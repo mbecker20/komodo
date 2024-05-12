@@ -35,6 +35,8 @@ async fn app() -> anyhow::Result<()> {
   // Spawn monitoring loops
   monitor::spawn_monitor_loop()?;
   helpers::prune::spawn_prune_loop();
+  resource::spawn_build_state_refresh_loop();
+  resource::spawn_repo_state_refresh_loop();
 
   // Setup static frontend services
   let frontend_path = frontend_path();

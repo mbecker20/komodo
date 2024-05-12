@@ -22,8 +22,9 @@ use monitor_client::{
   },
 };
 use mungos::{
+  by_id::update_one_by_id,
   find::find_collect,
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::{doc, to_bson, to_document},
 };
 use periphery_client::{
   api::{self, GetVersionResponse},
@@ -48,7 +49,7 @@ use crate::{
     query::get_deployment_state,
     update::{add_update, make_update, update_update},
   },
-  resource,
+  resource::{self, refresh_build_state_cache},
   state::{action_states, db_client, State},
 };
 
@@ -135,9 +136,7 @@ impl Resolve<RunBuild, User> for State {
             "get builder",
             serialize_error_pretty(&e),
           ));
-          update.finalize();
-          update_update(update.clone()).await?;
-          return Ok(update);
+          return handle_early_return(update).await;
         }
       };
 
@@ -162,9 +161,7 @@ impl Resolve<RunBuild, User> for State {
         cleanup_builder_instance(periphery, cleanup_data, &mut update)
           .await;
         info!("builder cleaned up");
-        update.finalize();
-        update_update(update.clone()).await?;
-        return Ok(update)
+        return handle_early_return(update).await
       },
     };
 
@@ -198,9 +195,7 @@ impl Resolve<RunBuild, User> for State {
           update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
           cleanup_builder_instance(periphery, cleanup_data, &mut update)
             .await;
-          update.finalize();
-          update_update(update.clone()).await?;
-          return Ok(update)
+          return handle_early_return(update).await
         },
       };
 
@@ -218,9 +213,10 @@ impl Resolve<RunBuild, User> for State {
 
     update.finalize();
 
+    let db = db_client().await;
+
     if update.success {
-      let _ = db_client()
-        .await
+      let _ = db
         .builds
         .update_one(
           doc! { "name": &build.name },
@@ -241,17 +237,55 @@ impl Resolve<RunBuild, User> for State {
     cleanup_builder_instance(periphery, cleanup_data, &mut update)
       .await;
 
-    info!("builder instance cleaned up");
+    // Need to manually update the update before cache refresh,
+    // and before broadcast with add_update.
+    // The Err case of to_document should be unreachable,
+    // but will fail to update cache in that case.
+    if let Ok(update_doc) = to_document(&update) {
+      let _ = update_one_by_id(
+        &db.updates,
+        &update.id,
+        mungos::update::Update::Set(update_doc),
+        None,
+      )
+      .await;
+      refresh_build_state_cache().await;
+    }
 
     update_update(update.clone()).await?;
 
     if update.success {
-      handle_post_build_redeploy(&build.id).await;
-      info!("post build redeploy handled");
+      // don't hold response up for user
+      tokio::spawn(async move {
+        handle_post_build_redeploy(&build.id).await;
+        info!("post build redeploy handled");
+      });
     }
 
     Ok(update)
   }
+}
+
+async fn handle_early_return(
+  mut update: Update,
+) -> anyhow::Result<Update> {
+  update.finalize();
+  // Need to manually update the update before cache refresh,
+  // and before broadcast with add_update.
+  // The Err case of to_document should be unreachable,
+  // but will fail to update cache in that case.
+  if let Ok(update_doc) = to_document(&update) {
+    let _ = update_one_by_id(
+      &db_client().await.updates,
+      &update.id,
+      mungos::update::Update::Set(update_doc),
+      None,
+    )
+    .await;
+    refresh_build_state_cache().await;
+  }
+  update_update(update.clone()).await?;
+  Ok(update)
 }
 
 #[async_trait]

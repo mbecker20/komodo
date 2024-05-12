@@ -2,10 +2,8 @@ use std::{collections::HashSet, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  build::BuildState,
   deployment::{Deployment, DeploymentState},
   permission::PermissionLevel,
-  repo::RepoState,
   server::{Server, ServerState},
   tag::Tag,
   update::ResourceTargetVariant,
@@ -14,16 +12,10 @@ use monitor_client::entities::{
 use mungos::{
   by_id::find_one_by_id,
   find::find_collect,
-  mongodb::{
-    bson::{doc, oid::ObjectId, Document},
-    options::FindOneOptions,
-  },
+  mongodb::bson::{doc, oid::ObjectId, Document},
 };
 
-use crate::{
-  resource,
-  state::{action_states, db_client},
-};
+use crate::{resource, state::db_client};
 
 #[instrument(level = "debug")]
 pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
@@ -205,103 +197,4 @@ pub fn id_or_name_filter(id_or_name: &str) -> Document {
     Ok(id) => doc! { "_id": id },
     Err(_) => doc! { "name": id_or_name },
   }
-}
-
-pub async fn get_build_state(id: &String) -> BuildState {
-  async {
-    if action_states()
-      .build
-      .get(id)
-      .await
-      .map(|s| s.get().map(|s| s.building))
-      .transpose()?
-      .unwrap_or_default()
-    {
-      return Ok(BuildState::Building);
-    }
-    let status = db_client()
-      .await
-      .updates
-      .find_one(
-        doc! {
-          "target.type": "Build",
-          "target.id": id,
-          "operation": "RunBuild"
-        },
-        FindOneOptions::builder()
-          .sort(doc! { "start_ts": -1 })
-          .build(),
-      )
-      .await?
-      .map(|u| {
-        if u.success {
-          BuildState::Ok
-        } else {
-          BuildState::Failed
-        }
-      })
-      .unwrap_or(BuildState::Ok);
-    anyhow::Ok(status)
-  }
-  .await
-  .inspect_err(|e| {
-    warn!("failed to get build status for {id} | {e:#}")
-  })
-  .unwrap_or(BuildState::Unknown)
-}
-
-pub async fn get_repo_state(id: &String) -> RepoState {
-  async {
-    if let Some(status) = action_states()
-      .repo
-      .get(id)
-      .await
-      .map(|s| {
-        s.get().map(|s| {
-          if s.cloning {
-            Some(RepoState::Cloning)
-          } else if s.pulling {
-            Some(RepoState::Pulling)
-          } else {
-            None
-          }
-        })
-      })
-      .transpose()?
-      .flatten()
-    {
-      return Ok(status);
-    }
-    let status = db_client()
-      .await
-      .updates
-      .find_one(
-        doc! {
-          "target.type": "Repo",
-          "target.id": id,
-          "$or": [
-            { "operation": "CloneRepo" },
-            { "operation": "PullRepo" },
-          ],
-        },
-        FindOneOptions::builder()
-          .sort(doc! { "start_ts": -1 })
-          .build(),
-      )
-      .await?
-      .map(|u| {
-        if u.success {
-          RepoState::Ok
-        } else {
-          RepoState::Failed
-        }
-      })
-      .unwrap_or(RepoState::Ok);
-    anyhow::Ok(status)
-  }
-  .await
-  .inspect_err(|e| {
-    warn!("failed to get repo status for {id} | {e:#}")
-  })
-  .unwrap_or(RepoState::Unknown)
 }

@@ -285,6 +285,8 @@ export interface BuildConfig {
 	repo?: string;
 	/** The branch of the repo. */
 	branch: string;
+	/** Optionally set a specific commit hash. */
+	commit?: string;
 	/**
 	 * The github account used to clone (used to access private repos).
 	 * Empty string is public clone (only public repos).
@@ -680,6 +682,8 @@ export interface RepoConfig {
 	repo?: string;
 	/** The repo branch. */
 	branch: string;
+	/** Optionally set a specific commit hash. */
+	commit?: string;
 	/**
 	 * The github account to use to clone.
 	 * It must be available in the server's periphery config.
@@ -709,6 +713,8 @@ export type Repo = Resource<RepoConfig, RepoInfo>;
 export type GetRepoResponse = Repo;
 
 export enum RepoState {
+	/** Unknown case */
+	Unknown = "Unknown",
 	/** Last clone / pull successful (or never cloned) */
 	Ok = "Ok",
 	/** Last clone / pull failed */
@@ -717,8 +723,6 @@ export enum RepoState {
 	Cloning = "Cloning",
 	/** Currently pullling */
 	Pulling = "Pulling",
-	/** Other case */
-	Unknown = "Unknown",
 }
 
 export interface RepoListItemInfo {
@@ -730,6 +734,10 @@ export interface RepoListItemInfo {
 	branch: string;
 	/** The repo state */
 	state: RepoState;
+	/** If the repo is cloned, will be the latest short commit hash. */
+	latest_hash?: string;
+	/** If the repo is cloned, will be the latest commit message. */
+	latest_message?: string;
 }
 
 export type RepoListItem = ResourceListItem<RepoListItemInfo>;
@@ -3065,6 +3073,7 @@ export interface CloneArgs {
 	name: string;
 	repo?: string;
 	branch?: string;
+	commit?: string;
 	on_clone?: SystemCommand;
 	on_pull?: SystemCommand;
 	github_account?: string;

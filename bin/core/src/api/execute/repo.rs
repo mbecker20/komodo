@@ -12,7 +12,10 @@ use monitor_client::{
     Operation,
   },
 };
-use mungos::mongodb::bson::doc;
+use mungos::{
+  by_id::update_one_by_id,
+  mongodb::bson::{doc, to_document},
+};
 use periphery_client::api;
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
@@ -23,7 +26,7 @@ use crate::{
     periphery_client,
     update::{add_update, update_update},
   },
-  resource,
+  resource::{self, refresh_repo_state_cache},
   state::{action_states, db_client, State},
 };
 
@@ -99,8 +102,7 @@ impl Resolve<CloneRepo, User> for State {
       update_last_pulled(&repo.name).await;
     }
 
-    update_update(update.clone()).await?;
-    Ok(update)
+    handle_update_return(update).await
   }
 }
 
@@ -174,9 +176,29 @@ impl Resolve<PullRepo, User> for State {
       update_last_pulled(&repo.name).await;
     }
 
-    update_update(update.clone()).await?;
-    Ok(update)
+    handle_update_return(update).await
   }
+}
+
+async fn handle_update_return(
+  update: Update,
+) -> anyhow::Result<Update> {
+  // Need to manually update the update before cache refresh,
+  // and before broadcast with add_update.
+  // The Err case of to_document should be unreachable,
+  // but will fail to update cache in that case.
+  if let Ok(update_doc) = to_document(&update) {
+    let _ = update_one_by_id(
+      &db_client().await.updates,
+      &update.id,
+      mungos::update::Update::Set(update_doc),
+      None,
+    )
+    .await;
+    refresh_repo_state_cache().await;
+  }
+  update_update(update.clone()).await?;
+  Ok(update)
 }
 
 async fn update_last_pulled(repo_name: &str) {

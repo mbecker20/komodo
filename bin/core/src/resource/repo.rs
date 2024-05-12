@@ -1,9 +1,11 @@
+use std::time::Duration;
+
 use anyhow::Context;
 use monitor_client::entities::{
   permission::PermissionLevel,
   repo::{
     PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo,
-    RepoListItem, RepoListItemInfo, RepoQuerySpecifics,
+    RepoListItem, RepoListItemInfo, RepoQuerySpecifics, RepoState,
   },
   resource::Resource,
   server::Server,
@@ -11,7 +13,10 @@ use monitor_client::entities::{
   user::User,
   Operation,
 };
-use mungos::mongodb::Collection;
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOneOptions, Collection},
+};
 use periphery_client::api::git::DeleteRepo;
 use serror::serialize_error_pretty;
 
@@ -44,8 +49,7 @@ impl super::MonitorResource for Repo {
   async fn to_list_item(
     repo: Resource<Self::Config, Self::Info>,
   ) -> anyhow::Result<Self::ListItem> {
-    let state =
-      repo_state_cache().get(&repo.id).await.unwrap_or_default();
+    let state = get_repo_state(&repo.id).await;
     let status =
       repo_status_cache().get(&repo.id).await.unwrap_or_default();
     Ok(RepoListItem {
@@ -159,6 +163,33 @@ impl super::MonitorResource for Repo {
   }
 }
 
+pub fn spawn_repo_state_refresh_loop() {
+  tokio::spawn(async move {
+    loop {
+      refresh_repo_state_cache().await;
+      tokio::time::sleep(Duration::from_secs(60)).await;
+    }
+  });
+}
+
+pub async fn refresh_repo_state_cache() {
+  let _ = async {
+    let repos = find_collect(&db_client().await.repos, None, None)
+      .await
+      .context("failed to get repos from db")?;
+    let cache = repo_state_cache();
+    for repo in repos {
+      let state = get_repo_state_from_db(&repo.id).await;
+      cache.insert(repo.id, state).await;
+    }
+    anyhow::Ok(())
+  }
+  .await
+  .inspect_err(|e| {
+    error!("failed to refresh repo state cache | {e:#}")
+  });
+}
+
 #[instrument(skip(user))]
 async fn validate_config(
   config: &mut PartialRepoConfig,
@@ -178,4 +209,63 @@ async fn validate_config(
     _ => {}
   }
   Ok(())
+}
+
+async fn get_repo_state(id: &String) -> RepoState {
+  if let Some(state) = action_states()
+    .repo
+    .get(id)
+    .await
+    .and_then(|s| {
+      s.get()
+        .map(|s| {
+          if s.cloning {
+            Some(RepoState::Cloning)
+          } else if s.pulling {
+            Some(RepoState::Pulling)
+          } else {
+            None
+          }
+        })
+        .ok()
+    })
+    .flatten()
+  {
+    return state;
+  }
+  repo_state_cache().get(id).await.unwrap_or_default()
+}
+
+async fn get_repo_state_from_db(id: &str) -> RepoState {
+  async {
+    let state = db_client()
+      .await
+      .updates
+      .find_one(
+        doc! {
+          "target.type": "Repo",
+          "target.id": id,
+          "$or": [
+            { "operation": "CloneRepo" },
+            { "operation": "PullRepo" },
+          ],
+        },
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
+      )
+      .await?
+      .map(|u| {
+        if u.success {
+          RepoState::Ok
+        } else {
+          RepoState::Failed
+        }
+      })
+      .unwrap_or(RepoState::Ok);
+    anyhow::Ok(state)
+  }
+  .await
+  .inspect_err(|e| warn!("failed to get repo state for {id} | {e:#}"))
+  .unwrap_or(RepoState::Unknown)
 }

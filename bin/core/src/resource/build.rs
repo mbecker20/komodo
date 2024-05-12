@@ -1,8 +1,11 @@
+use std::time::Duration;
+
 use anyhow::Context;
 use monitor_client::entities::{
   build::{
     Build, BuildConfig, BuildConfigDiff, BuildInfo, BuildListItem,
-    BuildListItemInfo, BuildQuerySpecifics, PartialBuildConfig,
+    BuildListItemInfo, BuildQuerySpecifics, BuildState,
+    PartialBuildConfig,
   },
   builder::Builder,
   permission::PermissionLevel,
@@ -11,7 +14,10 @@ use monitor_client::entities::{
   user::User,
   Operation,
 };
-use mungos::mongodb::Collection;
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOneOptions, Collection},
+};
 
 use crate::{
   helpers::empty_or_only_spaces,
@@ -38,8 +44,7 @@ impl super::MonitorResource for Build {
   async fn to_list_item(
     build: Resource<Self::Config, Self::Info>,
   ) -> anyhow::Result<Self::ListItem> {
-    let state =
-      build_state_cache().get(&build.id).await.unwrap_or_default();
+    let state = get_build_state(&build.id).await;
     Ok(BuildListItem {
       name: build.name,
       id: build.id,
@@ -130,6 +135,33 @@ impl super::MonitorResource for Build {
   }
 }
 
+pub fn spawn_build_state_refresh_loop() {
+  tokio::spawn(async move {
+    loop {
+      refresh_build_state_cache().await;
+      tokio::time::sleep(Duration::from_secs(60)).await;
+    }
+  });
+}
+
+pub async fn refresh_build_state_cache() {
+  let _ = async {
+    let builds = find_collect(&db_client().await.builds, None, None)
+      .await
+      .context("failed to get builds from db")?;
+    let cache = build_state_cache();
+    for build in builds {
+      let state = get_build_state_from_db(&build.id).await;
+      cache.insert(build.id, state).await;
+    }
+    anyhow::Ok(())
+  }
+  .await
+  .inspect_err(|e| {
+    error!("failed to refresh build state cache | {e:#}")
+  });
+}
+
 #[instrument(skip(user))]
 async fn validate_config(
   config: &mut PartialBuildConfig,
@@ -153,6 +185,51 @@ async fn validate_config(
   Ok(())
 }
 
-pub fn spawn_build_state_management() {
-  
+async fn get_build_state(id: &String) -> BuildState {
+  if action_states()
+    .build
+    .get(id)
+    .await
+    .map(|s| s.get().map(|s| s.building))
+    .transpose()
+    .ok()
+    .flatten()
+    .unwrap_or_default()
+  {
+    return BuildState::Building;
+  }
+  build_state_cache().get(id).await.unwrap_or_default()
+}
+
+async fn get_build_state_from_db(id: &str) -> BuildState {
+  async {
+    let state = db_client()
+      .await
+      .updates
+      .find_one(
+        doc! {
+          "target.type": "Build",
+          "target.id": id,
+          "operation": "RunBuild"
+        },
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
+      )
+      .await?
+      .map(|u| {
+        if u.success {
+          BuildState::Ok
+        } else {
+          BuildState::Failed
+        }
+      })
+      .unwrap_or(BuildState::Ok);
+    anyhow::Ok(state)
+  }
+  .await
+  .inspect_err(|e| {
+    warn!("failed to get build state for {id} | {e:#}")
+  })
+  .unwrap_or(BuildState::Unknown)
 }
