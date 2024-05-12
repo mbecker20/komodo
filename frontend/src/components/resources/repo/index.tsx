@@ -53,7 +53,7 @@ export const RepoComponents: RequiredResourceComponents = {
 
   Status: {
     State: ({ id }) => {
-      let state = useRepo(id)?.info.state;
+      const state = useRepo(id)?.info.state;
       const color = bg_color_class_by_intention(repo_state_intention(state));
       return (
         <Card className={cn("w-fit", color)}>
@@ -61,6 +61,14 @@ export const RepoComponents: RequiredResourceComponents = {
         </Card>
       );
     },
+    Status: ({id}) => {
+      const info = useRepo(id)?.info;
+      if (info?.latest_hash) {
+        return <>{info.latest_hash}</>;
+      } else {
+        return <>{"not cloned"}</>
+      }
+    }
   },
 
   Info: {

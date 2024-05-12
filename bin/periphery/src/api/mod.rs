@@ -43,6 +43,7 @@ pub enum PeripheryRequest {
   GetSystemStats(GetSystemStats),
   #[to_string_resolver]
   GetSystemProcesses(GetSystemProcesses),
+  GetLatestCommit(GetLatestCommit),
 
   // Docker
   GetContainerList(GetContainerList),
