@@ -31,7 +31,7 @@ export const OmniSearch = ({
       variant="outline"
       onClick={() => setOpen(true)}
       className={cn(
-        "flex items-center gap-4 w-fit md:w-[200px] lg:w-[300px] justify-start",
+        "flex items-center gap-4 w-fit md:w-[200px] lg:w-[300px] xl:w-[400px] justify-start",
         className
       )}
     >
