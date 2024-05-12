@@ -5,7 +5,7 @@ use mongo_indexed::Indexed;
 use monitor_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant},
   monitor_timestamp, optional_string,
-  server::{stats::SeverityLevel, ServerListItem, ServerStatus},
+  server::{stats::SeverityLevel, ServerListItem, ServerState},
   update::ResourceTarget,
 };
 use mungos::{
@@ -56,8 +56,8 @@ pub async fn alert_servers(
     let health_alert = server_alerts.as_ref().and_then(|alerts| {
       alerts.get(&AlertDataVariant::ServerUnreachable)
     });
-    match (server_status.status, health_alert) {
-      (ServerStatus::NotOk, None) => {
+    match (server_status.state, health_alert) {
+      (ServerState::NotOk, None) => {
         // open unreachable alert
         let alert = Alert {
           id: Default::default(),
@@ -77,7 +77,7 @@ pub async fn alert_servers(
         alerts_to_open
           .push((alert, server.info.send_unreachable_alerts))
       }
-      (ServerStatus::NotOk, Some(alert)) => {
+      (ServerState::NotOk, Some(alert)) => {
         // update alert err
         let mut alert = alert.clone();
         let (id, name, region) = match alert.data {
@@ -102,7 +102,7 @@ pub async fn alert_servers(
 
       // Close an open alert
       (
-        ServerStatus::Ok | ServerStatus::Disabled,
+        ServerState::Ok | ServerState::Disabled,
         Some(health_alert),
       ) => alert_ids_to_close.push((
         health_alert.id.clone(),

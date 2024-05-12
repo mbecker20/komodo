@@ -4,7 +4,7 @@ use monitor_client::entities::{
   deployment::{ContainerSummary, DockerContainerState},
   server::{
     stats::{ServerHealth, SystemStats},
-    Server, ServerStatus,
+    Server, ServerState,
   },
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
@@ -34,7 +34,7 @@ pub struct History<Curr: Default, Prev> {
 #[derive(Default, Clone, Debug)]
 pub struct CachedServerStatus {
   pub id: String,
-  pub status: ServerStatus,
+  pub state: ServerState,
   pub version: String,
   pub stats: Option<SystemStats>,
   pub health: Option<ServerHealth>,
@@ -95,7 +95,7 @@ pub async fn update_cache_for_server(server: &Server) {
     insert_deployments_status_unknown(deployments).await;
     insert_server_status(
       server,
-      ServerStatus::Disabled,
+      ServerState::Disabled,
       String::from("unknown"),
       None,
       None,
@@ -112,7 +112,7 @@ pub async fn update_cache_for_server(server: &Server) {
       insert_deployments_status_unknown(deployments).await;
       insert_server_status(
         server,
-        ServerStatus::NotOk,
+        ServerState::NotOk,
         String::from("unknown"),
         None,
         Serror::from(&e),
@@ -129,7 +129,7 @@ pub async fn update_cache_for_server(server: &Server) {
         insert_deployments_status_unknown(deployments).await;
         insert_server_status(
           server,
-          ServerStatus::NotOk,
+          ServerState::NotOk,
           String::from("unknown"),
           None,
           Serror::from(&e),
@@ -142,14 +142,8 @@ pub async fn update_cache_for_server(server: &Server) {
     None
   };
 
-  insert_server_status(
-    server,
-    ServerStatus::Ok,
-    version,
-    stats,
-    None,
-  )
-  .await;
+  insert_server_status(server, ServerState::Ok, version, stats, None)
+    .await;
 
   let containers =
     periphery.request(api::container::GetContainerList {}).await;

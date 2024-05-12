@@ -8,7 +8,7 @@ use monitor_client::{
     deployment::{Deployment, DeploymentImage},
     get_image_name, monitor_timestamp,
     permission::PermissionLevel,
-    server::ServerStatus,
+    server::ServerState,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     user::User,
     Operation, Version,
@@ -68,7 +68,7 @@ impl Resolve<Deploy, User> for State {
 
     let (server, status) =
       get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerStatus::Ok {
+    if status != ServerState::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
@@ -168,7 +168,7 @@ impl Resolve<StartContainer, User> for State {
 
     let (server, status) =
       get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerStatus::Ok {
+    if status != ServerState::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
@@ -247,7 +247,7 @@ impl Resolve<StopContainer, User> for State {
 
     let (server, status) =
       get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerStatus::Ok {
+    if status != ServerState::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
@@ -296,7 +296,7 @@ impl Resolve<StopAllContainers, User> for State {
     user: User,
   ) -> anyhow::Result<Update> {
     let (server, status) = get_server_with_status(&server).await?;
-    if status != ServerStatus::Ok {
+    if status != ServerState::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
@@ -406,7 +406,7 @@ impl Resolve<RemoveContainer, User> for State {
 
     let (server, status) =
       get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerStatus::Ok {
+    if status != ServerState::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));

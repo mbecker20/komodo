@@ -16,7 +16,7 @@ use periphery_client::api::git::DeleteRepo;
 use serror::serialize_error_pretty;
 
 use crate::{
-  helpers::{periphery_client, query::get_repo_status},
+  helpers::{periphery_client, query::get_repo_state},
   state::{action_states, db_client},
 };
 
@@ -42,7 +42,7 @@ impl super::MonitorResource for Repo {
   async fn to_list_item(
     repo: Resource<Self::Config, Self::Info>,
   ) -> anyhow::Result<Self::ListItem> {
-    let status = get_repo_status(&repo.id).await;
+    let state = get_repo_state(&repo.id).await;
     Ok(RepoListItem {
       name: repo.name,
       id: repo.id,
@@ -52,7 +52,7 @@ impl super::MonitorResource for Repo {
         last_pulled_at: repo.info.last_pulled_at,
         repo: repo.config.repo,
         branch: repo.config.branch,
-        status,
+        state,
       },
     })
   }

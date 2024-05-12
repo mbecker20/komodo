@@ -13,7 +13,7 @@ use crate::entities::{
       SystemStatsRecord,
     },
     Server, ServerActionState, ServerListItem, ServerQuery,
-    ServerStatus,
+    ServerState,
   },
   Timelength, I64,
 };
@@ -58,25 +58,25 @@ pub type ListServersResponse = Vec<ServerListItem>;
 
 //
 
-/// Get the status of the target server. Response: [GetServerStatusResponse].
+/// Get the state of the target server. Response: [GetServerStateResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetServerStatusResponse)]
-pub struct GetServerStatus {
+#[response(GetServerStateResponse)]
+pub struct GetServerState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub server: String,
 }
 
-/// The status for [GetServerStatus].
+/// The response for [GetServerState].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetServerStatusResponse {
+pub struct GetServerStateResponse {
   /// The server status.
-  pub status: ServerStatus,
+  pub status: ServerState,
 }
 
 //

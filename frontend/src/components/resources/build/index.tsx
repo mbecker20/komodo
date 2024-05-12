@@ -10,7 +10,7 @@ import { DeploymentTable } from "../deployment/table";
 import { RunBuild } from "./actions";
 import {
   bg_color_class_by_intention,
-  build_status_intention,
+  build_state_intention,
   fill_color_class_by_intention,
 } from "@lib/color";
 import { Card, CardHeader } from "@ui/card";
@@ -20,9 +20,9 @@ const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
 
 const BuildIcon = ({ id, size }: { id?: string; size: number }) => {
-  const status = useBuild(id)?.info.status;
-  const color = fill_color_class_by_intention(build_status_intention(status));
-  return <Hammer className={cn(`w-${size} h-${size}`, status && color)} />;
+  const state = useBuild(id)?.info.state;
+  const color = fill_color_class_by_intention(build_state_intention(state));
+  return <Hammer className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 
 export const BuildComponents: RequiredResourceComponents = {
@@ -39,12 +39,12 @@ export const BuildComponents: RequiredResourceComponents = {
   BigIcon: ({ id }) => <BuildIcon id={id} size={8} />,
 
   Status: {
-    Status: ({ id }) => {
-      let status = useBuild(id)?.info.status;
-      const color = bg_color_class_by_intention(build_status_intention(status));
+    State: ({ id }) => {
+      let state = useBuild(id)?.info.state;
+      const color = bg_color_class_by_intention(build_state_intention(state));
       return (
         <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{status}</CardHeader>
+          <CardHeader className="py-0 px-2">{state}</CardHeader>
         </Card>
       );
     },

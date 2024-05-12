@@ -72,7 +72,7 @@ enum ReadRequest {
   GetServersSummary(GetServersSummary),
   GetServer(GetServer),
   ListServers(ListServers),
-  GetServerStatus(GetServerStatus),
+  GetServerState(GetServerState),
   GetPeripheryVersion(GetPeripheryVersion),
   GetDockerContainers(GetDockerContainers),
   GetDockerImages(GetDockerImages),

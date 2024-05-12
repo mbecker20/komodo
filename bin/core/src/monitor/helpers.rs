@@ -4,7 +4,7 @@ use monitor_client::entities::{
     stats::{
       ServerHealth, SeverityLevel, SingleDiskUsage, SystemStats,
     },
-    Server, ServerConfig, ServerStatus,
+    Server, ServerConfig, ServerState,
   },
 };
 use serror::Serror;
@@ -41,7 +41,7 @@ pub async fn insert_deployments_status_unknown(
 #[instrument(level = "debug", skip_all)]
 pub async fn insert_server_status(
   server: &Server,
-  status: ServerStatus,
+  state: ServerState,
   version: String,
   stats: Option<SystemStats>,
   err: impl Into<Option<Serror>>,
@@ -52,7 +52,7 @@ pub async fn insert_server_status(
       server.id.clone(),
       CachedServerStatus {
         id: server.id.clone(),
-        status,
+        state,
         version,
         stats,
         health,

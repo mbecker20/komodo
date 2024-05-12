@@ -25,15 +25,15 @@ pub struct RepoListItemInfo {
   pub repo: String,
   /// The configured branch
   pub branch: String,
-  /// The repo status
-  pub status: RepoStatus,
+  /// The repo state
+  pub state: RepoState,
 }
 
 #[typeshare]
 #[derive(
   Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
 )]
-pub enum RepoStatus {
+pub enum RepoState {
   /// Last clone / pull successful (or never cloned)
   Ok,
   /// Last clone / pull failed
@@ -124,7 +124,9 @@ fn default_webhook_enabled() -> bool {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct RepoActionState {
+  /// Whether repo currently cloning
   pub cloning: bool,
+  /// Whether repo currently pulling
   pub pulling: bool,
 }
 
@@ -136,6 +138,7 @@ pub type RepoQuery = ResourceQuery<RepoQuerySpecifics>;
   Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
 )]
 pub struct RepoQuerySpecifics {
+  /// Filter builds by their repo.
   pub repos: Vec<String>,
 }
 

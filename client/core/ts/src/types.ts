@@ -329,7 +329,7 @@ export type Build = Resource<BuildConfig, BuildInfo>;
 
 export type GetBuildResponse = Build;
 
-export enum BuildStatus {
+export enum BuildState {
 	/** Last build successful (or never built) */
 	Ok = "Ok",
 	/** Last build failed */
@@ -349,8 +349,8 @@ export interface BuildListItemInfo {
 	repo: string;
 	/** The branch of the repo */
 	branch: string;
-	/** Status for the build */
-	status: BuildStatus;
+	/** State of the build. Reflects whether most recent build successful. */
+	state: BuildState;
 }
 
 export type BuildListItem = ResourceListItem<BuildListItemInfo>;
@@ -700,7 +700,7 @@ export type Repo = Resource<RepoConfig, RepoInfo>;
 
 export type GetRepoResponse = Repo;
 
-export enum RepoStatus {
+export enum RepoState {
 	/** Last clone / pull successful (or never cloned) */
 	Ok = "Ok",
 	/** Last clone / pull failed */
@@ -720,8 +720,8 @@ export interface RepoListItemInfo {
 	repo: string;
 	/** The configured branch */
 	branch: string;
-	/** The repo status */
-	status: RepoStatus;
+	/** The repo state */
+	state: RepoState;
 }
 
 export type RepoListItem = ResourceListItem<RepoListItemInfo>;
@@ -729,7 +729,9 @@ export type RepoListItem = ResourceListItem<RepoListItemInfo>;
 export type ListReposResponse = RepoListItem[];
 
 export interface RepoActionState {
+	/** Whether repo currently cloning */
 	cloning: boolean;
+	/** Whether repo currently pulling */
 	pulling: boolean;
 }
 
@@ -787,7 +789,7 @@ export type Server = Resource<ServerConfig, undefined>;
 
 export type GetServerResponse = Server;
 
-export enum ServerStatus {
+export enum ServerState {
 	/** Server is unreachable. */
 	NotOk = "NotOk",
 	/** Server health check passing. */
@@ -797,8 +799,8 @@ export enum ServerStatus {
 }
 
 export interface ServerListItemInfo {
-	/** The server's status. */
-	status: ServerStatus;
+	/** The server's state. */
+	state: ServerState;
 	/** Region of the server. */
 	region: string;
 	/** Whether server is configured to send unreachable alerts. */
@@ -1304,6 +1306,7 @@ export type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
 export type _PartialRepoConfig = Partial<RepoConfig>;
 
 export interface RepoQuerySpecifics {
+	/** Filter builds by their repo. */
 	repos: string[];
 }
 
@@ -2030,16 +2033,16 @@ export interface ListServers {
 	query?: ServerQuery;
 }
 
-/** Get the status of the target server. Response: [GetServerStatusResponse]. */
-export interface GetServerStatus {
+/** Get the state of the target server. Response: [GetServerStateResponse]. */
+export interface GetServerState {
 	/** Id or name */
 	server: string;
 }
 
-/** The status for [GetServerStatus]. */
-export interface GetServerStatusResponse {
+/** The response for [GetServerState]. */
+export interface GetServerStateResponse {
 	/** The server status. */
-	status: ServerStatus;
+	status: ServerState;
 }
 
 /** Get current action state for the servers. Response: [ServerActionState]. */
@@ -3179,7 +3182,7 @@ export type ReadRequest =
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }
-	| { type: "GetServerStatus", params: GetServerStatus }
+	| { type: "GetServerState", params: GetServerState }
 	| { type: "GetPeripheryVersion", params: GetPeripheryVersion }
 	| { type: "GetDockerContainers", params: GetDockerContainers }
 	| { type: "GetDockerImages", params: GetDockerImages }

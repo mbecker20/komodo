@@ -43,7 +43,7 @@ export type ReadResponses = {
   GetServersSummary: Types.GetServersSummaryResponse;
   GetServer: Types.GetServerResponse;
   ListServers: Types.ListServersResponse;
-  GetServerStatus: Types.GetServerStatusResponse;
+  GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   GetSystemInformation: Types.GetSystemInformationResponse;
   GetDockerContainers: Types.GetDockerContainersResponse;

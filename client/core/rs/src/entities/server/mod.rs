@@ -20,8 +20,8 @@ pub type ServerListItem = ResourceListItem<ServerListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerListItemInfo {
-  /// The server's status.
-  pub status: ServerStatus,
+  /// The server's state.
+  pub state: ServerState,
   /// Region of the server.
   pub region: String,
   /// Whether server is configured to send unreachable alerts.
@@ -208,7 +208,7 @@ pub struct ServerActionState {
   Copy,
   Default,
 )]
-pub enum ServerStatus {
+pub enum ServerState {
   /// Server is unreachable.
   #[default]
   NotOk,

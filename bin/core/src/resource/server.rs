@@ -44,7 +44,7 @@ impl super::MonitorResource for Server {
       tags: server.tags,
       resource_type: ResourceTargetVariant::Server,
       info: ServerListItemInfo {
-        status: status.map(|s| s.status).unwrap_or_default(),
+        state: status.map(|s| s.state).unwrap_or_default(),
         region: server.config.region,
         send_unreachable_alerts: server
           .config

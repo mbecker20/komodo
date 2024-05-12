@@ -32,12 +32,12 @@ export const RepoTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          accessorKey: "info.status",
+          accessorKey: "info.state",
           header: ({ column }) => (
-            <SortableHeader column={column} title="Status" />
+            <SortableHeader column={column} title="State" />
           ),
           cell: ({ row }) => (
-            <RepoComponents.Status.Status id={row.original.id} />
+            <RepoComponents.Status.State id={row.original.id} />
           ),
         },
         {

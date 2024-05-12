@@ -86,15 +86,15 @@ export const text_color_class_by_intention = (intention: ColorIntention) => {
   }
 };
 
-export const server_status_intention: (
-  status?: Types.ServerStatus
+export const server_state_intention: (
+  status?: Types.ServerState
 ) => ColorIntention = (status) => {
   switch (status) {
-    case Types.ServerStatus.Ok:
+    case Types.ServerState.Ok:
       return "Good";
-    case Types.ServerStatus.NotOk:
+    case Types.ServerState.NotOk:
       return "Critical";
-    case Types.ServerStatus.Disabled:
+    case Types.ServerState.Disabled:
       return "Neutral";
     case undefined:
       return "None";
@@ -118,36 +118,36 @@ export const deployment_state_intention: (
   }
 };
 
-export const build_status_intention = (status?: Types.BuildStatus) => {
+export const build_state_intention = (status?: Types.BuildState) => {
   switch (status) {
     case undefined:
       return "None";
-    case Types.BuildStatus.Unknown:
+    case Types.BuildState.Unknown:
       return "Unknown";
-    case Types.BuildStatus.Ok:
+    case Types.BuildState.Ok:
       return "Good";
-    case Types.BuildStatus.Building:
+    case Types.BuildState.Building:
       return "Warning";
-    case Types.BuildStatus.Failed:
+    case Types.BuildState.Failed:
       return "Critical";
     default:
       return "None";
   }
 }
 
-export const repo_status_intention = (status?: Types.RepoStatus) => {
-  switch (status) {
+export const repo_state_intention = (state?: Types.RepoState) => {
+  switch (state) {
     case undefined:
       return "None";
-    case Types.RepoStatus.Unknown:
+    case Types.RepoState.Unknown:
       return "Unknown";
-    case Types.RepoStatus.Ok:
+    case Types.RepoState.Ok:
       return "Good";
-    case Types.RepoStatus.Cloning:
+    case Types.RepoState.Cloning:
       return "Warning";
-    case Types.RepoStatus.Pulling:
+    case Types.RepoState.Pulling:
       return "Warning";
-    case Types.RepoStatus.Failed:
+    case Types.RepoState.Failed:
       return "Critical";
     default:
       return "None";

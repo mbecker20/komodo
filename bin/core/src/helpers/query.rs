@@ -2,11 +2,11 @@ use std::{collections::HashSet, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  build::BuildStatus,
+  build::BuildState,
   deployment::{Deployment, DockerContainerState},
   permission::PermissionLevel,
-  repo::RepoStatus,
-  server::{Server, ServerStatus},
+  repo::RepoState,
+  server::{Server, ServerState},
   tag::Tag,
   update::ResourceTargetVariant,
   user::{admin_service_user, User},
@@ -39,17 +39,17 @@ pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
 #[instrument(level = "debug")]
 pub async fn get_server_with_status(
   server_id_or_name: &str,
-) -> anyhow::Result<(Server, ServerStatus)> {
+) -> anyhow::Result<(Server, ServerState)> {
   let server = resource::get::<Server>(server_id_or_name).await?;
   if !server.config.enabled {
-    return Ok((server, ServerStatus::Disabled));
+    return Ok((server, ServerState::Disabled));
   }
   let status = match super::periphery_client(&server)?
     .request(periphery_client::api::GetHealth {})
     .await
   {
-    Ok(_) => ServerStatus::Ok,
-    Err(_) => ServerStatus::NotOk,
+    Ok(_) => ServerState::Ok,
+    Err(_) => ServerState::NotOk,
   };
   Ok((server, status))
 }
@@ -63,7 +63,7 @@ pub async fn get_deployment_state(
   }
   let (server, status) =
     get_server_with_status(&deployment.config.server_id).await?;
-  if status != ServerStatus::Ok {
+  if status != ServerState::Ok {
     return Ok(DockerContainerState::Unknown);
   }
   let container = super::periphery_client(&server)?
@@ -207,7 +207,7 @@ pub fn id_or_name_filter(id_or_name: &str) -> Document {
   }
 }
 
-pub async fn get_build_status(id: &String) -> BuildStatus {
+pub async fn get_build_state(id: &String) -> BuildState {
   async {
     if action_states()
       .build
@@ -217,7 +217,7 @@ pub async fn get_build_status(id: &String) -> BuildStatus {
       .transpose()?
       .unwrap_or_default()
     {
-      return Ok(BuildStatus::Building);
+      return Ok(BuildState::Building);
     }
     let status = db_client()
       .await
@@ -235,22 +235,22 @@ pub async fn get_build_status(id: &String) -> BuildStatus {
       .await?
       .map(|u| {
         if u.success {
-          BuildStatus::Ok
+          BuildState::Ok
         } else {
-          BuildStatus::Failed
+          BuildState::Failed
         }
       })
-      .unwrap_or(BuildStatus::Ok);
+      .unwrap_or(BuildState::Ok);
     anyhow::Ok(status)
   }
   .await
   .inspect_err(|e| {
     warn!("failed to get build status for {id} | {e:#}")
   })
-  .unwrap_or(BuildStatus::Unknown)
+  .unwrap_or(BuildState::Unknown)
 }
 
-pub async fn get_repo_status(id: &String) -> RepoStatus {
+pub async fn get_repo_state(id: &String) -> RepoState {
   async {
     if let Some(status) = action_states()
       .repo
@@ -259,9 +259,9 @@ pub async fn get_repo_status(id: &String) -> RepoStatus {
       .map(|s| {
         s.get().map(|s| {
           if s.cloning {
-            Some(RepoStatus::Cloning)
+            Some(RepoState::Cloning)
           } else if s.pulling {
-            Some(RepoStatus::Pulling)
+            Some(RepoState::Pulling)
           } else {
             None
           }
@@ -291,17 +291,17 @@ pub async fn get_repo_status(id: &String) -> RepoStatus {
       .await?
       .map(|u| {
         if u.success {
-          RepoStatus::Ok
+          RepoState::Ok
         } else {
-          RepoStatus::Failed
+          RepoState::Failed
         }
       })
-      .unwrap_or(RepoStatus::Ok);
+      .unwrap_or(RepoState::Ok);
     anyhow::Ok(status)
   }
   .await
   .inspect_err(|e| {
     warn!("failed to get repo status for {id} | {e:#}")
   })
-  .unwrap_or(RepoStatus::Unknown)
+  .unwrap_or(RepoState::Unknown)
 }

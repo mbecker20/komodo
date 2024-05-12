@@ -7,18 +7,18 @@ import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource } from "../common";
 import { RepoTable } from "./table";
-import { bg_color_class_by_intention, fill_color_class_by_intention, repo_status_intention } from "@lib/color";
+import { bg_color_class_by_intention, fill_color_class_by_intention, repo_state_intention } from "@lib/color";
 import { cn } from "@lib/utils";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
 
 const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
-  const status = useRepo(id)?.info.status;
+  const state = useRepo(id)?.info.state;
   const color = fill_color_class_by_intention(
-    repo_status_intention(status)
+    repo_state_intention(state)
   );
-  return <GitBranch className={cn(`w-${size} h-${size}`, status && color)} />;
+  return <GitBranch className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 
 export const RepoComponents: RequiredResourceComponents = {
@@ -52,12 +52,12 @@ export const RepoComponents: RequiredResourceComponents = {
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,
 
   Status: {
-    Status: ({ id }) => {
-      let status = useRepo(id)?.info.status;
-      const color = bg_color_class_by_intention(repo_status_intention(status));
+    State: ({ id }) => {
+      let state = useRepo(id)?.info.state;
+      const color = bg_color_class_by_intention(repo_state_intention(state));
       return (
         <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{status}</CardHeader>
+          <CardHeader className="py-0 px-2">{state}</CardHeader>
         </Card>
       );
     },

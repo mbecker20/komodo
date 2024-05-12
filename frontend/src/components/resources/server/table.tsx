@@ -47,16 +47,16 @@ export const ServerTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          accessorKey: "info.status",
+          accessorKey: "info.state",
           header: ({ column }) => (
-            <SortableHeader column={column} title="Status" />
+            <SortableHeader column={column} title="State" />
           ),
           cell: ({
             row: {
               original: { id },
             },
           }) => {
-            return <ServerComponents.Status.Status id={id} />;
+            return <ServerComponents.Status.State id={id} />;
           },
         },
         {

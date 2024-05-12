@@ -30,15 +30,15 @@ pub struct BuildListItemInfo {
   pub repo: String,
   /// The branch of the repo
   pub branch: String,
-  /// Status for the build
-  pub status: BuildStatus,
+  /// State of the build. Reflects whether most recent build successful.
+  pub state: BuildState,
 }
 
 #[typeshare]
 #[derive(
   Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
 )]
-pub enum BuildStatus {
+pub enum BuildState {
   /// Last build successful (or never built)
   Ok,
   /// Last build failed

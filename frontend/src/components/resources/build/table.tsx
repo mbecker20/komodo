@@ -31,12 +31,12 @@ export const BuildTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          accessorKey: "info.status",
+          accessorKey: "info.state",
           header: ({ column }) => (
-            <SortableHeader column={column} title="Status" />
+            <SortableHeader column={column} title="State" />
           ),
           cell: ({ row }) => (
-            <BuildComponents.Status.Status id={row.original.id} />
+            <BuildComponents.Status.State id={row.original.id} />
           ),
         },
         {

@@ -45,7 +45,7 @@ const on_message = (
       ["ListServers"],
       ["GetServer"],
       ["GetServerActionState"],
-      ["GetServerStatus"],
+      ["GetServerState"],
       ["GetHistoricalServerStats"],
       ["GetServersSummary"]
     );

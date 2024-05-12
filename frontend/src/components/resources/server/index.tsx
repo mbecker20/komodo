@@ -18,7 +18,7 @@ import { RenameServer } from "./actions";
 import {
   bg_color_class_by_intention,
   fill_color_class_by_intention,
-  server_status_intention,
+  server_state_intention,
 } from "@lib/color";
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
@@ -36,12 +36,12 @@ export const useServer = (id?: string) =>
   );
 
 const _ServerIcon = ({ id, size }: { id?: string; size: number }) => {
-  const status = useServer(id)?.info.status;
+  const state = useServer(id)?.info.state;
   return (
     <ServerIcon
       className={cn(
         `w-${size} h-${size}`,
-        id && fill_color_class_by_intention(server_status_intention(status))
+        id && fill_color_class_by_intention(server_state_intention(state))
       )}
     />
   );
@@ -61,15 +61,13 @@ export const ServerComponents: RequiredResourceComponents = {
   BigIcon: ({ id }) => <_ServerIcon id={id} size={8} />,
 
   Status: {
-    Status: ({ id }) => {
-      const status = useServer(id)?.info.status;
-      const color = bg_color_class_by_intention(
-        server_status_intention(status)
-      );
+    State: ({ id }) => {
+      const state = useServer(id)?.info.state;
+      const color = bg_color_class_by_intention(server_state_intention(state));
       return (
         <Card className={cn("w-fit", color)}>
           <CardHeader className="py-0 px-2">
-            {status === Types.ServerStatus.NotOk ? "Not Ok" : status}
+            {state === Types.ServerState.NotOk ? "Not Ok" : state}
           </CardHeader>
         </Card>
       );
@@ -100,7 +98,7 @@ export const ServerComponents: RequiredResourceComponents = {
         useRead(
           "GetSystemInformation",
           { server: id },
-          { enabled: server ? server.info.status !== "Disabled" : false }
+          { enabled: server ? server.info.state !== "Disabled" : false }
         ).data?.core_count ?? 0;
       return (
         <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
@@ -114,7 +112,7 @@ export const ServerComponents: RequiredResourceComponents = {
       const stats = useRead(
         "GetSystemStats",
         { server: id },
-        { enabled: server ? server.info.status !== "Disabled" : false }
+        { enabled: server ? server.info.state !== "Disabled" : false }
       ).data;
       return (
         <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
@@ -128,7 +126,7 @@ export const ServerComponents: RequiredResourceComponents = {
       const stats = useRead(
         "GetSystemStats",
         { server: id },
-        { enabled: server ? server.info.status !== "Disabled" : false }
+        { enabled: server ? server.info.state !== "Disabled" : false }
       ).data;
       const disk_total_gb = stats?.disks.reduce(
         (acc, curr) => acc + curr.total_gb,

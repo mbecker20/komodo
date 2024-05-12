@@ -15,7 +15,7 @@ use monitor_client::{
     permission::PermissionLevel,
     server::{
       docker_image::ImageSummary, docker_network::DockerNetwork,
-      Server, ServerActionState, ServerListItem, ServerStatus,
+      Server, ServerActionState, ServerListItem, ServerState,
     },
     user::User,
   },
@@ -48,14 +48,14 @@ impl Resolve<GetServersSummary, User> for State {
     let mut res = GetServersSummaryResponse::default();
     for server in servers {
       res.total += 1;
-      match server.info.status {
-        ServerStatus::Ok => {
+      match server.info.state {
+        ServerState::Ok => {
           res.healthy += 1;
         }
-        ServerStatus::NotOk => {
+        ServerState::NotOk => {
           res.unhealthy += 1;
         }
-        ServerStatus::Disabled => {
+        ServerState::Disabled => {
           res.disabled += 1;
         }
       }
@@ -114,12 +114,12 @@ impl Resolve<ListServers, User> for State {
 }
 
 #[async_trait]
-impl Resolve<GetServerStatus, User> for State {
+impl Resolve<GetServerState, User> for State {
   async fn resolve(
     &self,
-    GetServerStatus { server }: GetServerStatus,
+    GetServerState { server }: GetServerState,
     user: User,
-  ) -> anyhow::Result<GetServerStatusResponse> {
+  ) -> anyhow::Result<GetServerStateResponse> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
@@ -130,8 +130,8 @@ impl Resolve<GetServerStatus, User> for State {
       .get(&server.id)
       .await
       .ok_or(anyhow!("did not find cached status for server"))?;
-    let response = GetServerStatusResponse {
-      status: status.status,
+    let response = GetServerStateResponse {
+      status: status.state,
     };
     Ok(response)
   }
