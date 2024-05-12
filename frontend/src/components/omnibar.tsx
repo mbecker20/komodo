@@ -18,6 +18,9 @@ import { BuildComponents } from "./resources/build";
 import { ServerComponents } from "./resources/server";
 import { ProcedureComponents } from "./resources/procedure";
 import { RepoComponents } from "./resources/repo";
+import { BuilderComponents } from "./resources/builder";
+import { AlerterComponents } from "./resources/alerter";
+import { ServerTemplateComponents } from "./resources/server-template";
 
 export const OmniSearch = ({
   className,
@@ -107,6 +110,9 @@ const useOmniItems = (
   const builds = useRead("ListBuilds", {}).data;
   const repos = useRead("ListRepos", {}).data;
   const procedures = useRead("ListProcedures", {}).data;
+  const builders = useRead("ListBuilders", {}).data;
+  const alerters = useRead("ListAlerters", {}).data;
+  const templates = useRead("ListServerTemplates", {}).data;
   const searchTerms = search
     .toLowerCase()
     .split(" ")
@@ -143,6 +149,21 @@ const useOmniItems = (
           label: "Procedures",
           icon: <ProcedureComponents.Icon />,
           onSelect: () => nav("/procedures"),
+        },
+        {
+          label: "Builders",
+          icon: <BuilderComponents.Icon />,
+          onSelect: () => nav("/builders"),
+        },
+        {
+          label: "Alerters",
+          icon: <AlerterComponents.Icon />,
+          onSelect: () => nav("/alerters"),
+        },
+        {
+          label: "Templates",
+          icon: <ServerTemplateComponents.Icon />,
+          onSelect: () => nav("/server-templates"),
         },
         (user?.admin && {
           label: "Users",
@@ -242,6 +263,57 @@ const useOmniItems = (
             label: procedure.name,
             icon: <ProcedureComponents.Icon id={procedure.id} />,
             onSelect: () => nav(`/procedures/${procedure.id}`),
+          })) || [],
+
+      Builders:
+        builders
+          ?.filter(
+            (item) =>
+              searchTerms.length === 0 ||
+              searchTerms.every(
+                (term) =>
+                  item.name.toLowerCase().includes(term) ||
+                  "builder".includes(term)
+              )
+          )
+          .map((builder) => ({
+            label: builder.name,
+            icon: <ProcedureComponents.Icon id={builder.id} />,
+            onSelect: () => nav(`/builders/${builder.id}`),
+          })) || [],
+
+      Alerters:
+        alerters
+          ?.filter(
+            (item) =>
+              searchTerms.length === 0 ||
+              searchTerms.every(
+                (term) =>
+                  item.name.toLowerCase().includes(term) ||
+                  "alerter".includes(term)
+              )
+          )
+          .map((alerter) => ({
+            label: alerter.name,
+            icon: <ProcedureComponents.Icon id={alerter.id} />,
+            onSelect: () => nav(`/alerters/${alerter.id}`),
+          })) || [],
+
+      Templates:
+        templates
+          ?.filter(
+            (item) =>
+              searchTerms.length === 0 ||
+              searchTerms.every(
+                (term) =>
+                  item.name.toLowerCase().includes(term) ||
+                  "template".includes(term)
+              )
+          )
+          .map((template) => ({
+            label: template.name,
+            icon: <ProcedureComponents.Icon id={template.id} />,
+            onSelect: () => nav(`/templates/${template.id}`),
           })) || [],
     }),
     [user, servers, deployments, builds, repos, procedures, search]
