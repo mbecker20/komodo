@@ -71,6 +71,8 @@ export const ConfigLayout = <
   );
 };
 
+type PrimitiveConfigArgs = { placeholder: string };
+
 export const Config = <T,>({
   config,
   update,
@@ -95,6 +97,7 @@ export const Config = <T,>({
       {
         [K in keyof Partial<T>]:
           | boolean
+          | PrimitiveConfigArgs
           | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
       }
     >
@@ -185,6 +188,7 @@ export const ConfigAgain = <
   components: Partial<{
     [K in keyof T extends string ? keyof T : never]:
       | boolean
+      | PrimitiveConfigArgs
       | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
   }>;
   set: (value: Partial<T>) => void;
@@ -194,7 +198,12 @@ export const ConfigAgain = <
       {keys(components).map((key) => {
         const component = components[key];
         const value = update[key] ?? config[key];
-        if (component === true) {
+        if (typeof component === "function") {
+          return (
+            <Fragment key={key.toString()}>{component?.(value, set)}</Fragment>
+          );
+        } else if (typeof component === "object" || component === true) {
+          const args = (typeof component === "object") ? component as PrimitiveConfigArgs : undefined;
           switch (typeof value) {
             case "string":
               return (
@@ -204,6 +213,7 @@ export const ConfigAgain = <
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
                   disabled={disabled}
+                  placeholder={args?.placeholder}
                 />
               );
             case "number":
@@ -216,6 +226,7 @@ export const ConfigAgain = <
                     set({ [key]: Number(value) } as Partial<T>)
                   }
                   disabled={disabled}
+                  placeholder={args?.placeholder}
                 />
               );
             case "boolean":
@@ -234,9 +245,7 @@ export const ConfigAgain = <
         } else if (component === false) {
           return <Fragment key={key.toString()} />;
         }
-        return (
-          <Fragment key={key.toString()}>{component?.(value, set)}</Fragment>
-        );
+        
       })}
     </>
   );

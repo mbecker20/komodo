@@ -98,9 +98,9 @@ export const BuildConfig = ({ id }: { id: string }) => {
             ),
           },
           git: {
-            repo: true,
-            branch: true,
-            commit: true,
+            repo: { placeholder: "Enter repo" },
+            branch: { placeholder: "Enter branch" },
+            commit: { placeholder: "Enter specific commit hash. Optional." },
             github_account: (account, set) => (
               <AccountSelector
                 id={update.builder_id ?? config.builder_id ?? undefined}
