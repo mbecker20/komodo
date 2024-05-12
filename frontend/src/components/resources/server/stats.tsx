@@ -11,7 +11,7 @@ import { Cpu, Database, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { ServerComponents, useServer } from ".";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { Fragment, useState } from "react";
 import { Input } from "@ui/input";
 import { ResourceDescription } from "../common";
@@ -183,25 +183,49 @@ export const ServerStats = ({ id }: { id: string }) => {
         }
       >
         <DataTable
+          sortDescFirst
           tableKey="server-disks"
-          data={stats?.disks ?? []}
+          data={
+            stats?.disks.map((disk) => ({
+              ...disk,
+              percentage: 100 * (disk.used_gb / disk.total_gb),
+            })) ?? []
+          }
           columns={[
             {
               header: "Path",
-              accessorKey: "mount",
+              cell: ({ row }) => (
+                <div className="overflow-hidden overflow-ellipsis">
+                  {row.original.mount}
+                </div>
+              ),
             },
             {
-              header: "Used",
-              accessorFn: (disk) => disk.used_gb.toFixed(2) + " GB",
+              accessorKey: "used_gb",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Used" sortDescFirst />
+              ),
+              cell: ({ row }) => <>{row.original.used_gb.toFixed(2)} GB</>,
             },
             {
-              header: "Total",
-              accessorFn: (disk) => disk.total_gb.toFixed(2) + " GB",
+              accessorKey: "total_gb",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Total" sortDescFirst />
+              ),
+              cell: ({ row }) => <>{row.original.total_gb.toFixed(2)} GB</>,
             },
             {
-              header: "Percentage",
-              accessorFn: (disk) =>
-                (100 * (disk.used_gb / disk.total_gb)).toFixed(2) + "% Full",
+              accessorKey: "percentage",
+              header: ({ column }) => (
+                <SortableHeader
+                  column={column}
+                  title="Percentage"
+                  sortDescFirst
+                />
+              ),
+              cell: ({ row }) => (
+                <>{row.original.percentage.toFixed(2)}% Full</>
+              ),
             },
           ]}
         />
@@ -232,6 +256,7 @@ const Processes = ({ id }: { id: string }) => {
       }
     >
       <DataTable
+        sortDescFirst
         tableKey="server-processes"
         data={processes.filter((process) =>
           searchSplit.every((search) => process.name.includes(search))
@@ -244,17 +269,31 @@ const Processes = ({ id }: { id: string }) => {
           {
             header: "Exe",
             accessorKey: "exe",
+            cell: ({ row }) => (
+              <div className="overflow-hidden overflow-ellipsis">
+                {row.original.exe}
+              </div>
+            ),
           },
           {
-            header: "Cpu",
-            accessorFn: (process) => `${process.cpu_perc.toFixed(2)} %`,
+            accessorKey: "cpu_perc",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Cpu" sortDescFirst />
+            ),
+            cell: ({ row }) => <>{row.original.cpu_perc.toFixed(2)}%</>,
           },
           {
-            header: "Memory",
-            accessorFn: (process) =>
-              process.mem_mb > 1000
-                ? `${(process.mem_mb / 1024).toFixed(2)} GB`
-                : `${process.mem_mb.toFixed(2)} MB`,
+            accessorKey: "mem_mb",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Memory" sortDescFirst />
+            ),
+            cell: ({ row }) => (
+              <>
+                {row.original.mem_mb > 1000
+                  ? `${(row.original.mem_mb / 1024).toFixed(2)} GB`
+                  : `${row.original.mem_mb.toFixed(2)} MB`}
+              </>
+            ),
           },
         ]}
       />

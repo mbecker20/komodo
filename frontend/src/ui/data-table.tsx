@@ -28,6 +28,7 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   noResults?: ReactNode;
   defaultSort?: SortingState;
+  sortDescFirst?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -36,6 +37,7 @@ export function DataTable<TData, TValue>({
   data,
   onRowClick,
   noResults,
+  sortDescFirst = false,
   defaultSort = [],
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(defaultSort);
@@ -49,7 +51,7 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
     },
-    sortDescFirst: false,
+    sortDescFirst,
   });
 
   useEffect(() => {
@@ -125,9 +127,11 @@ export function DataTable<TData, TValue>({
 export const SortableHeader = <T, V>({
   column,
   title,
+  sortDescFirst,
 }: {
   column: Column<T, V>;
   title: string;
+  sortDescFirst?: boolean;
 }) => (
   <div
     className="flex items-center justify-between"
@@ -135,9 +139,17 @@ export const SortableHeader = <T, V>({
   >
     {title}
     {column.getIsSorted() === "asc" ? (
-      <ArrowDown className="w-4" />
+      sortDescFirst ? (
+        <ArrowUp className="w-4" />
+      ) : (
+        <ArrowDown className="w-4" />
+      )
     ) : column.getIsSorted() === "desc" ? (
-      <ArrowUp className="w-4" />
+      sortDescFirst ? (
+        <ArrowDown className="w-4" />
+      ) : (
+        <ArrowUp className="w-4" />
+      )
     ) : (
       <Minus className="w-4" />
     )}
