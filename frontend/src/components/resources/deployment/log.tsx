@@ -130,7 +130,11 @@ const NoSearchLogs = (id: string, tail: string, stream: string) => {
     { refetchInterval: 30000 }
   );
   return {
-    Log: <Log log={log} stream={stream as "stdout" | "stderr"} />,
+    Log: (
+      <div className="relative">
+        <Log log={log} stream={stream as "stdout" | "stderr"} />
+      </div>
+    ),
     refetch,
     stderr: !!log?.stderr,
   };
@@ -178,7 +182,7 @@ const Log = ({
           className="-scroll-mt-24"
         />
       </div>
-      <Button className="absolute bottom-4 right-4" onClick={scroll}>
+      <Button variant="secondary" className="absolute top-4 right-4" onClick={scroll}>
         <ChevronDown className="h-4 w-4" />
       </Button>
     </>

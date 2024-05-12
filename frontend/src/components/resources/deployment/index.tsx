@@ -25,10 +25,9 @@ import { Card, CardHeader } from "@ui/card";
 import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
-import { atomWithStorage } from "jotai/utils";
-import { useAtom } from "jotai";
+import { useState } from "react";
 
-const configOrLog = atomWithStorage("config-or-log-v1", "Config");
+// const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -36,7 +35,8 @@ export const useDeployment = (id?: string) =>
   );
 
 const ConfigOrLog = ({ id }: { id: string }) => {
-  const [view, setView] = useAtom(configOrLog);
+  // const [view, setView] = useAtom(configOrLog);
+  const [view, setView] = useState("Config");
   const state = useDeployment(id)?.info.state;
   const logsDisabled =
     state === undefined ||
