@@ -82,6 +82,8 @@ pub struct SystemStats {
 pub struct SingleDiskUsage {
   /// The mount point of the disk
   pub mount: PathBuf,
+  /// Detected file system
+  pub file_system: String,
   /// Used portion of the disk in GB
   pub used_gb: f64,
   /// Total size of the disk in GB

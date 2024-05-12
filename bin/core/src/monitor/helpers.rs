@@ -125,6 +125,7 @@ fn get_server_health(
     mount,
     used_gb,
     total_gb,
+    ..
   } in disks
   {
     let perc = 100.0 * used_gb / total_gb;

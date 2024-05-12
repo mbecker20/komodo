@@ -107,13 +107,17 @@ impl StatsClient {
       .disks
       .list()
       .iter()
+      .filter(|d| d.file_system() != "overlay")
       .map(|disk| {
+        let file_system =
+          disk.file_system().to_string_lossy().to_string();
         let disk_total = disk.total_space() as f64 / BYTES_PER_GB;
         let disk_free = disk.available_space() as f64 / BYTES_PER_GB;
         SingleDiskUsage {
           mount: disk.mount_point().to_owned(),
           used_gb: disk_total - disk_free,
           total_gb: disk_total,
+          file_system,
         }
       })
       .collect()
