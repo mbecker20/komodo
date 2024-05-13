@@ -147,11 +147,60 @@ export const BuildConfig = ({ id }: { id: string }) => {
                       />
                     ),
               use_buildx: true,
-              labels: (l, set) => (
-                <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
-              ),
+            },
+          },
+          {
+            label: "Extra Args",
+            contentHidden:
+              (update.extra_args ?? config.extra_args)?.length === 0,
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    extra_args: [
+                      ...(update.extra_args ?? config.extra_args ?? []),
+                      "",
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Extra Arg
+              </Button>
+            ),
+            components: {
               extra_args: (value, set) => (
                 <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
+              ),
+            },
+          },
+          {
+            label: "Labels",
+            contentHidden: (update.labels ?? config.labels)?.length === 0,
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    labels: [
+                      ...(update.labels ?? config.labels ?? []),
+                      { variable: "", value: "" },
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Label
+              </Button>
+            ),
+            components: {
+              labels: (l, set) => (
+                <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
               ),
             },
           },
@@ -160,7 +209,6 @@ export const BuildConfig = ({ id }: { id: string }) => {
             components: {
               pre_build: (value, set) => (
                 <SystemCommand
-                  label="Pre Build"
                   value={value}
                   set={(value) => set({ pre_build: value })}
                   disabled={disabled}
@@ -233,44 +281,32 @@ const ExtraArgs = ({
   disabled: boolean;
 }) => {
   return (
-    <ConfigItem
-      label="Extra Args"
-      className={args.length > 0 ? "items-start" : undefined}
-    >
-      <div className="flex flex-col gap-4 w-full max-w-[400px]">
-        {args.map((arg, i) => (
-          <div className="w-full flex gap-4" key={i}>
-            <Input
-              value={arg}
-              placeholder="--extra-arg=value"
-              onChange={(e) => {
-                args[i] = e.target.value;
-                set({ extra_args: [...args] });
-              }}
-              disabled={disabled}
-            />
-            {!disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
-                }
-              >
-                <MinusCircle className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        ))}
-
-        <Button
-          variant="secondary"
-          className="flex items-center gap-2 w-[200px] place-self-end"
-          onClick={() => set({ extra_args: [...args, ""] })}
-        >
-          <PlusCircle className="w-4 h-4" /> Add Extra Arg
-        </Button>
-      </div>
-    </ConfigItem>
+    <div className="flex flex-col justify-end gap-4 w-full">
+      {args.map((arg, i) => (
+        <div className="w-full flex gap-4 justify-end" key={i}>
+          <Input
+            value={arg}
+            placeholder="--extra-arg=value"
+            onChange={(e) => {
+              args[i] = e.target.value;
+              set({ extra_args: [...args] });
+            }}
+            disabled={disabled}
+            className="w-[400px] max-w-full"
+          />
+          {!disabled && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
+              }
+            >
+              <MinusCircle className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      ))}
+    </div>
   );
 };
 

@@ -49,16 +49,6 @@ export const ExtraArgs = ({
           )}
         </div>
       ))}
-
-      {/* {!disabled && (
-        <div className="place-self-end">
-          <AddExtraArgMenu
-            onSelect={(suggestion) =>
-              set({ extra_args: [...args, suggestion] })
-            }
-          />
-        </div>
-      )} */}
     </div>
   );
 };

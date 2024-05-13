@@ -324,7 +324,7 @@ export const TextUpdateMenu = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+        <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-fit">
           <div
             className={cn(
               "text-sm text-nowrap overflow-hidden overflow-ellipsis",

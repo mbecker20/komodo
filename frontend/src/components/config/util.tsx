@@ -129,7 +129,10 @@ export const DoubleInput = <
   return (
     <div className={cn("flex flex-col gap-4", containerClassName)}>
       {values?.map((value, i) => (
-        <div className="flex items-center justify-between gap-4 flex-wrap" key={i}>
+        <div
+          className="flex items-center justify-between gap-4 flex-wrap"
+          key={i}
+        >
           <Input
             className={inputClassName}
             value={value[leftval] as any}
@@ -204,9 +207,7 @@ export const AccountSelector = ({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={"Empty"}>
-            {placeholder}
-          </SelectItem>
+          <SelectItem value={"Empty"}>{placeholder}</SelectItem>
           {(accounts as any)?.[account_type]?.map((account: string) => (
             <SelectItem key={account} value={account}>
               {account}
@@ -315,36 +316,38 @@ export const ConfirmUpdate = ({
 };
 
 export const SystemCommand = ({
-  label,
   value,
   disabled,
   set,
 }: {
-  label: string;
   value?: Types.SystemCommand;
   disabled: boolean;
   set: (value: Types.SystemCommand) => void;
 }) => {
   return (
-    <ConfigItem label={label} className="items-start">
-      <div className="grid gap-y-4 gap-x-8 grid-cols-[auto_1fr] grid-rows-1 items-center">
-        Path:
-        <Input
-          placeholder="Command working directory"
-          value={value?.path}
-          className="w-full"
-          onChange={(e) => set({ ...(value || {}), path: e.target.value })}
-          disabled={disabled}
-        />
-        Command:
-        <TextUpdateMenu
-          title="Update Command"
-          placeholder="Set shell command"
-          value={value?.command}
-          onUpdate={(command) => set({ ...(value || {}), command })}
-          triggerClassName="w-[300px]"
-        />
+    <div className="w-full flex justify-end flex-wrap">
+      <div className="flex items-center gap-4">
+        <div className="grid gap-2">
+          <div className="text-muted-foreground">Path:</div>
+          <Input
+            placeholder="Command working directory"
+            value={value?.path}
+            className="w-[200px] lg:w-[300px]"
+            onChange={(e) => set({ ...(value || {}), path: e.target.value })}
+            disabled={disabled}
+          />
+        </div>
+        <div className="grid gap-2">
+          <div className="text-muted-foreground">Command:</div>
+          <TextUpdateMenu
+            title="Update Command"
+            placeholder="Set shell command"
+            value={value?.command}
+            onUpdate={(command) => set({ ...(value || {}), command })}
+            triggerClassName="w-[200px] lg:w-[300px]"
+          />
+        </div>
       </div>
-    </ConfigItem>
+    </div>
   );
 };
