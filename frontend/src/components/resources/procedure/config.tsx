@@ -75,7 +75,7 @@ const ProcedureConfigInner = ({
           await mutateAsync({ id: procedure._id!.$oid, config });
           setConfig({});
         }}
-        onReset={() => setConfig(procedure.config)}
+        onReset={() => setConfig({})}
         selector={
           <div className="flex gap-2 items-center text-sm">
             Procedure Type:
@@ -343,25 +343,28 @@ const ProcedureConfigInner = ({
           <CardHeader className="p-4">
             <ConfigItem label="Github Webhook" className="items-start">
               <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="text-nowrap text-muted-foreground">
-                    Listen on branch:
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="text-nowrap text-muted-foreground">
+                      Listen on branch:
+                    </div>
+                    <Input
+                      placeholder="Branch"
+                      value={branch}
+                      onChange={(e) => setBranch(e.target.value)}
+                      className="w-[200px]"
+                    />
                   </div>
-                  <Input
-                    placeholder="Branch"
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
+                  <CopyGithubWebhook
+                    path={`/procedure/${procedure._id?.$oid!}/${branch}`}
                   />
                 </div>
-                <CopyGithubWebhook
-                  path={`/procedure/${procedure._id?.$oid!}/${branch}`}
-                />
                 <div className="flex items-center justify-end gap-4 w-full">
-                  <div className="text-muted-foreground">
-                    Enabled:
-                  </div>
+                  <div className="text-muted-foreground">Enabled:</div>
                   <Switch
-                    checked={procedure.config.webhook_enabled}
+                    checked={
+                      config.webhook_enabled ?? procedure.config.webhook_enabled
+                    }
                     onCheckedChange={(webhook_enabled) =>
                       setConfig({ ...config, webhook_enabled })
                     }

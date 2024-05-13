@@ -43,7 +43,9 @@ export const ProcedureComponents: RequiredResourceComponents = {
 
   Status: {},
 
-  Info: { Type: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</> },
+  Info: {
+    Type: ({ id }) => <div>{useProcedure(id)?.info.procedure_type}</div>,
+  },
 
   Actions: {
     RunProcedure: ({ id }) => {

@@ -30,7 +30,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
   return (
     <UpdateDetails id={update.id}>
       <Card className="p-4 flex justify-between cursor-pointer hover:bg-accent/50 transition-colors text-sm">
-        <div>
+        <div className="grid gap-1 items-start">
           <div className="flex items-center gap-2">
             <Icon />
             {update.operation}
@@ -42,7 +42,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
             </div>
           )}
         </div>
-        <div>
+        <div className="grid gap-1">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4" />
             {fmt_date(new Date(update.start_ts))}
