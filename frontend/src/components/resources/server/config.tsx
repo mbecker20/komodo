@@ -1,9 +1,15 @@
 import { Config } from "@components/config";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
-export const ServerConfig = ({ id }: { id: string }) => {
+export const ServerConfig = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Server", id },
   }).data;
@@ -22,6 +28,7 @@ export const ServerConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      titleOther={titleOther}
       disabled={disabled}
       config={config}
       update={update}

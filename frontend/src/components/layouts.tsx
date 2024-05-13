@@ -37,7 +37,7 @@ export const Layout = () => {
   return (
     <>
       <Topbar />
-      <div className="flex gap-2">
+      <div className="flex">
         <Sidebar />
         <div className="w-full h-[calc(100vh-70px)] overflow-y-auto">
           <div className="pb-24">
@@ -68,7 +68,7 @@ export const Page = ({
   actions,
   children,
 }: PageProps) => (
-  <div className="flex flex-col gap-10 container py-8">
+  <div className="flex flex-col gap-10 container py-8 pr-12">
     {(title || icon || subtitle || actions) && (
       <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
         <div className="flex flex-col gap-4">

@@ -144,7 +144,7 @@ export const Config = <T,>({
     >
       <div className="flex gap-4">
         {/** The sidebar when large */}
-        <div className="hidden lg:flex flex-col gap-4 w-[300px]">
+        <div className="hidden xl:flex flex-col gap-4 w-[300px]">
           {keys(components).map((tab) => (
             <Button
               key={tab}

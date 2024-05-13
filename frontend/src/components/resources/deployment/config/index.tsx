@@ -206,6 +206,7 @@ export const DeploymentConfig = ({
           },
           {
             label: "Labels",
+            contentHidden: (update.labels ?? config.labels)?.length === 0,
             actions: (
               <Button
                 variant="secondary"

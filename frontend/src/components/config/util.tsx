@@ -11,7 +11,7 @@ import {
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
-import { CheckCircle, MinusCircle, PlusCircle, Save } from "lucide-react";
+import { CheckCircle, MinusCircle, Save } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { cn } from "@lib/utils";
 import {
@@ -129,7 +129,7 @@ export const DoubleInput = <
   return (
     <div className={cn("flex flex-col gap-4", containerClassName)}>
       {values?.map((value, i) => (
-        <div className="flex items-center justify-between gap-4" key={i}>
+        <div className="flex items-center justify-between gap-4 flex-wrap" key={i}>
           <Input
             className={inputClassName}
             value={value[leftval] as any}

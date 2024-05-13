@@ -53,12 +53,12 @@ const ConfigOrLog = ({ id }: { id: string }) => {
           id={id}
           titleOther={
             <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[70px]">
+              <TabsTrigger value="Config" className="w-[110px]">
                 Config
               </TabsTrigger>
               <TabsTrigger
                 value="Log"
-                className="w-[70px]"
+                className="w-[110px]"
                 disabled={logsDisabled}
               >
                 Log
@@ -72,12 +72,12 @@ const ConfigOrLog = ({ id }: { id: string }) => {
           id={id}
           titleOther={
             <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[70px]">
+              <TabsTrigger value="Config" className="w-[110px]">
                 Config
               </TabsTrigger>
               <TabsTrigger
                 value="Log"
-                className="w-[70px]"
+                className="w-[110px]"
                 disabled={logsDisabled}
               >
                 Log

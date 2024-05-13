@@ -4,7 +4,6 @@ import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import {
   ServerIcon,
-  Rocket,
   Cpu,
   MemoryStick,
   Database,
@@ -29,6 +28,8 @@ import { DeleteResource, NewResource } from "../common";
 import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { Card, CardHeader } from "@ui/card";
 import { Button } from "@ui/button";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -44,6 +45,61 @@ const _ServerIcon = ({ id, size }: { id?: string; size: number }) => {
         id && fill_color_class_by_intention(server_state_intention(state))
       )}
     />
+  );
+};
+
+const ConfigOrDeployments = ({ id }: { id: string }) => {
+  const [view, setView] = useState("Config");
+  const deployments = useRead("ListDeployments", {}).data?.filter(
+    (deployment) => deployment.info.server_id === id
+  );
+  const deploymentsDisabled = (deployments?.length || 0) === 0;
+  return (
+    <Tabs
+      value={deploymentsDisabled ? "Config" : view}
+      onValueChange={setView}
+      className="grid gap-4"
+    >
+      <TabsContent value="Config">
+        <ServerConfig
+          id={id}
+          titleOther={
+            <TabsList className="justify-start w-fit">
+              <TabsTrigger value="Config" className="w-[110px]">
+                Config
+              </TabsTrigger>
+              <TabsTrigger
+                value="Deployments"
+                className="w-[110px]"
+                disabled={deploymentsDisabled}
+              >
+                Deployments
+              </TabsTrigger>
+            </TabsList>
+          }
+        />
+      </TabsContent>
+      <TabsContent value="Deployments">
+        <Section
+          titleOther={
+            <TabsList className="justify-start w-fit">
+              <TabsTrigger value="Config" className="w-[110px]">
+                Config
+              </TabsTrigger>
+              <TabsTrigger
+                value="Deployments"
+                className="w-[110px]"
+                disabled={deploymentsDisabled}
+              >
+                Deployments
+              </TabsTrigger>
+            </TabsList>
+          }
+        >
+          <DeploymentTable deployments={deployments} />
+        </Section>
+      </TabsContent>
+    </Tabs>
   );
 };
 
@@ -204,21 +260,9 @@ export const ServerComponents: RequiredResourceComponents = {
     //     )
     //   );
     // },
-    Deployments: ({ id }) => {
-      const deployments = useRead("ListDeployments", {}).data?.filter(
-        (deployment) => deployment.info.server_id === id
-      );
-      return (
-        (deployments?.length || 0) > 0 && (
-          <Section title="Deployments" icon={<Rocket className="w-4 h-4" />}>
-            <DeploymentTable deployments={deployments} />
-          </Section>
-        )
-      );
-    },
   },
 
-  Config: ServerConfig,
+  Config: ConfigOrDeployments,
 
   DangerZone: ({ id }) => (
     <>
