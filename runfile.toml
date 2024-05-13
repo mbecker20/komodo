@@ -19,9 +19,13 @@ cmd = "yarn build"
 path = "bin/cli"
 cmd = "cargo run -- sync"
 
-[doc-dev-server]
+[rustdoc-server]
 cmd = "cargo watch -s 'cargo doc --no-deps -p monitor_client' & http --quiet target/doc"
 
 [docsite-start]
 path = "docsite"
 cmd = "yarn start"
+
+[docsite-deploy]
+path = "docsite"
+cmd = "yarn deploy"
