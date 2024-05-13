@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr, sync::OnceLock};
+use std::{collections::{HashMap, HashSet}, str::FromStr, sync::OnceLock};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -257,5 +257,30 @@ impl ResolveToString<ListDockerOrganizations, User> for State {
     _: User,
   ) -> anyhow::Result<String> {
     Ok(docker_organizations().clone())
+  }
+}
+
+#[async_trait]
+impl Resolve<ListCommonBuildExtraArgs, User> for State {
+  async fn resolve(
+    &self,
+    ListCommonBuildExtraArgs { query }: ListCommonBuildExtraArgs,
+    user: User,
+  ) -> anyhow::Result<ListCommonBuildExtraArgsResponse> {
+    let builds =
+      resource::list_full_for_user::<Build>(query, &user)
+        .await
+        .context("failed to get resources matching query")?;
+
+    // first collect with guaranteed uniqueness
+    let mut res = HashSet::<String>::new();
+
+    for build in builds {
+      for extra_arg in build.config.extra_args {
+        res.insert(extra_arg);
+      }
+    }
+
+    Ok(res.into_iter().collect())
   }
 }

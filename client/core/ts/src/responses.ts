@@ -63,7 +63,7 @@ export type ReadResponses = {
   GetDeploymentStats: Types.GetDeploymentStatsResponse;
   GetLog: Types.GetLogResponse;
   SearchLog: Types.SearchLogResponse;
-  ListCommonExtraArgs: Types.ListCommonExtraArgsResponse;
+  ListCommonDeploymentExtraArgs: Types.ListCommonDeploymentExtraArgsResponse;
 
   // ==== BUILD ====
   GetBuildsSummary: Types.GetBuildsSummaryResponse;
@@ -72,6 +72,7 @@ export type ReadResponses = {
   GetBuildActionState: Types.GetBuildActionStateResponse;
   GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
   GetBuildVersions: Types.GetBuildVersionsResponse;
+  ListCommonBuildExtraArgs: Types.ListCommonBuildExtraArgsResponse;
   ListDockerOrganizations: Types.ListDockerOrganizationsResponse;
 
   // ==== REPO ====

@@ -205,18 +205,18 @@ pub struct GetDeploymentsSummaryResponse {
 //
 
 /// Gets a list of existing values used as extra args across other deployments.
-/// Useful to offer suggestions. Response: [ListCommonExtraArgsResponse]
+/// Useful to offer suggestions. Response: [ListCommonDeploymentExtraArgsResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(ListCommonExtraArgsResponse)]
-pub struct ListCommonExtraArgs {
+#[response(ListCommonDeploymentExtraArgsResponse)]
+pub struct ListCommonDeploymentExtraArgs {
   /// optional structured query to filter deployments.
   #[serde(default)]
   pub query: DeploymentQuery,
 }
 
 #[typeshare]
-pub type ListCommonExtraArgsResponse = Vec<String>;
+pub type ListCommonDeploymentExtraArgsResponse = Vec<String>;

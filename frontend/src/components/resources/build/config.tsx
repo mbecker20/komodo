@@ -1,6 +1,7 @@
 import { Config } from "@components/config";
 import {
   AccountSelector,
+  AddExtraArgMenu,
   ConfigItem,
   InputList,
   SystemCommand,
@@ -154,22 +155,17 @@ export const BuildConfig = ({ id }: { id: string }) => {
             contentHidden:
               (update.extra_args ?? config.extra_args)?.length === 0,
             actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
+              <AddExtraArgMenu
+                type="Build"
+                onSelect={(suggestion) =>
                   set({
-                    ...update,
                     extra_args: [
                       ...(update.extra_args ?? config.extra_args ?? []),
-                      "",
+                      suggestion,
                     ],
                   })
                 }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Extra Arg
-              </Button>
+              />
             ),
             components: {
               extra_args: (value, set) => (

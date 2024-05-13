@@ -374,6 +374,8 @@ export type GetBuildVersionsResponse = BuildVersionResponseItem[];
 
 export type ListDockerOrganizationsResponse = string[];
 
+export type ListCommonBuildExtraArgsResponse = string[];
+
 export type BuilderConfig = 
 	/** Use a connected server an image builder. */
 	| { type: "Server", params: ServerBuilderConfig }
@@ -578,7 +580,7 @@ export interface DeploymentActionState {
 
 export type GetDeploymentActionStateResponse = DeploymentActionState;
 
-export type ListCommonExtraArgsResponse = string[];
+export type ListCommonDeploymentExtraArgsResponse = string[];
 
 export type UserTarget = 
 	/** User Id */
@@ -1738,6 +1740,15 @@ export interface GetBuildVersions {
 export interface ListDockerOrganizations {
 }
 
+/**
+ * Gets a list of existing values used as extra args across other builds.
+ * Useful to offer suggestions. Response: [ListCommonBuildExtraArgsResponse]
+ */
+export interface ListCommonBuildExtraArgs {
+	/** optional structured query to filter builds. */
+	query?: BuildQuery;
+}
+
 /** Get a specific builder by id or name. Response: [Builder]. */
 export interface GetBuilder {
 	/** Id or name */
@@ -1893,9 +1904,9 @@ export interface GetDeploymentsSummaryResponse {
 
 /**
  * Gets a list of existing values used as extra args across other deployments.
- * Useful to offer suggestions. Response: [ListCommonExtraArgsResponse]
+ * Useful to offer suggestions. Response: [ListCommonDeploymentExtraArgsResponse]
  */
-export interface ListCommonExtraArgs {
+export interface ListCommonDeploymentExtraArgs {
 	/** optional structured query to filter deployments. */
 	query?: DeploymentQuery;
 }
@@ -3220,13 +3231,14 @@ export type ReadRequest =
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
 	| { type: "GetLog", params: GetLog }
 	| { type: "SearchLog", params: SearchLog }
-	| { type: "ListCommonExtraArgs", params: ListCommonExtraArgs }
+	| { type: "ListCommonDeploymentExtraArgs", params: ListCommonDeploymentExtraArgs }
 	| { type: "GetBuildsSummary", params: GetBuildsSummary }
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
 	| { type: "GetBuildMonthlyStats", params: GetBuildMonthlyStats }
 	| { type: "GetBuildVersions", params: GetBuildVersions }
+	| { type: "ListCommonBuildExtraArgs", params: ListCommonBuildExtraArgs }
 	| { type: "ListDockerOrganizations", params: ListDockerOrganizations }
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }

@@ -199,3 +199,22 @@ pub struct ListDockerOrganizations {}
 
 #[typeshare]
 pub type ListDockerOrganizationsResponse = Vec<String>;
+
+//
+
+/// Gets a list of existing values used as extra args across other builds.
+/// Useful to offer suggestions. Response: [ListCommonBuildExtraArgsResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListCommonBuildExtraArgsResponse)]
+pub struct ListCommonBuildExtraArgs {
+  /// optional structured query to filter builds.
+  #[serde(default)]
+  pub query: BuildQuery,
+}
+
+#[typeshare]
+pub type ListCommonBuildExtraArgsResponse = Vec<String>;

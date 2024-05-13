@@ -3,6 +3,7 @@ import { Types } from "@monitor/client";
 import { ReactNode, useState } from "react";
 import {
   AccountSelector,
+  AddExtraArgMenu,
   ConfigItem,
   InputList,
 } from "@components/config/util";
@@ -12,7 +13,6 @@ import { NetworkModeSelector } from "./components/network";
 import { PortsConfig } from "./components/ports";
 import { EnvVars } from "./components/environment";
 import { VolumesConfig } from "./components/volumes";
-import { AddExtraArgMenu } from "./components/extra-args";
 import { Config } from "@components/config";
 import {
   DefaultTerminationSignal,
@@ -193,6 +193,7 @@ export const DeploymentConfig = ({
               (update.extra_args ?? config.extra_args)?.length === 0,
             actions: !disabled && (
               <AddExtraArgMenu
+                type="Deployment"
                 onSelect={(suggestion) =>
                   set({
                     extra_args: [

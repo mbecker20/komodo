@@ -91,7 +91,7 @@ enum ReadRequest {
   GetDeploymentStats(GetDeploymentStats),
   GetLog(GetLog),
   SearchLog(SearchLog),
-  ListCommonExtraArgs(ListCommonExtraArgs),
+  ListCommonDeploymentExtraArgs(ListCommonDeploymentExtraArgs),
 
   // ==== BUILD ====
   GetBuildsSummary(GetBuildsSummary),
@@ -100,6 +100,7 @@ enum ReadRequest {
   GetBuildActionState(GetBuildActionState),
   GetBuildMonthlyStats(GetBuildMonthlyStats),
   GetBuildVersions(GetBuildVersions),
+  ListCommonBuildExtraArgs(ListCommonBuildExtraArgs),
   #[to_string_resolver]
   ListDockerOrganizations(ListDockerOrganizations),
 

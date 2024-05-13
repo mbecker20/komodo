@@ -256,12 +256,12 @@ impl Resolve<GetDeploymentsSummary, User> for State {
 }
 
 #[async_trait]
-impl Resolve<ListCommonExtraArgs, User> for State {
+impl Resolve<ListCommonDeploymentExtraArgs, User> for State {
   async fn resolve(
     &self,
-    ListCommonExtraArgs { query }: ListCommonExtraArgs,
+    ListCommonDeploymentExtraArgs { query }: ListCommonDeploymentExtraArgs,
     user: User,
-  ) -> anyhow::Result<ListCommonExtraArgsResponse> {
+  ) -> anyhow::Result<ListCommonDeploymentExtraArgsResponse> {
     let deployments =
       resource::list_full_for_user::<Deployment>(query, &user)
         .await
