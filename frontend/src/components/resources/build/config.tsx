@@ -19,10 +19,10 @@ import {
 } from "@ui/select";
 import { Textarea } from "@ui/textarea";
 import { PlusCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
 
-export const BuildConfig = ({ id }: { id: string }) => {
+export const BuildConfig = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Build", id },
   }).data;
@@ -37,6 +37,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      titleOther={titleOther}
       disabled={disabled}
       config={config}
       update={update}
