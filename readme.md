@@ -6,29 +6,26 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 
 ## Screenshots
 
-### Dashboard
+### Light
 
-![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dashboard.png)
-![Search](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Search.png)
-![ExportToToml](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ExportToToml.png)
+![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Dashboard.png)
+![Resources](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Resources.png)
+![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Server.png)
+![Deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Deployment.png)
+![Procedure](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Procedure.png)
+![UserGroup](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-UserGroup.png)
+![Update](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Update.png)
+![Search](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Search.png)
+![Export](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Export.png)
 
-### Deployments
+### Dark
 
-![Deployments](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Deployments.png)
-![Deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Deployment.png)
-![LogSearchTerms](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/LogSearchTerms.png)
-![DeploymentConfig](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/DeploymentConfig.png)
-![DeploymentEnvironment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/DeploymentEnvironment.png)
-
-### Builds
-
-![Build](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Build.png)
-![BuildConfig](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/BuildConfig.png)
-![Update](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Update.png)
-
-### Servers
-
-![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Server.png)
-![ServerStatsHeader](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ServerStatsHeader.png)
-![ServerStatsGraphs](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ServerStatsGraphs.png)
-![ServerStatsMore](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ServerStatsMore.png)
+![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Dashboard.png)
+![Resources](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Resources.png)
+![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Server.png)
+![Deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Deployment.png)
+![Procedure](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Procedure.png)
+![UserGroup](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-UserGroup.png)
+![Update](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Update.png)
+![Search](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Search.png)
+![Export](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Export.png)
