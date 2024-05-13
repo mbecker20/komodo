@@ -66,17 +66,25 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   );
                 }
               },
+            },
+          },
+          {
+            label: "On Clone",
+            components: {
               on_clone: (value, set) => (
                 <SystemCommand
-                  label="On Clone"
                   value={value}
                   set={(value) => set({ on_clone: value })}
                   disabled={disabled}
                 />
               ),
+            },
+          },
+          {
+            label: "On Pull",
+            components: {
               on_pull: (value, set) => (
                 <SystemCommand
-                  label="On Pull"
                   value={value}
                   set={(value) => set({ on_pull: value })}
                   disabled={disabled}

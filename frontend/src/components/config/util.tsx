@@ -344,7 +344,7 @@ export const SystemCommand = ({
             placeholder="Set shell command"
             value={value?.command}
             onUpdate={(command) => set({ ...(value || {}), command })}
-            triggerClassName="w-[200px] lg:w-[300px]"
+            triggerClassName="w-[200px] lg:w-[300px] xl:w-[400px]"
           />
         </div>
       </div>
