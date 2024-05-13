@@ -663,8 +663,22 @@ export type Procedure = Resource<ProcedureConfig, undefined>;
 
 export type GetProcedureResponse = Procedure;
 
+export enum ProcedureState {
+	/** Last run successful */
+	Ok = "Ok",
+	/** Last run failed */
+	Failed = "Failed",
+	/** Currently running */
+	Running = "Running",
+	/** Other case (never run) */
+	Unknown = "Unknown",
+}
+
 export interface ProcedureListItemInfo {
+	/** Sequence or Parallel. */
 	procedure_type: ProcedureType;
+	/** Reflect whether last run successful / currently running. */
+	state: ProcedureState;
 }
 
 export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
