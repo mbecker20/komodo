@@ -2,13 +2,13 @@ import { Config } from "@components/config";
 import {
   AccountSelector,
   ConfigItem,
+  InputList,
   SystemCommand,
 } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { env_to_text, text_to_env } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
-import { Input } from "@ui/input";
 import {
   Select,
   SelectContent,
@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { Textarea } from "@ui/textarea";
-import { MinusCircle, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
 
@@ -173,7 +173,13 @@ export const BuildConfig = ({ id }: { id: string }) => {
             ),
             components: {
               extra_args: (value, set) => (
-                <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
+                <InputList
+                  field="extra_args"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="--extra-arg=value"
+                />
               ),
             },
           },
@@ -268,45 +274,6 @@ const BuildArgs = ({
         disabled={disabled}
       />
     </ConfigItem>
-  );
-};
-
-const ExtraArgs = ({
-  args,
-  set,
-  disabled,
-}: {
-  args: string[];
-  set: (update: Partial<Types.BuildConfig>) => void;
-  disabled: boolean;
-}) => {
-  return (
-    <div className="flex flex-col justify-end gap-4 w-full">
-      {args.map((arg, i) => (
-        <div className="w-full flex gap-4 justify-end" key={i}>
-          <Input
-            value={arg}
-            placeholder="--extra-arg=value"
-            onChange={(e) => {
-              args[i] = e.target.value;
-              set({ extra_args: [...args] });
-            }}
-            disabled={disabled}
-            className="w-[400px] max-w-full"
-          />
-          {!disabled && (
-            <Button
-              variant="secondary"
-              onClick={() =>
-                set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
-              }
-            >
-              <MinusCircle className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      ))}
-    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 import { useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import {
   Command,
@@ -9,49 +8,9 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
-import { Input } from "@ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-import { MinusCircle, PlusCircle, SearchX } from "lucide-react";
+import { PlusCircle, SearchX } from "lucide-react";
 import { useState } from "react";
-
-export const ExtraArgs = ({
-  args,
-  set,
-  disabled,
-}: {
-  args: string[];
-  set: (update: Partial<Types.DeploymentConfig>) => void;
-  disabled: boolean;
-}) => {
-  return (
-    <div className="flex flex-col justify-end gap-4 w-full">
-      {args.map((arg, i) => (
-        <div className="w-full flex gap-4 justify-end" key={i}>
-          <Input
-            value={arg}
-            placeholder="--extra-arg=value"
-            onChange={(e) => {
-              args[i] = e.target.value;
-              set({ extra_args: [...args] });
-            }}
-            disabled={disabled}
-            className="w-[400px] max-w-full"
-          />
-          {!disabled && (
-            <Button
-              variant="secondary"
-              onClick={() =>
-                set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
-              }
-            >
-              <MinusCircle className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
 
 export const AddExtraArgMenu = ({
   onSelect,

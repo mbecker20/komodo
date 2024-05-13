@@ -4,6 +4,8 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { useState } from "react";
 import { ResourceSelector } from "../common";
+import { Button } from "@ui/button";
+import { PlusCircle } from "lucide-react";
 
 export const BuilderConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuilder", { builder: id }).data?.config;
@@ -15,7 +17,8 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Builder", id },
   }).data;
-  const config = useRead("GetBuilder", { builder: id }).data?.config;
+  const config = useRead("GetBuilder", { builder: id }).data?.config
+    .params as Types.AwsBuilderConfig;
   const [update, set] = useState<Partial<Types.AwsBuilderConfig>>({});
   const { mutateAsync } = useWrite("UpdateBuilder");
   if (!config) return null;
@@ -25,7 +28,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
   return (
     <Config
       disabled={disabled}
-      config={config.params as Types.AwsBuilderConfig}
+      config={config}
       update={update}
       set={set}
       onSave={async () => {
@@ -44,31 +47,116 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               key_pair_name: true,
               assign_public_ip: true,
               use_public_ip: true,
+              port: true,
+            },
+          },
+          {
+            label: "Security Group Ids",
+            contentHidden:
+              (update.security_group_ids ?? config.security_group_ids)
+                ?.length === 0,
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    security_group_ids: [
+                      ...(update.security_group_ids ??
+                        config.security_group_ids ??
+                        []),
+                      "",
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Security Group Id
+              </Button>
+            ),
+            components: {
               security_group_ids: (values, set) => (
                 <InputList
                   field="security_group_ids"
                   values={values}
                   set={set}
                   disabled={disabled}
+                  placeholder="Security Group Id"
                 />
               ),
+            },
+          },
+          {
+            label: "Github Accounts",
+            contentHidden:
+              (update.github_accounts ?? config.github_accounts)?.length === 0,
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    github_accounts: [
+                      ...(update.github_accounts ??
+                        config.github_accounts ??
+                        []),
+                      "",
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Github Account
+              </Button>
+            ),
+            components: {
               github_accounts: (accounts, set) => (
                 <InputList
                   field="github_accounts"
                   values={accounts ?? []}
                   set={set}
                   disabled={disabled}
+                  placeholder="Github Username"
                 />
               ),
+            },
+          },
+          {
+            label: "Docker Accounts",
+            contentHidden:
+              (update.docker_accounts ?? config.docker_accounts)?.length === 0,
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    docker_accounts: [
+                      ...(update.docker_accounts ??
+                        config.docker_accounts ??
+                        []),
+                      "",
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Docker Account
+              </Button>
+            ),
+            components: {
               docker_accounts: (accounts, set) => (
                 <InputList
                   field="docker_accounts"
                   values={accounts ?? []}
                   set={set}
                   disabled={disabled}
+                  placeholder="Docker Username"
                 />
               ),
-              port: true,
             },
           },
         ],

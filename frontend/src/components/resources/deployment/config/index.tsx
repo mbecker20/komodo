@@ -1,14 +1,18 @@
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { ReactNode, useState } from "react";
-import { AccountSelector, ConfigItem } from "@components/config/util";
+import {
+  AccountSelector,
+  ConfigItem,
+  InputList,
+} from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
 import { PortsConfig } from "./components/ports";
 import { EnvVars } from "./components/environment";
 import { VolumesConfig } from "./components/volumes";
-import { AddExtraArgMenu, ExtraArgs } from "./components/extra-args";
+import { AddExtraArgMenu } from "./components/extra-args";
 import { Config } from "@components/config";
 import {
   DefaultTerminationSignal,
@@ -200,7 +204,13 @@ export const DeploymentConfig = ({
             ),
             components: {
               extra_args: (value, set) => (
-                <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
+                <InputList
+                  field="extra_args"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="--extra-arg=value"
+                />
               ),
             },
           },

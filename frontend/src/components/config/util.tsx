@@ -224,27 +224,29 @@ export const InputList = <T extends { [key: string]: unknown }>({
   values,
   disabled,
   set,
+  placeholder,
+  className,
 }: {
   field: keyof T;
   values: string[];
   disabled: boolean;
   set: (update: Partial<T>) => void;
+  placeholder?: string;
+  className?: string;
 }) => (
-  <ConfigItem
-    label={field as string}
-    className={values.length > 0 ? "items-start" : undefined}
-  >
-    <div className="flex flex-col gap-4 w-full max-w-[400px]">
+  <div className="flex justify-end w-full">
+    <div className="flex flex-col gap-4 w-fit">
       {values.map((arg, i) => (
         <div className="w-full flex gap-4" key={i}>
           <Input
-            // placeholder="--extra-arg=value"
+            placeholder={placeholder}
             value={arg}
             onChange={(e) => {
               values[i] = e.target.value;
               set({ [field]: [...values] } as Partial<T>);
             }}
             disabled={disabled}
+            className={cn("w-[400px] max-w-full", className)}
           />
           {!disabled && (
             <Button
@@ -260,17 +262,8 @@ export const InputList = <T extends { [key: string]: unknown }>({
           )}
         </div>
       ))}
-
-      {!disabled && (
-        <Button
-          variant="secondary"
-          onClick={() => set({ [field]: [...values, ""] } as Partial<T>)}
-        >
-          Add {snake_case_to_upper_space_case(field as string).slice(0, -1)}
-        </Button>
-      )}
     </div>
-  </ConfigItem>
+  </div>
 );
 
 interface ConfirmUpdateProps {
