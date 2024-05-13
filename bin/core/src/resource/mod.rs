@@ -51,6 +51,9 @@ mod server_template;
 pub use build::{
   refresh_build_state_cache, spawn_build_state_refresh_loop,
 };
+pub use procedure::{
+  refresh_procedure_state_cache, spawn_procedure_state_refresh_loop,
+};
 pub use repo::{
   refresh_repo_state_cache, spawn_repo_state_refresh_loop,
 };

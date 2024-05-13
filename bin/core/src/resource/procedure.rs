@@ -1,4 +1,6 @@
-use anyhow::anyhow;
+use std::time::Duration;
+
+use anyhow::{anyhow, Context};
 use monitor_client::{
   api::execute::Execution,
   entities::{
@@ -8,7 +10,7 @@ use monitor_client::{
     procedure::{
       PartialProcedureConfig, Procedure, ProcedureConfig,
       ProcedureConfigDiff, ProcedureListItem, ProcedureListItemInfo,
-      ProcedureQuerySpecifics,
+      ProcedureQuerySpecifics, ProcedureState,
     },
     repo::Repo,
     resource::Resource,
@@ -18,9 +20,12 @@ use monitor_client::{
     Operation,
   },
 };
-use mungos::mongodb::Collection;
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOneOptions, Collection},
+};
 
-use crate::state::{action_states, db_client};
+use crate::state::{action_states, db_client, procedure_state_cache};
 
 impl super::MonitorResource for Procedure {
   type Config = ProcedureConfig;
@@ -42,6 +47,7 @@ impl super::MonitorResource for Procedure {
   async fn to_list_item(
     procedure: Resource<Self::Config, Self::Info>,
   ) -> anyhow::Result<Self::ListItem> {
+    let state = get_procedure_state(&procedure.id).await;
     Ok(ProcedureListItem {
       name: procedure.name,
       id: procedure.id,
@@ -49,6 +55,7 @@ impl super::MonitorResource for Procedure {
       resource_type: ResourceTargetVariant::Procedure,
       info: ProcedureListItemInfo {
         procedure_type: procedure.config.procedure_type,
+        state,
       },
     })
   }
@@ -259,4 +266,81 @@ async fn validate_config(
     }
   }
   Ok(())
+}
+
+pub fn spawn_procedure_state_refresh_loop() {
+  tokio::spawn(async move {
+    loop {
+      refresh_procedure_state_cache().await;
+      tokio::time::sleep(Duration::from_secs(60)).await;
+    }
+  });
+}
+
+pub async fn refresh_procedure_state_cache() {
+  let _ = async {
+    let procedures =
+      find_collect(&db_client().await.procedures, None, None)
+        .await
+        .context("failed to get procedures from db")?;
+    let cache = procedure_state_cache();
+    for procedure in procedures {
+      let state = get_procedure_state_from_db(&procedure.id).await;
+      cache.insert(procedure.id, state).await;
+    }
+    anyhow::Ok(())
+  }
+  .await
+  .inspect_err(|e| {
+    error!("failed to refresh build state cache | {e:#}")
+  });
+}
+
+async fn get_procedure_state(id: &String) -> ProcedureState {
+  if action_states()
+    .procedure
+    .get(id)
+    .await
+    .map(|s| s.get().map(|s| s.running))
+    .transpose()
+    .ok()
+    .flatten()
+    .unwrap_or_default()
+  {
+    return ProcedureState::Running;
+  }
+  procedure_state_cache().get(id).await.unwrap_or_default()
+}
+
+async fn get_procedure_state_from_db(id: &str) -> ProcedureState {
+  async {
+    let state = db_client()
+      .await
+      .updates
+      .find_one(
+        doc! {
+          "target.type": "Procedure",
+          "target.id": id,
+          "operation": "RunProcedure"
+        },
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
+      )
+      .await?
+      .map(|u| {
+        if u.success {
+          ProcedureState::Ok
+        } else {
+          ProcedureState::Failed
+        }
+      })
+      .unwrap_or(ProcedureState::Ok);
+    anyhow::Ok(state)
+  }
+  .await
+  .inspect_err(|e| {
+    warn!("failed to get procedure state for {id} | {e:#}")
+  })
+  .unwrap_or(ProcedureState::Unknown)
 }

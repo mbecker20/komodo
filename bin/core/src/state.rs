@@ -1,7 +1,8 @@
 use std::sync::{Arc, OnceLock};
 
 use monitor_client::entities::{
-  build::BuildState, deployment::DeploymentState, repo::RepoState,
+  build::BuildState, deployment::DeploymentState,
+  procedure::ProcedureState, repo::RepoState,
 };
 use tokio::sync::OnceCell;
 
@@ -79,4 +80,12 @@ pub type RepoStateCache = Cache<String, RepoState>;
 pub fn repo_state_cache() -> &'static RepoStateCache {
   static REPO_STATE_CACHE: OnceLock<RepoStateCache> = OnceLock::new();
   REPO_STATE_CACHE.get_or_init(Default::default)
+}
+
+pub type ProcedureStateCache = Cache<String, ProcedureState>;
+
+pub fn procedure_state_cache() -> &'static ProcedureStateCache {
+  static PROCEDURE_STATE_CACHE: OnceLock<ProcedureStateCache> =
+    OnceLock::new();
+  PROCEDURE_STATE_CACHE.get_or_init(Default::default)
 }

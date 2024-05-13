@@ -20,7 +20,26 @@ pub type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ProcedureListItemInfo {
+  /// Sequence or Parallel.
   pub procedure_type: ProcedureType,
+  /// Reflect whether last run successful / currently running.
+  pub state: ProcedureState,
+}
+
+#[typeshare]
+#[derive(
+  Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
+)]
+pub enum ProcedureState {
+  /// Last run successful
+  Ok,
+  /// Last run failed
+  Failed,
+  /// Currently running
+  Running,
+  /// Other case (never run)
+  #[default]
+  Unknown,
 }
 
 #[typeshare]

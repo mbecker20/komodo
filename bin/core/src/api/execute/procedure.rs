@@ -6,6 +6,7 @@ use monitor_client::{
     update::Update, user::User, Operation,
   },
 };
+use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 use tokio::sync::Mutex;
@@ -14,7 +15,9 @@ use crate::{
   helpers::{
     procedure::execute_procedure,
     update::{add_update, make_update, update_update},
-  }, resource, state::{action_states, State}
+  },
+  resource::{self, refresh_procedure_state_cache},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -73,6 +76,21 @@ impl Resolve<RunProcedure, User> for State {
     }
 
     update.finalize();
+
+    // Need to manually update the update before cache refresh,
+    // and before broadcast with add_update.
+    // The Err case of to_document should be unreachable,
+    // but will fail to update cache in that case.
+    if let Ok(update_doc) = to_document(&update) {
+      let _ = update_one_by_id(
+        &db_client().await.updates,
+        &update.id,
+        mungos::update::Update::Set(update_doc),
+        None,
+      )
+      .await;
+      refresh_procedure_state_cache().await;
+    }
 
     update_update(update.clone()).await?;
 
