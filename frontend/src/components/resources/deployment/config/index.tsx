@@ -118,6 +118,7 @@ export const DeploymentConfig = ({
                     value={value}
                     onUpdate={(command) => set({ command })}
                     triggerClassName="min-w-[300px] max-w-[400px]"
+                    disabled={disabled}
                   />
                 </ConfigItem>
               ),
@@ -127,7 +128,7 @@ export const DeploymentConfig = ({
             label: "Ports",
             hidden: hide_ports,
             contentHidden: (update.ports ?? config.ports)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -158,7 +159,7 @@ export const DeploymentConfig = ({
           {
             label: "Volumes",
             contentHidden: (update.volumes ?? config.volumes)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -190,7 +191,7 @@ export const DeploymentConfig = ({
             label: "Extra Args",
             contentHidden:
               (update.extra_args ?? config.extra_args)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <AddExtraArgMenu
                 onSelect={(suggestion) =>
                   set({
@@ -217,7 +218,7 @@ export const DeploymentConfig = ({
           {
             label: "Labels",
             contentHidden: (update.labels ?? config.labels)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>

@@ -58,8 +58,9 @@ export const AlerterConfig = ({ id }: { id: string }) => {
                 enabled: update.enabled === undefined ? true : update.enabled,
               });
             }}
+            disabled={disabled}
           >
-            <SelectTrigger className="w-32 capitalize">
+            <SelectTrigger className="w-32 capitalize" disabled={disabled}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-32">

@@ -55,7 +55,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
             contentHidden:
               (update.security_group_ids ?? config.security_group_ids)
                 ?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -91,7 +91,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
             label: "Github Accounts",
             contentHidden:
               (update.github_accounts ?? config.github_accounts)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -127,7 +127,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
             label: "Docker Accounts",
             contentHidden:
               (update.docker_accounts ?? config.docker_accounts)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>

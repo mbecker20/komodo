@@ -153,7 +153,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
             label: "Extra Args",
             contentHidden:
               (update.extra_args ?? config.extra_args)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -186,7 +186,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
           {
             label: "Labels",
             contentHidden: (update.labels ?? config.labels)?.length === 0,
-            actions: (
+            actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
