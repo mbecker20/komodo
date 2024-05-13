@@ -6,7 +6,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 
 ## Screenshots
 
-### Light
+### Light Theme
 
 ![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Dashboard.png)
 ![Resources](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Resources.png)
@@ -18,7 +18,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 ![Search](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Search.png)
 ![Export](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Export.png)
 
-### Dark
+### Dark Theme
 
 ![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Dashboard.png)
 ![Resources](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Resources.png)
