@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { MinusCircle } from "lucide-react";
+import { MinusCircle, PlusCircle } from "lucide-react";
 import { useState } from "react";
 
 export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
@@ -29,7 +29,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
     target: { type: "ServerTemplate", id },
   }).data;
   const config = useRead("GetServerTemplate", { server_template: id }).data
-    ?.config;
+    ?.config.params as Types.AwsServerTemplateConfig;
   const [update, set] = useState<Partial<Types.AwsServerTemplateConfig>>({});
   const { mutateAsync } = useWrite("UpdateServerTemplate");
   if (!config) return null;
@@ -39,7 +39,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
   return (
     <Config
       disabled={disabled}
-      config={config.params as Types.AwsServerTemplateConfig}
+      config={config}
       update={update}
       set={set}
       onSave={async () => {
@@ -55,23 +55,73 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
               ami_id: true,
               subnet_id: true,
               key_pair_name: true,
+              port: true,
               assign_public_ip: true,
               use_public_ip: true,
-              port: true,
+            },
+          },
+          {
+            label: "Security Group Ids",
+            contentHidden:
+              (update.security_group_ids ?? config.security_group_ids)
+                ?.length === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    security_group_ids: [
+                      ...(update.security_group_ids ??
+                        config.security_group_ids ??
+                        []),
+                      "",
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Security Group Id
+              </Button>
+            ),
+            components: {
               security_group_ids: (values, set) => (
                 <InputList
                   field="security_group_ids"
-                  values={values!}
+                  values={values ?? []}
                   set={set}
                   disabled={disabled}
+                  placeholder="Security Group Id"
                 />
               ),
+            },
+          },
+          {
+            label: "Volumes",
+            contentHidden: (update.volumes ?? config.volumes)?.length === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    volumes: [
+                      ...(update.volumes ?? config.volumes ?? []),
+                      newVolume((update.volumes ?? config.volumes).length),
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Volume
+              </Button>
+            ),
+            components: {
               volumes: (volumes, set) => {
                 return (
-                  <ConfigItem
-                    label="EBS Volumes"
-                    className={volumes.length > 0 ? "items-start" : undefined}
-                  >
+                  <div className="w-full flex justify-end">
                     <div className="flex flex-col gap-4 w-full max-w-[400px]">
                       {volumes.map((_, index) => (
                         <div
@@ -101,22 +151,16 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
                           )}
                         </div>
                       ))}
-                      {!disabled && (
-                        <Button
-                          variant="secondary"
-                          onClick={() =>
-                            set({
-                              volumes: [...volumes, newVolume(volumes.length)],
-                            })
-                          }
-                        >
-                          Add Volume
-                        </Button>
-                      )}
                     </div>
-                  </ConfigItem>
+                  </div>
                 );
               },
+            },
+          },
+          {
+            label: "User Data",
+            labelHidden: true,
+            components: {
               user_data: (user_data, set) => (
                 <ConfigItem label="User Data">
                   <TextUpdateMenu
@@ -125,6 +169,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
                     value={user_data}
                     onUpdate={(user_data) => set({ user_data })}
                     triggerClassName="min-w-[300px] max-w-[400px]"
+                    disabled={disabled}
                   />
                 </ConfigItem>
               ),

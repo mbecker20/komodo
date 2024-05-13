@@ -305,6 +305,7 @@ export const TextUpdateMenu = ({
   onUpdate,
   placeholder,
   confirmButton,
+  disabled,
 }: {
   title: string;
   value: string | undefined;
@@ -312,6 +313,7 @@ export const TextUpdateMenu = ({
   triggerClassName?: string;
   placeholder?: string;
   confirmButton?: boolean;
+  disabled?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [_value, setValue] = useState(value);
@@ -348,25 +350,28 @@ export const TextUpdateMenu = ({
             if (e.key === "Enter") onClick();
           }}
           className="min-h-[200px]"
+          disabled={disabled}
         />
-        <DialogFooter>
-          {confirmButton ? (
-            <ConfirmButton
-              title="Update"
-              icon={<CheckCircle className="w-4 h-4" />}
-              onClick={onClick}
-            />
-          ) : (
-            <Button
-              variant="secondary"
-              onClick={onClick}
-              className="flex items-center gap-2"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Update
-            </Button>
-          )}
-        </DialogFooter>
+        {!disabled && (
+          <DialogFooter>
+            {confirmButton ? (
+              <ConfirmButton
+                title="Update"
+                icon={<CheckCircle className="w-4 h-4" />}
+                onClick={onClick}
+              />
+            ) : (
+              <Button
+                variant="secondary"
+                onClick={onClick}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Update
+              </Button>
+            )}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
