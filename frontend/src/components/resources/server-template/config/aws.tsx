@@ -46,86 +46,91 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: { type: "Aws", params: update } });
       }}
       components={{
-        general: {
-          general: {
-            region: true,
-            instance_type: true,
-            ami_id: true,
-            subnet_id: true,
-            key_pair_name: true,
-            assign_public_ip: true,
-            use_public_ip: true,
-            port: true,
-            security_group_ids: (values, set) => (
-              <InputList
-                field="security_group_ids"
-                values={values!}
-                set={set}
-                disabled={disabled}
-              />
-            ),
-            volumes: (volumes, set) => {
-              return (
-                <ConfigItem
-                  label="EBS Volumes"
-                  className={volumes.length > 0 ? "items-start" : undefined}
-                >
-                  <div className="flex flex-col gap-4 w-full max-w-[400px]">
-                    {volumes.map((_, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between gap-4"
-                      >
-                        <AwsVolumeDialog
-                          volumes={volumes}
-                          index={index}
-                          set={set}
-                          disabled={disabled}
-                        />
-                        {!disabled && (
-                          <Button
-                            variant="secondary"
-                            disabled={disabled}
-                            onClick={() =>
-                              set({
-                                volumes: volumes.filter((_, i) => i !== index),
-                              })
-                            }
-                          >
-                            <MinusCircle className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    {!disabled && (
-                      <Button
-                        variant="secondary"
-                        onClick={() =>
-                          set({
-                            volumes: [...volumes, newVolume(volumes.length)],
-                          })
-                        }
-                      >
-                        Add Volume
-                      </Button>
-                    )}
-                  </div>
-                </ConfigItem>
-              );
-            },
-            user_data: (user_data, set) => (
-              <ConfigItem label="User Data">
-                <TextUpdateMenu
-                  title="Update User Data"
-                  placeholder="Set User Data"
-                  value={user_data}
-                  onUpdate={(user_data) => set({ user_data })}
-                  triggerClassName="min-w-[300px] max-w-[400px]"
+        general: [
+          {
+            label: "General",
+            components: {
+              region: true,
+              instance_type: true,
+              ami_id: true,
+              subnet_id: true,
+              key_pair_name: true,
+              assign_public_ip: true,
+              use_public_ip: true,
+              port: true,
+              security_group_ids: (values, set) => (
+                <InputList
+                  field="security_group_ids"
+                  values={values!}
+                  set={set}
+                  disabled={disabled}
                 />
-              </ConfigItem>
-            ),
+              ),
+              volumes: (volumes, set) => {
+                return (
+                  <ConfigItem
+                    label="EBS Volumes"
+                    className={volumes.length > 0 ? "items-start" : undefined}
+                  >
+                    <div className="flex flex-col gap-4 w-full max-w-[400px]">
+                      {volumes.map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between gap-4"
+                        >
+                          <AwsVolumeDialog
+                            volumes={volumes}
+                            index={index}
+                            set={set}
+                            disabled={disabled}
+                          />
+                          {!disabled && (
+                            <Button
+                              variant="secondary"
+                              disabled={disabled}
+                              onClick={() =>
+                                set({
+                                  volumes: volumes.filter(
+                                    (_, i) => i !== index
+                                  ),
+                                })
+                              }
+                            >
+                              <MinusCircle className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      {!disabled && (
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            set({
+                              volumes: [...volumes, newVolume(volumes.length)],
+                            })
+                          }
+                        >
+                          Add Volume
+                        </Button>
+                      )}
+                    </div>
+                  </ConfigItem>
+                );
+              },
+              user_data: (user_data, set) => (
+                <ConfigItem label="User Data">
+                  <TextUpdateMenu
+                    title="Update User Data"
+                    placeholder="Set User Data"
+                    value={user_data}
+                    onUpdate={(user_data) => set({ user_data })}
+                    triggerClassName="min-w-[300px] max-w-[400px]"
+                  />
+                </ConfigItem>
+              ),
+            },
           },
-        },
+        ],
       }}
     />
   );

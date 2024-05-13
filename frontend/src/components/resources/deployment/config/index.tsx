@@ -8,7 +8,7 @@ import { NetworkModeSelector } from "./components/network";
 import { PortsConfig } from "./components/ports";
 import { EnvVars } from "./components/environment";
 import { VolumesConfig } from "./components/volumes";
-import { ExtraArgs } from "./components/extra-args";
+import { AddExtraArgMenu, ExtraArgs } from "./components/extra-args";
 import { Config } from "@components/config";
 import {
   DefaultTerminationSignal,
@@ -17,8 +17,16 @@ import {
 } from "./components/term-signal";
 import { LabelsConfig, ServerSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
+import { Button } from "@ui/button";
+import { PlusCircle } from "lucide-react";
 
-export const DeploymentConfig = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
+export const DeploymentConfig = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Deployment", id },
   }).data;
@@ -28,10 +36,10 @@ export const DeploymentConfig = ({ id, titleOther }: { id: string; titleOther: R
 
   if (!config) return null;
 
-  const show_ports = update.network
-    ? update.network !== "host"
+  const hide_ports = update.network
+    ? update.network === "host" || update.network === "none"
     : config.network
-    ? config.network !== "host"
+    ? config.network === "host" || config.network === "none"
     : false;
 
   const disabled = perms !== Types.PermissionLevel.Write;
@@ -47,111 +55,226 @@ export const DeploymentConfig = ({ id, titleOther }: { id: string; titleOther: R
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: {
-          "": {
-            server_id: (value, set) => (
-              <ServerSelector selected={value} set={set} disabled={disabled} />
-            ),
+        general: [
+          {
+            label: "Server Id",
+            labelHidden: true,
+            components: {
+              server_id: (value, set) => (
+                <ServerSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                  align="end"
+                />
+              ),
+            },
           },
-          container: {
-            image: (value, set) => (
-              <ImageConfig image={value} set={set} disabled={disabled} />
-            ),
-            docker_account: (value, set) => (
-              <AccountSelector
-                id={update.server_id ?? config.server_id}
-                account_type="docker"
-                type="Server"
-                selected={value}
-                onSelect={(docker_account) => set({ docker_account })}
-                disabled={disabled}
-                placeholder={
-                  (update.image?.type || config.image?.type) === "Build"
-                    ? "Same as build"
-                    : "None"
+          {
+            label: "Container",
+            components: {
+              image: (value, set) => (
+                <ImageConfig image={value} set={set} disabled={disabled} />
+              ),
+              docker_account: (value, set) => (
+                <AccountSelector
+                  id={update.server_id ?? config.server_id}
+                  account_type="docker"
+                  type="Server"
+                  selected={value}
+                  onSelect={(docker_account) => set({ docker_account })}
+                  disabled={disabled}
+                  placeholder={
+                    (update.image?.type || config.image?.type) === "Build"
+                      ? "Same as build"
+                      : "None"
+                  }
+                />
+              ),
+              restart: (value, set) => (
+                <RestartModeSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+              network: (value, set) => (
+                <NetworkModeSelector
+                  server_id={update.server_id ?? config.server_id}
+                  selected={value}
+                  onSelect={(network) => set({ network })}
+                  disabled={disabled}
+                />
+              ),
+              command: (value, set) => (
+                <ConfigItem label="Command">
+                  <TextUpdateMenu
+                    title="Update Command"
+                    placeholder="Set custom command"
+                    value={value}
+                    onUpdate={(command) => set({ command })}
+                    triggerClassName="min-w-[300px] max-w-[400px]"
+                  />
+                </ConfigItem>
+              ),
+            },
+          },
+          {
+            label: "Ports",
+            hidden: hide_ports,
+            contentHidden: (update.ports ?? config.ports)?.length === 0,
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    ports: [
+                      ...(update.ports ?? config.ports ?? []),
+                      { container: "", local: "" },
+                    ],
+                  })
                 }
-              />
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Port
+              </Button>
             ),
-            restart: (value, set) => (
-              <RestartModeSelector
-                selected={value}
-                set={set}
-                disabled={disabled}
-              />
-            ),
-            network: (value, set) => (
-              <NetworkModeSelector
-                server_id={update.server_id ?? config.server_id}
-                selected={value}
-                onSelect={(network) => set({ network })}
-                disabled={disabled}
-              />
-            ),
-            ports: (value, set) =>
-              show_ports && (
+            components: {
+              ports: (value, set) => (
                 <PortsConfig
                   ports={value ?? []}
                   set={set}
                   disabled={disabled}
                 />
               ),
-            volumes: (v, set) => (
-              <VolumesConfig volumes={v ?? []} set={set} disabled={disabled} />
+            },
+          },
+          {
+            label: "Volumes",
+            contentHidden: (update.volumes ?? config.volumes)?.length === 0,
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    volumes: [
+                      ...(update.volumes ?? config.volumes ?? []),
+                      { container: "", local: "" },
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Volume
+              </Button>
             ),
-            labels: (l, set) => (
-              <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
-            ),
-            extra_args: (value, set) => (
-              <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
-            ),
-            command: (value, set) => (
-              <ConfigItem label="Command">
-                <TextUpdateMenu
-                  title="Update Command"
-                  placeholder="Set custom command"
-                  value={value}
-                  onUpdate={(command) => set({ command })}
-                  triggerClassName="min-w-[300px] max-w-[400px]"
+            components: {
+              volumes: (v, set) => (
+                <VolumesConfig
+                  volumes={v ?? []}
+                  set={set}
+                  disabled={disabled}
                 />
-              </ConfigItem>
-            ),
+              ),
+            },
           },
-          settings: {
-            send_alerts: true,
-            redeploy_on_build:
-              (update.image?.type || config.image?.type) === "Build",
-          },
-        },
-        environment: {
-          environment: {
-            environment: (vars, set) => (
-              <EnvVars
-                vars={vars ?? []}
-                set={set}
-                server={update.server_id || config.server_id}
-                disabled={disabled}
+          {
+            label: "Extra Args",
+            contentHidden:
+              (update.extra_args ?? config.extra_args)?.length === 0,
+            actions: (
+              <AddExtraArgMenu
+                onSelect={(suggestion) =>
+                  set({
+                    extra_args: [
+                      ...(update.extra_args ?? config.extra_args ?? []),
+                      suggestion,
+                    ],
+                  })
+                }
               />
             ),
-            skip_secret_interp: true,
+            components: {
+              extra_args: (value, set) => (
+                <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
+              ),
+            },
           },
-        },
-        termination: {
-          termination: {
-            termination_signal: (value, set) => (
-              <DefaultTerminationSignal
-                arg={value}
-                set={set}
-                disabled={disabled}
-              />
+          {
+            label: "Labels",
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({
+                    ...update,
+                    labels: [
+                      ...(update.labels ?? config.labels ?? []),
+                      { variable: "", value: "" },
+                    ],
+                  })
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Label
+              </Button>
             ),
-            termination_timeout: (value, set) => (
-              <TerminationTimeout arg={value} set={set} disabled={disabled} />
-            ),
-            term_signal_labels: (value, set) => (
-              <TermSignalLabels args={value} set={set} disabled={disabled} />
-            ),
+            components: {
+              labels: (l, set) => (
+                <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
+              ),
+            },
           },
-        },
+          {
+            label: "Settings",
+            components: {
+              send_alerts: true,
+              redeploy_on_build:
+                (update.image?.type || config.image?.type) === "Build",
+            },
+          },
+        ],
+        environment: [
+          {
+            label: "Environment",
+            components: {
+              environment: (vars, set) => (
+                <EnvVars
+                  vars={vars ?? []}
+                  set={set}
+                  server={update.server_id || config.server_id}
+                  disabled={disabled}
+                />
+              ),
+              skip_secret_interp: true,
+            },
+          },
+        ],
+        termination: [
+          {
+            label: "Termination",
+            components: {
+              termination_signal: (value, set) => (
+                <DefaultTerminationSignal
+                  arg={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+              termination_timeout: (value, set) => (
+                <TerminationTimeout arg={value} set={set} disabled={disabled} />
+              ),
+              term_signal_labels: (value, set) => (
+                <TermSignalLabels args={value} set={set} disabled={disabled} />
+              ),
+            },
+          },
+        ],
       }}
     />
   );

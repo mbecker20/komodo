@@ -4,7 +4,7 @@ import {
   ConfirmUpdate,
 } from "@components/config/util";
 import { Section } from "@components/layouts";
-import { snake_case_to_upper_space_case } from "@lib/formatting";
+import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
@@ -73,6 +73,21 @@ export const ConfigLayout = <
 
 type PrimitiveConfigArgs = { placeholder: string };
 
+type ConfigComponent<T> = {
+  label: string;
+  icon?: ReactNode;
+  actions?: ReactNode;
+  hidden?: boolean;
+  labelHidden?: boolean;
+  contentHidden?: boolean;
+  components: {
+    [K in keyof Partial<T>]:
+      | boolean
+      | PrimitiveConfigArgs
+      | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
+  };
+};
+
 export const Config = <T,>({
   config,
   update,
@@ -91,16 +106,8 @@ export const Config = <T,>({
   selector?: ReactNode;
   titleOther?: ReactNode;
   components: Record<
-    string,
-    Record<
-      string,
-      {
-        [K in keyof Partial<T>]:
-          | boolean
-          | PrimitiveConfigArgs
-          | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
-      }
-    >
+    string, // sidebar key
+    ConfigComponent<T>[]
   >;
 }) => {
   const [show, setShow] = useState(keys(components)[0]);
@@ -136,6 +143,7 @@ export const Config = <T,>({
       }
     >
       <div className="flex gap-4">
+        {/** The sidebar when large */}
         <div className="hidden lg:flex flex-col gap-4 w-[300px]">
           {keys(components).map((tab) => (
             <Button
@@ -148,25 +156,53 @@ export const Config = <T,>({
             </Button>
           ))}
         </div>
+
         <div className="flex flex-col gap-6 min-h-[500px] w-full">
-          {Object.entries(components[show]).map(([k, v]) => (
-            <Card className="w-full" key={k}>
-              {k && (
-                <CardHeader className="border-b">
-                  <CardTitle>{snake_case_to_upper_space_case(k)}</CardTitle>
-                </CardHeader>
-              )}
-              <CardContent className="flex flex-col gap-2 mt-4">
-                <ConfigAgain
-                  config={config}
-                  update={update}
-                  set={(u) => set((p) => ({ ...p, ...u }))}
-                  components={v}
-                  disabled={disabled}
-                />
-              </CardContent>
-            </Card>
-          ))}
+          {components[show].map(
+            ({
+              label,
+              labelHidden,
+              icon,
+              actions,
+              hidden,
+              contentHidden,
+              components,
+            }) =>
+              !hidden && (
+                <Card className="w-full grid gap-2" key={label}>
+                  {!labelHidden && (
+                    <CardHeader
+                      className={cn(
+                        "flex-row items-center justify-between w-full py-0 h-[60px] space-y-0",
+                        !contentHidden && "border-b"
+                      )}
+                    >
+                      <CardTitle className="flex gap-4">
+                        {icon}
+                        {label}
+                      </CardTitle>
+                      {actions}
+                    </CardHeader>
+                  )}
+                  {!contentHidden && (
+                    <CardContent
+                      className={cn(
+                        "flex flex-col gap-2 pb-3",
+                        labelHidden && "pt-3"
+                      )}
+                    >
+                      <ConfigAgain
+                        config={config}
+                        update={update}
+                        set={(u) => set((p) => ({ ...p, ...u }))}
+                        components={components}
+                        disabled={disabled}
+                      />
+                    </CardContent>
+                  )}
+                </Card>
+              )
+          )}
         </div>
       </div>
     </ConfigLayout>
@@ -200,10 +236,13 @@ export const ConfigAgain = <
         const value = update[key] ?? config[key];
         if (typeof component === "function") {
           return (
-            <Fragment key={key.toString()}>{component?.(value, set)}</Fragment>
+            <Fragment key={key.toString()}>{component(value, set)}</Fragment>
           );
         } else if (typeof component === "object" || component === true) {
-          const args = (typeof component === "object") ? component as PrimitiveConfigArgs : undefined;
+          const args =
+            typeof component === "object"
+              ? (component as PrimitiveConfigArgs)
+              : undefined;
           switch (typeof value) {
             case "string":
               return (
@@ -245,7 +284,6 @@ export const ConfigAgain = <
         } else if (component === false) {
           return <Fragment key={key.toString()} />;
         }
-        
       })}
     </>
   );

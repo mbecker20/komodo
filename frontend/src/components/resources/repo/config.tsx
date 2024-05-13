@@ -33,60 +33,74 @@ export const RepoConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: {
-          "": {
-            server_id: (value, set) => (
-              <ServerSelector selected={value} set={set} disabled={disabled} />
-            ),
-          },
-          general: {
-            repo: { placeholder: "Enter repo" },
-            branch: { placeholder: "Enter branch" },
-            commit: { placeholder: "Enter specific commit hash. Optional." },
-            github_account: (value, set) => {
-              const server_id = update.server_id || config.server_id;
-              if (server_id) {
-                return (
-                  <GithubAccount
-                    server={server_id}
-                    value={value}
-                    set={set}
-                    disabled={disabled}
-                  />
-                );
-              }
+        general: [
+          {
+            label: "Server Id",
+            labelHidden: true,
+            components: {
+              server_id: (value, set) => (
+                <ServerSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
             },
-            on_clone: (value, set) => (
-              <SystemCommand
-                label="On Clone"
-                value={value}
-                set={(value) => set({ on_clone: value })}
-                disabled={disabled}
-              />
-            ),
-            on_pull: (value, set) => (
-              <SystemCommand
-                label="On Pull"
-                value={value}
-                set={(value) => set({ on_pull: value })}
-                disabled={disabled}
-              />
-            ),
           },
-          github_webhooks: {
-            ["clone" as any]: () => (
-              <ConfigItem label="Clone">
-                <CopyGithubWebhook path={`/repo/${id}/clone`} />
-              </ConfigItem>
-            ),
-            ["pull" as any]: () => (
-              <ConfigItem label="Pull">
-                <CopyGithubWebhook path={`/repo/${id}/pull`} />
-              </ConfigItem>
-            ),
-            webhook_enabled: true,
+          {
+            label: "General",
+            components: {
+              repo: { placeholder: "Enter repo" },
+              branch: { placeholder: "Enter branch" },
+              commit: { placeholder: "Enter specific commit hash. Optional." },
+              github_account: (value, set) => {
+                const server_id = update.server_id || config.server_id;
+                if (server_id) {
+                  return (
+                    <GithubAccount
+                      server={server_id}
+                      value={value}
+                      set={set}
+                      disabled={disabled}
+                    />
+                  );
+                }
+              },
+              on_clone: (value, set) => (
+                <SystemCommand
+                  label="On Clone"
+                  value={value}
+                  set={(value) => set({ on_clone: value })}
+                  disabled={disabled}
+                />
+              ),
+              on_pull: (value, set) => (
+                <SystemCommand
+                  label="On Pull"
+                  value={value}
+                  set={(value) => set({ on_pull: value })}
+                  disabled={disabled}
+                />
+              ),
+            },
           },
-        },
+          {
+            label: "Github Webhooks",
+            components: {
+              ["clone" as any]: () => (
+                <ConfigItem label="Clone">
+                  <CopyGithubWebhook path={`/repo/${id}/clone`} />
+                </ConfigItem>
+              ),
+              ["pull" as any]: () => (
+                <ConfigItem label="Pull">
+                  <CopyGithubWebhook path={`/repo/${id}/pull`} />
+                </ConfigItem>
+              ),
+              webhook_enabled: true,
+            },
+          },
+        ],
       }}
     />
   );

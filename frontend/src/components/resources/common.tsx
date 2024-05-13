@@ -81,11 +81,13 @@ export const ResourceSelector = ({
   selected,
   onSelect,
   disabled,
+  align,
 }: {
   type: UsableResource;
   selected: string | undefined;
   onSelect?: (id: string) => void;
   disabled?: boolean;
+  align?: "start" | "center" | "end"
 }) => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -103,7 +105,7 @@ export const ResourceSelector = ({
           {!disabled && <ChevronsUpDown className="w-3 h-3" />}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
+      <PopoverContent className="w-[200px] max-h-[200px] p-0" align={align}>
         <Command>
           <CommandInput
             placeholder={`Search ${type}s`}
@@ -284,18 +286,16 @@ export const LabelsConfig = ({
   set: (input: Partial<Types.DeploymentConfig | Types.BuildConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem
-    label="Labels"
-    className={labels.length > 0 ? "items-start" : undefined}
-  >
+  <div className="py-2 w-full flex justify-end">
     <DoubleInput
       disabled={disabled}
+      inputClassName="max-w-full"
+      containerClassName="w-fit"
       values={labels}
       leftval="variable"
       leftpl="Key"
       rightval="value"
       rightpl="Value"
-      addName="Label"
       onLeftChange={(variable, i) => {
         labels[i].variable = variable;
         set({ labels: [...labels] });
@@ -304,14 +304,11 @@ export const LabelsConfig = ({
         labels[i].value = value;
         set({ labels: [...labels] });
       }}
-      onAdd={() =>
-        set({ labels: [...(labels ?? []), { variable: "", value: "" }] })
-      }
       onRemove={(idx) =>
         set({ labels: [...labels.filter((_, i) => i !== idx)] })
       }
     />
-  </ConfigItem>
+  </div>
 );
 
 export const CopyGithubWebhook = ({
@@ -333,10 +330,12 @@ export const ServerSelector = ({
   selected,
   set,
   disabled,
+  align,
 }: {
   selected: string | undefined;
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
+  align?: "start" | "center" | "end"
 }) => (
   <ConfigItem label="Server">
     <ResourceSelector
@@ -344,6 +343,7 @@ export const ServerSelector = ({
       selected={selected}
       onSelect={(server_id) => set({ server_id })}
       disabled={disabled}
+      align={align}
     />
   </ConfigItem>
 );

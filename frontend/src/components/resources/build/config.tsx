@@ -44,135 +44,153 @@ export const BuildConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: {
-          general: {
-            version: (version, set) => {
-              const { major, minor, patch } = version ?? {
-                major: 0,
-                minor: 0,
-                patch: 0,
-              };
-              return (
-                <ConfigItem label="Version">
-                  <div className="flex gap-4 items-center">
-                    <div className="text-xl">
-                      v{major}.{minor}.{patch}
+        general: [
+          {
+            label: "General",
+            components: {
+              version: (version, set) => {
+                const { major, minor, patch } = version ?? {
+                  major: 0,
+                  minor: 0,
+                  patch: 0,
+                };
+                return (
+                  <ConfigItem label="Version">
+                    <div className="flex gap-4 items-center">
+                      <div className="text-xl">
+                        v{major}.{minor}.{patch}
+                      </div>
+                      {!disabled && (
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            set({
+                              version: { major: major + 1, minor, patch: 0 },
+                            })
+                          }
+                        >
+                          + Major
+                        </Button>
+                      )}
+                      {!disabled && (
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            set({
+                              version: { major, minor: minor + 1, patch: 0 },
+                            })
+                          }
+                        >
+                          + Minor
+                        </Button>
+                      )}
                     </div>
-                    {!disabled && (
-                      <Button
-                        variant="secondary"
-                        onClick={() =>
-                          set({
-                            version: { major: major + 1, minor, patch: 0 },
-                          })
-                        }
-                      >
-                        + Major
-                      </Button>
-                    )}
-                    {!disabled && (
-                      <Button
-                        variant="secondary"
-                        onClick={() =>
-                          set({
-                            version: { major, minor: minor + 1, patch: 0 },
-                          })
-                        }
-                      >
-                        + Minor
-                      </Button>
-                    )}
-                  </div>
+                  </ConfigItem>
+                );
+              },
+              builder_id: (id, set) => (
+                <ConfigItem label="Builder">
+                  <ResourceSelector
+                    type="Builder"
+                    selected={id}
+                    onSelect={(builder_id) => set({ builder_id })}
+                    disabled={disabled}
+                  />
                 </ConfigItem>
-              );
+              ),
             },
-            builder_id: (id, set) => (
-              <ConfigItem label="Builder">
-                <ResourceSelector
+          },
+          {
+            label: "Git",
+            components: {
+              repo: { placeholder: "Enter repo" },
+              branch: { placeholder: "Enter branch" },
+              commit: { placeholder: "Enter specific commit hash. Optional." },
+              github_account: (account, set) => (
+                <AccountSelector
+                  id={update.builder_id ?? config.builder_id ?? undefined}
                   type="Builder"
-                  selected={id}
-                  onSelect={(builder_id) => set({ builder_id })}
+                  account_type="github"
+                  selected={account}
+                  onSelect={(github_account) => set({ github_account })}
+                  disabled={disabled}
+                  placeholder="None"
+                />
+              ),
+            },
+          },
+          {
+            label: "Docker",
+            components: {
+              build_path: true,
+              dockerfile_path: true,
+              docker_account: (account, set) => (
+                <AccountSelector
+                  id={update.builder_id ?? config.builder_id ?? undefined}
+                  type="Builder"
+                  account_type="docker"
+                  selected={account}
+                  onSelect={(docker_account) => set({ docker_account })}
+                  disabled={disabled}
+                  placeholder="None"
+                />
+              ),
+              docker_organization:
+                docker_organizations === undefined ||
+                docker_organizations.length === 0
+                  ? undefined
+                  : (value, set) => (
+                      <DockerOrganizations
+                        value={value}
+                        set={set}
+                        disabled={disabled}
+                      />
+                    ),
+              use_buildx: true,
+              labels: (l, set) => (
+                <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
+              ),
+              extra_args: (value, set) => (
+                <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
+              ),
+            },
+          },
+          {
+            label: "Pre Build",
+            components: {
+              pre_build: (value, set) => (
+                <SystemCommand
+                  label="Pre Build"
+                  value={value}
+                  set={(value) => set({ pre_build: value })}
                   disabled={disabled}
                 />
-              </ConfigItem>
-            ),
+              ),
+            },
           },
-          git: {
-            repo: { placeholder: "Enter repo" },
-            branch: { placeholder: "Enter branch" },
-            commit: { placeholder: "Enter specific commit hash. Optional." },
-            github_account: (account, set) => (
-              <AccountSelector
-                id={update.builder_id ?? config.builder_id ?? undefined}
-                type="Builder"
-                account_type="github"
-                selected={account}
-                onSelect={(github_account) => set({ github_account })}
-                disabled={disabled}
-                placeholder="None"
-              />
-            ),
+          {
+            label: "Github Webhook",
+            components: {
+              ["build" as any]: () => (
+                <ConfigItem label="Build">
+                  <CopyGithubWebhook path={`/build/${id}`} />
+                </ConfigItem>
+              ),
+              webhook_enabled: true,
+            },
           },
-          docker: {
-            build_path: true,
-            dockerfile_path: true,
-            docker_account: (account, set) => (
-              <AccountSelector
-                id={update.builder_id ?? config.builder_id ?? undefined}
-                type="Builder"
-                account_type="docker"
-                selected={account}
-                onSelect={(docker_account) => set({ docker_account })}
-                disabled={disabled}
-                placeholder="None"
-              />
-            ),
-            docker_organization:
-              docker_organizations === undefined ||
-              docker_organizations.length === 0
-                ? undefined
-                : (value, set) => (
-                    <DockerOrganizations
-                      value={value}
-                      set={set}
-                      disabled={disabled}
-                    />
-                  ),
-            use_buildx: true,
-            labels: (l, set) => (
-              <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
-            ),
-            extra_args: (value, set) => (
-              <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
-            ),
+        ],
+        "Build Args": [
+          {
+            label: "Build Args",
+            components: {
+              build_args: (vars, set) => (
+                <BuildArgs vars={vars ?? []} set={set} disabled={disabled} />
+              ),
+              skip_secret_interp: true,
+            },
           },
-          pre_build: {
-            pre_build: (value, set) => (
-              <SystemCommand
-                label="Pre Build"
-                value={value}
-                set={(value) => set({ pre_build: value })}
-                disabled={disabled}
-              />
-            ),
-          },
-          github_webhook: {
-            ["build" as any]: () => (
-              <ConfigItem label="Build">
-                <CopyGithubWebhook path={`/build/${id}`} />
-              </ConfigItem>
-            ),
-            webhook_enabled: true,
-          },
-        },
-        "Build Args": {
-          "Build Args": {
-            build_args: (vars, set) => (
-              <BuildArgs vars={vars ?? []} set={set} disabled={disabled} />
-            ),
-            skip_secret_interp: true,
-          },
-        },
+        ],
       }}
     />
   );

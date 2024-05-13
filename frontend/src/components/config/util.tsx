@@ -104,11 +104,12 @@ export const DoubleInput = <
   leftpl,
   rightval,
   rightpl,
-  addName,
+  // addName,
   onLeftChange,
   onRightChange,
-  onAdd,
+  // onAdd,
   onRemove,
+  containerClassName,
   inputClassName,
 }: {
   disabled: boolean;
@@ -117,15 +118,16 @@ export const DoubleInput = <
   leftpl: string;
   rightval: R;
   rightpl: string;
-  addName: string;
+  // addName: string;
   onLeftChange: (value: T[L], i: number) => void;
   onRightChange: (value: T[R], i: number) => void;
-  onAdd: () => void;
+  // onAdd: () => void;
   onRemove: (i: number) => void;
+  containerClassName?: string;
   inputClassName?: string;
 }) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn("flex flex-col gap-4", containerClassName)}>
       {values?.map((value, i) => (
         <div className="flex items-center justify-between gap-4" key={i}>
           <Input
@@ -150,7 +152,7 @@ export const DoubleInput = <
           )}
         </div>
       ))}
-      {!disabled && (
+      {/* {!disabled && (
         <Button
           variant="secondary"
           className="flex items-center gap-2 w-[200px] place-self-end"
@@ -159,7 +161,7 @@ export const DoubleInput = <
           <PlusCircle className="w-4 h-4" />
           Add {addName}
         </Button>
-      )}
+      )} */}
     </div>
   );
 };

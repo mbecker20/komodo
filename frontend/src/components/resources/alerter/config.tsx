@@ -36,12 +36,15 @@ export const AlerterConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: { type, params: update } });
       }}
       components={{
-        general: {
-          general: {
-            url: true,
-            enabled: true,
+        general: [
+          {
+            label: "General",
+            components: {
+              url: true,
+              enabled: true,
+            },
           },
-        },
+        ],
       }}
       selector={
         <div className="flex gap-2 items-center text-sm">

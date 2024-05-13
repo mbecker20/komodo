@@ -1,4 +1,4 @@
-import { ConfigItem, DoubleInput } from "@components/config/util";
+import { DoubleInput } from "@components/config/util";
 import { Types } from "@monitor/client";
 
 export const PortsConfig = ({
@@ -10,18 +10,16 @@ export const PortsConfig = ({
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem
-    label="Ports"
-    className={ports.length > 0 ? "items-start" : undefined}
-  >
+  <div className="py-2 w-full flex justify-end">
     <DoubleInput
       disabled={disabled}
+      inputClassName="w-[200px] max-w-full"
+      containerClassName="w-fit"
       values={ports}
       leftval="local"
       leftpl="Local"
       rightval="container"
       rightpl="Container"
-      addName="Port"
       onLeftChange={(local, i) => {
         ports[i].local = local;
         set({ ports: [...ports] });
@@ -30,10 +28,7 @@ export const PortsConfig = ({
         ports[i].container = container;
         set({ ports: [...ports] });
       }}
-      onAdd={() =>
-        set({ ports: [...(ports ?? []), { container: "", local: "" }] })
-      }
       onRemove={(idx) => set({ ports: [...ports.filter((_, i) => i !== idx)] })}
     />
-  </ConfigItem>
+  </div>
 );

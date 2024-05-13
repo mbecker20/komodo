@@ -30,37 +30,52 @@ export const ServerConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: {
-          general: {
-            address: true,
-            region: true,
-            enabled: true,
-            stats_monitoring: true,
-            auto_prune: true,
+        general: [
+          {
+            label: "General",
+            components: {
+              address: true,
+              region: true,
+              enabled: true,
+              stats_monitoring: true,
+              auto_prune: true,
+            },
           },
-        },
-        alerts: {
-          alerts: {
-            send_unreachable_alerts: true,
-            send_cpu_alerts: true,
-            send_disk_alerts: true,
-            send_mem_alerts: true,
+        ],
+        alerts: [
+          {
+            label: "Alerts",
+            components: {
+              send_unreachable_alerts: true,
+              send_cpu_alerts: true,
+              send_disk_alerts: true,
+              send_mem_alerts: true,
+            },
           },
-        },
-        warnings: {
-          cpu: {
-            cpu_warning: true,
-            cpu_critical: true,
+        ],
+        warnings: [
+          {
+            label: "Cpu",
+            components: {
+              cpu_warning: true,
+              cpu_critical: true,
+            },
           },
-          memory: {
-            mem_warning: true,
-            mem_critical: true,
+          {
+            label: "Memory",
+            components: {
+              mem_warning: true,
+              mem_critical: true,
+            },
           },
-          disk: {
-            disk_warning: true,
-            disk_critical: true,
+          {
+            label: "Disk",
+            components: {
+              disk_warning: true,
+              disk_critical: true,
+            },
           },
-        },
+        ],
       }}
     />
   );

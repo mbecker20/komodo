@@ -32,43 +32,46 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: { type: "Aws", params: update } });
       }}
       components={{
-        general: {
-          general: {
-            region: true,
-            instance_type: true,
-            volume_gb: true,
-            ami_id: true,
-            subnet_id: true,
-            key_pair_name: true,
-            assign_public_ip: true,
-            use_public_ip: true,
-            security_group_ids: (values, set) => (
-              <InputList
-                field="security_group_ids"
-                values={values}
-                set={set}
-                disabled={disabled}
-              />
-            ),
-            github_accounts: (accounts, set) => (
-              <InputList
-                field="github_accounts"
-                values={accounts ?? []}
-                set={set}
-                disabled={disabled}
-              />
-            ),
-            docker_accounts: (accounts, set) => (
-              <InputList
-                field="docker_accounts"
-                values={accounts ?? []}
-                set={set}
-                disabled={disabled}
-              />
-            ),
-            port: true,
+        general: [
+          {
+            label: "General",
+            components: {
+              region: true,
+              instance_type: true,
+              volume_gb: true,
+              ami_id: true,
+              subnet_id: true,
+              key_pair_name: true,
+              assign_public_ip: true,
+              use_public_ip: true,
+              security_group_ids: (values, set) => (
+                <InputList
+                  field="security_group_ids"
+                  values={values}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+              github_accounts: (accounts, set) => (
+                <InputList
+                  field="github_accounts"
+                  values={accounts ?? []}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+              docker_accounts: (accounts, set) => (
+                <InputList
+                  field="docker_accounts"
+                  values={accounts ?? []}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+              port: true,
+            },
           },
-        },
+        ],
       }}
     />
   );
@@ -95,21 +98,24 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: { type: "Server", params: update } });
       }}
       components={{
-        general: {
-          general: {
-            server_id: (id, set) => (
-              <div className="flex justify-between items-center border-b pb-4">
-                Select Server
-                <ResourceSelector
-                  type="Server"
-                  selected={id}
-                  onSelect={(server_id) => set({ server_id })}
-                  disabled={disabled}
-                />
-              </div>
-            ),
+        general: [
+          {
+            label: "General",
+            components: {
+              server_id: (id, set) => (
+                <div className="flex justify-between items-center border-b pb-4">
+                  Select Server
+                  <ResourceSelector
+                    type="Server"
+                    selected={id}
+                    onSelect={(server_id) => set({ server_id })}
+                    disabled={disabled}
+                  />
+                </div>
+              ),
+            },
           },
-        },
+        ],
       }}
     />
   );
