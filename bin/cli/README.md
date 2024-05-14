@@ -2,6 +2,12 @@
 
 Monitor CLI is a tool to sync monitor resources and execute file defined procedures.
 
+## Install
+
+```sh
+cargo install monitor_cli
+```
+
 ## Usage
 
 Configure a file `~/.config/monitor/creds.toml` file with contents:
