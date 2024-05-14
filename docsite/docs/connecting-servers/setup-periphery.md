@@ -8,6 +8,11 @@ The easiest way to setup periphery is to use the [Periphery setup script](https:
 
  2. Create and edit your config files, following the [config example](https://github.com/mbecker20/monitor/blob/main/config_example/periphery.config.example.toml).
 
+ :::note
+ See the [periphery config docs](https://docs.rs/monitor_client/latest/monitor_client/entities/config/periphery/index.html)
+ for more information on configuring periphery.
+ :::
+
  3. Ensure that inbound connectivity is allowed on the port specified in periphery.config.toml (default 8000).
 
  4. Install docker. Make sure whatever user periphery is run as has access to the docker group without sudo.

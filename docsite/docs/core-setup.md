@@ -20,7 +20,7 @@ the redirect uri is `<base_url>/auth/google/callback` for google and `<base_url>
 
 :::note
 all configuration can additionally be passed using environment variables, which override the value in the config file.
-see ###CONFIG_RUST_DOCS###.
+see [config docs](https://docs.rs/monitor_client/latest/monitor_client/entities/config/core/index.html).
 :::
 
 ## 2. start monitor core

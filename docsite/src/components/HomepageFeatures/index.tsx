@@ -28,7 +28,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "powered by Rust 🦀",
-    description: <>The core API and periphery client are written in Rust</>,
+    description: <>The core API and periphery agent are written in Rust</>,
   },
 ];
 

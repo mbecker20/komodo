@@ -79,8 +79,13 @@ const config: Config = {
           label: "docs",
         },
         {
+          href: "https://docs.rs/monitor_client/latest/monitor_client/",
+          label: "docs.rs",
+          position: "right",
+        },
+        {
           href: "https://github.com/mbecker20/monitor",
-          label: "GitHub",
+          label: "github",
           position: "right",
         },
       ],
