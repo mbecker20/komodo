@@ -2,6 +2,9 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
+import dotenv from "dotenv"
+dotenv.config();
+
 const config: Config = {
   title: "monitor",
   tagline: "distributed build and deployment system",
