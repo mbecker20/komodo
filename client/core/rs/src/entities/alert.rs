@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use derive_variants::EnumVariants;
 use mongo_indexed::derive::MongoIndexed;
 use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id, Document,
+  doc, serde_helpers::hex_string_as_object_id,
 };
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -20,9 +20,9 @@ use super::{
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
-#[doc_index(doc! { "data.type": 1 })]
-#[doc_index(doc! { "target.type": 1 })]
-#[doc_index(doc! { "target.id": 1 })]
+#[doc_index({ "data.type": 1 })]
+#[doc_index({ "target.type": 1 })]
+#[doc_index({ "target.id": 1 })]
 pub struct Alert {
   /// The Mongo ID of the alert.
   /// This field is de/serialized from/to JSON as

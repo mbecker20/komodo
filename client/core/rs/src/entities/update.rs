@@ -2,7 +2,7 @@ use async_timing_util::unix_timestamp_ms;
 use derive_variants::EnumVariants;
 use mongo_indexed::derive::MongoIndexed;
 use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id, Document,
+  doc, serde_helpers::hex_string_as_object_id,
 };
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
@@ -22,8 +22,8 @@ use super::{
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
-#[doc_index(doc! { "target.type": 1 })]
-#[sparse_doc_index(doc! { "target.id": 1 })]
+#[doc_index({ "target.type": 1 })]
+#[sparse_doc_index({ "target.id": 1 })]
 pub struct Update {
   /// The Mongo ID of the update.
   /// This field is de/serialized from/to JSON as

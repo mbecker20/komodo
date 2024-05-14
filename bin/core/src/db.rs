@@ -1,4 +1,4 @@
-use mongo_indexed::{create_index, create_unique_index, Indexed};
+use mongo_indexed::{create_index, create_unique_index};
 use monitor_client::entities::{
   alert::Alert,
   alerter::Alerter,
@@ -80,14 +80,20 @@ impl DbClient {
     let db = client.database(db_name);
 
     let client = DbClient {
-      users: User::collection(&db, true).await?,
-      user_groups: UserGroup::collection(&db, true).await?,
-      permissions: Permission::collection(&db, true).await?,
-      api_keys: ApiKey::collection(&db, true).await?,
-      tags: Tag::collection(&db, true).await?,
-      updates: Update::collection(&db, true).await?,
-      alerts: Alert::collection(&db, true).await?,
-      stats: SystemStatsRecord::collection(&db, true).await?,
+      users: mongo_indexed::collection::<User>(&db, true).await?,
+      user_groups: mongo_indexed::collection::<UserGroup>(&db, true)
+        .await?,
+      permissions: mongo_indexed::collection::<Permission>(&db, true)
+        .await?,
+      api_keys: mongo_indexed::collection::<ApiKey>(&db, true)
+        .await?,
+      tags: mongo_indexed::collection::<Tag>(&db, true).await?,
+      updates: mongo_indexed::collection::<Update>(&db, true).await?,
+      alerts: mongo_indexed::collection::<Alert>(&db, true).await?,
+      stats: mongo_indexed::collection::<SystemStatsRecord>(
+        &db, true,
+      )
+      .await?,
       servers: resource_collection(&db, "Server").await?,
       deployments: resource_collection(&db, "Deployment").await?,
       builds: resource_collection(&db, "Build").await?,

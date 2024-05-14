@@ -2,7 +2,7 @@ use std::sync::OnceLock;
 
 use mongo_indexed::derive::MongoIndexed;
 use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id, Document,
+  doc, serde_helpers::hex_string_as_object_id,
 };
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -13,9 +13,9 @@ use crate::entities::{update::ResourceTarget, MongoId, I64};
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
-#[doc_index(doc! { "config.type": 1 })]
-#[sparse_doc_index(doc! { "config.data.google_id": 1 })]
-#[sparse_doc_index(doc! { "config.data.github_id": 1 })]
+#[doc_index({ "config.type": 1 })]
+#[sparse_doc_index({ "config.data.google_id": 1 })]
+#[sparse_doc_index({ "config.data.github_id": 1 })]
 pub struct User {
   /// The Mongo ID of the User.
   /// This field is de/serialized from/to JSON as

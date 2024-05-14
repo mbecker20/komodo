@@ -1,5 +1,4 @@
 use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::Document;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 

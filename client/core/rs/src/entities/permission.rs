@@ -1,8 +1,6 @@
 use derive_variants::EnumVariants;
 use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id, Document,
-};
+use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
@@ -13,11 +11,11 @@ use super::{update::ResourceTarget, MongoId};
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize, MongoIndexed)]
 // To query for all permissions on user target
-#[doc_index(doc! { "user_target.type": 1, "user_target.id": 1 })]
+#[doc_index({ "user_target.type": 1, "user_target.id": 1 })]
 // To query for all permissions on a resource target
-#[doc_index(doc! { "resource_target.type": 1, "resource_target.id": 1 })]
+#[doc_index({ "resource_target.type": 1, "resource_target.id": 1 })]
 // Only one permission allowed per user / resource target
-#[unique_doc_index(doc! {
+#[unique_doc_index({
   "user_target.type": 1,
   "user_target.id": 1,
   "resource_target.type": 1,

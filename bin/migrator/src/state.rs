@@ -63,8 +63,8 @@ pub struct DbClient {
 impl DbClient {
   pub async fn new(db: &Database) -> anyhow::Result<DbClient> {
     Ok(DbClient {
-      users: User::collection(db, true).await?,
-      updates: Update::collection(db, true).await?,
+      users: mongo_indexed::collection::<User>(db, true).await?,
+      updates: mongo_indexed::collection::<Update>(db, true).await?,
       servers: resource_collection(db, "Server").await?,
       deployments: resource_collection(db, "Deployment").await?,
       builds: resource_collection(db, "Build").await?,
