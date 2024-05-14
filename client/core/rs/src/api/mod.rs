@@ -33,7 +33,7 @@
 //! - [auth]: Requests relating to loggins in / obtaining authentication tokens.
 //! - [read]: Read only requests which retrieve data from Monitor.
 //! - [execute]: Run actions on monitor resources, eg [execute::RunBuild].
-//! - [write]: Requests which alter data, like create / update / delete resources.
+//! - [mod@write]: Requests which alter data, like create / update / delete resources.
 //!
 //! ## Errors
 //!

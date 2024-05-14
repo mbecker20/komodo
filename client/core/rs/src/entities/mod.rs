@@ -7,24 +7,43 @@ use serror::Serror;
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
+/// Subtypes of [Alert][alert::Alert].
 pub mod alert;
+/// Subtypes of [Alerter][alerter::Alerter].
 pub mod alerter;
+/// Subtypes of [ApiKey][api_key::ApiKey].
 pub mod api_key;
+/// Subtypes of [Build][build::Build].
 pub mod build;
+/// Subtypes of [Builder][builder::Builder].
 pub mod builder;
+/// [core config][config::core] and [periphery config][config::periphery]
 pub mod config;
+/// Subtypes of [Deployment][deployment::Deployment].
 pub mod deployment;
+/// Subtypes of [LogConfig][logger::LogConfig].
 pub mod logger;
+/// Subtypes of [Permission][permission::Permission].
 pub mod permission;
+/// Subtypes of [Procedure][procedure::Procedure].
 pub mod procedure;
+/// Subtypes of [Repo][repo::Repo].
 pub mod repo;
+/// Subtypes of [Resource][resource::Resource].
 pub mod resource;
+/// Subtypes of [Server][server::Server].
 pub mod server;
+/// Subtypes of [ServerTemplate][server_template::ServerTemplate].
 pub mod server_template;
+/// Subtypes of [Tag][tag::Tag].
 pub mod tag;
+/// Subtypes of [ResourcesToml][toml::ResourcesToml].
 pub mod toml;
+/// Subtypes of [Update][update::Update].
 pub mod update;
+/// Subtypes of [User][user::User].
 pub mod user;
+/// Subtypes of [UserGroup][user_group::UserGroup].
 pub mod user_group;
 
 #[typeshare(serialized_as = "number")]

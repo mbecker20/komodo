@@ -2,18 +2,19 @@
 //! *A system to build and deploy software accross many servers*
 //!
 //! This is a client library for the monitor core API.
-//! It contains the definitions for all application [entities]
-//! (eg. [Build][entities::build::Build], [Deployment][entities::deployment::Deployment], [Server][entities::server::Server], etc.),
-//! api requests / responses (eg. [Deploy][api::execute::Deploy], [GetBuild][api::read::GetBuild]), and usage guides.
+//! It contains:
+//! - Definitions for the application [api] and [entities].
+//! - A [client][MonitorClient] to interact with the monitor core API.
+//! - Information on configuring monitor [core][entities::config::core] and [periphery][entities::config::periphery].
 //! 
-//! ## Configuration
+//! ## Client Configuration
 //! 
 //! The client includes a convenenience method to parse the monitor url and credentials from the environment:
 //! - MONITOR_ADDRESS
 //! - MONITOR_API_KEY
 //! - MONITOR_API_SECRET
 //! 
-//! ## Example
+//! ## Client Example
 //! ```
 //! dotenv::dotenv().ok();
 //! 
