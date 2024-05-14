@@ -2,6 +2,7 @@ import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { TagsWithBadge } from "@components/tags";
 import { ResourceLink } from "../common";
+import { ProcedureComponents } from ".";
 
 export const ProcedureTable = ({ search }: { search?: string }) => {
   const procedures = useRead("ListProcedures", {}).data;
@@ -24,6 +25,15 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
           accessorKey: "info.procedure_type",
           header: ({ column }) => (
             <SortableHeader column={column} title="Type" />
+          ),
+        },
+        {
+          accessorKey: "info.state",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="State" />
+          ),
+          cell: ({ row }) => (
+            <ProcedureComponents.Status.State id={row.original.id} />
           ),
         },
         {

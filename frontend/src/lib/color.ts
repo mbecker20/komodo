@@ -154,6 +154,23 @@ export const repo_state_intention = (state?: Types.RepoState) => {
   }
 };
 
+export const procedure_state_intention = (status?: Types.ProcedureState) => {
+  switch (status) {
+    case undefined:
+      return "None";
+    case Types.ProcedureState.Unknown:
+      return "Unknown";
+    case Types.ProcedureState.Ok:
+      return "Good";
+    case Types.ProcedureState.Running:
+      return "Warning";
+    case Types.ProcedureState.Failed:
+      return "Critical";
+    default:
+      return "None";
+  }
+};
+
 export const alert_level_intention: (
   level: Types.SeverityLevel
 ) => ColorIntention = (level) => {

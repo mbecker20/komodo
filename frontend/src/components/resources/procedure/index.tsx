@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
+import { bg_color_class_by_intention, procedure_state_intention } from "@lib/color";
+import { cn } from "@lib/utils";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -41,7 +43,17 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Icon: () => <Route className="w-4" />,
   BigIcon: () => <Route className="w-8" />,
 
-  Status: {},
+  Status: {
+    State: ({ id }) => {
+      let state = useProcedure(id)?.info.state;
+      const color = bg_color_class_by_intention(procedure_state_intention(state));
+      return (
+        <Card className={cn("w-fit", color)}>
+          <CardHeader className="py-0 px-2">{state}</CardHeader>
+        </Card>
+      );
+    },
+  },
 
   Info: {
     Type: ({ id }) => <div>{useProcedure(id)?.info.procedure_type}</div>,
