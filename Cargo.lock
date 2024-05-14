@@ -32,7 +32,7 @@ dependencies = [
 
 [[package]]
 name = "alerter"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "axum 0.7.5",
@@ -2006,7 +2006,7 @@ checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
 
 [[package]]
 name = "logger"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "monitor_client",
@@ -2083,7 +2083,7 @@ dependencies = [
 
 [[package]]
 name = "migrator"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2211,7 +2211,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -2230,7 +2230,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_client"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2262,7 +2262,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_core"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2308,7 +2308,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_periphery"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2637,7 +2637,7 @@ checksum = "9b2a4787296e9989611394c33f193f676704af1686e70b8f8033ab5ba9a35a94"
 
 [[package]]
 name = "periphery_client"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "monitor_client",
@@ -3636,7 +3636,7 @@ dependencies = [
 
 [[package]]
 name = "tests"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "dotenv",
@@ -4192,7 +4192,7 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "update_logger"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "anyhow",
  "logger",
