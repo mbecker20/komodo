@@ -49,27 +49,28 @@ export const Resource = () => {
         </div>
       }
       subtitle={
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-4 items-center text-muted-foreground">
-            {Object.entries(Components.Info).map(([key, Info], i) => (
-              <Fragment key={key}>
-                {i !== 0 && "| "}<Info key={i} id={id} />
-              </Fragment>
-            ))}
-            | <ExportButton target={{ type, id }} />
-          </div>
-          <ResourceDescription type={type} id={id} />
+        <div className="flex gap-4 items-center text-muted-foreground">
+          {Object.entries(Components.Info).map(([key, Info], i) => (
+            <Fragment key={key}>
+              {i !== 0 && "| "}
+              <Info key={i} id={id} />
+            </Fragment>
+          ))}
+          | <ExportButton target={{ type, id }} />
         </div>
       }
       actions={
-        <div className="flex gap-2 items-center">
-          <div className="text-muted-foreground">tags:</div>
-          <ResourceTags
-            target={{ id, type }}
-            className="text-sm"
-            click_to_delete
-          />
-          <AddTags target={{ id, type }} />
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2 items-center lg:justify-end">
+            <div className="text-muted-foreground">tags:</div>
+            <ResourceTags
+              target={{ id, type }}
+              className="text-sm"
+              click_to_delete
+            />
+            <AddTags target={{ id, type }} />
+          </div>
+          <ResourceDescription type={type} id={id} />
         </div>
       }
     >
