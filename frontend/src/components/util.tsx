@@ -196,6 +196,7 @@ export const ConfirmButton = ({
   disabled,
   loading,
   onClick,
+  className,
 }: {
   variant?:
     | "link"
@@ -212,6 +213,7 @@ export const ConfirmButton = ({
   onClick?: MouseEventHandler<HTMLButtonElement>;
   loading?: boolean;
   disabled?: boolean;
+  className?: string;
 }) => {
   const [confirmed, set] = useState(false);
 
@@ -236,6 +238,7 @@ export const ConfirmButton = ({
       }
       onBlur={() => set(false)}
       loading={loading}
+      className={className}
     />
   );
 };
