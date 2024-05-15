@@ -4,7 +4,7 @@ slug: /intro
 
 # what is monitor?
 
-If you have many servers running many applications, it can be a challenge to keep things organized and easily accessible. Monitor is a web app to provide structure for managing your servers, builds, deployments, and automated procedures.
+Monitor is a web app to provide structure for managing your servers, builds, deployments, and automated procedures.
 
 ## docker
 
