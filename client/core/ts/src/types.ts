@@ -45,17 +45,6 @@ export type UserConfig =
 
 export type I64 = number;
 
-export type ResourceTarget = 
-	| { type: "System", id: string }
-	| { type: "Build", id: string }
-	| { type: "Builder", id: string }
-	| { type: "Deployment", id: string }
-	| { type: "Server", id: string }
-	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string }
-	| { type: "Procedure", id: string }
-	| { type: "ServerTemplate", id: string };
-
 export interface User {
 	/**
 	 * The Mongo ID of the User.
@@ -63,14 +52,30 @@ export interface User {
 	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
 	 */
 	_id?: MongoId;
+	/** The globally unique username for the user. */
 	username: string;
+	/** Whether user is enabled / able to access the api. */
 	enabled?: boolean;
+	/** Whether the user has global admin permissions. */
 	admin?: boolean;
+	/** Whether the user has permission to create servers. */
 	create_server_permissions?: boolean;
+	/** Whether the user has permission to create builds */
 	create_build_permissions?: boolean;
+	/** The user-type specific config. */
 	config: UserConfig;
+	/** When the user last opened updates dropdown. */
 	last_update_view?: I64;
-	recently_viewed?: ResourceTarget[];
+	/** Recently viewed server ids */
+	recent_servers?: string[];
+	/** Recently viewed deployment ids */
+	recent_deployments?: string[];
+	/** Recently viewed build ids */
+	recent_builds?: string[];
+	/** Recently viewed repo ids */
+	recent_repos?: string[];
+	/** Recently viewed procedure ids */
+	recent_procedures?: string[];
 	updated_at?: I64;
 }
 
@@ -91,6 +96,17 @@ export enum SeverityLevel {
 	/** Problem fully realized. */
 	Critical = "CRITICAL",
 }
+
+export type ResourceTarget = 
+	| { type: "System", id: string }
+	| { type: "Build", id: string }
+	| { type: "Builder", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Server", id: string }
+	| { type: "Repo", id: string }
+	| { type: "Alerter", id: string }
+	| { type: "Procedure", id: string }
+	| { type: "ServerTemplate", id: string };
 
 /** The variants of data related to the alert. */
 export type AlertData = 

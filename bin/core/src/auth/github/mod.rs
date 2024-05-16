@@ -86,7 +86,11 @@ async fn callback(
         create_build_permissions: no_users_exist,
         updated_at: ts,
         last_update_view: 0,
-        recently_viewed: Vec::new(),
+        recent_servers: Vec::new(),
+        recent_deployments: Vec::new(),
+        recent_builds: Vec::new(),
+        recent_repos: Vec::new(),
+        recent_procedures: Vec::new(),
         config: UserConfig::Github {
           github_id,
           avatar: github_user.avatar_url,

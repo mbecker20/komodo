@@ -1,19 +1,15 @@
 import { Page, Section } from "@components/layouts";
-import { Box, History, Key, Tag } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Box, Key, Tag } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@ui/card";
 import { ResourceComponents } from "@components/resources";
 import { OpenAlerts } from "@components/alert";
-import { useCheckResourceExists, useRead, useUser } from "@lib/hooks";
-import { ResourceLink } from "@components/resources/common";
-import { Fragment } from "react";
-import { cn, usableResourcePath } from "@lib/utils";
+import { useRead } from "@lib/hooks";
 import { AllUpdates } from "@components/updates/resource";
 
 export const Dashboard = () => {
@@ -21,7 +17,7 @@ export const Dashboard = () => {
     <Page title="">
       <OpenAlerts />
       <AllUpdates />
-      <RecentlyViewed />
+      {/* <RecentlyViewed /> */}
       <Resources />
     </Page>
   );
@@ -57,42 +53,42 @@ const Resources = () => {
   );
 };
 
-const RecentlyViewed = () => {
-  const nav = useNavigate();
-  const recently_viewed = useUser().data?.recently_viewed;
-  const checkResourceExists = useCheckResourceExists();
-  return (
-    <Section
-      title="Recently Viewed"
-      icon={<History className="w-4 h-4" />}
-      actions=""
-    >
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-        {recently_viewed
-          ?.filter(checkResourceExists)
-          .slice(0, 8)
-          .map(({ type, id }, i) => (
-            <Fragment key={type + id}>
-              {type !== "System" && (
-                <Card
-                  onClick={() => nav(`/${usableResourcePath(type)}/${id}`)}
-                  className={cn(
-                    "px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer",
-                    i > 5 && "hidden 2xl:flex"
-                  )}
-                >
-                  <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground w-full">
-                    <ResourceLink type={type} id={id} />
-                    {type}
-                  </CardContent>
-                </Card>
-              )}
-            </Fragment>
-          ))}
-      </div>
-    </Section>
-  );
-};
+// const RecentlyViewed = () => {
+//   const nav = useNavigate();
+//   const recently_viewed = useUser().data?.recently_viewed;
+//   const checkResourceExists = useCheckResourceExists();
+//   return (
+//     <Section
+//       title="Recently Viewed"
+//       icon={<History className="w-4 h-4" />}
+//       actions=""
+//     >
+//       <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+//         {recently_viewed
+//           ?.filter(checkResourceExists)
+//           .slice(0, 8)
+//           .map(({ type, id }, i) => (
+//             <Fragment key={type + id}>
+//               {type !== "System" && (
+//                 <Card
+//                   onClick={() => nav(`/${usableResourcePath(type)}/${id}`)}
+//                   className={cn(
+//                     "px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer",
+//                     i > 5 && "hidden 2xl:flex"
+//                   )}
+//                 >
+//                   <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground w-full">
+//                     <ResourceLink type={type} id={id} />
+//                     {type}
+//                   </CardContent>
+//                 </Card>
+//               )}
+//             </Fragment>
+//           ))}
+//       </div>
+//     </Section>
+//   );
+// };
 
 const TagsSummary = () => {
   const tags_count = useRead("ListTags", {}).data?.length;

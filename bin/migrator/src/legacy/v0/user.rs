@@ -106,7 +106,11 @@ impl TryFrom<User> for monitor_client::entities::user::User {
       create_server_permissions: value.create_server_permissions,
       create_build_permissions: value.create_build_permissions,
       last_update_view: Default::default(),
-      recently_viewed: Default::default(),
+      recent_servers: Vec::new(),
+      recent_deployments: Vec::new(),
+      recent_builds: Vec::new(),
+      recent_repos: Vec::new(),
+      recent_procedures: Vec::new(),
       updated_at: unix_from_monitor_ts(&value.updated_at)?,
     };
     Ok(user)
