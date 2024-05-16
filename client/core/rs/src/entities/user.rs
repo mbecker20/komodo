@@ -7,7 +7,7 @@ use mungos::mongodb::bson::{
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{update::ResourceTarget, MongoId, I64};
+use crate::entities::{MongoId, I64};
 
 #[typeshare]
 #[derive(
@@ -28,29 +28,53 @@ pub struct User {
   )]
   pub id: MongoId,
 
+  /// The globally unique username for the user.
   #[unique_index]
   pub username: String,
 
+  /// Whether user is enabled / able to access the api.
   #[index]
   #[serde(default)]
   pub enabled: bool,
 
+  /// Whether the user has global admin permissions.
   #[serde(default)]
   pub admin: bool,
 
+  /// Whether the user has permission to create servers.
   #[serde(default)]
   pub create_server_permissions: bool,
 
+  /// Whether the user has permission to create builds
   #[serde(default)]
   pub create_build_permissions: bool,
 
+  /// The user-type specific config.
   pub config: UserConfig,
 
+  /// When the user last opened updates dropdown.
   #[serde(default)]
   pub last_update_view: I64,
 
+  /// Recently viewed server ids
   #[serde(default)]
-  pub recently_viewed: Vec<ResourceTarget>,
+  pub recent_servers: Vec<String>,
+
+  /// Recently viewed deployment ids
+  #[serde(default)]
+  pub recent_deployments: Vec<String>,
+
+  /// Recently viewed build ids
+  #[serde(default)]
+  pub recent_builds: Vec<String>,
+
+  /// Recently viewed repo ids
+  #[serde(default)]
+  pub recent_repos: Vec<String>,
+
+  /// Recently viewed procedure ids
+  #[serde(default)]
+  pub recent_procedures: Vec<String>,
 
   #[serde(default)]
   pub updated_at: I64,

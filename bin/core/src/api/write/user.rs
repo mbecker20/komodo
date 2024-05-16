@@ -11,6 +11,7 @@ use monitor_client::{
   },
   entities::{
     monitor_timestamp,
+    update::ResourceTarget,
     user::{User, UserConfig},
   },
 };
@@ -25,7 +26,7 @@ use crate::{
   state::{db_client, State},
 };
 
-const RECENTLY_VIEWED_MAX: usize = 10;
+const RECENTLY_VIEWED_MAX: usize = 5;
 
 #[async_trait]
 impl Resolve<PushRecentlyViewed, User> for State {
@@ -35,29 +36,43 @@ impl Resolve<PushRecentlyViewed, User> for State {
     PushRecentlyViewed { resource }: PushRecentlyViewed,
     user: User,
   ) -> anyhow::Result<PushRecentlyViewedResponse> {
-    let mut recently_viewed = get_user(&user.id)
-      .await?
-      .recently_viewed
+    let user = get_user(&user.id).await?;
+
+    let (recents, id, field) = match resource {
+      ResourceTarget::Server(id) => {
+        (user.recent_servers, id, "recent_servers")
+      }
+      ResourceTarget::Deployment(id) => {
+        (user.recent_deployments, id, "recent_deployments")
+      }
+      ResourceTarget::Build(id) => {
+        (user.recent_builds, id, "recent_builds")
+      }
+      ResourceTarget::Repo(id) => {
+        (user.recent_repos, id, "recent_repos")
+      }
+      ResourceTarget::Procedure(id) => {
+        (user.recent_procedures, id, "recent_procedures")
+      }
+      _ => return Ok(PushRecentlyViewedResponse {}),
+    };
+
+    let mut recents = recents
       .into_iter()
-      .filter(|r| !resource.eq(r))
+      .filter(|_id| !id.eq(_id))
       .take(RECENTLY_VIEWED_MAX - 1)
       .collect::<VecDeque<_>>();
-
-    recently_viewed.push_front(resource);
-
-    let recently_viewed = to_bson(&recently_viewed)
-      .context("failed to convert recently views to bson")?;
+    recents.push_front(id);
+    let update = doc! { field: to_bson(&recents)? };
 
     update_one_by_id(
       &db_client().await.users,
       &user.id,
-      mungos::update::Update::Set(doc! {
-        "recently_viewed": recently_viewed
-      }),
+      mungos::update::Update::Set(update),
       None,
     )
     .await
-    .context("context")?;
+    .with_context(|| format!("failed to update {field}"))?;
 
     Ok(PushRecentlyViewedResponse {})
   }
@@ -112,7 +127,11 @@ impl Resolve<CreateServiceUser, User> for State {
       create_server_permissions: false,
       create_build_permissions: false,
       last_update_view: 0,
-      recently_viewed: Vec::new(),
+      recent_servers: Vec::new(),
+      recent_deployments: Vec::new(),
+      recent_builds: Vec::new(),
+      recent_repos: Vec::new(),
+      recent_procedures: Vec::new(),
       updated_at: monitor_timestamp(),
     };
     user.id = db_client()
