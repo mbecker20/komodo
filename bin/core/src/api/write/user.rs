@@ -26,7 +26,7 @@ use crate::{
   state::{db_client, State},
 };
 
-const RECENTLY_VIEWED_MAX: usize = 5;
+const RECENTLY_VIEWED_MAX: usize = 10;
 
 #[async_trait]
 impl Resolve<PushRecentlyViewed, User> for State {
