@@ -77,7 +77,18 @@ pub struct GetReposSummary {}
 
 /// Response for [GetReposSummary]
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetReposSummaryResponse {
+  /// The total number of repos
   pub total: u32,
+  /// The number of repos with Ok state.
+  pub ok: u32,
+  /// The number of repos currently cloning.
+  pub cloning: u32,
+  /// The number of repos currently pulling.
+  pub pulling: u32,
+  /// The number of repos with failed state.
+  pub failed: u32,
+  /// The number of repos with unknown state.
+  pub unknown: u32,
 }

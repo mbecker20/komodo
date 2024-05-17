@@ -229,7 +229,7 @@ impl Resolve<GetDeploymentsSummary, User> for State {
     let deployments =
       find_collect(&db_client().await.deployments, query, None)
         .await
-        .context("failed to count all deployment documents")?;
+        .context("failed to find all deployment documents")?;
     let mut res = GetDeploymentsSummaryResponse::default();
     let status_cache = deployment_status_cache();
     for deployment in deployments {

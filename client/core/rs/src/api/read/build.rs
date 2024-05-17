@@ -80,10 +80,18 @@ pub struct GetBuildsSummary {}
 
 /// Response for [GetBuildsSummary].
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct GetBuildsSummaryResponse {
   /// The total number of builds in monitor.
   pub total: u32,
+  /// The number of builds with Ok state.
+  pub ok: u32,
+  /// The number of builds with Failed state.
+  pub failed: u32,
+  /// The number of builds currently building.
+  pub building: u32,
+  /// The number of builds with unknown state.
+  pub unknown: u32,
 }
 
 //

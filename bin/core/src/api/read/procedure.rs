@@ -10,17 +10,22 @@ use monitor_client::{
     ListProcedures, ListProceduresResponse,
   },
   entities::{
-    permission::PermissionLevel, procedure::Procedure,
-    update::ResourceTargetVariant, user::User,
+    permission::PermissionLevel,
+    procedure::{Procedure, ProcedureState},
+    update::ResourceTargetVariant,
+    user::User,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId};
+use mungos::{
+  find::find_collect,
+  mongodb::bson::{doc, oid::ObjectId},
+};
 use resolver_api::Resolve;
 
 use crate::{
   helpers::query::get_resource_ids_for_non_admin,
   resource,
-  state::{action_states, db_client, State},
+  state::{action_states, db_client, procedure_state_cache, State},
 };
 
 #[async_trait]
@@ -73,15 +78,40 @@ impl Resolve<GetProceduresSummary, User> for State {
       };
       Some(query)
     };
-    let total = db_client()
-      .await
-      .procedures
-      .count_documents(query, None)
-      .await
-      .context("failed to count all procedure documents")?;
-    let res = GetProceduresSummaryResponse {
-      total: total as u32,
-    };
+
+    let procedures =
+      find_collect(&db_client().await.procedures, query, None)
+        .await
+        .context("failed to find all procedure documents")?;
+
+    let mut res = GetProceduresSummaryResponse::default();
+
+    let cache = procedure_state_cache();
+    let action_states = action_states();
+
+    for procedure in procedures {
+      res.total += 1;
+
+      match (
+        cache.get(&procedure.id).await.unwrap_or_default(),
+        action_states
+          .procedure
+          .get(&procedure.id)
+          .await
+          .unwrap_or_default()
+          .get()?,
+      ) {
+        (_, action_states) if action_states.running => {
+          res.running += 1;
+        }
+        (ProcedureState::Ok, _) => res.ok += 1,
+        (ProcedureState::Failed, _) => res.failed += 1,
+        (ProcedureState::Unknown, _) => res.unknown += 1,
+        // will never come off the cache in the running state, since that comes from action states
+        (ProcedureState::Running, _) => unreachable!(),
+      }
+    }
+
     Ok(res)
   }
 }

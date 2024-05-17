@@ -6,18 +6,21 @@ use monitor_client::{
   api::read::*,
   entities::{
     permission::PermissionLevel,
-    repo::{Repo, RepoActionState, RepoListItem},
+    repo::{Repo, RepoActionState, RepoListItem, RepoState},
     update::ResourceTargetVariant,
     user::User,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId};
+use mungos::{
+  find::find_collect,
+  mongodb::bson::{doc, oid::ObjectId},
+};
 use resolver_api::Resolve;
 
 use crate::{
   helpers::query::get_resource_ids_for_non_admin,
   resource,
-  state::{action_states, db_client, State},
+  state::{action_states, db_client, repo_state_cache, State},
 };
 
 #[async_trait]
@@ -93,15 +96,43 @@ impl Resolve<GetReposSummary, User> for State {
       };
       Some(query)
     };
-    let total = db_client()
+
+    let repos = find_collect(&db_client().await.repos, query, None)
       .await
-      .repos
-      .count_documents(query, None)
-      .await
-      .context("failed to count all build documents")?;
-    let res = GetReposSummaryResponse {
-      total: total as u32,
-    };
+      .context("failed to find all repo documents")?;
+    let mut res = GetReposSummaryResponse::default();
+
+    let cache = repo_state_cache();
+    let action_states = action_states();
+
+    for repo in repos {
+      res.total += 1;
+
+      match (
+        cache.get(&repo.id).await.unwrap_or_default(),
+        action_states
+          .repo
+          .get(&repo.id)
+          .await
+          .unwrap_or_default()
+          .get()?,
+      ) {
+        (_, action_states) if action_states.cloning => {
+          res.cloning += 1;
+        }
+        (_, action_states) if action_states.pulling => {
+          res.pulling += 1;
+        }
+        (RepoState::Ok, _) => res.ok += 1,
+        (RepoState::Failed, _) => res.failed += 1,
+        (RepoState::Unknown, _) => res.unknown += 1,
+        // will never come off the cache in the building state, since that comes from action states
+        (RepoState::Cloning, _) | (RepoState::Pulling, _) => {
+          unreachable!()
+        }
+      }
+    }
+
     Ok(res)
   }
 }

@@ -1,4 +1,8 @@
-use std::{collections::{HashMap, HashSet}, str::FromStr, sync::OnceLock};
+use std::{
+  collections::{HashMap, HashSet},
+  str::FromStr,
+  sync::OnceLock,
+};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -7,7 +11,7 @@ use futures::TryStreamExt;
 use monitor_client::{
   api::read::*,
   entities::{
-    build::{Build, BuildActionState, BuildListItem},
+    build::{Build, BuildActionState, BuildListItem, BuildState},
     permission::PermissionLevel,
     update::{ResourceTargetVariant, UpdateStatus},
     user::User,
@@ -27,7 +31,7 @@ use crate::{
   config::core_config,
   helpers::query::get_resource_ids_for_non_admin,
   resource,
-  state::{action_states, db_client, State},
+  state::{action_states, build_state_cache, db_client, State},
 };
 
 #[async_trait]
@@ -103,15 +107,38 @@ impl Resolve<GetBuildsSummary, User> for State {
       };
       Some(query)
     };
-    let total = db_client()
+
+    let builds = find_collect(&db_client().await.builds, query, None)
       .await
-      .builds
-      .count_documents(query, None)
-      .await
-      .context("failed to count all build documents")?;
-    let res = GetBuildsSummaryResponse {
-      total: total as u32,
-    };
+      .context("failed to find all build documents")?;
+    let mut res = GetBuildsSummaryResponse::default();
+
+    let cache = build_state_cache();
+    let action_states = action_states();
+    
+    for build in builds {
+      res.total += 1;
+
+      match (
+        cache.get(&build.id).await.unwrap_or_default(),
+        action_states
+          .build
+          .get(&build.id)
+          .await
+          .unwrap_or_default()
+          .get()?,
+      ) {
+        (_, action_states) if action_states.building => {
+          res.building += 1;
+        }
+        (BuildState::Ok, _) => res.ok += 1,
+        (BuildState::Failed, _) => res.failed += 1,
+        (BuildState::Unknown, _) => res.unknown += 1,
+        // will never come off the cache in the building state, since that comes from action states
+        (BuildState::Building, _) => unreachable!(),
+      }
+    }
+
     Ok(res)
   }
 }
@@ -267,10 +294,9 @@ impl Resolve<ListCommonBuildExtraArgs, User> for State {
     ListCommonBuildExtraArgs { query }: ListCommonBuildExtraArgs,
     user: User,
   ) -> anyhow::Result<ListCommonBuildExtraArgsResponse> {
-    let builds =
-      resource::list_full_for_user::<Build>(query, &user)
-        .await
-        .context("failed to get resources matching query")?;
+    let builds = resource::list_full_for_user::<Build>(query, &user)
+      .await
+      .context("failed to get resources matching query")?;
 
     // first collect with guaranteed uniqueness
     let mut res = HashSet::<String>::new();

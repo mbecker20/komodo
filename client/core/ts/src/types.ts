@@ -1714,6 +1714,14 @@ export interface GetBuildsSummary {
 export interface GetBuildsSummaryResponse {
 	/** The total number of builds in monitor. */
 	total: number;
+	/** The number of builds with Ok state. */
+	ok: number;
+	/** The number of builds with Failed state. */
+	failed: number;
+	/** The number of builds currently building. */
+	building: number;
+	/** The number of builds with unknown state. */
+	unknown: number;
 }
 
 /**
@@ -2025,7 +2033,16 @@ export interface GetProceduresSummary {
 
 /** Response for [GetProceduresSummary]. */
 export interface GetProceduresSummaryResponse {
+	/** The total number of procedures. */
 	total: number;
+	/** The number of procedures with Ok state. */
+	ok: number;
+	/** The number of procedures currently running. */
+	running: number;
+	/** The number of procedures with failed state. */
+	failed: number;
+	/** The number of procedures with unknown state. */
+	unknown: number;
 }
 
 /** Get a specific repo. Response: [Repo]. */
@@ -2055,7 +2072,18 @@ export interface GetReposSummary {
 
 /** Response for [GetReposSummary] */
 export interface GetReposSummaryResponse {
+	/** The total number of repos */
 	total: number;
+	/** The number of repos with Ok state. */
+	ok: number;
+	/** The number of repos currently cloning. */
+	cloning: number;
+	/** The number of repos currently pulling. */
+	pulling: number;
+	/** The number of repos with failed state. */
+	failed: number;
+	/** The number of repos with unknown state. */
+	unknown: number;
 }
 
 /** Find resources matching a common query. Response: [FindResourcesResponse]. */

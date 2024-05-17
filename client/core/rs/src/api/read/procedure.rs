@@ -77,9 +77,18 @@ pub struct GetProceduresSummary {}
 
 /// Response for [GetProceduresSummary].
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetProceduresSummaryResponse {
+  /// The total number of procedures.
   pub total: u32,
+  /// The number of procedures with Ok state.
+  pub ok: u32,
+  /// The number of procedures currently running.
+  pub running: u32,
+  /// The number of procedures with failed state.
+  pub failed: u32,
+  /// The number of procedures with unknown state.
+  pub unknown: u32,
 }
 
 //
