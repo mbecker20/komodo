@@ -1,9 +1,8 @@
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { Card, CardHeader } from "@ui/card";
 import { Loader2, Route } from "lucide-react";
-import { Link } from "react-router-dom";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
@@ -12,6 +11,7 @@ import {
   procedure_state_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
+import { ProcedureDashboard } from "./dashboard";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -19,24 +19,7 @@ const useProcedure = (id?: string) =>
 export const ProcedureComponents: RequiredResourceComponents = {
   list_item: (id) => useProcedure(id),
 
-  Dashboard: () => {
-    const procedure_count = useRead("ListProcedures", {}).data?.length;
-    return (
-      <Link to="/procedures/" className="w-full">
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <CardHeader>
-            <div className="flex justify-between">
-              <div>
-                <CardTitle>Procedures</CardTitle>
-                <CardDescription>{procedure_count} Total</CardDescription>
-              </div>
-              <Route className="w-4 h-4" />
-            </div>
-          </CardHeader>
-        </Card>
-      </Link>
-    );
-  },
+  Dashboard: ProcedureDashboard,
 
   New: () => <NewResource type="Procedure" />,
 

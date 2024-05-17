@@ -32,9 +32,7 @@ export const BuilderTable = ({ search }: { search?: string }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="Instance Type" />
           ),
-          cell: ({ row }) => {
-            <BuilderInstanceType id={row.original.id} />;
-          },
+          cell: ({ row }) => <BuilderInstanceType id={row.original.id} />,
         },
         {
           header: "Tags",

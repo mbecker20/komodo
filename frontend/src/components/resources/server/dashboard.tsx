@@ -18,8 +18,8 @@ import { cn } from "@lib/utils";
 export const ServersChart = () => {
   const { data } = useRead("GetServersSummary", {});
   return (
-    <Link to="/servers/" className="w-full">
-      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+    <Link to="/servers/">
+      <Card className="hover:bg-accent/50 transition-colors cursor-pointer w-[300px]">
         <CardHeader>
           <div className="flex justify-between">
             <div>
@@ -30,8 +30,8 @@ export const ServersChart = () => {
           </div>
         </CardHeader>
         <CardContent className="hidden xl:flex h-[200px] items-center justify-between">
-          <div className="flex flex-col gap-2 text-muted-foreground w-full">
-            <CardDescription>
+          <div className="flex flex-col gap-2 text-muted-foreground w-full text-nowrap">
+            <CardDescription className="flex items-center gap-2">
               <span
                 className={cn(
                   text_color_class_by_intention("Good"),
@@ -42,7 +42,7 @@ export const ServersChart = () => {
               </span>
               Healthy
             </CardDescription>
-            <CardDescription>
+            <CardDescription className="flex items-center gap-2">
               <span
                 className={cn(
                   text_color_class_by_intention("Critical"),
@@ -53,7 +53,7 @@ export const ServersChart = () => {
               </span>
               Unhealthy
             </CardDescription>
-            <CardDescription>
+            <CardDescription className="flex items-center gap-2">
               <span
                 className={cn(
                   text_color_class_by_intention("Neutral"),

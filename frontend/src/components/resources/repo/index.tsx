@@ -1,8 +1,7 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { Card, CardHeader } from "@ui/card";
 import { FolderGit, GitBranch } from "lucide-react";
-import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource } from "../common";
@@ -14,6 +13,7 @@ import {
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+import { RepoDashboard } from "./dashboard";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
@@ -29,24 +29,7 @@ const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
 export const RepoComponents: RequiredResourceComponents = {
   list_item: (id) => useRepo(id),
 
-  Dashboard: () => {
-    const repo_count = useRead("ListRepos", {}).data?.length;
-    return (
-      <Link to="/repos/" className="w-full">
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <CardHeader>
-            <div className="flex justify-between">
-              <div>
-                <CardTitle>Repos</CardTitle>
-                <CardDescription>{repo_count} Total</CardDescription>
-              </div>
-              <GitBranch className="w-4 h-4" />
-            </div>
-          </CardHeader>
-        </Card>
-      </Link>
-    );
-  },
+  Dashboard: RepoDashboard,
 
   New: () => <NewResource type="Repo" />,
 

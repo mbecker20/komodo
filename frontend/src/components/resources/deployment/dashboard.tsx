@@ -20,7 +20,7 @@ export const DeploymentsChart = () => {
 
   return (
     <Link to="/deployments">
-      <Card className="hover:bg-accent/50 transition-colors cursor-pointer w-fit">
+      <Card className="hover:bg-accent/50 transition-colors cursor-pointer w-[300px]">
         <CardHeader>
           <div className="flex justify-between">
             <div>

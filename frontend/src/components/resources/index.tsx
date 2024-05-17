@@ -17,6 +17,6 @@ export const ResourceComponents: {
   Repo: RepoComponents,
   Procedure: ProcedureComponents,
   Builder: BuilderComponents,
-  Alerter: AlerterComponents,
   ServerTemplate: ServerTemplateComponents,
+  Alerter: AlerterComponents,
 };

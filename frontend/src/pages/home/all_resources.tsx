@@ -62,7 +62,7 @@ const TableSection = ({
   if (!count) return;
 
   return (
-    <Section key={type} title={type + "s"} actions={<Components.New />}>
+    <Section key={type} title={type + "s"}>
       <Components.Table search={search} />
     </Section>
   );
