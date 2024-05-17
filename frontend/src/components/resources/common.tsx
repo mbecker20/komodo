@@ -35,6 +35,8 @@ import { NewLayout } from "@components/layouts";
 import { Types } from "@monitor/client";
 import { ConfigItem, DoubleInput } from "@components/config/util";
 import { usableResourcePath } from "@lib/utils";
+import { Card } from "@ui/card";
+import { TagsWithBadge } from "@components/tags";
 
 export const ResourceDescription = ({
   type,
@@ -87,7 +89,7 @@ export const ResourceSelector = ({
   selected: string | undefined;
   onSelect?: (id: string) => void;
   disabled?: boolean;
-  align?: "start" | "center" | "end"
+  align?: "start" | "center" | "end";
 }) => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -311,11 +313,7 @@ export const LabelsConfig = ({
   </div>
 );
 
-export const CopyGithubWebhook = ({
-  path,
-}: {
-  path: string;
-}) => {
+export const CopyGithubWebhook = ({ path }: { path: string }) => {
   const base_url = useRead("GetCoreInfo", {}).data?.github_webhook_base_url;
   const url = base_url + "/listener/github" + path;
   return (
@@ -335,7 +333,7 @@ export const ServerSelector = ({
   selected: string | undefined;
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
-  align?: "start" | "center" | "end"
+  align?: "start" | "center" | "end";
 }) => (
   <ConfigItem label="Server">
     <ResourceSelector
@@ -347,3 +345,27 @@ export const ServerSelector = ({
     />
   </ConfigItem>
 );
+
+export const RecentCard = ({
+  type,
+  id,
+}: {
+  type: UsableResource;
+  id: string;
+}) => {
+  const Components = ResourceComponents[type];
+  const tags = Components.list_item(id)?.tags;
+  return (
+    <Link to={`${usableResourcePath(type)}/${id}`} className="h-full">
+      <Card className="h-full px-6 py-4 flex flex-col justify-between hover:bg-accent/50 transition-colors cursor-pointer">
+        <div className="flex items-center justify-between w-full">
+          <Components.Name id={id} />
+          <Components.Icon id={id} />
+        </div>
+        <div className="flex items-end justify-end gap-2 w-full">
+          <TagsWithBadge tag_ids={tags} />
+        </div>
+      </Card>
+    </Link>
+  );
+};

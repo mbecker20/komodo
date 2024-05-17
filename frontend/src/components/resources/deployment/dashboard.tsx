@@ -19,8 +19,8 @@ export const DeploymentsChart = () => {
   const summary = useRead("GetDeploymentsSummary", {}).data;
 
   return (
-    <Link to="/deployments" className="w-full">
-      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+    <Link to="/deployments">
+      <Card className="hover:bg-accent/50 transition-colors cursor-pointer w-fit">
         <CardHeader>
           <div className="flex justify-between">
             <div>
@@ -30,9 +30,9 @@ export const DeploymentsChart = () => {
             <Rocket className="w-4 h-4" />
           </div>
         </CardHeader>
-        <CardContent className="hidden xl:flex h-[200px] items-center justify-between">
-          <div className="flex flex-col gap-2 text-muted-foreground w-full">
-            <CardDescription>
+        <CardContent className="hidden xl:flex h-[200px] items-center justify-between gap-4">
+          <div className="flex flex-col gap-2 text-muted-foreground w-full text-nowrap">
+            <CardDescription className="flex items-center gap-2">
               <span
                 className={cn(
                   text_color_class_by_intention("Good"),
@@ -43,7 +43,7 @@ export const DeploymentsChart = () => {
               </span>
               Running
             </CardDescription>
-            <CardDescription>
+            <CardDescription className="flex items-center gap-2">
               <span
                 className={cn(
                   text_color_class_by_intention("Critical"),
@@ -54,7 +54,7 @@ export const DeploymentsChart = () => {
               </span>
               Stopped
             </CardDescription>
-            <CardDescription>
+            <CardDescription className="flex items-center gap-2">
               <span
                 className={cn(
                   text_color_class_by_intention("Neutral"),
@@ -65,7 +65,7 @@ export const DeploymentsChart = () => {
               </span>
               Not Deployed
             </CardDescription>
-            <CardDescription>
+            <CardDescription className="flex items-center gap-2">
               <span
                 className={cn(
                   text_color_class_by_intention("Unknown"),

@@ -7,7 +7,7 @@ import {
 } from "@ui/card";
 import { PieChart } from "react-minimal-pie-chart";
 import { useRead } from "@lib/hooks";
-import { Hammer } from "lucide-react";
+import { Route } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@lib/utils";
 import {
@@ -15,19 +15,19 @@ import {
   text_color_class_by_intention,
 } from "@lib/color";
 
-export const BuildDashboard = () => {
-  const summary = useRead("GetBuildsSummary", {}).data;
+export const ProcedureDashboard = () => {
+  const summary = useRead("GetProceduresSummary", {}).data;
 
   return (
-    <Link to="/builds">
+    <Link to="/procedures">
       <Card className="hover:bg-accent/50 transition-colors cursor-pointer w-fit">
         <CardHeader>
           <div className="flex justify-between">
             <div>
-              <CardTitle>Builds</CardTitle>
+              <CardTitle>Procedures</CardTitle>
               <CardDescription>{summary?.total} Total</CardDescription>
             </div>
-            <Hammer className="w-4 h-4" />
+            <Route className="w-4 h-4" />
           </div>
         </CardHeader>
         <CardContent className="hidden xl:flex h-[200px] items-center justify-between gap-4">
@@ -50,9 +50,9 @@ export const BuildDashboard = () => {
                   "font-bold"
                 )}
               >
-                {summary?.building}{" "}
+                {summary?.running}{" "}
               </span>
-              Building
+              Running
             </CardDescription>
             <CardDescription className="flex items-center gap-2">
               <span
@@ -91,9 +91,9 @@ export const BuildDashboard = () => {
                 },
                 {
                   color: hex_color_by_intention("Warning"),
-                  value: summary?.building ?? 0,
-                  title: "building",
-                  key: "building",
+                  value: summary?.running ?? 0,
+                  title: "running",
+                  key: "running",
                 },
                 {
                   color: hex_color_by_intention("Critical"),

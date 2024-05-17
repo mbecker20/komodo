@@ -99,6 +99,8 @@ const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 export const DeploymentComponents: RequiredResourceComponents = {
+  list_item: (id) => useDeployment(id),
+
   Dashboard: DeploymentsChart,
 
   New: () => <NewResource type="Deployment" />,
@@ -109,7 +111,6 @@ export const DeploymentComponents: RequiredResourceComponents = {
   },
 
   Name: ({ id }) => <>{useDeployment(id)?.name}</>,
-  name: (id) => useDeployment(id)?.name,
 
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
   BigIcon: ({ id }) => <DeploymentIcon id={id} size={8} />,

@@ -36,6 +36,8 @@ export const BuilderInstanceType = ({ id }: { id: string }) => {
 };
 
 export const BuilderComponents: RequiredResourceComponents = {
+  list_item: (id) => useBuilder(id),
+
   Dashboard: () => {
     const builders_count = useRead("ListBuilders", {}).data?.length;
     return (
@@ -65,8 +67,9 @@ export const BuilderComponents: RequiredResourceComponents = {
       <NewLayout
         entityType="Builder"
         onSuccess={async () => {
-          if (!type) return
-          const id = (await mutateAsync({ name, config: { type, params: {} } }))._id?.$oid!;
+          if (!type) return;
+          const id = (await mutateAsync({ name, config: { type, params: {} } }))
+            ._id?.$oid!;
           nav(`/builders/${id}`);
         }}
         enabled={!!name && !!type}
@@ -103,7 +106,6 @@ export const BuilderComponents: RequiredResourceComponents = {
   Table: BuilderTable,
 
   Name: ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>,
-  name: (id) => useBuilder(id)?.name,
 
   Icon: () => <Factory className="w-4 h-4" />,
   BigIcon: () => <Factory className="w-8 h-8" />,

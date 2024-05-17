@@ -23,6 +23,8 @@ const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
 
 export const AlerterComponents: RequiredResourceComponents = {
+  list_item: (id) => useAlerter(id),
+
   Dashboard: () => {
     const alerters_count = useRead("ListAlerters", {}).data?.length;
     return (
@@ -91,7 +93,6 @@ export const AlerterComponents: RequiredResourceComponents = {
   Table: AlerterTable,
 
   Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
-  name: (id) => useAlerter(id)?.name,
 
   Icon: () => <AlarmClock className="w-4 h-4" />,
   BigIcon: () => <AlarmClock className="w-8 h-8" />,

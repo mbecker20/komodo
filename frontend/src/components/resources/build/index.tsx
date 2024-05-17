@@ -3,7 +3,7 @@ import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { FolderGit, Hammer } from "lucide-react";
 import { BuildConfig } from "./config";
-import { BuildChart } from "./dashboard";
+import { BuildDashboard } from "./dashboard";
 import { BuildTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import { DeploymentTable } from "../deployment/table";
@@ -83,14 +83,15 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
 };
 
 export const BuildComponents: RequiredResourceComponents = {
-  Dashboard: BuildChart,
+  list_item: (id) => useBuild(id),
+
+  Dashboard: BuildDashboard,
 
   New: () => <NewResource type="Build" />,
 
   Table: BuildTable,
 
   Name: ({ id }) => <>{useBuild(id)?.name}</>,
-  name: (id) => useBuild(id)?.name,
 
   Icon: ({ id }) => <BuildIcon id={id} size={4} />,
   BigIcon: ({ id }) => <BuildIcon id={id} size={8} />,

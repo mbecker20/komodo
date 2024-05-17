@@ -363,9 +363,11 @@ export const SystemCommand = ({
 export const AddExtraArgMenu = ({
   onSelect,
   type,
+  disabled,
 }: {
   onSelect: (suggestion: string) => void;
   type: "Deployment" | "Build";
+  disabled?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -376,6 +378,7 @@ export const AddExtraArgMenu = ({
         <Button
           variant="secondary"
           className="flex items-center gap-2 w-[200px]"
+          disabled={disabled}
         >
           <PlusCircle className="w-4 h-4" /> Add Extra Arg
         </Button>

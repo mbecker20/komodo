@@ -202,6 +202,7 @@ export const DeploymentConfig = ({
                     ],
                   })
                 }
+                disabled={disabled}
               />
             ),
             components: {

@@ -6,6 +6,8 @@ type IdComponent = React.FC<{ id: string }>;
 type OptionalIdComponent = React.FC<{ id?: string }>;
 
 export interface RequiredResourceComponents {
+  list_item: (id: string) => Types.ResourceListItem<unknown> | undefined;
+
   /** Summary card for use in dashboard */
   Dashboard: React.FC;
 
@@ -17,7 +19,6 @@ export interface RequiredResourceComponents {
 
   /** Name of the resource */
   Name: IdComponent;
-  name: (id: string) => string | undefined;
 
   /** Icon for the component */
   Icon: OptionalIdComponent;

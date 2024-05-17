@@ -27,6 +27,8 @@ const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 export const RepoComponents: RequiredResourceComponents = {
+  list_item: (id) => useRepo(id),
+
   Dashboard: () => {
     const repo_count = useRead("ListRepos", {}).data?.length;
     return (
@@ -51,7 +53,6 @@ export const RepoComponents: RequiredResourceComponents = {
   Table: RepoTable,
 
   Name: ({ id }) => <>{useRepo(id)?.name}</>,
-  name: (id) => useRepo(id)?.name,
 
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,

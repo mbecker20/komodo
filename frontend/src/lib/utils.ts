@@ -63,7 +63,7 @@ export function version_is_none({ major, minor, patch }: Types.Version) {
 
 export function resource_name(type: UsableResource, id: string) {
   const Components = ResourceComponents[type];
-  return Components.name(id);
+  return Components.list_item(id)?.name;
 }
 
 export const level_to_number = (level: Types.PermissionLevel | undefined) => {

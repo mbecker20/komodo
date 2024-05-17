@@ -1,6 +1,6 @@
 import { homeViewAtom } from "@main";
 import { useAtom } from "jotai";
-import { Dashboard } from "./dashboard";
+import { Dashboard } from "./dashboard2";
 import { AllResources } from "./all_resources";
 import { Tree } from "./tree";
 import { useSetTitle } from "@lib/hooks";

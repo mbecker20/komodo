@@ -24,6 +24,8 @@ export const useServerTemplate = (id?: string) =>
   useRead("ListServerTemplates", {}).data?.find((d) => d.id === id);
 
 export const ServerTemplateComponents: RequiredResourceComponents = {
+  list_item: (id) => useServerTemplate(id),
+
   Dashboard: () => {
     const count = useRead("ListServerTemplates", {}).data?.length;
     return (
@@ -91,7 +93,6 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
   Table: ServerTemplateTable,
 
   Name: ({ id }) => <>{useServerTemplate(id)?.name}</>,
-  name: (id) => useServerTemplate(id)?.name,
 
   Icon: () => <ServerCog className="w-4 h-4" />,
   BigIcon: () => <ServerCog className="w-8 h-8" />,

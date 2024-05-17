@@ -166,6 +166,7 @@ export const BuildConfig = ({ id, titleOther }: { id: string; titleOther: ReactN
                     ],
                   })
                 }
+                disabled={disabled}
               />
             ),
             components: {

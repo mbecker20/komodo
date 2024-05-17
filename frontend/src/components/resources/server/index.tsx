@@ -104,6 +104,8 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
 };
 
 export const ServerComponents: RequiredResourceComponents = {
+  list_item: (id) => useServer(id),
+
   Dashboard: ServersChart,
 
   New: () => <NewResource type="Server" />,
@@ -111,7 +113,6 @@ export const ServerComponents: RequiredResourceComponents = {
   Table: ServerTable,
 
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
-  name: (id) => useServer(id)?.name,
 
   Icon: ({ id }) => <_ServerIcon id={id} size={4} />,
   BigIcon: ({ id }) => <_ServerIcon id={id} size={8} />,
