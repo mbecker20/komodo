@@ -21,6 +21,7 @@ import { RepoComponents } from "./resources/repo";
 import { BuilderComponents } from "./resources/builder";
 import { AlerterComponents } from "./resources/alerter";
 import { ServerTemplateComponents } from "./resources/server-template";
+import { Badge } from "@ui/badge";
 
 export const OmniSearch = ({
   className,
@@ -34,14 +35,17 @@ export const OmniSearch = ({
       variant="outline"
       onClick={() => setOpen(true)}
       className={cn(
-        "flex items-center gap-4 w-fit md:w-[200px] lg:w-[300px] xl:w-[400px] justify-start",
+        "flex items-center gap-4 w-fit md:w-[200px] lg:w-[300px] xl:w-[400px] justify-between",
         className
       )}
     >
-      <Search className="w-4 h-4" />{" "}
-      <span className="text-muted-foreground hidden md:flex">
-        Search {"(shift+s)"}
-      </span>
+      <div className="flex items-center gap-4">
+        <Search className="w-4 h-4" />{" "}
+        <span className="text-muted-foreground hidden md:flex">Search</span>
+      </div>
+      <Badge variant="outline" className="text-muted-foreground">
+        shift + s
+      </Badge>
     </Button>
   );
 };

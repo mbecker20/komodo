@@ -43,7 +43,7 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
       </div>
       <div className="grid grid-cols-3 grid-rows-2 gap-4 w-full">
         {ids.map((id: string) => (
-          <RecentCard type={type} id={id} />
+          <RecentCard key={type + id} type={type} id={id} />
         ))}
       </div>
     </div>
