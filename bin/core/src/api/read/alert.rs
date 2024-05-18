@@ -17,7 +17,7 @@ use crate::{
   state::{db_client, State},
 };
 
-const NUM_ALERTS_PER_PAGE: u64 = 20;
+const NUM_ALERTS_PER_PAGE: u64 = 100;
 
 impl Resolve<ListAlerts, User> for State {
   async fn resolve(

@@ -32,7 +32,7 @@ use crate::{
   state::{db_client, State},
 };
 
-const UPDATES_PER_PAGE: i64 = 20;
+const UPDATES_PER_PAGE: i64 = 100;
 
 impl Resolve<ListUpdates, User> for State {
   async fn resolve(
