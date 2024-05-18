@@ -23,7 +23,7 @@ import { ReactNode, useEffect, useState } from "react";
 interface DataTableProps<TData, TValue> {
   /** Unique key given to table so sorting can be remembered on local storage */
   tableKey: string;
-  columns: ColumnDef<TData, TValue>[];
+  columns: (ColumnDef<TData, TValue> | false | undefined)[];
   data: TData[];
   onRowClick?: (row: TData) => void;
   noResults?: ReactNode;
@@ -44,7 +44,7 @@ export function DataTable<TData, TValue>({
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns.filter((c) => c) as any,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),

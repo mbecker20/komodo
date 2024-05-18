@@ -41,6 +41,13 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
             <DialogDescription>
               <div className="flex flex-col gap-2">
                 <div className="flex gap-4 items-center">
+                  {/** Alert type */}
+                  <div className="flex gap-2">
+                    <div className="text-muted-foreground">type:</div>{" "}
+                    {alert.data.type}
+                  </div>
+
+                  {/** Resolved */}
                   <div className="flex gap-2">
                     <div className="text-muted-foreground">status:</div>{" "}
                     <div
@@ -53,15 +60,15 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
                       {alert.resolved ? "RESOLVED" : "OPEN"}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <div className="text-muted-foreground">type:</div>{" "}
-                    {alert.data.type}
-                  </div>
+
+                  {/** Level */}
                   <div className="flex gap-2 text-muted-foreground">
                     level: <AlertLevel level={alert.level} />
                   </div>
                 </div>
-                <pre className="text-lg">{JSON.stringify(alert.data.data, undefined, 2)}</pre>
+
+                {/** Alert data */}
+                <pre>{JSON.stringify(alert.data.data, undefined, 2)}</pre>
               </div>
             </DialogDescription>
           </>

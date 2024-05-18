@@ -77,7 +77,7 @@ export const Alerts = () => {
           </Select>
         </div>
 
-        <AlertsTable alerts={alerts?.alerts ?? []} />
+        <AlertsTable alerts={alerts?.alerts ?? []} showResolved />
 
         <div className="flex gap-4 justify-center items-center text-muted-foreground">
           <Button
