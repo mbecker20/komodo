@@ -184,17 +184,19 @@ impl Resolve<RunBuild, User> for State {
         .cloned();
 
       // Interpolate variables / secrets into build args
-      let mut replacers = HashSet::new();
+      let mut global_replacers = HashSet::new();
+      let mut secret_replacers = HashSet::new();
       for arg in &mut build.config.build_args {
-        // first pass - global variables - don't need replacers.
-        let (res, _) = svi::interpolate_variables(
+        // first pass - global variables
+        let (res, more_replacers) = svi::interpolate_variables(
           &arg.value,
           &variables,
           svi::Interpolator::DoubleBrackets,
           false,
         )
         .context("failed to interpolate global variables")?;
-        // second pass - core secrets - need replacers.
+        global_replacers.extend(more_replacers);
+        // second pass - core secrets
         let (res, more_replacers) = svi::interpolate_variables(
           &res,
           &core_config.secrets,
@@ -202,8 +204,30 @@ impl Resolve<RunBuild, User> for State {
           false,
         )
         .context("failed to interpolate core secrets")?;
-        replacers.extend(more_replacers);
+        secret_replacers.extend(more_replacers);
         arg.value = res;
+      }
+
+      // Show which variables were interpolated
+      if !global_replacers.is_empty() {
+        update.push_simple_log(
+          "interpolate global variables",
+          global_replacers
+            .into_iter()
+            .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        );
+      }
+      if !secret_replacers.is_empty() {
+        update.push_simple_log(
+          "interpolate core secrets",
+          secret_replacers
+            .iter()
+            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        );
       }
 
       let res = tokio::select! {
@@ -211,7 +235,7 @@ impl Resolve<RunBuild, User> for State {
           .request(api::build::Build {
             build: build.clone(),
             docker_token,
-            replacers: replacers.into_iter().collect(),
+            replacers: secret_replacers.into_iter().collect(),
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
           info!("build cancelled during build, cleaning up builder");

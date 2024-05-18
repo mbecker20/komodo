@@ -103,17 +103,19 @@ impl Resolve<Deploy, User> for State {
     let core_config = core_config();
 
     // Interpolate variables into environment
-    let mut replacers = HashSet::new();
+    let mut global_replacers = HashSet::new();
+    let mut secret_replacers = HashSet::new();
     for env in &mut deployment.config.environment {
-      // first pass - global variables - don't need replacers.
-      let (res, _) = svi::interpolate_variables(
+      // first pass - global variables
+      let (res, more_replacers) = svi::interpolate_variables(
         &env.value,
         &variables,
         svi::Interpolator::DoubleBrackets,
         false,
       )
       .context("failed to interpolate global variables")?;
-      // second pass - core secrets - need replacers.
+      global_replacers.extend(more_replacers);
+      // second pass - core secrets
       let (res, more_replacers) = svi::interpolate_variables(
         &res,
         &core_config.secrets,
@@ -121,7 +123,9 @@ impl Resolve<Deploy, User> for State {
         false,
       )
       .context("failed to interpolate core secrets")?;
-      replacers.extend(more_replacers);
+      secret_replacers.extend(more_replacers);
+
+      // set env value with the result
       env.value = res;
     }
 
@@ -129,6 +133,28 @@ impl Resolve<Deploy, User> for State {
       make_update(&deployment, Operation::DeployContainer, &user);
     update.in_progress();
     update.version = version;
+
+    // Show which variables were interpolated
+    if !global_replacers.is_empty() {
+      update.push_simple_log(
+        "interpolate global variables",
+        global_replacers
+          .into_iter()
+          .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
+          .collect::<Vec<_>>()
+          .join("\n"),
+      );
+    }
+    if !secret_replacers.is_empty() {
+      update.push_simple_log(
+        "interpolate core secrets",
+        secret_replacers
+          .iter()
+          .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+          .collect::<Vec<_>>()
+          .join("\n"),
+      );
+    }
 
     update.id = add_update(update.clone()).await?;
 
@@ -143,7 +169,7 @@ impl Resolve<Deploy, User> for State {
         stop_signal,
         stop_time,
         docker_token,
-        replacers: replacers.into_iter().collect(),
+        replacers: secret_replacers.into_iter().collect(),
       })
       .await
     {

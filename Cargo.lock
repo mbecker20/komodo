@@ -3515,9 +3515,9 @@ checksum = "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
 
 [[package]]
 name = "svi"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6136b927b6a7bd321e3ebfd1380d396a6952d4f5c14dcd0893724110d79a5c3b"
+checksum = "ecfc625e6292e18db65d1a122cb1ea014dd909622ab0154f068a3990413ff017"
 dependencies = [
  "thiserror",
 ]
