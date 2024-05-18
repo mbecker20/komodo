@@ -201,14 +201,11 @@ fn ms_to_hour(duration: i64) -> f64 {
   duration as f64 / MS_TO_HOUR_DIVISOR
 }
 
-const NUM_VERSIONS_PER_PAGE: u64 = 10;
-
 impl Resolve<GetBuildVersions, User> for State {
   async fn resolve(
     &self,
     GetBuildVersions {
       build,
-      page,
       major,
       minor,
       patch,
@@ -246,8 +243,6 @@ impl Resolve<GetBuildVersions, User> for State {
       filter,
       FindOptions::builder()
         .sort(doc! { "_id": -1 })
-        .limit(NUM_VERSIONS_PER_PAGE as i64)
-        .skip(page as u64 * NUM_VERSIONS_PER_PAGE)
         .build(),
     )
     .await

@@ -159,7 +159,7 @@ impl GetBuildMonthlyStatsResponse {
 
 //
 
-/// Paginated endpoint for versions of the build that were built in the past and available for deployment,
+/// Retrieve versions of the build that were built in the past and available for deployment,
 /// sorted by most recent first.
 /// Response: [GetBuildVersionsResponse].
 #[typeshare]
@@ -172,9 +172,6 @@ pub struct GetBuildVersions {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub build: String,
-  /// The page of data. Default is 0, which corrensponds to the most recent versions.
-  #[serde(default)]
-  pub page: u32,
   /// Filter to only include versions matching this major version.
   pub major: Option<i32>,
   /// Filter to only include versions matching this minor version.
