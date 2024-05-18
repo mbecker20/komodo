@@ -29,6 +29,7 @@ resolver_api.workspace = true
 parse_csl.workspace = true
 mungos.workspace = true
 slack.workspace = true
+svi.workspace = true
 # external
 urlencoding.workspace = true
 aws-sdk-ec2.workspace = true

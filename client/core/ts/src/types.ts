@@ -1130,6 +1130,7 @@ export enum Operation {
 	PruneNetworksServer = "PruneNetworksServer",
 	CreateNetwork = "CreateNetwork",
 	DeleteNetwork = "DeleteNetwork",
+	StopAllContainers = "StopAllContainers",
 	CreateBuild = "CreateBuild",
 	UpdateBuild = "UpdateBuild",
 	DeleteBuild = "DeleteBuild",
@@ -1143,7 +1144,6 @@ export enum Operation {
 	DeleteDeployment = "DeleteDeployment",
 	DeployContainer = "DeployContainer",
 	StopContainer = "StopContainer",
-	StopAllContainers = "StopAllContainers",
 	StartContainer = "StartContainer",
 	RemoveContainer = "RemoveContainer",
 	RenameDeployment = "RenameDeployment",
@@ -1163,6 +1163,9 @@ export enum Operation {
 	UpdateServerTemplate = "UpdateServerTemplate",
 	DeleteServerTemplate = "DeleteServerTemplate",
 	LaunchServer = "LaunchServer",
+	CreateVariable = "CreateVariable",
+	UpdateVariableValue = "UpdateVariableValue",
+	DeleteVariable = "DeleteVariable",
 }
 
 export enum UpdateStatus {
@@ -1230,6 +1233,24 @@ export type GetUserGroupResponse = UserGroup;
 
 export type ListUserGroupsResponse = UserGroup[];
 
+/**
+ * A non-secret global variable which can be interpolated into deployment
+ * environment variable values and build argument values.
+ */
+export interface Variable {
+	/**
+	 * Unique name associated with the variable.
+	 * Instances of '[[variable.name]]' in value will be replaced with 'variable.value'.
+	 */
+	name: string;
+	/** The value associated with the variable. */
+	value: string;
+	/** A description for the variable. */
+	description: string;
+}
+
+export type GetVariableResponse = Variable;
+
 export type DeleteApiKeyResponse = NoData;
 
 /** Response for [CreateApiKey]. */
@@ -1272,6 +1293,14 @@ export type SetLastSeenUpdateResponse = NoData;
 export type CreateServiceUserResponse = User;
 
 export type UpdateServiceUserDescriptionResponse = User;
+
+export type CreateVariableResponse = Variable;
+
+export type UpdateVariableValueResponse = Variable;
+
+export type UpdateVariableDescriptionResponse = Variable;
+
+export type DeleteVariableResponse = Variable;
 
 export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
 
@@ -1754,15 +1783,13 @@ export interface GetBuildMonthlyStatsResponse {
 }
 
 /**
- * Paginated endpoint for versions of the build that were built in the past and available for deployment,
+ * Retrieve versions of the build that were built in the past and available for deployment,
  * sorted by most recent first.
  * Response: [GetBuildVersionsResponse].
  */
 export interface GetBuildVersions {
 	/** Id or name */
 	build: string;
-	/** The page of data. Default is 0, which corrensponds to the most recent versions. */
-	page?: number;
 	/** Filter to only include versions matching this major version. */
 	major?: number;
 	/** Filter to only include versions matching this minor version. */
@@ -2462,6 +2489,30 @@ export interface GetUserGroup {
 export interface ListUserGroups {
 }
 
+/**
+ * List all available global variables.
+ * Response: [Variable]
+ */
+export interface GetVariable {
+	/** The name of the variable to get. */
+	name: string;
+}
+
+/**
+ * List all available global variables.
+ * Response: [ListVariablesResponse]
+ */
+export interface ListVariables {
+}
+
+/** The response of [ListVariables]. */
+export interface ListVariablesResponse {
+	/** The available global variables. */
+	variables: Variable[];
+	/** The available global secret keys */
+	secrets: string[];
+}
+
 export type PartialAlerterConfig = 
 	| { type: "Custom", params: _PartialCustomAlerterConfig }
 	| { type: "Slack", params: _PartialSlackAlerterConfig };
@@ -3076,6 +3127,37 @@ export interface SetUsersInUserGroup {
 	users: string[];
 }
 
+/** **Admin only.** Create variable. Response: [Variable]. */
+export interface CreateVariable {
+	/** The name of the variable to create. */
+	name: string;
+	/** The initial value of the variable. defualt: "". */
+	value?: string;
+	/** The initial value of the description. default: "". */
+	description?: string;
+}
+
+/** **Admin only.** Update variable. Response: [Variable]. */
+export interface UpdateVariableValue {
+	/** The name of the variable to update. */
+	name: string;
+	/** The value to set. */
+	value: string;
+}
+
+/** **Admin only.** Update variable. Response: [Variable]. */
+export interface UpdateVariableDescription {
+	/** The name of the variable to update. */
+	name: string;
+	/** The description to set. */
+	description: string;
+}
+
+/** **Admin only.** Delete a variable. Response: [Variable]. */
+export interface DeleteVariable {
+	name: string;
+}
+
 /** Configuration for a custom alerter. */
 export interface CustomAlerterConfig {
 	/** The http/s endpoint to send the POST to */
@@ -3319,7 +3401,9 @@ export type ReadRequest =
 	| { type: "GetAlert", params: GetAlert }
 	| { type: "GetSystemInformation", params: GetSystemInformation }
 	| { type: "GetSystemStats", params: GetSystemStats }
-	| { type: "GetSystemProcesses", params: GetSystemProcesses };
+	| { type: "GetSystemProcesses", params: GetSystemProcesses }
+	| { type: "GetVariable", params: GetVariable }
+	| { type: "ListVariables", params: ListVariables };
 
 export type WriteRequest = 
 	| { type: "CreateApiKey", params: CreateApiKey }
@@ -3377,7 +3461,11 @@ export type WriteRequest =
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "RenameTag", params: RenameTag }
-	| { type: "UpdateTagsOnResource", params: UpdateTagsOnResource };
+	| { type: "UpdateTagsOnResource", params: UpdateTagsOnResource }
+	| { type: "CreateVariable", params: CreateVariable }
+	| { type: "UpdateVariableValue", params: UpdateVariableValue }
+	| { type: "UpdateVariableDescription", params: UpdateVariableDescription }
+	| { type: "DeleteVariable", params: DeleteVariable };
 
 export type WsLoginMessage = 
 	| { type: "Jwt", params: {

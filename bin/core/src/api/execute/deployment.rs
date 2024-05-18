@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
 use monitor_client::{
@@ -22,7 +24,7 @@ use crate::{
   config::core_config,
   helpers::{
     periphery_client,
-    query::get_server_with_status,
+    query::{get_global_variables, get_server_with_status},
     update::{add_update, make_update, update_update},
   },
   monitor::update_cache_for_server,
@@ -49,6 +51,10 @@ impl Resolve<Deploy, User> for State {
       )
       .await?;
 
+    if deployment.config.server_id.is_empty() {
+      return Err(anyhow!("deployment has no server configured"));
+    }
+
     // get the action state for the deployment (or insert default).
     let action_state = action_states()
       .deployment
@@ -59,10 +65,6 @@ impl Resolve<Deploy, User> for State {
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
       action_state.update(|state| state.deploying = true)?;
-
-    if deployment.config.server_id.is_empty() {
-      return Err(anyhow!("deployment has no server configured"));
-    }
 
     let (server, status) =
       get_server_with_status(&deployment.config.server_id).await?;
@@ -83,9 +85,11 @@ impl Resolve<Deploy, User> for State {
         } else {
           version
         };
+        // replace image with corresponding build image.
         deployment.config.image = DeploymentImage::Image {
           image: format!("{image_name}:{version}"),
         };
+        // set docker account to match build docker account if it's not overridden by deployment
         if deployment.config.docker_account.is_empty() {
           deployment.config.docker_account =
             build.config.docker_account;
@@ -95,6 +99,32 @@ impl Resolve<Deploy, User> for State {
       DeploymentImage::Image { .. } => Version::default(),
     };
 
+    let variables = get_global_variables().await?;
+    let core_config = core_config();
+
+    // Interpolate variables into environment
+    let mut replacers = HashSet::new();
+    for env in &mut deployment.config.environment {
+      // first pass - global variables - don't need replacers.
+      let (res, _) = svi::interpolate_variables(
+        &env.value,
+        &variables,
+        svi::Interpolator::DoubleBrackets,
+        false,
+      )
+      .context("failed to interpolate global variables")?;
+      // second pass - core secrets - need replacers.
+      let (res, more_replacers) = svi::interpolate_variables(
+        &res,
+        &core_config.secrets,
+        svi::Interpolator::DoubleBrackets,
+        false,
+      )
+      .context("failed to interpolate core secrets")?;
+      replacers.extend(more_replacers);
+      env.value = res;
+    }
+
     let mut update =
       make_update(&deployment, Operation::DeployContainer, &user);
     update.in_progress();
@@ -102,7 +132,7 @@ impl Resolve<Deploy, User> for State {
 
     update.id = add_update(update.clone()).await?;
 
-    let docker_token = core_config()
+    let docker_token = core_config
       .docker_accounts
       .get(&deployment.config.docker_account)
       .cloned();
@@ -113,6 +143,7 @@ impl Resolve<Deploy, User> for State {
         stop_signal,
         stop_time,
         docker_token,
+        replacers: replacers.into_iter().collect(),
       })
       .await
     {

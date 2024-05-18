@@ -105,4 +105,6 @@ pub struct Deploy {
   pub docker_token: Option<String>,
   pub stop_signal: Option<TerminationSignal>,
   pub stop_time: Option<i32>,
+  /// Propogate any secret replacers from core interpolation.
+  pub replacers: Vec<(String, String)>,
 }

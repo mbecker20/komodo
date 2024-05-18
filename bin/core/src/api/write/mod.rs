@@ -26,6 +26,7 @@ mod server_template;
 mod tag;
 mod user;
 mod user_group;
+mod variable;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -116,6 +117,12 @@ enum WriteRequest {
   DeleteTag(DeleteTag),
   RenameTag(RenameTag),
   UpdateTagsOnResource(UpdateTagsOnResource),
+
+  // ==== VARIABLE ====
+  CreateVariable(CreateVariable),
+  UpdateVariableValue(UpdateVariableValue),
+  UpdateVariableDescription(UpdateVariableDescription),
+  DeleteVariable(DeleteVariable),
 }
 
 pub fn router() -> Router {

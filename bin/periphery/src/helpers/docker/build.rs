@@ -20,7 +20,7 @@ pub async fn prune_images() -> Log {
   run_monitor_command("prune images", command).await
 }
 
-#[instrument(skip(docker_token))]
+#[instrument(skip(docker_token, core_replacers))]
 pub async fn build(
   Build {
     name,
@@ -41,6 +41,7 @@ pub async fn build(
     ..
   }: &Build,
   docker_token: Option<String>,
+  core_replacers: Vec<(String, String)>,
 ) -> anyhow::Result<Vec<Log>> {
   let mut logs = Vec::new();
   let docker_token = match (
@@ -90,14 +91,17 @@ pub async fn build(
     info!("finished building docker image");
     logs.push(build_log);
   } else {
-    let (command, replacers) = svi::interpolate_variables(
+    let (command, mut replacers) = svi::interpolate_variables(
       &command,
       &periphery_config().secrets,
       svi::Interpolator::DoubleBrackets,
+      true,
     )
     .context(
       "failed to interpolate secrets into docker build command",
     )?;
+    replacers.extend(core_replacers);
+
     let mut build_log =
       run_monitor_command("docker build", command).await;
     build_log.command =

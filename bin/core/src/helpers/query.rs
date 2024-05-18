@@ -1,4 +1,7 @@
-use std::{collections::HashSet, str::FromStr};
+use std::{
+  collections::{HashMap, HashSet},
+  str::FromStr,
+};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
@@ -8,6 +11,7 @@ use monitor_client::entities::{
   tag::Tag,
   update::ResourceTargetVariant,
   user::{admin_service_user, User},
+  variable::Variable,
 };
 use mungos::{
   by_id::find_one_by_id,
@@ -197,4 +201,28 @@ pub fn id_or_name_filter(id_or_name: &str) -> Document {
     Ok(id) => doc! { "_id": id },
     Err(_) => doc! { "name": id_or_name },
   }
+}
+
+pub async fn get_global_variables(
+) -> anyhow::Result<HashMap<String, String>> {
+  Ok(
+    find_collect(&db_client().await.variables, None, None)
+      .await
+      .context("failed to get all variables from db")?
+      .into_iter()
+      .map(|variable| (variable.name, variable.value))
+      .collect(),
+  )
+}
+
+pub async fn get_variable(name: &str) -> anyhow::Result<Variable> {
+  db_client()
+    .await
+    .variables
+    .find_one(doc! { "name": &name }, None)
+    .await
+    .context("failed at call to db")?
+    .with_context(|| {
+      format!("no variable found with given name: {name}")
+    })
 }

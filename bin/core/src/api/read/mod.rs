@@ -28,6 +28,7 @@ mod toml;
 mod update;
 mod user;
 mod user_group;
+mod variable;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -141,6 +142,10 @@ enum ReadRequest {
   GetSystemStats(GetSystemStats),
   #[to_string_resolver]
   GetSystemProcesses(GetSystemProcesses),
+
+  // ==== VARIABLE ====
+  GetVariable(GetVariable),
+  ListVariables(ListVariables),
 }
 
 pub fn router() -> Router {

@@ -90,6 +90,11 @@ mongo.address = "localhost:27017"
 # aws.access_key_id = "your_aws_key_id"
 # aws.secret_access_key = "your_aws_secret_key"
 
+## provide core-base secrets
+# [secrets]
+# SECRET_1 = "value_1"
+# SECRET_2 = "value_2"
+
 ## provide core-based github accounts
 # [github_accounts]
 # github_username_1 = "github_token_1"

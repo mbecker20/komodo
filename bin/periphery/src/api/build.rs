@@ -12,16 +12,17 @@ use crate::{
 };
 
 impl Resolve<Build> for State {
-  #[instrument(name = "Build", skip(self))]
+  #[instrument(name = "Build", skip(self, replacers))]
   async fn resolve(
     &self,
     Build {
       build,
       docker_token,
+      replacers,
     }: Build,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    docker::build::build(&build, docker_token).await
+    docker::build::build(&build, docker_token, replacers).await
   }
 }
 

@@ -45,6 +45,7 @@ pub mod update;
 pub mod user;
 /// Subtypes of [UserGroup][user_group::UserGroup].
 pub mod user_group;
+pub mod variable;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;
@@ -433,6 +434,11 @@ pub enum Operation {
   UpdateServerTemplate,
   DeleteServerTemplate,
   LaunchServer,
+
+  // variable
+  CreateVariable,
+  UpdateVariableValue,
+  DeleteVariable,
 }
 
 #[typeshare]

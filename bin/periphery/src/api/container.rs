@@ -187,7 +187,7 @@ impl Resolve<PruneContainers> for State {
 //
 
 impl Resolve<Deploy> for State {
-  #[instrument(name = "Deploy", skip(self))]
+  #[instrument(name = "Deploy", skip(self, replacers))]
   async fn resolve(
     &self,
     Deploy {
@@ -195,6 +195,7 @@ impl Resolve<Deploy> for State {
       docker_token,
       stop_signal,
       stop_time,
+      replacers,
     }: Deploy,
     _: (),
   ) -> anyhow::Result<Log> {
@@ -207,6 +208,7 @@ impl Resolve<Deploy> for State {
         .unwrap_or(deployment.config.termination_timeout)
         .into(),
       docker_token,
+      replacers,
     )
     .await;
     Ok(res)

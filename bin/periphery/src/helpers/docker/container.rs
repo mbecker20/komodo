@@ -178,12 +178,13 @@ async fn pull_image(image: &str) -> Log {
   run_monitor_command("docker pull", command).await
 }
 
-#[instrument(skip(docker_token))]
+#[instrument(skip(docker_token, core_replacers))]
 pub async fn deploy(
   deployment: &Deployment,
   stop_signal: Option<TerminationSignal>,
   stop_time: Option<i32>,
   docker_token: Option<String>,
+  core_replacers: Vec<(String, String)>,
 ) -> Log {
   let docker_token = match (
     docker_token,
@@ -244,12 +245,14 @@ pub async fn deploy(
       &command,
       &periphery_config().secrets,
       svi::Interpolator::DoubleBrackets,
+      true,
     )
     .context("failed to interpolate secrets into docker run command");
     if let Err(e) = command {
       return Log::error("docker run", format!("{e:?}"));
     }
-    let (command, replacers) = command.unwrap();
+    let (command, mut replacers) = command.unwrap();
+    replacers.extend(core_replacers);
     let mut log = run_monitor_command("docker run", command).await;
     log.command = svi::replace_in_string(&log.command, &replacers);
     log.stdout = svi::replace_in_string(&log.stdout, &replacers);

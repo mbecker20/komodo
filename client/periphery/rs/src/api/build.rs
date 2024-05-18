@@ -10,6 +10,8 @@ pub struct Build {
   pub build: monitor_client::entities::build::Build,
   /// Override docker token with one sent from core.
   pub docker_token: Option<String>,
+  /// Propogate any secret replacers from core interpolation.
+  pub replacers: Vec<(String, String)>,
 }
 
 pub type BuildResponse = Vec<Log>;

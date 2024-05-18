@@ -2281,6 +2281,7 @@ dependencies = [
  "serror",
  "sha2",
  "slack_client_rs",
+ "svi",
  "termination_signal",
  "tokio",
  "tokio-util",
@@ -3514,9 +3515,9 @@ checksum = "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
 
 [[package]]
 name = "svi"
-version = "0.1.4"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78a65bb8a7e77c020a52094de0c5cab44506727339282368418b285fe9bc92ef"
+checksum = "6136b927b6a7bd321e3ebfd1380d396a6952d4f5c14dcd0893724110d79a5c3b"
 dependencies = [
  "thiserror",
 ]

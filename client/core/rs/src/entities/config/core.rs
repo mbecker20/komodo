@@ -1,13 +1,13 @@
 //! # Configuring the Core API
-//! 
+//!
 //! Monitor core is configured by parsing base configuration file ([CoreConfig]), and overriding
 //! any fields given in the file with ones provided on the environment ([Env]).
-//! 
+//!
 //! The recommended method for running monitor core is via the docker image. This image has a default
 //! configuration file provided in the image, meaning any custom configuration can be provided
 //! on the environment alone. However, if a custom configuration file is prefered, it can be mounted
 //! into the image at `/config/config.toml`.
-//! 
+//!
 
 use std::collections::HashMap;
 
@@ -108,25 +108,25 @@ fn default_config_path() -> String {
 }
 
 /// # Core Configuration File
-/// 
+///
 /// The Core API initializes it's configuration by reading the environment,
 /// parsing the [CoreConfig] schema from the file path specified by `env.monitor_config_path`,
 /// and then applying any config field overrides specified in the environment.
-/// 
+///
 /// *Note.* The monitor core docker image includes the default core configuration found below.
 /// To configure the core api, you can either mount your own custom configuration file
 /// to `/config/config.toml` inside the container, or simply override whichever fields
 /// you need using the environment.
-/// 
+///
 /// ## Example TOML
 /// ```toml
 /// ## this will be the document title on the web page (shows up as text in the browser tab).
 /// ## default: 'Monitor'
 /// title = "Monitor"
 ///
-/// ## required for oauth functionality. this should be the url used to access monitor in browser, 
+/// ## required for oauth functionality. this should be the url used to access monitor in browser,
 /// ## potentially behind DNS.
-/// ## eg https://monitor.dev or http://12.34.56.78:9000. 
+/// ## eg https://monitor.dev or http://12.34.56.78:9000.
 /// ## this should match the address configured in your oauth app.
 /// ## no default
 /// host = "https://monitor.dev"
@@ -157,7 +157,7 @@ fn default_config_path() -> String {
 ///
 /// ## specify how long an issued jwt stays valid.
 /// ## all jwts are invalidated on application restart.
-/// ## default: 1-day. 
+/// ## default: 1-day.
 /// ## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
 /// jwt_valid_for = "1-day"
 ///
@@ -166,7 +166,7 @@ fn default_config_path() -> String {
 /// ## options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
 /// monitoring_interval = "15-sec"
 ///
-/// ## number of days to keep stats around, or 0 to disable pruning. 
+/// ## number of days to keep stats around, or 0 to disable pruning.
 /// ## stats older than this number of days are deleted daily
 /// ## default: 0 (pruning disabled)
 /// keep_stats_for_days = 0
@@ -215,12 +215,17 @@ fn default_config_path() -> String {
 /// ## provide aws api keys for ephemeral builders
 /// # aws.access_key_id = "your_aws_key_id"
 /// # aws.secret_access_key = "your_aws_secret_key"
-/// 
+///
+/// ## provide core-base secrets
+/// [secrets]
+/// # SECRET_1 = "value_1"
+/// # SECRET_2 = "value_2"
+///
 /// ## provide core-based github accounts
 /// [github_accounts]
 /// # github_username_1 = "github_token_1"
 /// # github_username_2 = "github_token_2"
-/// 
+///
 /// ## provide core-based docker accounts
 /// [docker_accounts]
 /// # docker_username_1 = "docker_token_1"
@@ -312,7 +317,13 @@ pub struct CoreConfig {
   /// Configure AWS credentials to use with AWS builds / server launches.
   #[serde(default)]
   pub aws: AwsCredentials,
-  
+
+  /// Configure core-based secrets. These will be preferentially interpolated into
+  /// values if they contain a matching secret. Otherwise, the periphery will have to have the
+  /// secret configured.
+  #[serde(default)]
+  pub secrets: HashMap<String, String>,
+
   /// Configure core-based github accounts. These will be preferentially attached to build / repo clone
   /// requests if they contain a matching github account. Otherwise, the periphery will have to have the
   /// account configured.

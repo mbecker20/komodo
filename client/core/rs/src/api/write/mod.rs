@@ -12,6 +12,7 @@ mod server_template;
 mod tags;
 mod user;
 mod user_group;
+mod variable;
 
 pub use alerter::*;
 pub use api_key::*;
@@ -27,5 +28,6 @@ pub use server_template::*;
 pub use tags::*;
 pub use user::*;
 pub use user_group::*;
+pub use variable::*;
 
 pub trait MonitorWriteRequest: resolver_api::HasResponse {}

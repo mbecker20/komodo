@@ -111,6 +111,10 @@ export type ReadResponses = {
   // ==== SERVER STATS ====
   GetSystemStats: Types.GetSystemStatsResponse;
   GetSystemProcesses: Types.GetSystemProcessesResponse;
+
+  // ==== VARIABLE ====
+  GetVariable: Types.GetVariableResponse;
+  ListVariables: Types.ListVariablesResponse;
 };
 
 export type WriteResponses = {
@@ -198,6 +202,12 @@ export type WriteResponses = {
   DeleteTag: Types.Tag;
   RenameTag: Types.Tag;
   UpdateTagsOnResource: Types.UpdateTagsOnResourceResponse;
+
+  // ==== VARIABLE ====
+  CreateVariable: Types.CreateVariableResponse;
+  UpdateVariableValue: Types.UpdateVariableValueResponse;
+  UpdateVariableDescription: Types.UpdateVariableDescriptionResponse;
+  DeleteVariable: Types.DeleteVariableResponse;
 };
 
 export type ExecuteResponses = {
