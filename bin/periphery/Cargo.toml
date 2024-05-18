@@ -19,6 +19,7 @@ monitor_client = { workspace = true, features = ["docker"] }
 periphery_client.workspace = true
 logger.workspace = true
 # mogh
+serror = { workspace = true, features = ["axum"] }
 async_timing_util.workspace = true
 merge_config_files.workspace = true
 parse_csl.workspace = true
@@ -26,7 +27,6 @@ termination_signal.workspace = true
 run_command.workspace = true
 svi.workspace = true
 resolver_api.workspace = true
-serror.workspace = true
 # external
 tokio.workspace = true
 axum.workspace = true
