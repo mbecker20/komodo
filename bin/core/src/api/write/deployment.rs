@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{
@@ -27,7 +26,6 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
-#[async_trait]
 impl Resolve<CreateDeployment, User> for State {
   #[instrument(name = "CreateDeployment", skip(self, user))]
   async fn resolve(
@@ -39,7 +37,6 @@ impl Resolve<CreateDeployment, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<CopyDeployment, User> for State {
   #[instrument(name = "CopyDeployment", skip(self, user))]
   async fn resolve(
@@ -58,7 +55,6 @@ impl Resolve<CopyDeployment, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteDeployment, User> for State {
   #[instrument(name = "DeleteDeployment", skip(self, user))]
   async fn resolve(
@@ -70,7 +66,6 @@ impl Resolve<DeleteDeployment, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdateDeployment, User> for State {
   #[instrument(name = "UpdateDeployment", skip(self, user))]
   async fn resolve(
@@ -82,7 +77,6 @@ impl Resolve<UpdateDeployment, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<RenameDeployment, User> for State {
   #[instrument(name = "RenameDeployment", skip(self, user))]
   async fn resolve(

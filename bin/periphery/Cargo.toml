@@ -41,4 +41,3 @@ clap.workspace = true
 tracing.workspace = true
 uuid.workspace = true
 sysinfo.workspace = true
-async-trait.workspace = true

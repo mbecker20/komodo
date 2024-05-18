@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use anyhow::Context;
-use axum::async_trait;
 use monitor_client::{
   api::read::{
     GetServerTemplate, GetServerTemplateResponse,
@@ -20,7 +19,6 @@ use crate::{
   helpers::query::get_resource_ids_for_non_admin, resource, state::{db_client, State}
 };
 
-#[async_trait]
 impl Resolve<GetServerTemplate, User> for State {
   async fn resolve(
     &self,
@@ -36,7 +34,6 @@ impl Resolve<GetServerTemplate, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListServerTemplates, User> for State {
   async fn resolve(
     &self,
@@ -47,7 +44,6 @@ impl Resolve<ListServerTemplates, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetServerTemplatesSummary, User> for State {
   async fn resolve(
     &self,

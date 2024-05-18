@@ -6,7 +6,6 @@ use std::{
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
-use async_trait::async_trait;
 use futures::TryStreamExt;
 use monitor_client::{
   api::read::*,
@@ -34,7 +33,6 @@ use crate::{
   state::{action_states, build_state_cache, db_client, State},
 };
 
-#[async_trait]
 impl Resolve<GetBuild, User> for State {
   async fn resolve(
     &self,
@@ -50,7 +48,6 @@ impl Resolve<GetBuild, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListBuilds, User> for State {
   async fn resolve(
     &self,
@@ -61,7 +58,6 @@ impl Resolve<ListBuilds, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetBuildActionState, User> for State {
   async fn resolve(
     &self,
@@ -84,7 +80,6 @@ impl Resolve<GetBuildActionState, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetBuildsSummary, User> for State {
   async fn resolve(
     &self,
@@ -145,7 +140,6 @@ impl Resolve<GetBuildsSummary, User> for State {
 
 const ONE_DAY_MS: i64 = 86400000;
 
-#[async_trait]
 impl Resolve<GetBuildMonthlyStats, User> for State {
   async fn resolve(
     &self,
@@ -209,7 +203,6 @@ fn ms_to_hour(duration: i64) -> f64 {
 
 const NUM_VERSIONS_PER_PAGE: u64 = 10;
 
-#[async_trait]
 impl Resolve<GetBuildVersions, User> for State {
   async fn resolve(
     &self,
@@ -276,7 +269,6 @@ fn docker_organizations() -> &'static String {
   })
 }
 
-#[async_trait]
 impl ResolveToString<ListDockerOrganizations, User> for State {
   async fn resolve_to_string(
     &self,
@@ -287,7 +279,6 @@ impl ResolveToString<ListDockerOrganizations, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListCommonBuildExtraArgs, User> for State {
   async fn resolve(
     &self,

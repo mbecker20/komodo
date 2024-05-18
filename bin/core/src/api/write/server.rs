@@ -1,5 +1,4 @@
 use anyhow::Context;
-use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{
@@ -25,7 +24,6 @@ use crate::{
   state::{db_client, State},
 };
 
-#[async_trait]
 impl Resolve<CreateServer, User> for State {
   #[instrument(name = "CreateServer", skip(self, user))]
   async fn resolve(
@@ -37,7 +35,6 @@ impl Resolve<CreateServer, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteServer, User> for State {
   #[instrument(name = "DeleteServer", skip(self, user))]
   async fn resolve(
@@ -49,7 +46,6 @@ impl Resolve<DeleteServer, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdateServer, User> for State {
   #[instrument(name = "UpdateServer", skip(self, user))]
   async fn resolve(
@@ -61,7 +57,6 @@ impl Resolve<UpdateServer, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<RenameServer, User> for State {
   #[instrument(name = "RenameServer", skip(self, user))]
   async fn resolve(
@@ -91,7 +86,6 @@ impl Resolve<RenameServer, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<CreateNetwork, User> for State {
   #[instrument(name = "CreateNetwork", skip(self, user))]
   async fn resolve(
@@ -129,7 +123,6 @@ impl Resolve<CreateNetwork, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteNetwork, User> for State {
   #[instrument(name = "DeleteNetwork", skip(self, user))]
   async fn resolve(

@@ -8,7 +8,6 @@ use resolver_api::Resolve;
 
 use crate::{config::periphery_config, helpers::git, State};
 
-#[async_trait::async_trait]
 impl Resolve<GetLatestCommit, ()> for State {
   async fn resolve(
     &self,
@@ -25,7 +24,6 @@ impl Resolve<GetLatestCommit, ()> for State {
   }
 }
 
-#[async_trait::async_trait]
 impl Resolve<CloneRepo> for State {
   #[instrument(name = "CloneRepo", skip(self))]
   async fn resolve(
@@ -39,7 +37,6 @@ impl Resolve<CloneRepo> for State {
 
 //
 
-#[async_trait::async_trait]
 impl Resolve<PullRepo> for State {
   #[instrument(name = "PullRepo", skip(self))]
   async fn resolve(
@@ -67,7 +64,6 @@ impl Resolve<PullRepo> for State {
 
 //
 
-#[async_trait::async_trait]
 impl Resolve<DeleteRepo> for State {
   #[instrument(name = "DeleteRepo", skip(self))]
   async fn resolve(

@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{
@@ -20,7 +19,6 @@ use crate::{
 const SECRET_LENGTH: usize = 40;
 const BCRYPT_COST: u32 = 10;
 
-#[async_trait]
 impl Resolve<CreateApiKey, User> for State {
   #[instrument(
     name = "CreateApiKey",
@@ -57,7 +55,6 @@ impl Resolve<CreateApiKey, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteApiKey, User> for State {
   #[instrument(
     name = "DeleteApiKey",
@@ -88,7 +85,6 @@ impl Resolve<DeleteApiKey, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<CreateApiKeyForServiceUser, User> for State {
   #[instrument(name = "CreateApiKeyForServiceUser", skip(self, user))]
   async fn resolve(
@@ -117,7 +113,6 @@ impl Resolve<CreateApiKeyForServiceUser, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteApiKeyForServiceUser, User> for State {
   #[instrument(name = "DeleteApiKeyForServiceUser", skip(self, user))]
   async fn resolve(

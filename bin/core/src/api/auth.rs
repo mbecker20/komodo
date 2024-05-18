@@ -1,7 +1,6 @@
 use std::{sync::OnceLock, time::Instant};
 
 use anyhow::anyhow;
-use async_trait::async_trait;
 use axum::{http::HeaderMap, routing::post, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::auth::*, entities::user::User};
@@ -92,7 +91,6 @@ fn login_options_reponse() -> &'static GetLoginOptionsResponse {
   })
 }
 
-#[async_trait]
 impl Resolve<GetLoginOptions, HeaderMap> for State {
   #[instrument(name = "GetLoginOptions", level = "debug", skip(self))]
   async fn resolve(
@@ -104,7 +102,6 @@ impl Resolve<GetLoginOptions, HeaderMap> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ExchangeForJwt, HeaderMap> for State {
   #[instrument(name = "ExchangeForJwt", level = "debug", skip(self))]
   async fn resolve(
@@ -118,7 +115,6 @@ impl Resolve<ExchangeForJwt, HeaderMap> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetUser, HeaderMap> for State {
   #[instrument(name = "GetUser", level = "debug", skip(self))]
   async fn resolve(

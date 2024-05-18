@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use anyhow::Context;
-use async_trait::async_trait;
 use monitor_client::{
   api::read::{
     GetProcedure, GetProcedureActionState,
@@ -28,7 +27,6 @@ use crate::{
   state::{action_states, db_client, procedure_state_cache, State},
 };
 
-#[async_trait]
 impl Resolve<GetProcedure, User> for State {
   async fn resolve(
     &self,
@@ -44,7 +42,6 @@ impl Resolve<GetProcedure, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListProcedures, User> for State {
   async fn resolve(
     &self,
@@ -55,7 +52,6 @@ impl Resolve<ListProcedures, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetProceduresSummary, User> for State {
   async fn resolve(
     &self,
@@ -116,7 +112,6 @@ impl Resolve<GetProceduresSummary, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetProcedureActionState, User> for State {
   async fn resolve(
     &self,

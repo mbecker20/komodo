@@ -1,4 +1,3 @@
-use axum::async_trait;
 use monitor_client::{
   api::write::{
     CopyServerTemplate, CreateServerTemplate, DeleteServerTemplate,
@@ -13,7 +12,6 @@ use resolver_api::Resolve;
 
 use crate::{resource, state::State};
 
-#[async_trait]
 impl Resolve<CreateServerTemplate, User> for State {
   async fn resolve(
     &self,
@@ -24,7 +22,6 @@ impl Resolve<CreateServerTemplate, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<CopyServerTemplate, User> for State {
   async fn resolve(
     &self,
@@ -43,7 +40,6 @@ impl Resolve<CopyServerTemplate, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteServerTemplate, User> for State {
   async fn resolve(
     &self,
@@ -54,7 +50,6 @@ impl Resolve<DeleteServerTemplate, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdateServerTemplate, User> for State {
   async fn resolve(
     &self,

@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
-use async_trait::async_trait;
 use axum::http::HeaderMap;
 use monitor_client::{
   api::auth::{
@@ -22,7 +21,6 @@ use crate::{
 
 const BCRYPT_COST: u32 = 10;
 
-#[async_trait]
 impl Resolve<CreateLocalUser, HeaderMap> for State {
   #[instrument(name = "CreateLocalUser", skip(self))]
   async fn resolve(
@@ -90,7 +88,6 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<LoginLocalUser, HeaderMap> for State {
   #[instrument(name = "LoginLocalUser", level = "debug", skip(self))]
   async fn resolve(

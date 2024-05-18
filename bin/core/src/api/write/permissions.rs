@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::write::{
     UpdatePermissionOnTarget, UpdatePermissionOnTargetResponse,
@@ -27,7 +26,6 @@ use crate::{
   state::{db_client, State},
 };
 
-#[async_trait]
 impl Resolve<UpdateUserBasePermissions, User> for State {
   #[instrument(name = "UpdateUserBasePermissions", skip(self, admin))]
   async fn resolve(
@@ -75,7 +73,6 @@ impl Resolve<UpdateUserBasePermissions, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdatePermissionOnTarget, User> for State {
   #[instrument(name = "UpdatePermissionOnTarget", skip(self, admin))]
   async fn resolve(

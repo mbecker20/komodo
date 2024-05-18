@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use axum::async_trait;
 use monitor_client::{
   api::{execute::LaunchServer, write::CreateServer},
   entities::{
@@ -19,7 +18,6 @@ use crate::{
   cloud::aws::launch_ec2_instance, helpers::update::{add_update, make_update, update_update}, resource, state::{db_client, State}
 };
 
-#[async_trait]
 impl Resolve<LaunchServer, User> for State {
   #[instrument(name = "LaunchServer", skip(self, user))]
   async fn resolve(

@@ -1,7 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
-use axum::async_trait;
 use monitor_client::{
   api::write::{
     AddUserToUserGroup, CreateUserGroup, DeleteUserGroup,
@@ -18,7 +17,6 @@ use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
 
-#[async_trait]
 impl Resolve<CreateUserGroup, User> for State {
   async fn resolve(
     &self,
@@ -51,7 +49,6 @@ impl Resolve<CreateUserGroup, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<RenameUserGroup, User> for State {
   async fn resolve(
     &self,
@@ -77,7 +74,6 @@ impl Resolve<RenameUserGroup, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteUserGroup, User> for State {
   async fn resolve(
     &self,
@@ -111,7 +107,6 @@ impl Resolve<DeleteUserGroup, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<AddUserToUserGroup, User> for State {
   async fn resolve(
     &self,
@@ -155,7 +150,6 @@ impl Resolve<AddUserToUserGroup, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<RemoveUserFromUserGroup, User> for State {
   async fn resolve(
     &self,
@@ -202,7 +196,6 @@ impl Resolve<RemoveUserFromUserGroup, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<SetUsersInUserGroup, User> for State {
   async fn resolve(
     &self,

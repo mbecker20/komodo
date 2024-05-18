@@ -28,7 +28,7 @@ async_timing_util = "0.1.14"
 partial_derive2 = "0.4.2"
 derive_variants = "0.1.3"
 mongo_indexed = "0.3.0"
-resolver_api = "0.1.9"
+resolver_api = "1.1.0"
 parse_csl = "0.1.0"
 mungos = "0.5.5"
 svi = "0.1.4"
@@ -39,7 +39,6 @@ reqwest = { version = "0.12.4", features = ["json"] }
 tokio-util = "0.7.11"
 futures = "0.3.30"
 futures-util = "0.3.30"
-async-trait = "0.1.80"
 
 # SERVER
 axum = { version = "0.7.5", features = ["ws", "json"] }

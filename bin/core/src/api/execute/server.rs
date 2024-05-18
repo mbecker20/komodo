@@ -1,5 +1,4 @@
 use anyhow::Context;
-use async_trait::async_trait;
 use monitor_client::{
   api::execute::*,
   entities::{
@@ -24,7 +23,6 @@ use crate::{
   state::{action_states, State},
 };
 
-#[async_trait]
 impl Resolve<PruneDockerContainers, User> for State {
   #[instrument(name = "PruneDockerContainers", skip(self, user))]
   async fn resolve(
@@ -81,7 +79,6 @@ impl Resolve<PruneDockerContainers, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<PruneDockerNetworks, User> for State {
   #[instrument(name = "PruneDockerNetworks", skip(self, user))]
   async fn resolve(
@@ -138,7 +135,6 @@ impl Resolve<PruneDockerNetworks, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<PruneDockerImages, User> for State {
   #[instrument(name = "PruneDockerImages", skip(self, user))]
   async fn resolve(

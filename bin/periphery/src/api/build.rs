@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use monitor_client::entities::{
   server::docker_image::ImageSummary, update::Log,
 };
@@ -12,7 +11,6 @@ use crate::{
   State,
 };
 
-#[async_trait]
 impl Resolve<Build> for State {
   #[instrument(name = "Build", skip(self))]
   async fn resolve(
@@ -29,7 +27,6 @@ impl Resolve<Build> for State {
 
 //
 
-#[async_trait::async_trait]
 impl Resolve<GetImageList> for State {
   #[instrument(name = "GetImageList", level = "debug", skip(self))]
   async fn resolve(
@@ -43,7 +40,6 @@ impl Resolve<GetImageList> for State {
 
 //
 
-#[async_trait]
 impl Resolve<PruneImages> for State {
   #[instrument(name = "PruneImages", skip(self))]
   async fn resolve(

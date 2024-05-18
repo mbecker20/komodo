@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use monitor_client::entities::{
   server::docker_network::DockerNetwork, update::Log,
 };
@@ -14,7 +13,6 @@ use crate::{
 
 //
 
-#[async_trait]
 impl Resolve<GetNetworkList> for State {
   #[instrument(name = "GetNetworkList", level = "debug", skip(self))]
   async fn resolve(
@@ -28,7 +26,6 @@ impl Resolve<GetNetworkList> for State {
 
 //
 
-#[async_trait]
 impl Resolve<CreateNetwork> for State {
   #[instrument(name = "CreateNetwork", skip(self))]
   async fn resolve(
@@ -42,7 +39,6 @@ impl Resolve<CreateNetwork> for State {
 
 //
 
-#[async_trait]
 impl Resolve<DeleteNetwork> for State {
   #[instrument(name = "DeleteNetwork", skip(self))]
   async fn resolve(
@@ -56,7 +52,6 @@ impl Resolve<DeleteNetwork> for State {
 
 //
 
-#[async_trait]
 impl Resolve<PruneNetworks> for State {
   #[instrument(name = "PruneNetworks", skip(self))]
   async fn resolve(

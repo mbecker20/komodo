@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use monitor_client::{
   api::write::{
     CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter,
@@ -11,7 +10,6 @@ use resolver_api::Resolve;
 
 use crate::{resource, state::State};
 
-#[async_trait]
 impl Resolve<CreateAlerter, User> for State {
   #[instrument(name = "CreateAlerter", skip(self, user))]
   async fn resolve(
@@ -23,7 +21,6 @@ impl Resolve<CreateAlerter, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<CopyAlerter, User> for State {
   #[instrument(name = "CopyAlerter", skip(self, user))]
   async fn resolve(
@@ -44,7 +41,6 @@ impl Resolve<CopyAlerter, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteAlerter, User> for State {
   #[instrument(name = "DeleteAlerter", skip(self, user))]
   async fn resolve(
@@ -56,7 +52,6 @@ impl Resolve<DeleteAlerter, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdateAlerter, User> for State {
   #[instrument(name = "UpdateAlerter", skip(self, user))]
   async fn resolve(

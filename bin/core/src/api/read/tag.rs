@@ -1,5 +1,4 @@
 use anyhow::Context;
-use async_trait::async_trait;
 use monitor_client::{
   api::read::{GetTag, ListTags},
   entities::{tag::Tag, user::User},
@@ -12,7 +11,6 @@ use crate::{
   state::{db_client, State},
 };
 
-#[async_trait]
 impl Resolve<GetTag, User> for State {
   async fn resolve(
     &self,
@@ -23,7 +21,6 @@ impl Resolve<GetTag, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListTags, User> for State {
   async fn resolve(
     &self,

@@ -1,5 +1,4 @@
 use anyhow::Context;
-use async_trait::async_trait;
 use monitor_client::{
   api::read::{
     GetAlert, GetAlertResponse, ListAlerts, ListAlertsResponse,
@@ -20,7 +19,6 @@ use crate::{
 
 const NUM_ALERTS_PER_PAGE: u64 = 20;
 
-#[async_trait]
 impl Resolve<ListAlerts, User> for State {
   async fn resolve(
     &self,
@@ -71,7 +69,6 @@ impl Resolve<ListAlerts, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetAlert, User> for State {
   async fn resolve(
     &self,

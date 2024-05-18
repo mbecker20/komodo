@@ -1,7 +1,6 @@
 use std::{cmp, collections::HashSet, str::FromStr};
 
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::read::*,
   entities::{
@@ -30,7 +29,6 @@ use crate::{
   state::{action_states, db_client, deployment_status_cache, State},
 };
 
-#[async_trait]
 impl Resolve<GetDeployment, User> for State {
   async fn resolve(
     &self,
@@ -46,7 +44,6 @@ impl Resolve<GetDeployment, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListDeployments, User> for State {
   async fn resolve(
     &self,
@@ -57,7 +54,6 @@ impl Resolve<ListDeployments, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetDeploymentContainer, User> for State {
   async fn resolve(
     &self,
@@ -84,7 +80,6 @@ impl Resolve<GetDeploymentContainer, User> for State {
 
 const MAX_LOG_LENGTH: u64 = 5000;
 
-#[async_trait]
 impl Resolve<GetLog, User> for State {
   async fn resolve(
     &self,
@@ -115,7 +110,6 @@ impl Resolve<GetLog, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<SearchLog, User> for State {
   async fn resolve(
     &self,
@@ -151,7 +145,6 @@ impl Resolve<SearchLog, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetDeploymentStats, User> for State {
   async fn resolve(
     &self,
@@ -179,7 +172,6 @@ impl Resolve<GetDeploymentStats, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetDeploymentActionState, User> for State {
   async fn resolve(
     &self,
@@ -202,7 +194,6 @@ impl Resolve<GetDeploymentActionState, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetDeploymentsSummary, User> for State {
   async fn resolve(
     &self,
@@ -255,7 +246,6 @@ impl Resolve<GetDeploymentsSummary, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListCommonDeploymentExtraArgs, User> for State {
   async fn resolve(
     &self,

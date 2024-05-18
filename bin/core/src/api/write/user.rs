@@ -1,7 +1,6 @@
 use std::{collections::VecDeque, str::FromStr};
 
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::write::{
     CreateServiceUser, CreateServiceUserResponse, PushRecentlyViewed,
@@ -28,7 +27,6 @@ use crate::{
 
 const RECENTLY_VIEWED_MAX: usize = 10;
 
-#[async_trait]
 impl Resolve<PushRecentlyViewed, User> for State {
   #[instrument(name = "PushRecentlyViewed", skip(self, user))]
   async fn resolve(
@@ -78,7 +76,6 @@ impl Resolve<PushRecentlyViewed, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<SetLastSeenUpdate, User> for State {
   #[instrument(name = "SetLastSeenUpdate", skip(self, user))]
   async fn resolve(
@@ -100,7 +97,6 @@ impl Resolve<SetLastSeenUpdate, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<CreateServiceUser, User> for State {
   #[instrument(name = "CreateServiceUser", skip(self, user))]
   async fn resolve(
@@ -148,7 +144,6 @@ impl Resolve<CreateServiceUser, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdateServiceUserDescription, User> for State {
   #[instrument(
     name = "UpdateServiceUserDescription",

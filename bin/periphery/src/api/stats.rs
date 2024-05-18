@@ -6,7 +6,6 @@ use resolver_api::ResolveToString;
 
 use crate::{stats::stats_client, State};
 
-#[async_trait::async_trait]
 impl ResolveToString<GetSystemInformation> for State {
   #[instrument(
     name = "GetSystemInformation",
@@ -26,7 +25,6 @@ impl ResolveToString<GetSystemInformation> for State {
 
 //
 
-#[async_trait::async_trait]
 impl ResolveToString<GetSystemStats> for State {
   #[instrument(name = "GetSystemStats", level = "debug", skip(self))]
   async fn resolve_to_string(
@@ -42,7 +40,6 @@ impl ResolveToString<GetSystemStats> for State {
 
 //
 
-#[async_trait::async_trait]
 impl ResolveToString<GetSystemProcesses> for State {
   #[instrument(
     name = "GetSystemProcesses",

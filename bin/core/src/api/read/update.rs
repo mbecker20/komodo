@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::read::{GetUpdate, ListUpdates, ListUpdatesResponse},
   entities::{
@@ -35,7 +34,6 @@ use crate::{
 
 const UPDATES_PER_PAGE: i64 = 20;
 
-#[async_trait]
 impl Resolve<ListUpdates, User> for State {
   async fn resolve(
     &self,
@@ -155,7 +153,6 @@ impl Resolve<ListUpdates, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetUpdate, User> for State {
   async fn resolve(
     &self,

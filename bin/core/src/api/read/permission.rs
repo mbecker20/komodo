@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use axum::async_trait;
 use monitor_client::{
   api::read::{
     GetPermissionLevel, GetPermissionLevelResponse, ListPermissions,
@@ -16,7 +15,6 @@ use crate::{
   state::{db_client, State},
 };
 
-#[async_trait]
 impl Resolve<ListPermissions, User> for State {
   async fn resolve(
     &self,
@@ -36,7 +34,6 @@ impl Resolve<ListPermissions, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetPermissionLevel, User> for State {
   async fn resolve(
     &self,
@@ -51,7 +48,6 @@ impl Resolve<GetPermissionLevel, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListUserTargetPermissions, User> for State {
   async fn resolve(
     &self,

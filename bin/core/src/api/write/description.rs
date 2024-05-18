@@ -1,5 +1,4 @@
 use anyhow::anyhow;
-use async_trait::async_trait;
 use monitor_client::{
   api::write::{UpdateDescription, UpdateDescriptionResponse},
   entities::{
@@ -13,7 +12,6 @@ use resolver_api::Resolve;
 
 use crate::{resource, state::State};
 
-#[async_trait]
 impl Resolve<UpdateDescription, User> for State {
   #[instrument(name = "UpdateDescription", skip(self, user))]
   async fn resolve(

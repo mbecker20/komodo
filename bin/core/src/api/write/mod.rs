@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::write::*, entities::user::User};
-use resolver_api::{derive::Resolver, Resolve, Resolver};
+use resolver_api::{derive::Resolver, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::Json;
 use typeshare::typeshare;

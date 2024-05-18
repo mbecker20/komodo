@@ -1,5 +1,4 @@
 use anyhow::anyhow;
-use async_trait::async_trait;
 use monitor_client::{
   api::execute::*,
   entities::{
@@ -30,7 +29,6 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
-#[async_trait]
 impl Resolve<CloneRepo, User> for State {
   #[instrument(name = "CloneRepo", skip(self, user))]
   async fn resolve(
@@ -106,7 +104,6 @@ impl Resolve<CloneRepo, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<PullRepo, User> for State {
   #[instrument(name = "PullRepo", skip(self, user))]
   async fn resolve(

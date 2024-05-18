@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use monitor_client::{
   api::read::{FindResources, FindResourcesResponse},
   entities::{
@@ -19,7 +18,6 @@ const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 5] = [
   ResourceTargetVariant::Procedure,
 ];
 
-#[async_trait]
 impl Resolve<FindResources, User> for State {
   async fn resolve(
     &self,

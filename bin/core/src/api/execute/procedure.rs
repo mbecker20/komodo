@@ -1,4 +1,5 @@
-use async_trait::async_trait;
+use std::pin::Pin;
+
 use monitor_client::{
   api::execute::RunProcedure,
   entities::{
@@ -20,7 +21,6 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
-#[async_trait]
 impl Resolve<RunProcedure, User> for State {
   #[instrument(name = "RunProcedure", skip(self, user))]
   async fn resolve(
@@ -28,6 +28,19 @@ impl Resolve<RunProcedure, User> for State {
     RunProcedure { procedure }: RunProcedure,
     user: User,
   ) -> anyhow::Result<Update> {
+    resolve_inner(procedure, user).await
+  }
+}
+
+fn resolve_inner(
+  procedure: String,
+  user: User,
+) -> Pin<
+  Box<
+    dyn std::future::Future<Output = anyhow::Result<Update>> + Send,
+  >,
+> {
+  Box::pin(async move {
     let procedure = resource::get_check_permissions::<Procedure>(
       &procedure,
       &user,
@@ -95,5 +108,5 @@ impl Resolve<RunProcedure, User> for State {
     update_update(update.clone()).await?;
 
     Ok(update)
-  }
+  })
 }

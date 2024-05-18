@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{build::Build, permission::PermissionLevel, user::User},
@@ -7,7 +6,6 @@ use resolver_api::Resolve;
 
 use crate::{resource, state::State};
 
-#[async_trait]
 impl Resolve<CreateBuild, User> for State {
   #[instrument(name = "CreateBuild", skip(self, user))]
   async fn resolve(
@@ -19,7 +17,6 @@ impl Resolve<CreateBuild, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<CopyBuild, User> for State {
   #[instrument(name = "CopyBuild", skip(self, user))]
   async fn resolve(
@@ -40,7 +37,6 @@ impl Resolve<CopyBuild, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteBuild, User> for State {
   #[instrument(name = "DeleteBuild", skip(self, user))]
   async fn resolve(
@@ -52,7 +48,6 @@ impl Resolve<DeleteBuild, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdateBuild, User> for State {
   #[instrument(name = "UpdateBuild", skip(self, user))]
   async fn resolve(

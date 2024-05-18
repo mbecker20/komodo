@@ -31,7 +31,6 @@ serror.workspace = true
 slack.workspace = true
 # external
 urlencoding.workspace = true
-async-trait.workspace = true
 aws-sdk-ec2.workspace = true
 aws-config.workspace = true
 tokio-util.workspace = true

@@ -111,9 +111,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.83"
+version = "1.0.85"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25bdb32cbbdce2b519a9cd7df3a678443100e265d5e25ca763b7572a5104f5f3"
+checksum = "27a4bd113ab6da4cd0f521068a6e2ee1065eab54107266a11835d02c8ec86a37"
 
 [[package]]
 name = "async-stream"
@@ -2237,7 +2237,7 @@ dependencies = [
  "mungos",
  "partial_derive2",
  "reqwest 0.12.4",
- "resolver_api",
+ "resolver_api 1.1.0",
  "serde",
  "serde_json",
  "serror",
@@ -2271,7 +2271,7 @@ dependencies = [
  "mungos",
  "partial_derive2",
  "reqwest 0.12.4",
- "resolver_api",
+ "resolver_api 0.1.9",
  "serde",
  "serde_json",
  "serror",
@@ -2290,7 +2290,6 @@ name = "monitor_core"
 version = "1.3.0"
 dependencies = [
  "anyhow",
- "async-trait",
  "async_timing_util",
  "aws-config",
  "aws-sdk-ec2",
@@ -2313,7 +2312,7 @@ dependencies = [
  "periphery_client",
  "rand",
  "reqwest 0.12.4",
- "resolver_api",
+ "resolver_api 1.1.0",
  "serde",
  "serde_json",
  "serror",
@@ -2336,7 +2335,6 @@ name = "monitor_periphery"
 version = "1.3.0"
 dependencies = [
  "anyhow",
- "async-trait",
  "async_timing_util",
  "axum 0.7.5",
  "axum-extra",
@@ -2349,7 +2347,7 @@ dependencies = [
  "monitor_client 1.3.0",
  "parse_csl",
  "periphery_client",
- "resolver_api",
+ "resolver_api 1.1.0",
  "run_command",
  "serde",
  "serde_json",
@@ -2667,7 +2665,7 @@ dependencies = [
  "anyhow",
  "monitor_client 1.3.0",
  "reqwest 0.12.4",
- "resolver_api",
+ "resolver_api 1.1.0",
  "serde",
  "serde_json",
  "serror",
@@ -2936,7 +2934,20 @@ checksum = "43981e6bc9a85f1072ffd38bcaca5823e3cd7f24bb675fa5e79736a318f1f998"
 dependencies = [
  "anyhow",
  "async-trait",
- "resolver_api_derive",
+ "resolver_api_derive 0.1.8",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "resolver_api"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4e8831e742662de68dbce8ca6243d1f0a1a5a295e1b3fa9ad996f215d1645b5"
+dependencies = [
+ "anyhow",
+ "resolver_api_derive 1.1.0",
  "serde",
  "serde_json",
  "thiserror",
@@ -2947,6 +2958,17 @@ name = "resolver_api_derive"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e0af2b29987c0bff183294b58b5b084f16c8f1b77951c7c72b7c70d66cf91ac"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.53",
+]
+
+[[package]]
+name = "resolver_api_derive"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e35ef0d79735ffcdf944895605c107b7f04ea097ce5a39d3191f9b2d82f73f7b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3181,9 +3203,9 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
-version = "1.0.201"
+version = "1.0.202"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "780f1cebed1629e4753a1a38a3c72d30b97ec044f0aef68cb26650a3c5cf363c"
+checksum = "226b61a0d411b2ba5ff6d7f73a476ac4f8bb900373459cd00fab8512828ba395"
 dependencies = [
  "serde_derive",
 ]
@@ -3199,9 +3221,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.201"
+version = "1.0.202"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5e405930b9796f1c00bee880d03fc7e0bb4b9a11afc776885ffe84320da2865"
+checksum = "6048858004bcff69094cd972ed40a32500f153bd3be9f716b2eed2e8217c4838"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3210,9 +3232,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.116"
+version = "1.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e17db7126d17feb94eb3fad46bf1a96b034e8aacbc2e775fe81505f8b0b2813"
+checksum = "455182ea6142b14f93f4bc5320a2b31c1f266b66a4a5c858b013302a5d8cbfc3"
 dependencies = [
  "indexmap 2.2.5",
  "itoa",
@@ -3673,18 +3695,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.60"
+version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "579e9083ca58dd9dcf91a9923bb9054071b9ebbd800b342194c9feb0ee89fc18"
+checksum = "c546c80d6be4bc6a00c0f01730c08df82eaa7a7a61f11d656526506112cc1709"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.60"
+version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2470041c06ec3ac1ab38d0356a6119054dedaea53e12fbefc0de730a1c08524"
+checksum = "46c3384250002a6d5af4d114f2845d37b57521033f30d5c3f46c4d70e1197533"
 dependencies = [
  "proc-macro2",
  "quote",

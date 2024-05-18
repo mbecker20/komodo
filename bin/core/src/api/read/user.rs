@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::read::{
     GetUsername, GetUsernameResponse, ListApiKeys,
@@ -15,7 +14,6 @@ use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
 
-#[async_trait]
 impl Resolve<GetUsername, User> for State {
   async fn resolve(
     &self,
@@ -40,7 +38,6 @@ impl Resolve<GetUsername, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListUsers, User> for State {
   async fn resolve(
     &self,
@@ -59,7 +56,6 @@ impl Resolve<ListUsers, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListApiKeys, User> for State {
   async fn resolve(
     &self,
@@ -83,7 +79,6 @@ impl Resolve<ListApiKeys, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListApiKeysForServiceUser, User> for State {
   async fn resolve(
     &self,

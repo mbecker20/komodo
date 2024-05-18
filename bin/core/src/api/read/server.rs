@@ -7,7 +7,6 @@ use anyhow::{anyhow, Context};
 use async_timing_util::{
   get_timelength_in_ms, unix_timestamp_ms, FIFTEEN_SECONDS_MS,
 };
-use async_trait::async_trait;
 use monitor_client::{
   api::read::*,
   entities::{
@@ -35,7 +34,6 @@ use crate::{
   state::{action_states, db_client, server_status_cache, State},
 };
 
-#[async_trait]
 impl Resolve<GetServersSummary, User> for State {
   async fn resolve(
     &self,
@@ -64,7 +62,6 @@ impl Resolve<GetServersSummary, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetPeripheryVersion, User> for State {
   async fn resolve(
     &self,
@@ -86,7 +83,6 @@ impl Resolve<GetPeripheryVersion, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetServer, User> for State {
   async fn resolve(
     &self,
@@ -102,7 +98,6 @@ impl Resolve<GetServer, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListServers, User> for State {
   async fn resolve(
     &self,
@@ -113,7 +108,6 @@ impl Resolve<ListServers, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetServerState, User> for State {
   async fn resolve(
     &self,
@@ -137,7 +131,6 @@ impl Resolve<GetServerState, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetServerActionState, User> for State {
   async fn resolve(
     &self,
@@ -169,7 +162,6 @@ fn system_info_cache() -> &'static SystemInfoCache {
   SYSTEM_INFO_CACHE.get_or_init(Default::default)
 }
 
-#[async_trait]
 impl ResolveToString<GetSystemInformation, User> for State {
   async fn resolve_to_string(
     &self,
@@ -205,7 +197,6 @@ impl ResolveToString<GetSystemInformation, User> for State {
   }
 }
 
-#[async_trait]
 impl ResolveToString<GetSystemStats, User> for State {
   async fn resolve_to_string(
     &self,
@@ -239,7 +230,6 @@ fn processes_cache() -> &'static ProcessesCache {
   PROCESSES_CACHE.get_or_init(Default::default)
 }
 
-#[async_trait]
 impl ResolveToString<GetSystemProcesses, User> for State {
   async fn resolve_to_string(
     &self,
@@ -276,7 +266,6 @@ impl ResolveToString<GetSystemProcesses, User> for State {
 
 const STATS_PER_PAGE: i64 = 500;
 
-#[async_trait]
 impl Resolve<GetHistoricalServerStats, User> for State {
   async fn resolve(
     &self,
@@ -330,7 +319,6 @@ impl Resolve<GetHistoricalServerStats, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetDockerImages, User> for State {
   async fn resolve(
     &self,
@@ -349,7 +337,6 @@ impl Resolve<GetDockerImages, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetDockerNetworks, User> for State {
   async fn resolve(
     &self,
@@ -368,7 +355,6 @@ impl Resolve<GetDockerNetworks, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetDockerContainers, User> for State {
   async fn resolve(
     &self,
@@ -387,7 +373,6 @@ impl Resolve<GetDockerContainers, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetAvailableAccounts, User> for State {
   async fn resolve(
     &self,
@@ -428,7 +413,6 @@ impl Resolve<GetAvailableAccounts, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetAvailableSecrets, User> for State {
   async fn resolve(
     &self,

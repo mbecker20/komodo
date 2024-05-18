@@ -1,5 +1,4 @@
 use anyhow::Context;
-use async_trait::async_trait;
 use monitor_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
   build::*, container::*, git::*, network::*, stats::*, GetAccounts,
@@ -74,7 +73,6 @@ pub enum PeripheryRequest {
 
 //
 
-#[async_trait]
 impl ResolveToString<GetHealth> for State {
   #[instrument(name = "GetHealth", level = "debug", skip(self))]
   async fn resolve_to_string(
@@ -88,7 +86,6 @@ impl ResolveToString<GetHealth> for State {
 
 //
 
-#[async_trait]
 impl Resolve<GetVersion> for State {
   #[instrument(name = "GetVersion", level = "debug", skip(self))]
   async fn resolve(
@@ -104,7 +101,6 @@ impl Resolve<GetVersion> for State {
 
 //
 
-#[async_trait]
 impl ResolveToString<GetAccounts> for State {
   #[instrument(name = "GetAccounts", level = "debug", skip(self))]
   async fn resolve_to_string(
@@ -118,7 +114,6 @@ impl ResolveToString<GetAccounts> for State {
 
 //
 
-#[async_trait]
 impl ResolveToString<GetSecrets> for State {
   #[instrument(name = "GetSecrets", level = "debug", skip(self))]
   async fn resolve_to_string(
@@ -130,7 +125,6 @@ impl ResolveToString<GetSecrets> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<RunCommand> for State {
   #[instrument(name = "RunCommand", skip(self))]
   async fn resolve(
@@ -153,7 +147,6 @@ impl Resolve<RunCommand> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<PruneSystem> for State {
   #[instrument(name = "PruneSystem", skip(self))]
   async fn resolve(

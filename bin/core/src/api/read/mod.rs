@@ -1,13 +1,10 @@
 use std::time::Instant;
 
 use anyhow::anyhow;
-use async_trait::async_trait;
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::read::*, entities::user::User};
-use resolver_api::{
-  derive::Resolver, Resolve, ResolveToString, Resolver,
-};
+use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::Json;
 use typeshare::typeshare;
@@ -181,7 +178,6 @@ async fn handler(
   Ok((TypedHeader(ContentType::json()), res?))
 }
 
-#[async_trait]
 impl Resolve<GetVersion, User> for State {
   #[instrument(name = "GetVersion", level = "debug", skip(self))]
   async fn resolve(
@@ -195,7 +191,6 @@ impl Resolve<GetVersion, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetCoreInfo, User> for State {
   #[instrument(name = "GetCoreInfo", level = "debug", skip(self))]
   async fn resolve(

@@ -1,7 +1,6 @@
 use std::{collections::HashSet, str::FromStr};
 
 use anyhow::Context;
-use async_trait::async_trait;
 use monitor_client::{
   api::read::{self, *},
   entities::{
@@ -21,7 +20,6 @@ use crate::{
   state::{db_client, State},
 };
 
-#[async_trait]
 impl Resolve<GetBuilder, User> for State {
   async fn resolve(
     &self,
@@ -37,7 +35,6 @@ impl Resolve<GetBuilder, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ListBuilders, User> for State {
   async fn resolve(
     &self,
@@ -48,7 +45,6 @@ impl Resolve<ListBuilders, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetBuildersSummary, User> for State {
   async fn resolve(
     &self,
@@ -84,7 +80,6 @@ impl Resolve<GetBuildersSummary, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<GetBuilderAvailableAccounts, User> for State {
   async fn resolve(
     &self,

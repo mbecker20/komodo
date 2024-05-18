@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use monitor_client::{
   api::write::{
     CreateTag, DeleteTag, RenameTag, UpdateTagsOnResource,
@@ -27,7 +26,6 @@ use crate::{
   state::{db_client, State},
 };
 
-#[async_trait]
 impl Resolve<CreateTag, User> for State {
   #[instrument(name = "CreateTag", skip(self, user))]
   async fn resolve(
@@ -60,7 +58,6 @@ impl Resolve<CreateTag, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<RenameTag, User> for State {
   async fn resolve(
     &self,
@@ -86,7 +83,6 @@ impl Resolve<RenameTag, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<DeleteTag, User> for State {
   #[instrument(name = "DeleteTag", skip(self, user))]
   async fn resolve(
@@ -113,7 +109,6 @@ impl Resolve<DeleteTag, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<UpdateTagsOnResource, User> for State {
   #[instrument(name = "UpdateTagsOnResource", skip(self, user))]
   async fn resolve(

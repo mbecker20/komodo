@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
-use axum::async_trait;
 use monitor_client::{
   api::{
     execute::Execution,
@@ -38,7 +37,6 @@ use crate::{
   state::{db_client, State},
 };
 
-#[async_trait]
 impl Resolve<ExportAllResourcesToToml, User> for State {
   async fn resolve(
     &self,
@@ -125,7 +123,6 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
   }
 }
 
-#[async_trait]
 impl Resolve<ExportResourcesToToml, User> for State {
   async fn resolve(
     &self,

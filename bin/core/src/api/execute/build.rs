@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_client::{
   api::execute::{
@@ -53,7 +52,6 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
-#[async_trait]
 impl Resolve<RunBuild, User> for State {
   #[instrument(name = "RunBuild", skip(self, user))]
   async fn resolve(
@@ -288,7 +286,6 @@ async fn handle_early_return(
   Ok(update)
 }
 
-#[async_trait]
 impl Resolve<CancelBuild, User> for State {
   #[instrument(name = "CancelBuild", skip(self, user))]
   async fn resolve(
