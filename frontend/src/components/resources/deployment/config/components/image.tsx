@@ -1,10 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigItem } from "@components/config/util";
 import { ResourceSelector } from "@components/resources/common";
-import { fmt_version } from "@lib/formatting";
+import { fmt_date, fmt_version } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
+import { CaretSortIcon } from "@radix-ui/react-icons";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@ui/command";
 import { Input } from "@ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   Select,
   SelectContent,
@@ -12,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
+import { SearchX } from "lucide-react";
+import { useState } from "react";
 
 const BuildVersionSelector = ({
   disabled,
@@ -21,37 +33,71 @@ const BuildVersionSelector = ({
 }: {
   disabled: boolean;
   buildId: string | undefined;
-  selected: string | undefined;
-  onSelect: (version: string) => void;
+  selected: Types.Version | undefined;
+  onSelect: (version: Types.Version) => void;
 }) => {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
   const versions = useRead(
     "GetBuildVersions",
     { build: buildId! },
     { enabled: !!buildId }
   ).data;
   return (
-    <Select
-      value={selected || undefined}
-      onValueChange={onSelect}
-      disabled={disabled}
-    >
-      <SelectTrigger className="w-full lg:w-[150px]" disabled={disabled}>
-        <SelectValue placeholder="Select Version" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={JSON.stringify({ major: 0, minor: 0, patch: 0 })}>
-          latest
-        </SelectItem>
-        {versions?.map((v) => (
-          <SelectItem
-            key={JSON.stringify(v.version) + v.ts}
-            value={JSON.stringify(v.version)}
-          >
-            {fmt_version(v.version)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild disabled={disabled}>
+        <div className="h-full w-[150px] cursor-pointer flex items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
+          {selected ? fmt_version(selected) : "Latest"}
+          <CaretSortIcon className="h-4 w-4 opacity-50" />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[200px] max-h-[200px] p-0">
+        <Command>
+          <CommandInput
+            placeholder="Search Versions"
+            value={input}
+            onValueChange={setInput}
+            className="h-9"
+          />
+          <CommandList>
+            <CommandEmpty className="flex justify-evenly items-center">
+              No Versions Found
+              <SearchX className="w-3 h-3" />
+            </CommandEmpty>
+
+            <CommandGroup>
+              <CommandItem
+                className="cursor-pointer"
+                onSelect={() => {
+                  onSelect({ major: 0, minor: 0, patch: 0 });
+                  setOpen(false);
+                }}
+              >
+                <div>Latest</div>
+              </CommandItem>
+              {versions?.map((v) => {
+                const version = fmt_version(v.version);
+                return (
+                  <CommandItem
+                    key={version}
+                    onSelect={() => {
+                      onSelect(v.version);
+                      setOpen(false);
+                    }}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <div>{version}</div>
+                    <div className="text-muted-foreground">
+                      {fmt_date(new Date(v.ts))}
+                    </div>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 
@@ -64,7 +110,11 @@ const ImageTypeSelector = ({
   onSelect: (type: Types.DeploymentImage["type"]) => void;
   disabled: boolean;
 }) => (
-  <Select value={selected || undefined} onValueChange={onSelect} disabled={disabled}>
+  <Select
+    value={selected || undefined}
+    onValueChange={onSelect}
+    disabled={disabled}
+  >
     <SelectTrigger className="max-w-[150px]" disabled={disabled}>
       <SelectValue placeholder="Select Type" />
     </SelectTrigger>
@@ -85,7 +135,7 @@ export const ImageConfig = ({
   disabled: boolean;
 }) => (
   <ConfigItem label="Image">
-    <div className="flex gap-4 w-full justify-end">
+    <div className="flex gap-4 w-full items-center justify-end">
       <ImageTypeSelector
         selected={image?.type}
         disabled={disabled}
@@ -105,7 +155,7 @@ export const ImageConfig = ({
         }
       />
       {image?.type === "Build" && (
-        <div className="flex gap-4">
+        <>
           <ResourceSelector
             type="Build"
             selected={image.params.build_id}
@@ -120,21 +170,21 @@ export const ImageConfig = ({
           />
           <BuildVersionSelector
             buildId={image.params.build_id}
-            selected={JSON.stringify(image.params.version)}
+            selected={image.params.version}
             onSelect={(version) =>
               set({
                 image: {
                   ...image,
                   params: {
                     ...image.params,
-                    version: JSON.parse(version),
+                    version,
                   },
                 },
               })
             }
             disabled={disabled}
           />
-        </div>
+        </>
       )}
       {image?.type === "Image" && (
         <Input

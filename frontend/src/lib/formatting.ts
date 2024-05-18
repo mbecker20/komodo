@@ -16,7 +16,7 @@ export const fmt_date_with_minutes = (d: Date) => {
 export const fmt_version = (version: Types.Version | undefined) => {
   if (!version) return "...";
   const { major, minor, patch } = version;
-  if (major === 0 && minor === 0 && patch === 0) return "latest";
+  if (major === 0 && minor === 0 && patch === 0) return "Latest";
   return `v${major}.${minor}.${patch}`;
 };
 

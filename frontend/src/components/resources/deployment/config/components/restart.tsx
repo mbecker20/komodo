@@ -26,7 +26,7 @@ export const RestartModeSelector = ({
       onValueChange={(restart: Types.RestartMode) => set({ restart })}
       disabled={disabled}
     >
-      <SelectTrigger className="max-w-[150px] capitalize" disabled={disabled}>
+      <SelectTrigger className="w-[200px] capitalize" disabled={disabled}>
         <SelectValue placeholder="Select Type" />
       </SelectTrigger>
       <SelectContent>

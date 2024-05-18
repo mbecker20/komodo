@@ -32,7 +32,7 @@ export const NetworkModeSelector = ({
         onValueChange={onSelect}
         disabled={disabled}
       >
-        <SelectTrigger className="max-w-[150px]" disabled={disabled}>
+        <SelectTrigger className="w-[200px]" disabled={disabled}>
           <SelectValue placeholder="Select Type" />
         </SelectTrigger>
         <SelectContent>

@@ -216,7 +216,7 @@ export const AccountSelector = ({
         disabled={disabled}
       >
         <SelectTrigger
-          className="w-full lg:w-[300px] max-w-[50%]"
+          className="w-full lg:w-[200px] max-w-[50%]"
           disabled={disabled || !id}
         >
           <SelectValue placeholder={placeholder} />
