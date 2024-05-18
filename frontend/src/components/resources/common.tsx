@@ -35,8 +35,6 @@ import { NewLayout } from "@components/layouts";
 import { Types } from "@monitor/client";
 import { ConfigItem, DoubleInput } from "@components/config/util";
 import { usableResourcePath } from "@lib/utils";
-import { Card } from "@ui/card";
-import { TagsWithBadge } from "@components/tags";
 
 export const ResourceDescription = ({
   type,
@@ -345,27 +343,3 @@ export const ServerSelector = ({
     />
   </ConfigItem>
 );
-
-export const RecentCard = ({
-  type,
-  id,
-}: {
-  type: UsableResource;
-  id: string;
-}) => {
-  const Components = ResourceComponents[type];
-  const tags = Components.list_item(id)?.tags;
-  return (
-    <Link to={`${usableResourcePath(type)}/${id}`} className="h-full">
-      <Card className="h-full px-6 py-4 flex flex-col justify-between hover:bg-accent/50 transition-colors cursor-pointer">
-        <div className="flex items-center justify-between w-full">
-          <Components.Name id={id} />
-          <Components.Icon id={id} />
-        </div>
-        <div className="flex items-end justify-end gap-2 w-full">
-          <TagsWithBadge tag_ids={tags} />
-        </div>
-      </Card>
-    </Link>
-  );
-};

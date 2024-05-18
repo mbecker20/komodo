@@ -386,6 +386,7 @@ pub enum Operation {
   PruneNetworksServer,
   CreateNetwork,
   DeleteNetwork,
+  StopAllContainers,
 
   // build
   CreateBuild,
@@ -405,7 +406,6 @@ pub enum Operation {
   DeleteDeployment,
   DeployContainer,
   StopContainer,
-  StopAllContainers,
   StartContainer,
   RemoveContainer,
   RenameDeployment,

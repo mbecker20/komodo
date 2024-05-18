@@ -1,130 +1,84 @@
-import { Page, Section } from "@components/layouts";
-import { Box, Key, Tag } from "lucide-react";
-import { Link } from "react-router-dom";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@ui/card";
-import { ResourceComponents } from "@components/resources";
 import { OpenAlerts } from "@components/alert";
-import { useRead } from "@lib/hooks";
+import { Page } from "@components/layouts";
+import { ResourceComponents } from "@components/resources";
+import { TagsWithBadge } from "@components/tags";
 import { AllUpdates } from "@components/updates/resource";
+import { useRead, useUser } from "@lib/hooks";
+import { usableResourcePath } from "@lib/utils";
+import { UsableResource } from "@types";
+import { Card } from "@ui/card";
+import { Separator } from "@ui/separator";
+import { History } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Dashboard = () => {
   return (
     <Page title="">
       <OpenAlerts />
       <AllUpdates />
-      {/* <RecentlyViewed /> */}
-      <Resources />
+
+      <ResourceRow type="Deployment" />
+      <ResourceRow type="Build" />
+      <ResourceRow type="Repo" />
+      <ResourceRow type="Server" />
+      <ResourceRow type="Procedure" />
     </Page>
   );
 };
 
-const Resources = () => {
+const ResourceRow = ({ type }: { type: UsableResource }) => {
+  const recents = useUser().data?.[`recent_${type.toLowerCase()}s`]?.slice(
+    0,
+    6
+  ) as string[] | undefined;
+  const resources = useRead(`List${type}s`, {})
+    .data?.filter((r) => !recents?.includes(r.id))
+    .map((r) => r.id);
+  const ids = [
+    ...(recents ?? []),
+    ...(resources?.slice(0, 6 - (recents?.length || 0)) ?? []),
+  ];
+  if (ids.length === 0) return;
+  const Components = ResourceComponents[type];
   return (
-    <Section title="Resources" icon={<Box className="w-4 h-4" />} actions="">
-      <div className="flex flex-col lg:flex-row gap-4 w-full">
-        <div className="flex flex-col md:flex-row gap-4 w-full">
-          <ResourceComponents.Server.Dashboard />
-          <ResourceComponents.Deployment.Dashboard />
+    <div className="flex gap-4">
+      <Components.Dashboard />
+      <div className="py-2">
+        <Separator orientation="vertical" />
+      </div>
+      <div className="flex flex-col gap-4 w-full pb-1">
+        <div className="flex gap-2 items-center text-muted-foreground">
+          <History className="w-4 h-4" />
+          <h3>Recent {type}s</h3>
         </div>
-        <div className="w-full lg:max-w-[50%]">
-          <ResourceComponents.Build.Dashboard />
+        <div className="grid grid-cols-3 grid-rows-2 gap-4 w-full h-full">
+          {ids.map((id: string) => (
+            <RecentCard key={type + id} type={type} id={id} />
+          ))}
         </div>
       </div>
-      <div className="flex flex-col lg:flex-row gap-4 w-full">
-        <ResourceComponents.Procedure.Dashboard />
-        <ResourceComponents.Repo.Dashboard />
-      </div>
-      <div className="flex flex-col lg:flex-row gap-4 w-full">
-        <div className="flex flex-col md:flex-row gap-4 w-full">
-          <ResourceComponents.Alerter.Dashboard />
-          <ResourceComponents.Builder.Dashboard />
-        </div>
-        <div className="flex flex-col md:flex-row gap-4 w-full">
-          <TagsSummary />
-          <ApiKeysSummary />
-        </div>
-      </div>
-    </Section>
+    </div>
   );
 };
 
-// const RecentlyViewed = () => {
-//   const nav = useNavigate();
-//   const recently_viewed = useUser().data?.recently_viewed;
-//   const checkResourceExists = useCheckResourceExists();
-//   return (
-//     <Section
-//       title="Recently Viewed"
-//       icon={<History className="w-4 h-4" />}
-//       actions=""
-//     >
-//       <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-//         {recently_viewed
-//           ?.filter(checkResourceExists)
-//           .slice(0, 8)
-//           .map(({ type, id }, i) => (
-//             <Fragment key={type + id}>
-//               {type !== "System" && (
-//                 <Card
-//                   onClick={() => nav(`/${usableResourcePath(type)}/${id}`)}
-//                   className={cn(
-//                     "px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer",
-//                     i > 5 && "hidden 2xl:flex"
-//                   )}
-//                 >
-//                   <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground w-full">
-//                     <ResourceLink type={type} id={id} />
-//                     {type}
-//                   </CardContent>
-//                 </Card>
-//               )}
-//             </Fragment>
-//           ))}
-//       </div>
-//     </Section>
-//   );
-// };
-
-const TagsSummary = () => {
-  const tags_count = useRead("ListTags", {}).data?.length;
-
+const RecentCard = ({ type, id }: { type: UsableResource; id: string }) => {
+  const Components = ResourceComponents[type];
+  const tags = Components.list_item(id)?.tags;
   return (
-    <Link to="/tags" className="w-full">
-      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-        <CardHeader>
-          <div className="flex justify-between">
-            <div>
-              <CardTitle>Tags</CardTitle>
-              <CardDescription>{tags_count} Total</CardDescription>
-            </div>
-            <Tag className="w-4 h-4" />
+    <Link to={`${usableResourcePath(type)}/${id}`} className="h-full">
+      <Card className="h-full px-6 py-4 flex flex-col justify-between hover:bg-accent/50 transition-colors cursor-pointer">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <Components.Icon id={id} />
+            <Components.Name id={id} />
           </div>
-        </CardHeader>
-      </Card>
-    </Link>
-  );
-};
-
-const ApiKeysSummary = () => {
-  const keys_count = useRead("ListApiKeys", {}).data?.length;
-
-  return (
-    <Link to="/keys" className="w-full">
-      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-        <CardHeader>
-          <div className="flex justify-between">
-            <div>
-              <CardTitle>Api Keys</CardTitle>
-              <CardDescription>{keys_count} Total</CardDescription>
-            </div>
-            <Key className="w-4 h-4" />
+          <div className="text-sm">
+            <Components.Status.State id={id} />
           </div>
-        </CardHeader>
+        </div>
+        <div className="flex items-end justify-end gap-2 w-full">
+          <TagsWithBadge tag_ids={tags} />
+        </div>
       </Card>
     </Link>
   );
