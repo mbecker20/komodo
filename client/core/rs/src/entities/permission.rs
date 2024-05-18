@@ -1,6 +1,4 @@
 use derive_variants::EnumVariants;
-use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
@@ -9,25 +7,29 @@ use super::{update::ResourceTarget, MongoId};
 
 /// Representation of a User or UserGroups permission on a resource.
 #[typeshare]
-#[derive(Debug, Clone, Serialize, Deserialize, MongoIndexed)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(
+  feature = "mongo",
+  derive(mongo_indexed::derive::MongoIndexed)
+)]
 // To query for all permissions on user target
-#[doc_index({ "user_target.type": 1, "user_target.id": 1 })]
+#[cfg_attr(feature = "mongo", doc_index({ "user_target.type": 1, "user_target.id": 1 }))]
 // To query for all permissions on a resource target
-#[doc_index({ "resource_target.type": 1, "resource_target.id": 1 })]
+#[cfg_attr(feature = "mongo", doc_index({ "resource_target.type": 1, "resource_target.id": 1 }))]
 // Only one permission allowed per user / resource target
-#[unique_doc_index({
+#[cfg_attr(feature = "mongo", unique_doc_index({
   "user_target.type": 1,
   "user_target.id": 1,
   "resource_target.type": 1,
   "resource_target.id": 1
-})]
+}))]
 pub struct Permission {
   /// The id of the permission document
   #[serde(
     default,
     rename = "_id",
     skip_serializing_if = "String::is_empty",
-    with = "hex_string_as_object_id"
+    with = "bson::serde_helpers::hex_string_as_object_id"
   )]
   pub id: MongoId,
   /// The target User / UserGroup

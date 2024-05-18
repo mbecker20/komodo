@@ -1,9 +1,5 @@
 use async_timing_util::unix_timestamp_ms;
 use derive_variants::EnumVariants;
-use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id,
-};
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
@@ -19,11 +15,13 @@ use super::{
 };
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[cfg_attr(
+  feature = "mongo",
+  derive(mongo_indexed::derive::MongoIndexed)
 )]
-#[doc_index({ "target.type": 1 })]
-#[sparse_doc_index({ "target.id": 1 })]
+#[cfg_attr(feature = "mongo", doc_index({ "target.type": 1 }))]
+#[cfg_attr(feature = "mongo", sparse_doc_index({ "target.id": 1 }))]
 pub struct Update {
   /// The Mongo ID of the update.
   /// This field is de/serialized from/to JSON as
@@ -32,20 +30,20 @@ pub struct Update {
     default,
     rename = "_id",
     skip_serializing_if = "String::is_empty",
-    with = "hex_string_as_object_id"
+    with = "bson::serde_helpers::hex_string_as_object_id"
   )]
   pub id: MongoId,
 
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub operation: Operation,
 
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub start_ts: I64,
 
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub success: bool,
 
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub operator: String,
 
   pub target: ResourceTarget,

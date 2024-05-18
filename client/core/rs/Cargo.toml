@@ -10,19 +10,22 @@ repository.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+mongo = ["dep:mongo_indexed"]
+docker = ["dep:bollard"]
+
 [dependencies]
 # mogh
+mongo_indexed = { workspace = true, optional = true }
 serror.workspace = true
 resolver_api.workspace = true
 derive_empty_traits.workspace = true
 partial_derive2.workspace = true
 derive_variants.workspace = true
 derive_default_builder.workspace = true
-mungos.workspace = true
-mongo_indexed.workspace = true
 async_timing_util.workspace = true
 # external
-bollard.workspace = true
+bollard = { workspace = true, optional = true }
 reqwest.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
@@ -39,3 +42,4 @@ derive_builder.workspace = true
 tracing.workspace = true
 uuid.workspace = true
 clap.workspace = true
+bson.workspace = true

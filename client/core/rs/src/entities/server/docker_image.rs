@@ -79,6 +79,7 @@ fn deserialize_nonoptional_map<
     .map(|x: Option<_>| x.unwrap_or_default())
 }
 
+#[cfg(feature = "docker")]
 impl From<bollard::service::ImageSummary> for ImageSummary {
   fn from(value: bollard::service::ImageSummary) -> Self {
     Self {

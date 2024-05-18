@@ -1,6 +1,6 @@
+use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
-use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum::Display;
@@ -9,7 +9,7 @@ use typeshare::typeshare;
 use crate::entities::I64;
 
 use super::{
-  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
+  resource::{Resource, ResourceListItem, ResourceQuery},
   EnvironmentVar, SystemCommand, Version,
 };
 
@@ -208,7 +208,7 @@ pub struct BuildQuerySpecifics {
   pub built_since: I64,
 }
 
-impl AddFilters for BuildQuerySpecifics {
+impl super::resource::AddFilters for BuildQuerySpecifics {
   fn add_filters(&self, filters: &mut Document) {
     if !self.builder_ids.is_empty() {
       filters.insert(

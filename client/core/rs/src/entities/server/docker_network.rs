@@ -86,6 +86,7 @@ fn serialize_timestamp<S: Serializer>(
   }
 }
 
+#[cfg(feature = "docker")]
 impl From<bollard::service::Network> for DockerNetwork {
   fn from(value: bollard::service::Network) -> Self {
     Self {
@@ -130,6 +131,7 @@ pub struct Ipam {
   pub options: Option<HashMap<String, String>>,
 }
 
+#[cfg(feature = "docker")]
 impl From<bollard::service::Ipam> for Ipam {
   fn from(value: bollard::service::Ipam) -> Self {
     Self {
@@ -165,6 +167,7 @@ pub struct IpamConfig {
   pub auxiliary_addresses: Option<HashMap<String, String>>,
 }
 
+#[cfg(feature = "docker")]
 impl From<bollard::service::IpamConfig> for IpamConfig {
   fn from(value: bollard::service::IpamConfig) -> Self {
     Self {
@@ -203,6 +206,7 @@ pub struct NetworkContainer {
   pub ipv6_address: Option<String>,
 }
 
+#[cfg(feature = "docker")]
 impl From<bollard::service::NetworkContainer> for NetworkContainer {
   fn from(value: bollard::service::NetworkContainer) -> Self {
     Self {

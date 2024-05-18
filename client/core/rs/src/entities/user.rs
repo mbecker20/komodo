@@ -1,21 +1,19 @@
 use std::sync::OnceLock;
 
-use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id,
-};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[cfg_attr(
+  feature = "mongo",
+  derive(mongo_indexed::derive::MongoIndexed)
 )]
-#[doc_index({ "config.type": 1 })]
-#[sparse_doc_index({ "config.data.google_id": 1 })]
-#[sparse_doc_index({ "config.data.github_id": 1 })]
+#[cfg_attr(feature = "mongo", doc_index({ "config.type": 1 }))]
+#[cfg_attr(feature = "mongo", sparse_doc_index({ "config.data.google_id": 1 }))]
+#[cfg_attr(feature = "mongo", sparse_doc_index({ "config.data.github_id": 1 }))]
 pub struct User {
   /// The Mongo ID of the User.
   /// This field is de/serialized from/to JSON as
@@ -24,16 +22,16 @@ pub struct User {
     default,
     rename = "_id",
     skip_serializing_if = "String::is_empty",
-    with = "hex_string_as_object_id"
+    with = "bson::serde_helpers::hex_string_as_object_id"
   )]
   pub id: MongoId,
 
   /// The globally unique username for the user.
-  #[unique_index]
+  #[cfg_attr(feature = "mongo", unique_index)]
   pub username: String,
 
   /// Whether user is enabled / able to access the api.
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   #[serde(default)]
   pub enabled: bool,
 

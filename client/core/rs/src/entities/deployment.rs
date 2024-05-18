@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
+use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
-use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
-  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
+  resource::{Resource, ResourceListItem, ResourceQuery},
   EnvironmentVar, Version,
 };
 
@@ -397,7 +397,7 @@ pub struct DeploymentQuerySpecifics {
   pub build_ids: Vec<String>,
 }
 
-impl AddFilters for DeploymentQuerySpecifics {
+impl super::resource::AddFilters for DeploymentQuerySpecifics {
   fn add_filters(&self, filters: &mut Document) {
     if !self.server_ids.is_empty() {
       filters

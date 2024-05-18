@@ -1,6 +1,5 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use mongo_indexed::derive::MongoIndexed;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
@@ -27,16 +26,18 @@ pub struct SystemInformation {
 
 /// System stats stored on the database.
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[cfg_attr(
+  feature = "mongo",
+  derive(mongo_indexed::derive::MongoIndexed)
 )]
-#[collection_name(Stats)]
+#[cfg_attr(feature = "mongo", collection_name(Stats))]
 pub struct SystemStatsRecord {
   /// Unix timestamp in milliseconds
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub ts: I64,
   /// Server id
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub sid: String,
   // basic stats
   /// Cpu usage percentage

@@ -1,13 +1,13 @@
-use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use super::{MongoId, I64};
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[cfg_attr(
+  feature = "mongo",
+  derive(mongo_indexed::derive::MongoIndexed)
 )]
 pub struct UserGroup {
   /// The Mongo ID of the UserGroup.
@@ -17,15 +17,15 @@ pub struct UserGroup {
     default,
     rename = "_id",
     skip_serializing_if = "String::is_empty",
-    with = "hex_string_as_object_id"
+    with = "bson::serde_helpers::hex_string_as_object_id"
   )]
   pub id: MongoId,
 
-  #[unique_index]
+  #[cfg_attr(feature = "mongo", unique_index)]
   pub name: String,
 
   /// User ids
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub users: Vec<String>,
 
   #[serde(default)]

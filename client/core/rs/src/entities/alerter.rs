@@ -1,14 +1,14 @@
+use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
-use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::{Diff, MaybeNone, Partial, PartialDiff};
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
-  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
+  resource::{Resource, ResourceListItem, ResourceQuery},
   MergePartial,
 };
 
@@ -283,7 +283,7 @@ pub struct AlerterQuerySpecifics {
   pub types: Vec<AlerterConfigVariant>,
 }
 
-impl AddFilters for AlerterQuerySpecifics {
+impl super::resource::AddFilters for AlerterQuerySpecifics {
   fn add_filters(&self, filters: &mut Document) {
     let types =
       self.types.iter().map(|t| t.as_ref()).collect::<Vec<_>>();

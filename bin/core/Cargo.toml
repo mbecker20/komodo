@@ -15,10 +15,11 @@ path = "src/main.rs"
 
 [dependencies]
 # local
+monitor_client = { workspace = true, features = ["mongo"] }
 periphery_client.workspace = true
-monitor_client.workspace = true
 logger.workspace = true
 # mogh
+serror = { workspace = true, features = ["axum"] }
 merge_config_files.workspace = true
 termination_signal.workspace = true
 async_timing_util.workspace = true
@@ -27,7 +28,6 @@ mongo_indexed.workspace = true
 resolver_api.workspace = true
 parse_csl.workspace = true
 mungos.workspace = true
-serror.workspace = true
 slack.workspace = true
 # external
 urlencoding.workspace = true

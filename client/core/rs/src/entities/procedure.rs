@@ -1,6 +1,6 @@
+use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
-use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString, IntoStaticStr};
@@ -8,9 +8,7 @@ use typeshare::typeshare;
 
 use crate::api::execute::Execution;
 
-use super::resource::{
-  AddFilters, Resource, ResourceListItem, ResourceQuery,
-};
+use super::resource::{Resource, ResourceListItem, ResourceQuery};
 
 // List item
 
@@ -49,7 +47,9 @@ pub type Procedure = Resource<ProcedureConfig, ()>;
 pub type _PartialProcedureConfig = PartialProcedureConfig;
 
 #[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Partial, Builder)]
+#[derive(
+  Debug, Clone, Default, Serialize, Deserialize, Partial, Builder,
+)]
 #[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct ProcedureConfig {
@@ -124,7 +124,7 @@ pub struct ProcedureQuerySpecifics {
   pub types: Vec<ProcedureType>,
 }
 
-impl AddFilters for ProcedureQuerySpecifics {
+impl super::resource::AddFilters for ProcedureQuerySpecifics {
   fn add_filters(&self, filters: &mut Document) {
     let types =
       self.types.iter().map(|t| t.as_ref()).collect::<Vec<_>>();

@@ -1,7 +1,7 @@
+use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
-use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::{Diff, MaybeNone, Partial, PartialDiff};
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};

@@ -34,6 +34,6 @@ where
         )])),
     )
     .install_batch(opentelemetry_sdk::runtime::Tokio)
-    .expect("");
+    .expect("failed to init opentelemetry tracer");
   tracing_opentelemetry::layer().with_tracer(tracer)
 }

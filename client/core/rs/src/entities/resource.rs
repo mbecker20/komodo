@@ -1,11 +1,8 @@
 use std::str::FromStr;
 
+use bson::{doc, oid::ObjectId, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
-use mungos::mongodb::bson::{
-  doc, oid::ObjectId, serde_helpers::hex_string_as_object_id,
-  Document,
-};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -23,7 +20,7 @@ pub struct Resource<Config, Info: Default = ()> {
     default,
     rename = "_id",
     skip_serializing_if = "String::is_empty",
-    with = "hex_string_as_object_id"
+    with = "bson::serde_helpers::hex_string_as_object_id"
   )]
   #[builder(setter(skip))]
   pub id: MongoId,

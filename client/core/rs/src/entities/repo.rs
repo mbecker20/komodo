@@ -1,6 +1,6 @@
+use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
-use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum::Display;
@@ -9,7 +9,7 @@ use typeshare::typeshare;
 use crate::entities::I64;
 
 use super::{
-  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
+  resource::{Resource, ResourceListItem, ResourceQuery},
   SystemCommand,
 };
 
@@ -151,7 +151,7 @@ pub struct RepoQuerySpecifics {
   pub repos: Vec<String>,
 }
 
-impl AddFilters for RepoQuerySpecifics {
+impl super::resource::AddFilters for RepoQuerySpecifics {
   fn add_filters(&self, filters: &mut Document) {
     if !self.repos.is_empty() {
       filters.insert("config.repo", doc! { "$in": &self.repos });

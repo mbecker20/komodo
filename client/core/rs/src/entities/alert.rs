@@ -1,10 +1,6 @@
 use std::path::PathBuf;
 
 use derive_variants::EnumVariants;
-use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id,
-};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -17,12 +13,14 @@ use super::{
 
 /// Representation of an alert in the system.
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[cfg_attr(
+  feature = "mongo",
+  derive(mongo_indexed::derive::MongoIndexed)
 )]
-#[doc_index({ "data.type": 1 })]
-#[doc_index({ "target.type": 1 })]
-#[doc_index({ "target.id": 1 })]
+#[cfg_attr(feature = "mongo", doc_index({ "data.type": 1 }))]
+#[cfg_attr(feature = "mongo", doc_index({ "target.type": 1 }))]
+#[cfg_attr(feature = "mongo", doc_index({ "target.id": 1 }))]
 pub struct Alert {
   /// The Mongo ID of the alert.
   /// This field is de/serialized from/to JSON as
@@ -31,20 +29,20 @@ pub struct Alert {
     default,
     rename = "_id",
     skip_serializing_if = "String::is_empty",
-    with = "hex_string_as_object_id"
+    with = "bson::serde_helpers::hex_string_as_object_id"
   )]
   pub id: MongoId,
 
   /// Unix timestamp in milliseconds the alert was opened
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub ts: I64,
 
   /// Whether the alert is already resolved
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub resolved: bool,
 
   /// The severity of the alert
-  #[index]
+  #[cfg_attr(feature = "mongo", index)]
   pub level: SeverityLevel,
 
   /// The target of the alert
