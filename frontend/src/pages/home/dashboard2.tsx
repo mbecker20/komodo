@@ -6,6 +6,7 @@ import { AllUpdates } from "@components/updates/resource";
 import { useRead, useUser } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Separator } from "@ui/separator";
+import { History } from "lucide-react";
 
 export const Dashboard = () => {
   return (
@@ -41,10 +42,16 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
       <div className="py-2">
         <Separator orientation="vertical" />
       </div>
-      <div className="grid grid-cols-3 grid-rows-2 gap-4 w-full">
-        {ids.map((id: string) => (
-          <RecentCard key={type + id} type={type} id={id} />
-        ))}
+      <div className="flex flex-col gap-4 w-full pb-1">
+        <div className="flex gap-2 items-center text-muted-foreground">
+          <History className="w-4 h-4" />
+          <h3>Recent {type}s</h3>
+        </div>
+        <div className="grid grid-cols-3 grid-rows-2 gap-4 w-full h-full">
+          {ids.map((id: string) => (
+            <RecentCard key={type + id} type={type} id={id} />
+          ))}
+        </div>
       </div>
     </div>
   );
