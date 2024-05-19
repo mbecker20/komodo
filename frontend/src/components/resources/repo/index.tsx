@@ -35,8 +35,6 @@ export const RepoComponents: RequiredResourceComponents = {
 
   Table: RepoTable,
 
-  Name: ({ id }) => <>{useRepo(id)?.name}</>,
-
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,
 

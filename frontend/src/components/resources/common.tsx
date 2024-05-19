@@ -152,10 +152,22 @@ export const ResourceLink = ({
     <Link to={`/${usableResourcePath(type)}/${id}`}>
       <Button variant="link" className="flex gap-2 items-center p-0">
         <Components.Icon id={id} />
-        <Components.Name id={id} />
+        <ResourceName type={type} id={id} />
       </Button>
     </Link>
   );
+};
+
+export const ResourceName = ({
+  type,
+  id,
+}: {
+  type: UsableResource;
+  id: string;
+}) => {
+  const Components = ResourceComponents[type];
+  const name = Components.list_item(id)?.name ?? "unknown";
+  return <>{name}</>;
 };
 
 export const CopyResource = ({

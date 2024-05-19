@@ -70,7 +70,7 @@ export const Topbar = () => {
             to={"/"}
             className="flex gap-3 items-start text-2xl tracking-widest lg:mx-2"
           >
-            <img src="/monitor-lizard.png" className="w-9 h-7 dark:invert" />
+            <img src="/monitor-lizard.png" className="w-9 h-7 dark:invert hidden lg:block" />
             MONITOR
           </Link>
           <div className="flex gap-2">

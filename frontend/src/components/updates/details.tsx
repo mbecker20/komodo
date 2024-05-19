@@ -6,7 +6,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@ui/sheet";
-import { Calendar, Clock, Loader2, Milestone, User } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Loader2,
+  Milestone,
+  Settings,
+  User,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,7 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRead } from "@lib/hooks";
 import { ResourceComponents } from "@components/resources";
 import { Link } from "react-router-dom";
@@ -27,6 +34,8 @@ import {
 } from "@lib/utils";
 import { UsableResource } from "@types";
 import { UserAvatar } from "@components/util";
+import { ResourceName } from "@components/resources/common";
+import { useWebsocketMessages } from "@lib/socket";
 
 export const UpdateUser = ({
   user_id,
@@ -141,7 +150,7 @@ export const UpdateDetailsInner = ({
         side="top"
         onClick={() => setOpen(false)}
       >
-        {open && <UpdateDetailsContent id={id} setOpen={setOpen} />}
+        <UpdateDetailsContent id={id} open={open} setOpen={setOpen} />
       </SheetContent>
     </Sheet>
   );
@@ -149,12 +158,28 @@ export const UpdateDetailsInner = ({
 
 const UpdateDetailsContent = ({
   id,
+  open,
   setOpen,
 }: {
   id: string;
+  open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const update = useRead("GetUpdate", { id }).data;
+  const { data: update, refetch } = useRead(
+    "GetUpdate",
+    { id },
+    { enabled: false }
+  );
+  useEffect(() => {
+    // handle open state change loading
+    if (open) {
+      refetch();
+    }
+  }, [open]);
+  // Since auto refetching is disabled, listen for updates on the update id and refetch
+  useWebsocketMessages("update-details", (update) => {
+    if (update.id === id) refetch();
+  });
   if (!update)
     return (
       <div className="w-full flex justify-center">
@@ -178,7 +203,7 @@ const UpdateDetailsContent = ({
         <SheetDescription className="flex flex-col gap-2">
           <UpdateUser user_id={update.operator} />
           <div className="flex gap-4">
-            {Components && (
+            {Components ? (
               <Link
                 to={`/${usableResourcePath(
                   update.target.type as UsableResource
@@ -189,9 +214,18 @@ const UpdateDetailsContent = ({
                   onClick={() => setOpen(false)}
                 >
                   <Components.Icon id={update.target.id} />
-                  <Components.Name id={update.target.id} />
+                  <ResourceName
+                    // will be UsableResource because Components exists in this branch
+                    type={update.target.type as UsableResource}
+                    id={id}
+                  />
                 </div>
               </Link>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                System
+              </div>
             )}
             {update.version && (
               <div className="flex items-center gap-2">

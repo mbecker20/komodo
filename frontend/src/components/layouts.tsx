@@ -17,6 +17,7 @@ import { ResourceTags } from "./tags";
 import { Topbar } from "./topbar";
 import { usableResourcePath } from "@lib/utils";
 import { Sidebar } from "./sidebar";
+import { ResourceName } from "./resources/common";
 
 export const Layout = () => {
   const nav = useNavigate();
@@ -95,15 +96,23 @@ interface SectionProps {
   actions?: ReactNode;
 }
 
-export const Section = ({ title, icon, titleOther, actions, children }: SectionProps) => (
+export const Section = ({
+  title,
+  icon,
+  titleOther,
+  actions,
+  children,
+}: SectionProps) => (
   <div className="flex flex-col gap-4">
     <div className="flex items-start justify-between">
-      {(title || icon) ? (
+      {title || icon ? (
         <div className="flex items-center gap-2 text-muted-foreground">
           {icon}
           {title && <h2 className="text-xl">{title}</h2>}
         </div>
-      ) : titleOther}
+      ) : (
+        titleOther
+      )}
       {actions}
     </div>
     {children}
@@ -178,7 +187,7 @@ export const ResourceCard = ({
         <CardHeader className="flex-row justify-between">
           <div>
             <CardTitle>
-              <Components.Name id={id} />
+              <ResourceName type={type} id={id} />
             </CardTitle>
             {/* <CardDescription>
               <Components.Description id={id} />
@@ -214,7 +223,7 @@ export const ResourceRow = ({
       <Card className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors">
         <CardHeader className="grid grid-cols-4 items-center">
           <CardTitle>
-            <Components.Name id={id} />
+            <ResourceName type={type} id={id} />
           </CardTitle>
           {Object.entries(Components.Info).map(([key, Info]) => (
             <Info key={key} id={id} />

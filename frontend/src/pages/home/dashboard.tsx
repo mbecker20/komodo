@@ -1,6 +1,7 @@
 import { OpenAlerts } from "@components/alert";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
+import { ResourceName } from "@components/resources/common";
 import { TagsWithBadge } from "@components/tags";
 import { AllUpdates } from "@components/updates/resource";
 import { useRead, useUser } from "@lib/hooks";
@@ -72,7 +73,7 @@ const RecentCard = ({ type, id }: { type: UsableResource; id: string }) => {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <Components.Icon id={id} />
-            <Components.Name id={id} />
+            <ResourceName type={type} id={id} />
           </div>
           <div className="text-sm">
             <Components.Status.State id={id} />

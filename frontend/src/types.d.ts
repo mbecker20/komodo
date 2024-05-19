@@ -17,9 +17,6 @@ export interface RequiredResourceComponents {
   /** A table component to view resource list */
   Table: React.FC<{ search?: string }>;
 
-  /** Name of the resource */
-  Name: IdComponent;
-
   /** Icon for the component */
   Icon: OptionalIdComponent;
   BigIcon: OptionalIdComponent;

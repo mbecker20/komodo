@@ -91,8 +91,6 @@ export const BuildComponents: RequiredResourceComponents = {
 
   Table: BuildTable,
 
-  Name: ({ id }) => <>{useBuild(id)?.name}</>,
-
   Icon: ({ id }) => <BuildIcon id={id} size={4} />,
   BigIcon: ({ id }) => <BuildIcon id={id} size={8} />,
 

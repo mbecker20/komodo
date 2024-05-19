@@ -7,6 +7,7 @@ import { bg_color_class_by_intention } from "@lib/color";
 import { Card, CardHeader } from "@ui/card";
 import { cn } from "@lib/utils";
 import { ResourceLink } from "@components/resources/common";
+import { Settings } from "lucide-react";
 
 export const UpdatesTable = ({
   updates,
@@ -30,7 +31,10 @@ export const UpdatesTable = ({
             header: "Target",
             cell: ({ row }) =>
               row.original.target.type === "System" ? (
-                "N/A"
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  System
+                </div>
               ) : (
                 <ResourceLink
                   type={row.original.target.type}

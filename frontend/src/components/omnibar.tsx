@@ -43,7 +43,7 @@ export const OmniSearch = ({
         <Search className="w-4 h-4" />{" "}
         <span className="text-muted-foreground hidden md:flex">Search</span>
       </div>
-      <Badge variant="outline" className="text-muted-foreground">
+      <Badge variant="outline" className="text-muted-foreground hidden md:inline-flex">
         shift + s
       </Badge>
     </Button>

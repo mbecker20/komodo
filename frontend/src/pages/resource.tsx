@@ -39,7 +39,7 @@ export const Resource = () => {
 
   return (
     <Page
-      title={<Components.Name id={id} />}
+      title={name}
       icon={<Components.BigIcon id={id} />}
       titleRight={
         <div className="flex gap-4 items-center">

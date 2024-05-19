@@ -14,6 +14,23 @@ const useWebsocket = () => useAtom(rws_atom);
 const ws_connected = atom(false);
 export const useWebsocketConnected = () => useAtom(ws_connected);
 
+const onMessageHandlers: {
+  [key: string]: (update: Types.UpdateListItem) => void;
+} = {};
+
+export const useWebsocketMessages = (
+  key: string,
+  handler: (update: Types.UpdateListItem) => void
+) => {
+  onMessageHandlers[key] = handler;
+  useEffect(() => {
+    // Clean up on unmount
+    return () => {
+      delete onMessageHandlers[key];
+    };
+  }, []);
+};
+
 const on_message = (
   { data }: MessageEvent,
   invalidate: ReturnType<typeof useInvalidate>
@@ -107,6 +124,9 @@ const on_message = (
   ) {
     invalidate(["ListVariables"], ["GetVariable"]);
   }
+
+  // Run any attached handlers
+  Object.values(onMessageHandlers).forEach((handler) => handler(update));
 };
 
 export const WebsocketProvider = ({

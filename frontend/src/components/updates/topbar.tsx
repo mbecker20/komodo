@@ -13,6 +13,8 @@ import { ResourceComponents } from "@components/resources";
 import { cn, version_is_none } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { fmt_date, fmt_version } from "@lib/formatting";
+import { ResourceName } from "@components/resources/common";
+import { UsableResource } from "@types";
 
 export const TopbarUpdates = () => {
   const updates = useRead("ListUpdates", {}).data;
@@ -78,10 +80,21 @@ const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
               </div>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
-              {Components && <Components.Icon />}
-              {Components && <Components.Name id={update.target.id} />}
-              {!Components && <Settings className="w-4 h-4" />}
-              {!Components && "System"}
+              {Components && (
+                <>
+                  <Components.Icon />
+                  <ResourceName
+                    type={update.target.type as UsableResource}
+                    id={update.target.id}
+                  />
+                </>
+              )}
+              {!Components && (
+                <>
+                  <Settings className="w-4 h-4" />
+                  System
+                </>
+              )}
             </div>
           </div>
           <div className="text-xs text-muted-foreground w-48">

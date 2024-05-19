@@ -88,7 +88,7 @@ const ResourceUpdates = ({
   const Components = ResourceComponents[type];
   return (
     <Page
-      title={<Components.Name id={id} />}
+      title={name}
       titleRight={<h2 className="text-muted-foreground">Updates</h2>}
       icon={<Components.BigIcon id={id} />}
       actions={

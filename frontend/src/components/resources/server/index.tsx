@@ -112,8 +112,6 @@ export const ServerComponents: RequiredResourceComponents = {
 
   Table: ServerTable,
 
-  Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
-
   Icon: ({ id }) => <_ServerIcon id={id} size={4} />,
   BigIcon: ({ id }) => <_ServerIcon id={id} size={8} />,
 

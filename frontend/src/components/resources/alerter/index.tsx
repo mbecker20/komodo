@@ -92,8 +92,6 @@ export const AlerterComponents: RequiredResourceComponents = {
 
   Table: AlerterTable,
 
-  Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
-
   Icon: () => <AlarmClock className="w-4 h-4" />,
   BigIcon: () => <AlarmClock className="w-8 h-8" />,
 

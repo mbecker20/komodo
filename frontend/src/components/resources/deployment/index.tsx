@@ -110,8 +110,6 @@ export const DeploymentComponents: RequiredResourceComponents = {
     return <DeploymentTable deployments={deployments} search={search} />;
   },
 
-  Name: ({ id }) => <>{useDeployment(id)?.name}</>,
-
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
   BigIcon: ({ id }) => <DeploymentIcon id={id} size={8} />,
 
