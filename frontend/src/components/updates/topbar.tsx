@@ -5,7 +5,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { Bell, Check, Circle, Loader2, X } from "lucide-react";
+import { Bell, Check, Circle, Loader2, Settings, X } from "lucide-react";
 import { Button } from "@ui/button";
 import { Calendar } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
@@ -80,6 +80,8 @@ const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
             <div className="flex items-center gap-2 text-muted-foreground">
               {Components && <Components.Icon />}
               {Components && <Components.Name id={update.target.id} />}
+              {!Components && <Settings className="w-4 h-4" />}
+              {!Components && "System"}
             </div>
           </div>
           <div className="text-xs text-muted-foreground w-48">

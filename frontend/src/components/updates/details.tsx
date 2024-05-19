@@ -6,7 +6,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@ui/sheet";
-import { Calendar, Clock, Milestone, User } from "lucide-react";
+import { Calendar, Clock, Loader2, Milestone, User } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -133,16 +133,6 @@ export const UpdateDetailsInner = ({
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const update = useRead("GetUpdate", { id }).data;
-  if (!update) return null;
-
-  const Components =
-    update.target.type === "System"
-      ? null
-      : ResourceComponents[update.target.type];
-
-  if (!Components) return null;
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -151,17 +141,44 @@ export const UpdateDetailsInner = ({
         side="top"
         onClick={() => setOpen(false)}
       >
-        <SheetHeader className="mb-4">
-          <SheetTitle>
-            {update.operation
-              .split("_")
-              .map((s) => s[0].toUpperCase() + s.slice(1))
-              .join(" ")}{" "}
-            {!version_is_none(update.version) && fmt_version(update.version)}
-          </SheetTitle>
-          <SheetDescription className="flex flex-col gap-2">
-            <UpdateUser user_id={update.operator} />
-            <div className="flex gap-4">
+        {open && <UpdateDetailsContent id={id} setOpen={setOpen} />}
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+const UpdateDetailsContent = ({
+  id,
+  setOpen,
+}: {
+  id: string;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const update = useRead("GetUpdate", { id }).data;
+  if (!update)
+    return (
+      <div className="w-full flex justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  const Components =
+    update.target.type === "System"
+      ? null
+      : ResourceComponents[update.target.type];
+  return (
+    <>
+      <SheetHeader className="mb-4">
+        <SheetTitle>
+          {update.operation
+            .split("_")
+            .map((s) => s[0].toUpperCase() + s.slice(1))
+            .join(" ")}{" "}
+          {!version_is_none(update.version) && fmt_version(update.version)}
+        </SheetTitle>
+        <SheetDescription className="flex flex-col gap-2">
+          <UpdateUser user_id={update.operator} />
+          <div className="flex gap-4">
+            {Components && (
               <Link
                 to={`/${usableResourcePath(
                   update.target.type as UsableResource
@@ -175,79 +192,79 @@ export const UpdateDetailsInner = ({
                   <Components.Name id={update.target.id} />
                 </div>
               </Link>
-              {update.version && (
-                <div className="flex items-center gap-2">
-                  <Milestone className="w-4 h-4" />
-                  {fmt_version(update.version)}
+            )}
+            {update.version && (
+              <div className="flex items-center gap-2">
+                <Milestone className="w-4 h-4" />
+                {fmt_version(update.version)}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {new Date(update.start_ts).toLocaleString()}
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              {update.end_ts
+                ? fmt_duration(update.start_ts, update.end_ts)
+                : "ongoing"}
+            </div>
+          </div>
+        </SheetDescription>
+      </SheetHeader>
+      <div className="grid gap-2">
+        {update.logs?.map((log, i) => (
+          <Card key={i}>
+            <CardHeader className="flex-col">
+              <CardTitle>{log.stage}</CardTitle>
+              <CardDescription className="flex gap-2">
+                <span>
+                  Stage {i + 1} of {update.logs.length}
+                </span>
+                <span>|</span>
+                <span className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  {fmt_duration(log.start_ts, log.end_ts)}
+                </span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              {log.command && (
+                <div>
+                  <CardDescription>command</CardDescription>
+                  <pre className="max-h-[500px] overflow-y-auto">
+                    {log.command}
+                  </pre>
                 </div>
               )}
-            </div>
-            <div className="flex gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                {new Date(update.start_ts).toLocaleString()}
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                {update.end_ts
-                  ? fmt_duration(update.start_ts, update.end_ts)
-                  : "ongoing"}
-              </div>
-            </div>
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-2">
-          {update.logs?.map((log, i) => (
-            <Card key={i}>
-              <CardHeader className="flex-col">
-                <CardTitle>{log.stage}</CardTitle>
-                <CardDescription className="flex gap-2">
-                  <span>
-                    Stage {i + 1} of {update.logs.length}
-                  </span>
-                  <span>|</span>
-                  <span className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {fmt_duration(log.start_ts, log.end_ts)}
-                  </span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                {log.command && (
-                  <div>
-                    <CardDescription>command</CardDescription>
-                    <pre className="max-h-[500px] overflow-y-auto">
-                      {log.command}
-                    </pre>
-                  </div>
-                )}
-                {log.stdout && (
-                  <div>
-                    <CardDescription>stdout</CardDescription>
-                    <pre
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeOnlySpan(log.stdout),
-                      }}
-                      className="max-h-[500px] overflow-y-auto"
-                    />
-                  </div>
-                )}
-                {log.stderr && (
-                  <div>
-                    <CardDescription>stderr</CardDescription>
-                    <pre
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeOnlySpan(log.stderr),
-                      }}
-                      className="max-h-[500px] overflow-y-auto"
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </SheetContent>
-    </Sheet>
+              {log.stdout && (
+                <div>
+                  <CardDescription>stdout</CardDescription>
+                  <pre
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeOnlySpan(log.stdout),
+                    }}
+                    className="max-h-[500px] overflow-y-auto"
+                  />
+                </div>
+              )}
+              {log.stderr && (
+                <div>
+                  <CardDescription>stderr</CardDescription>
+                  <pre
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeOnlySpan(log.stderr),
+                    }}
+                    className="max-h-[500px] overflow-y-auto"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </>
   );
 };

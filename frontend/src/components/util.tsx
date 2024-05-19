@@ -309,6 +309,7 @@ export const TextUpdateMenu = ({
   placeholder,
   confirmButton,
   disabled,
+  fullWidth,
 }: {
   title: string;
   value: string | undefined;
@@ -317,6 +318,7 @@ export const TextUpdateMenu = ({
   placeholder?: string;
   confirmButton?: boolean;
   disabled?: boolean;
+  fullWidth?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [_value, setValue] = useState(value);
@@ -329,7 +331,12 @@ export const TextUpdateMenu = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-fit">
+        <Card
+          className={cn(
+            "px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer",
+            fullWidth ? "w-full" : "w-fit"
+          )}
+        >
           <div
             className={cn(
               "text-sm text-nowrap overflow-hidden overflow-ellipsis",

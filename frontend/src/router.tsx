@@ -16,6 +16,7 @@ import { ResourceStats } from "@pages/resource_stats";
 import { Alerts } from "@pages/alerts";
 import { UserPage } from "@pages/user";
 import { UserGroupPage } from "@pages/user-group";
+import { Variables } from "@pages/variables";
 
 const ROUTER = createBrowserRouter([
   {
@@ -26,9 +27,11 @@ const ROUTER = createBrowserRouter([
       { path: "keys", element: <Keys /> },
       { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },
-      { path: "resources", element: <AllResources /> },
       { path: "alerts", element: <Alerts /> },
       { path: "updates", element: <Updates /> },
+      { path: "variables", element: <Variables /> },
+      { path: "resources", element: <AllResources /> },
+      { path: "user-groups/:id", element: <UserGroupPage /> },
       {
         path: "users",
         children: [
@@ -36,7 +39,6 @@ const ROUTER = createBrowserRouter([
           { path: ":id", element: <UserPage /> },
         ],
       },
-      { path: "user-groups/:id", element: <UserGroupPage /> },
       {
         path: ":type",
         children: [

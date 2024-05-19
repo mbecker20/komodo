@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { Switch } from "@ui/switch";
+import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router";
 
@@ -48,8 +49,10 @@ export const Alerts = () => {
     page,
   }).data;
   return (
-    <Page title="Alerts">
-      <div className="flex flex-col gap-4">
+    <Page
+      title="Alerts"
+      icon={<AlertTriangle className="w-8 h-8" />}
+      actions={
         <div className="flex gap-4 items-center justify-end">
           <div
             className="flex gap-3 items-center cursor-pointer"
@@ -76,9 +79,10 @@ export const Alerts = () => {
             </SelectContent>
           </Select>
         </div>
-
+      }
+    >
+      <div className="flex flex-col gap-4">
         <AlertsTable alerts={alerts?.alerts ?? []} showResolved />
-
         <div className="flex gap-4 justify-center items-center text-muted-foreground">
           <Button
             variant="outline"

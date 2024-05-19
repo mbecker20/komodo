@@ -9,6 +9,7 @@ import {
   FolderTree,
   Tag,
   UserCircle2,
+  Variable,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { ResourceComponents } from "./resources";
@@ -72,6 +73,12 @@ export const Sidebar = () => {
           label="Updates"
           to="/updates"
           icon={<Bell className="w-4 h-4" />}
+        />
+
+        <SidebarLink
+          label="Variables"
+          to="/variables"
+          icon={<Variable className="w-4 h-4" />}
         />
 
         <SidebarLink

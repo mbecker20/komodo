@@ -5,6 +5,7 @@ import { useRead, useResourceParamType, useSetTitle } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { UsableResource } from "@types";
+import { Button } from "@ui/button";
 import {
   Command,
   CommandEmpty,
@@ -14,7 +15,7 @@ import {
   CommandList,
 } from "@ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-import { SearchX } from "lucide-react";
+import { Bell, SearchX } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -31,15 +32,36 @@ export const Updates = () => {
 const AllUpdates = () => {
   useSetTitle("Updates");
   const [operation, setOperation] = useState<Types.Operation | undefined>();
-  const updates = useRead("ListUpdates", { query: { operation } }).data;
+  const [page, setPage] = useState(0);
+  const updates = useRead("ListUpdates", { query: { operation }, page }).data;
   return (
     <Page
       title="Updates"
+      icon={<Bell className="w-8 h-8" />}
       actions={
         <OperationSelector selected={operation} onSelect={setOperation} />
       }
     >
-      <UpdatesTable updates={updates?.updates ?? []} showTarget />
+      <div className="flex flex-col gap-4">
+        <UpdatesTable updates={updates?.updates ?? []} showTarget />
+        <div className="flex gap-4 justify-center items-center text-muted-foreground">
+          <Button
+            variant="outline"
+            onClick={() => setPage(page - 1)}
+            disabled={page === 0}
+          >
+            Prev Page
+          </Button>
+          Page: {page + 1}
+          <Button
+            variant="outline"
+            onClick={() => updates?.next_page && setPage(updates.next_page)}
+            disabled={!updates?.next_page}
+          >
+            Next Page
+          </Button>
+        </div>
+      </div>
     </Page>
   );
 };
@@ -54,12 +76,14 @@ const ResourceUpdates = ({
   const name = useRead(`List${type}s`, {}).data?.find((r) => r.id === id)?.name;
   useSetTitle(name && `${name} | Updates`);
   const [operation, setOperation] = useState<Types.Operation | undefined>();
+  const [page, setPage] = useState(0);
   const updates = useRead("ListUpdates", {
     query: {
       "target.type": type,
       "target.id": id,
       operation,
     },
+    page,
   }).data;
   const Components = ResourceComponents[type];
   return (
@@ -75,7 +99,26 @@ const ResourceUpdates = ({
         />
       }
     >
-      <UpdatesTable updates={updates?.updates ?? []} />
+      <div className="flex flex-col gap-4">
+        <UpdatesTable updates={updates?.updates ?? []} />
+        <div className="flex gap-4 justify-center items-center text-muted-foreground">
+          <Button
+            variant="outline"
+            onClick={() => setPage(page - 1)}
+            disabled={page === 0}
+          >
+            Prev Page
+          </Button>
+          Page: {page + 1}
+          <Button
+            variant="outline"
+            onClick={() => updates?.next_page && setPage(updates.next_page)}
+            disabled={!updates?.next_page}
+          >
+            Next Page
+          </Button>
+        </div>
+      </div>
     </Page>
   );
 };

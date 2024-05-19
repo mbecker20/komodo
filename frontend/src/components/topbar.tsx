@@ -13,6 +13,7 @@ import {
   Tag,
   UserCircle2,
   Users,
+  Variable,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -104,6 +105,8 @@ const PrimaryDropdown = () => {
     ? [<Key className="w-4 h-4" />, "Api Keys"]
     : location.pathname === "/tags"
     ? [<Tag className="w-4 h-4" />, "Tags"]
+    : location.pathname === "/variables"
+    ? [<Variable className="w-4 h-4" />, "Variables"]
     : location.pathname === "/alerts"
     ? [<AlertTriangle className="w-4 h-4" />, "Alerts"]
     : location.pathname === "/updates"
@@ -162,6 +165,12 @@ const PrimaryDropdown = () => {
             label="Updates"
             icon={<Bell className="w-4 h-4" />}
             to="/updates"
+          />
+
+          <DropdownLinkItem
+            label="Variables"
+            icon={<Variable className="w-4 h-4" />}
+            to="/variables"
           />
 
           <DropdownLinkItem

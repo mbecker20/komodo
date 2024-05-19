@@ -100,6 +100,13 @@ const on_message = (
       ["GetServerTemplatesSummary"]
     );
   }
+
+  if (
+    update.target.type === "System" &&
+    update.operation.includes("Variable")
+  ) {
+    invalidate(["ListVariables"], ["GetVariable"]);
+  }
 };
 
 export const WebsocketProvider = ({
@@ -188,5 +195,5 @@ const make_websocket = (
   // force close every 30s to trigger reconnect and keep fresh
   setTimeout(() => ws.close(), 30_000);
 
-  return ws
+  return ws;
 };

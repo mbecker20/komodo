@@ -76,6 +76,10 @@ impl Resolve<UpdateVariableValue, User> for State {
 
     let variable = get_variable(&name).await?;
 
+    if value == variable.value {
+      return Err(anyhow!("no change"));
+    }
+
     db_client()
       .await
       .variables

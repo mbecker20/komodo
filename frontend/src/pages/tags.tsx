@@ -12,7 +12,7 @@ import {
 import { Button } from "@ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 import { useToast } from "@ui/use-toast";
-import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
+import { Trash, PlusCircle, Loader2, Check, Tag } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@ui/input";
 import { UpdateUser } from "@components/updates/details";
@@ -28,12 +28,14 @@ export const Tags = () => {
   return (
     <Page
       title="Tags"
+      icon={<Tag className="w-8 h-8" />}
       actions={
         <div className="flex gap-4">
           <Input
             placeholder="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            className="w-[200px] lg:w-[300px]"
           />
           <CreateTag />
         </div>
