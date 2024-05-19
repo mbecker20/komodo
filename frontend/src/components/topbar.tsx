@@ -66,7 +66,11 @@ export const Topbar = () => {
     <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
       <div className="w-full p-4 grid grid-cols-2 lg:grid-cols-3">
         <div className="flex items-center gap-4 justify-self-start w-fit">
-          <Link to={"/"} className="text-2xl tracking-widest lg:mx-8">
+          <Link
+            to={"/"}
+            className="flex gap-3 items-start text-2xl tracking-widest lg:mx-2"
+          >
+            <img src="/monitor-lizard.png" className="w-9 h-7 dark:invert" />
             MONITOR
           </Link>
           <div className="flex gap-2">
@@ -74,7 +78,10 @@ export const Topbar = () => {
             <SecondaryDropdown />
           </div>
         </div>
-        <OmniSearch setOpen={setOmniOpen} className="hidden lg:flex justify-self-center" />
+        <OmniSearch
+          setOpen={setOmniOpen}
+          className="hidden lg:flex justify-self-center"
+        />
         <div className="flex md:gap-2 justify-self-end items-center">
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <WsStatusIndicator />
