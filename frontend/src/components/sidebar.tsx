@@ -7,8 +7,9 @@ import {
   Box,
   Boxes,
   FolderTree,
+  Key,
   Tag,
-  UserCircle2,
+  User,
   Variable,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -17,10 +18,11 @@ import { Separator } from "@ui/separator";
 import { ReactNode } from "react";
 import { useAtom } from "jotai";
 import { homeViewAtom } from "@main";
+import { useUser } from "@lib/hooks";
 
 export const Sidebar = () => {
+  const user = useUser().data;
   const [view, setView] = useAtom(homeViewAtom);
-  console.log(view);
   return (
     <Card className="h-fit m-4 hidden lg:flex">
       <CardContent className="h-fit grid gap-1 px-6 py-4">
@@ -89,16 +91,18 @@ export const Sidebar = () => {
 
         <Separator />
 
+        {user?.admin && (
+          <SidebarLink
+            label="Users"
+            to="/users"
+            icon={<User className="w-4 h-4" />}
+          />
+        )}
+
         <SidebarLink
           label="Api Keys"
           to="/keys"
-          icon={<Box className="w-4 h-4" />}
-        />
-
-        <SidebarLink
-          label="Users"
-          to="/users"
-          icon={<UserCircle2 className="w-4 h-4" />}
+          icon={<Key className="w-4 h-4" />}
         />
       </CardContent>
     </Card>

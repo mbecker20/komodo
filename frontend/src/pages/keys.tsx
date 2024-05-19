@@ -11,7 +11,7 @@ import {
 } from "@ui/dialog";
 import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
-import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
+import { Trash, PlusCircle, Loader2, Check, Key } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@ui/input";
 import {
@@ -27,12 +27,12 @@ export const Keys = () => {
   useSetTitle("Api Keys");
   const keys = useRead("ListApiKeys", {}).data ?? [];
   return (
-    <Page title="Api Keys" actions={<CreateKey />}>
-      <KeysTable
-        keys={keys}
-        DeleteKey={DeleteKey}
-
-      />
+    <Page
+      title="Api Keys"
+      icon={<Key className="w-8 h-8" />}
+      actions={<CreateKey />}
+    >
+      <KeysTable keys={keys} DeleteKey={DeleteKey} />
     </Page>
   );
 };

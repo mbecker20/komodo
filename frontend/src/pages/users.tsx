@@ -4,7 +4,7 @@ import { UserTable } from "@components/users/table";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
-import { UserCircle2, Users } from "lucide-react";
+import { User, Users } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +17,8 @@ export const UsersPage = () => {
   const searchSplit = search.split(" ");
   return (
     <Page
+      title="Users"
+      icon={<User className="w-8 h-8" />}
       actions={
         <Input
           placeholder="Search"
@@ -53,7 +55,7 @@ export const UsersPage = () => {
       {/* Users */}
       <Section
         title="Users"
-        icon={<UserCircle2 className="w-4 h-4" />}
+        icon={<User className="w-4 h-4" />}
         actions={<NewServiceUser />}
       >
         <UserTable

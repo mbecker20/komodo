@@ -11,7 +11,7 @@ import {
   Key,
   SearchX,
   Tag,
-  UserCircle2,
+  User,
   Users,
   Variable,
 } from "lucide-react";
@@ -122,7 +122,7 @@ const PrimaryDropdown = () => {
     ? [<Users className="w-4 h-4" />, "User Groups"]
     : location.pathname === "/users" ||
       location.pathname.split("/")[1] === "users"
-    ? [<UserCircle2 className="w-4 h-4" />, "Users"]
+    ? [<User className="w-4 h-4" />, "Users"]
     : [<FileQuestion className="w-4 h-4" />, "Unknown"];
   // : [<Box className="w-4 h-4" />, "Dashboard"];
 
@@ -188,19 +188,19 @@ const PrimaryDropdown = () => {
 
           <DropdownMenuSeparator />
 
+          {user?.admin && (
+            <DropdownLinkItem
+              label="Users"
+              icon={<User className="w-4 h-4" />}
+              to="/users"
+            />
+          )}
+
           <DropdownLinkItem
             label="Api Keys"
             icon={<Box className="w-4 h-4" />}
             to="/keys"
           />
-
-          {user?.admin && (
-            <DropdownLinkItem
-              label="Users"
-              icon={<UserCircle2 className="w-4 h-4" />}
-              to="/users"
-            />
-          )}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -390,7 +390,7 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
                 }}
               >
                 <Button variant="link" className="flex gap-2 items-center p-0">
-                  <UserCircle2 className="w-4" />
+                  <User className="w-4" />
                   All User Groups
                 </Button>
               </CommandItem>
@@ -464,7 +464,7 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
                 }}
               >
                 <Button variant="link" className="flex gap-2 items-center p-0">
-                  <UserCircle2 className="w-4" />
+                  <User className="w-4" />
                   All Users
                 </Button>
               </CommandItem>

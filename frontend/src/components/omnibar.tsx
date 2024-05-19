@@ -9,7 +9,7 @@ import {
   CommandSeparator,
   CommandItem,
 } from "@ui/command";
-import { Home, Search, UserCircle2 } from "lucide-react";
+import { Home, Search, User } from "lucide-react";
 import { Fragment, ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@lib/utils";
@@ -171,7 +171,7 @@ const useOmniItems = (
         },
         (user?.admin && {
           label: "Users",
-          icon: <UserCircle2 className="w-4 h-4" />,
+          icon: <User className="w-4 h-4" />,
           onSelect: () => nav("/users"),
         }) as OmniItem,
       ]

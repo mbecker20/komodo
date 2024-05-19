@@ -7,6 +7,7 @@ import {
   useUser,
   useWrite,
 } from "@lib/hooks";
+import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import {
@@ -27,10 +28,11 @@ export const Variables = () => {
   const disabled = !user?.admin;
   useSetTitle("Variables");
   const [search, setSearch] = useState("");
-  const { variables } = useRead("ListVariables", {}).data ?? {
+  const { variables, secrets } = useRead("ListVariables", {}).data ?? {
     variables: [],
     secrets: [],
   };
+  secrets.sort();
   const searchSplit = search?.toLowerCase().split(" ") || [];
   const filtered =
     variables?.filter((variable) => {
@@ -61,6 +63,8 @@ export const Variables = () => {
           onChange={(e) => setSearch(e.target.value)}
           className="w-[200px] lg:w-[300px]"
         />
+
+        {/** VARIABLES */}
         <DataTable
           tableKey="variables"
           data={filtered}
@@ -126,6 +130,16 @@ export const Variables = () => {
             },
           ]}
         />
+
+        {/** SECRETS */}
+        {secrets.length && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div>Core Secrets:</div>
+            {secrets.map((secret) => (
+              <Badge variant="secondary">{secret}</Badge>
+            ))}
+          </div>
+        )}
       </div>
     </Page>
   );

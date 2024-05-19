@@ -15,7 +15,7 @@ import {
 import { Input } from "@ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
-import { PlusCircle, Save, SearchX, UserCircle2 } from "lucide-react";
+import { PlusCircle, Save, SearchX, User } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -53,7 +53,7 @@ export const UserGroupPage = () => {
     <Page title={group.name} actions={<ExportButton user_group={group_id} />}>
       <Section
         title="Users"
-        icon={<UserCircle2 className="w-4 h-4" />}
+        icon={<User className="w-4 h-4" />}
         actions={<AddUserToGroup group_id={group_id} />}
       >
         <UserTable
@@ -170,5 +170,5 @@ const UserAvatar = ({ avatar }: { avatar: string | undefined }) =>
   avatar ? (
     <img src={avatar} alt="Avatar" className="w-4" />
   ) : (
-    <UserCircle2 className="w-4" />
+    <User className="w-4" />
   );
