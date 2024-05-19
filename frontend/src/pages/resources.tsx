@@ -17,21 +17,21 @@ export const Resources = () => {
       title={`${name}s`}
       icon={<Components.BigIcon />}
       actions={
-        <div className="grid gap-4 justify-items-end">
-          <div className="flex gap-4">
-            <TagsFilter />
-            <Components.New />
-          </div>
-          <Input
-            value={search}
-            onChange={(e) => set(e.target.value)}
-            placeholder="search..."
-            className="w-96"
-          />
+        <div className="flex gap-4">
+          <TagsFilter />
+          <Components.New />
         </div>
       }
     >
-      <Components.Table search={search} />
+      <div className="flex flex-col gap-4">
+        <Input
+          value={search}
+          onChange={(e) => set(e.target.value)}
+          placeholder="search..."
+          className="w-[200px] lg:w-[300px]"
+        />
+        <Components.Table search={search} />
+      </div>
     </Page>
   );
 };

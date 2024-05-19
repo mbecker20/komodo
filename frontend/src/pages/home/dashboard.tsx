@@ -1,5 +1,5 @@
 import { OpenAlerts } from "@components/alert";
-import { Page } from "@components/layouts";
+import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsWithBadge } from "@components/tags";
 import { AllUpdates } from "@components/updates/resource";
@@ -8,20 +8,22 @@ import { usableResourcePath } from "@lib/utils";
 import { UsableResource } from "@types";
 import { Card } from "@ui/card";
 import { Separator } from "@ui/separator";
-import { History } from "lucide-react";
+import { Boxes, History } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Dashboard = () => {
   return (
-    <Page title="">
+    <Page>
       <OpenAlerts />
       <AllUpdates />
 
-      <ResourceRow type="Deployment" />
-      <ResourceRow type="Build" />
-      <ResourceRow type="Repo" />
-      <ResourceRow type="Server" />
-      <ResourceRow type="Procedure" />
+      <Section title="Resources" icon={<Boxes className="w-4 h-4" />}>
+        <ResourceRow type="Deployment" />
+        <ResourceRow type="Build" />
+        <ResourceRow type="Repo" />
+        <ResourceRow type="Server" />
+        <ResourceRow type="Procedure" />
+      </Section>
     </Page>
   );
 };

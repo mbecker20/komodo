@@ -29,41 +29,39 @@ export const Tags = () => {
     <Page
       title="Tags"
       icon={<Tag className="w-8 h-8" />}
-      actions={
-        <div className="flex gap-4">
-          <Input
-            placeholder="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-[200px] lg:w-[300px]"
-          />
-          <CreateTag />
-        </div>
-      }
+      actions={<CreateTag />}
     >
-      <DataTable
-        tableKey="tags"
-        data={tags?.filter((tag) => tag.name.includes(search)) ?? []}
-        columns={[
-          {
-            header: "Name",
-            accessorKey: "name",
-          },
-          {
-            header: "Owner",
-            cell: ({ row }) =>
-              row.original.owner ? (
-                <UpdateUser user_id={row.original.owner} />
-              ) : (
-                "Unknown"
-              ),
-          },
-          {
-            header: "Delete",
-            cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
-          },
-        ]}
-      />
+      <div className="flex flex-col gap-4">
+        <Input
+          placeholder="search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-[200px] lg:w-[300px]"
+        />
+        <DataTable
+          tableKey="tags"
+          data={tags?.filter((tag) => tag.name.includes(search)) ?? []}
+          columns={[
+            {
+              header: "Name",
+              accessorKey: "name",
+            },
+            {
+              header: "Owner",
+              cell: ({ row }) =>
+                row.original.owner ? (
+                  <UpdateUser user_id={row.original.owner} />
+                ) : (
+                  "Unknown"
+                ),
+            },
+            {
+              header: "Delete",
+              cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
+            },
+          ]}
+        />
+      </div>
     </Page>
   );
 };
