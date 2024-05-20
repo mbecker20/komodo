@@ -9,7 +9,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 ### <ins>v1 (Spring 2024)</ins>
 
 - **New resource types**:
-	- **Repo**: Clone / pull configured repositories on desired Server. Run shell commands in the repo on every clone / pull to acheive desired automation. Listen for pushes to a particular branch to automatically pull the repo and run the command.
+	- **Repo**: Clone / pull configured repositories on desired Server. Run shell commands in the repo on every clone / pull to acheive automation. Listen for pushes to a particular branch to automatically pull the repo and run the command.
 	- **Procedure**: Combine multiple *executions* (Deploy, RunBuild) and run them in sequence or in parallel. *RunProcedure* is an execution type, meaning procedures can run *other procedures*.
 	- **Builder**: Ephemeral builder configuration has moved to being an API / UI managed entity for greater observability and ease of management.
 	- **Alerter**: Define multiple alerting endpoints and manage them via the API / UI.
