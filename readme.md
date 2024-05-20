@@ -4,6 +4,73 @@ A tool to build and deploy software across many servers. [docs](https://mbecker2
 
 Docs for periphery setup script can be found in [scripts/readme.md](https://github.com/mbecker20/monitor/blob/main/scripts/readme.md).
 
+## Changelog
+
+### <ins>v1 (Spring 2024)</ins>
+
+- **New resource types**:
+	- **Repo**: Clone / pull configured repositories on desired Server. Run shell commands in the repo on every clone / pull to acheive desired automation. Listen for pushes to a particular branch to automatically pull the repo and run the command.
+	- **Procedure**: Combine multiple *executions* (Deploy, RunBuild) and run them in sequence or in parallel. *RunProcedure* is an execution type, meaning procedures can run *other procedures*.
+	- **Builder**: Ephemeral builder configuration has moved to being an API / UI managed entity for greater observability and ease of management.
+	- **Alerter**: Define multiple alerting endpoints and manage them via the API / UI.
+		- Slack support continues with the *Slack* Alerter variant.
+		- Send JSON serialized alert data to any HTTP endpoint with the *Custom* Alerter variant.
+	- **Template**: Define a template for your cloud provider's VM configuration, and Monitor can launch VMs based on the template.
+		- Supports AWS Ec2.
+
+- **Resource Tagging**
+	- Attach multiple *tags* to resources, which can be used to see group related resources together. These can be used to filter resources in the UI.
+	- For example, resources can be given tags for *environment*, like `Prod`, `Uat`, or `Dev`. This can be combined with tags for the larger system the resource is a part of, such as `Authentication`, `Logging`, or `Messaging`.
+
+- **Variables**
+	- Manage global, non-secret key-value pairs using the API / UI.
+	- These values can be interpolated into deployment `environments` and build `build_args`
+
+- **Core Accounts and Secrets**
+	- Docker / Github accounts and Secrets can now be configured in the Core configuration file.
+	- They can still be added to the Periphery configuration as before. Accounts / Secrets defined in the Core configuration will be preferentially used over like ones defined in Periphery configuration.
+
+- **Builds**
+	- Build log displays the **latest commit hash and message**.
+	- In-progress builds are able to be **cancelled before completion**.
+	- Specify a specific commit hash to build from.
+
+- **Deployments**
+	- Filter logs lines using multiple search terms.
+
+- **Alerting**
+	- The alerting system has been redesigned with a stateful model.
+	- Alerts can be in an Open or a Resolved state, and alerts are only sent on state changes.
+	- For example, say a server has just crossed 80% memory usage, the configured memory threshold. An alert will be created in the Open state and the alert data will be sent out. Later, it has dropped down to 70%. The alert will be changed to the Resolved state and the alert data will again be sent.
+	- In addition to server usage alerts, Monitor now support deployment state change alerts. These are sent when a deployment's state changes without being caused by a Monitor action. For example, if a deployment goes from the Running state to the Exited state unexpectedly, say from a crash, an alert will be sent.
+	- Current and past alerts can be retrieved using the API and viewed on the UI.
+
+- **New UI**:
+	- The Monitor UI has been revamped to support the new features and improve the user experience.
+
+### <ins>v0 (Winter 2022)</ins>
+
+- Move Core and Periphery implementation to Rust.
+- Add AWS Ec2 ephemeral build instance support.
+	- Configuration added to core configuration file.
+- Automatic build versioning system, supporting image rollback.
+- Realtime and historical system stats - CPU, memory, disk.
+- Simple stats alerting based on out-of-bounds values for system stats.
+	- Support sending alerts to Slack.
+
+### <ins>Pre-versioned releases</ins>
+
+- Defined main resource types:
+	- Server
+	- Deployment
+	- Build
+- Basics of Monitor:
+	- Build docker images from Github repos.
+	- Manage image deployment on connected servers, see container status, get container logs.
+	- Add account credentials in Periphery configuration.
+- Core and Periphery implemented in Typescript.
+
+
 ## Screenshots
 
 ### Light Theme
