@@ -19,11 +19,13 @@ export const Dashboard = () => {
       <AllUpdates />
 
       <Section title="Resources" icon={<Boxes className="w-4 h-4" />}>
-        <ResourceRow type="Deployment" />
-        <ResourceRow type="Build" />
-        <ResourceRow type="Repo" />
-        <ResourceRow type="Server" />
-        <ResourceRow type="Procedure" />
+        <div className="flex flex-col gap-12">
+          <ResourceRow type="Deployment" />
+          <ResourceRow type="Build" />
+          <ResourceRow type="Repo" />
+          <ResourceRow type="Server" />
+          <ResourceRow type="Procedure" />
+        </div>
       </Section>
     </Page>
   );
