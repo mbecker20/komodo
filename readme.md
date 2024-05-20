@@ -43,7 +43,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 	- The alerting system has been redesigned with a stateful model.
 	- Alerts can be in an Open or a Resolved state, and alerts are only sent on state changes.
 	- For example, say a server has just crossed 80% memory usage, the configured memory threshold. An alert will be created in the Open state and the alert data will be sent out. Later, it has dropped down to 70%. The alert will be changed to the Resolved state and the alert data will again be sent.
-	- In addition to server usage alerts, Monitor now support deployment state change alerts. These are sent when a deployment's state changes without being caused by a Monitor action. For example, if a deployment goes from the Running state to the Exited state unexpectedly, say from a crash, an alert will be sent.
+	- In addition to server usage alerts, Monitor now supports deployment state change alerts. These are sent when a deployment's state changes without being caused by a Monitor action. For example, if a deployment goes from the Running state to the Exited state unexpectedly, say from a crash, an alert will be sent.
 	- Current and past alerts can be retrieved using the API and viewed on the UI.
 
 - **New UI**:
