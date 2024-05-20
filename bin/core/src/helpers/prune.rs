@@ -1,16 +1,24 @@
+use anyhow::Context;
 use async_timing_util::{
   unix_timestamp_ms, wait_until_timelength, Timelength, ONE_DAY_MS,
 };
-use mungos::mongodb::bson::doc;
+use futures::future::join_all;
+use mungos::{find::find_collect, mongodb::bson::doc};
+use periphery_client::api::build::PruneImages;
 
 use crate::{config::core_config, state::db_client};
+
+use super::periphery_client;
 
 pub fn spawn_prune_loop() {
   tokio::spawn(async move {
     loop {
       wait_until_timelength(Timelength::OneDay, 5000).await;
-      let (stats_res, alerts_res) =
-        tokio::join!(prune_stats(), prune_alerts());
+      let (images_res, stats_res, alerts_res) =
+        tokio::join!(prune_images(), prune_stats(), prune_alerts());
+      if let Err(e) = images_res {
+        error!("error in pruning images | {e:#}");
+      }
       if let Err(e) = stats_res {
         error!("error in pruning stats | {e:#}");
       }
@@ -19,6 +27,35 @@ pub fn spawn_prune_loop() {
       }
     }
   });
+}
+
+async fn prune_images() -> anyhow::Result<()> {
+  let futures = find_collect(&db_client().await.servers, None, None)
+    .await
+    .context("failed to get servers from db")?
+    .into_iter()
+    // This could be done in the mongo query, but rather have rust type system guarantee this.
+    .filter(|server| server.config.auto_prune)
+    .map(|server| async move {
+      (
+        async {
+          periphery_client(&server)?.request(PruneImages {}).await
+        }
+        .await,
+        server,
+      )
+    });
+
+  for (res, server) in join_all(futures).await {
+    if let Err(e) = res {
+      error!(
+        "failed to prune images on server {} ({}) | {e:#}",
+        server.name, server.id
+      )
+    }
+  }
+
+  Ok(())
 }
 
 async fn prune_stats() -> anyhow::Result<()> {
