@@ -19,7 +19,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 		- Supports AWS Ec2.
 
 - **Resource Tagging**
-	- Attach multiple *tags* to resources, which can be used to see group related resources together. These can be used to filter resources in the UI.
+	- Attach multiple *tags* to resources, which can be used to group related resources together. These can be used to filter resources in the UI.
 	- For example, resources can be given tags for *environment*, like `Prod`, `Uat`, or `Dev`. This can be combined with tags for the larger system the resource is a part of, such as `Authentication`, `Logging`, or `Messaging`.
 
 - **Variables**
