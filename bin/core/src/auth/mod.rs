@@ -8,7 +8,9 @@ use axum::{
 use monitor_client::entities::{monitor_timestamp, user::User};
 use mungos::mongodb::bson::doc;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use reqwest::StatusCode;
 use serde::Deserialize;
+use serror::AddStatusCode;
 
 use crate::{
   helpers::query::get_user,
@@ -36,7 +38,9 @@ pub async fn auth_request(
   mut req: Request,
   next: Next,
 ) -> serror::Result<Response> {
-  let user = authenticate_check_enabled(&headers).await?;
+  let user = authenticate_check_enabled(&headers)
+    .await
+    .status_code(StatusCode::UNAUTHORIZED)?;
   req.extensions_mut().insert(user);
   Ok(next.run(req).await)
 }

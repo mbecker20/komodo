@@ -1,4 +1,4 @@
-import { useInvalidate } from "@lib/hooks";
+import { useInvalidate, useUser } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { toast } from "@ui/use-toast";
@@ -136,6 +136,7 @@ export const WebsocketProvider = ({
   url: string;
   children: ReactNode;
 }) => {
+  const user = useUser().data;
   const invalidate = useInvalidate();
   const [_, set] = useWebsocket();
   const [connected, setConnected] = useWebsocketConnected();
@@ -146,7 +147,7 @@ export const WebsocketProvider = ({
   );
 
   useEffect(() => {
-    if (!connected) {
+    if (user && !connected) {
       const ws = make_websocket(
         url,
         () => setConnected(true),
@@ -158,7 +159,7 @@ export const WebsocketProvider = ({
       );
       set(ws);
     }
-  }, [set, url, connected]);
+  }, [set, url, user, connected]);
 
   return <>{children}</>;
 };

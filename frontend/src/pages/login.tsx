@@ -1,5 +1,12 @@
 import { Button } from "@ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
 import { useAuth, useLoginOptions, useUserInvalidate } from "@lib/hooks";
@@ -7,6 +14,7 @@ import { useState } from "react";
 import { ThemeToggle } from "@ui/theme";
 import { AUTH_TOKEN_STORAGE_KEY, MONITOR_BASE_URL } from "@main";
 import { Loader2 } from "lucide-react";
+import { cn } from "@lib/utils";
 
 type OauthProvider = "Github" | "Google";
 
@@ -92,7 +100,12 @@ export const Login = () => {
       <div className="container flex justify-end items-center h-16">
         <ThemeToggle />
       </div>
-      <div className="flex justify-center items-center container mt-32">
+      <div
+        className={cn(
+          "flex justify-center items-center container",
+          options?.local ? "mt-32" : "mt-64"
+        )}
+      >
         <Card className="w-full max-w-[500px] place-self-center">
           <CardHeader className="flex-row justify-between">
             <div>
