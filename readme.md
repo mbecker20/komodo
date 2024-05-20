@@ -37,7 +37,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 	- Specify a specific commit hash to build from.
 
 - **Deployments**
-	- Filter logs lines using multiple search terms.
+	- Filter log lines using multiple search terms.
 
 - **Alerting**
 	- The alerting system has been redesigned with a stateful model.
