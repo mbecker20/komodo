@@ -25,7 +25,7 @@ export const Sidebar = () => {
   const [view, setView] = useAtom(homeViewAtom);
   return (
     <Card className="h-fit m-4 hidden lg:flex">
-      <CardContent className="h-fit grid gap-[2px] px-6 py-3">
+      <CardContent className="h-fit grid gap-[2px] px-6 py-2">
         <SidebarLink
           label="Dashboard"
           to="/"
