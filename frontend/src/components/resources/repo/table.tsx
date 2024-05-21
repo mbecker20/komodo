@@ -18,18 +18,21 @@ export const RepoTable = ({ search }: { search?: string }) => {
             <SortableHeader column={column} title="Name" />
           ),
           cell: ({ row }) => <ResourceLink type="Repo" id={row.original.id} />,
+          size: 200,
         },
         {
           accessorKey: "info.repo",
           header: ({ column }) => (
             <SortableHeader column={column} title="Repo" />
           ),
+          size: 200,
         },
         {
           accessorKey: "info.branch",
           header: ({ column }) => (
             <SortableHeader column={column} title="Branch" />
           ),
+          size: 200,
         },
         {
           accessorKey: "info.state",
@@ -39,6 +42,7 @@ export const RepoTable = ({ search }: { search?: string }) => {
           cell: ({ row }) => (
             <RepoComponents.Status.State id={row.original.id} />
           ),
+          size: 100,
         },
         {
           header: "Tags",

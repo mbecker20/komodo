@@ -33,6 +33,7 @@ export const DeploymentTable = ({
           cell: ({ row }) => (
             <ResourceLink type="Deployment" id={row.original.id} />
           ),
+          size: 200,
         },
         {
           accessorKey: "info.image",
@@ -46,6 +47,7 @@ export const DeploymentTable = ({
               },
             },
           }) => <Image build_id={build_id} image={image} />,
+          size: 200,
         },
         {
           accessorKey: "info.server_id",
@@ -67,6 +69,7 @@ export const DeploymentTable = ({
           cell: ({ row }) => (
             <ResourceLink type="Server" id={row.original.info.server_id} />
           ),
+          size: 200,
         },
         {
           accessorKey: "info.state",
@@ -76,6 +79,7 @@ export const DeploymentTable = ({
           cell: ({ row }) => (
             <DeploymentComponents.Status.State id={row.original.id} />
           ),
+          size: 100,
         },
         {
           header: "Tags",

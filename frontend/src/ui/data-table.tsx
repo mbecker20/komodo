@@ -77,7 +77,10 @@ export function DataTable<TData, TValue>({
                   <TableHead
                     key={header.id}
                     colSpan={header.colSpan}
-                    className="border-x first:border-r first:border-l-0 last:border-l last:border-r-0 whitespace-nowrap"
+                    className={cn(
+                      "border-x first:border-r first:border-l-0 last:border-l last:border-r-0 whitespace-nowrap",
+                      `w-[${header.column.getSize()}px]`
+                    )}
                   >
                     {header.isPlaceholder
                       ? null
@@ -100,15 +103,24 @@ export function DataTable<TData, TValue>({
                 onClick={() => onRowClick && onRowClick(row.original)}
                 className={cn(onRowClick && "cursor-pointer")}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    // className="p-4 border-x first:border-r first:border-l-0 last:border-l last:border-r-0"
-                    className="p-4"
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const size = cell.column.getSize();
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      // className="p-4 border-x first:border-r first:border-l-0 last:border-l last:border-r-0"
+                      className={cn(
+                        "p-4 overflow-hidden overflow-ellipsis",
+                        size && `w-[${size}px]`
+                      )}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))
           ) : (

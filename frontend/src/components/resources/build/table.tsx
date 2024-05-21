@@ -19,16 +19,19 @@ export const BuildTable = ({ search }: { search?: string }) => {
             <SortableHeader column={column} title="Name" />
           ),
           cell: ({ row }) => <ResourceLink type="Build" id={row.original.id} />,
-        },
-        {
-          header: "Version",
-          accessorFn: ({ info }) => fmt_version(info.version),
+          size: 200,
         },
         {
           accessorKey: "info.repo",
           header: ({ column }) => (
             <SortableHeader column={column} title="Repo" />
           ),
+          size: 200,
+        },
+        {
+          header: "Version",
+          accessorFn: ({ info }) => fmt_version(info.version),
+          size: 100,
         },
         {
           accessorKey: "info.state",
@@ -38,6 +41,7 @@ export const BuildTable = ({ search }: { search?: string }) => {
           cell: ({ row }) => (
             <BuildComponents.Status.State id={row.original.id} />
           ),
+          size: 100,
         },
         {
           header: "Tags",

@@ -20,6 +20,7 @@ export const ServerTable = ({ search }: { search?: string }) => {
           cell: ({ row }) => (
             <ResourceLink type="Server" id={row.original.id} />
           ),
+          size: 200,
         },
         {
           accessorKey: "id",
@@ -51,13 +52,9 @@ export const ServerTable = ({ search }: { search?: string }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="State" />
           ),
-          cell: ({
-            row: {
-              original: { id },
-            },
-          }) => {
-            return <ServerComponents.Status.State id={id} />;
-          },
+          cell: ({ row }) => (
+            <ServerComponents.Status.State id={row.original.id} />
+          ),
         },
         {
           header: "Tags",
