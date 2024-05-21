@@ -5,7 +5,7 @@ import { ResourceName } from "@components/resources/common";
 import { TagsWithBadge } from "@components/tags";
 import { AllUpdates } from "@components/updates/resource";
 import { useRead, useUser } from "@lib/hooks";
-import { usableResourcePath } from "@lib/utils";
+import { cn, usableResourcePath } from "@lib/utils";
 import { UsableResource } from "@types";
 import { Card } from "@ui/card";
 import { Separator } from "@ui/separator";
@@ -56,9 +56,14 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
           <History className="w-4 h-4" />
           <h3>Recent {type}s</h3>
         </div>
-        <div className="grid grid-cols-3 grid-rows-2 gap-4 w-full h-full">
-          {ids.map((id: string) => (
-            <RecentCard key={type + id} type={type} id={id} />
+        <div className="grid grid-rows-2 grid-cols-2 2xl:grid-cols-3 gap-4 w-full h-full">
+          {ids.map((id, i) => (
+            <RecentCard
+              key={type + id}
+              type={type}
+              id={id}
+              className={i > 3 && "hidden 2xl:block"}
+            />
           ))}
         </div>
       </div>
@@ -66,11 +71,22 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
   );
 };
 
-const RecentCard = ({ type, id }: { type: UsableResource; id: string }) => {
+const RecentCard = ({
+  type,
+  id,
+  className,
+}: {
+  type: UsableResource;
+  id: string;
+  className: string | false;
+}) => {
   const Components = ResourceComponents[type];
   const tags = Components.list_item(id)?.tags;
   return (
-    <Link to={`${usableResourcePath(type)}/${id}`} className="h-full">
+    <Link
+      to={`${usableResourcePath(type)}/${id}`}
+      className={cn("h-full", className)}
+    >
       <Card className="h-full px-6 py-4 flex flex-col justify-between hover:bg-accent/50 transition-colors cursor-pointer">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">

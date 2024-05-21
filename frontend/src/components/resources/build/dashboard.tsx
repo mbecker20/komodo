@@ -30,7 +30,7 @@ export const BuildDashboard = () => {
             <Hammer className="w-4 h-4" />
           </div>
         </CardHeader>
-        <CardContent className="hidden xl:flex h-[200px] items-center justify-between gap-4">
+        <CardContent className="flex h-[200px] items-center justify-between gap-4">
           <div className="flex flex-col gap-2 text-muted-foreground w-full text-nowrap">
             <CardDescription className="flex items-center gap-2">
               <span
