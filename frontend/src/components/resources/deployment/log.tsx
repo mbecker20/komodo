@@ -171,10 +171,10 @@ const Log = ({
       top: ref.current.scrollHeight,
       behavior: "smooth",
     });
-  useEffect(scroll, []);
+  useEffect(scroll, [_log]);
   return (
     <>
-      <div ref={ref} className="h-[70vh] overflow-y-auto">
+      <div ref={ref} className="h-[80vh] overflow-y-auto">
         <pre
           dangerouslySetInnerHTML={{
             __html: _log ? logToHtml(_log) : `no ${stream} logs`,
