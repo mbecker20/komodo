@@ -2024,7 +2024,6 @@ dependencies = [
  "dotenv",
  "envy",
  "logger",
- "mongo_indexed 0.3.0",
  "monitor_client 1.4.0",
  "mungos",
  "serde",

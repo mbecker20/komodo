@@ -1,34 +1,52 @@
 use std::collections::HashMap;
 
-use anyhow::{anyhow, Context};
-use chrono::{DateTime, LocalResult, SecondsFormat, TimeZone, Utc};
+use anyhow::Context;
+use chrono::DateTime;
+use mungos::{init::MongoBuilder, mongodb::Collection};
 use serde::{Deserialize, Serialize};
 
-pub mod traits;
-
-mod action;
-mod alert;
 mod build;
 mod config;
 mod deployment;
-mod group;
-mod periphery_command;
-mod procedure;
 mod server;
 mod update;
 mod user;
 
-pub use action::*;
-pub use alert::*;
 pub use build::*;
 pub use config::*;
 pub use deployment::*;
-pub use group::*;
-pub use periphery_command::*;
-pub use procedure::*;
 pub use server::*;
 pub use update::*;
 pub use user::*;
+
+pub struct DbClient {
+  pub users: Collection<User>,
+  pub servers: Collection<Server>,
+  pub deployments: Collection<Deployment>,
+  pub builds: Collection<Build>,
+  pub updates: Collection<Update>,
+}
+
+impl DbClient {
+  pub async fn new(
+    legacy_uri: &str,
+    legacy_db_name: &str,
+  ) -> DbClient {
+    let client = MongoBuilder::default()
+      .uri(legacy_uri)
+      .build()
+      .await
+      .expect("failed to init legacy mongo client");
+    let db = client.database(legacy_db_name);
+    DbClient {
+      users: db.collection("users"),
+      servers: db.collection("servers"),
+      deployments: db.collection("deployments"),
+      builds: db.collection("builds"),
+      updates: db.collection("updates"),
+    }
+  }
+}
 
 pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
@@ -321,16 +339,4 @@ pub fn unix_from_monitor_ts(ts: &str) -> anyhow::Result<i64> {
       .context("failed to parse rfc3339 timestamp")?
       .timestamp_millis(),
   )
-}
-
-pub fn monitor_ts_from_unix(ts: i64) -> anyhow::Result<String> {
-  match Utc.timestamp_millis_opt(ts) {
-    LocalResult::Single(dt) => {
-      Ok(dt.to_rfc3339_opts(SecondsFormat::Millis, false))
-    }
-    LocalResult::None => {
-      Err(anyhow!("out of bounds timestamp passed"))
-    }
-    _ => unreachable!(),
-  }
 }

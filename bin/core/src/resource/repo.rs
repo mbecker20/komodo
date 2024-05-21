@@ -48,11 +48,11 @@ impl super::MonitorResource for Repo {
 
   async fn to_list_item(
     repo: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let state = get_repo_state(&repo.id).await;
     let status =
       repo_status_cache().get(&repo.id).await.unwrap_or_default();
-    Ok(RepoListItem {
+    RepoListItem {
       name: repo.name,
       id: repo.id,
       tags: repo.tags,
@@ -65,7 +65,7 @@ impl super::MonitorResource for Repo {
         latest_hash: status.latest_hash.clone(),
         latest_message: status.latest_message.clone(),
       },
-    })
+    }
   }
 
   async fn busy(id: &String) -> anyhow::Result<bool> {

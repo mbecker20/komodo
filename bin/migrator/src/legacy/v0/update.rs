@@ -2,10 +2,7 @@ use monitor_client::entities::update::ResourceTarget;
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
-use super::{
-  unix_from_monitor_ts, Build, Deployment, Group, Operation,
-  Procedure, Server, Version,
-};
+use super::{unix_from_monitor_ts, Operation, Version};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Update {
@@ -107,7 +104,7 @@ impl From<UpdateTarget>
       UpdateTarget::Server(id) => Some(Server(id)),
       UpdateTarget::Procedure(_) => None,
       UpdateTarget::Group(_) => None,
-      UpdateTarget::Command(id) => None,
+      UpdateTarget::Command(_) => None,
     }
   }
 }

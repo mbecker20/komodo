@@ -38,7 +38,7 @@ impl super::MonitorResource for Builder {
 
   async fn to_list_item(
     builder: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let (builder_type, instance_type) = match builder.config {
       BuilderConfig::Server(config) => (
         BuilderConfigVariant::Server.to_string(),
@@ -49,8 +49,7 @@ impl super::MonitorResource for Builder {
         Some(config.instance_type),
       ),
     };
-
-    Ok(BuilderListItem {
+    BuilderListItem {
       name: builder.name,
       id: builder.id,
       tags: builder.tags,
@@ -59,7 +58,7 @@ impl super::MonitorResource for Builder {
         builder_type,
         instance_type,
       },
-    })
+    }
   }
 
   async fn busy(_id: &String) -> anyhow::Result<bool> {

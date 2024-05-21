@@ -43,9 +43,9 @@ impl super::MonitorResource for Build {
 
   async fn to_list_item(
     build: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let state = get_build_state(&build.id).await;
-    Ok(BuildListItem {
+    BuildListItem {
       name: build.name,
       id: build.id,
       tags: build.tags,
@@ -57,7 +57,7 @@ impl super::MonitorResource for Build {
         branch: build.config.branch,
         state,
       },
-    })
+    }
   }
 
   async fn busy(id: &String) -> anyhow::Result<bool> {

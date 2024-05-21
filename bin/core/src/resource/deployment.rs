@@ -46,21 +46,29 @@ impl super::MonitorResource for Deployment {
 
   async fn to_list_item(
     deployment: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let status = deployment_status_cache().get(&deployment.id).await;
-    let (image, build_id) = match deployment.config.image {
+    let (build_image, build_id) = match deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
-        let build = super::get::<Build>(&build_id).await?;
+        let (build_name, build_id, build_version) =
+          super::get::<Build>(&build_id)
+            .await
+            .map(|b| (b.name, b.id, b.config.version))
+            .unwrap_or((
+              String::from("unknown"),
+              String::new(),
+              Default::default(),
+            ));
         let version = if version.is_none() {
-          build.config.version.to_string()
+          build_version.to_string()
         } else {
           version.to_string()
         };
-        (format!("{}:{version}", build.name), Some(build_id))
+        (format!("{build_name}:{version}"), Some(build_id))
       }
       DeploymentImage::Image { image } => (image, None),
     };
-    Ok(DeploymentListItem {
+    DeploymentListItem {
       name: deployment.name,
       id: deployment.id,
       tags: deployment.tags,
@@ -73,11 +81,16 @@ impl super::MonitorResource for Deployment {
         status: status.as_ref().and_then(|s| {
           s.curr.container.as_ref().and_then(|c| c.status.to_owned())
         }),
-        image,
+        image: status
+          .as_ref()
+          .and_then(|s| {
+            s.curr.container.as_ref().map(|c| c.image.clone())
+          })
+          .unwrap_or(build_image),
         server_id: deployment.config.server_id,
         build_id,
       },
-    })
+    }
   }
 
   async fn busy(id: &String) -> anyhow::Result<bool> {
@@ -149,8 +162,7 @@ impl super::MonitorResource for Deployment {
       .context("failed to get container state")?;
     if !matches!(
       state,
-      DeploymentState::NotDeployed
-        | DeploymentState::Unknown
+      DeploymentState::NotDeployed | DeploymentState::Unknown
     ) {
       // container needs to be destroyed
       let server =

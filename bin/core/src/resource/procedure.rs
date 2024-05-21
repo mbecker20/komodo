@@ -46,9 +46,9 @@ impl super::MonitorResource for Procedure {
 
   async fn to_list_item(
     procedure: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let state = get_procedure_state(&procedure.id).await;
-    Ok(ProcedureListItem {
+    ProcedureListItem {
       name: procedure.name,
       id: procedure.id,
       tags: procedure.tags,
@@ -57,7 +57,7 @@ impl super::MonitorResource for Procedure {
         procedure_type: procedure.config.procedure_type,
         state,
       },
-    })
+    }
   }
 
   async fn busy(id: &String) -> anyhow::Result<bool> {

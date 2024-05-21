@@ -36,9 +36,9 @@ impl super::MonitorResource for Server {
 
   async fn to_list_item(
     server: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let status = server_status_cache().get(&server.id).await;
-    Ok(ServerListItem {
+    ServerListItem {
       name: server.name,
       id: server.id,
       tags: server.tags,
@@ -53,7 +53,7 @@ impl super::MonitorResource for Server {
         send_mem_alerts: server.config.send_mem_alerts,
         send_disk_alerts: server.config.send_disk_alerts,
       },
-    })
+    }
   }
 
   async fn busy(id: &String) -> anyhow::Result<bool> {

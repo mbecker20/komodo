@@ -36,7 +36,7 @@ impl super::MonitorResource for ServerTemplate {
 
   async fn to_list_item(
     server_template: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let (template_type, instance_type) = match server_template.config
     {
       ServerTemplateConfig::Aws(config) => (
@@ -44,7 +44,7 @@ impl super::MonitorResource for ServerTemplate {
         Some(config.instance_type),
       ),
     };
-    Ok(ServerTemplateListItem {
+    ServerTemplateListItem {
       name: server_template.name,
       id: server_template.id,
       tags: server_template.tags,
@@ -53,7 +53,7 @@ impl super::MonitorResource for ServerTemplate {
         provider: template_type.to_string(),
         instance_type,
       },
-    })
+    }
   }
 
   async fn busy(_id: &String) -> anyhow::Result<bool> {

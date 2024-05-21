@@ -89,7 +89,7 @@ pub trait MonitorResource {
 
   async fn to_list_item(
     resource: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem>;
+  ) -> Self::ListItem;
 
   #[allow(clippy::ptr_arg)]
   async fn busy(id: &String) -> anyhow::Result<bool>;
@@ -232,17 +232,7 @@ pub async fn list_for_user_using_document<T: MonitorResource>(
     .await?
     .into_iter()
     .map(|resource| T::to_list_item(resource));
-
-  let list = join_all(list)
-    .await
-    .into_iter()
-    .collect::<anyhow::Result<Vec<_>>>()
-    .context(format!(
-      "failed to convert {} list item",
-      T::resource_type()
-    ))?;
-
-  Ok(list)
+  Ok(join_all(list).await)
 }
 
 pub async fn list_full_for_user<T: MonitorResource>(

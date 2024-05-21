@@ -35,7 +35,7 @@ impl super::MonitorResource for Alerter {
 
   async fn to_list_item(
     alerter: Resource<Self::Config, Self::Info>,
-  ) -> anyhow::Result<Self::ListItem> {
+  ) -> Self::ListItem {
     let (alerter_type, enabled) = match alerter.config {
       AlerterConfig::Custom(config) => {
         (AlerterConfigVariant::Custom.to_string(), config.enabled)
@@ -44,7 +44,7 @@ impl super::MonitorResource for Alerter {
         (AlerterConfigVariant::Slack.to_string(), config.enabled)
       }
     };
-    Ok(AlerterListItem {
+    AlerterListItem {
       name: alerter.name,
       id: alerter.id,
       tags: alerter.tags,
@@ -54,7 +54,7 @@ impl super::MonitorResource for Alerter {
         is_default: alerter.info.is_default,
         enabled,
       },
-    })
+    }
   }
 
   async fn busy(_id: &String) -> anyhow::Result<bool> {
