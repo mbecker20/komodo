@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { Moon, Sun } from "lucide-react";
+import { CheckCircle, Moon, Sun } from "lucide-react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -81,7 +81,7 @@ export const useTheme = () => {
 };
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   return (
     <DropdownMenu>
@@ -94,22 +94,25 @@ export function ThemeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          className="cursor-pointer"
+          className="cursor-pointer flex items-center justify-between"
           onClick={() => setTheme("light")}
         >
           Light
+          {theme === "light" && <CheckCircle className="w-3 h-3" />}
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="cursor-pointer"
+          className="cursor-pointer flex items-center justify-between"
           onClick={() => setTheme("dark")}
         >
           Dark
+          {theme === "dark" && <CheckCircle className="w-3 h-3" />}
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="cursor-pointer"
+          className="cursor-pointer flex items-center justify-between"
           onClick={() => setTheme("system")}
         >
           System
+          {theme === "system" && <CheckCircle className="w-3 h-3" />}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
