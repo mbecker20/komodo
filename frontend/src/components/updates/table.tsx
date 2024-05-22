@@ -26,6 +26,22 @@ export const UpdatesTable = ({
           {
             header: "Operation",
             accessorKey: "operation",
+            cell: ({ row }) => {
+              const more =
+                row.original.status === Types.UpdateStatus.InProgress
+                  ? "in progress"
+                  : row.original.status === Types.UpdateStatus.Queued
+                  ? "queued"
+                  : undefined;
+              return (
+                <div className="flex items-center gap-2">
+                  {row.original.operation}{" "}
+                  {more && (
+                    <div className="text-sm text-muted-foreground">{more}</div>
+                  )}
+                </div>
+              );
+            },
           },
           showTarget && {
             header: "Target",
@@ -43,7 +59,7 @@ export const UpdatesTable = ({
               ),
           },
           {
-            header: "Status",
+            header: "Result",
             cell: ({ row }) => {
               const color = bg_color_class_by_intention(
                 row.original.success ? "Good" : "Critical"
