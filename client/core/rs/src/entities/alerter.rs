@@ -75,6 +75,15 @@ pub enum PartialAlerterConfig {
   Slack(_PartialSlackAlerterConfig),
 }
 
+impl MaybeNone for PartialAlerterConfig {
+  fn is_none(&self) -> bool {
+    match self {
+      PartialAlerterConfig::Custom(config) => config.is_none(),
+      PartialAlerterConfig::Slack(config) => config.is_none(),
+    }
+  }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum AlerterConfigDiff {
   Custom(CustomAlerterConfigDiff),

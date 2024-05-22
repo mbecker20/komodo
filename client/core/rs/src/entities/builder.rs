@@ -64,6 +64,15 @@ pub enum PartialBuilderConfig {
   Aws(_PartialAwsBuilderConfig),
 }
 
+impl MaybeNone for PartialBuilderConfig {
+  fn is_none(&self) -> bool {
+    match self {
+      PartialBuilderConfig::Server(config) => config.is_none(),
+      PartialBuilderConfig::Aws(config) => config.is_none(),
+    }
+  }
+}
+
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BuilderConfigDiff {

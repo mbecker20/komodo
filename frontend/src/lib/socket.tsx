@@ -4,7 +4,7 @@ import { Button } from "@ui/button";
 import { toast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
 import { Circle } from "lucide-react";
-import { ReactNode, useCallback, useEffect } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import { cn } from "@lib/utils";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 
@@ -138,28 +138,47 @@ export const WebsocketProvider = ({
 }) => {
   const user = useUser().data;
   const invalidate = useInvalidate();
-  const [_, set] = useWebsocket();
+  const [ws, set] = useWebsocket();
   const [connected, setConnected] = useWebsocketConnected();
+  // don't care about value, just use to make sure value changes
+  // to trigger connection useEffect
+  const [reconnect, setReconnect] = useState(false);
 
   const on_message_fn = useCallback(
     (e: MessageEvent) => on_message(e, invalidate),
     [invalidate]
   );
 
+  // Connection useEffect
   useEffect(() => {
     if (user && !connected) {
-      const ws = make_websocket(
+      const ws = make_websocket({
         url,
-        () => setConnected(true),
-        on_message_fn,
-        () => {
-          console.log("ws closed");
+        on_open: () => setConnected(true),
+        on_message: on_message_fn,
+        on_close: () => {
           setConnected(false);
-        }
-      );
+        },
+      });
       set(ws);
     }
-  }, [set, url, user, connected]);
+  }, [set, url, user, connected, reconnect]);
+
+  useEffect(() => {
+    // poll for CLOSED state.
+    // trigger reconnect after stale page
+    const interval = setInterval(() => {
+      if (ws?.CLOSED) {
+        setConnected(false);
+        // toggle to make sure connection useEffect runs.
+        // which could happen if connected is stuck in false state,
+        // so setConnected(false) doesn't trigger reconnect
+        setReconnect(!reconnect);
+      }
+    }, 3_000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return <>{children}</>;
 };
@@ -188,18 +207,19 @@ export const WsStatusIndicator = () => {
   );
 };
 
-const make_websocket = (
-  url: string,
-  on_open: () => void,
-  on_message: (e: MessageEvent) => void,
-  on_close: () => void
-) => {
+const make_websocket = ({
+  url,
+  on_open,
+  on_message,
+  on_close,
+}: {
+  url: string;
+  on_open: () => void;
+  on_message: (e: MessageEvent) => void;
+  on_close: () => void;
+}) => {
   console.log("init websocket");
   const ws = new WebSocket(url);
-
-  ws.addEventListener("open", on_open);
-  ws.addEventListener("message", on_message);
-  ws.addEventListener("close", on_close);
 
   const _on_open = () => {
     const jwt = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
@@ -209,12 +229,9 @@ const make_websocket = (
     on_open();
   };
 
-  ws?.addEventListener("open", _on_open);
-  ws?.addEventListener("message", on_message);
-  ws?.addEventListener("close", on_close);
-
-  // force close every 30s to trigger reconnect and keep fresh
-  setTimeout(() => ws.close(), 30_000);
+  ws.addEventListener("open", _on_open);
+  ws.addEventListener("message", on_message);
+  ws.addEventListener("close", on_close);
 
   return ws;
 };

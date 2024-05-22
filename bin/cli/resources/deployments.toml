@@ -20,7 +20,7 @@ container = "/etc/letsencrypt"
 ## MONITOR MONGO
 [[deployment]]
 name = "monitor-mongo"
-description = ""
+description = "shared mongo deployment"
 tags = ["monitor"]
 
 [deployment.config]
@@ -50,7 +50,7 @@ params.image = "mbecker2020/monitor_core"
 ## GRAFANA
 [[deployment]]
 name = "grafana"
-description = ""
+description = "runs on port 3080"
 tags = ["logging"]
 
 [deployment.config]
@@ -78,7 +78,7 @@ value = "key-value"
 ## LOKI
 [[deployment]]
 name = "loki"
-description = ""
+description = "runs on 3100"
 tags = ["logging"]
 
 [deployment.config]
@@ -97,7 +97,7 @@ container = "/loki"
 
 [[deployment]]
 name = "tempo"
-description = ""
+description = "OTLP: port 4317. HTTP: 3200"
 tags = ["logging"]
 
 [deployment.config]
@@ -122,7 +122,7 @@ value = "key-value"
 ## VECTOR
 [[deployment]]
 name = "vector"
-description = ""
+description = "collects the docker logs (and alert endpoint)"
 tags = ["logging"]
 
 [deployment.config]
@@ -155,7 +155,7 @@ value = "key-value"
 ## MONITOR CORE DEV
 [[deployment]]
 name = "monitor-core-dev"
-description = ""
+description = "runs on 9001"
 tags = ["monitor", "dev"]
 
 [deployment.config]

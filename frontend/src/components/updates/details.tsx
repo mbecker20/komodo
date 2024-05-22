@@ -108,7 +108,7 @@ const RealUpdateUser = ({
       ) : (
         <UserAvatar avatar={avatar} size={iconSize} />
       )}
-      {username || user_id}
+      {username || "Unknown"}
     </div>
   );
 };

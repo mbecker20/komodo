@@ -32,7 +32,7 @@ export const NetworkModeSelector = ({
         onValueChange={onSelect}
         disabled={disabled}
       >
-        <SelectTrigger className="w-[200px]" disabled={disabled}>
+        <SelectTrigger className="w-[200px] capitalize" disabled={disabled}>
           <SelectValue placeholder="Select Type" />
         </SelectTrigger>
         <SelectContent>
@@ -40,7 +40,7 @@ export const NetworkModeSelector = ({
             <SelectItem
               key={network.Id}
               value={network.Name ?? ""}
-              className="cursor-pointer"
+              className="capitalize cursor-pointer"
             >
               {network.Name}
             </SelectItem>

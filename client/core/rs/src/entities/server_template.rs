@@ -64,6 +64,14 @@ pub enum PartialServerTemplateConfig {
   Aws(_PartialAwsServerTemplateConfig),
 }
 
+impl MaybeNone for PartialServerTemplateConfig {
+  fn is_none(&self) -> bool {
+    match self {
+      PartialServerTemplateConfig::Aws(config) => config.is_none(),
+    }
+  }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ServerTemplateConfigDiff {
   Aws(AwsServerTemplateConfigDiff),

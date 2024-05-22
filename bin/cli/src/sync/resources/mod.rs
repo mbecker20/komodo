@@ -45,6 +45,7 @@ pub trait ResourceSync {
     + Send
     + From<Self::ConfigDiff>
     + Serialize
+    + MaybeNone
     + 'static;
   type ConfigDiff: Diff + MaybeNone;
   type ListItemInfo: 'static;
@@ -263,18 +264,20 @@ pub trait ResourceSync {
         Self::update_tags(id.clone(), &name, tags).await;
       }
 
-      if let Err(e) = Self::update(id, resource).await {
-        warn!(
-          "failed to update config on {} {name} | {e:#}",
-          Self::display()
-        );
-      } else {
-        info!(
-          "{} {} '{}' configuration",
-          "updated".blue().bold(),
-          Self::display(),
-          name.bold(),
-        );
+      if !resource.config.is_none() {
+        if let Err(e) = Self::update(id, resource).await {
+          warn!(
+            "failed to update config on {} {name} | {e:#}",
+            Self::display()
+          );
+        } else {
+          info!(
+            "{} {} '{}' configuration",
+            "updated".blue().bold(),
+            Self::display(),
+            name.bold(),
+          );
+        }
       }
     }
   }

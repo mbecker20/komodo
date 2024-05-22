@@ -1,14 +1,11 @@
 import { Config } from "@components/config";
-import { ConfigItem, SystemCommand } from "@components/config/util";
+import {
+  AccountSelector,
+  ConfigItem,
+  SystemCommand,
+} from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ui/select";
 import { useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
 
@@ -57,11 +54,14 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 const server_id = update.server_id || config.server_id;
                 if (server_id) {
                   return (
-                    <GithubAccount
-                      server={server_id}
-                      value={value}
-                      set={set}
+                    <AccountSelector
+                      id={server_id}
+                      account_type="github"
+                      type="Server"
+                      selected={value}
+                      onSelect={(github_account) => set({ github_account })}
                       disabled={disabled}
+                      placeholder="None"
                     />
                   );
                 }
@@ -111,44 +111,5 @@ export const RepoConfig = ({ id }: { id: string }) => {
         ],
       }}
     />
-  );
-};
-
-const GithubAccount = ({
-  value,
-  set,
-  server,
-  disabled,
-}: {
-  value?: string;
-  set: (input: Partial<Types.RepoConfig>) => void;
-  server: string;
-  disabled: boolean;
-}) => {
-  const accounts = useRead("GetAvailableAccounts", {
-    server,
-  }).data;
-  return (
-    <ConfigItem label="Github Account">
-      <Select
-        value={value}
-        onValueChange={(value) => set({ github_account: value })}
-        disabled={disabled}
-      >
-        <SelectTrigger
-          className="w-full lg:w-[300px] max-w-[50%]"
-          disabled={disabled}
-        >
-          <SelectValue placeholder="Select Account" />
-        </SelectTrigger>
-        <SelectContent>
-          {accounts?.github?.map((account: string) => (
-            <SelectItem key={account} value={account}>
-              {account}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </ConfigItem>
   );
 };
