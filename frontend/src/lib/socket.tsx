@@ -51,14 +51,14 @@ const on_message = (
           id={update.target.id}
         />
       </div>
+      {!update.success && <div>FAILED</div>}
     </div>
   ) : (
-    update.operation
+    `${update.operation}${update.success ? "" : " - FAILED"}`
   );
 
   toast({
     title,
-    variant: update.success ? "default" : "destructive",
   });
 
   invalidate(["ListUpdates"]);
