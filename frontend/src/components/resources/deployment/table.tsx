@@ -79,7 +79,7 @@ export const DeploymentTable = ({
           cell: ({ row }) => (
             <DeploymentComponents.Status.State id={row.original.id} />
           ),
-          size: 100,
+          size: 120,
         },
         {
           header: "Tags",

@@ -31,7 +31,7 @@ export const BuildTable = ({ search }: { search?: string }) => {
         {
           header: "Version",
           accessorFn: ({ info }) => fmt_version(info.version),
-          size: 100,
+          size: 120,
         },
         {
           accessorKey: "info.state",
@@ -41,7 +41,7 @@ export const BuildTable = ({ search }: { search?: string }) => {
           cell: ({ row }) => (
             <BuildComponents.Status.State id={row.original.id} />
           ),
-          size: 100,
+          size: 120,
         },
         {
           header: "Tags",

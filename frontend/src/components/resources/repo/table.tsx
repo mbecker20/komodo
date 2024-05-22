@@ -42,7 +42,7 @@ export const RepoTable = ({ search }: { search?: string }) => {
           cell: ({ row }) => (
             <RepoComponents.Status.State id={row.original.id} />
           ),
-          size: 100,
+          size: 120,
         },
         {
           header: "Tags",
