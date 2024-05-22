@@ -1,11 +1,9 @@
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { useToast } from "@ui/use-toast";
 import { Ban, Hammer, Loader2 } from "lucide-react";
 
 export const RunBuild = ({ id }: { id: string }) => {
-  const { toast } = useToast();
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Build", id },
   }).data;
@@ -14,22 +12,9 @@ export const RunBuild = ({ id }: { id: string }) => {
     { build: id },
     { refetchInterval: 5000 }
   ).data?.building;
-  const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild", {
-    onMutate: () => {
-      toast({ title: "Run Build Sent" });
-    },
-  });
-  const { mutate: cancel_mutate, isPending: cancelPending } = useExecute(
-    "CancelBuild",
-    {
-      onMutate: () => {
-        toast({ title: "Cancel Build Sent" });
-      },
-      onSuccess: () => {
-        toast({ title: "Build Cancelled" });
-      },
-    }
-  );
+  const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild");
+  const { mutate: cancel_mutate, isPending: cancelPending } =
+    useExecute("CancelBuild");
 
   // make sure hidden without perms.
   // not usually necessary, but this button also used in deployment actions.
