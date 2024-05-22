@@ -9,6 +9,7 @@ import { cn } from "@lib/utils";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 import { ResourceComponents } from "@components/resources";
 import { UsableResource } from "@types";
+import { ResourceName } from "@components/resources/common";
 
 const rws_atom = atom<WebSocket | null>(null);
 const useWebsocket = () => useAtom(rws_atom);
@@ -41,13 +42,22 @@ const on_message = (
   const update = JSON.parse(data) as Types.UpdateListItem;
 
   const Components = ResourceComponents[update.target.type as UsableResource];
-  const title = Components
-    ? `${update.operation} - ${Components.list_item(update.target.id)?.name}`
-    : update.operation;
+  const title = Components ? (
+    <div className="flex items-center gap-2">
+      <div>{update.operation}</div> -
+      <div>
+        <ResourceName
+          type={update.target.type as UsableResource}
+          id={update.target.id}
+        />
+      </div>
+    </div>
+  ) : (
+    update.operation
+  );
 
   toast({
     title,
-    description: update.username,
     variant: update.success ? "default" : "destructive",
   });
 
