@@ -217,7 +217,7 @@ const UpdateDetailsContent = ({
                   <ResourceName
                     // will be UsableResource because Components exists in this branch
                     type={update.target.type as UsableResource}
-                    id={id}
+                    id={update.target.id}
                   />
                 </div>
               </Link>
