@@ -1,8 +1,35 @@
 [[procedure]]
-name = "test-procedure"
+name = "build-monitor"
 description = ""
-tags = []
+tags = ["monitor"]
 
 [procedure.config]
-procedure_type = "Sequence"
-executions = []
+procedure_type = "Parallel"
+webhook_enabled = true
+
+[[procedure.config.executions]]
+enabled = true
+
+[procedure.config.executions.execution]
+type = "RunBuild"
+
+[procedure.config.executions.execution.params]
+build = "monitor_core"
+
+[[procedure.config.executions]]
+enabled = true
+
+[procedure.config.executions.execution]
+type = "RunBuild"
+
+[procedure.config.executions.execution.params]
+build = "monitor_frontend"
+
+[[procedure.config.executions]]
+enabled = false
+
+[procedure.config.executions.execution]
+type = "RunBuild"
+
+[procedure.config.executions.execution.params]
+build = "monitor_frontend_dev"

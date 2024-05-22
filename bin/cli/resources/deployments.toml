@@ -5,7 +5,7 @@ description = "An NGINX proxy for mogh.tech"
 tags = ["monitor"]
 config.server_id = "monitor-01"
 config.network = "host"
-config.restart = "on-failure"
+config.restart = "unless-stopped"
 config.image.type = "Image"
 config.image.params.image = "jc21/nginx-proxy-manager"
 
@@ -137,7 +137,7 @@ type = "Image"
 params.image = "timberio/vector:latest-debian"
 
 [[deployment.config.volumes]]
-local = "/home/ubuntu/.config/vector"
+local = "/root/.config/vector"
 container = "/etc/vector"
 
 [[deployment.config.volumes]]
@@ -169,7 +169,7 @@ type = "Build"
 params.build_id = "monitor_core"
 
 [[deployment.config.volumes]]
-local = "/home/ubuntu/.config/monitor/dev.core.config.toml"
+local = "/root/.config/monitor/dev.core.config.toml"
 container = "/config/config.toml"
 
 [[deployment.config.volumes]]
