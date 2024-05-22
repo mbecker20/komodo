@@ -193,7 +193,7 @@ export const WebsocketProvider = ({
         // so setConnected(false) doesn't trigger reconnect
         setReconnect(!reconnect);
       }
-    }, 5_000);
+    }, 3_000);
 
     return () => clearInterval(interval);
   }, []);
