@@ -176,7 +176,7 @@ export const WebsocketProvider = ({
     // poll for CLOSED state.
     // trigger reconnect after stale page
     const interval = setInterval(() => {
-      if (ws?.CLOSED) {
+      if (ws?.readyState === WebSocket.CLOSED) {
         setConnected(false);
         // toggle to make sure connection useEffect runs.
         // which could happen if connected is stuck in false state,
