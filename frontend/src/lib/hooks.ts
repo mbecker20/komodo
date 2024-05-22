@@ -99,7 +99,7 @@ export const useWrite = <
     ...config,
     onError: (e, v, c) => {
       console.log("useWrite error:", e);
-      toast({ title: `Request ${type} Failed` });
+      toast({ title: `Request ${type} Failed`, description: "See console for details", variant: "destructive" });
       config?.onError && config.onError(e, v, c);
     },
   });

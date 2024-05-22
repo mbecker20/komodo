@@ -158,7 +158,11 @@ const CreateVariable = () => {
     },
     onError: (e) => {
       console.log("create variable error:" + e);
-      toast({ title: "Failed to create variable" });
+      toast({
+        title: "Failed to create variable",
+        description: "See console for details",
+        variant: "destructive",
+      });
       setOpen(false);
     },
   });
@@ -209,8 +213,13 @@ const DeleteVariable = ({ name }: { name: string }) => {
       invalidate(["ListVariables"], ["GetVariable"]);
       toast({ title: "Variable Deleted" });
     },
-    onError: () => {
-      toast({ title: "Failed to delete variable" });
+    onError: (e) => {
+      console.log("delete variable error:" + e);
+      toast({
+        title: "Failed to delete variable",
+        description: "See console for details",
+        variant: "destructive",
+      });
     },
   });
   return (

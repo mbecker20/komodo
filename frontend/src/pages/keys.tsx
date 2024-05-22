@@ -165,7 +165,7 @@ const DeleteKey = ({ api_key }: { api_key: string }) => {
       toast({ title: "Api Key Deleted" });
     },
     onError: () => {
-      toast({ title: "Failed to delete api key" });
+      toast({ title: "Failed to delete api key", variant: "destructive" });
     },
   });
   return (

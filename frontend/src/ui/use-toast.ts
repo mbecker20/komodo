@@ -6,8 +6,8 @@ import type {
   ToastProps,
 } from "@//ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5_000
 
 type ToasterToast = ToastProps & {
   id: string

@@ -105,7 +105,11 @@ const CreateTag = () => {
     },
     onError: (e) => {
       console.log("create tag error:" + e);
-      toast({ title: "Failed to create tag" });
+      toast({
+        title: "Failed to create tag",
+        description: "See console for details",
+        variant: "destructive",
+      });
       setOpen(false);
     },
   });
@@ -154,8 +158,13 @@ const DeleteTag = ({ tag_id }: { tag_id: string }) => {
       invalidate(["ListTags"]);
       toast({ title: "Tag Deleted" });
     },
-    onError: () => {
-      toast({ title: "Failed to delete tag" });
+    onError: (e) => {
+      console.log("delete tag error:" + e);
+      toast({
+        title: "Failed to delete tag",
+        description: "See console for details",
+        variant: "destructive",
+      });
     },
   });
   return (

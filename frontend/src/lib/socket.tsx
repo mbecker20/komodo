@@ -7,6 +7,8 @@ import { Circle } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { cn } from "@lib/utils";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
+import { ResourceComponents } from "@components/resources";
+import { UsableResource } from "@types";
 
 const rws_atom = atom<WebSocket | null>(null);
 const useWebsocket = () => useAtom(rws_atom);
@@ -38,9 +40,15 @@ const on_message = (
   if (data == "LOGGED_IN") return console.info("logged in to ws");
   const update = JSON.parse(data) as Types.UpdateListItem;
 
+  const Components = ResourceComponents[update.target.type as UsableResource];
+  const title = Components
+    ? `${update.operation} - ${Components.list_item(update.target.id)?.name}`
+    : update.operation;
+
   toast({
-    title: update.operation,
+    title,
     description: update.username,
+    variant: update.success ? "default" : "destructive",
   });
 
   invalidate(["ListUpdates"]);

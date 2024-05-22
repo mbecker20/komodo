@@ -23,8 +23,12 @@ export const UserPage = () => {
   const { mutate } = useWrite("UpdateUserBasePermissions", {
     onSuccess: () => inv(["ListUsers"]),
     onError: (e) => {
-      console.log(e);
-      toast({ title: "Failed to update user permissions" });
+      console.log("update user permission failure", e);
+      toast({
+        title: "Failed to update user permissions",
+        description: "See console for details",
+        variant: "destructive",
+      });
     },
   });
   const enabledClass = user?.enabled ? "text-green-500" : "text-red-500";
