@@ -14,9 +14,7 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_non_admin,
-  resource,
-  state::{db_client, State},
+  config::core_config, helpers::query::get_resource_ids_for_non_admin, resource, state::{db_client, State}
 };
 
 impl Resolve<GetAlerter, User> for State {
@@ -50,7 +48,7 @@ impl Resolve<GetAlertersSummary, User> for State {
     GetAlertersSummary {}: GetAlertersSummary,
     user: User,
   ) -> anyhow::Result<GetAlertersSummaryResponse> {
-    let query = if user.admin {
+    let query = if user.admin || core_config().transparent_mode {
       None
     } else {
       let ids = get_resource_ids_for_non_admin(

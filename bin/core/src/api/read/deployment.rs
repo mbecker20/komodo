@@ -1,4 +1,4 @@
-use std::{cmp, collections::HashSet, str::FromStr};
+use std::{cmp, collections::HashSet};
 
 use anyhow::{anyhow, Context};
 use monitor_client::{
@@ -10,23 +10,17 @@ use monitor_client::{
     },
     permission::PermissionLevel,
     server::Server,
-    update::{Log, ResourceTargetVariant},
+    update::Log,
     user::User,
   },
-};
-use mungos::{
-  find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId},
 };
 use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{
-    periphery_client, query::get_resource_ids_for_non_admin,
-  },
+  helpers::periphery_client,
   resource,
-  state::{action_states, db_client, deployment_status_cache, State},
+  state::{action_states, deployment_status_cache, State},
 };
 
 impl Resolve<GetDeployment, User> for State {
@@ -200,27 +194,12 @@ impl Resolve<GetDeploymentsSummary, User> for State {
     GetDeploymentsSummary {}: GetDeploymentsSummary,
     user: User,
   ) -> anyhow::Result<GetDeploymentsSummaryResponse> {
-    let query = if user.admin {
-      None
-    } else {
-      let ids = get_resource_ids_for_non_admin(
-        &user.id,
-        ResourceTargetVariant::Deployment,
-      )
-      .await?
-      .into_iter()
-      .flat_map(|id| ObjectId::from_str(&id))
-      .collect::<Vec<_>>();
-      let query = doc! {
-        "_id": { "$in": ids }
-      };
-      Some(query)
-    };
-
-    let deployments =
-      find_collect(&db_client().await.deployments, query, None)
-        .await
-        .context("failed to find all deployment documents")?;
+    let deployments = resource::list_full_for_user::<Deployment>(
+      Default::default(),
+      &user,
+    )
+    .await
+    .context("failed to get deployments from db")?;
     let mut res = GetDeploymentsSummaryResponse::default();
     let status_cache = deployment_status_cache();
     for deployment in deployments {

@@ -1,6 +1,5 @@
 use std::{
   collections::{HashMap, HashSet},
-  str::FromStr,
   sync::OnceLock,
 };
 
@@ -12,23 +11,19 @@ use monitor_client::{
   entities::{
     build::{Build, BuildActionState, BuildListItem, BuildState},
     permission::PermissionLevel,
-    update::{ResourceTargetVariant, UpdateStatus},
+    update::UpdateStatus,
     user::User,
     Operation,
   },
 };
 use mungos::{
   find::find_collect,
-  mongodb::{
-    bson::{doc, oid::ObjectId},
-    options::FindOptions,
-  },
+  mongodb::{bson::doc, options::FindOptions},
 };
 use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
   config::core_config,
-  helpers::query::get_resource_ids_for_non_admin,
   resource,
   state::{action_states, build_state_cache, db_client, State},
 };
@@ -86,31 +81,18 @@ impl Resolve<GetBuildsSummary, User> for State {
     GetBuildsSummary {}: GetBuildsSummary,
     user: User,
   ) -> anyhow::Result<GetBuildsSummaryResponse> {
-    let query = if user.admin {
-      None
-    } else {
-      let ids = get_resource_ids_for_non_admin(
-        &user.id,
-        ResourceTargetVariant::Build,
-      )
-      .await?
-      .into_iter()
-      .flat_map(|id| ObjectId::from_str(&id))
-      .collect::<Vec<_>>();
-      let query = doc! {
-        "_id": { "$in": ids }
-      };
-      Some(query)
-    };
+    let builds = resource::list_full_for_user::<Build>(
+      Default::default(),
+      &user,
+    )
+    .await
+    .context("failed to get all builds")?;
 
-    let builds = find_collect(&db_client().await.builds, query, None)
-      .await
-      .context("failed to find all build documents")?;
     let mut res = GetBuildsSummaryResponse::default();
 
     let cache = build_state_cache();
     let action_states = action_states();
-    
+
     for build in builds {
       res.total += 1;
 
@@ -241,9 +223,7 @@ impl Resolve<GetBuildVersions, User> for State {
     let versions = find_collect(
       &db_client().await.updates,
       filter,
-      FindOptions::builder()
-        .sort(doc! { "_id": -1 })
-        .build(),
+      FindOptions::builder().sort(doc! { "_id": -1 }).build(),
     )
     .await
     .context("failed to pull versions from mongo")?

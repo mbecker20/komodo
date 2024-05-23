@@ -19,7 +19,7 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, Document},
 };
 
-use crate::{resource, state::db_client};
+use crate::{config::core_config, resource, state::db_client};
 
 #[instrument(level = "debug")]
 pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
@@ -150,6 +150,11 @@ pub async fn get_user_permission_on_resource(
   resource_variant: ResourceTargetVariant,
   resource_id: &str,
 ) -> anyhow::Result<PermissionLevel> {
+  let lowest_permission = if core_config().transparent_mode {
+    PermissionLevel::Read
+  } else {
+    PermissionLevel::None
+  };
   let permission = find_collect(
     &db_client().await.permissions,
     doc! {
@@ -163,7 +168,7 @@ pub async fn get_user_permission_on_resource(
   .context("failed to query db for permissions")?
   .into_iter()
   // get the max permission user has between personal / any user groups
-  .fold(PermissionLevel::None, |level, permission| {
+  .fold(lowest_permission, |level, permission| {
     if permission.level > level {
       permission.level
     } else {

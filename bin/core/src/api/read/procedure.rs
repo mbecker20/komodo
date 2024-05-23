@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use monitor_client::{
   api::read::{
@@ -11,20 +9,14 @@ use monitor_client::{
   entities::{
     permission::PermissionLevel,
     procedure::{Procedure, ProcedureState},
-    update::ResourceTargetVariant,
     user::User,
   },
-};
-use mungos::{
-  find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId},
 };
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_non_admin,
   resource,
-  state::{action_states, db_client, procedure_state_cache, State},
+  state::{action_states, procedure_state_cache, State},
 };
 
 impl Resolve<GetProcedure, User> for State {
@@ -58,27 +50,12 @@ impl Resolve<GetProceduresSummary, User> for State {
     GetProceduresSummary {}: GetProceduresSummary,
     user: User,
   ) -> anyhow::Result<GetProceduresSummaryResponse> {
-    let query = if user.admin {
-      None
-    } else {
-      let ids = get_resource_ids_for_non_admin(
-        &user.id,
-        ResourceTargetVariant::Procedure,
-      )
-      .await?
-      .into_iter()
-      .flat_map(|id| ObjectId::from_str(&id))
-      .collect::<Vec<_>>();
-      let query = doc! {
-        "_id": { "$in": ids }
-      };
-      Some(query)
-    };
-
-    let procedures =
-      find_collect(&db_client().await.procedures, query, None)
-        .await
-        .context("failed to find all procedure documents")?;
+    let procedures = resource::list_full_for_user::<Procedure>(
+      Default::default(),
+      &user,
+    )
+    .await
+    .context("failed to get procedures from db")?;
 
     let mut res = GetProceduresSummaryResponse::default();
 

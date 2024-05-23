@@ -27,6 +27,7 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
+  config::core_config,
   helpers::query::get_resource_ids_for_non_admin,
   resource,
   state::{db_client, State},
@@ -40,7 +41,7 @@ impl Resolve<ListUpdates, User> for State {
     ListUpdates { query, page }: ListUpdates,
     user: User,
   ) -> anyhow::Result<ListUpdatesResponse> {
-    let query = if user.admin {
+    let query = if user.admin || core_config().transparent_mode {
       query
     } else {
       let server_ids = get_resource_ids_for_non_admin(
@@ -163,7 +164,7 @@ impl Resolve<GetUpdate, User> for State {
       .await
       .context("failed to query to db")?
       .context("no update exists with given id")?;
-    if user.admin {
+    if user.admin || core_config().transparent_mode {
       return Ok(update);
     }
     match &update.target {

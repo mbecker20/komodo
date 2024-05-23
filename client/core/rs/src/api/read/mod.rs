@@ -85,4 +85,6 @@ pub struct GetCoreInfoResponse {
   pub monitoring_interval: Timelength,
   /// The github webhook base url to use with github webhooks.
   pub github_webhook_base_url: String,
+  /// Whether transparent mode is enabled, which gives all users read access to all resources.
+  pub transparent_mode: bool
 }

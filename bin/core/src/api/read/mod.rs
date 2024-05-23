@@ -211,6 +211,7 @@ impl Resolve<GetCoreInfo, User> for State {
         .github_webhook_base_url
         .clone()
         .unwrap_or_else(|| config.host.clone()),
+      transparent_mode: config.transparent_mode,
     })
   }
 }

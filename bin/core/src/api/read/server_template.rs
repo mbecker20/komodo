@@ -68,10 +68,10 @@ impl Resolve<GetServerTemplatesSummary, User> for State {
     };
     let total = db_client()
       .await
-      .builders
+      .server_templates
       .count_documents(query, None)
       .await
-      .context("failed to count all builder documents")?;
+      .context("failed to count all server template documents")?;
     let res = GetServerTemplatesSummaryResponse {
       total: total as u32,
     };

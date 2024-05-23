@@ -67,6 +67,9 @@ pub struct Env {
   /// Override `logging.opentelemetry_service_name`
   pub monitor_logging_opentelemetry_service_name: Option<String>,
 
+  /// Override `transparent_mode`
+  pub monitor_transparent_mode: Option<bool>,
+
   /// Override `local_auth`
   pub monitor_local_auth: Option<bool>,
 
@@ -185,6 +188,9 @@ fn default_config_path() -> String {
 /// ## if empty, the "docker organization" config option will not be shown.
 /// ## default: empty
 /// # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
+/// 
+/// ## allows all users to have read access on all resources
+/// # transparent_mode = true
 ///
 /// ## allow or deny user login with username / password
 /// ## default: false
@@ -295,6 +301,10 @@ pub struct CoreConfig {
   /// Configure logging
   #[serde(default)]
   pub logging: LogConfig,
+
+  /// Enable transparent mode, which gives all (enabled) users read access to all resources.
+  #[serde(default)]
+  pub transparent_mode: bool,
 
   /// enable login with local auth
   #[serde(default)]

@@ -28,6 +28,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use serror::serialize_error_pretty;
 
 use crate::{
+  config::core_config,
   helpers::{
     create_permission,
     query::{
@@ -191,7 +192,10 @@ pub async fn get_check_permissions<T: MonitorResource>(
   permission_level: PermissionLevel,
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {
   let resource = get::<T>(id_or_name).await?;
-  if user.admin {
+  if user.admin
+    || (permission_level <= PermissionLevel::Read
+      && core_config().transparent_mode)
+  {
     return Ok(resource);
   }
   let permissions = get_user_permission_on_resource(
@@ -249,7 +253,7 @@ async fn list_full_for_user_using_document<T: MonitorResource>(
   mut filters: Document,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
-  if !user.admin {
+  if !user.admin && !core_config().transparent_mode {
     let ids =
       get_resource_ids_for_non_admin(&user.id, T::resource_type())
         .await?

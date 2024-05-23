@@ -51,7 +51,7 @@ impl Resolve<GetBuildersSummary, User> for State {
     GetBuildersSummary {}: GetBuildersSummary,
     user: User,
   ) -> anyhow::Result<GetBuildersSummaryResponse> {
-    let query = if user.admin {
+    let query = if user.admin || core_config().transparent_mode {
       None
     } else {
       let ids = get_resource_ids_for_non_admin(

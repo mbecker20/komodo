@@ -13,8 +13,7 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_non_admin,
-  state::{db_client, State},
+  config::core_config, helpers::query::get_resource_ids_for_non_admin, state::{db_client, State}
 };
 
 const NUM_ALERTS_PER_PAGE: u64 = 100;
@@ -26,7 +25,7 @@ impl Resolve<ListAlerts, User> for State {
     user: User,
   ) -> anyhow::Result<ListAlertsResponse> {
     let mut query = query.unwrap_or_default();
-    if !user.admin {
+    if !user.admin && !core_config().transparent_mode {
       let server_ids = get_resource_ids_for_non_admin(
         &user.id,
         ResourceTargetVariant::Server,

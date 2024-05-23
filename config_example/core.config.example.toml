@@ -63,6 +63,9 @@ passkey = "a_random_passkey"
 ## default: empty
 # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
 
+## allows all users to have read access on all resources
+# transparent_mode = true
+
 ## allow or deny user login with username / password
 ## default: false
 # local_auth = true

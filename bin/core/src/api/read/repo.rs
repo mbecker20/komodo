@@ -1,25 +1,17 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use monitor_client::{
   api::read::*,
   entities::{
     permission::PermissionLevel,
     repo::{Repo, RepoActionState, RepoListItem, RepoState},
-    update::ResourceTargetVariant,
     user::User,
   },
-};
-use mungos::{
-  find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId},
 };
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_non_admin,
   resource,
-  state::{action_states, db_client, repo_state_cache, State},
+  state::{action_states, repo_state_cache, State},
 };
 
 impl Resolve<GetRepo, User> for State {
@@ -75,26 +67,11 @@ impl Resolve<GetReposSummary, User> for State {
     GetReposSummary {}: GetReposSummary,
     user: User,
   ) -> anyhow::Result<GetReposSummaryResponse> {
-    let query = if user.admin {
-      None
-    } else {
-      let ids = get_resource_ids_for_non_admin(
-        &user.id,
-        ResourceTargetVariant::Alerter,
-      )
-      .await?
-      .into_iter()
-      .flat_map(|id| ObjectId::from_str(&id))
-      .collect::<Vec<_>>();
-      let query = doc! {
-        "_id": { "$in": ids }
-      };
-      Some(query)
-    };
+    let repos =
+      resource::list_full_for_user::<Repo>(Default::default(), &user)
+        .await
+        .context("failed to get repos from db")?;
 
-    let repos = find_collect(&db_client().await.repos, query, None)
-      .await
-      .context("failed to find all repo documents")?;
     let mut res = GetReposSummaryResponse::default();
 
     let cache = repo_state_cache();

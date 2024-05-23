@@ -77,6 +77,10 @@ pub fn core_config() -> &'static CoreConfig {
       .monitor_logging_opentelemetry_service_name
       .unwrap_or(config.logging.opentelemetry_service_name);
 
+    config.transparent_mode = env
+      .monitor_transparent_mode
+      .unwrap_or(config.transparent_mode);
+
     config.local_auth =
       env.monitor_local_auth.unwrap_or(config.local_auth);
 
