@@ -1,4 +1,5 @@
 pub mod aws;
+pub mod hetzner;
 
 #[derive(Debug)]
 pub enum BuildCleanupData {
