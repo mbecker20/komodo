@@ -99,7 +99,8 @@ pub async fn launch_hetzner_server(
 
   let body = CreateServerBody {
     name: name.to_string(),
-    automount: Some(automount),
+    // only actually add automount if volumes nonempty
+    automount: (!volume_ids.is_empty()).then_some(automount),
     datacenter: Some(datacenter),
     location: None,
     firewalls: firewall_ids
