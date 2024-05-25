@@ -173,6 +173,7 @@ pub enum HetznerServerType {
   DedicatedAmd48Core192Ram960Disk,
 }
 
+#[typeshare]
 #[derive(
   Debug,
   Clone,

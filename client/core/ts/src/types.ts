@@ -179,6 +179,15 @@ export type AlertData =
 	| { type: "AwsBuilderTerminationFailed", data: {
 	/** The id of the aws instance which failed to terminate */
 	instance_id: string;
+	/** A reason for the failure */
+	message: string;
+}}
+	/** A Hetzner builder failed to terminate. */
+	| { type: "HetznerBuilderTerminationFailed", data: {
+	/** The id of the server which failed to terminate */
+	server_id: I64;
+	/** A reason for the failure */
+	message: string;
 }}
 	| { type: "None", data: {
 }};
@@ -1078,7 +1087,9 @@ export type GetAvailableSecretsResponse = string[];
 
 export type ServerTemplateConfig = 
 	/** Template to launch an AWS EC2 instance */
-	| { type: "Aws", params: AwsServerTemplateConfig };
+	| { type: "Aws", params: AwsServerTemplateConfig }
+	/** Template to launch a Hetzner server */
+	| { type: "Hetzner", params: HetznerServerTemplateConfig };
 
 export type ServerTemplate = Resource<ServerTemplateConfig, undefined>;
 
@@ -1400,6 +1411,8 @@ export interface ServerQuerySpecifics {
 export type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
 
 export type _PartialAwsServerTemplateConfig = Partial<AwsServerTemplateConfig>;
+
+export type _PartialHetznerServerTemplateConfig = Partial<HetznerServerTemplateConfig>;
 
 export interface ServerTemplateQuerySpecifics {
 	types: ServerTemplateConfig["type"][];
@@ -2004,6 +2017,8 @@ export interface GetCoreInfoResponse {
 	monitoring_interval: Timelength;
 	/** The github webhook base url to use with github webhooks. */
 	github_webhook_base_url: string;
+	/** Whether transparent mode is enabled, which gives all users read access to all resources. */
+	transparent_mode: boolean;
 }
 
 /**
@@ -2960,7 +2975,8 @@ export interface DeleteNetwork {
 }
 
 export type PartialServerTemplateConfig = 
-	| { type: "Aws", params: _PartialAwsServerTemplateConfig };
+	| { type: "Aws", params: _PartialAwsServerTemplateConfig }
+	| { type: "Hetzner", params: _PartialHetznerServerTemplateConfig };
 
 /** Create a server template. Response: [ServerTemplate]. */
 export interface CreateServerTemplate {
@@ -3306,6 +3322,93 @@ export interface AwsServerTemplateConfig {
 	security_group_ids?: string[];
 	/** Specify the EBS volumes to attach. */
 	volumes: AwsVolume[];
+}
+
+export enum HetznerDatacenter {
+	Nuremberg1Dc3 = "Nuremberg1Dc3",
+	Helsinki1Dc2 = "Helsinki1Dc2",
+	Falkenstein1Dc14 = "Falkenstein1Dc14",
+	AshburnDc1 = "AshburnDc1",
+	HillsboroDc1 = "HillsboroDc1",
+}
+
+export enum HetznerServerType {
+	SharedIntel1Core2Ram20Disk = "SharedIntel1Core2Ram20Disk",
+	SharedAmd2Core2Ram40Disk = "SharedAmd2Core2Ram40Disk",
+	SharedArm2Core4Ram40Disk = "SharedArm2Core4Ram40Disk",
+	SharedIntel2Core4Ram40Disk = "SharedIntel2Core4Ram40Disk",
+	SharedAmd3Core4Ram80Disk = "SharedAmd3Core4Ram80Disk",
+	SharedArm4Core8Ram80Disk = "SharedArm4Core8Ram80Disk",
+	SharedIntel2Core8Ram80Disk = "SharedIntel2Core8Ram80Disk",
+	SharedAmd4Core8Ram160Disk = "SharedAmd4Core8Ram160Disk",
+	SharedArm8Core16Ram160Disk = "SharedArm8Core16Ram160Disk",
+	SharedIntel4Core16Ram160Disk = "SharedIntel4Core16Ram160Disk",
+	SharedAmd8Core16Ram240Disk = "SharedAmd8Core16Ram240Disk",
+	SharedArm16Core32Ram320Disk = "SharedArm16Core32Ram320Disk",
+	SharedIntel8Core32Ram240Disk = "SharedIntel8Core32Ram240Disk",
+	SharedAmd16Core32Ram360Disk = "SharedAmd16Core32Ram360Disk",
+	DedicatedAmd2Core8Ram80Disk = "DedicatedAmd2Core8Ram80Disk",
+	DedicatedAmd4Core16Ram160Disk = "DedicatedAmd4Core16Ram160Disk",
+	DedicatedAmd8Core32Ram240Disk = "DedicatedAmd8Core32Ram240Disk",
+	DedicatedAmd16Core64Ram360Disk = "DedicatedAmd16Core64Ram360Disk",
+	DedicatedAmd32Core128Ram600Disk = "DedicatedAmd32Core128Ram600Disk",
+	DedicatedAmd48Core192Ram960Disk = "DedicatedAmd48Core192Ram960Disk",
+}
+
+export enum HetznerVolumeFormat {
+	Xfs = "Xfs",
+	Ext4 = "Ext4",
+}
+
+export interface HetznerVolumeSpecs {
+	/** A name for the volume */
+	name: string;
+	/** The format for the volume */
+	format: HetznerVolumeFormat;
+	/** Labels for the volume */
+	labels: Record<string, string>;
+	/** Size of the volume in GB */
+	size_gb: I64;
+}
+
+/** Hetzner server config. */
+export interface HetznerServerTemplateConfig {
+	/** ID or name of the Image the Server is created from */
+	image?: string;
+	/** Auto-mount Volumes after attach */
+	automount: boolean;
+	/** ID or name of Datacenter to create Server in */
+	datacenter?: HetznerDatacenter;
+	/** Network IDs which should be attached to the Server private network interface at the creation time */
+	private_network_ids?: I64[];
+	/**
+	 * ID of the Placement Group the server should be in,
+	 * Or 0 to not use placement group.
+	 */
+	placement_group?: I64;
+	/** Attach an IPv4 on the public NIC. If false, no IPv4 address will be attached. */
+	enable_public_ipv4?: boolean;
+	/** Attach an IPv6 on the public NIC. If false, no IPv6 address will be attached. */
+	enable_public_ipv6?: boolean;
+	/** The firewalls to attach to the instance */
+	firewall_ids?: I64[];
+	/** ID or name of the Server type this Server should be created with */
+	server_type?: HetznerServerType;
+	/** SSH key IDs ( integer ) or names ( string ) which should be injected into the Server at creation time */
+	ssh_keys?: string[];
+	/** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
+	user_data?: string;
+	/** Connect to the instance using it's public ip. */
+	use_public_ip?: boolean;
+	/** Labels for the server */
+	labels?: Record<string, string>;
+	/** Specs for volumes to attach */
+	volumes?: HetznerVolumeSpecs[];
+	/**
+	 * The port periphery will be running on in AMI.
+	 * Default: `8120`
+	 */
+	port: number;
 }
 
 export type AuthRequest = 
