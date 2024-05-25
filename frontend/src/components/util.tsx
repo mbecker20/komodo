@@ -356,9 +356,6 @@ export const TextUpdateMenu = ({
           value={_value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") onClick();
-          }}
           className="min-h-[200px]"
           disabled={disabled}
         />

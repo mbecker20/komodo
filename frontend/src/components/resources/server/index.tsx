@@ -129,9 +129,12 @@ export const ServerComponents: RequiredResourceComponents = {
     Version: ({ id }) => {
       const version = useRead("GetPeripheryVersion", { server: id }).data
         ?.version;
+      const _version =
+        version === undefined || version === "unknown" ? "unknown" : version;
       return (
         <div className="flex items-center gap-2">
-          <Milestone className="w-4 h-4" />v{version}
+          <Milestone className="w-4 h-4" />
+          {_version}
         </div>
       );
     },
