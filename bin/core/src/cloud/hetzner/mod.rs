@@ -47,8 +47,8 @@ pub struct HetznerServerMinimal {
   pub ip: String,
 }
 
-const POLL_RATE_SECS: u64 = 2;
-const MAX_POLL_TRIES: usize = 30;
+const POLL_RATE_SECS: u64 = 3;
+const MAX_POLL_TRIES: usize = 100;
 
 #[instrument]
 pub async fn launch_hetzner_server(
@@ -140,7 +140,12 @@ pub async fn launch_hetzner_server(
     };
     if matches!(res.server.status, HetznerServerStatus::Running) {
       let ip = if use_public_ip {
-        res.server.public_net.ipv4.context("instance ")?.ip
+        res
+          .server
+          .public_net
+          .ipv4
+          .context("instance does not have public ipv4 attached")?
+          .ip
       } else {
         res
           .server
