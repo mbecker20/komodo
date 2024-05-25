@@ -10,13 +10,14 @@ pub struct HetznerServerResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct HetznerServer {
   pub id: i64,
-  pub image: HetznerImage,
   pub name: String,
   pub primary_disk_size: f64,
+  pub image: Option<HetznerImage>,
   pub private_net: Vec<HetznerPrivateNet>,
   pub public_net: HetznerPublicNet,
   pub server_type: HetznerServerTypeDetails,
   pub status: HetznerServerStatus,
+  #[serde(default)]
   pub volumes: Vec<i64>,
 }
 
@@ -42,6 +43,7 @@ pub struct HetznerPrivateNet {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct HetznerPublicNet {
+  #[serde(default)]
   pub firewalls: Vec<HetznerFirewall>,
   pub floating_ips: Vec<i64>,
   pub ipv4: Option<HetznerIpv4>,
@@ -55,7 +57,7 @@ pub struct HetznerFirewall {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct HetznerIpv4 {
-  pub id: i64,
+  pub id: Option<i64>,
   pub blocked: bool,
   pub dns_ptr: String,
   pub ip: String,
@@ -63,11 +65,12 @@ pub struct HetznerIpv4 {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct HetznerImage {
+  pub id: i64,
   pub description: String,
-  pub name: String,
+  pub name: Option<String>,
   pub os_flavor: String,
-  pub os_version: String,
-  pub rapid_deploy: bool,
+  pub os_version: Option<String>,
+  pub rapid_deploy: Option<bool>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -84,7 +87,7 @@ pub struct HetznerAction {
   pub progress: i32,
   pub resources: Vec<HetznerResource>,
   pub started: String,
-  pub status: String,
+  pub status: HetznerActionStatus,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -215,6 +218,14 @@ pub enum HetznerServerStatus {
   Migrating,
   Rebuilding,
   Unknown,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum HetznerActionStatus {
+  Running,
+  Success,
+  Error,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
