@@ -14,7 +14,7 @@ use monitor_client::{
     monitor_timestamp,
     permission::PermissionLevel,
     server::Server,
-    server_template::AwsServerTemplateConfig,
+    server_template::aws::AwsServerTemplateConfig,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
     Operation,

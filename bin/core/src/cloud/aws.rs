@@ -16,7 +16,7 @@ use monitor_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant},
   monitor_timestamp,
   server::stats::SeverityLevel,
-  server_template::AwsServerTemplateConfig,
+  server_template::aws::AwsServerTemplateConfig,
   update::ResourceTarget,
 };
 
@@ -165,7 +165,7 @@ pub async fn terminate_ec2_instance_with_retry(
       }
       Err(e) => {
         if i == MAX_TERMINATION_TRIES - 1 {
-          error!("failed to terminate instance {instance_id}.");
+          error!("failed to terminate aws instance {instance_id}.");
           let alert = Alert {
             id: Default::default(),
             ts: monitor_timestamp(),
@@ -175,6 +175,7 @@ pub async fn terminate_ec2_instance_with_retry(
             variant: AlertDataVariant::AwsBuilderTerminationFailed,
             data: AlertData::AwsBuilderTerminationFailed {
               instance_id: instance_id.to_string(),
+              message: format!("{e:#}"),
             },
             resolved_ts: None,
           };
@@ -191,7 +192,7 @@ pub async fn terminate_ec2_instance_with_retry(
   unreachable!()
 }
 
-#[instrument]
+#[instrument(skip(client))]
 async fn terminate_ec2_instance_inner(
   client: &Client,
   instance_id: &str,

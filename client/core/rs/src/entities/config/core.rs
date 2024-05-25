@@ -104,6 +104,9 @@ pub struct Env {
   pub monitor_aws_access_key_id: Option<String>,
   /// Override `aws.secret_access_key`
   pub monitor_aws_secret_access_key: Option<String>,
+
+  /// Override `hetzner.token`
+  pub monitor_hetzner_token: Option<String>,
 }
 
 fn default_config_path() -> String {
@@ -188,7 +191,7 @@ fn default_config_path() -> String {
 /// ## if empty, the "docker organization" config option will not be shown.
 /// ## default: empty
 /// # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
-/// 
+///
 /// ## allows all users to have read access on all resources
 /// # transparent_mode = true
 ///
@@ -221,6 +224,9 @@ fn default_config_path() -> String {
 /// ## provide aws api keys for ephemeral builders
 /// # aws.access_key_id = "your_aws_key_id"
 /// # aws.secret_access_key = "your_aws_secret_key"
+///
+/// ## provide hetzner api token for ephemeral builders
+/// # hetzner.token = "your_hetzner_token"
 ///
 /// ## provide core-base secrets
 /// [secrets]
@@ -327,6 +333,10 @@ pub struct CoreConfig {
   /// Configure AWS credentials to use with AWS builds / server launches.
   #[serde(default)]
   pub aws: AwsCredentials,
+
+  /// Configure Hetzner credentials to use with Hetzner builds / server launches.
+  #[serde(default)]
+  pub hetzner: HetznerCredentials,
 
   /// Configure core-based secrets. These will be preferentially interpolated into
   /// values if they contain a matching secret. Otherwise, the periphery will have to have the
@@ -470,4 +480,10 @@ pub struct AwsCredentials {
   pub access_key_id: String,
   /// The aws SECRET_ACCESS_KEY
   pub secret_access_key: String,
+}
+
+/// Provide Hetzner credentials for monitor to use.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct HetznerCredentials {
+  pub token: String,
 }

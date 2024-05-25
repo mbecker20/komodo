@@ -210,13 +210,33 @@ async fn send_slack_alert(
       ];
       (text, blocks.into())
     }
-    AlertData::AwsBuilderTerminationFailed { instance_id } => {
+    AlertData::AwsBuilderTerminationFailed {
+      instance_id,
+      message,
+    } => {
       let text = format!(
         "{level} | Failed to terminated AWS builder instance"
       );
       let blocks = vec![
         Block::header(text.clone()),
-        Block::section(format!("instance id: {instance_id}")),
+        Block::section(format!(
+          "instance id: **{instance_id}**\n{message}"
+        )),
+      ];
+      (text, blocks.into())
+    }
+    AlertData::HetznerBuilderTerminationFailed {
+      server_id,
+      message,
+    } => {
+      let text = format!(
+        "{level} | Failed to terminated Hetzner builder instance"
+      );
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server id: **{server_id}**\n{message}"
+        )),
       ];
       (text, blocks.into())
     }

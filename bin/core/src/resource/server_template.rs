@@ -43,6 +43,10 @@ impl super::MonitorResource for ServerTemplate {
         ServerTemplateConfigVariant::Aws.to_string(),
         Some(config.instance_type),
       ),
+      ServerTemplateConfig::Hetzner(config) => (
+        ServerTemplateConfigVariant::Hetzner.to_string(),
+        Some(config.server_type.as_ref().to_string()),
+      ),
     };
     ServerTemplateListItem {
       name: server_template.name,

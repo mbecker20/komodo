@@ -15,7 +15,10 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  cloud::aws::launch_ec2_instance, helpers::update::{add_update, make_update, update_update}, resource, state::{db_client, State}
+  cloud::{aws::launch_ec2_instance, hetzner::launch_hetzner_server},
+  helpers::update::{add_update, make_update, update_update},
+  resource,
+  state::{db_client, State},
 };
 
 impl Resolve<LaunchServer, User> for State {
@@ -64,17 +67,19 @@ impl Resolve<LaunchServer, User> for State {
     let config = match template.config {
       ServerTemplateConfig::Aws(config) => {
         let region = config.region.clone();
-        let instance = launch_ec2_instance(&name, config).await;
-        if let Err(e) = &instance {
-          update.push_error_log(
-            "launch server",
-            format!("failed to launch aws instance\n\n{e:#?}"),
-          );
-          update.finalize();
-          update_update(update.clone()).await?;
-          return Ok(update);
-        }
-        let instance = instance.unwrap();
+        let instance = match launch_ec2_instance(&name, config).await
+        {
+          Ok(instance) => instance,
+          Err(e) => {
+            update.push_error_log(
+              "launch server",
+              format!("failed to launch aws instance\n\n{e:#?}"),
+            );
+            update.finalize();
+            update_update(update.clone()).await?;
+            return Ok(update);
+          }
+        };
         update.push_simple_log(
           "launch server",
           format!(
@@ -85,6 +90,34 @@ impl Resolve<LaunchServer, User> for State {
         PartialServerConfig {
           address: format!("http://{}:8120", instance.ip).into(),
           region: region.into(),
+          ..Default::default()
+        }
+      }
+      ServerTemplateConfig::Hetzner(config) => {
+        let datacenter = config.datacenter;
+        let server = match launch_hetzner_server(&name, config).await
+        {
+          Ok(server) => server,
+          Err(e) => {
+            update.push_error_log(
+              "launch server",
+              format!("failed to launch hetzner server\n\n{e:#?}"),
+            );
+            update.finalize();
+            update_update(update.clone()).await?;
+            return Ok(update);
+          }
+        };
+        update.push_simple_log(
+          "launch server",
+          format!(
+            "successfully launched server {name} on ip {}",
+            server.ip
+          ),
+        );
+        PartialServerConfig {
+          address: format!("http://{}:8120", server.ip).into(),
+          region: datacenter.as_ref().to_string().into(),
           ..Default::default()
         }
       }

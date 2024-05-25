@@ -89,9 +89,12 @@ mongo.address = "localhost:27017"
 ## default: monitor_core. this is the assigned app_name of the mongo client
 # mongo.app_name = "monitor_core"
 
-## provide aws api keys for ephemeral builders
+## provide aws api keys for ephemeral builders / server launch
 # aws.access_key_id = "your_aws_key_id"
 # aws.secret_access_key = "your_aws_secret_key"
+
+## provide hetzner api token for ephemeral builders / server launch
+# hetzner.token = "your_hetzner_token"
 
 ## provide core-base secrets
 # [secrets]
