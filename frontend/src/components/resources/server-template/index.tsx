@@ -82,6 +82,7 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="Aws">Aws</SelectItem>
+                <SelectItem value="Hetzner">Hetzner</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
