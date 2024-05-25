@@ -126,30 +126,31 @@ pub async fn launch_hetzner_server(
     volumes: volume_ids,
   };
 
-  let server = hetzner
+  let server_id = hetzner
     .create_server(&body)
     .await
     .context("failed to create hetnzer server")?
-    .server;
-
-  let ip = if use_public_ip {
-    server.public_net.ipv4.context("instance ")?.ip
-  } else {
-    server
-      .private_net
-      .first()
-      .context("no private networks attached")?
-      .ip
-      .to_string()
-  };
-  let server = HetznerServerMinimal { id: server.id, ip };
+    .server
+    .id;
 
   for _ in 0..MAX_POLL_TRIES {
     tokio::time::sleep(Duration::from_secs(POLL_RATE_SECS)).await;
-    let Ok(res) = hetzner.get_server(server.id).await else {
+    let Ok(res) = hetzner.get_server(server_id).await else {
       continue;
     };
     if matches!(res.server.status, HetznerServerStatus::Running) {
+      let ip = if use_public_ip {
+        res.server.public_net.ipv4.context("instance ")?.ip
+      } else {
+        res
+          .server
+          .private_net
+          .first()
+          .context("no private networks attached")?
+          .ip
+          .to_string()
+      };
+      let server = HetznerServerMinimal { id: server_id, ip };
       return Ok(server);
     }
   }
