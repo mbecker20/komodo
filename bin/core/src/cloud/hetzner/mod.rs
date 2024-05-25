@@ -158,9 +158,12 @@ pub async fn launch_hetzner_server(
   ))
 }
 
+#[allow(unused)]
 const MAX_TERMINATION_TRIES: usize = 5;
+#[allow(unused)]
 const TERMINATION_WAIT_SECS: u64 = 15;
 
+#[allow(unused)]
 pub async fn terminate_hetzner_server_with_retry(
   id: i64,
 ) -> anyhow::Result<()> {

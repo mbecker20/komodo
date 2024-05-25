@@ -56,6 +56,7 @@ impl HetznerClient {
     self.delete(&format!("/servers/{id}")).await
   }
 
+  #[allow(unused)]
   pub async fn get_volume(
     &self,
     id: i64,
@@ -70,6 +71,7 @@ impl HetznerClient {
     self.post("/volumes", body).await
   }
 
+  #[allow(unused)]
   pub async fn delete_volume(&self, id: i64) -> anyhow::Result<()> {
     let res = self
       .0
@@ -91,6 +93,7 @@ impl HetznerClient {
     }
   }
 
+  #[allow(unused)]
   pub async fn list_datacenters(
     &self,
   ) -> anyhow::Result<HetznerDatacenterResponse> {
