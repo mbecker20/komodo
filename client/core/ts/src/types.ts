@@ -767,6 +767,8 @@ export enum RepoState {
 }
 
 export interface RepoListItemInfo {
+	/** The server that repo sits on. */
+	server_id: string;
 	/** Repo last cloned / pulled timestamp in ms. */
 	last_pulled_at: I64;
 	/** The configured github repo */

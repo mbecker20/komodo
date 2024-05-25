@@ -19,6 +19,8 @@ pub type RepoListItem = ResourceListItem<RepoListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RepoListItemInfo {
+  /// The server that repo sits on.
+  pub server_id: String,
   /// Repo last cloned / pulled timestamp in ms.
   pub last_pulled_at: I64,
   /// The configured github repo

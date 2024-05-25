@@ -30,6 +30,7 @@ import { Card, CardHeader } from "@ui/card";
 import { Button } from "@ui/button";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
+import { RepoTable } from "../repo/table";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -48,55 +49,53 @@ const _ServerIcon = ({ id, size }: { id?: string; size: number }) => {
   );
 };
 
-const ConfigOrDeployments = ({ id }: { id: string }) => {
+const ConfigOrChildResources = ({ id }: { id: string }) => {
   const [view, setView] = useState("Config");
   const deployments = useRead("ListDeployments", {}).data?.filter(
     (deployment) => deployment.info.server_id === id
   );
   const deploymentsDisabled = (deployments?.length || 0) === 0;
+  const repos = useRead("ListRepos", {}).data?.filter(
+    (repo) => repo.info.server_id === id
+  );
+  const reposDisabled = (repos?.length || 0) === 0;
+  const currentView =
+    (view === "Deployments" && deploymentsDisabled) ||
+    (view === "Repos" && reposDisabled)
+      ? "Config"
+      : view;
+  const tabsList = (
+    <TabsList className="justify-start w-fit">
+      <TabsTrigger value="Config" className="w-[110px]">
+        Config
+      </TabsTrigger>
+      <TabsTrigger
+        value="Deployments"
+        className="w-[110px]"
+        disabled={deploymentsDisabled}
+      >
+        Deployments
+      </TabsTrigger>
+      <TabsTrigger value="Repos" className="w-[110px]" disabled={reposDisabled}>
+        Repos
+      </TabsTrigger>
+    </TabsList>
+  );
   return (
-    <Tabs
-      value={deploymentsDisabled ? "Config" : view}
-      onValueChange={setView}
-      className="grid gap-4"
-    >
+    <Tabs value={currentView} onValueChange={setView} className="grid gap-4">
       <TabsContent value="Config">
-        <ServerConfig
-          id={id}
-          titleOther={
-            <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[110px]">
-                Config
-              </TabsTrigger>
-              <TabsTrigger
-                value="Deployments"
-                className="w-[110px]"
-                disabled={deploymentsDisabled}
-              >
-                Deployments
-              </TabsTrigger>
-            </TabsList>
-          }
-        />
+        <ServerConfig id={id} titleOther={tabsList} />
       </TabsContent>
+
       <TabsContent value="Deployments">
-        <Section
-          titleOther={
-            <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[110px]">
-                Config
-              </TabsTrigger>
-              <TabsTrigger
-                value="Deployments"
-                className="w-[110px]"
-                disabled={deploymentsDisabled}
-              >
-                Deployments
-              </TabsTrigger>
-            </TabsList>
-          }
-        >
+        <Section titleOther={tabsList}>
           <DeploymentTable deployments={deployments} />
+        </Section>
+      </TabsContent>
+
+      <TabsContent value="Repos">
+        <Section titleOther={tabsList}>
+          <RepoTable repos={repos} />
         </Section>
       </TabsContent>
     </Tabs>
@@ -261,7 +260,7 @@ export const ServerComponents: RequiredResourceComponents = {
     // },
   },
 
-  Config: ConfigOrDeployments,
+  Config: ConfigOrChildResources,
 
   DangerZone: ({ id }) => (
     <>

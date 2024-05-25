@@ -33,7 +33,10 @@ export const RepoComponents: RequiredResourceComponents = {
 
   New: () => <NewResource type="Repo" />,
 
-  Table: RepoTable,
+  Table: ({ search }) => {
+    const repos = useRead("ListRepos", {}).data;
+    return <RepoTable repos={repos} search={search} />;
+  },
 
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,

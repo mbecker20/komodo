@@ -58,6 +58,7 @@ impl super::MonitorResource for Repo {
       tags: repo.tags,
       resource_type: ResourceTargetVariant::Repo,
       info: RepoListItemInfo {
+        server_id: repo.config.server_id,
         last_pulled_at: repo.info.last_pulled_at,
         repo: repo.config.repo,
         branch: repo.config.branch,

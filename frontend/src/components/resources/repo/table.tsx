@@ -1,11 +1,22 @@
-import { useFilterResources, useRead } from "@lib/hooks";
+import { useFilterResources } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TagsWithBadge } from "@components/tags";
 import { RepoComponents } from ".";
+import { Types } from "@monitor/client";
 
-export const RepoTable = ({ search }: { search?: string }) => {
-  const repos = useRead("ListRepos", {}).data;
+export const RepoTable = ({
+  repos,
+  search,
+}: {
+  search?: string;
+  repos: Types.RepoListItem[] | undefined;
+}) => {
+  // const servers = useRead("ListServers", {}).data;
+  // const serverName = useCallback(
+  //   (id: string) => servers?.find((server) => server.id === id)?.name,
+  //   [servers]
+  // );
   const filtered = useFilterResources(repos, search);
   return (
     <DataTable
