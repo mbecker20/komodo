@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
+import { Switch } from "@ui/switch";
 import { ChevronsUpDown, MinusCircle, PlusCircle, SearchX } from "lucide-react";
 import { useState } from "react";
 
@@ -70,13 +71,17 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
               ),
               server_type: (server_type, set) => (
                 <ServerTypeSelector
+                  datacenter={
+                    update.datacenter ??
+                    config.datacenter ??
+                    Types.HetznerDatacenter.Nuremberg1Dc3
+                  }
                   selected={server_type}
                   set={set}
                   disabled={disabled}
                 />
               ),
               image: true,
-              automount: true,
               port: true,
               enable_public_ipv4: true,
               enable_public_ipv6: true,
@@ -93,7 +98,7 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     private_network_ids: [
                       ...(update.private_network_ids ??
@@ -101,7 +106,7 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
                         []),
                       0,
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -172,24 +177,35 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
             contentHidden:
               ((update.volumes ?? config.volumes)?.length ?? 0) === 0,
             actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set({
-                    ...update,
-                    volumes: [
-                      ...(update.volumes ?? config.volumes ?? []),
-                      newVolume(
-                        (update.volumes ?? config.volumes)?.length ?? 0
-                      ),
-                    ],
-                  })
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Volume
-              </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  Automount
+                  <Switch
+                    checked={update.automount ?? config.automount}
+                    onCheckedChange={(automount) =>
+                      set((update) => ({ ...update, automount }))
+                    }
+                  />
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    set((update) => ({
+                      ...update,
+                      volumes: [
+                        ...(update.volumes ?? config.volumes ?? []),
+                        newVolume(
+                          (update.volumes ?? config.volumes)?.length ?? 0
+                        ),
+                      ],
+                    }))
+                  }
+                  className="flex items-center gap-2 w-[200px]"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  Add Volume
+                </Button>
+              </div>
             ),
             components: {
               volumes: (volumes, set) => {
@@ -324,16 +340,25 @@ const DatacenterSelector = ({
 };
 
 const ServerTypeSelector = ({
+  datacenter,
   disabled,
   selected,
   set,
 }: {
+  datacenter: Types.HetznerDatacenter;
   disabled: boolean;
   selected: Types.HetznerServerType | undefined;
   set: (value: Partial<Types.HetznerServerTemplateConfig>) => void;
 }) => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  // The US based datacenters only have Amd servers
+  const filter =
+    datacenter === Types.HetznerDatacenter.HillsboroDc1 ||
+    datacenter === Types.HetznerDatacenter.AshburnDc1
+      ? (st: string) => st.includes("Amd")
+      : () => true;
+  const server_types = Object.values(Types.HetznerServerType).filter(filter);
   return (
     <ConfigItem label="Server Type">
       <Popover open={open} onOpenChange={setOpen}>
@@ -362,7 +387,7 @@ const ServerTypeSelector = ({
               </CommandEmpty>
 
               <CommandGroup>
-                {Object.values(Types.HetznerServerType).map((server_type) => (
+                {server_types.map((server_type) => (
                   <CommandItem
                     key={server_type}
                     onSelect={() => {
