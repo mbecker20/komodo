@@ -150,8 +150,9 @@ pub enum HetznerVolumeFormat {
 )]
 #[allow(clippy::enum_variant_names)]
 pub enum HetznerServerType {
-  #[default]
   SharedIntel1Core2Ram20Disk,
+  // The lowest tier available at all locations
+  #[default]
   SharedAmd2Core2Ram40Disk,
   SharedArm2Core4Ram40Disk,
   SharedIntel2Core4Ram40Disk,

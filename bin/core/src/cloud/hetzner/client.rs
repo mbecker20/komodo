@@ -139,13 +139,18 @@ async fn handle_req<Res: DeserializeOwned>(
 
   let status = res.status();
 
-  if status == StatusCode::OK {
+  if status.is_success() {
     res.json().await.context("failed to parse response to json")
   } else {
     let text = res
       .text()
       .await
       .context("failed to get response body as text")?;
+    if let Ok(json_error) =
+      serde_json::from_str::<serde_json::Value>(&text)
+    {
+      return Err(anyhow!("{status} | {json_error:?}"));
+    }
     Err(anyhow!("{status} | {text}"))
   }
 }
