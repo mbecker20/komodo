@@ -233,7 +233,6 @@ impl MergePartial for ServerTemplateConfig {
         ServerTemplateConfig::Hetzner(config) => {
           let config = hetzner::HetznerServerTemplateConfig {
             image: partial.image.unwrap_or(config.image),
-            automount: partial.automount.unwrap_or(config.automount),
             datacenter: partial
               .datacenter
               .unwrap_or(config.datacenter),

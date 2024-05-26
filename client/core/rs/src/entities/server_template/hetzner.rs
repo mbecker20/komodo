@@ -22,11 +22,6 @@ pub struct HetznerServerTemplateConfig {
   #[serde(default)]
   #[builder(default)]
   pub image: String,
-  /// Auto-mount Volumes after attach
-  #[serde(default = "default_automount")]
-  #[builder(default = "default_automount()")]
-  #[partial_default(default_automount())]
-  pub automount: bool,
   /// ID or name of Datacenter to create Server in
   #[serde(default)]
   #[builder(default)]
@@ -84,10 +79,6 @@ pub struct HetznerServerTemplateConfig {
   pub port: i32,
 }
 
-fn default_automount() -> bool {
-  true
-}
-
 fn default_port() -> i32 {
   8120
 }
@@ -95,7 +86,6 @@ fn default_port() -> i32 {
 impl Default for HetznerServerTemplateConfig {
   fn default() -> Self {
     Self {
-      automount: default_automount(),
       port: default_port(),
       image: Default::default(),
       datacenter: Default::default(),

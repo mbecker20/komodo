@@ -65,7 +65,6 @@ pub async fn launch_hetzner_server(
     *hetzner().as_ref().context("Hetzner token not configured")?;
   let HetznerServerTemplateConfig {
     image,
-    automount,
     datacenter,
     private_network_ids,
     placement_group,
@@ -131,8 +130,7 @@ pub async fn launch_hetzner_server(
 
   let body = CreateServerBody {
     name: name.to_string(),
-    // only actually add automount if volumes nonempty
-    automount: (!volume_ids.is_empty()).then_some(automount),
+    automount: None,
     datacenter: Some(datacenter),
     location: None,
     firewalls: firewall_ids

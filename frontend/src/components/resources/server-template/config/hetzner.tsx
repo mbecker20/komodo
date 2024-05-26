@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Switch } from "@ui/switch";
 import { ChevronsUpDown, MinusCircle, PlusCircle, SearchX } from "lucide-react";
 import { useState } from "react";
 
@@ -177,35 +176,24 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
             contentHidden:
               ((update.volumes ?? config.volumes)?.length ?? 0) === 0,
             actions: !disabled && (
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  Automount
-                  <Switch
-                    checked={update.automount ?? config.automount}
-                    onCheckedChange={(automount) =>
-                      set((update) => ({ ...update, automount }))
-                    }
-                  />
-                </div>
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    set((update) => ({
-                      ...update,
-                      volumes: [
-                        ...(update.volumes ?? config.volumes ?? []),
-                        newVolume(
-                          (update.volumes ?? config.volumes)?.length ?? 0
-                        ),
-                      ],
-                    }))
-                  }
-                  className="flex items-center gap-2 w-[200px]"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Add Volume
-                </Button>
-              </div>
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    volumes: [
+                      ...(update.volumes ?? config.volumes ?? []),
+                      newVolume(
+                        (update.volumes ?? config.volumes)?.length ?? 0
+                      ),
+                    ],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Volume
+              </Button>
             ),
             components: {
               volumes: (volumes, set) => {

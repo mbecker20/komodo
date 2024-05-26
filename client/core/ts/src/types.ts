@@ -3426,20 +3426,18 @@ export enum HetznerVolumeFormat {
 export interface HetznerVolumeSpecs {
 	/** A name for the volume */
 	name: string;
-	/** The format for the volume */
-	format: HetznerVolumeFormat;
-	/** Labels for the volume */
-	labels: Record<string, string>;
 	/** Size of the volume in GB */
 	size_gb: I64;
+	/** The format for the volume */
+	format?: HetznerVolumeFormat;
+	/** Labels for the volume */
+	labels?: Record<string, string>;
 }
 
 /** Hetzner server config. */
 export interface HetznerServerTemplateConfig {
 	/** ID or name of the Image the Server is created from */
 	image?: string;
-	/** Auto-mount Volumes after attach */
-	automount: boolean;
 	/** ID or name of Datacenter to create Server in */
 	datacenter?: HetznerDatacenter;
 	/** Network IDs which should be attached to the Server private network interface at the creation time */
