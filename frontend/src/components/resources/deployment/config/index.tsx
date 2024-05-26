@@ -132,13 +132,13 @@ export const DeploymentConfig = ({
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     ports: [
                       ...(update.ports ?? config.ports ?? []),
                       { container: "", local: "" },
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -163,13 +163,13 @@ export const DeploymentConfig = ({
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     volumes: [
                       ...(update.volumes ?? config.volumes ?? []),
                       { container: "", local: "" },
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -195,12 +195,13 @@ export const DeploymentConfig = ({
               <AddExtraArgMenu
                 type="Deployment"
                 onSelect={(suggestion) =>
-                  set({
+                  set((update) => ({
+                    ...update,
                     extra_args: [
                       ...(update.extra_args ?? config.extra_args ?? []),
                       suggestion,
                     ],
-                  })
+                  }))
                 }
                 disabled={disabled}
               />

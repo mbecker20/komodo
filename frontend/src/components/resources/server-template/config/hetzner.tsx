@@ -140,13 +140,13 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     firewall_ids: [
                       ...(update.firewall_ids ?? config.firewall_ids ?? []),
                       0,
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -271,13 +271,13 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     ssh_keys: [
                       ...(update.ssh_keys ?? config.ssh_keys ?? []),
                       "",
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >

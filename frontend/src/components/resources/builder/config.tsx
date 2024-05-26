@@ -59,7 +59,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set(update => ({
                     ...update,
                     security_group_ids: [
                       ...(update.security_group_ids ??
@@ -67,7 +67,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
                         []),
                       "",
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -95,7 +95,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set(update => ({
                     ...update,
                     github_accounts: [
                       ...(update.github_accounts ??
@@ -103,7 +103,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
                         []),
                       "",
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -131,7 +131,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     docker_accounts: [
                       ...(update.docker_accounts ??
@@ -139,7 +139,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
                         []),
                       "",
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >

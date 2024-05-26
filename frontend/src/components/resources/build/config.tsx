@@ -22,7 +22,13 @@ import { PlusCircle } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
 
-export const BuildConfig = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
+export const BuildConfig = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Build", id },
   }).data;
@@ -159,12 +165,13 @@ export const BuildConfig = ({ id, titleOther }: { id: string; titleOther: ReactN
               <AddExtraArgMenu
                 type="Build"
                 onSelect={(suggestion) =>
-                  set({
+                  set((update) => ({
+                    ...update,
                     extra_args: [
                       ...(update.extra_args ?? config.extra_args ?? []),
                       suggestion,
                     ],
-                  })
+                  }))
                 }
                 disabled={disabled}
               />
@@ -188,13 +195,13 @@ export const BuildConfig = ({ id, titleOther }: { id: string; titleOther: ReactN
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set(update => ({
                     ...update,
                     labels: [
                       ...(update.labels ?? config.labels ?? []),
                       { variable: "", value: "" },
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >

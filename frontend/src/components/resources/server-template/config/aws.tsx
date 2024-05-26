@@ -69,7 +69,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     security_group_ids: [
                       ...(update.security_group_ids ??
@@ -77,7 +77,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
                         []),
                       "",
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -104,13 +104,13 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set({
+                  set((update) => ({
                     ...update,
                     volumes: [
                       ...(update.volumes ?? config.volumes ?? []),
                       newVolume((update.volumes ?? config.volumes).length),
                     ],
-                  })
+                  }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
