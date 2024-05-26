@@ -599,7 +599,6 @@ where
   T: Into<ResourceTarget> + std::fmt::Debug,
 {
   let resource: ResourceTarget = resource.into();
-  // let (ty, id) = resource.extract_variant_id();
   let (recent_field, id) = match resource {
     ResourceTarget::Server(id) => ("recent_servers", id),
     ResourceTarget::Deployment(id) => ("recent_deployments", id),
