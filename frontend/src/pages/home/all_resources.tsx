@@ -50,12 +50,14 @@ const TableSection = ({
   search?: string;
 }) => {
   const tags = useTagsFilter();
-  const searchSplit = search?.split(" ") || [];
+  const searchSplit = search?.toLowerCase().split(" ") || [];
   const count = useRead(`List${type as UsableResource}s`, {}).data?.filter(
     (resource) =>
       tags.every((tag) => resource.tags.includes(tag)) &&
       (searchSplit.length > 0
-        ? searchSplit.every((search) => resource.name.includes(search))
+        ? searchSplit.every((search) =>
+            resource.name.toLowerCase().includes(search)
+          )
         : true)
   ).length;
 
