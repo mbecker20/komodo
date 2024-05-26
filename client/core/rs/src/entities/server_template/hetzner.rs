@@ -115,16 +115,22 @@ impl Default for HetznerServerTemplateConfig {
 }
 
 #[typeshare]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(
+  Debug, Clone, PartialEq, Serialize, Deserialize, Builder,
+)]
 pub struct HetznerVolumeSpecs {
   /// A name for the volume
   pub name: String,
-  /// The format for the volume
-  pub format: HetznerVolumeFormat,
-  /// Labels for the volume
-  pub labels: HashMap<String, String>,
   /// Size of the volume in GB
   pub size_gb: I64,
+  /// The format for the volume
+  #[serde(default)]
+  #[builder(default)]
+  pub format: HetznerVolumeFormat,
+  /// Labels for the volume
+  #[serde(default)]
+  #[builder(default)]
+  pub labels: HashMap<String, String>,
 }
 
 #[typeshare]

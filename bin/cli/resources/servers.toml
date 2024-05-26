@@ -49,3 +49,33 @@ size_gb = 10
 volume_type = "gp3"
 iops = 0
 throughput = 0
+
+[[server_template]]
+name = "hetzno"
+description = ""
+tags = []
+
+[server_template.config]
+type = "Hetzner"
+
+[server_template.config.params]
+image = "docker-ce"
+automount = true
+datacenter = "HillsboroDc1"
+private_network_ids = [4258025]
+enable_public_ipv4 = true
+enable_public_ipv6 = true
+firewall_ids = [1402830, 1402832, 1410630]
+server_type = "SharedAmd3Core4Ram80Disk"
+ssh_keys = ["becker@Beckers-MacBook-Pro.local"]
+user_data = """
+#cloud-config
+runcmd:
+  - curl -sSL 'https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py' | python3"""
+use_public_ip = false
+port = 8120
+
+[[server_template.config.params.volumes]]
+name = "data"
+format = "Xfs"
+size_gb = 200
