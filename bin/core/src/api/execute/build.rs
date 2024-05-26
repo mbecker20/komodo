@@ -313,6 +313,7 @@ impl Resolve<RunBuild, User> for State {
   }
 }
 
+#[instrument(skip(update))]
 async fn handle_early_return(
   mut update: Update,
 ) -> anyhow::Result<Update> {
@@ -394,7 +395,7 @@ impl Resolve<CancelBuild, User> for State {
 const BUILDER_POLL_RATE_SECS: u64 = 2;
 const BUILDER_POLL_MAX_TRIES: usize = 30;
 
-#[instrument]
+#[instrument(skip_all, fields(build_id = build.id, update_id = update.id))]
 async fn get_build_builder(
   build: &Build,
   update: &mut Update,
@@ -424,7 +425,7 @@ async fn get_build_builder(
   }
 }
 
-#[instrument]
+#[instrument(skip_all, fields(build_id = build.id, update_id = update.id))]
 async fn get_aws_builder(
   build: &Build,
   config: AwsBuilderConfig,
@@ -504,7 +505,7 @@ async fn get_aws_builder(
   Err(res.err().unwrap())
 }
 
-#[instrument(skip(periphery))]
+#[instrument(skip(periphery, update))]
 async fn cleanup_builder_instance(
   periphery: PeripheryClient,
   cleanup_data: BuildCleanupData,

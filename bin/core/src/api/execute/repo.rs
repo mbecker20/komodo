@@ -97,7 +97,7 @@ impl Resolve<CloneRepo, User> for State {
     update.finalize();
 
     if update.success {
-      update_last_pulled(&repo.name).await;
+      update_last_pulled_time(&repo.name).await;
     }
 
     handle_update_return(update).await
@@ -170,13 +170,14 @@ impl Resolve<PullRepo, User> for State {
     update.finalize();
 
     if update.success {
-      update_last_pulled(&repo.name).await;
+      update_last_pulled_time(&repo.name).await;
     }
 
     handle_update_return(update).await
   }
 }
 
+#[instrument(skip_all, fields(update_id = update.id))]
 async fn handle_update_return(
   update: Update,
 ) -> anyhow::Result<Update> {
@@ -198,7 +199,8 @@ async fn handle_update_return(
   Ok(update)
 }
 
-async fn update_last_pulled(repo_name: &str) {
+#[instrument]
+async fn update_last_pulled_time(repo_name: &str) {
   let res = db_client()
     .await
     .repos
