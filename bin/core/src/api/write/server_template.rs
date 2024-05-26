@@ -13,6 +13,7 @@ use resolver_api::Resolve;
 use crate::{resource, state::State};
 
 impl Resolve<CreateServerTemplate, User> for State {
+  #[instrument(name = "CreateServerTemplate", skip(self, user))]
   async fn resolve(
     &self,
     CreateServerTemplate { name, config }: CreateServerTemplate,
@@ -23,6 +24,7 @@ impl Resolve<CreateServerTemplate, User> for State {
 }
 
 impl Resolve<CopyServerTemplate, User> for State {
+  #[instrument(name = "CopyServerTemplate", skip(self, user))]
   async fn resolve(
     &self,
     CopyServerTemplate { name, id }: CopyServerTemplate,
@@ -41,6 +43,7 @@ impl Resolve<CopyServerTemplate, User> for State {
 }
 
 impl Resolve<DeleteServerTemplate, User> for State {
+  #[instrument(name = "DeleteServerTemplate", skip(self, user))]
   async fn resolve(
     &self,
     DeleteServerTemplate { id }: DeleteServerTemplate,
@@ -51,6 +54,7 @@ impl Resolve<DeleteServerTemplate, User> for State {
 }
 
 impl Resolve<UpdateServerTemplate, User> for State {
+  #[instrument(name = "UpdateServerTemplate", skip(self, user))]
   async fn resolve(
     &self,
     UpdateServerTemplate { id, config }: UpdateServerTemplate,
