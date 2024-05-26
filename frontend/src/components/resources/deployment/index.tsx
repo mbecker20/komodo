@@ -1,7 +1,7 @@
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
-import { HardDrive, Rocket } from "lucide-react";
+import { HardDrive, Rocket, Server } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useServer } from "../server";
 import {
@@ -142,7 +142,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       ) : (
         <div className="flex gap-2 items-center">
           <HardDrive className="w-4 h-4" />
-          {info?.image || "N/A"}
+          <div>{info?.image || "N/A"}</div>
         </div>
       );
     },
@@ -152,7 +152,10 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return server?.id ? (
         <ResourceLink type="Server" id={server?.id} />
       ) : (
-        "Unknown Server"
+        <div className="flex gap-2 items-center">
+          <Server className="w-4 h-4" />
+          <div>Unknown Server</div>
+        </div>
       );
     },
   },

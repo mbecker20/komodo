@@ -3,7 +3,7 @@ import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import {
-  ServerIcon,
+  Server,
   Cpu,
   MemoryStick,
   Database,
@@ -37,10 +37,10 @@ export const useServer = (id?: string) =>
     (d) => d.id === id
   );
 
-const _ServerIcon = ({ id, size }: { id?: string; size: number }) => {
+const Icon = ({ id, size }: { id?: string; size: number }) => {
   const state = useServer(id)?.info.state;
   return (
-    <ServerIcon
+    <Server
       className={cn(
         `w-${size} h-${size}`,
         id && fill_color_class_by_intention(server_state_intention(state))
@@ -111,8 +111,8 @@ export const ServerComponents: RequiredResourceComponents = {
 
   Table: ServerTable,
 
-  Icon: ({ id }) => <_ServerIcon id={id} size={4} />,
-  BigIcon: ({ id }) => <_ServerIcon id={id} size={8} />,
+  Icon: ({ id }) => <Icon id={id} size={4} />,
+  BigIcon: ({ id }) => <Icon id={id} size={8} />,
 
   Status: {
     State: ({ id }) => {

@@ -1,7 +1,7 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardHeader } from "@ui/card";
-import { FolderGit, GitBranch } from "lucide-react";
+import { FolderGit, GitBranch, Server } from "lucide-react";
 import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
@@ -103,7 +103,10 @@ export const RepoComponents: RequiredResourceComponents = {
       return server?.id ? (
         <ResourceLink type="Server" id={server?.id} />
       ) : (
-        "Unknown Server"
+        <div className="flex gap-2 items-center">
+          <Server className="w-4 h-4" />
+          <div>Unknown Server</div>
+        </div>
       );
     },
   },
