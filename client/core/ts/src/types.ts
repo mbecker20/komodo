@@ -97,6 +97,7 @@ export enum SeverityLevel {
 	Critical = "CRITICAL",
 }
 
+/** Used to reference a specific resource across all resource types */
 export type ResourceTarget = 
 	| { type: "System", id: string }
 	| { type: "Build", id: string }
@@ -569,13 +570,21 @@ export type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
 
 export type ListDeploymentsResponse = DeploymentListItem[];
 
+/** Represents the output of some command being run */
 export interface Log {
+	/** A label for the log */
 	stage: string;
+	/** The command which was executed */
 	command: string;
+	/** The output of the command in the standard channel */
 	stdout: string;
+	/** The output of the command in the error channel */
 	stderr: string;
+	/** Whether the command run was successful */
 	success: boolean;
+	/** The start time of the command execution */
 	start_ts: I64;
+	/** The end time of the command execution */
 	end_ts: I64;
 }
 
@@ -1181,12 +1190,17 @@ export enum Operation {
 	DeleteVariable = "DeleteVariable",
 }
 
+/** An update's status */
 export enum UpdateStatus {
+	/** The run is in the system but hasn't started yet */
 	Queued = "Queued",
+	/** The run is currently running */
 	InProgress = "InProgress",
+	/** The run is complete */
 	Complete = "Complete",
 }
 
+/** Represents an action performed by Monitor. */
 export interface Update {
 	/**
 	 * The Mongo ID of the update.
@@ -1194,15 +1208,38 @@ export interface Update {
 	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Update) }`
 	 */
 	_id?: MongoId;
+	/** The operation performed */
 	operation: Operation;
+	/** The time the operation started */
 	start_ts: I64;
+	/** Whether the operation was successful */
 	success: boolean;
+	/**
+	 * The user id that triggered the update.
+	 * 
+	 * Also can take these values for operations triggered automatically:
+	 * - `Procedure`: The operation was triggered as part of a procedure run
+	 * - `Github`: The operation was triggered by a github webhook
+	 * - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
+	 */
 	operator: string;
+	/** The target resource to which this update refers */
 	target: ResourceTarget;
+	/** Logs produced as the operation is performed */
 	logs: Log[];
+	/** The time the operation completed. */
 	end_ts?: I64;
+	/**
+	 * The status of the update
+	 * - `Queued`
+	 * - `InProgress`
+	 * - `Complete`
+	 */
 	status: UpdateStatus;
-	version: Version;
+	/** An optional version on the update, ie build version or deployed version. */
+	version?: Version;
+	/** Some unstructured, operation specific data. Not for general usage. */
+	other_data?: string;
 }
 
 export type GetUpdateResponse = Update;
@@ -2425,16 +2462,40 @@ export interface ListUpdates {
 	page?: number;
 }
 
+/** Minimal representation of an action performed by Monitor. */
 export interface UpdateListItem {
+	/** The id of the update */
 	id: string;
+	/** Which operation was run */
 	operation: Operation;
+	/** The starting time of the operation */
 	start_ts: I64;
+	/** Whether the operation was successful */
 	success: boolean;
+	/** The username of the user performing update */
 	username: string;
+	/**
+	 * The user id that triggered the update.
+	 * 
+	 * Also can take these values for operations triggered automatically:
+	 * - `Procedure`: The operation was triggered as part of a procedure run
+	 * - `Github`: The operation was triggered by a github webhook
+	 * - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
+	 */
 	operator: string;
+	/** The target resource to which this update refers */
 	target: ResourceTarget;
+	/**
+	 * The status of the update
+	 * - `Queued`
+	 * - `InProgress`
+	 * - `Complete`
+	 */
 	status: UpdateStatus;
-	version: Version;
+	/** An optional version on the update, ie build version or deployed version. */
+	version?: Version;
+	/** Some unstructured, operation specific data. Not for general usage. */
+	other_data?: string;
 }
 
 /** Response for [ListUpdates]. */

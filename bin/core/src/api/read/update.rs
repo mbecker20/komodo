@@ -140,6 +140,7 @@ impl Resolve<ListUpdates, User> for State {
         target: u.target,
         status: u.status,
         version: u.version,
+        other_data: u.other_data,
       }
     })
     .collect::<Vec<_>>();

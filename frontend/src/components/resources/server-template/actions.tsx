@@ -13,13 +13,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@ui/dialog";
+import { useWebsocketMessages } from "@lib/socket";
+import { useNavigate } from "react-router-dom";
+import { Types } from "@monitor/client";
 
 export const LaunchServer = ({ id }: { id: string }) => {
+  const nav = useNavigate();
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
   const { mutate } = useExecute("LaunchServer");
   const template = useServerTemplate(id);
+
+  useWebsocketMessages("server-launch", (update) => {
+    if (
+      update.target.type === "ServerTemplate" &&
+      update.target.id === id &&
+      update.operation === Types.Operation.LaunchServer &&
+      update.status === Types.UpdateStatus.Complete &&
+      update.success &&
+      update.other_data
+    ) {
+      // The 'other_data' in this case will be created server id
+      nav(`/servers/${update.other_data}`);
+    }
+  });
 
   if (!template) return;
 

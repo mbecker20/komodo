@@ -57,8 +57,9 @@ function keep_line(line: string) {
   return true;
 }
 
-export function version_is_none({ major, minor, patch }: Types.Version) {
-  return major === 0 && minor === 0 && patch === 0;
+export function version_is_none(version?: Types.Version) {
+  if (!version) return true;
+  return version.major === 0 && version.minor === 0 && version.patch === 0;
 }
 
 export function resource_name(type: UsableResource, id: string) {

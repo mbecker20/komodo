@@ -129,6 +129,7 @@ impl Resolve<LaunchServer, User> for State {
           "create server",
           format!("created server {} ({})", server.name, server.id),
         );
+        update.other_data = server.id;
       }
       Err(e) => {
         update.push_error_log(

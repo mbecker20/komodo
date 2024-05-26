@@ -83,6 +83,7 @@ async fn update_list_item(
     target: update.target,
     status: update.status,
     version: update.version,
+    other_data: update.other_data,
     username,
   };
   Ok(update)

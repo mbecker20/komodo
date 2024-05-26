@@ -48,6 +48,7 @@ impl TryFrom<Update> for monitor_client::entities::update::Update {
         .and_then(|ts| unix_from_monitor_ts(&ts).ok()),
       status: value.status.into(),
       version: value.version.map(|v| v.into()).unwrap_or_default(),
+      other_data: Default::default(),
     };
     Ok(update)
   }

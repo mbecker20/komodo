@@ -14,6 +14,7 @@ use super::{
   server::Server, server_template::ServerTemplate, Version,
 };
 
+/// Represents an action performed by Monitor.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[cfg_attr(
@@ -34,23 +35,44 @@ pub struct Update {
   )]
   pub id: MongoId,
 
+  /// The operation performed
   #[cfg_attr(feature = "mongo", index)]
   pub operation: Operation,
 
+  /// The time the operation started
   #[cfg_attr(feature = "mongo", index)]
   pub start_ts: I64,
 
+  /// Whether the operation was successful
   #[cfg_attr(feature = "mongo", index)]
   pub success: bool,
 
+  /// The user id that triggered the update.
+  ///
+  /// Also can take these values for operations triggered automatically:
+  /// - `Procedure`: The operation was triggered as part of a procedure run
+  /// - `Github`: The operation was triggered by a github webhook
+  /// - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
   #[cfg_attr(feature = "mongo", index)]
   pub operator: String,
 
+  /// The target resource to which this update refers
   pub target: ResourceTarget,
+  /// Logs produced as the operation is performed
   pub logs: Vec<Log>,
+  /// The time the operation completed.
   pub end_ts: Option<I64>,
+  /// The status of the update
+  /// - `Queued`
+  /// - `InProgress`
+  /// - `Complete`
   pub status: UpdateStatus,
+  /// An optional version on the update, ie build version or deployed version.
+  #[serde(default, skip_serializing_if = "Version::is_none")]
   pub version: Version,
+  /// Some unstructured, operation specific data. Not for general usage.
+  #[serde(default, skip_serializing_if = "String::is_empty")]
+  pub other_data: String,
 }
 
 impl Update {
@@ -81,29 +103,59 @@ impl Update {
   }
 }
 
+/// Minimal representation of an action performed by Monitor.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateListItem {
+  /// The id of the update
   pub id: String,
+  /// Which operation was run
   pub operation: Operation,
+  /// The starting time of the operation
   pub start_ts: I64,
+  /// Whether the operation was successful
   pub success: bool,
+  /// The username of the user performing update
   pub username: String,
+  /// The user id that triggered the update.
+  ///
+  /// Also can take these values for operations triggered automatically:
+  /// - `Procedure`: The operation was triggered as part of a procedure run
+  /// - `Github`: The operation was triggered by a github webhook
+  /// - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
   pub operator: String,
+  /// The target resource to which this update refers
   pub target: ResourceTarget,
+  /// The status of the update
+  /// - `Queued`
+  /// - `InProgress`
+  /// - `Complete`
   pub status: UpdateStatus,
+  /// An optional version on the update, ie build version or deployed version.
+  #[serde(default, skip_serializing_if = "Version::is_none")]
   pub version: Version,
+  /// Some unstructured, operation specific data. Not for general usage.
+  #[serde(default, skip_serializing_if = "String::is_empty")]
+  pub other_data: String,
 }
 
+/// Represents the output of some command being run
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Log {
+  /// A label for the log
   pub stage: String,
+  /// The command which was executed
   pub command: String,
+  /// The output of the command in the standard channel
   pub stdout: String,
+  /// The output of the command in the error channel
   pub stderr: String,
+  /// Whether the command run was successful
   pub success: bool,
+  /// The start time of the command execution
   pub start_ts: I64,
+  /// The end time of the command execution
   pub end_ts: I64,
 }
 
@@ -133,6 +185,7 @@ impl Log {
   }
 }
 
+/// Used to reference a specific resource across all resource types
 #[typeshare]
 #[derive(
   Serialize,
@@ -249,6 +302,7 @@ impl From<&ServerTemplate> for ResourceTarget {
   }
 }
 
+/// An update's status
 #[typeshare]
 #[derive(
   Serialize,
@@ -264,8 +318,11 @@ impl From<&ServerTemplate> for ResourceTarget {
   Default,
 )]
 pub enum UpdateStatus {
+  /// The run is in the system but hasn't started yet
   Queued,
+  /// The run is currently running
   InProgress,
+  /// The run is complete
   #[default]
   Complete,
 }
