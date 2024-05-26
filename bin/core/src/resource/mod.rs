@@ -599,7 +599,16 @@ where
   T: Into<ResourceTarget> + std::fmt::Debug,
 {
   let resource: ResourceTarget = resource.into();
-  let (ty, id) = resource.extract_variant_id();
+  // let (ty, id) = resource.extract_variant_id();
+  let (recent_field, id) = match resource {
+    ResourceTarget::Server(id) => ("recent_servers", id),
+    ResourceTarget::Deployment(id) => ("recent_deployments", id),
+    ResourceTarget::Build(id) => ("recent_builds", id),
+    ResourceTarget::Repo(id) => ("recent_repos", id),
+    ResourceTarget::Procedure(id) => ("recent_procedures", id),
+    // Don't need to do anything for others
+    _ => return,
+  };
   if let Err(e) = db_client()
     .await
     .users
@@ -607,10 +616,7 @@ where
       doc! {},
       doc! {
         "$pull": {
-          "recently_viewed": {
-            "type": ty.to_string(),
-            "id": id,
-          }
+          recent_field: id
         }
       },
       None,
