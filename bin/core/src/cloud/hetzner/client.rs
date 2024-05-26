@@ -56,6 +56,7 @@ impl HetznerClient {
     self.delete(&format!("/servers/{id}")).await
   }
 
+  #[allow(unused)]
   pub async fn get_volume(
     &self,
     id: i64,

@@ -1,10 +1,6 @@
-use std::{
-  sync::{Arc, Mutex, OnceLock},
-  time::Duration,
-};
+use std::{sync::OnceLock, time::Duration};
 
 use anyhow::{anyhow, Context};
-use futures::future::join_all;
 use monitor_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant},
   monitor_timestamp,
@@ -27,9 +23,7 @@ use crate::{
 
 use self::{
   client::HetznerClient,
-  common::{
-    HetznerAction, HetznerActionResponse, HetznerVolumeStatus,
-  },
+  common::{HetznerAction, HetznerActionResponse},
 };
 
 mod client;
@@ -101,32 +95,6 @@ pub async fn launch_hetzner_server(
       .volume
       .id;
     volume_ids.push(id);
-  }
-
-  // Make sure volumes are available so auto mount is successful
-  let vol_ids_poll = Arc::new(Mutex::new(volume_ids.clone()));
-  for _ in 0..MAX_POLL_TRIES {
-    if vol_ids_poll.lock().unwrap().is_empty() {
-      break;
-    }
-    tokio::time::sleep(Duration::from_secs(POLL_RATE_SECS)).await;
-    let ids = vol_ids_poll.lock().unwrap().clone();
-    let futures = ids.into_iter().map(|id| {
-      let vol_ids = vol_ids_poll.clone();
-      async move {
-        let Ok(res) = hetzner.get_volume(id).await else {
-          return;
-        };
-        if matches!(res.volume.status, HetznerVolumeStatus::Available)
-        {
-          vol_ids.lock().unwrap().retain(|_id| *_id != id);
-        }
-      }
-    });
-    join_all(futures).await;
-  }
-  if !vol_ids_poll.lock().unwrap().is_empty() {
-    return Err(anyhow!("Volumes not ready after poll"));
   }
 
   let body = CreateServerBody {
