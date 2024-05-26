@@ -1,9 +1,10 @@
-import { useFilterResources } from "@lib/hooks";
+import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TagsWithBadge } from "@components/tags";
 import { RepoComponents } from ".";
 import { Types } from "@monitor/client";
+import { useCallback } from "react";
 
 export const RepoTable = ({
   repos,
@@ -12,11 +13,11 @@ export const RepoTable = ({
   search?: string;
   repos: Types.RepoListItem[] | undefined;
 }) => {
-  // const servers = useRead("ListServers", {}).data;
-  // const serverName = useCallback(
-  //   (id: string) => servers?.find((server) => server.id === id)?.name,
-  //   [servers]
-  // );
+  const servers = useRead("ListServers", {}).data;
+  const serverName = useCallback(
+    (id: string) => servers?.find((server) => server.id === id)?.name,
+    [servers]
+  );
   const filtered = useFilterResources(repos, search);
   return (
     <DataTable
@@ -39,9 +40,24 @@ export const RepoTable = ({
           size: 200,
         },
         {
-          accessorKey: "info.branch",
+          accessorKey: "info.server_id",
+          sortingFn: (a, b) => {
+            const sa = serverName(a.original.info.server_id);
+            const sb = serverName(b.original.info.server_id);
+
+            if (!sa && !sb) return 0;
+            if (!sa) return -1;
+            if (!sb) return 1;
+
+            if (sa > sb) return 1;
+            else if (sa < sb) return -1;
+            else return 0;
+          },
           header: ({ column }) => (
-            <SortableHeader column={column} title="Branch" />
+            <SortableHeader column={column} title="Server" />
+          ),
+          cell: ({ row }) => (
+            <ResourceLink type="Server" id={row.original.info.server_id} />
           ),
           size: 200,
         },

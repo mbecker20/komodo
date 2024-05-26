@@ -4,7 +4,7 @@ import { Card, CardHeader } from "@ui/card";
 import { FolderGit, GitBranch } from "lucide-react";
 import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
-import { DeleteResource, NewResource } from "../common";
+import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RepoTable } from "./table";
 import {
   bg_color_class_by_intention,
@@ -14,6 +14,7 @@ import {
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { RepoDashboard } from "./dashboard";
+import { useServer } from "../server";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
@@ -87,13 +88,22 @@ export const RepoComponents: RequiredResourceComponents = {
         </div>
       );
     },
-    Branch: ({ id }) => {
-      const branch = useRepo(id)?.info.branch;
-      return (
-        <div className="flex items-center gap-2">
-          <FolderGit className="w-4 h-4" />
-          {branch}
-        </div>
+    // Branch: ({ id }) => {
+    //   const branch = useRepo(id)?.info.branch;
+    //   return (
+    //     <div className="flex items-center gap-2">
+    //       <FolderGit className="w-4 h-4" />
+    //       {branch}
+    //     </div>
+    //   );
+    // },
+    Server: ({ id }) => {
+      const info = useRepo(id)?.info;
+      const server = useServer(info?.server_id);
+      return server?.id ? (
+        <ResourceLink type="Server" id={server?.id} />
+      ) : (
+        "Unknown Server"
       );
     },
   },
