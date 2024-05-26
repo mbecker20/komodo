@@ -1,4 +1,4 @@
-import { useRead, useUser, useUserInvalidate, useWrite } from "@lib/hooks";
+import { useManageUser, useRead, useUser, useUserInvalidate } from "@lib/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,7 @@ export const TopbarUpdates = () => {
   );
 
   const userInvalidate = useUserInvalidate();
-  const { mutate } = useWrite("SetLastSeenUpdate", {
+  const { mutate } = useManageUser("SetLastSeenUpdate", {
     onSuccess: userInvalidate,
   });
 

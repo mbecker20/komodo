@@ -48,6 +48,7 @@ async fn app() -> anyhow::Result<()> {
 
   let app = Router::new()
     .nest("/auth", api::auth::router())
+    .nest("/user", api::user::router())
     .nest("/read", api::read::router())
     .nest("/write", api::write::router())
     .nest("/execute", api::execute::router())

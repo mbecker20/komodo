@@ -4,6 +4,7 @@ import {
   AuthResponses,
   ExecuteResponses,
   ReadResponses,
+  UserResponses,
   WriteResponses,
 } from "@monitor/client/dist/responses";
 import {
@@ -80,6 +81,35 @@ export const useInvalidate = () => {
   ) => keys.forEach((key) => qc.invalidateQueries({ queryKey: key }));
 };
 
+export const useManageUser = <
+  T extends Types.UserRequest["type"],
+  R extends Extract<Types.UserRequest, { type: T }>,
+  P extends R["params"],
+  C extends Omit<
+    UseMutationOptions<UserResponses[T], unknown, P, unknown>,
+    "mutationKey" | "mutationFn"
+  >
+>(
+  type: T,
+  config?: C
+) => {
+  const { toast } = useToast();
+  return useMutation({
+    mutationKey: [type],
+    mutationFn: (params: P) => client().user({ type, params } as R),
+    onError: (e, v, c) => {
+      console.log("useManageUser error:", e);
+      toast({
+        title: `Request ${type} Failed`,
+        description: "See console for details",
+        variant: "destructive",
+      });
+      config?.onError && config.onError(e, v, c);
+    },
+    ...config,
+  });
+};
+
 export const useWrite = <
   T extends Types.WriteRequest["type"],
   R extends Extract<Types.WriteRequest, { type: T }>,
@@ -96,12 +126,16 @@ export const useWrite = <
   return useMutation({
     mutationKey: [type],
     mutationFn: (params: P) => client().write({ type, params } as R),
-    ...config,
     onError: (e, v, c) => {
       console.log("useWrite error:", e);
-      toast({ title: `Request ${type} Failed`, description: "See console for details", variant: "destructive" });
+      toast({
+        title: `Request ${type} Failed`,
+        description: "See console for details",
+        variant: "destructive",
+      });
       config?.onError && config.onError(e, v, c);
     },
+    ...config,
   });
 };
 
@@ -116,12 +150,23 @@ export const useExecute = <
 >(
   type: T,
   config?: C
-) =>
-  useMutation({
+) => {
+  const { toast } = useToast();
+  return useMutation({
     mutationKey: [type],
     mutationFn: (params: P) => client().execute({ type, params } as R),
+    onError: (e, v, c) => {
+      console.log("useExecute error:", e);
+      toast({
+        title: `Request ${type} Failed`,
+        description: "See console for details",
+        variant: "destructive",
+      });
+      config?.onError && config.onError(e, v, c);
+    },
     ...config,
   });
+};
 
 export const useAuth = <
   T extends Types.AuthRequest["type"],
@@ -153,7 +198,7 @@ export const useResourceParamType = () => {
 export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
   const userInvalidate = useUserInvalidate();
 
-  const push = useWrite("PushRecentlyViewed", {
+  const push = useManageUser("PushRecentlyViewed", {
     onSuccess: userInvalidate,
   }).mutate;
 

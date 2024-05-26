@@ -8,6 +8,13 @@ export type AuthResponses = {
   GetUser: Types.GetUserResponse;
 };
 
+export type UserResponses = {
+  PushRecentlyViewed: Types.PushRecentlyViewedResponse;
+  SetLastSeenUpdate: Types.SetLastSeenUpdateResponse;
+  CreateApiKey: Types.CreateApiKeyResponse;
+  DeleteApiKey: Types.DeleteApiKeyResponse;
+};
+
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
@@ -118,17 +125,11 @@ export type ReadResponses = {
 };
 
 export type WriteResponses = {
-  // ==== API KEY ====
-  CreateApiKey: Types.CreateApiKeyResponse;
-  DeleteApiKey: Types.DeleteApiKeyResponse;
+  // ==== SERVICE USER ====
+  CreateServiceUser: Types.CreateServiceUserResponse;
+  UpdateServiceUserDescription: Types.UpdateServiceUserDescriptionResponse;
   CreateApiKeyForServiceUser: Types.CreateApiKeyForServiceUserResponse;
   DeleteApiKeyForServiceUser: Types.DeleteApiKeyForServiceUserResponse;
-
-  // ==== USER ====
-  PushRecentlyViewed: Types.PushRecentlyViewedResponse;
-  SetLastSeenUpdate: Types.SetLastSeenUpdateResponse;
-  CreateServiceUser: Types.CreateServiceUserResponse;
-  UpdateServiceUserDescription: Types.UpdateServiceUserDescription;
 
   // ==== USER GROUP ====
   CreateUserGroup: Types.UserGroup;

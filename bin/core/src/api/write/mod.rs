@@ -13,7 +13,6 @@ use uuid::Uuid;
 use crate::{auth::auth_request, state::State};
 
 mod alerter;
-mod api_key;
 mod build;
 mod builder;
 mod deployment;
@@ -23,8 +22,8 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod service_user;
 mod tag;
-mod user;
 mod user_group;
 mod variable;
 
@@ -34,17 +33,11 @@ mod variable;
 #[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
 enum WriteRequest {
-  // ==== API KEY ====
-  CreateApiKey(CreateApiKey),
-  DeleteApiKey(DeleteApiKey),
-  CreateApiKeyForServiceUser(CreateApiKeyForServiceUser),
-  DeleteApiKeyForServiceUser(DeleteApiKeyForServiceUser),
-
-  // ==== USER ====
-  PushRecentlyViewed(PushRecentlyViewed),
-  SetLastSeenUpdate(SetLastSeenUpdate),
+  // ==== SERVICE USER ====
   CreateServiceUser(CreateServiceUser),
   UpdateServiceUserDescription(UpdateServiceUserDescription),
+  CreateApiKeyForServiceUser(CreateApiKeyForServiceUser),
+  DeleteApiKeyForServiceUser(DeleteApiKeyForServiceUser),
 
   // ==== USER GROUP ====
   CreateUserGroup(CreateUserGroup),

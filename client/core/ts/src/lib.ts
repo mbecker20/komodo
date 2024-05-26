@@ -3,12 +3,14 @@ import {
   AuthResponses,
   ExecuteResponses,
   ReadResponses,
+  UserResponses,
   WriteResponses,
 } from "./responses";
 import {
   AuthRequest,
   ExecuteRequest,
   ReadRequest,
+  UserRequest,
   WriteRequest,
 } from "./types";
 
@@ -39,6 +41,9 @@ export function MonitorClient(url: string, options: InitOptions) {
   const auth = async <Req extends AuthRequest>(req: Req) =>
     await request<Req, AuthResponses[Req["type"]]>("/auth", req);
 
+  const user = async <Req extends UserRequest>(req: Req) =>
+    await request<Req, UserResponses[Req["type"]]>("/user", req);
+
   const read = async <Req extends ReadRequest>(req: Req) =>
     await request<Req, ReadResponses[Req["type"]]>("/read", req);
 
@@ -48,5 +53,5 @@ export function MonitorClient(url: string, options: InitOptions) {
   const execute = async <Req extends ExecuteRequest>(req: Req) =>
     await request<Req, ExecuteResponses[Req["type"]]>("/execute", req);
 
-  return { request, auth, read, write, execute };
+  return { request, auth, user, read, write, execute };
 }

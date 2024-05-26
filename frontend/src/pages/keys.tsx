@@ -1,6 +1,6 @@
 import { Page } from "@components/layouts";
 import { ConfirmButton, CopyButton } from "@components/util";
-import { useInvalidate, useRead, useSetTitle, useWrite } from "@lib/hooks";
+import { useInvalidate, useManageUser, useRead, useSetTitle } from "@lib/hooks";
 import {
   Dialog,
   DialogContent,
@@ -47,7 +47,7 @@ const CreateKey = () => {
   const [expires, setExpires] = useState<ExpiresOptions>("never");
   const [submitted, setSubmitted] = useState<{ key: string; secret: string }>();
   const invalidate = useInvalidate();
-  const { mutate, isPending } = useWrite("CreateApiKey", {
+  const { mutate, isPending } = useManageUser("CreateApiKey", {
     onSuccess: ({ key, secret }) => {
       invalidate(["ListApiKeys"]);
       setSubmitted({ key, secret });
@@ -159,7 +159,7 @@ const CreateKey = () => {
 const DeleteKey = ({ api_key }: { api_key: string }) => {
   const invalidate = useInvalidate();
   const { toast } = useToast();
-  const { mutate, isPending } = useWrite("DeleteApiKey", {
+  const { mutate, isPending } = useManageUser("DeleteApiKey", {
     onSuccess: () => {
       invalidate(["ListApiKeys"]);
       toast({ title: "Api Key Deleted" });

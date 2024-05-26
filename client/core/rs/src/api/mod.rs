@@ -4,7 +4,7 @@
 //!
 //! All calls share some common HTTP params:
 //! - Method: `POST`
-//! - Path: `/auth`, `/read`, `/write`, `/execute`
+//! - Path: `/auth`, `/user`, `/read`, `/write`, `/execute`
 //! - Headers:
 //!   - Content-Type: `application/json`
 //!   - Authorication: `your_jwt`
@@ -30,7 +30,8 @@
 //!
 //! ## Modules
 //!
-//! - [auth]: Requests relating to loggins in / obtaining authentication tokens.
+//! - [auth]: Requests relating to logging in / obtaining authentication tokens.
+//! - [user]: User self-management actions (manage api keys, etc.)
 //! - [read]: Read only requests which retrieve data from Monitor.
 //! - [execute]: Run actions on monitor resources, eg [execute::RunBuild].
 //! - [mod@write]: Requests which alter data, like create / update / delete resources.
@@ -52,4 +53,5 @@
 pub mod auth;
 pub mod execute;
 pub mod read;
+pub mod user;
 pub mod write;

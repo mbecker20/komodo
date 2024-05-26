@@ -1,101 +1,29 @@
-use std::{collections::VecDeque, str::FromStr};
+use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
 use monitor_client::{
-  api::write::{
-    CreateServiceUser, CreateServiceUserResponse, PushRecentlyViewed,
-    PushRecentlyViewedResponse, SetLastSeenUpdate,
-    SetLastSeenUpdateResponse, UpdateServiceUserDescription,
-    UpdateServiceUserDescriptionResponse,
+  api::{
+    user::CreateApiKey,
+    write::{
+      CreateApiKeyForServiceUser, CreateApiKeyForServiceUserResponse,
+      CreateServiceUser, CreateServiceUserResponse,
+      DeleteApiKeyForServiceUser, DeleteApiKeyForServiceUserResponse,
+      UpdateServiceUserDescription,
+      UpdateServiceUserDescriptionResponse,
+    },
   },
   entities::{
     monitor_timestamp,
-    update::ResourceTarget,
     user::{User, UserConfig},
   },
 };
 use mungos::{
-  by_id::update_one_by_id,
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
+  by_id::find_one_by_id,
+  mongodb::bson::{doc, oid::ObjectId},
 };
 use resolver_api::Resolve;
 
-use crate::{
-  helpers::query::get_user,
-  state::{db_client, State},
-};
-
-const RECENTLY_VIEWED_MAX: usize = 10;
-
-impl Resolve<PushRecentlyViewed, User> for State {
-  #[instrument(name = "PushRecentlyViewed", skip(self, user))]
-  async fn resolve(
-    &self,
-    PushRecentlyViewed { resource }: PushRecentlyViewed,
-    user: User,
-  ) -> anyhow::Result<PushRecentlyViewedResponse> {
-    let user = get_user(&user.id).await?;
-
-    let (recents, id, field) = match resource {
-      ResourceTarget::Server(id) => {
-        (user.recent_servers, id, "recent_servers")
-      }
-      ResourceTarget::Deployment(id) => {
-        (user.recent_deployments, id, "recent_deployments")
-      }
-      ResourceTarget::Build(id) => {
-        (user.recent_builds, id, "recent_builds")
-      }
-      ResourceTarget::Repo(id) => {
-        (user.recent_repos, id, "recent_repos")
-      }
-      ResourceTarget::Procedure(id) => {
-        (user.recent_procedures, id, "recent_procedures")
-      }
-      _ => return Ok(PushRecentlyViewedResponse {}),
-    };
-
-    let mut recents = recents
-      .into_iter()
-      .filter(|_id| !id.eq(_id))
-      .take(RECENTLY_VIEWED_MAX - 1)
-      .collect::<VecDeque<_>>();
-    recents.push_front(id);
-    let update = doc! { field: to_bson(&recents)? };
-
-    update_one_by_id(
-      &db_client().await.users,
-      &user.id,
-      mungos::update::Update::Set(update),
-      None,
-    )
-    .await
-    .with_context(|| format!("failed to update {field}"))?;
-
-    Ok(PushRecentlyViewedResponse {})
-  }
-}
-
-impl Resolve<SetLastSeenUpdate, User> for State {
-  #[instrument(name = "SetLastSeenUpdate", skip(self, user))]
-  async fn resolve(
-    &self,
-    SetLastSeenUpdate {}: SetLastSeenUpdate,
-    user: User,
-  ) -> anyhow::Result<SetLastSeenUpdateResponse> {
-    update_one_by_id(
-      &db_client().await.users,
-      &user.id,
-      mungos::update::Update::Set(doc! {
-        "last_update_view": monitor_timestamp()
-      }),
-      None,
-    )
-    .await
-    .context("failed to update user last_update_view")?;
-    Ok(SetLastSeenUpdateResponse {})
-  }
-}
+use crate::state::{db_client, State};
 
 impl Resolve<CreateServiceUser, User> for State {
   #[instrument(name = "CreateServiceUser", skip(self, user))]
@@ -183,5 +111,66 @@ impl Resolve<UpdateServiceUserDescription, User> for State {
       .await
       .context("failed to query db for user")?
       .context("user with username not found")
+  }
+}
+
+impl Resolve<CreateApiKeyForServiceUser, User> for State {
+  #[instrument(name = "CreateApiKeyForServiceUser", skip(self, user))]
+  async fn resolve(
+    &self,
+    CreateApiKeyForServiceUser {
+      user_id,
+      name,
+      expires,
+    }: CreateApiKeyForServiceUser,
+    user: User,
+  ) -> anyhow::Result<CreateApiKeyForServiceUserResponse> {
+    if !user.admin {
+      return Err(anyhow!("user not admin"));
+    }
+    let service_user =
+      find_one_by_id(&db_client().await.users, &user_id)
+        .await
+        .context("failed to query db for user")?
+        .context("no user found with id")?;
+    let UserConfig::Service { .. } = &service_user.config else {
+      return Err(anyhow!("user is not service user"));
+    };
+    self
+      .resolve(CreateApiKey { name, expires }, service_user)
+      .await
+  }
+}
+
+impl Resolve<DeleteApiKeyForServiceUser, User> for State {
+  #[instrument(name = "DeleteApiKeyForServiceUser", skip(self, user))]
+  async fn resolve(
+    &self,
+    DeleteApiKeyForServiceUser { key }: DeleteApiKeyForServiceUser,
+    user: User,
+  ) -> anyhow::Result<DeleteApiKeyForServiceUserResponse> {
+    if !user.admin {
+      return Err(anyhow!("user not admin"));
+    }
+    let db = db_client().await;
+    let api_key = db
+      .api_keys
+      .find_one(doc! { "key": &key }, None)
+      .await
+      .context("failed to query db for api key")?
+      .context("did not find matching api key")?;
+    let service_user =
+      find_one_by_id(&db_client().await.users, &api_key.user_id)
+        .await
+        .context("failed to query db for user")?
+        .context("no user found with id")?;
+    let UserConfig::Service { .. } = &service_user.config else {
+      return Err(anyhow!("user is not service user"));
+    };
+    db.api_keys
+      .delete_one(doc! { "key": key }, None)
+      .await
+      .context("failed to delete api key on db")?;
+    Ok(DeleteApiKeyForServiceUserResponse {})
   }
 }

@@ -1301,6 +1301,10 @@ export interface Variable {
 
 export type GetVariableResponse = Variable;
 
+export type PushRecentlyViewedResponse = NoData;
+
+export type SetLastSeenUpdateResponse = NoData;
+
 export type DeleteApiKeyResponse = NoData;
 
 /** Response for [CreateApiKey]. */
@@ -1335,10 +1339,6 @@ export type DeleteProcedureResponse = Procedure;
 export type UpdateProcedureResponse = Procedure;
 
 export type UpdateTagsOnResourceResponse = NoData;
-
-export type PushRecentlyViewedResponse = NoData;
-
-export type SetLastSeenUpdateResponse = NoData;
 
 export type CreateServiceUserResponse = User;
 
@@ -2591,6 +2591,49 @@ export interface ListVariablesResponse {
 	secrets: string[];
 }
 
+/**
+ * Push a resource to the front of the users 10 most recently viewed resources.
+ * Response: [NoData].
+ */
+export interface PushRecentlyViewed {
+	/** The target to push. */
+	resource: ResourceTarget;
+}
+
+/**
+ * Set the time the user last opened the UI updates.
+ * Used for unseen notification dot.
+ * Response: [NoData]
+ */
+export interface SetLastSeenUpdate {
+}
+
+/**
+ * Create an api key for the calling user.
+ * Response: [CreateApiKeyResponse].
+ * 
+ * Note. After the response is served, there will be no way
+ * to get the secret later.
+ */
+export interface CreateApiKey {
+	/** The name for the api key. */
+	name: string;
+	/**
+	 * A unix timestamp in millseconds specifying api key expire time.
+	 * Default is 0, which means no expiry.
+	 */
+	expires?: I64;
+}
+
+/**
+ * Delete an api key for the calling user.
+ * Response: [NoData]
+ */
+export interface DeleteApiKey {
+	/** The key which the user intends to delete. */
+	key: string;
+}
+
 export type PartialAlerterConfig = 
 	| { type: "Custom", params: _PartialCustomAlerterConfig }
 	| { type: "Slack", params: _PartialSlackAlerterConfig };
@@ -2636,32 +2679,6 @@ export interface UpdateAlerter {
 	id: string;
 	/** The partial config update to apply. */
 	config: PartialAlerterConfig;
-}
-
-/**
- * Create an api key for the calling user.
- * Response: [CreateApiKeyResponse].
- * 
- * Note. After the response is served, there will be no way
- * to get the secret later.
- */
-export interface CreateApiKey {
-	/** The name for the api key. */
-	name: string;
-	/**
-	 * A unix timestamp in millseconds specifying api key expire time.
-	 * Default is 0, which means no expiry.
-	 */
-	expires?: I64;
-}
-
-/**
- * Delete an api key for the calling user.
- * Response: [NoData]
- */
-export interface DeleteApiKey {
-	/** The key which the user intends to delete. */
-	key: string;
 }
 
 /**
@@ -3121,23 +3138,6 @@ export interface UpdateTagsOnResource {
 }
 
 /**
- * Push a resource to the front of the users 10 most recently viewed resources.
- * Response: [NoData].
- */
-export interface PushRecentlyViewed {
-	/** The target to push. */
-	resource: ResourceTarget;
-}
-
-/**
- * Set the time the user last opened the UI updates.
- * Used for unseen notification dot.
- * Response: [NoData]
- */
-export interface SetLastSeenUpdate {
-}
-
-/**
  * **Admin only.** Create a service user.
  * Response: [User].
  */
@@ -3571,15 +3571,17 @@ export type ReadRequest =
 	| { type: "GetVariable", params: GetVariable }
 	| { type: "ListVariables", params: ListVariables };
 
-export type WriteRequest = 
-	| { type: "CreateApiKey", params: CreateApiKey }
-	| { type: "DeleteApiKey", params: DeleteApiKey }
-	| { type: "CreateApiKeyForServiceUser", params: CreateApiKeyForServiceUser }
-	| { type: "DeleteApiKeyForServiceUser", params: DeleteApiKeyForServiceUser }
+export type UserRequest = 
 	| { type: "PushRecentlyViewed", params: PushRecentlyViewed }
 	| { type: "SetLastSeenUpdate", params: SetLastSeenUpdate }
+	| { type: "CreateApiKey", params: CreateApiKey }
+	| { type: "DeleteApiKey", params: DeleteApiKey };
+
+export type WriteRequest = 
 	| { type: "CreateServiceUser", params: CreateServiceUser }
 	| { type: "UpdateServiceUserDescription", params: UpdateServiceUserDescription }
+	| { type: "CreateApiKeyForServiceUser", params: CreateApiKeyForServiceUser }
+	| { type: "DeleteApiKeyForServiceUser", params: DeleteApiKeyForServiceUser }
 	| { type: "CreateUserGroup", params: CreateUserGroup }
 	| { type: "RenameUserGroup", params: RenameUserGroup }
 	| { type: "DeleteUserGroup", params: DeleteUserGroup }

@@ -6,8 +6,7 @@ use serror::deserialize_error;
 
 use crate::{
   api::{
-    auth::MonitorAuthRequest, execute::MonitorExecuteRequest,
-    read::MonitorReadRequest, write::MonitorWriteRequest,
+    auth::MonitorAuthRequest, execute::MonitorExecuteRequest, read::MonitorReadRequest, user::MonitorUserRequest, write::MonitorWriteRequest
   },
   MonitorClient,
 };
@@ -15,6 +14,22 @@ use crate::{
 impl MonitorClient {
   #[tracing::instrument(skip(self))]
   pub async fn auth<T: MonitorAuthRequest>(
+    &self,
+    request: T,
+  ) -> anyhow::Result<T::Response> {
+    self
+      .post(
+        "/auth",
+        json!({
+          "type": T::req_type(),
+          "params": request
+        }),
+      )
+      .await
+  }
+
+  #[tracing::instrument(skip(self))]
+  pub async fn user<T: MonitorUserRequest>(
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
