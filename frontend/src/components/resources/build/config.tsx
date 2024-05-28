@@ -116,17 +116,19 @@ export const BuildConfig = ({
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
               commit: { placeholder: "Enter specific commit hash. Optional." },
-              github_account: (account, set) => (
-                <AccountSelector
-                  id={update.builder_id ?? config.builder_id ?? undefined}
-                  type="Builder"
-                  account_type="github"
-                  selected={account}
-                  onSelect={(github_account) => set({ github_account })}
-                  disabled={disabled}
-                  placeholder="None"
-                />
-              ),
+              github_account:
+                (update.builder_id ?? config.builder_id ? true : false) &&
+                ((account, set) => (
+                  <AccountSelector
+                    id={update.builder_id ?? config.builder_id ?? undefined}
+                    type="Builder"
+                    account_type="github"
+                    selected={account}
+                    onSelect={(github_account) => set({ github_account })}
+                    disabled={disabled}
+                    placeholder="None"
+                  />
+                )),
             },
           },
           {
@@ -134,17 +136,18 @@ export const BuildConfig = ({
             components: {
               build_path: true,
               dockerfile_path: true,
-              docker_account: (account, set) => (
-                <AccountSelector
-                  id={update.builder_id ?? config.builder_id ?? undefined}
-                  type="Builder"
-                  account_type="docker"
-                  selected={account}
-                  onSelect={(docker_account) => set({ docker_account })}
-                  disabled={disabled}
-                  placeholder="None"
-                />
-              ),
+              docker_account: (account, set) =>
+                (update.builder_id ?? config.builder_id ? true : false) && (
+                  <AccountSelector
+                    id={update.builder_id ?? config.builder_id ?? undefined}
+                    type="Builder"
+                    account_type="docker"
+                    selected={account}
+                    onSelect={(docker_account) => set({ docker_account })}
+                    disabled={disabled}
+                    placeholder="None"
+                  />
+                ),
               docker_organization:
                 docker_organizations === undefined ||
                 docker_organizations.length === 0
@@ -298,7 +301,9 @@ const DockerOrganizations = ({
     <ConfigItem label="Docker Organization">
       <Select
         value={value}
-        onValueChange={(value) => set({ docker_organization: value })}
+        onValueChange={(value) =>
+          set({ docker_organization: value === "Empty" ? "" : value })
+        }
         disabled={disabled}
       >
         <SelectTrigger
@@ -308,7 +313,7 @@ const DockerOrganizations = ({
           <SelectValue placeholder="Select Organization" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={""}>None</SelectItem>
+          <SelectItem value={"Empty"}>None</SelectItem>
           {docker_organizations?.map((org) => (
             <SelectItem key={org} value={org}>
               {org}

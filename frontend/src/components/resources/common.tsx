@@ -117,7 +117,7 @@ export const ResourceSelector = ({
             onValueChange={setInput}
           />
           <CommandList>
-            <CommandEmpty className="flex justify-evenly items-center">
+            <CommandEmpty className="flex justify-evenly items-center pt-2">
               {`No ${type}s Found`}
               <SearchX className="w-3 h-3" />
             </CommandEmpty>

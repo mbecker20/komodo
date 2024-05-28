@@ -129,6 +129,7 @@ pub async fn migrate_builds(
   Ok(())
 }
 
+#[allow(unused)]
 pub async fn migrate_updates(
   legacy_db: &v0::DbClient,
   target_db: &crate::DbClient,
