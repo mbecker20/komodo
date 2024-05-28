@@ -50,6 +50,24 @@ pub type ListBuildsResponse = Vec<BuildListItem>;
 
 //
 
+/// List builds matching optional query. Response: [ListFullBuildsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullBuildsResponse)]
+pub struct ListFullBuilds {
+  /// optional structured query to filter builds.
+  #[serde(default)]
+  pub query: BuildQuery,
+}
+
+#[typeshare]
+pub type ListFullBuildsResponse = Vec<Build>;
+
+//
+
 /// Get current action state for the build. Response: [BuildActionState].
 #[typeshare]
 #[derive(

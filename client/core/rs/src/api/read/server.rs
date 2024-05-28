@@ -58,6 +58,24 @@ pub type ListServersResponse = Vec<ServerListItem>;
 
 //
 
+/// List servers matching optional query. Response: [ListFullServersResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullServersResponse)]
+pub struct ListFullServers {
+  /// optional structured query to filter servers.
+  #[serde(default)]
+  pub query: ServerQuery,
+}
+
+#[typeshare]
+pub type ListFullServersResponse = Vec<Server>;
+
+//
+
 /// Get the state of the target server. Response: [GetServerStateResponse].
 #[typeshare]
 #[derive(

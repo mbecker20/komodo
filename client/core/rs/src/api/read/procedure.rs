@@ -47,6 +47,24 @@ pub type ListProceduresResponse = Vec<ProcedureListItem>;
 
 //
 
+/// List procedures matching optional query. Response: [ListFullProceduresResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullProceduresResponse)]
+pub struct ListFullProcedures {
+  /// optional structured query to filter procedures.
+  #[serde(default)]
+  pub query: ProcedureQuery,
+}
+
+#[typeshare]
+pub type ListFullProceduresResponse = Vec<Procedure>;
+
+//
+
 /// Get current action state for the procedure. Response: [ProcedureActionState].
 #[typeshare]
 #[derive(

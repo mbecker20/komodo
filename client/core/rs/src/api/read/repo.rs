@@ -35,7 +35,7 @@ pub type GetRepoResponse = Repo;
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(Vec<RepoListItem>)]
+#[response(ListReposResponse)]
 pub struct ListRepos {
   /// optional structured query to filter repos.
   #[serde(default)]
@@ -44,6 +44,24 @@ pub struct ListRepos {
 
 #[typeshare]
 pub type ListReposResponse = Vec<RepoListItem>;
+
+//
+
+/// List repos matching optional query. Response: [ListFullReposResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullReposResponse)]
+pub struct ListFullRepos {
+  /// optional structured query to filter repos.
+  #[serde(default)]
+  pub query: RepoQuery,
+}
+
+#[typeshare]
+pub type ListFullReposResponse = Vec<Repo>;
 
 //
 

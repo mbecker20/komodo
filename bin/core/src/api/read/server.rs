@@ -108,6 +108,16 @@ impl Resolve<ListServers, User> for State {
   }
 }
 
+impl Resolve<ListFullServers, User> for State {
+  async fn resolve(
+    &self,
+    ListFullServers { query }: ListFullServers,
+    user: User,
+  ) -> anyhow::Result<ListFullServersResponse> {
+    resource::list_full_for_user::<Server>(query, &user).await
+  }
+}
+
 impl Resolve<GetServerState, User> for State {
   async fn resolve(
     &self,

@@ -48,6 +48,16 @@ impl Resolve<ListDeployments, User> for State {
   }
 }
 
+impl Resolve<ListFullDeployments, User> for State {
+  async fn resolve(
+    &self,
+    ListFullDeployments { query }: ListFullDeployments,
+    user: User,
+  ) -> anyhow::Result<ListFullDeploymentsResponse> {
+    resource::list_full_for_user::<Deployment>(query, &user).await
+  }
+}
+
 impl Resolve<GetDeploymentContainer, User> for State {
   async fn resolve(
     &self,

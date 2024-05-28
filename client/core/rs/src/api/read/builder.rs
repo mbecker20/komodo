@@ -46,6 +46,23 @@ pub type ListBuildersResponse = Vec<BuilderListItem>;
 
 //
 
+/// List builders matching structured query. Response: [ListFullBuildersResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullBuildersResponse)]
+pub struct ListFullBuilders {
+  #[serde(default)]
+  pub query: BuilderQuery,
+}
+
+#[typeshare]
+pub type ListFullBuildersResponse = Vec<Builder>;
+
+//
+
 /// Gets a summary of data relating to all builders.
 /// Response: [GetBuildersSummaryResponse].
 #[typeshare]

@@ -14,7 +14,10 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  config::core_config, helpers::query::get_resource_ids_for_non_admin, resource, state::{db_client, State}
+  config::core_config,
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
+  state::{db_client, State},
 };
 
 impl Resolve<GetAlerter, User> for State {
@@ -39,6 +42,16 @@ impl Resolve<ListAlerters, User> for State {
     user: User,
   ) -> anyhow::Result<Vec<AlerterListItem>> {
     resource::list_for_user::<Alerter>(query, &user).await
+  }
+}
+
+impl Resolve<ListFullAlerters, User> for State {
+  async fn resolve(
+    &self,
+    ListFullAlerters { query }: ListFullAlerters,
+    user: User,
+  ) -> anyhow::Result<ListFullAlertersResponse> {
+    resource::list_full_for_user::<Alerter>(query, &user).await
   }
 }
 

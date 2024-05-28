@@ -1,11 +1,6 @@
 use anyhow::Context;
 use monitor_client::{
-  api::read::{
-    GetProcedure, GetProcedureActionState,
-    GetProcedureActionStateResponse, GetProcedureResponse,
-    GetProceduresSummary, GetProceduresSummaryResponse,
-    ListProcedures, ListProceduresResponse,
-  },
+  api::read::*,
   entities::{
     permission::PermissionLevel,
     procedure::{Procedure, ProcedureState},
@@ -41,6 +36,16 @@ impl Resolve<ListProcedures, User> for State {
     user: User,
   ) -> anyhow::Result<ListProceduresResponse> {
     resource::list_for_user::<Procedure>(query, &user).await
+  }
+}
+
+impl Resolve<ListFullProcedures, User> for State {
+  async fn resolve(
+    &self,
+    ListFullProcedures { query }: ListFullProcedures,
+    user: User,
+  ) -> anyhow::Result<ListFullProceduresResponse> {
+    resource::list_full_for_user::<Procedure>(query, &user).await
   }
 }
 

@@ -45,6 +45,16 @@ impl Resolve<ListBuilders, User> for State {
   }
 }
 
+impl Resolve<ListFullBuilders, User> for State {
+  async fn resolve(
+    &self,
+    ListFullBuilders { query }: ListFullBuilders,
+    user: User,
+  ) -> anyhow::Result<ListFullBuildersResponse> {
+    resource::list_full_for_user::<Builder>(query, &user).await
+  }
+}
+
 impl Resolve<GetBuildersSummary, User> for State {
   async fn resolve(
     &self,

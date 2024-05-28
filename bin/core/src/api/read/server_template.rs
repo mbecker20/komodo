@@ -2,11 +2,7 @@ use std::str::FromStr;
 
 use anyhow::Context;
 use monitor_client::{
-  api::read::{
-    GetServerTemplate, GetServerTemplateResponse,
-    GetServerTemplatesSummary, GetServerTemplatesSummaryResponse,
-    ListServerTemplates, ListServerTemplatesResponse,
-  },
+  api::read::*,
   entities::{
     permission::PermissionLevel, server_template::ServerTemplate,
     update::ResourceTargetVariant, user::User,
@@ -16,7 +12,9 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_non_admin, resource, state::{db_client, State}
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
+  state::{db_client, State},
 };
 
 impl Resolve<GetServerTemplate, User> for State {
@@ -41,6 +39,16 @@ impl Resolve<ListServerTemplates, User> for State {
     user: User,
   ) -> anyhow::Result<ListServerTemplatesResponse> {
     resource::list_for_user::<ServerTemplate>(query, &user).await
+  }
+}
+
+impl Resolve<ListFullServerTemplates, User> for State {
+  async fn resolve(
+    &self,
+    ListFullServerTemplates { query }: ListFullServerTemplates,
+    user: User,
+  ) -> anyhow::Result<ListFullServerTemplatesResponse> {
+    resource::list_full_for_user::<ServerTemplate>(query, &user).await
   }
 }
 

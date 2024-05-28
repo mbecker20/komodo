@@ -60,16 +60,19 @@ enum ReadRequest {
   GetProcedure(GetProcedure),
   GetProcedureActionState(GetProcedureActionState),
   ListProcedures(ListProcedures),
+  ListFullProcedures(ListFullProcedures),
 
   // ==== SERVER TEMPLATE ====
   GetServerTemplate(GetServerTemplate),
   ListServerTemplates(ListServerTemplates),
+  ListFullServerTemplates(ListFullServerTemplates),
   GetServerTemplatesSummary(GetServerTemplatesSummary),
 
   // ==== SERVER ====
   GetServersSummary(GetServersSummary),
   GetServer(GetServer),
   ListServers(ListServers),
+  ListFullServers(ListFullServers),
   GetServerState(GetServerState),
   GetPeripheryVersion(GetPeripheryVersion),
   GetDockerContainers(GetDockerContainers),
@@ -84,6 +87,7 @@ enum ReadRequest {
   GetDeploymentsSummary(GetDeploymentsSummary),
   GetDeployment(GetDeployment),
   ListDeployments(ListDeployments),
+  ListFullDeployments(ListFullDeployments),
   GetDeploymentContainer(GetDeploymentContainer),
   GetDeploymentActionState(GetDeploymentActionState),
   GetDeploymentStats(GetDeploymentStats),
@@ -95,6 +99,7 @@ enum ReadRequest {
   GetBuildsSummary(GetBuildsSummary),
   GetBuild(GetBuild),
   ListBuilds(ListBuilds),
+  ListFullBuilds(ListFullBuilds),
   GetBuildActionState(GetBuildActionState),
   GetBuildMonthlyStats(GetBuildMonthlyStats),
   GetBuildVersions(GetBuildVersions),
@@ -106,18 +111,21 @@ enum ReadRequest {
   GetReposSummary(GetReposSummary),
   GetRepo(GetRepo),
   ListRepos(ListRepos),
+  ListFullRepos(ListFullRepos),
   GetRepoActionState(GetRepoActionState),
 
   // ==== BUILDER ====
   GetBuildersSummary(GetBuildersSummary),
   GetBuilder(GetBuilder),
   ListBuilders(ListBuilders),
+  ListFullBuilders(ListFullBuilders),
   GetBuilderAvailableAccounts(GetBuilderAvailableAccounts),
 
   // ==== ALERTER ====
   GetAlertersSummary(GetAlertersSummary),
   GetAlerter(GetAlerter),
   ListAlerters(ListAlerters),
+  ListFullAlerters(ListFullAlerters),
 
   // ==== TOML ====
   ExportAllResourcesToToml(ExportAllResourcesToToml),

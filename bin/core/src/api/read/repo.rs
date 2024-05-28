@@ -39,6 +39,16 @@ impl Resolve<ListRepos, User> for State {
   }
 }
 
+impl Resolve<ListFullRepos, User> for State {
+  async fn resolve(
+    &self,
+    ListFullRepos { query }: ListFullRepos,
+    user: User,
+  ) -> anyhow::Result<ListFullReposResponse> {
+    resource::list_full_for_user::<Repo>(query, &user).await
+  }
+}
+
 impl Resolve<GetRepoActionState, User> for State {
   async fn resolve(
     &self,

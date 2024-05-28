@@ -283,6 +283,8 @@ export type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
 
 export type ListAlertersResponse = AlerterListItem[];
 
+export type ListFullAlertersResponse = Alerter[];
+
 export interface Version {
 	major: number;
 	minor: number;
@@ -385,6 +387,8 @@ export type BuildListItem = ResourceListItem<BuildListItemInfo>;
 
 export type ListBuildsResponse = BuildListItem[];
 
+export type ListFullBuildsResponse = Build[];
+
 export interface BuildActionState {
 	building: boolean;
 }
@@ -420,6 +424,8 @@ export interface BuilderListItemInfo {
 export type BuilderListItem = ResourceListItem<BuilderListItemInfo>;
 
 export type ListBuildersResponse = BuilderListItem[];
+
+export type ListFullBuildersResponse = Builder[];
 
 export type DeploymentImage = 
 	/** Deploy any external image. */
@@ -570,6 +576,8 @@ export type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
 
 export type ListDeploymentsResponse = DeploymentListItem[];
 
+export type ListFullDeploymentsResponse = Deployment[];
+
 /** Represents the output of some command being run */
 export interface Log {
 	/** A label for the log */
@@ -719,6 +727,8 @@ export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
 
 export type ListProceduresResponse = ProcedureListItem[];
 
+export type ListFullProceduresResponse = Procedure[];
+
 export interface ProcedureActionState {
 	running: boolean;
 }
@@ -795,6 +805,8 @@ export interface RepoListItemInfo {
 export type RepoListItem = ResourceListItem<RepoListItemInfo>;
 
 export type ListReposResponse = RepoListItem[];
+
+export type ListFullReposResponse = Repo[];
 
 export interface RepoActionState {
 	/** Whether repo currently cloning */
@@ -884,6 +896,8 @@ export interface ServerListItemInfo {
 export type ServerListItem = ResourceListItem<ServerListItemInfo>;
 
 export type ListServersResponse = ServerListItem[];
+
+export type ListFullServersResponse = Server[];
 
 /** Current pending actions on the server. */
 export interface ServerActionState {
@@ -1116,6 +1130,8 @@ export interface ServerTemplateListItemInfo {
 export type ServerTemplateListItem = ResourceListItem<ServerTemplateListItemInfo>;
 
 export type ListServerTemplatesResponse = ServerTemplateListItem[];
+
+export type ListFullServerTemplatesResponse = ServerTemplate[];
 
 export interface Tag {
 	/**
@@ -1754,6 +1770,12 @@ export interface ListAlerters {
 	query?: AlerterQuery;
 }
 
+/** List full alerters matching optional query. Response: [ListFullAlertersResponse]. */
+export interface ListFullAlerters {
+	/** Structured query to filter alerters. */
+	query?: AlerterQuery;
+}
+
 /**
  * Gets a summary of data relating to all alerters.
  * Response: [GetAlertersSummaryResponse].
@@ -1774,6 +1796,12 @@ export interface GetBuild {
 
 /** List builds matching optional query. Response: [ListBuildsResponse]. */
 export interface ListBuilds {
+	/** optional structured query to filter builds. */
+	query?: BuildQuery;
+}
+
+/** List builds matching optional query. Response: [ListFullBuildsResponse]. */
+export interface ListFullBuilds {
 	/** optional structured query to filter builds. */
 	query?: BuildQuery;
 }
@@ -1877,6 +1905,11 @@ export interface ListBuilders {
 	query?: BuilderQuery;
 }
 
+/** List builders matching structured query. Response: [ListFullBuildersResponse]. */
+export interface ListFullBuilders {
+	query?: BuilderQuery;
+}
+
 /**
  * Gets a summary of data relating to all builders.
  * Response: [GetBuildersSummaryResponse].
@@ -1918,6 +1951,15 @@ export interface GetDeployment {
  * Response: [ListDeploymentsResponse].
  */
 export interface ListDeployments {
+	/** optional structured query to filter deployments. */
+	query?: DeploymentQuery;
+}
+
+/**
+ * List deployments matching optional query.
+ * Response: [ListFullDeploymentsResponse].
+ */
+export interface ListFullDeployments {
 	/** optional structured query to filter deployments. */
 	query?: DeploymentQuery;
 }
@@ -2099,6 +2141,12 @@ export interface ListProcedures {
 	query?: ProcedureQuery;
 }
 
+/** List procedures matching optional query. Response: [ListFullProceduresResponse]. */
+export interface ListFullProcedures {
+	/** optional structured query to filter procedures. */
+	query?: ProcedureQuery;
+}
+
 /** Get current action state for the procedure. Response: [ProcedureActionState]. */
 export interface GetProcedureActionState {
 	/** Id or name */
@@ -2134,6 +2182,12 @@ export interface GetRepo {
 
 /** List repos matching optional query. Response: [ListReposResponse]. */
 export interface ListRepos {
+	/** optional structured query to filter repos. */
+	query?: RepoQuery;
+}
+
+/** List repos matching optional query. Response: [ListFullReposResponse]. */
+export interface ListFullRepos {
 	/** optional structured query to filter repos. */
 	query?: RepoQuery;
 }
@@ -2197,6 +2251,12 @@ export interface GetServer {
 
 /** List servers matching optional query. Response: [ListServersResponse]. */
 export interface ListServers {
+	/** optional structured query to filter servers. */
+	query?: ServerQuery;
+}
+
+/** List servers matching optional query. Response: [ListFullServersResponse]. */
+export interface ListFullServers {
 	/** optional structured query to filter servers. */
 	query?: ServerQuery;
 }
@@ -2390,6 +2450,11 @@ export interface GetServerTemplate {
 
 /** List server templates matching structured query. Response: [ListServerTemplatesResponse]. */
 export interface ListServerTemplates {
+	query?: ServerTemplateQuery;
+}
+
+/** List server templates matching structured query. Response: [ListFullServerTemplatesResponse]. */
+export interface ListFullServerTemplates {
 	query?: ServerTemplateQuery;
 }
 
@@ -3512,12 +3577,15 @@ export type ReadRequest =
 	| { type: "GetProcedure", params: GetProcedure }
 	| { type: "GetProcedureActionState", params: GetProcedureActionState }
 	| { type: "ListProcedures", params: ListProcedures }
+	| { type: "ListFullProcedures", params: ListFullProcedures }
 	| { type: "GetServerTemplate", params: GetServerTemplate }
 	| { type: "ListServerTemplates", params: ListServerTemplates }
+	| { type: "ListFullServerTemplates", params: ListFullServerTemplates }
 	| { type: "GetServerTemplatesSummary", params: GetServerTemplatesSummary }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }
+	| { type: "ListFullServers", params: ListFullServers }
 	| { type: "GetServerState", params: GetServerState }
 	| { type: "GetPeripheryVersion", params: GetPeripheryVersion }
 	| { type: "GetDockerContainers", params: GetDockerContainers }
@@ -3530,6 +3598,7 @@ export type ReadRequest =
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "ListDeployments", params: ListDeployments }
+	| { type: "ListFullDeployments", params: ListFullDeployments }
 	| { type: "GetDeploymentContainer", params: GetDeploymentContainer }
 	| { type: "GetDeploymentActionState", params: GetDeploymentActionState }
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
@@ -3539,6 +3608,7 @@ export type ReadRequest =
 	| { type: "GetBuildsSummary", params: GetBuildsSummary }
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }
+	| { type: "ListFullBuilds", params: ListFullBuilds }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
 	| { type: "GetBuildMonthlyStats", params: GetBuildMonthlyStats }
 	| { type: "GetBuildVersions", params: GetBuildVersions }
@@ -3547,14 +3617,17 @@ export type ReadRequest =
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }
 	| { type: "ListRepos", params: ListRepos }
+	| { type: "ListFullRepos", params: ListFullRepos }
 	| { type: "GetRepoActionState", params: GetRepoActionState }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }
+	| { type: "ListFullBuilders", params: ListFullBuilders }
 	| { type: "GetBuilderAvailableAccounts", params: GetBuilderAvailableAccounts }
 	| { type: "GetAlertersSummary", params: GetAlertersSummary }
 	| { type: "GetAlerter", params: GetAlerter }
 	| { type: "ListAlerters", params: ListAlerters }
+	| { type: "ListFullAlerters", params: ListFullAlerters }
 	| { type: "ExportAllResourcesToToml", params: ExportAllResourcesToToml }
 	| { type: "ExportResourcesToToml", params: ExportResourcesToToml }
 	| { type: "GetTag", params: GetTag }

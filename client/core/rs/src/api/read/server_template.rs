@@ -46,6 +46,23 @@ pub type ListServerTemplatesResponse = Vec<ServerTemplateListItem>;
 
 //
 
+/// List server templates matching structured query. Response: [ListFullServerTemplatesResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullServerTemplatesResponse)]
+pub struct ListFullServerTemplates {
+  #[serde(default)]
+  pub query: ServerTemplateQuery,
+}
+
+#[typeshare]
+pub type ListFullServerTemplatesResponse = Vec<ServerTemplate>;
+
+//
+
 /// Gets a summary of data relating to all server templates.
 /// Response: [GetServerTemplatesSummaryResponse].
 #[typeshare]

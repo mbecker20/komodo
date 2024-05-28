@@ -40,16 +40,19 @@ export type ReadResponses = {
   GetProcedure: Types.GetProcedureResponse;
   GetProcedureActionState: Types.GetProcedureActionStateResponse;
   ListProcedures: Types.ListProceduresResponse;
+  ListFullProcedures: Types.ListFullProceduresResponse;
 
   // ==== SERVER TEMPLATE ====
   GetServerTemplate: Types.GetServerTemplateResponse;
   ListServerTemplates: Types.ListServerTemplatesResponse;
+  ListFullServerTemplates: Types.ListFullServerTemplatesResponse;
   GetServerTemplatesSummary: Types.GetServerTemplatesSummaryResponse;
 
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
   GetServer: Types.GetServerResponse;
   ListServers: Types.ListServersResponse;
+  ListFullServers: Types.ListFullServersResponse;
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   GetSystemInformation: Types.GetSystemInformationResponse;
@@ -65,6 +68,7 @@ export type ReadResponses = {
   GetDeploymentsSummary: Types.GetDeploymentsSummaryResponse;
   GetDeployment: Types.GetDeploymentResponse;
   ListDeployments: Types.ListDeploymentsResponse;
+  ListFullDeployments: Types.ListFullDeploymentsResponse;
   GetDeploymentContainer: Types.GetDeploymentContainerResponse;
   GetDeploymentActionState: Types.GetDeploymentActionStateResponse;
   GetDeploymentStats: Types.GetDeploymentStatsResponse;
@@ -76,6 +80,7 @@ export type ReadResponses = {
   GetBuildsSummary: Types.GetBuildsSummaryResponse;
   GetBuild: Types.GetBuildResponse;
   ListBuilds: Types.ListBuildsResponse;
+  ListFullBuilds: Types.ListFullBuildsResponse;
   GetBuildActionState: Types.GetBuildActionStateResponse;
   GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
   GetBuildVersions: Types.GetBuildVersionsResponse;
@@ -86,18 +91,21 @@ export type ReadResponses = {
   GetReposSummary: Types.GetReposSummaryResponse;
   GetRepo: Types.GetRepoResponse;
   ListRepos: Types.ListReposResponse;
+  ListFullRepos: Types.ListFullReposResponse;
   GetRepoActionState: Types.GetRepoActionStateResponse;
 
   // ==== BUILDER ====
   GetBuildersSummary: Types.GetBuildersSummaryResponse;
   GetBuilder: Types.GetBuilderResponse;
   ListBuilders: Types.ListBuildersResponse;
+  ListFullBuilders: Types.ListFullBuildersResponse;
   GetBuilderAvailableAccounts: Types.GetBuilderAvailableAccountsResponse;
 
   // ==== ALERTER ====
   GetAlertersSummary: Types.GetAlertersSummaryResponse;
   GetAlerter: Types.GetAlerterResponse;
   ListAlerters: Types.ListAlertersResponse;
+  ListFullAlerters: Types.ListFullAlertersResponse;
 
   // ==== TOML ====
   ExportAllResourcesToToml: Types.ExportAllResourcesToTomlResponse;

@@ -54,6 +54,25 @@ pub type ListDeploymentsResponse = Vec<DeploymentListItem>;
 
 //
 
+/// List deployments matching optional query.
+/// Response: [ListFullDeploymentsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullDeploymentsResponse)]
+pub struct ListFullDeployments {
+  /// optional structured query to filter deployments.
+  #[serde(default)]
+  pub query: DeploymentQuery,
+}
+
+#[typeshare]
+pub type ListFullDeploymentsResponse = Vec<Deployment>;
+
+//
+
 /// Get the container, including image / status, of the target deployment.
 /// Response: [GetDeploymentContainerResponse].
 ///
