@@ -33,12 +33,15 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 
 - **User Groups**
 	- Admins can now create User Groups and assign permissions to them as if they were a user. 
-	- Multiple users can then be added to the group, and a user can be added to multiple groups
+	- Multiple users can then be added to the group, and a user can be added to multiple groups.
 	- Users in the group inherit the group's permissions. 
 
 - **Monitor CLI + Sync**
 	- Introduces the [monitor cli](https://crates.io/crates/monitor_cli), which can sync resources declared across multiple toml files.
 	- Implements granular diffing of local and remote resources, producing detailed logs of the changes which will be made before user confirm.
+	- Resource files can be checked into git and managed via PR, enabling easy scaling even with large numbers of resources.
+	- All UI resources include button to export the resource to TOML for easy addition to your resource file. There is also a button to export all resources
+	to make the move to file managed resources.
 
 - **Builds**
 	- Build log displays the **latest commit hash and message**.
