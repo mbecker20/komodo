@@ -1,22 +1,22 @@
-# configuration
+# Configuration
 
-## choose the docker image
+## Choose the docker image
 
 There are two options to configure the docker image to deploy. 
 
-### attaching a monitor build
-If the software you want to deploy is built by monitor, you can attach the build directly to the deployment.
+### Attaching a Monitor build
+If the software you want to deploy is built by Monitor, you can attach the build directly to the deployment.
 
-By default, monitor will deploy the latest available version of the build, or you can specify a specific version using the version dropdown.
+By default, Monitor will deploy the latest available version of the build, or you can specify a specific version using the version dropdown.
 
-Also by default, monitor will use the same docker account that is attached to the build in order to pull the image on the periphery server. If that account is not available on the server, you can specify another available account to use instead, this account just needs to have read access to the docker repository.
+Also by default, Monitor will use the same docker account that is attached to the build in order to pull the image on the periphery server. If that account is not available on the server, you can specify another available account to use instead, this account just needs to have read access to the docker repository.
 
-### using a custom image
+### Using a custom image
 You can also manually specify an image name, like `mongo` or `mbecker2020/random_image:0.1.1`.
 
-If the image repository is private, you can select an available docker account to use to pull the image.
+If the image repository is private, you can still select an available docker account to use to pull the image.
 
-## configuring the network
+## Configuring the network
 
 One feature of docker is that it allows for the creation of [virtual networks between containers](https://docs.docker.com/network/). Monitor allows you to specify a docker virtual network to connect the container to, or to use the host system networking to bypass the docker virtual network.
 
@@ -32,11 +32,11 @@ In this case, you would access mongo from outside of the container on port `2701
 
 Note that this is not the only affect of using a network other than `host`. For example, containers running on different networks can not communicate, and ones on the same network can not reach other containers on `localhost` even when they are running on the same system. This behavior can be a bit confusing if you are not familiar with it, and it can be bypassed entirely by just using `host` network.
 
-## configuring restart behavior
+## Configuring restart behavior
 
 Docker, like systemd, has a couple options for handling when a container exits. See [docker restart policies](https://docs.docker.com/config/containers/start-containers-automatically/). Monitor allows you to select the appropriate restart behavior from these options.
 
-## configuring environment variables
+## Configuring environment variables
 
 Monitor enables you to easily manage environment variables passed to the container. 
 In the GUI, navigate to the environment tab of the configuration on the deployment page.
@@ -48,7 +48,7 @@ ENV_VAR_1=some_value
 ENV_VAR_2=some_other_value
 ```
 
-## configuring volumes
+## Configuring volumes
 
 A docker container's filesystem is segregated from that of the host. However, it is still possible for a container to access system files and directories, this is accomplished by using [bind mounts](https://docs.docker.com/storage/bind-mounts/).
 
@@ -62,7 +62,7 @@ The first path is the one on the system, the second is the path in the container
 
 These can be configured easily with the GUI in the 'volumes' card. You can configure as many bind mounts as you need.
 
-## extra args
+## Extra args
 
 Not all features of docker are mapped directly by monitor, only the most common. You can still specify any custom flags for monitor to include in the ```docker run``` command by utilizing 'extra args'. For example, you can enable log rotation using these two extra args:
 
@@ -73,7 +73,7 @@ Not all features of docker are mapped directly by monitor, only the most common.
 --log-opt max-file=3
 ```
 
-## command
+## Command
 
 Sometimes you need to override the default command in the image, or specify some flags to be passed directly to the application. What is put here is inserted into the docker run command after the image. For example, to pass the `--quiet` flag to MongoDB, the docker run command would be:
 

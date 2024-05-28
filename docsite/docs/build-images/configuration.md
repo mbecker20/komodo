@@ -1,8 +1,8 @@
-# configuration
+# Configuration
 
-monitor just needs a bit of information in order to build your image.
+Monitor just needs a bit of information in order to build your image.
 
-### repo configuration
+### Repo configuration
 To specify the github repo to build, just give it the name of the repo and the branch under *repo config*. The name is given like ```mbecker20/monitor```, it includes the username / organization that owns the repo.
 
 Many repos are private, in this case a Github access token is needed by the building server.
@@ -10,7 +10,7 @@ It can either come from and account defined in the core configuration,
 or in the periphery configuration of the building server.
 These are specified in the config like `username = "access_token"`.
 
-### docker build configuration
+### Docker build configuration
 
 In order to docker build, monitor just needs to know the build directory and the path of the Dockerfile relative to the repo, you can configure these in the *build config* section.
 
@@ -20,7 +20,7 @@ The dockerfile's path is given relative to the build directory. So if your build
 
 Just as with private repos, you will need to select a docker account to use with `docker push`. 
 
-### adding build args
+### Adding build args
 
 The Dockerfile may make use of [build args](https://docs.docker.com/engine/reference/builder/#arg). Build args can be passed using the gui by navigating to the `Build Args` tab in the config. They are passed in the menu just like in the would in a .env file:
 

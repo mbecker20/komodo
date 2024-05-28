@@ -32,7 +32,10 @@ function HomepageHeader() {
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <div className={styles.buttons}>
-            <Link className="button button--secondary button--lg" to="/docs/intro">
+            <Link
+              className="button button--secondary button--lg"
+              to="/docs/intro"
+            >
               docs
             </Link>
             <Link
@@ -43,7 +46,7 @@ function HomepageHeader() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              to="https://github.com/mbecker20/monitor#readme"
+              to="https://github.com/mbecker20/monitor#screenshots"
               style={{
                 width: "100%",
                 boxSizing: "border-box",

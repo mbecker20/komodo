@@ -1,8 +1,8 @@
-# permissioning resources
+# Permissioning Resources
 
 All monitor resources (servers, builds, deployment) have independant permission tables to allow for users to have granular access to these resources. By default, users do not see any resources until they are given at least read permissions.
 
-## permission levels
+## Permission Levels
 
 There are 4 levels of permissions a user can have on a resource:
 
@@ -13,6 +13,11 @@ There are 4 levels of permissions a user can have on a resource:
  3. **Execute**. This level will allow the user to execute actions on the resource, like send a build command or trigger a redeploy. The user will still be blocked from updating configuration on the resource.
 
  4. **Write**. The user has full access to the resource, they can execute any actions, update the configuration, and delete the resource.
+
+## User Groups
+
+In addition to assigning permissions to users directly, admins can create User Groups and **assign permissions to them**, as if they were a user.
+Users can then be **added to multiple User Groups** and they **inherit the group's permissions**.
 
 ## Administration
 

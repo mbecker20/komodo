@@ -16,7 +16,7 @@ const sidebars: SidebarsConfig = {
     "core-setup",
     {
       type: "category",
-      label: "connecting servers",
+      label: "Connecting Servers",
       link: {
         type: "doc",
         id: "connecting-servers/index",
@@ -28,7 +28,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "build images",
+      label: "Build Images",
       link: {
         type: "doc",
         id: "build-images/index",
@@ -42,7 +42,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "deploy containers",
+      label: "Deploy Containers",
       link: {
         type: "doc",
         id: "deploy-containers/index",
@@ -54,6 +54,7 @@ const sidebars: SidebarsConfig = {
         // "deploy-containers/versioning",
       ],
     },
+    "sync-resources",
     "permissioning",
     "file-paths",
   ],

@@ -1,8 +1,14 @@
-# setup monitor periphery
+# Setup Monitor Periphery
 
-The easiest way to setup periphery is to use the [Periphery setup script](https://github.com/mbecker20/monitor/tree/main/scripts).
+The easiest way to setup periphery is to use the setup script:
 
-### manual install steps
+```sh
+curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3
+```
+
+You can find more information (and view the script) in the [readme](https://github.com/mbecker20/monitor/tree/main/scripts).
+
+### Manual install steps
 
  1. Download the periphery binary from the latest [release](https://github.com/mbecker20/monitor/releases).
 
@@ -13,13 +19,17 @@ The easiest way to setup periphery is to use the [Periphery setup script](https:
  for more information on configuring periphery.
  :::
 
- 3. Ensure that inbound connectivity is allowed on the port specified in periphery.config.toml (default 8000).
+ 3. Ensure that inbound connectivity is allowed on the port specified in periphery.config.toml (default 8120).
 
- 4. Install docker. Make sure whatever user periphery is run as has access to the docker group without sudo.
+ 4. Install docker. See the [docker install docs](https://docs.docker.com/engine/install/).
 
- 5. Start the periphery binary with your preferred process manager, like systemd. The config read from the file is printed on startup, ensure that it is as expected.
+ :::note
+ Ensure that the user which periphery is run as has access to the docker group without sudo.
+ :::
 
-### example periphery start command
+ 5. Start the periphery binary with your preferred process manager, like systemd.
+
+### Example periphery start command
 
 ```
 periphery \
@@ -30,7 +40,7 @@ periphery \
 	--merge-nested-config
 ```
 
-### passing config files
+### Passing config files
 
 Either file paths or directory paths can be passed to `--config-path`.
 

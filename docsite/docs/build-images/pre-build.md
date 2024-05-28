@@ -1,4 +1,4 @@
-# pre build command
+# Pre-build command
 
 Sometimes a command needs to be run before running ```docker build```, you can configure this in the *pre build* section. 
 

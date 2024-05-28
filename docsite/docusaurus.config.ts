@@ -73,6 +73,7 @@ const config: Config = {
       logo: {
         alt: "monitor lizard",
         src: "img/monitor-lizard.png",
+        width: "46px"
       },
       items: [
         {
