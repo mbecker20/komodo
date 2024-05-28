@@ -16,7 +16,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 		- Slack support continues with the *Slack* Alerter variant.
 		- Send JSON serialized alert data to any HTTP endpoint with the *Custom* Alerter variant.
 	- **Template**: Define a template for your cloud provider's VM configuration, and Monitor can launch VMs based on the template.
-		- Supports AWS Ec2 and Hetzner.
+		- Supports AWS EC2 and Hetzner Cloud.
 
 - **Resource Tagging**
 	- Attach multiple *tags* to resources, which can be used to group related resources together. These can be used to filter resources in the UI.
