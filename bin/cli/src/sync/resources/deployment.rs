@@ -1,14 +1,13 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::{read::GetDeployment, write},
+  api::write,
   entities::{
     deployment::{
       Deployment, DeploymentConfig, DeploymentConfigDiff,
-      DeploymentImage, DeploymentListItemInfo,
-      PartialDeploymentConfig,
+      DeploymentImage, PartialDeploymentConfig,
     },
-    resource::{Resource, ResourceListItem},
+    resource::Resource,
     toml::ResourceToml,
     update::ResourceTarget,
   },
@@ -27,7 +26,6 @@ impl ResourceSync for Deployment {
   type Info = ();
   type PartialConfig = PartialDeploymentConfig;
   type ConfigDiff = DeploymentConfigDiff;
-  type ListItemInfo = DeploymentListItemInfo;
 
   fn display() -> &'static str {
     "deployment"
@@ -38,7 +36,7 @@ impl ResourceSync for Deployment {
   }
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>
   {
     name_to_deployment()
   }
@@ -66,14 +64,6 @@ impl ResourceSync for Deployment {
       })
       .await?;
     Ok(())
-  }
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
-    monitor_client()
-      .read(GetDeployment { deployment: id })
-      .await
   }
 
   async fn get_diff(

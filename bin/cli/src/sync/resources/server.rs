@@ -1,15 +1,11 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::{
-    read::GetServer,
-    write::{CreateServer, UpdateServer},
-  },
+  api::write::{CreateServer, UpdateServer},
   entities::{
-    resource::{Resource, ResourceListItem},
+    resource::Resource,
     server::{
       PartialServerConfig, Server, ServerConfig, ServerConfigDiff,
-      ServerListItemInfo,
     },
     toml::ResourceToml,
     update::ResourceTarget,
@@ -26,7 +22,6 @@ impl ResourceSync for Server {
   type Info = ();
   type PartialConfig = PartialServerConfig;
   type ConfigDiff = ServerConfigDiff;
-  type ListItemInfo = ServerListItemInfo;
 
   fn display() -> &'static str {
     "server"
@@ -37,7 +32,7 @@ impl ResourceSync for Server {
   }
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>
   {
     name_to_server()
   }
@@ -65,12 +60,6 @@ impl ResourceSync for Server {
       })
       .await?;
     Ok(())
-  }
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
-    monitor_client().read(GetServer { server: id }).await
   }
 
   async fn get_diff(

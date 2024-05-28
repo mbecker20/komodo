@@ -1,14 +1,12 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::{
-    read::GetServerTemplate,
-    write::{CreateServerTemplate, UpdateServerTemplate},
-  },
+  api::write::{CreateServerTemplate, UpdateServerTemplate},
   entities::{
-    resource::{Resource, ResourceListItem},
+    resource::Resource,
     server_template::{
-      PartialServerTemplateConfig, ServerTemplate, ServerTemplateConfig, ServerTemplateConfigDiff, ServerTemplateListItemInfo
+      PartialServerTemplateConfig, ServerTemplate,
+      ServerTemplateConfig, ServerTemplateConfigDiff,
     },
     toml::ResourceToml,
     update::ResourceTarget,
@@ -25,7 +23,6 @@ impl ResourceSync for ServerTemplate {
   type Info = ();
   type PartialConfig = PartialServerTemplateConfig;
   type ConfigDiff = ServerTemplateConfigDiff;
-  type ListItemInfo = ServerTemplateListItemInfo;
 
   fn display() -> &'static str {
     "server template"
@@ -36,7 +33,7 @@ impl ResourceSync for ServerTemplate {
   }
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>
   {
     name_to_server_template()
   }
@@ -64,16 +61,6 @@ impl ResourceSync for ServerTemplate {
       })
       .await?;
     Ok(())
-  }
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
-    monitor_client()
-      .read(GetServerTemplate {
-        server_template: id,
-      })
-      .await
   }
 
   async fn get_diff(

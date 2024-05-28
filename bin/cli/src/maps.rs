@@ -3,22 +3,21 @@ use std::{collections::HashMap, sync::OnceLock};
 use monitor_client::{
   api::read,
   entities::{
-    alerter::AlerterListItem, build::BuildListItem,
-    builder::BuilderListItem, deployment::DeploymentListItem,
-    procedure::ProcedureListItem, repo::RepoListItem,
-    server::ServerListItem, server_template::ServerTemplateListItem,
-    tag::Tag, user::User, user_group::UserGroup,
+    alerter::Alerter, build::Build, builder::Builder,
+    deployment::Deployment, procedure::Procedure, repo::Repo,
+    server::Server, server_template::ServerTemplate, tag::Tag,
+    user::User, user_group::UserGroup,
   },
 };
 
 use crate::monitor_client;
 
-pub fn name_to_build() -> &'static HashMap<String, BuildListItem> {
-  static NAME_TO_BUILD: OnceLock<HashMap<String, BuildListItem>> =
+pub fn name_to_build() -> &'static HashMap<String, Build> {
+  static NAME_TO_BUILD: OnceLock<HashMap<String, Build>> =
     OnceLock::new();
   NAME_TO_BUILD.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListBuilds::default()),
+      monitor_client().read(read::ListFullBuilds::default()),
     )
     .expect("failed to get builds from monitor")
     .into_iter()
@@ -27,12 +26,12 @@ pub fn name_to_build() -> &'static HashMap<String, BuildListItem> {
   })
 }
 
-pub fn id_to_build() -> &'static HashMap<String, BuildListItem> {
-  static ID_TO_BUILD: OnceLock<HashMap<String, BuildListItem>> =
+pub fn id_to_build() -> &'static HashMap<String, Build> {
+  static ID_TO_BUILD: OnceLock<HashMap<String, Build>> =
     OnceLock::new();
   ID_TO_BUILD.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListBuilds::default()),
+      monitor_client().read(read::ListFullBuilds::default()),
     )
     .expect("failed to get builds from monitor")
     .into_iter()
@@ -41,14 +40,12 @@ pub fn id_to_build() -> &'static HashMap<String, BuildListItem> {
   })
 }
 
-pub fn name_to_deployment(
-) -> &'static HashMap<String, DeploymentListItem> {
-  static NAME_TO_DEPLOYMENT: OnceLock<
-    HashMap<String, DeploymentListItem>,
-  > = OnceLock::new();
+pub fn name_to_deployment() -> &'static HashMap<String, Deployment> {
+  static NAME_TO_DEPLOYMENT: OnceLock<HashMap<String, Deployment>> =
+    OnceLock::new();
   NAME_TO_DEPLOYMENT.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListDeployments::default()),
+      monitor_client().read(read::ListFullDeployments::default()),
     )
     .expect("failed to get deployments from monitor")
     .into_iter()
@@ -57,14 +54,12 @@ pub fn name_to_deployment(
   })
 }
 
-pub fn id_to_deployment(
-) -> &'static HashMap<String, DeploymentListItem> {
-  static ID_TO_DEPLOYMENT: OnceLock<
-    HashMap<String, DeploymentListItem>,
-  > = OnceLock::new();
+pub fn id_to_deployment() -> &'static HashMap<String, Deployment> {
+  static ID_TO_DEPLOYMENT: OnceLock<HashMap<String, Deployment>> =
+    OnceLock::new();
   ID_TO_DEPLOYMENT.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListDeployments::default()),
+      monitor_client().read(read::ListFullDeployments::default()),
     )
     .expect("failed to get deployments from monitor")
     .into_iter()
@@ -73,12 +68,12 @@ pub fn id_to_deployment(
   })
 }
 
-pub fn name_to_server() -> &'static HashMap<String, ServerListItem> {
-  static NAME_TO_SERVER: OnceLock<HashMap<String, ServerListItem>> =
+pub fn name_to_server() -> &'static HashMap<String, Server> {
+  static NAME_TO_SERVER: OnceLock<HashMap<String, Server>> =
     OnceLock::new();
   NAME_TO_SERVER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListServers::default()),
+      monitor_client().read(read::ListFullServers::default()),
     )
     .expect("failed to get servers from monitor")
     .into_iter()
@@ -87,12 +82,12 @@ pub fn name_to_server() -> &'static HashMap<String, ServerListItem> {
   })
 }
 
-pub fn id_to_server() -> &'static HashMap<String, ServerListItem> {
-  static ID_TO_SERVER: OnceLock<HashMap<String, ServerListItem>> =
+pub fn id_to_server() -> &'static HashMap<String, Server> {
+  static ID_TO_SERVER: OnceLock<HashMap<String, Server>> =
     OnceLock::new();
   ID_TO_SERVER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListServers::default()),
+      monitor_client().read(read::ListFullServers::default()),
     )
     .expect("failed to get servers from monitor")
     .into_iter()
@@ -101,13 +96,12 @@ pub fn id_to_server() -> &'static HashMap<String, ServerListItem> {
   })
 }
 
-pub fn name_to_builder() -> &'static HashMap<String, BuilderListItem>
-{
-  static NAME_TO_BUILDER: OnceLock<HashMap<String, BuilderListItem>> =
+pub fn name_to_builder() -> &'static HashMap<String, Builder> {
+  static NAME_TO_BUILDER: OnceLock<HashMap<String, Builder>> =
     OnceLock::new();
   NAME_TO_BUILDER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListBuilders::default()),
+      monitor_client().read(read::ListFullBuilders::default()),
     )
     .expect("failed to get builders from monitor")
     .into_iter()
@@ -116,12 +110,12 @@ pub fn name_to_builder() -> &'static HashMap<String, BuilderListItem>
   })
 }
 
-pub fn id_to_builder() -> &'static HashMap<String, BuilderListItem> {
-  static ID_TO_BUILDER: OnceLock<HashMap<String, BuilderListItem>> =
+pub fn id_to_builder() -> &'static HashMap<String, Builder> {
+  static ID_TO_BUILDER: OnceLock<HashMap<String, Builder>> =
     OnceLock::new();
   ID_TO_BUILDER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListBuilders::default()),
+      monitor_client().read(read::ListFullBuilders::default()),
     )
     .expect("failed to get builders from monitor")
     .into_iter()
@@ -130,13 +124,12 @@ pub fn id_to_builder() -> &'static HashMap<String, BuilderListItem> {
   })
 }
 
-pub fn name_to_alerter() -> &'static HashMap<String, AlerterListItem>
-{
-  static NAME_TO_ALERTER: OnceLock<HashMap<String, AlerterListItem>> =
+pub fn name_to_alerter() -> &'static HashMap<String, Alerter> {
+  static NAME_TO_ALERTER: OnceLock<HashMap<String, Alerter>> =
     OnceLock::new();
   NAME_TO_ALERTER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListAlerters::default()),
+      monitor_client().read(read::ListFullAlerters::default()),
     )
     .expect("failed to get alerters from monitor")
     .into_iter()
@@ -145,12 +138,12 @@ pub fn name_to_alerter() -> &'static HashMap<String, AlerterListItem>
   })
 }
 
-pub fn id_to_alerter() -> &'static HashMap<String, AlerterListItem> {
-  static ID_TO_ALERTER: OnceLock<HashMap<String, AlerterListItem>> =
+pub fn id_to_alerter() -> &'static HashMap<String, Alerter> {
+  static ID_TO_ALERTER: OnceLock<HashMap<String, Alerter>> =
     OnceLock::new();
   ID_TO_ALERTER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListAlerters::default()),
+      monitor_client().read(read::ListFullAlerters::default()),
     )
     .expect("failed to get alerters from monitor")
     .into_iter()
@@ -159,12 +152,12 @@ pub fn id_to_alerter() -> &'static HashMap<String, AlerterListItem> {
   })
 }
 
-pub fn name_to_repo() -> &'static HashMap<String, RepoListItem> {
-  static NAME_TO_ALERTER: OnceLock<HashMap<String, RepoListItem>> =
+pub fn name_to_repo() -> &'static HashMap<String, Repo> {
+  static NAME_TO_ALERTER: OnceLock<HashMap<String, Repo>> =
     OnceLock::new();
   NAME_TO_ALERTER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListRepos::default()),
+      monitor_client().read(read::ListFullRepos::default()),
     )
     .expect("failed to get repos from monitor")
     .into_iter()
@@ -173,12 +166,12 @@ pub fn name_to_repo() -> &'static HashMap<String, RepoListItem> {
   })
 }
 
-pub fn id_to_repo() -> &'static HashMap<String, RepoListItem> {
-  static ID_TO_ALERTER: OnceLock<HashMap<String, RepoListItem>> =
+pub fn id_to_repo() -> &'static HashMap<String, Repo> {
+  static ID_TO_ALERTER: OnceLock<HashMap<String, Repo>> =
     OnceLock::new();
   ID_TO_ALERTER.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListRepos::default()),
+      monitor_client().read(read::ListFullRepos::default()),
     )
     .expect("failed to get repos from monitor")
     .into_iter()
@@ -187,14 +180,12 @@ pub fn id_to_repo() -> &'static HashMap<String, RepoListItem> {
   })
 }
 
-pub fn name_to_procedure(
-) -> &'static HashMap<String, ProcedureListItem> {
-  static NAME_TO_PROCEDURE: OnceLock<
-    HashMap<String, ProcedureListItem>,
-  > = OnceLock::new();
+pub fn name_to_procedure() -> &'static HashMap<String, Procedure> {
+  static NAME_TO_PROCEDURE: OnceLock<HashMap<String, Procedure>> =
+    OnceLock::new();
   NAME_TO_PROCEDURE.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListProcedures::default()),
+      monitor_client().read(read::ListFullProcedures::default()),
     )
     .expect("failed to get procedures from monitor")
     .into_iter()
@@ -203,14 +194,12 @@ pub fn name_to_procedure(
   })
 }
 
-pub fn id_to_procedure() -> &'static HashMap<String, ProcedureListItem>
-{
-  static ID_TO_PROCEDURE: OnceLock<
-    HashMap<String, ProcedureListItem>,
-  > = OnceLock::new();
+pub fn id_to_procedure() -> &'static HashMap<String, Procedure> {
+  static ID_TO_PROCEDURE: OnceLock<HashMap<String, Procedure>> =
+    OnceLock::new();
   ID_TO_PROCEDURE.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListProcedures::default()),
+      monitor_client().read(read::ListFullProcedures::default()),
     )
     .expect("failed to get procedures from monitor")
     .into_iter()
@@ -220,13 +209,13 @@ pub fn id_to_procedure() -> &'static HashMap<String, ProcedureListItem>
 }
 
 pub fn name_to_server_template(
-) -> &'static HashMap<String, ServerTemplateListItem> {
+) -> &'static HashMap<String, ServerTemplate> {
   static NAME_TO_SERVER_TEMPLATE: OnceLock<
-    HashMap<String, ServerTemplateListItem>,
+    HashMap<String, ServerTemplate>,
   > = OnceLock::new();
   NAME_TO_SERVER_TEMPLATE.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListServerTemplates::default()),
+      monitor_client().read(read::ListFullServerTemplates::default()),
     )
     .expect("failed to get server templates from monitor")
     .into_iter()
@@ -236,13 +225,13 @@ pub fn name_to_server_template(
 }
 
 pub fn id_to_server_template(
-) -> &'static HashMap<String, ServerTemplateListItem> {
+) -> &'static HashMap<String, ServerTemplate> {
   static ID_TO_SERVER_TEMPLATE: OnceLock<
-    HashMap<String, ServerTemplateListItem>,
+    HashMap<String, ServerTemplate>,
   > = OnceLock::new();
   ID_TO_SERVER_TEMPLATE.get_or_init(|| {
     futures::executor::block_on(
-      monitor_client().read(read::ListServerTemplates::default()),
+      monitor_client().read(read::ListFullServerTemplates::default()),
     )
     .expect("failed to get server templates from monitor")
     .into_iter()

@@ -1,16 +1,12 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::{
-    read::GetBuilder,
-    write::{CreateBuilder, UpdateBuilder},
-  },
+  api::write::{CreateBuilder, UpdateBuilder},
   entities::{
     builder::{
-      Builder, BuilderConfig, BuilderConfigDiff, BuilderListItemInfo,
-      PartialBuilderConfig,
+      Builder, BuilderConfig, BuilderConfigDiff, PartialBuilderConfig,
     },
-    resource::{Resource, ResourceListItem},
+    resource::Resource,
     toml::ResourceToml,
     update::ResourceTarget,
   },
@@ -29,7 +25,6 @@ impl ResourceSync for Builder {
   type Info = ();
   type PartialConfig = PartialBuilderConfig;
   type ConfigDiff = BuilderConfigDiff;
-  type ListItemInfo = BuilderListItemInfo;
 
   fn display() -> &'static str {
     "builder"
@@ -40,7 +35,7 @@ impl ResourceSync for Builder {
   }
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>
   {
     name_to_builder()
   }
@@ -68,12 +63,6 @@ impl ResourceSync for Builder {
       })
       .await?;
     Ok(())
-  }
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
-    monitor_client().read(GetBuilder { builder: id }).await
   }
 
   async fn get_diff(

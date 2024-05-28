@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use monitor_client::{
   api::{
     execute::Execution,
-    read::GetProcedure,
     write::{CreateProcedure, UpdateProcedure},
   },
   entities::{
     procedure::{
-      PartialProcedureConfig, Procedure, ProcedureConfig, ProcedureConfigDiff, ProcedureListItemInfo
+      PartialProcedureConfig, Procedure, ProcedureConfig,
+      ProcedureConfigDiff,
     },
-    resource::{Resource, ResourceListItem},
+    resource::Resource,
     toml::ResourceToml,
     update::ResourceTarget,
   },
@@ -33,7 +33,6 @@ impl ResourceSync for Procedure {
   type Info = ();
   type PartialConfig = PartialProcedureConfig;
   type ConfigDiff = ProcedureConfigDiff;
-  type ListItemInfo = ProcedureListItemInfo;
 
   fn display() -> &'static str {
     "procedure"
@@ -44,7 +43,7 @@ impl ResourceSync for Procedure {
   }
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>
   {
     name_to_procedure()
   }
@@ -155,12 +154,6 @@ impl ResourceSync for Procedure {
       }
     }
     warn!("procedure sync loop exited after max iterations");
-  }
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
-    monitor_client().read(GetProcedure { procedure: id }).await
   }
 
   async fn get_diff(

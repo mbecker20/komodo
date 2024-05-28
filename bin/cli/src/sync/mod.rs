@@ -23,24 +23,27 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   info!("computing sync actions...");
 
-  let (server_template_creates, server_template_updates) =
-    ServerTemplate::get_updates(resources.server_templates).await?;
-  let (server_creates, server_updates) =
-    Server::get_updates(resources.servers).await?;
-  let (deployment_creates, deployment_updates) =
-    Deployment::get_updates(resources.deployments).await?;
-  let (build_creates, build_updates) =
-    Build::get_updates(resources.builds).await?;
-  let (builder_creates, builder_updates) =
-    Builder::get_updates(resources.builders).await?;
-  let (alerter_creates, alerter_updates) =
-    Alerter::get_updates(resources.alerters).await?;
-  let (repo_creates, repo_updates) =
-    Repo::get_updates(resources.repos).await?;
-  let (procedure_creates, procedure_updates) =
-    Procedure::get_updates(resources.procedures).await?;
-  let (user_group_creates, user_group_updates) =
-    user_group::get_updates(resources.user_groups).await?;
+  let (
+    (server_template_creates, server_template_updates),
+    (server_creates, server_updates),
+    (deployment_creates, deployment_updates),
+    (build_creates, build_updates),
+    (builder_creates, builder_updates),
+    (alerter_creates, alerter_updates),
+    (repo_creates, repo_updates),
+    (procedure_creates, procedure_updates),
+    (user_group_creates, user_group_updates),
+  ) = tokio::try_join!(
+    ServerTemplate::get_updates(resources.server_templates),
+    Server::get_updates(resources.servers),
+    Deployment::get_updates(resources.deployments),
+    Build::get_updates(resources.builds),
+    Builder::get_updates(resources.builders),
+    Alerter::get_updates(resources.alerters),
+    Repo::get_updates(resources.repos),
+    Procedure::get_updates(resources.procedures),
+    user_group::get_updates(resources.user_groups)
+  )?;
 
   if server_template_creates.is_empty()
     && server_template_updates.is_empty()

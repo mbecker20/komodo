@@ -1,15 +1,13 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::{
-    read::GetAlerter,
-    write::{CreateAlerter, UpdateAlerter},
-  },
+  api::write::{CreateAlerter, UpdateAlerter},
   entities::{
     alerter::{
-      Alerter, AlerterConfig, AlerterConfigDiff, AlerterInfo, AlerterListItemInfo, PartialAlerterConfig
+      Alerter, AlerterConfig, AlerterConfigDiff, AlerterInfo,
+      PartialAlerterConfig,
     },
-    resource::{Resource, ResourceListItem},
+    resource::Resource,
     toml::ResourceToml,
     update::ResourceTarget,
   },
@@ -25,7 +23,6 @@ impl ResourceSync for Alerter {
   type Info = AlerterInfo;
   type PartialConfig = PartialAlerterConfig;
   type ConfigDiff = AlerterConfigDiff;
-  type ListItemInfo = AlerterListItemInfo;
 
   fn display() -> &'static str {
     "alerter"
@@ -36,7 +33,7 @@ impl ResourceSync for Alerter {
   }
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>
   {
     name_to_alerter()
   }
@@ -64,12 +61,6 @@ impl ResourceSync for Alerter {
       })
       .await?;
     Ok(())
-  }
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
-    monitor_client().read(GetAlerter { alerter: id }).await
   }
 
   async fn get_diff(

@@ -1,16 +1,12 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::{
-    read::GetRepo,
-    write::{CreateRepo, UpdateRepo},
-  },
+  api::write::{CreateRepo, UpdateRepo},
   entities::{
     repo::{
       PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo,
-      RepoListItemInfo,
     },
-    resource::{Resource, ResourceListItem},
+    resource::Resource,
     toml::ResourceToml,
     update::ResourceTarget,
   },
@@ -29,7 +25,6 @@ impl ResourceSync for Repo {
   type Info = RepoInfo;
   type PartialConfig = PartialRepoConfig;
   type ConfigDiff = RepoConfigDiff;
-  type ListItemInfo = RepoListItemInfo;
 
   fn display() -> &'static str {
     "repo"
@@ -40,7 +35,7 @@ impl ResourceSync for Repo {
   }
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>
   {
     name_to_repo()
   }
@@ -68,12 +63,6 @@ impl ResourceSync for Repo {
       })
       .await?;
     Ok(())
-  }
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
-    monitor_client().read(GetRepo { repo: id }).await
   }
 
   async fn get_diff(

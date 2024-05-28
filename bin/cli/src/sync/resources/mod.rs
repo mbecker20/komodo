@@ -4,9 +4,7 @@ use colored::Colorize;
 use monitor_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
-    resource::{Resource, ResourceListItem},
-    toml::ResourceToml,
-    update::ResourceTarget,
+    resource::Resource, toml::ResourceToml, update::ResourceTarget,
   },
 };
 use partial_derive2::{Diff, FieldDiff, MaybeNone, PartialDiff};
@@ -39,7 +37,7 @@ pub trait ResourceSync {
     + Send
     + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
-  type Info: Default;
+  type Info: Default + 'static;
   type PartialConfig: std::fmt::Debug
     + Clone
     + Send
@@ -48,14 +46,13 @@ pub trait ResourceSync {
     + MaybeNone
     + 'static;
   type ConfigDiff: Diff + MaybeNone;
-  type ListItemInfo: 'static;
 
   fn display() -> &'static str;
 
   fn resource_target(id: String) -> ResourceTarget;
 
   fn name_to_resource(
-  ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>;
+  ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>;
 
   /// Creates the resource and returns created id.
   async fn create(
@@ -67,10 +64,6 @@ pub trait ResourceSync {
     id: String,
     resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()>;
-
-  async fn get(
-    id: String,
-  ) -> anyhow::Result<Resource<Self::Config, Self::Info>>;
 
   /// Diffs the declared toml (partial) against the full existing config.
   /// Removes all fields from toml (partial) that haven't changed.
@@ -90,13 +83,11 @@ pub trait ResourceSync {
     let quiet = cli_args().quiet;
 
     for mut resource in resources {
-      match map.get(&resource.name).map(|s| s.id.clone()) {
-        Some(id) => {
-          // Get the full original config for the resource.
-          let original = Self::get(id.clone()).await?;
-
+      match map.get(&resource.name) {
+        Some(original) => {
           let diff =
-            Self::get_diff(original.config, resource.config).await?;
+            Self::get_diff(original.config.clone(), resource.config)
+              .await?;
 
           let original_tags = original
             .tags
@@ -162,7 +153,7 @@ pub trait ResourceSync {
           resource.config = diff.into();
 
           let update = ToUpdateItem {
-            id,
+            id: original.id.clone(),
             update_description: resource.description
               != original.description,
             update_tags: resource.tags != original_tags,
