@@ -31,6 +31,11 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 	- Docker / Github accounts and Secrets can now be configured in the Core configuration file.
 	- They can still be added to the Periphery configuration as before. Accounts / Secrets defined in the Core configuration will be preferentially used over like ones defined in Periphery configuration.
 
+- **User Groups**
+	- Admins can now create User Groups and assign permissions to them as if they were a user. 
+	- Multiple users can then be added to the group, and a user can be added to multiple groups
+	- Users in the group inherit the group's permissions. 
+
 - **Builds**
 	- Build log displays the **latest commit hash and message**.
 	- In-progress builds are able to be **cancelled before completion**.
