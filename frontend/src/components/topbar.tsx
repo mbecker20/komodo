@@ -62,6 +62,7 @@ export const Topbar = () => {
     document.addEventListener("keydown", keydown);
     return () => document.removeEventListener("keydown", keydown);
   });
+  const version = useRead("GetVersion", {}).data?.version;
   return (
     <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
       <div className="w-full p-4 grid grid-cols-2 lg:grid-cols-3">
@@ -83,6 +84,7 @@ export const Topbar = () => {
           className="hidden lg:flex justify-self-center"
         />
         <div className="flex md:gap-2 justify-self-end items-center">
+          <div className="hidden lg:block px-2 text-muted-foreground cursor-default">v{version}</div>
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <WsStatusIndicator />
           <TopbarUpdates />
