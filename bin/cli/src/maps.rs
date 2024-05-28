@@ -6,7 +6,7 @@ use monitor_client::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
     server::Server, server_template::ServerTemplate, tag::Tag,
-    user::User, user_group::UserGroup,
+    user::User, user_group::UserGroup, variable::Variable,
   },
 };
 
@@ -250,6 +250,21 @@ pub fn name_to_user_group() -> &'static HashMap<String, UserGroup> {
     .expect("failed to get user groups from monitor")
     .into_iter()
     .map(|user_group| (user_group.name.clone(), user_group))
+    .collect()
+  })
+}
+
+pub fn name_to_variable() -> &'static HashMap<String, Variable> {
+  static NAME_TO_VARIABLE: OnceLock<HashMap<String, Variable>> =
+    OnceLock::new();
+  NAME_TO_VARIABLE.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListVariables::default()),
+    )
+    .expect("failed to get user groups from monitor")
+    .variables
+    .into_iter()
+    .map(|variable| (variable.name.clone(), variable))
     .collect()
   })
 }

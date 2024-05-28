@@ -42,9 +42,14 @@ pub type ExportAllResourcesToTomlResponse = TomlResponse;
 #[response(ExportResourcesToTomlResponse)]
 pub struct ExportResourcesToToml {
   /// The targets to include in the export.
+  #[serde(default)]
   pub targets: Vec<ResourceTarget>,
   /// The user group names or ids to include in the export.
+  #[serde(default)]
   pub user_groups: Vec<String>,
+  /// Whether to include variables
+  #[serde(default)]
+  pub include_variables: bool,
 }
 
 #[typeshare]

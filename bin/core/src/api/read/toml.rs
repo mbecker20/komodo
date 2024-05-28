@@ -116,6 +116,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
         ExportResourcesToToml {
           targets,
           user_groups,
+          include_variables: true,
         },
         user,
       )
@@ -129,6 +130,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
     ExportResourcesToToml {
       targets,
       user_groups,
+      include_variables,
     }: ExportResourcesToToml,
     user: User,
   ) -> anyhow::Result<ExportResourcesToTomlResponse> {
@@ -255,6 +257,13 @@ impl Resolve<ExportResourcesToToml, User> for State {
     add_user_groups(user_groups, &mut res, &user)
       .await
       .context("failed to add user groups")?;
+
+    if include_variables {
+      res.variables =
+        find_collect(&db_client().await.variables, None, None)
+          .await
+          .context("failed to get variables from db")?;
+    }
 
     let toml = toml::to_string(&res)
       .context("failed to serialize resources to toml")?;

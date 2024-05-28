@@ -12,6 +12,7 @@ use crate::{sync::resources::ResourceSync, wait_for_enter};
 mod file;
 mod resources;
 mod user_group;
+mod variables;
 
 pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
   info!(
@@ -33,6 +34,7 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
     (repo_creates, repo_updates),
     (procedure_creates, procedure_updates),
     (user_group_creates, user_group_updates),
+    (variable_creates, variable_updates),
   ) = tokio::try_join!(
     ServerTemplate::get_updates(resources.server_templates),
     Server::get_updates(resources.servers),
@@ -42,7 +44,8 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
     Alerter::get_updates(resources.alerters),
     Repo::get_updates(resources.repos),
     Procedure::get_updates(resources.procedures),
-    user_group::get_updates(resources.user_groups)
+    user_group::get_updates(resources.user_groups),
+    variables::get_updates(resources.variables),
   )?;
 
   if server_template_creates.is_empty()
@@ -63,6 +66,8 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
     && procedure_updates.is_empty()
     && user_group_creates.is_empty()
     && user_group_updates.is_empty()
+    && variable_creates.is_empty()
+    && variable_updates.is_empty()
   {
     info!("{}. exiting.", "nothing to do".green().bold());
     return Ok(());
@@ -92,6 +97,7 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   // Dependant on everything
   Procedure::run_updates(procedure_creates, procedure_updates).await;
+  variables::run_updates(variable_creates, variable_updates).await;
   user_group::run_updates(user_group_creates, user_group_updates)
     .await;
 

@@ -6,7 +6,7 @@ use super::{
   permission::PermissionLevel, procedure::PartialProcedureConfig,
   repo::PartialRepoConfig, server::PartialServerConfig,
   server_template::PartialServerTemplateConfig,
-  update::ResourceTarget,
+  update::ResourceTarget, variable::Variable,
 };
 
 /// Specifies resources to sync on monitor
@@ -75,6 +75,13 @@ pub struct ResourcesToml {
     skip_serializing_if = "Vec::is_empty"
   )]
   pub user_groups: Vec<UserGroupToml>,
+
+  #[serde(
+    default,
+    rename = "variable",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub variables: Vec<Variable>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

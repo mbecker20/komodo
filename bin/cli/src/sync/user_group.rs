@@ -174,8 +174,6 @@ pub async fn run_updates(
   to_create: Vec<UserGroupToml>,
   to_update: Vec<UserGroupToml>,
 ) {
-  let log_after = !to_update.is_empty() || !to_create.is_empty();
-
   // Create the non-existant user groups
   for user_group in to_create {
     // Create the user group
@@ -200,10 +198,6 @@ pub async fn run_updates(
   for user_group in to_update {
     set_users(user_group.name.clone(), user_group.users).await;
     update_permissions(user_group.name, user_group.permissions).await;
-  }
-
-  if log_after {
-    info!("============ user groups synced ✅ ============");
   }
 }
 
