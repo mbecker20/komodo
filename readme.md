@@ -36,6 +36,10 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 	- Multiple users can then be added to the group, and a user can be added to multiple groups
 	- Users in the group inherit the group's permissions. 
 
+- **Monitor CLI + Sync**
+	- Introduces the [monitor cli](https://crates.io/crates/monitor_cli), which can sync resources declared across multiple toml files.
+	- Implements granular diffing of local and remote resources, producing detailed logs of the changes which will be made before user confirm.
+
 - **Builds**
 	- Build log displays the **latest commit hash and message**.
 	- In-progress builds are able to be **cancelled before completion**.
