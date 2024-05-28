@@ -66,7 +66,7 @@ export const ServerStats = ({ id }: { id: string }) => {
               </Fragment>
             ))}
           </div>
-          <ResourceDescription type="Server" id={id} />
+          <ResourceDescription type="Server" id={id} disabled />
         </div>
       }
       actions={
