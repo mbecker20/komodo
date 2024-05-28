@@ -61,10 +61,12 @@ const ProcedureConfigInner = ({
   }).data;
   const [branch, setBranch] = useState("main");
   const [config, setConfig] = useState<Partial<Types.ProcedureConfig>>({});
+  const global_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const { mutateAsync } = useWrite("UpdateProcedure");
   const executions = config.executions || procedure.config.executions || [];
 
-  const disabled = perms !== Types.PermissionLevel.Write;
+  const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   return (
     <>

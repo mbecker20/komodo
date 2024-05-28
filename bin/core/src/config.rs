@@ -75,6 +75,9 @@ pub fn core_config() -> &'static CoreConfig {
       transparent_mode: env
         .monitor_transparent_mode
         .unwrap_or(config.transparent_mode),
+      ui_write_disabled: env
+        .monitor_ui_write_disabled
+        .unwrap_or(config.ui_write_disabled),
       local_auth: env.monitor_local_auth.unwrap_or(config.local_auth),
       google_oauth: OauthCredentials {
         enabled: env
@@ -145,7 +148,7 @@ pub fn core_config() -> &'static CoreConfig {
       // These can't be overridden on env
       secrets: config.secrets,
       github_accounts: config.github_accounts,
-      docker_accounts: config.docker_accounts
+      docker_accounts: config.docker_accounts,
     }
   })
 }

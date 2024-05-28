@@ -112,10 +112,12 @@ export const ResourceTags = ({
   target,
   click_to_delete,
   className,
+  disabled,
 }: {
   target: TargetExcludingSystem;
   click_to_delete?: boolean;
   className?: string;
+  disabled?: boolean;
 }) => {
   const { toast } = useToast();
   const inv = useInvalidate();
@@ -133,13 +135,14 @@ export const ResourceTags = ({
       tag_ids={resource?.tags}
       onBadgeClick={(tag_id) => {
         if (!click_to_delete) return;
+        if (disabled) return;
         mutate({
           target,
           tags: resource!.tags.filter((tag) => tag !== tag_id),
         });
       }}
       className={className}
-      icon={click_to_delete && <MinusCircle className="w-3 h-3" />}
+      icon={!disabled && click_to_delete && <MinusCircle className="w-3 h-3" />}
     />
   );
 };

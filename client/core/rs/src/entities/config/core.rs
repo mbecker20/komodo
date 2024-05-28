@@ -69,6 +69,8 @@ pub struct Env {
 
   /// Override `transparent_mode`
   pub monitor_transparent_mode: Option<bool>,
+  /// Override `ui_write_disabled`
+  pub monitor_ui_write_disabled: Option<bool>,
 
   /// Override `local_auth`
   pub monitor_local_auth: Option<bool>,
@@ -193,7 +195,12 @@ fn default_config_path() -> String {
 /// # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
 ///
 /// ## allows all users to have read access on all resources
+/// ## default: false
 /// # transparent_mode = true
+///
+/// ## disables write support on resources in the UI
+/// ## default: false
+/// # ui_write_disabled = true
 ///
 /// ## allow or deny user login with username / password
 /// ## default: false
@@ -311,6 +318,10 @@ pub struct CoreConfig {
   /// Enable transparent mode, which gives all (enabled) users read access to all resources.
   #[serde(default)]
   pub transparent_mode: bool,
+
+  /// Disable user ability to use the UI to update resource configuration.
+  #[serde(default)]
+  pub ui_write_disabled: bool,
 
   /// enable login with local auth
   #[serde(default)]

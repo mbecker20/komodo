@@ -19,11 +19,13 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
   }).data;
   const config = useRead("GetBuilder", { builder: id }).data?.config
     .params as Types.AwsBuilderConfig;
+  const global_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.AwsBuilderConfig>>({});
   const { mutateAsync } = useWrite("UpdateBuilder");
   if (!config) return null;
 
-  const disabled = perms !== Types.PermissionLevel.Write;
+  const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   return (
     <Config

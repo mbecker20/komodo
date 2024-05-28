@@ -86,5 +86,7 @@ pub struct GetCoreInfoResponse {
   /// The github webhook base url to use with github webhooks.
   pub github_webhook_base_url: String,
   /// Whether transparent mode is enabled, which gives all users read access to all resources.
-  pub transparent_mode: bool
+  pub transparent_mode: bool,
+  /// Whether UI write access should be disabled
+  pub ui_write_disabled: bool,
 }

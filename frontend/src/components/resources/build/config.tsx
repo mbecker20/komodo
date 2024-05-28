@@ -33,13 +33,15 @@ export const BuildConfig = ({
     target: { type: "Build", id },
   }).data;
   const config = useRead("GetBuild", { build: id }).data?.config;
+  const global_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const docker_organizations = useRead("ListDockerOrganizations", {}).data;
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
   const { mutateAsync } = useWrite("UpdateBuild");
 
   if (!config) return null;
 
-  const disabled = perms !== Types.PermissionLevel.Write;
+  const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   return (
     <Config
@@ -195,7 +197,7 @@ export const BuildConfig = ({
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set(update => ({
+                  set((update) => ({
                     ...update,
                     labels: [
                       ...(update.labels ?? config.labels ?? []),

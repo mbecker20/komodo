@@ -64,7 +64,12 @@ passkey = "a_random_passkey"
 # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
 
 ## allows all users to have read access on all resources
+## default: false
 # transparent_mode = true
+
+## disables write support on resources in the UI
+## default: false
+# ui_write_disabled = true
 
 ## allow or deny user login with username / password
 ## default: false

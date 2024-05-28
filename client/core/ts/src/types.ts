@@ -1309,10 +1309,10 @@ export interface Variable {
 	 * Instances of '[[variable.name]]' in value will be replaced with 'variable.value'.
 	 */
 	name: string;
-	/** The value associated with the variable. */
-	value: string;
 	/** A description for the variable. */
-	description: string;
+	description?: string;
+	/** The value associated with the variable. */
+	value?: string;
 }
 
 export type GetVariableResponse = Variable;
@@ -2100,6 +2100,8 @@ export interface GetCoreInfoResponse {
 	github_webhook_base_url: string;
 	/** Whether transparent mode is enabled, which gives all users read access to all resources. */
 	transparent_mode: boolean;
+	/** Whether UI write access should be disabled */
+	ui_write_disabled: boolean;
 }
 
 /**
@@ -2499,9 +2501,11 @@ export interface ExportAllResourcesToToml {
  */
 export interface ExportResourcesToToml {
 	/** The targets to include in the export. */
-	targets: ResourceTarget[];
+	targets?: ResourceTarget[];
 	/** The user group names or ids to include in the export. */
-	user_groups: string[];
+	user_groups?: string[];
+	/** Whether to include variables */
+	include_variables?: boolean;
 }
 
 /**

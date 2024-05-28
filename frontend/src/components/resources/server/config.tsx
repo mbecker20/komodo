@@ -15,6 +15,8 @@ export const ServerConfig = ({
   }).data;
   const invalidate = useInvalidate();
   const config = useRead("GetServer", { server: id }).data?.config;
+  const global_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.ServerConfig>>({});
   const { mutateAsync } = useWrite("UpdateServer", {
     onSuccess: () => {
@@ -24,7 +26,7 @@ export const ServerConfig = ({
   });
   if (!config) return null;
 
-  const disabled = perms !== Types.PermissionLevel.Write;
+  const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   return (
     <Config

@@ -220,6 +220,7 @@ impl Resolve<GetCoreInfo, User> for State {
         .clone()
         .unwrap_or_else(|| config.host.clone()),
       transparent_mode: config.transparent_mode,
+      ui_write_disabled: config.ui_write_disabled,
     })
   }
 }

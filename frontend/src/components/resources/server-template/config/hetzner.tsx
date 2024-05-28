@@ -33,10 +33,13 @@ import {
 import { ChevronsUpDown, MinusCircle, PlusCircle, SearchX } from "lucide-react";
 import { useState } from "react";
 
-export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
-  const perms = useRead("GetPermissionLevel", {
-    target: { type: "ServerTemplate", id },
-  }).data;
+export const HetznerServerTemplateConfig = ({
+  id,
+  disabled,
+}: {
+  id: string;
+  disabled: boolean;
+}) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data
     ?.config.params as Types.HetznerServerTemplateConfig;
   const [update, set] = useState<Partial<Types.HetznerServerTemplateConfig>>(
@@ -44,8 +47,6 @@ export const HetznerServerTemplateConfig = ({ id }: { id: string }) => {
   );
   const { mutateAsync } = useWrite("UpdateServerTemplate");
   if (!config) return null;
-
-  const disabled = perms !== Types.PermissionLevel.Write;
 
   return (
     <Config

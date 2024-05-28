@@ -39,9 +39,11 @@ import { usableResourcePath } from "@lib/utils";
 export const ResourceDescription = ({
   type,
   id,
+  disabled,
 }: {
   type: UsableResource;
   id: string;
+  disabled: boolean;
 }) => {
   const { toast } = useToast();
   const inv = useInvalidate();
@@ -72,6 +74,7 @@ export const ResourceDescription = ({
         })
       }
       triggerClassName="text-muted-foreground w-[300px]"
+      disabled={disabled}
     />
   );
 };

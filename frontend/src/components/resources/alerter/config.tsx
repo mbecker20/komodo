@@ -15,6 +15,8 @@ export const AlerterConfig = ({ id }: { id: string }) => {
     target: { type: "Alerter", id },
   }).data;
   const config = useRead("GetAlerter", { alerter: id }).data?.config;
+  const global_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [type, setType] = useState<Types.AlerterConfig["type"]>();
   useEffect(() => config?.type && setType(config.type), [config?.type]);
   const [update, setConfig] = useState<
@@ -23,7 +25,7 @@ export const AlerterConfig = ({ id }: { id: string }) => {
   const { mutateAsync } = useWrite("UpdateAlerter");
   if (!config) return null;
 
-  const disabled = perms !== Types.PermissionLevel.Write;
+  const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   return (
     <Config

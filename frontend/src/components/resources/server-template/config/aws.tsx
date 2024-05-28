@@ -24,17 +24,18 @@ import {
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { useState } from "react";
 
-export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
-  const perms = useRead("GetPermissionLevel", {
-    target: { type: "ServerTemplate", id },
-  }).data;
+export const AwsServerTemplateConfig = ({
+  id,
+  disabled,
+}: {
+  id: string;
+  disabled: boolean;
+}) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data
     ?.config.params as Types.AwsServerTemplateConfig;
   const [update, set] = useState<Partial<Types.AwsServerTemplateConfig>>({});
   const { mutateAsync } = useWrite("UpdateServerTemplate");
   if (!config) return null;
-
-  const disabled = perms !== Types.PermissionLevel.Write;
 
   return (
     <Config

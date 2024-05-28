@@ -35,6 +35,8 @@ export const DeploymentConfig = ({
     target: { type: "Deployment", id },
   }).data;
   const config = useRead("GetDeployment", { deployment: id }).data?.config;
+  const global_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
   const { mutateAsync } = useWrite("UpdateDeployment");
 
@@ -46,7 +48,7 @@ export const DeploymentConfig = ({
     ? config.network === "host" || config.network === "none"
     : false;
 
-  const disabled = perms !== Types.PermissionLevel.Write;
+  const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   return (
     <Config

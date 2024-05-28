@@ -26,6 +26,8 @@ export const Resource = () => {
   const name = useRead(`List${type}s`, {}).data?.find((r) => r.id === id)?.name;
   useSetTitle(name);
   const perms = useRead("GetPermissionLevel", { target: { type, id } }).data;
+  const ui_write_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
 
   if (!type || !id) return null;
 
@@ -35,7 +37,7 @@ export const Resource = () => {
     perms,
     Types.PermissionLevel.Execute
   );
-  const canWrite = perms === Types.PermissionLevel.Write;
+  const canWrite = !ui_write_disabled && perms === Types.PermissionLevel.Write;
 
   return (
     <Page
@@ -66,11 +68,12 @@ export const Resource = () => {
             <ResourceTags
               target={{ id, type }}
               className="text-sm"
+              disabled={!canWrite}
               click_to_delete
             />
-            <AddTags target={{ id, type }} />
+            {canWrite && <AddTags target={{ id, type }} />}
           </div>
-          <ResourceDescription type={type} id={id} />
+          <ResourceDescription type={type} id={id} disabled={!canWrite} />
         </div>
       }
     >

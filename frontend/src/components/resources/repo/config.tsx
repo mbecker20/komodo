@@ -14,11 +14,13 @@ export const RepoConfig = ({ id }: { id: string }) => {
     target: { type: "Repo", id },
   }).data;
   const config = useRead("GetRepo", { repo: id }).data?.config;
+  const global_disabled =
+    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.RepoConfig>>({});
   const { mutateAsync } = useWrite("UpdateRepo");
   if (!config) return null;
 
-  const disabled = perms !== Types.PermissionLevel.Write;
+  const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   return (
     <Config
