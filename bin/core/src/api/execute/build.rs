@@ -495,6 +495,8 @@ async fn get_aws_builder(
     tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS))
       .await;
   }
+
+  // Spawn terminate task in failure case (if loop is passed without return)
   tokio::spawn(async move {
     let _ =
       terminate_ec2_instance_with_retry(config.region, &instance_id)
@@ -502,7 +504,11 @@ async fn get_aws_builder(
   });
 
   // Unwrap is safe, only way to get here is after check Ok / early return, so it must be err
-  Err(res.err().unwrap())
+  Err(
+    res.err().unwrap().context(
+      "failed to start usable builder. terminating instance.",
+    ),
+  )
 }
 
 #[instrument(skip(periphery, update))]
