@@ -11,7 +11,7 @@ pub async fn migrate_all(
   legacy_db: &v0::DbClient,
   target_db: &crate::DbClient,
 ) -> anyhow::Result<()> {
-  // migrate_users(legacy_db, target_db).await?;
+  migrate_users(legacy_db, target_db).await?;
   migrate_servers(legacy_db, target_db).await?;
   migrate_deployments(legacy_db, target_db).await?;
   migrate_builds(legacy_db, target_db).await?;
