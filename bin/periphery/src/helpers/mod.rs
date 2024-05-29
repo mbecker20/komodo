@@ -16,7 +16,7 @@ pub fn get_github_token(
       match periphery_config().github_accounts.get(account) {
         Some(token) => Ok(Some(token.to_owned())),
         None => Err(anyhow!(
-          "did not find token in config for github account {account} "
+          "did not find token in config for github account {account}"
         )),
       }
     }
@@ -32,7 +32,7 @@ pub fn get_docker_token(
       match periphery_config().docker_accounts.get(account) {
         Some(token) => Ok(Some(token.to_owned())),
         None => Err(anyhow!(
-        "did not find token in config for docker account {account} "
+        "did not find token in config for docker account {account}"
       )),
       }
     }
