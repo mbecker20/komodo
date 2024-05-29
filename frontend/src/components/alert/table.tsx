@@ -28,7 +28,7 @@ export const AlertsTable = ({
             ),
         },
         {
-          header: "Target",
+          header: "Resource",
           cell: ({ row }) => {
             const type = row.original.target.type as UsableResource;
             return <ResourceLink type={type} id={row.original.target.id} />;
