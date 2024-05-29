@@ -30,7 +30,7 @@ use periphery_client::{
   PeripheryClient,
 };
 use resolver_api::Resolve;
-use serror::{serialize_error, serialize_error_pretty};
+use serror::serialize_error_pretty;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
@@ -171,7 +171,8 @@ impl Resolve<RunBuild, User> for State {
       }
       Err(e) => {
         warn!("failed build at clone repo | {e:#}");
-        update.push_error_log("clone repo", serialize_error(&e));
+        update
+          .push_error_log("clone repo", serialize_error_pretty(&e));
       }
     }
 
@@ -253,7 +254,7 @@ impl Resolve<RunBuild, User> for State {
         }
         Err(e) => {
           warn!("error in build | {e:#}");
-          update.push_error_log("build", serialize_error(&e))
+          update.push_error_log("build", serialize_error_pretty(&e))
         }
       };
     }
