@@ -37,7 +37,7 @@ periphery \
 	--config-path /other_path/to/overide-periphery-config-directory \
 	--config-keyword periphery \
 	--config-keyword config \
-	--merge-nested-config
+	--merge-nested-config true
 ```
 
 ### Passing config files
@@ -50,8 +50,8 @@ When passing multiple config files, later --config-path given in the command wil
 
 There are two ways to merge config files. The default behavior is to completely replace any base fields with whatever fields are present in the overide config. So if you pass `allowed_ips = []` in your overide config, the final allowed_ips will be an empty list as well. 
 
-`--merge-nested-config` will merge config fields recursively and extend config array fields. 
+`--merge-nested-config true` will merge config fields recursively and extend config array fields. 
 
-For example, with `--merge-nested-config` you can specify an allowed ip in the base config, and another in the overide config, they will both be present in the final config.
+For example, with `--merge-nested-config true` you can specify an allowed ip in the base config, and another in the overide config, they will both be present in the final config.
 
 Similarly, you can specify a base docker / github account pair, and extend them with additional accounts in the overide config.

@@ -27,6 +27,18 @@ use crate::entities::{
 /// This structure represents the periphery command line arguments used to
 /// configure the periphery agent. A help manual for the periphery binary
 /// can be printed using `/path/to/periphery --help`.
+///
+/// Example command:
+/// ```sh
+/// periphery \
+///   --config-path /path/to/periphery.config.base.toml \
+///   --config-path /other_path/to/overide-periphery-config-directory \
+///   --config-keyword periphery \
+///   --config-keyword config \
+///   --merge-nested-config true \
+///   --extend-config-arrays false \
+///   --log-level info
+/// ```
 #[derive(Parser)]
 #[command(name = "periphery", author, about, version)]
 pub struct CliArgs {
@@ -42,15 +54,18 @@ pub struct CliArgs {
 
   /// Merges nested configs, eg. secrets, docker_accounts, github_accounts.
   /// Will override the equivalent env configuration.
+  /// Default: false
   #[arg(long)]
   pub merge_nested_config: Option<bool>,
 
   /// Extends config arrays, eg. allowed_ips, passkeys.
   /// Will override the equivalent env configuration.
+  /// Default: false
   #[arg(long)]
   pub extend_config_arrays: Option<bool>,
 
   /// Configure the logging level: error, warn, info, debug, trace.
+  /// Default: info
   /// If passed, will override any other log_level set.
   #[arg(long)]
   pub log_level: Option<tracing::Level>,
