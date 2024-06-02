@@ -201,9 +201,15 @@ export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
     onSuccess: userInvalidate,
   }).mutate;
 
+  const exists = useRead(`List${type as UsableResource}s`, {}).data?.find(
+    (r) => r.id === id
+  )
+    ? true
+    : false;
+
   useEffect(() => {
-    !!type && !!id && push({ resource: { type, id } });
-  }, [type, id, push]);
+    exists && push({ resource: { type, id } });
+  }, [exists, push]);
 
   return () => push({ resource: { type, id } });
 };
