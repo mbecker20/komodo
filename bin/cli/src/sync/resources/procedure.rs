@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use colored::Colorize;
 use monitor_client::{
   api::{
     execute::Execution,
-    write::{CreateProcedure, UpdateProcedure},
+    write::{CreateProcedure, DeleteProcedure, UpdateProcedure},
   },
   entities::{
     procedure::{
@@ -22,11 +23,12 @@ use crate::{
     id_to_build, id_to_deployment, id_to_procedure, id_to_repo,
     id_to_server, name_to_procedure,
   },
-  monitor_client,
-  sync::resources::ToUpdateItem,
+  state::monitor_client,
+  sync::resource::{
+    run_update_description, run_update_tags, ResourceSync, ToCreate,
+    ToDelete, ToUpdate, ToUpdateItem,
+  },
 };
-
-use super::{ResourceSync, ToCreate, ToUpdate};
 
 impl ResourceSync for Procedure {
   type Config = ProcedureConfig;
@@ -76,7 +78,23 @@ impl ResourceSync for Procedure {
   async fn run_updates(
     mut to_create: ToCreate<Self::PartialConfig>,
     mut to_update: ToUpdate<Self::PartialConfig>,
+    to_delete: ToDelete,
   ) {
+    for name in to_delete {
+      if let Err(e) = crate::state::monitor_client()
+        .write(DeleteProcedure { id: name.clone() })
+        .await
+      {
+        warn!("failed to delete procedure {name} | {e:#}",);
+      } else {
+        info!(
+          "{} procedure '{}'",
+          "deleted".red().bold(),
+          name.bold(),
+        );
+      }
+    }
+
     if to_update.is_empty() && to_create.is_empty() {
       return;
     }
@@ -95,11 +113,15 @@ impl ResourceSync for Procedure {
         let tags = resource.tags.clone();
         let description = resource.description.clone();
         if *update_description {
-          Self::update_description(id.clone(), &name, description)
-            .await;
+          run_update_description::<Procedure>(
+            id.clone(),
+            &name,
+            description,
+          )
+          .await;
         }
         if *update_tags {
-          Self::update_tags(id.clone(), &name, tags).await;
+          run_update_tags::<Procedure>(id.clone(), &name, tags).await;
         }
         if !resource.config.is_none() {
           if let Err(e) =
@@ -138,25 +160,23 @@ impl ResourceSync for Procedure {
             continue;
           }
         };
-        Self::update_tags(id.clone(), &name, tags).await;
-        Self::update_description(id, &name, description).await;
+        run_update_tags::<Procedure>(id.clone(), &name, tags).await;
+        run_update_description::<Procedure>(id, &name, description)
+          .await;
         info!("{} {name} created", Self::display());
         to_pull.push(name);
       }
       to_create.retain(|resource| !to_pull.contains(&resource.name));
 
       if to_update.is_empty() && to_create.is_empty() {
-        info!(
-          "============ {}s synced ✅ ============",
-          Self::display()
-        );
+        info!("all procedures synced");
         return;
       }
     }
     warn!("procedure sync loop exited after max iterations");
   }
 
-  async fn get_diff(
+  fn get_diff(
     mut original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff> {
@@ -217,19 +237,19 @@ impl ResourceSync for Procedure {
             .map(|d| d.name.clone())
             .unwrap_or_default();
         }
-        Execution::PruneDockerNetworks(config) => {
+        Execution::PruneNetworks(config) => {
           config.server = id_to_server()
             .get(&config.server)
             .map(|d| d.name.clone())
             .unwrap_or_default();
         }
-        Execution::PruneDockerImages(config) => {
+        Execution::PruneImages(config) => {
           config.server = id_to_server()
             .get(&config.server)
             .map(|d| d.name.clone())
             .unwrap_or_default();
         }
-        Execution::PruneDockerContainers(config) => {
+        Execution::PruneContainers(config) => {
           config.server = id_to_server()
             .get(&config.server)
             .map(|d| d.name.clone())
@@ -239,5 +259,9 @@ impl ResourceSync for Procedure {
     }
 
     Ok(original.partial_diff(update))
+  }
+
+  async fn delete(_: String) -> anyhow::Result<()> {
+    unreachable!()
   }
 }

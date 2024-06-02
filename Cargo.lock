@@ -1170,9 +1170,19 @@ dependencies = [
 
 [[package]]
 name = "derive_variants"
-version = "0.1.3"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4140db2d06b71f45b6c3ab1a30db4c024a930b5b87c207ff8e8c8bfc2f13e461"
+checksum = "7197273f187b1adc848e4db0487f6bb2d49e97d8d892e2d23a2fa05d07deee1e"
+dependencies = [
+ "derive_variants_derive",
+ "thiserror",
+]
+
+[[package]]
+name = "derive_variants_derive"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1bceb8b4ad480f8cf02ae4efb42c95add230544b4239d543cbd9f9141d838581"
 dependencies = [
  "proc-macro2",
  "quote",

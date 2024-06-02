@@ -59,7 +59,7 @@ pub type CopyProcedureResponse = Procedure;
 #[empty_traits(MonitorWriteRequest)]
 #[response(DeleteProcedureResponse)]
 pub struct DeleteProcedure {
-  /// The id of the procedure to delete.
+  /// The id or name of the procedure to delete.
   pub id: String,
 }
 

@@ -26,9 +26,9 @@ mod server_template;
 #[serde(tag = "type", content = "params")]
 enum ExecuteRequest {
   // ==== SERVER ====
-  PruneContainers(PruneDockerContainers),
-  PruneImages(PruneDockerImages),
-  PruneNetworks(PruneDockerNetworks),
+  PruneContainers(PruneContainers),
+  PruneImages(PruneImages),
+  PruneNetworks(PruneNetworks),
 
   // ==== DEPLOYMENT ====
   Deploy(Deploy),

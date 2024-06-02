@@ -159,18 +159,18 @@ async fn execute_execution(
       .resolve(req, user)
       .await
       .context("failed at PullRepo")?,
-    Execution::PruneDockerNetworks(req) => State
+    Execution::PruneNetworks(req) => State
       .resolve(req, user)
       .await
-      .context("failed at PruneDockerNetworks")?,
-    Execution::PruneDockerImages(req) => State
+      .context("failed at PruneNetworks")?,
+    Execution::PruneImages(req) => State
       .resolve(req, user)
       .await
-      .context("failed at PruneDockerImages")?,
-    Execution::PruneDockerContainers(req) => State
+      .context("failed at PruneImages")?,
+    Execution::PruneContainers(req) => State
       .resolve(req, user)
       .await
-      .context("failed at PruneDockerContainers")?,
+      .context("failed at PruneContainers")?,
   };
   if update.success {
     Ok(())

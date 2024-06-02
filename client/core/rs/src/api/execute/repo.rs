@@ -1,3 +1,4 @@
+use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -25,6 +26,7 @@ use super::MonitorExecuteRequest;
   PartialEq,
   Request,
   EmptyTraits,
+  Parser,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -48,6 +50,7 @@ pub struct CloneRepo {
   PartialEq,
   Request,
   EmptyTraits,
+  Parser,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]

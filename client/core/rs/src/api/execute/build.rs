@@ -1,3 +1,4 @@
+use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -9,7 +10,7 @@ use super::MonitorExecuteRequest;
 
 //
 
-/// Executes the target build. Response: [Update].
+/// Runs the target build. Response: [Update].
 ///
 /// 1. Get a handle to the builder. If using AWS builder, this means starting a builder ec2 instance.
 /// 2. Clone the repo on the builder. If an `on_clone` commmand is given, it will be executed.
@@ -17,13 +18,14 @@ use super::MonitorExecuteRequest;
 /// 4. If a dockerhub account is attached, the build will be pushed to that account.
 #[typeshare]
 #[derive(
-  Serialize,
-  Deserialize,
   Debug,
   Clone,
   PartialEq,
+  Serialize,
+  Deserialize,
   Request,
   EmptyTraits,
+  Parser,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]

@@ -1,6 +1,8 @@
+use clap::Subcommand;
 use derive_variants::EnumVariants;
 use resolver_api::HasResponse;
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 mod build;
@@ -24,12 +26,26 @@ pub trait MonitorExecuteRequest: HasResponse {}
 /// A wrapper for all monitor exections.
 #[typeshare]
 #[derive(
-  Debug, Clone, PartialEq, Serialize, Deserialize, EnumVariants,
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  EnumVariants,
+  Subcommand,
 )]
-#[variant_derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[variant_derive(
+  Debug,
+  Clone,
+  Copy,
+  Serialize,
+  Deserialize,
+  Display,
+  EnumString
+)]
 #[serde(tag = "type", content = "params")]
 pub enum Execution {
-  /// For new executions upon instantiation
+  /// The "null" execution. Does nothing.
   None(NoData),
 
   // PROCEDURE
@@ -50,7 +66,7 @@ pub enum Execution {
   PullRepo(PullRepo),
 
   // SERVER
-  PruneDockerNetworks(PruneDockerNetworks),
-  PruneDockerImages(PruneDockerImages),
-  PruneDockerContainers(PruneDockerContainers),
+  PruneNetworks(PruneNetworks),
+  PruneImages(PruneImages),
+  PruneContainers(PruneContainers),
 }

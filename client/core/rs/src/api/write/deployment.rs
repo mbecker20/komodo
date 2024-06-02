@@ -54,7 +54,7 @@ pub struct CopyDeployment {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Deployment)]
 pub struct DeleteDeployment {
-  /// The id of the deployment to delete.
+  /// The id or name of the deployment to delete.
   pub id: String,
 }
 

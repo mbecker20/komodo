@@ -37,7 +37,7 @@ pub struct CreateServer {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Server)]
 pub struct DeleteServer {
-  /// The id of the server to delete.
+  /// The id or name of the server to delete.
   pub id: String,
 }
 

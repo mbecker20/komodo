@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateBuilder, UpdateBuilder},
+  api::write::{CreateBuilder, DeleteBuilder, UpdateBuilder},
   entities::{
     builder::{
       Builder, BuilderConfig, BuilderConfigDiff, PartialBuilderConfig,
@@ -15,10 +15,9 @@ use partial_derive2::PartialDiff;
 
 use crate::{
   maps::{id_to_server, name_to_builder},
-  monitor_client,
+  state::monitor_client,
+  sync::resource::ResourceSync,
 };
-
-use super::ResourceSync;
 
 impl ResourceSync for Builder {
   type Config = BuilderConfig;
@@ -65,7 +64,7 @@ impl ResourceSync for Builder {
     Ok(())
   }
 
-  async fn get_diff(
+  fn get_diff(
     mut original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff> {
@@ -78,5 +77,10 @@ impl ResourceSync for Builder {
     }
 
     Ok(original.partial_diff(update))
+  }
+
+  async fn delete(id: String) -> anyhow::Result<()> {
+    monitor_client().write(DeleteBuilder { id }).await?;
+    Ok(())
   }
 }

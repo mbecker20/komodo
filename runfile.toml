@@ -19,6 +19,10 @@ cmd = "yarn build"
 path = "bin/cli"
 cmd = "cargo run -- sync"
 
+[monitor-cli-test]
+path = "bin/cli2"
+cmd = "cargo run -- execute prune-images monitor-01"
+
 [rustdoc-server]
 cmd = "cargo watch -s 'cargo doc --no-deps -p monitor_client' & http --quiet target/doc"
 

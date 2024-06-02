@@ -1,12 +1,18 @@
-use std::{fs, path::Path};
+use std::{
+  fs,
+  path::{Path, PathBuf},
+  str::FromStr,
+};
 
 use anyhow::{anyhow, Context};
 use colored::Colorize;
 use monitor_client::entities::toml::ResourcesToml;
 
-pub fn read_resources(path: &Path) -> anyhow::Result<ResourcesToml> {
+pub fn read_resources(path: &str) -> anyhow::Result<ResourcesToml> {
   let mut res = ResourcesToml::default();
-  read_resources_recursive(path, &mut res)?;
+  let path =
+    PathBuf::from_str(path).context("invalid resources path")?;
+  read_resources_recursive(&path, &mut res)?;
   Ok(res)
 }
 
@@ -24,27 +30,29 @@ fn read_resources_recursive(
     {
       return Ok(());
     }
-    let more = match crate::parse_toml_file::<ResourcesToml>(path) {
-      Ok(res) => res,
-      Err(e) => {
-        warn!("failed to parse {:?}. skipping file | {e:#}", path);
-        return Ok(());
-      }
-    };
+    let more =
+      match crate::helpers::parse_toml_file::<ResourcesToml>(path) {
+        Ok(res) => res,
+        Err(e) => {
+          warn!("failed to parse {:?}. skipping file | {e:#}", path);
+          return Ok(());
+        }
+      };
     info!(
       "{} from {}",
       "adding resources".green().bold(),
       path.display().to_string().blue().bold()
     );
-    resources.server_templates.extend(more.server_templates);
     resources.servers.extend(more.servers);
-    resources.builds.extend(more.builds);
     resources.deployments.extend(more.deployments);
-    resources.builders.extend(more.builders);
     resources.repos.extend(more.repos);
-    resources.alerters.extend(more.alerters);
+    resources.builds.extend(more.builds);
     resources.procedures.extend(more.procedures);
+    resources.builders.extend(more.builders);
+    resources.alerters.extend(more.alerters);
+    resources.server_templates.extend(more.server_templates);
     resources.user_groups.extend(more.user_groups);
+    resources.variables.extend(more.variables);
     Ok(())
   } else if res.is_dir() {
     let directory = fs::read_dir(path)

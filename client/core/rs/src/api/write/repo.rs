@@ -51,7 +51,7 @@ pub struct CopyRepo {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Repo)]
 pub struct DeleteRepo {
-  /// The id of the repo to delete.
+  /// The id or name of the repo to delete.
   pub id: String,
 }
 

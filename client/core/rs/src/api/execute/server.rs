@@ -1,3 +1,4 @@
+use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -21,10 +22,11 @@ use super::MonitorExecuteRequest;
   PartialEq,
   Request,
   EmptyTraits,
+  Parser,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct PruneDockerNetworks {
+pub struct PruneNetworks {
   /// Id or name
   pub server: String,
 }
@@ -43,10 +45,11 @@ pub struct PruneDockerNetworks {
   PartialEq,
   Request,
   EmptyTraits,
+  Parser,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct PruneDockerImages {
+pub struct PruneImages {
   /// Id or name
   pub server: String,
 }
@@ -65,10 +68,11 @@ pub struct PruneDockerImages {
   PartialEq,
   Request,
   EmptyTraits,
+  Parser,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct PruneDockerContainers {
+pub struct PruneContainers {
   /// Id or name
   pub server: String,
 }

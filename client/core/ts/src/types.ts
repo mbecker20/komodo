@@ -669,7 +669,7 @@ export enum ProcedureType {
 
 /** A wrapper for all monitor exections. */
 export type Execution = 
-	/** For new executions upon instantiation */
+	/** The "null" execution. Does nothing. */
 	| { type: "None", params: NoData }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "RunBuild", params: RunBuild }
@@ -680,9 +680,9 @@ export type Execution =
 	| { type: "RemoveContainer", params: RemoveContainer }
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
-	| { type: "PruneDockerNetworks", params: PruneDockerNetworks }
-	| { type: "PruneDockerImages", params: PruneDockerImages }
-	| { type: "PruneDockerContainers", params: PruneDockerContainers };
+	| { type: "PruneNetworks", params: PruneNetworks }
+	| { type: "PruneImages", params: PruneImages }
+	| { type: "PruneContainers", params: PruneContainers };
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
 export interface EnabledExecution {
@@ -1543,7 +1543,7 @@ export interface GetUser {
 }
 
 /**
- * Executes the target build. Response: [Update].
+ * Runs the target build. Response: [Update].
  * 
  * 1. Get a handle to the builder. If using AWS builder, this means starting a builder ec2 instance.
  * 2. Clone the repo on the builder. If an `on_clone` commmand is given, it will be executed.
@@ -1668,7 +1668,7 @@ export interface PullRepo {
  * 
  * 1. Runs `docker network prune -f`.
  */
-export interface PruneDockerNetworks {
+export interface PruneNetworks {
 	/** Id or name */
 	server: string;
 }
@@ -1678,7 +1678,7 @@ export interface PruneDockerNetworks {
  * 
  * 1. Runs `docker image prune -a -f`.
  */
-export interface PruneDockerImages {
+export interface PruneImages {
 	/** Id or name */
 	server: string;
 }
@@ -1688,7 +1688,7 @@ export interface PruneDockerImages {
  * 
  * 1. Runs `docker container prune -f`.
  */
-export interface PruneDockerContainers {
+export interface PruneContainers {
 	/** Id or name */
 	server: string;
 }
@@ -2731,7 +2731,7 @@ export interface CopyAlerter {
  * Response: [Alerter]
  */
 export interface DeleteAlerter {
-	/** The id of the alerter to delete. */
+	/** The id or name of the alerter to delete. */
 	id: string;
 }
 
@@ -2798,7 +2798,7 @@ export interface CopyBuild {
  * Response: [Build]
  */
 export interface DeleteBuild {
-	/** The id of the build to delete. */
+	/** The id or name of the build to delete. */
 	id: string;
 }
 
@@ -2848,7 +2848,7 @@ export interface CopyBuilder {
  * Response: [Builder]
  */
 export interface DeleteBuilder {
-	/** The id of the builder to delete. */
+	/** The id or name of the builder to delete. */
 	id: string;
 }
 
@@ -2893,7 +2893,7 @@ export interface CopyDeployment {
  * Response: [Deployment].
  */
 export interface DeleteDeployment {
-	/** The id of the deployment to delete. */
+	/** The id or name of the deployment to delete. */
 	id: string;
 }
 
@@ -2990,7 +2990,7 @@ export interface CopyProcedure {
  * Response: [Procedure]
  */
 export interface DeleteProcedure {
-	/** The id of the procedure to delete. */
+	/** The id or name of the procedure to delete. */
 	id: string;
 }
 
@@ -3035,7 +3035,7 @@ export interface CopyRepo {
  * Response: [Repo]
  */
 export interface DeleteRepo {
-	/** The id of the repo to delete. */
+	/** The id or name of the repo to delete. */
 	id: string;
 }
 
@@ -3072,7 +3072,7 @@ export interface CreateServer {
  * Response: [Server]
  */
 export interface DeleteServer {
-	/** The id of the server to delete. */
+	/** The id or name of the server to delete. */
 	id: string;
 }
 
@@ -3151,7 +3151,7 @@ export interface CopyServerTemplate {
  * Response: [ServerTemplate]
  */
 export interface DeleteServerTemplate {
-	/** The id of the server template to delete. */
+	/** The id or name of the server template to delete. */
 	id: string;
 }
 
@@ -3549,9 +3549,9 @@ export type AuthRequest =
 	| { type: "GetUser", params: GetUser };
 
 export type ExecuteRequest = 
-	| { type: "PruneContainers", params: PruneDockerContainers }
-	| { type: "PruneImages", params: PruneDockerImages }
-	| { type: "PruneNetworks", params: PruneDockerNetworks }
+	| { type: "PruneContainers", params: PruneContainers }
+	| { type: "PruneImages", params: PruneImages }
+	| { type: "PruneNetworks", params: PruneNetworks }
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartContainer", params: StartContainer }
 	| { type: "StopContainer", params: StopContainer }

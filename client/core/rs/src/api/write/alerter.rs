@@ -51,7 +51,7 @@ pub struct CopyAlerter {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct DeleteAlerter {
-  /// The id of the alerter to delete.
+  /// The id or name of the alerter to delete.
   pub id: String,
 }
 

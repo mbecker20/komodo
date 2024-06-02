@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write,
+  api::write::{self, DeleteDeployment},
   entities::{
     deployment::{
       Deployment, DeploymentConfig, DeploymentConfigDiff,
@@ -16,10 +16,9 @@ use partial_derive2::PartialDiff;
 
 use crate::{
   maps::{id_to_build, id_to_server, name_to_deployment},
-  monitor_client,
+  state::monitor_client,
+  sync::resource::ResourceSync,
 };
-
-use super::ResourceSync;
 
 impl ResourceSync for Deployment {
   type Config = DeploymentConfig;
@@ -66,7 +65,7 @@ impl ResourceSync for Deployment {
     Ok(())
   }
 
-  async fn get_diff(
+  fn get_diff(
     mut original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff> {
@@ -90,5 +89,10 @@ impl ResourceSync for Deployment {
     }
 
     Ok(original.partial_diff(update))
+  }
+
+  async fn delete(id: String) -> anyhow::Result<()> {
+    monitor_client().write(DeleteDeployment { id }).await?;
+    Ok(())
   }
 }

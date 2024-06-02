@@ -236,7 +236,7 @@ async fn validate_config(
         .await?;
         params.repo = repo.id;
       }
-      Execution::PruneDockerNetworks(params) => {
+      Execution::PruneNetworks(params) => {
         let server = super::get_check_permissions::<Server>(
           &params.server,
           user,
@@ -245,7 +245,7 @@ async fn validate_config(
         .await?;
         params.server = server.id;
       }
-      Execution::PruneDockerImages(params) => {
+      Execution::PruneImages(params) => {
         let server = super::get_check_permissions::<Server>(
           &params.server,
           user,
@@ -254,7 +254,7 @@ async fn validate_config(
         .await?;
         params.server = server.id;
       }
-      Execution::PruneDockerContainers(params) => {
+      Execution::PruneContainers(params) => {
         let server = super::get_check_permissions::<Server>(
           &params.server,
           user,

@@ -503,7 +503,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       );
     },
   },
-  PruneDockerContainers: {
+  PruneContainers: {
     params: { server: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -514,7 +514,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  PruneDockerImages: {
+  PruneImages: {
     params: { server: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -525,7 +525,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  PruneDockerNetworks: {
+  PruneNetworks: {
     params: { server: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector

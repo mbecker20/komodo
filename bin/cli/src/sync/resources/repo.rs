@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateRepo, UpdateRepo},
+  api::write::{CreateRepo, DeleteRepo, UpdateRepo},
   entities::{
     repo::{
       PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo,
@@ -15,10 +15,9 @@ use partial_derive2::PartialDiff;
 
 use crate::{
   maps::{id_to_server, name_to_repo},
-  monitor_client,
+  state::monitor_client,
+  sync::resource::ResourceSync,
 };
-
-use super::ResourceSync;
 
 impl ResourceSync for Repo {
   type Config = RepoConfig;
@@ -65,7 +64,7 @@ impl ResourceSync for Repo {
     Ok(())
   }
 
-  async fn get_diff(
+  fn get_diff(
     mut original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff> {
@@ -76,5 +75,10 @@ impl ResourceSync for Repo {
       .unwrap_or_default();
 
     Ok(original.partial_diff(update))
+  }
+
+  async fn delete(id: String) -> anyhow::Result<()> {
+    monitor_client().write(DeleteRepo { id }).await?;
+    Ok(())
   }
 }

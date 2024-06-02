@@ -1,5 +1,5 @@
 use async_timing_util::unix_timestamp_ms;
-use derive_variants::EnumVariants;
+use derive_variants::{EnumVariants, ExtractVariant};
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
@@ -228,7 +228,6 @@ impl ResourceTarget {
   pub fn extract_variant_id(
     &self,
   ) -> (ResourceTargetVariant, &String) {
-    let variant: ResourceTargetVariant = self.into();
     let id = match &self {
       ResourceTarget::System(id) => id,
       ResourceTarget::Build(id) => id,
@@ -240,7 +239,7 @@ impl ResourceTarget {
       ResourceTarget::Procedure(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
     };
-    (variant, id)
+    (self.extract_variant(), id)
   }
 
   pub fn system() -> ResourceTarget {

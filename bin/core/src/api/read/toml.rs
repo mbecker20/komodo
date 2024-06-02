@@ -328,17 +328,15 @@ async fn add_procedure(
       Execution::StopAllContainers(exec) => exec.server.clone_from(
         names.servers.get(&exec.server).unwrap_or(&String::new()),
       ),
-      Execution::PruneDockerNetworks(exec) => exec.server.clone_from(
+      Execution::PruneNetworks(exec) => exec.server.clone_from(
         names.servers.get(&exec.server).unwrap_or(&String::new()),
       ),
-      Execution::PruneDockerImages(exec) => exec.server.clone_from(
+      Execution::PruneImages(exec) => exec.server.clone_from(
         names.servers.get(&exec.server).unwrap_or(&String::new()),
       ),
-      Execution::PruneDockerContainers(exec) => {
-        exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        )
-      }
+      Execution::PruneContainers(exec) => exec.server.clone_from(
+        names.servers.get(&exec.server).unwrap_or(&String::new()),
+      ),
       Execution::None(_) => continue,
     }
   }

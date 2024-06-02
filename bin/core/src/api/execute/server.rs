@@ -23,11 +23,11 @@ use crate::{
   state::{action_states, State},
 };
 
-impl Resolve<PruneDockerContainers, User> for State {
-  #[instrument(name = "PruneDockerContainers", skip(self, user))]
+impl Resolve<PruneContainers, User> for State {
+  #[instrument(name = "PruneContainers", skip(self, user))]
   async fn resolve(
     &self,
-    PruneDockerContainers { server }: PruneDockerContainers,
+    PruneContainers { server }: PruneContainers,
     user: User,
   ) -> anyhow::Result<Update> {
     let server = resource::get_check_permissions::<Server>(
@@ -79,11 +79,11 @@ impl Resolve<PruneDockerContainers, User> for State {
   }
 }
 
-impl Resolve<PruneDockerNetworks, User> for State {
-  #[instrument(name = "PruneDockerNetworks", skip(self, user))]
+impl Resolve<PruneNetworks, User> for State {
+  #[instrument(name = "PruneNetworks", skip(self, user))]
   async fn resolve(
     &self,
-    PruneDockerNetworks { server }: PruneDockerNetworks,
+    PruneNetworks { server }: PruneNetworks,
     user: User,
   ) -> anyhow::Result<Update> {
     let server = resource::get_check_permissions::<Server>(
@@ -135,11 +135,11 @@ impl Resolve<PruneDockerNetworks, User> for State {
   }
 }
 
-impl Resolve<PruneDockerImages, User> for State {
-  #[instrument(name = "PruneDockerImages", skip(self, user))]
+impl Resolve<PruneImages, User> for State {
+  #[instrument(name = "PruneImages", skip(self, user))]
   async fn resolve(
     &self,
-    PruneDockerImages { server }: PruneDockerImages,
+    PruneImages { server }: PruneImages,
     user: User,
   ) -> anyhow::Result<Update> {
     let server = resource::get_check_permissions::<Server>(

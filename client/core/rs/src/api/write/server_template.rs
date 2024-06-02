@@ -51,7 +51,7 @@ pub struct CopyServerTemplate {
 #[empty_traits(MonitorWriteRequest)]
 #[response(ServerTemplate)]
 pub struct DeleteServerTemplate {
-  /// The id of the server template to delete.
+  /// The id or name of the server template to delete.
   pub id: String,
 }
 

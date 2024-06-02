@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateServerTemplate, UpdateServerTemplate},
+  api::write::{
+    CreateServerTemplate, DeleteServerTemplate, UpdateServerTemplate,
+  },
   entities::{
     resource::Resource,
     server_template::{
@@ -14,9 +16,10 @@ use monitor_client::{
 };
 use partial_derive2::PartialDiff;
 
-use crate::{maps::name_to_server_template, monitor_client};
-
-use super::ResourceSync;
+use crate::{
+  maps::name_to_server_template, state::monitor_client,
+  sync::resource::ResourceSync,
+};
 
 impl ResourceSync for ServerTemplate {
   type Config = ServerTemplateConfig;
@@ -63,10 +66,15 @@ impl ResourceSync for ServerTemplate {
     Ok(())
   }
 
-  async fn get_diff(
+  fn get_diff(
     original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff> {
     Ok(original.partial_diff(update))
+  }
+
+  async fn delete(id: String) -> anyhow::Result<()> {
+    monitor_client().write(DeleteServerTemplate { id }).await?;
+    Ok(())
   }
 }

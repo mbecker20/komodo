@@ -1,7 +1,8 @@
+use partial_derive2::PartialDiff;
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateAlerter, UpdateAlerter},
+  api::write::{CreateAlerter, DeleteAlerter, UpdateAlerter},
   entities::{
     alerter::{
       Alerter, AlerterConfig, AlerterConfigDiff, AlerterInfo,
@@ -12,11 +13,11 @@ use monitor_client::{
     update::ResourceTarget,
   },
 };
-use partial_derive2::PartialDiff;
 
-use crate::{maps::name_to_alerter, monitor_client};
-
-use super::ResourceSync;
+use crate::{
+  maps::name_to_alerter, state::monitor_client,
+  sync::resource::ResourceSync,
+};
 
 impl ResourceSync for Alerter {
   type Config = AlerterConfig;
@@ -63,10 +64,15 @@ impl ResourceSync for Alerter {
     Ok(())
   }
 
-  async fn get_diff(
+  fn get_diff(
     original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff> {
     Ok(original.partial_diff(update))
+  }
+
+  async fn delete(id: String) -> anyhow::Result<()> {
+    monitor_client().write(DeleteAlerter { id }).await?;
+    Ok(())
   }
 }

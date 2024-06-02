@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
+use clap::Parser;
+use derive_empty_traits::EmptyTraits;
 use serde::{Deserialize, Serialize};
 use serror::Serror;
 use strum::{Display, EnumString};
@@ -61,7 +63,7 @@ pub type _Serror = Serror;
 /// Represents an empty json object: `{}`
 #[typeshare]
 #[derive(
-  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+  Debug, Clone, Default, PartialEq, Serialize, Deserialize, Parser, EmptyTraits
 )]
 pub struct NoData {}
 

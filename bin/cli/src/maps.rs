@@ -10,7 +10,7 @@ use monitor_client::{
   },
 };
 
-use crate::monitor_client;
+use crate::state::monitor_client;
 
 pub fn name_to_build() -> &'static HashMap<String, Build> {
   static NAME_TO_BUILD: OnceLock<HashMap<String, Build>> =

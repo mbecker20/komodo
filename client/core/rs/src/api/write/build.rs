@@ -51,7 +51,7 @@ pub struct CopyBuild {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Build)]
 pub struct DeleteBuild {
-  /// The id of the build to delete.
+  /// The id or name of the build to delete.
   pub id: String,
 }
 
