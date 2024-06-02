@@ -1,6 +1,12 @@
 use anyhow::Context;
 use monitor_client::entities::{
+  build::Build,
+  deployment::Deployment,
   monitor_timestamp,
+  procedure::Procedure,
+  repo::Repo,
+  server::Server,
+  server_template::ServerTemplate,
   update::{ResourceTarget, Update, UpdateListItem},
   user::User,
   Operation,
@@ -10,7 +16,9 @@ use mungos::{
   mongodb::bson::to_document,
 };
 
-use crate::{api::execute::ExecuteRequest, state::db_client};
+use crate::{
+  api::execute::ExecuteRequest, resource, state::db_client,
+};
 
 use super::channel::update_channel;
 
@@ -103,68 +111,99 @@ pub async fn init_execution_update(
     // Server
     ExecuteRequest::PruneContainers(data) => (
       Operation::PruneImages,
-      ResourceTarget::Server(data.server.clone()),
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
     ),
     ExecuteRequest::PruneImages(data) => (
       Operation::PruneImages,
-      ResourceTarget::Server(data.server.clone()),
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
     ),
     ExecuteRequest::PruneNetworks(data) => (
       Operation::PruneNetworks,
-      ResourceTarget::Server(data.server.clone()),
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
     ),
     ExecuteRequest::StopAllContainers(data) => (
       Operation::StopAllContainers,
-      ResourceTarget::Server(data.server.clone()),
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
     ),
 
     // Deployment
     ExecuteRequest::Deploy(data) => (
       Operation::Deploy,
-      ResourceTarget::Deployment(data.deployment.clone()),
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
     ),
     ExecuteRequest::StartContainer(data) => (
       Operation::StartContainer,
-      ResourceTarget::Deployment(data.deployment.clone()),
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
     ),
     ExecuteRequest::StopContainer(data) => (
       Operation::StopContainer,
-      ResourceTarget::Deployment(data.deployment.clone()),
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
     ),
     ExecuteRequest::RemoveContainer(data) => (
       Operation::RemoveContainer,
-      ResourceTarget::Deployment(data.deployment.clone()),
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
     ),
 
     // Build
     ExecuteRequest::RunBuild(data) => (
       Operation::RunBuild,
-      ResourceTarget::Build(data.build.clone()),
+      ResourceTarget::Build(
+        resource::get::<Build>(&data.build).await?.id,
+      ),
     ),
     ExecuteRequest::CancelBuild(data) => (
       Operation::CancelBuild,
-      ResourceTarget::Build(data.build.clone()),
+      ResourceTarget::Build(
+        resource::get::<Build>(&data.build).await?.id,
+      ),
     ),
 
     // Repo
     ExecuteRequest::CloneRepo(data) => (
       Operation::CloneRepo,
-      ResourceTarget::Repo(data.repo.clone()),
+      ResourceTarget::Repo(
+        resource::get::<Repo>(&data.repo).await?.id,
+      ),
     ),
-    ExecuteRequest::PullRepo(data) => {
-      (Operation::PullRepo, ResourceTarget::Repo(data.repo.clone()))
-    }
+    ExecuteRequest::PullRepo(data) => (
+      Operation::PullRepo,
+      ResourceTarget::Repo(
+        resource::get::<Repo>(&data.repo).await?.id,
+      ),
+    ),
 
     // Procedure
     ExecuteRequest::RunProcedure(data) => (
       Operation::RunProcedure,
-      ResourceTarget::Procedure(data.procedure.clone()),
+      ResourceTarget::Procedure(
+        resource::get::<Procedure>(&data.procedure).await?.id,
+      ),
     ),
 
     // Server template
     ExecuteRequest::LaunchServer(data) => (
       Operation::LaunchServer,
-      ResourceTarget::ServerTemplate(data.server_template.clone()),
+      ResourceTarget::ServerTemplate(
+        resource::get::<ServerTemplate>(&data.server_template)
+          .await?
+          .id,
+      ),
     ),
   };
   let mut update = make_update(target, operation, user);
