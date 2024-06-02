@@ -7,7 +7,6 @@ use monitor_client::{
     server_template::{ServerTemplate, ServerTemplateConfig},
     update::Update,
     user::User,
-    Operation,
   },
 };
 use mungos::mongodb::bson::doc;
@@ -16,12 +15,12 @@ use serror::serialize_error_pretty;
 
 use crate::{
   cloud::{aws::launch_ec2_instance, hetzner::launch_hetzner_server},
-  helpers::update::{add_update, make_update, update_update},
+  helpers::update::update_update,
   resource,
   state::{db_client, State},
 };
 
-impl Resolve<LaunchServer, User> for State {
+impl Resolve<LaunchServer, (User, Update)> for State {
   #[instrument(name = "LaunchServer", skip(self, user))]
   async fn resolve(
     &self,
@@ -29,7 +28,7 @@ impl Resolve<LaunchServer, User> for State {
       name,
       server_template,
     }: LaunchServer,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     // validate name isn't already taken by another server
     if db_client()
@@ -55,14 +54,11 @@ impl Resolve<LaunchServer, User> for State {
     )
     .await?;
 
-    let mut update =
-      make_update(&template, Operation::LaunchServer, &user);
-    update.in_progress();
     update.push_simple_log(
       "launching server",
       format!("{:#?}", template.config),
     );
-    update.id = add_update(update.clone()).await?;
+    update_update(update.clone()).await?;
 
     let config = match template.config {
       ServerTemplateConfig::Aws(config) => {

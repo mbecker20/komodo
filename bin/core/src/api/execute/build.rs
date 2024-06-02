@@ -52,12 +52,14 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
-impl Resolve<RunBuild, User> for State {
+use crate::helpers::update::init_execution_update;
+
+impl Resolve<RunBuild, (User, Update)> for State {
   #[instrument(name = "RunBuild", skip(self, user))]
   async fn resolve(
     &self,
     RunBuild { build }: RunBuild,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let mut build = resource::get_check_permissions::<Build>(
       &build,
@@ -77,8 +79,6 @@ impl Resolve<RunBuild, User> for State {
 
     build.config.version.increment();
 
-    let mut update = make_update(&build, Operation::RunBuild, &user);
-    update.in_progress();
     update.version = build.config.version.clone();
 
     let cancel = CancellationToken::new();
@@ -337,12 +337,12 @@ async fn handle_early_return(
   Ok(update)
 }
 
-impl Resolve<CancelBuild, User> for State {
+impl Resolve<CancelBuild, (User, Update)> for State {
   #[instrument(name = "CancelBuild", skip(self, user))]
   async fn resolve(
     &self,
     CancelBuild { build }: CancelBuild,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<CancelBuildResponse> {
     let build = resource::get_check_permissions::<Build>(
       &build,
@@ -369,9 +369,6 @@ impl Resolve<CancelBuild, User> for State {
     {
       return Err(anyhow!("Build cancel is already in progress"));
     }
-
-    let mut update =
-      make_update(&build, Operation::CancelBuild, &user);
 
     update.push_simple_log(
       "cancel triggered",
@@ -564,16 +561,26 @@ async fn handle_post_build_redeploy(build_id: &str) {
         let state =
           get_deployment_state(&deployment).await.unwrap_or_default();
         if state == DeploymentState::Running {
-          let res = State
-            .resolve(
-              Deploy {
-                deployment: deployment.id.clone(),
-                stop_signal: None,
-                stop_time: None,
-              },
-              auto_redeploy_user().to_owned(),
-            )
-            .await;
+          let req = super::ExecuteRequest::Deploy(Deploy {
+            deployment: deployment.id.clone(),
+            stop_signal: None,
+            stop_time: None,
+          });
+          let user = auto_redeploy_user().to_owned();
+          let res = async {
+            let update = init_execution_update(&req, &user).await?;
+            State
+              .resolve(
+                Deploy {
+                  deployment: deployment.id.clone(),
+                  stop_signal: None,
+                  stop_time: None,
+                },
+                (user, update),
+              )
+              .await
+          }
+          .await;
           Some((deployment.id.clone(), res))
         } else {
           None
@@ -592,7 +599,8 @@ async fn handle_post_build_redeploy(build_id: &str) {
     let (id, res) = res.unwrap();
     match res {
       Ok(_) => redeploys.push(id),
-      Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
+      Err(e) => redeploy_failures
+        .push(format!("{id}: {}", serialize_error_pretty(&e))),
     }
   }
 }

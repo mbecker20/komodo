@@ -12,9 +12,9 @@ use monitor_client::{
 use resolver_api::Resolve;
 use tokio::sync::Mutex;
 
-use crate::state::State;
+use crate::{api::execute::ExecuteRequest, state::State};
 
-use super::update::update_update;
+use super::update::{init_execution_update, update_update};
 
 #[instrument]
 pub async fn execute_procedure(
@@ -79,58 +79,137 @@ async fn execute_execution(
       if req.procedure == parent_id || req.procedure == parent_name {
         return Err(anyhow!("Self referential procedure detected"));
       }
+      let req = ExecuteRequest::RunProcedure(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RunProcedure(req) = req else {
+        unreachable!()
+      };
       State
-        .resolve(req, user)
+        .resolve(req, (user, update))
         .await
         .context("failed at RunProcedure")?
     }
-    Execution::RunBuild(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at RunBuild")?,
-    Execution::Deploy(req) => {
-      State.resolve(req, user).await.context("failed at Deploy")?
-    }
-    Execution::StartContainer(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at StartContainer")?,
-    Execution::StopContainer(req) => {
+    Execution::RunBuild(req) => {
+      let req = ExecuteRequest::RunBuild(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RunBuild(req) = req else {
+        unreachable!()
+      };
       State
-        .resolve(req, user)
+        .resolve(req, (user, update))
+        .await
+        .context("failed at RunBuild")?
+    }
+    Execution::Deploy(req) => {
+      let req = ExecuteRequest::Deploy(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::Deploy(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at Deploy")?
+    }
+    Execution::StartContainer(req) => {
+      let req = ExecuteRequest::StartContainer(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StartContainer(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at StartContainer")?
+    }
+    Execution::StopContainer(req) => {
+      let req = ExecuteRequest::StopContainer(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StopContainer(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
         .await
         .context("failed at StopContainer")?
     }
-    Execution::StopAllContainers(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at StopAllContainers")?,
-    Execution::RemoveContainer(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at RemoveContainer")?,
-    Execution::CloneRepo(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at CloneRepo")?,
-    Execution::PullRepo(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at PullRepo")?,
-    Execution::PruneNetworks(req) => {
+    Execution::StopAllContainers(req) => {
+      let req = ExecuteRequest::StopAllContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StopAllContainers(req) = req else {
+        unreachable!()
+      };
       State
-        .resolve(req, user)
+        .resolve(req, (user, update))
+        .await
+        .context("failed at StopAllContainers")?
+    }
+    Execution::RemoveContainer(req) => {
+      let req = ExecuteRequest::RemoveContainer(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RemoveContainer(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at RemoveContainer")?
+    }
+    Execution::CloneRepo(req) => {
+      let req = ExecuteRequest::CloneRepo(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::CloneRepo(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at CloneRepo")?
+    }
+    Execution::PullRepo(req) => {
+      let req = ExecuteRequest::PullRepo(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PullRepo(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at PullRepo")?
+    }
+    Execution::PruneNetworks(req) => {
+      let req = ExecuteRequest::PruneNetworks(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PruneNetworks(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
         .await
         .context("failed at PruneNetworks")?
     }
-    Execution::PruneImages(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at PruneImages")?,
-    Execution::PruneContainers(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at PruneContainers")?,
+    Execution::PruneImages(req) => {
+      let req = ExecuteRequest::PruneImages(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PruneImages(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at PruneImages")?
+    }
+    Execution::PruneContainers(req) => {
+      let req = ExecuteRequest::PruneContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PruneContainers(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at PruneContainers")?
+    }
   };
   if update.success {
     Ok(())

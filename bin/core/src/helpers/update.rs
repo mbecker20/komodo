@@ -10,7 +10,7 @@ use mungos::{
   mongodb::bson::to_document,
 };
 
-use crate::state::db_client;
+use crate::{api::execute::ExecuteRequest, state::db_client};
 
 use super::channel::update_channel;
 
@@ -93,4 +93,82 @@ async fn update_list_item(
 async fn send_update(update: UpdateListItem) -> anyhow::Result<()> {
   update_channel().sender.lock().await.send(update)?;
   Ok(())
+}
+
+pub async fn init_execution_update(
+  request: &ExecuteRequest,
+  user: &User,
+) -> anyhow::Result<Update> {
+  let (operation, target) = match &request {
+    // Server
+    ExecuteRequest::PruneContainers(data) => (
+      Operation::PruneImages,
+      ResourceTarget::Server(data.server.clone()),
+    ),
+    ExecuteRequest::PruneImages(data) => (
+      Operation::PruneImages,
+      ResourceTarget::Server(data.server.clone()),
+    ),
+    ExecuteRequest::PruneNetworks(data) => (
+      Operation::PruneNetworks,
+      ResourceTarget::Server(data.server.clone()),
+    ),
+    ExecuteRequest::StopAllContainers(data) => (
+      Operation::StopAllContainers,
+      ResourceTarget::Server(data.server.clone()),
+    ),
+
+    // Deployment
+    ExecuteRequest::Deploy(data) => (
+      Operation::Deploy,
+      ResourceTarget::Deployment(data.deployment.clone()),
+    ),
+    ExecuteRequest::StartContainer(data) => (
+      Operation::StartContainer,
+      ResourceTarget::Deployment(data.deployment.clone()),
+    ),
+    ExecuteRequest::StopContainer(data) => (
+      Operation::StopContainer,
+      ResourceTarget::Deployment(data.deployment.clone()),
+    ),
+    ExecuteRequest::RemoveContainer(data) => (
+      Operation::RemoveContainer,
+      ResourceTarget::Deployment(data.deployment.clone()),
+    ),
+
+    // Build
+    ExecuteRequest::RunBuild(data) => (
+      Operation::RunBuild,
+      ResourceTarget::Build(data.build.clone()),
+    ),
+    ExecuteRequest::CancelBuild(data) => (
+      Operation::CancelBuild,
+      ResourceTarget::Build(data.build.clone()),
+    ),
+
+    // Repo
+    ExecuteRequest::CloneRepo(data) => (
+      Operation::CloneRepo,
+      ResourceTarget::Repo(data.repo.clone()),
+    ),
+    ExecuteRequest::PullRepo(data) => {
+      (Operation::PullRepo, ResourceTarget::Repo(data.repo.clone()))
+    }
+
+    // Procedure
+    ExecuteRequest::RunProcedure(data) => (
+      Operation::RunProcedure,
+      ResourceTarget::Procedure(data.procedure.clone()),
+    ),
+
+    // Server template
+    ExecuteRequest::LaunchServer(data) => (
+      Operation::LaunchServer,
+      ResourceTarget::ServerTemplate(data.server_template.clone()),
+    ),
+  };
+  let mut update = make_update(target, operation, user);
+  update.in_progress();
+  update.id = add_update(update.clone()).await?;
+  Ok(update)
 }

@@ -7,12 +7,12 @@ use monitor_client::{
   entities::{
     build::Build,
     deployment::{Deployment, DeploymentImage},
-    get_image_name, monitor_timestamp,
+    get_image_name,
     permission::PermissionLevel,
     server::ServerState,
-    update::{Log, ResourceTarget, Update, UpdateStatus},
+    update::{Log, Update},
     user::User,
-    Operation, Version,
+    Version,
   },
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
@@ -25,14 +25,16 @@ use crate::{
   helpers::{
     periphery_client,
     query::{get_global_variables, get_server_with_status},
-    update::{add_update, make_update, update_update},
+    update::update_update,
   },
   monitor::update_cache_for_server,
   resource,
   state::{action_states, db_client, State},
 };
 
-impl Resolve<Deploy, User> for State {
+use crate::helpers::update::init_execution_update;
+
+impl Resolve<Deploy, (User, Update)> for State {
   #[instrument(name = "Deploy", skip(self, user))]
   async fn resolve(
     &self,
@@ -41,7 +43,7 @@ impl Resolve<Deploy, User> for State {
       stop_signal,
       stop_time,
     }: Deploy,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let mut deployment =
       resource::get_check_permissions::<Deployment>(
@@ -129,11 +131,6 @@ impl Resolve<Deploy, User> for State {
       env.value = res;
     }
 
-    let mut update =
-      make_update(&deployment, Operation::DeployContainer, &user);
-    update.in_progress();
-    update.version = version;
-
     // Show which variables were interpolated
     if !global_replacers.is_empty() {
       update.push_simple_log(
@@ -156,7 +153,8 @@ impl Resolve<Deploy, User> for State {
       );
     }
 
-    update.id = add_update(update.clone()).await?;
+    update.version = version;
+    update_update(update.clone()).await?;
 
     let docker_token = core_config
       .docker_accounts
@@ -191,12 +189,12 @@ impl Resolve<Deploy, User> for State {
   }
 }
 
-impl Resolve<StartContainer, User> for State {
+impl Resolve<StartContainer, (User, Update)> for State {
   #[instrument(name = "StartContainer", skip(self, user))]
   async fn resolve(
     &self,
     StartContainer { deployment }: StartContainer,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
@@ -230,20 +228,6 @@ impl Resolve<StartContainer, User> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let start_ts = monitor_timestamp();
-
-    let mut update = Update {
-      target: ResourceTarget::Deployment(deployment.id.clone()),
-      operation: Operation::StartContainer,
-      start_ts,
-      status: UpdateStatus::InProgress,
-      success: true,
-      operator: user.id.clone(),
-      ..Default::default()
-    };
-
-    update.id = add_update(update.clone()).await?;
-
     let log = match periphery
       .request(api::container::StartContainer {
         name: deployment.name.clone(),
@@ -257,15 +241,15 @@ impl Resolve<StartContainer, User> for State {
     };
 
     update.logs.push(log);
-    update.finalize();
     update_cache_for_server(&server).await;
+    update.finalize();
     update_update(update.clone()).await?;
 
     Ok(update)
   }
 }
 
-impl Resolve<StopContainer, User> for State {
+impl Resolve<StopContainer, (User, Update)> for State {
   #[instrument(name = "StopContainer", skip(self, user))]
   async fn resolve(
     &self,
@@ -274,7 +258,7 @@ impl Resolve<StopContainer, User> for State {
       signal,
       time,
     }: StopContainer,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
@@ -308,11 +292,6 @@ impl Resolve<StopContainer, User> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let mut update =
-      make_update(&deployment, Operation::StopContainer, &user);
-
-    update.id = add_update(update.clone()).await?;
-
     let log = match periphery
       .request(api::container::StopContainer {
         name: deployment.name.clone(),
@@ -332,20 +311,20 @@ impl Resolve<StopContainer, User> for State {
     };
 
     update.logs.push(log);
-    update.finalize();
     update_cache_for_server(&server).await;
+    update.finalize();
     update_update(update.clone()).await?;
 
     Ok(update)
   }
 }
 
-impl Resolve<StopAllContainers, User> for State {
+impl Resolve<StopAllContainers, (User, Update)> for State {
   #[instrument(name = "StopAllContainers", skip(self, user))]
   async fn resolve(
     &self,
     StopAllContainers { server }: StopAllContainers,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (server, status) = get_server_with_status(&server).await?;
     if status != ServerState::Ok {
@@ -375,23 +354,27 @@ impl Resolve<StopAllContainers, User> for State {
     .await
     .context("failed to find deployments on server")?;
 
-    let mut update =
-      make_update(&server, Operation::StopAllContainers, &user);
-    update.in_progress();
-    update.id = add_update(update.clone()).await?;
-
     let futures = deployments.iter().map(|deployment| async {
+      let req = super::ExecuteRequest::StopContainer(StopContainer {
+        deployment: deployment.id.clone(),
+        signal: None,
+        time: None,
+      });
       (
-        self
-          .resolve(
-            StopContainer {
-              deployment: deployment.id.clone(),
-              signal: None,
-              time: None,
-            },
-            user.clone(),
-          )
-          .await,
+        async {
+          let update = init_execution_update(&req, &user).await?;
+          State
+            .resolve(
+              StopContainer {
+                deployment: deployment.id.clone(),
+                signal: None,
+                time: None,
+              },
+              (user.clone(), update),
+            )
+            .await
+        }
+        .await,
         deployment.name.clone(),
         deployment.id.clone(),
       )
@@ -422,7 +405,7 @@ impl Resolve<StopAllContainers, User> for State {
   }
 }
 
-impl Resolve<RemoveContainer, User> for State {
+impl Resolve<RemoveContainer, (User, Update)> for State {
   #[instrument(name = "RemoveContainer", skip(self, user))]
   async fn resolve(
     &self,
@@ -431,7 +414,7 @@ impl Resolve<RemoveContainer, User> for State {
       signal,
       time,
     }: RemoveContainer,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
@@ -464,20 +447,6 @@ impl Resolve<RemoveContainer, User> for State {
     }
 
     let periphery = periphery_client(&server)?;
-
-    let start_ts = monitor_timestamp();
-
-    let mut update = Update {
-      target: ResourceTarget::Deployment(deployment.id.clone()),
-      operation: Operation::RemoveContainer,
-      start_ts,
-      status: UpdateStatus::InProgress,
-      success: true,
-      operator: user.id.clone(),
-      ..Default::default()
-    };
-
-    update.id = add_update(update.clone()).await?;
 
     let log = match periphery
       .request(api::container::RemoveContainer {

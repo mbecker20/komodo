@@ -4,7 +4,7 @@ use monitor_client::{
   api::execute::RunProcedure,
   entities::{
     permission::PermissionLevel, procedure::Procedure,
-    update::Update, user::User, Operation,
+    update::Update, user::User,
   },
 };
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
@@ -13,28 +13,26 @@ use serror::serialize_error_pretty;
 use tokio::sync::Mutex;
 
 use crate::{
-  helpers::{
-    procedure::execute_procedure,
-    update::{add_update, make_update, update_update},
-  },
+  helpers::{procedure::execute_procedure, update::update_update},
   resource::{self, refresh_procedure_state_cache},
   state::{action_states, db_client, State},
 };
 
-impl Resolve<RunProcedure, User> for State {
+impl Resolve<RunProcedure, (User, Update)> for State {
   #[instrument(name = "RunProcedure", skip(self, user))]
   async fn resolve(
     &self,
     RunProcedure { procedure }: RunProcedure,
-    user: User,
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    resolve_inner(procedure, user).await
+    resolve_inner(procedure, user, update).await
   }
 }
 
 fn resolve_inner(
   procedure: String,
   user: User,
+  update: Update,
 ) -> Pin<
   Box<
     dyn std::future::Future<Output = anyhow::Result<Update>> + Send,
@@ -58,16 +56,6 @@ fn resolve_inner(
     // Will also check to ensure procedure not already busy before updating.
     let _action_guard =
       action_state.update(|state| state.running = true)?;
-
-    let mut update =
-      make_update(&procedure, Operation::RunProcedure, &user);
-    update.in_progress();
-    update.push_simple_log(
-      "execute procedure",
-      format!("Executing procedure: {}", procedure.name),
-    );
-
-    update.id = add_update(update.clone()).await?;
 
     let update = Mutex::new(update);
 

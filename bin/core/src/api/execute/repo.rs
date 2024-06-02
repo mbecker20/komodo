@@ -6,9 +6,8 @@ use monitor_client::{
     permission::PermissionLevel,
     repo::Repo,
     server::Server,
-    update::{Log, ResourceTarget, Update, UpdateStatus},
+    update::{Log, Update},
     user::User,
-    Operation,
   },
 };
 use mungos::{
@@ -21,20 +20,17 @@ use serror::serialize_error_pretty;
 
 use crate::{
   config::core_config,
-  helpers::{
-    periphery_client,
-    update::{add_update, update_update},
-  },
+  helpers::{periphery_client, update::update_update},
   resource::{self, refresh_repo_state_cache},
   state::{action_states, db_client, State},
 };
 
-impl Resolve<CloneRepo, User> for State {
+impl Resolve<CloneRepo, (User, Update)> for State {
   #[instrument(name = "CloneRepo", skip(self, user))]
   async fn resolve(
     &self,
     CloneRepo { repo }: CloneRepo,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let repo = resource::get_check_permissions::<Repo>(
       &repo,
@@ -60,20 +56,6 @@ impl Resolve<CloneRepo, User> for State {
       resource::get::<Server>(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
-
-    let start_ts = monitor_timestamp();
-
-    let mut update = Update {
-      operation: Operation::CloneRepo,
-      target: ResourceTarget::Repo(repo.id.clone()),
-      start_ts,
-      status: UpdateStatus::InProgress,
-      operator: user.id.clone(),
-      success: true,
-      ..Default::default()
-    };
-
-    update.id = add_update(update.clone()).await?;
 
     let github_token = core_config()
       .github_accounts
@@ -104,12 +86,12 @@ impl Resolve<CloneRepo, User> for State {
   }
 }
 
-impl Resolve<PullRepo, User> for State {
+impl Resolve<PullRepo, (User, Update)> for State {
   #[instrument(name = "PullRepo", skip(self, user))]
   async fn resolve(
     &self,
     PullRepo { repo }: PullRepo,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let repo = resource::get_check_permissions::<Repo>(
       &repo,
@@ -135,20 +117,6 @@ impl Resolve<PullRepo, User> for State {
       resource::get::<Server>(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
-
-    let start_ts = monitor_timestamp();
-
-    let mut update = Update {
-      operation: Operation::PullRepo,
-      target: ResourceTarget::Repo(repo.id.clone()),
-      start_ts,
-      status: UpdateStatus::InProgress,
-      operator: user.id.clone(),
-      success: true,
-      ..Default::default()
-    };
-
-    update.id = add_update(update.clone()).await?;
 
     let logs = match periphery
       .request(api::git::PullRepo {

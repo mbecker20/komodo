@@ -7,7 +7,6 @@ use monitor_client::{
     server::Server,
     update::{Log, Update, UpdateStatus},
     user::User,
-    Operation,
   },
 };
 use periphery_client::api;
@@ -15,20 +14,17 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  helpers::{
-    periphery_client,
-    update::{add_update, make_update, update_update},
-  },
+  helpers::{periphery_client, update::update_update},
   resource,
   state::{action_states, State},
 };
 
-impl Resolve<PruneContainers, User> for State {
+impl Resolve<PruneContainers, (User, Update)> for State {
   #[instrument(name = "PruneContainers", skip(self, user))]
   async fn resolve(
     &self,
     PruneContainers { server }: PruneContainers,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let server = resource::get_check_permissions::<Server>(
       &server,
@@ -49,11 +45,6 @@ impl Resolve<PruneContainers, User> for State {
       action_state.update(|state| state.pruning_containers = true)?;
 
     let periphery = periphery_client(&server)?;
-
-    let mut update =
-      make_update(&server, Operation::PruneContainersServer, &user);
-    update.in_progress();
-    update.id = add_update(update.clone()).await?;
 
     let log = match periphery
       .request(api::container::PruneContainers {})
@@ -79,12 +70,12 @@ impl Resolve<PruneContainers, User> for State {
   }
 }
 
-impl Resolve<PruneNetworks, User> for State {
+impl Resolve<PruneNetworks, (User, Update)> for State {
   #[instrument(name = "PruneNetworks", skip(self, user))]
   async fn resolve(
     &self,
     PruneNetworks { server }: PruneNetworks,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let server = resource::get_check_permissions::<Server>(
       &server,
@@ -105,11 +96,6 @@ impl Resolve<PruneNetworks, User> for State {
       action_state.update(|state| state.pruning_networks = true)?;
 
     let periphery = periphery_client(&server)?;
-
-    let mut update =
-      make_update(&server, Operation::PruneNetworksServer, &user);
-    update.in_progress();
-    update.id = add_update(update.clone()).await?;
 
     let log = match periphery
       .request(api::network::PruneNetworks {})
@@ -135,12 +121,12 @@ impl Resolve<PruneNetworks, User> for State {
   }
 }
 
-impl Resolve<PruneImages, User> for State {
+impl Resolve<PruneImages, (User, Update)> for State {
   #[instrument(name = "PruneImages", skip(self, user))]
   async fn resolve(
     &self,
     PruneImages { server }: PruneImages,
-    user: User,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let server = resource::get_check_permissions::<Server>(
       &server,
@@ -161,11 +147,6 @@ impl Resolve<PruneImages, User> for State {
       action_state.update(|state| state.pruning_images = true)?;
 
     let periphery = periphery_client(&server)?;
-
-    let mut update =
-      make_update(&server, Operation::PruneImagesServer, &user);
-    update.in_progress();
-    update.id = add_update(update.clone()).await?;
 
     let log =
       match periphery.request(api::build::PruneImages {}).await {

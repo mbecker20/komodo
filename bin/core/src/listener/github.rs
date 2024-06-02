@@ -18,7 +18,9 @@ use tracing::Instrument;
 
 use crate::{
   config::core_config,
-  helpers::{cache::Cache, random_duration},
+  helpers::{
+    cache::Cache, random_duration, update::init_execution_update,
+  },
   resource,
   state::State,
 };
@@ -137,12 +139,15 @@ async fn handle_build_webhook(
   if request_branch != build.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  State
-    .resolve(
-      execute::RunBuild { build: build_id },
-      github_user().to_owned(),
-    )
-    .await?;
+  let user = github_user().to_owned();
+  let req = crate::api::execute::ExecuteRequest::RunBuild(
+    execute::RunBuild { build: build_id },
+  );
+  let update = init_execution_update(&req, &user).await?;
+  let crate::api::execute::ExecuteRequest::RunBuild(req) = req else {
+    unreachable!()
+  };
+  State.resolve(req, (user, update)).await?;
   Ok(())
 }
 
@@ -166,12 +171,16 @@ async fn handle_repo_clone_webhook(
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  State
-    .resolve(
-      execute::CloneRepo { repo: repo_id },
-      github_user().to_owned(),
-    )
-    .await?;
+  let user = github_user().to_owned();
+  let req = crate::api::execute::ExecuteRequest::CloneRepo(
+    execute::CloneRepo { repo: repo_id },
+  );
+  let update = init_execution_update(&req, &user).await?;
+  let crate::api::execute::ExecuteRequest::CloneRepo(req) = req
+  else {
+    unreachable!()
+  };
+  State.resolve(req, (user, update)).await?;
   Ok(())
 }
 
@@ -195,12 +204,15 @@ async fn handle_repo_pull_webhook(
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  State
-    .resolve(
-      execute::PullRepo { repo: repo_id },
-      github_user().to_owned(),
-    )
-    .await?;
+  let user = github_user().to_owned();
+  let req = crate::api::execute::ExecuteRequest::PullRepo(
+    execute::PullRepo { repo: repo_id },
+  );
+  let update = init_execution_update(&req, &user).await?;
+  let crate::api::execute::ExecuteRequest::PullRepo(req) = req else {
+    unreachable!()
+  };
+  State.resolve(req, (user, update)).await?;
   Ok(())
 }
 
@@ -226,14 +238,18 @@ async fn handle_procedure_webhook(
   if !procedure.config.webhook_enabled {
     return Err(anyhow!("procedure does not have webhook enabled"));
   }
-  State
-    .resolve(
-      execute::RunProcedure {
-        procedure: procedure_id,
-      },
-      github_user().to_owned(),
-    )
-    .await?;
+  let user = github_user().to_owned();
+  let req = crate::api::execute::ExecuteRequest::RunProcedure(
+    execute::RunProcedure {
+      procedure: procedure_id,
+    },
+  );
+  let update = init_execution_update(&req, &user).await?;
+  let crate::api::execute::ExecuteRequest::RunProcedure(req) = req
+  else {
+    unreachable!()
+  };
+  State.resolve(req, (user, update)).await?;
   Ok(())
 }
 

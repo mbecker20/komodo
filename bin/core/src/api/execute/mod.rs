@@ -1,16 +1,22 @@
 use std::time::Instant;
 
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use axum::{middleware, routing::post, Extension, Router};
-use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::{api::execute::*, entities::user::User};
+use monitor_client::{
+  api::execute::*,
+  entities::{update::Update, user::User},
+};
 use resolver_api::{derive::Resolver, Resolver};
 use serde::{Deserialize, Serialize};
-use serror::Json;
+use serror::{serialize_error_pretty, Json};
 use typeshare::typeshare;
 use uuid::Uuid;
 
-use crate::{auth::auth_request, state::State};
+use crate::{
+  auth::auth_request,
+  helpers::update::{init_execution_update, update_update},
+  state::State,
+};
 
 mod build;
 mod deployment;
@@ -22,9 +28,9 @@ mod server_template;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[resolver_target(State)]
-#[resolver_args(User)]
+#[resolver_args((User, Update))]
 #[serde(tag = "type", content = "params")]
-enum ExecuteRequest {
+pub enum ExecuteRequest {
   // ==== SERVER ====
   PruneContainers(PruneContainers),
   PruneImages(PruneImages),
@@ -61,18 +67,37 @@ pub fn router() -> Router {
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<ExecuteRequest>,
-) -> serror::Result<(TypedHeader<ContentType>, String)> {
+) -> serror::Result<Json<Update>> {
   let req_id = Uuid::new_v4();
 
-  let res = tokio::spawn(task(req_id, request, user))
-    .await
-    .context("failure in spawned execute task");
+  let update = init_execution_update(&request, &user).await?;
 
-  if let Err(e) = &res {
-    warn!("/execute request {req_id} spawn error: {e:#}",);
-  }
+  let handle =
+    tokio::spawn(task(req_id, request, user, update.clone()));
 
-  Ok((TypedHeader(ContentType::json()), res??))
+  tokio::spawn({
+    let mut update = update.clone();
+    async move {
+      match handle.await {
+        Ok(Err(e)) => {
+          warn!("/execute request {req_id} task error: {e:#}",);
+          update
+            .push_error_log("task error", serialize_error_pretty(&e));
+          update.finalize();
+          let _ = update_update(update).await;
+        }
+        Err(e) => {
+          warn!("/execute request {req_id} spawn error: {e:?}",);
+          update.push_error_log("spawn error", format!("{e:#?}"));
+          update.finalize();
+          let _ = update_update(update).await;
+        }
+        _ => {}
+      }
+    }
+  });
+
+  Ok(Json(update))
 }
 
 #[instrument(name = "ExecuteRequest", skip(user))]
@@ -80,6 +105,7 @@ async fn task(
   req_id: Uuid,
   request: ExecuteRequest,
   user: User,
+  update: Update,
 ) -> anyhow::Result<String> {
   info!(
     "/execute request {req_id} | user: {} ({})",
@@ -87,16 +113,15 @@ async fn task(
   );
   let timer = Instant::now();
 
-  let res =
-    State
-      .resolve_request(request, user)
-      .await
-      .map_err(|e| match e {
-        resolver_api::Error::Serialization(e) => {
-          anyhow!("{e:?}").context("response serialization error")
-        }
-        resolver_api::Error::Inner(e) => e,
-      });
+  let res = State
+    .resolve_request(request, (user, update))
+    .await
+    .map_err(|e| match e {
+      resolver_api::Error::Serialization(e) => {
+        anyhow!("{e:?}").context("response serialization error")
+      }
+      resolver_api::Error::Inner(e) => e,
+    });
 
   if let Err(e) = &res {
     warn!("/execute request {req_id} error: {e:#}");
