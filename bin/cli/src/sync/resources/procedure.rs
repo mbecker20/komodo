@@ -180,84 +180,85 @@ impl ResourceSync for Procedure {
     mut original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff> {
-    for execution in &mut original.executions {
-      match &mut execution.execution {
-        Execution::None(_) => {}
-        Execution::RunProcedure(config) => {
-          config.procedure = id_to_procedure()
-            .get(&config.procedure)
-            .map(|p| p.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::RunBuild(config) => {
-          config.build = id_to_build()
-            .get(&config.build)
-            .map(|b| b.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::Deploy(config) => {
-          config.deployment = id_to_deployment()
-            .get(&config.deployment)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::StartContainer(config) => {
-          config.deployment = id_to_deployment()
-            .get(&config.deployment)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::StopContainer(config) => {
-          config.deployment = id_to_deployment()
-            .get(&config.deployment)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::RemoveContainer(config) => {
-          config.deployment = id_to_deployment()
-            .get(&config.deployment)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::CloneRepo(config) => {
-          config.repo = id_to_repo()
-            .get(&config.repo)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::PullRepo(config) => {
-          config.repo = id_to_repo()
-            .get(&config.repo)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::StopAllContainers(config) => {
-          config.server = id_to_server()
-            .get(&config.server)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::PruneNetworks(config) => {
-          config.server = id_to_server()
-            .get(&config.server)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::PruneImages(config) => {
-          config.server = id_to_server()
-            .get(&config.server)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
-        }
-        Execution::PruneContainers(config) => {
-          config.server = id_to_server()
-            .get(&config.server)
-            .map(|d| d.name.clone())
-            .unwrap_or_default();
+    for stage in &mut original.stages {
+      for execution in &mut stage.executions {
+        match &mut execution.execution {
+          Execution::None(_) => {}
+          Execution::RunProcedure(config) => {
+            config.procedure = id_to_procedure()
+              .get(&config.procedure)
+              .map(|p| p.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RunBuild(config) => {
+            config.build = id_to_build()
+              .get(&config.build)
+              .map(|b| b.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::Deploy(config) => {
+            config.deployment = id_to_deployment()
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StartContainer(config) => {
+            config.deployment = id_to_deployment()
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StopContainer(config) => {
+            config.deployment = id_to_deployment()
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RemoveContainer(config) => {
+            config.deployment = id_to_deployment()
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::CloneRepo(config) => {
+            config.repo = id_to_repo()
+              .get(&config.repo)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PullRepo(config) => {
+            config.repo = id_to_repo()
+              .get(&config.repo)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StopAllContainers(config) => {
+            config.server = id_to_server()
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneNetworks(config) => {
+            config.server = id_to_server()
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneImages(config) => {
+            config.server = id_to_server()
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneContainers(config) => {
+            config.server = id_to_server()
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
         }
       }
     }
-
     Ok(original.partial_diff(update))
   }
 

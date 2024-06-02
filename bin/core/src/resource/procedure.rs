@@ -54,7 +54,7 @@ impl super::MonitorResource for Procedure {
       tags: procedure.tags,
       resource_type: ResourceTargetVariant::Procedure,
       info: ProcedureListItemInfo {
-        procedure_type: procedure.config.procedure_type,
+        stages: procedure.config.stages.len() as i64,
         state,
       },
     }
@@ -141,130 +141,137 @@ async fn validate_config(
   user: &User,
   id: Option<&str>,
 ) -> anyhow::Result<()> {
-  let Some(executions) = &mut config.executions else {
+  let Some(stages) = &mut config.stages else {
     return Ok(());
   };
-  for exec in executions {
-    match &mut exec.execution {
-      Execution::None(_) => {}
-      Execution::RunProcedure(params) => {
-        let procedure = super::get_check_permissions::<Procedure>(
-          &params.procedure,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        match id {
-          Some(id) if procedure.id == id => {
-            return Err(anyhow!(
-              "Cannot have self-referential procedure"
-            ))
+  for stage in stages {
+    for exec in &mut stage.executions {
+      match &mut exec.execution {
+        Execution::None(_) => {}
+        Execution::RunProcedure(params) => {
+          let procedure = super::get_check_permissions::<Procedure>(
+            &params.procedure,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          match id {
+            Some(id) if procedure.id == id => {
+              return Err(anyhow!(
+                "Cannot have self-referential procedure"
+              ))
+            }
+            _ => {}
           }
-          _ => {}
+          params.procedure = procedure.id;
         }
-        params.procedure = procedure.id;
-      }
-      Execution::RunBuild(params) => {
-        let build = super::get_check_permissions::<Build>(
-          &params.build,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.build = build.id;
-      }
-      Execution::Deploy(params) => {
-        let deployment = super::get_check_permissions::<Deployment>(
-          &params.deployment,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.deployment = deployment.id;
-      }
-      Execution::StartContainer(params) => {
-        let deployment = super::get_check_permissions::<Deployment>(
-          &params.deployment,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.deployment = deployment.id;
-      }
-      Execution::StopContainer(params) => {
-        let deployment = super::get_check_permissions::<Deployment>(
-          &params.deployment,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.deployment = deployment.id;
-      }
-      Execution::StopAllContainers(params) => {
-        let server = super::get_check_permissions::<Server>(
-          &params.server,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.server = server.id;
-      }
-      Execution::RemoveContainer(params) => {
-        let deployment = super::get_check_permissions::<Deployment>(
-          &params.deployment,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.deployment = deployment.id;
-      }
-      Execution::CloneRepo(params) => {
-        let repo = super::get_check_permissions::<Repo>(
-          &params.repo,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.repo = repo.id;
-      }
-      Execution::PullRepo(params) => {
-        let repo = super::get_check_permissions::<Repo>(
-          &params.repo,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.repo = repo.id;
-      }
-      Execution::PruneNetworks(params) => {
-        let server = super::get_check_permissions::<Server>(
-          &params.server,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.server = server.id;
-      }
-      Execution::PruneImages(params) => {
-        let server = super::get_check_permissions::<Server>(
-          &params.server,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.server = server.id;
-      }
-      Execution::PruneContainers(params) => {
-        let server = super::get_check_permissions::<Server>(
-          &params.server,
-          user,
-          PermissionLevel::Execute,
-        )
-        .await?;
-        params.server = server.id;
+        Execution::RunBuild(params) => {
+          let build = super::get_check_permissions::<Build>(
+            &params.build,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.build = build.id;
+        }
+        Execution::Deploy(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::StartContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::StopContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::StopAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::RemoveContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::CloneRepo(params) => {
+          let repo = super::get_check_permissions::<Repo>(
+            &params.repo,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.repo = repo.id;
+        }
+        Execution::PullRepo(params) => {
+          let repo = super::get_check_permissions::<Repo>(
+            &params.repo,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.repo = repo.id;
+        }
+        Execution::PruneNetworks(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PruneImages(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PruneContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
       }
     }
   }
+
   Ok(())
 }
 

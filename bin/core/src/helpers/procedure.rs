@@ -5,9 +5,7 @@ use futures::future::join_all;
 use monitor_client::{
   api::execute::Execution,
   entities::{
-    monitor_timestamp,
-    procedure::{EnabledExecution, Procedure, ProcedureType},
-    update::Update,
+    monitor_timestamp, procedure::Procedure, update::Update,
     user::procedure_user,
   },
 };
@@ -25,91 +23,51 @@ pub async fn execute_procedure(
 ) -> anyhow::Result<()> {
   let start_ts = monitor_timestamp();
 
-  use ProcedureType::*;
-  match procedure.config.procedure_type {
-    Sequence => {
-      add_line_to_update(
-        update,
-        &format!(
-          "executing sequence: {} ({})",
-          procedure.name, procedure.id
-        ),
-      )
-      .await;
-      execute_sequence(
-        filter_list_by_enabled(&procedure.config.executions),
-        &procedure.id,
-        &procedure.name,
-        update,
-      )
-      .await
-      .with_context(|| {
-        let time = Duration::from_millis(
-          (monitor_timestamp() - start_ts) as u64,
-        );
-        format!(
-          "failed sequence execution after {time:?}. {} ({})",
-          procedure.name, procedure.id
-        )
-      })?;
+  for stage in &procedure.config.stages {
+    add_line_to_update(
+      update,
+      &format!("executing stage: {}", stage.name),
+    )
+    .await;
+    execute_stage(
+      stage
+        .executions
+        .iter()
+        .filter(|item| item.enabled)
+        .map(|item| item.execution.clone())
+        .collect(),
+      &procedure.id,
+      &procedure.name,
+      update,
+    )
+    .await
+    .with_context(|| {
       let time = Duration::from_millis(
         (monitor_timestamp() - start_ts) as u64,
       );
-      add_line_to_update(
-        update,
-        &format!(
-          "finished sequence execution in {time:?}: {} ({}) ✅",
-          procedure.name, procedure.id
-        ),
+      format!(
+        "failed stage '{}' execution after {time:?}",
+        stage.name
       )
-      .await;
-      Ok(())
-    }
-    Parallel => {
-      add_line_to_update(
-        update,
-        &format!(
-          "executing parallel: {} ({})",
-          procedure.name, procedure.id
-        ),
-      )
-      .await;
-      execute_parallel(
-        filter_list_by_enabled(&procedure.config.executions),
-        &procedure.id,
-        &procedure.name,
-        update,
-      )
-      .await
-      .with_context(|| {
-        let time = Duration::from_millis(
-          (monitor_timestamp() - start_ts) as u64,
-        );
-        format!(
-          "failed parallel execution after {time:?}. {} ({})",
-          procedure.name, procedure.id
-        )
-      })?;
-      let time = Duration::from_millis(
-        (monitor_timestamp() - start_ts) as u64,
-      );
-      add_line_to_update(
-        update,
-        &format!(
-          "finished parallel execution in {time:?}: {} ({}) ✅",
-          procedure.name, procedure.id
-        ),
-      )
-      .await;
-      Ok(())
-    }
+    })?;
+    let time =
+      Duration::from_millis((monitor_timestamp() - start_ts) as u64);
+    add_line_to_update(
+      update,
+      &format!(
+        "finished stage '{}' execution in {time:?} ✅",
+        stage.name
+      ),
+    )
+    .await;
   }
+
+  Ok(())
 }
 
 #[instrument]
 async fn execute_execution(
   execution: Execution,
-
   // used to prevent recursive procedure
   parent_id: &str,
   parent_name: &str,
@@ -159,10 +117,12 @@ async fn execute_execution(
       .resolve(req, user)
       .await
       .context("failed at PullRepo")?,
-    Execution::PruneNetworks(req) => State
-      .resolve(req, user)
-      .await
-      .context("failed at PruneNetworks")?,
+    Execution::PruneNetworks(req) => {
+      State
+        .resolve(req, user)
+        .await
+        .context("failed at PruneNetworks")?
+    }
     Execution::PruneImages(req) => State
       .resolve(req, user)
       .await
@@ -182,38 +142,8 @@ async fn execute_execution(
   }
 }
 
-#[instrument]
-async fn execute_sequence(
-  executions: Vec<Execution>,
-  parent_id: &str,
-  parent_name: &str,
-  update: &Mutex<Update>,
-) -> anyhow::Result<()> {
-  for execution in executions {
-    let now = Instant::now();
-    add_line_to_update(
-      update,
-      &format!("executing stage: {execution:?}"),
-    )
-    .await;
-    let fail_log = format!("failed on {execution:?}");
-    execute_execution(execution.clone(), parent_id, parent_name)
-      .await
-      .context(fail_log)?;
-    add_line_to_update(
-      update,
-      &format!(
-        "finished stage in {:?}: {execution:?}",
-        now.elapsed()
-      ),
-    )
-    .await;
-  }
-  Ok(())
-}
-
-#[instrument]
-async fn execute_parallel(
+#[instrument(skip(update))]
+async fn execute_stage(
   executions: Vec<Execution>,
   parent_id: &str,
   parent_name: &str,
@@ -221,11 +151,8 @@ async fn execute_parallel(
 ) -> anyhow::Result<()> {
   let futures = executions.into_iter().map(|execution| async move {
     let now = Instant::now();
-    add_line_to_update(
-      update,
-      &format!("executing stage: {execution:?}"),
-    )
-    .await;
+    add_line_to_update(update, &format!("executing: {execution:?}"))
+      .await;
     let fail_log = format!("failed on {execution:?}");
     let res =
       execute_execution(execution.clone(), parent_id, parent_name)
@@ -234,7 +161,7 @@ async fn execute_parallel(
     add_line_to_update(
       update,
       &format!(
-        "finished stage in {:?}: {execution:?}",
+        "finished execution in {:?}: {execution:?}",
         now.elapsed()
       ),
     )
@@ -246,16 +173,6 @@ async fn execute_parallel(
     .into_iter()
     .collect::<anyhow::Result<_>>()?;
   Ok(())
-}
-
-fn filter_list_by_enabled(
-  list: &[EnabledExecution],
-) -> Vec<Execution> {
-  list
-    .iter()
-    .filter(|item| item.enabled)
-    .map(|item| item.execution.clone())
-    .collect()
 }
 
 /// ASSUMES FIRST LOG IS ALREADY CREATED

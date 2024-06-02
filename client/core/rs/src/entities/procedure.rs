@@ -1,16 +1,17 @@
-use bson::{doc, Document};
+use bson::Document;
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
-use strum::{AsRefStr, Display, EnumString, IntoStaticStr};
+use strum::Display;
 use typeshare::typeshare;
 
 use crate::api::execute::Execution;
 
-use super::resource::{Resource, ResourceListItem, ResourceQuery};
-
-// List item
+use super::{
+  resource::{Resource, ResourceListItem, ResourceQuery},
+  I64,
+};
 
 #[typeshare]
 pub type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
@@ -18,8 +19,8 @@ pub type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ProcedureListItemInfo {
-  /// Sequence or Parallel.
-  pub procedure_type: ProcedureType,
+  /// Number of stages procedure has.
+  pub stages: I64,
   /// Reflect whether last run successful / currently running.
   pub state: ProcedureState,
 }
@@ -40,12 +41,15 @@ pub enum ProcedureState {
   Unknown,
 }
 
+/// Procedures run a series of stages sequentially, where
+/// each stage runs executions in parallel.
 #[typeshare]
 pub type Procedure = Resource<ProcedureConfig, ()>;
 
 #[typeshare(serialized_as = "Partial<ProcedureConfig>")]
 pub type _PartialProcedureConfig = PartialProcedureConfig;
 
+/// Config for the [Procedure]
 #[typeshare]
 #[derive(
   Debug, Clone, Default, Serialize, Deserialize, Partial, Builder,
@@ -53,14 +57,10 @@ pub type _PartialProcedureConfig = PartialProcedureConfig;
 #[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct ProcedureConfig {
-  /// Whether executions in the procedure runs sequentially or in parallel.
+  /// The stages to be run by the procedure.
   #[serde(default)]
   #[builder(default)]
-  pub procedure_type: ProcedureType,
-  /// The executions to be run by the procedure.
-  #[serde(default)]
-  #[builder(default)]
-  pub executions: Vec<EnabledExecution>,
+  pub stages: Vec<ProcedureStage>,
 
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
@@ -73,40 +73,36 @@ fn default_webhook_enabled() -> bool {
   true
 }
 
+/// A single stage of a procedure. Runs a list of executions in parallel.
 #[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  Copy,
-  Default,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Display,
-  EnumString,
-  AsRefStr,
-  IntoStaticStr,
-)]
-pub enum ProcedureType {
-  /// Run the executions one after the other, in order of increasing index.
-  #[default]
-  Sequence,
-  /// Start all the executions simultaneously.
-  Parallel,
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ProcedureStage {
+  /// A name for the procedure
+  pub name: String,
+  /// Whether the stage should be run as part of the procedure.
+  #[serde(default = "default_enabled")]
+  pub enabled: bool,
+  /// The executions in the stage
+  pub executions: Vec<EnabledExecution>,
 }
 
 /// Allows to enable / disabled procedures in the sequence / parallel vec on the fly
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EnabledExecution {
   /// The execution request to run.
   pub execution: Execution,
   /// Whether the execution is enabled to run in the procedure.
+  #[serde(default = "default_enabled")]
   pub enabled: bool,
 }
 
+fn default_enabled() -> bool {
+  true
+}
+
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct ProcedureActionState {
   pub running: bool,
 }
@@ -120,16 +116,8 @@ pub type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
 )]
-pub struct ProcedureQuerySpecifics {
-  pub types: Vec<ProcedureType>,
-}
+pub struct ProcedureQuerySpecifics {}
 
 impl super::resource::AddFilters for ProcedureQuerySpecifics {
-  fn add_filters(&self, filters: &mut Document) {
-    let types =
-      self.types.iter().map(|t| t.as_ref()).collect::<Vec<_>>();
-    if !self.types.is_empty() {
-      filters.insert("config.procedure_type", doc! { "$in": types });
-    }
-  }
+  fn add_filters(&self, _: &mut Document) {}
 }

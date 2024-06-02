@@ -660,13 +660,6 @@ export type GetPermissionLevelResponse = PermissionLevel;
 
 export type ListUserTargetPermissionsResponse = Permission[];
 
-export enum ProcedureType {
-	/** Run the executions one after the other, in order of increasing index. */
-	Sequence = "Sequence",
-	/** Start all the executions simultaneously. */
-	Parallel = "Parallel",
-}
-
 /** A wrapper for all monitor exections. */
 export type Execution = 
 	/** The "null" execution. Does nothing. */
@@ -692,15 +685,28 @@ export interface EnabledExecution {
 	enabled: boolean;
 }
 
+/** A single stage of a procedure. Runs a list of executions in parallel. */
+export interface ProcedureStage {
+	/** A name for the procedure */
+	name: string;
+	/** Whether the stage should be run as part of the procedure. */
+	enabled: boolean;
+	/** The executions in the stage */
+	executions: EnabledExecution[];
+}
+
+/** Config for the [Procedure] */
 export interface ProcedureConfig {
-	/** Whether executions in the procedure runs sequentially or in parallel. */
-	procedure_type?: ProcedureType;
-	/** The executions to be run by the procedure. */
-	executions?: EnabledExecution[];
+	/** The stages to be run by the procedure. */
+	stages?: ProcedureStage[];
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
 }
 
+/**
+ * Procedures run a series of stages sequentially, where
+ * each stage runs executions in parallel.
+ */
 export type Procedure = Resource<ProcedureConfig, undefined>;
 
 export type GetProcedureResponse = Procedure;
@@ -717,8 +723,8 @@ export enum ProcedureState {
 }
 
 export interface ProcedureListItemInfo {
-	/** Sequence or Parallel. */
-	procedure_type: ProcedureType;
+	/** Number of stages procedure has. */
+	stages: I64;
 	/** Reflect whether last run successful / currently running. */
 	state: ProcedureState;
 }
@@ -1443,7 +1449,6 @@ export type _Serror = __Serror;
 export type _PartialProcedureConfig = Partial<ProcedureConfig>;
 
 export interface ProcedureQuerySpecifics {
-	types: ProcedureType[];
 }
 
 export type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;

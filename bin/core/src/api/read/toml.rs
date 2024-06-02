@@ -284,62 +284,70 @@ async fn add_procedure(
     PermissionLevel::Read,
   )
   .await?;
-  for execution in &mut procedure.config.executions {
-    match &mut execution.execution {
-      Execution::RunProcedure(exec) => exec.procedure.clone_from(
-        names
-          .procedures
-          .get(&exec.procedure)
-          .unwrap_or(&String::new()),
-      ),
-      Execution::RunBuild(exec) => exec.build.clone_from(
-        names.builds.get(&exec.build).unwrap_or(&String::new()),
-      ),
-      Execution::Deploy(exec) => exec.deployment.clone_from(
-        names
-          .deployments
-          .get(&exec.deployment)
-          .unwrap_or(&String::new()),
-      ),
-      Execution::StartContainer(exec) => exec.deployment.clone_from(
-        names
-          .deployments
-          .get(&exec.deployment)
-          .unwrap_or(&String::new()),
-      ),
-      Execution::StopContainer(exec) => exec.deployment.clone_from(
-        names
-          .deployments
-          .get(&exec.deployment)
-          .unwrap_or(&String::new()),
-      ),
-      Execution::RemoveContainer(exec) => exec.deployment.clone_from(
-        names
-          .deployments
-          .get(&exec.deployment)
-          .unwrap_or(&String::new()),
-      ),
-      Execution::CloneRepo(exec) => exec.repo.clone_from(
-        names.repos.get(&exec.repo).unwrap_or(&String::new()),
-      ),
-      Execution::PullRepo(exec) => exec.repo.clone_from(
-        names.repos.get(&exec.repo).unwrap_or(&String::new()),
-      ),
-      Execution::StopAllContainers(exec) => exec.server.clone_from(
-        names.servers.get(&exec.server).unwrap_or(&String::new()),
-      ),
-      Execution::PruneNetworks(exec) => exec.server.clone_from(
-        names.servers.get(&exec.server).unwrap_or(&String::new()),
-      ),
-      Execution::PruneImages(exec) => exec.server.clone_from(
-        names.servers.get(&exec.server).unwrap_or(&String::new()),
-      ),
-      Execution::PruneContainers(exec) => exec.server.clone_from(
-        names.servers.get(&exec.server).unwrap_or(&String::new()),
-      ),
-      Execution::None(_) => continue,
+
+  for stage in &mut procedure.config.stages {
+    for execution in &mut stage.executions {
+      match &mut execution.execution {
+        Execution::RunProcedure(exec) => exec.procedure.clone_from(
+          names
+            .procedures
+            .get(&exec.procedure)
+            .unwrap_or(&String::new()),
+        ),
+        Execution::RunBuild(exec) => exec.build.clone_from(
+          names.builds.get(&exec.build).unwrap_or(&String::new()),
+        ),
+        Execution::Deploy(exec) => exec.deployment.clone_from(
+          names
+            .deployments
+            .get(&exec.deployment)
+            .unwrap_or(&String::new()),
+        ),
+        Execution::StartContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::StopContainer(exec) => exec.deployment.clone_from(
+          names
+            .deployments
+            .get(&exec.deployment)
+            .unwrap_or(&String::new()),
+        ),
+        Execution::RemoveContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::CloneRepo(exec) => exec.repo.clone_from(
+          names.repos.get(&exec.repo).unwrap_or(&String::new()),
+        ),
+        Execution::PullRepo(exec) => exec.repo.clone_from(
+          names.repos.get(&exec.repo).unwrap_or(&String::new()),
+        ),
+        Execution::StopAllContainers(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PruneNetworks(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PruneImages(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PruneContainers(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::None(_) => continue,
+      }
     }
   }
+
   res
     .procedures
     .push(convert_resource(procedure, &names.tags));

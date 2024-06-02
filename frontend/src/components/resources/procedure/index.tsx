@@ -3,7 +3,7 @@ import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardHeader } from "@ui/card";
 import { Loader2, Route } from "lucide-react";
-import { ProcedureConfig } from "./config";
+import { ProcedureConfig } from "./config2";
 import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import {
@@ -43,7 +43,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
   },
 
   Info: {
-    Type: ({ id }) => <div>{useProcedure(id)?.info.procedure_type}</div>,
+    Stages: ({ id }) => <div>Stages: {useProcedure(id)?.info.stages}</div>,
   },
 
   Actions: {

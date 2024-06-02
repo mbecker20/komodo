@@ -47,6 +47,7 @@ pub mod update;
 pub mod user;
 /// Subtypes of [UserGroup][user_group::UserGroup].
 pub mod user_group;
+/// Subtypes of [Variable][variable::Variable]
 pub mod variable;
 
 #[typeshare(serialized_as = "number")]
@@ -63,7 +64,14 @@ pub type _Serror = Serror;
 /// Represents an empty json object: `{}`
 #[typeshare]
 #[derive(
-  Debug, Clone, Default, PartialEq, Serialize, Deserialize, Parser, EmptyTraits
+  Debug,
+  Clone,
+  Default,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Parser,
+  EmptyTraits,
 )]
 pub struct NoData {}
 

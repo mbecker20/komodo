@@ -22,9 +22,9 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          accessorKey: "info.procedure_type",
+          accessorKey: "info.stages",
           header: ({ column }) => (
-            <SortableHeader column={column} title="Type" />
+            <SortableHeader column={column} title="Stages" />
           ),
         },
         {
