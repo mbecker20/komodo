@@ -10,9 +10,13 @@ import { ConfigLayout } from "@components/config";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { Button } from "@ui/button";
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronsUpDown,
   Info,
+  Minus,
   MinusCircle,
+  Plus,
   PlusCircle,
   SearchX,
   Settings,
@@ -28,6 +32,14 @@ import {
 import { Switch } from "@ui/switch";
 import { DataTable } from "@ui/data-table";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@ui/dropdown-menu";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
   const procedure = useRead("GetProcedure", { procedure: id }).data;
@@ -55,14 +67,7 @@ const ProcedureConfigInner = ({
   const add_stage = () =>
     setConfig((config) => ({
       ...config,
-      stages: [
-        ...stages,
-        {
-          name: `Stage ${stages.length + 1}`,
-          enabled: true,
-          executions: [],
-        },
-      ],
+      stages: [...stages, new_stage()],
     }));
 
   return (
@@ -110,6 +115,64 @@ const ProcedureConfigInner = ({
               setConfig((config) => ({
                 ...config,
                 stages: stages.filter((_, i) => index !== i),
+              }))
+            }
+            moveUp={
+              index === 0
+                ? undefined
+                : () =>
+                    setConfig((config) => ({
+                      ...config,
+                      stages: stages.map((stage, i) => {
+                        // Make sure its not the first row
+                        if (i === index && index !== 0) {
+                          return stages[index - 1];
+                        } else if (i === index - 1) {
+                          // Reverse the entry, moving this row "Up"
+                          return stages[index];
+                        } else {
+                          return stage;
+                        }
+                      }),
+                    }))
+            }
+            moveDown={
+              index === stages.length - 1
+                ? undefined
+                : () =>
+                    setConfig((config) => ({
+                      ...config,
+                      stages: stages.map((stage, i) => {
+                        // The index also cannot be the last index, which cannot be moved down
+                        if (i === index && index !== stages.length - 1) {
+                          return stages[index + 1];
+                        } else if (i === index + 1) {
+                          // Move the row "Down"
+                          return stages[index];
+                        } else {
+                          return stage;
+                        }
+                      }),
+                    }))
+            }
+            insertAbove={() =>
+              setConfig((config) => ({
+                ...config,
+                stages: [
+                  ...stages.slice(0, index),
+                  new_stage(),
+                  ...stages.slice(index),
+                ],
+              }))
+            }
+            insertBelow={() =>
+              setConfig((config) => ({
+                ...config,
+                stages: [
+                  ...stages.slice(0, index + 1),
+                  new_stage(),
+                  ...stages.slice(index + 1),
+                ],
               }))
             }
             disabled={disabled}
@@ -165,11 +228,19 @@ const Stage = ({
   stage,
   setStage,
   removeStage,
+  moveUp,
+  moveDown,
+  insertAbove,
+  insertBelow,
   disabled,
 }: {
   stage: Types.ProcedureStage;
   setStage: (stage: Types.ProcedureStage) => void;
   removeStage: () => void;
+  insertAbove: () => void;
+  insertBelow: () => void;
+  moveUp: (() => void) | undefined;
+  moveDown: (() => void) | undefined;
   disabled: boolean;
 }) => {
   return (
@@ -186,9 +257,71 @@ const Stage = ({
             checked={stage.enabled}
             onCheckedChange={(enabled) => setStage({ ...stage, enabled })}
           />
-          <Button variant="secondary" onClick={removeStage}>
+          {/* <Button variant="secondary" onClick={removeStage}>
             <MinusCircle className="w-4 h-4" />
-          </Button>
+          </Button> */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild disabled={disabled}>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                disabled={disabled}
+              >
+                <span className="sr-only">Open menu</span>
+                <DotsHorizontalIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {moveUp && (
+                <DropdownMenuItem
+                  className="flex gap-4 justify-between cursor-pointer"
+                  onClick={moveUp}
+                >
+                  Move Up <ArrowUp className="w-4 h-4" />
+                </DropdownMenuItem>
+              )}
+              {moveDown && (
+                <DropdownMenuItem
+                  className="flex gap-4 justify-between cursor-pointer"
+                  onClick={moveDown}
+                >
+                  Move Down <ArrowDown className="w-4 h-4" />
+                </DropdownMenuItem>
+              )}
+
+              {(moveUp ?? moveDown) && <DropdownMenuSeparator />}
+
+              <DropdownMenuItem
+                className="flex gap-4 justify-between cursor-pointer"
+                onClick={insertAbove}
+              >
+                Insert Above{" "}
+                <div className="flex">
+                  <ArrowUp className="w-4 h-4" />
+                  <Plus className="w-4 h-4" />
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex gap-4 justify-between cursor-pointer"
+                onClick={insertBelow}
+              >
+                Insert Below{" "}
+                <div className="flex">
+                  <ArrowDown className="w-4 h-4" />
+                  <Plus className="w-4 h-4" />
+                </div>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className="flex gap-4 justify-between cursor-pointer"
+                onClick={removeStage}
+              >
+                Remove <Minus className="w-4 h-4" />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <DataTable
@@ -332,6 +465,12 @@ const Stage = ({
     </Card>
   );
 };
+
+const new_stage = () => ({
+  name: "Stage",
+  enabled: true,
+  executions: [],
+});
 
 const default_enabled_execution: () => Types.EnabledExecution = () => ({
   enabled: true,
