@@ -3,7 +3,7 @@ import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardHeader } from "@ui/card";
 import { Loader2, Route } from "lucide-react";
-import { ProcedureConfig } from "./config2";
+import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import {

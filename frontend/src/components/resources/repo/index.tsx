@@ -56,7 +56,7 @@ export const RepoComponents: RequiredResourceComponents = {
       const info = useRepo(id)?.info;
       if (info?.latest_hash && info?.latest_message) {
         return (
-          <HoverCard>
+          <HoverCard openDelay={200}>
             <HoverCardTrigger asChild>
               <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
                 <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
