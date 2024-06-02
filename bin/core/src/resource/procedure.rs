@@ -90,6 +90,7 @@ impl super::MonitorResource for Procedure {
     _created: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_procedure_state_cache().await;
     Ok(())
   }
 
@@ -111,6 +112,7 @@ impl super::MonitorResource for Procedure {
     _updated: &Self,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_procedure_state_cache().await;
     Ok(())
   }
 

@@ -99,6 +99,7 @@ impl super::MonitorResource for Repo {
     _created: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_repo_state_cache().await;
     Ok(())
   }
 
@@ -120,6 +121,7 @@ impl super::MonitorResource for Repo {
     _updated: &Self,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_repo_state_cache().await;
     Ok(())
   }
 

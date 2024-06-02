@@ -90,6 +90,7 @@ impl super::MonitorResource for Build {
     _created: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_build_state_cache().await;
     Ok(())
   }
 
@@ -111,6 +112,7 @@ impl super::MonitorResource for Build {
     _updated: &Self,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_build_state_cache().await;
     Ok(())
   }
 

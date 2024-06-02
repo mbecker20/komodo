@@ -22,6 +22,8 @@ use crate::{
     empty_or_only_spaces, periphery_client,
     query::get_deployment_state,
   },
+  monitor::update_cache_for_server,
+  resource,
   state::{action_states, db_client, deployment_status_cache},
 };
 
@@ -120,9 +122,14 @@ impl super::MonitorResource for Deployment {
   }
 
   async fn post_create(
-    _created: &Resource<Self::Config, Self::Info>,
+    created: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    if !created.config.server_id.is_empty() {
+      let server =
+        resource::get::<Server>(&created.config.server_id).await?;
+      update_cache_for_server(&server).await;
+    }
     Ok(())
   }
 
@@ -141,9 +148,14 @@ impl super::MonitorResource for Deployment {
   }
 
   async fn post_update(
-    _updated: &Self,
+    updated: &Self,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    if !updated.config.server_id.is_empty() {
+      let server =
+        resource::get::<Server>(&updated.config.server_id).await?;
+      update_cache_for_server(&server).await;
+    }
     Ok(())
   }
 
