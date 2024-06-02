@@ -2,8 +2,8 @@
 extern crate tracing;
 
 use monitor_client::entities::{
-  build::Build, deployment::Deployment, server::Server,
-  update::Update, user::User,
+  build::Build, deployment::Deployment, permission::Permission,
+  server::Server, update::Update, user::User,
 };
 use mungos::{init::MongoBuilder, mongodb::Collection};
 use serde::Deserialize;
@@ -47,6 +47,7 @@ struct DbClient {
   pub servers: Collection<Server>,
   pub deployments: Collection<Deployment>,
   pub builds: Collection<Build>,
+  pub permissions: Collection<Permission>,
 }
 
 impl DbClient {
@@ -62,6 +63,7 @@ impl DbClient {
       servers: db.collection("Server"),
       deployments: db.collection("Deployment"),
       builds: db.collection("Build"),
+      permissions: db.collection("Permission"),
     })
   }
 }
