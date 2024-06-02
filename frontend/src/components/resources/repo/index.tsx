@@ -32,7 +32,7 @@ export const RepoComponents: RequiredResourceComponents = {
 
   Dashboard: RepoDashboard,
 
-  New: () => <NewResource type="Repo" />,
+  New: ({ server_id }) => <NewResource type="Repo" server_id={server_id} />,
 
   Table: ({ search }) => {
     const repos = useRead("ListRepos", {}).data;

@@ -105,6 +105,7 @@ export const BuildConfig = ({
                     selected={id}
                     onSelect={(builder_id) => set({ builder_id })}
                     disabled={disabled}
+                    align="end"
                   />
                 </ConfigItem>
               ),

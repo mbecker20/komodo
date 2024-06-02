@@ -31,6 +31,7 @@ import { Button } from "@ui/button";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
+import { ResourceComponents } from "..";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -88,13 +89,19 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
       </TabsContent>
 
       <TabsContent value="Deployments">
-        <Section titleOther={tabsList}>
+        <Section
+          titleOther={tabsList}
+          actions={<ResourceComponents.Deployment.New server_id={id} />}
+        >
           <DeploymentTable deployments={deployments} />
         </Section>
       </TabsContent>
 
       <TabsContent value="Repos">
-        <Section titleOther={tabsList}>
+        <Section
+          titleOther={tabsList}
+          actions={<ResourceComponents.Repo.New server_id={id} />}
+        >
           <RepoTable repos={repos} />
         </Section>
       </TabsContent>

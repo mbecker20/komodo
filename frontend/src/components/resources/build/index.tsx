@@ -17,6 +17,7 @@ import { Card, CardHeader } from "@ui/card";
 import { cn } from "@lib/utils";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
+import { ResourceComponents } from "..";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -33,6 +34,20 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
     (deployment) => deployment.info.build_id === id
   );
   const deploymentsDisabled = (deployments?.length || 0) === 0;
+  const titleOther = (
+    <TabsList className="justify-start w-fit">
+      <TabsTrigger value="Config" className="w-[110px]">
+        Config
+      </TabsTrigger>
+      <TabsTrigger
+        value="Deployments"
+        className="w-[110px]"
+        disabled={deploymentsDisabled}
+      >
+        Deployments
+      </TabsTrigger>
+    </TabsList>
+  );
   return (
     <Tabs
       value={deploymentsDisabled ? "Config" : view}
@@ -40,40 +55,12 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
       className="grid gap-4"
     >
       <TabsContent value="Config">
-        <BuildConfig
-          id={id}
-          titleOther={
-            <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[110px]">
-                Config
-              </TabsTrigger>
-              <TabsTrigger
-                value="Deployments"
-                className="w-[110px]"
-                disabled={deploymentsDisabled}
-              >
-                Deployments
-              </TabsTrigger>
-            </TabsList>
-          }
-        />
+        <BuildConfig id={id} titleOther={titleOther} />
       </TabsContent>
       <TabsContent value="Deployments">
         <Section
-          titleOther={
-            <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[110px]">
-                Config
-              </TabsTrigger>
-              <TabsTrigger
-                value="Deployments"
-                className="w-[110px]"
-                disabled={deploymentsDisabled}
-              >
-                Deployments
-              </TabsTrigger>
-            </TabsList>
-          }
+          titleOther={titleOther}
+          actions={<ResourceComponents.Deployment.New build_id={id} />}
         >
           <DeploymentTable deployments={deployments} />
         </Section>

@@ -108,7 +108,7 @@ export const ResourceSelector = ({
           {!disabled && <ChevronsUpDown className="w-3 h-3" />}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] max-h-[200px] p-0" align={align}>
+      <PopoverContent className="w-[300px] max-h-[300px] p-0" align={align}>
         <Command>
           <CommandInput
             placeholder={`Search ${type}s`}
@@ -228,17 +228,34 @@ export const CopyResource = ({
   );
 };
 
-export const NewResource = ({ type }: { type: UsableResource }) => {
+export const NewResource = ({
+  type,
+  server_id,
+  build_id,
+}: {
+  type: UsableResource;
+  server_id?: string;
+  build_id?: string;
+}) => {
   const nav = useNavigate();
   const { mutateAsync } = useWrite(`Create${type}`);
   const [name, setName] = useState("");
   const type_display =
     type === "ServerTemplate" ? "server-template" : type.toLowerCase();
+  const config =
+    type === "Deployment"
+      ? {
+          server_id,
+          image: build_id ?? { type: "Build", params: { build_id } },
+        }
+      : type === "Repo"
+      ? { server_id }
+      : {};
   return (
     <NewLayout
       entityType={type}
       onSuccess={async () => {
-        const id = (await mutateAsync({ name, config: {} }))._id?.$oid!;
+        const id = (await mutateAsync({ name, config }))._id?.$oid!;
         nav(`/${usableResourcePath(type)}/${id}`);
       }}
       enabled={!!name}

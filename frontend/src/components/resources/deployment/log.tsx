@@ -174,12 +174,12 @@ const Log = ({
   useEffect(scroll, [_log]);
   return (
     <>
-      <div ref={ref} className="h-[80vh] overflow-y-auto">
+      <div ref={ref} className="h-[75vh] overflow-y-auto">
         <pre
           dangerouslySetInnerHTML={{
             __html: _log ? logToHtml(_log) : `no ${stream} logs`,
           }}
-          className="-scroll-mt-24"
+          className="-scroll-mt-24 pb-[20vh]"
         />
       </div>
       <Button variant="secondary" className="absolute top-4 right-4" onClick={scroll}>

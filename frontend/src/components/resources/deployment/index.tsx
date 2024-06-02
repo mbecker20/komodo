@@ -103,7 +103,9 @@ export const DeploymentComponents: RequiredResourceComponents = {
 
   Dashboard: DeploymentsChart,
 
-  New: () => <NewResource type="Deployment" />,
+  New: ({ server_id, build_id }) => (
+    <NewResource type="Deployment" server_id={server_id} build_id={build_id} />
+  ),
 
   Table: ({ search }) => {
     const deployments = useRead("ListDeployments", {}).data;

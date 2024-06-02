@@ -17,7 +17,7 @@ import {
 import { UsableResource } from "@types";
 import { useToast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 // ============== RESOLVER ==============
@@ -290,4 +290,26 @@ export const useFilterResources = <Info>(
           : true)
     ) ?? []
   );
+};
+
+export type LocalStorageSetter<T> = (state: T) => T;
+
+export const useLocalStorage = <T>(
+  key: string,
+  init: T
+): [T, (state: T | LocalStorageSetter<T>) => void] => {
+  const stored = localStorage.getItem(key);
+  const parsed = stored ? (JSON.parse(stored) as T) : undefined;
+  const [state, inner_set] = useState<T>(parsed ?? init);
+  const set = (state: T | LocalStorageSetter<T>) => {
+    inner_set((prev_state) => {
+      const new_val =
+        typeof state === "function"
+          ? (state as LocalStorageSetter<T>)(prev_state)
+          : state;
+      localStorage.setItem(key, JSON.stringify(new_val));
+      return new_val;
+    });
+  };
+  return [state, set];
 };

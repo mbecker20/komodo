@@ -50,7 +50,8 @@ export const Tree = () => {
 
 const Server = ({ id }: { id: string }) => {
   const [search] = useAtom(searchAtom);
-  const [open, setOpen] = useState(true);
+  // const [open, setOpen] = useLocalStorage(`server-tree-open-${id}`, false);
+  const [open, setOpen] = useState(false);
   const server = useRead("ListServers", {}).data?.find(
     (server) => server.id === id
   );
