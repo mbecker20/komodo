@@ -17,7 +17,6 @@ use monitor_client::{
     server_template::aws::AwsServerTemplateConfig,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
-    Operation,
   },
 };
 use mungos::{
@@ -46,7 +45,7 @@ use crate::{
     channel::build_cancel_channel,
     periphery_client,
     query::{get_deployment_state, get_global_variables},
-    update::{add_update, make_update, update_update},
+    update::update_update,
   },
   resource::{self, refresh_build_state_cache},
   state::{action_states, db_client, State},
@@ -78,8 +77,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
       action_state.update(|state| state.building = true)?;
 
     build.config.version.increment();
-
     update.version = build.config.version.clone();
+    update_update(update.clone()).await?;
 
     let cancel = CancellationToken::new();
     let cancel_clone = cancel.clone();
@@ -113,12 +112,10 @@ impl Resolve<RunBuild, (User, Update)> for State {
         anyhow::Ok(())
       };
       tokio::select! {
-          _ = cancel_clone.cancelled() => {}
-          _ = poll => {}
+        _ = cancel_clone.cancelled() => {}
+        _ = poll => {}
       }
     });
-
-    update.id = add_update(update.clone()).await?;
 
     // GET BUILDER PERIPHERY
 
@@ -370,15 +367,22 @@ impl Resolve<CancelBuild, (User, Update)> for State {
       return Err(anyhow!("Build cancel is already in progress"));
     }
 
+    // make sure the build is building
+    if !action_states()
+      .build
+      .get(&build.id)
+      .await
+      .and_then(|s| s.get().ok().map(|s| s.building))
+      .unwrap_or_default()
+    {
+      return Err(anyhow!("Build is not building."));
+    }
+
     update.push_simple_log(
       "cancel triggered",
       "the build cancel has been triggered",
     );
-    update.in_progress();
-
-    update.id =
-      add_update(make_update(&build, Operation::CancelBuild, &user))
-        .await?;
+    update_update(update.clone()).await?;
 
     build_cancel_channel()
       .sender
