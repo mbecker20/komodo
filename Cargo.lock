@@ -2200,6 +2200,7 @@ dependencies = [
  "aws-sdk-ec2",
  "axum 0.7.5",
  "axum-extra",
+ "base64 0.22.1",
  "bcrypt",
  "derive_variants",
  "dotenv",

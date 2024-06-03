@@ -46,6 +46,7 @@ futures.workspace = true
 anyhow.workspace = true
 dotenv.workspace = true
 bcrypt.workspace = true
+base64.workspace = true
 tokio.workspace = true
 tower.workspace = true
 serde.workspace = true

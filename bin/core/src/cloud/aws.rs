@@ -12,6 +12,7 @@ use aws_sdk_ec2::{
   },
   Client,
 };
+use base64::Engine;
 use monitor_client::entities::{
   alert::{Alert, AlertData},
   monitor_timestamp,
@@ -92,7 +93,10 @@ pub async fn launch_ec2_instance(
     )
     .min_count(1)
     .max_count(1)
-    .user_data(user_data);
+    .user_data(
+      base64::engine::general_purpose::STANDARD_NO_PAD
+        .encode(user_data),
+    );
 
   for volume in volumes {
     let ebs = EbsBlockDevice::builder()
