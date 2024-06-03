@@ -20,6 +20,11 @@ secret = "YOUR-API-SECRET"
 ```
 
 Note. You can specify a different creds file by using `--creds ./other/path.toml`.
+You can also bypass using any file and pass the information using `--url`, `--key`, `--secret`:
+
+```sh
+monitor --url "https://your.monitor.address" --key "YOUR-API-KEY" --secret "YOUR-API-SECRET" ...
+```
 
 ### Run Syncs
 
@@ -51,6 +56,7 @@ Options:
 ### Run Executions
 
 ```sh
+# Triggers an example build
 monitor execute run-build test_build
 ```
 

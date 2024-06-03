@@ -8,9 +8,24 @@ pub struct CliArgs {
   /// Sync or Exec
   #[command(subcommand)]
   pub command: Command,
+
   /// The path to a creds file.
+  /// 
+  /// Note: If each of `url`, `key` and `secret` are passed,
+  /// no file is required at this path.
   #[arg(long, default_value_t = default_creds())]
   pub creds: String,
+
+  /// Pass url in args instead of creds file
+  #[arg(long)]
+  pub url: Option<String>,
+  /// Pass api key in args instead of creds file
+  #[arg(long)]
+  pub key: Option<String>,
+  /// Pass api secret in args instead of creds file
+  #[arg(long)]
+  pub secret: Option<String>,
+
   /// Always continue on user confirmation prompts.
   #[arg(long, short, default_value_t = false)]
   pub yes: bool,

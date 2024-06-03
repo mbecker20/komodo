@@ -11,9 +11,34 @@ pub fn cli_args() -> &'static crate::args::CliArgs {
 pub fn monitor_client() -> &'static MonitorClient {
   static MONITOR_CLIENT: OnceLock<MonitorClient> = OnceLock::new();
   MONITOR_CLIENT.get_or_init(|| {
+    let args = cli_args();
     let crate::args::CredsFile { url, key, secret } =
-      crate::helpers::parse_toml_file(&cli_args().creds)
-        .expect("failed to parse monitor credentials");
+      match (&args.url, &args.key, &args.secret) {
+        (Some(url), Some(key), Some(secret)) => {
+          crate::args::CredsFile {
+            url: url.clone(),
+            key: key.clone(),
+            secret: secret.clone(),
+          }
+        }
+        (url, key, secret) => {
+          let mut creds: crate::args::CredsFile =
+            crate::helpers::parse_toml_file(&cli_args().creds)
+              .expect("failed to parse monitor credentials");
+
+          if let Some(url) = url {
+            creds.url.clone_from(url);
+          }
+          if let Some(key) = key {
+            creds.key.clone_from(key);
+          }
+          if let Some(secret) = secret {
+            creds.secret.clone_from(secret);
+          }
+
+          creds
+        }
+      };
     futures::executor::block_on(MonitorClient::new(url, key, secret))
       .expect("failed to initialize monitor client")
   })
