@@ -70,6 +70,9 @@ async fn handler(
 ) -> serror::Result<Json<Update>> {
   let req_id = Uuid::new_v4();
 
+  // need to validate no cancel is active before any update is created.
+  build::validate_cancel_build(&request).await?;
+
   let update = init_execution_update(&request, &user).await?;
 
   let handle =

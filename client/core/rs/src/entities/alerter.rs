@@ -2,18 +2,19 @@ use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
-use partial_derive2::{Diff, MaybeNone, Partial, PartialDiff};
+use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
+  alert::AlertDataVariant,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  MergePartial,
+  update::ResourceTarget,
 };
 
 #[typeshare]
-pub type Alerter = Resource<AlerterConfig, AlerterInfo>;
+pub type Alerter = Resource<AlerterConfig, ()>;
 
 #[typeshare]
 pub type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
@@ -23,254 +24,118 @@ pub type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
 pub struct AlerterListItemInfo {
   /// Whether alerter is enabled for sending alerts
   pub enabled: bool,
-  /// Whether the alerter is the default
-  pub is_default: bool,
-  /// The type of the alerter, eg. Slack, Custom
-  pub alerter_type: String,
+  /// The type of the alerter, eg. `Slack`, `Custom`
+  pub endpoint_type: AlerterEndpointVariant,
 }
 
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct AlerterInfo {
-  #[serde(default)]
-  pub is_default: bool,
-}
+#[typeshare(serialized_as = "Partial<AlerterConfig>")]
+pub type _PartialAlerterConfig = PartialAlerterConfig;
 
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
-#[variant_derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Copy,
-  Display,
-  EnumString,
-  AsRefStr
-)]
-#[serde(tag = "type", content = "params")]
-pub enum AlerterConfig {
-  /// Send alert serialized to JSON to an http endpoint.
-  Custom(CustomAlerterConfig),
-
-  /// Send alert to a slack app
-  Slack(SlackAlerterConfig),
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
-#[variant_derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Copy,
-  Display,
-  EnumString,
-  AsRefStr
-)]
-#[serde(tag = "type", content = "params")]
-pub enum PartialAlerterConfig {
-  Custom(_PartialCustomAlerterConfig),
-  Slack(_PartialSlackAlerterConfig),
-}
-
-impl MaybeNone for PartialAlerterConfig {
-  fn is_none(&self) -> bool {
-    match self {
-      PartialAlerterConfig::Custom(config) => config.is_none(),
-      PartialAlerterConfig::Slack(config) => config.is_none(),
-    }
-  }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum AlerterConfigDiff {
-  Custom(CustomAlerterConfigDiff),
-  Slack(SlackAlerterConfigDiff),
-}
-
-impl From<AlerterConfigDiff> for PartialAlerterConfig {
-  fn from(value: AlerterConfigDiff) -> Self {
-    match value {
-      AlerterConfigDiff::Custom(diff) => {
-        PartialAlerterConfig::Custom(diff.into())
-      }
-      AlerterConfigDiff::Slack(diff) => {
-        PartialAlerterConfig::Slack(diff.into())
-      }
-    }
-  }
-}
-
-impl Diff for AlerterConfigDiff {
-  fn iter_field_diffs(
-    &self,
-  ) -> impl Iterator<Item = partial_derive2::FieldDiff> {
-    match self {
-      AlerterConfigDiff::Custom(diff) => {
-        diff.iter_field_diffs().collect::<Vec<_>>().into_iter()
-      }
-      AlerterConfigDiff::Slack(diff) => {
-        diff.iter_field_diffs().collect::<Vec<_>>().into_iter()
-      }
-    }
-  }
-}
-
-impl PartialDiff<PartialAlerterConfig, AlerterConfigDiff>
-  for AlerterConfig
-{
-  fn partial_diff(
-    &self,
-    partial: PartialAlerterConfig,
-  ) -> AlerterConfigDiff {
-    match self {
-      AlerterConfig::Custom(original) => match partial {
-        PartialAlerterConfig::Custom(partial) => {
-          AlerterConfigDiff::Custom(original.partial_diff(partial))
-        }
-        PartialAlerterConfig::Slack(partial) => {
-          let full: SlackAlerterConfig = partial.into();
-          AlerterConfigDiff::Slack(SlackAlerterConfigDiff {
-            url: Some((original.url.clone(), full.url)),
-            enabled: Some((original.enabled, full.enabled)),
-          })
-        }
-      },
-      AlerterConfig::Slack(original) => match partial {
-        PartialAlerterConfig::Slack(partial) => {
-          AlerterConfigDiff::Slack(original.partial_diff(partial))
-        }
-        PartialAlerterConfig::Custom(partial) => {
-          let full: CustomAlerterConfig = partial.into();
-          AlerterConfigDiff::Custom(CustomAlerterConfigDiff {
-            url: Some((original.url.clone(), full.url)),
-            enabled: Some((original.enabled, full.enabled)),
-          })
-        }
-      },
-    }
-  }
-}
-
-impl MaybeNone for AlerterConfigDiff {
-  fn is_none(&self) -> bool {
-    match self {
-      AlerterConfigDiff::Custom(config) => config.is_none(),
-      AlerterConfigDiff::Slack(config) => config.is_none(),
-    }
-  }
-}
-
-impl From<PartialAlerterConfig> for AlerterConfig {
-  fn from(value: PartialAlerterConfig) -> AlerterConfig {
-    match value {
-      PartialAlerterConfig::Custom(config) => {
-        AlerterConfig::Custom(config.into())
-      }
-      PartialAlerterConfig::Slack(config) => {
-        AlerterConfig::Slack(config.into())
-      }
-    }
-  }
-}
-
-impl From<AlerterConfig> for PartialAlerterConfig {
-  fn from(value: AlerterConfig) -> Self {
-    match value {
-      AlerterConfig::Custom(config) => {
-        PartialAlerterConfig::Custom(config.into())
-      }
-      AlerterConfig::Slack(config) => {
-        PartialAlerterConfig::Slack(config.into())
-      }
-    }
-  }
-}
-
-impl MergePartial for AlerterConfig {
-  type Partial = PartialAlerterConfig;
-  fn merge_partial(
-    self,
-    partial: PartialAlerterConfig,
-  ) -> AlerterConfig {
-    match partial {
-      PartialAlerterConfig::Custom(partial) => match self {
-        AlerterConfig::Custom(config) => {
-          let config = CustomAlerterConfig {
-            url: partial.url.unwrap_or(config.url),
-            enabled: partial.enabled.unwrap_or(config.enabled),
-          };
-          AlerterConfig::Custom(config)
-        }
-        _ => AlerterConfig::Custom(partial.into()),
-      },
-      PartialAlerterConfig::Slack(partial) => match self {
-        AlerterConfig::Slack(config) => {
-          let config = SlackAlerterConfig {
-            url: partial.url.unwrap_or(config.url),
-            enabled: partial.enabled.unwrap_or(config.enabled),
-          };
-          AlerterConfig::Slack(config)
-        }
-        _ => AlerterConfig::Slack(partial.into()),
-      },
-    }
-  }
-}
-
-#[typeshare(serialized_as = "Partial<CustomAlerterConfig>")]
-pub type _PartialCustomAlerterConfig = PartialCustomAlerterConfig;
-
-/// Configuration for a custom alerter.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[partial(skip_serializing_none, from, diff)]
-pub struct CustomAlerterConfig {
+pub struct AlerterConfig {
+  /// Whether the alerter is enabled
+  #[serde(default = "default_enabled")]
+  #[builder(default = "default_enabled()")]
+  pub enabled: bool,
+
+  /// Only send specific alert types.
+  /// If empty, will send all alert types.
+  #[serde(default)]
+  #[builder(default)]
+  pub alert_types: Vec<AlertDataVariant>,
+
+  /// Only send alerts on specific resources.
+  /// If empty, will send alerts for all resources.
+  #[serde(default)]
+  #[builder(default)]
+  pub resources: Vec<ResourceTarget>,
+
+  /// Where to route the alert messages.
+  ///
+  /// Default: Custom endpoint `http://localhost:7000`
+  #[serde(default)]
+  #[builder(default)]
+  pub endpoint: AlerterEndpoint,
+}
+
+fn default_enabled() -> bool {
+  true
+}
+
+// ENDPOINTS
+
+#[typeshare]
+#[derive(
+  Debug, Clone, PartialEq, Serialize, Deserialize, EnumVariants,
+)]
+#[variant_derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  Copy,
+  Display,
+  EnumString,
+  AsRefStr
+)]
+#[serde(tag = "type", content = "params")]
+pub enum AlerterEndpoint {
+  /// Send alert serialized to JSON to an http endpoint.
+  Custom(CustomAlerterEndpoint),
+
+  /// Send alert to a slack app
+  Slack(SlackAlerterEndpoint),
+}
+
+impl Default for AlerterEndpoint {
+  fn default() -> Self {
+    Self::Custom(Default::default())
+  }
+}
+
+/// Configuration for a custom alerter endpoint.
+#[typeshare]
+#[derive(
+  Debug, Clone, PartialEq, Serialize, Deserialize, Builder,
+)]
+pub struct CustomAlerterEndpoint {
   /// The http/s endpoint to send the POST to
   #[serde(default = "default_custom_url")]
   #[builder(default = "default_custom_url()")]
-  #[partial_default(default_custom_url())]
   pub url: String,
+}
 
-  /// Whether the alerter is enabled
-  #[serde(default)]
-  #[builder(default)]
-  pub enabled: bool,
+impl Default for CustomAlerterEndpoint {
+  fn default() -> Self {
+    Self {
+      url: default_custom_url(),
+    }
+  }
 }
 
 fn default_custom_url() -> String {
   String::from("http://localhost:7000")
 }
 
-#[typeshare(serialized_as = "Partial<SlackAlerterConfig>")]
-pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
-
 /// Configuration for a slack alerter.
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[partial(skip_serializing_none, from, diff)]
-pub struct SlackAlerterConfig {
+#[derive(
+  Debug, Clone, PartialEq, Serialize, Deserialize, Builder,
+)]
+pub struct SlackAlerterEndpoint {
   /// The slack app url
   #[serde(default = "default_slack_url")]
   #[builder(default = "default_slack_url()")]
-  #[partial_default(default_slack_url())]
   pub url: String,
-
-  /// Whether the alerter is enabled
-  #[serde(default)]
-  #[builder(default)]
-  pub enabled: bool,
 }
 
-impl Default for SlackAlerterConfig {
+impl Default for SlackAlerterEndpoint {
   fn default() -> Self {
     Self {
       url: default_slack_url(),
-      enabled: false,
     }
   }
 }
@@ -281,6 +146,8 @@ fn default_slack_url() -> String {
   )
 }
 
+// QUERY
+
 #[typeshare]
 pub type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
 
@@ -289,15 +156,26 @@ pub type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
   Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
 )]
 pub struct AlerterQuerySpecifics {
-  pub types: Vec<AlerterConfigVariant>,
+  /// Filter alerters by enabled.
+  /// - `None`: Don't filter by enabled
+  /// - `Some(true)`: Only include alerts with `enabled: true`
+  /// - `Some(false)`: Only include alerts with `enabled: false`
+  pub enabled: Option<bool>,
+
+  /// Only include alerters with these endpoint types.
+  /// If empty, don't filter by enpoint type.
+  pub types: Vec<AlerterEndpointVariant>,
 }
 
 impl super::resource::AddFilters for AlerterQuerySpecifics {
   fn add_filters(&self, filters: &mut Document) {
+    if let Some(enabled) = self.enabled {
+      filters.insert("config.enabled", enabled);
+    }
     let types =
       self.types.iter().map(|t| t.as_ref()).collect::<Vec<_>>();
     if !self.types.is_empty() {
-      filters.insert("config.type", doc! { "$in": types });
+      filters.insert("config.endpoint.type", doc! { "$in": types });
     }
   }
 }

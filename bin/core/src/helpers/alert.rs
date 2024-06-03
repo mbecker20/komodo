@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use derive_variants::ExtractVariant;
 use futures::future::join_all;
 use monitor_client::entities::{
   alert::{Alert, AlertData},
@@ -7,7 +8,6 @@ use monitor_client::entities::{
   server::stats::SeverityLevel,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
-use reqwest::StatusCode;
 use slack::types::Block;
 
 use crate::state::db_client;
@@ -18,21 +18,21 @@ pub async fn send_alerts(alerts: &[Alert]) {
     return;
   }
 
-  let alerters = find_collect(
+  let alerters = match find_collect(
     &db_client().await.alerters,
-    doc! { "config.params.enabled": true },
+    doc! { "config.enabled": true },
     None,
   )
-  .await;
-
-  if let Err(e) = alerters {
-    error!(
-      "ERROR sending alerts | failed to get alerters from db | {e:#}"
-    );
-    return;
-  }
-
-  let alerters = alerters.unwrap();
+  .await
+  {
+    Ok(alerters) => alerters,
+    Err(e) => {
+      error!(
+        "ERROR sending alerts | failed to get alerters from db | {e:#}"
+      );
+      return;
+    }
+  };
 
   let handles =
     alerts.iter().map(|alert| send_alert(&alerters, alert));
@@ -46,23 +46,44 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
     return;
   }
 
+  let alert_type = alert.data.extract_variant();
+
   let handles = alerters.iter().map(|alerter| async {
-    match &alerter.config {
-      AlerterConfig::Slack(SlackAlerterConfig { url, enabled }) => {
-        if !enabled {
-          return Ok(());
-        }
-        send_slack_alert(url, alert)
-          .await
-          .context("failed to send slack alert")
+    // Don't send if not enabled
+    if !alerter.config.enabled {
+      return Ok(());
+    }
+
+    // Don't send if alert type not configured on the alerter
+    if !alerter.config.alert_types.is_empty()
+      && !alerter.config.alert_types.contains(&alert_type)
+    {
+      return Ok(());
+    }
+
+    // Don't send if resource target not configured on the alerter
+    if !alerter.config.resources.is_empty()
+      && !alerter.config.resources.contains(&alert.target)
+    {
+      return Ok(());
+    }
+
+    match &alerter.config.endpoint {
+      AlerterEndpoint::Slack(SlackAlerterEndpoint { url }) => {
+        send_slack_alert(url, alert).await.with_context(|| {
+          format!(
+            "failed to send alert to slack alerter {}",
+            alerter.name
+          )
+        })
       }
-      AlerterConfig::Custom(CustomAlerterConfig { url, enabled }) => {
-        if !enabled {
-          return Ok(());
-        }
-        send_custom_alert(url, alert).await.context(format!(
-          "failed to send alert to custom alerter at {url}"
-        ))
+      AlerterEndpoint::Custom(CustomAlerterEndpoint { url }) => {
+        send_custom_alert(url, alert).await.with_context(|| {
+          format!(
+            "failed to send alert to custom alerter {}",
+            alerter.name
+          )
+        })
       }
     }
   });
@@ -86,7 +107,7 @@ async fn send_custom_alert(
     .await
     .context("failed at post request to alerter")?;
   let status = res.status();
-  if status != StatusCode::OK {
+  if !status.is_success() {
     let text = res
       .text()
       .await

@@ -129,7 +129,7 @@ export const useWrite = <
     onError: (e, v, c) => {
       console.log("useWrite error:", e);
       toast({
-        title: `Request ${type} Failed`,
+        title: `Write request ${type} failed`,
         description: "See console for details",
         variant: "destructive",
       });
@@ -151,16 +151,17 @@ export const useExecute = <
   type: T,
   config?: C
 ) => {
+  const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
     mutationFn: (params: P) => client().execute({ type, params } as R),
     onError: (e, v, c) => {
-      // console.log("useExecute error:", e);
-      // toast({
-      //   title: `Request ${type} Failed`,
-      //   description: "See console for details",
-      //   variant: "destructive",
-      // });
+      console.log("useExecute error:", e);
+      toast({
+        title: `Execute request ${type} failed`,
+        description: "See console for details",
+        variant: "destructive",
+      });
       config?.onError && config.onError(e, v, c);
     },
     ...config,

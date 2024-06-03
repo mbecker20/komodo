@@ -37,7 +37,7 @@ mungos = "0.5.6"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.37.0", features = ["full"] }
+tokio = { version = "1.38.0", features = ["full"] }
 reqwest = { version = "0.12.4", features = ["json"] }
 tokio-util = "0.7.11"
 futures = "0.3.30"
@@ -48,10 +48,10 @@ axum = { version = "0.7.5", features = ["ws", "json"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.5.2", features = ["fs", "cors"] }
-tokio-tungstenite = "0.21.0"
+tokio-tungstenite = "0.22.0"
 
 # SER/DE
-serde = { version = "1.0.202", features = ["derive"] }
+serde = { version = "1.0.203", features = ["derive"] }
 strum = { version = "0.26.2", features = ["derive"] }
 serde_json = "1.0.117"
 toml = "0.8.13"
@@ -61,11 +61,11 @@ anyhow = "1.0.86"
 thiserror = "1.0.61"
 
 # LOGGING
-opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
+opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio"] }
 tracing-subscriber = { version = "0.3.18", features = ["json"] }
-tracing-opentelemetry = "0.23.0"
-opentelemetry-otlp = "0.15.0"
-opentelemetry = "0.22.0"
+tracing-opentelemetry = "0.24.0"
+opentelemetry-otlp = "0.16.0"
+opentelemetry = "0.23.0"
 tracing = "0.1.40"
 
 # CONFIG
@@ -88,8 +88,8 @@ bollard = "0.16.1"
 sysinfo = "0.30.12"
 
 # CLOUD
-aws-config = "1.4.0"
-aws-sdk-ec2 = "1.42.0"
+aws-config = "1.5.0"
+aws-sdk-ec2 = "1.46.0"
 
 # MISC
 derive_builder = "0.20.0"

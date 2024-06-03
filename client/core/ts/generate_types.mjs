@@ -26,9 +26,8 @@ function fix_types() {
   const fixed = contents
     .toString()
     .replaceAll("ResourceTargetVariant", 'ResourceTarget["type"]')
+    .replaceAll("AlerterEndpointVariant", 'AlerterEndpoint["type"]')
     .replaceAll("AlertDataVariant", 'AlertData["type"]')
-    .replaceAll("ProcedureConfigVariant", 'ProcedureConfig["type"]')
-    .replaceAll("AlerterConfigVariant", 'AlerterConfig["type"]')
     .replaceAll("ServerTemplateConfigVariant", 'ServerTemplateConfig["type"]');
   writeFileSync(types_path, fixed);
 }

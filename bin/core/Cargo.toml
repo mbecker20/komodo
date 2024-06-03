@@ -24,6 +24,7 @@ merge_config_files.workspace = true
 termination_signal.workspace = true
 async_timing_util.workspace = true
 partial_derive2.workspace = true
+derive_variants.workspace = true
 mongo_indexed.workspace = true
 resolver_api.workspace = true
 parse_csl.workspace = true

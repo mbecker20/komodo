@@ -5,8 +5,7 @@ use monitor_client::{
   api::write::{CreateAlerter, DeleteAlerter, UpdateAlerter},
   entities::{
     alerter::{
-      Alerter, AlerterConfig, AlerterConfigDiff, AlerterInfo,
-      PartialAlerterConfig,
+      Alerter, AlerterConfig, AlerterConfigDiff, PartialAlerterConfig,
     },
     resource::Resource,
     toml::ResourceToml,
@@ -21,7 +20,7 @@ use crate::{
 
 impl ResourceSync for Alerter {
   type Config = AlerterConfig;
-  type Info = AlerterInfo;
+  type Info = ();
   type PartialConfig = PartialAlerterConfig;
   type ConfigDiff = AlerterConfigDiff;
 

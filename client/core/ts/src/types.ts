@@ -243,17 +243,34 @@ export interface Resource<Config, Info> {
 	config: Config;
 }
 
-export type AlerterConfig = 
+export type AlerterEndpoint = 
 	/** Send alert serialized to JSON to an http endpoint. */
-	| { type: "Custom", params: CustomAlerterConfig }
+	| { type: "Custom", params: CustomAlerterEndpoint }
 	/** Send alert to a slack app */
-	| { type: "Slack", params: SlackAlerterConfig };
+	| { type: "Slack", params: SlackAlerterEndpoint };
 
-export interface AlerterInfo {
-	is_default?: boolean;
+export interface AlerterConfig {
+	/** Whether the alerter is enabled */
+	enabled: boolean;
+	/**
+	 * Only send specific alert types.
+	 * If empty, will send all alert types.
+	 */
+	alert_types?: AlertData["type"][];
+	/**
+	 * Only send alerts on specific resources.
+	 * If empty, will send alerts for all resources.
+	 */
+	resources?: ResourceTarget[];
+	/**
+	 * Where to route the alert messages.
+	 * 
+	 * Default: Custom endpoint `http://localhost:7000`
+	 */
+	endpoint?: AlerterEndpoint;
 }
 
-export type Alerter = Resource<AlerterConfig, AlerterInfo>;
+export type Alerter = Resource<AlerterConfig, undefined>;
 
 export type GetAlerterResponse = Alerter;
 
@@ -273,10 +290,8 @@ export interface ResourceListItem<Info> {
 export interface AlerterListItemInfo {
 	/** Whether alerter is enabled for sending alerts */
 	enabled: boolean;
-	/** Whether the alerter is the default */
-	is_default: boolean;
-	/** The type of the alerter, eg. Slack, Custom */
-	alerter_type: string;
+	/** The type of the alerter, eg. `Slack`, `Custom` */
+	endpoint_type: AlerterEndpoint["type"];
 }
 
 export type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
@@ -1169,9 +1184,9 @@ export enum Operation {
 	UpdateServer = "UpdateServer",
 	DeleteServer = "DeleteServer",
 	RenameServer = "RenameServer",
-	PruneImagesServer = "PruneImagesServer",
-	PruneContainersServer = "PruneContainersServer",
-	PruneNetworksServer = "PruneNetworksServer",
+	PruneImages = "PruneImages",
+	PruneContainers = "PruneContainers",
+	PruneNetworks = "PruneNetworks",
 	CreateNetwork = "CreateNetwork",
 	DeleteNetwork = "DeleteNetwork",
 	StopAllContainers = "StopAllContainers",
@@ -1186,7 +1201,7 @@ export enum Operation {
 	CreateDeployment = "CreateDeployment",
 	UpdateDeployment = "UpdateDeployment",
 	DeleteDeployment = "DeleteDeployment",
-	DeployContainer = "DeployContainer",
+	Deploy = "Deploy",
 	StopContainer = "StopContainer",
 	StartContainer = "StartContainer",
 	RemoveContainer = "RemoveContainer",
@@ -1374,9 +1389,7 @@ export type UpdateVariableDescriptionResponse = Variable;
 
 export type DeleteVariableResponse = Variable;
 
-export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
-
-export type _PartialSlackAlerterConfig = Partial<SlackAlerterConfig>;
+export type _PartialAlerterConfig = Partial<AlerterConfig>;
 
 export enum TagBehavior {
 	/** Returns resources which have strictly all the tags */
@@ -1396,7 +1409,18 @@ export interface ResourceQuery<T> {
 }
 
 export interface AlerterQuerySpecifics {
-	types: AlerterConfig["type"][];
+	/**
+	 * Filter alerters by enabled.
+	 * - `None`: Don't filter by enabled
+	 * - `Some(true)`: Only include alerts with `enabled: true`
+	 * - `Some(false)`: Only include alerts with `enabled: false`
+	 */
+	enabled?: boolean;
+	/**
+	 * Only include alerters with these endpoint types.
+	 * If empty, don't filter by enpoint type.
+	 */
+	types: AlerterEndpoint["type"][];
 }
 
 export type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
@@ -2708,16 +2732,12 @@ export interface DeleteApiKey {
 	key: string;
 }
 
-export type PartialAlerterConfig = 
-	| { type: "Custom", params: _PartialCustomAlerterConfig }
-	| { type: "Slack", params: _PartialSlackAlerterConfig };
-
 /** Create an alerter. Response: [Alerter]. */
 export interface CreateAlerter {
 	/** The name given to newly created alerter. */
 	name: string;
 	/** Optional partial config to initialize the alerter with. */
-	config: PartialAlerterConfig;
+	config: _PartialAlerterConfig;
 }
 
 /**
@@ -2752,7 +2772,7 @@ export interface UpdateAlerter {
 	/** The id of the alerter to update. */
 	id: string;
 	/** The partial config update to apply. */
-	config: PartialAlerterConfig;
+	config: _PartialAlerterConfig;
 }
 
 /**
@@ -3311,20 +3331,16 @@ export interface DeleteVariable {
 	name: string;
 }
 
-/** Configuration for a custom alerter. */
-export interface CustomAlerterConfig {
+/** Configuration for a custom alerter endpoint. */
+export interface CustomAlerterEndpoint {
 	/** The http/s endpoint to send the POST to */
 	url: string;
-	/** Whether the alerter is enabled */
-	enabled?: boolean;
 }
 
 /** Configuration for a slack alerter. */
-export interface SlackAlerterConfig {
+export interface SlackAlerterEndpoint {
 	/** The slack app url */
 	url: string;
-	/** Whether the alerter is enabled */
-	enabled?: boolean;
 }
 
 /** Configuration for a monitor server builder. */

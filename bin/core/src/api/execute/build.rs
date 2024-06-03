@@ -53,6 +53,8 @@ use crate::{
 
 use crate::helpers::update::init_execution_update;
 
+use super::ExecuteRequest;
+
 impl Resolve<RunBuild, (User, Update)> for State {
   #[instrument(name = "RunBuild", skip(self, user))]
   async fn resolve(
@@ -334,21 +336,11 @@ async fn handle_early_return(
   Ok(update)
 }
 
-impl Resolve<CancelBuild, (User, Update)> for State {
-  #[instrument(name = "CancelBuild", skip(self, user))]
-  async fn resolve(
-    &self,
-    CancelBuild { build }: CancelBuild,
-    (user, mut update): (User, Update),
-  ) -> anyhow::Result<CancelBuildResponse> {
-    let build = resource::get_check_permissions::<Build>(
-      &build,
-      &user,
-      PermissionLevel::Execute,
-    )
-    .await?;
-
-    // check if theres already an open cancel build update
+pub async fn validate_cancel_build(
+  request: &ExecuteRequest,
+) -> anyhow::Result<()> {
+  if let ExecuteRequest::CancelBuild(req) = request {
+    let build = resource::get::<Build>(&req.build).await?;
     if db_client()
       .await
       .updates
@@ -366,6 +358,23 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     {
       return Err(anyhow!("Build cancel is already in progress"));
     }
+  }
+  Ok(())
+}
+
+impl Resolve<CancelBuild, (User, Update)> for State {
+  #[instrument(name = "CancelBuild", skip(self, user))]
+  async fn resolve(
+    &self,
+    CancelBuild { build }: CancelBuild,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<CancelBuildResponse> {
+    let build = resource::get_check_permissions::<Build>(
+      &build,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
 
     // make sure the build is building
     if !action_states()
@@ -384,11 +393,29 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     );
     update_update(update.clone()).await?;
 
+    let update_id = update.id.clone();
+
     build_cancel_channel()
       .sender
       .lock()
       .await
       .send((build.id, update))?;
+
+    // Make sure cancel is set to complete after some time in case
+    // no reciever is there to do it. Prevents update stuck in InProgress.
+    tokio::spawn(async move {
+      tokio::time::sleep(Duration::from_secs(60)).await;
+      if let Err(e) = update_one_by_id(
+        &db_client().await.updates,
+        &update_id,
+        doc! { "status": "Complete" },
+        None,
+      )
+      .await
+      {
+        warn!("failed to set BuildCancel Update status Complete after timeout | {e:#}")
+      }
+    });
 
     Ok(CancelBuildResponse {})
   }
