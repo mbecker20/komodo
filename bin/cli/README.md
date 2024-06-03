@@ -86,3 +86,7 @@ Options:
   -h, --help  Print help
 ```
 
+### --yes
+
+You can use `--yes` to avoid any human prompt to continue, for use in automated environments.
+
