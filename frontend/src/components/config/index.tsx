@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { History, Settings } from "lucide-react";
+import { AlertTriangle, History, Settings } from "lucide-react";
 import { Fragment, ReactNode, SetStateAction, useState } from "react";
 
 const keys = <T extends Record<string, unknown>>(obj: T) =>
@@ -43,11 +43,18 @@ export const ConfigLayout = <
   const titleProps = titleOther
     ? { titleOther }
     : { title: "Config", icon: <Settings className="w-4 h-4" /> };
+  const changesMade = Object.keys(config).length ? true : false;
   return (
     <Section
       {...titleProps}
       actions={
         <div className="flex gap-2">
+          {changesMade && (
+            <div className="text-muted-foreground flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" /> Unsaved changes
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          )}
           {selector}
           <Button
             variant="outline"
@@ -56,13 +63,13 @@ export const ConfigLayout = <
           >
             <History className="w-4 h-4" />
           </Button>
-          {Object.keys(config).length ? (
+          {changesMade && (
             <ConfirmUpdate
               content={JSON.stringify(config, null, 2)}
               onConfirm={onConfirm}
               disabled={disabled}
             />
-          ) : null}
+          )}
         </div>
       }
     >
