@@ -15,7 +15,7 @@ import { Section } from "@components/layouts";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
 import { fmt_date, fmt_version } from "@lib/formatting";
-import { usableResourcePath, version_is_none } from "@lib/utils";
+import { getUpdateQuery, usableResourcePath, version_is_none } from "@lib/utils";
 import { Card } from "@ui/card";
 import { UsableResource } from "@types";
 
@@ -107,36 +107,4 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
       </div>
     </Section>
   );
-};
-
-const getUpdateQuery = (
-  target: Types.ResourceTarget,
-  deployments: Types.DeploymentListItem[] | undefined
-) => {
-  const build_id =
-    target.type === "Deployment"
-      ? deployments?.find((d) => d.id === target.id)?.info.build_id
-      : undefined;
-  if (build_id) {
-    return {
-      $or: [
-        {
-          "target.type": target.type,
-          "target.id": target.id,
-        },
-        {
-          "target.type": "Build",
-          "target.id": build_id,
-          operation: {
-            $in: [Types.Operation.RunBuild, Types.Operation.CancelBuild],
-          },
-        },
-      ],
-    };
-  } else {
-    return {
-      "target.type": target.type,
-      "target.id": target.id,
-    };
-  }
 };

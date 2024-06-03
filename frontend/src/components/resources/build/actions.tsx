@@ -12,6 +12,12 @@ export const RunBuild = ({ id }: { id: string }) => {
     { build: id },
     { refetchInterval: 5000 }
   ).data?.building;
+  const updates = useRead("ListUpdates", {
+    query: {
+      "target.type": "Build",
+      "target.id": id,
+    },
+  }).data;
   const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild");
   const { mutate: cancel_mutate, isPending: cancelPending } =
     useExecute("CancelBuild");
@@ -24,6 +30,18 @@ export const RunBuild = ({ id }: { id: string }) => {
   )
     return null;
 
+  // updates come in in descending order, so 'find' will find latest update matching operation
+  const latestBuild = updates?.updates.find(
+    (u) => u.operation === Types.Operation.RunBuild
+  );
+  const latestCancel = updates?.updates.find(
+    (u) => u.operation === Types.Operation.CancelBuild
+  );
+  const cancelDisabled =
+    cancelPending || (latestCancel && latestBuild)
+      ? latestCancel!.start_ts > latestBuild!.start_ts
+      : false;
+
   if (building) {
     return (
       <ConfirmButton
@@ -31,7 +49,7 @@ export const RunBuild = ({ id }: { id: string }) => {
         variant="destructive"
         icon={<Ban className="h-4 w-4" />}
         onClick={() => cancel_mutate({ build: id })}
-        disabled={cancelPending}
+        disabled={cancelDisabled}
       />
     );
   } else {
