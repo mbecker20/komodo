@@ -49,6 +49,7 @@ impl HetznerClient {
     self.post("/servers", body).await
   }
 
+  #[allow(unused)]
   pub async fn delete_server(
     &self,
     id: i64,
@@ -120,6 +121,7 @@ impl HetznerClient {
     })
   }
 
+  #[allow(unused)]
   async fn delete<Res: DeserializeOwned>(
     &self,
     path: &str,

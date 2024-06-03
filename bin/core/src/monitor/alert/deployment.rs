@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use monitor_client::entities::{
-  alert::{Alert, AlertData, AlertDataVariant},
+  alert::{Alert, AlertData},
   deployment::Deployment,
   server::stats::SeverityLevel,
   update::ResourceTarget,
@@ -46,7 +46,6 @@ pub async fn alert_deployments(
       let alert = Alert {
         id: Default::default(),
         level: SeverityLevel::Warning,
-        variant: AlertDataVariant::ContainerStateChange,
         resolved: true,
         resolved_ts: ts.into(),
         target,

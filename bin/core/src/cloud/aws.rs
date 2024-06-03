@@ -13,7 +13,7 @@ use aws_sdk_ec2::{
   Client,
 };
 use monitor_client::entities::{
-  alert::{Alert, AlertData, AlertDataVariant},
+  alert::{Alert, AlertData},
   monitor_timestamp,
   server::stats::SeverityLevel,
   server_template::aws::AwsServerTemplateConfig,
@@ -172,7 +172,6 @@ pub async fn terminate_ec2_instance_with_retry(
             resolved: false,
             level: SeverityLevel::Critical,
             target: ResourceTarget::system(),
-            variant: AlertDataVariant::AwsBuilderTerminationFailed,
             data: AlertData::AwsBuilderTerminationFailed {
               instance_id: instance_id.to_string(),
               message: format!("{e:#}"),

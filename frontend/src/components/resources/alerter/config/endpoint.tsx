@@ -1,0 +1,58 @@
+import { ConfigItem } from "@components/config/util";
+import { TextUpdateMenu } from "@components/util";
+import { Types } from "@monitor/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/select";
+
+const ENDPOINT_TYPES: Types.AlerterEndpoint["type"][] = ["Custom", "Slack"];
+
+export const EndpointConfig = ({
+  endpoint,
+  set,
+  disabled,
+}: {
+  endpoint: Types.AlerterEndpoint;
+  set: (endpoint: Types.AlerterEndpoint) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <ConfigItem label="Endpoint">
+      <div className="flex items-center gap-4">
+        <Select
+          value={endpoint.type}
+          onValueChange={(type: Types.AlerterEndpoint["type"]) => {
+            set({ type, params: { url: default_url(type) } });
+          }}
+          disabled={disabled}
+        >
+          <SelectTrigger className="w-[150px]" disabled={disabled}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ENDPOINT_TYPES.map((endpoint) => (
+              <SelectItem key={endpoint} value={endpoint}>
+                {endpoint}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <TextUpdateMenu
+          title={`${endpoint.type} Alerter Url`}
+          value={endpoint.params.url}
+          onUpdate={(url) =>
+            set({ ...endpoint, params: { ...endpoint.params, url } })
+          }
+          placeholder="Enter endpoint url"
+          triggerClassName="w-[250px]"
+        />
+      </div>
+    </ConfigItem>
+  );
+};
+
+const default_url = (type: Types.AlerterEndpoint["type"]) => {
+  return type === "Custom"
+    ? "http://localhost:7000"
+    : type === "Slack"
+    ? "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+    : "";
+};

@@ -48,9 +48,6 @@ pub struct Alert {
   /// The target of the alert
   pub target: ResourceTarget,
 
-  /// The type of alert, eg ServerUnreachable, ServerMem, ContainerStateChange
-  pub variant: AlertDataVariant,
-
   /// The data attached to the alert
   pub data: AlertData,
 
@@ -147,14 +144,6 @@ pub enum AlertData {
   AwsBuilderTerminationFailed {
     /// The id of the aws instance which failed to terminate
     instance_id: String,
-    /// A reason for the failure
-    message: String,
-  },
-
-  /// A Hetzner builder failed to terminate.
-  HetznerBuilderTerminationFailed {
-    /// The id of the server which failed to terminate
-    server_id: I64,
     /// A reason for the failure
     message: String,
   },

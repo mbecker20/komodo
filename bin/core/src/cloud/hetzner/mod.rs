@@ -5,15 +5,9 @@ use std::{
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
-use monitor_client::entities::{
-  alert::{Alert, AlertData, AlertDataVariant},
-  monitor_timestamp,
-  server::stats::SeverityLevel,
-  server_template::hetzner::{
-    HetznerDatacenter, HetznerServerTemplateConfig,
-    HetznerServerType, HetznerVolumeFormat,
-  },
-  update::ResourceTarget,
+use monitor_client::entities::server_template::hetzner::{
+  HetznerDatacenter, HetznerServerTemplateConfig, HetznerServerType,
+  HetznerVolumeFormat,
 };
 
 use crate::{
@@ -22,15 +16,9 @@ use crate::{
     create_volume::CreateVolumeBody,
   },
   config::core_config,
-  helpers::alert::send_alerts,
 };
 
-use self::{
-  client::HetznerClient,
-  common::{
-    HetznerAction, HetznerActionResponse, HetznerVolumeStatus,
-  },
-};
+use self::{client::HetznerClient, common::HetznerVolumeStatus};
 
 mod client;
 mod common;
@@ -193,60 +181,6 @@ pub async fn launch_hetzner_server(
   Err(anyhow!(
     "failed to verify server running after polling status"
   ))
-}
-
-#[allow(unused)]
-const MAX_TERMINATION_TRIES: usize = 5;
-#[allow(unused)]
-const TERMINATION_WAIT_SECS: u64 = 15;
-
-#[allow(unused)]
-pub async fn terminate_hetzner_server_with_retry(
-  id: i64,
-) -> anyhow::Result<()> {
-  let hetzner =
-    *hetzner().as_ref().context("Hetzner token not configured")?;
-
-  for i in 0..MAX_TERMINATION_TRIES {
-    let message = match hetzner.delete_server(id).await {
-      Ok(HetznerActionResponse {
-        action: HetznerAction { error: None, .. },
-      }) => return Ok(()),
-      Ok(HetznerActionResponse {
-        action: HetznerAction { error: Some(e), .. },
-      }) => (i == MAX_TERMINATION_TRIES - 1).then(|| {
-        format!(
-          "failed to terminate instance | code: {} | {}",
-          e.code, e.message
-        )
-      }),
-      Err(e) => {
-        (i == MAX_TERMINATION_TRIES - 1).then(|| format!("{e:#}"))
-      }
-    };
-    if let Some(message) = message {
-      error!("failed to terminate hetzner server {id} | {message}");
-      let alert = Alert {
-        id: Default::default(),
-        ts: monitor_timestamp(),
-        resolved: false,
-        level: SeverityLevel::Critical,
-        target: ResourceTarget::system(),
-        variant: AlertDataVariant::HetznerBuilderTerminationFailed,
-        data: AlertData::HetznerBuilderTerminationFailed {
-          server_id: id,
-          message: message.clone(),
-        },
-        resolved_ts: None,
-      };
-      send_alerts(&[alert]).await;
-      return Err(anyhow::Error::msg(message));
-    }
-    tokio::time::sleep(Duration::from_secs(TERMINATION_WAIT_SECS))
-      .await;
-  }
-
-  Ok(())
 }
 
 fn hetzner_format(

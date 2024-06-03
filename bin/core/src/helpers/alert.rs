@@ -246,21 +246,6 @@ async fn send_slack_alert(
       ];
       (text, blocks.into())
     }
-    AlertData::HetznerBuilderTerminationFailed {
-      server_id,
-      message,
-    } => {
-      let text = format!(
-        "{level} | Failed to terminated Hetzner builder instance"
-      );
-      let blocks = vec![
-        Block::header(text.clone()),
-        Block::section(format!(
-          "server id: **{server_id}**\n{message}"
-        )),
-      ];
-      (text, blocks.into())
-    }
     AlertData::None {} => Default::default(),
   };
   if !text.is_empty() {

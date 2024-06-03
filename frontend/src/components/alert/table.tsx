@@ -55,7 +55,7 @@ export const AlertsTable = ({
         },
         {
           header: "Alert Type",
-          accessorKey: "variant",
+          accessorKey: "data.type",
         },
       ]}
     />

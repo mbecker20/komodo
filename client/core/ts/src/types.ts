@@ -183,13 +183,6 @@ export type AlertData =
 	/** A reason for the failure */
 	message: string;
 }}
-	/** A Hetzner builder failed to terminate. */
-	| { type: "HetznerBuilderTerminationFailed", data: {
-	/** The id of the server which failed to terminate */
-	server_id: I64;
-	/** A reason for the failure */
-	message: string;
-}}
 	| { type: "None", data: {
 }};
 
@@ -209,8 +202,6 @@ export interface Alert {
 	level: SeverityLevel;
 	/** The target of the alert */
 	target: ResourceTarget;
-	/** The type of alert, eg ServerUnreachable, ServerMem, ContainerStateChange */
-	variant: AlertData["type"];
 	/** The data attached to the alert */
 	data: AlertData;
 	/** The timestamp of alert resolution */

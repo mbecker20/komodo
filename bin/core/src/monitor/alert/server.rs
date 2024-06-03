@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::Context;
+use derive_variants::ExtractVariant;
 use mongo_indexed::Indexed;
 use monitor_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant},
@@ -66,7 +67,6 @@ pub async fn alert_servers(
           resolved_ts: None,
           level: SeverityLevel::Critical,
           target: ResourceTarget::Server(server_status.id.clone()),
-          variant: AlertDataVariant::ServerUnreachable,
           data: AlertData::ServerUnreachable {
             id: server_status.id.clone(),
             name: server.name.clone(),
@@ -132,7 +132,6 @@ pub async fn alert_servers(
           resolved_ts: None,
           level: health.cpu,
           target: ResourceTarget::Server(server_status.id.clone()),
-          variant: AlertDataVariant::ServerCpu,
           data: AlertData::ServerCpu {
             id: server_status.id.clone(),
             name: server.name.clone(),
@@ -188,7 +187,6 @@ pub async fn alert_servers(
           resolved_ts: None,
           level: health.cpu,
           target: ResourceTarget::Server(server_status.id.clone()),
-          variant: AlertDataVariant::ServerMem,
           data: AlertData::ServerMem {
             id: server_status.id.clone(),
             name: server.name.clone(),
@@ -260,7 +258,6 @@ pub async fn alert_servers(
             resolved_ts: None,
             level: *health,
             target: ResourceTarget::Server(server_status.id.clone()),
-            variant: AlertDataVariant::ServerDisk,
             data: AlertData::ServerDisk {
               id: server_status.id.clone(),
               name: server.name.clone(),
@@ -492,7 +489,7 @@ async fn get_open_alerts(
       }
       _ => {
         let inner = map.entry(alert.target.clone()).or_default();
-        inner.insert(alert.variant, alert);
+        inner.insert(alert.data.extract_variant(), alert);
       }
     }
   }
