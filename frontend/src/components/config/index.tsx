@@ -60,8 +60,10 @@ export const ConfigLayout = <
             variant="outline"
             onClick={onReset}
             disabled={disabled || (config ? !Object.keys(config).length : true)}
+            className="flex items-center gap-2"
           >
             <History className="w-4 h-4" />
+            Reset
           </Button>
           {changesMade && (
             <ConfirmUpdate

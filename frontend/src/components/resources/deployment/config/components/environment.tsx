@@ -20,10 +20,35 @@ export const EnvVars = ({
   server?: string;
 }) => {
   const ref = createRef<HTMLTextAreaElement>();
-  const [env, setEnv] = useState(env_to_text(vars));
-  useEffect(() => {
-    !!env && set({ environment: text_to_env(env) });
-  }, [env, set]);
+  const [env, setEnv] = useState<string>();
+  useEffect(() => setEnv(env_to_text(vars)), [vars]);
+
+  const update = () => {
+    if (!env) return;
+    const parsed = text_to_env(env);
+
+    // Diff the vars from old to new
+    for (const [v, i] of vars.map(
+      (v, i) => [v, i] as [Types.EnvironmentVar, number]
+    )) {
+      const _v = parsed[i];
+      if (!_v || v.value !== _v.value || v.variable !== _v.variable) {
+        set({ environment: parsed });
+        return;
+      }
+    }
+
+    // Diff the vars from new to old
+    for (const [v, i] of parsed.map(
+      (v, i) => [v, i] as [Types.EnvironmentVar, number]
+    )) {
+      const _v = vars[i];
+      if (!_v || v.value !== _v.value || v.variable !== _v.variable) {
+        set({ environment: parsed });
+        return;
+      }
+    }
+  };
 
   return (
     <ConfigItem className="flex-col gap-4 items-start">
@@ -36,6 +61,7 @@ export const EnvVars = ({
         placeholder="VARIABLE=value"
         value={env}
         onChange={(e) => setEnv(e.target.value)}
+        onBlur={update}
         disabled={disabled}
       />
     </ConfigItem>
