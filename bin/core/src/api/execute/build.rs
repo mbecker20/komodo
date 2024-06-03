@@ -22,7 +22,10 @@ use monitor_client::{
 use mungos::{
   by_id::update_one_by_id,
   find::find_collect,
-  mongodb::bson::{doc, to_bson, to_document},
+  mongodb::{
+    bson::{doc, to_bson, to_document},
+    options::FindOneOptions,
+  },
 };
 use periphery_client::{
   api::{self, GetVersionResponse},
@@ -341,23 +344,39 @@ pub async fn validate_cancel_build(
 ) -> anyhow::Result<()> {
   if let ExecuteRequest::CancelBuild(req) = request {
     let build = resource::get::<Build>(&req.build).await?;
-    if db_client()
-      .await
-      .updates
-      .find_one(
+
+    let db = db_client().await;
+
+    let (latest_build, latest_cancel) = tokio::try_join!(
+      db.updates.find_one(
         doc! {
-          "operation": "CancelBuild",
-          "status": "InProgress",
+          "operation": "RunBuild",
           "target.id": &build.id,
         },
-        None,
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
+      ),
+      db.updates.find_one(
+        doc! {
+          "operation": "CancelBuild",
+          "target.id": &build.id,
+        },
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
       )
-      .await
-      .context("failed to query updates")?
-      .is_some()
-    {
-      return Err(anyhow!("Build cancel is already in progress"));
-    }
+    )?;
+
+    match (latest_build, latest_cancel) {
+      (Some(build), Some(cancel)) => {
+        if cancel.start_ts > build.start_ts {
+          return Err(anyhow!("Build has already been cancelled"));
+        }
+      }
+      (None, _) => return Err(anyhow!("No build in progress")),
+      _ => {}
+    };
   }
   Ok(())
 }
@@ -408,7 +427,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
       if let Err(e) = update_one_by_id(
         &db_client().await.updates,
         &update_id,
-        doc! { "status": "Complete" },
+        doc! { "$set": { "status": "Complete" } },
         None,
       )
       .await
