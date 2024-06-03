@@ -4,6 +4,7 @@ import { Types } from "@monitor/client";
 import { useState } from "react";
 import { EndpointConfig } from "./endpoint";
 import { AlertTypeConfig } from "./alert_types";
+import { ResourcesConfig } from "./resources";
 
 export const AlerterConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -44,6 +45,13 @@ export const AlerterConfig = ({ id }: { id: string }) => {
                 <AlertTypeConfig
                   alert_types={alert_types!}
                   set={(alert_types) => set({ alert_types })}
+                  disabled={disabled}
+                />
+              ),
+              resources: (resources, set) => (
+                <ResourcesConfig
+                  resources={resources!}
+                  set={(resources) => set({ resources })}
                   disabled={disabled}
                 />
               ),
