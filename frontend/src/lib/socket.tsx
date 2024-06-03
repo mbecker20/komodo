@@ -44,6 +44,7 @@ const on_message = (
   const Components = ResourceComponents[update.target.type as UsableResource];
   const title = Components ? (
     <div className="flex items-center gap-2">
+      <div>Update</div> -
       <div>{update.operation}</div> -
       <div>
         <ResourceName
