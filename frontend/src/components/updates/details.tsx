@@ -146,7 +146,7 @@ export const UpdateDetailsInner = ({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent
-        className="overflow-y-auto w-[1000px] max-w-[100vw] max-h-[90vh]"
+        className="w-[1200px] max-w-[100vw]"
         side="top"
         onClick={() => setOpen(false)}
       >
@@ -248,7 +248,7 @@ const UpdateDetailsContent = ({
           </div>
         </SheetDescription>
       </SheetHeader>
-      <div className="grid gap-2">
+      <div className="grid gap-2 max-h-[calc(85vh-110px)] overflow-y-auto">
         {update.logs?.map((log, i) => (
           <Card key={i}>
             <CardHeader className="flex-col">
