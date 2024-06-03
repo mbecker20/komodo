@@ -32,6 +32,10 @@ export const fmt_duration = (start_ts: number, end_ts: number) => {
   }${remaining_seconds.toFixed(minutes > 0 ? 0 : 1)} seconds`;
 };
 
+export const fmt_operation = (operation: Types.Operation) => {
+  return operation.match(/[A-Z][a-z]+|[0-9]+/g)?.join(" ")!;
+};
+
 /// list_all_items => List All Items
 export function snake_case_to_upper_space_case(snake: string) {
   if (snake.length === 0) return "";

@@ -14,8 +14,12 @@ import { Types } from "@monitor/client";
 import { Section } from "@components/layouts";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
-import { fmt_date, fmt_version } from "@lib/formatting";
-import { getUpdateQuery, usableResourcePath, version_is_none } from "@lib/utils";
+import { fmt_date, fmt_operation, fmt_version } from "@lib/formatting";
+import {
+  getUpdateQuery,
+  usableResourcePath,
+  version_is_none,
+} from "@lib/utils";
 import { Card } from "@ui/card";
 import { UsableResource } from "@types";
 
@@ -33,7 +37,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
         <div className="grid gap-1 items-start">
           <div className="flex items-center gap-2">
             <Icon />
-            {update.operation}
+            {fmt_operation(update.operation)}
           </div>
           {!version_is_none(update.version) && (
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -55,7 +59,6 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
 };
 
 export const AllUpdates = () => {
-
   const updates = useRead("ListUpdates", {}).data;
 
   return (
@@ -63,9 +66,7 @@ export const AllUpdates = () => {
       title="Updates"
       icon={<Bell className="w-4 h-4" />}
       actions={
-        <Link
-          to="/updates"
-        >
+        <Link to="/updates">
           <Button variant="secondary" size="icon">
             <ExternalLink className="w-4 h-4" />
           </Button>
@@ -93,7 +94,9 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
       title="Updates"
       icon={<Bell className="w-4 h-4" />}
       actions={
-        <Link to={`/${usableResourcePath(type as UsableResource)}/${id}/updates`}>
+        <Link
+          to={`/${usableResourcePath(type as UsableResource)}/${id}/updates`}
+        >
           <Button variant="secondary" size="icon">
             <ExternalLink className="w-4 h-4" />
           </Button>

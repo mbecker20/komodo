@@ -1,4 +1,4 @@
-import { fmt_date_with_minutes } from "@lib/formatting";
+import { fmt_date_with_minutes, fmt_operation } from "@lib/formatting";
 import { Types } from "@monitor/client";
 import { DataTable } from "@ui/data-table";
 import { useState } from "react";
@@ -35,7 +35,7 @@ export const UpdatesTable = ({
                   : undefined;
               return (
                 <div className="flex items-center gap-2">
-                  {row.original.operation}{" "}
+                  {fmt_operation(row.original.operation)}{" "}
                   {more && (
                     <div className="text-sm text-muted-foreground">{more}</div>
                   )}

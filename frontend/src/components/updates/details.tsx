@@ -25,7 +25,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useRead } from "@lib/hooks";
 import { ResourceComponents } from "@components/resources";
 import { Link } from "react-router-dom";
-import { fmt_duration, fmt_version } from "@lib/formatting";
+import { fmt_duration, fmt_operation, fmt_version } from "@lib/formatting";
 import {
   cn,
   sanitizeOnlySpan,
@@ -194,10 +194,7 @@ const UpdateDetailsContent = ({
     <>
       <SheetHeader className="mb-4">
         <SheetTitle>
-          {update.operation
-            .split("_")
-            .map((s) => s[0].toUpperCase() + s.slice(1))
-            .join(" ")}{" "}
+          {fmt_operation(update.operation)}{" "}
           {!version_is_none(update.version) && fmt_version(update.version)}
         </SheetTitle>
         <SheetDescription className="flex flex-col gap-2">

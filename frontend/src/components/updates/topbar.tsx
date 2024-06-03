@@ -12,7 +12,7 @@ import { UpdateDetails, UpdateUser } from "./details";
 import { ResourceComponents } from "@components/resources";
 import { cn, version_is_none } from "@lib/utils";
 import { Types } from "@monitor/client";
-import { fmt_date, fmt_version } from "@lib/formatting";
+import { fmt_date, fmt_operation, fmt_version } from "@lib/formatting";
 import { ResourceName } from "@components/resources/common";
 import { UsableResource } from "@types";
 
@@ -73,7 +73,7 @@ const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
           <div className="text-sm w-full">
             <div className="flex items-center gap-2">
               <Icon />
-              {update.operation.match(/[A-Z][a-z]+|[0-9]+/g)?.join(" ")}
+              {fmt_operation(update.operation)}
               <div className="text-xs text-muted-foreground">
                 {!version_is_none(update.version) &&
                   fmt_version(update.version)}
