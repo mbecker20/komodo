@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use monitor_client::entities::{
   alert::{Alert, AlertData},
-  deployment::Deployment,
+  deployment::{Deployment, DeploymentState},
   server::stats::SeverityLevel,
   update::ResourceTarget,
 };
@@ -18,30 +18,45 @@ pub async fn alert_deployments(
   server_names: HashMap<String, String>,
 ) {
   let mut alerts = Vec::<Alert>::new();
-  for v in deployment_status_cache().get_list().await {
-    if v.prev.is_none() {
+  for status in deployment_status_cache().get_list().await {
+    // Don't alert if prev None
+    let Some(prev) = status.prev else {
+      continue;
+    };
+
+    // Don't alert if either prev or curr is Unknown.
+    // This will happen if server is unreachable, so this would be redundant.
+    if status.curr.state == DeploymentState::Unknown
+      || prev == DeploymentState::Unknown
+    {
       continue;
     }
-    let prev = v.prev.as_ref().unwrap().to_owned();
-    if v.curr.state != prev {
+
+    if status.curr.state != prev {
       // send alert
-      let d = resource::get::<Deployment>(&v.curr.id).await;
-      if let Err(e) = d {
-        error!("failed to get deployment from db | {e:#?}");
+      let Ok(deployment) =
+        resource::get::<Deployment>(&status.curr.id)
+          .await
+          .inspect_err(|e| {
+            error!("failed to get deployment from db | {e:#?}")
+          })
+      else {
+        continue;
+      };
+      if !deployment.config.send_alerts {
         continue;
       }
-      let d = d.unwrap();
-      let target: ResourceTarget = (&d).into();
+      let target: ResourceTarget = (&deployment).into();
       let data = AlertData::ContainerStateChange {
-        id: v.curr.id.clone(),
-        name: d.name,
+        id: status.curr.id.clone(),
+        name: deployment.name,
         server_name: server_names
-          .get(&d.config.server_id)
+          .get(&deployment.config.server_id)
           .cloned()
           .unwrap_or(String::from("unknown")),
-        server_id: d.config.server_id,
+        server_id: deployment.config.server_id,
         from: prev,
-        to: v.curr.state,
+        to: status.curr.state,
       };
       let alert = Alert {
         id: Default::default(),
@@ -52,9 +67,7 @@ pub async fn alert_deployments(
         data,
         ts,
       };
-      if d.config.send_alerts {
-        alerts.push(alert);
-      }
+      alerts.push(alert);
     }
   }
   if alerts.is_empty() {
