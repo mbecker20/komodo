@@ -71,7 +71,10 @@ export const Topbar = () => {
             to={"/"}
             className="flex gap-3 items-start text-2xl tracking-widest lg:mx-2"
           >
-            <img src="/monitor-lizard.png" className="w-9 h-7 dark:invert hidden lg:block" />
+            <img
+              src="/monitor-lizard.png"
+              className="w-9 h-7 dark:invert hidden lg:block"
+            />
             MONITOR
           </Link>
           <div className="flex gap-2">
@@ -84,7 +87,18 @@ export const Topbar = () => {
           className="hidden lg:flex justify-self-center"
         />
         <div className="flex md:gap-2 justify-self-end items-center">
-          <div className="hidden lg:block px-2 text-muted-foreground cursor-default">v{version}</div>
+          {/* <div className="hidden lg:block px-2 text-muted-foreground cursor-default">
+            v{version}
+          </div> */}
+          <a
+            href="https://docs.monitor.mogh.tech"
+            target="_blank"
+            className="hidden lg:block"
+          >
+            <Button variant="link" className="text-muted-foreground p-2">
+              <div>v{version ? version : "x.x.x"}</div>
+            </Button>
+          </a>
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <WsStatusIndicator />
           <TopbarUpdates />
