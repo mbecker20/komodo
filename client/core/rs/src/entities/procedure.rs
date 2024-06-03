@@ -51,9 +51,7 @@ pub type _PartialProcedureConfig = PartialProcedureConfig;
 
 /// Config for the [Procedure]
 #[typeshare]
-#[derive(
-  Debug, Clone, Default, Serialize, Deserialize, Partial, Builder,
-)]
+#[derive(Debug, Clone, Serialize, Deserialize, Partial, Builder)]
 #[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct ProcedureConfig {
@@ -69,8 +67,23 @@ pub struct ProcedureConfig {
   pub webhook_enabled: bool,
 }
 
+impl ProcedureConfig {
+  pub fn builder() -> ProcedureConfigBuilder {
+    ProcedureConfigBuilder::default()
+  }
+}
+
 fn default_webhook_enabled() -> bool {
   true
+}
+
+impl Default for ProcedureConfig {
+  fn default() -> Self {
+    Self {
+      stages: Default::default(),
+      webhook_enabled: default_webhook_enabled(),
+    }
+  }
 }
 
 /// A single stage of a procedure. Runs a list of executions in parallel.
@@ -83,6 +96,7 @@ pub struct ProcedureStage {
   #[serde(default = "default_enabled")]
   pub enabled: bool,
   /// The executions in the stage
+  #[serde(default)]
   pub executions: Vec<EnabledExecution>,
 }
 

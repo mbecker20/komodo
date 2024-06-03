@@ -182,6 +182,30 @@ fn default_webhook_enabled() -> bool {
   true
 }
 
+impl Default for BuildConfig {
+  fn default() -> Self {
+    Self {
+      builder_id: Default::default(),
+      skip_secret_interp: Default::default(),
+      version: Default::default(),
+      repo: Default::default(),
+      branch: default_branch(),
+      commit: Default::default(),
+      github_account: Default::default(),
+      docker_account: Default::default(),
+      docker_organization: Default::default(),
+      pre_build: Default::default(),
+      build_path: default_build_path(),
+      dockerfile_path: default_dockerfile_path(),
+      build_args: Default::default(),
+      labels: Default::default(),
+      extra_args: Default::default(),
+      use_buildx: Default::default(),
+      webhook_enabled: default_webhook_enabled(),
+    }
+  }
+}
+
 #[typeshare]
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct BuildActionState {

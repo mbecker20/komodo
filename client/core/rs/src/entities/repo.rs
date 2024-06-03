@@ -132,6 +132,21 @@ fn default_webhook_enabled() -> bool {
   true
 }
 
+impl Default for RepoConfig {
+  fn default() -> Self {
+    Self {
+      server_id: Default::default(),
+      repo: Default::default(),
+      branch: default_branch(),
+      commit: Default::default(),
+      github_account: Default::default(),
+      on_clone: Default::default(),
+      on_pull: Default::default(),
+      webhook_enabled: default_webhook_enabled(),
+    }
+  }
+}
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct RepoActionState {

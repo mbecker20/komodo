@@ -54,6 +54,12 @@ pub enum ServerTemplateConfig {
   Hetzner(hetzner::HetznerServerTemplateConfig),
 }
 
+impl Default for ServerTemplateConfig {
+  fn default() -> Self {
+    Self::Aws(Default::default())
+  }
+}
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(

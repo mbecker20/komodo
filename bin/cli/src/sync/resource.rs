@@ -28,13 +28,16 @@ pub struct ToUpdateItem<T> {
 
 pub trait ResourceSync: Sized {
   type Config: Clone
+    + Default
     + Send
+    + From<Self::PartialConfig>
     + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
   type Info: Default + 'static;
   type PartialConfig: std::fmt::Debug
     + Clone
     + Send
+    + From<Self::Config>
     + From<Self::ConfigDiff>
     + Serialize
     + MaybeNone
@@ -158,6 +161,7 @@ pub trait ResourceSync: Sized {
   }
 }
 
+/// Gets all the resources to update, logging along the way.
 pub fn get_updates<Resource: ResourceSync>(
   resources: Vec<ResourceToml<Resource::PartialConfig>>,
   delete: bool,
@@ -179,6 +183,11 @@ pub fn get_updates<Resource: ResourceSync>(
   for mut resource in resources {
     match map.get(&resource.name) {
       Some(original) => {
+        // First merge toml resource config (partial) onto default resource config.
+        // Makes sure things that aren't defined in toml (come through as None) actually get removed.
+        let config: Resource::Config = resource.config.into();
+        resource.config = config.into();
+
         let diff = Resource::get_diff(
           original.config.clone(),
           resource.config,

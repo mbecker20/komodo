@@ -61,8 +61,25 @@ pub struct AlerterConfig {
   pub endpoint: AlerterEndpoint,
 }
 
+impl AlerterConfig {
+  pub fn builder() -> AlerterConfigBuilder {
+    AlerterConfigBuilder::default()
+  }
+}
+
 fn default_enabled() -> bool {
   true
+}
+
+impl Default for AlerterConfig {
+  fn default() -> Self {
+    Self {
+      enabled: default_enabled(),
+      alert_types: Default::default(),
+      resources: Default::default(),
+      endpoint: Default::default(),
+    }
+  }
 }
 
 // ENDPOINTS

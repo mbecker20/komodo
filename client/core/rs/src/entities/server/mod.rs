@@ -182,6 +182,28 @@ fn default_disk_critical() -> f64 {
   95.0
 }
 
+impl Default for ServerConfig {
+  fn default() -> Self {
+    Self {
+      address: Default::default(),
+      enabled: default_enabled(),
+      stats_monitoring: default_stats_monitoring(),
+      auto_prune: default_auto_prune(),
+      send_unreachable_alerts: default_send_alerts(),
+      send_cpu_alerts: default_send_alerts(),
+      send_mem_alerts: default_send_alerts(),
+      send_disk_alerts: default_send_alerts(),
+      region: Default::default(),
+      cpu_warning: default_cpu_warning(),
+      cpu_critical: default_cpu_critical(),
+      mem_warning: default_mem_warning(),
+      mem_critical: default_mem_critical(),
+      disk_warning: default_disk_warning(),
+      disk_critical: default_disk_critical(),
+    }
+  }
+}
+
 /// Current pending actions on the server.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]

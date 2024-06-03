@@ -79,6 +79,12 @@ pub struct HetznerServerTemplateConfig {
   pub port: i32,
 }
 
+impl HetznerServerTemplateConfig {
+  pub fn builder() -> HetznerServerTemplateConfigBuilder {
+    HetznerServerTemplateConfigBuilder::default()
+  }
+}
+
 fn default_port() -> i32 {
   8120
 }

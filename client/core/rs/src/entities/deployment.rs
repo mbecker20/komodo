@@ -169,6 +169,30 @@ fn default_network() -> String {
   String::from("host")
 }
 
+impl Default for DeploymentConfig {
+  fn default() -> Self {
+    Self {
+      server_id: Default::default(),
+      send_alerts: default_send_alerts(),
+      image: Default::default(),
+      skip_secret_interp: Default::default(),
+      redeploy_on_build: Default::default(),
+      term_signal_labels: default_term_signal_labels(),
+      termination_signal: Default::default(),
+      termination_timeout: default_termination_timeout(),
+      ports: Default::default(),
+      volumes: Default::default(),
+      environment: Default::default(),
+      labels: Default::default(),
+      network: default_network(),
+      restart: Default::default(),
+      command: Default::default(),
+      extra_args: Default::default(),
+      docker_account: Default::default(),
+    }
+  }
+}
+
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, PartialEq, EnumVariants,

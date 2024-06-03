@@ -46,6 +46,12 @@ pub enum BuilderConfig {
   Aws(AwsBuilderConfig),
 }
 
+impl Default for BuilderConfig {
+  fn default() -> Self {
+    Self::Aws(Default::default())
+  }
+}
+
 /// Partial representation of [BuilderConfig]
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]

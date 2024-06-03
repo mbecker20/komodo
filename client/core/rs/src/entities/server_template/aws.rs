@@ -65,6 +65,12 @@ pub struct AwsServerTemplateConfig {
   pub volumes: Vec<AwsVolume>,
 }
 
+impl AwsServerTemplateConfig {
+  pub fn builder() -> AwsServerTemplateConfigBuilder {
+    AwsServerTemplateConfigBuilder::default()
+  }
+}
+
 fn default_region() -> String {
   String::from("us-east-1")
 }
