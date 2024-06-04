@@ -178,7 +178,12 @@ const ProcedureConfigInner = ({
             disabled={disabled}
           />
         ))}
-        <Button onClick={add_stage} className="w-fit self-end">
+        <Button
+          variant="secondary"
+          onClick={add_stage}
+          className="w-fit self-end"
+          disabled={disabled}
+        >
           Add Stage
         </Button>
       </ConfigLayout>
@@ -257,9 +262,6 @@ const Stage = ({
             checked={stage.enabled}
             onCheckedChange={(enabled) => setStage({ ...stage, enabled })}
           />
-          {/* <Button variant="secondary" onClick={removeStage}>
-            <MinusCircle className="w-4 h-4" />
-          </Button> */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild disabled={disabled}>
               <Button
@@ -326,7 +328,7 @@ const Stage = ({
       </div>
       <DataTable
         tableKey="procedure-stage-executions"
-        data={stage.executions}
+        data={stage.executions!}
         noResults={
           <Button
             onClick={() =>
@@ -335,6 +337,7 @@ const Stage = ({
                 executions: [default_enabled_execution()],
               })
             }
+            variant="secondary"
             disabled={disabled}
           >
             Add Execution
@@ -355,7 +358,7 @@ const Stage = ({
                   onClick={() =>
                     setStage({
                       ...stage,
-                      executions: stage.executions.map((item, i) =>
+                      executions: stage.executions!.map((item, i) =>
                         i === index ? { ...item, enabled: !enabled } : item
                       ),
                     })
@@ -374,7 +377,7 @@ const Stage = ({
                 onSelect={(type) =>
                   setStage({
                     ...stage,
-                    executions: stage.executions.map((item, i) =>
+                    executions: stage.executions!.map((item, i) =>
                       i === index
                         ? ({
                             ...item,
@@ -411,7 +414,7 @@ const Stage = ({
                   setParams={(params: any) =>
                     setStage({
                       ...stage,
-                      executions: stage.executions.map((item, i) =>
+                      executions: stage.executions!.map((item, i) =>
                         i === index
                           ? {
                               ...item,
@@ -435,12 +438,13 @@ const Stage = ({
                     setStage({
                       ...stage,
                       executions: [
-                        ...stage.executions.slice(0, index + 1),
+                        ...stage.executions!.slice(0, index + 1),
                         default_enabled_execution(),
-                        ...stage.executions.slice(index + 1),
+                        ...stage.executions!.slice(index + 1),
                       ],
                     })
                   }
+                  disabled={disabled}
                 >
                   <PlusCircle className="w-4 h-4" />
                 </Button>
@@ -449,11 +453,12 @@ const Stage = ({
                   onClick={() =>
                     setStage({
                       ...stage,
-                      executions: stage.executions.filter(
+                      executions: stage.executions!.filter(
                         (_, i) => i !== index
                       ),
                     })
                   }
+                  disabled={disabled}
                 >
                   <MinusCircle className="w-4 h-4" />
                 </Button>
