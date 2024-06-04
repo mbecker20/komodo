@@ -15,9 +15,11 @@ import { CopyButton } from "./util";
 export const ExportButton = ({
   target,
   user_group,
+  tags,
 }: {
   target?: Types.ResourceTarget;
   user_group?: string;
+  tags?: string[];
 }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -35,7 +37,7 @@ export const ExportButton = ({
         {target || user_group ? (
           <ExportTargetLoader target={target} user_group={user_group} />
         ) : (
-          <ExportAllLoader />
+          <ExportAllLoader tags={tags} />
         )}
       </DialogContent>
     </Dialog>
@@ -56,8 +58,8 @@ const ExportTargetLoader = ({
   return <ExportPre loading={isPending} content={data?.toml} />;
 };
 
-const ExportAllLoader = () => {
-  const { data, isPending } = useRead("ExportAllResourcesToToml", {});
+const ExportAllLoader = ({ tags }: { tags?: string[] }) => {
+  const { data, isPending } = useRead("ExportAllResourcesToToml", { tags });
   return <ExportPre loading={isPending} content={data?.toml} />;
 };
 

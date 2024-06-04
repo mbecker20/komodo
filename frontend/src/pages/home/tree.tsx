@@ -30,7 +30,7 @@ export const Tree = () => {
               placeholder="search..."
               className="w-[200px] lg:w-[300px]"
             />
-            <ExportButton />
+            <ExportButton tags={tags} />
           </div>
           <TagsFilter />
         </div>

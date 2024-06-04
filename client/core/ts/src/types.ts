@@ -698,7 +698,7 @@ export interface ProcedureStage {
 	/** Whether the stage should be run as part of the procedure. */
 	enabled: boolean;
 	/** The executions in the stage */
-	executions: EnabledExecution[];
+	executions?: EnabledExecution[];
 }
 
 /** Config for the [Procedure] */
@@ -2513,6 +2513,8 @@ export interface ListTags {
  * Response: [TomlResponse].
  */
 export interface ExportAllResourcesToToml {
+	/** Tag name or id. Empty array will not filter by tag. */
+	tags?: string[];
 }
 
 /**

@@ -10,6 +10,7 @@ import { useState } from "react";
 
 export const AllResources = () => {
   const [search, setSearch] = useState("");
+  const tags = useTagsFilter();
   return (
     <Page
       titleOther={
@@ -21,7 +22,7 @@ export const AllResources = () => {
               placeholder="search..."
               className="w-[200px] lg:w-[300px]"
             />
-            <ExportButton />
+            <ExportButton tags={tags} />
           </div>
           <TagsFilter />
         </div>

@@ -241,7 +241,7 @@ export const atomWithStorage = <T>(key: string, init: T) => {
 export const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
 
 export const useTagsFilter = () => {
-  const [tags] = useAtom(tagsAtom);
+  const [tags] = useAtom<string[]>(tagsAtom);
   return tags;
 };
 

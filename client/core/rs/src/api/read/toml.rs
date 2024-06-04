@@ -25,7 +25,11 @@ pub struct TomlResponse {
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ExportAllResourcesToTomlResponse)]
-pub struct ExportAllResourcesToToml {}
+pub struct ExportAllResourcesToToml {
+  /// Tag name or id. Empty array will not filter by tag.
+  #[serde(default)]
+  pub tags: Vec<String>,
+}
 
 #[typeshare]
 pub type ExportAllResourcesToTomlResponse = TomlResponse;

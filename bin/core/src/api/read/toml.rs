@@ -18,7 +18,7 @@ use monitor_client::{
     permission::{PermissionLevel, UserTarget},
     procedure::Procedure,
     repo::Repo,
-    resource::Resource,
+    resource::{Resource, ResourceQuery},
     server::Server,
     server_template::ServerTemplate,
     toml::{
@@ -40,32 +40,41 @@ use crate::{
 impl Resolve<ExportAllResourcesToToml, User> for State {
   async fn resolve(
     &self,
-    ExportAllResourcesToToml {}: ExportAllResourcesToToml,
+    ExportAllResourcesToToml { tags }: ExportAllResourcesToToml,
     user: User,
   ) -> anyhow::Result<ExportAllResourcesToTomlResponse> {
     let mut targets = Vec::<ResourceTarget>::new();
 
     targets.extend(
-      resource::list_for_user::<Alerter>(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Alerter(resource.id)),
+      resource::list_for_user::<Alerter>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Alerter(resource.id)),
     );
     targets.extend(
-      resource::list_for_user::<Builder>(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Builder(resource.id)),
+      resource::list_for_user::<Builder>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Builder(resource.id)),
     );
     targets.extend(
-      resource::list_for_user::<Server>(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Server(resource.id)),
+      resource::list_for_user::<Server>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Server(resource.id)),
     );
     targets.extend(
       resource::list_for_user::<Deployment>(
-        Default::default(),
+        ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
       )
       .await?
@@ -73,26 +82,35 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .map(|resource| ResourceTarget::Deployment(resource.id)),
     );
     targets.extend(
-      resource::list_for_user::<Build>(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Build(resource.id)),
+      resource::list_for_user::<Build>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Build(resource.id)),
     );
     targets.extend(
-      resource::list_for_user::<Repo>(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Repo(resource.id)),
+      resource::list_for_user::<Repo>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Repo(resource.id)),
     );
     targets.extend(
-      resource::list_for_user::<Procedure>(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Procedure(resource.id)),
+      resource::list_for_user::<Procedure>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Procedure(resource.id)),
     );
     targets.extend(
       resource::list_for_user::<ServerTemplate>(
-        Default::default(),
+        ResourceQuery::builder().tags(tags).build(),
         &user,
       )
       .await?
