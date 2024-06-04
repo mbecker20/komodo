@@ -3,6 +3,7 @@ import { ConfigItem } from "@components/config/util";
 import { ResourceSelector } from "@components/resources/common";
 import { fmt_date, fmt_version } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
+import { filterBySplit } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import {
@@ -43,13 +44,9 @@ const BuildVersionSelector = ({
     { build: buildId! },
     { enabled: !!buildId }
   ).data;
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? versions?.filter((version) => {
-        const fmt = fmt_version(version.version);
-        return searchSplit.every((term) => fmt.includes(term));
-      })
-    : versions;
+  const filtered = filterBySplit(versions, search, (item) =>
+    fmt_version(item.version)
+  );
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>

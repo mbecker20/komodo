@@ -1,7 +1,7 @@
 import { TableTags } from "@components/tags";
 import { Types } from "@monitor/client";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { useFilterResources, useRead } from "@lib/hooks";
+import { useRead } from "@lib/hooks";
 import { ResourceLink } from "../common";
 import { DeploymentComponents } from ".";
 import { HardDrive } from "lucide-react";
@@ -9,21 +9,18 @@ import { useCallback } from "react";
 
 export const DeploymentTable = ({
   deployments,
-  search,
 }: {
-  deployments: Types.DeploymentListItem[] | undefined;
-  search?: string;
+  deployments: Types.DeploymentListItem[];
 }) => {
   const servers = useRead("ListServers", {}).data;
   const serverName = useCallback(
     (id: string) => servers?.find((server) => server.id === id)?.name,
     [servers]
   );
-  const filtered = useFilterResources(deployments, search);
   return (
     <DataTable
       tableKey="deployments"
-      data={filtered}
+      data={deployments}
       columns={[
         {
           accessorKey: "name",

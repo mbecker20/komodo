@@ -1,7 +1,14 @@
+import { ExportButton } from "@components/export";
 import { Page } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsFilter } from "@components/tags";
-import { useResourceParamType, useSetTitle } from "@lib/hooks";
+import {
+  useFilterResources,
+  useRead,
+  useResourceParamType,
+  useSetTitle,
+} from "@lib/hooks";
+import { Types } from "@monitor/client";
 import { Input } from "@ui/input";
 import { useState } from "react";
 
@@ -11,6 +18,16 @@ export const Resources = () => {
   useSetTitle(name + "s");
   const Components = ResourceComponents[type];
   const [search, set] = useState("");
+
+  const resources = useRead(`List${type}s`, {}).data;
+
+  const filtered = useFilterResources(resources as any, search);
+  const targets = filtered?.map(
+    (resource): Types.ResourceTarget => ({
+      type,
+      id: resource.id,
+    })
+  );
 
   return (
     <Page
@@ -24,13 +41,16 @@ export const Resources = () => {
       }
     >
       <div className="flex flex-col gap-4">
-        <Input
-          value={search}
-          onChange={(e) => set(e.target.value)}
-          placeholder="search..."
-          className="w-[200px] lg:w-[300px]"
-        />
-        <Components.Table search={search} />
+        <div className="flex items-center gap-4">
+          <Input
+            value={search}
+            onChange={(e) => set(e.target.value)}
+            placeholder="search..."
+            className="w-[200px] lg:w-[300px]"
+          />
+          <ExportButton targets={targets} />
+        </div>
+        <Components.Table resources={filtered ?? []} />
       </div>
     </Page>
   );

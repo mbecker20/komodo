@@ -15,7 +15,7 @@ export interface RequiredResourceComponents {
   New: React.FC<{ server_id?: string; build_id?: string }>;
 
   /** A table component to view resource list */
-  Table: React.FC<{ search?: string }>;
+  Table: React.FC<{ resources: Types.ResourceListItem<unknown>[] }>;
 
   /** Icon for the component */
   Icon: OptionalIdComponent;

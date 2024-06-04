@@ -3,7 +3,8 @@ import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsFilter } from "@components/tags";
-import { useRead, useTagsFilter } from "@lib/hooks";
+import { useFilterResources, useRead, useTagsFilter } from "@lib/hooks";
+import { Types } from "@monitor/client";
 import { RequiredResourceComponents, UsableResource } from "@types";
 import { Input } from "@ui/input";
 import { useState } from "react";
@@ -50,23 +51,20 @@ const TableSection = ({
   Components: RequiredResourceComponents;
   search?: string;
 }) => {
-  const tags = useTagsFilter();
-  const searchSplit = search?.toLowerCase().split(" ") || [];
-  const count = useRead(`List${type as UsableResource}s`, {}).data?.filter(
-    (resource) =>
-      tags.every((tag) => resource.tags.includes(tag)) &&
-      (searchSplit.length > 0
-        ? searchSplit.every((search) =>
-            resource.name.toLowerCase().includes(search)
-          )
-        : true)
-  ).length;
+  const resources = useRead(`List${type as UsableResource}s`, {}).data;
+
+  const filtered = useFilterResources(
+    resources as Types.ResourceListItem<unknown>[],
+    search
+  );
+
+  let count = filtered.length;
 
   if (!count) return;
 
   return (
     <Section key={type} title={type + "s"}>
-      <Components.Table search={search} />
+      <Components.Table resources={resources ?? []} />
     </Section>
   );
 };

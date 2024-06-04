@@ -1,16 +1,19 @@
 import { TableTags } from "@components/tags";
-import { useFilterResources, useRead } from "@lib/hooks";
+import { useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceLink } from "../common";
+import { Types } from "@monitor/client";
 
-export const ServerTable = ({ search }: { search?: string }) => {
-  const servers = useRead("ListServers", {}).data;
-  const filtered = useFilterResources(servers, search);
+export const ServerTable = ({
+  servers,
+}: {
+  servers: Types.ServerListItem[];
+}) => {
   return (
     <DataTable
       tableKey="servers"
-      data={filtered}
+      data={servers}
       columns={[
         {
           accessorKey: "name",

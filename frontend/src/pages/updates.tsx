@@ -2,6 +2,7 @@ import { Page } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { UpdatesTable } from "@components/updates/table";
 import { useRead, useResourceParamType, useSetTitle } from "@lib/hooks";
+import { filterBySplit } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { UsableResource } from "@types";
@@ -183,12 +184,7 @@ const OperationSelector = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? options.filter((operation) =>
-        searchSplit.every((term) => operation.includes(term))
-      )
-    : options;
+  const filtered = filterBySplit(options, search, (item) => item);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

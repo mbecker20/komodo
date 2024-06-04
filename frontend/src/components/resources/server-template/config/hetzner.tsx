@@ -2,7 +2,7 @@ import { Config } from "@components/config";
 import { ConfigItem, InputList } from "@components/config/util";
 import { TextUpdateMenu } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
-import { cn } from "@lib/utils";
+import { cn, filterBySplit } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card } from "@ui/card";
@@ -348,12 +348,7 @@ const ServerTypeSelector = ({
       ? (st: string) => st.includes("Amd")
       : () => true;
   const server_types = Object.values(Types.HetznerServerType).filter(filter);
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? server_types.filter((type) =>
-        searchSplit.every((term) => type.includes(term))
-      )
-    : server_types;
+  const filtered = filterBySplit(server_types, search, (item) => item);
   return (
     <ConfigItem label="Server Type">
       <Popover open={open} onOpenChange={setOpen}>

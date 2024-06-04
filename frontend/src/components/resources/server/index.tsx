@@ -93,7 +93,7 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
           titleOther={tabsList}
           actions={<ResourceComponents.Deployment.New server_id={id} />}
         >
-          <DeploymentTable deployments={deployments} />
+          <DeploymentTable deployments={deployments ?? []} />
         </Section>
       </TabsContent>
 
@@ -102,7 +102,7 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
           titleOther={tabsList}
           actions={<ResourceComponents.Repo.New server_id={id} />}
         >
-          <RepoTable repos={repos} />
+          <RepoTable repos={repos ?? []} />
         </Section>
       </TabsContent>
     </Tabs>
@@ -116,7 +116,9 @@ export const ServerComponents: RequiredResourceComponents = {
 
   New: () => <NewResource type="Server" />,
 
-  Table: ServerTable,
+  Table: ({ resources }) => (
+    <ServerTable servers={resources as Types.ServerListItem[]} />
+  ),
 
   Icon: ({ id }) => <Icon id={id} size={4} />,
   BigIcon: ({ id }) => <Icon id={id} size={8} />,

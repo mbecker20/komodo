@@ -91,7 +91,11 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
     );
   },
 
-  Table: ServerTemplateTable,
+  Table: ({ resources }) => (
+    <ServerTemplateTable
+      serverTemplates={resources as Types.ServerTemplateListItem[]}
+    />
+  ),
 
   Icon: () => <ServerCog className="w-4 h-4" />,
   BigIcon: () => <ServerCog className="w-8 h-8" />,

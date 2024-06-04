@@ -15,6 +15,7 @@ import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { RepoDashboard } from "./dashboard";
 import { useServer } from "../server";
+import { Types } from "@monitor/client";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
@@ -34,10 +35,9 @@ export const RepoComponents: RequiredResourceComponents = {
 
   New: ({ server_id }) => <NewResource type="Repo" server_id={server_id} />,
 
-  Table: ({ search }) => {
-    const repos = useRead("ListRepos", {}).data;
-    return <RepoTable repos={repos} search={search} />;
-  },
+  Table: ({ resources }) => (
+    <RepoTable repos={resources as Types.RepoListItem[]} />
+  ),
 
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,

@@ -1,15 +1,17 @@
-import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
+import { Types } from "@monitor/client";
 
-export const ServerTemplateTable = ({ search }: { search?: string }) => {
-  const server_templates = useRead("ListServerTemplates", {}).data;
-  const filtered = useFilterResources(server_templates, search);
+export const ServerTemplateTable = ({
+  serverTemplates,
+}: {
+  serverTemplates: Types.ServerTemplateListItem[];
+}) => {
   return (
     <DataTable
       tableKey="server-templates"
-      data={filtered}
+      data={serverTemplates}
       columns={[
         {
           accessorKey: "name",

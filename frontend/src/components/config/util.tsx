@@ -19,7 +19,7 @@ import {
   SearchX,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { cn } from "@lib/utils";
+import { cn, filterBySplit } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -376,14 +376,9 @@ export const AddExtraArgMenu = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const suggestions = useRead(`ListCommon${type}ExtraArgs`, {}).data;
+  const suggestions = useRead(`ListCommon${type}ExtraArgs`, {}).data ?? [];
 
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? suggestions?.filter((suggestion) =>
-        searchSplit.every((term) => suggestion.includes(term))
-      )
-    : suggestions;
+  const filtered = filterBySplit(suggestions, search, (item) => item);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -1,5 +1,5 @@
 import { tagsAtom, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { cn } from "@lib/utils";
+import { cn, filterBySplit } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
@@ -24,12 +24,7 @@ export const TagsFilter = () => {
   const [search, setSearch] = useState("");
   const [tags, setTags] = useAtom(tagsAtom);
   const all_tags = useRead("ListTags", {}).data;
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? all_tags?.filter((tag) =>
-        searchSplit.every((term) => tag.name.includes(term))
-      )
-    : all_tags;
+  const filtered = filterBySplit(all_tags, search, (item) => item.name);
   return (
     <div className="flex gap-4 items-center">
       <TagsFilterTags
@@ -236,12 +231,11 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
 
   if (!resource) return null;
 
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? all_tags?.filter((tag) =>
-        searchSplit.every((term) => tag.name.includes(term))
-      )
-    : all_tags;
+  const filtered = filterBySplit(
+    all_tags,
+    search,
+    (item) => item.name
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

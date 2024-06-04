@@ -25,7 +25,11 @@ import {
 } from "@ui/dropdown-menu";
 import { Button } from "@ui/button";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { RESOURCE_TARGETS, usableResourcePath } from "@lib/utils";
+import {
+  RESOURCE_TARGETS,
+  filterBySplit,
+  usableResourcePath,
+} from "@lib/utils";
 import { OmniSearch, OmniDialog } from "./omnibar";
 import { WsStatusIndicator } from "@lib/socket";
 import { TopbarUpdates } from "./updates/topbar";
@@ -45,6 +49,7 @@ import {
 } from "@ui/command";
 import { ResourceLink } from "./resources/common";
 import { HomeView, homeViewAtom } from "@main";
+import { Types } from "@monitor/client";
 
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
@@ -298,7 +303,7 @@ const SecondaryDropdown = () => {
 const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
   const nav = useNavigate();
   const id = useParams().id as string;
-  const list = useRead(`List${type}s`, {}).data;
+  const list = useRead(`List${type}s`, {}).data ?? [];
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -306,12 +311,11 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
   const selected = list?.find((i) => i.id === id);
   const Components = ResourceComponents[type];
 
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit
-    ? list?.filter((resource) =>
-        searchSplit.every((term) => resource.name.includes(term))
-      )
-    : list;
+  const filtered = filterBySplit(
+    list as Types.ResourceListItem<unknown>[],
+    search,
+    (item) => item.name
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -374,18 +378,17 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const groups = useRead("ListUserGroups", {}).data;
+  const groups = useRead("ListUserGroups", {}).data ?? [];
 
   const selected = group_id
     ? groups?.find((user) => user._id?.$oid === group_id)
     : undefined;
 
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit
-    ? groups?.filter((group) =>
-        searchSplit.every((term) => group.name.includes(term))
-      )
-    : groups;
+  const filtered = filterBySplit(
+    groups as Types.UserGroup[],
+    search,
+    (item) => item.name
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -454,19 +457,18 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const users = useRead("ListUsers", {}).data;
+  const users = useRead("ListUsers", {}).data ?? [];
 
   const selected = user_id
     ? users?.find((user) => user._id?.$oid === user_id)
     : undefined;
   const avatar = (selected?.config.data as { avatar?: string })?.avatar;
 
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit
-    ? users?.map((user) =>
-        searchSplit.every((term) => user.username.includes(term))
-      )
-    : users;
+  const filtered = filterBySplit(
+    users as Types.User[],
+    search,
+    (item) => item.username
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -5,7 +5,7 @@ import { ResourceComponents } from "@components/resources";
 import { DeploymentTable } from "@components/resources/deployment/table";
 import { ServerComponents } from "@components/resources/server";
 import { TagsFilter, TagsWithBadge } from "@components/tags";
-import { useRead, useTagsFilter } from "@lib/hooks";
+import { useFilterResources, useRead, useTagsFilter } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle } from "@ui/card";
 import { Input } from "@ui/input";
@@ -58,6 +58,7 @@ const Server = ({ id }: { id: string }) => {
   const deployments = useRead("ListDeployments", {}).data?.filter(
     (deployment) => deployment.info.server_id === id
   );
+  const filtered = useFilterResources(deployments, search);
   return (
     <div className="grid gap-2">
       <Card
@@ -85,7 +86,7 @@ const Server = ({ id }: { id: string }) => {
           </div>
         </CardHeader>
       </Card>
-      {open && <DeploymentTable deployments={deployments} search={search} />}
+      {open && <DeploymentTable deployments={filtered ?? []} />}
     </div>
   );
 };

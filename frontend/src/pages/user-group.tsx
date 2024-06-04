@@ -3,6 +3,7 @@ import { Page, Section } from "@components/layouts";
 import { PermissionsTable } from "@components/users/permissions-table";
 import { UserTable } from "@components/users/table";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { filterBySplit } from "@lib/utils";
 import { Button } from "@ui/button";
 import {
   Command,
@@ -118,12 +119,7 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
 
   if (!users || users.length === 0) return null;
 
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? users.filter((user) =>
-        searchSplit.every((term) => user.username.includes(term))
-      )
-    : users;
+  const filtered = filterBySplit(users, search, (item) => item.username);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

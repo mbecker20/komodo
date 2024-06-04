@@ -157,3 +157,19 @@ export const getUpdateQuery = (
     };
   }
 };
+
+export const filterBySplit = <T>(
+  items: T[] | undefined,
+  search: string,
+  extract: (item: T) => string
+) => {
+  const split = search.toLowerCase().split(" ");
+  return (
+    (split.length
+      ? items?.filter((item) => {
+          const target = extract(item);
+          return split.every((term) => target.includes(term));
+        })
+      : items) ?? []
+  );
+};

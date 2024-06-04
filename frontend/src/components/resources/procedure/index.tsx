@@ -12,6 +12,7 @@ import {
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { ProcedureDashboard } from "./dashboard";
+import { Types } from "@monitor/client";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -23,7 +24,9 @@ export const ProcedureComponents: RequiredResourceComponents = {
 
   New: () => <NewResource type="Procedure" />,
 
-  Table: ProcedureTable,
+  Table: ({ resources }) => (
+    <ProcedureTable procedures={resources as Types.ProcedureListItem[]} />
+  ),
 
   Icon: () => <Route className="w-4" />,
   BigIcon: () => <Route className="w-8" />,

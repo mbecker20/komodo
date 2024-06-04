@@ -103,7 +103,9 @@ export const BuilderComponents: RequiredResourceComponents = {
     );
   },
 
-  Table: BuilderTable,
+  Table: ({ resources }) => (
+    <BuilderTable builders={resources as Types.BuilderListItem[]} />
+  ),
 
   Icon: () => <Factory className="w-4 h-4" />,
   BigIcon: () => <Factory className="w-8 h-8" />,

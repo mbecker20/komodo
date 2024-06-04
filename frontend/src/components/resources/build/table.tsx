@@ -1,17 +1,15 @@
 import { TableTags } from "@components/tags";
-import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { fmt_version } from "@lib/formatting";
 import { ResourceLink } from "../common";
 import { BuildComponents } from ".";
+import { Types } from "@monitor/client";
 
-export const BuildTable = ({ search }: { search?: string }) => {
-  const builds = useRead("ListBuilds", {}).data;
-  const filtered = useFilterResources(builds, search)
+export const BuildTable = ({ builds }: { builds: Types.BuildListItem[] }) => {
   return (
     <DataTable
       tableKey="builds"
-      data={filtered}
+      data={builds}
       columns={[
         {
           accessorKey: "name",

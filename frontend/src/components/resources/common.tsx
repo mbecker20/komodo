@@ -34,7 +34,7 @@ import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
 import { Types } from "@monitor/client";
 import { ConfigItem, DoubleInput } from "@components/config/util";
-import { usableResourcePath } from "@lib/utils";
+import { filterBySplit, usableResourcePath } from "@lib/utils";
 
 export const ResourceDescription = ({
   type,
@@ -100,12 +100,11 @@ export const ResourceSelector = ({
 
   if (!resources) return null;
 
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? resources.filter((resource) =>
-        searchSplit.every((term) => resource.name.includes(term))
-      )
-    : resources;
+  const filtered = filterBySplit(
+    resources as Types.ResourceListItem<unknown>[],
+    search,
+    (item) => item.name
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

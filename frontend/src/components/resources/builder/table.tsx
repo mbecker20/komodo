@@ -1,16 +1,18 @@
-import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { BuilderInstanceType } from ".";
+import { Types } from "@monitor/client";
 
-export const BuilderTable = ({ search }: { search?: string }) => {
-  const builders = useRead("ListBuilders", {}).data;
-  const filtered = useFilterResources(builders, search);
+export const BuilderTable = ({
+  builders,
+}: {
+  builders: Types.BuilderListItem[];
+}) => {
   return (
     <DataTable
       tableKey="builders"
-      data={filtered}
+      data={builders}
       columns={[
         {
           accessorKey: "name",

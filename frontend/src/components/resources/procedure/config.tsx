@@ -40,6 +40,7 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { filterBySplit } from "@lib/utils";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
   const procedure = useRead("GetProcedure", { procedure: id }).data;
@@ -508,12 +509,8 @@ const ExecutionTypeSelector = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const searchSplit = search.split(" ");
-  const filtered = searchSplit.length
-    ? EXECUTION_TYPES?.filter((type) =>
-        searchSplit.every((term) => type.includes(term))
-      )
-    : EXECUTION_TYPES;
+  const filtered = filterBySplit(EXECUTION_TYPES, search, (item) => item);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

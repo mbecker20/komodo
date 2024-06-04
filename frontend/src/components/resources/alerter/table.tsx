@@ -1,15 +1,17 @@
-import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
+import { Types } from "@monitor/client";
 
-export const AlerterTable = ({ search }: { search?: string }) => {
-  const alerters = useRead("ListAlerters", {}).data;
-  const filtered = useFilterResources(alerters, search);
+export const AlerterTable = ({
+  alerters,
+}: {
+  alerters: Types.AlerterListItem[];
+}) => {
   return (
     <DataTable
       tableKey="alerters"
-      data={filtered}
+      data={alerters}
       columns={[
         {
           accessorKey: "name",

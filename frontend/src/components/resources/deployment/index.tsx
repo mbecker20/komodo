@@ -107,9 +107,10 @@ export const DeploymentComponents: RequiredResourceComponents = {
     <NewResource type="Deployment" server_id={server_id} build_id={build_id} />
   ),
 
-  Table: ({ search }) => {
-    const deployments = useRead("ListDeployments", {}).data;
-    return <DeploymentTable deployments={deployments} search={search} />;
+  Table: ({ resources }) => {
+    return (
+      <DeploymentTable deployments={resources as Types.DeploymentListItem[]} />
+    );
   },
 
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,

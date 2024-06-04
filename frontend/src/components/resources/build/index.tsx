@@ -18,6 +18,7 @@ import { cn } from "@lib/utils";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceComponents } from "..";
+import { Types } from "@monitor/client";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -62,7 +63,7 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
           titleOther={titleOther}
           actions={<ResourceComponents.Deployment.New build_id={id} />}
         >
-          <DeploymentTable deployments={deployments} />
+          <DeploymentTable deployments={deployments ?? []} />
         </Section>
       </TabsContent>
     </Tabs>
@@ -76,7 +77,9 @@ export const BuildComponents: RequiredResourceComponents = {
 
   New: () => <NewResource type="Build" />,
 
-  Table: BuildTable,
+  Table: ({ resources }) => (
+    <BuildTable builds={resources as Types.BuildListItem[]} />
+  ),
 
   Icon: ({ id }) => <BuildIcon id={id} size={4} />,
   BigIcon: ({ id }) => <BuildIcon id={id} size={8} />,

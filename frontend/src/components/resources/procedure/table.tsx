@@ -1,16 +1,18 @@
-import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { TableTags } from "@components/tags";
 import { ResourceLink } from "../common";
 import { ProcedureComponents } from ".";
+import { Types } from "@monitor/client";
 
-export const ProcedureTable = ({ search }: { search?: string }) => {
-  const procedures = useRead("ListProcedures", {}).data;
-  const filtered = useFilterResources(procedures, search);
+export const ProcedureTable = ({
+  procedures,
+}: {
+  procedures: Types.ProcedureListItem[];
+}) => {
   return (
     <DataTable
       tableKey="procedures"
-      data={filtered}
+      data={procedures}
       columns={[
         {
           accessorKey: "name",
