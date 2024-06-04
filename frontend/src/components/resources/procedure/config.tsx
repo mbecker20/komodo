@@ -98,7 +98,7 @@ const ProcedureConfigInner = ({
         config={config}
         onConfirm={async () => {
           await mutateAsync({ id: procedure._id!.$oid, config });
-          // setConfig({});
+          setConfig({});
         }}
         onReset={() => setConfig({})}
       >
