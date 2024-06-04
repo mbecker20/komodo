@@ -268,7 +268,7 @@ export const NewResource = ({
       enabled={!!name}
       onOpenChange={() => setName("")}
     >
-      <div className="grid md:grid-cols-2">
+      <div className="grid md:grid-cols-2 items-center">
         {type} Name
         <Input
           placeholder={`${type_display}-name`}
