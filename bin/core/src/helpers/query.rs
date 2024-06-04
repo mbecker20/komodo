@@ -9,14 +9,18 @@ use monitor_client::entities::{
   permission::PermissionLevel,
   server::{Server, ServerState},
   tag::Tag,
-  update::ResourceTargetVariant,
+  update::{ResourceTargetVariant, Update},
   user::{admin_service_user, User},
   variable::Variable,
+  Operation,
 };
 use mungos::{
   by_id::find_one_by_id,
   find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId, Document},
+  mongodb::{
+    bson::{doc, oid::ObjectId, Document},
+    options::FindOneOptions,
+  },
 };
 
 use crate::{config::core_config, resource, state::db_client};
@@ -230,4 +234,26 @@ pub async fn get_variable(name: &str) -> anyhow::Result<Variable> {
     .with_context(|| {
       format!("no variable found with given name: {name}")
     })
+}
+
+pub async fn get_latest_update(
+  resource_type: ResourceTargetVariant,
+  id: &str,
+  operation: Operation,
+) -> anyhow::Result<Option<Update>> {
+  db_client()
+    .await
+    .updates
+    .find_one(
+      doc! {
+        "target.type": resource_type.as_ref(),
+        "target.id": id,
+        "operation": operation.as_ref()
+      },
+      FindOneOptions::builder()
+        .sort(doc! { "start_ts": -1 })
+        .build(),
+    )
+    .await
+    .context("failed to query db for latest update")
 }

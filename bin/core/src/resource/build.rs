@@ -16,11 +16,11 @@ use monitor_client::entities::{
 };
 use mungos::{
   find::find_collect,
-  mongodb::{bson::doc, options::FindOneOptions, Collection},
+  mongodb::{bson::doc, options::FindOptions, Collection},
 };
 
 use crate::{
-  helpers::empty_or_only_spaces,
+  helpers::{empty_or_only_spaces, query::get_latest_update},
   state::{action_states, build_state_cache, db_client},
 };
 
@@ -205,28 +205,40 @@ async fn get_build_state(id: &String) -> BuildState {
 
 async fn get_build_state_from_db(id: &str) -> BuildState {
   async {
-    let state = db_client()
-      .await
-      .updates
-      .find_one(
-        doc! {
-          "target.type": "Build",
-          "target.id": id,
-          "operation": "RunBuild"
-        },
-        FindOneOptions::builder()
-          .sort(doc! { "start_ts": -1 })
-          .build(),
-      )
-      .await?
-      .map(|u| {
-        if u.success {
+    let state = match tokio::try_join!(
+      latest_2_build_updates(id),
+      get_latest_update(
+        ResourceTargetVariant::Build,
+        id,
+        Operation::CancelBuild
+      ),
+    )? {
+      ([Some(build), second], Some(cancel))
+        if cancel.start_ts > build.start_ts =>
+      {
+        match second {
+          Some(build) => {
+            if build.success {
+              BuildState::Ok
+            } else {
+              BuildState::Failed
+            }
+          }
+          None => BuildState::Ok,
+        }
+      }
+      ([Some(build), _], _) => {
+        if build.success {
           BuildState::Ok
         } else {
           BuildState::Failed
         }
-      })
-      .unwrap_or(BuildState::Ok);
+      }
+      _ => {
+        // No build update ever, should be fine
+        BuildState::Ok
+      }
+    };
     anyhow::Ok(state)
   }
   .await
@@ -234,4 +246,26 @@ async fn get_build_state_from_db(id: &str) -> BuildState {
     warn!("failed to get build state for {id} | {e:#}")
   })
   .unwrap_or(BuildState::Unknown)
+}
+
+async fn latest_2_build_updates(
+  id: &str,
+) -> anyhow::Result<[Option<Update>; 2]> {
+  let mut builds = find_collect(
+    &db_client().await.updates,
+    doc! {
+      "target.type": "Build",
+      "target.id": id,
+      "operation": "RunBuild"
+    },
+    FindOptions::builder()
+      .sort(doc! { "start_ts": -1 })
+      .limit(2)
+      .build(),
+  )
+  .await
+  .context("failed to query for latest updates")?;
+  let second = builds.pop();
+  let first = builds.pop();
+  Ok([first, second])
 }

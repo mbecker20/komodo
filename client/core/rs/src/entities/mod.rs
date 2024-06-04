@@ -6,7 +6,7 @@ use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use serde::{Deserialize, Serialize};
 use serror::Serror;
-use strum::{Display, EnumString};
+use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
 /// Subtypes of [Alert][alert::Alert].
@@ -370,17 +370,18 @@ impl TryInto<async_timing_util::Timelength> for Timelength {
 
 #[typeshare]
 #[derive(
+  Debug,
+  Clone,
+  Copy,
+  PartialEq,
+  Eq,
+  Hash,
   Serialize,
   Deserialize,
-  Debug,
   Default,
   Display,
   EnumString,
-  PartialEq,
-  Hash,
-  Eq,
-  Clone,
-  Copy,
+  AsRefStr,
 )]
 pub enum Operation {
   // do nothing
