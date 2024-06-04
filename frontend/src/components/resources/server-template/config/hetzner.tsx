@@ -340,7 +340,7 @@ const ServerTypeSelector = ({
   set: (value: Partial<Types.HetznerServerTemplateConfig>) => void;
 }) => {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
   // The US based datacenters only have Amd servers
   const filter =
     datacenter === Types.HetznerDatacenter.HillsboroDc1 ||
@@ -348,6 +348,12 @@ const ServerTypeSelector = ({
       ? (st: string) => st.includes("Amd")
       : () => true;
   const server_types = Object.values(Types.HetznerServerType).filter(filter);
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? server_types.filter((type) =>
+        searchSplit.every((term) => type.includes(term))
+      )
+    : server_types;
   return (
     <ConfigItem label="Server Type">
       <Popover open={open} onOpenChange={setOpen}>
@@ -362,12 +368,12 @@ const ServerTypeSelector = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] max-h-[200px] p-0" align="end">
-          <Command>
+          <Command shouldFilter={false}>
             <CommandInput
               placeholder="Search Server Types"
               className="h-9"
-              value={input}
-              onValueChange={setInput}
+              value={search}
+              onValueChange={setSearch}
             />
             <CommandList>
               <CommandEmpty className="flex justify-evenly items-center">
@@ -376,7 +382,7 @@ const ServerTypeSelector = ({
               </CommandEmpty>
 
               <CommandGroup>
-                {server_types.map((server_type) => (
+                {filtered.map((server_type) => (
                   <CommandItem
                     key={server_type}
                     onSelect={() => {

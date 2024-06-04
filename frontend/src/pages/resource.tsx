@@ -58,7 +58,7 @@ export const Resource = () => {
               <Info key={i} id={id} />
             </Fragment>
           ))}
-          | <ExportButton target={{ type, id }} />
+          | <ExportButton targets={[{ type, id }]} />
         </div>
       }
       actions={

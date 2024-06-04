@@ -93,12 +93,19 @@ export const ResourceSelector = ({
   align?: "start" | "center" | "end";
 }) => {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
 
   const resources = useRead(`List${type}s`, {}).data;
   const name = resources?.find((r) => r.id === selected)?.name;
 
   if (!resources) return null;
+
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? resources.filter((resource) =>
+        searchSplit.every((term) => resource.name.includes(term))
+      )
+    : resources;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -109,12 +116,12 @@ export const ResourceSelector = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[300px] p-0" align={align}>
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder={`Search ${type}s`}
             className="h-9"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
           />
           <CommandList>
             <CommandEmpty className="flex justify-evenly items-center pt-2">
@@ -123,7 +130,7 @@ export const ResourceSelector = ({
             </CommandEmpty>
 
             <CommandGroup>
-              {resources.map((resource) => (
+              {filtered.map((resource) => (
                 <CommandItem
                   key={resource.id}
                   onSelect={() => {

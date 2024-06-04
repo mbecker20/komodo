@@ -182,7 +182,13 @@ const OperationSelector = ({
   options?: Types.Operation[];
 }) => {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? options.filter((operation) =>
+        searchSplit.every((term) => operation.includes(term))
+      )
+    : options;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -192,11 +198,11 @@ const OperationSelector = ({
         </div>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[200px] max-h-[200px] p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search Operations"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
             className="h-9"
           />
           <CommandList>
@@ -216,7 +222,7 @@ const OperationSelector = ({
                 <div>All</div>
               </CommandItem>
 
-              {options.map((operation) => (
+              {filtered.map((operation) => (
                 <CommandItem
                   className="cursor-pointer"
                   onSelect={() => {

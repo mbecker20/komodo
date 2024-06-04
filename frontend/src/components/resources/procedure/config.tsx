@@ -485,6 +485,18 @@ const default_enabled_execution: () => Types.EnabledExecution = () => ({
   },
 });
 
+const EXECUTION_TYPES = [
+  "RunProcedure",
+  "RunBuild",
+  "Deploy",
+  "StartContainer",
+  "StopContainer",
+  "StopAllContainers",
+  "RemoveContainer",
+  "CloneRepo",
+  "PullRepo",
+];
+
 const ExecutionTypeSelector = ({
   type,
   onSelect,
@@ -496,6 +508,12 @@ const ExecutionTypeSelector = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? EXECUTION_TYPES?.filter((type) =>
+        searchSplit.every((term) => type.includes(term))
+      )
+    : EXECUTION_TYPES;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -505,7 +523,7 @@ const ExecutionTypeSelector = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search Executions"
             className="h-9"
@@ -518,17 +536,7 @@ const ExecutionTypeSelector = ({
               <SearchX className="w-3 h-3" />
             </CommandEmpty>
             <CommandGroup className="overflow-auto">
-              {[
-                "RunProcedure",
-                "RunBuild",
-                "Deploy",
-                "StartContainer",
-                "StopContainer",
-                "StopAllContainers",
-                "RemoveContainer",
-                "CloneRepo",
-                "PullRepo",
-              ].map((type) => (
+              {filtered.map((type) => (
                 <CommandItem
                   key={type}
                   onSelect={() => onSelect(type as Types.Execution["type"])}

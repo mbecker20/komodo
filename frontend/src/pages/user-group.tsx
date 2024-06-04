@@ -50,7 +50,10 @@ export const UserGroupPage = () => {
   }).mutate;
   if (!group) return null;
   return (
-    <Page title={group.name} actions={<ExportButton user_group={group_id} />}>
+    <Page
+      title={group.name}
+      actions={<ExportButton user_groups={[group_id]} />}
+    >
       <Section
         title="Users"
         icon={<User className="w-4 h-4" />}
@@ -94,7 +97,7 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
   const { toast } = useToast();
 
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
 
   const group = useRead("ListUserGroups", {}).data?.find(
     (group) => group._id?.$oid === group_id
@@ -115,6 +118,13 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
 
   if (!users || users.length === 0) return null;
 
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? users.filter((user) =>
+        searchSplit.every((term) => user.username.includes(term))
+      )
+    : users;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -127,12 +137,12 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search Users"
             className="h-9"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
           />
           <CommandList>
             <CommandEmpty className="flex justify-evenly items-center">
@@ -141,7 +151,7 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
             </CommandEmpty>
 
             <CommandGroup>
-              {users?.map((user) => (
+              {filtered?.map((user) => (
                 <CommandItem
                   key={user.username}
                   onSelect={() => {

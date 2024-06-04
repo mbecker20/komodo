@@ -377,6 +377,14 @@ export const AddExtraArgMenu = ({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const suggestions = useRead(`ListCommon${type}ExtraArgs`, {}).data;
+
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? suggestions?.filter((suggestion) =>
+        searchSplit.every((term) => suggestion.includes(term))
+      )
+    : suggestions;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -389,7 +397,7 @@ export const AddExtraArgMenu = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[400px] p-0" align="end">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search suggestions"
             className="h-9"
@@ -413,7 +421,7 @@ export const AddExtraArgMenu = ({
                 Empty Extra Arg
               </CommandItem>
 
-              {suggestions?.map((suggestion) => (
+              {filtered?.map((suggestion) => (
                 <CommandItem
                   key={suggestion}
                   onSelect={() => {

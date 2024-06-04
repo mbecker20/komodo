@@ -37,12 +37,19 @@ const BuildVersionSelector = ({
   onSelect: (version: Types.Version) => void;
 }) => {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
   const versions = useRead(
     "GetBuildVersions",
     { build: buildId! },
     { enabled: !!buildId }
   ).data;
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? versions?.filter((version) => {
+        const fmt = fmt_version(version.version);
+        return searchSplit.every((term) => fmt.includes(term));
+      })
+    : versions;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
@@ -52,11 +59,11 @@ const BuildVersionSelector = ({
         </div>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[200px] max-h-[200px] p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search Versions"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
             className="h-9"
           />
           <CommandList>
@@ -75,7 +82,7 @@ const BuildVersionSelector = ({
               >
                 <div>Latest</div>
               </CommandItem>
-              {versions?.map((v) => {
+              {filtered?.map((v) => {
                 const version = fmt_version(v.version);
                 return (
                   <CommandItem

@@ -306,6 +306,13 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
   const selected = list?.find((i) => i.id === id);
   const Components = ResourceComponents[type];
 
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit
+    ? list?.filter((resource) =>
+        searchSplit.every((term) => resource.name.includes(term))
+      )
+    : list;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -318,7 +325,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[400px] p-0" align="start">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder={`Search ${type}s`}
             className="h-9"
@@ -343,7 +350,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
                   All {type}s
                 </Button>
               </CommandItem>
-              {list?.map((resource) => (
+              {filtered?.map((resource) => (
                 <CommandItem
                   key={resource.id}
                   onSelect={() => {
@@ -365,13 +372,20 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
 const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
 
   const groups = useRead("ListUserGroups", {}).data;
 
   const selected = group_id
     ? groups?.find((user) => user._id?.$oid === group_id)
     : undefined;
+
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit
+    ? groups?.filter((group) =>
+        searchSplit.every((term) => group.name.includes(term))
+      )
+    : groups;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -385,12 +399,12 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search User Groups"
             className="h-9"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
           />
           <CommandList>
             <CommandEmpty className="flex justify-evenly items-center">
@@ -410,7 +424,7 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
                   All User Groups
                 </Button>
               </CommandItem>
-              {groups?.map((group) => (
+              {filtered?.map((group) => (
                 <CommandItem
                   key={group.name}
                   onSelect={() => {
@@ -438,7 +452,7 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
 const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
 
   const users = useRead("ListUsers", {}).data;
 
@@ -446,6 +460,13 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
     ? users?.find((user) => user._id?.$oid === user_id)
     : undefined;
   const avatar = (selected?.config.data as { avatar?: string })?.avatar;
+
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit
+    ? users?.map((user) =>
+        searchSplit.every((term) => user.username.includes(term))
+      )
+    : users;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -459,12 +480,12 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search Users"
             className="h-9"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
           />
           <CommandList>
             <CommandEmpty className="flex justify-evenly items-center">
@@ -484,7 +505,7 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
                   All Users
                 </Button>
               </CommandItem>
-              {users?.map((user) => (
+              {filtered?.map((user) => (
                 <CommandItem
                   key={user.username}
                   onSelect={() => {

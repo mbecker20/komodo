@@ -24,6 +24,12 @@ export const TagsFilter = () => {
   const [search, setSearch] = useState("");
   const [tags, setTags] = useAtom(tagsAtom);
   const all_tags = useRead("ListTags", {}).data;
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? all_tags?.filter((tag) =>
+        searchSplit.every((term) => tag.name.includes(term))
+      )
+    : all_tags;
   return (
     <div className="flex gap-4 items-center">
       <TagsFilterTags
@@ -43,7 +49,7 @@ export const TagsFilter = () => {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
-          <Command>
+          <Command shouldFilter={false}>
             <CommandInput
               placeholder="Search Tags"
               className="h-9"
@@ -57,7 +63,7 @@ export const TagsFilter = () => {
               </CommandEmpty>
 
               <CommandGroup>
-                {all_tags
+                {filtered
                   ?.filter((tag) => !tags.includes(tag._id!.$oid))
                   .map((tag) => (
                     <CommandItem
@@ -196,7 +202,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   const resource = useRead(`List${type}s`, {}).data?.find((d) => d.id === id);
 
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
 
   const all_tags = useRead("ListTags", {}).data;
 
@@ -205,7 +211,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   const { mutate: update } = useWrite("UpdateTagsOnResource", {
     onSuccess: () => {
       inv([`List${type}s`]);
-      toast({ title: `Added tag ${input}` });
+      toast({ title: `Added tag ${search}` });
       setOpen(false);
     },
   });
@@ -215,12 +221,12 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   });
 
   useEffect(() => {
-    if (open) setInput("");
+    if (open) setSearch("");
   }, [open]);
 
   const create_tag = async () => {
-    if (!input) return toast({ title: "Must provide tag name in input" });
-    const tag = await create({ name: input });
+    if (!search) return toast({ title: "Must provide tag name in input" });
+    const tag = await create({ name: search });
     update({
       target,
       tags: [...(resource?.tags ?? []), tag._id!.$oid],
@@ -230,6 +236,13 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
 
   if (!resource) return null;
 
+  const searchSplit = search.split(" ");
+  const filtered = searchSplit.length
+    ? all_tags?.filter((tag) =>
+        searchSplit.every((term) => tag.name.includes(term))
+      )
+    : all_tags;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -238,17 +251,17 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" sideOffset={12}>
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search / Create"
             className="h-9"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
             onKeyDown={(e) => {
               if (
                 e.key === "Enter" &&
                 // check that no tags still match
-                all_tags?.every((tag) => !tag.name.includes(input))
+                all_tags?.every((tag) => !tag.name.includes(search))
               ) {
                 create_tag();
               }
@@ -266,7 +279,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
               </Button>
             </CommandEmpty>
             <CommandGroup>
-              {all_tags
+              {filtered
                 ?.filter((tag) => !resource?.tags.includes(tag._id!.$oid))
                 .map((tag) => (
                   <CommandItem

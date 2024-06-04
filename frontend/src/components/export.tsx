@@ -13,12 +13,12 @@ import { useState } from "react";
 import { CopyButton } from "./util";
 
 export const ExportButton = ({
-  target,
-  user_group,
+  targets,
+  user_groups,
   tags,
 }: {
-  target?: Types.ResourceTarget;
-  user_group?: string;
+  targets?: Types.ResourceTarget[];
+  user_groups?: string[];
   tags?: string[];
 }) => {
   const [open, setOpen] = useState(false);
@@ -34,8 +34,8 @@ export const ExportButton = ({
         <DialogHeader>
           <DialogTitle>Export to Toml</DialogTitle>
         </DialogHeader>
-        {target || user_group ? (
-          <ExportTargetLoader target={target} user_group={user_group} />
+        {targets || user_groups ? (
+          <ExportTargetsLoader targets={targets} user_groups={user_groups} />
         ) : (
           <ExportAllLoader tags={tags} />
         )}
@@ -44,16 +44,16 @@ export const ExportButton = ({
   );
 };
 
-const ExportTargetLoader = ({
-  user_group,
-  target,
+const ExportTargetsLoader = ({
+  user_groups,
+  targets,
 }: {
-  user_group?: string;
-  target?: Types.ResourceTarget;
+  user_groups?: string[];
+  targets?: Types.ResourceTarget[];
 }) => {
   const { data, isPending } = useRead("ExportResourcesToToml", {
-    targets: target ? [target] : [],
-    user_groups: user_group ? [user_group] : [],
+    targets: targets ? targets : [],
+    user_groups: user_groups ? user_groups : [],
   });
   return <ExportPre loading={isPending} content={data?.toml} />;
 };
