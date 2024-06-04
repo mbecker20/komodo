@@ -1,4 +1,4 @@
-import { TagsWithBadge } from "@components/tags";
+import { TableTags } from "@components/tags";
 import { Types } from "@monitor/client";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useFilterResources, useRead } from "@lib/hooks";
@@ -83,13 +83,7 @@ export const DeploymentTable = ({
         },
         {
           header: "Tags",
-          cell: ({ row }) => {
-            return (
-              <div className="flex gap-1">
-                <TagsWithBadge tag_ids={row.original.tags} />
-              </div>
-            );
-          },
+          cell: ({ row }) => <TableTags tag_ids={row.original.tags} />,
         },
       ]}
     />

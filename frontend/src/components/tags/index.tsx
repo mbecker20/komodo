@@ -167,7 +167,10 @@ export const TagsWithBadge = ({
         <Badge
           key={tag_id}
           variant="secondary"
-          className={cn("gap-2 px-1.5 py-0.5 cursor-pointer", className)}
+          className={cn(
+            "gap-2 px-1.5 py-0.5 cursor-pointer text-nowrap",
+            className
+          )}
           onClick={() => onBadgeClick && onBadgeClick(tag_id)}
         >
           {get_name(tag_id)}
@@ -175,6 +178,14 @@ export const TagsWithBadge = ({
         </Badge>
       ))}
     </>
+  );
+};
+
+export const TableTags = ({ tag_ids }: { tag_ids: string[] }) => {
+  return (
+    <div className="flex gap-1 flex-wrap">
+      <TagsWithBadge tag_ids={tag_ids} />
+    </div>
   );
 };
 

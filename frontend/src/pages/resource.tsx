@@ -62,7 +62,7 @@ export const Resource = () => {
         </div>
       }
       actions={
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 items-end">
           <div className="flex gap-2 items-center lg:justify-end">
             <div className="text-muted-foreground">tags:</div>
             <ResourceTags

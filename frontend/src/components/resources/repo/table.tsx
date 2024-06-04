@@ -1,7 +1,7 @@
 import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
-import { TagsWithBadge } from "@components/tags";
+import { TableTags } from "@components/tags";
 import { RepoComponents } from ".";
 import { Types } from "@monitor/client";
 import { useCallback } from "react";
@@ -73,13 +73,7 @@ export const RepoTable = ({
         },
         {
           header: "Tags",
-          cell: ({ row }) => {
-            return (
-              <div className="flex gap-1">
-                <TagsWithBadge tag_ids={row.original.tags} />
-              </div>
-            );
-          },
+          cell: ({ row }) => <TableTags tag_ids={row.original.tags} />,
         },
       ]}
     />
