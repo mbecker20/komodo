@@ -7,7 +7,7 @@ dotenv.config();
 
 const config: Config = {
   title: "monitor",
-  tagline: "distributed build and deployment system",
+  tagline: "build and deployment system",
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
