@@ -25,7 +25,7 @@ export const OpenAlerts = () => {
       icon={<AlertTriangle className="w-4 h-4" />}
       actions={
         <Button variant="ghost" onClick={() => setOpen(!open)}>
-          {open ? "close" : "open"}
+          {open ? "hide" : "show"}
         </Button>
       }
     >
