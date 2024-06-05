@@ -103,7 +103,7 @@ async fn handler(
   Ok(Json(update))
 }
 
-#[instrument(name = "ExecuteRequest", skip(user))]
+#[instrument(name = "ExecuteRequest", skip(user, update))]
 async fn task(
   req_id: Uuid,
   request: ExecuteRequest,
