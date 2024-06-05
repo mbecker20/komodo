@@ -199,7 +199,8 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const all_tags = useRead("ListTags", {}).data;
+  const all_tags = useRead("ListTags", {}).data ?? [];
+  const all_tag_names = all_tags.map((tag) => tag.name);
 
   const inv = useInvalidate();
 
@@ -231,10 +232,16 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
 
   if (!resource) return null;
 
-  const filtered = filterBySplit(
-    all_tags,
-    search,
-    (item) => item.name
+  const filtered = filterBySplit(all_tags, search, (item) => item.name)?.sort(
+    (a, b) => {
+      if (a.name > b.name) {
+        return 1;
+      } else if (a.name < b.name) {
+        return -1;
+      } else {
+        return 0;
+      }
+    }
   );
 
   return (
@@ -244,7 +251,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
           <PlusCircle className="w-3" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" sideOffset={12}>
+      <PopoverContent className="w-[200px] p-0" sideOffset={12} align="end">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search / Create"
@@ -285,11 +292,22 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
                         tags: [...(resource?.tags ?? []), tag._id!.$oid],
                       })
                     }
-                    className="flex items-center justify-between cursor-pointer"
+                    className="cursor-pointer"
                   >
                     <div className="p-1">{tag.name}</div>
                   </CommandItem>
                 ))}
+              {search && !all_tag_names.includes(search) && (
+                <CommandItem
+                  onSelect={create_tag}
+                  className="cursor-pointer"
+                >
+                  <div className="w-full p-1 flex items-center justify-between">
+                    Create Tag
+                    <PlusCircle className="w-4" />
+                  </div>
+                </CommandItem>
+              )}
             </CommandGroup>
           </CommandList>
         </Command>
