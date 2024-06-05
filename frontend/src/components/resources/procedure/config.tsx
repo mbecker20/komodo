@@ -475,7 +475,7 @@ const Stage = ({
 const new_stage = () => ({
   name: "Stage",
   enabled: true,
-  executions: [],
+  executions: [default_enabled_execution()],
 });
 
 const default_enabled_execution: () => Types.EnabledExecution = () => ({

@@ -167,7 +167,7 @@ export const filterBySplit = <T>(
   return (
     (split.length
       ? items?.filter((item) => {
-          const target = extract(item);
+          const target = extract(item).toLowerCase();
           return split.every((term) => target.includes(term));
         })
       : items) ?? []

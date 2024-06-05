@@ -16,6 +16,7 @@ use monitor_client::entities::{
 };
 use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;
+use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -177,42 +178,64 @@ impl super::MonitorResource for Deployment {
       DeploymentState::NotDeployed | DeploymentState::Unknown
     ) {
       // container needs to be destroyed
-      let server =
-        super::get::<Server>(&deployment.config.server_id).await;
-      if let Err(e) = server {
-        update.push_error_log(
-          "remove container",
-          format!(
-            "failed to retrieve server at {} from db | {e:#?}",
-            deployment.config.server_id
-          ),
-        );
-      } else if let Ok(server) = server {
-        match periphery_client(&server) {
-          Ok(periphery) => match periphery
-            .request(RemoveContainer {
-              name: deployment.name.clone(),
-              signal: deployment.config.termination_signal.into(),
-              time: deployment.config.termination_timeout.into(),
-            })
-            .await
-          {
-            Ok(log) => update.logs.push(log),
-            Err(e) => update.push_error_log(
-              "remove container",
-              format!(
-                "failed to remove container on periphery | {e:#?}"
-              ),
-            ),
-          },
-          Err(e) => update.push_error_log(
+      let server = match super::get::<Server>(
+        &deployment.config.server_id,
+      )
+      .await
+      {
+        Ok(server) => server,
+        Err(e) => {
+          update.push_error_log(
             "remove container",
             format!(
-              "failed to remove container on periphery | {e:#?}"
+              "failed to retrieve server at {} from db.\n\nerror: {}",
+              deployment.config.server_id,
+              serialize_error_pretty(&e)
             ),
-          ),
-        };
+          );
+          return Ok(());
+        }
+      };
+      if !server.config.enabled {
+        // Don't need to
+        update.push_simple_log(
+          "remove container",
+          "skipping container removal, server is disabled.",
+        );
+        return Ok(());
       }
+      let periphery = match periphery_client(&server) {
+        Ok(periphery) => periphery,
+        Err(e) => {
+          // This case won't ever happen, as periphery_client only fallible if the server is disabled.
+          // Leaving it for completeness sake
+          update.push_error_log(
+            "remove container",
+            format!(
+              "failed to remove container on periphery.\n\nerror: {}",
+              serialize_error_pretty(&e),
+            ),
+          );
+          return Ok(());
+        }
+      };
+      match periphery
+        .request(RemoveContainer {
+          name: deployment.name.clone(),
+          signal: deployment.config.termination_signal.into(),
+          time: deployment.config.termination_timeout.into(),
+        })
+        .await
+      {
+        Ok(log) => update.logs.push(log),
+        Err(e) => update.push_error_log(
+          "remove container",
+          format!(
+            "failed to remove container.\n\nerror: {}",
+            serialize_error_pretty(&e)
+          ),
+        ),
+      };
     }
     Ok(())
   }

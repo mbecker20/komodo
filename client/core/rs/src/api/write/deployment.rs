@@ -47,6 +47,9 @@ pub struct CopyDeployment {
 
 /// Deletes the deployment at the given id, and returns the deleted deployment.
 /// Response: [Deployment].
+/// 
+/// Note. If the associated container is running, it will be deleted as part of
+/// the deployment clean up.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
