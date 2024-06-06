@@ -21,7 +21,7 @@ use partial_derive2::{MaybeNone, PartialDiff};
 use crate::{
   maps::{
     id_to_build, id_to_deployment, id_to_procedure, id_to_repo,
-    id_to_server, name_to_procedure,
+    id_to_resource_sync, id_to_server, name_to_procedure,
   },
   state::monitor_client,
   sync::resource::{
@@ -254,6 +254,12 @@ impl ResourceSync for Procedure {
             config.server = id_to_server()
               .get(&config.server)
               .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RunSync(config) => {
+            config.sync = id_to_resource_sync()
+              .get(&config.sync)
+              .map(|s| s.name.clone())
               .unwrap_or_default();
           }
         }

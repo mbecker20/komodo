@@ -11,6 +11,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod sync;
 
 pub use build::*;
 pub use deployment::*;
@@ -18,6 +19,7 @@ pub use procedure::*;
 pub use repo::*;
 pub use server::*;
 pub use server_template::*;
+pub use sync::*;
 
 use crate::entities::NoData;
 
@@ -69,4 +71,7 @@ pub enum Execution {
   PruneNetworks(PruneNetworks),
   PruneImages(PruneImages),
   PruneContainers(PruneContainers),
+
+  // SYNC
+  RunSync(RunSync),
 }

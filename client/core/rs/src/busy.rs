@@ -1,7 +1,7 @@
 use crate::entities::{
   build::BuildActionState, deployment::DeploymentActionState,
   procedure::ProcedureActionState, repo::RepoActionState,
-  server::ServerActionState,
+  server::ServerActionState, sync::ResourceSyncActionState,
 };
 
 pub trait Busy {
@@ -41,5 +41,11 @@ impl Busy for RepoActionState {
 impl Busy for ProcedureActionState {
   fn busy(&self) -> bool {
     self.running
+  }
+}
+
+impl Busy for ResourceSyncActionState {
+  fn busy(&self) -> bool {
+    self.syncing
   }
 }

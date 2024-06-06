@@ -6,7 +6,7 @@ use monitor_client::{
   entities::{
     build::BuildActionState, deployment::DeploymentActionState,
     procedure::ProcedureActionState, repo::RepoActionState,
-    server::ServerActionState,
+    server::ServerActionState, sync::ResourceSyncActionState,
   },
 };
 
@@ -21,6 +21,8 @@ pub struct ActionStates {
   pub repo: Cache<String, Arc<ActionState<RepoActionState>>>,
   pub procedure:
     Cache<String, Arc<ActionState<ProcedureActionState>>>,
+  pub resource_sync:
+    Cache<String, Arc<ActionState<ResourceSyncActionState>>>,
 }
 
 /// Need to be able to check "busy" with write lock acquired.

@@ -222,6 +222,7 @@ pub enum ResourceTarget {
   Alerter(String),
   Procedure(String),
   ServerTemplate(String),
+  ResourceSync(String),
 }
 
 impl ResourceTarget {
@@ -238,6 +239,7 @@ impl ResourceTarget {
       ResourceTarget::Alerter(id) => id,
       ResourceTarget::Procedure(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
+      ResourceTarget::ResourceSync(id) => id,
     };
     (self.extract_variant(), id)
   }

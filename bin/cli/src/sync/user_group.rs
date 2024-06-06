@@ -18,9 +18,7 @@ use monitor_client::{
 };
 
 use crate::maps::{
-  id_to_alerter, id_to_build, id_to_builder, id_to_deployment,
-  id_to_procedure, id_to_repo, id_to_server, id_to_server_template,
-  id_to_user, name_to_user_group,
+  id_to_alerter, id_to_build, id_to_builder, id_to_deployment, id_to_procedure, id_to_repo, id_to_server, id_to_server_template, id_to_resource_sync, id_to_user, name_to_user_group
 };
 
 pub struct UpdateItem {
@@ -142,6 +140,12 @@ pub async fn get_updates(
           }
           ResourceTarget::ServerTemplate(id) => {
             *id = id_to_server_template()
+              .get(id)
+              .map(|b| b.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::ResourceSync(id) => {
+            *id = id_to_resource_sync()
               .get(id)
               .map(|b| b.name.clone())
               .unwrap_or_default()

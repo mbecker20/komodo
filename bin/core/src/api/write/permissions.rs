@@ -304,5 +304,20 @@ async fn extract_resource_target_with_validation(
         .id;
       Ok((ResourceTargetVariant::ServerTemplate, id))
     }
+    ResourceTarget::ResourceSync(ident) => {
+      let filter = match ObjectId::from_str(ident) {
+        Ok(id) => doc! { "_id": id },
+        Err(_) => doc! { "name": ident },
+      };
+      let id = db_client()
+        .await
+        .resource_syncs
+        .find_one(filter, None)
+        .await
+        .context("failed to query db for resource syncs")?
+        .context("no matching resource sync found")?
+        .id;
+      Ok((ResourceTargetVariant::ResourceSync, id))
+    }
   }
 }

@@ -5,8 +5,9 @@ use monitor_client::{
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, server_template::ServerTemplate, tag::Tag,
-    user::User, user_group::UserGroup, variable::Variable,
+    server::Server, server_template::ServerTemplate,
+    sync::ResourceSync, tag::Tag, user::User, user_group::UserGroup,
+    variable::Variable,
   },
 };
 
@@ -236,6 +237,36 @@ pub fn id_to_server_template(
     .expect("failed to get server templates from monitor")
     .into_iter()
     .map(|procedure| (procedure.id.clone(), procedure))
+    .collect()
+  })
+}
+
+pub fn name_to_resource_sync(
+) -> &'static HashMap<String, ResourceSync> {
+  static NAME_TO_SYNC: OnceLock<HashMap<String, ResourceSync>> =
+    OnceLock::new();
+  NAME_TO_SYNC.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListFullResourceSyncs::default()),
+    )
+    .expect("failed to get syncs from monitor")
+    .into_iter()
+    .map(|sync| (sync.name.clone(), sync))
+    .collect()
+  })
+}
+
+pub fn id_to_resource_sync() -> &'static HashMap<String, ResourceSync>
+{
+  static ID_TO_SYNC: OnceLock<HashMap<String, ResourceSync>> =
+    OnceLock::new();
+  ID_TO_SYNC.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListFullResourceSyncs::default()),
+    )
+    .expect("failed to get syncs from monitor")
+    .into_iter()
+    .map(|sync| (sync.id.clone(), sync))
     .collect()
   })
 }

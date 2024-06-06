@@ -268,6 +268,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
               format!("failed to add procedure {id}")
             })?;
         }
+        ResourceTarget::ResourceSync(id) => {
+          todo!()
+        }
         ResourceTarget::System(_) => continue,
       };
     }
@@ -361,6 +364,7 @@ async fn add_procedure(
         Execution::PruneContainers(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
+        Execution::RunSync(exec) => todo!(),
         Execution::None(_) => continue,
       }
     }

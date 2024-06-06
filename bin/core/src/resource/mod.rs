@@ -48,6 +48,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod sync;
 
 pub use build::{
   refresh_build_state_cache, spawn_build_state_refresh_loop,
@@ -435,6 +436,9 @@ fn resource_target<T: MonitorResource>(id: String) -> ResourceTarget {
     ResourceTargetVariant::Procedure => ResourceTarget::Procedure(id),
     ResourceTargetVariant::ServerTemplate => {
       ResourceTarget::ServerTemplate(id)
+    }
+    ResourceTargetVariant::ResourceSync => {
+      ResourceTarget::ResourceSync(id)
     }
   }
 }

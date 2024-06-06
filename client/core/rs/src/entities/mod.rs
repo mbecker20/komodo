@@ -37,6 +37,8 @@ pub mod resource;
 pub mod server;
 /// Subtypes of [ServerTemplate][server_template::ServerTemplate].
 pub mod server_template;
+/// Subtypes of [mod@Sync][sync::Sync]
+pub mod sync;
 /// Subtypes of [Tag][tag::Tag].
 pub mod tag;
 /// Subtypes of [ResourcesToml][toml::ResourcesToml].
@@ -445,6 +447,12 @@ pub enum Operation {
   UpdateServerTemplate,
   DeleteServerTemplate,
   LaunchServer,
+
+  // sync
+  CreateResourceSync,
+  UpdateResourceSync,
+  DeleteResourceSync,
+  RunSync,
 
   // variable
   CreateVariable,

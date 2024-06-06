@@ -61,8 +61,8 @@ pub type _PartialBuildConfig = PartialBuildConfig;
 
 /// The build configuration.
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Builder, Partial)]
+#[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct BuildConfig {
   /// Which builder is used to build the image.

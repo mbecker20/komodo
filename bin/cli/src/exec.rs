@@ -57,6 +57,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::PruneContainers(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::RunSync(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
   }
 
   if !cli_args().yes {
@@ -100,6 +103,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::PruneContainers(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::RunSync(request) => {
       monitor_client().execute(request).await
     }
     Execution::None(_) => unreachable!(),

@@ -210,6 +210,9 @@ async fn execute_execution(
         .await
         .context("failed at PruneContainers")?
     }
+    Execution::RunSync(req) => {
+      todo!()
+    }
   };
   if update.success {
     Ok(())

@@ -270,6 +270,9 @@ async fn validate_config(
           .await?;
           params.server = server.id;
         }
+        Execution::RunSync(params) => {
+          todo!()
+        }
       }
     }
   }

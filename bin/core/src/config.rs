@@ -54,6 +54,9 @@ pub fn core_config() -> &'static CoreConfig {
       jwt_valid_for: env
         .monitor_jwt_valid_for
         .unwrap_or(config.jwt_valid_for),
+      sync_directory: env
+        .monitor_sync_directory
+        .unwrap_or(config.sync_directory),
       monitoring_interval: env
         .monitor_monitoring_interval
         .unwrap_or(config.monitoring_interval),

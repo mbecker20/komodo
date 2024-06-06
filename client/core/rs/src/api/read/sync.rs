@@ -1,0 +1,111 @@
+use derive_empty_traits::EmptyTraits;
+use resolver_api::derive::Request;
+use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
+
+use crate::entities::sync::{
+  ResourceSync, ResourceSyncActionState, ResourceSyncListItem,
+  ResourceSyncQuery,
+};
+
+use super::MonitorReadRequest;
+
+//
+
+/// Get a specific sync. Response: [ResourceSync].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ResourceSync)]
+pub struct GetResourceSync {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub sync: String,
+}
+
+#[typeshare]
+pub type GetResourceSyncResponse = ResourceSync;
+
+//
+
+/// List syncs matching optional query. Response: [ListResourceSyncsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListResourceSyncsResponse)]
+pub struct ListResourceSyncs {
+  /// optional structured query to filter syncs.
+  #[serde(default)]
+  pub query: ResourceSyncQuery,
+}
+
+#[typeshare]
+pub type ListResourceSyncsResponse = Vec<ResourceSyncListItem>;
+
+//
+
+/// List syncs matching optional query. Response: [ListFullResourceSyncsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListFullResourceSyncsResponse)]
+pub struct ListFullResourceSyncs {
+  /// optional structured query to filter syncs.
+  #[serde(default)]
+  pub query: ResourceSyncQuery,
+}
+
+#[typeshare]
+pub type ListFullResourceSyncsResponse = Vec<ResourceSync>;
+
+//
+
+/// Get current action state for the sync. Response: [ResourceSyncActionState].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetResourceSyncActionStateResponse)]
+pub struct GetResourceSyncActionState {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub sync: String,
+}
+
+#[typeshare]
+pub type GetResourceSyncActionStateResponse = ResourceSyncActionState;
+
+//
+
+/// Gets a summary of data relating to all syncs.
+/// Response: [GetResourceSyncsSummaryResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetResourceSyncsSummaryResponse)]
+pub struct GetResourceSyncsSummary {}
+
+/// Response for [GetResourceSyncsSummary]
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct GetResourceSyncsSummaryResponse {
+  /// The total number of syncs
+  pub total: u32,
+  /// The number of syncs with Ok state.
+  pub ok: u32,
+  /// The number of syncs currently syncing.
+  pub syncing: u32,
+  /// The number of syncs with failed state.
+  pub failed: u32,
+  /// The number of syncs with unknown state.
+  pub unknown: u32,
+}

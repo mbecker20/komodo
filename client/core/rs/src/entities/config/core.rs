@@ -45,6 +45,8 @@ pub struct Env {
   pub monitor_passkey: Option<String>,
   /// Override `jwt_valid_for`
   pub monitor_jwt_valid_for: Option<Timelength>,
+  /// Override `sync_directory`
+  pub monitor_sync_directory: Option<String>,
   /// Override `monitoring_interval`
   pub monitor_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
@@ -277,6 +279,12 @@ pub struct CoreConfig {
   #[serde(default = "default_jwt_valid_for")]
   pub jwt_valid_for: Timelength,
 
+  /// Specify the directory used to clone sync repos. The default is fine when using a container.
+  /// This directory has no need for persistence, so no need to mount it.
+  /// Default: `/syncs`
+  #[serde(default = "default_sync_directory")]
+  pub sync_directory: String,
+
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
   #[serde(default = "default_monitoring_interval")]
@@ -378,6 +386,10 @@ fn default_core_port() -> u16 {
 
 fn default_jwt_valid_for() -> Timelength {
   Timelength::OneDay
+}
+
+fn default_sync_directory() -> String {
+  String::from("/syncs")
 }
 
 fn default_monitoring_interval() -> Timelength {

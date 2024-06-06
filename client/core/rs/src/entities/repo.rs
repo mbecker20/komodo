@@ -164,7 +164,7 @@ pub type RepoQuery = ResourceQuery<RepoQuerySpecifics>;
   Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
 )]
 pub struct RepoQuerySpecifics {
-  /// Filter builds by their repo.
+  /// Filter repos by their repo.
   pub repos: Vec<String>,
 }
 
