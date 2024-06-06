@@ -11,7 +11,6 @@ use monitor_client::{
 };
 use resolver_api::Resolve;
 use tokio::sync::Mutex;
-use tracing::Instrument;
 
 use crate::{api::execute::ExecuteRequest, state::State};
 
