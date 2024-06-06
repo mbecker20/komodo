@@ -28,6 +28,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod sync;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -60,6 +61,9 @@ pub enum ExecuteRequest {
 
   // ==== SERVER TEMPLATE ====
   LaunchServer(LaunchServer),
+
+  // ==== SYNC ====
+  RunSync(RunSync),
 }
 
 pub fn router() -> Router {

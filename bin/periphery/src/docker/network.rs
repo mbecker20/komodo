@@ -1,6 +1,5 @@
+use command::run_monitor_command;
 use monitor_client::entities::update::Log;
-
-use crate::helpers::run_monitor_command;
 
 #[instrument]
 pub async fn create_network(

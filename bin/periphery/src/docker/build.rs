@@ -1,4 +1,5 @@
 use anyhow::Context;
+use command::run_monitor_command;
 use monitor_client::entities::{
   build::{Build, BuildConfig},
   optional_string, to_monitor_name,
@@ -7,10 +8,7 @@ use monitor_client::entities::{
 };
 use serror::serialize_error_pretty;
 
-use crate::{
-  config::periphery_config,
-  helpers::{get_docker_token, run_monitor_command},
-};
+use crate::{config::periphery_config, helpers::get_docker_token};
 
 use super::{docker_login, parse_extra_args, parse_labels};
 

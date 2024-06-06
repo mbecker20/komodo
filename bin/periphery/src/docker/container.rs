@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use command::run_monitor_command;
 use monitor_client::entities::{
   deployment::{
     Conversion, Deployment, DeploymentConfig, DeploymentImage,
@@ -11,15 +12,9 @@ use monitor_client::entities::{
 use run_command::async_run_command;
 use serror::serialize_error_pretty;
 
-use crate::{
-  config::periphery_config,
-  helpers::{
-    docker::{parse_extra_args, parse_labels},
-    get_docker_token, run_monitor_command,
-  },
-};
+use crate::{config::periphery_config, helpers::get_docker_token};
 
-use super::docker_login;
+use super::{docker_login, parse_extra_args, parse_labels};
 
 #[instrument(level = "debug")]
 pub async fn container_log(container_name: &str, tail: u64) -> Log {

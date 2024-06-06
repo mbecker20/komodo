@@ -9,6 +9,7 @@ use termination_signal::tokio::immediate_term_handle;
 
 mod api;
 mod config;
+mod docker;
 mod guard;
 mod handler;
 mod helpers;

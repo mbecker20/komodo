@@ -29,14 +29,14 @@ pub struct ResourceSyncListItemInfo {
   /// The branch of the repo
   pub branch: String,
   /// State of the sync. Reflects whether most recent sync successful.
-  pub state: SyncState,
+  pub state: ResourceSyncState,
 }
 
 #[typeshare]
 #[derive(
   Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
 )]
-pub enum SyncState {
+pub enum ResourceSyncState {
   /// Last sync successful (or never synced)
   Ok,
   /// Last sync failed

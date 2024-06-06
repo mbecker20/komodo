@@ -23,6 +23,7 @@ mod repo;
 mod search;
 mod server;
 mod server_template;
+mod sync;
 mod tag;
 mod toml;
 mod update;
@@ -113,6 +114,13 @@ enum ReadRequest {
   ListRepos(ListRepos),
   ListFullRepos(ListFullRepos),
   GetRepoActionState(GetRepoActionState),
+
+  // ==== SYNC ====
+  GetResourceSyncsSummary(GetResourceSyncsSummary),
+  GetResourceSync(GetResourceSync),
+  ListResourceSyncs(ListResourceSyncs),
+  ListFullResourceSyncs(ListFullResourceSyncs),
+  GetResourceSyncActionState(GetResourceSyncActionState),
 
   // ==== BUILDER ====
   GetBuildersSummary(GetBuildersSummary),

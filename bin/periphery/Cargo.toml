@@ -17,7 +17,9 @@ path = "src/main.rs"
 # local
 monitor_client = { workspace = true, features = ["docker"] }
 periphery_client.workspace = true
+command.workspace = true
 logger.workspace = true
+git.workspace = true
 # mogh
 serror = { workspace = true, features = ["axum"] }
 async_timing_util.workspace = true

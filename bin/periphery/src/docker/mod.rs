@@ -1,8 +1,7 @@
 use anyhow::anyhow;
+use command::run_monitor_command;
 use monitor_client::entities::{update::Log, EnvironmentVar};
 use run_command::async_run_command;
-
-use super::run_monitor_command;
 
 pub mod build;
 pub mod client;

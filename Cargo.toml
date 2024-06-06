@@ -17,7 +17,9 @@ monitor_client = { path = "client/core/rs" }
 # LOCAL
 monitor_client = "1.6.2"
 periphery_client = { path = "client/periphery/rs" }
+command = { path = "lib/command" }
 logger = { path = "lib/logger" }
+git = { path = "lib/git" }
 
 # MOGH
 run_command = { version = "0.0.6", features = ["async_tokio"] }

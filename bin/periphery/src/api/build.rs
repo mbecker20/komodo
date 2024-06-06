@@ -7,7 +7,7 @@ use periphery_client::api::build::{
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::docker::{self, client::docker_client},
+  docker::{self, client::docker_client},
   State,
 };
 

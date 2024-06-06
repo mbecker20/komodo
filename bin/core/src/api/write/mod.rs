@@ -23,6 +23,7 @@ mod repo;
 mod server;
 mod server_template;
 mod service_user;
+mod sync;
 mod tag;
 mod user_group;
 mod variable;
@@ -104,6 +105,12 @@ enum WriteRequest {
   CopyProcedure(CopyProcedure),
   DeleteProcedure(DeleteProcedure),
   UpdateProcedure(UpdateProcedure),
+
+  // ==== SYNC ====
+  CreateResourceSync(CreateResourceSync),
+  CopyResourceSync(CopyResourceSync),
+  DeleteResourceSync(DeleteResourceSync),
+  UpdateResourceSync(UpdateResourceSync),
 
   // ==== TAG ====
   CreateTag(CreateTag),

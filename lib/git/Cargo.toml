@@ -1,0 +1,17 @@
+[package]
+name = "git"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+monitor_client.workspace = true
+command.workspace = true
+#
+run_command.workspace = true
+#
+tracing.workspace = true
+anyhow.workspace = true

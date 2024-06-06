@@ -1,19 +1,13 @@
 use monitor_client::entities::{
-  update::Log, CloneArgs, SystemCommand,
+  update::Log, CloneArgs, LatestCommit, SystemCommand,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(GetLatestCommitResponse)]
+#[response(LatestCommit)]
 pub struct GetLatestCommit {
   pub name: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetLatestCommitResponse {
-  pub hash: String,
-  pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]

@@ -1,4 +1,5 @@
 use anyhow::Context;
+use command::run_monitor_command;
 use monitor_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
   build::*, container::*, git::*, network::*, stats::*, GetAccounts,
@@ -10,8 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
   config::{accounts_response, secrets_response},
-  helpers::{docker, run_monitor_command},
-  State,
+  docker, State,
 };
 
 mod build;

@@ -237,6 +237,12 @@ pub struct EnvironmentVar {
   pub value: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LatestCommit {
+  pub hash: String,
+  pub message: String,
+}
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CloneArgs {

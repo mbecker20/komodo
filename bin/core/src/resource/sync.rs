@@ -3,7 +3,8 @@ use monitor_client::entities::{
   sync::{
     PartialResourceSyncConfig, ResourceSync, ResourceSyncConfig,
     ResourceSyncConfigDiff, ResourceSyncInfo, ResourceSyncListItem,
-    ResourceSyncQuerySpecifics,
+    ResourceSyncListItemInfo, ResourceSyncQuerySpecifics,
+    ResourceSyncState,
   },
   update::{ResourceTargetVariant, Update},
   user::User,
@@ -33,7 +34,20 @@ impl super::MonitorResource for ResourceSync {
   async fn to_list_item(
     resource_sync: Resource<Self::Config, Self::Info>,
   ) -> Self::ListItem {
-    todo!()
+    ResourceSyncListItem {
+      id: resource_sync.id,
+      name: resource_sync.name,
+      tags: resource_sync.tags,
+      resource_type: ResourceTargetVariant::ResourceSync,
+      info: ResourceSyncListItemInfo {
+        repo: resource_sync.config.repo,
+        branch: resource_sync.config.branch,
+        last_sync_ts: 0,
+        last_sync_hash: String::new(),
+        last_sync_message: String::new(),
+        state: ResourceSyncState::Unknown,
+      },
+    }
   }
 
   async fn busy(id: &String) -> anyhow::Result<bool> {
@@ -56,17 +70,17 @@ impl super::MonitorResource for ResourceSync {
   }
 
   async fn validate_create_config(
-    config: &mut Self::PartialConfig,
-    user: &User,
+    _config: &mut Self::PartialConfig,
+    _user: &User,
   ) -> anyhow::Result<()> {
-    todo!()
+    Ok(())
   }
 
   async fn post_create(
-    created: &Resource<Self::Config, Self::Info>,
-    update: &mut Update,
+    _created: &Resource<Self::Config, Self::Info>,
+    _update: &mut Update,
   ) -> anyhow::Result<()> {
-    todo!()
+    Ok(())
   }
 
   // UPDATE
@@ -76,18 +90,18 @@ impl super::MonitorResource for ResourceSync {
   }
 
   async fn validate_update_config(
-    id: &str,
-    config: &mut Self::PartialConfig,
-    user: &User,
+    _id: &str,
+    _config: &mut Self::PartialConfig,
+    _user: &User,
   ) -> anyhow::Result<()> {
-    todo!()
+    Ok(())
   }
 
   async fn post_update(
-    updated: &Resource<Self::Config, Self::Info>,
-    update: &mut Update,
+    _updated: &Resource<Self::Config, Self::Info>,
+    _update: &mut Update,
   ) -> anyhow::Result<()> {
-    todo!()
+    Ok(())
   }
 
   // DELETE
@@ -97,15 +111,15 @@ impl super::MonitorResource for ResourceSync {
   }
 
   async fn pre_delete(
-    resource: &Resource<Self::Config, Self::Info>,
-    update: &mut Update,
+    _resource: &Resource<Self::Config, Self::Info>,
+    _update: &mut Update,
   ) -> anyhow::Result<()> {
     Ok(())
   }
 
   async fn post_delete(
-    resource: &Resource<Self::Config, Self::Info>,
-    update: &mut Update,
+    _resource: &Resource<Self::Config, Self::Info>,
+    _update: &mut Update,
   ) -> anyhow::Result<()> {
     Ok(())
   }

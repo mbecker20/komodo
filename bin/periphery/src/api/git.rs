@@ -1,19 +1,22 @@
 use anyhow::anyhow;
-use monitor_client::entities::{to_monitor_name, update::Log};
+use monitor_client::entities::{
+  to_monitor_name, update::Log, CloneArgs, LatestCommit,
+};
 use periphery_client::api::git::{
-  CloneRepo, DeleteRepo, GetLatestCommit, GetLatestCommitResponse,
-  PullRepo,
+  CloneRepo, DeleteRepo, GetLatestCommit, PullRepo,
 };
 use resolver_api::Resolve;
 
-use crate::{config::periphery_config, helpers::git, State};
+use crate::{
+  config::periphery_config, helpers::get_github_token, State,
+};
 
 impl Resolve<GetLatestCommit, ()> for State {
   async fn resolve(
     &self,
     GetLatestCommit { name }: GetLatestCommit,
     _: (),
-  ) -> anyhow::Result<GetLatestCommitResponse> {
+  ) -> anyhow::Result<LatestCommit> {
     let repo_path = periphery_config().repo_dir.join(name);
     if !repo_path.is_dir() {
       return Err(anyhow!(
@@ -31,7 +34,14 @@ impl Resolve<CloneRepo> for State {
     CloneRepo { args, github_token }: CloneRepo,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    git::clone(args, github_token).await
+    let CloneArgs { github_account, .. } = &args;
+    let github_token =
+      match (github_token, get_github_token(github_account)) {
+        (Some(token), _) => Some(token),
+        (None, Ok(token)) => token,
+        (None, Err(e)) => return Err(e),
+      };
+    git::clone(args, &periphery_config().repo_dir, github_token).await
   }
 }
 
