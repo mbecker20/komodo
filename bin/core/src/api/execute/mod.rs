@@ -1,11 +1,15 @@
 use std::time::Instant;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use monitor_client::{
   api::execute::*,
-  entities::{update::Update, user::User},
+  entities::{
+    update::{Log, Update},
+    user::User,
+  },
 };
+use mungos::by_id::find_one_by_id;
 use resolver_api::{derive::Resolver, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::{serialize_error_pretty, Json};
@@ -15,7 +19,7 @@ use uuid::Uuid;
 use crate::{
   auth::auth_request,
   helpers::update::{init_execution_update, update_update},
-  state::State,
+  state::{db_client, State},
 };
 
 mod build;
@@ -79,23 +83,33 @@ async fn handler(
     tokio::spawn(task(req_id, request, user, update.clone()));
 
   tokio::spawn({
-    let mut update = update.clone();
+    let update_id = update.id.clone();
     async move {
-      match handle.await {
+      let log = match handle.await {
         Ok(Err(e)) => {
           warn!("/execute request {req_id} task error: {e:#}",);
-          update
-            .push_error_log("task error", serialize_error_pretty(&e));
-          update.finalize();
-          let _ = update_update(update).await;
+          Log::error("task error", serialize_error_pretty(&e))
         }
         Err(e) => {
           warn!("/execute request {req_id} spawn error: {e:?}",);
-          update.push_error_log("spawn error", format!("{e:#?}"));
-          update.finalize();
-          let _ = update_update(update).await;
+          Log::error("spawn error", format!("{e:#?}"))
         }
-        _ => {}
+        _ => return,
+      };
+      let res = async {
+        let mut update =
+          find_one_by_id(&db_client().await.updates, &update_id)
+            .await
+            .context("failed to query to db")?
+            .context("no update exists with given id")?;
+        update.logs.push(log);
+        update.finalize();
+        update_update(update).await
+      }
+      .await;
+
+      if let Err(e) = res {
+        warn!("failed to update update with task error log | {e:#}");
       }
     }
   });
