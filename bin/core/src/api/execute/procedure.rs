@@ -32,7 +32,7 @@ impl Resolve<RunProcedure, (User, Update)> for State {
 fn resolve_inner(
   procedure: String,
   user: User,
-  update: Update,
+  mut update: Update,
 ) -> Pin<
   Box<
     dyn std::future::Future<Output = anyhow::Result<Update>> + Send,
@@ -45,6 +45,14 @@ fn resolve_inner(
       PermissionLevel::Execute,
     )
     .await?;
+
+    // Need to push the initial log, as execute_procedure
+    // assumes first log is already created
+    // and will panic otherwise.
+    update.push_simple_log(
+      "execute_procedure",
+      format!("executing procedure {}", procedure.name),
+    );
 
     // get the action state for the procedure (or insert default).
     let action_state = action_states()

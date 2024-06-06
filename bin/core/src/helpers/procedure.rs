@@ -11,12 +11,13 @@ use monitor_client::{
 };
 use resolver_api::Resolve;
 use tokio::sync::Mutex;
+use tracing::Instrument;
 
 use crate::{api::execute::ExecuteRequest, state::State};
 
 use super::update::{init_execution_update, update_update};
 
-#[instrument]
+#[instrument(skip_all)]
 pub async fn execute_procedure(
   procedure: &Procedure,
   update: &Mutex<Update>,
@@ -65,7 +66,39 @@ pub async fn execute_procedure(
   Ok(())
 }
 
-#[instrument]
+#[instrument(skip(update))]
+async fn execute_stage(
+  executions: Vec<Execution>,
+  parent_id: &str,
+  parent_name: &str,
+  update: &Mutex<Update>,
+) -> anyhow::Result<()> {
+  let futures = executions.into_iter().map(|execution| async move {
+    let now = Instant::now();
+    add_line_to_update(update, &format!("executing: {execution:?}"))
+      .await;
+    let fail_log = format!("failed on {execution:?}");
+    let res =
+      execute_execution(execution.clone(), parent_id, parent_name)
+        .await
+        .context(fail_log);
+    add_line_to_update(
+      update,
+      &format!(
+        "finished execution in {:?}: {execution:?}",
+        now.elapsed()
+      ),
+    )
+    .await;
+    res
+  });
+  join_all(futures)
+    .await
+    .into_iter()
+    .collect::<anyhow::Result<_>>()?;
+  Ok(())
+}
+
 async fn execute_execution(
   execution: Execution,
   // used to prevent recursive procedure
@@ -222,39 +255,6 @@ async fn execute_execution(
       update.id
     ))
   }
-}
-
-#[instrument(skip(update))]
-async fn execute_stage(
-  executions: Vec<Execution>,
-  parent_id: &str,
-  parent_name: &str,
-  update: &Mutex<Update>,
-) -> anyhow::Result<()> {
-  let futures = executions.into_iter().map(|execution| async move {
-    let now = Instant::now();
-    add_line_to_update(update, &format!("executing: {execution:?}"))
-      .await;
-    let fail_log = format!("failed on {execution:?}");
-    let res =
-      execute_execution(execution.clone(), parent_id, parent_name)
-        .await
-        .context(fail_log);
-    add_line_to_update(
-      update,
-      &format!(
-        "finished execution in {:?}: {execution:?}",
-        now.elapsed()
-      ),
-    )
-    .await;
-    res
-  });
-  join_all(futures)
-    .await
-    .into_iter()
-    .collect::<anyhow::Result<_>>()?;
-  Ok(())
 }
 
 /// ASSUMES FIRST LOG IS ALREADY CREATED
