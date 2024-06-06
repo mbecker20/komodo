@@ -27,6 +27,7 @@ pub trait ResourceSync: Sized {
     + Default
     + Send
     + From<Self::PartialConfig>
+    + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
   type Info: Default + 'static;
   type PartialConfig: std::fmt::Debug
@@ -35,7 +36,9 @@ pub trait ResourceSync: Sized {
     + From<Self::Config>
     + Serialize
     + MaybeNone
+    + From<Self::ConfigDiff>
     + 'static;
+  type ConfigDiff: Diff + MaybeNone;
 
   fn name_to_resource(
   ) -> &'static HashMap<String, Resource<Self::Config, Self::Info>>;
@@ -68,29 +71,24 @@ pub trait ResourceSync: Sized {
     id: String,
     description: String,
   ) -> anyhow::Result<()>;
-}
-
-pub trait ResourceSyncOuter<
-  Implementer: ResourceSync,
-  Logger: SyncLogger<Implementer, Self>,
-> where
-  Self: Sized,
-  Implementer::Config:
-    PartialDiff<Implementer::PartialConfig, Self::ConfigDiff>,
-  Implementer::PartialConfig: From<Self::ConfigDiff>,
-{
-  type ConfigDiff: Diff + MaybeNone;
-
-  fn display() -> &'static str;
-
-  fn resource_target(id: String) -> ResourceTarget;
 
   /// Diffs the declared toml (partial) against the full existing config.
   /// Removes all fields from toml (partial) that haven't changed.
   fn get_diff(
-    original: Implementer::Config,
-    update: Implementer::PartialConfig,
+    original: Self::Config,
+    update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff>;
+}
+
+pub trait ResourceSyncOuter<
+  Implementer: ResourceSync,
+  Logger: SyncLogger<Implementer>,
+> where
+  Self: Sized,
+{
+  fn display() -> &'static str;
+
+  fn resource_target(id: String) -> ResourceTarget;
 
   #[allow(async_fn_in_trait)]
   async fn run_updates(
@@ -203,14 +201,9 @@ pub trait ResourceSyncOuter<
   }
 }
 
-pub trait SyncLogger<Implementer, Resource>
+pub trait SyncLogger<Implementer: ResourceSync>
 where
   Self: Sized,
-  Implementer: ResourceSync,
-  Resource: ResourceSyncOuter<Implementer, Self>,
-  Implementer::Config:
-    PartialDiff<Implementer::PartialConfig, Resource::ConfigDiff>,
-  Implementer::PartialConfig: From<Resource::ConfigDiff>,
 {
   fn log_to_create(
     resource: &ResourceToml<Implementer::PartialConfig>,
@@ -219,7 +212,7 @@ where
     name: &str,
     description: &str,
     tags: &[String],
-    diff: &Resource::ConfigDiff,
+    diff: &Implementer::ConfigDiff,
   );
   fn log_to_delete(name: &str);
 
@@ -237,6 +230,8 @@ where
 
   fn log_description_updated(name: &str);
   fn log_failed_description_update(name: &str, e: anyhow::Error);
+
+  fn log_procedure_sync_failed_max_iter();
 }
 
 pub trait IdToTag {
@@ -251,11 +246,8 @@ pub fn get_updates<Implementer, Resource, Tags, Logger>(
 where
   Implementer: ResourceSync,
   Resource: ResourceSyncOuter<Implementer, Logger>,
-  Implementer::Config:
-    PartialDiff<Implementer::PartialConfig, Resource::ConfigDiff>,
-  Implementer::PartialConfig: From<Resource::ConfigDiff>,
   Tags: IdToTag,
-  Logger: SyncLogger<Implementer, Resource>,
+  Logger: SyncLogger<Implementer>,
 {
   let map = Implementer::name_to_resource();
 
@@ -279,7 +271,7 @@ where
         let config: Implementer::Config = resource.config.into();
         resource.config = config.into();
 
-        let diff = Resource::get_diff(
+        let diff = Implementer::get_diff(
           original.config.clone(),
           resource.config,
         )?;
@@ -400,10 +392,7 @@ pub async fn run_update_tags<Implementer, Resource, Logger>(
 ) where
   Implementer: ResourceSync,
   Resource: ResourceSyncOuter<Implementer, Logger>,
-  Implementer::Config:
-    PartialDiff<Implementer::PartialConfig, Resource::ConfigDiff>,
-  Implementer::PartialConfig: From<Resource::ConfigDiff>,
-  Logger: SyncLogger<Implementer, Resource>,
+  Logger: SyncLogger<Implementer>,
 {
   // Update tags
   if let Err(e) = Implementer::update_tags(id, tags).await {
@@ -430,10 +419,7 @@ pub async fn run_update_description<Implementer, Resource, Logger>(
 ) where
   Implementer: ResourceSync,
   Resource: ResourceSyncOuter<Implementer, Logger>,
-  Implementer::Config:
-    PartialDiff<Implementer::PartialConfig, Resource::ConfigDiff>,
-  Implementer::PartialConfig: From<Resource::ConfigDiff>,
-  Logger: SyncLogger<Implementer, Resource>,
+  Logger: SyncLogger<Implementer>,
 {
   if let Err(e) =
     Implementer::update_description(id, description).await
