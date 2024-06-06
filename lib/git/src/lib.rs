@@ -82,13 +82,6 @@ where
     ..
   } = clone_args.into();
 
-  // let access_token =
-  //   match (github_token, get_github_token(&github_account)) {
-  //     (Some(token), _) => Some(token),
-  //     (None, Ok(token)) => token,
-  //     (None, Err(e)) => return Err(e),
-  //   };
-
   let repo = repo.as_ref().context("build has no repo attached")?;
   let name = to_monitor_name(&name);
 

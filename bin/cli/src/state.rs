@@ -23,7 +23,7 @@ pub fn monitor_client() -> &'static MonitorClient {
         }
         (url, key, secret) => {
           let mut creds: crate::args::CredsFile =
-            crate::helpers::parse_toml_file(&cli_args().creds)
+            sync::file::parse_toml_file(&cli_args().creds)
               .expect("failed to parse monitor credentials");
 
           if let Some(url) = url {

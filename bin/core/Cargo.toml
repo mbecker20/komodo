@@ -18,6 +18,8 @@ path = "src/main.rs"
 monitor_client = { workspace = true, features = ["mongo"] }
 periphery_client.workspace = true
 logger.workspace = true
+sync.workspace = true
+git.workspace = true
 # mogh
 serror = { workspace = true, features = ["axum"] }
 merge_config_files.workspace = true

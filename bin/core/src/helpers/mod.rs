@@ -20,6 +20,7 @@ pub mod channel;
 pub mod procedure;
 pub mod prune;
 pub mod query;
+pub mod sync;
 pub mod update;
 
 // pub mod resource;

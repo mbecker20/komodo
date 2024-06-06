@@ -1,12 +1,11 @@
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use anyhow::{anyhow, Context, Ok};
 use futures::future::join_all;
 use monitor_client::{
   api::execute::Execution,
   entities::{
-    monitor_timestamp, procedure::Procedure, update::Update,
-    user::procedure_user,
+    procedure::Procedure, update::Update, user::procedure_user,
   },
 };
 use resolver_api::Resolve;
@@ -21,14 +20,13 @@ pub async fn execute_procedure(
   procedure: &Procedure,
   update: &Mutex<Update>,
 ) -> anyhow::Result<()> {
-  let start_ts = monitor_timestamp();
-
   for stage in &procedure.config.stages {
     add_line_to_update(
       update,
       &format!("executing stage: {}", stage.name),
     )
     .await;
+    let timer = Instant::now();
     execute_stage(
       stage
         .executions
@@ -42,21 +40,18 @@ pub async fn execute_procedure(
     )
     .await
     .with_context(|| {
-      let time = Duration::from_millis(
-        (monitor_timestamp() - start_ts) as u64,
-      );
       format!(
-        "failed stage '{}' execution after {time:?}",
-        stage.name
+        "failed stage '{}' execution after {:?}",
+        stage.name,
+        timer.elapsed(),
       )
     })?;
-    let time =
-      Duration::from_millis((monitor_timestamp() - start_ts) as u64);
     add_line_to_update(
       update,
       &format!(
-        "finished stage '{}' execution in {time:?} ✅",
-        stage.name
+        "finished stage '{}' execution in {:?} ✅",
+        stage.name,
+        timer.elapsed()
       ),
     )
     .await;

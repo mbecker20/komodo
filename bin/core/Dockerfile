@@ -14,7 +14,7 @@ RUN cd frontend && yarn link @monitor/client && yarn && yarn build
 
 # Final Image
 FROM debian:bookworm-slim
-RUN apt update && apt install -y ca-certificates
+RUN apt update && apt install -y git ca-certificates
 COPY ./config_example/core.config.example.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /
 COPY --from=frontend-builder /builder/frontend/dist /frontend

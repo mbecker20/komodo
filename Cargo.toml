@@ -19,6 +19,7 @@ monitor_client = "1.6.2"
 periphery_client = { path = "client/periphery/rs" }
 command = { path = "lib/command" }
 logger = { path = "lib/logger" }
+sync = { path = "lib/sync" }
 git = { path = "lib/git" }
 
 # MOGH

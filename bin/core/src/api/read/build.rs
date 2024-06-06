@@ -283,6 +283,8 @@ impl Resolve<ListCommonBuildExtraArgs, User> for State {
       }
     }
 
-    Ok(res.into_iter().collect())
+    let mut res = res.into_iter().collect::<Vec<_>>();
+    res.sort();
+    Ok(res)
   }
 }

@@ -283,6 +283,20 @@ impl From<&self::repo::Repo> for CloneArgs {
   }
 }
 
+impl From<&self::sync::ResourceSync> for CloneArgs {
+  fn from(sync: &self::sync::ResourceSync) -> Self {
+    CloneArgs {
+      name: sync.name.clone(),
+      repo: optional_string(&sync.config.repo),
+      branch: optional_string(&sync.config.branch),
+      commit: optional_string(&sync.config.commit),
+      github_account: optional_string(&sync.config.github_account),
+      on_clone: None,
+      on_pull: None,
+    }
+  }
+}
+
 #[typeshare]
 #[derive(
   Serialize,

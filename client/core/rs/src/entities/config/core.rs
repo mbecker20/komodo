@@ -9,7 +9,7 @@
 //! into the image at `/config/config.toml`.
 //!
 
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
@@ -283,7 +283,7 @@ pub struct CoreConfig {
   /// This directory has no need for persistence, so no need to mount it.
   /// Default: `/syncs`
   #[serde(default = "default_sync_directory")]
-  pub sync_directory: String,
+  pub sync_directory: PathBuf,
 
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
@@ -388,8 +388,9 @@ fn default_jwt_valid_for() -> Timelength {
   Timelength::OneDay
 }
 
-fn default_sync_directory() -> String {
-  String::from("/syncs")
+fn default_sync_directory() -> PathBuf {
+  // `/syncs` will always be valid path
+  PathBuf::from_str("/syncs").unwrap()
 }
 
 fn default_monitoring_interval() -> Timelength {

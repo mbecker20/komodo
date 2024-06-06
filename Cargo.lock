@@ -2171,6 +2171,7 @@ dependencies = [
  "serde",
  "serde_json",
  "strum 0.26.2",
+ "sync",
  "tokio",
  "toml",
  "tracing",
@@ -2225,6 +2226,7 @@ dependencies = [
  "dotenv",
  "envy",
  "futures",
+ "git",
  "hex",
  "hmac",
  "jwt",
@@ -2245,6 +2247,7 @@ dependencies = [
  "sha2",
  "slack_client_rs",
  "svi",
+ "sync",
  "termination_signal",
  "tokio",
  "tokio-util",
@@ -3474,6 +3477,19 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "sync"
+version = "1.6.2"
+dependencies = [
+ "anyhow",
+ "colored",
+ "monitor_client",
+ "partial_derive2",
+ "serde",
+ "toml",
+ "tracing",
 ]
 
 [[package]]

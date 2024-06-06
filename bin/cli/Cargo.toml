@@ -15,8 +15,9 @@ path = "src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# local client
+# local
 monitor_client.workspace = true
+sync.workspace = true
 # mogh
 partial_derive2.workspace = true
 # external

@@ -4,14 +4,6 @@ use anyhow::Context;
 use colored::Colorize;
 use serde::de::DeserializeOwned;
 
-pub fn parse_toml_file<T: DeserializeOwned>(
-  path: impl AsRef<std::path::Path>,
-) -> anyhow::Result<T> {
-  let contents = std::fs::read_to_string(path)
-    .context("failed to read file contents")?;
-  toml::from_str(&contents).context("failed to parse toml contents")
-}
-
 pub fn wait_for_enter(press_enter_to: &str) -> anyhow::Result<()> {
   println!(
     "\nPress {} to {}\n",
