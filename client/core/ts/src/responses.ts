@@ -107,6 +107,13 @@ export type ReadResponses = {
   ListAlerters: Types.ListAlertersResponse;
   ListFullAlerters: Types.ListFullAlertersResponse;
 
+  // ==== SYNC ====
+  GetResourceSyncsSummary: Types.GetResourceSyncsSummaryResponse;
+  GetResourceSync: Types.GetResourceSyncResponse;
+  ListResourceSyncs: Types.ListResourceSyncsResponse;
+  ListFullResourceSyncs: Types.ListFullResourceSyncsResponse;
+  GetResourceSyncActionState: Types.GetResourceSyncActionStateResponse;
+
   // ==== TOML ====
   ExportAllResourcesToToml: Types.ExportAllResourcesToTomlResponse;
   ExportResourcesToToml: Types.ExportResourcesToTomlResponse;
@@ -206,6 +213,12 @@ export type WriteResponses = {
   DeleteProcedure: Types.Procedure;
   UpdateProcedure: Types.Procedure;
 
+  // ==== SYNC ====
+  CreateResourceSync: Types.ResourceSync;
+  CopyResourceSync: Types.ResourceSync;
+  DeleteResourceSync: Types.ResourceSync;
+  UpdateResourceSync: Types.ResourceSync;
+
   // ==== TAG ====
   CreateTag: Types.Tag;
   DeleteTag: Types.Tag;
@@ -245,4 +258,7 @@ export type ExecuteResponses = {
 
   // ==== SERVER TEMPLATE ====
   LaunchServer: Types.Update;
+
+  // ==== SYNC ====
+  RunSync: Types.Update;
 };

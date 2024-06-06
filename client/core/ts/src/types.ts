@@ -107,7 +107,8 @@ export type ResourceTarget =
 	| { type: "Repo", id: string }
 	| { type: "Alerter", id: string }
 	| { type: "Procedure", id: string }
-	| { type: "ServerTemplate", id: string };
+	| { type: "ServerTemplate", id: string }
+	| { type: "ResourceSync", id: string };
 
 /** The variants of data related to the alert. */
 export type AlertData = 
@@ -681,7 +682,8 @@ export type Execution =
 	| { type: "PullRepo", params: PullRepo }
 	| { type: "PruneNetworks", params: PruneNetworks }
 	| { type: "PruneImages", params: PruneImages }
-	| { type: "PruneContainers", params: PruneContainers };
+	| { type: "PruneContainers", params: PruneContainers }
+	| { type: "RunSync", params: RunSync };
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
 export interface EnabledExecution {
@@ -1145,6 +1147,85 @@ export type ListServerTemplatesResponse = ServerTemplateListItem[];
 
 export type ListFullServerTemplatesResponse = ServerTemplate[];
 
+/** The sync configuration. */
+export interface ResourceSyncConfig {
+	/** The Github repo used as the source of the build. */
+	repo?: string;
+	/** The branch of the repo. */
+	branch: string;
+	/** Optionally set a specific commit hash. */
+	commit?: string;
+	/**
+	 * The github account used to clone (used to access private repos).
+	 * Empty string is public clone (only public repos).
+	 */
+	github_account?: string;
+	/**
+	 * The github account used to clone (used to access private repos).
+	 * Empty string is public clone (only public repos).
+	 */
+	resource_path: string;
+	/**
+	 * Whether sync should delete resources
+	 * not declared in the resource files
+	 */
+	delete?: boolean;
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+}
+
+export interface ResourceSyncInfo {
+	/** Unix timestamp of last sync */
+	last_sync_ts: I64;
+	/** Short commit hash of last sync */
+	last_sync_hash: string;
+	/** Commit message of last sync */
+	last_sync_message: string;
+}
+
+export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
+
+export type GetResourceSyncResponse = ResourceSync;
+
+export enum ResourceSyncState {
+	/** Last sync successful (or never synced) */
+	Ok = "Ok",
+	/** Last sync failed */
+	Failed = "Failed",
+	/** Currently syncing */
+	Syncing = "Syncing",
+	/** Other case */
+	Unknown = "Unknown",
+}
+
+export interface ResourceSyncListItemInfo {
+	/** Unix timestamp of last sync, or 0 */
+	last_sync_ts: I64;
+	/** Short commit hash of last sync, or empty string */
+	last_sync_hash: string;
+	/** Commit message of last sync, or empty string */
+	last_sync_message: string;
+	/** The Github repo used as the source of the sync resources */
+	repo: string;
+	/** The branch of the repo */
+	branch: string;
+	/** State of the sync. Reflects whether most recent sync successful. */
+	state: ResourceSyncState;
+}
+
+export type ResourceSyncListItem = ResourceListItem<ResourceSyncListItemInfo>;
+
+export type ListResourceSyncsResponse = ResourceSyncListItem[];
+
+export type ListFullResourceSyncsResponse = ResourceSync[];
+
+export interface ResourceSyncActionState {
+	/** Whether sync currently syncing */
+	syncing: boolean;
+}
+
+export type GetResourceSyncActionStateResponse = ResourceSyncActionState;
+
 export interface Tag {
 	/**
 	 * The Mongo ID of the tag.
@@ -1213,6 +1294,10 @@ export enum Operation {
 	UpdateServerTemplate = "UpdateServerTemplate",
 	DeleteServerTemplate = "DeleteServerTemplate",
 	LaunchServer = "LaunchServer",
+	CreateResourceSync = "CreateResourceSync",
+	UpdateResourceSync = "UpdateResourceSync",
+	DeleteResourceSync = "DeleteResourceSync",
+	RunSync = "RunSync",
 	CreateVariable = "CreateVariable",
 	UpdateVariableValue = "UpdateVariableValue",
 	DeleteVariable = "DeleteVariable",
@@ -1471,7 +1556,7 @@ export type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
 export type _PartialRepoConfig = Partial<RepoConfig>;
 
 export interface RepoQuerySpecifics {
-	/** Filter builds by their repo. */
+	/** Filter repos by their repo. */
 	repos: string[];
 }
 
@@ -1494,6 +1579,15 @@ export interface ServerTemplateQuerySpecifics {
 }
 
 export type ServerTemplateQuery = ResourceQuery<ServerTemplateQuerySpecifics>;
+
+export type _PartialResourceSyncConfig = Partial<ResourceSyncConfig>;
+
+export interface ResourceSyncQuerySpecifics {
+	/** Filter syncs by their repo. */
+	repos: string[];
+}
+
+export type ResourceSyncQuery = ResourceQuery<ResourceSyncQuerySpecifics>;
 
 export type _PartialTag = Partial<Tag>;
 
@@ -1722,6 +1816,12 @@ export interface LaunchServer {
 	name: string;
 	/** The server template used to define the config. */
 	server_template: string;
+}
+
+/** Runs the target resource sync. Response: [Update] */
+export interface RunSync {
+	/** Id or name */
+	sync: string;
 }
 
 /**
@@ -2493,6 +2593,51 @@ export interface GetServerTemplatesSummaryResponse {
 	total: number;
 }
 
+/** Get a specific sync. Response: [ResourceSync]. */
+export interface GetResourceSync {
+	/** Id or name */
+	sync: string;
+}
+
+/** List syncs matching optional query. Response: [ListResourceSyncsResponse]. */
+export interface ListResourceSyncs {
+	/** optional structured query to filter syncs. */
+	query?: ResourceSyncQuery;
+}
+
+/** List syncs matching optional query. Response: [ListFullResourceSyncsResponse]. */
+export interface ListFullResourceSyncs {
+	/** optional structured query to filter syncs. */
+	query?: ResourceSyncQuery;
+}
+
+/** Get current action state for the sync. Response: [ResourceSyncActionState]. */
+export interface GetResourceSyncActionState {
+	/** Id or name */
+	sync: string;
+}
+
+/**
+ * Gets a summary of data relating to all syncs.
+ * Response: [GetResourceSyncsSummaryResponse].
+ */
+export interface GetResourceSyncsSummary {
+}
+
+/** Response for [GetResourceSyncsSummary] */
+export interface GetResourceSyncsSummaryResponse {
+	/** The total number of syncs */
+	total: number;
+	/** The number of syncs with Ok state. */
+	ok: number;
+	/** The number of syncs currently syncing. */
+	syncing: number;
+	/** The number of syncs with failed state. */
+	failed: number;
+	/** The number of syncs with unknown state. */
+	unknown: number;
+}
+
 /** Get data for a specific tag. Response [Tag]. */
 export interface GetTag {
 	/** Id or name */
@@ -2909,6 +3054,9 @@ export interface CopyDeployment {
 /**
  * Deletes the deployment at the given id, and returns the deleted deployment.
  * Response: [Deployment].
+ * 
+ * Note. If the associated container is running, it will be deleted as part of
+ * the deployment clean up.
  */
 export interface DeleteDeployment {
 	/** The id or name of the deployment to delete. */
@@ -3188,6 +3336,54 @@ export interface UpdateServerTemplate {
 	id: string;
 	/** The partial config update to apply. */
 	config: PartialServerTemplateConfig;
+}
+
+/** Create a sync. Response: [ResourceSync]. */
+export interface CreateResourceSync {
+	/** The name given to newly created sync. */
+	name: string;
+	/** Optional partial config to initialize the sync with. */
+	config: _PartialResourceSyncConfig;
+}
+
+/**
+ * Creates a new sync with given `name` and the configuration
+ * of the sync at the given `id`. Response: [ResourceSync].
+ */
+export interface CopyResourceSync {
+	/** The name of the new sync. */
+	name: string;
+	/** The id of the sync to copy. */
+	id: string;
+}
+
+/**
+ * Deletes the sync at the given id, and returns the deleted sync.
+ * Response: [ResourceSync]
+ */
+export interface DeleteResourceSync {
+	/** The id or name of the sync to delete. */
+	id: string;
+}
+
+/**
+ * Update the sync at the given id, and return the updated sync.
+ * Response: [ResourceSync].
+ * 
+ * Note. If the attached server for the sync changes,
+ * the sync will be deleted / cleaned up on the old server.
+ * 
+ * Note. This method updates only the fields which are set in the [_PartialResourceSyncConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateResourceSync {
+	/** The id of the sync to update. */
+	id: string;
+	/** The partial config update to apply. */
+	config: _PartialResourceSyncConfig;
 }
 
 /** Create a tag. Response: [Tag]. */
@@ -3576,7 +3772,8 @@ export type ExecuteRequest =
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
 	| { type: "RunProcedure", params: RunProcedure }
-	| { type: "LaunchServer", params: LaunchServer };
+	| { type: "LaunchServer", params: LaunchServer }
+	| { type: "RunSync", params: RunSync };
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
@@ -3637,6 +3834,11 @@ export type ReadRequest =
 	| { type: "ListRepos", params: ListRepos }
 	| { type: "ListFullRepos", params: ListFullRepos }
 	| { type: "GetRepoActionState", params: GetRepoActionState }
+	| { type: "GetResourceSyncsSummary", params: GetResourceSyncsSummary }
+	| { type: "GetResourceSync", params: GetResourceSync }
+	| { type: "ListResourceSyncs", params: ListResourceSyncs }
+	| { type: "ListFullResourceSyncs", params: ListFullResourceSyncs }
+	| { type: "GetResourceSyncActionState", params: GetResourceSyncActionState }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }
@@ -3715,6 +3917,10 @@ export type WriteRequest =
 	| { type: "CopyProcedure", params: CopyProcedure }
 	| { type: "DeleteProcedure", params: DeleteProcedure }
 	| { type: "UpdateProcedure", params: UpdateProcedure }
+	| { type: "CreateResourceSync", params: CreateResourceSync }
+	| { type: "CopyResourceSync", params: CopyResourceSync }
+	| { type: "DeleteResourceSync", params: DeleteResourceSync }
+	| { type: "UpdateResourceSync", params: UpdateResourceSync }
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "RenameTag", params: RenameTag }
