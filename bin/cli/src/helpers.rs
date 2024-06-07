@@ -2,7 +2,6 @@ use std::io::Read;
 
 use anyhow::Context;
 use colored::Colorize;
-use serde::de::DeserializeOwned;
 
 pub fn wait_for_enter(press_enter_to: &str) -> anyhow::Result<()> {
   println!(

@@ -15,6 +15,7 @@ use monitor_client::{
     repo::Repo,
     resource::Resource,
     server::Server,
+    sync::ResourceSync,
     update::{ResourceTargetVariant, Update},
     user::User,
     Operation,
@@ -271,7 +272,13 @@ async fn validate_config(
           params.server = server.id;
         }
         Execution::RunSync(params) => {
-          todo!()
+          let sync = super::get_check_permissions::<ResourceSync>(
+            &params.sync,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.sync = sync.id;
         }
       }
     }

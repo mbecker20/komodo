@@ -133,6 +133,7 @@ impl ResourceSync for Procedure {
                 Self::display()
               );
             }
+            continue;
           }
         }
 
@@ -169,7 +170,7 @@ impl ResourceSync for Procedure {
       to_create.retain(|resource| !to_pull.contains(&resource.name));
 
       if to_update.is_empty() && to_create.is_empty() {
-        info!("all procedures synced");
+        // info!("all procedures synced");
         return;
       }
     }

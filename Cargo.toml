@@ -19,12 +19,11 @@ monitor_client = "1.6.2"
 periphery_client = { path = "client/periphery/rs" }
 command = { path = "lib/command" }
 logger = { path = "lib/logger" }
-sync = { path = "lib/sync" }
 git = { path = "lib/git" }
 
 # MOGH
 run_command = { version = "0.0.6", features = ["async_tokio"] }
-serror = { version = "0.3.5", default-features = false }
+serror = { version = "0.4.3", default-features = false }
 slack = { version = "0.1.0", package = "slack_client_rs" }
 derive_default_builder = "0.1.8"
 derive_empty_traits = "0.1.0"

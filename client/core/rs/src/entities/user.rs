@@ -87,7 +87,10 @@ impl User {
   }
 
   pub fn is_service_user(user_id: &str) -> bool {
-    matches!(user_id, "Procedure" | "Github" | "Auto Redeploy")
+    matches!(
+      user_id,
+      "Procedure" | "Github" | "Auto Redeploy" | "Resource Sync"
+    )
   }
 }
 
@@ -96,6 +99,7 @@ pub fn admin_service_user(user_id: &str) -> Option<User> {
     "Procedure" => procedure_user().to_owned().into(),
     "Github" => github_user().to_owned().into(),
     "Auto Redeploy" => auto_redeploy_user().to_owned().into(),
+    "Resource Sync" => sync_user().to_owned().into(),
     _ => None,
   }
 }
@@ -130,6 +134,19 @@ pub fn auto_redeploy_user() -> &'static User {
   static AUTO_REDEPLOY_USER: OnceLock<User> = OnceLock::new();
   AUTO_REDEPLOY_USER.get_or_init(|| {
     let id_name = String::from("Auto Redeploy");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
+}
+
+pub fn sync_user() -> &'static User {
+  static SYNC_USER: OnceLock<User> = OnceLock::new();
+  SYNC_USER.get_or_init(|| {
+    let id_name = String::from("Resource Sync");
     User {
       id: id_name.clone(),
       username: id_name,

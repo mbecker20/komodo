@@ -6,7 +6,8 @@ use super::{
   permission::PermissionLevel, procedure::PartialProcedureConfig,
   repo::PartialRepoConfig, server::PartialServerConfig,
   server_template::PartialServerTemplateConfig,
-  update::ResourceTarget, variable::Variable,
+  sync::PartialResourceSyncConfig, update::ResourceTarget,
+  variable::Variable,
 };
 
 /// Specifies resources to sync on monitor
@@ -14,25 +15,10 @@ use super::{
 pub struct ResourcesToml {
   #[serde(
     default,
-    rename = "server_template",
-    skip_serializing_if = "Vec::is_empty"
-  )]
-  pub server_templates:
-    Vec<ResourceToml<PartialServerTemplateConfig>>,
-
-  #[serde(
-    default,
     rename = "server",
     skip_serializing_if = "Vec::is_empty"
   )]
   pub servers: Vec<ResourceToml<PartialServerConfig>>,
-
-  #[serde(
-    default,
-    rename = "build",
-    skip_serializing_if = "Vec::is_empty"
-  )]
-  pub builds: Vec<ResourceToml<PartialBuildConfig>>,
 
   #[serde(
     default,
@@ -43,10 +29,10 @@ pub struct ResourcesToml {
 
   #[serde(
     default,
-    rename = "builder",
+    rename = "build",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub builders: Vec<ResourceToml<PartialBuilderConfig>>,
+  pub builds: Vec<ResourceToml<PartialBuildConfig>>,
 
   #[serde(
     default,
@@ -57,6 +43,20 @@ pub struct ResourcesToml {
 
   #[serde(
     default,
+    rename = "procedure",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub procedures: Vec<ResourceToml<PartialProcedureConfig>>,
+
+  #[serde(
+    default,
+    rename = "builder",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub builders: Vec<ResourceToml<PartialBuilderConfig>>,
+
+  #[serde(
+    default,
     rename = "alerter",
     skip_serializing_if = "Vec::is_empty"
   )]
@@ -64,10 +64,18 @@ pub struct ResourcesToml {
 
   #[serde(
     default,
-    rename = "procedure",
+    rename = "server_template",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub procedures: Vec<ResourceToml<PartialProcedureConfig>>,
+  pub server_templates:
+    Vec<ResourceToml<PartialServerTemplateConfig>>,
+
+  #[serde(
+    default,
+    rename = "sync",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub syncs: Vec<ResourceToml<PartialResourceSyncConfig>>,
 
   #[serde(
     default,

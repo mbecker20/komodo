@@ -21,6 +21,7 @@ use monitor_client::{
     resource::{Resource, ResourceQuery},
     server::Server,
     server_template::ServerTemplate,
+    sync::ResourceSync,
     toml::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
     },
@@ -167,6 +168,15 @@ impl Resolve<ExportResourcesToToml, User> for State {
           .await?;
           res.alerters.push(convert_resource(alerter, &names.tags))
         }
+        ResourceTarget::ResourceSync(id) => {
+          let sync = resource::get_check_permissions::<ResourceSync>(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          res.syncs.push(convert_resource(sync, &names.tags))
+        }
         ResourceTarget::ServerTemplate(id) => {
           let template = resource::get_check_permissions::<
             ServerTemplate,
@@ -268,9 +278,6 @@ impl Resolve<ExportResourcesToToml, User> for State {
               format!("failed to add procedure {id}")
             })?;
         }
-        ResourceTarget::ResourceSync(id) => {
-          todo!()
-        }
         ResourceTarget::System(_) => continue,
       };
     }
@@ -364,7 +371,9 @@ async fn add_procedure(
         Execution::PruneContainers(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
-        Execution::RunSync(exec) => todo!(),
+        Execution::RunSync(exec) => exec.sync.clone_from(
+          names.syncs.get(&exec.sync).unwrap_or(&String::new()),
+        ),
         Execution::None(_) => continue,
       }
     }
@@ -384,6 +393,7 @@ struct ResourceNames {
   repos: HashMap<String, String>,
   deployments: HashMap<String, String>,
   procedures: HashMap<String, String>,
+  syncs: HashMap<String, String>,
 }
 
 impl ResourceNames {
@@ -429,6 +439,12 @@ impl ResourceNames {
       procedures: find_collect(&db.procedures, None, None)
         .await
         .context("failed to get all procedures")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      syncs: find_collect(&db.resource_syncs, None, None)
+        .await
+        .context("failed to get all resource syncs")?
         .into_iter()
         .map(|t| (t.id, t.name))
         .collect::<HashMap<_, _>>(),

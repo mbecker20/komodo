@@ -2166,12 +2166,12 @@ dependencies = [
  "clap",
  "colored",
  "futures",
+ "merge_config_files",
  "monitor_client",
  "partial_derive2",
  "serde",
  "serde_json",
  "strum 0.26.2",
- "sync",
  "tokio",
  "toml",
  "tracing",
@@ -2247,7 +2247,6 @@ dependencies = [
  "sha2",
  "slack_client_rs",
  "svi",
- "sync",
  "termination_signal",
  "tokio",
  "tokio-util",
@@ -3219,13 +3218,12 @@ dependencies = [
 
 [[package]]
 name = "serror"
-version = "0.3.5"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4c2d61f8b059a9ac51ab4f65ea9874cb1b8a6e57f2ebc6d284988f6b877253b"
+checksum = "a58297fe0d139a2950d2f474c3f5d0614eecc2b90f3bfe3ee28dca36dfcfd78d"
 dependencies = [
  "anyhow",
  "axum 0.7.5",
- "axum-extra",
  "serde",
  "serde_json",
 ]
@@ -3477,19 +3475,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "sync"
-version = "1.6.2"
-dependencies = [
- "anyhow",
- "colored",
- "monitor_client",
- "partial_derive2",
- "serde",
- "toml",
- "tracing",
 ]
 
 [[package]]

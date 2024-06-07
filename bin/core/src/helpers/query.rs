@@ -107,6 +107,18 @@ pub async fn get_tag_check_owner(
   Err(anyhow!("user must be tag owner or admin"))
 }
 
+pub async fn get_id_to_tags(
+  filter: impl Into<Option<Document>>,
+) -> anyhow::Result<HashMap<String, Tag>> {
+  let res = find_collect(&db_client().await.tags, filter, None)
+    .await
+    .context("failed to query db for tags")?
+    .into_iter()
+    .map(|tag| (tag.id.clone(), tag))
+    .collect();
+  Ok(res)
+}
+
 #[instrument(level = "debug")]
 pub async fn get_user_user_group_ids(
   user_id: &str,

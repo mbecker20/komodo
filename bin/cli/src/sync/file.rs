@@ -7,6 +7,7 @@ use std::{
 use anyhow::{anyhow, Context};
 use colored::Colorize;
 use monitor_client::entities::toml::ResourcesToml;
+use serde::de::DeserializeOwned;
 
 pub fn read_resources(path: &str) -> anyhow::Result<ResourcesToml> {
   let mut res = ResourcesToml::default();
@@ -30,14 +31,13 @@ fn read_resources_recursive(
     {
       return Ok(());
     }
-    let more =
-      match sync::file::parse_toml_file::<ResourcesToml>(path) {
-        Ok(res) => res,
-        Err(e) => {
-          warn!("failed to parse {:?}. skipping file | {e:#}", path);
-          return Ok(());
-        }
-      };
+    let more = match parse_toml_file::<ResourcesToml>(path) {
+      Ok(res) => res,
+      Err(e) => {
+        warn!("failed to parse {:?}. skipping file | {e:#}", path);
+        return Ok(());
+      }
+    };
     info!(
       "{} from {}",
       "adding resources".green().bold(),
@@ -45,12 +45,13 @@ fn read_resources_recursive(
     );
     resources.servers.extend(more.servers);
     resources.deployments.extend(more.deployments);
-    resources.repos.extend(more.repos);
     resources.builds.extend(more.builds);
+    resources.repos.extend(more.repos);
     resources.procedures.extend(more.procedures);
     resources.builders.extend(more.builders);
     resources.alerters.extend(more.alerters);
     resources.server_templates.extend(more.server_templates);
+    resources.syncs.extend(more.syncs);
     resources.user_groups.extend(more.user_groups);
     resources.variables.extend(more.variables);
     Ok(())
@@ -68,4 +69,12 @@ fn read_resources_recursive(
   } else {
     Err(anyhow!("resources path is neither file nor directory"))
   }
+}
+
+fn parse_toml_file<T: DeserializeOwned>(
+  path: impl AsRef<std::path::Path>,
+) -> anyhow::Result<T> {
+  let contents = std::fs::read_to_string(path)
+    .context("failed to read file contents")?;
+  toml::from_str(&contents).context("failed to parse toml contents")
 }

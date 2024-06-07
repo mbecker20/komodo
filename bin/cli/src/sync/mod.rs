@@ -24,14 +24,6 @@ pub async fn run(path: &str, delete: bool) -> anyhow::Result<()> {
 
   info!("computing sync actions...");
 
-  let (
-    server_template_creates,
-    server_template_updates,
-    server_template_deletes,
-  ) = resource::get_updates::<ServerTemplate>(
-    resources.server_templates,
-    delete,
-  )?;
   let (server_creates, server_updates, server_deletes) =
     resource::get_updates::<Server>(resources.servers, delete)?;
   let (deployment_creates, deployment_updates, deployment_deletes) =
@@ -41,14 +33,22 @@ pub async fn run(path: &str, delete: bool) -> anyhow::Result<()> {
     )?;
   let (build_creates, build_updates, build_deletes) =
     resource::get_updates::<Build>(resources.builds, delete)?;
-  let (builder_creates, builder_updates, builder_deletes) =
-    resource::get_updates::<Builder>(resources.builders, delete)?;
-  let (alerter_creates, alerter_updates, alerter_deletes) =
-    resource::get_updates::<Alerter>(resources.alerters, delete)?;
   let (repo_creates, repo_updates, repo_deletes) =
     resource::get_updates::<Repo>(resources.repos, delete)?;
   let (procedure_creates, procedure_updates, procedure_deletes) =
     resource::get_updates::<Procedure>(resources.procedures, delete)?;
+  let (builder_creates, builder_updates, builder_deletes) =
+    resource::get_updates::<Builder>(resources.builders, delete)?;
+  let (alerter_creates, alerter_updates, alerter_deletes) =
+    resource::get_updates::<Alerter>(resources.alerters, delete)?;
+  let (
+    server_template_creates,
+    server_template_updates,
+    server_template_deletes,
+  ) = resource::get_updates::<ServerTemplate>(
+    resources.server_templates,
+    delete,
+  )?;
 
   let (variable_creates, variable_updates, variable_deletes) =
     variables::get_updates(resources.variables, delete)?;
@@ -116,7 +116,7 @@ pub async fn run(path: &str, delete: bool) -> anyhow::Result<()> {
   Build::run_updates(build_creates, build_updates, build_deletes)
     .await;
 
-  // Dependant on server / builder
+  // Dependant on server / build
   Deployment::run_updates(
     deployment_creates,
     deployment_updates,

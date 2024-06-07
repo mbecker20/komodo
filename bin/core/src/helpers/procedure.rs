@@ -238,7 +238,15 @@ async fn execute_execution(
         .context("failed at PruneContainers")?
     }
     Execution::RunSync(req) => {
-      todo!()
+      let req = ExecuteRequest::RunSync(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RunSync(req) = req else {
+        unreachable!()
+      };
+      State
+        .resolve(req, (user, update))
+        .await
+        .context("failed at RunSync")?
     }
   };
   if update.success {

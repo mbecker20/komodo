@@ -1,6 +1,7 @@
 use std::sync::OnceLock;
 
 use clap::Parser;
+use merge_config_files::parse_config_file;
 use monitor_client::MonitorClient;
 
 pub fn cli_args() -> &'static crate::args::CliArgs {
@@ -23,7 +24,7 @@ pub fn monitor_client() -> &'static MonitorClient {
         }
         (url, key, secret) => {
           let mut creds: crate::args::CredsFile =
-            sync::file::parse_toml_file(&cli_args().creds)
+            parse_config_file(cli_args().creds.as_str())
               .expect("failed to parse monitor credentials");
 
           if let Some(url) = url {

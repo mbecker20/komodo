@@ -1,19 +1,24 @@
 use std::{fs, path::Path};
 
 use anyhow::{anyhow, Context};
-use colored::Colorize;
-use monitor_client::entities::toml::ResourcesToml;
+use monitor_client::entities::{toml::ResourcesToml, update::Log};
 use serde::de::DeserializeOwned;
 
-pub fn read_resources(path: &Path) -> anyhow::Result<ResourcesToml> {
+use super::{colored, muted};
+
+pub fn read_resources(
+  path: &Path,
+) -> anyhow::Result<(ResourcesToml, Log)> {
   let mut res = ResourcesToml::default();
-  read_resources_recursive(path, &mut res)?;
-  Ok(res)
+  let mut log = format!("reading resources from {path:?}");
+  read_resources_recursive(path, &mut res, &mut log)?;
+  Ok((res, Log::simple("read remote resources", log)))
 }
 
 fn read_resources_recursive(
   path: &Path,
   resources: &mut ResourcesToml,
+  log: &mut String,
 ) -> anyhow::Result<()> {
   let res =
     fs::metadata(path).context("failed to get path metadata")?;
@@ -28,26 +33,28 @@ fn read_resources_recursive(
     let more = match parse_toml_file::<ResourcesToml>(path) {
       Ok(res) => res,
       Err(e) => {
-        tracing::warn!(
-          "failed to parse {:?}. skipping file | {e:#}",
-          path
-        );
+        warn!("failed to parse {:?}. skipping file | {e:#}", path);
         return Ok(());
       }
     };
-    tracing::info!(
-      "{} from {}",
-      "adding resources".green().bold(),
-      path.display().to_string().blue().bold()
-    );
+
+    log.push('\n');
+    log.push_str(&format!(
+      "{}: {} from {}",
+      muted("INFO"),
+      colored("adding resources", "green"),
+      colored(&path.display().to_string(), "blue")
+    ));
+
     resources.servers.extend(more.servers);
     resources.deployments.extend(more.deployments);
-    resources.repos.extend(more.repos);
     resources.builds.extend(more.builds);
+    resources.repos.extend(more.repos);
     resources.procedures.extend(more.procedures);
     resources.builders.extend(more.builders);
     resources.alerters.extend(more.alerters);
     resources.server_templates.extend(more.server_templates);
+    resources.syncs.extend(more.syncs);
     resources.user_groups.extend(more.user_groups);
     resources.variables.extend(more.variables);
     Ok(())
@@ -55,12 +62,15 @@ fn read_resources_recursive(
     let directory = fs::read_dir(path)
       .context("failed to read directory contents")?;
     for entry in directory.into_iter().flatten() {
-      if let Err(e) =
-        read_resources_recursive(&entry.path(), resources)
+      let path = entry.path();
+      if let Err(e) = read_resources_recursive(&path, resources, log)
       {
-        tracing::warn!(
-          "failed to read additional resources at path | {e:#}"
-        );
+        log.push('\n');
+        log.push_str(&format!(
+          "{}: failed to read additional resources from {} | {e:#}",
+          colored("ERROR", "red"),
+          colored(&path.display().to_string(), "blue")
+        ));
       }
     }
     Ok(())
@@ -69,7 +79,7 @@ fn read_resources_recursive(
   }
 }
 
-pub fn parse_toml_file<T: DeserializeOwned>(
+fn parse_toml_file<T: DeserializeOwned>(
   path: impl AsRef<std::path::Path>,
 ) -> anyhow::Result<T> {
   let contents = std::fs::read_to_string(path)

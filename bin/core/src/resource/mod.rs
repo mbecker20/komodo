@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
@@ -63,14 +63,16 @@ pub use repo::{
 /// Implement on each monitor resource for common methods
 pub trait MonitorResource {
   type ListItem: Serialize + Send;
-  type Config: Send
+  type Config: Clone
+    + Send
     + Sync
     + Unpin
     + Serialize
     + DeserializeOwned
+    + From<Self::PartialConfig>
     + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
-  type PartialConfig: Into<Self::Config> + Serialize;
+  type PartialConfig: From<Self::Config> + Serialize + MaybeNone;
   type ConfigDiff: Into<Self::PartialConfig>
     + Serialize
     + Diff
@@ -268,6 +270,19 @@ async fn list_full_for_user_using_document<T: MonitorResource>(
     .with_context(|| {
       format!("failed to pull {}s from mongo", T::resource_type())
     })
+}
+
+pub async fn get_id_to_resource_map<T: MonitorResource>(
+) -> anyhow::Result<HashMap<String, Resource<T::Config, T::Info>>> {
+  let res = find_collect(T::coll().await, None, None)
+    .await
+    .with_context(|| {
+      format!("failed to pull {}s from mongo", T::resource_type())
+    })?
+    .into_iter()
+    .map(|r| (r.id.clone(), r))
+    .collect();
+  Ok(res)
 }
 
 // =======
