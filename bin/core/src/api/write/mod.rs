@@ -111,6 +111,7 @@ enum WriteRequest {
   CopyResourceSync(CopyResourceSync),
   DeleteResourceSync(DeleteResourceSync),
   UpdateResourceSync(UpdateResourceSync),
+  RefreshResourceSyncPending(RefreshResourceSyncPending),
 
   // ==== TAG ====
   CreateTag(CreateTag),

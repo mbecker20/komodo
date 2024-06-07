@@ -82,3 +82,17 @@ pub struct UpdateResourceSync {
   /// The partial config update to apply.
   pub config: _PartialResourceSyncConfig,
 }
+
+//
+
+/// Trigger a refresh of the computed diff logs for view.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(ResourceSync)]
+pub struct RefreshResourceSyncPending {
+  /// Id or name
+  pub sync: String,
+}

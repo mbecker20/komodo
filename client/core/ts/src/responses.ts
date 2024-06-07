@@ -218,6 +218,7 @@ export type WriteResponses = {
   CopyResourceSync: Types.ResourceSync;
   DeleteResourceSync: Types.ResourceSync;
   UpdateResourceSync: Types.ResourceSync;
+  RefreshResourceSyncPending: Types.ResourceSync;
 
   // ==== TAG ====
   CreateTag: Types.Tag;

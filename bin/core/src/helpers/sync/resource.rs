@@ -20,7 +20,7 @@ use monitor_client::{
   },
 };
 use mungos::find::find_collect;
-use partial_derive2::MaybeNone;
+use partial_derive2::{Diff, FieldDiff, MaybeNone};
 use resolver_api::Resolve;
 
 use crate::{resource::MonitorResource, state::State};
@@ -191,6 +191,139 @@ pub trait ResourceSync: MonitorResource + Sized {
   }
 }
 
+/// Turns all the diffs into a readable string
+pub async fn get_updates_for_view<Resource: ResourceSync>(
+  resources: Vec<ResourceToml<Resource::PartialConfig>>,
+  delete: bool,
+  all_resources: &AllResourcesById,
+  id_to_tags: &HashMap<String, Tag>,
+) -> anyhow::Result<Option<String>> {
+  let map = find_collect(Resource::coll().await, None, None)
+    .await
+    .context("failed to get resources from db")?
+    .into_iter()
+    .map(|r| (r.name.clone(), r))
+    .collect::<HashMap<_, _>>();
+
+  let mut any_change = false;
+
+  let mut to_delete = Vec::<String>::new();
+  if delete {
+    for resource in map.values() {
+      if !resources.iter().any(|r| r.name == resource.name) {
+        any_change = true;
+        to_delete.push(resource.name.clone())
+      }
+    }
+  }
+
+  let mut log = format!("{} Updates", Resource::resource_type());
+
+  for mut resource in resources {
+    match map.get(&resource.name) {
+      Some(original) => {
+        // First merge toml resource config (partial) onto default resource config.
+        // Makes sure things that aren't defined in toml (come through as None) actually get removed.
+        let config: Resource::Config = resource.config.into();
+        resource.config = config.into();
+
+        let diff = Resource::get_diff(
+          original.config.clone(),
+          resource.config,
+          all_resources,
+        )?;
+
+        let original_tags = original
+          .tags
+          .iter()
+          .filter_map(|id| id_to_tags.get(id).map(|t| t.name.clone()))
+          .collect::<Vec<_>>();
+
+        // Only proceed if there are any fields to update,
+        // or a change to tags / description
+        if diff.is_none()
+          && resource.description == original.description
+          && resource.tags == original_tags
+        {
+          continue;
+        }
+
+        any_change = true;
+
+        log.push_str(&format!(
+          "\n{}: {}: '{}'\n-------------------",
+          colored("UPDATE", "blue"),
+          Resource::resource_type(),
+          bold(&resource.name)
+        ));
+
+        let mut lines = Vec::<String>::new();
+        if resource.description != original.description {
+          lines.push(format!(
+            "{}: 'description'\n{}:  {}\n{}:    {}",
+            muted("field"),
+            muted("from"),
+            colored(&original.description, "red"),
+            muted("to"),
+            colored(&resource.description, "green")
+          ));
+        }
+        if resource.tags != original_tags {
+          let from = colored(&format!("{:?}", original_tags), "red");
+          let to = colored(&format!("{:?}", resource.tags), "green");
+          lines.push(format!(
+            "{}: 'tags'\n{}:  {from}\n{}:    {to}",
+            muted("field"),
+            muted("from"),
+            muted("to"),
+          ));
+        }
+        lines.extend(diff.iter_field_diffs().map(
+          |FieldDiff { field, from, to }| {
+            format!(
+              "{}: '{field}'\n{}:  {}\n{}:    {}",
+              muted("field"),
+              muted("from"),
+              colored(&from, "red"),
+              muted("to"),
+              colored(&to, "green")
+            )
+          },
+        ));
+        log.push('\n');
+        log.push_str(&lines.join("\n-------------------\n"));
+      }
+      None => {
+        any_change = true;
+        log.push_str(&format!(
+          "\n{}: {}: {}\n{}: {}\n{}: {:?}\n{}: {}",
+          colored("CREATE", "green"),
+          Resource::resource_type(),
+          bold(&resource.name),
+          muted("description"),
+          resource.description,
+          muted("tags"),
+          resource.tags,
+          muted("config"),
+          serde_json::to_string_pretty(&resource.config)
+            .context("failed to serialize config to json")?
+        ))
+      }
+    }
+  }
+
+  for name in to_delete {
+    log.push_str(&format!(
+      "\n{}: {}: '{}'\n-------------------",
+      colored("DELETE", "red"),
+      Resource::resource_type(),
+      bold(&name)
+    ));
+  }
+
+  Ok(any_change.then_some(log))
+}
+
 /// Gets all the resources to update. For use in sync execution.
 pub async fn get_updates_for_execution<Resource: ResourceSync>(
   resources: Vec<ResourceToml<Resource::PartialConfig>>,
@@ -316,15 +449,6 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
         to_create.push(resource);
       }
     }
-  }
-
-  for name in &to_delete {
-    // println!(
-    //   "\n{}: {}: '{}'\n-------------------",
-    //   "DELETE".red(),
-    //   Resource::display(),
-    //   name.bold(),
-    // );
   }
 
   Ok((to_create, to_update, to_delete))

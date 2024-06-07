@@ -1174,13 +1174,40 @@ export interface ResourceSyncConfig {
 	webhook_enabled: boolean;
 }
 
+export interface PendingUpdates {
+	/** The commit hash which produced these pending updates */
+	hash: string;
+	/** The commit message which produced these pending updates */
+	message: string;
+	/** Readable log of any pending server updates */
+	server_updates?: string;
+	/** Readable log of any pending deployment updates */
+	deployment_updates?: string;
+	/** Readable log of any pending build updates */
+	build_updates?: string;
+	/** Readable log of any pending repo updates */
+	repo_updates?: string;
+	/** Readable log of any pending procedure updates */
+	procedure_updates?: string;
+	/** Readable log of any pending alerter updates */
+	alerter_updates?: string;
+	/** Readable log of any pending builder updates */
+	builder_updates?: string;
+	/** Readable log of any pending server template updates */
+	server_template_updates?: string;
+	/** Readable log of any pending resource sync updates */
+	resource_sync_updates?: string;
+}
+
 export interface ResourceSyncInfo {
-	/** Unix timestamp of last sync */
+	/** Unix timestamp of last applied sync */
 	last_sync_ts: I64;
-	/** Short commit hash of last sync */
+	/** Short commit hash of last applied sync */
 	last_sync_hash: string;
-	/** Commit message of last sync */
+	/** Commit message of last applied sync */
 	last_sync_message: string;
+	/** Readable logs of pending updates */
+	pending: PendingUpdates;
 }
 
 export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
@@ -3386,6 +3413,12 @@ export interface UpdateResourceSync {
 	config: _PartialResourceSyncConfig;
 }
 
+/** Trigger a refresh of the computed diff logs for view. */
+export interface RefreshResourceSyncPending {
+	/** Id or name */
+	sync: string;
+}
+
 /** Create a tag. Response: [Tag]. */
 export interface CreateTag {
 	/** The name of the tag. */
@@ -3921,6 +3954,7 @@ export type WriteRequest =
 	| { type: "CopyResourceSync", params: CopyResourceSync }
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }
 	| { type: "UpdateResourceSync", params: UpdateResourceSync }
+	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "RenameTag", params: RenameTag }

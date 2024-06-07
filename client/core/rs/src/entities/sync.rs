@@ -55,12 +55,41 @@ pub type ResourceSync =
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ResourceSyncInfo {
-  /// Unix timestamp of last sync
+  /// Unix timestamp of last applied sync
   pub last_sync_ts: I64,
-  /// Short commit hash of last sync
+  /// Short commit hash of last applied sync
   pub last_sync_hash: String,
-  /// Commit message of last sync
+  /// Commit message of last applied sync
   pub last_sync_message: String,
+  /// Readable logs of pending updates
+  pub pending: PendingUpdates,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct PendingUpdates {
+  /// The commit hash which produced these pending updates
+  pub hash: String,
+  /// The commit message which produced these pending updates
+  pub message: String,
+  /// Readable log of any pending server updates
+  pub server_updates: Option<String>,
+  /// Readable log of any pending deployment updates
+  pub deployment_updates: Option<String>,
+  /// Readable log of any pending build updates
+  pub build_updates: Option<String>,
+  /// Readable log of any pending repo updates
+  pub repo_updates: Option<String>,
+  /// Readable log of any pending procedure updates
+  pub procedure_updates: Option<String>,
+  /// Readable log of any pending alerter updates
+  pub alerter_updates: Option<String>,
+  /// Readable log of any pending builder updates
+  pub builder_updates: Option<String>,
+  /// Readable log of any pending server template updates
+  pub server_template_updates: Option<String>,
+  /// Readable log of any pending resource sync updates
+  pub resource_sync_updates: Option<String>,
 }
 
 #[typeshare(serialized_as = "Partial<ResourceSyncConfig>")]

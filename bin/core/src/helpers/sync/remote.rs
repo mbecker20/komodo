@@ -1,13 +1,22 @@
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
+  sync::ResourceSync, to_monitor_name, toml::ResourcesToml,
+  update::Log, CloneArgs, LatestCommit,
 };
 
 use crate::config::core_config;
 
 pub async fn get_remote_resources(
   sync: &ResourceSync,
-) -> anyhow::Result<(anyhow::Result<ResourcesToml>, Vec<Log>)> {
+) -> anyhow::Result<(
+  anyhow::Result<ResourcesToml>,
+  Vec<Log>,
+  // commit short hash
+  String,
+  // commit message
+  String,
+)> {
+  let name = to_monitor_name(&sync.name);
   let clone_args: CloneArgs = sync.into();
 
   let config = core_config();
@@ -28,6 +37,12 @@ pub async fn get_remote_resources(
       .await
       .context("failed to clone resource repo")?;
 
+  let repo_dir = config.sync_directory.join(&name);
+  let LatestCommit { hash, message } =
+    git::get_commit_hash_info(&repo_dir)
+      .await
+      .context("failed to get commit hash info")?;
+
   let repo_path = config.sync_directory.join(&sync.name);
   let resource_path = repo_path.join(&sync.config.resource_path);
 
@@ -42,5 +57,5 @@ pub async fn get_remote_resources(
     warn!("failed to remove sync repo directory | {e:?}")
   }
 
-  Ok((res, logs))
+  Ok((res, logs, hash, message))
 }

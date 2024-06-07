@@ -1,4 +1,5 @@
 use anyhow::Context;
+use mongo_indexed::doc;
 use monitor_client::{
   api::execute::RunSync,
   entities::{
@@ -7,6 +8,7 @@ use monitor_client::{
     build::Build,
     builder::Builder,
     deployment::Deployment,
+    monitor_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
@@ -16,6 +18,7 @@ use monitor_client::{
     user::User,
   },
 };
+use mungos::by_id::update_one_by_id;
 use resolver_api::Resolve;
 
 use crate::{
@@ -27,7 +30,7 @@ use crate::{
     update::update_update,
   },
   resource,
-  state::State,
+  state::{db_client, State},
 };
 
 impl Resolve<RunSync, (User, Update)> for State {
@@ -41,7 +44,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
 
-    let (res, logs) =
+    let (res, logs, hash, message) =
       crate::helpers::sync::remote::get_remote_resources(&sync)
         .await
         .context("failed to get remote resources")?;
@@ -232,6 +235,26 @@ impl Resolve<RunSync, (User, Update)> for State {
       )
       .await,
     );
+
+    if let Err(e) = update_one_by_id(
+      &db_client().await.resource_syncs,
+      &sync.id,
+      doc! {
+        "$set": {
+          "info.last_sync_ts": monitor_timestamp(),
+          "info.last_sync_hash": hash,
+          "info.last_sync_message": message,
+        }
+      },
+      None,
+    )
+    .await
+    {
+      warn!(
+        "failed to update resource sync {} info after sync | {e:#}",
+        sync.name
+      )
+    }
 
     update.finalize();
     update_update(update.clone()).await?;
