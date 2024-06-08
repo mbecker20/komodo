@@ -194,18 +194,18 @@ export const AccountSelector = ({
   placeholder,
 }: {
   disabled: boolean;
-  id: string | undefined;
-  type: "Server" | "Builder";
+  id?: string;
+  type: "Server" | "None" | "Builder";
   account_type: keyof Types.GetBuilderAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
   placeholder: string;
 }) => {
   const [request, params] =
-    type === "Server"
-      ? ["GetAvailableAccounts", { server: id! }]
+    type === "Server" || type === "None"
+      ? ["GetAvailableAccounts", { server: id }]
       : ["GetBuilderAvailableAccounts", { builder: id }];
-  const accounts = useRead(request as any, params, { enabled: !!id }).data;
+  const accounts = useRead(request as any, params).data;
   return (
     <ConfigItem label={`${account_type} Account`}>
       <Select

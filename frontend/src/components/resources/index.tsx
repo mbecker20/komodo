@@ -7,6 +7,7 @@ import { RepoComponents } from "./repo";
 import { ServerComponents } from "./server";
 import { ProcedureComponents } from "./procedure/index";
 import { ServerTemplateComponents } from "./server-template";
+import { ResourceSyncComponents } from "./sync";
 
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
@@ -19,4 +20,5 @@ export const ResourceComponents: {
   Builder: BuilderComponents,
   ServerTemplate: ServerTemplateComponents,
   Alerter: AlerterComponents,
+  ResourceSync: ResourceSyncComponents,
 };

@@ -82,7 +82,7 @@ export const ConfigLayout = <
   );
 };
 
-type PrimitiveConfigArgs = { placeholder: string };
+type PrimitiveConfigArgs = { placeholder?: string; label?: string };
 
 type ConfigComponent<T> = {
   label: string;
@@ -258,7 +258,7 @@ export const ConfigAgain = <
             case "string":
               return (
                 <ConfigInput
-                  key={key.toString()}
+                  key={args?.label ?? key.toString()}
                   label={key.toString()}
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
@@ -270,7 +270,7 @@ export const ConfigAgain = <
               return (
                 <ConfigInput
                   key={key.toString()}
-                  label={key.toString()}
+                  label={args?.label ?? key.toString()}
                   value={Number(value)}
                   onChange={(value) =>
                     set({ [key]: Number(value) } as Partial<T>)
@@ -283,14 +283,14 @@ export const ConfigAgain = <
               return (
                 <ConfigSwitch
                   key={key.toString()}
-                  label={key.toString()}
+                  label={args?.label ?? key.toString()}
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
                   disabled={disabled}
                 />
               );
             default:
-              return <div>{key.toString()}</div>;
+              return <div>{args?.label ?? key.toString()}</div>;
           }
         } else if (component === false) {
           return <Fragment key={key.toString()} />;

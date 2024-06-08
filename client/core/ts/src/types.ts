@@ -1197,6 +1197,10 @@ export interface PendingUpdates {
 	server_template_updates?: string;
 	/** Readable log of any pending resource sync updates */
 	resource_sync_updates?: string;
+	/** Readable log of any pending variable updates */
+	variable_updates?: string;
+	/** Readable log of any pending user group updates */
+	user_group_updates?: string;
 }
 
 export interface ResourceSyncInfo {
@@ -2566,12 +2570,14 @@ export interface GetServersSummaryResponse {
 
 /**
  * Get the usernames for the available github / docker accounts
- * on the target server.
+ * on the target server, or only available globally if no server
+ * is provided.
+ * 
  * Response: [GetAvailableAccountsResponse].
  */
 export interface GetAvailableAccounts {
 	/** Id or name */
-	server: string;
+	server?: string;
 }
 
 /** Response for [GetAvailableAccounts]. */

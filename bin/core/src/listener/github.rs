@@ -5,9 +5,10 @@ use axum::{extract::Path, http::HeaderMap, routing::post, Router};
 use hex::ToHex;
 use hmac::{Hmac, Mac};
 use monitor_client::{
-  api::execute,
+  api::{execute, write::RefreshResourceSyncPending},
   entities::{
-    build::Build, procedure::Procedure, repo::Repo, user::github_user,
+    build::Build, procedure::Procedure, repo::Repo,
+    sync::ResourceSync, user::github_user,
   },
 };
 use resolver_api::Resolve;
@@ -109,6 +110,50 @@ pub fn router() -> Router {
               ).await;
               if let Err(e) = res {
                 warn!("failed to run procedure webook for procedure {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
+					});
+				},
+			)
+		)
+    .route(
+			"/sync/:id/refresh", 
+			post(
+				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+					tokio::spawn(async move {
+            let span = info_span!("sync_refresh_webhook", id);
+            async {
+              let res = handle_sync_refresh_webhook(
+                id.clone(),
+                headers,
+                body
+              ).await;
+              if let Err(e) = res {
+                warn!("failed to run sync webook for sync {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
+					});
+				},
+			)
+		)
+    .route(
+			"/sync/:id/sync", 
+			post(
+				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+					tokio::spawn(async move {
+            let span = info_span!("sync_execute_webhook", id);
+            async {
+              let res = handle_sync_execute_webhook(
+                id.clone(),
+                headers,
+                body
+              ).await;
+              if let Err(e) = res {
+                warn!("failed to run sync webook for sync {id} | {e:#}");
               }
             }
               .instrument(span)
@@ -253,6 +298,66 @@ async fn handle_procedure_webhook(
   Ok(())
 }
 
+async fn handle_sync_refresh_webhook(
+  sync_id: String,
+  headers: HeaderMap,
+  body: String,
+) -> anyhow::Result<()> {
+  // Acquire and hold lock to make a task queue for
+  // subsequent listener calls on same resource.
+  // It would fail if we let it go through from action state busy.
+  let lock = sync_locks().get_or_insert_default(&sync_id).await;
+  let _lock = lock.lock().await;
+
+  verify_gh_signature(headers, &body).await?;
+  let request_branch = extract_branch(&body)?;
+  let sync = resource::get::<ResourceSync>(&sync_id).await?;
+  if !sync.config.webhook_enabled {
+    return Err(anyhow!("sync does not have webhook enabled"));
+  }
+  if request_branch != sync.config.branch {
+    return Err(anyhow!("request branch does not match expected"));
+  }
+  let user = github_user().to_owned();
+  State
+    .resolve(RefreshResourceSyncPending { sync: sync_id }, user)
+    .await?;
+  Ok(())
+}
+
+async fn handle_sync_execute_webhook(
+  sync_id: String,
+  headers: HeaderMap,
+  body: String,
+) -> anyhow::Result<()> {
+  // Acquire and hold lock to make a task queue for
+  // subsequent listener calls on same resource.
+  // It would fail if we let it go through from action state busy.
+  let lock = sync_locks().get_or_insert_default(&sync_id).await;
+  let _lock = lock.lock().await;
+
+  verify_gh_signature(headers, &body).await?;
+  let request_branch = extract_branch(&body)?;
+  let sync = resource::get::<ResourceSync>(&sync_id).await?;
+  if !sync.config.webhook_enabled {
+    return Err(anyhow!("sync does not have webhook enabled"));
+  }
+  if request_branch != sync.config.branch {
+    return Err(anyhow!("request branch does not match expected"));
+  }
+  let user = github_user().to_owned();
+  let req =
+    crate::api::execute::ExecuteRequest::RunSync(execute::RunSync {
+      sync: sync_id,
+    });
+  let update = init_execution_update(&req, &user).await?;
+  let crate::api::execute::ExecuteRequest::RunSync(req) = req else {
+    unreachable!()
+  };
+  State.resolve(req, (user, update)).await?;
+  Ok(())
+}
+
 #[instrument(skip_all)]
 async fn verify_gh_signature(
   headers: HeaderMap,
@@ -312,4 +417,9 @@ fn repo_locks() -> &'static ListenerLockCache {
 fn procedure_locks() -> &'static ListenerLockCache {
   static BUILD_LOCKS: OnceLock<ListenerLockCache> = OnceLock::new();
   BUILD_LOCKS.get_or_init(Default::default)
+}
+
+fn sync_locks() -> &'static ListenerLockCache {
+  static SYNC_LOCKS: OnceLock<ListenerLockCache> = OnceLock::new();
+  SYNC_LOCKS.get_or_init(Default::default)
 }

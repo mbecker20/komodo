@@ -54,19 +54,17 @@ export const RepoConfig = ({ id }: { id: string }) => {
               commit: { placeholder: "Enter specific commit hash. Optional." },
               github_account: (value, set) => {
                 const server_id = update.server_id || config.server_id;
-                if (server_id) {
-                  return (
-                    <AccountSelector
-                      id={server_id}
-                      account_type="github"
-                      type="Server"
-                      selected={value}
-                      onSelect={(github_account) => set({ github_account })}
-                      disabled={disabled}
-                      placeholder="None"
-                    />
-                  );
-                }
+                return (
+                  <AccountSelector
+                    id={server_id}
+                    account_type="github"
+                    type={server_id ? "Server" : "None"}
+                    selected={value}
+                    onSelect={(github_account) => set({ github_account })}
+                    disabled={disabled}
+                    placeholder="None"
+                  />
+                );
               },
             },
           },

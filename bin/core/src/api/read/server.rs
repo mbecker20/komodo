@@ -389,18 +389,24 @@ impl Resolve<GetAvailableAccounts, User> for State {
     GetAvailableAccounts { server }: GetAvailableAccounts,
     user: User,
   ) -> anyhow::Result<GetAvailableAccountsResponse> {
-    let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
+    let (github, docker) = match server {
+      Some(server) => {
+        let server = resource::get_check_permissions::<Server>(
+          &server,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
 
-    let GetAccountsResponse { github, docker } =
-      periphery_client(&server)?
-        .request(api::GetAccounts {})
-        .await
-        .context("failed to get accounts from periphery")?;
+        let GetAccountsResponse { github, docker } =
+          periphery_client(&server)?
+            .request(api::GetAccounts {})
+            .await
+            .context("failed to get accounts from periphery")?;
+        (github, docker)
+      }
+      None => Default::default(),
+    };
 
     let mut github_set = HashSet::<String>::new();
 

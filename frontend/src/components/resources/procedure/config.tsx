@@ -713,4 +713,15 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  RunSync: {
+    params: { sync: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="ResourceSync"
+        selected={params.sync}
+        onSelect={(id) => setParams({ sync: id })}
+        disabled={disabled}
+      />
+    ),
+  },
 };

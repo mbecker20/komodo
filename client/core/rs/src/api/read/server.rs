@@ -320,7 +320,9 @@ pub struct GetServersSummaryResponse {
 //
 
 /// Get the usernames for the available github / docker accounts
-/// on the target server.
+/// on the target server, or only available globally if no server
+/// is provided.
+/// 
 /// Response: [GetAvailableAccountsResponse].
 #[typeshare]
 #[derive(
@@ -331,7 +333,7 @@ pub struct GetServersSummaryResponse {
 pub struct GetAvailableAccounts {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
-  pub server: String,
+  pub server: Option<String>,
 }
 
 /// Response for [GetAvailableAccounts].

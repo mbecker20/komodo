@@ -110,7 +110,7 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
         let res = self
           .resolve(
             read::GetAvailableAccounts {
-              server: config.server_id,
+              server: Some(config.server_id),
             },
             user,
           )

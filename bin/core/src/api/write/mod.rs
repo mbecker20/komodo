@@ -33,7 +33,7 @@ mod variable;
 #[resolver_target(State)]
 #[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
-enum WriteRequest {
+pub enum WriteRequest {
   // ==== SERVICE USER ====
   CreateServiceUser(CreateServiceUser),
   UpdateServiceUserDescription(UpdateServiceUserDescription),
