@@ -8,6 +8,7 @@ import {
 } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
+import { Card } from "@ui/card";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import {
   Dialog,
@@ -26,6 +27,15 @@ export const Variables = () => {
   const user = useUser().data;
   const disabled = !user?.admin;
   useSetTitle("Variables");
+  const [updateMenuData, setUpdateMenuData] = useState<
+    | false
+    | {
+        title: string;
+        value: string;
+        placeholder: string;
+        onUpdate: (value: string) => void;
+      }
+  >(false);
   const [search, setSearch] = useState("");
   const { variables, secrets } = useRead("ListVariables", {}).data ?? {
     variables: [],
@@ -58,6 +68,24 @@ export const Variables = () => {
         className="w-[200px] lg:w-[300px]"
       />
 
+      {updateMenuData && (
+        <TextUpdateMenu
+          title={updateMenuData.title}
+          placeholder={updateMenuData.placeholder}
+          value={updateMenuData.value}
+          onUpdate={updateMenuData.onUpdate}
+          triggerClassName="w-full"
+          disabled={disabled}
+          open={!!updateMenuData}
+          setOpen={(open) => {
+            if (!open) {
+              setUpdateMenuData(false);
+            }
+          }}
+          triggerHidden
+        />
+      )}
+
       {/** VARIABLES */}
       <DataTable
         tableKey="variables"
@@ -76,20 +104,26 @@ export const Variables = () => {
             ),
             cell: ({ row }) => {
               return (
-                <TextUpdateMenu
-                  title={`${row.original.name} - Value`}
-                  placeholder="Set value"
-                  value={row.original.value}
-                  onUpdate={(value) => {
-                    if (row.original.value === value) {
-                      return;
-                    }
-                    updateValue({ name: row.original.name, value });
+                <Card
+                  className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-full"
+                  onClick={() => {
+                    setUpdateMenuData({
+                      title: `${row.original.name} - Value`,
+                      value: row.original.value ?? "",
+                      placeholder: "Set value",
+                      onUpdate: (value) => {
+                        if (row.original.value === value) {
+                          return;
+                        }
+                        updateValue({ name: row.original.name, value });
+                      },
+                    });
                   }}
-                  triggerClassName="w-full"
-                  disabled={disabled}
-                  fullWidth
-                />
+                >
+                  <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
+                    {row.original.value || "Set value"}
+                  </div>
+                </Card>
               );
             },
           },
@@ -98,23 +132,29 @@ export const Variables = () => {
             header: "Description",
             cell: ({ row }) => {
               return (
-                <TextUpdateMenu
-                  title={`${row.original.name} - Description`}
-                  placeholder="Set description"
-                  value={row.original.description}
-                  onUpdate={(description) => {
-                    if (row.original.description === description) {
-                      return;
-                    }
-                    updateDescription({
-                      name: row.original.name,
-                      description,
+                <Card
+                  className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-full"
+                  onClick={() => {
+                    setUpdateMenuData({
+                      title: `${row.original.name} - Description`,
+                      value: row.original.description ?? "",
+                      placeholder: "Set description",
+                      onUpdate: (description) => {
+                        if (row.original.description === description) {
+                          return;
+                        }
+                        updateDescription({
+                          name: row.original.name,
+                          description,
+                        });
+                      },
                     });
                   }}
-                  triggerClassName="w-full"
-                  disabled={disabled}
-                  fullWidth
-                />
+                >
+                  <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
+                    {row.original.description || "Set description"}
+                  </div>
+                </Card>
               );
             },
           },

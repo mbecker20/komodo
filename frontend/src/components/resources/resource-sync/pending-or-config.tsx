@@ -24,7 +24,11 @@ const PENDING_TYPE_KEYS: Array<[string, string]> = [
 export const PendingOrConfig = ({ id }: { id: string }) => {
   const [view, setView] = useState("Pending");
 
-  const sync = useRead("GetResourceSync", { sync: id }).data;
+  const sync = useRead(
+    "GetResourceSync",
+    { sync: id },
+    { refetchInterval: 5000 }
+  ).data;
 
   const pendingDisabled = !sync || sync_no_changes(sync);
   const currentView = view === "Pending" && pendingDisabled ? "Config" : view;

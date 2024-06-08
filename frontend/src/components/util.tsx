@@ -310,6 +310,9 @@ export const TextUpdateMenu = ({
   confirmButton,
   disabled,
   fullWidth,
+  open,
+  setOpen,
+  triggerHidden,
 }: {
   title: string;
   value: string | undefined;
@@ -319,22 +322,27 @@ export const TextUpdateMenu = ({
   confirmButton?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
+  triggerHidden?: boolean;
 }) => {
-  const [open, setOpen] = useState(false);
+  const [_open, _setOpen] = useState(false);
+  const [__open, __setOpen] = [open ?? _open, setOpen ?? _setOpen];
   const [_value, setValue] = useState(value);
   useEffect(() => setValue(value), [value]);
   const onClick = () => {
     onUpdate(_value);
-    setOpen(false);
+    __setOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={__open} onOpenChange={__setOpen}>
       <DialogTrigger asChild>
         <Card
           className={cn(
             "px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer",
-            fullWidth ? "w-full" : "w-fit"
+            fullWidth ? "w-full" : "w-fit",
+            triggerHidden && "hidden"
           )}
         >
           <div

@@ -17,7 +17,9 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { fmt_date } from "@lib/formatting";
 
 const useResourceSync = (id?: string) =>
-  useRead("ListResourceSyncs", {}).data?.find((d) => d.id === id);
+  useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
+    (d) => d.id === id
+  );
 
 export const ResourceSyncComponents: RequiredResourceComponents = {
   list_item: (id) => useResourceSync(id),
