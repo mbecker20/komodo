@@ -1,6 +1,12 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { FolderSync } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
@@ -10,14 +16,32 @@ import { ResourceSyncConfig } from "./config";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ExecuteSync, RefreshSync } from "./actions";
+import { sanitizeOnlySpan, sync_no_changes } from "@lib/utils";
+import { Section } from "@components/layouts";
 
 const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}).data?.find((d) => d.id === id);
 
+const PENDING_TYPE_KEYS: Array<[string, string]> = [
+  ["Server", "server_updates"],
+  ["Deployment", "deployment_updates"],
+  ["Build", "build_updates"],
+  ["Repo", "repo_updates"],
+  ["Procedure", "procedure_updates"],
+  ["Alerter", "alerter_updates"],
+  ["Builder", "builder_updates"],
+  ["Server Template", "server_template_updates"],
+  ["Resource Sync", "resource_sync_updates"],
+  ["Variable", "variable_updates"],
+  ["User Group", "user_group_updates"],
+];
+
 const PendingOrConfig = ({ id }: { id: string }) => {
   const [view, setView] = useState("Pending");
 
-  const pendingDisabled = true;
+  const sync = useRead("GetResourceSync", { sync: id }).data;
+
+  const pendingDisabled = !sync || sync_no_changes(sync);
   const currentView = view === "Pending" && pendingDisabled ? "Config" : view;
 
   const tabsList = (
@@ -35,7 +59,43 @@ const PendingOrConfig = ({ id }: { id: string }) => {
       <TabsContent value="Config">
         <ResourceSyncConfig id={id} titleOther={tabsList} />
       </TabsContent>
+      <TabsContent value="Pending">
+        <Section titleOther={tabsList}>
+          {PENDING_TYPE_KEYS.map(([type, key]) => (
+            <PendingView
+              key={type}
+              type={type}
+              log={sync?.info?.pending?.[key]}
+            />
+          ))}
+        </Section>
+      </TabsContent>
     </Tabs>
+  );
+};
+
+const PendingView = ({
+  type,
+  log,
+}: {
+  type: string;
+  log: string | undefined;
+}) => {
+  if (!log) return;
+
+  return (
+    <Card>
+      <CardHeader className="flex-col">
+        <CardTitle>{type} Updates</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <pre
+          dangerouslySetInnerHTML={{
+            __html: sanitizeOnlySpan(log),
+          }}
+        />
+      </CardContent>
+    </Card>
   );
 };
 

@@ -6,7 +6,7 @@ use monitor_client::entities::{
   update::Log, CloneArgs, LatestCommit,
 };
 
-use crate::config::core_config;
+use crate::{config::core_config, state::resource_sync_lock_cache};
 
 pub async fn get_remote_resources(
   sync: &ResourceSync,
@@ -36,6 +36,12 @@ pub async fn get_remote_resources(
 
   fs::create_dir_all(&config.sync_directory)
     .context("failed to create sync directory")?;
+
+  // lock simultaneous access to same directory
+  let lock = resource_sync_lock_cache()
+    .get_or_insert_default(&sync.id)
+    .await;
+  let _lock = lock.lock().await;
 
   let mut logs =
     git::clone(clone_args, &config.sync_directory, github_token)

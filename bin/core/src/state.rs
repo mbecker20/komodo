@@ -5,7 +5,7 @@ use monitor_client::entities::{
   procedure::ProcedureState, repo::RepoState,
   sync::ResourceSyncState,
 };
-use tokio::sync::OnceCell;
+use tokio::sync::{Mutex, OnceCell};
 
 use crate::{
   auth::jwt::JwtClient,
@@ -98,4 +98,12 @@ pub fn resource_sync_state_cache() -> &'static ResourceSyncStateCache
   static RESOURCE_SYNC_STATE_CACHE: OnceLock<ResourceSyncStateCache> =
     OnceLock::new();
   RESOURCE_SYNC_STATE_CACHE.get_or_init(Default::default)
+}
+
+pub type ResourceSyncLockCache = Cache<String, Arc<Mutex<()>>>;
+
+pub fn resource_sync_lock_cache() -> &'static ResourceSyncLockCache {
+  static RESOURCE_SYNC_LOCK_CACHE: OnceLock<ResourceSyncLockCache> =
+    OnceLock::new();
+  RESOURCE_SYNC_LOCK_CACHE.get_or_init(Default::default)
 }
