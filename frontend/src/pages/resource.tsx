@@ -39,6 +39,8 @@ export const Resource = () => {
   );
   const canWrite = !ui_write_disabled && perms === Types.PermissionLevel.Write;
 
+  const infoEntries = Object.entries(Components.Info);
+
   return (
     <Page
       title={name}
@@ -52,13 +54,14 @@ export const Resource = () => {
       }
       subtitle={
         <div className="flex gap-4 items-center text-muted-foreground">
-          {Object.entries(Components.Info).map(([key, Info], i) => (
+          {infoEntries.map(([key, Info], i) => (
             <Fragment key={key}>
               {i !== 0 && "| "}
               <Info key={i} id={id} />
             </Fragment>
           ))}
-          | <ExportButton targets={[{ type, id }]} />
+          {infoEntries.length ? "| " : ""}
+          <ExportButton targets={[{ type, id }]} />
         </div>
       }
       actions={

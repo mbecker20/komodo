@@ -1,124 +1,23 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@ui/card";
-import { FolderSync } from "lucide-react";
+import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { Clock, FolderSync } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
 import { ResourceSyncTable } from "./table";
 import { Types } from "@monitor/client";
-import { ResourceSyncConfig } from "./config";
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ExecuteSync, RefreshSync } from "./actions";
-import { sanitizeOnlySpan, sync_no_changes } from "@lib/utils";
-import { Section } from "@components/layouts";
+import { PendingOrConfig } from "./pending-or-config";
+import {
+  bg_color_class_by_intention,
+  resource_sync_state_intention,
+} from "@lib/color";
+import { cn } from "@lib/utils";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+import { fmt_date } from "@lib/formatting";
 
 const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}).data?.find((d) => d.id === id);
-
-const PENDING_TYPE_KEYS: Array<[string, string]> = [
-  ["Server", "server_updates"],
-  ["Deployment", "deployment_updates"],
-  ["Build", "build_updates"],
-  ["Repo", "repo_updates"],
-  ["Procedure", "procedure_updates"],
-  ["Alerter", "alerter_updates"],
-  ["Builder", "builder_updates"],
-  ["Server Template", "server_template_updates"],
-  ["Resource Sync", "resource_sync_updates"],
-  ["Variable", "variable_updates"],
-  ["User Group", "user_group_updates"],
-];
-
-const PendingOrConfig = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Pending");
-
-  const sync = useRead("GetResourceSync", { sync: id }).data;
-
-  const pendingDisabled = !sync || sync_no_changes(sync);
-  const currentView = view === "Pending" && pendingDisabled ? "Config" : view;
-
-  const tabsList = (
-    <TabsList className="justify-start w-fit">
-      <TabsTrigger
-        value="Pending"
-        className="w-[110px]"
-        disabled={pendingDisabled}
-      >
-        Pending
-      </TabsTrigger>
-      <TabsTrigger value="Config" className="w-[110px]">
-        Config
-      </TabsTrigger>
-    </TabsList>
-  );
-  return (
-    <Tabs value={currentView} onValueChange={setView} className="grid gap-4">
-      <TabsContent value="Config">
-        <ResourceSyncConfig id={id} titleOther={tabsList} />
-      </TabsContent>
-      <TabsContent value="Pending">
-        <Section titleOther={tabsList}>
-          {PENDING_TYPE_KEYS.map(([type, key]) => (
-            <PendingView
-              key={type}
-              type={type}
-              pending={sync?.info?.pending?.[key]}
-            />
-          ))}
-        </Section>
-      </TabsContent>
-    </Tabs>
-  );
-};
-
-const PendingView = ({
-  type,
-  pending,
-}: {
-  type: string;
-  pending: Types.SyncUpdate | undefined;
-}) => {
-  if (!pending) return;
-
-  return (
-    <Card>
-      <CardHeader className="flex items-center justify-between gap-4">
-        <CardTitle>{type} Updates</CardTitle>
-        <div className="flex gap-4 items-center">
-          {pending.to_create && (
-            <div className="flex gap-2 items-center">
-              To Create: {pending.to_create}
-            </div>
-          )}
-          {pending.to_update && (
-            <div className="flex gap-2 items-center">
-              To Update: {pending.to_update}
-            </div>
-          )}
-          {pending.to_delete && (
-            <div className="flex gap-2 items-center">
-              To Delete: {pending.to_delete}
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <pre
-          dangerouslySetInnerHTML={{
-            __html: sanitizeOnlySpan(pending.log),
-          }}
-        />
-      </CardContent>
-    </Card>
-  );
-};
 
 export const ResourceSyncComponents: RequiredResourceComponents = {
   list_item: (id) => useResourceSync(id),
@@ -151,9 +50,55 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   Icon: () => <FolderSync className="w-4 h-4" />,
   BigIcon: () => <FolderSync className="w-8 h-8" />,
 
-  Status: {},
+  Status: {
+    State: ({ id }) => {
+      const state = useResourceSync(id)?.info.state;
+      const color = bg_color_class_by_intention(
+        resource_sync_state_intention(state)
+      );
+      return (
+        <Card className={cn("w-fit", color)}>
+          <CardHeader className="py-0 px-2">{state}</CardHeader>
+        </Card>
+      );
+    },
+    Status: ({ id }) => {
+      const info = useResourceSync(id)?.info;
+      if (info?.last_sync_hash && info?.last_sync_message) {
+        return (
+          <HoverCard openDelay={200}>
+            <HoverCardTrigger asChild>
+              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                  last sync: {info.last_sync_hash}
+                </div>
+              </Card>
+            </HoverCardTrigger>
+            <HoverCardContent align="start">
+              <div className="grid">
+                <div className="text-muted-foreground">commit message:</div>
+                {info.last_sync_message}
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        );
+      } else {
+        return <div className="text-muted-foreground">{"Never synced"}</div>;
+      }
+    },
+  },
 
-  Info: {},
+  Info: {
+    LastSync: ({ id }) => {
+      const last_ts = useResourceSync(id)?.info.last_sync_ts;
+      return (
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          {last_ts ? fmt_date(new Date(last_ts)) : "Never"}
+        </div>
+      );
+    },
+  },
 
   Actions: { RefreshSync, ExecuteSync },
 

@@ -171,6 +171,25 @@ export const procedure_state_intention = (status?: Types.ProcedureState) => {
   }
 };
 
+export const resource_sync_state_intention = (status?: Types.ResourceSyncState) => {
+  switch (status) {
+    case undefined:
+      return "None";
+    case Types.ResourceSyncState.Unknown:
+      return "Unknown";
+    case Types.ResourceSyncState.Ok:
+      return "Good";
+    case Types.ResourceSyncState.Syncing:
+      return "Warning";
+    case Types.ResourceSyncState.Pending:
+      return "Warning";
+    case Types.ResourceSyncState.Failed:
+      return "Critical";
+    default:
+      return "None";
+  }
+};
+
 export const alert_level_intention: (
   level: Types.SeverityLevel
 ) => ColorIntention = (level) => {

@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use mongo_indexed::doc;
 use monitor_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
@@ -47,6 +47,10 @@ impl Resolve<RunSync, (User, Update)> for State {
       entities::sync::ResourceSync,
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
+
+    if sync.config.repo.is_empty() {
+      return Err(anyhow!("resource sync repo not configured"));
+    }
 
     let (res, logs, hash, message) =
       crate::helpers::sync::remote::get_remote_resources(&sync)

@@ -60,7 +60,7 @@ export const RepoComponents: RequiredResourceComponents = {
             <HoverCardTrigger asChild>
               <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
                 <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                  {info.latest_hash}
+                  latest commit: {info.latest_hash}
                 </div>
               </Card>
             </HoverCardTrigger>

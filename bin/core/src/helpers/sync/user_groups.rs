@@ -275,7 +275,11 @@ pub async fn get_updates_for_view(
     ));
   }
 
-  Ok(Some(update))
+  let any_change = update.to_create > 0
+    || update.to_update > 0
+    || update.to_delete > 0;
+
+  Ok(any_change.then_some(update))
 }
 
 pub async fn get_updates_for_execution(

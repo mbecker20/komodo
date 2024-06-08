@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use monitor_client::{
   api::write::*,
   entities::{
@@ -103,6 +103,10 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       entities::sync::ResourceSync,
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
+
+    if sync.config.repo.is_empty() {
+      return Err(anyhow!("resource sync repo not configured"));
+    }
 
     let res = async {
       let (res, _, hash, message) =
