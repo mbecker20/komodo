@@ -38,6 +38,7 @@ async fn app() -> anyhow::Result<()> {
   resource::spawn_build_state_refresh_loop();
   resource::spawn_repo_state_refresh_loop();
   resource::spawn_procedure_state_refresh_loop();
+  resource::spawn_resource_sync_state_refresh_loop();
 
   // Setup static frontend services
   let frontend_path = frontend_path();

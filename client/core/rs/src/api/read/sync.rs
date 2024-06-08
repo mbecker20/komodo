@@ -104,6 +104,8 @@ pub struct GetResourceSyncsSummaryResponse {
   pub ok: u32,
   /// The number of syncs currently syncing.
   pub syncing: u32,
+  /// The number of syncs with pending updates
+  pub pending: u32,
   /// The number of syncs with failed state.
   pub failed: u32,
   /// The number of syncs with unknown state.

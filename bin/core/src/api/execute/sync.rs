@@ -18,7 +18,7 @@ use monitor_client::{
     user::{sync_user, User},
   },
 };
-use mungos::by_id::update_one_by_id;
+use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
@@ -33,7 +33,7 @@ use crate::{
     },
     update::update_update,
   },
-  resource,
+  resource::{self, refresh_resource_sync_state_cache},
   state::{db_client, State},
 };
 
@@ -319,8 +319,10 @@ impl Resolve<RunSync, (User, Update)> for State {
       .await,
     );
 
+    let db = db_client().await;
+
     if let Err(e) = update_one_by_id(
-      &db_client().await.resource_syncs,
+      &db.resource_syncs,
       &sync.id,
       doc! {
         "$set": {
@@ -357,6 +359,21 @@ impl Resolve<RunSync, (User, Update)> for State {
     }
 
     update.finalize();
+
+    // Need to manually update the update before cache refresh,
+    // and before broadcast with add_update.
+    // The Err case of to_document should be unreachable,
+    // but will fail to update cache in that case.
+    if let Ok(update_doc) = to_document(&update) {
+      let _ = update_one_by_id(
+        &db.updates,
+        &update.id,
+        mungos::update::Update::Set(update_doc),
+        None,
+      )
+      .await;
+      refresh_resource_sync_state_cache().await;
+    }
     update_update(update.clone()).await?;
 
     Ok(update)

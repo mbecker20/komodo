@@ -1210,12 +1210,14 @@ export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
 export type GetResourceSyncResponse = ResourceSync;
 
 export enum ResourceSyncState {
-	/** Last sync successful (or never synced) */
+	/** Last sync successful (or never synced). No Changes pending */
 	Ok = "Ok",
 	/** Last sync failed */
 	Failed = "Failed",
 	/** Currently syncing */
 	Syncing = "Syncing",
+	/** Updates pending */
+	Pending = "Pending",
 	/** Other case */
 	Unknown = "Unknown",
 }
@@ -2656,6 +2658,8 @@ export interface GetResourceSyncsSummaryResponse {
 	ok: number;
 	/** The number of syncs currently syncing. */
 	syncing: number;
+	/** The number of syncs with pending updates */
+	pending: number;
 	/** The number of syncs with failed state. */
 	failed: number;
 	/** The number of syncs with unknown state. */

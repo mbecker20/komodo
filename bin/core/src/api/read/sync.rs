@@ -4,8 +4,8 @@ use monitor_client::{
   entities::{
     permission::PermissionLevel,
     sync::{
-      ResourceSync, ResourceSyncActionState, ResourceSyncListItem,
-      ResourceSyncState,
+      PendingSyncUpdatesData, ResourceSync, ResourceSyncActionState,
+      ResourceSyncListItem, ResourceSyncState,
     },
     user::User,
   },
@@ -96,6 +96,19 @@ impl Resolve<GetResourceSyncsSummary, User> for State {
     for resource_sync in resource_syncs {
       res.total += 1;
 
+      match resource_sync.info.pending.data {
+        PendingSyncUpdatesData::Ok(data) => {
+          if !data.no_updates() {
+            res.pending += 1;
+            continue;
+          }
+        }
+        PendingSyncUpdatesData::Err(_) => {
+          res.failed += 1;
+          continue;
+        }
+      }
+
       match (
         cache.get(&resource_sync.id).await.unwrap_or_default(),
         action_states
@@ -113,6 +126,9 @@ impl Resolve<GetResourceSyncsSummary, User> for State {
         (ResourceSyncState::Unknown, _) => res.unknown += 1,
         // will never come off the cache in the building state, since that comes from action states
         (ResourceSyncState::Syncing, _) => {
+          unreachable!()
+        }
+        (ResourceSyncState::Pending, _) => {
           unreachable!()
         }
       }

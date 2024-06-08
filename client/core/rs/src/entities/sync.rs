@@ -37,12 +37,14 @@ pub struct ResourceSyncListItemInfo {
   Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
 )]
 pub enum ResourceSyncState {
-  /// Last sync successful (or never synced)
+  /// Last sync successful (or never synced). No Changes pending
   Ok,
   /// Last sync failed
   Failed,
   /// Currently syncing
   Syncing,
+  /// Updates pending
+  Pending,
   /// Other case
   #[default]
   Unknown,
