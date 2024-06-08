@@ -39,6 +39,7 @@ pub struct AlerterConfig {
   /// Whether the alerter is enabled
   #[serde(default = "default_enabled")]
   #[builder(default = "default_enabled()")]
+  #[partial_default(default_enabled())]
   pub enabled: bool,
 
   /// Only send specific alert types.
