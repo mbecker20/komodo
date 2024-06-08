@@ -8,7 +8,9 @@ use monitor_client::{
   entities::user::{User, UserConfig},
 };
 use mungos::{
-  by_id::find_one_by_id, find::find_collect, mongodb::bson::doc,
+  by_id::find_one_by_id,
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOptions},
 };
 use resolver_api::Resolve;
 
@@ -47,10 +49,13 @@ impl Resolve<ListUsers, User> for State {
     if !user.admin {
       return Err(anyhow!("this route is only accessable by admins"));
     }
-    let mut users =
-      find_collect(&db_client().await.users, None, None)
-        .await
-        .context("failed to pull users from db")?;
+    let mut users = find_collect(
+      &db_client().await.users,
+      None,
+      FindOptions::builder().sort(doc! { "username": 1 }).build(),
+    )
+    .await
+    .context("failed to pull users from db")?;
     users.iter_mut().for_each(|user| user.sanitize());
     Ok(users)
   }
@@ -65,7 +70,7 @@ impl Resolve<ListApiKeys, User> for State {
     let api_keys = find_collect(
       &db_client().await.api_keys,
       doc! { "user_id": &user.id },
-      None,
+      FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )
     .await
     .context("failed to query db for api keys")?

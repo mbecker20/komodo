@@ -441,10 +441,11 @@ impl Resolve<GetAvailableSecrets, User> for State {
       PermissionLevel::Read,
     )
     .await?;
-    let secrets = periphery_client(&server)?
+    let mut secrets = periphery_client(&server)?
       .request(api::GetSecrets {})
       .await
       .context("failed to get accounts from periphery")?;
+    secrets.sort();
     Ok(secrets)
   }
 }

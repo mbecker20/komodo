@@ -1,4 +1,5 @@
 use anyhow::Context;
+use mongo_indexed::doc;
 use monitor_client::{
   api::read::{
     GetVariable, GetVariableResponse, ListVariables,
@@ -6,7 +7,7 @@ use monitor_client::{
   },
   entities::user::User,
 };
-use mungos::find::find_collect;
+use mungos::{find::find_collect, mongodb::options::FindOptions};
 use resolver_api::Resolve;
 
 use crate::{
@@ -31,10 +32,13 @@ impl Resolve<ListVariables, User> for State {
     ListVariables {}: ListVariables,
     _: User,
   ) -> anyhow::Result<ListVariablesResponse> {
-    let variables =
-      find_collect(&db_client().await.variables, None, None)
-        .await
-        .context("failed to query db for variables")?;
+    let variables = find_collect(
+      &db_client().await.variables,
+      None,
+      FindOptions::builder().sort(doc! { "name": 1 }).build(),
+    )
+    .await
+    .context("failed to query db for variables")?;
     Ok(ListVariablesResponse {
       variables,
       secrets: core_config().secrets.keys().cloned().collect(),

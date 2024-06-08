@@ -10,7 +10,7 @@ use monitor_client::{
 };
 use mungos::{
   find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId, Document},
+  mongodb::{bson::{doc, oid::ObjectId, Document}, options::FindOptions},
 };
 use resolver_api::Resolve;
 
@@ -51,8 +51,12 @@ impl Resolve<ListUserGroups, User> for State {
     if !user.admin {
       filter.insert("users", &user.id);
     }
-    find_collect(&db_client().await.user_groups, filter, None)
-      .await
-      .context("failed to query db for UserGroups")
+    find_collect(
+      &db_client().await.user_groups,
+      filter,
+      FindOptions::builder().sort(doc! { "name": 1 }).build(),
+    )
+    .await
+    .context("failed to query db for UserGroups")
   }
 }

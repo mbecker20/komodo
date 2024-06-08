@@ -19,6 +19,7 @@ use mungos::{
   find::find_collect,
   mongodb::{
     bson::{doc, oid::ObjectId, to_document, Document},
+    options::FindOptions,
     Collection,
   },
 };
@@ -270,11 +271,15 @@ async fn list_full_for_user_using_document<T: MonitorResource>(
         .collect::<Vec<_>>();
     filters.insert("_id", doc! { "$in": ids });
   }
-  find_collect(T::coll().await, filters, None)
-    .await
-    .with_context(|| {
-      format!("failed to pull {}s from mongo", T::resource_type())
-    })
+  find_collect(
+    T::coll().await,
+    filters,
+    FindOptions::builder().sort(doc! { "name": 1 }).build(),
+  )
+  .await
+  .with_context(|| {
+    format!("failed to pull {}s from mongo", T::resource_type())
+  })
 }
 
 pub async fn get_id_to_resource_map<T: MonitorResource>(
