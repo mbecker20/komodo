@@ -52,7 +52,12 @@ export const Sidebar = () => {
 
         {RESOURCE_TARGETS.map((type) => {
           const RTIcon = ResourceComponents[type].Icon;
-          const name = type === "ServerTemplate" ? "Template" : type;
+          const name =
+            type === "ServerTemplate"
+              ? "Template"
+              : type === "ResourceSync"
+              ? "Sync"
+              : type;
           return (
             <SidebarLink
               key={type}

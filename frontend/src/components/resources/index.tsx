@@ -7,7 +7,7 @@ import { RepoComponents } from "./repo";
 import { ServerComponents } from "./server";
 import { ProcedureComponents } from "./procedure/index";
 import { ServerTemplateComponents } from "./server-template";
-import { ResourceSyncComponents } from "./sync";
+import { ResourceSyncComponents } from "./resource-sync";
 
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;

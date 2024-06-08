@@ -49,7 +49,11 @@ export const ResourceDescription = ({
   const inv = useInvalidate();
 
   const key =
-    type === "ServerTemplate" ? "server_template" : type.toLowerCase();
+    type === "ServerTemplate"
+      ? "server_template"
+      : type === "ResourceSync"
+      ? "sync"
+      : type.toLowerCase();
 
   const resource = useRead(`Get${type}`, {
     [key]: id,
@@ -244,10 +248,12 @@ export const CopyResource = ({
 
 export const NewResource = ({
   type,
+  readable_type,
   server_id,
   build_id,
 }: {
   type: UsableResource;
+  readable_type?: string;
   server_id?: string;
   build_id?: string;
 }) => {
@@ -255,7 +261,11 @@ export const NewResource = ({
   const { mutateAsync } = useWrite(`Create${type}`);
   const [name, setName] = useState("");
   const type_display =
-    type === "ServerTemplate" ? "server-template" : type.toLowerCase();
+    type === "ServerTemplate"
+      ? "server-template"
+      : type === "ResourceSync"
+      ? "resource-sync"
+      : type.toLowerCase();
   const config =
     type === "Deployment"
       ? {
@@ -267,7 +277,7 @@ export const NewResource = ({
       : {};
   return (
     <NewLayout
-      entityType={type}
+      entityType={readable_type ?? type}
       onSuccess={async () => {
         const id = (await mutateAsync({ name, config }))._id?.$oid!;
         nav(`/${usableResourcePath(type)}/${id}`);
@@ -276,7 +286,7 @@ export const NewResource = ({
       onOpenChange={() => setName("")}
     >
       <div className="grid md:grid-cols-2 items-center">
-        {type} Name
+        {readable_type ?? type} Name
         <Input
           placeholder={`${type_display}-name`}
           value={name}
@@ -296,7 +306,11 @@ export const DeleteResource = ({
 }) => {
   const nav = useNavigate();
   const key =
-    type === "ServerTemplate" ? "server_template" : type.toLowerCase();
+    type === "ServerTemplate"
+      ? "server_template"
+      : type === "ResourceSync"
+      ? "sync"
+      : type.toLowerCase();
   const resource = useRead(`Get${type}`, {
     [key]: id,
   } as any).data;

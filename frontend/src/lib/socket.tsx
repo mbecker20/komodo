@@ -137,6 +137,15 @@ const on_message = (
     );
   }
 
+  if (update.target.type === "ResourceSync") {
+    invalidate(
+      ["ListResourceSyncs"],
+      ["GetResourceSync"],
+      ["GetResourceSyncActionState"],
+      ["GetResourceSyncsSummary"]
+    );
+  }
+
   if (
     update.target.type === "System" &&
     update.operation.includes("Variable")

@@ -125,7 +125,11 @@ const PrimaryDropdown = () => {
   const [icon, title] = Components
     ? [
         <Components.Icon />,
-        (type === "ServerTemplate" ? "Template" : type) + "s",
+        (type === "ServerTemplate"
+          ? "Template"
+          : type === "ResourceSync"
+          ? "Sync"
+          : type) + "s",
       ]
     : location.pathname === "/"
     ? [<Home className="w-4 h-4" />, "Home"]

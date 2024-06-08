@@ -1,3 +1,5 @@
+use std::fs;
+
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
   sync::ResourceSync, to_monitor_name, toml::ResourcesToml,
@@ -31,6 +33,9 @@ pub async fn get_remote_resources(
     })
     .transpose()?
     .cloned();
+
+  fs::create_dir_all(&config.sync_directory)
+    .context("failed to create sync directory")?;
 
   let mut logs =
     git::clone(clone_args, &config.sync_directory, github_token)

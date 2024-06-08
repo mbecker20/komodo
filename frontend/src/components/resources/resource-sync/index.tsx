@@ -9,6 +9,7 @@ import { Types } from "@monitor/client";
 import { ResourceSyncConfig } from "./config";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
+import { ExecuteSync, RefreshSync } from "./actions";
 
 const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}).data?.find((d) => d.id === id);
@@ -44,12 +45,12 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   Dashboard: () => {
     const syncs_count = useRead("ListResourceSyncs", {}).data?.length;
     return (
-      <Link to="/syncs/" className="w-full">
+      <Link to="/resource-syncs/" className="w-full">
         <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
           <CardHeader>
             <div className="flex justify-between">
               <div>
-                <CardTitle>Syncs</CardTitle>
+                <CardTitle>Resource Syncs</CardTitle>
                 <CardDescription>{syncs_count} Total</CardDescription>
               </div>
               <FolderSync className="w-4 h-4" />
@@ -60,7 +61,7 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="ResourceSync" />,
+  New: () => <NewResource type="ResourceSync" readable_type="Resource Sync" />,
 
   Table: ({ resources }) => (
     <ResourceSyncTable syncs={resources as Types.ResourceSyncListItem[]} />
@@ -73,7 +74,7 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
 
   Info: {},
 
-  Actions: {},
+  Actions: { RefreshSync, ExecuteSync },
 
   Page: {},
 

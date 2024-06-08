@@ -14,7 +14,12 @@ import { useState } from "react";
 
 export const Resources = () => {
   const type = useResourceParamType()!;
-  const name = type === "ServerTemplate" ? "Server Template" : type;
+  const name =
+    type === "ServerTemplate"
+      ? "Server Template"
+      : type === "ResourceSync"
+      ? "Resource Sync"
+      : type;
   useSetTitle(name + "s");
   const Components = ResourceComponents[type];
   const [search, set] = useState("");

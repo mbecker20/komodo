@@ -1,0 +1,57 @@
+import { ConfirmButton } from "@components/util";
+import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { sync_no_changes } from "@lib/utils";
+import { Loader2, RefreshCcw, SquarePlay } from "lucide-react";
+
+export const RefreshSync = ({ id }: { id: string }) => {
+  const inv = useInvalidate();
+  const { mutate, isPending } = useWrite("RefreshResourceSyncPending", {
+    onSuccess: () => inv(["GetResourceSync", { sync: id }]),
+  });
+  const pending = isPending;
+  return (
+    <ConfirmButton
+      title="Refresh"
+      icon={
+        pending ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <RefreshCcw className="w-4 h-4" />
+        )
+      }
+      onClick={() => mutate({ sync: id })}
+      disabled={pending}
+      loading={pending}
+    />
+  );
+};
+
+export const ExecuteSync = ({ id }: { id: string }) => {
+  const { mutate, isPending } = useExecute("RunSync");
+  const syncing = useRead(
+    "GetResourceSyncActionState",
+    { sync: id },
+    { refetchInterval: 5000 }
+  ).data?.syncing;
+  const sync = useRead("GetResourceSync", { sync: id }).data;
+
+  if (!sync || sync_no_changes(sync)) return null;
+
+  const pending = isPending || syncing;
+
+  return (
+    <ConfirmButton
+      title="Execute Sync"
+      icon={
+        pending ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <SquarePlay className="w-4 h-4" />
+        )
+      }
+      onClick={() => mutate({ sync: id })}
+      disabled={pending}
+      loading={pending}
+    />
+  );
+};

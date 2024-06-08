@@ -22,6 +22,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
   "Builder",
   "Alerter",
   "ServerTemplate",
+  "ResourceSync",
 ];
 
 export function env_to_text(envVars: Types.EnvironmentVar[] | undefined) {
@@ -97,6 +98,7 @@ export const convertTsMsToLocalUnixTsInSecs = (ts: number) =>
 
 export const usableResourcePath = (resource: UsableResource) => {
   if (resource === "ServerTemplate") return "server-templates";
+  if (resource === "ResourceSync") return "resource-syncs";
   return `${resource.toLowerCase()}s`;
 };
 
@@ -171,5 +173,23 @@ export const filterBySplit = <T>(
           return split.every((term) => target.includes(term));
         })
       : items) ?? []
+  );
+};
+
+export const sync_no_changes = (sync: Types.ResourceSync) => {
+  const pending = sync.info?.pending;
+  if (!pending) return false;
+  return (
+    !pending.server_updates?.length &&
+    !pending.deployment_updates?.length &&
+    !pending.build_updates?.length &&
+    !pending.repo_updates?.length &&
+    !pending.procedure_updates?.length &&
+    !pending.alerter_updates?.length &&
+    !pending.builder_updates?.length &&
+    !pending.server_template_updates?.length &&
+    !pending.resource_sync_updates?.length &&
+    !pending.variable_updates?.length &&
+    !pending.user_group_updates?.length
   );
 };
