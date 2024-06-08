@@ -177,19 +177,20 @@ export const filterBySplit = <T>(
 };
 
 export const sync_no_changes = (sync: Types.ResourceSync) => {
-  const pending = sync.info?.pending;
+  const pending = sync.info?.pending.data;
   if (!pending) return false;
+  if (pending.type === "Err") return false;
   return (
-    !pending.server_updates &&
-    !pending.deployment_updates &&
-    !pending.build_updates &&
-    !pending.repo_updates &&
-    !pending.procedure_updates &&
-    !pending.alerter_updates &&
-    !pending.builder_updates &&
-    !pending.server_template_updates &&
-    !pending.resource_sync_updates &&
-    !pending.variable_updates &&
-    !pending.user_group_updates
+    !pending.data.server_updates &&
+    !pending.data.deployment_updates &&
+    !pending.data.build_updates &&
+    !pending.data.repo_updates &&
+    !pending.data.procedure_updates &&
+    !pending.data.alerter_updates &&
+    !pending.data.builder_updates &&
+    !pending.data.server_template_updates &&
+    !pending.data.resource_sync_updates &&
+    !pending.data.variable_updates &&
+    !pending.data.user_group_updates
   );
 };

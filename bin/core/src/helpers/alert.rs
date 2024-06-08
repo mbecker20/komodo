@@ -246,6 +246,17 @@ async fn send_slack_alert(
       ];
       (text, blocks.into())
     }
+    AlertData::ResourceSyncPendingUpdates { id, name } => {
+      let text =
+        format!("{level} | There are pending resource sync updates");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "sync id: **{id}**\nsync name: **{name}**"
+        )),
+      ];
+      (text, blocks.into())
+    }
     AlertData::None {} => Default::default(),
   };
   if !text.is_empty() {

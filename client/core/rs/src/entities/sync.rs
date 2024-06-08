@@ -67,24 +67,34 @@ pub struct ResourceSyncInfo {
 
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct SyncUpdate {
-  /// Resources to create
-  pub to_create: i32,
-  /// Resources to update
-  pub to_update: i32,
-  /// Resources to delete
-  pub to_delete: i32,
-  /// A readable log of all the changes to be applied
-  pub log: String,
+pub struct PendingSyncUpdates {
+  /// The commit hash which produced these pending updates
+  pub hash: Option<String>,
+  /// The commit message which produced these pending updates
+  pub message: Option<String>,
+  /// The data associated with the sync. Either Ok containing diffs,
+  /// or Err containing an error message
+  pub data: PendingSyncUpdatesData,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
+#[allow(clippy::large_enum_variant)]
+pub enum PendingSyncUpdatesData {
+  Ok(PendingSyncUpdatesDataOk),
+  Err(PendingSyncUpdatesDataErr),
+}
+
+impl Default for PendingSyncUpdatesData {
+  fn default() -> Self {
+    Self::Ok(Default::default())
+  }
 }
 
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct PendingSyncUpdates {
-  /// The commit hash which produced these pending updates
-  pub hash: String,
-  /// The commit message which produced these pending updates
-  pub message: String,
+pub struct PendingSyncUpdatesDataOk {
   /// Readable log of any pending server updates
   pub server_updates: Option<SyncUpdate>,
   /// Readable log of any pending deployment updates
@@ -107,6 +117,41 @@ pub struct PendingSyncUpdates {
   pub variable_updates: Option<SyncUpdate>,
   /// Readable log of any pending user group updates
   pub user_group_updates: Option<SyncUpdate>,
+}
+
+impl PendingSyncUpdatesDataOk {
+  pub fn no_updates(&self) -> bool {
+    self.server_updates.is_none()
+      && self.deployment_updates.is_none()
+      && self.build_updates.is_none()
+      && self.repo_updates.is_none()
+      && self.procedure_updates.is_none()
+      && self.alerter_updates.is_none()
+      && self.builder_updates.is_none()
+      && self.server_template_updates.is_none()
+      && self.resource_sync_updates.is_none()
+      && self.variable_updates.is_none()
+      && self.user_group_updates.is_none()
+  }
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SyncUpdate {
+  /// Resources to create
+  pub to_create: i32,
+  /// Resources to update
+  pub to_update: i32,
+  /// Resources to delete
+  pub to_delete: i32,
+  /// A readable log of all the changes to be applied
+  pub log: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PendingSyncUpdatesDataErr {
+  pub message: String,
 }
 
 #[typeshare(serialized_as = "Partial<ResourceSyncConfig>")]

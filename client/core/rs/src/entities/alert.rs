@@ -148,6 +148,11 @@ pub enum AlertData {
     message: String,
   },
 
+  ResourceSyncPendingUpdates {
+    id: String,
+    name: String,
+  },
+
   None {},
 }
 

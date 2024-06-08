@@ -184,6 +184,10 @@ export type AlertData =
 	/** A reason for the failure */
 	message: string;
 }}
+	| { type: "ResourceSyncPendingUpdates", data: {
+	id: string;
+	name: string;
+}}
 	| { type: "None", data: {
 }};
 
@@ -1174,44 +1178,20 @@ export interface ResourceSyncConfig {
 	webhook_enabled: boolean;
 }
 
-export interface SyncUpdate {
-	/** Resources to create */
-	to_create: number;
-	/** Resources to update */
-	to_update: number;
-	/** Resources to delete */
-	to_delete: number;
-	/** A readable log of all the changes to be applied */
-	log: string;
-}
+export type PendingSyncUpdatesData = 
+	| { type: "Ok", data: PendingSyncUpdatesDataOk }
+	| { type: "Err", data: PendingSyncUpdatesDataErr };
 
 export interface PendingSyncUpdates {
 	/** The commit hash which produced these pending updates */
-	hash: string;
+	hash?: string;
 	/** The commit message which produced these pending updates */
-	message: string;
-	/** Readable log of any pending server updates */
-	server_updates?: SyncUpdate;
-	/** Readable log of any pending deployment updates */
-	deployment_updates?: SyncUpdate;
-	/** Readable log of any pending build updates */
-	build_updates?: SyncUpdate;
-	/** Readable log of any pending repo updates */
-	repo_updates?: SyncUpdate;
-	/** Readable log of any pending procedure updates */
-	procedure_updates?: SyncUpdate;
-	/** Readable log of any pending alerter updates */
-	alerter_updates?: SyncUpdate;
-	/** Readable log of any pending builder updates */
-	builder_updates?: SyncUpdate;
-	/** Readable log of any pending server template updates */
-	server_template_updates?: SyncUpdate;
-	/** Readable log of any pending resource sync updates */
-	resource_sync_updates?: SyncUpdate;
-	/** Readable log of any pending variable updates */
-	variable_updates?: SyncUpdate;
-	/** Readable log of any pending user group updates */
-	user_group_updates?: SyncUpdate;
+	message?: string;
+	/**
+	 * The data associated with the sync. Either Ok containing diffs,
+	 * or Err containing an error message
+	 */
+	data: PendingSyncUpdatesData;
 }
 
 export interface ResourceSyncInfo {
@@ -3799,6 +3779,46 @@ export interface HetznerServerTemplateConfig {
 	 * Default: `8120`
 	 */
 	port: number;
+}
+
+export interface SyncUpdate {
+	/** Resources to create */
+	to_create: number;
+	/** Resources to update */
+	to_update: number;
+	/** Resources to delete */
+	to_delete: number;
+	/** A readable log of all the changes to be applied */
+	log: string;
+}
+
+export interface PendingSyncUpdatesDataOk {
+	/** Readable log of any pending server updates */
+	server_updates?: SyncUpdate;
+	/** Readable log of any pending deployment updates */
+	deployment_updates?: SyncUpdate;
+	/** Readable log of any pending build updates */
+	build_updates?: SyncUpdate;
+	/** Readable log of any pending repo updates */
+	repo_updates?: SyncUpdate;
+	/** Readable log of any pending procedure updates */
+	procedure_updates?: SyncUpdate;
+	/** Readable log of any pending alerter updates */
+	alerter_updates?: SyncUpdate;
+	/** Readable log of any pending builder updates */
+	builder_updates?: SyncUpdate;
+	/** Readable log of any pending server template updates */
+	server_template_updates?: SyncUpdate;
+	/** Readable log of any pending resource sync updates */
+	resource_sync_updates?: SyncUpdate;
+	/** Readable log of any pending variable updates */
+	variable_updates?: SyncUpdate;
+	/** Readable log of any pending user group updates */
+	user_group_updates?: SyncUpdate;
+}
+
+export interface PendingSyncUpdatesDataErr {
+	message: string;
 }
 
 export type AuthRequest = 

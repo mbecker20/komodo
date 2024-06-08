@@ -3,16 +3,23 @@ use monitor_client::{
   api::write::*,
   entities::{
     self,
+    alert::{Alert, AlertData},
     alerter::Alerter,
     build::Build,
     builder::Builder,
     deployment::Deployment,
+    monitor_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
-    server::Server,
+    server::{stats::SeverityLevel, Server},
     server_template::ServerTemplate,
-    sync::{PendingSyncUpdates, ResourceSync},
+    sync::{
+      PendingSyncUpdates, PendingSyncUpdatesData,
+      PendingSyncUpdatesDataErr, PendingSyncUpdatesDataOk,
+      ResourceSync,
+    },
+    update::ResourceTarget,
     user::User,
   },
 };
@@ -21,6 +28,7 @@ use mungos::{
   mongodb::bson::{doc, to_document},
 };
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -96,108 +104,136 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
 
-    let (res, _, hash, message) =
-      crate::helpers::sync::remote::get_remote_resources(&sync)
-        .await
-        .context("failed to get remote resources")?;
-    let resources = res?;
+    let res = async {
+      let (res, _, hash, message) =
+        crate::helpers::sync::remote::get_remote_resources(&sync)
+          .await
+          .context("failed to get remote resources")?;
+      let resources = res?;
 
-    let all_resources = AllResourcesById::load().await?;
-    let id_to_tags = get_id_to_tags(None).await?;
+      let all_resources = AllResourcesById::load().await?;
+      let id_to_tags = get_id_to_tags(None).await?;
 
-    let pending = PendingSyncUpdates {
-      hash,
-      message,
-      server_updates: get_updates_for_view::<Server>(
-        resources.servers,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get server updates")?,
-      deployment_updates: get_updates_for_view::<Deployment>(
-        resources.deployments,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get deployment updates")?,
-      build_updates: get_updates_for_view::<Build>(
-        resources.builds,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get build updates")?,
-      repo_updates: get_updates_for_view::<Repo>(
-        resources.repos,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get repo updates")?,
-      procedure_updates: get_updates_for_view::<Procedure>(
-        resources.procedures,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get procedure updates")?,
-      alerter_updates: get_updates_for_view::<Alerter>(
-        resources.alerters,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get alerter updates")?,
-      builder_updates: get_updates_for_view::<Builder>(
-        resources.builders,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get builder updates")?,
-      server_template_updates:
-        get_updates_for_view::<ServerTemplate>(
-          resources.server_templates,
+      let data = PendingSyncUpdatesDataOk {
+        server_updates: get_updates_for_view::<Server>(
+          resources.servers,
           sync.config.delete,
           &all_resources,
           &id_to_tags,
         )
         .await
-        .context("failed to get server template updates")?,
-      resource_sync_updates: get_updates_for_view::<
-        entities::sync::ResourceSync,
-      >(
-        resources.resource_syncs,
-        sync.config.delete,
-        &all_resources,
-        &id_to_tags,
-      )
-      .await
-      .context("failed to get resource sync updates")?,
-      variable_updates:
-        crate::helpers::sync::variables::get_updates_for_view(
-          resources.variables,
-          sync.config.delete,
-        )
-        .await
-        .context("failed to get variable updates")?,
-      user_group_updates:
-        crate::helpers::sync::user_groups::get_updates_for_view(
-          resources.user_groups,
+        .context("failed to get server updates")?,
+        deployment_updates: get_updates_for_view::<Deployment>(
+          resources.deployments,
           sync.config.delete,
           &all_resources,
+          &id_to_tags,
         )
         .await
-        .context("failed to get user group updates")?,
+        .context("failed to get deployment updates")?,
+        build_updates: get_updates_for_view::<Build>(
+          resources.builds,
+          sync.config.delete,
+          &all_resources,
+          &id_to_tags,
+        )
+        .await
+        .context("failed to get build updates")?,
+        repo_updates: get_updates_for_view::<Repo>(
+          resources.repos,
+          sync.config.delete,
+          &all_resources,
+          &id_to_tags,
+        )
+        .await
+        .context("failed to get repo updates")?,
+        procedure_updates: get_updates_for_view::<Procedure>(
+          resources.procedures,
+          sync.config.delete,
+          &all_resources,
+          &id_to_tags,
+        )
+        .await
+        .context("failed to get procedure updates")?,
+        alerter_updates: get_updates_for_view::<Alerter>(
+          resources.alerters,
+          sync.config.delete,
+          &all_resources,
+          &id_to_tags,
+        )
+        .await
+        .context("failed to get alerter updates")?,
+        builder_updates: get_updates_for_view::<Builder>(
+          resources.builders,
+          sync.config.delete,
+          &all_resources,
+          &id_to_tags,
+        )
+        .await
+        .context("failed to get builder updates")?,
+        server_template_updates:
+          get_updates_for_view::<ServerTemplate>(
+            resources.server_templates,
+            sync.config.delete,
+            &all_resources,
+            &id_to_tags,
+          )
+          .await
+          .context("failed to get server template updates")?,
+        resource_sync_updates: get_updates_for_view::<
+          entities::sync::ResourceSync,
+        >(
+          resources.resource_syncs,
+          sync.config.delete,
+          &all_resources,
+          &id_to_tags,
+        )
+        .await
+        .context("failed to get resource sync updates")?,
+        variable_updates:
+          crate::helpers::sync::variables::get_updates_for_view(
+            resources.variables,
+            sync.config.delete,
+          )
+          .await
+          .context("failed to get variable updates")?,
+        user_group_updates:
+          crate::helpers::sync::user_groups::get_updates_for_view(
+            resources.user_groups,
+            sync.config.delete,
+            &all_resources,
+          )
+          .await
+          .context("failed to get user group updates")?,
+      };
+      anyhow::Ok((hash, message, data))
+    }
+    .await;
+
+    let (pending, has_updates) = match res {
+      Ok((hash, message, data)) => {
+        let has_updates = !data.no_updates();
+        (
+          PendingSyncUpdates {
+            hash: Some(hash),
+            message: Some(message),
+            data: PendingSyncUpdatesData::Ok(data),
+          },
+          has_updates,
+        )
+      }
+      Err(e) => (
+        PendingSyncUpdates {
+          hash: None,
+          message: None,
+          data: PendingSyncUpdatesData::Err(
+            PendingSyncUpdatesDataErr {
+              message: serialize_error_pretty(&e),
+            },
+          ),
+        },
+        false,
+      ),
     };
 
     let pending = to_document(&pending)
@@ -210,6 +246,71 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       None,
     )
     .await?;
+
+    // check to update alert
+    let id = sync.id.clone();
+    let name = sync.name.clone();
+    tokio::task::spawn(async move {
+      let db = db_client().await;
+      let Some(existing) = db_client()
+        .await
+        .alerts
+        .find_one(
+          doc! {
+            "resolved": false,
+            "target.type": "ResourceSync",
+            "target.id": &id,
+          },
+          None,
+        )
+        .await
+        .context("failed to query db for alert")
+        .inspect_err(|e| warn!("{e:#}"))
+        .ok()
+      else {
+        return;
+      };
+      match (existing, has_updates) {
+        // OPEN A NEW ALERT
+        (None, true) => {
+          let alert = Alert {
+            id: Default::default(),
+            ts: monitor_timestamp(),
+            resolved: false,
+            level: SeverityLevel::Ok,
+            target: ResourceTarget::ResourceSync(id.clone()),
+            data: AlertData::ResourceSyncPendingUpdates { id, name },
+            resolved_ts: None,
+          };
+          db.alerts
+            .insert_one(&alert, None)
+            .await
+            .context("failed to open existing pending resource sync updates alert")
+            .inspect_err(|e| warn!("{e:#}"))
+            .ok();
+        }
+        // CLOSE ALERT
+        (Some(existing), false) => {
+          update_one_by_id(
+            &db.alerts,
+            &existing.id,
+            doc! {
+              "$set": {
+                "resolved": true,
+                "resolved_ts": monitor_timestamp()
+              }
+            },
+            None,
+          )
+          .await
+          .context("failed to close existing pending resource sync updates alert")
+          .inspect_err(|e| warn!("{e:#}"))
+          .ok();
+        }
+        // NOTHING TO DO
+        _ => {}
+      }
+    });
 
     crate::resource::get::<ResourceSync>(&sync.id).await
   }
