@@ -1,10 +1,13 @@
 use std::str::FromStr;
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
 use clap::Parser;
 use derive_empty_traits::EmptyTraits;
-use serde::{Deserialize, Serialize};
+use serde::{
+  de::{value::MapAccessDeserializer, Visitor},
+  Deserialize, Serialize,
+};
 use serror::Serror;
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
@@ -177,13 +180,76 @@ impl SystemCommand {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, PartialEq,
-)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq)]
 pub struct Version {
   pub major: i32,
   pub minor: i32,
   pub patch: i32,
+}
+
+impl<'de> Deserialize<'de> for Version {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: serde::Deserializer<'de>,
+  {
+    #[derive(Deserialize)]
+    struct VersionInner {
+      major: i32,
+      minor: i32,
+      patch: i32,
+    }
+
+    impl From<VersionInner> for Version {
+      fn from(
+        VersionInner {
+          major,
+          minor,
+          patch,
+        }: VersionInner,
+      ) -> Self {
+        Version {
+          major,
+          minor,
+          patch,
+        }
+      }
+    }
+
+    struct VersionVisitor;
+
+    impl<'de> Visitor<'de> for VersionVisitor {
+      type Value = Version;
+      fn expecting(
+        &self,
+        formatter: &mut std::fmt::Formatter,
+      ) -> std::fmt::Result {
+        write!(
+          formatter,
+          "version string or object | example: '0.2.4' or {{ \"major\": 0, \"minor\": 2, \"patch\": 4, }}"
+        )
+      }
+
+      fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+      where
+        E: serde::de::Error,
+      {
+        v.try_into()
+          .map_err(|e| serde::de::Error::custom(format!("{e:#}")))
+      }
+
+      fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+      where
+        A: serde::de::MapAccess<'de>,
+      {
+        Ok(
+          VersionInner::deserialize(MapAccessDeserializer::new(map))?
+            .into(),
+        )
+      }
+    }
+
+    deserializer.deserialize_any(VersionVisitor)
+  }
 }
 
 impl std::fmt::Display for Version {
@@ -199,22 +265,29 @@ impl TryFrom<&str> for Version {
   type Error = anyhow::Error;
 
   fn try_from(value: &str) -> Result<Self, Self::Error> {
-    let vals = value
-      .split('.')
-      .map(|v| {
-        anyhow::Ok(
-          v.parse().context("failed at parsing value into i32")?,
-        )
-      })
-      .collect::<anyhow::Result<Vec<i32>>>()?;
-    let version = Version {
-      major: *vals
-        .first()
-        .ok_or(anyhow!("must include at least major version"))?,
-      minor: *vals.get(1).unwrap_or(&0),
-      patch: *vals.get(2).unwrap_or(&0),
-    };
-    Ok(version)
+    let mut split = value.split('.');
+    let major = split
+      .next()
+      .context("must provide at least major version")?
+      .parse::<i32>()
+      .context("major version must be integer")?;
+    let minor = split
+      .next()
+      .map(|minor| minor.parse::<i32>())
+      .transpose()
+      .context("minor version must be integer")?
+      .unwrap_or_default();
+    let patch = split
+      .next()
+      .map(|patch| patch.parse::<i32>())
+      .transpose()
+      .context("patch version must be integer")?
+      .unwrap_or_default();
+    Ok(Version {
+      major,
+      minor,
+      patch,
+    })
   }
 }
 
