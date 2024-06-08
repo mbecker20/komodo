@@ -6,3 +6,4 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod sync;

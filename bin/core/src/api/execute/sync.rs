@@ -136,7 +136,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       resource_syncs_to_update,
       resource_syncs_to_delete,
     ) = get_updates_for_execution::<entities::sync::ResourceSync>(
-      resources.syncs,
+      resources.resource_syncs,
       sync.config.delete,
       &all_resources,
       &id_to_tags,

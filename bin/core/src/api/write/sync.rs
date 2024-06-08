@@ -176,7 +176,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       resource_sync_updates: get_updates_for_view::<
         entities::sync::ResourceSync,
       >(
-        resources.syncs,
+        resources.resource_syncs,
         sync.config.delete,
         &all_resources,
         &id_to_tags,

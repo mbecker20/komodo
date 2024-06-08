@@ -175,7 +175,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          res.syncs.push(convert_resource(sync, &names.tags))
+          res.resource_syncs.push(convert_resource(sync, &names.tags))
         }
         ResourceTarget::ServerTemplate(id) => {
           let template = resource::get_check_permissions::<

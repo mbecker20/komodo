@@ -72,10 +72,10 @@ pub struct ResourcesToml {
 
   #[serde(
     default,
-    rename = "sync",
+    rename = "resource_sync",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub syncs: Vec<ResourceToml<PartialResourceSyncConfig>>,
+  pub resource_syncs: Vec<ResourceToml<PartialResourceSyncConfig>>,
 
   #[serde(
     default,

@@ -1,10 +1,9 @@
 use colored::Colorize;
 use monitor_client::entities::{
-  alerter::Alerter, build::Build, builder::Builder,
+  self, alerter::Alerter, build::Build, builder::Builder,
   deployment::Deployment, procedure::Procedure, repo::Repo,
   server::Server, server_template::ServerTemplate,
 };
-use resource::ResourceSync;
 
 use crate::{helpers::wait_for_enter, state::cli_args};
 
@@ -13,6 +12,8 @@ mod resource;
 mod resources;
 mod user_group;
 mod variables;
+
+use resource::ResourceSync;
 
 pub async fn run(path: &str, delete: bool) -> anyhow::Result<()> {
   info!("resources path: {}", path.blue().bold());
@@ -49,6 +50,14 @@ pub async fn run(path: &str, delete: bool) -> anyhow::Result<()> {
     resources.server_templates,
     delete,
   )?;
+  let (
+    resource_sync_creates,
+    resource_sync_updates,
+    resource_sync_deletes,
+  ) = resource::get_updates::<entities::sync::ResourceSync>(
+    resources.resource_syncs,
+    delete,
+  )?;
 
   let (variable_creates, variable_updates, variable_deletes) =
     variables::get_updates(resources.variables, delete)?;
@@ -56,22 +65,33 @@ pub async fn run(path: &str, delete: bool) -> anyhow::Result<()> {
   let (user_group_creates, user_group_updates, user_group_deletes) =
     user_group::get_updates(resources.user_groups, delete).await?;
 
-  if server_template_creates.is_empty()
+  if resource_sync_creates.is_empty()
+    && resource_sync_updates.is_empty()
+    && resource_sync_deletes.is_empty()
+    && server_template_creates.is_empty()
     && server_template_updates.is_empty()
+    && server_template_deletes.is_empty()
     && server_creates.is_empty()
     && server_updates.is_empty()
+    && server_deletes.is_empty()
     && deployment_creates.is_empty()
     && deployment_updates.is_empty()
+    && deployment_deletes.is_empty()
     && build_creates.is_empty()
     && build_updates.is_empty()
+    && build_deletes.is_empty()
     && builder_creates.is_empty()
     && builder_updates.is_empty()
+    && builder_deletes.is_empty()
     && alerter_creates.is_empty()
     && alerter_updates.is_empty()
+    && alerter_deletes.is_empty()
     && repo_creates.is_empty()
     && repo_updates.is_empty()
+    && repo_deletes.is_empty()
     && procedure_creates.is_empty()
     && procedure_updates.is_empty()
+    && procedure_deletes.is_empty()
     && user_group_creates.is_empty()
     && user_group_updates.is_empty()
     && user_group_deletes.is_empty()
@@ -88,6 +108,12 @@ pub async fn run(path: &str, delete: bool) -> anyhow::Result<()> {
   }
 
   // No deps
+  entities::sync::ResourceSync::run_updates(
+    resource_sync_creates,
+    resource_sync_updates,
+    resource_sync_deletes,
+  )
+  .await;
   ServerTemplate::run_updates(
     server_template_creates,
     server_template_updates,

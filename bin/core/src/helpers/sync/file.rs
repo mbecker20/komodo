@@ -54,7 +54,7 @@ fn read_resources_recursive(
     resources.builders.extend(more.builders);
     resources.alerters.extend(more.alerters);
     resources.server_templates.extend(more.server_templates);
-    resources.syncs.extend(more.syncs);
+    resources.resource_syncs.extend(more.resource_syncs);
     resources.user_groups.extend(more.user_groups);
     resources.variables.extend(more.variables);
     Ok(())
