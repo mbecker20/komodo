@@ -1,8 +1,8 @@
-import { ConfirmButton } from "@components/util";
+import { ActionWithDialog } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardHeader } from "@ui/card";
-import { Loader2, Route } from "lucide-react";
+import { Route } from "lucide-react";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
@@ -57,18 +57,16 @@ export const ProcedureComponents: RequiredResourceComponents = {
         { refetchInterval: 5000 }
       ).data?.running;
       const { mutate, isPending } = useExecute("RunProcedure");
+      const procedure = useProcedure(id);
+      if (!procedure) return null;
       return (
-        <ConfirmButton
+        <ActionWithDialog
+          name={procedure.name}
           title={running ? "Running" : "Run"}
-          icon={
-            running ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Route className="h-4 w-4" />
-            )
-          }
+          icon={<Route className="h-4 w-4" />}
           onClick={() => mutate({ procedure: id })}
           disabled={running || isPending}
+          loading={running}
         />
       );
     },
