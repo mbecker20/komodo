@@ -73,6 +73,7 @@ pub trait ResourceSync: MonitorResource + Sized {
       return None;
     }
 
+    let mut has_error = false;
     let mut log =
       format!("running updates on {}s", Self::resource_type());
 
@@ -89,6 +90,7 @@ pub trait ResourceSync: MonitorResource + Sized {
       {
         Ok(resource) => resource.id,
         Err(e) => {
+          has_error = true;
           log.push_str(&format!(
             "\n{}: failed to create {} '{}' | {e:#}",
             colored("ERROR", "red"),
@@ -98,13 +100,20 @@ pub trait ResourceSync: MonitorResource + Sized {
           continue;
         }
       };
-      run_update_tags::<Self>(id.clone(), &name, tags, &mut log)
-        .await;
+      run_update_tags::<Self>(
+        id.clone(),
+        &name,
+        tags,
+        &mut log,
+        &mut has_error,
+      )
+      .await;
       run_update_description::<Self>(
         id,
         &name,
         description,
         &mut log,
+        &mut has_error,
       )
       .await;
       log.push_str(&format!(
@@ -134,13 +143,20 @@ pub trait ResourceSync: MonitorResource + Sized {
           &name,
           description,
           &mut log,
+          &mut has_error,
         )
         .await;
       }
 
       if update_tags {
-        run_update_tags::<Self>(id.clone(), &name, tags, &mut log)
-          .await;
+        run_update_tags::<Self>(
+          id.clone(),
+          &name,
+          tags,
+          &mut log,
+          &mut has_error,
+        )
+        .await;
       }
 
       if !resource.config.is_none() {
@@ -151,6 +167,7 @@ pub trait ResourceSync: MonitorResource + Sized {
         )
         .await
         {
+          has_error = true;
           log.push_str(&format!(
             "\n{}: failed to update config on {} '{}' | {e:#}",
             colored("ERROR", "red"),
@@ -173,6 +190,7 @@ pub trait ResourceSync: MonitorResource + Sized {
       if let Err(e) =
         crate::resource::delete::<Self>(&resource, sync_user()).await
       {
+        has_error = true;
         log.push_str(&format!(
           "\n{}: failed to delete {} '{}' | {e:#}",
           colored("ERROR", "red"),
@@ -190,10 +208,12 @@ pub trait ResourceSync: MonitorResource + Sized {
       }
     }
 
-    Some(Log::simple(
-      &format!("Update {}s", Self::resource_type()),
-      log,
-    ))
+    let stage = format!("Update {}s", Self::resource_type());
+    Some(if has_error {
+      Log::error(&stage, log)
+    } else {
+      Log::simple(&stage, log)
+    })
   }
 }
 
@@ -423,6 +443,7 @@ pub async fn run_update_tags<Resource: ResourceSync>(
   name: &str,
   tags: Vec<String>,
   log: &mut String,
+  has_error: &mut bool,
 ) {
   // Update tags
   if let Err(e) = State
@@ -435,6 +456,7 @@ pub async fn run_update_tags<Resource: ResourceSync>(
     )
     .await
   {
+    *has_error = true;
     log.push_str(&format!(
       "\n{}: failed to update tags on {} '{}' | {e:#}",
       colored("ERROR", "red"),
@@ -457,6 +479,7 @@ pub async fn run_update_description<Resource: ResourceSync>(
   name: &str,
   description: String,
   log: &mut String,
+  has_error: &mut bool,
 ) {
   if let Err(e) = State
     .resolve(
@@ -468,6 +491,7 @@ pub async fn run_update_description<Resource: ResourceSync>(
     )
     .await
   {
+    *has_error = true;
     log.push_str(&format!(
       "\n{}: failed to update description on {} '{}' | {e:#}",
       colored("ERROR", "red"),

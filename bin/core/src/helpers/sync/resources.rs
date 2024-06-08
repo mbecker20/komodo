@@ -317,6 +317,7 @@ impl ResourceSync for Procedure {
       return None;
     }
 
+    let mut has_error = false;
     let mut log =
       format!("running updates on {}s", Self::resource_type());
 
@@ -324,6 +325,7 @@ impl ResourceSync for Procedure {
       if let Err(e) =
         crate::resource::delete::<Procedure>(&name, sync_user()).await
       {
+        has_error = true;
         log.push_str(&format!(
           "{}: failed to delete {} '{}' | {e:#}",
           colored("ERROR", "red"),
@@ -342,10 +344,12 @@ impl ResourceSync for Procedure {
     }
 
     if to_update.is_empty() && to_create.is_empty() {
-      return Some(Log::simple(
-        &format!("Update {}s", Self::resource_type()),
-        log,
-      ));
+      let stage = "Update Procedures";
+      return Some(if has_error {
+        Log::error(stage, log)
+      } else {
+        Log::simple(stage, log)
+      });
     }
 
     for i in 0..10 {
@@ -367,6 +371,7 @@ impl ResourceSync for Procedure {
             &name,
             description,
             &mut log,
+            &mut has_error,
           )
           .await;
         }
@@ -376,6 +381,7 @@ impl ResourceSync for Procedure {
             &name,
             tags,
             &mut log,
+            &mut has_error,
           )
           .await;
         }
@@ -388,9 +394,9 @@ impl ResourceSync for Procedure {
           .await
           {
             if i == 9 {
-              log.push('\n');
+              has_error = true;
               log.push_str(&format!(
-                "{}: failed to update {} '{}' | {e:#}",
+                "\n{}: failed to update {} '{}' | {e:#}",
                 colored("ERROR", "red"),
                 Self::resource_type(),
                 bold(&name)
@@ -400,9 +406,8 @@ impl ResourceSync for Procedure {
           }
         }
 
-        log.push('\n');
         log.push_str(&format!(
-          "{}: {} '{}' updated",
+          "\n{}: {} '{}' updated",
           muted("INFO"),
           Self::resource_type(),
           bold(&name)
@@ -428,9 +433,9 @@ impl ResourceSync for Procedure {
           Ok(resource) => resource.id,
           Err(e) => {
             if i == 9 {
-              log.push('\n');
+              has_error = true;
               log.push_str(&format!(
-                "{}: failed to create {} '{}' | {e:#}",
+                "\n{}: failed to create {} '{}' | {e:#}",
                 colored("ERROR", "red"),
                 Self::resource_type(),
                 bold(&name)
@@ -444,6 +449,7 @@ impl ResourceSync for Procedure {
           &name,
           tags,
           &mut log,
+          &mut has_error,
         )
         .await;
         run_update_description::<Procedure>(
@@ -451,6 +457,7 @@ impl ResourceSync for Procedure {
           &name,
           description,
           &mut log,
+          &mut has_error,
         )
         .await;
         log.push_str(&format!(
@@ -465,8 +472,12 @@ impl ResourceSync for Procedure {
       to_create.retain(|resource| !to_pull.contains(&resource.name));
 
       if to_update.is_empty() && to_create.is_empty() {
-        // info!("all procedures synced");
-        return Some(Log::simple("Update Procedures", log));
+        let stage = "Update Procedures";
+        return Some(if has_error {
+          Log::error(stage, log)
+        } else {
+          Log::simple(stage, log)
+        });
       }
     }
     warn!("procedure sync loop exited after max iterations");

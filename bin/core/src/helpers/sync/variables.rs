@@ -184,6 +184,7 @@ pub async fn run_updates(
     return None;
   }
 
+  let mut has_error = false;
   let mut log = String::from("running updates on Variables");
 
   for variable in to_create {
@@ -198,6 +199,7 @@ pub async fn run_updates(
       )
       .await
     {
+      has_error = true;
       log.push_str(&format!(
         "\n{}: failed to create variable '{}' | {e:#}",
         colored("ERROR", "red"),
@@ -230,6 +232,7 @@ pub async fn run_updates(
         )
         .await
       {
+        has_error = true;
         log.push_str(&format!(
           "\n{}: failed to update variable value for '{}' | {e:#}",
           colored("ERROR", "red"),
@@ -255,6 +258,7 @@ pub async fn run_updates(
         )
         .await
       {
+        has_error = true;
         log.push_str(&format!(
           "\n{}: failed to update variable description for '{}' | {e:#}",
           colored("ERROR", "red"),
@@ -281,6 +285,7 @@ pub async fn run_updates(
       )
       .await
     {
+      has_error = true;
       log.push_str(&format!(
         "\n{}: failed to delete variable '{}' | {e:#}",
         colored("ERROR", "red"),
@@ -296,5 +301,10 @@ pub async fn run_updates(
     }
   }
 
-  Some(Log::simple("Update Variables", log))
+  let stage = "Update Variables";
+  Some(if has_error {
+    Log::error(stage, log)
+  } else {
+    Log::simple(stage, log)
+  })
 }

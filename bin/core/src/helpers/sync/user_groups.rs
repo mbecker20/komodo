@@ -477,6 +477,7 @@ pub async fn run_updates(
     return None;
   }
 
+  let mut has_error = false;
   let mut log = String::from("running updates on UserGroups");
 
   // Create the non-existant user groups
@@ -491,6 +492,7 @@ pub async fn run_updates(
       )
       .await
     {
+      has_error = true;
       log.push_str(&format!(
         "\n{}: failed to create user group '{}' | {e:#}",
         colored("ERROR", "red"),
@@ -506,12 +508,18 @@ pub async fn run_updates(
       ))
     };
 
-    set_users(user_group.name.clone(), user_group.users, &mut log)
-      .await;
+    set_users(
+      user_group.name.clone(),
+      user_group.users,
+      &mut log,
+      &mut has_error,
+    )
+    .await;
     run_update_permissions(
       user_group.name,
       user_group.permissions,
       &mut log,
+      &mut has_error,
     )
     .await;
   }
@@ -524,14 +532,20 @@ pub async fn run_updates(
   } in to_update
   {
     if update_users {
-      set_users(user_group.name.clone(), user_group.users, &mut log)
-        .await;
+      set_users(
+        user_group.name.clone(),
+        user_group.users,
+        &mut log,
+        &mut has_error,
+      )
+      .await;
     }
     if update_permissions {
       run_update_permissions(
         user_group.name,
         user_group.permissions,
         &mut log,
+        &mut has_error,
       )
       .await;
     }
@@ -545,6 +559,7 @@ pub async fn run_updates(
       )
       .await
     {
+      has_error = true;
       log.push_str(&format!(
         "\n{}: failed to delete user group '{}' | {e:#}",
         colored("ERROR", "red"),
@@ -560,13 +575,19 @@ pub async fn run_updates(
     }
   }
 
-  Some(Log::simple("Update UserGroups", log))
+  let stage = "Update UserGroups";
+  Some(if has_error {
+    Log::error(stage, log)
+  } else {
+    Log::simple(stage, log)
+  })
 }
 
 async fn set_users(
   user_group: String,
   users: Vec<String>,
   log: &mut String,
+  has_error: &mut bool,
 ) {
   if let Err(e) = State
     .resolve(
@@ -578,6 +599,7 @@ async fn set_users(
     )
     .await
   {
+    *has_error = true;
     log.push_str(&format!(
       "\n{}: failed to set users in group {} | {e:#}",
       colored("ERROR", "red"),
@@ -597,6 +619,7 @@ async fn run_update_permissions(
   user_group: String,
   permissions: Vec<PermissionToml>,
   log: &mut String,
+  has_error: &mut bool,
 ) {
   for PermissionToml { target, level } in permissions {
     if let Err(e) = State
@@ -610,6 +633,7 @@ async fn run_update_permissions(
       )
       .await
     {
+      *has_error = true;
       log.push_str(&format!(
         "\n{}: failed to set permssion in group {} | target: {target:?} | {e:#}",
         colored("ERROR", "red"),
