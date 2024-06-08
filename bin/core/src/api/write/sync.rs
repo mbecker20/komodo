@@ -183,6 +183,21 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       )
       .await
       .context("failed to get resource sync updates")?,
+      variable_updates:
+        crate::helpers::sync::variables::get_updates_for_view(
+          resources.variables,
+          sync.config.delete,
+        )
+        .await
+        .context("failed to get variable updates")?,
+      user_group_updates:
+        crate::helpers::sync::user_groups::get_updates_for_view(
+          resources.user_groups,
+          sync.config.delete,
+          &all_resources,
+        )
+        .await
+        .context("failed to get user group updates")?,
     };
 
     let pending = to_document(&pending)

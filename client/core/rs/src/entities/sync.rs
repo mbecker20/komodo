@@ -90,6 +90,10 @@ pub struct PendingUpdates {
   pub server_template_updates: Option<String>,
   /// Readable log of any pending resource sync updates
   pub resource_sync_updates: Option<String>,
+  /// Readable log of any pending variable updates
+  pub variable_updates: Option<String>,
+  /// Readable log of any pending user group updates
+  pub user_group_updates: Option<String>,
 }
 
 #[typeshare(serialized_as = "Partial<ResourceSyncConfig>")]

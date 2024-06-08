@@ -80,9 +80,8 @@ pub trait ResourceSync: MonitorResource + Sized {
       {
         Ok(resource) => resource.id,
         Err(e) => {
-          log.push('\n');
           log.push_str(&format!(
-            "{}: failed to create {} '{}' | {e:#}",
+            "\n{}: failed to create {} '{}' | {e:#}",
             colored("ERROR", "red"),
             Self::resource_type(),
             bold(&name)
@@ -136,7 +135,6 @@ pub trait ResourceSync: MonitorResource + Sized {
       }
 
       if !resource.config.is_none() {
-        log.push('\n');
         if let Err(e) = crate::resource::update::<Self>(
           &id,
           resource.config,
@@ -145,14 +143,14 @@ pub trait ResourceSync: MonitorResource + Sized {
         .await
         {
           log.push_str(&format!(
-            "{}: failed to update config on {} '{}' | {e:#}",
+            "\n{}: failed to update config on {} '{}' | {e:#}",
             colored("ERROR", "red"),
             Self::resource_type(),
             bold(&name),
           ))
         } else {
           log.push_str(&format!(
-            "{}: {} {} '{}' configuration",
+            "\n{}: {} {} '{}' configuration",
             muted("INFO"),
             colored("updated", "blue"),
             Self::resource_type(),
@@ -163,19 +161,18 @@ pub trait ResourceSync: MonitorResource + Sized {
     }
 
     for resource in to_delete {
-      log.push('\n');
       if let Err(e) =
         crate::resource::delete::<Self>(&resource, sync_user()).await
       {
         log.push_str(&format!(
-          "{}: failed to delete {} '{}' | {e:#}",
+          "\n{}: failed to delete {} '{}' | {e:#}",
           colored("ERROR", "red"),
           Self::resource_type(),
           bold(&resource),
         ))
       } else {
         log.push_str(&format!(
-          "{}: {} {} '{}'",
+          "\n{}: {} {} '{}'",
           muted("INFO"),
           colored("deleted", "red"),
           Self::resource_type(),
@@ -251,7 +248,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
         any_change = true;
 
         log.push_str(&format!(
-          "\n{}: {}: '{}'\n-------------------",
+          "\n\n{}: {}: '{}'\n-------------------",
           colored("UPDATE", "blue"),
           Resource::resource_type(),
           bold(&resource.name)
@@ -296,7 +293,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
       None => {
         any_change = true;
         log.push_str(&format!(
-          "\n{}: {}: {}\n{}: {}\n{}: {:?}\n{}: {}",
+          "\n\n{}: {}: {}\n{}: {}\n{}: {:?}\n{}: {}",
           colored("CREATE", "green"),
           Resource::resource_type(),
           bold(&resource.name),
@@ -314,7 +311,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
 
   for name in to_delete {
     log.push_str(&format!(
-      "\n{}: {}: '{}'\n-------------------",
+      "\n\n{}: {}: '{}'\n-------------------",
       colored("DELETE", "red"),
       Resource::resource_type(),
       bold(&name)
@@ -379,47 +376,6 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
           continue;
         }
 
-        // println!(
-        //   "\n{}: {}: '{}'\n-------------------",
-        //   "UPDATE".blue(),
-        //   Resource::display(),
-        //   resource.name.bold(),
-        // );
-        // let mut lines = Vec::<String>::new();
-        // if resource.description != original.description {
-        //   lines.push(format!(
-        //     "{}: 'description'\n{}:  {}\n{}:    {}",
-        //     "field".dimmed(),
-        //     "from".dimmed(),
-        //     original.description.red(),
-        //     "to".dimmed(),
-        //     resource.description.green()
-        //   ))
-        // }
-        // if resource.tags != original_tags {
-        //   let from = format!("{:?}", original_tags).red();
-        //   let to = format!("{:?}", resource.tags).green();
-        //   lines.push(format!(
-        //     "{}: 'tags'\n{}:  {from}\n{}:    {to}",
-        //     "field".dimmed(),
-        //     "from".dimmed(),
-        //     "to".dimmed(),
-        //   ));
-        // }
-        // lines.extend(diff.iter_field_diffs().map(
-        //   |FieldDiff { field, from, to }| {
-        //     format!(
-        //       "{}: '{field}'\n{}:  {}\n{}:    {}",
-        //       "field".dimmed(),
-        //       "from".dimmed(),
-        //       from.red(),
-        //       "to".dimmed(),
-        //       to.green()
-        //     )
-        //   },
-        // ));
-        // println!("{}", lines.join("\n-------------------\n"));
-
         // Minimizes updates through diffing.
         resource.config = diff.into();
 
@@ -433,21 +389,7 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
 
         to_update.push(update);
       }
-      None => {
-        // println!(
-        //   "\n{}: {}: {}\n{}: {}\n{}: {:?}\n{}: {}",
-        //   "CREATE".green(),
-        //   Resource::display(),
-        //   resource.name.bold().green(),
-        //   "description".dimmed(),
-        //   resource.description,
-        //   "tags".dimmed(),
-        //   resource.tags,
-        //   "config".dimmed(),
-        //   serde_json::to_string_pretty(&resource.config)?
-        // );
-        to_create.push(resource);
-      }
+      None => to_create.push(resource),
     }
   }
 
@@ -461,7 +403,6 @@ pub async fn run_update_tags<Resource: ResourceSync>(
   log: &mut String,
 ) {
   // Update tags
-  log.push('\n');
   if let Err(e) = State
     .resolve(
       UpdateTagsOnResource {
@@ -473,14 +414,14 @@ pub async fn run_update_tags<Resource: ResourceSync>(
     .await
   {
     log.push_str(&format!(
-      "{}: failed to update tags on {} '{}' | {e:#}",
+      "\n{}: failed to update tags on {} '{}' | {e:#}",
       colored("ERROR", "red"),
       Resource::resource_type(),
       bold(name),
     ))
   } else {
     log.push_str(&format!(
-      "{}: {} {} '{}' tags",
+      "\n{}: {} {} '{}' tags",
       muted("INFO"),
       colored("updated", "blue"),
       Resource::resource_type(),
@@ -495,7 +436,6 @@ pub async fn run_update_description<Resource: ResourceSync>(
   description: String,
   log: &mut String,
 ) {
-  log.push('\n');
   if let Err(e) = State
     .resolve(
       UpdateDescription {
@@ -507,14 +447,14 @@ pub async fn run_update_description<Resource: ResourceSync>(
     .await
   {
     log.push_str(&format!(
-      "{}: failed to update description on {} '{}' | {e:#}",
+      "\n{}: failed to update description on {} '{}' | {e:#}",
       colored("ERROR", "red"),
       Resource::resource_type(),
       bold(name),
     ))
   } else {
     log.push_str(&format!(
-      "{}: {} {} '{}' description",
+      "\n{}: {} {} '{}' description",
       muted("INFO"),
       colored("updated", "blue"),
       Resource::resource_type(),

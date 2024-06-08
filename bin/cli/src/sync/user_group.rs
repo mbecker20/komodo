@@ -238,6 +238,7 @@ pub async fn get_updates(
           "adding".dimmed()
         ))
       }
+      println!("{}", lines.join("\n-------------------\n"));
       to_update.push(UpdateItem {
         user_group,
         update_users,
@@ -248,7 +249,7 @@ pub async fn get_updates(
 
   for d in &to_delete {
     println!(
-      "\n{}: variable: '{}'\n-------------------",
+      "\n{}: user group: '{}'\n-------------------",
       "DELETE".red(),
       d.name.bold(),
     );

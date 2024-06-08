@@ -1,7 +1,7 @@
 use anyhow::Context;
 use mongo_indexed::doc;
 use monitor_client::{
-  api::execute::RunSync,
+  api::{execute::RunSync, write::RefreshResourceSyncPending},
   entities::{
     self,
     alerter::Alerter,
@@ -15,17 +15,21 @@ use monitor_client::{
     server::Server,
     server_template::ServerTemplate,
     update::{Log, Update},
-    user::User,
+    user::{sync_user, User},
   },
 };
 use mungos::by_id::update_one_by_id;
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
     query::get_id_to_tags,
-    sync::resource::{
-      get_updates_for_execution, AllResourcesById, ResourceSync,
+    sync::{
+      colored,
+      resource::{
+        get_updates_for_execution, AllResourcesById, ResourceSync,
+      },
     },
     update::update_update,
   },
@@ -130,7 +134,6 @@ impl Resolve<RunSync, (User, Update)> for State {
       &id_to_tags,
     )
     .await?;
-
     let (
       resource_syncs_to_create,
       resource_syncs_to_update,
@@ -142,10 +145,90 @@ impl Resolve<RunSync, (User, Update)> for State {
       &id_to_tags,
     )
     .await?;
+    let (
+      variables_to_create,
+      variables_to_update,
+      variables_to_delete,
+    ) = crate::helpers::sync::variables::get_updates_for_execution(
+      resources.variables,
+      sync.config.delete,
+    )
+    .await?;
+    let (
+      user_groups_to_create,
+      user_groups_to_update,
+      user_groups_to_delete,
+    ) = crate::helpers::sync::user_groups::get_updates_for_execution(
+      resources.user_groups,
+      sync.config.delete,
+      &all_resources,
+    )
+    .await?;
+
+    if resource_syncs_to_create.is_empty()
+      && resource_syncs_to_update.is_empty()
+      && resource_syncs_to_delete.is_empty()
+      && server_templates_to_create.is_empty()
+      && server_templates_to_update.is_empty()
+      && server_templates_to_delete.is_empty()
+      && servers_to_create.is_empty()
+      && servers_to_update.is_empty()
+      && servers_to_delete.is_empty()
+      && deployments_to_create.is_empty()
+      && deployments_to_update.is_empty()
+      && deployments_to_delete.is_empty()
+      && builds_to_create.is_empty()
+      && builds_to_update.is_empty()
+      && builds_to_delete.is_empty()
+      && builders_to_create.is_empty()
+      && builders_to_update.is_empty()
+      && builders_to_delete.is_empty()
+      && alerters_to_create.is_empty()
+      && alerters_to_update.is_empty()
+      && alerters_to_delete.is_empty()
+      && repos_to_create.is_empty()
+      && repos_to_update.is_empty()
+      && repos_to_delete.is_empty()
+      && procedures_to_create.is_empty()
+      && procedures_to_update.is_empty()
+      && procedures_to_delete.is_empty()
+      && user_groups_to_create.is_empty()
+      && user_groups_to_update.is_empty()
+      && user_groups_to_delete.is_empty()
+      && variables_to_create.is_empty()
+      && variables_to_update.is_empty()
+      && variables_to_delete.is_empty()
+    {
+      update.push_simple_log(
+        "No Changes",
+        format!("{}. exiting.", colored("nothing to do", "green")),
+      );
+      update.finalize();
+      update_update(update.clone()).await?;
+      return Ok(update);
+    }
 
     // =================
 
     // No deps
+    maybe_extend(
+      &mut update.logs,
+      crate::helpers::sync::variables::run_updates(
+        variables_to_create,
+        variables_to_update,
+        variables_to_delete,
+      )
+      .await,
+    );
+    maybe_extend(
+      &mut update.logs,
+      crate::helpers::sync::user_groups::run_updates(
+        user_groups_to_create,
+        user_groups_to_update,
+        user_groups_to_delete,
+      )
+      .await,
+    );
     maybe_extend(
       &mut update.logs,
       entities::sync::ResourceSync::run_updates(
@@ -254,6 +337,23 @@ impl Resolve<RunSync, (User, Update)> for State {
         "failed to update resource sync {} info after sync | {e:#}",
         sync.name
       )
+    }
+
+    if let Err(e) = State
+      .resolve(
+        RefreshResourceSyncPending { sync: sync.id },
+        sync_user().to_owned(),
+      )
+      .await
+    {
+      warn!("failed to refresh sync {} after run | {e:#}", sync.name);
+      update.push_error_log(
+        "refresh sync",
+        format!(
+          "failed to refresh sync pending after run | {}",
+          serialize_error_pretty(&e)
+        ),
+      );
     }
 
     update.finalize();
