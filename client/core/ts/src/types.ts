@@ -1174,33 +1174,44 @@ export interface ResourceSyncConfig {
 	webhook_enabled: boolean;
 }
 
-export interface PendingUpdates {
+export interface SyncUpdate {
+	/** Resources to create */
+	to_create: number;
+	/** Resources to update */
+	to_update: number;
+	/** Resources to delete */
+	to_delete: number;
+	/** A readable log of all the changes to be applied */
+	log: string;
+}
+
+export interface PendingSyncUpdates {
 	/** The commit hash which produced these pending updates */
 	hash: string;
 	/** The commit message which produced these pending updates */
 	message: string;
 	/** Readable log of any pending server updates */
-	server_updates?: string;
+	server_updates?: SyncUpdate;
 	/** Readable log of any pending deployment updates */
-	deployment_updates?: string;
+	deployment_updates?: SyncUpdate;
 	/** Readable log of any pending build updates */
-	build_updates?: string;
+	build_updates?: SyncUpdate;
 	/** Readable log of any pending repo updates */
-	repo_updates?: string;
+	repo_updates?: SyncUpdate;
 	/** Readable log of any pending procedure updates */
-	procedure_updates?: string;
+	procedure_updates?: SyncUpdate;
 	/** Readable log of any pending alerter updates */
-	alerter_updates?: string;
+	alerter_updates?: SyncUpdate;
 	/** Readable log of any pending builder updates */
-	builder_updates?: string;
+	builder_updates?: SyncUpdate;
 	/** Readable log of any pending server template updates */
-	server_template_updates?: string;
+	server_template_updates?: SyncUpdate;
 	/** Readable log of any pending resource sync updates */
-	resource_sync_updates?: string;
+	resource_sync_updates?: SyncUpdate;
 	/** Readable log of any pending variable updates */
-	variable_updates?: string;
+	variable_updates?: SyncUpdate;
 	/** Readable log of any pending user group updates */
-	user_group_updates?: string;
+	user_group_updates?: SyncUpdate;
 }
 
 export interface ResourceSyncInfo {
@@ -1211,7 +1222,7 @@ export interface ResourceSyncInfo {
 	/** Commit message of last applied sync */
 	last_sync_message: string;
 	/** Readable logs of pending updates */
-	pending: PendingUpdates;
+	pending: PendingSyncUpdates;
 }
 
 export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;

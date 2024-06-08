@@ -30,11 +30,12 @@ use monitor_client::{
   },
 };
 use mungos::find::find_collect;
+use partial_derive2::PartialDiff;
 use resolver_api::Resolve;
 
 use crate::{
   helpers::query::get_user_user_group_ids,
-  resource,
+  resource::{self, MonitorResource},
   state::{db_client, State},
 };
 
@@ -166,7 +167,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          res.alerters.push(convert_resource(alerter, &names.tags))
+          res
+            .alerters
+            .push(convert_resource::<Alerter>(alerter, &names.tags))
         }
         ResourceTarget::ResourceSync(id) => {
           let sync = resource::get_check_permissions::<ResourceSync>(
@@ -175,7 +178,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          res.resource_syncs.push(convert_resource(sync, &names.tags))
+          res
+            .resource_syncs
+            .push(convert_resource::<ResourceSync>(sync, &names.tags))
         }
         ResourceTarget::ServerTemplate(id) => {
           let template = resource::get_check_permissions::<
@@ -184,9 +189,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
             &id, &user, PermissionLevel::Read
           )
           .await?;
-          res
-            .server_templates
-            .push(convert_resource(template, &names.tags))
+          res.server_templates.push(
+            convert_resource::<ServerTemplate>(template, &names.tags),
+          )
         }
         ResourceTarget::Server(id) => {
           let server = resource::get_check_permissions::<Server>(
@@ -195,7 +200,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          res.servers.push(convert_resource(server, &names.tags))
+          res
+            .servers
+            .push(convert_resource::<Server>(server, &names.tags))
         }
         ResourceTarget::Builder(id) => {
           let mut builder =
@@ -211,7 +218,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
               names.servers.get(&id).unwrap_or(&String::new()),
             )
           }
-          res.builders.push(convert_resource(builder, &names.tags))
+          res
+            .builders
+            .push(convert_resource::<Builder>(builder, &names.tags))
         }
         ResourceTarget::Build(id) => {
           let mut build = resource::get_check_permissions::<Build>(
@@ -227,7 +236,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
               .get(&build.config.builder_id)
               .unwrap_or(&String::new()),
           );
-          res.builds.push(convert_resource(build, &names.tags))
+          res
+            .builds
+            .push(convert_resource::<Build>(build, &names.tags))
         }
         ResourceTarget::Deployment(id) => {
           let mut deployment = resource::get_check_permissions::<
@@ -251,9 +262,10 @@ impl Resolve<ExportResourcesToToml, User> for State {
               names.builds.get(build_id).unwrap_or(&String::new()),
             );
           }
-          res
-            .deployments
-            .push(convert_resource(deployment, &names.tags))
+          res.deployments.push(convert_resource::<Deployment>(
+            deployment,
+            &names.tags,
+          ))
         }
         ResourceTarget::Repo(id) => {
           let mut repo = resource::get_check_permissions::<Repo>(
@@ -269,7 +281,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
               .get(&repo.config.server_id)
               .unwrap_or(&String::new()),
           );
-          res.repos.push(convert_resource(repo, &names.tags))
+          res.repos.push(convert_resource::<Repo>(repo, &names.tags))
         }
         ResourceTarget::Procedure(id) => {
           add_procedure(&id, &mut res, &user, &names)
@@ -381,7 +393,7 @@ async fn add_procedure(
 
   res
     .procedures
-    .push(convert_resource(procedure, &names.tags));
+    .push(convert_resource::<Procedure>(procedure, &names.tags));
   Ok(())
 }
 
@@ -500,13 +512,13 @@ async fn add_user_groups(
   Ok(())
 }
 
-fn convert_resource<Config, Info: Default, PartialConfig>(
-  resource: Resource<Config, Info>,
+fn convert_resource<R: MonitorResource>(
+  resource: Resource<R::Config, R::Info>,
   tag_names: &HashMap<String, String>,
-) -> ResourceToml<PartialConfig>
-where
-  Config: Into<PartialConfig>,
-{
+) -> ResourceToml<R::PartialConfig> {
+  // This makes sure all non-necessary (defaulted) fields don't make it into final toml
+  let partial: R::PartialConfig = resource.config.into();
+  let config = R::Config::default().minimize_partial(partial);
   ResourceToml {
     name: resource.name,
     tags: resource
@@ -515,6 +527,6 @@ where
       .filter_map(|t| tag_names.get(t).cloned())
       .collect(),
     description: resource.description,
-    config: resource.config.into(),
+    config,
   }
 }

@@ -62,38 +62,51 @@ pub struct ResourceSyncInfo {
   /// Commit message of last applied sync
   pub last_sync_message: String,
   /// Readable logs of pending updates
-  pub pending: PendingUpdates,
+  pub pending: PendingSyncUpdates,
 }
 
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct PendingUpdates {
+pub struct SyncUpdate {
+  /// Resources to create
+  pub to_create: i32,
+  /// Resources to update
+  pub to_update: i32,
+  /// Resources to delete
+  pub to_delete: i32,
+  /// A readable log of all the changes to be applied
+  pub log: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct PendingSyncUpdates {
   /// The commit hash which produced these pending updates
   pub hash: String,
   /// The commit message which produced these pending updates
   pub message: String,
   /// Readable log of any pending server updates
-  pub server_updates: Option<String>,
+  pub server_updates: Option<SyncUpdate>,
   /// Readable log of any pending deployment updates
-  pub deployment_updates: Option<String>,
+  pub deployment_updates: Option<SyncUpdate>,
   /// Readable log of any pending build updates
-  pub build_updates: Option<String>,
+  pub build_updates: Option<SyncUpdate>,
   /// Readable log of any pending repo updates
-  pub repo_updates: Option<String>,
+  pub repo_updates: Option<SyncUpdate>,
   /// Readable log of any pending procedure updates
-  pub procedure_updates: Option<String>,
+  pub procedure_updates: Option<SyncUpdate>,
   /// Readable log of any pending alerter updates
-  pub alerter_updates: Option<String>,
+  pub alerter_updates: Option<SyncUpdate>,
   /// Readable log of any pending builder updates
-  pub builder_updates: Option<String>,
+  pub builder_updates: Option<SyncUpdate>,
   /// Readable log of any pending server template updates
-  pub server_template_updates: Option<String>,
+  pub server_template_updates: Option<SyncUpdate>,
   /// Readable log of any pending resource sync updates
-  pub resource_sync_updates: Option<String>,
+  pub resource_sync_updates: Option<SyncUpdate>,
   /// Readable log of any pending variable updates
-  pub variable_updates: Option<String>,
+  pub variable_updates: Option<SyncUpdate>,
   /// Readable log of any pending user group updates
-  pub user_group_updates: Option<String>,
+  pub user_group_updates: Option<SyncUpdate>,
 }
 
 #[typeshare(serialized_as = "Partial<ResourceSyncConfig>")]

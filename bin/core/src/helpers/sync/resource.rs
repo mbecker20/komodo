@@ -13,6 +13,7 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     server_template::ServerTemplate,
+    sync::SyncUpdate,
     tag::Tag,
     toml::ResourceToml,
     update::{Log, ResourceTarget},
@@ -44,6 +45,10 @@ pub struct ToUpdateItem<T> {
 pub trait ResourceSync: MonitorResource + Sized {
   fn resource_target(id: String) -> ResourceTarget;
 
+  /// Apply any changes to incoming toml partial config
+  /// before it is diffed against existing config
+  fn validate_partial_config(_config: &mut Self::PartialConfig) {}
+
   /// Diffs the declared toml (partial) against the full existing config.
   /// Removes all fields from toml (partial) that haven't changed.
   fn get_diff(
@@ -51,6 +56,10 @@ pub trait ResourceSync: MonitorResource + Sized {
     update: Self::PartialConfig,
     resources: &AllResourcesById,
   ) -> anyhow::Result<Self::ConfigDiff>;
+
+  /// Apply any changes to computed config diff
+  /// before logging
+  fn validate_diff(_diff: &mut Self::ConfigDiff) {}
 
   async fn run_updates(
     to_create: ToCreate<Self::PartialConfig>,
@@ -194,7 +203,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
-) -> anyhow::Result<Option<String>> {
+) -> anyhow::Result<Option<SyncUpdate>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
@@ -202,19 +211,20 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 
-  let mut any_change = false;
+  let mut update = SyncUpdate {
+    log: format!("{} Updates", Resource::resource_type()),
+    ..Default::default()
+  };
 
   let mut to_delete = Vec::<String>::new();
   if delete {
     for resource in map.values() {
       if !resources.iter().any(|r| r.name == resource.name) {
-        any_change = true;
+        update.to_delete += 1;
         to_delete.push(resource.name.clone())
       }
     }
   }
-
-  let mut log = format!("{} Updates", Resource::resource_type());
 
   for mut resource in resources {
     match map.get(&resource.name) {
@@ -224,11 +234,15 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
         let config: Resource::Config = resource.config.into();
         resource.config = config.into();
 
-        let diff = Resource::get_diff(
+        Resource::validate_partial_config(&mut resource.config);
+
+        let mut diff = Resource::get_diff(
           original.config.clone(),
           resource.config,
           all_resources,
         )?;
+
+        Resource::validate_diff(&mut diff);
 
         let original_tags = original
           .tags
@@ -245,9 +259,9 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
           continue;
         }
 
-        any_change = true;
+        update.to_update += 1;
 
-        log.push_str(&format!(
+        update.log.push_str(&format!(
           "\n\n{}: {}: '{}'\n-------------------",
           colored("UPDATE", "blue"),
           Resource::resource_type(),
@@ -287,12 +301,12 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
             )
           },
         ));
-        log.push('\n');
-        log.push_str(&lines.join("\n-------------------\n"));
+        update.log.push('\n');
+        update.log.push_str(&lines.join("\n-------------------\n"));
       }
       None => {
-        any_change = true;
-        log.push_str(&format!(
+        update.to_create += 1;
+        update.log.push_str(&format!(
           "\n\n{}: {}: {}\n{}: {}\n{}: {:?}\n{}: {}",
           colored("CREATE", "green"),
           Resource::resource_type(),
@@ -310,7 +324,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
   }
 
   for name in to_delete {
-    log.push_str(&format!(
+    update.log.push_str(&format!(
       "\n\n{}: {}: '{}'\n-------------------",
       colored("DELETE", "red"),
       Resource::resource_type(),
@@ -318,7 +332,11 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
     ));
   }
 
-  Ok(any_change.then_some(log))
+  let any_change = update.to_create > 0
+    || update.to_update > 0
+    || update.to_delete > 0;
+
+  Ok(any_change.then_some(update))
 }
 
 /// Gets all the resources to update. For use in sync execution.
@@ -355,11 +373,15 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
         let config: Resource::Config = resource.config.into();
         resource.config = config.into();
 
-        let diff = Resource::get_diff(
+        Resource::validate_partial_config(&mut resource.config);
+
+        let mut diff = Resource::get_diff(
           original.config.clone(),
           resource.config,
           all_resources,
         )?;
+
+        Resource::validate_diff(&mut diff);
 
         let original_tags = original
           .tags

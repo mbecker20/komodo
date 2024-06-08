@@ -64,6 +64,7 @@ pub use repo::{
 pub trait MonitorResource {
   type ListItem: Serialize + Send;
   type Config: Clone
+    + Default
     + Send
     + Sync
     + Unpin

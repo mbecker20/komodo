@@ -11,6 +11,7 @@ use monitor_client::{
   },
   entities::{
     permission::UserTarget,
+    sync::SyncUpdate,
     toml::{PermissionToml, UserGroupToml},
     update::{Log, ResourceTarget},
     user::sync_user,
@@ -38,7 +39,7 @@ pub async fn get_updates_for_view(
   user_groups: Vec<UserGroupToml>,
   delete: bool,
   all_resources: &AllResourcesById,
-) -> anyhow::Result<Option<String>> {
+) -> anyhow::Result<Option<SyncUpdate>> {
   let map = find_collect(&db_client().await.user_groups, None, None)
     .await
     .context("failed to query db for UserGroups")?
@@ -46,30 +47,20 @@ pub async fn get_updates_for_view(
     .map(|ug| (ug.name.clone(), ug))
     .collect::<HashMap<_, _>>();
 
+  let mut update = SyncUpdate {
+    log: String::from("User Group Updates"),
+    ..Default::default()
+  };
+
   let mut to_delete = Vec::<String>::new();
 
   if delete {
     for user_group in map.values() {
       if !user_groups.iter().any(|ug| ug.name == user_group.name) {
+        update.to_delete += 1;
         to_delete.push(user_group.name.clone());
       }
     }
-  }
-
-  let mut log = String::from("User Group Updates");
-
-  if user_groups.is_empty() {
-    if to_delete.is_empty() {
-      return Ok(None);
-    }
-    for name in &to_delete {
-      log.push_str(&format!(
-        "\n\n{}: user group: '{}'\n-------------------",
-        colored("DELETE", "red"),
-        bold(name),
-      ));
-    }
-    return Ok(Some(log));
   }
 
   let id_to_user = find_collect(&db_client().await.users, None, None)
@@ -83,7 +74,8 @@ pub async fn get_updates_for_view(
     let original = match map.get(&user_group.name).cloned() {
       Some(original) => original,
       None => {
-        log.push_str(&format!(
+        update.to_create += 1;
+        update.log.push_str(&format!(
           "\n\n{}: user group: {}\n{}: {:?}\n{}: {:?}",
           colored("CREATE", "green"),
           colored(&user_group.name, "green"),
@@ -199,9 +191,10 @@ pub async fn get_updates_for_view(
     let update_permissions =
       user_group.permissions != original_permissions;
 
-    // only push update after failed diff
+    // only add log after diff detected
     if update_users || update_permissions {
-      log.push_str(&format!(
+      update.to_update += 1;
+      update.log.push_str(&format!(
         "\n\n{}: user group: '{}'\n-------------------",
         colored("UPDATE", "blue"),
         bold(&user_group.name),
@@ -269,20 +262,20 @@ pub async fn get_updates_for_view(
           muted("adding"),
         ))
       }
-      log.push('\n');
-      log.push_str(&lines.join("\n-------------------\n"));
+      update.log.push('\n');
+      update.log.push_str(&lines.join("\n-------------------\n"));
     }
   }
 
   for name in &to_delete {
-    log.push_str(&format!(
+    update.log.push_str(&format!(
       "\n\n{}: user group: '{}'\n-------------------",
       colored("DELETE", "red"),
       bold(name),
     ));
   }
 
-  Ok(Some(log))
+  Ok(Some(update))
 }
 
 pub async fn get_updates_for_execution(

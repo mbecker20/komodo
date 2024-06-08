@@ -180,16 +180,16 @@ export const sync_no_changes = (sync: Types.ResourceSync) => {
   const pending = sync.info?.pending;
   if (!pending) return false;
   return (
-    !pending.server_updates?.length &&
-    !pending.deployment_updates?.length &&
-    !pending.build_updates?.length &&
-    !pending.repo_updates?.length &&
-    !pending.procedure_updates?.length &&
-    !pending.alerter_updates?.length &&
-    !pending.builder_updates?.length &&
-    !pending.server_template_updates?.length &&
-    !pending.resource_sync_updates?.length &&
-    !pending.variable_updates?.length &&
-    !pending.user_group_updates?.length
+    !pending.server_updates &&
+    !pending.deployment_updates &&
+    !pending.build_updates &&
+    !pending.repo_updates &&
+    !pending.procedure_updates &&
+    !pending.alerter_updates &&
+    !pending.builder_updates &&
+    !pending.server_template_updates &&
+    !pending.resource_sync_updates &&
+    !pending.variable_updates &&
+    !pending.user_group_updates
   );
 };

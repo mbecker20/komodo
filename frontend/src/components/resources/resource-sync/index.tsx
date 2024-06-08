@@ -46,7 +46,11 @@ const PendingOrConfig = ({ id }: { id: string }) => {
 
   const tabsList = (
     <TabsList className="justify-start w-fit">
-      <TabsTrigger value="Pending" className="w-[110px]" disabled={true}>
+      <TabsTrigger
+        value="Pending"
+        className="w-[110px]"
+        disabled={pendingDisabled}
+      >
         Pending
       </TabsTrigger>
       <TabsTrigger value="Config" className="w-[110px]">
@@ -65,7 +69,7 @@ const PendingOrConfig = ({ id }: { id: string }) => {
             <PendingView
               key={type}
               type={type}
-              log={sync?.info?.pending?.[key]}
+              pending={sync?.info?.pending?.[key]}
             />
           ))}
         </Section>
@@ -76,22 +80,39 @@ const PendingOrConfig = ({ id }: { id: string }) => {
 
 const PendingView = ({
   type,
-  log,
+  pending,
 }: {
   type: string;
-  log: string | undefined;
+  pending: Types.SyncUpdate | undefined;
 }) => {
-  if (!log) return;
+  if (!pending) return;
 
   return (
     <Card>
-      <CardHeader className="flex-col">
+      <CardHeader className="flex items-center justify-between gap-4">
         <CardTitle>{type} Updates</CardTitle>
+        <div className="flex gap-4 items-center">
+          {pending.to_create && (
+            <div className="flex gap-2 items-center">
+              To Create: {pending.to_create}
+            </div>
+          )}
+          {pending.to_update && (
+            <div className="flex gap-2 items-center">
+              To Update: {pending.to_update}
+            </div>
+          )}
+          {pending.to_delete && (
+            <div className="flex gap-2 items-center">
+              To Delete: {pending.to_delete}
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <pre
           dangerouslySetInnerHTML={{
-            __html: sanitizeOnlySpan(log),
+            __html: sanitizeOnlySpan(pending.log),
           }}
         />
       </CardContent>

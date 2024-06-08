@@ -12,7 +12,7 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     server_template::ServerTemplate,
-    sync::{PendingUpdates, ResourceSync},
+    sync::{PendingSyncUpdates, ResourceSync},
     user::User,
   },
 };
@@ -105,7 +105,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     let all_resources = AllResourcesById::load().await?;
     let id_to_tags = get_id_to_tags(None).await?;
 
-    let pending = PendingUpdates {
+    let pending = PendingSyncUpdates {
       hash,
       message,
       server_updates: get_updates_for_view::<Server>(

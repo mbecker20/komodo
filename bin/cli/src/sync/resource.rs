@@ -62,12 +62,20 @@ pub trait ResourceSync: Sized {
     resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()>;
 
+  /// Apply any changes to incoming toml partial config
+  /// before it is diffed against existing config
+  fn validate_partial_config(_config: &mut Self::PartialConfig) {}
+
   /// Diffs the declared toml (partial) against the full existing config.
   /// Removes all fields from toml (partial) that haven't changed.
   fn get_diff(
     original: Self::Config,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::ConfigDiff>;
+
+  /// Apply any changes to computed config diff
+  /// before logging
+  fn validate_diff(_diff: &mut Self::ConfigDiff) {}
 
   /// Deletes the target resource
   async fn delete(id_or_name: String) -> anyhow::Result<()>;
@@ -188,10 +196,14 @@ pub fn get_updates<Resource: ResourceSync>(
         let config: Resource::Config = resource.config.into();
         resource.config = config.into();
 
-        let diff = Resource::get_diff(
+        Resource::validate_partial_config(&mut resource.config);
+
+        let mut diff = Resource::get_diff(
           original.config.clone(),
           resource.config,
         )?;
+
+        Resource::validate_diff(&mut diff);
 
         let original_tags = original
           .tags

@@ -6,7 +6,10 @@ use monitor_client::{
     CreateVariable, DeleteVariable, UpdateVariableDescription,
     UpdateVariableValue,
   },
-  entities::{update::Log, user::sync_user, variable::Variable},
+  entities::{
+    sync::SyncUpdate, update::Log, user::sync_user,
+    variable::Variable,
+  },
 };
 use mungos::find::find_collect;
 use resolver_api::Resolve;
@@ -24,7 +27,7 @@ pub struct ToUpdateItem {
 pub async fn get_updates_for_view(
   variables: Vec<Variable>,
   delete: bool,
-) -> anyhow::Result<Option<String>> {
+) -> anyhow::Result<Option<SyncUpdate>> {
   let map = find_collect(&db_client().await.variables, None, None)
     .await
     .context("failed to query db for variables")?
@@ -32,30 +35,20 @@ pub async fn get_updates_for_view(
     .map(|v| (v.name.clone(), v))
     .collect::<HashMap<_, _>>();
 
+  let mut update = SyncUpdate {
+    log: String::from("Variable Updates"),
+    ..Default::default()
+  };
+
   let mut to_delete = Vec::<String>::new();
 
   if delete {
     for variable in map.values() {
       if !variables.iter().any(|v| v.name == variable.name) {
+        update.to_delete += 1;
         to_delete.push(variable.name.clone());
       }
     }
-  }
-
-  let mut log = String::from("Variable Updates");
-
-  if variables.is_empty() {
-    if to_delete.is_empty() {
-      return Ok(None);
-    }
-    for name in &to_delete {
-      log.push_str(&format!(
-        "\n\n{}: variable: '{}'\n-------------------",
-        colored("DELETE", "red"),
-        bold(name),
-      ));
-    }
-    return Ok(Some(log));
   }
 
   for variable in variables {
@@ -70,7 +63,8 @@ pub async fn get_updates_for_view(
         if !item.update_value && !item.update_description {
           continue;
         }
-        log.push_str(&format!(
+        update.to_update += 1;
+        update.log.push_str(&format!(
           "\n\n{}: variable: '{}'\n-------------------",
           colored("UPDATE", "blue"),
           bold(&item.variable.name),
@@ -100,11 +94,12 @@ pub async fn get_updates_for_view(
           ))
         }
 
-        log.push('\n');
-        log.push_str(&lines.join("\n-------------------\n"));
+        update.log.push('\n');
+        update.log.push_str(&lines.join("\n-------------------\n"));
       }
       None => {
-        log.push_str(&format!(
+        update.to_create += 1;
+        update.log.push_str(&format!(
           "\n\n{}: variable: {}\n{}: {}\n{}: {}",
           colored("CREATE", "green"),
           colored(&variable.name, "green"),
@@ -118,14 +113,14 @@ pub async fn get_updates_for_view(
   }
 
   for name in &to_delete {
-    log.push_str(&format!(
+    update.log.push_str(&format!(
       "\n\n{}: variable: '{}'\n-------------------",
       colored("DELETE", "red"),
       bold(name),
     ));
   }
 
-  Ok(Some(log))
+  Ok(Some(update))
 }
 
 pub async fn get_updates_for_execution(

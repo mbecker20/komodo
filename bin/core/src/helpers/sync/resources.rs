@@ -63,6 +63,14 @@ impl ResourceSync for Build {
 
     Ok(original.partial_diff(update))
   }
+
+  fn validate_diff(diff: &mut Self::ConfigDiff) {
+    if let Some((_, to)) = &diff.version {
+      if to.is_none() {
+        diff.version = None;
+      }
+    }
+  }
 }
 
 impl ResourceSync for Deployment {
