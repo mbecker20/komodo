@@ -280,6 +280,7 @@ async fn validate_config(
           .await?;
           params.sync = sync.id;
         }
+        Execution::Sleep(_) => {}
       }
     }
   }

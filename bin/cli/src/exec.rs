@@ -60,6 +60,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunSync(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::Sleep(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
   }
 
   if !cli_args().yes {
@@ -107,6 +110,13 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     }
     Execution::RunSync(request) => {
       monitor_client().execute(request).await
+    }
+    Execution::Sleep(request) => {
+      let duration =
+        Duration::from_millis(request.duration_ms as u64);
+      tokio::time::sleep(duration).await;
+      println!("Finished sleeping!");
+      std::process::exit(0)
     }
     Execution::None(_) => unreachable!(),
   };

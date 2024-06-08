@@ -1,4 +1,4 @@
-use clap::Subcommand;
+use clap::{Parser, Subcommand};
 use derive_variants::EnumVariants;
 use resolver_api::HasResponse;
 use serde::{Deserialize, Serialize};
@@ -21,7 +21,7 @@ pub use server::*;
 pub use server_template::*;
 pub use sync::*;
 
-use crate::entities::NoData;
+use crate::entities::{NoData, I64};
 
 pub trait MonitorExecuteRequest: HasResponse {}
 
@@ -74,4 +74,14 @@ pub enum Execution {
 
   // SYNC
   RunSync(RunSync),
+
+  // SLEEP
+  Sleep(Sleep),
+}
+
+#[typeshare]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Parser)]
+pub struct Sleep {
+  #[serde(default)]
+  pub duration_ms: I64,
 }

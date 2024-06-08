@@ -386,7 +386,7 @@ async fn add_procedure(
         Execution::RunSync(exec) => exec.sync.clone_from(
           names.syncs.get(&exec.sync).unwrap_or(&String::new()),
         ),
-        Execution::None(_) => continue,
+        Execution::Sleep(_) | Execution::None(_) => {}
       }
     }
   }

@@ -687,7 +687,8 @@ export type Execution =
 	| { type: "PruneNetworks", params: PruneNetworks }
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "PruneContainers", params: PruneContainers }
-	| { type: "RunSync", params: RunSync };
+	| { type: "RunSync", params: RunSync }
+	| { type: "Sleep", params: Sleep };
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
 export interface EnabledExecution {
@@ -1768,6 +1769,10 @@ export interface RemoveContainer {
 	signal?: TerminationSignal;
 	/** Override the default termination max time. */
 	time?: number;
+}
+
+export interface Sleep {
+	duration_ms?: I64;
 }
 
 /** Runs the target procedure. Response: [Update] */

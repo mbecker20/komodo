@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use anyhow::{anyhow, Context, Ok};
 use futures::future::join_all;
@@ -247,6 +247,16 @@ async fn execute_execution(
         .resolve(req, (user, update))
         .await
         .context("failed at RunSync")?
+    }
+    Execution::Sleep(req) => {
+      tokio::time::sleep(Duration::from_millis(
+        req.duration_ms as u64,
+      ))
+      .await;
+      Update {
+        success: true,
+        ..Default::default()
+      }
     }
   };
   if update.success {

@@ -299,6 +299,7 @@ impl ResourceSync for Procedure {
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
+          Execution::Sleep(_) => {}
         }
       }
     }

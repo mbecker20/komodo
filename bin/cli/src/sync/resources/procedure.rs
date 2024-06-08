@@ -184,7 +184,7 @@ impl ResourceSync for Procedure {
     for stage in &mut original.stages {
       for execution in &mut stage.executions {
         match &mut execution.execution {
-          Execution::None(_) => {}
+          Execution::None(_) | Execution::Sleep(_) => {}
           Execution::RunProcedure(config) => {
             config.procedure = id_to_procedure()
               .get(&config.procedure)

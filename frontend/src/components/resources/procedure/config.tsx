@@ -4,7 +4,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Card, CardHeader } from "@ui/card";
 import { Input } from "@ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CopyGithubWebhook, ResourceSelector } from "../common";
 import { ConfigLayout } from "@components/config";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
@@ -41,6 +41,7 @@ import {
 } from "@ui/dropdown-menu";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { filterBySplit } from "@lib/utils";
+import { useToast } from "@ui/use-toast";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
   const procedure = useRead("GetProcedure", { procedure: id }).data;
@@ -486,8 +487,7 @@ const default_enabled_execution: () => Types.EnabledExecution = () => ({
   },
 });
 
-const EXECUTION_TYPES = [
-  "RunProcedure",
+const EXECUTION_TYPES: Types.Execution["type"][] = [
   "RunBuild",
   "Deploy",
   "StartContainer",
@@ -496,6 +496,9 @@ const EXECUTION_TYPES = [
   "RemoveContainer",
   "CloneRepo",
   "PullRepo",
+  "RunProcedure",
+  "RunSync",
+  "Sleep",
 ];
 
 const ExecutionTypeSelector = ({
@@ -528,7 +531,7 @@ const ExecutionTypeSelector = ({
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty className="flex justify-evenly items-center">
+            <CommandEmpty className="flex justify-evenly items-center pt-2">
               Empty.
               <SearchX className="w-3 h-3" />
             </CommandEmpty>
@@ -723,5 +726,36 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         disabled={disabled}
       />
     ),
+  },
+  Sleep: {
+    params: { duration_ms: 0 },
+    Component: ({ params, setParams, disabled }) => {
+      const { toast } = useToast();
+      const [internal, setInternal] = useState(
+        params.duration_ms?.toString() ?? ""
+      );
+      useEffect(() => {
+        setInternal(params.duration_ms?.toString() ?? "");
+      }, [params.duration_ms]);
+      return (
+        <Input
+          placeholder="Duration in milliseconds"
+          value={internal}
+          onChange={(e) => setInternal(e.target.value)}
+          onBlur={() => {
+            const duration_ms = Number(internal);
+            if (duration_ms) {
+              setParams({ duration_ms });
+            } else {
+              toast({
+                title: "Duration must be valid number",
+                variant: "destructive",
+              });
+            }
+          }}
+          disabled={disabled}
+        />
+      );
+    },
   },
 };
