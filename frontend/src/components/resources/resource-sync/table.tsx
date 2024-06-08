@@ -22,6 +22,21 @@ export const ResourceSyncTable = ({
           cell: ({ row }) => (
             <ResourceLink type="ResourceSync" id={row.original.id} />
           ),
+          size: 200,
+        },
+        {
+          accessorKey: "info.repo",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Repo" />
+          ),
+          size: 200,
+        },
+        {
+          accessorKey: "info.branch",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Branch" />
+          ),
+          size: 200,
         },
         {
           accessorKey: "info.state",

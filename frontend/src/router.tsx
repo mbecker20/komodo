@@ -3,12 +3,9 @@ import { useUser } from "@lib/hooks";
 import { Login } from "@pages/login";
 import { Resource } from "@pages/resource";
 import { Resources } from "@pages/resources";
-import { Keys } from "@pages/keys";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/home/tree";
-import { Tags } from "@pages/tags";
 import { Updates } from "@pages/updates";
-import { UsersPage } from "@pages/users";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
@@ -16,7 +13,7 @@ import { ResourceStats } from "@pages/resource_stats";
 import { Alerts } from "@pages/alerts";
 import { UserPage } from "@pages/user";
 import { UserGroupPage } from "@pages/user-group";
-import { Variables } from "@pages/variables";
+import { Settings } from "@pages/settings";
 
 const ROUTER = createBrowserRouter([
   {
@@ -24,18 +21,19 @@ const ROUTER = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "", element: <Home /> },
-      { path: "keys", element: <Keys /> },
-      { path: "tags", element: <Tags /> },
+      { path: "settings", element: <Settings /> },
+      // { path: "keys", element: <Keys /> },
+      // { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },
       { path: "alerts", element: <Alerts /> },
       { path: "updates", element: <Updates /> },
-      { path: "variables", element: <Variables /> },
+      // { path: "variables", element: <Variables /> },
       { path: "resources", element: <AllResources /> },
       { path: "user-groups/:id", element: <UserGroupPage /> },
       {
         path: "users",
         children: [
-          { path: "", element: <UsersPage /> },
+          // { path: "", element: <UsersPage /> },
           { path: ":id", element: <UserPage /> },
         ],
       },

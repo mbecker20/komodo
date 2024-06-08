@@ -1,4 +1,3 @@
-import { Page } from "@components/layouts";
 import { ConfirmButton, CopyButton } from "@components/util";
 import { useInvalidate, useManageUser, useRead, useSetTitle } from "@lib/hooks";
 import {
@@ -11,7 +10,7 @@ import {
 } from "@ui/dialog";
 import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
-import { Trash, PlusCircle, Loader2, Check, Key } from "lucide-react";
+import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@ui/input";
 import {
@@ -26,22 +25,14 @@ import { KeysTable } from "@components/keys/table";
 export const Keys = () => {
   useSetTitle("Api Keys");
   const keys = useRead("ListApiKeys", {}).data ?? [];
-  return (
-    <Page
-      title="Api Keys"
-      icon={<Key className="w-8 h-8" />}
-      actions={<CreateKey />}
-    >
-      <KeysTable keys={keys} DeleteKey={DeleteKey} />
-    </Page>
-  );
+  return <KeysTable keys={keys} DeleteKey={DeleteKey} />;
 };
 
 const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 type ExpiresOptions = "90 days" | "180 days" | "1 year" | "never";
 
-const CreateKey = () => {
+export const CreateKey = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [expires, setExpires] = useState<ExpiresOptions>("never");

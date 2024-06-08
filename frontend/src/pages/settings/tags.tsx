@@ -1,4 +1,3 @@
-import { Page } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useInvalidate, useRead, useSetTitle, useWrite } from "@lib/hooks";
 import {
@@ -12,7 +11,7 @@ import {
 import { Button } from "@ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 import { useToast } from "@ui/use-toast";
-import { Trash, PlusCircle, Loader2, Check, Tag } from "lucide-react";
+import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@ui/input";
 import { UpdateUser } from "@components/updates/details";
@@ -26,43 +25,37 @@ export const Tags = () => {
   const tags = useRead("ListTags", {}).data;
 
   return (
-    <Page
-      title="Tags"
-      icon={<Tag className="w-8 h-8" />}
-      actions={<CreateTag />}
-    >
-      <div className="flex flex-col gap-4">
-        <Input
-          placeholder="search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-[200px] lg:w-[300px]"
-        />
-        <DataTable
-          tableKey="tags"
-          data={tags?.filter((tag) => tag.name.includes(search)) ?? []}
-          columns={[
-            {
-              header: "Name",
-              accessorKey: "name",
-            },
-            {
-              header: "Owner",
-              cell: ({ row }) =>
-                row.original.owner ? (
-                  <UpdateUser user_id={row.original.owner} />
-                ) : (
-                  "Unknown"
-                ),
-            },
-            {
-              header: "Delete",
-              cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
-            },
-          ]}
-        />
-      </div>
-    </Page>
+    <div className="flex flex-col gap-4">
+      <Input
+        placeholder="search..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-[200px] lg:w-[300px]"
+      />
+      <DataTable
+        tableKey="tags"
+        data={tags?.filter((tag) => tag.name.includes(search)) ?? []}
+        columns={[
+          {
+            header: "Name",
+            accessorKey: "name",
+          },
+          {
+            header: "Owner",
+            cell: ({ row }) =>
+              row.original.owner ? (
+                <UpdateUser user_id={row.original.owner} />
+              ) : (
+                "Unknown"
+              ),
+          },
+          {
+            header: "Delete",
+            cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
+          },
+        ]}
+      />
+    </div>
   );
 };
 
@@ -92,7 +85,7 @@ export const TagCards = () => {
   );
 };
 
-const CreateTag = () => {
+export const CreateTag = () => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -117,7 +110,7 @@ const CreateTag = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="items-center gap-2">
+        <Button variant="secondary" className="items-center gap-2">
           New Tag <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>

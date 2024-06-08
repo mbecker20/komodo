@@ -1,4 +1,3 @@
-import { Page } from "@components/layouts";
 import { ConfirmButton, TextUpdateMenu } from "@components/util";
 import {
   useInvalidate,
@@ -20,7 +19,7 @@ import {
 } from "@ui/dialog";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
-import { Check, Loader2, PlusCircle, Trash, Variable } from "lucide-react";
+import { Check, Loader2, PlusCircle, Trash } from "lucide-react";
 import { useState } from "react";
 
 export const Variables = () => {
@@ -51,101 +50,95 @@ export const Variables = () => {
     },
   });
   return (
-    <Page
-      title="Variables"
-      icon={<Variable className="w-8 h-8" />}
-      actions={<CreateVariable />}
-    >
-      <div className="flex flex-col gap-4">
-        <Input
-          placeholder="search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-[200px] lg:w-[300px]"
-        />
+    <div className="flex flex-col gap-4">
+      <Input
+        placeholder="search..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-[200px] lg:w-[300px]"
+      />
 
-        {/** VARIABLES */}
-        <DataTable
-          tableKey="variables"
-          data={filtered}
-          columns={[
-            {
-              accessorKey: "name",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="Name" />
-              ),
+      {/** VARIABLES */}
+      <DataTable
+        tableKey="variables"
+        data={filtered}
+        columns={[
+          {
+            accessorKey: "name",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Name" />
+            ),
+          },
+          {
+            accessorKey: "value",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Value" />
+            ),
+            cell: ({ row }) => {
+              return (
+                <TextUpdateMenu
+                  title={`${row.original.name} - Value`}
+                  placeholder="Set value"
+                  value={row.original.value}
+                  onUpdate={(value) => {
+                    if (row.original.value === value) {
+                      return;
+                    }
+                    updateValue({ name: row.original.name, value });
+                  }}
+                  triggerClassName="w-full"
+                  disabled={disabled}
+                  fullWidth
+                />
+              );
             },
-            {
-              accessorKey: "value",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="Value" />
-              ),
-              cell: ({ row }) => {
-                return (
-                  <TextUpdateMenu
-                    title={`${row.original.name} - Value`}
-                    placeholder="Set value"
-                    value={row.original.value}
-                    onUpdate={(value) => {
-                      if (row.original.value === value) {
-                        return;
-                      }
-                      updateValue({ name: row.original.name, value });
-                    }}
-                    triggerClassName="w-full"
-                    disabled={disabled}
-                    fullWidth
-                  />
-                );
-              },
+          },
+          {
+            accessorKey: "description",
+            header: "Description",
+            cell: ({ row }) => {
+              return (
+                <TextUpdateMenu
+                  title={`${row.original.name} - Description`}
+                  placeholder="Set description"
+                  value={row.original.description}
+                  onUpdate={(description) => {
+                    if (row.original.description === description) {
+                      return;
+                    }
+                    updateDescription({
+                      name: row.original.name,
+                      description,
+                    });
+                  }}
+                  triggerClassName="w-full"
+                  disabled={disabled}
+                  fullWidth
+                />
+              );
             },
-            {
-              accessorKey: "description",
-              header: "Description",
-              cell: ({ row }) => {
-                return (
-                  <TextUpdateMenu
-                    title={`${row.original.name} - Description`}
-                    placeholder="Set description"
-                    value={row.original.description}
-                    onUpdate={(description) => {
-                      if (row.original.description === description) {
-                        return;
-                      }
-                      updateDescription({
-                        name: row.original.name,
-                        description,
-                      });
-                    }}
-                    triggerClassName="w-full"
-                    disabled={disabled}
-                    fullWidth
-                  />
-                );
-              },
-            },
-            {
-              header: "Delete",
-              cell: ({ row }) => <DeleteVariable name={row.original.name} />,
-            },
-          ]}
-        />
+          },
+          {
+            header: "Delete",
+            cell: ({ row }) => <DeleteVariable name={row.original.name} />,
+          },
+        ]}
+      />
 
-        {/** SECRETS */}
-        {secrets.length && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div>Core Secrets:</div>
-            {secrets.map((secret) => (
-              <Badge variant="secondary">{secret}</Badge>
-            ))}
-          </div>
-        )}
-      </div>
-    </Page>
+      {/** SECRETS */}
+      {secrets.length && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <div>Core Secrets:</div>
+          {secrets.map((secret) => (
+            <Badge variant="secondary">{secret}</Badge>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
-const CreateVariable = () => {
+export const CreateVariable = () => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -170,7 +163,7 @@ const CreateVariable = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="items-center gap-2">
+        <Button variant="secondary" className="items-center gap-2">
           New Variable <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>

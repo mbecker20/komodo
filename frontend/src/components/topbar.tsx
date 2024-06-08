@@ -1,4 +1,4 @@
-import { useRead, useResourceParamType, useUser } from "@lib/hooks";
+import { useRead, useResourceParamType } from "@lib/hooks";
 import { ResourceComponents } from "./resources";
 import {
   AlertTriangle,
@@ -8,12 +8,10 @@ import {
   FileQuestion,
   FolderTree,
   Home,
-  Key,
   SearchX,
-  Tag,
+  Settings,
   User,
   Users,
-  Variable,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -117,8 +115,6 @@ export const Topbar = () => {
 };
 
 const PrimaryDropdown = () => {
-  const user = useUser().data;
-
   const type = useResourceParamType();
   const Components = type && ResourceComponents[type];
 
@@ -133,20 +129,15 @@ const PrimaryDropdown = () => {
       ]
     : location.pathname === "/"
     ? [<Home className="w-4 h-4" />, "Home"]
-    : location.pathname === "/keys"
-    ? [<Key className="w-4 h-4" />, "Api Keys"]
-    : location.pathname === "/tags"
-    ? [<Tag className="w-4 h-4" />, "Tags"]
-    : location.pathname === "/variables"
-    ? [<Variable className="w-4 h-4" />, "Variables"]
+    : location.pathname === "/settings"
+    ? [<Settings className="w-4 h-4" />, "Settings"]
     : location.pathname === "/alerts"
     ? [<AlertTriangle className="w-4 h-4" />, "Alerts"]
     : location.pathname === "/updates"
     ? [<Bell className="w-4 h-4" />, "Updates"]
     : location.pathname.split("/")[1] === "user-groups"
     ? [<Users className="w-4 h-4" />, "User Groups"]
-    : location.pathname === "/users" ||
-      location.pathname.split("/")[1] === "users"
+    : location.pathname.split("/")[1] === "users"
     ? [<User className="w-4 h-4" />, "Users"]
     : [<FileQuestion className="w-4 h-4" />, "Unknown"];
   // : [<Box className="w-4 h-4" />, "Dashboard"];
@@ -199,32 +190,12 @@ const PrimaryDropdown = () => {
             to="/updates"
           />
 
-          <DropdownLinkItem
-            label="Variables"
-            icon={<Variable className="w-4 h-4" />}
-            to="/variables"
-          />
-
-          <DropdownLinkItem
-            label="Tags"
-            icon={<Tag className="w-4 h-4" />}
-            to="/tags"
-          />
-
           <DropdownMenuSeparator />
 
-          {user?.admin && (
-            <DropdownLinkItem
-              label="Users"
-              icon={<User className="w-4 h-4" />}
-              to="/users"
-            />
-          )}
-
           <DropdownLinkItem
-            label="Api Keys"
-            icon={<Box className="w-4 h-4" />}
-            to="/keys"
+            label="Settings"
+            icon={<Settings className="w-4 h-4" />}
+            to="/settings"
           />
         </DropdownMenuGroup>
       </DropdownMenuContent>

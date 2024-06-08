@@ -7,10 +7,7 @@ import {
   Box,
   Boxes,
   FolderTree,
-  Key,
-  Tag,
-  User,
-  Variable,
+  Settings,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { ResourceComponents } from "./resources";
@@ -18,14 +15,12 @@ import { Separator } from "@ui/separator";
 import { ReactNode } from "react";
 import { useAtom } from "jotai";
 import { homeViewAtom } from "@main";
-import { useUser } from "@lib/hooks";
 
 export const Sidebar = () => {
-  const user = useUser().data;
   const [view, setView] = useAtom(homeViewAtom);
   return (
     <Card className="h-fit m-4 hidden lg:flex">
-      <CardContent className="h-fit grid gap-[2px] px-6 py-2">
+      <CardContent className="h-fit grid gap-[4px] px-6 py-2">
         <SidebarLink
           label="Dashboard"
           to="/"
@@ -82,32 +77,12 @@ export const Sidebar = () => {
           icon={<Bell className="w-4 h-4" />}
         />
 
-        <SidebarLink
-          label="Variables"
-          to="/variables"
-          icon={<Variable className="w-4 h-4" />}
-        />
-
-        <SidebarLink
-          label="Tags"
-          to="/tags"
-          icon={<Tag className="w-4 h-4" />}
-        />
-
         <Separator />
 
-        {user?.admin && (
-          <SidebarLink
-            label="Users"
-            to="/users"
-            icon={<User className="w-4 h-4" />}
-          />
-        )}
-
         <SidebarLink
-          label="Api Keys"
-          to="/keys"
-          icon={<Key className="w-4 h-4" />}
+          label="Settings"
+          to="/settings"
+          icon={<Settings className="w-4 h-4" />}
         />
       </CardContent>
     </Card>

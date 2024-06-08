@@ -1,33 +1,19 @@
-import { Page, Section } from "@components/layouts";
+import { Section } from "@components/layouts";
 import { NewServiceUser, NewUserGroup } from "@components/users/new";
 import { UserTable } from "@components/users/table";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
-import { Input } from "@ui/input";
 import { User, Users } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export const UsersPage = () => {
+export const UsersPage = ({ search }: { search: string }) => {
   useSetTitle("Users");
   const nav = useNavigate();
   const groups = useRead("ListUserGroups", {}).data;
   const users = useRead("ListUsers", {}).data;
-  const [search, setSearch] = useState("");
   const searchSplit = search.split(" ");
   return (
-    <Page
-      title="Users"
-      icon={<User className="w-8 h-8" />}
-      actions={
-        <Input
-          placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-[250px]"
-        />
-      }
-    >
+    <div className="flex flex-col gap-6">
       {/* User Groups */}
       <Section
         title="User Groups"
@@ -66,6 +52,6 @@ export const UsersPage = () => {
           }
         />
       </Section>
-    </Page>
+    </div>
   );
 };

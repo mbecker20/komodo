@@ -54,9 +54,13 @@ export const PendingOrConfig = ({ id }: { id: string }) => {
         <Section titleOther={tabsList}>
           {pending?.hash && pending.message && (
             <Card>
-              <CardHeader className="flex items-center gap-4 text-muted-foreground">
-                Commit: {pending.hash}: {pending.message}
-              </CardHeader>
+              <div className="flex items-center gap-4 px-8 py-4">
+                <div className="text-muted-foreground">Latest Commit</div>
+                <div className="text-muted-foreground">|</div>
+                <div>{pending.hash}</div>
+                <div className="text-muted-foreground">|</div>
+                <div>{pending.message}</div>
+              </div>
             </Card>
           )}
           {pending?.data.type === "Ok" &&
@@ -103,25 +107,28 @@ const PendingView = ({
         <div className="flex gap-4 items-center m-0">
           {pending.to_create ? (
             <>
-              |
+              <div className="text-muted-foreground">|</div>
               <div className="flex gap-2 items-center">
-                To Create: {pending.to_create}
+                <div className="text-muted-foreground">To Create:</div>
+                <div>{pending.to_create}</div>
               </div>
             </>
           ) : undefined}
           {pending.to_update ? (
             <>
-              |
+              <div className="text-muted-foreground">|</div>
               <div className="flex gap-2 items-center">
-                To Update: {pending.to_update}
+                <div className="text-muted-foreground">To Update:</div>
+                <div>{pending.to_update}</div>
               </div>
             </>
           ) : undefined}
           {pending.to_delete ? (
             <>
-              |
+              <div className="text-muted-foreground">|</div>
               <div className="flex gap-2 items-center">
-                To Delete: {pending.to_delete}
+                <div className="text-muted-foreground">To Delete:</div>
+                <div>{pending.to_delete}</div>
               </div>
             </>
           ) : undefined}
