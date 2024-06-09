@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 pub mod build;
-pub mod resource;
 pub mod deployment;
+pub mod resource;
 
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, PartialEq,
@@ -29,4 +29,15 @@ pub struct SystemCommand {
 pub struct EnvironmentVar {
   pub variable: String,
   pub value: String,
+}
+
+impl From<EnvironmentVar>
+  for monitor_client::entities::EnvironmentVar
+{
+  fn from(value: EnvironmentVar) -> Self {
+    monitor_client::entities::EnvironmentVar {
+      variable: value.variable,
+      value: value.value,
+    }
+  }
 }

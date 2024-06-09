@@ -1,3 +1,7 @@
+use monitor_client::entities::{
+  build::{CloudRegistryConfig, ImageRegistry},
+  NoData,
+};
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -6,31 +10,20 @@ use super::{
 
 pub type Build = Resource<BuildConfig, BuildInfo>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BuildListItemInfo {
-  /// Unix timestamp in milliseconds of last build
-  pub last_built_at: i64,
-  /// The current version of the build
-  pub version: Version,
-  /// The Github repo used as the source of the build
-  pub repo: String,
-  /// The branch of the repo
-  pub branch: String,
-  /// State of the build. Reflects whether most recent build successful.
-  pub state: BuildState,
-}
-
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
-pub enum BuildState {
-  /// Last build successful (or never built)
-  Ok,
-  /// Last build failed
-  Failed,
-  /// Currently building
-  Building,
-  /// Other case
-  #[default]
-  Unknown,
+impl From<Build> for monitor_client::entities::build::Build {
+  fn from(value: Build) -> Self {
+    monitor_client::entities::build::Build {
+      id: value.id,
+      name: value.name,
+      description: value.description,
+      updated_at: value.updated_at,
+      tags: value.tags,
+      info: monitor_client::entities::build::BuildInfo {
+        last_built_at: value.info.last_built_at,
+      },
+      config: value.config.into(),
+    }
+  }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -112,6 +105,49 @@ pub struct BuildConfig {
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
   pub webhook_enabled: bool,
+}
+
+impl From<BuildConfig>
+  for monitor_client::entities::build::BuildConfig
+{
+  fn from(value: BuildConfig) -> Self {
+    monitor_client::entities::build::BuildConfig {
+      builder_id: value.builder_id,
+      skip_secret_interp: value.skip_secret_interp,
+      version: monitor_client::entities::Version {
+        major: value.version.major,
+        minor: value.version.minor,
+        patch: value.version.patch,
+      },
+      repo: value.repo,
+      branch: value.branch,
+      commit: value.commit,
+      github_account: value.github_account,
+      pre_build: monitor_client::entities::SystemCommand {
+        path: value.pre_build.path,
+        command: value.pre_build.command,
+      },
+      build_path: value.build_path,
+      dockerfile_path: value.dockerfile_path,
+      build_args: value
+        .build_args
+        .into_iter()
+        .map(Into::into)
+        .collect(),
+      labels: value.labels.into_iter().map(Into::into).collect(),
+      extra_args: value.extra_args,
+      use_buildx: value.use_buildx,
+      image_registry: if value.docker_account.is_empty() {
+        ImageRegistry::None(NoData {})
+      } else {
+        ImageRegistry::DockerHub(CloudRegistryConfig {
+          account: value.docker_account,
+          organization: value.docker_organization,
+        })
+      },
+      webhook_enabled: value.webhook_enabled,
+    }
+  }
 }
 
 fn default_branch() -> String {
