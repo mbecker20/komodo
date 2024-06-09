@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod build;
 pub mod resource;
+pub mod deployment;
 
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, PartialEq,

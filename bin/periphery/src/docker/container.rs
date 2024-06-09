@@ -5,14 +5,14 @@ use monitor_client::entities::{
     Conversion, Deployment, DeploymentConfig, DeploymentImage,
     DockerContainerStats, RestartMode, TerminationSignal,
   },
-  optional_string, to_monitor_name,
+  to_monitor_name,
   update::Log,
   EnvironmentVar, SearchCombinator,
 };
 use run_command::async_run_command;
 use serror::serialize_error_pretty;
 
-use crate::{config::periphery_config, helpers::get_docker_token};
+use crate::config::periphery_config;
 
 use super::{docker_login, parse_extra_args, parse_labels};
 
@@ -173,34 +173,26 @@ async fn pull_image(image: &str) -> Log {
   run_monitor_command("docker pull", command).await
 }
 
-#[instrument(skip(docker_token, core_replacers))]
+#[instrument(skip(registry_token, core_replacers))]
 pub async fn deploy(
   deployment: &Deployment,
   stop_signal: Option<TerminationSignal>,
   stop_time: Option<i32>,
-  docker_token: Option<String>,
+  registry_token: Option<String>,
   core_replacers: Vec<(String, String)>,
 ) -> Log {
-  let docker_token = match (
-    docker_token,
-    get_docker_token(&optional_string(
-      &deployment.config.docker_account,
-    )),
-  ) {
-    (Some(token), _) => Some(token),
-    (None, Ok(token)) => token,
-    (None, Err(e)) => {
-      return Log::error("docker login", serialize_error_pretty(&e))
-    }
-  };
-
   if let Err(e) = docker_login(
-    &optional_string(&deployment.config.docker_account),
-    &docker_token,
+    &deployment.config.image_registry,
+    registry_token.as_deref(),
   )
   .await
   {
-    return Log::error("docker login", serialize_error_pretty(&e));
+    return Log::error(
+      "docker login",
+      serialize_error_pretty(
+        &e.context("failed to login to docker registry"),
+      ),
+    );
   }
 
   let image = if let DeploymentImage::Image { image } =

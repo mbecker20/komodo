@@ -2,13 +2,13 @@ use anyhow::Context;
 use command::run_monitor_command;
 use monitor_client::entities::{
   build::{Build, BuildConfig},
-  optional_string, to_monitor_name,
+  get_image_name, optional_string, to_monitor_name,
   update::Log,
   EnvironmentVar, Version,
 };
 use serror::serialize_error_pretty;
 
-use crate::{config::periphery_config, helpers::get_docker_token};
+use crate::config::periphery_config;
 
 use super::{docker_login, parse_extra_args, parse_labels};
 
@@ -18,15 +18,17 @@ pub async fn prune_images() -> Log {
   run_monitor_command("prune images", command).await
 }
 
-#[instrument(skip(docker_token, core_replacers))]
+#[instrument(skip(registry_token, core_replacers))]
 pub async fn build(
-  Build {
+  build: &Build,
+  registry_token: Option<String>,
+  core_replacers: Vec<(String, String)>,
+) -> anyhow::Result<Vec<Log>> {
+  let Build {
     name,
     config:
       BuildConfig {
         version,
-        docker_account,
-        docker_organization,
         skip_secret_interp,
         build_path,
         dockerfile_path,
@@ -34,61 +36,66 @@ pub async fn build(
         labels,
         extra_args,
         use_buildx,
+        image_registry,
         ..
       },
     ..
-  }: &Build,
-  docker_token: Option<String>,
-  core_replacers: Vec<(String, String)>,
-) -> anyhow::Result<Vec<Log>> {
+  } = build;
+
   let mut logs = Vec::new();
-  let docker_token = match (
-    docker_token,
-    get_docker_token(&optional_string(docker_account)),
-  ) {
-    (Some(docker_token), _) => Some(docker_token),
-    (None, Ok(docker_token)) => docker_token,
-    (None, Err(e)) => {
-      logs.push(Log::error("build", serialize_error_pretty(&e)));
+
+  // Maybe docker login
+  let should_push = match docker_login(
+    image_registry,
+    registry_token.as_deref(),
+  )
+  .await
+  {
+    Ok(should_push) => should_push,
+    Err(e) => {
+      logs.push(Log::error(
+        "docker login",
+        serialize_error_pretty(
+          &e.context("failed to login to docker registry"),
+        ),
+      ));
       return Ok(logs);
     }
   };
+
+  // Get paths
   let name = to_monitor_name(name);
-  let using_account =
-    docker_login(&optional_string(docker_account), &docker_token)
-      .await
-      .context("failed to login to docker")?;
   let build_dir =
     periphery_config().repo_dir.join(&name).join(build_path);
   let dockerfile_path = match optional_string(dockerfile_path) {
     Some(dockerfile_path) => dockerfile_path.to_owned(),
     None => "Dockerfile".to_owned(),
   };
+
+  // Get command parts
   let build_args = parse_build_args(build_args);
   let labels = parse_labels(labels);
   let extra_args = parse_extra_args(extra_args);
   let buildx = if *use_buildx { " buildx" } else { "" };
-  let image_name = get_image_name(
-    &name,
-    &optional_string(docker_account),
-    &optional_string(docker_organization),
-  );
+  let image_name = get_image_name(build);
   let image_tags = image_tags(&image_name, version);
-  let docker_push = if using_account {
-    format!(" && docker image push --all-tags {image_name}")
-  } else {
-    String::new()
-  };
+  let push_command = should_push
+    .then(|| format!(" && docker image push --all-tags {image_name}"))
+    .unwrap_or_default();
+
+  // Construct command
   let command = format!(
-    "cd {} && docker{buildx} build{build_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{docker_push}",
+    "cd {} && docker{buildx} build{build_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
     build_dir.display()
   );
+
   if *skip_secret_interp {
     let build_log =
       run_monitor_command("docker build", command).await;
     info!("finished building docker image");
     logs.push(build_log);
   } else {
+    // Interpolate any missing secrets
     let (command, mut replacers) = svi::interpolate_variables(
       &command,
       &periphery_config().secrets,
@@ -110,23 +117,8 @@ pub async fn build(
       svi::replace_in_string(&build_log.stderr, &replacers);
     logs.push(build_log);
   }
-  Ok(logs)
-}
 
-fn get_image_name(
-  name: &str,
-  docker_account: &Option<String>,
-  docker_organization: &Option<String>,
-) -> String {
-  match docker_organization {
-    Some(docker_org) => format!("{docker_org}/{name}"),
-    None => match docker_account {
-      Some(docker_account) => {
-        format!("{docker_account}/{name}")
-      }
-      None => name.to_string(),
-    },
-  }
+  Ok(logs)
 }
 
 fn image_tags(image_name: &str, version: &Version) -> String {

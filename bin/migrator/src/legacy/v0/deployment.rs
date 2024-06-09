@@ -1,3 +1,7 @@
+use monitor_client::entities::{
+  build::{CloudRegistryConfig, ImageRegistry},
+  NoData,
+};
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
@@ -374,10 +378,15 @@ impl TryFrom<Deployment>
             .post_image
             .unwrap_or_default(),
           extra_args: value.docker_run_args.extra_args,
-          docker_account: value
-            .docker_run_args
-            .docker_account
-            .unwrap_or_default(),
+          image_registry: match value.docker_run_args.docker_account {
+            Some(account) => {
+              ImageRegistry::DockerHub(CloudRegistryConfig {
+                account,
+                ..Default::default()
+              })
+            }
+            None => ImageRegistry::None(NoData {}),
+          },
           labels: Default::default(),
         },
     };

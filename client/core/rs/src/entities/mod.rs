@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
+use build::CloudRegistryConfig;
 use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use serde::{
@@ -105,22 +106,44 @@ pub fn optional_string(string: &str) -> Option<String> {
 pub fn get_image_name(
   build::Build {
     name,
-    config:
-      build::BuildConfig {
-        docker_organization,
-        docker_account,
-        ..
-      },
+    config: build::BuildConfig { image_registry, .. },
     ..
   }: &build::Build,
 ) -> String {
   let name = to_monitor_name(name);
-  if !docker_organization.is_empty() {
-    format!("{docker_organization}/{name}")
-  } else if !docker_account.is_empty() {
-    format!("{docker_account}/{name}")
-  } else {
-    name
+  match image_registry {
+    // TODO
+    build::ImageRegistry::None(_) => name,
+    build::ImageRegistry::DockerHub(CloudRegistryConfig {
+      organization,
+      account,
+    }) => {
+      if !organization.is_empty() {
+        format!("{organization}/{name}")
+      } else if !account.is_empty() {
+        format!("{account}/{name}")
+      } else {
+        name
+      }
+    }
+    build::ImageRegistry::GithubContainerRegistry(
+      CloudRegistryConfig {
+        organization,
+        account,
+      },
+    ) => {
+      if !organization.is_empty() {
+        format!("ghcr.io/{organization}/{name}")
+      } else if !account.is_empty() {
+        format!("ghcr.io/{account}/{name}")
+      } else {
+        name
+      }
+    }
+    build::ImageRegistry::Custom(_) => {
+      // TODO
+      name
+    }
   }
 }
 

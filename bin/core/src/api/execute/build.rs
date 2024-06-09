@@ -8,7 +8,7 @@ use monitor_client::{
   },
   entities::{
     all_logs_success,
-    build::Build,
+    build::{Build, CloudRegistryConfig, ImageRegistry},
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
     deployment::DeploymentState,
     monitor_timestamp,
@@ -71,6 +71,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
       PermissionLevel::Execute,
     )
     .await?;
+
+    let registry_token =
+      validate_account_extract_registry_token(&build)?;
 
     // get the action state for the build (or insert default).
     let action_state =
@@ -181,11 +184,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     if all_logs_success(&update.logs) {
-      let docker_token = core_config
-        .docker_accounts
-        .get(&build.config.docker_account)
-        .cloned();
-
       // Interpolate variables / secrets into build args
       let mut global_replacers = HashSet::new();
       let mut secret_replacers = HashSet::new();
@@ -237,7 +235,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
         res = periphery
           .request(api::build::Build {
             build: build.clone(),
-            docker_token,
+            registry_token,
             replacers: secret_replacers.into_iter().collect(),
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
@@ -282,6 +280,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
         .await;
     }
 
+    // stop the cancel listening task from going forever
     cancel.cancel();
 
     cleanup_builder_instance(periphery, cleanup_data, &mut update)
@@ -674,4 +673,36 @@ fn start_aws_builder_log(
   let readable_sec_group_ids = security_group_ids.join(", ");
 
   format!("instance id: {instance_id}\nip: {ip}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}\nassign public ip: {assign_public_ip}\nuse public ip: {use_public_ip}")
+}
+
+/// This will make sure that a build with non-none image registry has an account attached,
+/// and will check the core config for a token matching requirements (otherwise it is left to periphery)
+fn validate_account_extract_registry_token(
+  build: &Build,
+) -> anyhow::Result<Option<String>> {
+  match &build.config.image_registry {
+    ImageRegistry::None(_) => Ok(None),
+    ImageRegistry::DockerHub(CloudRegistryConfig {
+      account, ..
+    }) => {
+      if account.is_empty() {
+        return Err(anyhow!(
+          "Must attach account to use DockerHub image registry"
+        ));
+      }
+      Ok(core_config().docker_accounts.get(account).cloned())
+    }
+    ImageRegistry::GithubContainerRegistry(CloudRegistryConfig {
+      account,
+      ..
+    }) => {
+      if account.is_empty() {
+        return Err(anyhow!(
+          "Must attach account to use GithubContainerRegistry"
+        ));
+      }
+      Ok(core_config().github_accounts.get(account).cloned())
+    }
+    ImageRegistry::Custom(_) => todo!(),
+  }
 }

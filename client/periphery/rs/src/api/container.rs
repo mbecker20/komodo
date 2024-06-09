@@ -101,10 +101,10 @@ pub struct PruneContainers {}
 #[response(Log)]
 pub struct Deploy {
   pub deployment: Deployment,
-  /// Override docker token with one sent from core.
-  pub docker_token: Option<String>,
   pub stop_signal: Option<TerminationSignal>,
   pub stop_time: Option<i32>,
+  /// Override registry token with one sent from core.
+  pub registry_token: Option<String>,
   /// Propogate any secret replacers from core interpolation.
   pub replacers: Vec<(String, String)>,
 }

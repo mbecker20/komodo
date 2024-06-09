@@ -1,35 +1,21 @@
-use anyhow::anyhow;
+use anyhow::Context;
 
 use crate::config::periphery_config;
 
 pub fn get_github_token(
-  github_account: &Option<String>,
-) -> anyhow::Result<Option<String>> {
-  match github_account {
-    Some(account) => {
-      match periphery_config().github_accounts.get(account) {
-        Some(token) => Ok(Some(token.to_owned())),
-        None => Err(anyhow!(
-          "did not find token in config for github account {account}"
-        )),
-      }
-    }
-    None => Ok(None),
-  }
+  github_account: &String,
+) -> anyhow::Result<&'static String> {
+  periphery_config()
+    .github_accounts
+    .get(github_account)
+    .with_context(|| format!("did not find token in config for github account {github_account}"))
 }
 
 pub fn get_docker_token(
-  docker_account: &Option<String>,
-) -> anyhow::Result<Option<String>> {
-  match docker_account {
-    Some(account) => {
-      match periphery_config().docker_accounts.get(account) {
-        Some(token) => Ok(Some(token.to_owned())),
-        None => Err(anyhow!(
-          "did not find token in config for docker account {account}"
-        )),
-      }
-    }
-    None => Ok(None),
-  }
+  docker_account: &String,
+) -> anyhow::Result<&'static String> {
+  periphery_config()
+    .docker_accounts
+    .get(docker_account)
+    .with_context(|| format!("did not find token in config for docker account {docker_account}"))
 }

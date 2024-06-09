@@ -1,5 +1,7 @@
 use anyhow::{anyhow, Context};
-use monitor_client::entities::build::{BuildConfig, BuildInfo};
+use monitor_client::entities::build::{
+  BuildConfig, BuildInfo, CloudRegistryConfig, ImageRegistry,
+};
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
@@ -213,10 +215,14 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         repo: value.repo.unwrap_or_default(),
         branch: value.branch.unwrap_or_default(),
         github_account: value.github_account.unwrap_or_default(),
-        docker_account: value.docker_account.unwrap_or_default(),
-        docker_organization: value
-          .docker_organization
-          .unwrap_or_default(),
+        image_registry: ImageRegistry::DockerHub(
+          CloudRegistryConfig {
+            account: value.docker_account.unwrap_or_default(),
+            organization: value
+              .docker_organization
+              .unwrap_or_default(),
+          },
+        ),
         pre_build: value
           .pre_build
           .map(|command| monitor_client::entities::SystemCommand {

@@ -1,40 +1,65 @@
 use anyhow::anyhow;
 use command::run_monitor_command;
-use monitor_client::entities::{update::Log, EnvironmentVar};
+use monitor_client::entities::{
+  build::{CloudRegistryConfig, ImageRegistry},
+  update::Log,
+  EnvironmentVar,
+};
 use run_command::async_run_command;
+
+use crate::helpers::{get_docker_token, get_github_token};
 
 pub mod build;
 pub mod client;
 pub mod container;
 pub mod network;
 
-pub fn get_docker_username_pw(
-  docker_account: &Option<String>,
-  docker_token: &Option<String>,
-) -> anyhow::Result<Option<(String, String)>> {
-  match docker_account {
-    Some(docker_account) => match docker_token {
-      Some(docker_token) => Ok(Some((docker_account.to_owned(), docker_token.to_owned()))),
-      None => Err(anyhow!(
-        "docker token for account {docker_account} has not been configured on this client"
-      )),
-    },
-    None => Ok(None),
-  }
-}
-
+/// Returns whether build result should be pushed after build
 pub async fn docker_login(
-  docker_account: &Option<String>,
-  docker_token: &Option<String>,
+  registry: &ImageRegistry,
+  // For local token override from core.
+  registry_token: Option<&str>,
 ) -> anyhow::Result<bool> {
-  let docker_account_u_pw =
-    get_docker_username_pw(docker_account, docker_token)?;
-  if let Some((username, password)) = &docker_account_u_pw {
-    let login = format!("docker login -u {username} -p {password}");
-    async_run_command(&login).await;
-    Ok(true)
-  } else {
-    Ok(false)
+  match registry {
+    ImageRegistry::None(_) => Ok(false),
+    ImageRegistry::DockerHub(CloudRegistryConfig {
+      account, ..
+    }) => {
+      if account.is_empty() {
+        return Err(anyhow!(
+          "Must configure account for DockerHub registry"
+        ));
+      }
+      let registry_token = match registry_token {
+        Some(token) => token,
+        None => get_docker_token(account)?,
+      };
+      async_run_command(&format!(
+        "docker login -u {account} -p {registry_token}",
+      ))
+      .await;
+      Ok(true)
+    }
+    ImageRegistry::GithubContainerRegistry(CloudRegistryConfig {
+      account,
+      ..
+    }) => {
+      if account.is_empty() {
+        return Err(anyhow!(
+          "Must configure account for GithubContainerRegistry"
+        ));
+      }
+      let registry_token = match registry_token {
+        Some(token) => token,
+        None => get_github_token(account)?,
+      };
+      async_run_command(&format!(
+        "docker login ghcr.io -u {account} -p {registry_token}",
+      ))
+      .await;
+      Ok(true)
+    }
+    ImageRegistry::Custom(_) => todo!(),
   }
 }
 

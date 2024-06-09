@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use monitor_client::entities::{
   to_monitor_name, update::Log, CloneArgs, LatestCommit,
 };
@@ -35,12 +35,17 @@ impl Resolve<CloneRepo> for State {
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
     let CloneArgs { github_account, .. } = &args;
-    let github_token =
-      match (github_token, get_github_token(github_account)) {
-        (Some(token), _) => Some(token),
-        (None, Ok(token)) => token,
-        (None, Err(e)) => return Err(e),
-      };
+    let github_token = match (github_account, github_token) {
+      (None, _) => None,
+      (Some(_), Some(token)) => Some(token),
+      (Some(account), None) => Some(
+        get_github_token(account)
+          .context(
+            "failed to get github token from periphery config",
+          )?
+          .clone(),
+      ),
+    };
     git::clone(args, &periphery_config().repo_dir, github_token).await
   }
 }

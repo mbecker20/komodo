@@ -17,12 +17,12 @@ impl Resolve<Build> for State {
     &self,
     Build {
       build,
-      docker_token,
+      registry_token,
       replacers,
     }: Build,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    docker::build::build(&build, docker_token, replacers).await
+    docker::build::build(&build, registry_token, replacers).await
   }
 }
 

@@ -10,7 +10,7 @@ use crate::entities::I64;
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
-  EnvironmentVar, SystemCommand, Version,
+  EnvironmentVar, NoData, SystemCommand, Version,
 };
 
 #[typeshare]
@@ -103,18 +103,6 @@ pub struct BuildConfig {
   #[builder(default)]
   pub github_account: String,
 
-  /// The dockerhub account used to push the image to dockerhub.
-  /// Empty string means no dockerhub push (server local build).
-  #[serde(default)]
-  #[builder(default)]
-  pub docker_account: String,
-
-  /// The docker organization which the image should be pushed under.
-  /// Empty string means no organization.
-  #[serde(default)]
-  #[builder(default)]
-  pub docker_organization: String,
-
   /// The optional command run after repo clone and before docker build.
   #[serde(default)]
   #[builder(default)]
@@ -152,6 +140,11 @@ pub struct BuildConfig {
   #[serde(default)]
   #[builder(default)]
   pub use_buildx: bool,
+
+  /// Configuration for the registry to push the built image to.
+  #[serde(default)]
+  #[builder(default)]
+  pub image_registry: ImageRegistry,
 
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
@@ -192,8 +185,6 @@ impl Default for BuildConfig {
       branch: default_branch(),
       commit: Default::default(),
       github_account: Default::default(),
-      docker_account: Default::default(),
-      docker_organization: Default::default(),
       pre_build: Default::default(),
       build_path: default_build_path(),
       dockerfile_path: default_dockerfile_path(),
@@ -201,9 +192,46 @@ impl Default for BuildConfig {
       labels: Default::default(),
       extra_args: Default::default(),
       use_buildx: Default::default(),
+      image_registry: Default::default(),
       webhook_enabled: default_webhook_enabled(),
     }
   }
+}
+
+/// Configuration for the registry to push the built image to.
+#[typeshare]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum ImageRegistry {
+  /// Don't push the image to any registry
+  None(NoData),
+  /// Push the image to DockerHub
+  DockerHub(CloudRegistryConfig),
+  /// Push the image to the Github Container Registry
+  GithubContainerRegistry(CloudRegistryConfig),
+  /// Todo. Will point to a custom "Registry" resource by id
+  Custom(String),
+}
+
+impl Default for ImageRegistry {
+  fn default() -> Self {
+    Self::None(NoData {})
+  }
+}
+
+/// Configuration for a cloud image registry, like account and organization.
+#[typeshare]
+#[derive(
+  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
+pub struct CloudRegistryConfig {
+  /// Specify an account to use with the cloud registry.
+  #[serde(default)]
+  pub account: String,
+
+  /// Optional. Specify an organization to push the image under.
+  /// Empty string means no organization.
+  #[serde(default)]
+  pub organization: String,
 }
 
 #[typeshare]

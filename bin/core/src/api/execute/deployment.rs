@@ -5,7 +5,7 @@ use futures::future::join_all;
 use monitor_client::{
   api::execute::*,
   entities::{
-    build::Build,
+    build::{Build, ImageRegistry},
     deployment::{Deployment, DeploymentImage},
     get_image_name,
     permission::PermissionLevel,
@@ -78,6 +78,8 @@ impl Resolve<Deploy, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
+    // This block gets the version of the image to deploy in the Build case.
+    // It also gets the name of the image from the build and attaches it directly.
     let version = match deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
         let build = resource::get::<Build>(&build_id).await?;
@@ -91,10 +93,13 @@ impl Resolve<Deploy, (User, Update)> for State {
         deployment.config.image = DeploymentImage::Image {
           image: format!("{image_name}:{version}"),
         };
-        // set docker account to match build docker account if it's not overridden by deployment
-        if deployment.config.docker_account.is_empty() {
-          deployment.config.docker_account =
-            build.config.docker_account;
+        // set image registry to match build docker account if it's not overridden by deployment
+        if matches!(
+          &deployment.config.image_registry,
+          ImageRegistry::None(_)
+        ) {
+          deployment.config.image_registry =
+            build.config.image_registry;
         }
         version
       }
@@ -156,17 +161,25 @@ impl Resolve<Deploy, (User, Update)> for State {
     update.version = version;
     update_update(update.clone()).await?;
 
-    let docker_token = core_config
-      .docker_accounts
-      .get(&deployment.config.docker_account)
-      .cloned();
+    let registry_token = match &deployment.config.image_registry {
+      ImageRegistry::None(_) => None,
+      ImageRegistry::DockerHub(params) => {
+        core_config.docker_accounts.get(&params.account).cloned()
+      }
+      ImageRegistry::GithubContainerRegistry(params) => {
+        core_config.github_accounts.get(&params.account).cloned()
+      }
+      ImageRegistry::Custom(_) => {
+        return Err(anyhow!("Custom ImageRegistry not yet supported"))
+      }
+    };
 
     match periphery
       .request(api::container::Deploy {
         deployment,
         stop_signal,
         stop_time,
-        docker_token,
+        registry_token,
         replacers: secret_replacers.into_iter().collect(),
       })
       .await

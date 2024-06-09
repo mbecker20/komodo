@@ -192,9 +192,9 @@ impl Resolve<Deploy> for State {
     &self,
     Deploy {
       deployment,
-      docker_token,
       stop_signal,
       stop_time,
+      registry_token,
       replacers,
     }: Deploy,
     _: (),
@@ -207,7 +207,7 @@ impl Resolve<Deploy> for State {
       stop_time
         .unwrap_or(deployment.config.termination_timeout)
         .into(),
-      docker_token,
+      registry_token,
       replacers,
     )
     .await;
