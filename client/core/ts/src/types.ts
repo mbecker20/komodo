@@ -318,7 +318,12 @@ export type ImageRegistry =
 	| { type: "None", params: NoData }
 	/** Push the image to DockerHub */
 	| { type: "DockerHub", params: CloudRegistryConfig }
-	/** Push the image to the Github Container Registry */
+	/**
+	 * Push the image to the Github Container Registry.
+	 * 
+	 * See [the Github docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images)
+	 * for information on creating an access token
+	 */
 	| { type: "GithubContainerRegistry", params: CloudRegistryConfig }
 	/** Todo. Will point to a custom "Registry" resource by id */
 	| { type: "Custom", params: string };
