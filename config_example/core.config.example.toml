@@ -57,9 +57,13 @@ passkey = "a_random_passkey"
 ## default: empty (none)
 # github_webhook_base_url = "https://github-webhook.monitor.dev"
 
-## these will be used by the GUI to attach to builds.
+## these will be used by the GUI to attach to builds being pushed to ghcr.
 ## when attached to build, image will be pushed to repo under the specified organization.
-## if empty, the "docker organization" config option will not be shown.
+## default: empty
+# github_organizations = ["your_github_org1", "your_github_org_2"]
+
+## these will be used by the GUI to attach to builds being pushed to docker hub.
+## when attached to build, image will be pushed to repo under the specified organization.
 ## default: empty
 # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
 
