@@ -2,7 +2,6 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { ReactNode, useState } from "react";
 import {
-  AccountSelector,
   AddExtraArgMenu,
   ConfigItem,
   InputList,

@@ -10,13 +10,6 @@ import { useRead, useWrite } from "@lib/hooks";
 import { env_to_text, text_to_env } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ui/select";
 import { Textarea } from "@ui/textarea";
 import { PlusCircle } from "lucide-react";
 import { ReactNode, RefObject, createRef, useEffect, useState } from "react";
@@ -36,7 +29,7 @@ export const BuildConfig = ({
   const config = useRead("GetBuild", { build: id }).data?.config;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const docker_organizations = useRead("ListDockerOrganizations", {}).data;
+  // const docker_organizations = useRead("ListDockerOrganizations", {}).data;
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
   const { mutateAsync } = useWrite("UpdateBuild");
 

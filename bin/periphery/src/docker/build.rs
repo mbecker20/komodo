@@ -71,11 +71,11 @@ pub async fn build(
   };
 
   // Get command parts
+  let image_name = get_image_name(build);
   let build_args = parse_build_args(build_args);
   let labels = parse_labels(labels);
   let extra_args = parse_extra_args(extra_args);
   let buildx = if *use_buildx { " buildx" } else { "" };
-  let image_name = get_image_name(build);
   let image_tags = image_tags(&image_name, version);
   let push_command = should_push
     .then(|| format!(" && docker image push --all-tags {image_name}"))
