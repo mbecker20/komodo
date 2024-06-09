@@ -3,6 +3,7 @@ import {
   AccountSelector,
   AddExtraArgMenu,
   ConfigItem,
+  ImageRegistryConfig,
   InputList,
   SystemCommand,
 } from "@components/config/util";
@@ -129,6 +130,13 @@ export const BuildConfig = ({
           {
             label: "Docker",
             components: {
+              image_registry: (registry, set) => (
+                <ImageRegistryConfig
+                  registry={registry}
+                  setRegistry={(image_registry) => set({ image_registry })}
+                  disabled={disabled}
+                />
+              ),
               build_path: true,
               dockerfile_path: true,
               // docker_account: (account, set) =>

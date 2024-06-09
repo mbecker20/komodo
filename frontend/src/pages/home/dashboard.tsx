@@ -81,7 +81,12 @@ const RecentCard = ({
   className: string | false;
 }) => {
   const Components = ResourceComponents[type];
-  const tags = Components.list_item(id)?.tags;
+  const resource = Components.list_item(id);
+
+  if (!resource) return null;
+
+  const tags = resource?.tags;
+
   return (
     <Link
       to={`${usableResourcePath(type)}/${id}`}

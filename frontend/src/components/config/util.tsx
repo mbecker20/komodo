@@ -435,3 +435,79 @@ export const AddExtraArgMenu = ({
     </Popover>
   );
 };
+
+export const ImageRegistryConfig = ({
+  registry,
+  setRegistry,
+  disabled,
+}: {
+  registry: Types.ImageRegistry | undefined;
+  setRegistry: (registry: Types.ImageRegistry) => void;
+  disabled: boolean;
+}) => {
+  const _registry = registry ?? default_registry_config("None");
+  return (
+    <ConfigItem label="Image Registry">
+      <RegistryTypeSelector
+        registry={_registry}
+        setRegistry={setRegistry}
+        disabled={disabled}
+      />
+    </ConfigItem>
+  );
+};
+
+const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
+  "None",
+  "DockerHub",
+  "Ghcr",
+];
+
+const RegistryTypeSelector = ({
+  registry,
+  setRegistry,
+  disabled,
+}: {
+  registry: Types.ImageRegistry;
+  setRegistry: (registry: Types.ImageRegistry) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <Select
+      value={registry.type}
+      onValueChange={(type: Types.ImageRegistry["type"]) => {
+        setRegistry(default_registry_config(type));
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        className="w-full lg:w-[200px] max-w-[50%]"
+        disabled={disabled}
+      >
+        <SelectValue placeholder="Select Registry" />
+      </SelectTrigger>
+      <SelectContent align="end">
+        {REGISTRY_TYPES.map((type) => (
+          <SelectItem key={type} value={type}>
+            {type}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+const default_registry_config = (
+  type: Types.ImageRegistry["type"]
+): Types.ImageRegistry => {
+  switch (type) {
+    case "None":
+      return { type, params: {} };
+    case "DockerHub":
+      return { type, params: { account: "", organization: "" } };
+    case "Ghcr":
+      return { type, params: { account: "", organization: "" } };
+    case "Custom":
+      return { type, params: "" };
+  }
+};

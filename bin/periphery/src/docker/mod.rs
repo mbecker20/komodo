@@ -40,7 +40,7 @@ pub async fn docker_login(
       .await;
       Ok(true)
     }
-    ImageRegistry::GithubContainerRegistry(CloudRegistryConfig {
+    ImageRegistry::Ghcr(CloudRegistryConfig {
       account,
       ..
     }) => {

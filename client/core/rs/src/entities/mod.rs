@@ -126,12 +126,10 @@ pub fn get_image_name(
         name
       }
     }
-    build::ImageRegistry::GithubContainerRegistry(
-      CloudRegistryConfig {
-        organization,
-        account,
-      },
-    ) => {
+    build::ImageRegistry::Ghcr(CloudRegistryConfig {
+      organization,
+      account,
+    }) => {
       if !organization.is_empty() {
         format!("ghcr.io/{organization}/{name}")
       } else if !account.is_empty() {

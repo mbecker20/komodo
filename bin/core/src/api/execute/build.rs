@@ -692,10 +692,7 @@ fn validate_account_extract_registry_token(
       }
       Ok(core_config().docker_accounts.get(account).cloned())
     }
-    ImageRegistry::GithubContainerRegistry(CloudRegistryConfig {
-      account,
-      ..
-    }) => {
+    ImageRegistry::Ghcr(CloudRegistryConfig { account, .. }) => {
       if account.is_empty() {
         return Err(anyhow!(
           "Must attach account to use GithubContainerRegistry"

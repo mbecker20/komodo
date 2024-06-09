@@ -166,7 +166,7 @@ impl Resolve<Deploy, (User, Update)> for State {
       ImageRegistry::DockerHub(params) => {
         core_config.docker_accounts.get(&params.account).cloned()
       }
-      ImageRegistry::GithubContainerRegistry(params) => {
+      ImageRegistry::Ghcr(params) => {
         core_config.github_accounts.get(&params.account).cloned()
       }
       ImageRegistry::Custom(_) => {

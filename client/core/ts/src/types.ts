@@ -324,7 +324,7 @@ export type ImageRegistry =
 	 * See [the Github docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images)
 	 * for information on creating an access token
 	 */
-	| { type: "GithubContainerRegistry", params: CloudRegistryConfig }
+	| { type: "Ghcr", params: CloudRegistryConfig }
 	/** Todo. Will point to a custom "Registry" resource by id */
 	| { type: "Custom", params: string };
 
