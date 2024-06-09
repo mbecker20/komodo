@@ -312,6 +312,17 @@ export interface EnvironmentVar {
 	value: string;
 }
 
+/** Configuration for the registry to push the built image to. */
+export type ImageRegistry = 
+	/** Don't push the image to any registry */
+	| { type: "None", params: NoData }
+	/** Push the image to DockerHub */
+	| { type: "DockerHub", params: CloudRegistryConfig }
+	/** Push the image to the Github Container Registry */
+	| { type: "GithubContainerRegistry", params: CloudRegistryConfig }
+	/** Todo. Will point to a custom "Registry" resource by id */
+	| { type: "Custom", params: string };
+
 /** The build configuration. */
 export interface BuildConfig {
 	/** Which builder is used to build the image. */
@@ -331,16 +342,6 @@ export interface BuildConfig {
 	 * Empty string is public clone (only public repos).
 	 */
 	github_account?: string;
-	/**
-	 * The dockerhub account used to push the image to dockerhub.
-	 * Empty string means no dockerhub push (server local build).
-	 */
-	docker_account?: string;
-	/**
-	 * The docker organization which the image should be pushed under.
-	 * Empty string means no organization.
-	 */
-	docker_organization?: string;
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
 	/**
@@ -358,6 +359,8 @@ export interface BuildConfig {
 	extra_args?: string[];
 	/** Whether to use buildx to build (eg `docker buildx build ...`) */
 	use_buildx?: boolean;
+	/** Configuration for the registry to push the built image to. */
+	image_registry?: ImageRegistry;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
 }
@@ -412,6 +415,8 @@ export interface BuildVersionResponseItem {
 }
 
 export type GetBuildVersionsResponse = BuildVersionResponseItem[];
+
+export type ListGithubOrganizationsResponse = string[];
 
 export type ListDockerOrganizationsResponse = string[];
 
@@ -491,6 +496,16 @@ export interface DeploymentConfig {
 	 * Can either be a user inputted image, or a Monitor build.
 	 */
 	image?: DeploymentImage;
+	/**
+	 * Configure the registry used to pull the image from the registry.
+	 * Used with `docker login`.
+	 * 
+	 * When using attached build as image source:
+	 * - If the field is `None` variant, will use the same ImageRegistry config as the build.
+	 * - Otherwise, it must match the variant of the ImageRegistry build config.
+	 * - Only the account is used, the organization is not needed here
+	 */
+	image_registry?: ImageRegistry;
 	/** Whether to skip secret interpolation into the deployment environment variables. */
 	skip_secret_interp?: boolean;
 	/** Whether to redeploy the deployment whenever the attached build finishes. */
@@ -538,12 +553,6 @@ export interface DeploymentConfig {
 	 * and affect the container configuration.
 	 */
 	extra_args?: string[];
-	/**
-	 * The docker account the deployment should use to pull the image.
-	 * - If using a custom image, empty string means don't use an account. Only works for public images.
-	 * - If using a monitor build, empty string means to use the same docker account as the build uses.
-	 */
-	docker_account?: string;
 }
 
 export type Deployment = Resource<DeploymentConfig, undefined>;
@@ -2025,6 +2034,13 @@ export interface GetBuildVersions {
 	minor?: number;
 	/** Filter to only include versions matching this patch version. */
 	patch?: number;
+}
+
+/**
+ * List the available github organizations which can be attached to builds.
+ * Response: [ListGithubOrganizationsResponse].
+ */
+export interface ListGithubOrganizations {
 }
 
 /**
@@ -3571,6 +3587,17 @@ export interface SlackAlerterEndpoint {
 	url: string;
 }
 
+/** Configuration for a cloud image registry, like account and organization. */
+export interface CloudRegistryConfig {
+	/** Specify an account to use with the cloud registry. */
+	account?: string;
+	/**
+	 * Optional. Specify an organization to push the image under.
+	 * Empty string means no organization.
+	 */
+	organization?: string;
+}
+
 /** Configuration for a monitor server builder. */
 export interface ServerBuilderConfig {
 	/** The server id of the builder */
@@ -3907,6 +3934,7 @@ export type ReadRequest =
 	| { type: "GetBuildMonthlyStats", params: GetBuildMonthlyStats }
 	| { type: "GetBuildVersions", params: GetBuildVersions }
 	| { type: "ListCommonBuildExtraArgs", params: ListCommonBuildExtraArgs }
+	| { type: "ListGithubOrganizations", params: ListGithubOrganizations }
 	| { type: "ListDockerOrganizations", params: ListDockerOrganizations }
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }

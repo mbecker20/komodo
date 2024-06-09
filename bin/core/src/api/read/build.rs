@@ -246,6 +246,24 @@ impl Resolve<GetBuildVersions, User> for State {
   }
 }
 
+fn github_organizations() -> &'static String {
+  static GITHUB_ORGANIZATIONS: OnceLock<String> = OnceLock::new();
+  GITHUB_ORGANIZATIONS.get_or_init(|| {
+    serde_json::to_string(&core_config().github_organizations)
+      .expect("failed to serialize github organizations")
+  })
+}
+
+impl ResolveToString<ListGithubOrganizations, User> for State {
+  async fn resolve_to_string(
+    &self,
+    ListGithubOrganizations {}: ListGithubOrganizations,
+    _: User,
+  ) -> anyhow::Result<String> {
+    Ok(github_organizations().clone())
+  }
+}
+
 fn docker_organizations() -> &'static String {
   static DOCKER_ORGANIZATIONS: OnceLock<String> = OnceLock::new();
   DOCKER_ORGANIZATIONS.get_or_init(|| {

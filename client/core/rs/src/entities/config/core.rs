@@ -57,6 +57,8 @@ pub struct Env {
   pub monitor_github_webhook_secret: Option<String>,
   /// Override `github_webhook_base_url`
   pub monitor_github_webhook_base_url: Option<String>,
+  /// Override `github_organizations`
+  pub monitor_github_organizations: Option<Vec<String>>,
   /// Override `docker_organizations`
   pub monitor_docker_organizations: Option<Vec<String>>,
 
@@ -314,7 +316,12 @@ pub struct CoreConfig {
   /// can forward webhooks to the internal monitor
   pub github_webhook_base_url: Option<String>,
 
-  /// allowed docker orgs used with monitor. first in this list will be default for build.
+  /// Allowed github orgs used with monitor.
+  /// Default: none.
+  #[serde(default)]
+  pub github_organizations: Vec<String>,
+
+  /// Allowed docker orgs used with monitor.
   /// Default: none.
   #[serde(default)]
   pub docker_organizations: Vec<String>,

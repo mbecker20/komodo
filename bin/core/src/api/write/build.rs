@@ -24,15 +24,13 @@ impl Resolve<CopyBuild, User> for State {
     CopyBuild { name, id }: CopyBuild,
     user: User,
   ) -> anyhow::Result<Build> {
-    let Build {
-      config,
-      ..
-    } = resource::get_check_permissions::<Build>(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
+    let Build { config, .. } =
+      resource::get_check_permissions::<Build>(
+        &id,
+        &user,
+        PermissionLevel::Write,
+      )
+      .await?;
     resource::create::<Build>(&name, config.into(), &user).await
   }
 }

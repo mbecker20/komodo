@@ -13,7 +13,9 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  config::core_config, helpers::query::get_resource_ids_for_non_admin, state::{db_client, State}
+  config::core_config,
+  helpers::query::get_resource_ids_for_non_admin,
+  state::{db_client, State},
 };
 
 const NUM_ALERTS_PER_PAGE: u64 = 100;

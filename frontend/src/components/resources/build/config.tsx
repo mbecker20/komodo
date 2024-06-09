@@ -138,29 +138,29 @@ export const BuildConfig = ({
             components: {
               build_path: true,
               dockerfile_path: true,
-              docker_account: (account, set) =>
-                (update.builder_id ?? config.builder_id ? true : false) && (
-                  <AccountSelector
-                    id={update.builder_id ?? config.builder_id ?? undefined}
-                    type="Builder"
-                    account_type="docker"
-                    selected={account}
-                    onSelect={(docker_account) => set({ docker_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                ),
-              docker_organization:
-                docker_organizations === undefined ||
-                docker_organizations.length === 0
-                  ? undefined
-                  : (value, set) => (
-                      <DockerOrganizations
-                        value={value}
-                        set={set}
-                        disabled={disabled}
-                      />
-                    ),
+              // docker_account: (account, set) =>
+              //   (update.builder_id ?? config.builder_id ? true : false) && (
+              //     <AccountSelector
+              //       id={update.builder_id ?? config.builder_id ?? undefined}
+              //       type="Builder"
+              //       account_type="docker"
+              //       selected={account}
+              //       onSelect={(docker_account) => set({ docker_account })}
+              //       disabled={disabled}
+              //       placeholder="None"
+              //     />
+              //   ),
+              // docker_organization:
+              //   docker_organizations === undefined ||
+              //   docker_organizations.length === 0
+              //     ? undefined
+              //     : (value, set) => (
+              //         <DockerOrganizations
+              //           value={value}
+              //           set={set}
+              //           disabled={disabled}
+              //         />
+              //       ),
               use_buildx: true,
             },
           },
@@ -436,40 +436,40 @@ const Secrets = ({
   );
 };
 
-const DockerOrganizations = ({
-  value,
-  set,
-  disabled,
-}: {
-  value?: string;
-  set: (input: Partial<Types.BuildConfig>) => void;
-  disabled: boolean;
-}) => {
-  const docker_organizations = useRead("ListDockerOrganizations", {}).data;
-  return (
-    <ConfigItem label="Docker Organization">
-      <Select
-        value={value}
-        onValueChange={(value) =>
-          set({ docker_organization: value === "Empty" ? "" : value })
-        }
-        disabled={disabled}
-      >
-        <SelectTrigger
-          className="w-full lg:w-[300px] max-w-[50%]"
-          disabled={disabled}
-        >
-          <SelectValue placeholder="Select Organization" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={"Empty"}>None</SelectItem>
-          {docker_organizations?.map((org) => (
-            <SelectItem key={org} value={org}>
-              {org}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </ConfigItem>
-  );
-};
+// const DockerOrganizations = ({
+//   value,
+//   set,
+//   disabled,
+// }: {
+//   value?: string;
+//   set: (input: Partial<Types.BuildConfig>) => void;
+//   disabled: boolean;
+// }) => {
+//   const docker_organizations = useRead("ListDockerOrganizations", {}).data;
+//   return (
+//     <ConfigItem label="Docker Organization">
+//       <Select
+//         value={value}
+//         onValueChange={(value) =>
+//           set({ docker_organization: value === "Empty" ? "" : value })
+//         }
+//         disabled={disabled}
+//       >
+//         <SelectTrigger
+//           className="w-full lg:w-[300px] max-w-[50%]"
+//           disabled={disabled}
+//         >
+//           <SelectValue placeholder="Select Organization" />
+//         </SelectTrigger>
+//         <SelectContent>
+//           <SelectItem value={"Empty"}>None</SelectItem>
+//           {docker_organizations?.map((org) => (
+//             <SelectItem key={org} value={org}>
+//               {org}
+//             </SelectItem>
+//           ))}
+//         </SelectContent>
+//       </Select>
+//     </ConfigItem>
+//   );
+// };

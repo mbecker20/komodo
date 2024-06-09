@@ -85,6 +85,7 @@ export type ReadResponses = {
   GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
   GetBuildVersions: Types.GetBuildVersionsResponse;
   ListCommonBuildExtraArgs: Types.ListCommonBuildExtraArgsResponse;
+  ListGithubOrganizations: Types.ListGithubOrganizationsResponse;
   ListDockerOrganizations: Types.ListDockerOrganizationsResponse;
 
   // ==== REPO ====

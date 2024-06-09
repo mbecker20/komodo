@@ -10,7 +10,7 @@ pub struct CliArgs {
   pub command: Command,
 
   /// The path to a creds file.
-  /// 
+  ///
   /// Note: If each of `url`, `key` and `secret` are passed,
   /// no file is required at this path.
   #[arg(long, default_value_t = default_creds())]

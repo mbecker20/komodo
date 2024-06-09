@@ -45,23 +45,21 @@ pub async fn build(
   let mut logs = Vec::new();
 
   // Maybe docker login
-  let should_push = match docker_login(
-    image_registry,
-    registry_token.as_deref(),
-  )
-  .await
-  {
-    Ok(should_push) => should_push,
-    Err(e) => {
-      logs.push(Log::error(
-        "docker login",
-        serialize_error_pretty(
-          &e.context("failed to login to docker registry"),
-        ),
-      ));
-      return Ok(logs);
-    }
-  };
+  let should_push =
+    match docker_login(image_registry, registry_token.as_deref())
+      .await
+    {
+      Ok(should_push) => should_push,
+      Err(e) => {
+        logs.push(Log::error(
+          "docker login",
+          serialize_error_pretty(
+            &e.context("failed to login to docker registry"),
+          ),
+        ));
+        return Ok(logs);
+      }
+    };
 
   // Get paths
   let name = to_monitor_name(name);

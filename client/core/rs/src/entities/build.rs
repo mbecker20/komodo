@@ -201,6 +201,7 @@ impl Default for BuildConfig {
 /// Configuration for the registry to push the built image to.
 #[typeshare]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", content = "params")]
 pub enum ImageRegistry {
   /// Don't push the image to any registry
   None(NoData),

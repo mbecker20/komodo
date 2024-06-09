@@ -82,21 +82,21 @@ export const DeploymentConfig = ({
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
               ),
-              docker_account: (value, set) => (
-                <AccountSelector
-                  id={update.server_id ?? config.server_id}
-                  account_type="docker"
-                  type="Server"
-                  selected={value}
-                  onSelect={(docker_account) => set({ docker_account })}
-                  disabled={disabled}
-                  placeholder={
-                    (update.image?.type || config.image?.type) === "Build"
-                      ? "Same as build"
-                      : "None"
-                  }
-                />
-              ),
+              // docker_account: (value, set) => (
+              //   <AccountSelector
+              //     id={update.server_id ?? config.server_id}
+              //     account_type="docker"
+              //     type="Server"
+              //     selected={value}
+              //     onSelect={(docker_account) => set({ docker_account })}
+              //     disabled={disabled}
+              //     placeholder={
+              //       (update.image?.type || config.image?.type) === "Build"
+              //         ? "Same as build"
+              //         : "None"
+              //     }
+              //   />
+              // ),
               restart: (value, set) => (
                 <RestartModeSelector
                   selected={value}

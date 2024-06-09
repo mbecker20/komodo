@@ -2,7 +2,9 @@ use std::sync::OnceLock;
 
 use anyhow::{anyhow, Context};
 use jwt::Token;
-use monitor_client::entities::config::core::{CoreConfig, OauthCredentials};
+use monitor_client::entities::config::core::{
+  CoreConfig, OauthCredentials,
+};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize};
 use serde_json::Value;

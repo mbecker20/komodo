@@ -210,6 +210,21 @@ pub struct BuildVersionResponseItem {
 
 //
 
+/// List the available github organizations which can be attached to builds.
+/// Response: [ListGithubOrganizationsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListGithubOrganizationsResponse)]
+pub struct ListGithubOrganizations {}
+
+#[typeshare]
+pub type ListGithubOrganizationsResponse = Vec<String>;
+
+//
+
 /// List the available docker organizations which can be attached to builds.
 /// Response: [ListDockerOrganizationsResponse].
 #[typeshare]

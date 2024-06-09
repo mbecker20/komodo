@@ -322,7 +322,7 @@ pub struct GetServersSummaryResponse {
 /// Get the usernames for the available github / docker accounts
 /// on the target server, or only available globally if no server
 /// is provided.
-/// 
+///
 /// Response: [GetAvailableAccountsResponse].
 #[typeshare]
 #[derive(

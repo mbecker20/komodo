@@ -10,7 +10,10 @@ use monitor_client::{
 };
 use mungos::{
   find::find_collect,
-  mongodb::{bson::{doc, oid::ObjectId, Document}, options::FindOptions},
+  mongodb::{
+    bson::{doc, oid::ObjectId, Document},
+    options::FindOptions,
+  },
 };
 use resolver_api::Resolve;
 

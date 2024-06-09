@@ -78,7 +78,11 @@ async fn handler(
 const RECENTLY_VIEWED_MAX: usize = 10;
 
 impl Resolve<PushRecentlyViewed, User> for State {
-  #[instrument(name = "PushRecentlyViewed", level = "debug", skip(self, user))]
+  #[instrument(
+    name = "PushRecentlyViewed",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     PushRecentlyViewed { resource }: PushRecentlyViewed,
@@ -127,7 +131,11 @@ impl Resolve<PushRecentlyViewed, User> for State {
 }
 
 impl Resolve<SetLastSeenUpdate, User> for State {
-  #[instrument(name = "SetLastSeenUpdate", level = "debug", skip(self, user))]
+  #[instrument(
+    name = "SetLastSeenUpdate",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     SetLastSeenUpdate {}: SetLastSeenUpdate,

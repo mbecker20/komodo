@@ -106,6 +106,8 @@ enum ReadRequest {
   GetBuildVersions(GetBuildVersions),
   ListCommonBuildExtraArgs(ListCommonBuildExtraArgs),
   #[to_string_resolver]
+  ListGithubOrganizations(ListGithubOrganizations),
+  #[to_string_resolver]
   ListDockerOrganizations(ListDockerOrganizations),
 
   // ==== REPO ====

@@ -6,25 +6,25 @@
 //! - Definitions for the application [api] and [entities].
 //! - A [client][MonitorClient] to interact with the monitor core API.
 //! - Information on configuring monitor [core][entities::config::core] and [periphery][entities::config::periphery].
-//! 
+//!
 //! ## Client Configuration
-//! 
+//!
 //! The client includes a convenenience method to parse the monitor url and credentials from the environment:
 //! - MONITOR_ADDRESS
 //! - MONITOR_API_KEY
 //! - MONITOR_API_SECRET
-//! 
+//!
 //! ## Client Example
 //! ```
 //! dotenv::dotenv().ok();
-//! 
+//!
 //! let client = MonitorClient::new_from_env()?;
-//! 
+//!
 //! // Get all the deployments
 //! let deployments = client.read(ListDeployments::default()).await?;
-//! 
+//!
 //! println!("{deployments:#?}");
-//! 
+//!
 //! let update = client.execute
 //! ```
 

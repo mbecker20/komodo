@@ -28,13 +28,10 @@ impl Resolve<CopyAlerter, User> for State {
     CopyAlerter { name, id }: CopyAlerter,
     user: User,
   ) -> anyhow::Result<Alerter> {
-    let Alerter {
-      config,
-      ..
-    } = resource::get_check_permissions::<Alerter>(
-      &id,
-      &user,
-      PermissionLevel::Write,
+    let Alerter { config, .. } = resource::get_check_permissions::<
+      Alerter,
+    >(
+      &id, &user, PermissionLevel::Write
     )
     .await?;
     resource::create::<Alerter>(&name, config.into(), &user).await

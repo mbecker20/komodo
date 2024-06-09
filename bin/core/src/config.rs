@@ -56,7 +56,9 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or(config.jwt_valid_for),
       sync_directory: env
         .monitor_sync_directory
-        .map(|dir| dir.parse().context("failed to parse env MONITOR_SYNC_DIRECTORY as valid path").unwrap())
+        .map(|dir| 
+          dir.parse()
+            .context("failed to parse env MONITOR_SYNC_DIRECTORY as valid path").unwrap())
         .unwrap_or(config.sync_directory),
       monitoring_interval: env
         .monitor_monitoring_interval
@@ -73,6 +75,8 @@ pub fn core_config() -> &'static CoreConfig {
       github_webhook_base_url: env
         .monitor_github_webhook_base_url
         .or(config.github_webhook_base_url),
+      github_organizations: env.monitor_github_organizations
+        .unwrap_or(config.github_organizations),
       docker_organizations: env
         .monitor_docker_organizations
         .unwrap_or(config.docker_organizations),

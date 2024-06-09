@@ -6,7 +6,9 @@ use serror::deserialize_error;
 
 use crate::{
   api::{
-    auth::MonitorAuthRequest, execute::MonitorExecuteRequest, read::MonitorReadRequest, user::MonitorUserRequest, write::MonitorWriteRequest
+    auth::MonitorAuthRequest, execute::MonitorExecuteRequest,
+    read::MonitorReadRequest, user::MonitorUserRequest,
+    write::MonitorWriteRequest,
   },
   MonitorClient,
 };
