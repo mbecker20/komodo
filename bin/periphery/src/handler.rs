@@ -29,7 +29,6 @@ async fn task(
   req_id: Uuid,
   request: crate::api::PeripheryRequest,
 ) -> anyhow::Result<String> {
-  info!("request {req_id} | {request:?}");
   let timer = Instant::now();
 
   let res =
@@ -48,7 +47,7 @@ async fn task(
   }
 
   let elapsed = timer.elapsed();
-  info!("request {req_id} | resolve time: {elapsed:?}");
+  debug!("request {req_id} | resolve time: {elapsed:?}");
 
   res
 }
