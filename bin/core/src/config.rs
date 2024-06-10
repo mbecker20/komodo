@@ -56,7 +56,7 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or(config.jwt_valid_for),
       sync_directory: env
         .monitor_sync_directory
-        .map(|dir| 
+        .map(|dir|
           dir.parse()
             .context("failed to parse env MONITOR_SYNC_DIRECTORY as valid path").unwrap())
         .unwrap_or(config.sync_directory),

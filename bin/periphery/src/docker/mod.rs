@@ -40,10 +40,7 @@ pub async fn docker_login(
       .await;
       Ok(true)
     }
-    ImageRegistry::Ghcr(CloudRegistryConfig {
-      account,
-      ..
-    }) => {
+    ImageRegistry::Ghcr(CloudRegistryConfig { account, .. }) => {
       if account.is_empty() {
         return Err(anyhow!(
           "Must configure account for GithubContainerRegistry"
