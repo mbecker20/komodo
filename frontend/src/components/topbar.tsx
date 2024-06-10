@@ -72,11 +72,16 @@ export const Topbar = () => {
         <div className="flex items-center gap-4 justify-self-start w-fit">
           <Link
             to={"/"}
-            className="flex gap-3 items-start text-2xl tracking-widest lg:mx-2"
+            // className="flex gap-3 items-start text-2xl tracking-widest lg:mx-2"
+            className="flex gap-3 items-center text-2xl tracking-widest lg:mx-2"
           >
-            <img
+            {/* <img
               src="/monitor-lizard.png"
               className="w-9 h-7 dark:invert hidden lg:block"
+            /> */}
+            <img
+              src="/monitor-circle.png"
+              className="w-[28px] dark:invert hidden lg:block"
             />
             MONITOR
           </Link>
