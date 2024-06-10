@@ -4,6 +4,7 @@ import { ReactNode, useState } from "react";
 import {
   AddExtraArgMenu,
   ConfigItem,
+  ImageRegistryConfig,
   InputList,
 } from "@components/config/util";
 import { ImageConfig } from "./components/image";
@@ -81,21 +82,29 @@ export const DeploymentConfig = ({
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
               ),
-              // docker_account: (value, set) => (
-              //   <AccountSelector
-              //     id={update.server_id ?? config.server_id}
-              //     account_type="docker"
-              //     type="Server"
-              //     selected={value}
-              //     onSelect={(docker_account) => set({ docker_account })}
-              //     disabled={disabled}
-              //     placeholder={
-              //       (update.image?.type || config.image?.type) === "Build"
-              //         ? "Same as build"
-              //         : "None"
-              //     }
-              //   />
-              // ),
+              image_registry: (registry, set) => {
+                const image_type = update.image?.type ?? config.image?.type;
+                const build_id: string | undefined =
+                  (image_type === "Build" &&
+                    (update.image?.params as any).build_id) ??
+                  (config.image?.params as any).build_id;
+                const build_registry_type = useRead("GetBuild", {
+                  build: build_id!,
+                }).data?.config.image_registry?.type;
+                const server_id = update.server_id ?? config.server_id;
+                return (
+                  <ImageRegistryConfig
+                    registry={registry}
+                    setRegistry={(image_registry) => set({ image_registry })}
+                    type="Deployment"
+                    resource_id={server_id}
+                    disabled={disabled}
+                    registry_types={
+                      build_registry_type && ["None", build_registry_type]
+                    }
+                  />
+                );
+              },
               restart: (value, set) => (
                 <RestartModeSelector
                   selected={value}

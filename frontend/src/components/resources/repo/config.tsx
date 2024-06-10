@@ -1,6 +1,6 @@
 import { Config } from "@components/config";
 import {
-  AccountSelector,
+  AccountSelectorConfig,
   ConfigItem,
   SystemCommand,
 } from "@components/config/util";
@@ -55,7 +55,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
               github_account: (value, set) => {
                 const server_id = update.server_id || config.server_id;
                 return (
-                  <AccountSelector
+                  <AccountSelectorConfig
                     id={server_id}
                     account_type="github"
                     type={server_id ? "Server" : "None"}

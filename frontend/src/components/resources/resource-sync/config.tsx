@@ -1,5 +1,5 @@
 import { Config } from "@components/config";
-import { AccountSelector, ConfigItem } from "@components/config/util";
+import { AccountSelectorConfig, ConfigItem } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { ReactNode, useState } from "react";
@@ -44,7 +44,7 @@ export const ResourceSyncConfig = ({
               commit: { placeholder: "Enter specific commit hash. Optional." },
               github_account: (value, set) => {
                 return (
-                  <AccountSelector
+                  <AccountSelectorConfig
                     account_type="github"
                     type="None"
                     selected={value}

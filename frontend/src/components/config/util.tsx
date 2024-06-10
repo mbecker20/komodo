@@ -184,6 +184,22 @@ export const DoubleInput = <
   );
 };
 
+export const AccountSelectorConfig = (params: {
+  disabled: boolean;
+  id?: string;
+  type: "Server" | "None" | "Builder";
+  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
+  selected: string | undefined;
+  onSelect: (id: string) => void;
+  placeholder: string;
+}) => {
+  return (
+    <ConfigItem label={`${params.account_type} Account`}>
+      <AccountSelector {...params} />
+    </ConfigItem>
+  );
+};
+
 export const AccountSelector = ({
   disabled,
   id,
@@ -207,30 +223,28 @@ export const AccountSelector = ({
       : ["GetBuilderAvailableAccounts", { builder: id }];
   const accounts = useRead(request as any, params).data;
   return (
-    <ConfigItem label={`${account_type} Account`}>
-      <Select
-        value={type === "Builder" ? selected || undefined : selected}
-        onValueChange={(value) => {
-          onSelect(value === "Empty" ? "" : value);
-        }}
+    <Select
+      value={selected || undefined}
+      onValueChange={(value) => {
+        onSelect(value === "Empty" ? "" : value);
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        className="w-full lg:w-[200px] max-w-[50%]"
         disabled={disabled}
       >
-        <SelectTrigger
-          className="w-full lg:w-[200px] max-w-[50%]"
-          disabled={disabled}
-        >
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={"Empty"}>{placeholder}</SelectItem>
-          {(accounts as any)?.[account_type]?.map((account: string) => (
-            <SelectItem key={account} value={account}>
-              {account}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </ConfigItem>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={"Empty"}>{placeholder}</SelectItem>
+        {(accounts as any)?.[account_type]?.map((account: string) => (
+          <SelectItem key={account} value={account}>
+            {account}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 
@@ -440,19 +454,74 @@ export const ImageRegistryConfig = ({
   registry,
   setRegistry,
   disabled,
+  type,
+  resource_id,
+  registry_types,
 }: {
   registry: Types.ImageRegistry | undefined;
   setRegistry: (registry: Types.ImageRegistry) => void;
   disabled: boolean;
+  type: "Build" | "Deployment";
+  // For builds, its builder id. For servers, its server id.
+  resource_id?: string;
+  registry_types?: Types.ImageRegistry["type"][];
 }) => {
   const _registry = registry ?? default_registry_config("None");
+  const cloud_params =
+    _registry.type === "DockerHub" || _registry.type === "Ghcr"
+      ? _registry.params
+      : undefined;
+  if (_registry.type === "None" || _registry.type === "Custom") {
+    return (
+      <ConfigItem label="Image Registry">
+        <RegistryTypeSelector
+          registry={_registry}
+          setRegistry={setRegistry}
+          disabled={disabled}
+          deployment={type === "Deployment"}
+          registry_types={registry_types}
+        />
+      </ConfigItem>
+    );
+  }
   return (
     <ConfigItem label="Image Registry">
-      <RegistryTypeSelector
-        registry={_registry}
-        setRegistry={setRegistry}
-        disabled={disabled}
-      />
+      <div className="flex items-center justify-stretch gap-4">
+        {type === "Build" && (
+          <OrganizationSelector
+            value={cloud_params?.organization}
+            set={(organization) =>
+              setRegistry({
+                ..._registry,
+                params: { ..._registry.params, organization },
+              })
+            }
+            disabled={disabled}
+            type={_registry.type === "DockerHub" ? "Docker" : "Github"}
+          />
+        )}
+        <AccountSelector
+          id={resource_id}
+          type={type === "Build" ? "Builder" : "Server"}
+          account_type={_registry.type === "DockerHub" ? "docker" : "github"}
+          selected={cloud_params?.account}
+          onSelect={(account) =>
+            setRegistry({
+              ..._registry,
+              params: { ..._registry.params, account },
+            })
+          }
+          disabled={disabled}
+          placeholder="None"
+        />
+        <RegistryTypeSelector
+          registry={_registry}
+          setRegistry={setRegistry}
+          disabled={disabled}
+          deployment={type === "Deployment"}
+          registry_types={registry_types}
+        />
+      </div>
     </ConfigItem>
   );
 };
@@ -466,17 +535,23 @@ const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
 const RegistryTypeSelector = ({
   registry,
   setRegistry,
+  registry_types = REGISTRY_TYPES,
   disabled,
+  deployment,
 }: {
   registry: Types.ImageRegistry;
   setRegistry: (registry: Types.ImageRegistry) => void;
+  registry_types?: Types.ImageRegistry["type"][];
   disabled: boolean;
+  deployment?: boolean;
 }) => {
   return (
     <Select
-      value={registry.type}
-      onValueChange={(type: Types.ImageRegistry["type"]) => {
-        setRegistry(default_registry_config(type));
+      value={to_readable_registry_type(registry.type, deployment)}
+      onValueChange={(type) => {
+        setRegistry(
+          default_registry_config(from_readable_registry_type(type, deployment))
+        );
       }}
       disabled={disabled}
     >
@@ -487,14 +562,66 @@ const RegistryTypeSelector = ({
         <SelectValue placeholder="Select Registry" />
       </SelectTrigger>
       <SelectContent align="end">
-        {REGISTRY_TYPES.map((type) => (
-          <SelectItem key={type} value={type}>
-            {type}
+        {registry_types.map((type) => {
+          const t = to_readable_registry_type(type, deployment);
+          return (
+            <SelectItem key={type} value={t}>
+              {t}
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
+  );
+};
+
+const OrganizationSelector = ({
+  value,
+  set,
+  disabled,
+  type,
+}: {
+  value?: string;
+  set: (org: string) => void;
+  disabled: boolean;
+  type: "Docker" | "Github";
+}) => {
+  const organizations = useRead(`List${type}Organizations`, {}).data;
+  if (!organizations || organizations.length === 0) return null;
+  return (
+    <Select value={value} onValueChange={set} disabled={disabled}>
+      <SelectTrigger
+        className="w-full lg:w-[300px] max-w-[50%]"
+        disabled={disabled}
+      >
+        <SelectValue placeholder="Select Organization" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={"Empty"}>None</SelectItem>
+        {organizations?.map((org) => (
+          <SelectItem key={org} value={org}>
+            {org}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
+};
+
+const to_readable_registry_type = (
+  type: Types.ImageRegistry["type"],
+  deployment?: boolean
+) => {
+  if (deployment && type === "None") return "Same as build";
+  return type;
+};
+
+const from_readable_registry_type = (
+  readable: string,
+  deployment?: boolean
+) => {
+  if (deployment && readable === "Same as build") return "None";
+  return readable as Types.ImageRegistry["type"];
 };
 
 const default_registry_config = (

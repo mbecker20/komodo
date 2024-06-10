@@ -1,6 +1,6 @@
 import { Config } from "@components/config";
 import {
-  AccountSelector,
+  AccountSelectorConfig,
   AddExtraArgMenu,
   ConfigItem,
   ImageRegistryConfig,
@@ -115,7 +115,7 @@ export const BuildConfig = ({
               github_account:
                 (update.builder_id ?? config.builder_id ? true : false) &&
                 ((account, set) => (
-                  <AccountSelector
+                  <AccountSelectorConfig
                     id={update.builder_id ?? config.builder_id ?? undefined}
                     type="Builder"
                     account_type="github"
@@ -130,13 +130,19 @@ export const BuildConfig = ({
           {
             label: "Docker",
             components: {
-              image_registry: (registry, set) => (
-                <ImageRegistryConfig
-                  registry={registry}
-                  setRegistry={(image_registry) => set({ image_registry })}
-                  disabled={disabled}
-                />
-              ),
+              image_registry: (registry, set) => {
+                const builder_id = update.builder_id ?? config.builder_id;
+                if (!builder_id) return null;
+                return (
+                  <ImageRegistryConfig
+                    registry={registry}
+                    setRegistry={(image_registry) => set({ image_registry })}
+                    type="Build"
+                    resource_id={builder_id}
+                    disabled={disabled}
+                  />
+                );
+              },
               build_path: true,
               dockerfile_path: true,
               // docker_account: (account, set) =>
@@ -437,40 +443,3 @@ const Secrets = ({
   );
 };
 
-// const DockerOrganizations = ({
-//   value,
-//   set,
-//   disabled,
-// }: {
-//   value?: string;
-//   set: (input: Partial<Types.BuildConfig>) => void;
-//   disabled: boolean;
-// }) => {
-//   const docker_organizations = useRead("ListDockerOrganizations", {}).data;
-//   return (
-//     <ConfigItem label="Docker Organization">
-//       <Select
-//         value={value}
-//         onValueChange={(value) =>
-//           set({ docker_organization: value === "Empty" ? "" : value })
-//         }
-//         disabled={disabled}
-//       >
-//         <SelectTrigger
-//           className="w-full lg:w-[300px] max-w-[50%]"
-//           disabled={disabled}
-//         >
-//           <SelectValue placeholder="Select Organization" />
-//         </SelectTrigger>
-//         <SelectContent>
-//           <SelectItem value={"Empty"}>None</SelectItem>
-//           {docker_organizations?.map((org) => (
-//             <SelectItem key={org} value={org}>
-//               {org}
-//             </SelectItem>
-//           ))}
-//         </SelectContent>
-//       </Select>
-//     </ConfigItem>
-//   );
-// };
