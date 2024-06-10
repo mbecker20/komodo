@@ -1,3 +1,4 @@
+import { ExportButton } from "@components/export";
 import { Section } from "@components/layouts";
 import { NewServiceUser, NewUserGroup } from "@components/users/new";
 import { UserTable } from "@components/users/table";
@@ -18,7 +19,18 @@ export const UsersPage = ({ search }: { search: string }) => {
       <Section
         title="User Groups"
         icon={<Users className="w-4 h-4" />}
-        actions={<NewUserGroup />}
+        actions={
+          <div className="flex items-center gap-4">
+            {groups && groups.length ? (
+              <ExportButton
+                user_groups={groups
+                  ?.map((group) => group._id?.$oid!)
+                  .filter((id) => id)}
+              />
+            ) : undefined}
+            <NewUserGroup />
+          </div>
+        }
       >
         <DataTable
           tableKey="user-groups"

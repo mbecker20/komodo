@@ -1,3 +1,4 @@
+import { ExportButton } from "@components/export";
 import { ConfirmButton, TextUpdateMenu } from "@components/util";
 import {
   useInvalidate,
@@ -61,12 +62,15 @@ export const Variables = () => {
   });
   return (
     <div className="flex flex-col gap-4">
-      <Input
-        placeholder="search..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-[200px] lg:w-[300px]"
-      />
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-[200px] lg:w-[300px]"
+        />
+        <ExportButton include_variables />
+      </div>
 
       {updateMenuData && (
         <TextUpdateMenu

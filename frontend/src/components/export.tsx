@@ -16,10 +16,12 @@ export const ExportButton = ({
   targets,
   user_groups,
   tags,
+  include_variables,
 }: {
   targets?: Types.ResourceTarget[];
   user_groups?: string[];
   tags?: string[];
+  include_variables?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -34,8 +36,12 @@ export const ExportButton = ({
         <DialogHeader>
           <DialogTitle>Export to Toml</DialogTitle>
         </DialogHeader>
-        {targets || user_groups ? (
-          <ExportTargetsLoader targets={targets} user_groups={user_groups} />
+        {targets || user_groups || include_variables ? (
+          <ExportTargetsLoader
+            targets={targets}
+            user_groups={user_groups}
+            include_variables={include_variables}
+          />
         ) : (
           <ExportAllLoader tags={tags} />
         )}
@@ -45,21 +51,33 @@ export const ExportButton = ({
 };
 
 const ExportTargetsLoader = ({
-  user_groups,
   targets,
+  user_groups,
+  include_variables,
 }: {
-  user_groups?: string[];
   targets?: Types.ResourceTarget[];
+  user_groups?: string[];
+  include_variables?: boolean;
 }) => {
   const { data, isPending } = useRead("ExportResourcesToToml", {
     targets: targets ? targets : [],
     user_groups: user_groups ? user_groups : [],
+    include_variables,
   });
   return <ExportPre loading={isPending} content={data?.toml} />;
 };
 
-const ExportAllLoader = ({ tags }: { tags?: string[] }) => {
-  const { data, isPending } = useRead("ExportAllResourcesToToml", { tags });
+const ExportAllLoader = ({
+  tags,
+  include_variables,
+}: {
+  tags?: string[];
+  include_variables?: boolean;
+}) => {
+  const { data, isPending } = useRead("ExportAllResourcesToToml", {
+    tags,
+    include_variables,
+  });
   return <ExportPre loading={isPending} content={data?.toml} />;
 };
 
