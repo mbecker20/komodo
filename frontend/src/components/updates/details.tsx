@@ -53,7 +53,8 @@ export const UpdateUser = ({
   if (
     user_id === "Procedure" ||
     user_id === "Github" ||
-    user_id === "Auto Redeploy"
+    user_id === "Auto Redeploy" ||
+    user_id === "Resource Sync"
   ) {
     return (
       <div
