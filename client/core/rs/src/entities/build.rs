@@ -122,12 +122,24 @@ pub struct BuildConfig {
   pub dockerfile_path: String,
 
   /// Docker build arguments
-  #[serde(default)]
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
   #[builder(default)]
   pub build_args: Vec<EnvironmentVar>,
 
   /// Docker labels
-  #[serde(default)]
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
   #[builder(default)]
   pub labels: Vec<EnvironmentVar>,
 

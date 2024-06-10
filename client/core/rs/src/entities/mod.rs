@@ -6,8 +6,11 @@ use build::CloudRegistryConfig;
 use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use serde::{
-  de::{value::MapAccessDeserializer, Visitor},
-  Deserialize, Serialize,
+  de::{
+    value::{MapAccessDeserializer, SeqAccessDeserializer},
+    Visitor,
+  },
+  Deserialize, Deserializer, Serialize,
 };
 use serror::Serror;
 use strum::{AsRefStr, Display, EnumString};
@@ -324,11 +327,143 @@ impl Version {
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
 pub struct EnvironmentVar {
   pub variable: String,
   pub value: String,
+}
+
+pub fn environment_vars_from_str(
+  value: &str,
+) -> anyhow::Result<Vec<EnvironmentVar>> {
+  let res = value
+    .split('\n')
+    .map(|line| line.trim())
+    .enumerate()
+    .filter(|(_, line)| !line.starts_with('#'))
+    .map(|(i, line)| {
+      let mut split = line.split('=');
+      let variable = split
+        .next()
+        .with_context(|| format!("line {i} does not have variable"))?
+        .trim()
+        .to_string();
+      // remove trailing comments
+      let mut value_split = split
+        .next()
+        .with_context(|| format!("line {i} does not have value"))?
+        .split('#');
+      let value = value_split
+        .next()
+        .with_context(|| format!("line {i} does not have value"))?
+        .trim()
+        .to_string();
+      anyhow::Ok(EnvironmentVar { variable, value })
+    })
+    .collect::<anyhow::Result<Vec<_>>>()?;
+  Ok(res)
+}
+
+pub fn env_vars_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Vec<EnvironmentVar>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(EnvironmentVarVisitor)
+}
+
+pub fn option_env_vars_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Option<Vec<EnvironmentVar>>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(OptionEnvVarVisitor)
+}
+
+struct EnvironmentVarVisitor;
+
+impl<'de> Visitor<'de> for EnvironmentVarVisitor {
+  type Value = Vec<EnvironmentVar>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "string or Vec<EnvironmentVar>")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    environment_vars_from_str(v)
+      .map_err(|e| serde::de::Error::custom(format!("{e:#}")))
+  }
+
+  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::SeqAccess<'de>,
+  {
+    #[derive(Deserialize)]
+    struct EnvironmentVarInner {
+      variable: String,
+      value: String,
+    }
+
+    impl From<EnvironmentVarInner> for EnvironmentVar {
+      fn from(value: EnvironmentVarInner) -> Self {
+        Self {
+          variable: value.variable,
+          value: value.value,
+        }
+      }
+    }
+
+    let res = Vec::<EnvironmentVarInner>::deserialize(
+      SeqAccessDeserializer::new(seq),
+    )?
+    .into_iter()
+    .map(Into::into)
+    .collect();
+    Ok(res)
+  }
+}
+
+struct OptionEnvVarVisitor;
+
+impl<'de> Visitor<'de> for OptionEnvVarVisitor {
+  type Value = Option<Vec<EnvironmentVar>>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "null or string or Vec<EnvironmentVar>")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    EnvironmentVarVisitor.visit_str(v).map(Some)
+  }
+
+  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::SeqAccess<'de>,
+  {
+    EnvironmentVarVisitor.visit_seq(seq).map(Some)
+  }
+
+  fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
