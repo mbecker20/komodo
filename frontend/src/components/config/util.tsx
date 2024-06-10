@@ -207,7 +207,6 @@ export const AccountSelector = ({
   account_type,
   selected,
   onSelect,
-  placeholder,
 }: {
   disabled: boolean;
   id?: string;
@@ -215,7 +214,6 @@ export const AccountSelector = ({
   account_type: keyof Types.GetBuilderAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
-  placeholder: string;
 }) => {
   const [request, params] =
     type === "Server" || type === "None"
@@ -224,7 +222,7 @@ export const AccountSelector = ({
   const accounts = useRead(request as any, params).data;
   return (
     <Select
-      value={selected || undefined}
+      value={selected}
       onValueChange={(value) => {
         onSelect(value === "Empty" ? "" : value);
       }}
@@ -234,10 +232,10 @@ export const AccountSelector = ({
         className="w-full lg:w-[200px] max-w-[50%]"
         disabled={disabled}
       >
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder="Select Account" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={"Empty"}>{placeholder}</SelectItem>
+        <SelectItem value={"Empty"}>None</SelectItem>
         {(accounts as any)?.[account_type]?.map((account: string) => (
           <SelectItem key={account} value={account}>
             {account}
@@ -487,7 +485,7 @@ export const ImageRegistryConfig = ({
   return (
     <ConfigItem label="Image Registry">
       <div className="flex items-center justify-stretch gap-4">
-        {type === "Build" && (
+        {type === "Build" && cloud_params?.account && (
           <OrganizationSelector
             value={cloud_params?.organization}
             set={(organization) =>
@@ -512,7 +510,6 @@ export const ImageRegistryConfig = ({
             })
           }
           disabled={disabled}
-          placeholder="None"
         />
         <RegistryTypeSelector
           registry={_registry}
@@ -589,9 +586,13 @@ const OrganizationSelector = ({
   const organizations = useRead(`List${type}Organizations`, {}).data;
   if (!organizations || organizations.length === 0) return null;
   return (
-    <Select value={value} onValueChange={set} disabled={disabled}>
+    <Select
+      value={value}
+      onValueChange={(v) => set(v === "Empty" ? "" : v)}
+      disabled={disabled}
+    >
       <SelectTrigger
-        className="w-full lg:w-[300px] max-w-[50%]"
+        className="w-full lg:w-[200px] max-w-[50%]"
         disabled={disabled}
       >
         <SelectValue placeholder="Select Organization" />
