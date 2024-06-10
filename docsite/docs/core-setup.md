@@ -25,13 +25,13 @@ See [config docs](https://docs.rs/monitor_client/latest/monitor_client/entities/
 
 ## 2. Start monitor core
 
-Monitor core is distributed via dockerhub under the public repo [mbecker2020/monitor_core](https://hub.docker.com/r/mbecker2020/monitor_core).
+Monitor core is distributed via Github Container Registry under the package [mbecker20/monitor_core](https://github.com/mbecker20/monitor/pkgs/container/monitor_core).
 
 ```sh
 docker run -d --name monitor-core \
 	-v $HOME/.monitor/core.config.toml:/config/config.toml \
 	-p 9000:9000 \
-	mbecker2020/monitor_core
+	ghcr.io/mbecker20/monitor_core
 ```
 
 ## First login

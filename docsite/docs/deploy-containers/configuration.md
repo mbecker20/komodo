@@ -12,7 +12,7 @@ By default, Monitor will deploy the latest available version of the build, or yo
 Also by default, Monitor will use the same docker account that is attached to the build in order to pull the image on the periphery server. If that account is not available on the server, you can specify another available account to use instead, this account just needs to have read access to the docker repository.
 
 ### Using a custom image
-You can also manually specify an image name, like `mongo` or `mbecker2020/random_image:0.1.1`.
+You can also manually specify an image name, like `mongo` or `ghcr.io/mbecker20/random_image:0.1.1`.
 
 If the image repository is private, you can still select an available docker account to use to pull the image.
 

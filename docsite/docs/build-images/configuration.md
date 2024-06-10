@@ -18,7 +18,20 @@ If the build directory is the root of the repository, you pass the build path as
 
 The dockerfile's path is given relative to the build directory. So if your build directory is `build/directory` and the dockerfile is in `build/directory/Dockerfile.example`, you give the dockerfile path simply as `Dockerfile.example`.
 
-Just as with private repos, you will need to select a docker account to use with `docker push`. 
+### Image registry
+
+Monitor supports pushing to DockerHub and Github Container Registry (ghcr.io). 
+Any of the Docker / Github accounts that are specified in config, between the core config and builder, will be available to use.
+Additionally, allowed organizations for both DockerHub and Github can be specified on the core config and attached to builds.
+Doing so will cause the images to be published under the organization's namespace rather than the account's.
+
+When connecting a build to a deployments, the default behavior is for the deployment to inherit the registry configuration from the build.
+In cases where that account isn't available to the deployment, another account can be chosen in the deployment config.
+
+:::note
+In order to publish to the Github Container Registry, your Github access token must be given the `write:packages` permission.
+See the Github docs [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic).
+:::
 
 ### Adding build args
 
