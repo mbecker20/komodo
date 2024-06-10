@@ -52,7 +52,7 @@ export const TagsFilter = () => {
               onValueChange={setSearch}
             />
             <CommandList>
-              <CommandEmpty className="flex justify-evenly items-center">
+              <CommandEmpty className="flex justify-evenly items-center pt-2">
                 No Tags Found
                 <SearchX className="w-3 h-3" />
               </CommandEmpty>
