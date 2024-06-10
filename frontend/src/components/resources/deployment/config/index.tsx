@@ -86,8 +86,8 @@ export const DeploymentConfig = ({
                 const image_type = update.image?.type ?? config.image?.type;
                 const build_id: string | undefined =
                   (image_type === "Build" &&
-                    (update.image?.params as any).build_id) ??
-                  (config.image?.params as any).build_id;
+                    (update.image?.params as any)?.build_id) ??
+                  (config.image?.params as any)?.build_id;
                 const build_registry_type = useRead("GetBuild", {
                   build: build_id!,
                 }).data?.config.image_registry?.type;

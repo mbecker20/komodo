@@ -48,8 +48,8 @@ async fn main() -> anyhow::Result<()> {
     }
     AppMode::V1_6 => {
       let db = legacy::v1_6::DbClient::new(
-        &env.legacy_uri,
-        &env.legacy_db_name,
+        &env.target_uri,
+        &env.target_db_name,
       )
       .await;
       migrate::v1_6::migrate_all_in_place(&db).await?
