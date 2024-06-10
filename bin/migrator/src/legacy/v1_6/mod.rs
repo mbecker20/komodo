@@ -1,8 +1,32 @@
+use mungos::{init::MongoBuilder, mongodb::Collection};
 use serde::{Deserialize, Serialize};
 
 pub mod build;
 pub mod deployment;
 pub mod resource;
+
+pub struct DbClient {
+  pub deployments: Collection<deployment::Deployment>,
+  pub builds: Collection<build::Build>,
+}
+
+impl DbClient {
+  pub async fn new(
+    legacy_uri: &str,
+    legacy_db_name: &str,
+  ) -> DbClient {
+    let client = MongoBuilder::default()
+      .uri(legacy_uri)
+      .build()
+      .await
+      .expect("failed to init legacy mongo client");
+    let db = client.database(legacy_db_name);
+    DbClient {
+      deployments: db.collection("Deployment"),
+      builds: db.collection("Build"),
+    }
+  }
+}
 
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, PartialEq,

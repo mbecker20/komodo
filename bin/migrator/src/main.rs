@@ -12,7 +12,14 @@ mod legacy;
 mod migrate;
 
 #[derive(Deserialize)]
+enum AppMode {
+  V0,
+  V1_6,
+}
+
+#[derive(Deserialize)]
 struct Env {
+  app_mode: AppMode,
   legacy_uri: String,
   legacy_db_name: String,
   target_uri: String,
@@ -28,13 +35,26 @@ async fn main() -> anyhow::Result<()> {
 
   let env: Env = envy::from_env()?;
 
-  let legacy_db =
-    legacy::v0::DbClient::new(&env.legacy_uri, &env.legacy_db_name)
+  match env.app_mode {
+    AppMode::V0 => {
+      let legacy_db = legacy::v0::DbClient::new(
+        &env.legacy_uri,
+        &env.legacy_db_name,
+      )
       .await;
-  let target_db =
-    DbClient::new(&env.target_uri, &env.target_db_name).await?;
-
-  migrate::migrate_all(&legacy_db, &target_db).await?;
+      let target_db =
+        DbClient::new(&env.target_uri, &env.target_db_name).await?;
+      migrate::v0::migrate_all(&legacy_db, &target_db).await?
+    }
+    AppMode::V1_6 => {
+      let db = legacy::v1_6::DbClient::new(
+        &env.legacy_uri,
+        &env.legacy_db_name,
+      )
+      .await;
+      migrate::v1_6::migrate_all_in_place(&db).await?
+    }
+  }
 
   info!("finished!");
 
