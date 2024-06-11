@@ -600,7 +600,7 @@ fn serialize_resources_toml(
       );
     }
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&deployment, "  ")
+      &toml_pretty::to_string_custom_tab(&parsed, "  ")
         .context("failed to serialize deployments to toml")?,
     );
   }
@@ -636,7 +636,7 @@ fn serialize_resources_toml(
     }
     res.push_str("[[build]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&build, "  ")
+      &toml_pretty::to_string_custom_tab(&parsed, "  ")
         .context("failed to serialize builds to toml")?,
     );
   }
