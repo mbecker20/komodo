@@ -32,7 +32,7 @@ export const ExportButton = ({
           <FileDown className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-[600px]">
+      <DialogContent className="w-[900px] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>Export to Toml</DialogTitle>
         </DialogHeader>
