@@ -118,12 +118,21 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
     );
     targets.extend(
       resource::list_for_user::<ServerTemplate>(
-        ResourceQuery::builder().tags(tags).build(),
+        ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
       )
       .await?
       .into_iter()
       .map(|resource| ResourceTarget::ServerTemplate(resource.id)),
+    );
+    targets.extend(
+      resource::list_for_user::<ResourceSync>(
+        ResourceQuery::builder().tags(tags).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::ResourceSync(resource.id)),
     );
 
     let user_groups = if user.admin {
