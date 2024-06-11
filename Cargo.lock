@@ -3822,9 +3822,9 @@ dependencies = [
 
 [[package]]
 name = "toml_pretty"
-version = "1.0.3"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdd6d77389405b3ff40a5f945888efc02cddcf932ebd33867a5ebc49806fc901"
+checksum = "6c52247186037974d6547ab230c76bee9b0d777841189ec5b3eea4489cca2799"
 dependencies = [
  "ordered_hash_map",
  "serde",

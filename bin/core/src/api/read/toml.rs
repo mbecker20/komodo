@@ -542,20 +542,18 @@ fn serialize_resources_toml(
 ) -> anyhow::Result<String> {
   let mut res = String::new();
 
+  let options = toml_pretty::Options::default()
+    .tab("  ")
+    .skip_empty_string(true);
+
   for server in &resources.servers {
     if !res.is_empty() {
       res.push_str("\n\n##\n\n");
     }
     res.push_str("[[server]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &server,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize servers to toml")?,
+      &toml_pretty::to_string(&server, options)
+        .context("failed to serialize servers to toml")?,
     );
   }
 
@@ -606,14 +604,8 @@ fn serialize_resources_toml(
       );
     }
     res.push_str(
-      &toml_pretty::to_string(
-        &parsed,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize deployments to toml")?,
+      &toml_pretty::to_string(&parsed, options)
+        .context("failed to serialize deployments to toml")?,
     );
   }
 
@@ -648,14 +640,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[build]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &parsed,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize builds to toml")?,
+      &toml_pretty::to_string(&parsed, options)
+        .context("failed to serialize builds to toml")?,
     );
   }
 
@@ -665,14 +651,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[repo]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &repo,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize repos to toml")?,
+      &toml_pretty::to_string(&repo, options)
+        .context("failed to serialize repos to toml")?,
     );
   }
 
@@ -695,27 +675,15 @@ fn serialize_resources_toml(
 
     res.push_str("[[procedure]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &parsed,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize procedures to toml")?,
+      &toml_pretty::to_string(&parsed, options)
+        .context("failed to serialize procedures to toml")?,
     );
 
     for stage in stages {
       res.push_str("\n\n[[procedure.config.stage]]\n");
       res.push_str(
-        &toml_pretty::to_string(
-          stage,
-          toml_pretty::Options::builder()
-            .tab("  ")
-            .skip_empty_string(true)
-            .build(),
-        )
-        .context("failed to serialize procedures to toml")?,
+        &toml_pretty::to_string(stage, options)
+          .context("failed to serialize procedures to toml")?,
       );
     }
   }
@@ -726,14 +694,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[alerter]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &alerter,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize alerters to toml")?,
+      &toml_pretty::to_string(&alerter, options)
+        .context("failed to serialize alerters to toml")?,
     );
   }
 
@@ -743,14 +705,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[builder]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &builder,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize builders to toml")?,
+      &toml_pretty::to_string(&builder, options)
+        .context("failed to serialize builders to toml")?,
     );
   }
 
@@ -760,14 +716,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[server_template]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &server_template,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize server_templates to toml")?,
+      &toml_pretty::to_string(&server_template, options)
+        .context("failed to serialize server_templates to toml")?,
     );
   }
 
@@ -777,14 +727,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[resource_sync]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &resource_sync,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize resource_syncs to toml")?,
+      &toml_pretty::to_string(&resource_sync, options)
+        .context("failed to serialize resource_syncs to toml")?,
     );
   }
 
@@ -794,14 +738,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[variable]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &variable,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize variables to toml")?,
+      &toml_pretty::to_string(&variable, options)
+        .context("failed to serialize variables to toml")?,
     );
   }
 
@@ -811,14 +749,8 @@ fn serialize_resources_toml(
     }
     res.push_str("[[user_group]]\n");
     res.push_str(
-      &toml_pretty::to_string(
-        &user_group,
-        toml_pretty::Options::builder()
-          .tab("  ")
-          .skip_empty_string(true)
-          .build(),
-      )
-      .context("failed to serialize user_groups to toml")?,
+      &toml_pretty::to_string(&user_group, options)
+        .context("failed to serialize user_groups to toml")?,
     );
   }
 
