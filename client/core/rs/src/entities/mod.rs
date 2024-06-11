@@ -474,6 +474,13 @@ impl<'de> Visitor<'de> for OptionEnvVarVisitor {
   {
     Ok(None)
   }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

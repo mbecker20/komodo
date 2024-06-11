@@ -127,6 +127,7 @@ pub struct BuildConfig {
     deserialize_with = "super::env_vars_deserializer"
   )]
   #[partial_attr(serde(
+    default,
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
@@ -138,6 +139,7 @@ pub struct BuildConfig {
     deserialize_with = "super::env_vars_deserializer"
   )]
   #[partial_attr(serde(
+    default,
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]

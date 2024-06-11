@@ -95,6 +95,7 @@ pub struct DeploymentConfig {
     deserialize_with = "term_labels_deserializer"
   )]
   #[partial_attr(serde(
+    default,
     deserialize_with = "option_term_labels_deserializer"
   ))]
   #[builder(default = "default_term_signal_labels()")]
@@ -117,6 +118,7 @@ pub struct DeploymentConfig {
   /// Maps ports on host to ports on container.
   #[serde(default, deserialize_with = "conversions_deserializer")]
   #[partial_attr(serde(
+    default,
     deserialize_with = "option_conversions_deserializer"
   ))]
   #[builder(default)]
@@ -126,6 +128,7 @@ pub struct DeploymentConfig {
   /// Maps files / folders on host to files / folders in container.
   #[serde(default, deserialize_with = "conversions_deserializer")]
   #[partial_attr(serde(
+    default,
     deserialize_with = "option_conversions_deserializer"
   ))]
   #[builder(default)]
@@ -137,6 +140,7 @@ pub struct DeploymentConfig {
     deserialize_with = "super::env_vars_deserializer"
   )]
   #[partial_attr(serde(
+    default,
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
@@ -148,6 +152,7 @@ pub struct DeploymentConfig {
     deserialize_with = "super::env_vars_deserializer"
   )]
   #[partial_attr(serde(
+    default,
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
@@ -422,6 +427,13 @@ impl<'de> Visitor<'de> for OptionConversionVisitor {
   }
 
   fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
   where
     E: serde::de::Error,
   {
@@ -717,6 +729,13 @@ impl<'de> Visitor<'de> for OptionTermSignalLabelVisitor {
   }
 
   fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
   where
     E: serde::de::Error,
   {
