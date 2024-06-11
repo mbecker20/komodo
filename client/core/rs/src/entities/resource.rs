@@ -12,7 +12,7 @@ use super::update::ResourceTargetVariant;
 
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize, Builder)]
-pub struct Resource<Config, Info: Default = ()> {
+pub struct Resource<Config: Default, Info: Default = ()> {
   /// The Mongo ID of the resource.
   /// This field is de/serialized from/to JSON as
   /// `{ "_id": { "$oid": "..." }, ...(rest of serialized Resource<T>) }`
@@ -50,6 +50,8 @@ pub struct Resource<Config, Info: Default = ()> {
   pub info: Info,
 
   /// Resource-specific configuration.
+  #[serde(default)]
+  #[builder(default)]
   pub config: Config,
 }
 
