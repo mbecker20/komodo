@@ -544,7 +544,7 @@ fn serialize_resources_toml(
 
   for server in &resources.servers {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[server]]\n");
     res.push_str(
@@ -561,7 +561,7 @@ fn serialize_resources_toml(
 
   for deployment in &resources.deployments {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[deployment]]\n");
     let mut parsed: OrderedHashMap<String, Value> =
@@ -619,7 +619,7 @@ fn serialize_resources_toml(
 
   for build in &resources.builds {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     let mut parsed: OrderedHashMap<String, Value> =
       serde_json::from_str(&serde_json::to_string(&build)?)?;
@@ -661,7 +661,7 @@ fn serialize_resources_toml(
 
   for repo in &resources.repos {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[repo]]\n");
     res.push_str(
@@ -678,7 +678,7 @@ fn serialize_resources_toml(
 
   for procedure in &resources.procedures {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[procedure]]\n");
     res.push_str(
@@ -695,7 +695,7 @@ fn serialize_resources_toml(
 
   for alerter in &resources.alerters {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[alerter]]\n");
     res.push_str(
@@ -712,7 +712,7 @@ fn serialize_resources_toml(
 
   for builder in &resources.builders {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[builder]]\n");
     res.push_str(
@@ -729,7 +729,7 @@ fn serialize_resources_toml(
 
   for server_template in &resources.server_templates {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[server_template]]\n");
     res.push_str(
@@ -746,7 +746,7 @@ fn serialize_resources_toml(
 
   for resource_sync in &resources.resource_syncs {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[resource_sync]]\n");
     res.push_str(
@@ -763,7 +763,7 @@ fn serialize_resources_toml(
 
   for variable in &resources.variables {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[variable]]\n");
     res.push_str(
@@ -780,7 +780,7 @@ fn serialize_resources_toml(
 
   for user_group in &resources.user_groups {
     if !res.is_empty() {
-      res.push_str("\n##\n");
+      res.push_str("\n\n##\n\n");
     }
     res.push_str("[[user_group]]\n");
     res.push_str(
