@@ -56,7 +56,7 @@ pub type _PartialProcedureConfig = PartialProcedureConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct ProcedureConfig {
   /// The stages to be run by the procedure.
-  #[serde(default)]
+  #[serde(default, alias = "stage")]
   #[builder(default)]
   pub stages: Vec<ProcedureStage>,
 

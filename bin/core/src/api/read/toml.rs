@@ -680,10 +680,23 @@ fn serialize_resources_toml(
     if !res.is_empty() {
       res.push_str("\n\n##\n\n");
     }
+    let mut parsed: OrderedHashMap<String, Value> =
+      serde_json::from_str(&serde_json::to_string(&procedure)?)?;
+    let config = parsed
+      .get_mut("config")
+      .context("procedure has no config?")?
+      .as_object_mut()
+      .context("config is not object?")?;
+
+    let stages = config
+      .remove("stages")
+      .context("procedure config has no stages")?;
+    let stages = stages.as_array().context("stages is not array")?;
+
     res.push_str("[[procedure]]\n");
     res.push_str(
       &toml_pretty::to_string(
-        &procedure,
+        &parsed,
         toml_pretty::Options::builder()
           .tab("  ")
           .skip_empty_string(true)
@@ -691,6 +704,20 @@ fn serialize_resources_toml(
       )
       .context("failed to serialize procedures to toml")?,
     );
+
+    for stage in stages {
+      res.push_str("\n\n[[procedure.config.stage]]\n");
+      res.push_str(
+        &toml_pretty::to_string(
+          stage,
+          toml_pretty::Options::builder()
+            .tab("  ")
+            .skip_empty_string(true)
+            .build(),
+        )
+        .context("failed to serialize procedures to toml")?,
+      );
+    }
   }
 
   for alerter in &resources.alerters {
