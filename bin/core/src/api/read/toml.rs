@@ -548,8 +548,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[server]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&server, "  ")
-        .context("failed to serialize servers to toml")?,
+      &toml_pretty::to_string(
+        &server,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize servers to toml")?,
     );
   }
 
@@ -600,8 +606,14 @@ fn serialize_resources_toml(
       );
     }
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&parsed, "  ")
-        .context("failed to serialize deployments to toml")?,
+      &toml_pretty::to_string(
+        &parsed,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize deployments to toml")?,
     );
   }
 
@@ -636,8 +648,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[build]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&parsed, "  ")
-        .context("failed to serialize builds to toml")?,
+      &toml_pretty::to_string(
+        &parsed,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize builds to toml")?,
     );
   }
 
@@ -647,8 +665,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[repo]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&repo, "  ")
-        .context("failed to serialize repos to toml")?,
+      &toml_pretty::to_string(
+        &repo,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize repos to toml")?,
     );
   }
 
@@ -658,8 +682,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[procedure]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&procedure, "  ")
-        .context("failed to serialize procedures to toml")?,
+      &toml_pretty::to_string(
+        &procedure,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize procedures to toml")?,
     );
   }
 
@@ -669,8 +699,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[alerter]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&alerter, "  ")
-        .context("failed to serialize alerters to toml")?,
+      &toml_pretty::to_string(
+        &alerter,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize alerters to toml")?,
     );
   }
 
@@ -680,8 +716,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[builder]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&builder, "  ")
-        .context("failed to serialize builders to toml")?,
+      &toml_pretty::to_string(
+        &builder,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize builders to toml")?,
     );
   }
 
@@ -691,8 +733,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[server_template]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&server_template, "  ")
-        .context("failed to serialize server_templates to toml")?,
+      &toml_pretty::to_string(
+        &server_template,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize server_templates to toml")?,
     );
   }
 
@@ -702,8 +750,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[resource_sync]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&resource_sync, "  ")
-        .context("failed to serialize resource_syncs to toml")?,
+      &toml_pretty::to_string(
+        &resource_sync,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize resource_syncs to toml")?,
     );
   }
 
@@ -713,8 +767,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[variable]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&variable, "  ")
-        .context("failed to serialize variables to toml")?,
+      &toml_pretty::to_string(
+        &variable,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize variables to toml")?,
     );
   }
 
@@ -724,8 +784,14 @@ fn serialize_resources_toml(
     }
     res.push_str("[[user_group]]\n");
     res.push_str(
-      &toml_pretty::to_string_custom_tab(&user_group, "  ")
-        .context("failed to serialize user_groups to toml")?,
+      &toml_pretty::to_string(
+        &user_group,
+        toml_pretty::Options::builder()
+          .tab("  ")
+          .skip_empty_string(true)
+          .build(),
+      )
+      .context("failed to serialize user_groups to toml")?,
     );
   }
 
