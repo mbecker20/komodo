@@ -616,6 +616,12 @@ fn serialize_resources_toml(
       .context("build has no config?")?
       .as_object_mut()
       .context("config is not object?")?;
+    if let Some(version) = &build.config.version {
+      config.insert(
+        "version".to_string(),
+        Value::String(version.to_string()),
+      );
+    }
     if let Some(build_args) = &build.config.build_args {
       config.insert(
         "build_args".to_string(),
