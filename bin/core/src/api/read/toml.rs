@@ -544,7 +544,8 @@ fn serialize_resources_toml(
 
   let options = toml_pretty::Options::default()
     .tab("  ")
-    .skip_empty_string(true);
+    .skip_empty_string(true)
+    .max_inline_array_length(30);
 
   for server in &resources.servers {
     if !res.is_empty() {
