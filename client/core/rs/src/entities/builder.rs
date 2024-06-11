@@ -290,9 +290,6 @@ pub struct AwsBuilderConfig {
   pub ami_id: String,
   /// The subnet id to create the instance in.
   pub subnet_id: String,
-  /// The security group ids to attach to the instance.
-  /// This should include a security group to allow core inbound access to the periphery port.
-  pub security_group_ids: Vec<String>,
   /// The key pair name to attach to the instance
   pub key_pair_name: String,
   /// Whether to assign the instance a public IP address.
@@ -301,6 +298,9 @@ pub struct AwsBuilderConfig {
   /// Whether core should use the public IP address to communicate with periphery on the builder.
   /// If false, core will communicate with the instance using the private IP.
   pub use_public_ip: bool,
+  /// The security group ids to attach to the instance.
+  /// This should include a security group to allow core inbound access to the periphery port.
+  pub security_group_ids: Vec<String>,
 
   /// Which github accounts (usernames) are available on the AMI
   #[serde(default)]

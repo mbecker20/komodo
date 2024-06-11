@@ -71,11 +71,6 @@ pub struct BuildConfig {
   #[builder(default)]
   pub builder_id: String,
 
-  /// Whether to skip secret interpolation in the build_args.
-  #[serde(default)]
-  #[builder(default)]
-  pub skip_secret_interp: bool,
-
   /// The current version of the build.
   #[serde(default)]
   #[builder(default)]
@@ -108,6 +103,11 @@ pub struct BuildConfig {
   #[builder(default)]
   pub pre_build: SystemCommand,
 
+  /// Configuration for the registry to push the built image to.
+  #[serde(default)]
+  #[builder(default)]
+  pub image_registry: ImageRegistry,
+
   /// The path of the docker build context relative to the root of the repo.
   /// Default: "." (the root of the repo).
   #[serde(default = "default_build_path")]
@@ -120,6 +120,27 @@ pub struct BuildConfig {
   #[builder(default = "default_dockerfile_path()")]
   #[partial_default(default_dockerfile_path())]
   pub dockerfile_path: String,
+
+  /// Whether to skip secret interpolation in the build_args.
+  #[serde(default)]
+  #[builder(default)]
+  pub skip_secret_interp: bool,
+
+  /// Whether to use buildx to build (eg `docker buildx build ...`)
+  #[serde(default)]
+  #[builder(default)]
+  pub use_buildx: bool,
+
+  /// Whether incoming webhooks actually trigger action.
+  #[serde(default = "default_webhook_enabled")]
+  #[builder(default = "default_webhook_enabled()")]
+  #[partial_default(default_webhook_enabled())]
+  pub webhook_enabled: bool,
+
+  /// Any extra docker cli arguments to be included in the build command
+  #[serde(default)]
+  #[builder(default)]
+  pub extra_args: Vec<String>,
 
   /// Docker build arguments
   #[serde(
@@ -144,27 +165,6 @@ pub struct BuildConfig {
   ))]
   #[builder(default)]
   pub labels: Vec<EnvironmentVar>,
-
-  /// Any extra docker cli arguments to be included in the build command
-  #[serde(default)]
-  #[builder(default)]
-  pub extra_args: Vec<String>,
-
-  /// Whether to use buildx to build (eg `docker buildx build ...`)
-  #[serde(default)]
-  #[builder(default)]
-  pub use_buildx: bool,
-
-  /// Configuration for the registry to push the built image to.
-  #[serde(default)]
-  #[builder(default)]
-  pub image_registry: ImageRegistry,
-
-  /// Whether incoming webhooks actually trigger action.
-  #[serde(default = "default_webhook_enabled")]
-  #[builder(default = "default_webhook_enabled()")]
-  #[partial_default(default_webhook_enabled())]
-  pub webhook_enabled: bool,
 }
 
 impl BuildConfig {

@@ -42,6 +42,13 @@ pub struct AlerterConfig {
   #[partial_default(default_enabled())]
   pub enabled: bool,
 
+  /// Where to route the alert messages.
+  ///
+  /// Default: Custom endpoint `http://localhost:7000`
+  #[serde(default)]
+  #[builder(default)]
+  pub endpoint: AlerterEndpoint,
+
   /// Only send specific alert types.
   /// If empty, will send all alert types.
   #[serde(default)]
@@ -53,13 +60,6 @@ pub struct AlerterConfig {
   #[serde(default)]
   #[builder(default)]
   pub resources: Vec<ResourceTarget>,
-
-  /// Where to route the alert messages.
-  ///
-  /// Default: Custom endpoint `http://localhost:7000`
-  #[serde(default)]
-  #[builder(default)]
-  pub endpoint: AlerterEndpoint,
 }
 
 impl AlerterConfig {

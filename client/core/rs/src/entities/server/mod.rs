@@ -47,6 +47,11 @@ pub struct ServerConfig {
   /// Example: http://localhost:8120
   pub address: String,
 
+  /// An optional region label
+  #[serde(default)]
+  #[builder(default)]
+  pub region: String,
+
   /// Whether a server is enabled.
   /// If a server is disabled,
   /// you won't be able to perform any actions on it or see deployment's status.
@@ -93,11 +98,6 @@ pub struct ServerConfig {
   #[builder(default = "default_send_alerts()")]
   #[partial_default(default_send_alerts())]
   pub send_disk_alerts: bool,
-
-  /// An optional region label
-  #[serde(default)]
-  #[builder(default)]
-  pub region: String,
 
   /// The percentage threshhold which triggers WARNING state for CPU.
   #[serde(default = "default_cpu_warning")]

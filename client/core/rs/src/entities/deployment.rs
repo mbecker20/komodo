@@ -55,12 +55,6 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub server_id: String,
 
-  /// Whether to send ContainerStateChange alerts for this deployment.
-  #[serde(default = "default_send_alerts")]
-  #[builder(default = "default_send_alerts()")]
-  #[partial_default(default_send_alerts())]
-  pub send_alerts: bool,
-
   /// The image which the deployment deploys.
   /// Can either be a user inputted image, or a Monitor build.
   #[serde(default)]
@@ -88,6 +82,49 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub redeploy_on_build: bool,
 
+  /// Whether to send ContainerStateChange alerts for this deployment.
+  #[serde(default = "default_send_alerts")]
+  #[builder(default = "default_send_alerts()")]
+  #[partial_default(default_send_alerts())]
+  pub send_alerts: bool,
+
+  /// The network attached to the container.
+  /// Default is `host`.
+  #[serde(default = "default_network")]
+  #[builder(default = "default_network()")]
+  #[partial_default(default_network())]
+  pub network: String,
+
+  /// The restart mode given to the container.
+  #[serde(default)]
+  #[builder(default)]
+  pub restart: RestartMode,
+
+  /// This is interpolated at the end of the `docker run` command,
+  /// which means they are either passed to the containers inner process,
+  /// or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
+  /// Empty is no command.
+  #[serde(default)]
+  #[builder(default)]
+  pub command: String,
+
+  /// The default termination signal to use to stop the deployment. Defaults to SigTerm (default docker signal).
+  #[serde(default)]
+  #[builder(default)]
+  pub termination_signal: TerminationSignal,
+
+  /// The termination timeout.
+  #[serde(default = "default_termination_timeout")]
+  #[builder(default = "default_termination_timeout()")]
+  #[partial_default(default_termination_timeout())]
+  pub termination_timeout: i32,
+
+  /// Extra args which are interpolated into the `docker run` command,
+  /// and affect the container configuration.
+  #[serde(default)]
+  #[builder(default)]
+  pub extra_args: Vec<String>,
+
   /// Labels attached to various termination signal options.
   /// Used to specify different shutdown functionality depending on the termination signal.
   #[serde(
@@ -101,17 +138,6 @@ pub struct DeploymentConfig {
   #[builder(default = "default_term_signal_labels()")]
   #[partial_default(default_term_signal_labels())]
   pub term_signal_labels: Vec<TerminationSignalLabel>,
-
-  /// The default termination signal to use to stop the deployment. Defaults to SigTerm (default docker signal).
-  #[serde(default)]
-  #[builder(default)]
-  pub termination_signal: TerminationSignal,
-
-  /// The termination timeout.
-  #[serde(default = "default_termination_timeout")]
-  #[builder(default = "default_termination_timeout()")]
-  #[partial_default(default_termination_timeout())]
-  pub termination_timeout: i32,
 
   /// The container port mapping.
   /// Irrelevant if container network is `host`.
@@ -157,32 +183,6 @@ pub struct DeploymentConfig {
   ))]
   #[builder(default)]
   pub labels: Vec<EnvironmentVar>,
-
-  /// The network attached to the container.
-  /// Default is `host`.
-  #[serde(default = "default_network")]
-  #[builder(default = "default_network()")]
-  #[partial_default(default_network())]
-  pub network: String,
-
-  /// The restart mode given to the container.
-  #[serde(default)]
-  #[builder(default)]
-  pub restart: RestartMode,
-
-  /// This is interpolated at the end of the `docker run` command,
-  /// which means they are either passed to the containers inner process,
-  /// or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
-  /// Empty is no command.
-  #[serde(default)]
-  #[builder(default)]
-  pub command: String,
-
-  /// Extra args which are interpolated into the `docker run` command,
-  /// and affect the container configuration.
-  #[serde(default)]
-  #[builder(default)]
-  pub extra_args: Vec<String>,
 }
 
 impl DeploymentConfig {
