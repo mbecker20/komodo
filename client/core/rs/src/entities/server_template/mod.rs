@@ -78,6 +78,12 @@ pub enum PartialServerTemplateConfig {
   Hetzner(hetzner::_PartialHetznerServerTemplateConfig),
 }
 
+impl Default for PartialServerTemplateConfig {
+  fn default() -> Self {
+    Self::Aws(Default::default())
+  }
+}
+
 impl MaybeNone for PartialServerTemplateConfig {
   fn is_none(&self) -> bool {
     match self {

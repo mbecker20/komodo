@@ -78,7 +78,10 @@ pub trait MonitorResource {
     + From<Self::PartialConfig>
     + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
-  type PartialConfig: From<Self::Config> + Serialize + MaybeNone;
+  type PartialConfig: Default
+    + From<Self::Config>
+    + Serialize
+    + MaybeNone;
   type ConfigDiff: Into<Self::PartialConfig>
     + Serialize
     + Diff

@@ -70,6 +70,12 @@ pub enum PartialBuilderConfig {
   Aws(_PartialAwsBuilderConfig),
 }
 
+impl Default for PartialBuilderConfig {
+  fn default() -> Self {
+    Self::Aws(Default::default())
+  }
+}
+
 impl MaybeNone for PartialBuilderConfig {
   fn is_none(&self) -> bool {
     match self {

@@ -35,7 +35,7 @@ pub type ToDelete = Vec<String>;
 
 type UpdatesResult<T> = (ToCreate<T>, ToUpdate<T>, ToDelete);
 
-pub struct ToUpdateItem<T> {
+pub struct ToUpdateItem<T: Default> {
   pub id: String,
   pub resource: ResourceToml<T>,
   pub update_description: bool,

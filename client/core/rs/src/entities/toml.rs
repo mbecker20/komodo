@@ -93,7 +93,7 @@ pub struct ResourcesToml {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ResourceToml<PartialConfig> {
+pub struct ResourceToml<PartialConfig: Default> {
   /// The resource name. Required
   pub name: String,
 
@@ -106,6 +106,7 @@ pub struct ResourceToml<PartialConfig> {
   pub tags: Vec<String>,
 
   /// Resource specific configuration
+  #[serde(default)]
   pub config: PartialConfig,
 }
 
