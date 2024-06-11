@@ -579,6 +579,25 @@ fn serialize_resources_toml(
       .context("deployment has no config?")?
       .as_object_mut()
       .context("config is not object?")?;
+    if let Some(DeploymentImage::Build { version, .. }) =
+      &deployment.config.image
+    {
+      let image = config
+        .get_mut("image")
+        .context("deployment has no image")?
+        .get_mut("params")
+        .context("deployment image has no params")?
+        .as_object_mut()
+        .context("deployment image params is not object")?;
+      if version.is_none() {
+        image.remove("version");
+      } else {
+        image.insert(
+          "version".to_string(),
+          Value::String(version.to_string()),
+        );
+      }
+    }
     if let Some(term_signal_labels) =
       &deployment.config.term_signal_labels
     {
