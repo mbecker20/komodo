@@ -334,6 +334,16 @@ pub struct EnvironmentVar {
   pub value: String,
 }
 
+pub fn environment_vars_to_string(vars: &[EnvironmentVar]) -> String {
+  vars
+    .iter()
+    .map(|EnvironmentVar { variable, value }| {
+      format!("{variable}={value}")
+    })
+    .collect::<Vec<_>>()
+    .join("\n")
+}
+
 pub fn environment_vars_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<EnvironmentVar>> {

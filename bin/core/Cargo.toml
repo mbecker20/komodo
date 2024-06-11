@@ -28,11 +28,13 @@ partial_derive2.workspace = true
 derive_variants.workspace = true
 mongo_indexed.workspace = true
 resolver_api.workspace = true
+toml_pretty.workspace = true
 parse_csl.workspace = true
 mungos.workspace = true
 slack.workspace = true
 svi.workspace = true
 # external
+ordered_hash_map.workspace = true
 urlencoding.workspace = true
 aws-sdk-ec2.workspace = true
 aws-config.workspace = true

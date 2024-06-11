@@ -17,29 +17,29 @@ docker = ["dep:bollard"]
 [dependencies]
 # mogh
 mongo_indexed = { workspace = true, optional = true }
-serror.workspace = true
-resolver_api.workspace = true
+derive_default_builder.workspace = true
 derive_empty_traits.workspace = true
+async_timing_util.workspace = true
 partial_derive2.workspace = true
 derive_variants.workspace = true
-derive_default_builder.workspace = true
-async_timing_util.workspace = true
+resolver_api.workspace = true
+serror.workspace = true
 # external
 bollard = { workspace = true, optional = true }
-reqwest.workspace = true
-anyhow.workspace = true
-thiserror.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-envy.workspace = true
-tokio.workspace = true
-tokio-util.workspace = true
 tokio-tungstenite.workspace = true
-futures.workspace = true
-typeshare.workspace = true
-strum.workspace = true
 derive_builder.workspace = true
+serde_json.workspace = true
+tokio-util.workspace = true
+thiserror.workspace = true
+typeshare.workspace = true
+futures.workspace = true
+reqwest.workspace = true
 tracing.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+tokio.workspace = true
+strum.workspace = true
+envy.workspace = true
 uuid.workspace = true
 clap.workspace = true
 bson.workspace = true

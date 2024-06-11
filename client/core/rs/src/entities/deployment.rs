@@ -281,6 +281,16 @@ pub struct Conversion {
   pub container: String,
 }
 
+pub fn conversions_to_string(conversions: &[Conversion]) -> String {
+  conversions
+    .iter()
+    .map(|Conversion { local, container }| {
+      format!("{local}={container}")
+    })
+    .collect::<Vec<_>>()
+    .join("\n")
+}
+
 pub fn conversions_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<Conversion>> {
@@ -565,6 +575,18 @@ pub struct TerminationSignalLabel {
   pub signal: TerminationSignal,
   #[builder(default)]
   pub label: String,
+}
+
+pub fn term_signal_labels_to_string(
+  labels: &[TerminationSignalLabel],
+) -> String {
+  labels
+    .iter()
+    .map(|TerminationSignalLabel { signal, label }| {
+      format!("{signal}={label}")
+    })
+    .collect::<Vec<_>>()
+    .join("\n")
 }
 
 pub fn term_signal_labels_from_str(

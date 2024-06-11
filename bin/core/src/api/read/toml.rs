@@ -14,7 +14,11 @@ use monitor_client::{
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig},
-    deployment::{Deployment, DeploymentImage},
+    deployment::{
+      conversions_to_string, term_signal_labels_to_string,
+      Deployment, DeploymentImage,
+    },
+    environment_vars_to_string,
     permission::{PermissionLevel, UserTarget},
     procedure::Procedure,
     repo::Repo,
@@ -30,8 +34,10 @@ use monitor_client::{
   },
 };
 use mungos::find::find_collect;
+use ordered_hash_map::OrderedHashMap;
 use partial_derive2::PartialDiff;
 use resolver_api::Resolve;
+use serde_json::Value;
 
 use crate::{
   helpers::query::get_user_user_group_ids,
@@ -305,7 +311,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
           .context("failed to get variables from db")?;
     }
 
-    let toml = toml::to_string(&res)
+    let toml = serialize_resources_toml(&res)
       .context("failed to serialize resources to toml")?;
 
     Ok(ExportResourcesToTomlResponse { toml })
@@ -529,4 +535,193 @@ fn convert_resource<R: MonitorResource>(
     description: resource.description,
     config,
   }
+}
+
+fn serialize_resources_toml(
+  resources: &ResourcesToml,
+) -> anyhow::Result<String> {
+  let mut res = String::new();
+
+  for server in &resources.servers {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[server]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&server, "  ")
+        .context("failed to serialize servers to toml")?,
+    );
+  }
+
+  for deployment in &resources.deployments {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[deployment]]\n");
+    let mut parsed: OrderedHashMap<String, Value> =
+      serde_json::from_str(&serde_json::to_string(&deployment)?)?;
+    let config = parsed
+      .get_mut("config")
+      .context("deployment has no config?")?
+      .as_object_mut()
+      .context("config is not object?")?;
+    if let Some(term_signal_labels) =
+      &deployment.config.term_signal_labels
+    {
+      config.insert(
+        "term_signal_labels".to_string(),
+        Value::String(term_signal_labels_to_string(
+          term_signal_labels,
+        )),
+      );
+    }
+    if let Some(ports) = &deployment.config.ports {
+      config.insert(
+        "ports".to_string(),
+        Value::String(conversions_to_string(ports)),
+      );
+    }
+    if let Some(volumes) = &deployment.config.volumes {
+      config.insert(
+        "volumes".to_string(),
+        Value::String(conversions_to_string(volumes)),
+      );
+    }
+    if let Some(environment) = &deployment.config.environment {
+      config.insert(
+        "environment".to_string(),
+        Value::String(environment_vars_to_string(environment)),
+      );
+    }
+    if let Some(labels) = &deployment.config.labels {
+      config.insert(
+        "labels".to_string(),
+        Value::String(environment_vars_to_string(labels)),
+      );
+    }
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&deployment, "  ")
+        .context("failed to serialize deployments to toml")?,
+    );
+  }
+
+  for build in &resources.builds {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    let mut parsed: OrderedHashMap<String, Value> =
+      serde_json::from_str(&serde_json::to_string(&build)?)?;
+    let config = parsed
+      .get_mut("config")
+      .context("build has no config?")?
+      .as_object_mut()
+      .context("config is not object?")?;
+    if let Some(build_args) = &build.config.build_args {
+      config.insert(
+        "build_args".to_string(),
+        Value::String(environment_vars_to_string(build_args)),
+      );
+    }
+    if let Some(labels) = &build.config.labels {
+      config.insert(
+        "labels".to_string(),
+        Value::String(environment_vars_to_string(labels)),
+      );
+    }
+    res.push_str("[[build]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&build, "  ")
+        .context("failed to serialize builds to toml")?,
+    );
+  }
+
+  for repo in &resources.repos {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[repo]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&repo, "  ")
+        .context("failed to serialize repos to toml")?,
+    );
+  }
+
+  for procedure in &resources.procedures {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[procedure]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&procedure, "  ")
+        .context("failed to serialize procedures to toml")?,
+    );
+  }
+
+  for alerter in &resources.alerters {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[alerter]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&alerter, "  ")
+        .context("failed to serialize alerters to toml")?,
+    );
+  }
+
+  for builder in &resources.builders {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[builder]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&builder, "  ")
+        .context("failed to serialize builders to toml")?,
+    );
+  }
+
+  for server_template in &resources.server_templates {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[server_template]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&server_template, "  ")
+        .context("failed to serialize server_templates to toml")?,
+    );
+  }
+
+  for resource_sync in &resources.resource_syncs {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[resource_sync]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&resource_sync, "  ")
+        .context("failed to serialize resource_syncs to toml")?,
+    );
+  }
+
+  for variable in &resources.variables {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[variable]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&variable, "  ")
+        .context("failed to serialize variables to toml")?,
+    );
+  }
+
+  for user_group in &resources.user_groups {
+    if !res.is_empty() {
+      res.push_str("\n##\n");
+    }
+    res.push_str("[[user_group]]\n");
+    res.push_str(
+      &toml_pretty::to_string_custom_tab(&user_group, "  ")
+        .context("failed to serialize user_groups to toml")?,
+    );
+  }
+
+  Ok(res)
 }

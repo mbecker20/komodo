@@ -50,17 +50,17 @@ pub struct ResourcesToml {
 
   #[serde(
     default,
-    rename = "builder",
-    skip_serializing_if = "Vec::is_empty"
-  )]
-  pub builders: Vec<ResourceToml<PartialBuilderConfig>>,
-
-  #[serde(
-    default,
     rename = "alerter",
     skip_serializing_if = "Vec::is_empty"
   )]
   pub alerters: Vec<ResourceToml<PartialAlerterConfig>>,
+
+  #[serde(
+    default,
+    rename = "builder",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub builders: Vec<ResourceToml<PartialBuilderConfig>>,
 
   #[serde(
     default,

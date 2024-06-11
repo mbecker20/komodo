@@ -34,6 +34,7 @@ partial_derive2 = "0.4.3"
 derive_variants = "1.0.0"
 mongo_indexed = "0.3.0"
 resolver_api = "1.1.0"
+toml_pretty = "0.2.0"
 parse_csl = "0.1.0"
 mungos = "0.5.6"
 svi = "1.0.1"
@@ -50,9 +51,10 @@ axum = { version = "0.7.5", features = ["ws", "json"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.5.2", features = ["fs", "cors"] }
-tokio-tungstenite = "0.22.0"
+tokio-tungstenite = "0.23.0"
 
 # SER/DE
+ordered_hash_map = { version = "0.4.0", features = ["serde"] }
 serde = { version = "1.0.203", features = ["derive"] }
 strum = { version = "0.26.2", features = ["derive"] }
 serde_json = "1.0.117"
