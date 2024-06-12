@@ -1,5 +1,5 @@
 import { ExportButton } from "@components/export";
-import { ConfirmButton, TextUpdateMenu } from "@components/util";
+import { ConfirmButton, CopyButton, TextUpdateMenu } from "@components/util";
 import {
   useInvalidate,
   useRead,
@@ -108,26 +108,29 @@ export const Variables = () => {
             ),
             cell: ({ row }) => {
               return (
-                <Card
-                  className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-full"
-                  onClick={() => {
-                    setUpdateMenuData({
-                      title: `${row.original.name} - Value`,
-                      value: row.original.value ?? "",
-                      placeholder: "Set value",
-                      onUpdate: (value) => {
-                        if (row.original.value === value) {
-                          return;
-                        }
-                        updateValue({ name: row.original.name, value });
-                      },
-                    });
-                  }}
-                >
-                  <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
-                    {row.original.value || "Set value"}
-                  </div>
-                </Card>
+                <div className="flex items-center gap-2">
+                  <Card
+                    className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-full"
+                    onClick={() => {
+                      setUpdateMenuData({
+                        title: `${row.original.name} - Value`,
+                        value: row.original.value ?? "",
+                        placeholder: "Set value",
+                        onUpdate: (value) => {
+                          if (row.original.value === value) {
+                            return;
+                          }
+                          updateValue({ name: row.original.name, value });
+                        },
+                      });
+                    }}
+                  >
+                    <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
+                      {row.original.value || "Set value"}
+                    </div>
+                  </Card>
+                  <CopyButton content={row.original.value} />
+                </div>
               );
             },
           },
