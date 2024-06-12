@@ -25,31 +25,38 @@ export const hex_color_by_intention = (intention: ColorIntention) => {
   }
 };
 
-export const color_class_by_intention = (intention: ColorIntention) => {
+export const fill_color_class_by_intention = (intention: ColorIntention) => {
   switch (intention) {
     case "Good":
-      return "green-500";
+      return "text-green-400 dark:text-green-700";
     case "Neutral":
-      return "blue-500";
+      return "text-blue-400 dark:text-blue-700";
     case "Warning":
-      return "orange-500";
+      return "text-orange-400 dark:text-orange-700";
     case "Critical":
-      return "red-500";
+      return "text-red-400 dark:text-red-700";
     case "Unknown":
-      return "purple-500";
+      return "text-purple-400 dark:text-purple-700";
     case "None":
       return "";
   }
 };
 
-export const fill_color_class_by_intention = (intention: ColorIntention) => {
-  if (intention === "None") return "";
-  return `fill-${color_class_by_intention(intention)}`;
-};
-
 export const stroke_color_class_by_intention = (intention: ColorIntention) => {
-  if (intention === "None") return "";
-  return `stroke-${color_class_by_intention(intention)}`;
+  switch (intention) {
+    case "Good":
+      return "stroke-green-700 dark:stroke-green-400";
+    case "Neutral":
+      return "stroke-blue-700 dark:stroke-blue-400";
+    case "Warning":
+      return "stroke-orange-700 dark:stroke-orange-400";
+    case "Critical":
+      return "stroke-red-700 dark:stroke-red-400";
+    case "Unknown":
+      return "stroke-purple-700 dark:stroke-purple-400";
+    case "None":
+      return "";
+  }
 };
 
 export const bg_color_class_by_intention = (intention: ColorIntention) => {
