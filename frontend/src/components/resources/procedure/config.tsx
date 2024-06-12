@@ -347,30 +347,6 @@ const Stage = ({
         }
         columns={[
           {
-            header: "Enabled",
-            cell: ({
-              row: {
-                original: { enabled },
-                index,
-              },
-            }) => {
-              return (
-                <Switch
-                  checked={enabled}
-                  onClick={() =>
-                    setStage({
-                      ...stage,
-                      executions: stage.executions!.map((item, i) =>
-                        i === index ? { ...item, enabled: !enabled } : item
-                      ),
-                    })
-                  }
-                  disabled={disabled}
-                />
-              );
-            },
-          },
-          {
             header: "Execution",
             cell: ({ row: { original, index } }) => (
               <ExecutionTypeSelector
@@ -431,7 +407,7 @@ const Stage = ({
             },
           },
           {
-            header: "Modify",
+            header: "Add / Remove",
             cell: ({ row: { index } }) => (
               <div className="flex items-center gap-2">
                 <Button
@@ -466,6 +442,30 @@ const Stage = ({
                 </Button>
               </div>
             ),
+          },
+          {
+            header: "Enabled",
+            cell: ({
+              row: {
+                original: { enabled },
+                index,
+              },
+            }) => {
+              return (
+                <Switch
+                  checked={enabled}
+                  onClick={() =>
+                    setStage({
+                      ...stage,
+                      executions: stage.executions!.map((item, i) =>
+                        i === index ? { ...item, enabled: !enabled } : item
+                      ),
+                    })
+                  }
+                  disabled={disabled}
+                />
+              );
+            },
           },
         ]}
       />
