@@ -97,8 +97,8 @@ export const useManageUser = <
   return useMutation({
     mutationKey: [type],
     mutationFn: (params: P) => client().user({ type, params } as R),
-    onError: (e, v, c) => {
-      console.log("useManageUser error:", e);
+    onError: (e: { response: { data: any } }, v, c) => {
+      console.log("Auth error:", e.response.data);
       toast({
         title: `Request ${type} Failed`,
         description: "See console for details",
@@ -126,8 +126,8 @@ export const useWrite = <
   return useMutation({
     mutationKey: [type],
     mutationFn: (params: P) => client().write({ type, params } as R),
-    onError: (e, v, c) => {
-      console.log("useWrite error:", e);
+    onError: (e: { response: { data: any } }, v, c) => {
+      console.log("Write error:", e.response.data);
       toast({
         title: `Write request ${type} failed`,
         description: "See console for details",
@@ -155,8 +155,8 @@ export const useExecute = <
   return useMutation({
     mutationKey: [type],
     mutationFn: (params: P) => client().execute({ type, params } as R),
-    onError: (e, v, c) => {
-      console.log("useExecute error:", e);
+    onError: (e: { response: { data: any } }, v, c) => {
+      console.log("Execute error:", e.response.data);
       toast({
         title: `Execute request ${type} failed`,
         description: "See console for details",

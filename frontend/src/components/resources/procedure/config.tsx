@@ -595,7 +595,6 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
   Deploy: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => {
-      console.log(params.deployment);
       return (
         <ResourceSelector
           type="Deployment"
