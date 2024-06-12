@@ -16,8 +16,8 @@ import { Section } from "@components/layouts";
 import { RenameServer } from "./actions";
 import {
   bg_color_class_by_intention,
-  fill_color_class_by_intention,
   server_state_intention,
+  stroke_color_class_by_intention,
 } from "@lib/color";
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
@@ -44,7 +44,7 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
     <Server
       className={cn(
         `w-${size} h-${size}`,
-        id && fill_color_class_by_intention(server_state_intention(state))
+        state && stroke_color_class_by_intention(server_state_intention(state))
       )}
     />
   );

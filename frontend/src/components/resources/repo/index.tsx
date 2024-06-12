@@ -8,8 +8,8 @@ import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RepoTable } from "./table";
 import {
   bg_color_class_by_intention,
-  fill_color_class_by_intention,
   repo_state_intention,
+  stroke_color_class_by_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
@@ -24,7 +24,7 @@ export const useRepo = (id?: string) =>
 
 const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useRepo(id)?.info.state;
-  const color = fill_color_class_by_intention(repo_state_intention(state));
+  const color = stroke_color_class_by_intention(repo_state_intention(state));
   return <GitBranch className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 

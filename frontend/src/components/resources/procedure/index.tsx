@@ -8,8 +8,8 @@ import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import {
   bg_color_class_by_intention,
-  fill_color_class_by_intention,
   procedure_state_intention,
+  stroke_color_class_by_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { ProcedureDashboard } from "./dashboard";
@@ -20,7 +20,7 @@ const useProcedure = (id?: string) =>
 
 const ProcedureIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useProcedure(id)?.info.state;
-  const color = fill_color_class_by_intention(procedure_state_intention(state));
+  const color = stroke_color_class_by_intention(procedure_state_intention(state));
   return <Route className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 

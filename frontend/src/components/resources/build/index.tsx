@@ -11,7 +11,7 @@ import { RunBuild } from "./actions";
 import {
   bg_color_class_by_intention,
   build_state_intention,
-  fill_color_class_by_intention,
+  stroke_color_class_by_intention,
 } from "@lib/color";
 import { Card, CardHeader } from "@ui/card";
 import { cn } from "@lib/utils";
@@ -25,7 +25,7 @@ const useBuild = (id?: string) =>
 
 const BuildIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useBuild(id)?.info.state;
-  const color = fill_color_class_by_intention(build_state_intention(state));
+  const color = stroke_color_class_by_intention(build_state_intention(state));
   return <Hammer className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 

@@ -10,8 +10,8 @@ import { ExecuteSync, RefreshSync } from "./actions";
 import { PendingOrConfig } from "./pending-or-config";
 import {
   bg_color_class_by_intention,
-  fill_color_class_by_intention,
   resource_sync_state_intention,
+  stroke_color_class_by_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
@@ -24,7 +24,7 @@ const useResourceSync = (id?: string) =>
 
 const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useResourceSync(id)?.info.state;
-  const color = fill_color_class_by_intention(
+  const color = stroke_color_class_by_intention(
     resource_sync_state_intention(state)
   );
   return <FolderSync className={cn(`w-${size} h-${size}`, state && color)} />;

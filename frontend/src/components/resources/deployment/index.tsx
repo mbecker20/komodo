@@ -16,7 +16,7 @@ import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
   bg_color_class_by_intention,
   deployment_state_intention,
-  fill_color_class_by_intention,
+  stroke_color_class_by_intention,
 } from "@lib/color";
 import { DeploymentTable } from "./table";
 import { DeploymentsChart } from "./dashboard";
@@ -92,7 +92,7 @@ const ConfigOrLog = ({ id }: { id: string }) => {
 
 const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useDeployment(id)?.info.state;
-  const color = fill_color_class_by_intention(
+  const color = stroke_color_class_by_intention(
     deployment_state_intention(state)
   );
   return <Rocket className={cn(`w-${size} h-${size}`, state && color)} />;
