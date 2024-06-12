@@ -410,7 +410,7 @@ pub async fn update<T: MonitorResource>(
 
   for FieldDiff { field, from, to } in diff.iter_field_diffs() {
     diff_log.push_str(&format!(
-      "\n\n<span class=\"text-muted-foreground\">field</span>: '{field}'\n<span class=\"text-muted-foreground\">from</span>:  <span class=\"text-red-500\">{from}</span>\n<span class=\"text-muted-foreground\">to</span>:    <span class=\"text-green-500\">{to}</span>",
+      "\n\n<span class=\"text-muted-foreground\">field</span>: '{field}'\n<span class=\"text-muted-foreground\">from</span>:  <span class=\"text-red-700 dark:text-red-400\">{from}</span>\n<span class=\"text-muted-foreground\">to</span>:    <span class=\"text-green-700 dark:text-green-400\">{to}</span>",
     ));
   }
 
