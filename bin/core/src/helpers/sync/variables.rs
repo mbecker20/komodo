@@ -99,15 +99,25 @@ pub async fn get_updates_for_view(
       }
       None => {
         update.to_create += 1;
-        update.log.push_str(&format!(
-          "\n\n{}: variable: {}\n{}: {}\n{}: {}",
-          colored("CREATE", "green"),
-          colored(&variable.name, "green"),
-          muted("description"),
-          variable.description,
-          muted("value"),
-          variable.value,
-        ));
+        if variable.description.is_empty() {
+          update.log.push_str(&format!(
+            "\n\n{}: variable: {}\n{}: {}",
+            colored("CREATE", "green"),
+            colored(&variable.name, "green"),
+            muted("value"),
+            variable.value,
+          ));
+        } else {
+          update.log.push_str(&format!(
+            "\n\n{}: variable: {}\n{}: {}\n{}: {}",
+            colored("CREATE", "green"),
+            colored(&variable.name, "green"),
+            muted("description"),
+            variable.description,
+            muted("value"),
+            variable.value,
+          ));
+        }
       }
     }
   }

@@ -80,15 +80,25 @@ pub fn get_updates(
         to_update.push(item);
       }
       None => {
-        println!(
-          "\n{}: variable: {}\n{}: {}\n{}: {}",
-          "CREATE".green(),
-          variable.name.bold().green(),
-          "description".dimmed(),
-          variable.description,
-          "value".dimmed(),
-          variable.value,
-        );
+        if variable.description.is_empty() {
+          println!(
+            "\n{}: variable: {}\n{}: {}",
+            "CREATE".green(),
+            variable.name.bold().green(),
+            "value".dimmed(),
+            variable.value,
+          );
+        } else {
+          println!(
+            "\n{}: variable: {}\n{}: {}\n{}: {}",
+            "CREATE".green(),
+            variable.name.bold().green(),
+            "description".dimmed(),
+            variable.description,
+            "value".dimmed(),
+            variable.value,
+          );
+        }
         to_create.push(variable)
       }
     }
