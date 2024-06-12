@@ -45,15 +45,15 @@ export const fill_color_class_by_intention = (intention: ColorIntention) => {
 export const stroke_color_class_by_intention = (intention: ColorIntention) => {
   switch (intention) {
     case "Good":
-      return "stroke-green-700 dark:stroke-green-400";
+      return "stroke-green-600 dark:stroke-green-500";
     case "Neutral":
-      return "stroke-blue-700 dark:stroke-blue-400";
+      return "stroke-blue-600 dark:stroke-blue-500";
     case "Warning":
-      return "stroke-orange-700 dark:stroke-orange-400";
+      return "stroke-orange-600 dark:stroke-orange-500";
     case "Critical":
-      return "stroke-red-700 dark:stroke-red-400";
+      return "stroke-red-600 dark:stroke-red-500";
     case "Unknown":
-      return "stroke-purple-700 dark:stroke-purple-400";
+      return "stroke-purple-600 dark:stroke-purple-500";
     case "None":
       return "";
   }
