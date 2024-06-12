@@ -21,6 +21,9 @@ pub async fn execute_procedure(
   update: &Mutex<Update>,
 ) -> anyhow::Result<()> {
   for stage in &procedure.config.stages {
+    if !stage.enabled {
+      continue;
+    }
     add_line_to_update(
       update,
       &format!("executing stage: {}", stage.name),
