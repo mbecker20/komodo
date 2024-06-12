@@ -26,7 +26,7 @@ use resolver_api::Resolve;
 
 use crate::{resource::MonitorResource, state::State};
 
-use super::{bold, colored, muted};
+use super::{bold, colored, muted, Color};
 
 pub type ToUpdate<T> = Vec<ToUpdateItem<T>>;
 pub type ToCreate<T> = Vec<ResourceToml<T>>;
@@ -93,7 +93,7 @@ pub trait ResourceSync: MonitorResource + Sized {
           has_error = true;
           log.push_str(&format!(
             "\n{}: failed to create {} '{}' | {e:#}",
-            colored("ERROR", "red"),
+            colored("ERROR", Color::Red),
             Self::resource_type(),
             bold(&name)
           ));
@@ -119,7 +119,7 @@ pub trait ResourceSync: MonitorResource + Sized {
       log.push_str(&format!(
         "\n{}: {} {} '{}'",
         muted("INFO"),
-        colored("created", "green"),
+        colored("created", Color::Green),
         Self::resource_type(),
         bold(&name)
       ));
@@ -170,7 +170,7 @@ pub trait ResourceSync: MonitorResource + Sized {
           has_error = true;
           log.push_str(&format!(
             "\n{}: failed to update config on {} '{}' | {e:#}",
-            colored("ERROR", "red"),
+            colored("ERROR", Color::Red),
             Self::resource_type(),
             bold(&name),
           ))
@@ -178,7 +178,7 @@ pub trait ResourceSync: MonitorResource + Sized {
           log.push_str(&format!(
             "\n{}: {} {} '{}' configuration",
             muted("INFO"),
-            colored("updated", "blue"),
+            colored("updated", Color::Blue),
             Self::resource_type(),
             bold(&name)
           ));
@@ -193,7 +193,7 @@ pub trait ResourceSync: MonitorResource + Sized {
         has_error = true;
         log.push_str(&format!(
           "\n{}: failed to delete {} '{}' | {e:#}",
-          colored("ERROR", "red"),
+          colored("ERROR", Color::Red),
           Self::resource_type(),
           bold(&resource),
         ))
@@ -201,7 +201,7 @@ pub trait ResourceSync: MonitorResource + Sized {
         log.push_str(&format!(
           "\n{}: {} {} '{}'",
           muted("INFO"),
-          colored("deleted", "red"),
+          colored("deleted", Color::Red),
           Self::resource_type(),
           bold(&resource)
         ));
@@ -283,7 +283,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
 
         update.log.push_str(&format!(
           "\n\n{}: {}: '{}'\n-------------------",
-          colored("UPDATE", "blue"),
+          colored("UPDATE", Color::Blue),
           Resource::resource_type(),
           bold(&resource.name)
         ));
@@ -294,14 +294,14 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
             "{}: 'description'\n{}:  {}\n{}:    {}",
             muted("field"),
             muted("from"),
-            colored(&original.description, "red"),
+            colored(&original.description, Color::Red),
             muted("to"),
-            colored(&resource.description, "green")
+            colored(&resource.description, Color::Green)
           ));
         }
         if resource.tags != original_tags {
-          let from = colored(&format!("{:?}", original_tags), "red");
-          let to = colored(&format!("{:?}", resource.tags), "green");
+          let from = colored(&format!("{:?}", original_tags), Color::Red);
+          let to = colored(&format!("{:?}", resource.tags), Color::Green);
           lines.push(format!(
             "{}: 'tags'\n{}:  {from}\n{}:    {to}",
             muted("field"),
@@ -315,9 +315,9 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
               "{}: '{field}'\n{}:  {}\n{}:    {}",
               muted("field"),
               muted("from"),
-              colored(&from, "red"),
+              colored(&from, Color::Red),
               muted("to"),
-              colored(&to, "green")
+              colored(&to, Color::Green)
             )
           },
         ));
@@ -328,7 +328,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
         update.to_create += 1;
         update.log.push_str(&format!(
           "\n\n{}: {}: {}\n{}: {}\n{}: {:?}\n{}: {}",
-          colored("CREATE", "green"),
+          colored("CREATE", Color::Green),
           Resource::resource_type(),
           bold(&resource.name),
           muted("description"),
@@ -346,7 +346,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
   for name in to_delete {
     update.log.push_str(&format!(
       "\n\n{}: {}: '{}'\n-------------------",
-      colored("DELETE", "red"),
+      colored("DELETE", Color::Red),
       Resource::resource_type(),
       bold(&name)
     ));
@@ -459,7 +459,7 @@ pub async fn run_update_tags<Resource: ResourceSync>(
     *has_error = true;
     log.push_str(&format!(
       "\n{}: failed to update tags on {} '{}' | {e:#}",
-      colored("ERROR", "red"),
+      colored("ERROR", Color::Red),
       Resource::resource_type(),
       bold(name),
     ))
@@ -467,7 +467,7 @@ pub async fn run_update_tags<Resource: ResourceSync>(
     log.push_str(&format!(
       "\n{}: {} {} '{}' tags",
       muted("INFO"),
-      colored("updated", "blue"),
+      colored("updated", Color::Blue),
       Resource::resource_type(),
       bold(name)
     ));
@@ -494,7 +494,7 @@ pub async fn run_update_description<Resource: ResourceSync>(
     *has_error = true;
     log.push_str(&format!(
       "\n{}: failed to update description on {} '{}' | {e:#}",
-      colored("ERROR", "red"),
+      colored("ERROR", Color::Red),
       Resource::resource_type(),
       bold(name),
     ))
@@ -502,7 +502,7 @@ pub async fn run_update_description<Resource: ResourceSync>(
     log.push_str(&format!(
       "\n{}: {} {} '{}' description",
       muted("INFO"),
-      colored("updated", "blue"),
+      colored("updated", Color::Blue),
       Resource::resource_type(),
       bold(name)
     ));

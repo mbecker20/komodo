@@ -30,6 +30,7 @@ use crate::{
       resource::{
         get_updates_for_execution, AllResourcesById, ResourceSync,
       },
+      Color,
     },
     update::update_update,
   },
@@ -205,7 +206,10 @@ impl Resolve<RunSync, (User, Update)> for State {
     {
       update.push_simple_log(
         "No Changes",
-        format!("{}. exiting.", colored("nothing to do", "green")),
+        format!(
+          "{}. exiting.",
+          colored("nothing to do", Color::Green)
+        ),
       );
       update.finalize();
       update_update(update.clone()).await?;

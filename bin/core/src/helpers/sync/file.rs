@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context};
 use monitor_client::entities::{toml::ResourcesToml, update::Log};
 use serde::de::DeserializeOwned;
 
-use super::{colored, muted};
+use super::{colored, muted, Color};
 
 pub fn read_resources(
   path: &Path,
@@ -42,8 +42,8 @@ fn read_resources_recursive(
     log.push_str(&format!(
       "{}: {} from {}",
       muted("INFO"),
-      colored("adding resources", "green"),
-      colored(&path.display().to_string(), "blue")
+      colored("adding resources", Color::Green),
+      colored(&path.display().to_string(), Color::Blue)
     ));
 
     resources.servers.extend(more.servers);
@@ -68,8 +68,8 @@ fn read_resources_recursive(
         log.push('\n');
         log.push_str(&format!(
           "{}: failed to read additional resources from {} | {e:#}",
-          colored("ERROR", "red"),
-          colored(&path.display().to_string(), "blue")
+          colored("ERROR", Color::Red),
+          colored(&path.display().to_string(), Color::Blue)
         ));
       }
     }

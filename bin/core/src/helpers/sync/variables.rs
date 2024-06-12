@@ -16,7 +16,7 @@ use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
 
-use super::{bold, colored, muted};
+use super::{bold, colored, muted, Color};
 
 pub struct ToUpdateItem {
   pub variable: Variable,
@@ -66,7 +66,7 @@ pub async fn get_updates_for_view(
         update.to_update += 1;
         update.log.push_str(&format!(
           "\n\n{}: variable: '{}'\n-------------------",
-          colored("UPDATE", "blue"),
+          colored("UPDATE", Color::Blue),
           bold(&item.variable.name),
         ));
 
@@ -77,9 +77,9 @@ pub async fn get_updates_for_view(
             "{}: 'value'\n{}:  {}\n{}:    {}",
             muted("field"),
             muted("from"),
-            colored(&original.value, "red"),
+            colored(&original.value, Color::Red),
             muted("to"),
-            colored(&item.variable.value, "green")
+            colored(&item.variable.value, Color::Green)
           ))
         }
 
@@ -88,9 +88,9 @@ pub async fn get_updates_for_view(
             "{}: 'description'\n{}:  {}\n{}:    {}",
             muted("field"),
             muted("from"),
-            colored(&original.description, "red"),
+            colored(&original.description, Color::Red),
             muted("to"),
-            colored(&item.variable.description, "green")
+            colored(&item.variable.description, Color::Green)
           ))
         }
 
@@ -102,16 +102,16 @@ pub async fn get_updates_for_view(
         if variable.description.is_empty() {
           update.log.push_str(&format!(
             "\n\n{}: variable: {}\n{}: {}",
-            colored("CREATE", "green"),
-            colored(&variable.name, "green"),
+            colored("CREATE", Color::Green),
+            colored(&variable.name, Color::Green),
             muted("value"),
             variable.value,
           ));
         } else {
           update.log.push_str(&format!(
             "\n\n{}: variable: {}\n{}: {}\n{}: {}",
-            colored("CREATE", "green"),
-            colored(&variable.name, "green"),
+            colored("CREATE", Color::Green),
+            colored(&variable.name, Color::Green),
             muted("description"),
             variable.description,
             muted("value"),
@@ -125,7 +125,7 @@ pub async fn get_updates_for_view(
   for name in &to_delete {
     update.log.push_str(&format!(
       "\n\n{}: variable: '{}'\n-------------------",
-      colored("DELETE", "red"),
+      colored("DELETE", Color::Red),
       bold(name),
     ));
   }
@@ -212,14 +212,14 @@ pub async fn run_updates(
       has_error = true;
       log.push_str(&format!(
         "\n{}: failed to create variable '{}' | {e:#}",
-        colored("ERROR", "red"),
+        colored("ERROR", Color::Red),
         bold(&variable.name)
       ));
     } else {
       log.push_str(&format!(
         "\n{}: {} variable '{}'",
         muted("INFO"),
-        colored("created", "green"),
+        colored("created", Color::Green),
         bold(&variable.name)
       ))
     };
@@ -245,14 +245,14 @@ pub async fn run_updates(
         has_error = true;
         log.push_str(&format!(
           "\n{}: failed to update variable value for '{}' | {e:#}",
-          colored("ERROR", "red"),
+          colored("ERROR", Color::Red),
           bold(&variable.name)
         ))
       } else {
         log.push_str(&format!(
           "\n{}: {} variable '{}' value",
           muted("INFO"),
-          colored("updated", "blue"),
+          colored("updated", Color::Blue),
           bold(&variable.name)
         ))
       };
@@ -271,14 +271,14 @@ pub async fn run_updates(
         has_error = true;
         log.push_str(&format!(
           "\n{}: failed to update variable description for '{}' | {e:#}",
-          colored("ERROR", "red"),
+          colored("ERROR", Color::Red),
           bold(&variable.name)
         ))
       } else {
         log.push_str(&format!(
           "\n{}: {} variable '{}' description",
           muted("INFO"),
-          colored("updated", "blue"),
+          colored("updated", Color::Blue),
           bold(&variable.name)
         ))
       };
@@ -298,14 +298,14 @@ pub async fn run_updates(
       has_error = true;
       log.push_str(&format!(
         "\n{}: failed to delete variable '{}' | {e:#}",
-        colored("ERROR", "red"),
+        colored("ERROR", Color::Red),
         bold(&variable)
       ))
     } else {
       log.push_str(&format!(
         "\n{}: {} variable '{}'",
         muted("INFO"),
-        colored("deleted", "red"),
+        colored("deleted", Color::Red),
         bold(&variable)
       ))
     }

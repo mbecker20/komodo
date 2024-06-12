@@ -22,7 +22,7 @@ use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
 
-use super::{bold, colored, muted, resource::AllResourcesById};
+use super::{bold, colored, muted, resource::AllResourcesById, Color};
 
 pub struct UpdateItem {
   user_group: UserGroupToml,
@@ -77,8 +77,8 @@ pub async fn get_updates_for_view(
         update.to_create += 1;
         update.log.push_str(&format!(
           "\n\n{}: user group: {}\n{}: {:?}\n{}: {:?}",
-          colored("CREATE", "green"),
-          colored(&user_group.name, "green"),
+          colored("CREATE", Color::Green),
+          colored(&user_group.name, Color::Green),
           muted("users"),
           user_group.users,
           muted("permissions"),
@@ -196,7 +196,7 @@ pub async fn get_updates_for_view(
       update.to_update += 1;
       update.log.push_str(&format!(
         "\n\n{}: user group: '{}'\n-------------------",
-        colored("UPDATE", "blue"),
+        colored("UPDATE", Color::Blue),
         bold(&user_group.name),
       ));
       let mut lines = Vec::<String>::new();
@@ -210,7 +210,7 @@ pub async fn get_updates_for_view(
         let adding = if adding.is_empty() {
           String::from("None")
         } else {
-          colored(&adding.join(", "), "green")
+          colored(&adding.join(", "), Color::Green)
         };
         let removing = original_users
           .iter()
@@ -220,7 +220,7 @@ pub async fn get_updates_for_view(
         let removing = if removing.is_empty() {
           String::from("None")
         } else {
-          colored(&removing.join(", "), "red")
+          colored(&removing.join(", "), Color::Red)
         };
         lines.push(format!(
           "{}:    'users'\n{}: {removing}\n{}:   {adding}",
@@ -241,7 +241,7 @@ pub async fn get_updates_for_view(
         let adding = if adding.is_empty() {
           String::from("None")
         } else {
-          colored(&adding.join(", "), "green")
+          colored(&adding.join(", "), Color::Green)
         };
         let removing = original_permissions
           .iter()
@@ -253,7 +253,7 @@ pub async fn get_updates_for_view(
         let removing = if removing.is_empty() {
           String::from("None")
         } else {
-          colored(&removing.join(", "), "red")
+          colored(&removing.join(", "), Color::Red)
         };
         lines.push(format!(
           "{}:    'permissions'\n{}: {removing}\n{}:   {adding}",
@@ -270,7 +270,7 @@ pub async fn get_updates_for_view(
   for name in &to_delete {
     update.log.push_str(&format!(
       "\n\n{}: user group: '{}'\n-------------------",
-      colored("DELETE", "red"),
+      colored("DELETE", Color::Red),
       bold(name),
     ));
   }
@@ -495,7 +495,7 @@ pub async fn run_updates(
       has_error = true;
       log.push_str(&format!(
         "\n{}: failed to create user group '{}' | {e:#}",
-        colored("ERROR", "red"),
+        colored("ERROR", Color::Red),
         bold(&user_group.name)
       ));
       continue;
@@ -503,7 +503,7 @@ pub async fn run_updates(
       log.push_str(&format!(
         "\n{}: {} user group '{}'",
         muted("INFO"),
-        colored("created", "green"),
+        colored("created", Color::Green),
         bold(&user_group.name)
       ))
     };
@@ -562,14 +562,14 @@ pub async fn run_updates(
       has_error = true;
       log.push_str(&format!(
         "\n{}: failed to delete user group '{}' | {e:#}",
-        colored("ERROR", "red"),
+        colored("ERROR", Color::Red),
         bold(&user_group.name)
       ))
     } else {
       log.push_str(&format!(
         "\n{}: {} user group '{}'",
         muted("INFO"),
-        colored("deleted", "red"),
+        colored("deleted", Color::Red),
         bold(&user_group.name)
       ))
     }
@@ -602,14 +602,14 @@ async fn set_users(
     *has_error = true;
     log.push_str(&format!(
       "\n{}: failed to set users in group {} | {e:#}",
-      colored("ERROR", "red"),
+      colored("ERROR", Color::Red),
       bold(&user_group)
     ))
   } else {
     log.push_str(&format!(
       "\n{}: {} user group '{}' users",
       muted("INFO"),
-      colored("updated", "blue"),
+      colored("updated", Color::Blue),
       bold(&user_group)
     ))
   }
@@ -636,14 +636,14 @@ async fn run_update_permissions(
       *has_error = true;
       log.push_str(&format!(
         "\n{}: failed to set permssion in group {} | target: {target:?} | {e:#}",
-        colored("ERROR", "red"),
+        colored("ERROR", Color::Red),
         bold(&user_group)
       ))
     } else {
       log.push_str(&format!(
         "\n{}: {} user group '{}' permissions",
         muted("INFO"),
-        colored("updated", "blue"),
+        colored("updated", Color::Blue),
         bold(&user_group)
       ))
     }

@@ -22,7 +22,7 @@ use crate::{
     resource::{
       run_update_description, run_update_tags, ResourceSync,
       ToUpdateItem,
-    },
+    }, Color,
   },
   resource::MonitorResource,
 };
@@ -329,7 +329,7 @@ impl ResourceSync for Procedure {
         has_error = true;
         log.push_str(&format!(
           "{}: failed to delete {} '{}' | {e:#}",
-          colored("ERROR", "red"),
+          colored("ERROR", Color::Red),
           Self::resource_type(),
           bold(&name),
         ))
@@ -337,7 +337,7 @@ impl ResourceSync for Procedure {
         log.push_str(&format!(
           "{}: {} {} '{}'",
           muted("INFO"),
-          colored("deleted", "red"),
+          colored("deleted", Color::Red),
           Self::resource_type(),
           bold(&name)
         ));
@@ -398,7 +398,7 @@ impl ResourceSync for Procedure {
               has_error = true;
               log.push_str(&format!(
                 "\n{}: failed to update {} '{}' | {e:#}",
-                colored("ERROR", "red"),
+                colored("ERROR", Color::Red),
                 Self::resource_type(),
                 bold(&name)
               ));
@@ -437,7 +437,7 @@ impl ResourceSync for Procedure {
               has_error = true;
               log.push_str(&format!(
                 "\n{}: failed to create {} '{}' | {e:#}",
-                colored("ERROR", "red"),
+                colored("ERROR", Color::Red),
                 Self::resource_type(),
                 bold(&name)
               ));
@@ -464,7 +464,7 @@ impl ResourceSync for Procedure {
         log.push_str(&format!(
           "\n{}: {} {} '{}'",
           muted("INFO"),
-          colored("created", "green"),
+          colored("created", Color::Green),
           Self::resource_type(),
           bold(&name)
         ));
