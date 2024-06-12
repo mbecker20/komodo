@@ -22,6 +22,7 @@ import { BuilderComponents } from "./resources/builder";
 import { AlerterComponents } from "./resources/alerter";
 import { ServerTemplateComponents } from "./resources/server-template";
 import { Badge } from "@ui/badge";
+import { ResourceSyncComponents } from "./resources/resource-sync";
 
 export const OmniSearch = ({
   className,
@@ -43,7 +44,10 @@ export const OmniSearch = ({
         <Search className="w-4 h-4" />{" "}
         <span className="text-muted-foreground hidden md:flex">Search</span>
       </div>
-      <Badge variant="outline" className="text-muted-foreground hidden md:inline-flex">
+      <Badge
+        variant="outline"
+        className="text-muted-foreground hidden md:inline-flex"
+      >
         shift + s
       </Badge>
     </Button>
@@ -117,6 +121,7 @@ const useOmniItems = (
   const builders = useRead("ListBuilders", {}).data;
   const alerters = useRead("ListAlerters", {}).data;
   const templates = useRead("ListServerTemplates", {}).data;
+  const syncs = useRead("ListResourceSyncs", {}).data;
   const searchTerms = search
     .toLowerCase()
     .split(" ")
@@ -168,6 +173,11 @@ const useOmniItems = (
           label: "Templates",
           icon: <ServerTemplateComponents.Icon />,
           onSelect: () => nav("/server-templates"),
+        },
+        {
+          label: "Syncs",
+          icon: <ResourceSyncComponents.Icon />,
+          onSelect: () => nav("/resource-syncs"),
         },
         (user?.admin && {
           label: "Users",
@@ -282,7 +292,7 @@ const useOmniItems = (
           )
           .map((builder) => ({
             label: builder.name,
-            icon: <ProcedureComponents.Icon id={builder.id} />,
+            icon: <BuilderComponents.Icon id={builder.id} />,
             onSelect: () => nav(`/builders/${builder.id}`),
           })) || [],
 
@@ -299,7 +309,7 @@ const useOmniItems = (
           )
           .map((alerter) => ({
             label: alerter.name,
-            icon: <ProcedureComponents.Icon id={alerter.id} />,
+            icon: <AlerterComponents.Icon id={alerter.id} />,
             onSelect: () => nav(`/alerters/${alerter.id}`),
           })) || [],
 
@@ -316,10 +326,39 @@ const useOmniItems = (
           )
           .map((template) => ({
             label: template.name,
-            icon: <ProcedureComponents.Icon id={template.id} />,
-            onSelect: () => nav(`/templates/${template.id}`),
+            icon: <ServerTemplateComponents.Icon id={template.id} />,
+            onSelect: () => nav(`/server-templates/${template.id}`),
+          })) || [],
+
+      Syncs:
+        syncs
+          ?.filter(
+            (item) =>
+              searchTerms.length === 0 ||
+              searchTerms.every(
+                (term) =>
+                  item.name.toLowerCase().includes(term) ||
+                  "sync".includes(term)
+              )
+          )
+          .map((template) => ({
+            label: template.name,
+            icon: <ResourceSyncComponents.Icon id={template.id} />,
+            onSelect: () => nav(`/resource-syncs/${template.id}`),
           })) || [],
     }),
-    [user, servers, deployments, builds, repos, procedures, search]
+    [
+      user,
+      servers,
+      deployments,
+      builds,
+      repos,
+      procedures,
+      alerters,
+      builders,
+      templates,
+      syncs,
+      search,
+    ]
   );
 };
