@@ -258,15 +258,6 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
             className="h-9"
             value={search}
             onValueChange={setSearch}
-            onKeyDown={(e) => {
-              if (
-                e.key === "Enter" &&
-                // check that no tags still match
-                all_tags?.every((tag) => !tag.name.includes(search))
-              ) {
-                create_tag();
-              }
-            }}
           />
           <CommandList>
             <CommandEmpty className="m-1">
