@@ -72,15 +72,15 @@ export const bg_color_class_by_intention = (intention: ColorIntention) => {
 export const text_color_class_by_intention = (intention: ColorIntention) => {
   switch (intention) {
     case "Good":
-      return "text-green-500";
+      return "text-green-700 dark:text-green-400";
     case "Neutral":
-      return "text-blue-500";
+      return "text-blue-700 dark:text-blue-400";
     case "Warning":
-      return "text-orange-500";
+      return "text-orange-700 dark:text-orange-400";
     case "Critical":
-      return "text-red-500";
+      return "text-red-700 dark:text-red-400";
     case "Unknown":
-      return "text-purple-500";
+      return "text-purple-700 dark:text-purple-400";
     case "None":
       return "";
   }

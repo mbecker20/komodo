@@ -10,6 +10,7 @@ import { ExecuteSync, RefreshSync } from "./actions";
 import { PendingOrConfig } from "./pending-or-config";
 import {
   bg_color_class_by_intention,
+  fill_color_class_by_intention,
   resource_sync_state_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
@@ -20,6 +21,14 @@ const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
+
+const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
+  const state = useResourceSync(id)?.info.state;
+  const color = fill_color_class_by_intention(
+    resource_sync_state_intention(state)
+  );
+  return <FolderSync className={cn(`w-${size} h-${size}`, state && color)} />;
+};
 
 export const ResourceSyncComponents: RequiredResourceComponents = {
   list_item: (id) => useResourceSync(id),
@@ -49,8 +58,8 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
     <ResourceSyncTable syncs={resources as Types.ResourceSyncListItem[]} />
   ),
 
-  Icon: () => <FolderSync className="w-4 h-4" />,
-  BigIcon: () => <FolderSync className="w-8 h-8" />,
+  Icon: ({ id }) => <ResourceSyncIcon id={id} size={4} />,
+  BigIcon: ({ id }) => <ResourceSyncIcon id={id} size={8} />,
 
   Status: {
     State: ({ id }) => {

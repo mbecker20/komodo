@@ -8,6 +8,7 @@ import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import {
   bg_color_class_by_intention,
+  fill_color_class_by_intention,
   procedure_state_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
@@ -16,6 +17,12 @@ import { Types } from "@monitor/client";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
+
+const ProcedureIcon = ({ id, size }: { id?: string; size: number }) => {
+  const state = useProcedure(id)?.info.state;
+  const color = fill_color_class_by_intention(procedure_state_intention(state));
+  return <Route className={cn(`w-${size} h-${size}`, state && color)} />;
+};
 
 export const ProcedureComponents: RequiredResourceComponents = {
   list_item: (id) => useProcedure(id),
@@ -28,8 +35,8 @@ export const ProcedureComponents: RequiredResourceComponents = {
     <ProcedureTable procedures={resources as Types.ProcedureListItem[]} />
   ),
 
-  Icon: () => <Route className="w-4" />,
-  BigIcon: () => <Route className="w-8" />,
+  Icon: ({ id }) => <ProcedureIcon id={id} size={4} />,
+  BigIcon: ({ id }) => <ProcedureIcon id={id} size={8} />,
 
   Status: {
     State: ({ id }) => {
