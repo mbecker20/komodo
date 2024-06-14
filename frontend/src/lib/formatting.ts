@@ -3,7 +3,7 @@ import { Types } from "@monitor/client";
 export const fmt_date = (d: Date) => {
   const hours = d.getHours();
   const minutes = d.getMinutes();
-  return `${fmt_month(d.getMonth())} ${d.getDate()} @ ${
+  return `${fmt_month(d.getMonth())} ${d.getDate()} ${
     hours > 9 ? hours : "0" + hours
   }:${minutes > 9 ? minutes : "0" + minutes}`;
 };
