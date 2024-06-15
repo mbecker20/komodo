@@ -347,8 +347,11 @@ pub fn environment_vars_to_string(vars: &[EnvironmentVar]) -> String {
 pub fn environment_vars_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<EnvironmentVar>> {
-  let res = value
-    .trim()
+  let trimmed = value.trim();
+  if trimmed.is_empty() {
+    return Ok(Vec::new());
+  }
+  let res = trimmed
     .split('\n')
     .map(|line| line.trim())
     .enumerate()

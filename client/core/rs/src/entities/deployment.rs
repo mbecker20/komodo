@@ -299,8 +299,11 @@ pub fn conversions_to_string(conversions: &[Conversion]) -> String {
 pub fn conversions_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<Conversion>> {
-  let res = value
-    .trim()
+  let trimmed = value.trim();
+  if trimmed.is_empty() {
+    return Ok(Vec::new());
+  }
+  let res = trimmed
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
@@ -605,8 +608,11 @@ pub fn term_signal_labels_to_string(
 pub fn term_signal_labels_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<TerminationSignalLabel>> {
-  let res = value
-    .trim()
+  let trimmed = value.trim();
+  if trimmed.is_empty() {
+    return Ok(Vec::new());
+  }
+  let res = trimmed
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
