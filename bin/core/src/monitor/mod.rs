@@ -52,7 +52,6 @@ pub struct CachedDeploymentStatus {
 
 #[derive(Default, Clone, Debug)]
 pub struct CachedRepoStatus {
-  pub id: String,
   pub latest_hash: Option<String>,
   pub latest_message: Option<String>,
 }
@@ -229,9 +228,8 @@ pub async fn update_cache_for_server(server: &Server) {
       .unzip();
     status_cache
       .insert(
-        repo.id.clone(),
+        repo.id,
         CachedRepoStatus {
-          id: repo.id,
           latest_hash,
           latest_message,
         }

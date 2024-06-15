@@ -52,7 +52,6 @@ pub async fn insert_repos_status_unknown(repos: Vec<Repo>) {
       .insert(
         repo.id.clone(),
         CachedRepoStatus {
-          id: repo.id,
           latest_hash: None,
           latest_message: None,
         }

@@ -1,4 +1,6 @@
 pub mod aws;
+
+#[allow(unused)]
 pub mod hetzner;
 
 #[derive(Debug)]

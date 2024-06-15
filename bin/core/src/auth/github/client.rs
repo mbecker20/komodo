@@ -216,8 +216,8 @@ impl GithubOauthClient {
 #[derive(Deserialize)]
 pub struct AccessTokenResponse {
   pub access_token: String,
-  pub scope: String,
-  pub token_type: String,
+  // pub scope: String,
+  // pub token_type: String,
 }
 
 #[derive(Deserialize)]
@@ -225,5 +225,5 @@ pub struct GithubUserResponse {
   pub login: String,
   pub id: u128,
   pub avatar_url: String,
-  pub email: Option<String>,
+  // pub email: Option<String>,
 }

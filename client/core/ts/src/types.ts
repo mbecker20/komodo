@@ -236,7 +236,7 @@ export interface Resource<Config, Info> {
 	/** Resource-specific information (not user configurable). */
 	info?: Info;
 	/** Resource-specific configuration. */
-	config: Config;
+	config?: Config;
 }
 
 export type AlerterEndpoint = 
@@ -249,6 +249,12 @@ export interface AlerterConfig {
 	/** Whether the alerter is enabled */
 	enabled: boolean;
 	/**
+	 * Where to route the alert messages.
+	 * 
+	 * Default: Custom endpoint `http://localhost:7000`
+	 */
+	endpoint?: AlerterEndpoint;
+	/**
 	 * Only send specific alert types.
 	 * If empty, will send all alert types.
 	 */
@@ -258,12 +264,6 @@ export interface AlerterConfig {
 	 * If empty, will send alerts for all resources.
 	 */
 	resources?: ResourceTarget[];
-	/**
-	 * Where to route the alert messages.
-	 * 
-	 * Default: Custom endpoint `http://localhost:7000`
-	 */
-	endpoint?: AlerterEndpoint;
 }
 
 export type Alerter = Resource<AlerterConfig, undefined>;
@@ -307,11 +307,6 @@ export interface SystemCommand {
 	command?: string;
 }
 
-export interface EnvironmentVar {
-	variable: string;
-	value: string;
-}
-
 /** Configuration for the registry to push the built image to. */
 export type ImageRegistry = 
 	/** Don't push the image to any registry */
@@ -328,12 +323,15 @@ export type ImageRegistry =
 	/** Todo. Will point to a custom "Registry" resource by id */
 	| { type: "Custom", params: string };
 
+export interface EnvironmentVar {
+	variable: string;
+	value: string;
+}
+
 /** The build configuration. */
 export interface BuildConfig {
 	/** Which builder is used to build the image. */
 	builder_id?: string;
-	/** Whether to skip secret interpolation in the build_args. */
-	skip_secret_interp?: boolean;
 	/** The current version of the build. */
 	version?: Version;
 	/** The Github repo used as the source of the build. */
@@ -349,6 +347,8 @@ export interface BuildConfig {
 	github_account?: string;
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
+	/** Configuration for the registry to push the built image to. */
+	image_registry?: ImageRegistry;
 	/**
 	 * The path of the docker build context relative to the root of the repo.
 	 * Default: "." (the root of the repo).
@@ -356,18 +356,18 @@ export interface BuildConfig {
 	build_path: string;
 	/** The path of the dockerfile relative to the build path. */
 	dockerfile_path: string;
+	/** Whether to skip secret interpolation in the build_args. */
+	skip_secret_interp?: boolean;
+	/** Whether to use buildx to build (eg `docker buildx build ...`) */
+	use_buildx?: boolean;
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+	/** Any extra docker cli arguments to be included in the build command */
+	extra_args?: string[];
 	/** Docker build arguments */
 	build_args?: EnvironmentVar[];
 	/** Docker labels */
 	labels?: EnvironmentVar[];
-	/** Any extra docker cli arguments to be included in the build command */
-	extra_args?: string[];
-	/** Whether to use buildx to build (eg `docker buildx build ...`) */
-	use_buildx?: boolean;
-	/** Configuration for the registry to push the built image to. */
-	image_registry?: ImageRegistry;
-	/** Whether incoming webhooks actually trigger action. */
-	webhook_enabled: boolean;
 }
 
 export interface BuildInfo {
@@ -465,6 +465,13 @@ export type DeploymentImage =
 	version?: Version;
 }};
 
+export enum RestartMode {
+	NoRestart = "no",
+	OnFailure = "on-failure",
+	Always = "always",
+	UnlessStopped = "unless-stopped",
+}
+
 export enum TerminationSignal {
 	SigHup = "SIGHUP",
 	SigInt = "SIGINT",
@@ -484,18 +491,9 @@ export interface Conversion {
 	container: string;
 }
 
-export enum RestartMode {
-	NoRestart = "no",
-	OnFailure = "on-failure",
-	Always = "always",
-	UnlessStopped = "unless-stopped",
-}
-
 export interface DeploymentConfig {
 	/** The id of server the deployment is deployed on. */
 	server_id?: string;
-	/** Whether to send ContainerStateChange alerts for this deployment. */
-	send_alerts: boolean;
 	/**
 	 * The image which the deployment deploys.
 	 * Can either be a user inputted image, or a Monitor build.
@@ -515,15 +513,36 @@ export interface DeploymentConfig {
 	skip_secret_interp?: boolean;
 	/** Whether to redeploy the deployment whenever the attached build finishes. */
 	redeploy_on_build?: boolean;
+	/** Whether to send ContainerStateChange alerts for this deployment. */
+	send_alerts: boolean;
+	/**
+	 * The network attached to the container.
+	 * Default is `host`.
+	 */
+	network: string;
+	/** The restart mode given to the container. */
+	restart?: RestartMode;
+	/**
+	 * This is interpolated at the end of the `docker run` command,
+	 * which means they are either passed to the containers inner process,
+	 * or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
+	 * Empty is no command.
+	 */
+	command?: string;
+	/** The default termination signal to use to stop the deployment. Defaults to SigTerm (default docker signal). */
+	termination_signal?: TerminationSignal;
+	/** The termination timeout. */
+	termination_timeout: number;
+	/**
+	 * Extra args which are interpolated into the `docker run` command,
+	 * and affect the container configuration.
+	 */
+	extra_args?: string[];
 	/**
 	 * Labels attached to various termination signal options.
 	 * Used to specify different shutdown functionality depending on the termination signal.
 	 */
 	term_signal_labels: TerminationSignalLabel[];
-	/** The default termination signal to use to stop the deployment. Defaults to SigTerm (default docker signal). */
-	termination_signal?: TerminationSignal;
-	/** The termination timeout. */
-	termination_timeout: number;
 	/**
 	 * The container port mapping.
 	 * Irrelevant if container network is `host`.
@@ -539,25 +558,6 @@ export interface DeploymentConfig {
 	environment?: EnvironmentVar[];
 	/** The docker labels given to the container. */
 	labels?: EnvironmentVar[];
-	/**
-	 * The network attached to the container.
-	 * Default is `host`.
-	 */
-	network: string;
-	/** The restart mode given to the container. */
-	restart?: RestartMode;
-	/**
-	 * This is interpolated at the end of the `docker run` command,
-	 * which means they are either passed to the containers inner process,
-	 * or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
-	 * Empty is no command.
-	 */
-	command?: string;
-	/**
-	 * Extra args which are interpolated into the `docker run` command,
-	 * and affect the container configuration.
-	 */
-	extra_args?: string[];
 }
 
 export type Deployment = Resource<DeploymentConfig, undefined>;
@@ -857,6 +857,8 @@ export interface ServerConfig {
 	 * Example: http://localhost:8120
 	 */
 	address: string;
+	/** An optional region label */
+	region?: string;
 	/**
 	 * Whether a server is enabled.
 	 * If a server is disabled,
@@ -882,8 +884,6 @@ export interface ServerConfig {
 	send_mem_alerts: boolean;
 	/** Whether to send alerts about the servers DISK status */
 	send_disk_alerts: boolean;
-	/** An optional region label */
-	region?: string;
 	/** The percentage threshhold which triggers WARNING state for CPU. */
 	cpu_warning: number;
 	/** The percentage threshhold which triggers CRITICAL state for CPU. */
@@ -3630,11 +3630,6 @@ export interface AwsBuilderConfig {
 	ami_id: string;
 	/** The subnet id to create the instance in. */
 	subnet_id: string;
-	/**
-	 * The security group ids to attach to the instance.
-	 * This should include a security group to allow core inbound access to the periphery port.
-	 */
-	security_group_ids: string[];
 	/** The key pair name to attach to the instance */
 	key_pair_name: string;
 	/**
@@ -3647,6 +3642,11 @@ export interface AwsBuilderConfig {
 	 * If false, core will communicate with the instance using the private IP.
 	 */
 	use_public_ip: boolean;
+	/**
+	 * The security group ids to attach to the instance.
+	 * This should include a security group to allow core inbound access to the periphery port.
+	 */
+	security_group_ids: string[];
 	/** Which github accounts (usernames) are available on the AMI */
 	github_accounts?: string[];
 	/** Which dockerhub accounts (usernames) are available on the AMI */

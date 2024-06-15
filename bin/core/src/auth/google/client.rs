@@ -185,10 +185,10 @@ impl GoogleOauthClient {
 
 #[derive(Deserialize)]
 pub struct AccessTokenResponse {
-  pub access_token: String,
+  // pub access_token: String,
   pub id_token: String,
-  pub scope: String,
-  pub token_type: String,
+  // pub scope: String,
+  // pub token_type: String,
 }
 
 #[derive(Deserialize, Clone)]
