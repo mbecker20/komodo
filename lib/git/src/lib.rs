@@ -1,4 +1,7 @@
-use std::path::Path;
+use std::{
+  path::{Path, PathBuf},
+  str::FromStr,
+};
 
 use anyhow::Context;
 use command::run_monitor_command;
@@ -77,6 +80,7 @@ where
     repo,
     branch,
     commit,
+    destination,
     on_clone,
     on_pull,
     ..
@@ -85,7 +89,11 @@ where
   let repo = repo.as_ref().context("build has no repo attached")?;
   let name = to_monitor_name(&name);
 
-  let repo_dir = repo_dir.join(name);
+  let repo_dir = match destination {
+    Some(destination) => PathBuf::from_str(&destination)
+      .context("destination is not valid path")?,
+    None => repo_dir.join(name),
+  };
 
   let mut logs =
     clone_inner(repo, &repo_dir, &branch, &commit, github_token)

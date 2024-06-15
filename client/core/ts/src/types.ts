@@ -782,6 +782,8 @@ export interface RepoConfig {
 	 * It must be available in the server's periphery config.
 	 */
 	github_account?: string;
+	/** Explicitly specificy the folder to clone the repo in. */
+	path?: string;
 	/**
 	 * Command to be run after the repo is cloned.
 	 * The path is relative to the root of the repo.
@@ -3658,6 +3660,7 @@ export interface CloneArgs {
 	repo?: string;
 	branch?: string;
 	commit?: string;
+	destination?: string;
 	on_clone?: SystemCommand;
 	on_pull?: SystemCommand;
 	github_account?: string;

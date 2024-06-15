@@ -99,6 +99,11 @@ pub struct RepoConfig {
   #[builder(default)]
   pub github_account: String,
 
+  /// Explicitly specificy the folder to clone the repo in.
+  #[serde(default)]
+  #[builder(default)]
+  pub path: String,
+
   /// Command to be run after the repo is cloned.
   /// The path is relative to the root of the repo.
   #[serde(default)]
@@ -140,6 +145,7 @@ impl Default for RepoConfig {
       branch: default_branch(),
       commit: Default::default(),
       github_account: Default::default(),
+      path: Default::default(),
       on_clone: Default::default(),
       on_pull: Default::default(),
       webhook_enabled: default_webhook_enabled(),
