@@ -23,6 +23,7 @@ import { LabelsConfig, ServerSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
+import { env_to_text } from "@lib/utils";
 
 export const DeploymentConfig = ({
   id,
@@ -90,7 +91,7 @@ export const DeploymentConfig = ({
                   (config.image?.params as any)?.build_id;
                 const build_registry_type = useRead("GetBuild", {
                   build: build_id!,
-                }).data?.config.image_registry?.type;
+                }).data?.config?.image_registry?.type;
                 const server_id = update.server_id ?? config.server_id;
                 return (
                   <ImageRegistryConfig
@@ -240,7 +241,7 @@ export const DeploymentConfig = ({
                     labels: [
                       ...(update.labels ?? config.labels ?? []),
                       { variable: "", value: "" },
-                    ],
+                    ] as Types.EnvironmentVar[],
                   })
                 }
                 className="flex items-center gap-2 w-[200px]"
@@ -251,7 +252,11 @@ export const DeploymentConfig = ({
             ),
             components: {
               labels: (l, set) => (
-                <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
+                <LabelsConfig
+                  labels={(l as Types.EnvironmentVar[]) ?? []}
+                  set={set}
+                  disabled={disabled}
+                />
               ),
             },
           },
@@ -268,14 +273,17 @@ export const DeploymentConfig = ({
           {
             label: "Environment",
             components: {
-              environment: (vars, set) => (
-                <EnvVars
-                  vars={vars ?? []}
-                  set={set}
-                  server={update.server_id || config.server_id}
-                  disabled={disabled}
-                />
-              ),
+              environment: (vars, set) => {
+                const env = typeof vars === "object" ? env_to_text(vars) : vars;
+                return (
+                  <EnvVars
+                    env={env ?? ""}
+                    set={set}
+                    server={update.server_id || config.server_id}
+                    disabled={disabled}
+                  />
+                );
+              },
               skip_secret_interp: true,
             },
           },

@@ -1,54 +1,25 @@
 import { ConfigItem } from "@components/config/util";
 import { useRead } from "@lib/hooks";
-import { env_to_text, text_to_env } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { Textarea } from "@ui/textarea";
-import { RefObject, createRef, useEffect, useState } from "react";
+import { RefObject, createRef } from "react";
 
 export const EnvVars = ({
-  vars,
+  env,
   set,
   disabled,
   server,
 }: {
-  vars: Types.EnvironmentVar[];
+  env: string;
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
   /// eg server id
   server?: string;
 }) => {
   const ref = createRef<HTMLTextAreaElement>();
-  const [env, setEnv] = useState<string>();
-  useEffect(() => setEnv(env_to_text(vars)), [vars]);
-
-  const update = () => {
-    if (!env) return;
-    const parsed = text_to_env(env);
-
-    // Diff the vars from old to new
-    for (const [v, i] of vars.map(
-      (v, i) => [v, i] as [Types.EnvironmentVar, number]
-    )) {
-      const _v = parsed[i];
-      if (!_v || v.value !== _v.value || v.variable !== _v.variable) {
-        set({ environment: parsed });
-        return;
-      }
-    }
-
-    // Diff the vars from new to old
-    for (const [v, i] of parsed.map(
-      (v, i) => [v, i] as [Types.EnvironmentVar, number]
-    )) {
-      const _v = vars[i];
-      if (!_v || v.value !== _v.value || v.variable !== _v.variable) {
-        set({ environment: parsed });
-        return;
-      }
-    }
-  };
+  const setEnv = (environment: string) => set({ environment });
 
   return (
     <ConfigItem className="flex-col gap-4 items-start">
@@ -61,7 +32,6 @@ export const EnvVars = ({
         placeholder="VARIABLE=value"
         value={env}
         onChange={(e) => setEnv(e.target.value)}
-        onBlur={update}
         disabled={disabled}
       />
     </ConfigItem>

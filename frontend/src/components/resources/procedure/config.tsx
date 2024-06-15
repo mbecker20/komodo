@@ -62,7 +62,7 @@ const ProcedureConfigInner = ({
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const { mutateAsync } = useWrite("UpdateProcedure");
-  const stages = config.stages || procedure.config.stages || [];
+  const stages = config.stages || procedure.config?.stages || [];
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
@@ -214,7 +214,7 @@ const ProcedureConfigInner = ({
                   <div className="text-muted-foreground">Enabled:</div>
                   <Switch
                     checked={
-                      config.webhook_enabled ?? procedure.config.webhook_enabled
+                      config.webhook_enabled ?? procedure.config?.webhook_enabled
                     }
                     onCheckedChange={(webhook_enabled) =>
                       setConfig({ ...config, webhook_enabled })

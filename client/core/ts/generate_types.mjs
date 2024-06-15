@@ -25,9 +25,12 @@ function fix_types() {
   const contents = readFileSync(types_path);
   const fixed = contents
     .toString()
+    // Replace Variants
     .replaceAll("ResourceTargetVariant", 'ResourceTarget["type"]')
     .replaceAll("AlerterEndpointVariant", 'AlerterEndpoint["type"]')
     .replaceAll("AlertDataVariant", 'AlertData["type"]')
-    .replaceAll("ServerTemplateConfigVariant", 'ServerTemplateConfig["type"]');
+    .replaceAll("ServerTemplateConfigVariant", 'ServerTemplateConfig["type"]')
+    // Add '| string' to env vars
+    .replaceAll("EnvironmentVar[]", "EnvironmentVar[] | string");
   writeFileSync(types_path, fixed);
 }

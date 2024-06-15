@@ -18,7 +18,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
     target: { type: "Builder", id },
   }).data;
   const config = useRead("GetBuilder", { builder: id }).data?.config
-    .params as Types.AwsBuilderConfig;
+    ?.params as Types.AwsBuilderConfig;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.AwsBuilderConfig>>({});
@@ -61,7 +61,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set(update => ({
+                  set((update) => ({
                     ...update,
                     security_group_ids: [
                       ...(update.security_group_ids ??
@@ -97,7 +97,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set(update => ({
+                  set((update) => ({
                     ...update,
                     github_accounts: [
                       ...(update.github_accounts ??

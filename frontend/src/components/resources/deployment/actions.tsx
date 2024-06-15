@@ -23,8 +23,8 @@ export const DeployContainer = ({ id }: DeploymentId) => {
   const [signal, setSignal] = useState<Types.TerminationSignal>();
 
   useEffect(
-    () => setSignal(deployment?.config.termination_signal),
-    [deployment?.config.termination_signal]
+    () => setSignal(deployment?.config?.termination_signal),
+    [deployment?.config?.termination_signal]
   );
 
   const { mutate: deploy, isPending } = useExecute("Deploy");
@@ -60,9 +60,9 @@ export const DeployContainer = ({ id }: DeploymentId) => {
         disabled={pending}
         loading={pending}
         additional={
-          deployed && deployment.config.term_signal_labels.length > 1 ? (
+          deployed && deployment.config!.term_signal_labels.length > 1 ? (
             <TermSignalSelector
-              signals={deployment.config.term_signal_labels}
+              signals={deployment.config!.term_signal_labels}
               signal={signal}
               setSignal={setSignal}
             />
@@ -113,8 +113,8 @@ const StopContainer = ({ id }: DeploymentId) => {
   const [signal, setSignal] = useState<Types.TerminationSignal>();
 
   useEffect(
-    () => setSignal(deployment?.config.termination_signal),
-    [deployment?.config.termination_signal]
+    () => setSignal(deployment?.config?.termination_signal),
+    [deployment?.config?.termination_signal]
   );
 
   const { mutate, isPending } = useExecute("StopContainer");
@@ -138,9 +138,9 @@ const StopContainer = ({ id }: DeploymentId) => {
       disabled={pending}
       loading={pending}
       additional={
-        deployment.config.term_signal_labels.length > 1 ? (
+        deployment.config!.term_signal_labels.length > 1 ? (
           <TermSignalSelector
-            signals={deployment.config.term_signal_labels}
+            signals={deployment.config!.term_signal_labels}
             signal={signal}
             setSignal={setSignal}
           />
@@ -181,8 +181,8 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
   const [signal, setSignal] = useState<Types.TerminationSignal>();
 
   useEffect(
-    () => setSignal(deployment?.config.termination_signal),
-    [deployment?.config.termination_signal]
+    () => setSignal(deployment?.config?.termination_signal),
+    [deployment?.config?.termination_signal]
   );
 
   const { mutate, isPending } = useExecute("RemoveContainer");
@@ -212,9 +212,9 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
       disabled={pending}
       loading={pending}
       additional={
-        deployment.config.term_signal_labels.length > 1 ? (
+        deployment.config!.term_signal_labels.length > 1 ? (
           <TermSignalSelector
-            signals={deployment.config.term_signal_labels}
+            signals={deployment.config!.term_signal_labels}
             signal={signal}
             setSignal={setSignal}
           />

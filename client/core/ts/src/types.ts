@@ -365,9 +365,9 @@ export interface BuildConfig {
 	/** Any extra docker cli arguments to be included in the build command */
 	extra_args?: string[];
 	/** Docker build arguments */
-	build_args?: EnvironmentVar[];
+	build_args?: EnvironmentVar[] | string;
 	/** Docker labels */
-	labels?: EnvironmentVar[];
+	labels?: EnvironmentVar[] | string;
 }
 
 export interface BuildInfo {
@@ -555,9 +555,9 @@ export interface DeploymentConfig {
 	 */
 	volumes?: Conversion[];
 	/** The environment variables passed to the container. */
-	environment?: EnvironmentVar[];
+	environment?: EnvironmentVar[] | string;
 	/** The docker labels given to the container. */
-	labels?: EnvironmentVar[];
+	labels?: EnvironmentVar[] | string;
 }
 
 export type Deployment = Resource<DeploymentConfig, undefined>;

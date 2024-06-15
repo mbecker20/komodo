@@ -32,7 +32,7 @@ export const AwsServerTemplateConfig = ({
   disabled: boolean;
 }) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data
-    ?.config.params as Types.AwsServerTemplateConfig;
+    ?.config?.params as Types.AwsServerTemplateConfig;
   const [update, set] = useState<Partial<Types.AwsServerTemplateConfig>>({});
   const { mutateAsync } = useWrite("UpdateServerTemplate");
   if (!config) return null;

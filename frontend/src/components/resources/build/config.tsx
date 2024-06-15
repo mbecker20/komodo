@@ -8,12 +8,12 @@ import {
   SystemCommand,
 } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
-import { env_to_text, text_to_env } from "@lib/utils";
+import { env_to_text } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Textarea } from "@ui/textarea";
 import { PlusCircle } from "lucide-react";
-import { ReactNode, RefObject, createRef, useEffect, useState } from "react";
+import { ReactNode, RefObject, createRef, useState } from "react";
 import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 
@@ -209,13 +209,15 @@ export const BuildConfig = ({
               <Button
                 variant="secondary"
                 onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    labels: [
-                      ...(update.labels ?? config.labels ?? []),
-                      { variable: "", value: "" },
-                    ],
-                  }))
+                  set((update) => {
+                    return {
+                      ...update,
+                      labels: [
+                        ...(update.labels ?? config.labels ?? []),
+                        { variable: "", value: "" },
+                      ] as Types.EnvironmentVar[],
+                    };
+                  })
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
@@ -225,7 +227,11 @@ export const BuildConfig = ({
             ),
             components: {
               labels: (l, set) => (
-                <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
+                <LabelsConfig
+                  labels={(l as Types.EnvironmentVar[]) ?? []}
+                  set={set}
+                  disabled={disabled}
+                />
               ),
             },
           },
@@ -257,9 +263,13 @@ export const BuildConfig = ({
           {
             label: "Build Args",
             components: {
-              build_args: (vars, set) => (
-                <BuildArgs vars={vars ?? []} set={set} disabled={disabled} />
-              ),
+              build_args: (vars, set) => {
+                const args =
+                  typeof vars === "object" ? env_to_text(vars) : vars;
+                return (
+                  <BuildArgs args={args ?? ""} set={set} disabled={disabled} />
+                );
+              },
               skip_secret_interp: true,
             },
           },
@@ -270,44 +280,16 @@ export const BuildConfig = ({
 };
 
 const BuildArgs = ({
-  vars,
+  args,
   set,
   disabled,
 }: {
-  vars: Types.EnvironmentVar[];
+  args: string;
   set: (input: Partial<Types.BuildConfig>) => void;
   disabled: boolean;
 }) => {
   const ref = createRef<HTMLTextAreaElement>();
-  const [args, setArgs] = useState<string>();
-  useEffect(() => setArgs(env_to_text(vars)), [vars]);
-
-  const update = () => {
-    if (!args) return;
-    const parsed = text_to_env(args);
-
-    // Diff the vars from old to new
-    for (const [v, i] of vars.map(
-      (v, i) => [v, i] as [Types.EnvironmentVar, number]
-    )) {
-      const _v = parsed[i];
-      if (!_v || v.value !== _v.value || v.variable !== _v.variable) {
-        set({ build_args: parsed });
-        return;
-      }
-    }
-
-    // Diff the vars from new to old
-    for (const [v, i] of parsed.map(
-      (v, i) => [v, i] as [Types.EnvironmentVar, number]
-    )) {
-      const _v = vars[i];
-      if (!_v || v.value !== _v.value || v.variable !== _v.variable) {
-        set({ build_args: parsed });
-        return;
-      }
-    }
-  };
+  const setArgs = (build_args: string) => set({ build_args });
 
   return (
     <ConfigItem className="flex-col gap-4 items-start">
@@ -318,7 +300,6 @@ const BuildArgs = ({
         placeholder="VARIABLE=value"
         value={args}
         onChange={(e) => setArgs(e.target.value)}
-        onBlur={update}
         disabled={disabled}
       />
     </ConfigItem>
@@ -442,4 +423,3 @@ const Secrets = ({
     </Tabs>
   );
 };
-

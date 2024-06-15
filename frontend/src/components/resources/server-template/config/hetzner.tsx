@@ -41,7 +41,7 @@ export const HetznerServerTemplateConfig = ({
   disabled: boolean;
 }) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data
-    ?.config.params as Types.HetznerServerTemplateConfig;
+    ?.config?.params as Types.HetznerServerTemplateConfig;
   const [update, set] = useState<Partial<Types.HetznerServerTemplateConfig>>(
     {}
   );
