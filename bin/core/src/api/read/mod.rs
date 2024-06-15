@@ -191,7 +191,7 @@ async fn handler(
         resolver_api::Error::Inner(e) => e,
       });
   if let Err(e) = &res {
-    warn!("/read request {req_id} error: {e:#}");
+    debug!("/read request {req_id} error: {e:#}");
   }
   let elapsed = timer.elapsed();
   debug!("/read request {req_id} | resolve time: {elapsed:?}");
