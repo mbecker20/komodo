@@ -5,6 +5,7 @@ import {
   ConfigItem,
   ImageRegistryConfig,
   InputList,
+  SecretSelector,
   SystemCommand,
 } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
@@ -15,7 +16,6 @@ import { Textarea } from "@ui/textarea";
 import { PlusCircle } from "lucide-react";
 import { ReactNode, RefObject, createRef, useState } from "react";
 import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 
 export const BuildConfig = ({
   id,
@@ -324,102 +324,36 @@ const Secrets = ({
 
   if (variables.length === 0 && secrets.length === 0) return;
 
-  if (variables.length === 0) {
-    // ONLY SECRETS
-    return (
-      <div className="flex flex-col gap-2 w-full">
-        <h2 className="text-muted-foreground">Secrets</h2>
-        <div className="flex gap-4 items-center flex-wrap w-full">
-          {secrets.map((secret) => (
-            <Button
-              variant="secondary"
-              key={secret}
-              onClick={() =>
-                setArgs(
-                  _args.slice(0, argsRef.current?.selectionStart) +
-                    `[[${secret}]]` +
-                    _args.slice(argsRef.current?.selectionStart, undefined)
-                )
-              }
-            >
-              {secret}
-            </Button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (secrets.length === 0) {
-    // ONLY VARIABLES
-    return (
-      <div className="flex flex-col gap-2 w-full">
-        <h2 className="text-muted-foreground">Variables</h2>
-        <div className="flex gap-4 items-center flex-wrap w-full">
-          {variables.map(({ name }) => (
-            <Button
-              variant="secondary"
-              key={name}
-              onClick={() =>
-                setArgs(
-                  _args.slice(0, argsRef.current?.selectionStart) +
-                    `[[${name}]]` +
-                    _args.slice(argsRef.current?.selectionStart, undefined)
-                )
-              }
-            >
-              {name}
-            </Button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <Tabs className="w-full" defaultValue="Variables">
-      <TabsList>
-        <TabsTrigger value="Variables">Variables</TabsTrigger>
-        <TabsTrigger value="Secrets">Secrets</TabsTrigger>
-      </TabsList>
-      <TabsContent value="Variables">
-        <div className="flex gap-4 items-center w-full flex-wrap pt-1">
-          {variables.map(({ name }) => (
-            <Button
-              variant="secondary"
-              key={name}
-              onClick={() =>
-                setArgs(
-                  _args.slice(0, argsRef.current?.selectionStart) +
-                    `[[${name}]]` +
-                    _args.slice(argsRef.current?.selectionStart, undefined)
-                )
-              }
-            >
-              {name}
-            </Button>
-          ))}
-        </div>
-      </TabsContent>
-      <TabsContent value="Secrets">
-        <div className="flex gap-4 items-center w-full flex-wrap pt-1">
-          {secrets.map((secret) => (
-            <Button
-              variant="secondary"
-              key={secret}
-              onClick={() =>
-                setArgs(
-                  _args.slice(0, argsRef.current?.selectionStart) +
-                    `[[${secret}]]` +
-                    _args.slice(argsRef.current?.selectionStart, undefined)
-                )
-              }
-            >
-              {secret}
-            </Button>
-          ))}
-        </div>
-      </TabsContent>
-    </Tabs>
+    <div className="flex items-center gap-2">
+      {variables.length > 0 && (
+        <SecretSelector
+          type="Variable"
+          keys={variables.map((v) => v.name)}
+          onSelect={(variable) =>
+            setArgs(
+              _args.slice(0, argsRef.current?.selectionStart) +
+                `[[${variable}]]` +
+                _args.slice(argsRef.current?.selectionStart, undefined)
+            )
+          }
+          disabled={false}
+        />
+      )}
+      {secrets.length > 0 && (
+        <SecretSelector
+          type="Secret"
+          keys={secrets}
+          onSelect={(secret) =>
+            setArgs(
+              _args.slice(0, argsRef.current?.selectionStart) +
+                `[[${secret}]]` +
+                _args.slice(argsRef.current?.selectionStart, undefined)
+            )
+          }
+          disabled={false}
+        />
+      )}
+    </div>
   );
 };

@@ -639,3 +639,68 @@ const default_registry_config = (
       return { type, params: "" };
   }
 };
+
+export const SecretSelector = ({
+  keys,
+  onSelect,
+  type,
+  disabled,
+}: {
+  keys: string[];
+  onSelect: (key: string) => void;
+  type: "Variable" | "Secret";
+  disabled: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = filterBySplit(keys, search, (item) => item).sort((a, b) => {
+    if (a > b) {
+      return 1;
+    } else if (a < b) {
+      return -1;
+    } else {
+      return 0;
+    }
+  });
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="secondary" className="flex gap-2" disabled={disabled}>
+          <PlusCircle className="w-4 h-4" />
+          <div>Add {type}</div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] max-h-[300px] p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder={`Search ${type}s`}
+            className="h-9"
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            <CommandEmpty className="flex justify-evenly items-center pt-2">
+              {`No ${type}s Found`}
+              <SearchX className="w-3 h-3" />
+            </CommandEmpty>
+
+            <CommandGroup>
+              {filtered.map((key) => (
+                <CommandItem
+                  key={key}
+                  onSelect={() => {
+                    onSelect(key);
+                    setOpen(false);
+                  }}
+                  className="flex items-center justify-between cursor-pointer"
+                >
+                  <div className="p-1">{key}</div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
