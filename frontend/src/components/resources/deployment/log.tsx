@@ -2,12 +2,7 @@ import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
-import {
-  RefreshCw,
-  ChevronDown,
-  X,
-  AlertOctagon,
-} from "lucide-react";
+import { RefreshCw, ChevronDown, X, AlertOctagon } from "lucide-react";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useDeployment } from ".";
 import {
@@ -22,8 +17,15 @@ import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { logToHtml } from "@lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
+import { Switch } from "@ui/switch";
 
-export const DeploymentLogs = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
+export const DeploymentLogs = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
   const state = useDeployment(id)?.info.state;
   if (
     state === undefined ||
@@ -35,11 +37,18 @@ export const DeploymentLogs = ({ id, titleOther }: { id: string; titleOther: Rea
   return <DeploymentLogsInner id={id} titleOther={titleOther} />;
 };
 
-const DeploymentLogsInner = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
+const DeploymentLogsInner = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
   const { toast } = useToast();
   const [stream, setStream] = useState("stdout");
   const [tail, set] = useState("100");
   const [terms, setTerms] = useState<string[]>([]);
+  const [invert, setInvert] = useState(false);
   const [search, setSearch] = useState("");
 
   const addTerm = () => {
@@ -59,14 +68,18 @@ const DeploymentLogsInner = ({ id, titleOther }: { id: string; titleOther: React
   };
 
   const { Log, refetch, stderr } = terms.length
-    ? SearchLogs(id, terms)
+    ? SearchLogs(id, terms, invert)
     : NoSearchLogs(id, tail, stream);
 
   return (
     <Section
       titleOther={titleOther}
       actions={
-        <div className="flex gap-2">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="text-muted-foreground">Invert Search </div>
+            <Switch checked={invert} onCheckedChange={setInvert} />
+          </div>
           {terms.map((term, index) => (
             <Button
               key={term}
@@ -87,7 +100,7 @@ const DeploymentLogsInner = ({ id, titleOther }: { id: string; titleOther: React
               onKeyDown={(e) => {
                 if (e.key === "Enter") addTerm();
               }}
-              className="w-[300px]"
+              className="w-[240px]"
             />
             <Button
               variant="ghost"
@@ -140,11 +153,12 @@ const NoSearchLogs = (id: string, tail: string, stream: string) => {
   };
 };
 
-const SearchLogs = (id: string, terms: string[]) => {
+const SearchLogs = (id: string, terms: string[], invert: boolean) => {
   const { data: log, refetch } = useRead("SearchLog", {
     deployment: id,
     terms,
     combinator: Types.SearchCombinator.And,
+    invert,
   });
   return {
     Log: (
@@ -182,7 +196,11 @@ const Log = ({
           className="-scroll-mt-24 pb-[20vh]"
         />
       </div>
-      <Button variant="secondary" className="absolute top-4 right-4" onClick={scroll}>
+      <Button
+        variant="secondary"
+        className="absolute top-4 right-4"
+        onClick={scroll}
+      >
         <ChevronDown className="h-4 w-4" />
       </Button>
     </>
