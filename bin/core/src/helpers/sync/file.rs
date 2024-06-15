@@ -11,7 +11,9 @@ pub fn read_resources(
 ) -> anyhow::Result<(ResourcesToml, Log)> {
   let mut res = ResourcesToml::default();
   let mut log = format!("reading resources from {path:?}");
-  read_resources_recursive(path, &mut res, &mut log)?;
+  read_resources_recursive(path, &mut res, &mut log).with_context(
+    || format!("failed to read resources from {path:?}"),
+  )?;
   Ok((res, Log::simple("read remote resources", log)))
 }
 
@@ -30,13 +32,8 @@ fn read_resources_recursive(
     {
       return Ok(());
     }
-    let more = match parse_toml_file::<ResourcesToml>(path) {
-      Ok(res) => res,
-      Err(e) => {
-        warn!("failed to parse {:?}. skipping file | {e:#}", path);
-        return Ok(());
-      }
-    };
+    let more = parse_toml_file::<ResourcesToml>(path)
+      .context("failed to parse resource file")?;
 
     log.push('\n');
     log.push_str(&format!(
