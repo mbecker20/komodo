@@ -348,6 +348,7 @@ pub fn environment_vars_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<EnvironmentVar>> {
   let res = value
+    .trim()
     .split('\n')
     .map(|line| line.trim())
     .enumerate()

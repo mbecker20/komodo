@@ -300,6 +300,7 @@ pub fn conversions_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<Conversion>> {
   let res = value
+    .trim()
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
@@ -605,6 +606,7 @@ pub fn term_signal_labels_from_str(
   value: &str,
 ) -> anyhow::Result<Vec<TerminationSignalLabel>> {
   let res = value
+    .trim()
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
