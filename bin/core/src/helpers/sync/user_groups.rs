@@ -22,7 +22,9 @@ use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
 
-use super::{bold, colored, muted, resource::AllResourcesById, Color};
+use super::{
+  bold, colored, muted, resource::AllResourcesById, Color,
+};
 
 pub struct UpdateItem {
   user_group: UserGroupToml,

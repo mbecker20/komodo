@@ -355,7 +355,7 @@ pub fn environment_vars_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.starts_with('#'))
+    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
       let mut split = line.split('=');
       let variable = split

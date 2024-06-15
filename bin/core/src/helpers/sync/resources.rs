@@ -22,7 +22,8 @@ use crate::{
     resource::{
       run_update_description, run_update_tags, ResourceSync,
       ToUpdateItem,
-    }, Color,
+    },
+    Color,
   },
   resource::MonitorResource,
 };

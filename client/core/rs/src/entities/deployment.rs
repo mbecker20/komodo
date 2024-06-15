@@ -307,7 +307,7 @@ pub fn conversions_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.starts_with('#'))
+    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
       let mut split = line.split('=');
       let local = split
@@ -616,7 +616,7 @@ pub fn term_signal_labels_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.starts_with('#'))
+    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
       let mut split = line.split('=');
       let signal = split
