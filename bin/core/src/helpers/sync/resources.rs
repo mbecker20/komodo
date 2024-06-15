@@ -17,13 +17,12 @@ use monitor_client::{
 use partial_derive2::{MaybeNone, PartialDiff};
 
 use crate::{
-  helpers::sync::{
-    bold, colored, muted,
-    resource::{
+  helpers::{
+    formatting::{bold, colored, muted, Color},
+    sync::resource::{
       run_update_description, run_update_tags, ResourceSync,
       ToUpdateItem,
     },
-    Color,
   },
   resource::MonitorResource,
 };

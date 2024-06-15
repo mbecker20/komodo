@@ -24,9 +24,11 @@ use mungos::find::find_collect;
 use partial_derive2::{Diff, FieldDiff, MaybeNone};
 use resolver_api::Resolve;
 
-use crate::{resource::MonitorResource, state::State};
-
-use super::{bold, colored, muted, Color};
+use crate::{
+  helpers::formatting::{bold, colored, muted, Color},
+  resource::MonitorResource,
+  state::State,
+};
 
 pub type ToUpdate<T> = Vec<ToUpdateItem<T>>;
 pub type ToCreate<T> = Vec<ResourceToml<T>>;

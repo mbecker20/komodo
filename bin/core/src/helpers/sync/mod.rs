@@ -7,6 +7,7 @@ use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
 
+pub mod deployment;
 pub mod remote;
 pub mod resource;
 pub mod user_groups;
@@ -40,34 +41,4 @@ pub fn spawn_sync_refresh_loop() {
       }
     }
   });
-}
-
-fn muted(content: &str) -> String {
-  format!("<span class=\"text-muted-foreground\">{content}</span>")
-}
-
-fn bold(content: &str) -> String {
-  format!("<span class=\"font-bold\">{content}</span>")
-}
-
-pub fn colored(content: &str, color: Color) -> String {
-  format!("<span class=\"{color}\">{content}</span>")
-}
-
-pub enum Color {
-  Red,
-  Green,
-  Blue,
-}
-
-impl std::fmt::Display for Color {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      Color::Red => f.write_str("text-red-700 dark:text-red-400"),
-      Color::Green => {
-        f.write_str("text-green-700 dark:text-green-400")
-      }
-      Color::Blue => f.write_str("text-blue-700 dark:text-blue-400"),
-    }
-  }
 }

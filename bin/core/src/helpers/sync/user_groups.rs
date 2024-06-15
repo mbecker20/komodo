@@ -20,11 +20,12 @@ use monitor_client::{
 use mungos::find::find_collect;
 use resolver_api::Resolve;
 
-use crate::state::{db_client, State};
-
-use super::{
-  bold, colored, muted, resource::AllResourcesById, Color,
+use crate::{
+  helpers::formatting::{bold, colored, muted, Color},
+  state::{db_client, State},
 };
+
+use super::resource::AllResourcesById;
 
 pub struct UpdateItem {
   user_group: UserGroupToml,

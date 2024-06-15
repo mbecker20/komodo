@@ -542,6 +542,8 @@ fn convert_resource<R: MonitorResource>(
       .filter_map(|t| tag_names.get(t).cloned())
       .collect(),
     description: resource.description,
+    deploy: false,
+    after: Default::default(),
     config,
   }
 }

@@ -97,17 +97,35 @@ pub struct ResourceToml<PartialConfig: Default> {
   /// The resource name. Required
   pub name: String,
 
-  /// The resource description.
-  #[serde(default)]
+  /// The resource description. Optional.
+  #[serde(default, skip_serializing_if = "String::is_empty")]
   pub description: String,
 
-  /// Tag ids or names
-  #[serde(default)]
+  /// Tag ids or names. Optional
+  #[serde(default, skip_serializing_if = "Vec::is_empty")]
   pub tags: Vec<String>,
 
-  /// Resource specific configuration
+  /// Optional. Only relevant for deployments.
+  ///
+  /// Will ensure deployment is running with the latest configuration.
+  /// Deploy actions to achieve this will be included in the sync.
+  #[serde(default, skip_serializing_if = "is_false")]
+  pub deploy: bool,
+
+  /// Optional. Only relevant for deployments using the 'deploy' sync feature.
+  ///
+  /// Specify other deployments as dependencies.
+  /// The sync will ensure the deployment will only be deployed 'after' its dependencies.
+  #[serde(default, skip_serializing_if = "Vec::is_empty")]
+  pub after: Vec<String>,
+
+  /// Resource specific configuration.
   #[serde(default)]
   pub config: PartialConfig,
+}
+
+fn is_false(b: &bool) -> bool {
+  !b
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

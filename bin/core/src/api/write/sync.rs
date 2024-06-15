@@ -7,7 +7,6 @@ use monitor_client::{
     alerter::Alerter,
     build::Build,
     builder::Builder,
-    deployment::Deployment,
     monitor_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
@@ -33,7 +32,10 @@ use serror::serialize_error_pretty;
 use crate::{
   helpers::{
     query::get_id_to_tags,
-    sync::resource::{get_updates_for_view, AllResourcesById},
+    sync::{
+      deployment,
+      resource::{get_updates_for_view, AllResourcesById},
+    },
   },
   resource,
   state::{db_client, State},
@@ -127,7 +129,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         )
         .await
         .context("failed to get server updates")?,
-        deployment_updates: get_updates_for_view::<Deployment>(
+        deployment_updates: deployment::get_updates_for_view(
           resources.deployments,
           sync.config.delete,
           &all_resources,

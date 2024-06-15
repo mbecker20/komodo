@@ -24,13 +24,10 @@ use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
+    formatting::{colored, Color},
     query::get_id_to_tags,
-    sync::{
-      colored,
-      resource::{
-        get_updates_for_execution, AllResourcesById, ResourceSync,
-      },
-      Color,
+    sync::resource::{
+      get_updates_for_execution, AllResourcesById, ResourceSync,
     },
     update::update_update,
   },

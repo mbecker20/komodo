@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context};
 use monitor_client::entities::{toml::ResourcesToml, update::Log};
 use serde::de::DeserializeOwned;
 
-use super::{colored, muted, Color};
+use crate::helpers::formatting::{colored, muted, Color};
 
 pub fn read_resources(
   path: &Path,
