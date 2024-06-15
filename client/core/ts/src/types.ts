@@ -2195,6 +2195,8 @@ export interface SearchLog {
 	 * - `OR`: Include lines that have one or more matches in the terms.
 	 */
 	combinator?: SearchCombinator;
+	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
+	invert?: boolean;
 }
 
 /**

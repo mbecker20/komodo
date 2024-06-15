@@ -27,13 +27,18 @@ pub async fn container_log_search(
   container_name: &str,
   terms: &[String],
   combinator: SearchCombinator,
+  invert: bool,
 ) -> Log {
+  let maybe_invert = invert.then_some(" -v").unwrap_or_default();
   let grep = match combinator {
     SearchCombinator::Or => {
-      format!("grep -E '{}'", terms.join("|"))
+      format!("grep{maybe_invert} -E '{}'", terms.join("|"))
     }
     SearchCombinator::And => {
-      format!("grep -P '^(?=.*{})'", terms.join(")(?=.*"))
+      format!(
+        "grep{maybe_invert} -P '^(?=.*{})'",
+        terms.join(")(?=.*")
+      )
     }
   };
   let command =

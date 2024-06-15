@@ -51,14 +51,17 @@ impl Resolve<GetContainerLogSearch> for State {
   )]
   async fn resolve(
     &self,
-    req: GetContainerLogSearch,
+    GetContainerLogSearch {
+      name,
+      terms,
+      combinator,
+      invert,
+    }: GetContainerLogSearch,
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(
       docker::container::container_log_search(
-        &req.name,
-        &req.terms,
-        req.combinator,
+        &name, &terms, combinator, invert,
       )
       .await,
     )

@@ -153,9 +153,9 @@ pub struct SearchLog {
   /// - `OR`: Include lines that have one or more matches in the terms.
   #[serde(default)]
   pub combinator: SearchCombinator,
-  // /// 
-  // #[serde(default)]
-  // pub invert: bool,
+  /// Invert the results, ie return all lines that DON'T match the terms / combinator.
+  #[serde(default)]
+  pub invert: bool,
 }
 
 #[typeshare]

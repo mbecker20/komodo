@@ -121,6 +121,7 @@ impl Resolve<SearchLog, User> for State {
       deployment,
       terms,
       combinator,
+      invert,
     }: SearchLog,
     user: User,
   ) -> anyhow::Result<Log> {
@@ -143,7 +144,7 @@ impl Resolve<SearchLog, User> for State {
         name,
         terms,
         combinator,
-        invert: false,
+        invert,
       })
       .await
       .context("failed at call to periphery")
