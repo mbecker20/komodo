@@ -20,7 +20,7 @@ use crate::{
 };
 
 impl Resolve<PruneContainers, (User, Update)> for State {
-  #[instrument(name = "PruneContainers", skip(self, user))]
+  #[instrument(name = "PruneContainers", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     PruneContainers { server }: PruneContainers,
@@ -71,7 +71,7 @@ impl Resolve<PruneContainers, (User, Update)> for State {
 }
 
 impl Resolve<PruneNetworks, (User, Update)> for State {
-  #[instrument(name = "PruneNetworks", skip(self, user))]
+  #[instrument(name = "PruneNetworks", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     PruneNetworks { server }: PruneNetworks,
@@ -122,7 +122,7 @@ impl Resolve<PruneNetworks, (User, Update)> for State {
 }
 
 impl Resolve<PruneImages, (User, Update)> for State {
-  #[instrument(name = "PruneImages", skip(self, user))]
+  #[instrument(name = "PruneImages", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     PruneImages { server }: PruneImages,

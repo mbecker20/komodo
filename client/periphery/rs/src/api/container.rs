@@ -36,6 +36,8 @@ pub struct GetContainerLogSearch {
   pub terms: Vec<String>,
   #[serde(default)]
   pub combinator: SearchCombinator,
+  #[serde(default)]
+  pub invert: bool,
 }
 
 //

@@ -35,7 +35,7 @@ use crate::{
 use crate::helpers::update::init_execution_update;
 
 impl Resolve<Deploy, (User, Update)> for State {
-  #[instrument(name = "Deploy", skip(self, user))]
+  #[instrument(name = "Deploy", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     Deploy {
@@ -203,7 +203,7 @@ impl Resolve<Deploy, (User, Update)> for State {
 }
 
 impl Resolve<StartContainer, (User, Update)> for State {
-  #[instrument(name = "StartContainer", skip(self, user))]
+  #[instrument(name = "StartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     StartContainer { deployment }: StartContainer,
@@ -263,7 +263,7 @@ impl Resolve<StartContainer, (User, Update)> for State {
 }
 
 impl Resolve<StopContainer, (User, Update)> for State {
-  #[instrument(name = "StopContainer", skip(self, user))]
+  #[instrument(name = "StopContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     StopContainer {
@@ -333,7 +333,7 @@ impl Resolve<StopContainer, (User, Update)> for State {
 }
 
 impl Resolve<StopAllContainers, (User, Update)> for State {
-  #[instrument(name = "StopAllContainers", skip(self, user))]
+  #[instrument(name = "StopAllContainers", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     StopAllContainers { server }: StopAllContainers,
@@ -419,7 +419,7 @@ impl Resolve<StopAllContainers, (User, Update)> for State {
 }
 
 impl Resolve<RemoveContainer, (User, Update)> for State {
-  #[instrument(name = "RemoveContainer", skip(self, user))]
+  #[instrument(name = "RemoveContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     RemoveContainer {

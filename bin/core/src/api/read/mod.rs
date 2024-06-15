@@ -172,17 +172,14 @@ pub fn router() -> Router {
     .layer(middleware::from_fn(auth_request))
 }
 
-#[instrument(name = "ReadHandler", level = "debug", skip(user))]
+#[instrument(name = "ReadHandler", level = "debug", skip(user), fields(user_id = user.id))]
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<ReadRequest>,
 ) -> serror::Result<(TypedHeader<ContentType>, String)> {
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
-  debug!(
-    "/read request {req_id} | user: {} ({})",
-    user.username, user.id
-  );
+  debug!("/read request | user: {}", user.username);
   let res =
     State
       .resolve_request(request, user)

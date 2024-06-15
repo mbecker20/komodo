@@ -143,6 +143,7 @@ impl Resolve<SearchLog, User> for State {
         name,
         terms,
         combinator,
+        invert: false,
       })
       .await
       .context("failed at call to periphery")

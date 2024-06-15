@@ -59,7 +59,7 @@ use crate::helpers::update::init_execution_update;
 use super::ExecuteRequest;
 
 impl Resolve<RunBuild, (User, Update)> for State {
-  #[instrument(name = "RunBuild", skip(self, user))]
+  #[instrument(name = "RunBuild", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     RunBuild { build }: RunBuild,
@@ -338,6 +338,7 @@ async fn handle_early_return(
   Ok(update)
 }
 
+#[instrument(skip_all)]
 pub async fn validate_cancel_build(
   request: &ExecuteRequest,
 ) -> anyhow::Result<()> {
@@ -381,7 +382,7 @@ pub async fn validate_cancel_build(
 }
 
 impl Resolve<CancelBuild, (User, Update)> for State {
-  #[instrument(name = "CancelBuild", skip(self, user))]
+  #[instrument(name = "CancelBuild", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     CancelBuild { build }: CancelBuild,

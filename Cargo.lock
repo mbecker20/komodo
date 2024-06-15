@@ -2256,6 +2256,7 @@ dependencies = [
  "serror",
  "sha2",
  "slack_client_rs",
+ "strum 0.26.2",
  "svi",
  "termination_signal",
  "tokio",

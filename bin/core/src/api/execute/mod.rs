@@ -121,7 +121,7 @@ async fn handler(
   Ok(Json(update))
 }
 
-#[instrument(name = "ExecuteRequest", skip(user, update))]
+#[instrument(name = "ExecuteRequest", skip(user, update), fields(user_id = user.id, update_id = update.id))]
 async fn task(
   req_id: Uuid,
   request: ExecuteRequest,
@@ -149,7 +149,7 @@ async fn task(
   }
 
   let elapsed = timer.elapsed();
-  info!("/execute request {req_id} | resolve time: {elapsed:?}");
+  debug!("/execute request {req_id} | resolve time: {elapsed:?}");
 
   res
 }

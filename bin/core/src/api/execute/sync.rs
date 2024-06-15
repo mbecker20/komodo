@@ -39,6 +39,7 @@ use crate::{
 };
 
 impl Resolve<RunSync, (User, Update)> for State {
+  #[instrument(name = "RunSync", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     RunSync { sync }: RunSync,

@@ -21,7 +21,7 @@ use crate::{
 };
 
 impl Resolve<LaunchServer, (User, Update)> for State {
-  #[instrument(name = "LaunchServer", skip(self, user))]
+  #[instrument(name = "LaunchServer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     LaunchServer {

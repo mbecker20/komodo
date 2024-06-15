@@ -19,7 +19,7 @@ use crate::{
 };
 
 impl Resolve<RunProcedure, (User, Update)> for State {
-  #[instrument(name = "RunProcedure", skip(self, user))]
+  #[instrument(name = "RunProcedure", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     RunProcedure { procedure }: RunProcedure,

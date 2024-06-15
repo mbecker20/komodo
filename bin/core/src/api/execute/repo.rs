@@ -26,7 +26,7 @@ use crate::{
 };
 
 impl Resolve<CloneRepo, (User, Update)> for State {
-  #[instrument(name = "CloneRepo", skip(self, user))]
+  #[instrument(name = "CloneRepo", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     CloneRepo { repo }: CloneRepo,
@@ -87,7 +87,7 @@ impl Resolve<CloneRepo, (User, Update)> for State {
 }
 
 impl Resolve<PullRepo, (User, Update)> for State {
-  #[instrument(name = "PullRepo", skip(self, user))]
+  #[instrument(name = "PullRepo", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     PullRepo { repo }: PullRepo,

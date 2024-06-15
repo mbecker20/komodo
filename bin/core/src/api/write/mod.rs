@@ -149,16 +149,13 @@ async fn handler(
   Ok((TypedHeader(ContentType::json()), res??))
 }
 
-#[instrument(name = "WriteRequest", skip(user))]
+#[instrument(name = "WriteRequest", skip(user), fields(user_id = user.id))]
 async fn task(
   req_id: Uuid,
   request: WriteRequest,
   user: User,
 ) -> anyhow::Result<String> {
-  info!(
-    "/write request {req_id} | user: {} ({})",
-    user.username, user.id
-  );
+  info!("/write request | user: {}", user.username);
 
   let timer = Instant::now();
 
@@ -178,7 +175,7 @@ async fn task(
   }
 
   let elapsed = timer.elapsed();
-  info!("/write request {req_id} | resolve time: {elapsed:?}");
+  debug!("/write request {req_id} | resolve time: {elapsed:?}");
 
   res
 }
