@@ -1431,6 +1431,7 @@ version = "1.7.3"
 dependencies = [
  "anyhow",
  "command",
+ "formatting",
  "monitor_client",
  "run_command",
  "tracing",

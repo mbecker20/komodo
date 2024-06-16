@@ -1,5 +1,6 @@
 use std::pin::Pin;
 
+use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::execute::RunProcedure,
   entities::{
@@ -51,7 +52,11 @@ fn resolve_inner(
     // and will panic otherwise.
     update.push_simple_log(
       "execute_procedure",
-      format!("executing procedure {}", procedure.name),
+      format!(
+        "{}: executing procedure '{}'",
+        muted("INFO"),
+        bold(&procedure.name)
+      ),
     );
 
     // get the action state for the procedure (or insert default).
@@ -75,12 +80,20 @@ fn resolve_inner(
       Ok(_) => {
         update.push_simple_log(
           "execution ok",
-          "the procedure has completed with no errors",
+          format!(
+            "{}: the procedure has {} with no errors",
+            muted("INFO"),
+            colored("completed", Color::Green)
+          ),
         );
       }
       Err(e) => update.push_error_log(
         "execution error",
-        serialize_error_pretty(&e),
+        format!(
+          "{}: {}",
+          colored("ERROR", Color::Red),
+          serialize_error_pretty(&e)
+        ),
       ),
     }
 

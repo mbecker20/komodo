@@ -1,6 +1,7 @@
 use std::time::{Duration, Instant};
 
 use anyhow::{anyhow, Context, Ok};
+use formatting::{bold, colored, muted, Color};
 use futures::future::join_all;
 use monitor_client::{
   api::execute::Execution,
@@ -26,7 +27,11 @@ pub async fn execute_procedure(
     }
     add_line_to_update(
       update,
-      &format!("executing stage: {}", stage.name),
+      &format!(
+        "{}: executing stage: '{}'",
+        muted("INFO"),
+        bold(&stage.name)
+      ),
     )
     .await;
     let timer = Instant::now();
@@ -44,16 +49,19 @@ pub async fn execute_procedure(
     .await
     .with_context(|| {
       format!(
-        "failed stage '{}' execution after {:?}",
-        stage.name,
+        "{}: failed stage '{}' execution after {:?}",
+        colored("ERROR", Color::Red),
+        bold(&stage.name),
         timer.elapsed(),
       )
     })?;
     add_line_to_update(
       update,
       &format!(
-        "finished stage '{}' execution in {:?} ✅",
-        stage.name,
+        "{}: {} stage '{}' execution in {:?}",
+        muted("INFO"),
+        colored("finished", Color::Green),
+        bold(&stage.name),
         timer.elapsed()
       ),
     )
@@ -72,9 +80,15 @@ async fn execute_stage(
 ) -> anyhow::Result<()> {
   let futures = executions.into_iter().map(|execution| async move {
     let now = Instant::now();
-    add_line_to_update(update, &format!("executing: {execution:?}"))
-      .await;
-    let fail_log = format!("failed on {execution:?}");
+    add_line_to_update(
+      update,
+      &format!("{}: executing: {execution:?}", muted("INFO")),
+    )
+    .await;
+    let fail_log = format!(
+      "{}: failed on {execution:?}",
+      colored("ERROR", Color::Red)
+    );
     let res =
       execute_execution(execution.clone(), parent_id, parent_name)
         .await
@@ -82,7 +96,9 @@ async fn execute_stage(
     add_line_to_update(
       update,
       &format!(
-        "finished execution in {:?}: {execution:?}",
+        "{}: {} execution in {:?}: {execution:?}",
+        muted("INFO"),
+        colored("finished", Color::Green),
         now.elapsed()
       ),
     )
@@ -266,8 +282,9 @@ async fn execute_execution(
     Ok(())
   } else {
     Err(anyhow!(
-      "execution not successful. see update {}",
-      update.id
+      "{}: execution not successful. see update '{}'",
+      colored("ERROR", Color::Red),
+      bold(&update.id),
     ))
   }
 }

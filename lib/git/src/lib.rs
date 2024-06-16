@@ -5,6 +5,7 @@ use std::{
 
 use anyhow::Context;
 use command::run_monitor_command;
+use formatting::{bold, muted};
 use monitor_client::entities::{
   all_logs_success, monitor_timestamp, to_monitor_name, update::Log,
   CloneArgs, LatestCommit, SystemCommand,
@@ -252,7 +253,13 @@ pub async fn get_commit_hash_log(
   let log = Log {
     stage: "latest commit".into(),
     command,
-    stdout: format!("hash: {short}\nmessage: {msg}"),
+    stdout: format!(
+      "{} {}\n{} {}",
+      muted("hash:"),
+      bold(short),
+      muted("message:"),
+      bold(msg),
+    ),
     stderr: String::new(),
     success: true,
     start_ts,

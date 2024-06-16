@@ -9,6 +9,7 @@ homepage.workspace = true
 
 [dependencies]
 monitor_client.workspace = true
+formatting.workspace = true
 command.workspace = true
 #
 run_command.workspace = true
