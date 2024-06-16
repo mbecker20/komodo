@@ -44,7 +44,7 @@ pub mod resource;
 pub mod server;
 /// Subtypes of [ServerTemplate][server_template::ServerTemplate].
 pub mod server_template;
-/// Subtypes of [mod@Sync][sync::Sync]
+/// Subtypes of [ResourceSync][sync::ResourceSync]
 pub mod sync;
 /// Subtypes of [Tag][tag::Tag].
 pub mod tag;
