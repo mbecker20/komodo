@@ -5,7 +5,6 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
-use termination_signal::tokio::immediate_term_handle;
 use tower_http::{
   cors::{Any, CorsLayer},
   services::{ServeDir, ServeFile},
@@ -77,13 +76,15 @@ async fn app() -> anyhow::Result<()> {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  let term_signal = immediate_term_handle()?;
+  let mut term_signal = tokio::signal::unix::signal(
+    tokio::signal::unix::SignalKind::terminate(),
+  )?;
 
   let app = tokio::spawn(app());
 
   tokio::select! {
     res = app => return res?,
-    _ = term_signal => {},
+    _ = term_signal.recv() => {},
   }
 
   Ok(())

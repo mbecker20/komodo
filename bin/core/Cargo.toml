@@ -23,7 +23,6 @@ git.workspace = true
 # mogh
 serror = { workspace = true, features = ["axum"] }
 merge_config_files.workspace = true
-termination_signal.workspace = true
 async_timing_util.workspace = true
 partial_derive2.workspace = true
 derive_variants.workspace = true

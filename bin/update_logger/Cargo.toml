@@ -13,8 +13,6 @@ repository.workspace = true
 # local
 monitor_client.workspace = true
 logger.workspace = true
-# mogh
-termination_signal.workspace = true
 # external
 tokio.workspace = true
 tracing.workspace = true
