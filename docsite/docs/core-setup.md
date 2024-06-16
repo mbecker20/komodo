@@ -4,7 +4,23 @@ To run Monitor Core, you will need:
 
  - A valid configuration file.
  - An instance of MongoDB to which Core can connect.
- - Docker must be installed on the host.
+ - Docker must be installed on the host. See [the install docs](https://docs.docker.com/engine/install/).
+
+## Mongo
+
+Mongo can be run locally using the docker cli:
+
+```sh
+docker run --name monitor-mongo \
+	--network host \
+	-v /local/storage/path:/data/db \
+	-e MONGO_INITDB_ROOT_USERNAME="admin" \
+	-e MONGO_INITDB_ROOT_PASSWORD="admin" \
+	mongo:latest
+```
+
+You should replace the username and password with your own.
+See [the image docs](https://hub.docker.com/_/mongo) for more details.
 
 ## 1. Create the configuration file
 
@@ -29,8 +45,8 @@ Monitor core is distributed via Github Container Registry under the package [mbe
 
 ```sh
 docker run -d --name monitor-core \
+	--network host \
 	-v $HOME/.monitor/core.config.toml:/config/config.toml \
-	-p 9000:9000 \
 	ghcr.io/mbecker20/monitor_core
 ```
 
