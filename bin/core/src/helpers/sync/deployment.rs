@@ -4,7 +4,7 @@ use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
 use futures::future::join_all;
 use monitor_client::{
-  api::execute::Deploy,
+  api::{execute::Deploy, read::GetBuildVersions},
   entities::{
     deployment::{
       Deployment, DeploymentConfig, DeploymentImage, DeploymentState,
@@ -78,6 +78,7 @@ pub async fn get_updates_for_view(
   }
 
   let mut to_deploy_cache = HashMap::<String, bool>::new();
+  let mut to_deploy_build_cache = HashMap::<String, String>::new();
 
   for mut resource in resources.clone() {
     match map.get(&resource.name) {
@@ -109,6 +110,7 @@ pub async fn get_updates_for_view(
           &resources,
           resource.name.clone(),
           &mut to_deploy_cache,
+          &mut to_deploy_build_cache,
         )
         .await?;
 
@@ -291,6 +293,7 @@ pub async fn get_updates_for_execution(
   }
 
   let mut to_deploy_cache = HashMap::<String, bool>::new();
+  let mut to_deploy_build_cache = HashMap::<String, String>::new();
 
   for mut resource in resources.clone() {
     match map.get(&resource.name) {
@@ -322,6 +325,7 @@ pub async fn get_updates_for_execution(
           &resources,
           resource.name.clone(),
           &mut to_deploy_cache,
+          &mut to_deploy_build_cache,
         )
         .await?;
 
@@ -372,6 +376,8 @@ fn extract_to_deploy_and_state<'a>(
   name: String,
   // name to 'to_deploy'
   cache: &'a mut HashMap<String, bool>,
+  // build id to latest built version string
+  build_cache: &'a mut HashMap<String, String>,
 ) -> Res<'a> {
   Box::pin(async move {
     let Some(deployment) = resources.iter().find(|r| r.name == name)
@@ -402,11 +408,12 @@ fn extract_to_deploy_and_state<'a>(
 
       Deployment::validate_diff(&mut diff);
 
-      let state = deployment_status_cache()
+      let status = &deployment_status_cache()
         .get_or_insert_default(&original.id)
         .await
-        .curr
-        .state;
+        .curr;
+      let state = status.state;
+
       let mut to_deploy = match state {
         DeploymentState::Unknown => false,
         DeploymentState::Running => {
@@ -427,6 +434,54 @@ fn extract_to_deploy_and_state<'a>(
         // All other cases will require Deploy to enter Running state
         _ => true,
       };
+
+      // Check if build attached, version latest, and there is a new build.
+      if !to_deploy {
+        // only need to check original, if diff.image was Some, to_deploy would be true.
+        if let DeploymentImage::Build { build_id, version } =
+          &original.config.image
+        {
+          // check if version is none, ie use latest build
+          if version.is_none() {
+            let deployed_version = status
+              .container
+              .as_ref()
+              .and_then(|c| c.image.split(':').last())
+              .unwrap_or("0.0.0");
+            match build_cache.get(build_id) {
+              Some(version) if deployed_version != version => {
+                to_deploy = true;
+              }
+              Some(_) => {}
+              None => {
+                let Some(version) = State
+                  .resolve(
+                    GetBuildVersions {
+                      build: build_id.to_string(),
+                      limit: Some(1),
+                      ..Default::default()
+                    },
+                    sync_user().to_owned(),
+                  )
+                  .await
+                  .context("failed to get build versions")?
+                  .pop()
+                else {
+                  // this case shouldn't ever happen, how would deployment be deployed if build was never built?
+                  return Ok((false, DeploymentState::NotDeployed));
+                };
+                let version = version.version.to_string();
+                build_cache
+                  .insert(build_id.to_string(), version.clone());
+                if deployed_version != version {
+                  to_deploy = true;
+                }
+              }
+            };
+          }
+        }
+      }
+
       // Still need to check 'after' if they need deploy
       if !to_deploy {
         for name in &deployment.after {
@@ -443,6 +498,7 @@ fn extract_to_deploy_and_state<'a>(
                 resources,
                 name.to_string(),
                 cache,
+                build_cache,
               )
               .await?;
               if will_deploy {
@@ -453,6 +509,7 @@ fn extract_to_deploy_and_state<'a>(
           }
         }
       }
+
       cache.insert(name, to_deploy);
       Ok((to_deploy, state))
     } else {

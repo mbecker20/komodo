@@ -196,6 +196,8 @@ pub struct GetBuildVersions {
   pub minor: Option<i32>,
   /// Filter to only include versions matching this patch version.
   pub patch: Option<i32>,
+  /// Limit the number of included results. Default is no limit.
+  pub limit: Option<I64>,
 }
 
 #[typeshare]

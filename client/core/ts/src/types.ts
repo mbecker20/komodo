@@ -2041,6 +2041,8 @@ export interface GetBuildVersions {
 	minor?: number;
 	/** Filter to only include versions matching this patch version. */
 	patch?: number;
+	/** Limit the number of included results. Default is no limit. */
+	limit?: I64;
 }
 
 /**

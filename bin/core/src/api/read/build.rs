@@ -201,6 +201,7 @@ impl Resolve<GetBuildVersions, User> for State {
       major,
       minor,
       patch,
+      limit,
     }: GetBuildVersions,
     user: User,
   ) -> anyhow::Result<Vec<BuildVersionResponseItem>> {
@@ -233,7 +234,10 @@ impl Resolve<GetBuildVersions, User> for State {
     let versions = find_collect(
       &db_client().await.updates,
       filter,
-      FindOptions::builder().sort(doc! { "_id": -1 }).build(),
+      FindOptions::builder()
+        .sort(doc! { "_id": -1 })
+        .limit(limit)
+        .build(),
     )
     .await
     .context("failed to pull versions from mongo")?
