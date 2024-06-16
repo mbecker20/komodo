@@ -5,7 +5,7 @@ and apply updates based on the diffs. Simply use a Github repo to manage the fil
 and the core backend will poll for any updates (you can also manually trigger an update poll / execution in the UI).
 
 File detection is additive and recursive, so you can spread out your resource declarations across any number of files
-and use any nesting of folders (they should all be under one root folder). Additionally, you can create multiple `ResourceSyncs`
+and use any nesting of folders to organize resources inside a root folder. Additionally, you can create multiple `ResourceSyncs`
 and each sync will be handled independently. This allows different syncs to manage resources on a "per-project" basis.
 
 The UI will display the computed sync actions and only execute them upon manual confirmation.

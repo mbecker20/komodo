@@ -22,6 +22,14 @@ docker run --name monitor-mongo \
 You should replace the username and password with your own.
 See [the image docs](https://hub.docker.com/_/mongo) for more details.
 
+:::note
+The disk space requirements of Monitor are dominated by the storage of system stats.
+This depends on the number of connected servers (more system stats being produces / stored), stats collection frequency, and your stats pruning configuration.
+If you need to save on space, you can configure these fields in your core config:
+	- Stats poll frequency can be reduced using, for example, `monitoring_interval = "15-sec"`
+	- Pruning can be tuned more aggresively using, for example, `keep_stats_for_days = 7`.
+:::
+
 ## 1. Create the configuration file
 
 Create a configuration file on the system, for example at `~/.config/monitor/core.config.toml`, and copy the [example config](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml). Fill in all the necessary information before continuing.
