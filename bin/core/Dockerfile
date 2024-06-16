@@ -1,5 +1,5 @@
 # Build Core
-FROM rust:1.78.0-bookworm as core-builder
+FROM rust:1.79.0-bookworm as core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p monitor_core --release
