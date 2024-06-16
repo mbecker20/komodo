@@ -104,7 +104,7 @@ pub async fn get_updates_for_view(
           .filter_map(|id| id_to_tags.get(id).map(|t| t.name.clone()))
           .collect::<Vec<_>>();
 
-        let (to_deploy, state) = extract_to_deploy_and_state(
+        let (to_deploy, state, reason) = extract_to_deploy_and_state(
           all_resources,
           &map,
           &resources,
@@ -185,7 +185,7 @@ pub async fn get_updates_for_view(
         } else if to_deploy {
           let mut line = if state == DeploymentState::Running {
             format!(
-              "{}: {}",
+              "{}: {reason}, {}",
               muted("deploy"),
               bold("sync will trigger deploy")
             )
@@ -319,15 +319,16 @@ pub async fn get_updates_for_execution(
           .filter_map(|id| id_to_tags.get(id).map(|t| t.name.clone()))
           .collect::<Vec<_>>();
 
-        let (to_deploy, _state) = extract_to_deploy_and_state(
-          all_resources,
-          &map,
-          &resources,
-          resource.name.clone(),
-          &mut to_deploy_cache,
-          &mut to_deploy_build_cache,
-        )
-        .await?;
+        let (to_deploy, _state, _reason) =
+          extract_to_deploy_and_state(
+            all_resources,
+            &map,
+            &resources,
+            resource.name.clone(),
+            &mut to_deploy_cache,
+            &mut to_deploy_build_cache,
+          )
+          .await?;
 
         // Only proceed if there are any fields to update,
         // or a change to tags / description
@@ -363,7 +364,7 @@ pub async fn get_updates_for_execution(
 type Res<'a> = std::pin::Pin<
   Box<
     dyn std::future::Future<
-        Output = anyhow::Result<(bool, DeploymentState)>,
+        Output = anyhow::Result<(bool, DeploymentState, String)>,
       > + Send
       + 'a,
   >,
@@ -380,17 +381,19 @@ fn extract_to_deploy_and_state<'a>(
   build_cache: &'a mut HashMap<String, String>,
 ) -> Res<'a> {
   Box::pin(async move {
+    let mut reason = String::new();
     let Some(deployment) = resources.iter().find(|r| r.name == name)
     else {
       // this case should be unreachable, the names come off of a loop over resources
       cache.insert(name, false);
-      return Ok((false, DeploymentState::Unknown));
+      return Ok((false, DeploymentState::Unknown, reason));
     };
     if deployment.deploy {
       let Some(original) = map.get(&name) else {
         // not created, definitely deploy
         cache.insert(name, true);
-        return Ok((true, DeploymentState::NotDeployed));
+        // Don't need reason here, will be populated automatically
+        return Ok((true, DeploymentState::NotDeployed, reason));
       };
 
       // First merge toml resource config (partial) onto default resource config.
@@ -418,7 +421,7 @@ fn extract_to_deploy_and_state<'a>(
         DeploymentState::Unknown => false,
         DeploymentState::Running => {
           // Needs to only check config fields that affect docker run
-          diff.server_id.is_some()
+          let changed = diff.server_id.is_some()
             || diff.image.is_some()
             || diff.image_registry.is_some()
             || diff.skip_secret_interp.is_some()
@@ -429,9 +432,14 @@ fn extract_to_deploy_and_state<'a>(
             || diff.ports.is_some()
             || diff.volumes.is_some()
             || diff.environment.is_some()
-            || diff.labels.is_some()
+            || diff.labels.is_some();
+          if changed {
+            reason = String::from("deployment config has changed")
+          }
+          changed
         }
-        // All other cases will require Deploy to enter Running state
+        // All other cases will require Deploy to enter Running state.
+        // Don't need reason here as this case is handled outside, using returned state.
         _ => true,
       };
 
@@ -468,13 +476,19 @@ fn extract_to_deploy_and_state<'a>(
                   .pop()
                 else {
                   // this case shouldn't ever happen, how would deployment be deployed if build was never built?
-                  return Ok((false, DeploymentState::NotDeployed));
+                  return Ok((
+                    false,
+                    DeploymentState::NotDeployed,
+                    reason,
+                  ));
                 };
                 let version = version.version.to_string();
                 build_cache
                   .insert(build_id.to_string(), version.clone());
                 if deployed_version != version {
                   to_deploy = true;
+                  reason =
+                    String::from("attached build has new version")
                 }
               }
             };
@@ -492,7 +506,7 @@ fn extract_to_deploy_and_state<'a>(
             }
             Some(_) => {}
             None => {
-              let (will_deploy, _) = extract_to_deploy_and_state(
+              let (will_deploy, _, _) = extract_to_deploy_and_state(
                 all_resources,
                 map,
                 resources,
@@ -503,6 +517,10 @@ fn extract_to_deploy_and_state<'a>(
               .await?;
               if will_deploy {
                 to_deploy = true;
+                reason = format!(
+                  "parent dependency '{}' is deploying",
+                  bold(name)
+                );
                 break;
               }
             }
@@ -511,11 +529,11 @@ fn extract_to_deploy_and_state<'a>(
       }
 
       cache.insert(name, to_deploy);
-      Ok((to_deploy, state))
+      Ok((to_deploy, state, reason))
     } else {
       // The state in this case doesn't matter and won't be read (as long as it isn't 'Unknown' which will log in all cases)
       cache.insert(name, false);
-      Ok((false, DeploymentState::NotDeployed))
+      Ok((false, DeploymentState::NotDeployed, reason))
     }
   })
 }
