@@ -38,9 +38,10 @@ export const RunBuild = ({ id }: { id: string }) => {
     (u) => u.operation === Types.Operation.CancelBuild
   );
   const cancelDisabled =
-    cancelPending || (latestCancel && latestBuild)
+    cancelPending ||
+    (latestCancel && latestBuild
       ? latestCancel!.start_ts > latestBuild!.start_ts
-      : false;
+      : false);
 
   if (building) {
     return (
