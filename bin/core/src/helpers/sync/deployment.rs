@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use anyhow::Context;
 use futures::future::join_all;
@@ -621,9 +621,21 @@ pub async fn run_updates(
     // Remove the deployed ones from 'to_deploy'
     to_deploy.retain(|(name, _)| !good_to_deploy.contains(name));
 
-    // Increment the round
-    round += 1;
+    // If there must be another round, these are dependent on the first round.
+    // Sleep for 1s to allow for first round to startup
+    if !to_deploy.is_empty() {
+      // Increment the round
+      round += 1;
+      tokio::time::sleep(Duration::from_secs(1)).await;
+    }
   }
+
+  log.push_str(&format!(
+    "{}: finished after {} round{}",
+    muted("INFO"),
+    bold(round),
+    (round > 1).then_some("s").unwrap_or_default()
+  ));
 
   Some(logs)
 }
