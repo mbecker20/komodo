@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
+use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
@@ -24,11 +25,7 @@ use mungos::find::find_collect;
 use partial_derive2::{Diff, FieldDiff, MaybeNone};
 use resolver_api::Resolve;
 
-use crate::{
-  helpers::formatting::{bold, colored, muted, Color},
-  resource::MonitorResource,
-  state::State,
-};
+use crate::{resource::MonitorResource, state::State};
 
 pub type ToUpdate<T> = Vec<ToUpdateItem<T>>;
 pub type ToCreate<T> = Vec<ResourceToml<T>>;

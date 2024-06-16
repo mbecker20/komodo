@@ -1,6 +1,7 @@
 use std::{cmp::Ordering, collections::HashMap};
 
 use anyhow::Context;
+use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::{
     read::ListUserTargetPermissions,
@@ -20,10 +21,7 @@ use monitor_client::{
 use mungos::find::find_collect;
 use resolver_api::Resolve;
 
-use crate::{
-  helpers::formatting::{bold, colored, muted, Color},
-  state::{db_client, State},
-};
+use crate::state::{db_client, State};
 
 use super::resource::AllResourcesById;
 

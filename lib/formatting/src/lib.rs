@@ -6,7 +6,10 @@ pub fn bold(content: impl std::fmt::Display) -> String {
   format!("<span class=\"font-bold\">{content}</span>")
 }
 
-pub fn colored(content: impl std::fmt::Display, color: Color) -> String {
+pub fn colored(
+  content: impl std::fmt::Display,
+  color: Color,
+) -> String {
   format!("<span class=\"{color}\">{content}</span>")
 }
 

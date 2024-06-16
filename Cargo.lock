@@ -1300,6 +1300,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "formatting"
+version = "1.7.3"
+
+[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2234,6 +2238,7 @@ dependencies = [
  "derive_variants",
  "dotenv",
  "envy",
+ "formatting",
  "futures",
  "git",
  "hex",

@@ -1,3 +1,4 @@
+use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::execute::Execution,
   entities::{
@@ -16,12 +17,9 @@ use monitor_client::{
 use partial_derive2::{MaybeNone, PartialDiff};
 
 use crate::{
-  helpers::{
-    formatting::{bold, colored, muted, Color},
-    sync::resource::{
-      run_update_description, run_update_tags, ResourceSync,
-      ToUpdateItem,
-    },
+  helpers::sync::resource::{
+    run_update_description, run_update_tags, ResourceSync,
+    ToUpdateItem,
   },
   resource::MonitorResource,
 };

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
+use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::write::{
     CreateVariable, DeleteVariable, UpdateVariableDescription,
@@ -14,10 +15,7 @@ use monitor_client::{
 use mungos::find::find_collect;
 use resolver_api::Resolve;
 
-use crate::{
-  helpers::formatting::{bold, colored, muted, Color},
-  state::{db_client, State},
-};
+use crate::state::{db_client, State};
 
 pub struct ToUpdateItem {
   pub variable: Variable,

@@ -22,7 +22,6 @@ pub mod prune;
 pub mod query;
 pub mod sync;
 pub mod update;
-pub mod formatting;
 
 // pub mod resource;
 

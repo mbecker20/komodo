@@ -17,6 +17,7 @@ path = "src/main.rs"
 # local
 monitor_client = { workspace = true, features = ["mongo"] }
 periphery_client.workspace = true
+formatting.workspace = true
 logger.workspace = true
 git.workspace = true
 # mogh

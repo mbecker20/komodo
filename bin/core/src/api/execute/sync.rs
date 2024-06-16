@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use formatting::{colored, Color};
 use mongo_indexed::doc;
 use monitor_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
@@ -23,7 +24,6 @@ use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
-    formatting::{colored, Color},
     query::get_id_to_tags,
     sync::{
       deployment,

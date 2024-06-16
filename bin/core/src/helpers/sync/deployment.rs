@@ -19,13 +19,11 @@ use monitor_client::{
 use mungos::find::find_collect;
 use partial_derive2::{Diff, FieldDiff, MaybeNone, PartialDiff};
 use resolver_api::Resolve;
+use formatting::{bold, colored, muted, Color};
 
 use crate::{
   api::execute::ExecuteRequest,
-  helpers::{
-    formatting::{bold, colored, muted, Color},
-    update::init_execution_update,
-  },
+  helpers::update::init_execution_update,
   resource::MonitorResource,
   state::{deployment_status_cache, State},
 };

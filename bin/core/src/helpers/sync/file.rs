@@ -1,10 +1,9 @@
 use std::{fs, path::Path};
 
 use anyhow::{anyhow, Context};
+use formatting::{colored, muted, Color};
 use monitor_client::entities::{toml::ResourcesToml, update::Log};
 use serde::de::DeserializeOwned;
-
-use crate::helpers::formatting::{colored, muted, Color};
 
 pub fn read_resources(
   path: &Path,
