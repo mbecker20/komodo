@@ -1,6 +1,7 @@
 use std::{collections::HashMap, time::Duration};
 
 use anyhow::Context;
+use formatting::{bold, colored, muted, Color};
 use futures::future::join_all;
 use monitor_client::{
   api::execute::Deploy,
@@ -19,7 +20,6 @@ use monitor_client::{
 use mungos::find::find_collect;
 use partial_derive2::{Diff, FieldDiff, MaybeNone, PartialDiff};
 use resolver_api::Resolve;
-use formatting::{bold, colored, muted, Color};
 
 use crate::{
   api::execute::ExecuteRequest,
@@ -634,6 +634,8 @@ pub async fn run_updates(
     bold(round),
     (round > 1).then_some("s").unwrap_or_default()
   ));
+
+  logs.push(Log::simple("Sync Deployment State", log));
 
   Some(logs)
 }
