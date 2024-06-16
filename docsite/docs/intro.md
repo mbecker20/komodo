@@ -8,11 +8,11 @@ Monitor is a web app to provide structure for managing your servers, builds, dep
 
 With Monitor you can:
 
- 1. Build application source into auto-versioned images. 
- 2. Create, start, stop, and restart Docker containers, and view their status and logs.
- 3. Manage repositories on remote servers.
- 4. Keep a record of all the actions that are performed and by whom.
- 5. View realtime and historical system resource usage, and alert for out of bounds values.
+ 1. Connect all of your remote servers (across clouds + on premise) to be viewable from a unified 'monitor' (hence the name).
+ 2. Build application source into auto-versioned Docker images. 
+ 3. Create, start, stop, and restart Docker containers on the connected servers, and view their status and logs.
+ 4. Manage repositories on connected servers.
+ 5. Keep a record of all the actions that are performed and by whom.
 
 ## Docker
 
