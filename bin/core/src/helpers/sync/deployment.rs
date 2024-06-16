@@ -459,6 +459,8 @@ fn extract_to_deploy_and_state<'a>(
             match build_cache.get(build_id) {
               Some(version) if deployed_version != version => {
                 to_deploy = true;
+                reason =
+                  String::from("attached build has new version");
               }
               Some(_) => {}
               None => {
@@ -488,7 +490,7 @@ fn extract_to_deploy_and_state<'a>(
                 if deployed_version != version {
                   to_deploy = true;
                   reason =
-                    String::from("attached build has new version")
+                    String::from("attached build has new version");
                 }
               }
             };
@@ -502,6 +504,10 @@ fn extract_to_deploy_and_state<'a>(
           match cache.get(name) {
             Some(will_deploy) if *will_deploy => {
               to_deploy = true;
+              reason = format!(
+                "parent dependency '{}' is deploying",
+                bold(name)
+              );
               break;
             }
             Some(_) => {}
