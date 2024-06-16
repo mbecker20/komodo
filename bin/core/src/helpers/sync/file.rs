@@ -60,15 +60,9 @@ fn read_resources_recursive(
       .context("failed to read directory contents")?;
     for entry in directory.into_iter().flatten() {
       let path = entry.path();
-      if let Err(e) = read_resources_recursive(&path, resources, log)
-      {
-        log.push('\n');
-        log.push_str(&format!(
-          "{}: failed to read additional resources from {} | {e:#}",
-          colored("ERROR", Color::Red),
-          colored(&path.display().to_string(), Color::Blue)
-        ));
-      }
+      read_resources_recursive(&path, resources, log).with_context(
+        || format!("failed to read resources from {path:?}"),
+      )?;
     }
     Ok(())
   } else {
