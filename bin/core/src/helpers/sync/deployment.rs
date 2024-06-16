@@ -674,14 +674,14 @@ pub async fn run_updates(
       if let Err(e) = res {
         has_error = true;
         log.push_str(&format!(
-          "{}: failed to deploy '{}' in round {} | {e:#}",
+          "\n{}: failed to deploy '{}' in round {} | {e:#}",
           colored("ERROR", Color::Red),
           bold(name),
           bold(round)
         ));
       } else {
         log.push_str(&format!(
-          "{}: deployed '{}' in round {}",
+          "\n{}: deployed '{}' in round {}",
           muted("INFO"),
           bold(name),
           bold(round)
@@ -692,7 +692,7 @@ pub async fn run_updates(
     // Early exit if any deploy has errors
     if has_error {
       log.push_str(&format!(
-        "{}: exited in round {} {}",
+        "\n{}: exited in round {} {}",
         muted("INFO"),
         bold(round),
         colored("with errors", Color::Red)
@@ -714,7 +714,7 @@ pub async fn run_updates(
   }
 
   log.push_str(&format!(
-    "{}: finished after {} round{}",
+    "\n{}: finished after {} round{}",
     muted("INFO"),
     bold(round),
     (round > 1).then_some("s").unwrap_or_default()
