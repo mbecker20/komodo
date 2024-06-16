@@ -1,6 +1,7 @@
 use std::{collections::HashSet, time::Duration};
 
 use anyhow::{anyhow, Context};
+use formatting::muted;
 use futures::future::join_all;
 use monitor_client::{
   api::execute::{
@@ -102,10 +103,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
             id = cancel_recv.recv() => id?
           };
           if incoming_build_id == build_id {
-            info!("build cancel acknowledged");
             update.push_simple_log(
               "cancel acknowledged",
-              "the build cancellation has been queud, it may still take some time",
+              "the build cancellation has been queued, it may still take some time",
             );
             update.finalize();
             let id = update.id.clone();
@@ -673,7 +673,18 @@ fn start_aws_builder_log(
 
   let readable_sec_group_ids = security_group_ids.join(", ");
 
-  format!("instance id: {instance_id}\nip: {ip}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}\nassign public ip: {assign_public_ip}\nuse public ip: {use_public_ip}")
+  [
+    format!("{}: {instance_id}", muted("instance id")),
+    format!("{}: {ip}", muted("ip")),
+    format!("{}: {ami_id}", muted("ami id")),
+    format!("{}: {instance_type}", muted("instance type")),
+    format!("{}: {volume_gb} GB", muted("volume size")),
+    format!("{}: {subnet_id}", muted("subnet id")),
+    format!("{}: {readable_sec_group_ids}", muted("security groups")),
+    format!("{}: {assign_public_ip}", muted("assign public ip")),
+    format!("{}: {use_public_ip}", muted("use public ip")),
+  ]
+  .join("\n")
 }
 
 /// This will make sure that a build with non-none image registry has an account attached,
