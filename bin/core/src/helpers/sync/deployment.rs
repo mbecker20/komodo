@@ -459,8 +459,9 @@ fn extract_to_deploy_and_state<'a>(
             match build_cache.get(build_id) {
               Some(version) if deployed_version != version => {
                 to_deploy = true;
-                reason =
-                  String::from("attached build has new version");
+                reason = format!(
+                  "attached build has new version ({version})"
+                );
               }
               Some(_) => {}
               None => {
@@ -489,8 +490,9 @@ fn extract_to_deploy_and_state<'a>(
                   .insert(build_id.to_string(), version.clone());
                 if deployed_version != version {
                   to_deploy = true;
-                  reason =
-                    String::from("attached build has new version");
+                  reason = format!(
+                    "attached build has new version ({version})"
+                  );
                 }
               }
             };
