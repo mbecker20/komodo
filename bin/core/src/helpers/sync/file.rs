@@ -9,7 +9,8 @@ pub fn read_resources(
   path: &Path,
 ) -> anyhow::Result<(ResourcesToml, Log)> {
   let mut res = ResourcesToml::default();
-  let mut log = format!("reading resources from {path:?}");
+  let mut log =
+    format!("{}: reading resources from {path:?}", muted("INFO"));
   read_resources_recursive(path, &mut res, &mut log).with_context(
     || format!("failed to read resources from {path:?}"),
   )?;

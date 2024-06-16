@@ -476,8 +476,7 @@ pub async fn run_updates(
   }
 
   let mut has_error = false;
-  let mut log =
-    format!("running updates on {}s", Deployment::resource_type());
+  let mut log = String::new();
 
   // Collect all the deployment names that need to be deployed
   // and their 'after' dependencies
@@ -625,17 +624,32 @@ pub async fn run_updates(
     }
   }
 
-  let stage = format!("Update {}s", Deployment::resource_type());
   let mut logs = Vec::with_capacity(1);
+
+  let stage = format!("Update {}s", Deployment::resource_type());
   if has_error {
+    let log = format!(
+      "running updates on {}s{log}",
+      Deployment::resource_type()
+    );
     logs.push(Log::error(&stage, log));
     return Some(logs);
-  } else {
+  } else if !log.is_empty() {
+    let log = format!(
+      "running updates on {}s{log}",
+      Deployment::resource_type()
+    );
     logs.push(Log::simple(&stage, log));
   }
 
-  let mut log =
-    String::from("running executions to sync deployment state...");
+  if to_deploy.is_empty() {
+    return Some(logs);
+  }
+
+  let mut log = format!(
+    "{}: running executions to sync deployment state",
+    muted("INFO")
+  );
   let mut round = 1;
 
   while !to_deploy.is_empty() {
