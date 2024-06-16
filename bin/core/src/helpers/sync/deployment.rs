@@ -7,8 +7,8 @@ use monitor_client::{
   api::execute::Deploy,
   entities::{
     deployment::{
-      Deployment, DeploymentConfig, DeploymentConfigDiff,
-      DeploymentImage, DeploymentState, PartialDeploymentConfig,
+      Deployment, DeploymentConfig, DeploymentImage, DeploymentState,
+      PartialDeploymentConfig,
     },
     sync::SyncUpdate,
     tag::Tag,
@@ -77,7 +77,9 @@ pub async fn get_updates_for_view(
     }
   }
 
-  for mut resource in resources {
+  let mut to_deploy_cache = HashMap::<String, bool>::new();
+
+  for mut resource in resources.clone() {
     match map.get(&resource.name) {
       Some(original) => {
         // First merge toml resource config (partial) onto default resource config.
@@ -102,11 +104,13 @@ pub async fn get_updates_for_view(
           .collect::<Vec<_>>();
 
         let (to_deploy, state) = extract_to_deploy_and_state(
-          resource.deploy,
-          &original.id,
-          &diff,
+          all_resources,
+          &map,
+          &resources,
+          resource.name.clone(),
+          &mut to_deploy_cache,
         )
-        .await;
+        .await?;
 
         // Only proceed if there are any fields to update,
         // or a change to tags / description
@@ -177,12 +181,20 @@ pub async fn get_updates_for_view(
 						bold("could not be computed")
 					));
         } else if to_deploy {
-          let mut line = format!(
-            "{}: deployment is currently in {} state, {}",
-            muted("deploy"),
-            colored(&state.to_string(), Color::Red),
-            bold("sync will trigger deploy")
-          );
+          let mut line = if state == DeploymentState::Running {
+            format!(
+              "{}: {}",
+              muted("deploy"),
+              bold("sync will trigger deploy")
+            )
+          } else {
+            format!(
+              "{}: deployment is currently in {} state, {}",
+              muted("deploy"),
+              colored(&state.to_string(), Color::Red),
+              bold("sync will trigger deploy")
+            )
+          };
           if !resource.after.is_empty() {
             line.push_str(&format!(
               "\n{}: {:?}",
@@ -278,7 +290,9 @@ pub async fn get_updates_for_execution(
     }
   }
 
-  for mut resource in resources {
+  let mut to_deploy_cache = HashMap::<String, bool>::new();
+
+  for mut resource in resources.clone() {
     match map.get(&resource.name) {
       Some(original) => {
         // First merge toml resource config (partial) onto default resource config.
@@ -303,11 +317,13 @@ pub async fn get_updates_for_execution(
           .collect::<Vec<_>>();
 
         let (to_deploy, _state) = extract_to_deploy_and_state(
-          resource.deploy,
-          &original.id,
-          &diff,
+          all_resources,
+          &map,
+          &resources,
+          resource.name.clone(),
+          &mut to_deploy_cache,
         )
-        .await;
+        .await?;
 
         // Only proceed if there are any fields to update,
         // or a change to tags / description
@@ -340,42 +356,111 @@ pub async fn get_updates_for_execution(
   Ok((to_create, to_update, to_delete))
 }
 
-async fn extract_to_deploy_and_state(
-  deploy: bool,
-  original_id: &String,
-  diff: &DeploymentConfigDiff,
-) -> (bool, DeploymentState) {
-  if deploy {
-    let state = deployment_status_cache()
-      .get_or_insert_default(original_id)
-      .await
-      .curr
-      .state;
-    let to_deploy = match state {
-      DeploymentState::Unknown => false,
-      DeploymentState::Running => {
-        // Needs to only check config fields that affect docker run
-        diff.server_id.is_some()
-          || diff.image.is_some()
-          || diff.image_registry.is_some()
-          || diff.skip_secret_interp.is_some()
-          || diff.network.is_some()
-          || diff.restart.is_some()
-          || diff.command.is_some()
-          || diff.extra_args.is_some()
-          || diff.ports.is_some()
-          || diff.volumes.is_some()
-          || diff.environment.is_some()
-          || diff.labels.is_some()
-      }
-      // All other cases will require Deploy to enter Running state
-      _ => true,
+type Res<'a> = std::pin::Pin<
+  Box<
+    dyn std::future::Future<
+        Output = anyhow::Result<(bool, DeploymentState)>,
+      > + Send
+      + 'a,
+  >,
+>;
+
+fn extract_to_deploy_and_state<'a>(
+  all_resources: &'a AllResourcesById,
+  map: &'a HashMap<String, Deployment>,
+  resources: &'a [ResourceToml<PartialDeploymentConfig>],
+  name: String,
+  // name to 'to_deploy'
+  cache: &'a mut HashMap<String, bool>,
+) -> Res<'a> {
+  Box::pin(async move {
+    let Some(deployment) = resources.iter().find(|r| r.name == name)
+    else {
+      // this case should be unreachable, the names come off of a loop over resources
+      cache.insert(name, false);
+      return Ok((false, DeploymentState::Unknown));
     };
-    (to_deploy, state)
-  } else {
-    // The state in this case doesn't matter and won't be read (as long as it isn't 'Unknown' which will log in all cases)
-    (false, DeploymentState::NotDeployed)
-  }
+    if deployment.deploy {
+      let Some(original) = map.get(&name) else {
+        // not created, definitely deploy
+        cache.insert(name, true);
+        return Ok((true, DeploymentState::NotDeployed));
+      };
+
+      // First merge toml resource config (partial) onto default resource config.
+      // Makes sure things that aren't defined in toml (come through as None) actually get removed.
+      let config: DeploymentConfig = deployment.config.clone().into();
+      let mut config: PartialDeploymentConfig = config.into();
+
+      Deployment::validate_partial_config(&mut config);
+
+      let mut diff = Deployment::get_diff(
+        original.config.clone(),
+        config,
+        all_resources,
+      )?;
+
+      Deployment::validate_diff(&mut diff);
+
+      let state = deployment_status_cache()
+        .get_or_insert_default(&original.id)
+        .await
+        .curr
+        .state;
+      let mut to_deploy = match state {
+        DeploymentState::Unknown => false,
+        DeploymentState::Running => {
+          // Needs to only check config fields that affect docker run
+          diff.server_id.is_some()
+            || diff.image.is_some()
+            || diff.image_registry.is_some()
+            || diff.skip_secret_interp.is_some()
+            || diff.network.is_some()
+            || diff.restart.is_some()
+            || diff.command.is_some()
+            || diff.extra_args.is_some()
+            || diff.ports.is_some()
+            || diff.volumes.is_some()
+            || diff.environment.is_some()
+            || diff.labels.is_some()
+        }
+        // All other cases will require Deploy to enter Running state
+        _ => true,
+      };
+      // Still need to check 'after' if they need deploy
+      if !to_deploy {
+        for name in &deployment.after {
+          match cache.get(name) {
+            Some(will_deploy) if *will_deploy => {
+              to_deploy = true;
+              break;
+            }
+            Some(_) => {}
+            None => {
+              let (will_deploy, _) = extract_to_deploy_and_state(
+                all_resources,
+                map,
+                resources,
+                name.to_string(),
+                cache,
+              )
+              .await?;
+              if will_deploy {
+                to_deploy = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+      cache.insert(name, to_deploy);
+      Ok((to_deploy, state))
+    } else {
+      // The state in this case doesn't matter and won't be read (as long as it isn't 'Unknown' which will log in all cases)
+      cache.insert(name, false);
+      Ok((false, DeploymentState::NotDeployed))
+    }
+  })
 }
 
 pub async fn run_updates(
