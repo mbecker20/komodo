@@ -5,7 +5,6 @@ use monitor_client::{
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig},
-    deployment::{Deployment, DeploymentImage},
     procedure::Procedure,
     repo::Repo,
     server::Server,
@@ -70,41 +69,6 @@ impl ResourceSync for Build {
         diff.version = None;
       }
     }
-  }
-}
-
-impl ResourceSync for Deployment {
-  fn resource_target(id: String) -> ResourceTarget {
-    ResourceTarget::Deployment(id)
-  }
-
-  fn get_diff(
-    mut original: Self::Config,
-    update: Self::PartialConfig,
-    resources: &AllResourcesById,
-  ) -> anyhow::Result<Self::ConfigDiff> {
-    // need to replace the server id with name
-    original.server_id = resources
-      .servers
-      .get(&original.server_id)
-      .map(|s| s.name.clone())
-      .unwrap_or_default();
-
-    // need to replace the build id with name
-    if let DeploymentImage::Build { build_id, version } =
-      &original.image
-    {
-      original.image = DeploymentImage::Build {
-        build_id: resources
-          .builds
-          .get(build_id)
-          .map(|b| b.name.clone())
-          .unwrap_or_default(),
-        version: version.clone(),
-      };
-    }
-
-    Ok(original.partial_diff(update))
   }
 }
 

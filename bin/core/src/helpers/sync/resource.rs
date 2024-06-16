@@ -319,9 +319,9 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
               "{}: '{field}'\n{}:  {}\n{}:    {}",
               muted("field"),
               muted("from"),
-              colored(&from, Color::Red),
+              colored(from, Color::Red),
               muted("to"),
-              colored(&to, Color::Green)
+              colored(to, Color::Green)
             )
           },
         ));

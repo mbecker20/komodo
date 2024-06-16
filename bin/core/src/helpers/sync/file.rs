@@ -40,7 +40,7 @@ fn read_resources_recursive(
       "{}: {} from {}",
       muted("INFO"),
       colored("adding resources", Color::Green),
-      colored(&path.display().to_string(), Color::Blue)
+      colored(path.display(), Color::Blue)
     ));
 
     resources.servers.extend(more.servers);

@@ -7,7 +7,6 @@ use monitor_client::{
     alerter::Alerter,
     build::Build,
     builder::Builder,
-    deployment::Deployment,
     monitor_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
@@ -26,8 +25,11 @@ use crate::{
   helpers::{
     formatting::{colored, Color},
     query::get_id_to_tags,
-    sync::resource::{
-      get_updates_for_execution, AllResourcesById, ResourceSync,
+    sync::{
+      deployment,
+      resource::{
+        get_updates_for_execution, AllResourcesById, ResourceSync,
+      },
     },
     update::update_update,
   },
@@ -76,7 +78,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       deployments_to_create,
       deployments_to_update,
       deployments_to_delete,
-    ) = get_updates_for_execution::<Deployment>(
+    ) = deployment::get_updates_for_execution(
       resources.deployments,
       sync.config.delete,
       &all_resources,
@@ -304,15 +306,15 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
 
     // Dependant on server / build
-    maybe_extend(
-      &mut update.logs,
-      Deployment::run_updates(
-        deployments_to_create,
-        deployments_to_update,
-        deployments_to_delete,
-      )
-      .await,
-    );
+    if let Some(res) = deployment::run_updates(
+      deployments_to_create,
+      deployments_to_update,
+      deployments_to_delete,
+    )
+    .await
+    {
+      update.logs.extend(res);
+    }
 
     // Dependant on everything
     maybe_extend(
