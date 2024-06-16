@@ -75,5 +75,8 @@ fn parse_toml_file<T: DeserializeOwned>(
 ) -> anyhow::Result<T> {
   let contents = std::fs::read_to_string(path)
     .context("failed to read file contents")?;
-  toml::from_str(&contents).context("failed to parse toml contents")
+  toml::from_str(&contents)
+    // the error without this comes through with multiple lines (\n) and looks bad
+    .map_err(|e| anyhow!("{e:#}"))
+    .context("failed to parse toml contents")
 }
