@@ -16,7 +16,7 @@ import {
 import { has_minimum_permissions } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { AlertTriangle, Clapperboard } from "lucide-react";
-import { Fragment, ReactNode } from "react";
+import { Fragment } from "react";
 import { useParams } from "react-router-dom";
 
 export const Resource = () => {

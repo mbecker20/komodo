@@ -202,6 +202,8 @@ export type AlertData =
 	name: string;
 	/** The version that failed to build */
 	version: Version;
+	/** The reason build failed */
+	err?: Log;
 }};
 
 /** Representation of an alert in the system. */
