@@ -270,7 +270,7 @@ async fn validate_config(
           .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
       config.image = Some(DeploymentImage::Build {
         build_id: build.id,
-        version: version.clone(),
+        version: *version,
       });
     }
   }

@@ -849,7 +849,7 @@ impl ResourceSync for Deployment {
           .get(build_id)
           .map(|b| b.name.clone())
           .unwrap_or_default(),
-        version: version.clone(),
+        version: *version,
       };
     }
 

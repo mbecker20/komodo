@@ -204,7 +204,7 @@ impl SystemCommand {
 }
 
 #[typeshare]
-#[derive(Serialize, Debug, Clone, Default, PartialEq)]
+#[derive(Serialize, Debug, Clone, Copy, Default, PartialEq)]
 pub struct Version {
   pub major: i32,
   pub minor: i32,

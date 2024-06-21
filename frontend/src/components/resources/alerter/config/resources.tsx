@@ -31,6 +31,7 @@ export const ResourcesConfig = ({
   const [search, setSearch] = useState("");
   const servers = useRead("ListServers", {}).data ?? [];
   const deployments = useRead("ListDeployments", {}).data ?? [];
+  const builds = useRead("ListBuilds", {}).data ?? [];
   const all_resources = [
     ...servers.map((server) => {
       return {
@@ -50,6 +51,16 @@ export const ResourcesConfig = ({
       name: deployment.name.toLowerCase(),
       enabled: resources.find(
         (r) => r.type === "Deployment" && r.id === deployment.id
+      )
+        ? true
+        : false,
+    })),
+    ...builds.map((build) => ({
+      type: "Build",
+      id: build.id,
+      name: build.name.toLowerCase(),
+      enabled: resources.find(
+        (r) => r.type === "Build" && r.id === build.id
       )
         ? true
         : false,

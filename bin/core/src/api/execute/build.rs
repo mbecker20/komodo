@@ -8,13 +8,14 @@ use monitor_client::{
     CancelBuild, CancelBuildResponse, Deploy, RunBuild,
   },
   entities::{
+    alert::{Alert, AlertData},
     all_logs_success,
     build::{Build, CloudRegistryConfig, ImageRegistry},
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
     deployment::DeploymentState,
     monitor_timestamp,
     permission::PermissionLevel,
-    server::Server,
+    server::{stats::SeverityLevel, Server},
     server_template::aws::AwsServerTemplateConfig,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
@@ -46,6 +47,7 @@ use crate::{
   },
   config::core_config,
   helpers::{
+    alert::send_alerts,
     channel::build_cancel_channel,
     periphery_client,
     query::{get_deployment_state, get_global_variables},
@@ -86,7 +88,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
       action_state.update(|state| state.building = true)?;
 
     build.config.version.increment();
-    update.version = build.config.version.clone();
+    update.version = build.config.version;
     update_update(update.clone()).await?;
 
     let cancel = CancellationToken::new();
@@ -139,7 +141,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
             "get builder",
             serialize_error_pretty(&e),
           ));
-          return handle_early_return(update).await;
+          return handle_early_return(update, build.id, build.name)
+            .await;
         }
       };
 
@@ -165,7 +168,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
         cleanup_builder_instance(periphery, cleanup_data, &mut update)
           .await;
         info!("builder cleaned up");
-        return handle_early_return(update).await
+        return handle_early_return(update, build.id, build.name).await
       },
     };
 
@@ -243,7 +246,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
           cleanup_builder_instance(periphery, cleanup_data, &mut update)
             .await;
-          return handle_early_return(update).await
+          return handle_early_return(update, build.id, build.name).await
         },
       };
 
@@ -309,6 +312,25 @@ impl Resolve<RunBuild, (User, Update)> for State {
         handle_post_build_redeploy(&build.id).await;
         info!("post build redeploy handled");
       });
+    } else {
+      let target = update.target.clone();
+      let version = update.version;
+      tokio::spawn(async move {
+        let alert = Alert {
+          id: Default::default(),
+          target,
+          ts: monitor_timestamp(),
+          resolved_ts: Some(monitor_timestamp()),
+          resolved: true,
+          level: SeverityLevel::Warning,
+          data: AlertData::BuildFailed {
+            id: build.id,
+            name: build.name,
+            version,
+          },
+        };
+        send_alerts(&[alert]).await
+      });
     }
 
     Ok(update)
@@ -318,6 +340,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
 #[instrument(skip(update))]
 async fn handle_early_return(
   mut update: Update,
+  build_id: String,
+  build_name: String,
 ) -> anyhow::Result<Update> {
   update.finalize();
   // Need to manually update the update before cache refresh,
@@ -335,6 +359,26 @@ async fn handle_early_return(
     refresh_build_state_cache().await;
   }
   update_update(update.clone()).await?;
+  if !update.success {
+    let target = update.target.clone();
+    let version = update.version;
+    tokio::spawn(async move {
+      let alert = Alert {
+        id: Default::default(),
+        target,
+        ts: monitor_timestamp(),
+        resolved_ts: Some(monitor_timestamp()),
+        resolved: true,
+        level: SeverityLevel::Warning,
+        data: AlertData::BuildFailed {
+          id: build_id,
+          name: build_name,
+          version,
+        },
+      };
+      send_alerts(&[alert]).await
+    });
+  }
   Ok(update)
 }
 

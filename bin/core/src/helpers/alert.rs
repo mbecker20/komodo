@@ -257,6 +257,16 @@ async fn send_slack_alert(
       ];
       (text, blocks.into())
     }
+    AlertData::BuildFailed { id, name, version } => {
+      let text = format!("{level} | Build {name} has failed");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "build id: **{id}**\nbuild name: **{name}**\nversion: v{version}"
+        )),
+      ];
+      (text, blocks.into())
+    }
     AlertData::None {} => Default::default(),
   };
   if !text.is_empty() {

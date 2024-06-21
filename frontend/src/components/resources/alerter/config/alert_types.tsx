@@ -16,6 +16,7 @@ const ALERT_TYPES: Types.AlertData["type"][] = [
   "ServerDisk",
   "ContainerStateChange",
   "ResourceSyncPendingUpdates",
+  "BuildFailed",
   "AwsBuilderTerminationFailed",
 ];
 

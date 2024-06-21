@@ -8,7 +8,7 @@ use crate::entities::{MongoId, I64};
 
 use super::{
   _Serror, deployment::DeploymentState, server::stats::SeverityLevel,
-  update::ResourceTarget,
+  update::ResourceTarget, Version,
 };
 
 /// Representation of an alert in the system.
@@ -70,6 +70,9 @@ pub struct Alert {
 )]
 #[serde(tag = "type", content = "data")]
 pub enum AlertData {
+  /// A null alert
+  None {},
+
   /// A server could not be reached.
   ServerUnreachable {
     /// The id of the server
@@ -148,12 +151,23 @@ pub enum AlertData {
     message: String,
   },
 
+  /// A resource sync has pending updates
   ResourceSyncPendingUpdates {
+    /// The id of the resource sync
     id: String,
+    /// The name of the resource sync
     name: String,
   },
 
-  None {},
+  /// A build has failed
+  BuildFailed {
+    /// The id of the build
+    id: String,
+    /// The name of the build
+    name: String,
+    /// The version that failed to build
+    version: Version,
+  },
 }
 
 impl Default for AlertData {

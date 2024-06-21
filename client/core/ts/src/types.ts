@@ -112,6 +112,9 @@ export type ResourceTarget =
 
 /** The variants of data related to the alert. */
 export type AlertData = 
+	/** A null alert */
+	| { type: "None", data: {
+}}
 	/** A server could not be reached. */
 	| { type: "ServerUnreachable", data: {
 	/** The id of the server */
@@ -184,11 +187,21 @@ export type AlertData =
 	/** A reason for the failure */
 	message: string;
 }}
+	/** A resource sync has pending updates */
 	| { type: "ResourceSyncPendingUpdates", data: {
+	/** The id of the resource sync */
 	id: string;
+	/** The name of the resource sync */
 	name: string;
 }}
-	| { type: "None", data: {
+	/** A build has failed */
+	| { type: "BuildFailed", data: {
+	/** The id of the build */
+	id: string;
+	/** The name of the build */
+	name: string;
+	/** The version that failed to build */
+	version: Version;
 }};
 
 /** Representation of an alert in the system. */
