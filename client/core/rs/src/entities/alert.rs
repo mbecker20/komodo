@@ -7,8 +7,11 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  _Serror, deployment::DeploymentState, server::stats::SeverityLevel,
-  update::ResourceTarget, Version,
+  _Serror,
+  deployment::DeploymentState,
+  server::stats::SeverityLevel,
+  update::{Log, ResourceTarget},
+  Version,
 };
 
 /// Representation of an alert in the system.
@@ -167,6 +170,8 @@ pub enum AlertData {
     name: String,
     /// The version that failed to build
     version: Version,
+    /// The reason build failed
+    err: Option<Log>,
   },
 }
 

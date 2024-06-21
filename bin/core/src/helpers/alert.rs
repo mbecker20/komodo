@@ -6,11 +6,12 @@ use monitor_client::entities::{
   alerter::*,
   deployment::DeploymentState,
   server::stats::SeverityLevel,
+  update::ResourceTargetVariant,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use slack::types::Block;
 
-use crate::state::db_client;
+use crate::{config::core_config, state::db_client};
 
 #[instrument]
 pub async fn send_alerts(alerts: &[Alert]) {
@@ -126,7 +127,12 @@ async fn send_slack_alert(
 ) -> anyhow::Result<()> {
   let level = fmt_level(alert.level);
   let (text, blocks): (_, Option<_>) = match &alert.data {
-    AlertData::ServerUnreachable { name, region, .. } => {
+    AlertData::ServerUnreachable {
+      id,
+      name,
+      region,
+      err,
+    } => {
       let region = fmt_region(region);
       match alert.level {
         SeverityLevel::Ok => {
@@ -143,10 +149,18 @@ async fn send_slack_alert(
         SeverityLevel::Critical => {
           let text =
             format!("{level} | *{name}*{region} is *unreachable* ❌");
+          let err = err
+            .as_ref()
+            .map(|e| format!("\nerror: {e:#?}"))
+            .unwrap_or_default();
           let blocks = vec![
             Block::header(level),
             Block::section(format!(
-              "*{name}*{region} is *unreachable* ❌"
+              "*{name}*{region} is *unreachable* ❌{err}"
+            )),
+            Block::section(resource_link(
+              ResourceTargetVariant::Server,
+              id,
             )),
           ];
           (text, blocks.into())
@@ -155,10 +169,10 @@ async fn send_slack_alert(
       }
     }
     AlertData::ServerCpu {
+      id,
       name,
       region,
       percentage,
-      ..
     } => {
       let region = fmt_region(region);
       let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
@@ -167,15 +181,19 @@ async fn send_slack_alert(
         Block::section(format!(
           "*{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨"
         )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Server,
+          id,
+        )),
       ];
       (text, blocks.into())
     }
     AlertData::ServerMem {
+      id,
       name,
       region,
       used_gb,
       total_gb,
-      ..
     } => {
       let region = fmt_region(region);
       let percentage = 100.0 * used_gb / total_gb;
@@ -189,16 +207,20 @@ async fn send_slack_alert(
         Block::section(format!(
           "using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
         )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Server,
+          id,
+        )),
       ];
       (text, blocks.into())
     }
     AlertData::ServerDisk {
+      id,
       name,
       region,
       path,
       used_gb,
       total_gb,
-      ..
     } => {
       let region = fmt_region(region);
       let percentage = 100.0 * used_gb / total_gb;
@@ -211,6 +233,7 @@ async fn send_slack_alert(
         Block::section(format!(
           "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
         )),
+        Block::section(resource_link(ResourceTargetVariant::Server, id)),
       ];
       (text, blocks.into())
     }
@@ -219,6 +242,7 @@ async fn send_slack_alert(
       server_name,
       from,
       to,
+      id,
       ..
     } => {
       let to = fmt_docker_container_state(to);
@@ -226,7 +250,11 @@ async fn send_slack_alert(
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "server: {server_name}\nprevious: {from}"
+          "server: {server_name}\nprevious: {from}",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Deployment,
+          id,
         )),
       ];
       (text, blocks.into())
@@ -252,18 +280,37 @@ async fn send_slack_alert(
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "sync id: **{id}**\nsync name: **{name}**"
+          "sync id: **{id}**\nsync name: **{name}**",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::ResourceSync,
+          id,
         )),
       ];
       (text, blocks.into())
     }
-    AlertData::BuildFailed { id, name, version } => {
+    AlertData::BuildFailed {
+      id,
+      name,
+      version,
+      err,
+    } => {
       let text = format!("{level} | Build {name} has failed");
+      let err = err
+        .as_ref()
+        .map(|log| {
+          format!(
+            "\nfailed at stage: {}\nstdout: {}\nstderr: {}",
+            log.stage, log.stdout, log.stderr
+          )
+        })
+        .unwrap_or_default();
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "build id: **{id}**\nbuild name: **{name}**\nversion: v{version}"
+          "build id: **{id}**\nbuild name: **{name}**\nversion: v{version}{err}",
         )),
+        Block::section(resource_link(ResourceTargetVariant::Build, id))
       ];
       (text, blocks.into())
     }
@@ -299,4 +346,38 @@ fn fmt_level(level: SeverityLevel) -> &'static str {
     SeverityLevel::Warning => "WARNING 🚨",
     SeverityLevel::Ok => "OK ✅",
   }
+}
+
+fn resource_link(
+  resource_type: ResourceTargetVariant,
+  id: &str,
+) -> String {
+  let path = match resource_type {
+    ResourceTargetVariant::System => unreachable!(),
+    ResourceTargetVariant::Build => format!("/builds/{id}"),
+    ResourceTargetVariant::Builder => {
+      format!("/builders/{id}")
+    }
+    ResourceTargetVariant::Deployment => {
+      format!("/deployments/{id}")
+    }
+    ResourceTargetVariant::Server => {
+      format!("/servers/{id}")
+    }
+    ResourceTargetVariant::Repo => format!("/repos/{id}"),
+    ResourceTargetVariant::Alerter => {
+      format!("/alerters/{id}")
+    }
+    ResourceTargetVariant::Procedure => {
+      format!("/procedures/{id}")
+    }
+    ResourceTargetVariant::ServerTemplate => {
+      format!("/server-templates/{id}")
+    }
+    ResourceTargetVariant::ResourceSync => {
+      format!("/resource-syncs/{id}")
+    }
+  };
+
+  format!("{}{path}", core_config().host)
 }
