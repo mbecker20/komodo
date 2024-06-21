@@ -28,8 +28,8 @@ export const ExportButton = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex gap-2 items-center">
-          Toml
           <FileDown className="w-4 h-4" />
+          Toml
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[900px] max-w-[95vw]">
