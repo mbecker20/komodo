@@ -321,3 +321,20 @@ export const useLocalStorage = <T>(
   };
   return [state, set];
 };
+
+export const useShiftKeyListener = (listenKey: string, onPress: () => void) => {
+  useEffect(() => {
+    const keydown = (e: KeyboardEvent) => {
+      // This will ignore Shift + listenKey if it is sent from input / textarea
+      const target = e.target as any;
+      if (target.matches("input") || target.matches("textarea")) return;
+
+      if (e.shiftKey && e.key === listenKey) {
+        e.preventDefault();
+        onPress();
+      }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => document.removeEventListener("keydown", keydown);
+  });
+};

@@ -1,4 +1,4 @@
-import { useRead, useResourceParamType } from "@lib/hooks";
+import { useRead, useResourceParamType, useShiftKeyListener } from "@lib/hooks";
 import { ResourceComponents } from "./resources";
 import {
   AlertTriangle,
@@ -36,7 +36,7 @@ import { ThemeToggle } from "@ui/theme";
 import { UsableResource } from "@types";
 import { useAtom } from "jotai";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import {
   Command,
   CommandEmpty,
@@ -51,20 +51,7 @@ import { Types } from "@monitor/client";
 
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
-  useEffect(() => {
-    const keydown = (e: KeyboardEvent) => {
-      // This will ignore Shift + S if it is sent from input / textarea
-      const target = e.target as any;
-      if (target.matches("input") || target.matches("textarea")) return;
-
-      if (e.shiftKey && e.key === "S") {
-        e.preventDefault();
-        setOmniOpen(true);
-      }
-    };
-    document.addEventListener("keydown", keydown);
-    return () => document.removeEventListener("keydown", keydown);
-  });
+  useShiftKeyListener("S", () => setOmniOpen(true));
   const version = useRead("GetVersion", {}).data?.version;
   return (
     <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">

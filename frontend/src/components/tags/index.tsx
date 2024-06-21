@@ -1,4 +1,10 @@
-import { tagsAtom, useInvalidate, useRead, useWrite } from "@lib/hooks";
+import {
+  tagsAtom,
+  useInvalidate,
+  useRead,
+  useShiftKeyListener,
+  useWrite,
+} from "@lib/hooks";
 import { cn, filterBySplit } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
@@ -22,9 +28,11 @@ type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
 export const TagsFilter = () => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [tags, setTags] = useAtom(tagsAtom);
+  const [tags, setTags] = useAtom<string[]>(tagsAtom);
   const all_tags = useRead("ListTags", {}).data;
   const filtered = filterBySplit(all_tags, search, (item) => item.name);
+  useShiftKeyListener("T", () => setOpen(true));
+  useShiftKeyListener("C", () => setTags([]));
   return (
     <div className="flex gap-4 items-center">
       <TagsFilterTags
@@ -199,6 +207,8 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
+  useShiftKeyListener("T", () => setOpen(true));
+
   const all_tags = useRead("ListTags", {}).data ?? [];
   const all_tag_names = all_tags.map((tag) => tag.name);
 
@@ -289,10 +299,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
                   </CommandItem>
                 ))}
               {search && !all_tag_names.includes(search) && (
-                <CommandItem
-                  onSelect={create_tag}
-                  className="cursor-pointer"
-                >
+                <CommandItem onSelect={create_tag} className="cursor-pointer">
                   <div className="w-full p-1 flex items-center justify-between">
                     Create Tag
                     <PlusCircle className="w-4" />
