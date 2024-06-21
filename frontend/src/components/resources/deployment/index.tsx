@@ -1,7 +1,7 @@
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
-import { HardDrive, Rocket, Server } from "lucide-react";
+import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useServer } from "../server";
 import {
@@ -26,6 +26,7 @@ import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -159,6 +160,17 @@ export const DeploymentComponents: RequiredResourceComponents = {
           <Server className="w-4 h-4" />
           <div>Unknown Server</div>
         </div>
+      );
+    },
+    Alerts: ({ id }) => {
+      return (
+        <Link
+          to={`/deployments/${id}/alerts`}
+          className="flex gap-2 items-center"
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Alerts
+        </Link>
       );
     },
   },

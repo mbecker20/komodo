@@ -289,7 +289,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
+          className="hidden sm:flex lg:hidden justify-start items-center gap-2 w-48 px-3"
         >
           <Components.Icon id={selected?.id} />
           {selected ? selected.name : `All ${type}s`}
@@ -362,7 +362,7 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
+          className="hidden sm:flex lg:hidden justify-start items-center gap-2 w-48 px-3"
         >
           <Users className="w-4 h-4" />
           {selected ? selected.name : "All User Groups"}
@@ -442,7 +442,7 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
+          className="hidden sm:flex lg:hidden justify-start items-center gap-2 w-48 px-3"
         >
           <UserAvatar avatar={avatar} />
           {selected ? selected.username : "All Users"}

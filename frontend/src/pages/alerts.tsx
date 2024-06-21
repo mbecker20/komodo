@@ -16,14 +16,16 @@ import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router";
 
-const ALERT_TYPES = {
+const ALERT_TYPES: { [key: string]: Types.AlertData["type"][] } = {
   Server: ["ServerUnreachable", "ServerCpu", "ServerMem", "ServerDisk"],
   Deployment: ["ContainerStateChange"],
+  Build: ["BuildFailed"],
 };
 
 const FALLBACK_ALERT_TYPES = [
   ...ALERT_TYPES.Server,
   ...ALERT_TYPES.Deployment,
+  ...ALERT_TYPES.Build,
   "AwsBuilderTerminationFailed",
 ];
 
@@ -43,7 +45,7 @@ export const Alerts = () => {
     query: {
       "target.type": type,
       "target.id": id,
-      variant: variant === "All" ? undefined : variant,
+      "data.type": variant === "All" ? undefined : variant,
       resolved: onlyOpen ? false : undefined,
     },
     page,

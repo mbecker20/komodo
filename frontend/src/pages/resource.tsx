@@ -16,7 +16,7 @@ import {
 import { has_minimum_permissions } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { AlertTriangle, Clapperboard } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, ReactNode } from "react";
 import { useParams } from "react-router-dom";
 
 export const Resource = () => {
@@ -57,7 +57,7 @@ export const Resource = () => {
           {infoEntries.map(([key, Info], i) => (
             <Fragment key={key}>
               {i !== 0 && "| "}
-              <Info key={i} id={id} />
+              <Info id={id} />
             </Fragment>
           ))}
           {infoEntries.length ? "| " : ""}

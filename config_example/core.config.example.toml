@@ -48,6 +48,11 @@ passkey = "a_random_passkey"
 ## default: 0 (pruning disabled)
 # keep_stats_for_days = 14
 
+## number of days to keep alerts around, or 0 to disable pruning. 
+## alerts older than this number of days are deleted daily
+## default: 0 (pruning disabled)
+# keep_alerts_for_days = 14
+
 ## token that has to be given to github during repo webhook config as the secret
 ## default: empty (none)
 # github_webhook_secret = "your_random_webhook_secret"
