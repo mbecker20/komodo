@@ -74,11 +74,12 @@ export const ResourcesConfig = ({
       })
     : all_resources;
   return (
-    <ConfigItem label="Resources">
+    <ConfigItem label={`Resource ${blacklist ? "Blacklist" : "Whitelist"}`}>
       <div className="flex items-center gap-4">
         {resources.length ? (
           <div className="text-muted-foreground">
-            Alerts filtered by {resources.length} resources
+            Alerts {blacklist ? "blacklisted" : "whitelisted"} by{" "}
+            {resources.length} resources
           </div>
         ) : undefined}
         <Dialog open={open} onOpenChange={setOpen}>
