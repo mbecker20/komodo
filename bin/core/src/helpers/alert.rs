@@ -180,18 +180,36 @@ async fn send_slack_alert(
       percentage,
     } => {
       let region = fmt_region(region);
-      let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
-      let blocks = vec![
-        Block::header(format!("{level} 🚨")),
-        Block::section(format!(
-          "*{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨"
-        )),
-        Block::section(resource_link(
-          ResourceTargetVariant::Server,
-          id,
-        )),
-      ];
-      (text, blocks.into())
+      match alert.level {
+        SeverityLevel::Ok => {
+          let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* ✅");
+          let blocks = vec![
+            Block::header(format!("{level} ✅")),
+            Block::section(format!(
+              "*{name}*{region} cpu usage at *{percentage:.1}%*"
+            )),
+            Block::section(resource_link(
+              ResourceTargetVariant::Server,
+              id,
+            )),
+          ];
+          (text, blocks.into())
+        }
+        _ => {
+          let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
+          let blocks = vec![
+            Block::header(format!("{level} 🚨")),
+            Block::section(format!(
+              "*{name}*{region} cpu usage at *{percentage:.1}%* 📈"
+            )),
+            Block::section(resource_link(
+              ResourceTargetVariant::Server,
+              id,
+            )),
+          ];
+          (text, blocks.into())
+        }
+      }
     }
     AlertData::ServerMem {
       id,
@@ -202,22 +220,42 @@ async fn send_slack_alert(
     } => {
       let region = fmt_region(region);
       let percentage = 100.0 * used_gb / total_gb;
-      let text =
-                format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
-      let blocks = vec![
-        Block::header(level),
-        Block::section(format!(
-          "*{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨"
-        )),
-        Block::section(format!(
-          "using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
-        )),
-        Block::section(resource_link(
-          ResourceTargetVariant::Server,
-          id,
-        )),
-      ];
-      (text, blocks.into())
+      match alert.level {
+        SeverityLevel::Ok => {
+          let text = format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾 ✅");
+          let blocks = vec![
+            Block::header(format!("{level} ✅")),
+            Block::section(format!(
+              "*{name}*{region} memory usage at *{percentage:.1}%* 💾"
+            )),
+            Block::section(format!(
+              "using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
+            )),
+            Block::section(resource_link(
+              ResourceTargetVariant::Server,
+              id,
+            )),
+          ];
+          (text, blocks.into())
+        }
+        _ => {
+          let text = format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
+          let blocks = vec![
+            Block::header(format!("{level} 🚨")),
+            Block::section(format!(
+              "*{name}*{region} memory usage at *{percentage:.1}%* 💾"
+            )),
+            Block::section(format!(
+              "using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
+            )),
+            Block::section(resource_link(
+              ResourceTargetVariant::Server,
+              id,
+            )),
+          ];
+          (text, blocks.into())
+        }
+      }
     }
     AlertData::ServerDisk {
       id,
@@ -229,18 +267,36 @@ async fn send_slack_alert(
     } => {
       let region = fmt_region(region);
       let percentage = 100.0 * used_gb / total_gb;
-      let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 🚨");
-      let blocks = vec![
-        Block::header(level),
-        Block::section(format!(
-          "*{name}*{region} disk usage at *{percentage:.1}%* 💿 🚨"
-        )),
-        Block::section(format!(
-          "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
-        )),
-        Block::section(resource_link(ResourceTargetVariant::Server, id)),
-      ];
-      (text, blocks.into())
+      match alert.level {
+        SeverityLevel::Ok => {
+          let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 ✅");
+          let blocks = vec![
+            Block::header(format!("{level} ✅")),
+            Block::section(format!(
+              "*{name}*{region} disk usage at *{percentage:.1}%* 💿"
+            )),
+            Block::section(format!(
+              "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
+            )),
+            Block::section(resource_link(ResourceTargetVariant::Server, id)),
+          ];
+          (text, blocks.into())
+        }
+        _ => {
+          let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 🚨");
+          let blocks = vec![
+            Block::header(format!("{level} 🚨")),
+            Block::section(format!(
+              "*{name}*{region} disk usage at *{percentage:.1}%* 💿"
+            )),
+            Block::section(format!(
+              "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
+            )),
+            Block::section(resource_link(ResourceTargetVariant::Server, id)),
+          ];
+          (text, blocks.into())
+        }
+      }
     }
     AlertData::ContainerStateChange {
       name,
@@ -269,12 +325,12 @@ async fn send_slack_alert(
       message,
     } => {
       let text = format!(
-        "{level} | Failed to terminated AWS builder instance"
+        "{level} | Failed to terminated AWS builder instance 🚨"
       );
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "instance id: **{instance_id}**\n{message}"
+          "instance id: *{instance_id}*\n{message}"
         )),
       ];
       (text, blocks.into())
@@ -285,7 +341,7 @@ async fn send_slack_alert(
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "sync id: **{id}**\nsync name: **{name}**",
+          "sync id: *{id}*\nsync name: *{name}*",
         )),
         Block::section(resource_link(
           ResourceTargetVariant::ResourceSync,
@@ -300,20 +356,23 @@ async fn send_slack_alert(
       version,
       err,
     } => {
-      let text = format!("{level} | Build {name} has failed");
+      let text = format!("{level} | Build {name} has failed 🚨");
       let err = err
         .as_ref()
         .map(|log| {
-          format!(
-            "\nfailed at stage: {}\nstdout: {}\nstderr: {}",
-            log.stage, log.stdout, log.stderr
-          )
+          let stdout = (!log.stdout.is_empty())
+            .then(|| format!("\nstdout: {}", log.stdout))
+            .unwrap_or_default();
+          let stderr = (!log.stderr.is_empty())
+            .then(|| format!("\nstderr: {}", log.stderr))
+            .unwrap_or_default();
+          format!("\nfailed at stage: {}{stdout}{stderr}", log.stage)
         })
         .unwrap_or_default();
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "build id: **{id}**\nbuild name: **{name}**\nversion: v{version}{err}",
+          "build id: *{id}*\nbuild name: *{name}*\nversion: v{version}{err}",
         )),
         Block::section(resource_link(ResourceTargetVariant::Build, id))
       ];

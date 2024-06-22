@@ -42,7 +42,7 @@ pub async fn alert_servers(
 
   let mut alerts_to_open = Vec::<(Alert, SendAlerts)>::new();
   let mut alerts_to_update = Vec::<(Alert, SendAlerts)>::new();
-  let mut alert_ids_to_close = Vec::<(String, SendAlerts)>::new();
+  let mut alert_ids_to_close = Vec::<(Alert, SendAlerts)>::new();
 
   for server_status in server_statuses {
     let Some(server) = servers.remove(&server_status.id) else {
@@ -101,13 +101,10 @@ pub async fn alert_servers(
       }
 
       // Close an open alert
-      (
-        ServerState::Ok | ServerState::Disabled,
-        Some(health_alert),
-      ) => alert_ids_to_close.push((
-        health_alert.id.clone(),
-        server.info.send_unreachable_alerts,
-      )),
+      (ServerState::Ok | ServerState::Disabled, Some(alert)) => {
+        alert_ids_to_close
+          .push((alert.clone(), server.info.send_unreachable_alerts));
+      }
       _ => {}
     }
 
@@ -165,8 +162,20 @@ pub async fn alert_servers(
           alerts_to_update.push((alert, server.info.send_cpu_alerts));
         }
       }
-      (SeverityLevel::Ok, Some(alert)) => alert_ids_to_close
-        .push((alert.id.clone(), server.info.send_cpu_alerts)),
+      (SeverityLevel::Ok, Some(alert)) => {
+        let mut alert = alert.clone();
+        alert.data = AlertData::ServerCpu {
+          id: server_status.id.clone(),
+          name: server.name.clone(),
+          region: optional_string(&server.info.region),
+          percentage: server_status
+            .stats
+            .as_ref()
+            .map(|s| s.cpu_perc as f64)
+            .unwrap_or(0.0),
+        };
+        alert_ids_to_close.push((alert, server.info.send_cpu_alerts))
+      }
       _ => {}
     }
 
@@ -229,8 +238,25 @@ pub async fn alert_servers(
           alerts_to_update.push((alert, server.info.send_mem_alerts));
         }
       }
-      (SeverityLevel::Ok, Some(alert)) => alert_ids_to_close
-        .push((alert.id.clone(), server.info.send_mem_alerts)),
+      (SeverityLevel::Ok, Some(alert)) => {
+        let mut alert = alert.clone();
+        alert.data = AlertData::ServerMem {
+          id: server_status.id.clone(),
+          name: server.name.clone(),
+          region: optional_string(&server.info.region),
+          total_gb: server_status
+            .stats
+            .as_ref()
+            .map(|s| s.mem_total_gb)
+            .unwrap_or(0.0),
+          used_gb: server_status
+            .stats
+            .as_ref()
+            .map(|s| s.mem_used_gb)
+            .unwrap_or(0.0),
+        };
+        alert_ids_to_close.push((alert, server.info.send_mem_alerts))
+      }
       _ => {}
     }
 
@@ -291,8 +317,23 @@ pub async fn alert_servers(
               .push((alert, server.info.send_disk_alerts));
           }
         }
-        (SeverityLevel::Ok, Some(alert)) => alert_ids_to_close
-          .push((alert.id.clone(), server.info.send_disk_alerts)),
+        (SeverityLevel::Ok, Some(alert)) => {
+          let mut alert = alert.clone();
+          let disk = server_status.stats.as_ref().and_then(|stats| {
+            stats.disks.iter().find(|disk| disk.mount == *path)
+          });
+          alert.level = *health;
+          alert.data = AlertData::ServerDisk {
+            id: server_status.id.clone(),
+            name: server.name.clone(),
+            region: optional_string(&server.info.region),
+            path: path.to_owned(),
+            total_gb: disk.map(|d| d.total_gb).unwrap_or_default(),
+            used_gb: disk.map(|d| d.used_gb).unwrap_or_default(),
+          };
+          alert_ids_to_close
+            .push((alert, server.info.send_disk_alerts))
+        }
         _ => {}
       }
     }
@@ -402,22 +443,20 @@ async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
 }
 
 #[instrument(level = "debug")]
-async fn resolve_alerts(alert_ids: &[(String, SendAlerts)]) {
-  if alert_ids.is_empty() {
+async fn resolve_alerts(alerts: &[(Alert, SendAlerts)]) {
+  if alerts.is_empty() {
     return;
   }
 
-  let send_alerts_map =
-    alert_ids.iter().cloned().collect::<HashMap<_, _>>();
-
-  let close = || async {
-    let alert_ids = alert_ids
+  let close = || async move {
+    let alert_ids = alerts
       .iter()
-      .map(|(id, _)| {
-        ObjectId::from_str(id)
+      .map(|(alert, _)| {
+        ObjectId::from_str(&alert.id)
           .context("failed to convert alert id to ObjectId")
       })
       .collect::<anyhow::Result<Vec<_>>>()?;
+
     db_client()
       .await
       .alerts
@@ -432,28 +471,23 @@ async fn resolve_alerts(alert_ids: &[(String, SendAlerts)]) {
         None,
       )
       .await
-      .context("failed to resolve alerts on db")?;
-    let mut closed = find_collect(
-      &db_client().await.alerts,
-      doc! { "_id": { "$in": &alert_ids } },
-      None,
-    )
-    .await
-    .context("failed to get closed alerts from db")?;
+      .context("failed to resolve alerts on db")
+      .inspect_err(|e| warn!("{e:#}"))
+      .ok();
 
-    for closed in &mut closed {
-      closed.level = SeverityLevel::Ok;
-    }
+    let ts = monitor_timestamp();
 
-    let closed = closed
-      .into_iter()
-      .filter(|closed| {
-        if let ResourceTarget::Server(id) = &closed.target {
-          send_alerts_map.get(id).cloned().unwrap_or(true)
-        } else {
-          error!("got resource target other than server in resolve_server_alerts");
-          true
-        }
+    let closed = alerts
+      .iter()
+      .filter(|(_, send)| *send)
+      .map(|(alert, _)| {
+        let mut alert = alert.clone();
+
+        alert.resolved = true;
+        alert.resolved_ts = Some(ts);
+        alert.level = SeverityLevel::Ok;
+
+        alert
       })
       .collect::<Vec<_>>();
 
