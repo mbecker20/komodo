@@ -182,9 +182,9 @@ async fn send_slack_alert(
       let region = fmt_region(region);
       match alert.level {
         SeverityLevel::Ok => {
-          let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* ✅");
+          let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%*");
           let blocks = vec![
-            Block::header(format!("{level} ✅")),
+            Block::header(level),
             Block::section(format!(
               "*{name}*{region} cpu usage at *{percentage:.1}%*"
             )),
@@ -196,9 +196,9 @@ async fn send_slack_alert(
           (text, blocks.into())
         }
         _ => {
-          let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
+          let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* 📈");
           let blocks = vec![
-            Block::header(format!("{level} 🚨")),
+            Block::header(level),
             Block::section(format!(
               "*{name}*{region} cpu usage at *{percentage:.1}%* 📈"
             )),
@@ -222,9 +222,9 @@ async fn send_slack_alert(
       let percentage = 100.0 * used_gb / total_gb;
       match alert.level {
         SeverityLevel::Ok => {
-          let text = format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾 ✅");
+          let text = format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾");
           let blocks = vec![
-            Block::header(format!("{level} ✅")),
+            Block::header(level),
             Block::section(format!(
               "*{name}*{region} memory usage at *{percentage:.1}%* 💾"
             )),
@@ -239,9 +239,9 @@ async fn send_slack_alert(
           (text, blocks.into())
         }
         _ => {
-          let text = format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
+          let text = format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾");
           let blocks = vec![
-            Block::header(format!("{level} 🚨")),
+            Block::header(level),
             Block::section(format!(
               "*{name}*{region} memory usage at *{percentage:.1}%* 💾"
             )),
@@ -269,9 +269,9 @@ async fn send_slack_alert(
       let percentage = 100.0 * used_gb / total_gb;
       match alert.level {
         SeverityLevel::Ok => {
-          let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 ✅");
+          let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿");
           let blocks = vec![
-            Block::header(format!("{level} ✅")),
+            Block::header(level),
             Block::section(format!(
               "*{name}*{region} disk usage at *{percentage:.1}%* 💿"
             )),
@@ -283,9 +283,9 @@ async fn send_slack_alert(
           (text, blocks.into())
         }
         _ => {
-          let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 🚨");
+          let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿");
           let blocks = vec![
-            Block::header(format!("{level} 🚨")),
+            Block::header(level),
             Block::section(format!(
               "*{name}*{region} disk usage at *{percentage:.1}%* 💿"
             )),
@@ -325,7 +325,7 @@ async fn send_slack_alert(
       message,
     } => {
       let text = format!(
-        "{level} | Failed to terminated AWS builder instance 🚨"
+        "{level} | Failed to terminated AWS builder instance "
       );
       let blocks = vec![
         Block::header(text.clone()),
@@ -356,7 +356,7 @@ async fn send_slack_alert(
       version,
       err,
     } => {
-      let text = format!("{level} | Build {name} has failed 🚨");
+      let text = format!("{level} | Build {name} has failed");
       let err = err
         .as_ref()
         .map(|log| {
@@ -407,7 +407,7 @@ fn fmt_docker_container_state(state: &DeploymentState) -> String {
 fn fmt_level(level: SeverityLevel) -> &'static str {
   match level {
     SeverityLevel::Critical => "CRITICAL 🚨",
-    SeverityLevel::Warning => "WARNING 🚨",
+    SeverityLevel::Warning => "WARNING ‼️",
     SeverityLevel::Ok => "OK ✅",
   }
 }
