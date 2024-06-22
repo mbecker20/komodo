@@ -23,6 +23,11 @@ import { useShiftKeyListener } from "@lib/hooks";
 export const Layout = () => {
   const nav = useNavigate();
   useShiftKeyListener("H", () => nav("/"));
+  useShiftKeyListener("G", () => nav("/servers"));
+  useShiftKeyListener("D", () => nav("/deployments"));
+  useShiftKeyListener("B", () => nav("/builds"));
+  useShiftKeyListener("R", () => nav("/repos"));
+  useShiftKeyListener("P", () => nav("/procedures"));
   return (
     <>
       <Topbar />

@@ -8,6 +8,7 @@ import {
   FileQuestion,
   FolderTree,
   Home,
+  Keyboard,
   SearchX,
   Settings,
   User,
@@ -48,6 +49,13 @@ import {
 import { ResourceLink } from "./resources/common";
 import { HomeView, homeViewAtom } from "@main";
 import { Types } from "@monitor/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@ui/dialog";
 
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
@@ -82,9 +90,6 @@ export const Topbar = () => {
           className="hidden lg:flex justify-self-center"
         />
         <div className="flex md:gap-2 justify-self-end items-center">
-          {/* <div className="hidden lg:block px-2 text-muted-foreground cursor-default">
-            v{version}
-          </div> */}
           <a
             href="https://docs.monitor.mogh.tech"
             target="_blank"
@@ -96,6 +101,7 @@ export const Topbar = () => {
           </a>
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <WsStatusIndicator />
+          <KeyboardShortcuts />
           <TopbarUpdates />
           <ThemeToggle />
           <Logout />
@@ -496,5 +502,66 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
         </Command>
       </PopoverContent>
     </Popover>
+  );
+};
+
+const KeyboardShortcuts = () => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="items-center gap-2">
+          <Keyboard className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-3 grid-cols-2 pt-8">
+          <div>Go Home</div>
+          <div className="text-muted-foreground">shift + h</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Go to Servers</div>
+          <div className="text-muted-foreground">shift + g</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Go to Deployments</div>
+          <div className="text-muted-foreground">shift + d</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Go to Builds</div>
+          <div className="text-muted-foreground">shift + b</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Go to Repos</div>
+          <div className="text-muted-foreground">shift + r</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Go to Procedures</div>
+          <div className="text-muted-foreground">shift + p</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Omni-Search</div>
+          <div className="text-muted-foreground">shift + s</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Add Filter Tag</div>
+          <div className="text-muted-foreground">shift + t</div>
+
+          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+
+          <div>Clear Filter Tags</div>
+          <div className="text-muted-foreground">shift + c</div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

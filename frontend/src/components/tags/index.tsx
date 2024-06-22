@@ -20,7 +20,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { useAtom } from "jotai";
-import { MinusCircle, PlusCircle, SearchX, Tag } from "lucide-react";
+import { MinusCircle, PlusCircle, SearchX, Tag, X } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
@@ -34,27 +34,21 @@ export const TagsFilter = () => {
   useShiftKeyListener("T", () => setOpen(true));
   useShiftKeyListener("C", () => setTags([]));
   return (
-    <div className="flex gap-4 items-center">
+    <div className="flex gap-3 items-center">
+      {tags.length > 0 && (
+        <Button
+          variant="destructive"
+          className="px-2 py-1.5 h-fit"
+          onClick={() => setTags([])}
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      )}
+
       <TagsFilterTags
         tag_ids={tags}
         onBadgeClick={(tag_id) => setTags(tags.filter((id) => id !== tag_id))}
       />
-
-      {tags.length > 0 && (
-        <Badge
-          variant="destructive"
-          className="flex items-center gap-2 py-1"
-          onClick={() => setTags([])}
-        >
-          Clear
-          <Badge
-            variant="outline"
-            className="text-muted-foreground hidden md:inline-flex"
-          >
-            shift + c
-          </Badge>
-        </Badge>
-      )}
 
       <Popover
         open={open}
@@ -67,15 +61,13 @@ export const TagsFilter = () => {
           <Button variant="outline" className="flex items-center gap-2">
             <Tag className="w-3 h-3" />
             Tag Filter
-            <Badge
-              variant="outline"
-              className="text-muted-foreground hidden md:inline-flex"
-            >
-              shift + t
-            </Badge>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
+        <PopoverContent
+          className="w-[200px] max-h-[200px] p-0"
+          sideOffset={12}
+          align="end"
+        >
           <Command shouldFilter={false}>
             <CommandInput
               placeholder="Search Tags"
