@@ -62,7 +62,12 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
       return Ok(());
     }
 
-    // Don't send if resource target not configured on the alerter
+    // Don't send if resource is in the blacklist
+    if alerter.config.except_resources.contains(&alert.target) {
+      return Ok(());
+    }
+
+    // Don't send if whitelist configured and target is not included
     if !alerter.config.resources.is_empty()
       && !alerter.config.resources.contains(&alert.target)
     {

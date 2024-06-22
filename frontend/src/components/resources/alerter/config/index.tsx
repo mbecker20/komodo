@@ -53,6 +53,15 @@ export const AlerterConfig = ({ id }: { id: string }) => {
                   resources={resources!}
                   set={(resources) => set({ resources })}
                   disabled={disabled}
+                  blacklist={false}
+                />
+              ),
+              except_resources: (resources, set) => (
+                <ResourcesConfig
+                  resources={resources!}
+                  set={(except_resources) => set({ except_resources })}
+                  disabled={disabled}
+                  blacklist={true}
                 />
               ),
             },

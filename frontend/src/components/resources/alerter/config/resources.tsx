@@ -22,10 +22,12 @@ export const ResourcesConfig = ({
   resources,
   set,
   disabled,
+  blacklist,
 }: {
   resources: Types.ResourceTarget[];
   set: (resources: Types.ResourceTarget[]) => void;
   disabled: boolean;
+  blacklist: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -59,9 +61,7 @@ export const ResourcesConfig = ({
       type: "Build",
       id: build.id,
       name: build.name.toLowerCase(),
-      enabled: resources.find(
-        (r) => r.type === "Build" && r.id === build.id
-      )
+      enabled: resources.find((r) => r.type === "Build" && r.id === build.id)
         ? true
         : false,
     })),
@@ -152,7 +152,10 @@ export const ResourcesConfig = ({
                     {
                       accessorKey: "enabled",
                       header: ({ column }) => (
-                        <SortableHeader column={column} title="Enabled" />
+                        <SortableHeader
+                          column={column}
+                          title={blacklist ? "Blacklist" : "Whitelist"}
+                        />
                       ),
                       cell: ({ row }) => {
                         return (

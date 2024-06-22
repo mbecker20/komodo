@@ -279,6 +279,8 @@ export interface AlerterConfig {
 	 * If empty, will send alerts for all resources.
 	 */
 	resources?: ResourceTarget[];
+	/** DON'T send alerts on these resources. */
+	except_resources?: ResourceTarget[];
 }
 
 export type Alerter = Resource<AlerterConfig, undefined>;

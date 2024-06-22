@@ -60,6 +60,11 @@ pub struct AlerterConfig {
   #[serde(default)]
   #[builder(default)]
   pub resources: Vec<ResourceTarget>,
+
+  /// DON'T send alerts on these resources.
+  #[serde(default)]
+  #[builder(default)]
+  pub except_resources: Vec<ResourceTarget>,
 }
 
 impl AlerterConfig {
@@ -76,9 +81,10 @@ impl Default for AlerterConfig {
   fn default() -> Self {
     Self {
       enabled: default_enabled(),
+      endpoint: Default::default(),
       alert_types: Default::default(),
       resources: Default::default(),
-      endpoint: Default::default(),
+      except_resources: Default::default(),
     }
   }
 }
