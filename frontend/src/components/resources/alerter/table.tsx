@@ -23,9 +23,15 @@ export const AlerterTable = ({
           ),
         },
         {
-          accessorKey: "info.alerter_type",
+          accessorKey: "info.endpoint_type",
           header: ({ column }) => (
             <SortableHeader column={column} title="Type" />
+          ),
+        },
+        {
+          accessorKey: "info.enabled",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Enabled" />
           ),
         },
         {
