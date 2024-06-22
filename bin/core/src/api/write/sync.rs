@@ -31,6 +31,7 @@ use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
+    alert::send_alerts,
     query::get_id_to_tags,
     sync::{
       deployment,
@@ -294,6 +295,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
             .context("failed to open existing pending resource sync updates alert")
             .inspect_err(|e| warn!("{e:#}"))
             .ok();
+          send_alerts(&[alert]).await;
         }
         // CLOSE ALERT
         (Some(existing), false) => {
