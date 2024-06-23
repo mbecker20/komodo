@@ -76,7 +76,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
     .await?;
 
     let (registry_token, aws_ecr) =
-      validate_account_extract_registry_token_aws_ecr(&build)?;
+      validate_account_extract_registry_token_aws_ecr(&build).await?;
 
     // get the action state for the build (or insert default).
     let action_state =
@@ -736,7 +736,7 @@ fn start_aws_builder_log(
 /// This will make sure that a build with non-none image registry has an account attached,
 /// and will check the core config for a token / aws ecr config matching requirements.
 /// Otherwise it is left to periphery.
-fn validate_account_extract_registry_token_aws_ecr(
+async fn validate_account_extract_registry_token_aws_ecr(
   build: &Build,
 ) -> anyhow::Result<(Option<String>, Option<AwsEcrConfig>)> {
   match &build.config.image_registry {
@@ -760,7 +760,25 @@ fn validate_account_extract_registry_token_aws_ecr(
       Ok((core_config().github_accounts.get(account).cloned(), None))
     }
     ImageRegistry::AwsEcr(label) => {
-      Ok((None, core_config().aws_ecr_registries.get(label).cloned()))
+      let config = core_config().aws_ecr_registries.get(label);
+      let token = match config {
+        Some(AwsEcrConfig {
+          region,
+          access_key_id,
+          secret_access_key,
+          ..
+        }) => Some(
+          aws_ecr::get_ecr_token(
+            region,
+            access_key_id,
+            secret_access_key,
+          )
+          .await
+          .context("failed to get aws ecr token")?,
+        ),
+        None => None,
+      };
+      Ok((token, config.cloned()))
     }
     ImageRegistry::Custom(_) => {
       Err(anyhow!("Custom image registry is not implemented"))

@@ -16,8 +16,11 @@ RUN cd frontend && yarn link @monitor/client && yarn && yarn build
 FROM debian:bookworm-slim
 
 # Install Deps
-RUN apt update && apt install -y git ca-certificates
-
+RUN apt update && apt install -y git curl ca-certificates && \
+	curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+	unzip awscliv2.zip && \
+	./aws/install
+	
 # Copy
 COPY ./config_example/core.config.example.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /

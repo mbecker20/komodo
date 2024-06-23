@@ -2266,6 +2266,7 @@ dependencies = [
  "async_timing_util",
  "aws-config",
  "aws-sdk-ec2",
+ "aws_ecr",
  "axum 0.7.5",
  "axum-extra",
  "base64 0.22.1",

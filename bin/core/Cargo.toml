@@ -18,6 +18,7 @@ path = "src/main.rs"
 monitor_client = { workspace = true, features = ["mongo"] }
 periphery_client.workspace = true
 formatting.workspace = true
+aws_ecr.workspace = true
 logger.workspace = true
 git.workspace = true
 # mogh
