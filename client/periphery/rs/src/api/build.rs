@@ -14,6 +14,7 @@ pub struct Build {
   /// Propogate AwsEcrConfig from core
   pub aws_ecr: Option<AwsEcrConfig>,
   /// Propogate any secret replacers from core interpolation.
+  #[serde(default)]
   pub replacers: Vec<(String, String)>,
 }
 
