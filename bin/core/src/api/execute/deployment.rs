@@ -22,6 +22,7 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
+  cloud::aws::ecr,
   config::core_config,
   helpers::{
     periphery_client,
@@ -181,13 +182,28 @@ impl Resolve<Deploy, (User, Update)> for State {
         core_config.github_accounts.get(&params.account).cloned(),
         None,
       ),
-      ImageRegistry::AwsEcr(label) => (
-        None,
-        core_config
+      ImageRegistry::AwsEcr(label) => {
+        let config = core_config
           .aws_ecr_registries
           .get(label)
-          .map(AwsEcrConfig::from),
-      ),
+          .with_context(|| {
+            format!(
+              "did not find config for aws ecr registry {label}"
+            )
+          })?;
+        (
+          Some(
+            ecr::get_ecr_token(
+              &config.region,
+              &config.access_key_id,
+              &config.secret_access_key,
+            )
+            .await
+            .context("failed to create aws ecr login token")?,
+          ),
+          Some(AwsEcrConfig::from(config)),
+        )
+      }
       ImageRegistry::Custom(_) => {
         return Err(anyhow!("Custom ImageRegistry not yet supported"))
       }
