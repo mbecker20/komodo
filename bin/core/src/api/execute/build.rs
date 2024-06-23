@@ -772,22 +772,22 @@ async fn validate_account_extract_registry_token_aws_ecr(
           secret_access_key,
           ..
         }) => {
+          let token = ecr::get_ecr_token(
+            region,
+            access_key_id,
+            secret_access_key,
+          )
+          .await
+          .context("failed to get aws ecr token")?;
           ecr::maybe_create_repo(
             &to_monitor_name(&build.name),
             region.to_string(),
             access_key_id,
             secret_access_key,
           )
-          .await?;
-          Some(
-            ecr::get_ecr_token(
-              region,
-              access_key_id,
-              secret_access_key,
-            )
-            .await
-            .context("failed to get aws ecr token")?,
-          )
+          .await
+          .context("failed to create aws ecr repo")?;
+          Some(token)
         }
         None => None,
       };
