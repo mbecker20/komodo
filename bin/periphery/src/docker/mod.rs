@@ -76,26 +76,12 @@ pub async fn docker_login(
       }
     }
     ImageRegistry::AwsEcr(label) => {
-      let AwsEcrConfig {
-        region,
-        account_id,
-        access_key_id,
-        secret_access_key,
-      } = aws_ecr.with_context(|| {
-        format!("Could not find aws ecr config for label {label}")
-      })?;
-      let registry_token = match registry_token {
-        Some(token) => token.to_string(),
-        None => aws_ecr::get_ecr_token(
-          region,
-          access_key_id,
-          secret_access_key,
-        )
-        .await
+      let AwsEcrConfig { region, account_id } = aws_ecr
         .with_context(|| {
-          format!("failed to get aws ecr token for {label}")
-        })?,
-      };
+          format!("Could not find aws ecr config for label {label}")
+        })?;
+      let registry_token = registry_token
+        .context("aws ecr build missing registry token from core")?;
       let log = async_run_command(&format!("docker login {account_id}.dkr.ecr.{region}.amazonaws.com -u AWS -p {registry_token}")).await;
       if log.success() {
         Ok(true)

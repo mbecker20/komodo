@@ -397,7 +397,7 @@ pub struct CoreConfig {
 
   /// Configure aws ecr registries.
   #[serde(default, alias = "aws_ecr_registry")]
-  pub aws_ecr_registries: HashMap<String, AwsEcrConfig>,
+  pub aws_ecr_registries: HashMap<String, AwsEcrConfigWithCredentials>,
 }
 
 fn default_title() -> String {
@@ -538,7 +538,7 @@ pub struct HetznerCredentials {
 
 /// Provide configuration for an Aws Ecr registry.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AwsEcrConfig {
+pub struct AwsEcrConfigWithCredentials {
   /// The Aws region
   pub region: String,
   /// The Aws account id
@@ -547,4 +547,22 @@ pub struct AwsEcrConfig {
   pub access_key_id: String,
   /// The Aws SECRET_ACCESS_KEY
   pub secret_access_key: String,
+}
+
+/// Provide configuration for an Aws Ecr registry.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AwsEcrConfig {
+  /// The Aws region
+  pub region: String,
+  /// The Aws account id
+  pub account_id: String,
+}
+
+impl AwsEcrConfig {
+  pub fn from(config: &AwsEcrConfigWithCredentials) -> AwsEcrConfig {
+    AwsEcrConfig {
+      region: config.region.to_string(),
+      account_id: config.account_id.to_string(),
+    }
+  }
 }

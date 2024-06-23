@@ -107,13 +107,13 @@ pub fn optional_string(string: &str) -> Option<String> {
   }
 }
 
-pub fn get_image_name<'a, 'b>(
+pub fn get_image_name(
   build::Build {
     name,
     config: build::BuildConfig { image_registry, .. },
     ..
-  }: &'a build::Build,
-  aws_ecr: impl FnOnce(&'a String) -> Option<&'b AwsEcrConfig>,
+  }: &build::Build,
+  aws_ecr: impl FnOnce(&String) -> Option<AwsEcrConfig>,
 ) -> anyhow::Result<String> {
   let name = to_monitor_name(name);
   let name = match image_registry {

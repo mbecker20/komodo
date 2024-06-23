@@ -4,7 +4,7 @@ use aws_sdk_ecr::Client as EcrClient;
 use run_command::async_run_command;
 
 #[tracing::instrument(skip(access_key_id, secret_access_key))]
-pub async fn make_ecr_client(
+async fn make_ecr_client(
   region: String,
   access_key_id: &str,
   secret_access_key: &str,
@@ -19,35 +19,16 @@ pub async fn make_ecr_client(
   EcrClient::new(&config)
 }
 
-/// Gets a token docker login.
-///
-/// Requires the aws cli be installed on the host
 #[tracing::instrument(skip(access_key_id, secret_access_key))]
-pub async fn get_ecr_token(
-  region: &str,
+pub async fn maybe_create_repo(
+  repo: &str,
+  region: String,
   access_key_id: &str,
   secret_access_key: &str,
-) -> anyhow::Result<String> {
-  let log = async_run_command(&format!(
-    "AWS_ACCESS_KEY_ID={access_key_id} AWS_SECRET_ACCESS_KEY={secret_access_key} aws ecr get-login-password --region {region}"
-  ))
-  .await;
-
-  if log.success() {
-    Ok(log.stdout)
-  } else {
-    Err(
-      anyhow!("stdout: {} | stderr: {}", log.stdout, log.stderr)
-        .context("failed to get aws ecr login token"),
-    )
-  }
-}
-
-#[tracing::instrument(skip(client))]
-pub async fn maybe_create_repo(
-  client: &EcrClient,
-  repo: &str,
 ) -> anyhow::Result<()> {
+  let client =
+    make_ecr_client(region, access_key_id, secret_access_key).await;
+
   let existing = client
     .describe_repositories()
     .send()
@@ -74,4 +55,28 @@ pub async fn maybe_create_repo(
     .context("failed to create repository")?;
 
   Ok(())
+}
+
+/// Gets a token docker login.
+///
+/// Requires the aws cli be installed on the host
+#[tracing::instrument(skip(access_key_id, secret_access_key))]
+pub async fn get_ecr_token(
+  region: &str,
+  access_key_id: &str,
+  secret_access_key: &str,
+) -> anyhow::Result<String> {
+  let log = async_run_command(&format!(
+    "AWS_ACCESS_KEY_ID={access_key_id} AWS_SECRET_ACCESS_KEY={secret_access_key} aws ecr get-login-password --region {region}"
+  ))
+  .await;
+
+  if log.success() {
+    Ok(log.stdout)
+  } else {
+    Err(
+      anyhow!("stdout: {} | stderr: {}", log.stdout, log.stderr)
+        .context("failed to get aws ecr login token"),
+    )
+  }
 }

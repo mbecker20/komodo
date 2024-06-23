@@ -519,17 +519,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aws_ecr"
-version = "1.9.0"
-dependencies = [
- "anyhow",
- "aws-config",
- "aws-sdk-ecr",
- "run_command",
- "tracing",
-]
-
-[[package]]
 name = "axum"
 version = "0.6.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2266,7 +2255,7 @@ dependencies = [
  "async_timing_util",
  "aws-config",
  "aws-sdk-ec2",
- "aws_ecr",
+ "aws-sdk-ecr",
  "axum 0.7.5",
  "axum-extra",
  "base64 0.22.1",
@@ -2292,6 +2281,7 @@ dependencies = [
  "rand",
  "reqwest 0.12.4",
  "resolver_api",
+ "run_command",
  "serde",
  "serde_json",
  "serror",
@@ -2317,7 +2307,6 @@ version = "1.9.0"
 dependencies = [
  "anyhow",
  "async_timing_util",
- "aws_ecr",
  "axum 0.7.5",
  "axum-extra",
  "bollard",

@@ -12,12 +12,13 @@ use monitor_client::{
     all_logs_success,
     build::{Build, CloudRegistryConfig, ImageRegistry},
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
-    config::core::AwsEcrConfig,
+    config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
     monitor_timestamp,
     permission::PermissionLevel,
     server::{stats::SeverityLevel, Server},
     server_template::aws::AwsServerTemplateConfig,
+    to_monitor_name,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
   },
@@ -39,9 +40,12 @@ use tokio_util::sync::CancellationToken;
 
 use crate::{
   cloud::{
-    aws::ec2::{
-      launch_ec2_instance, terminate_ec2_instance_with_retry,
-      Ec2Instance,
+    aws::{
+      ec2::{
+        launch_ec2_instance, terminate_ec2_instance_with_retry,
+        Ec2Instance,
+      },
+      ecr,
     },
     BuildCleanupData,
   },
@@ -762,23 +766,32 @@ async fn validate_account_extract_registry_token_aws_ecr(
     ImageRegistry::AwsEcr(label) => {
       let config = core_config().aws_ecr_registries.get(label);
       let token = match config {
-        Some(AwsEcrConfig {
+        Some(AwsEcrConfigWithCredentials {
           region,
           access_key_id,
           secret_access_key,
           ..
-        }) => Some(
-          aws_ecr::get_ecr_token(
-            region,
+        }) => {
+          ecr::maybe_create_repo(
+            &to_monitor_name(&build.name),
+            region.to_string(),
             access_key_id,
             secret_access_key,
           )
-          .await
-          .context("failed to get aws ecr token")?,
-        ),
+          .await?;
+          Some(
+            ecr::get_ecr_token(
+              region,
+              access_key_id,
+              secret_access_key,
+            )
+            .await
+            .context("failed to get aws ecr token")?,
+          )
+        }
         None => None,
       };
-      Ok((token, config.cloned()))
+      Ok((token, config.map(AwsEcrConfig::from)))
     }
     ImageRegistry::Custom(_) => {
       Err(anyhow!("Custom image registry is not implemented"))

@@ -2,7 +2,7 @@ use anyhow::Context;
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{
-  build::{Build, BuildConfig, ImageRegistry},
+  build::{Build, BuildConfig},
   config::core::AwsEcrConfig,
   get_image_name, optional_string, to_monitor_name,
   update::Log,
@@ -68,11 +68,6 @@ pub async fn build(
 
   let name = to_monitor_name(name);
 
-  // Only needed for aws ecr
-  maybe_create_repo(&name, image_registry, aws_ecr)
-    .await
-    .context("failed to create new repo for the build")?;
-
   // Get paths
   let build_dir =
     periphery_config().repo_dir.join(&name).join(build_path);
@@ -82,7 +77,7 @@ pub async fn build(
   };
 
   // Get command parts
-  let image_name = get_image_name(build, |_| aws_ecr)
+  let image_name = get_image_name(build, |_| aws_ecr.cloned())
     .context("failed to make image name")?;
   let build_args = parse_build_args(build_args);
   let labels = parse_labels(labels);
@@ -144,34 +139,4 @@ fn parse_build_args(build_args: &[EnvironmentVar]) -> String {
     .map(|p| format!(" --build-arg {}=\"{}\"", p.variable, p.value))
     .collect::<Vec<_>>()
     .join("")
-}
-
-#[instrument(skip_all)]
-async fn maybe_create_repo(
-  name: &str,
-  image_registry: &ImageRegistry,
-  aws_ecr: Option<&AwsEcrConfig>,
-) -> anyhow::Result<()> {
-  match image_registry {
-    ImageRegistry::AwsEcr(label) => {
-      let AwsEcrConfig {
-        region,
-        access_key_id,
-        secret_access_key,
-        ..
-      } = aws_ecr.with_context(|| {
-        format!("did not find any aws ecr config for {label}")
-      })?;
-
-      let client = aws_ecr::make_ecr_client(
-        region.to_string(),
-        access_key_id,
-        secret_access_key,
-      )
-      .await;
-
-      aws_ecr::maybe_create_repo(&client, name).await
-    }
-    _ => Ok(()),
-  }
 }

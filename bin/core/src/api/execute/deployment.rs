@@ -7,6 +7,7 @@ use monitor_client::{
   api::execute::*,
   entities::{
     build::{Build, ImageRegistry},
+    config::core::AwsEcrConfig,
     deployment::{Deployment, DeploymentImage},
     get_image_name,
     permission::PermissionLevel,
@@ -84,7 +85,10 @@ impl Resolve<Deploy, (User, Update)> for State {
       DeploymentImage::Build { build_id, version } => {
         let build = resource::get::<Build>(&build_id).await?;
         let image_name = get_image_name(&build, |label| {
-          core_config().aws_ecr_registries.get(label)
+          core_config()
+            .aws_ecr_registries
+            .get(label)
+            .map(AwsEcrConfig::from)
         })
         .context("failed to create image name")?;
         let version = if version.is_none() {
@@ -177,9 +181,13 @@ impl Resolve<Deploy, (User, Update)> for State {
         core_config.github_accounts.get(&params.account).cloned(),
         None,
       ),
-      ImageRegistry::AwsEcr(label) => {
-        (None, core_config.aws_ecr_registries.get(label).cloned())
-      }
+      ImageRegistry::AwsEcr(label) => (
+        None,
+        core_config
+          .aws_ecr_registries
+          .get(label)
+          .map(AwsEcrConfig::from),
+      ),
       ImageRegistry::Custom(_) => {
         return Err(anyhow!("Custom ImageRegistry not yet supported"))
       }

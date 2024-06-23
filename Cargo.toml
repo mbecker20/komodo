@@ -19,7 +19,6 @@ monitor_client = "1.8.0"
 periphery_client = { path = "client/periphery/rs" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }
-aws_ecr = { path = "lib/aws_ecr" }
 logger = { path = "lib/logger" }
 git = { path = "lib/git" }
 
