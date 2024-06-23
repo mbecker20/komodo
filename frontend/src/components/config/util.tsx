@@ -588,6 +588,7 @@ const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
   "None",
   "DockerHub",
   "Ghcr",
+  "AwsEcr"
 ];
 
 const RegistryTypeSelector = ({

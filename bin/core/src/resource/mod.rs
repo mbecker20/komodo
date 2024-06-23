@@ -31,7 +31,7 @@ use serror::serialize_error_pretty;
 use crate::{
   config::core_config,
   helpers::{
-    create_permission,
+    create_permission, flatten_document,
     query::{
       get_resource_ids_for_non_admin, get_tag,
       get_user_permission_on_resource, id_or_name_filter,
@@ -422,10 +422,12 @@ pub async fn update<T: MonitorResource>(
   let config_doc = T::update_document(resource, config)
     .context("failed to serialize config to bson document")?;
 
+  let update_doc = flatten_document(doc! { "config": config_doc });
+  
   update_one_by_id(
     T::coll().await,
     &id,
-    mungos::update::Update::FlattenSet(doc! { "config": config_doc }),
+    doc! { "$set": update_doc },
     None,
   )
   .await

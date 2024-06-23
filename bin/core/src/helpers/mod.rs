@@ -1,13 +1,14 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
+use mongo_indexed::Document;
 use monitor_client::entities::{
   permission::{Permission, PermissionLevel, UserTarget},
   server::Server,
   update::ResourceTarget,
   user::User,
 };
-use mungos::mongodb::bson::doc;
+use mungos::mongodb::bson::{doc, Bson};
 use periphery_client::PeripheryClient;
 use rand::{thread_rng, Rng};
 
@@ -116,4 +117,24 @@ pub async fn create_permission<T>(
   {
     error!("failed to create permission for {target:?} | {e:#}");
   };
+}
+
+/// Flattens a document only one level deep
+///
+/// eg `{ config: { label: "yes", thing: { field1: "ok", field2: "ok" } } }` ->
+/// `{ "config.label": "yes", "config.thing": { field1: "ok", field2: "ok" } }`
+pub fn flatten_document(doc: Document) -> Document {
+  let mut target = Document::new();
+
+  for (outer_field, bson) in doc {
+    if let Bson::Document(doc) = bson {
+      for (inner_field, bson) in doc {
+        target.insert(format!("{outer_field}.{inner_field}"), bson);
+      }
+    } else {
+      target.insert(outer_field, bson);
+    }
+  }
+
+  target
 }
