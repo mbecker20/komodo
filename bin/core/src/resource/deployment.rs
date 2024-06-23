@@ -1,4 +1,5 @@
 use anyhow::Context;
+use formatting::format_serror;
 use monitor_client::entities::{
   build::Build,
   deployment::{
@@ -16,7 +17,6 @@ use monitor_client::entities::{
 };
 use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;
-use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -187,10 +187,12 @@ impl super::MonitorResource for Deployment {
         Err(e) => {
           update.push_error_log(
             "remove container",
-            format!(
-              "failed to retrieve server at {} from db.\n\nerror: {}",
-              deployment.config.server_id,
-              serialize_error_pretty(&e)
+            format_serror(
+              &e.context(format!(
+                "failed to retrieve server at {} from db.",
+                deployment.config.server_id
+              ))
+              .into(),
             ),
           );
           return Ok(());
@@ -211,9 +213,8 @@ impl super::MonitorResource for Deployment {
           // Leaving it for completeness sake
           update.push_error_log(
             "remove container",
-            format!(
-              "failed to remove container on periphery.\n\nerror: {}",
-              serialize_error_pretty(&e),
+            format_serror(
+              &e.context("failed to get periphery client").into(),
             ),
           );
           return Ok(());
@@ -230,9 +231,8 @@ impl super::MonitorResource for Deployment {
         Ok(log) => update.logs.push(log),
         Err(e) => update.push_error_log(
           "remove container",
-          format!(
-            "failed to remove container.\n\nerror: {}",
-            serialize_error_pretty(&e)
+          format_serror(
+            &e.context("failed to remove container").into(),
           ),
         ),
       };

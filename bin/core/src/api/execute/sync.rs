@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context};
-use formatting::{colored, Color};
+use formatting::{colored, format_serror, Color};
 use mongo_indexed::doc;
 use monitor_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
@@ -20,7 +20,6 @@ use monitor_client::{
 };
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -359,9 +358,9 @@ impl Resolve<RunSync, (User, Update)> for State {
       warn!("failed to refresh sync {} after run | {e:#}", sync.name);
       update.push_error_log(
         "refresh sync",
-        format!(
-          "failed to refresh sync pending after run | {}",
-          serialize_error_pretty(&e)
+        format_serror(
+          &e.context("failed to refresh sync pending after run")
+            .into(),
         ),
       );
     }

@@ -1,5 +1,6 @@
 use anyhow::Context;
 use command::run_monitor_command;
+use formatting::format_serror;
 use monitor_client::entities::{
   build::{Build, BuildConfig, ImageRegistry},
   config::core::AwsEcrConfig,
@@ -7,7 +8,6 @@ use monitor_client::entities::{
   update::Log,
   EnvironmentVar, Version,
 };
-use serror::serialize_error_pretty;
 
 use crate::config::periphery_config;
 
@@ -58,8 +58,8 @@ pub async fn build(
     Err(e) => {
       logs.push(Log::error(
         "docker login",
-        serialize_error_pretty(
-          &e.context("failed to login to docker registry"),
+        format_serror(
+          &e.context("failed to login to docker registry").into(),
         ),
       ));
       return Ok(logs);

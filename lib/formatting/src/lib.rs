@@ -1,3 +1,5 @@
+use serror::Serror;
+
 pub fn muted(content: impl std::fmt::Display) -> String {
   format!("<span class=\"text-muted-foreground\">{content}</span>")
 }
@@ -29,4 +31,19 @@ impl std::fmt::Display for Color {
       Color::Blue => f.write_str("text-blue-700 dark:text-blue-400"),
     }
   }
+}
+
+pub fn format_serror(Serror { error, trace }: &Serror) -> String {
+  let trace = (!trace.is_empty())
+    .then(|| {
+      let mut out = format!("\n\n{}:", muted("TRACE"));
+
+      for (i, msg) in trace.iter().enumerate() {
+        out.push_str(&format!("\n\t{}: {msg}", muted(i + 1)));
+      }
+
+      out
+    })
+    .unwrap_or_default();
+  format!("{}: {error}{trace}", colored("ERROR", Color::Red))
 }

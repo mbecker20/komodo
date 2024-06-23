@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
+use formatting::format_serror;
 use monitor_client::entities::{
   config::core::AwsEcrConfig,
   deployment::{
@@ -11,7 +12,6 @@ use monitor_client::entities::{
   EnvironmentVar, SearchCombinator,
 };
 use run_command::async_run_command;
-use serror::serialize_error_pretty;
 
 use crate::config::periphery_config;
 
@@ -197,8 +197,8 @@ pub async fn deploy(
   {
     return Log::error(
       "docker login",
-      serialize_error_pretty(
-        &e.context("failed to login to docker registry"),
+      format_serror(
+        &e.context("failed to login to docker registry").into(),
       ),
     );
   }

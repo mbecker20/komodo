@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use monitor_client::{
   api::{execute::LaunchServer, write::CreateServer},
   entities::{
@@ -11,7 +12,6 @@ use monitor_client::{
 };
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
 use crate::{
   cloud::{
@@ -132,10 +132,7 @@ impl Resolve<LaunchServer, (User, Update)> for State {
       Err(e) => {
         update.push_error_log(
           "create server",
-          format!(
-            "failed to create server\n\n{}",
-            serialize_error_pretty(&e)
-          ),
+          format_serror(&e.context("failed to create server").into()),
         );
       }
     };

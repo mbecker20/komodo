@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
@@ -16,7 +17,6 @@ use mungos::{
 };
 use periphery_client::api;
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
 use crate::{
   config::core_config,
@@ -71,7 +71,10 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     {
       Ok(logs) => logs,
       Err(e) => {
-        vec![Log::error("clone repo", serialize_error_pretty(&e))]
+        vec![Log::error(
+          "clone repo",
+          format_serror(&e.context("failed to clone repo").into()),
+        )]
       }
     };
 
@@ -129,7 +132,10 @@ impl Resolve<PullRepo, (User, Update)> for State {
     {
       Ok(logs) => logs,
       Err(e) => {
-        vec![Log::error("pull repo", serialize_error_pretty(&e))]
+        vec![Log::error(
+          "pull repo",
+          format_serror(&e.context("failed to pull repo").into()),
+        )]
       }
     };
 

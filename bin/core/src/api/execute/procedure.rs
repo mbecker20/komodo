@@ -1,6 +1,6 @@
 use std::pin::Pin;
 
-use formatting::{bold, colored, muted, Color};
+use formatting::{bold, colored, format_serror, muted, Color};
 use monitor_client::{
   api::execute::RunProcedure,
   entities::{
@@ -10,7 +10,6 @@ use monitor_client::{
 };
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 use tokio::sync::Mutex;
 
 use crate::{
@@ -87,14 +86,8 @@ fn resolve_inner(
           ),
         );
       }
-      Err(e) => update.push_error_log(
-        "execution error",
-        format!(
-          "{}: {}",
-          colored("ERROR", Color::Red),
-          serialize_error_pretty(&e)
-        ),
-      ),
+      Err(e) => update
+        .push_error_log("execution error", format_serror(&e.into())),
     }
 
     update.finalize();

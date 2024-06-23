@@ -1333,6 +1333,9 @@ dependencies = [
 [[package]]
 name = "formatting"
 version = "1.9.0"
+dependencies = [
+ "serror",
+]
 
 [[package]]
 name = "funty"
@@ -2320,6 +2323,7 @@ dependencies = [
  "command",
  "dotenv",
  "envy",
+ "formatting",
  "git",
  "logger",
  "merge_config_files",

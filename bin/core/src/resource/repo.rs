@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use anyhow::Context;
+use formatting::format_serror;
 use monitor_client::entities::{
   permission::PermissionLevel,
   repo::{
@@ -18,7 +19,6 @@ use mungos::{
   mongodb::{bson::doc, options::FindOneOptions, Collection},
 };
 use periphery_client::api::git::DeleteRepo;
-use serror::serialize_error_pretty;
 
 use crate::{
   helpers::periphery_client,
@@ -158,7 +158,7 @@ impl super::MonitorResource for Repo {
       Ok(log) => update.logs.push(log),
       Err(e) => update.push_error_log(
         "delete repo on periphery",
-        serialize_error_pretty(&e),
+        format_serror(&e.context("failed to delete repo").into()),
       ),
     }
 

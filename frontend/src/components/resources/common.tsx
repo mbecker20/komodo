@@ -349,7 +349,7 @@ export const LabelsConfig = ({
   <div className="py-2 w-full flex justify-end">
     <DoubleInput
       disabled={disabled}
-      inputClassName="w-[200px] max-w-full"
+      inputClassName="w-[300px] 2xl:w-[400px] max-w-full"
       containerClassName="w-fit"
       values={labels}
       leftval="variable"

@@ -1,4 +1,5 @@
 use anyhow::Context;
+use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
@@ -11,7 +12,6 @@ use monitor_client::{
 };
 use periphery_client::api;
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{periphery_client, update::update_update},
@@ -54,9 +54,12 @@ impl Resolve<PruneContainers, (User, Update)> for State {
         server.name
       )) {
       Ok(log) => log,
-      Err(e) => {
-        Log::error("prune containers", serialize_error_pretty(&e))
-      }
+      Err(e) => Log::error(
+        "prune containers",
+        format_serror(
+          &e.context("failed to prune containers").into(),
+        ),
+      ),
     };
 
     update.success = log.success;
@@ -105,9 +108,10 @@ impl Resolve<PruneNetworks, (User, Update)> for State {
         server.name
       )) {
       Ok(log) => log,
-      Err(e) => {
-        Log::error("prune networks", serialize_error_pretty(&e))
-      }
+      Err(e) => Log::error(
+        "prune networks",
+        format_serror(&e.context("failed to prune networks").into()),
+      ),
     };
 
     update.success = log.success;

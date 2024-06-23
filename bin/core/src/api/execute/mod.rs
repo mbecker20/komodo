@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
+use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
@@ -12,7 +13,7 @@ use monitor_client::{
 use mungos::by_id::find_one_by_id;
 use resolver_api::{derive::Resolver, Resolver};
 use serde::{Deserialize, Serialize};
-use serror::{serialize_error_pretty, Json};
+use serror::Json;
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -92,7 +93,7 @@ async fn handler(
       let log = match handle.await {
         Ok(Err(e)) => {
           warn!("/execute request {req_id} task error: {e:#}",);
-          Log::error("task error", serialize_error_pretty(&e))
+          Log::error("task error", format_serror(&e.into()))
         }
         Err(e) => {
           warn!("/execute request {req_id} spawn error: {e:?}",);

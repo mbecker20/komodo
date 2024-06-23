@@ -1,6 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use futures::future::join_all;
 use monitor_client::{
   api::write::CreateTag,
@@ -26,7 +27,6 @@ use mungos::{
 use partial_derive2::{Diff, FieldDiff, MaybeNone, PartialDiff};
 use resolver_api::Resolve;
 use serde::{de::DeserializeOwned, Serialize};
-use serror::serialize_error_pretty;
 
 use crate::{
   config::core_config,
@@ -423,7 +423,7 @@ pub async fn update<T: MonitorResource>(
     .context("failed to serialize config to bson document")?;
 
   let update_doc = flatten_document(doc! { "config": config_doc });
-  
+
   update_one_by_id(
     T::coll().await,
     &id,
@@ -582,7 +582,7 @@ pub async fn delete<T: MonitorResource>(
   );
 
   if let Err(e) = T::post_delete(&resource, &mut update).await {
-    update.push_error_log("post delete", serialize_error_pretty(&e));
+    update.push_error_log("post delete", format_serror(&e.into()));
   }
 
   update.finalize();

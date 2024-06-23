@@ -17,6 +17,7 @@ path = "src/main.rs"
 # local
 monitor_client = { workspace = true, features = ["docker"] }
 periphery_client.workspace = true
+formatting.workspace = true
 command.workspace = true
 aws_ecr.workspace = true
 logger.workspace = true

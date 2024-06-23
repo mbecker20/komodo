@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use futures::future::join_all;
 use monitor_client::{
   api::execute::*,
@@ -18,7 +19,6 @@ use monitor_client::{
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api;
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
 use crate::{
   config::core_config,
@@ -200,7 +200,9 @@ impl Resolve<Deploy, (User, Update)> for State {
       Err(e) => {
         update.push_error_log(
           "deploy container",
-          serialize_error_pretty(&e),
+          format_serror(
+            &e.context("failed to deploy container").into(),
+          ),
         );
       }
     };
@@ -260,9 +262,10 @@ impl Resolve<StartContainer, (User, Update)> for State {
       .await
     {
       Ok(log) => log,
-      Err(e) => {
-        Log::error("start container", serialize_error_pretty(&e))
-      }
+      Err(e) => Log::error(
+        "start container",
+        format_serror(&e.context("failed to start container").into()),
+      ),
     };
 
     update.logs.push(log);
@@ -330,9 +333,10 @@ impl Resolve<StopContainer, (User, Update)> for State {
       .await
     {
       Ok(log) => log,
-      Err(e) => {
-        Log::error("stop container", serialize_error_pretty(&e))
-      }
+      Err(e) => Log::error(
+        "stop container",
+        format_serror(&e.context("failed to stop container").into()),
+      ),
     };
 
     update.logs.push(log);
@@ -415,9 +419,11 @@ impl Resolve<StopAllContainers, (User, Update)> for State {
       if let Err(e) = res {
         update.push_error_log(
           "stop container failure",
-          format!(
-            "failed to stop container {name} ({id})\n\n{}",
-            serialize_error_pretty(&e)
+          format_serror(
+            &e.context(format!(
+              "failed to stop container {name} ({id})"
+            ))
+            .into(),
           ),
         );
       }
@@ -486,9 +492,10 @@ impl Resolve<RemoveContainer, (User, Update)> for State {
       .await
     {
       Ok(log) => log,
-      Err(e) => {
-        Log::error("stop container", serialize_error_pretty(&e))
-      }
+      Err(e) => Log::error(
+        "stop container",
+        format_serror(&e.context("failed to stop container").into()),
+      ),
     };
 
     update.logs.push(log);

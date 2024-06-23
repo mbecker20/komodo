@@ -1,7 +1,7 @@
 use std::{collections::HashSet, time::Duration};
 
 use anyhow::{anyhow, Context};
-use formatting::muted;
+use formatting::{format_serror, muted};
 use futures::future::join_all;
 use monitor_client::{
   api::execute::{
@@ -35,7 +35,6 @@ use periphery_client::{
   PeripheryClient,
 };
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
@@ -140,7 +139,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           warn!("failed to get builder | {e:#}");
           update.logs.push(Log::error(
             "get builder",
-            serialize_error_pretty(&e),
+            format_serror(&e.context("failed to get builder").into()),
           ));
           return handle_early_return(update, build.id, build.name)
             .await;
@@ -180,8 +179,10 @@ impl Resolve<RunBuild, (User, Update)> for State {
       }
       Err(e) => {
         warn!("failed build at clone repo | {e:#}");
-        update
-          .push_error_log("clone repo", serialize_error_pretty(&e));
+        update.push_error_log(
+          "clone repo",
+          format_serror(&e.context("failed to clone repo").into()),
+        );
       }
     }
 
@@ -259,7 +260,10 @@ impl Resolve<RunBuild, (User, Update)> for State {
         }
         Err(e) => {
           warn!("error in build | {e:#}");
-          update.push_error_log("build", serialize_error_pretty(&e))
+          update.push_error_log(
+            "build",
+            format_serror(&e.context("failed to build").into()),
+          )
         }
       };
     }
@@ -687,20 +691,12 @@ async fn handle_post_build_redeploy(build_id: &str) {
         }
       });
 
-  let redeploy_results = join_all(futures).await;
-
-  let mut redeploys = Vec::<String>::new();
-  let mut redeploy_failures = Vec::<String>::new();
-
-  for res in redeploy_results {
-    if res.is_none() {
+  for res in join_all(futures).await {
+    let Some((id, res)) = res else {
       continue;
-    }
-    let (id, res) = res.unwrap();
-    match res {
-      Ok(_) => redeploys.push(id),
-      Err(e) => redeploy_failures
-        .push(format!("{id}: {}", serialize_error_pretty(&e))),
+    };
+    if let Err(e) = res {
+      warn!("failed post build redeploy for deployment {id}: {e:#}");
     }
   }
 }

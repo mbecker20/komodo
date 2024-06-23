@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use monitor_client::{
   api::write::*,
   entities::{
@@ -27,7 +28,6 @@ use mungos::{
   mongodb::bson::{doc, to_document},
 };
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -235,7 +235,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           message: None,
           data: PendingSyncUpdatesData::Err(
             PendingSyncUpdatesDataErr {
-              message: serialize_error_pretty(&e),
+              message: format_serror(&e.into()),
             },
           ),
         },

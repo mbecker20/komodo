@@ -1,4 +1,5 @@
 use anyhow::Context;
+use formatting::format_serror;
 use monitor_client::{
   api::write::*,
   entities::{
@@ -13,7 +14,6 @@ use monitor_client::{
 use mungos::{by_id::update_one_by_id, mongodb::bson::doc};
 use periphery_client::api;
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -112,8 +112,10 @@ impl Resolve<CreateNetwork, User> for State {
       .await
     {
       Ok(log) => update.logs.push(log),
-      Err(e) => update
-        .push_error_log("create network", serialize_error_pretty(&e)),
+      Err(e) => update.push_error_log(
+        "create network",
+        format_serror(&e.context("failed to create network").into()),
+      ),
     };
 
     update.finalize();
@@ -149,8 +151,10 @@ impl Resolve<DeleteNetwork, User> for State {
       .await
     {
       Ok(log) => update.logs.push(log),
-      Err(e) => update
-        .push_error_log("delete network", serialize_error_pretty(&e)),
+      Err(e) => update.push_error_log(
+        "delete network",
+        format_serror(&e.context("failed to delete network").into()),
+      ),
     };
 
     update.finalize();
