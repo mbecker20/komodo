@@ -246,6 +246,42 @@ export const AccountSelector = ({
   );
 };
 
+export const AwsEcrLabelSelector = ({
+  disabled,
+  selected,
+  onSelect,
+}: {
+  disabled: boolean;
+  selected: string | undefined;
+  onSelect: (id: string) => void;
+}) => {
+  const labels = useRead("GetAvailableAwsEcrLabels", {}).data;
+  return (
+    <Select
+      value={selected}
+      onValueChange={(value) => {
+        onSelect(value === "Empty" ? "" : value);
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        className="w-full lg:w-[200px] max-w-[50%]"
+        disabled={disabled}
+      >
+        <SelectValue placeholder="Select Ecr Config" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={"Empty"}>None</SelectItem>
+        {labels?.map((label: string) => (
+          <SelectItem key={label} value={label}>
+            {label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
 export const InputList = <T extends { [key: string]: unknown }>({
   field,
   values,
@@ -486,7 +522,16 @@ export const ImageRegistryConfig = ({
     return (
       <ConfigItem label="Image Registry">
         <div className="flex items-center justify-stretch gap-4">
-          
+          <AwsEcrLabelSelector
+            selected={_registry.params}
+            onSelect={(label) =>
+              setRegistry({
+                type: "AwsEcr",
+                params: label,
+              })
+            }
+            disabled={disabled}
+          />
           <RegistryTypeSelector
             registry={_registry}
             setRegistry={setRegistry}
