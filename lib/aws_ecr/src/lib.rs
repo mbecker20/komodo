@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use aws_config::{BehaviorVersion, Region};
 use aws_sdk_ecr::Client as EcrClient;
+use run_command::async_run_command;
 
 #[tracing::instrument(skip(access_key_id, secret_access_key))]
 pub async fn make_ecr_client(
@@ -18,29 +19,28 @@ pub async fn make_ecr_client(
   EcrClient::new(&config)
 }
 
-/// Gets a token for the default registry only
-#[tracing::instrument(skip_all)]
+/// Gets a token docker login.
+///
+/// Requires the aws cli be installed on the host
+#[tracing::instrument(skip(access_key_id, secret_access_key))]
 pub async fn get_ecr_token(
-  client: &EcrClient,
+  region: &str,
+  access_key_id: &str,
+  secret_access_key: &str,
 ) -> anyhow::Result<String> {
-  let Some(tokens) = client
-    .get_authorization_token()
-    .send()
-    .await
-    .context("failed to get authorization token")?
-    .authorization_data
-  else {
-    return Err(anyhow!("No authorization data"));
-  };
+  let log = async_run_command(&format!(
+    "AWS_ACCESS_KEY_ID={access_key_id} AWS_SECRET_ACCESS_KEY={secret_access_key} aws ecr get-login-password --region {region}"
+  ))
+  .await;
 
-  let token = tokens
-    .into_iter()
-    .next()
-    .context("No tokens in response")?
-    .authorization_token
-    .context("no token on authorization token repsonse")?;
-
-  Ok(token)
+  if log.success() {
+    Ok(log.stdout)
+  } else {
+    Err(
+      anyhow!("stdout: {} | stderr: {}", log.stdout, log.stderr)
+        .context("failed to get aws ecr login token"),
+    )
+  }
 }
 
 #[tracing::instrument(skip(client))]

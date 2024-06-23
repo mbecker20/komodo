@@ -525,6 +525,7 @@ dependencies = [
  "anyhow",
  "aws-config",
  "aws-sdk-ecr",
+ "run_command",
  "tracing",
 ]
 

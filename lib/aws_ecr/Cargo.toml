@@ -8,6 +8,8 @@ repository.workspace = true
 homepage.workspace = true
 
 [dependencies]
+run_command.workspace = true
+#
 aws-sdk-ecr.workspace = true
 aws-config.workspace = true
 tracing.workspace = true

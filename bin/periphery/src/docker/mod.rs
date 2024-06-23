@@ -86,17 +86,15 @@ pub async fn docker_login(
       })?;
       let registry_token = match registry_token {
         Some(token) => token.to_string(),
-        None => {
-          let client = aws_ecr::make_ecr_client(
-            region.clone(),
-            access_key_id,
-            secret_access_key,
-          )
-          .await;
-          aws_ecr::get_ecr_token(&client).await.with_context(
-            || format!("failed to get aws ecr token for {label}"),
-          )?
-        }
+        None => aws_ecr::get_ecr_token(
+          region,
+          access_key_id,
+          secret_access_key,
+        )
+        .await
+        .with_context(|| {
+          format!("failed to get aws ecr token for {label}")
+        })?,
       };
       let log = async_run_command(&format!("docker login {account_id}.dkr.ecr.{region}.amazonaws.com -u AWS -p {registry_token}")).await;
       if log.success() {
