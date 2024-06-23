@@ -337,6 +337,12 @@ export type ImageRegistry =
 	 * for information on creating an access token
 	 */
 	| { type: "Ghcr", params: CloudRegistryConfig }
+	/**
+	 * Push the image to Aws Elastic Container Registry
+	 * 
+	 * The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
+	 */
+	| { type: "AwsEcr", params: string }
 	/** Todo. Will point to a custom "Registry" resource by id */
 	| { type: "Custom", params: string };
 
@@ -665,6 +671,8 @@ export interface DeploymentActionState {
 export type GetDeploymentActionStateResponse = DeploymentActionState;
 
 export type ListCommonDeploymentExtraArgsResponse = string[];
+
+export type GetAvailableAwsEcrLabelsResponse = string[];
 
 export type UserTarget = 
 	/** User Id */
@@ -2298,6 +2306,13 @@ export interface GetCoreInfoResponse {
 }
 
 /**
+ * Get the available aws ecr config labels from the core config.
+ * Response: [GetAvailableAwsEcrLabelsResponse].
+ */
+export interface GetAvailableAwsEcrLabels {
+}
+
+/**
  * List permissions for the calling user.
  * Does not include any permissions on UserGroups they may be a part of.
  * Response: [ListPermissionsResponse]
@@ -3913,6 +3928,7 @@ export type ExecuteRequest =
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
+	| { type: "GetAvailableAwsEcrLabels", params: GetAvailableAwsEcrLabels }
 	| { type: "ListUsers", params: ListUsers }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "ListApiKeys", params: ListApiKeys }

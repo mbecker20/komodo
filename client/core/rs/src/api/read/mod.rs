@@ -92,3 +92,18 @@ pub struct GetCoreInfoResponse {
   /// Whether UI write access should be disabled
   pub ui_write_disabled: bool,
 }
+
+//
+
+/// Get the available aws ecr config labels from the core config.
+/// Response: [GetAvailableAwsEcrLabelsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetAvailableAwsEcrLabelsResponse)]
+pub struct GetAvailableAwsEcrLabels {}
+
+#[typeshare]
+pub type GetAvailableAwsEcrLabelsResponse = Vec<String>;

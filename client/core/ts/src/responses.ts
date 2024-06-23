@@ -18,6 +18,7 @@ export type UserResponses = {
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
+  GetAvailableAwsEcrLabels: Types.GetAvailableAwsEcrLabelsResponse;
 
   // ==== USER ====
   ListUsers: Types.ListUsersResponse;

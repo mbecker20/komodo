@@ -482,6 +482,22 @@ export const ImageRegistryConfig = ({
       </ConfigItem>
     );
   }
+  if (_registry.type === "AwsEcr") {
+    return (
+      <ConfigItem label="Image Registry">
+        <div className="flex items-center justify-stretch gap-4">
+          
+          <RegistryTypeSelector
+            registry={_registry}
+            setRegistry={setRegistry}
+            disabled={disabled}
+            deployment={type === "Deployment"}
+            registry_types={registry_types}
+          />
+        </div>
+      </ConfigItem>
+    );
+  }
   return (
     <ConfigItem label="Image Registry">
       <div className="flex items-center justify-stretch gap-4">
@@ -635,6 +651,8 @@ const default_registry_config = (
       return { type, params: { account: "", organization: "" } };
     case "Ghcr":
       return { type, params: { account: "", organization: "" } };
+    case "AwsEcr":
+      return { type, params: "" };
     case "Custom":
       return { type, params: "" };
   }

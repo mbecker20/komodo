@@ -39,6 +39,7 @@ mod variable;
 enum ReadRequest {
   GetVersion(GetVersion),
   GetCoreInfo(GetCoreInfo),
+  GetAvailableAwsEcrLabels(GetAvailableAwsEcrLabels),
 
   // ==== USER ====
   ListUsers(ListUsers),
@@ -229,5 +230,15 @@ impl Resolve<GetCoreInfo, User> for State {
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
     })
+  }
+}
+
+impl Resolve<GetAvailableAwsEcrLabels, User> for State {
+  async fn resolve(
+    &self,
+    GetAvailableAwsEcrLabels {}: GetAvailableAwsEcrLabels,
+    _: User,
+  ) -> anyhow::Result<GetAvailableAwsEcrLabelsResponse> {
+    Ok(core_config().aws_ecr_registries.keys().cloned().collect())
   }
 }
