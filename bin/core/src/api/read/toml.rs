@@ -230,7 +230,10 @@ impl Resolve<ExportResourcesToToml, User> for State {
           // replace server id of builder
           if let BuilderConfig::Server(config) = &mut builder.config {
             config.server_id.clone_from(
-              names.servers.get(&id).unwrap_or(&String::new()),
+              names
+                .servers
+                .get(&config.server_id)
+                .unwrap_or(&String::new()),
             )
           }
           res
