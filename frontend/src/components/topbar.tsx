@@ -56,6 +56,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@ui/dialog";
+import { Badge } from "@ui/badge";
 
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
@@ -518,50 +519,50 @@ const KeyboardShortcuts = () => {
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3 grid-cols-2 pt-8">
-          <div>Go Home</div>
-          <div className="text-muted-foreground">shift + h</div>
+          <KeyboardShortcut label="Go Home" keys={["Shift", "H"]} />
 
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+          <KeyboardShortcut label="Go to Servers" keys={["Shift", "G"]} />
+          <KeyboardShortcut label="Go to Deployments" keys={["Shift", "D"]} />
+          <KeyboardShortcut label="Go to Builds" keys={["Shift", "B"]} />
+          <KeyboardShortcut label="Go to Repos" keys={["Shift", "R"]} />
+          <KeyboardShortcut label="Go to Procedures" keys={["Shift", "P"]} />
 
-          <div>Go to Servers</div>
-          <div className="text-muted-foreground">shift + g</div>
-
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
-
-          <div>Go to Deployments</div>
-          <div className="text-muted-foreground">shift + d</div>
-
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
-
-          <div>Go to Builds</div>
-          <div className="text-muted-foreground">shift + b</div>
-
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
-
-          <div>Go to Repos</div>
-          <div className="text-muted-foreground">shift + r</div>
-
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
-
-          <div>Go to Procedures</div>
-          <div className="text-muted-foreground">shift + p</div>
-
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
-
-          <div>Omni-Search</div>
-          <div className="text-muted-foreground">shift + s</div>
-
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
-
-          <div>Add Filter Tag</div>
-          <div className="text-muted-foreground">shift + t</div>
-
-          <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
-
-          <div>Clear Filter Tags</div>
-          <div className="text-muted-foreground">shift + c</div>
+          <KeyboardShortcut label="Search" keys={["Shift", "S"]} />
+          <KeyboardShortcut label="Add Filter Tag" keys={["Shift", "T"]} />
+          <KeyboardShortcut
+            label="Clear Filter Tags"
+            keys={["Shift", "C"]}
+            divider={false}
+          />
         </div>
       </DialogContent>
     </Dialog>
+  );
+};
+
+const KeyboardShortcut = ({
+  label,
+  keys,
+  divider = true,
+}: {
+  label: string;
+  keys: string[];
+  divider?: boolean;
+}) => {
+  return (
+    <>
+      <div>{label}</div>
+      <div className="flex items-center gap-2">
+        {keys.map((key) => (
+          <Badge variant="secondary" key={key}>
+            {key}
+          </Badge>
+        ))}
+      </div>
+
+      {divider && (
+        <div className="col-span-full bg-gray-600 h-[1px] opacity-40" />
+      )}
+    </>
   );
 };
