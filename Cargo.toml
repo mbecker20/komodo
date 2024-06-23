@@ -19,6 +19,7 @@ monitor_client = "1.8.0"
 periphery_client = { path = "client/periphery/rs" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }
+aws_ecr = { path = "lib/aws_ecr" }
 logger = { path = "lib/logger" }
 git = { path = "lib/git" }
 
@@ -51,14 +52,14 @@ axum = { version = "0.7.5", features = ["ws", "json"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.5.2", features = ["fs", "cors"] }
-tokio-tungstenite = "0.23.0"
+tokio-tungstenite = "0.23.1"
 
 # SER/DE
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
 serde = { version = "1.0.203", features = ["derive"] }
 strum = { version = "0.26.2", features = ["derive"] }
 serde_json = "1.0.117"
-toml = "0.8.13"
+toml = "0.8.14"
 
 # ERROR
 anyhow = "1.0.86"
@@ -73,7 +74,7 @@ opentelemetry = "0.23.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.4", features = ["derive"] }
+clap = { version = "4.5.7", features = ["derive"] }
 dotenv = "0.15.0"
 envy = "0.4.2"
 
@@ -93,11 +94,12 @@ bollard = "0.16.1"
 sysinfo = "0.30.12"
 
 # CLOUD
-aws-config = "1.5.0"
-aws-sdk-ec2 = "1.46.0"
+aws-config = "1.5.1"
+aws-sdk-ec2 = "1.51.1"
+aws-sdk-ecr = "1.33.0"
 
 # MISC
 derive_builder = "0.20.0"
 typeshare = "1.0.3"
 colored = "2.1.0"
-bson = "2.10.0"
+bson = "2.11.0"

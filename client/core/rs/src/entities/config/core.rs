@@ -253,6 +253,19 @@ fn default_config_path() -> String {
 /// [docker_accounts]
 /// # docker_username_1 = "docker_token_1"
 /// # docker_username_2 = "docker_token_2"
+///
+/// ## configure aws ecr registries
+/// # [aws_ecr_registry.label_1]
+/// # region = "us-east-1"
+/// # account_id = "123456677"
+/// # access_key_id = "your_aws_key_id_1"
+/// # secret_access_key = "your_aws_secret_key_1"
+///
+/// # [aws_ecr_registry.label_2]
+/// # region = "us-west-1"
+/// # account_id = "123456677"
+/// # access_key_id = "your_aws_key_id_2"
+/// # secret_access_key = "your_aws_secret_key_2"
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
@@ -381,6 +394,10 @@ pub struct CoreConfig {
   /// account configured.
   #[serde(default)]
   pub docker_accounts: HashMap<String, String>,
+
+  /// Configure aws ecr registries.
+  #[serde(default, alias = "aws_ecr_registry")]
+  pub aws_ecr_registries: HashMap<String, AwsEcrConfig>,
 }
 
 fn default_title() -> String {
@@ -517,4 +534,17 @@ pub struct AwsCredentials {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct HetznerCredentials {
   pub token: String,
+}
+
+/// Provide configuration for an Aws Ecr registry.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AwsEcrConfig {
+  /// The Aws region
+  pub region: String,
+  /// The Aws account id
+  pub account_id: String,
+  /// The Aws ACCESS_KEY_ID
+  pub access_key_id: String,
+  /// The Aws SECRET_ACCESS_KEY
+  pub secret_access_key: String,
 }

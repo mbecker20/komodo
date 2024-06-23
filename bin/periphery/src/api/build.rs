@@ -12,17 +12,27 @@ use crate::{
 };
 
 impl Resolve<Build> for State {
-  #[instrument(name = "Build", skip(self, replacers))]
+  #[instrument(
+    name = "Build",
+    skip(self, registry_token, replacers, aws_ecr)
+  )]
   async fn resolve(
     &self,
     Build {
       build,
       registry_token,
       replacers,
+      aws_ecr,
     }: Build,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    docker::build::build(&build, registry_token, replacers).await
+    docker::build::build(
+      &build,
+      registry_token,
+      replacers,
+      aws_ecr.as_ref(),
+    )
+    .await
   }
 }
 

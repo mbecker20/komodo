@@ -1,5 +1,6 @@
 use monitor_client::entities::{
-  server::docker_image::ImageSummary, update::Log,
+  config::core::AwsEcrConfig, server::docker_image::ImageSummary,
+  update::Log,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,8 @@ pub struct Build {
   pub build: monitor_client::entities::build::Build,
   /// Override registry token with one sent from core.
   pub registry_token: Option<String>,
+  /// Propogate AwsEcrConfig from core
+  pub aws_ecr: Option<AwsEcrConfig>,
   /// Propogate any secret replacers from core interpolation.
   pub replacers: Vec<(String, String)>,
 }

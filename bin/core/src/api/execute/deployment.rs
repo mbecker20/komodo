@@ -83,7 +83,10 @@ impl Resolve<Deploy, (User, Update)> for State {
     let version = match deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
         let build = resource::get::<Build>(&build_id).await?;
-        let image_name = get_image_name(&build);
+        let image_name = get_image_name(&build, |label| {
+          core_config().aws_ecr_registries.get(label)
+        })
+        .context("failed to create image name")?;
         let version = if version.is_none() {
           build.config.version
         } else {
@@ -161,13 +164,21 @@ impl Resolve<Deploy, (User, Update)> for State {
     update.version = version;
     update_update(update.clone()).await?;
 
-    let registry_token = match &deployment.config.image_registry {
-      ImageRegistry::None(_) => None,
-      ImageRegistry::DockerHub(params) => {
-        core_config.docker_accounts.get(&params.account).cloned()
-      }
-      ImageRegistry::Ghcr(params) => {
-        core_config.github_accounts.get(&params.account).cloned()
+    let (registry_token, aws_ecr) = match &deployment
+      .config
+      .image_registry
+    {
+      ImageRegistry::None(_) => (None, None),
+      ImageRegistry::DockerHub(params) => (
+        core_config.docker_accounts.get(&params.account).cloned(),
+        None,
+      ),
+      ImageRegistry::Ghcr(params) => (
+        core_config.github_accounts.get(&params.account).cloned(),
+        None,
+      ),
+      ImageRegistry::AwsEcr(label) => {
+        (None, core_config.aws_ecr_registries.get(label).cloned())
       }
       ImageRegistry::Custom(_) => {
         return Err(anyhow!("Custom ImageRegistry not yet supported"))
@@ -180,6 +191,7 @@ impl Resolve<Deploy, (User, Update)> for State {
         stop_signal,
         stop_time,
         registry_token,
+        aws_ecr,
         replacers: secret_replacers.into_iter().collect(),
       })
       .await

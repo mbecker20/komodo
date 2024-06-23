@@ -226,6 +226,10 @@ pub enum ImageRegistry {
   /// See [the Github docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images)
   /// for information on creating an access token
   Ghcr(CloudRegistryConfig),
+  /// Push the image to Aws Elastic Container Registry
+  ///
+  /// The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
+  AwsEcr(String),
   /// Todo. Will point to a custom "Registry" resource by id
   Custom(String),
 }

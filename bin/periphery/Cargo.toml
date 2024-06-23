@@ -18,27 +18,28 @@ path = "src/main.rs"
 monitor_client = { workspace = true, features = ["docker"] }
 periphery_client.workspace = true
 command.workspace = true
+aws_ecr.workspace = true
 logger.workspace = true
 git.workspace = true
 # mogh
 serror = { workspace = true, features = ["axum"] }
-async_timing_util.workspace = true
 merge_config_files.workspace = true
-parse_csl.workspace = true
-run_command.workspace = true
-svi.workspace = true
+async_timing_util.workspace = true
 resolver_api.workspace = true
+run_command.workspace = true
+parse_csl.workspace = true
+svi.workspace = true
 # external
-tokio.workspace = true
-axum.workspace = true
 axum-extra.workspace = true
-dotenv.workspace = true
-envy.workspace = true
-serde.workspace = true
 serde_json.workspace = true
-anyhow.workspace = true
-bollard.workspace = true
-clap.workspace = true
 tracing.workspace = true
-uuid.workspace = true
+bollard.workspace = true
 sysinfo.workspace = true
+dotenv.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+serde.workspace = true
+axum.workspace = true
+envy.workspace = true
+clap.workspace = true
+uuid.workspace = true

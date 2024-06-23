@@ -157,6 +157,7 @@ pub fn core_config() -> &'static CoreConfig {
       secrets: config.secrets,
       github_accounts: config.github_accounts,
       docker_accounts: config.docker_accounts,
+      aws_ecr_registries: config.aws_ecr_registries,
     }
   })
 }

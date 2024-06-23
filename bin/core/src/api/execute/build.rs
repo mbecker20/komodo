@@ -12,6 +12,7 @@ use monitor_client::{
     all_logs_success,
     build::{Build, CloudRegistryConfig, ImageRegistry},
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
+    config::core::AwsEcrConfig,
     deployment::DeploymentState,
     monitor_timestamp,
     permission::PermissionLevel,
@@ -39,7 +40,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::{
   cloud::{
-    aws::{
+    aws::ec2::{
       launch_ec2_instance, terminate_ec2_instance_with_retry,
       Ec2Instance,
     },
@@ -75,8 +76,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
     )
     .await?;
 
-    let registry_token =
-      validate_account_extract_registry_token(&build)?;
+    let (registry_token, aws_ecr) =
+      validate_account_extract_registry_token_aws_ecr(&build)?;
 
     // get the action state for the build (or insert default).
     let action_state =
@@ -239,6 +240,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           .request(api::build::Build {
             build: build.clone(),
             registry_token,
+            aws_ecr,
             replacers: secret_replacers.into_iter().collect(),
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
@@ -736,12 +738,13 @@ fn start_aws_builder_log(
 }
 
 /// This will make sure that a build with non-none image registry has an account attached,
-/// and will check the core config for a token matching requirements (otherwise it is left to periphery)
-fn validate_account_extract_registry_token(
+/// and will check the core config for a token / aws ecr config matching requirements.
+/// Otherwise it is left to periphery.
+fn validate_account_extract_registry_token_aws_ecr(
   build: &Build,
-) -> anyhow::Result<Option<String>> {
+) -> anyhow::Result<(Option<String>, Option<AwsEcrConfig>)> {
   match &build.config.image_registry {
-    ImageRegistry::None(_) => Ok(None),
+    ImageRegistry::None(_) => Ok((None, None)),
     ImageRegistry::DockerHub(CloudRegistryConfig {
       account, ..
     }) => {
@@ -750,7 +753,7 @@ fn validate_account_extract_registry_token(
           "Must attach account to use DockerHub image registry"
         ));
       }
-      Ok(core_config().docker_accounts.get(account).cloned())
+      Ok((core_config().docker_accounts.get(account).cloned(), None))
     }
     ImageRegistry::Ghcr(CloudRegistryConfig { account, .. }) => {
       if account.is_empty() {
@@ -758,8 +761,13 @@ fn validate_account_extract_registry_token(
           "Must attach account to use GithubContainerRegistry"
         ));
       }
-      Ok(core_config().github_accounts.get(account).cloned())
+      Ok((core_config().github_accounts.get(account).cloned(), None))
     }
-    ImageRegistry::Custom(_) => todo!(),
+    ImageRegistry::AwsEcr(label) => {
+      Ok((None, core_config().aws_ecr_registries.get(label).cloned()))
+    }
+    ImageRegistry::Custom(_) => {
+      Err(anyhow!("Custom image registry is not implemented"))
+    }
   }
 }

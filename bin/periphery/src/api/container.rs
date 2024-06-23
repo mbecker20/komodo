@@ -199,6 +199,7 @@ impl Resolve<Deploy> for State {
       stop_time,
       registry_token,
       replacers,
+      aws_ecr,
     }: Deploy,
     _: (),
   ) -> anyhow::Result<Log> {
@@ -212,6 +213,7 @@ impl Resolve<Deploy> for State {
         .into(),
       registry_token,
       replacers,
+      aws_ecr.as_ref(),
     )
     .await;
     Ok(res)

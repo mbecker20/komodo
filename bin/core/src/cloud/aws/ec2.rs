@@ -1,9 +1,8 @@
 use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
-use aws_config::BehaviorVersion;
+use aws_config::{BehaviorVersion, Region};
 use aws_sdk_ec2::{
-  config::Region,
   types::{
     BlockDeviceMapping, EbsBlockDevice,
     InstanceNetworkInterfaceSpecification, InstanceStateChange,

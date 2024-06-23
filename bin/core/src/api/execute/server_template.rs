@@ -14,7 +14,9 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  cloud::{aws::launch_ec2_instance, hetzner::launch_hetzner_server},
+  cloud::{
+    aws::ec2::launch_ec2_instance, hetzner::launch_hetzner_server,
+  },
   helpers::update::update_update,
   resource,
   state::{db_client, State},

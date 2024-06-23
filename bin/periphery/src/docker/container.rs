@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use monitor_client::entities::{
+  config::core::AwsEcrConfig,
   deployment::{
     Conversion, Deployment, DeploymentConfig, DeploymentImage,
     DockerContainerStats, RestartMode, TerminationSignal,
@@ -185,10 +186,12 @@ pub async fn deploy(
   stop_time: Option<i32>,
   registry_token: Option<String>,
   core_replacers: Vec<(String, String)>,
+  aws_ecr: Option<&AwsEcrConfig>,
 ) -> Log {
   if let Err(e) = docker_login(
     &deployment.config.image_registry,
     registry_token.as_deref(),
+    aws_ecr,
   )
   .await
   {

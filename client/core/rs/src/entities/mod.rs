@@ -4,6 +4,7 @@ use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
 use build::CloudRegistryConfig;
 use clap::Parser;
+use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
 use serde::{
   de::{
@@ -106,15 +107,16 @@ pub fn optional_string(string: &str) -> Option<String> {
   }
 }
 
-pub fn get_image_name(
+pub fn get_image_name<'a, 'b>(
   build::Build {
     name,
     config: build::BuildConfig { image_registry, .. },
     ..
-  }: &build::Build,
-) -> String {
+  }: &'a build::Build,
+  aws_ecr: impl FnOnce(&'a String) -> Option<&'b AwsEcrConfig>,
+) -> anyhow::Result<String> {
   let name = to_monitor_name(name);
-  match image_registry {
+  let name = match image_registry {
     // TODO
     build::ImageRegistry::None(_) => name,
     build::ImageRegistry::DockerHub(CloudRegistryConfig {
@@ -141,11 +143,20 @@ pub fn get_image_name(
         name
       }
     }
+    build::ImageRegistry::AwsEcr(label) => {
+      let AwsEcrConfig {
+        region, account_id, ..
+      } = aws_ecr(label).with_context(|| {
+        format!("didn't find aws ecr config for registry {label}")
+      })?;
+      format!("{account_id}.dkr.ecr.{region}.amazonaws.com/{name}")
+    }
     build::ImageRegistry::Custom(_) => {
       // TODO
       name
     }
-  }
+  };
+  Ok(name)
 }
 
 pub fn to_monitor_name(name: &str) -> String {

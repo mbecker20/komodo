@@ -1,10 +1,8 @@
 use monitor_client::entities::{
-  deployment::{
+  config::core::AwsEcrConfig, deployment::{
     ContainerSummary, Deployment, DockerContainerStats,
     TerminationSignal,
-  },
-  update::Log,
-  SearchCombinator,
+  }, update::Log, SearchCombinator
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -107,6 +105,8 @@ pub struct Deploy {
   pub stop_time: Option<i32>,
   /// Override registry token with one sent from core.
   pub registry_token: Option<String>,
+  /// Propogate AwsEcrConfig from core
+  pub aws_ecr: Option<AwsEcrConfig>,
   /// Propogate any secret replacers from core interpolation.
   pub replacers: Vec<(String, String)>,
 }
