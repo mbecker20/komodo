@@ -145,7 +145,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
             "get builder",
             format_serror(&e.context("failed to get builder").into()),
           ));
-          return handle_early_return(update, build.id, build.name)
+          return handle_early_return(update, build.id, build.name, false)
             .await;
         }
       };
@@ -172,7 +172,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
         cleanup_builder_instance(periphery, cleanup_data, &mut update)
           .await;
         info!("builder cleaned up");
-        return handle_early_return(update, build.id, build.name).await
+        return handle_early_return(update, build.id, build.name, true).await
       },
     };
 
@@ -253,7 +253,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
           cleanup_builder_instance(periphery, cleanup_data, &mut update)
             .await;
-          return handle_early_return(update, build.id, build.name).await
+          return handle_early_return(update, build.id, build.name, true).await
         },
       };
 
@@ -354,6 +354,7 @@ async fn handle_early_return(
   mut update: Update,
   build_id: String,
   build_name: String,
+  is_cancel: bool,
 ) -> anyhow::Result<Update> {
   update.finalize();
   // Need to manually update the update before cache refresh,
@@ -371,7 +372,7 @@ async fn handle_early_return(
     refresh_build_state_cache().await;
   }
   update_update(update.clone()).await?;
-  if !update.success {
+  if !update.success && !is_cancel {
     let target = update.target.clone();
     let version = update.version;
     let err = update.logs.iter().find(|l| !l.success).cloned();
