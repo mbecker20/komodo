@@ -194,7 +194,7 @@ pub async fn alert_servers(
           ts,
           resolved: false,
           resolved_ts: None,
-          level: health.cpu,
+          level: health.mem,
           target: ResourceTarget::Server(server_status.id.clone()),
           data: AlertData::ServerMem {
             id: server_status.id.clone(),
