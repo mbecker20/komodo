@@ -267,7 +267,32 @@ export const BuildConfig = ({
                 const args =
                   typeof vars === "object" ? env_to_text(vars) : vars;
                 return (
-                  <BuildArgs args={args ?? ""} set={set} disabled={disabled} />
+                  <Args
+                    type="build"
+                    args={args ?? ""}
+                    set={set}
+                    disabled={disabled}
+                  />
+                );
+              },
+              skip_secret_interp: true,
+            },
+          },
+        ],
+        "Secret Args": [
+          {
+            label: "Secret Args",
+            components: {
+              secret_args: (vars, set) => {
+                const args =
+                  typeof vars === "object" ? env_to_text(vars) : vars;
+                return (
+                  <Args
+                    type="secret"
+                    args={args ?? ""}
+                    set={set}
+                    disabled={disabled}
+                  />
                 );
               },
               skip_secret_interp: true,
@@ -279,17 +304,19 @@ export const BuildConfig = ({
   );
 };
 
-const BuildArgs = ({
+const Args = ({
+  type,
   args,
   set,
   disabled,
 }: {
+  type: "build" | "secret";
   args: string;
   set: (input: Partial<Types.BuildConfig>) => void;
   disabled: boolean;
 }) => {
   const ref = createRef<HTMLTextAreaElement>();
-  const setArgs = (build_args: string) => set({ build_args });
+  const setArgs = (args: string) => set({ [`${type}_args`]: args });
 
   return (
     <ConfigItem className="flex-col gap-4 items-start">

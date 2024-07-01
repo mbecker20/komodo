@@ -387,8 +387,25 @@ export interface BuildConfig {
 	webhook_enabled: boolean;
 	/** Any extra docker cli arguments to be included in the build command */
 	extra_args?: string[];
-	/** Docker build arguments */
+	/**
+	 * Docker build arguments.
+	 * 
+	 * These values are visible in the final image by running `docker inspect`.
+	 */
 	build_args?: EnvironmentVar[] | string;
+	/**
+	 * Secret arguments.
+	 * 
+	 * These values remain hidden in the final image by using
+	 * docker secret mounts. See `<https://docs.docker.com/build/building/secrets>`.
+	 * 
+	 * To use the values, add commands like this in the Dockerfile:
+	 * ```
+	 * RUN --mount=type=secret,id=SECRET_KEY \
+	 * SECRET_VALUE=$(cat /run/secrets/SECRET_KEY) ...
+	 * ```
+	 */
+	secret_args?: EnvironmentVar[] | string;
 	/** Docker labels */
 	labels?: EnvironmentVar[] | string;
 }
@@ -2993,7 +3010,7 @@ export interface DeleteAlerter {
 /**
  * Update the alerter at the given id, and return the updated alerter. Response: [Alerter].
  * 
- * Note. This method updates only the fields which are set in the [PartialAlerterConfig],
+ * Note. This method updates only the fields which are set in the [PartialAlerterConfig][crate::entities::alerter::PartialAlerterConfig],
  * effectively merging diffs into the final document. This is helpful when multiple users are using
  * the same resources concurrently by ensuring no unintentional
  * field changes occur from out of date local state.
