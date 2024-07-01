@@ -32,14 +32,14 @@ dependencies = [
 
 [[package]]
 name = "alerter"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "axum 0.7.5",
  "dotenv",
  "envy",
  "logger",
- "monitor_client",
+ "monitor_client 1.9.0",
  "serde",
  "tokio",
  "tracing",
@@ -944,9 +944,9 @@ dependencies = [
 
 [[package]]
 name = "command"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
- "monitor_client",
+ "monitor_client 1.9.0",
  "run_command",
 ]
 
@@ -1322,7 +1322,7 @@ dependencies = [
 
 [[package]]
 name = "formatting"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "serror",
 ]
@@ -1451,12 +1451,12 @@ checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
 name = "git"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "command",
  "formatting",
- "monitor_client",
+ "monitor_client 1.9.0",
  "run_command",
  "tracing",
 ]
@@ -2006,10 +2006,10 @@ checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
 name = "logger"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
- "monitor_client",
+ "monitor_client 1.9.0",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
@@ -2075,14 +2075,14 @@ dependencies = [
 
 [[package]]
 name = "migrator"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "chrono",
  "dotenv",
  "envy",
  "logger",
- "monitor_client",
+ "monitor_client 1.9.0",
  "mungos",
  "serde",
  "tokio",
@@ -2197,14 +2197,14 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "clap",
  "colored",
  "futures",
  "merge_config_files",
- "monitor_client",
+ "monitor_client 1.9.0",
  "partial_derive2",
  "serde",
  "serde_json",
@@ -2218,6 +2218,40 @@ dependencies = [
 [[package]]
 name = "monitor_client"
 version = "1.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9495b88560d38da0fc915379c69916caf2d209ca0b36a3eedcaf705d3c7d5cc"
+dependencies = [
+ "anyhow",
+ "async_timing_util",
+ "bollard",
+ "bson",
+ "clap",
+ "derive_builder",
+ "derive_default_builder",
+ "derive_empty_traits",
+ "derive_variants",
+ "envy",
+ "futures",
+ "mongo_indexed",
+ "partial_derive2",
+ "reqwest 0.12.4",
+ "resolver_api",
+ "serde",
+ "serde_json",
+ "serror",
+ "strum 0.26.2",
+ "thiserror",
+ "tokio",
+ "tokio-tungstenite 0.23.1",
+ "tokio-util",
+ "tracing",
+ "typeshare",
+ "uuid",
+]
+
+[[package]]
+name = "monitor_client"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2249,7 +2283,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_core"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2272,7 +2306,7 @@ dependencies = [
  "logger",
  "merge_config_files",
  "mongo_indexed",
- "monitor_client",
+ "monitor_client 1.9.0",
  "mungos",
  "ordered_hash_map",
  "parse_csl",
@@ -2303,7 +2337,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_periphery"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2318,7 +2352,7 @@ dependencies = [
  "git",
  "logger",
  "merge_config_files",
- "monitor_client",
+ "monitor_client 1.9.0",
  "parse_csl",
  "periphery_client",
  "resolver_api",
@@ -2639,10 +2673,10 @@ checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "periphery_client"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
- "monitor_client",
+ "monitor_client 1.9.0",
  "reqwest 0.12.4",
  "resolver_api",
  "serde",
@@ -3581,13 +3615,13 @@ dependencies = [
 
 [[package]]
 name = "tests"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "dotenv",
  "envy",
  "logger",
- "monitor_client",
+ "monitor_client 1.9.0",
  "mungos",
  "partial_derive2",
  "rand",
@@ -4166,11 +4200,11 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "update_logger"
-version = "1.9.0"
+version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "logger",
- "monitor_client",
+ "monitor_client 1.9.0",
  "tokio",
  "tracing",
 ]
