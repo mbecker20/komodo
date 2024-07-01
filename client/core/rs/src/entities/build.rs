@@ -142,7 +142,9 @@ pub struct BuildConfig {
   #[builder(default)]
   pub extra_args: Vec<String>,
 
-  /// Docker build arguments
+  /// Docker build arguments.
+  /// 
+  /// These values are visible in the final image by running `docker inspect`.
   #[serde(
     default,
     deserialize_with = "super::env_vars_deserializer"
@@ -153,6 +155,21 @@ pub struct BuildConfig {
   ))]
   #[builder(default)]
   pub build_args: Vec<EnvironmentVar>,
+
+  /// Secret arguments.
+  /// 
+  /// These values remain hidden in the final image by using
+  /// docker secret mounts. See `<https://docs.docker.com/build/building/secrets>`.
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
+  #[builder(default)]
+  pub secret_args: Vec<EnvironmentVar>,
 
   /// Docker labels
   #[serde(
@@ -203,6 +220,7 @@ impl Default for BuildConfig {
       build_path: default_build_path(),
       dockerfile_path: default_dockerfile_path(),
       build_args: Default::default(),
+      secret_args: Default::default(),
       labels: Default::default(),
       extra_args: Default::default(),
       use_buildx: Default::default(),

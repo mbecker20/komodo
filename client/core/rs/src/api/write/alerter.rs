@@ -59,7 +59,7 @@ pub struct DeleteAlerter {
 
 /// Update the alerter at the given id, and return the updated alerter. Response: [Alerter].
 ///
-/// Note. This method updates only the fields which are set in the [PartialAlerterConfig],
+/// Note. This method updates only the fields which are set in the [PartialAlerterConfig][crate::entities::alerter::PartialAlerterConfig],
 /// effectively merging diffs into the final document. This is helpful when multiple users are using
 /// the same resources concurrently by ensuring no unintentional
 /// field changes occur from out of date local state.

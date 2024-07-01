@@ -134,6 +134,7 @@ impl From<BuildConfig>
         .into_iter()
         .map(Into::into)
         .collect(),
+      secret_args: Default::default(),
       labels: value.labels.into_iter().map(Into::into).collect(),
       extra_args: value.extra_args,
       use_buildx: value.use_buildx,
