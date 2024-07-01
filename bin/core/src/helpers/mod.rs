@@ -62,7 +62,6 @@ where
           }
         }
       },
-      None,
     )
     .await
     .context("failed to remove resource from users recently viewed")
@@ -111,7 +110,6 @@ pub async fn create_permission<T>(
         resource_target: target.clone(),
         level,
       },
-      None,
     )
     .await
   {

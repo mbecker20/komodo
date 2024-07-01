@@ -44,7 +44,7 @@ impl Resolve<CreateVariable, User> for State {
     db_client()
       .await
       .variables
-      .insert_one(&variable, None)
+      .insert_one(&variable)
       .await
       .context("failed to create variable on db")?;
 
@@ -86,7 +86,6 @@ impl Resolve<UpdateVariableValue, User> for State {
       .update_one(
         doc! { "name": &name },
         doc! { "$set": { "value": &value } },
-        None,
       )
       .await
       .context("failed to update variable value on db")?;
@@ -127,7 +126,6 @@ impl Resolve<UpdateVariableDescription, User> for State {
       .update_one(
         doc! { "name": &name },
         doc! { "$set": { "description": &description } },
-        None,
       )
       .await
       .context("failed to update variable description on db")?;
@@ -148,7 +146,7 @@ impl Resolve<DeleteVariable, User> for State {
     db_client()
       .await
       .variables
-      .delete_one(doc! { "name": &name }, None)
+      .delete_one(doc! { "name": &name })
       .await
       .context("failed to delete variable on db")?;
 

@@ -187,7 +187,7 @@ impl Resolve<CreateApiKey, User> for State {
     db_client()
       .await
       .api_keys
-      .insert_one(api_key, None)
+      .insert_one(api_key)
       .await
       .context("failed to create api key on db")?;
     Ok(CreateApiKeyResponse { key, secret })
@@ -208,7 +208,7 @@ impl Resolve<DeleteApiKey, User> for State {
     let client = db_client().await;
     let key = client
       .api_keys
-      .find_one(doc! { "key": &key }, None)
+      .find_one(doc! { "key": &key })
       .await
       .context("failed at db query")?
       .context("no api key with key found")?;
@@ -217,7 +217,7 @@ impl Resolve<DeleteApiKey, User> for State {
     }
     client
       .api_keys
-      .delete_one(doc! { "key": key.key }, None)
+      .delete_one(doc! { "key": key.key })
       .await
       .context("failed to delete api key from db")?;
     Ok(DeleteApiKeyResponse {})

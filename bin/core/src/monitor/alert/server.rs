@@ -357,7 +357,7 @@ async fn open_alerts(alerts: &[(Alert, SendAlerts)]) {
   let open = || async {
     let ids = db
       .alerts
-      .insert_many(alerts.iter().map(|(alert, _)| alert), None)
+      .insert_many(alerts.iter().map(|(alert, _)| alert))
       .await?
       .inserted_ids
       .into_iter()
@@ -468,7 +468,6 @@ async fn resolve_alerts(alerts: &[(Alert, SendAlerts)]) {
             "resolved_ts": monitor_timestamp()
           }
         },
-        None,
       )
       .await
       .context("failed to resolve alerts on db")

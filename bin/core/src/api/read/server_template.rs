@@ -77,7 +77,7 @@ impl Resolve<GetServerTemplatesSummary, User> for State {
     let total = db_client()
       .await
       .server_templates
-      .count_documents(query, None)
+      .count_documents(query.unwrap_or_default())
       .await
       .context("failed to count all server template documents")?;
     let res = GetServerTemplatesSummaryResponse {

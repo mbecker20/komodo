@@ -35,7 +35,7 @@ impl Resolve<CreateUserGroup, User> for State {
     let db = db_client().await;
     let id = db
       .user_groups
-      .insert_one(user_group, None)
+      .insert_one(user_group)
       .await
       .context("failed to create UserGroup on db")?
       .inserted_id
@@ -99,7 +99,7 @@ impl Resolve<DeleteUserGroup, User> for State {
       .delete_many(doc! {
         "user_target.type": "UserGroup",
         "user_target.id": id,
-      }, None)
+      })
       .await
       .context("failed to clean up UserGroups permissions. User Group has been deleted")?;
 
@@ -125,7 +125,7 @@ impl Resolve<AddUserToUserGroup, User> for State {
     };
     let user = db
       .users
-      .find_one(filter, None)
+      .find_one(filter)
       .await
       .context("failed to query mongo for users")?
       .context("no matching user found")?;
@@ -138,12 +138,11 @@ impl Resolve<AddUserToUserGroup, User> for State {
       .update_one(
         filter.clone(),
         doc! { "$addToSet": { "users": &user.id } },
-        None,
       )
       .await
       .context("failed to add user to group on db")?;
     db.user_groups
-      .find_one(filter, None)
+      .find_one(filter)
       .await
       .context("failed to query db for UserGroups")?
       .context("no user group with given id")
@@ -171,7 +170,7 @@ impl Resolve<RemoveUserFromUserGroup, User> for State {
     };
     let user = db
       .users
-      .find_one(filter, None)
+      .find_one(filter)
       .await
       .context("failed to query mongo for users")?
       .context("no matching user found")?;
@@ -184,12 +183,11 @@ impl Resolve<RemoveUserFromUserGroup, User> for State {
       .update_one(
         filter.clone(),
         doc! { "$pull": { "users": &user.id } },
-        None,
       )
       .await
       .context("failed to add user to group on db")?;
     db.user_groups
-      .find_one(filter, None)
+      .find_one(filter)
       .await
       .context("failed to query db for UserGroups")?
       .context("no user group with given id")
@@ -229,15 +227,11 @@ impl Resolve<SetUsersInUserGroup, User> for State {
       Err(_) => doc! { "name": &user_group },
     };
     db.user_groups
-      .update_one(
-        filter.clone(),
-        doc! { "$set": { "users": users } },
-        None,
-      )
+      .update_one(filter.clone(), doc! { "$set": { "users": users } })
       .await
       .context("failed to add user to group on db")?;
     db.user_groups
-      .find_one(filter, None)
+      .find_one(filter)
       .await
       .context("failed to query db for UserGroups")?
       .context("no user group with given id")

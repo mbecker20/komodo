@@ -3,6 +3,7 @@ use async_timing_util::unix_timestamp_ms;
 use axum::{
   extract::Query, response::Redirect, routing::get, Router,
 };
+use mongo_indexed::Document;
 use monitor_client::entities::user::{User, UserConfig};
 use mungos::mongodb::bson::doc;
 use reqwest::StatusCode;
@@ -75,7 +76,7 @@ async fn callback(
   let db_client = db_client().await;
   let user = db_client
     .users
-    .find_one(doc! { "config.data.google_id": &google_id }, None)
+    .find_one(doc! { "config.data.google_id": &google_id })
     .await
     .context("failed at find user query from mongo")?;
   let jwt = match user {
@@ -85,7 +86,7 @@ async fn callback(
     None => {
       let ts = unix_timestamp_ms() as i64;
       let no_users_exist =
-        db_client.users.find_one(None, None).await?.is_none();
+        db_client.users.find_one(Document::new()).await?.is_none();
       let user = User {
         id: Default::default(),
         username: google_user
@@ -113,7 +114,7 @@ async fn callback(
       };
       let user_id = db_client
         .users
-        .insert_one(user, None)
+        .insert_one(user)
         .await
         .context("failed to create user on mongo")?
         .inserted_id

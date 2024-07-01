@@ -187,7 +187,7 @@ pub async fn get<T: MonitorResource>(
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {
   T::coll()
     .await
-    .find_one(id_or_name_filter(id_or_name), None)
+    .find_one(id_or_name_filter(id_or_name))
     .await
     .context("failed to query db for resource")?
     .with_context(|| {
@@ -336,7 +336,7 @@ pub async fn create<T: MonitorResource>(
 
   let resource_id = T::coll()
     .await
-    .insert_one(&resource, None)
+    .insert_one(&resource)
     .await
     .with_context(|| {
       format!("failed to add {} to db", T::resource_type())
@@ -489,7 +489,6 @@ pub async fn update_description<T: MonitorResource>(
     .update_one(
       id_or_name_filter(id_or_name),
       doc! { "$set": { "description": description } },
-      None,
     )
     .await?;
   Ok(())
@@ -524,7 +523,6 @@ pub async fn update_tags<T: MonitorResource>(
     .update_one(
       id_or_name_filter(id_or_name),
       doc! { "$set": { "tags": tags } },
-      None,
     )
     .await?;
   Ok(())
@@ -535,7 +533,7 @@ pub async fn remove_tag_from_all<T: MonitorResource>(
 ) -> anyhow::Result<()> {
   T::coll()
     .await
-    .update_many(doc! {}, doc! { "$pull": { "tags": tag_id } }, None)
+    .update_many(doc! {}, doc! { "$pull": { "tags": tag_id } })
     .await
     .context("failed to remove tag from resources")?;
   Ok(())
@@ -619,7 +617,6 @@ where
         "resource_target.type": variant.as_ref(),
         "resource_target.id": &id
       },
-      None,
     )
     .await
   {
@@ -652,7 +649,6 @@ where
           recent_field: id
         }
       },
-      None,
     )
     .await
     .context("failed to remove resource from users recently viewed")

@@ -129,8 +129,8 @@ impl Resolve<UpdatePermissionOnTarget, User> for State {
             "level": permission.as_ref(),
           }
         },
-        UpdateOptions::builder().upsert(true).build(),
       )
+      .with_options(UpdateOptions::builder().upsert(true).build())
       .await?;
 
     Ok(UpdatePermissionOnTargetResponse {})
@@ -150,7 +150,7 @@ async fn extract_user_target_with_validation(
       let id = db_client()
         .await
         .users
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for users")?
         .context("no matching user found")?
@@ -165,7 +165,7 @@ async fn extract_user_target_with_validation(
       let id = db_client()
         .await
         .user_groups
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for user_groups")?
         .context("no matching user_group found")?
@@ -192,7 +192,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .builds
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for builds")?
         .context("no matching build found")?
@@ -207,7 +207,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .builders
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for builders")?
         .context("no matching builder found")?
@@ -222,7 +222,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .deployments
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for deployments")?
         .context("no matching deployment found")?
@@ -237,7 +237,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .servers
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for servers")?
         .context("no matching server found")?
@@ -252,7 +252,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .repos
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for repos")?
         .context("no matching repo found")?
@@ -267,7 +267,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .alerters
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for alerters")?
         .context("no matching alerter found")?
@@ -282,7 +282,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .procedures
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for procedures")?
         .context("no matching procedure found")?
@@ -297,7 +297,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .server_templates
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for server templates")?
         .context("no matching server template found")?
@@ -312,7 +312,7 @@ async fn extract_resource_target_with_validation(
       let id = db_client()
         .await
         .resource_syncs
-        .find_one(filter, None)
+        .find_one(filter)
         .await
         .context("failed to query db for resource syncs")?
         .context("no matching resource sync found")?

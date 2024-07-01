@@ -244,15 +244,15 @@ async fn get_repo_state_from_db(id: &str) -> RepoState {
     let state = db_client()
       .await
       .updates
-      .find_one(
-        doc! {
-          "target.type": "Repo",
-          "target.id": id,
-          "$or": [
-            { "operation": "CloneRepo" },
-            { "operation": "PullRepo" },
-          ],
-        },
+      .find_one(doc! {
+        "target.type": "Repo",
+        "target.id": id,
+        "$or": [
+          { "operation": "CloneRepo" },
+          { "operation": "PullRepo" },
+        ],
+      })
+      .with_options(
         FindOneOptions::builder()
           .sort(doc! { "start_ts": -1 })
           .build(),

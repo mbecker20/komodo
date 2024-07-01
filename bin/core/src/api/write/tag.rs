@@ -46,7 +46,7 @@ impl Resolve<CreateTag, User> for State {
     tag.id = db_client()
       .await
       .tags
-      .insert_one(&tag, None)
+      .insert_one(&tag)
       .await
       .context("failed to create tag on db")?
       .inserted_id

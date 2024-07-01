@@ -3,6 +3,7 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::http::HeaderMap;
+use mongo_indexed::Document;
 use monitor_client::{
   api::auth::{
     CreateLocalUser, CreateLocalUserResponse, LoginLocalUser,
@@ -46,7 +47,7 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
     let no_users_exist = db_client()
       .await
       .users
-      .find_one(None, None)
+      .find_one(Document::new())
       .await?
       .is_none();
 
@@ -72,7 +73,7 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
     let user_id = db_client()
       .await
       .users
-      .insert_one(user, None)
+      .insert_one(user)
       .await
       .context("failed to create user")?
       .inserted_id
@@ -102,7 +103,7 @@ impl Resolve<LoginLocalUser, HeaderMap> for State {
     let user = db_client()
       .await
       .users
-      .find_one(doc! { "username": &username }, None)
+      .find_one(doc! { "username": &username })
       .await
       .context("failed at db query for users")?
       .with_context(|| {

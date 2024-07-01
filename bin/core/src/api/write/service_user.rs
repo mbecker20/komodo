@@ -61,7 +61,7 @@ impl Resolve<CreateServiceUser, User> for State {
     user.id = db_client()
       .await
       .users
-      .insert_one(&user, None)
+      .insert_one(&user)
       .await
       .context("failed to create service user on db")?
       .inserted_id
@@ -91,7 +91,7 @@ impl Resolve<UpdateServiceUserDescription, User> for State {
     let db = db_client().await;
     let service_user = db
       .users
-      .find_one(doc! { "username": &username }, None)
+      .find_one(doc! { "username": &username })
       .await
       .context("failed to query db for user")?
       .context("no user with given username")?;
@@ -102,12 +102,11 @@ impl Resolve<UpdateServiceUserDescription, User> for State {
       .update_one(
         doc! { "username": &username },
         doc! { "$set": { "config.data.description": description } },
-        None,
       )
       .await
       .context("failed to update user on db")?;
     db.users
-      .find_one(doc! { "username": &username }, None)
+      .find_one(doc! { "username": &username })
       .await
       .context("failed to query db for user")?
       .context("user with username not found")
@@ -155,7 +154,7 @@ impl Resolve<DeleteApiKeyForServiceUser, User> for State {
     let db = db_client().await;
     let api_key = db
       .api_keys
-      .find_one(doc! { "key": &key }, None)
+      .find_one(doc! { "key": &key })
       .await
       .context("failed to query db for api key")?
       .context("did not find matching api key")?;
@@ -168,7 +167,7 @@ impl Resolve<DeleteApiKeyForServiceUser, User> for State {
       return Err(anyhow!("user is not service user"));
     };
     db.api_keys
-      .delete_one(doc! { "key": key }, None)
+      .delete_one(doc! { "key": key })
       .await
       .context("failed to delete api key on db")?;
     Ok(DeleteApiKeyForServiceUserResponse {})

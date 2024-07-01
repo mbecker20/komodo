@@ -2,6 +2,7 @@ use anyhow::{anyhow, Context};
 use axum::{
   extract::Query, response::Redirect, routing::get, Router,
 };
+use mongo_indexed::Document;
 use monitor_client::entities::{
   monitor_timestamp,
   user::{User, UserConfig},
@@ -66,7 +67,7 @@ async fn callback(
   let db_client = db_client().await;
   let user = db_client
     .users
-    .find_one(doc! { "config.data.github_id": &github_id }, None)
+    .find_one(doc! { "config.data.github_id": &github_id })
     .await
     .context("failed at find user query from mongo")?;
   let jwt = match user {
@@ -76,7 +77,7 @@ async fn callback(
     None => {
       let ts = monitor_timestamp();
       let no_users_exist =
-        db_client.users.find_one(None, None).await?.is_none();
+        db_client.users.find_one(Document::new()).await?.is_none();
       let user = User {
         id: Default::default(),
         username: github_user.login,
@@ -98,7 +99,7 @@ async fn callback(
       };
       let user_id = db_client
         .users
-        .insert_one(user, None)
+        .insert_one(user)
         .await
         .context("failed to create user on mongo")?
         .inserted_id

@@ -127,7 +127,7 @@ pub async fn auth_api_key_get_user_id(
   let key = db_client()
     .await
     .api_keys
-    .find_one(doc! { "key": key }, None)
+    .find_one(doc! { "key": key })
     .await
     .context("failed to query db")?
     .context("no api key matching key")?;

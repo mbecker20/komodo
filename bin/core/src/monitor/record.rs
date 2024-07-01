@@ -30,8 +30,7 @@ pub async fn record_server_stats(ts: i64) {
     })
     .collect::<Vec<_>>();
   if !records.is_empty() {
-    let res =
-      db_client().await.stats.insert_many(records, None).await;
+    let res = db_client().await.stats.insert_many(records).await;
     if let Err(e) = res {
       error!("failed to record server stats | {e:#}");
     }

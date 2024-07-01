@@ -147,16 +147,13 @@ impl Resolve<GetBuildMonthlyStats, User> for State {
     let mut build_updates = db_client()
       .await
       .updates
-      .find(
-        doc! {
-          "start_ts": {
-            "$gte": open_ts,
-            "$lt": close_ts
-          },
-          "operation": Operation::RunBuild.to_string(),
+      .find(doc! {
+        "start_ts": {
+          "$gte": open_ts,
+          "$lt": close_ts
         },
-        None,
-      )
+        "operation": Operation::RunBuild.to_string(),
+      })
       .await
       .context("failed to get updates cursor")?;
 

@@ -213,12 +213,12 @@ async fn get_resource_sync_state_from_db(
     let state = db_client()
       .await
       .updates
-      .find_one(
-        doc! {
-          "target.type": "ResourceSync",
-          "target.id": id,
-          "operation": "RunSync"
-        },
+      .find_one(doc! {
+        "target.type": "ResourceSync",
+        "target.id": id,
+        "operation": "RunSync"
+      })
+      .with_options(
         FindOneOptions::builder()
           .sort(doc! { "start_ts": -1 })
           .build(),

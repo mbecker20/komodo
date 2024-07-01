@@ -80,7 +80,7 @@ impl Resolve<GetAlertersSummary, User> for State {
     let total = db_client()
       .await
       .alerters
-      .count_documents(query, None)
+      .count_documents(query.unwrap_or_default())
       .await
       .context("failed to count all alerter documents")?;
     let res = GetAlertersSummaryResponse {

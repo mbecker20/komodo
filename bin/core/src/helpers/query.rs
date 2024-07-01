@@ -89,7 +89,7 @@ pub async fn get_tag(id_or_name: &str) -> anyhow::Result<Tag> {
   db_client()
     .await
     .tags
-    .find_one(query, None)
+    .find_one(query)
     .await
     .context("failed to query mongo for tag")?
     .with_context(|| format!("no tag found matching {id_or_name}"))
@@ -240,7 +240,7 @@ pub async fn get_variable(name: &str) -> anyhow::Result<Variable> {
   db_client()
     .await
     .variables
-    .find_one(doc! { "name": &name }, None)
+    .find_one(doc! { "name": &name })
     .await
     .context("failed at call to db")?
     .with_context(|| {
@@ -256,12 +256,12 @@ pub async fn get_latest_update(
   db_client()
     .await
     .updates
-    .find_one(
-      doc! {
-        "target.type": resource_type.as_ref(),
-        "target.id": id,
-        "operation": operation.as_ref()
-      },
+    .find_one(doc! {
+      "target.type": resource_type.as_ref(),
+      "target.id": id,
+      "operation": operation.as_ref()
+    })
+    .with_options(
       FindOneOptions::builder()
         .sort(doc! { "start_ts": -1 })
         .build(),

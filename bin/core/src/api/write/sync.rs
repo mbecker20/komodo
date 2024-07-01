@@ -268,7 +268,6 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
             "target.type": "ResourceSync",
             "target.id": &id,
           },
-          None,
         )
         .await
         .context("failed to query db for alert")
@@ -290,7 +289,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
             resolved_ts: None,
           };
           db.alerts
-            .insert_one(&alert, None)
+            .insert_one(&alert)
             .await
             .context("failed to open existing pending resource sync updates alert")
             .inspect_err(|e| warn!("{e:#}"))

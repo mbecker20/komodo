@@ -36,12 +36,9 @@ impl Resolve<LaunchServer, (User, Update)> for State {
     if db_client()
       .await
       .servers
-      .find_one(
-        doc! {
-          "name": &name
-        },
-        None,
-      )
+      .find_one(doc! {
+        "name": &name
+      })
       .await
       .context("failed to query db for servers")?
       .is_some()

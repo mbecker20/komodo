@@ -181,7 +181,6 @@ async fn update_last_pulled_time(repo_name: &str) {
     .update_one(
       doc! { "name": repo_name },
       doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
-      None,
     )
     .await;
   if let Err(e) = res {

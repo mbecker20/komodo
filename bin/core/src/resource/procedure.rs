@@ -337,12 +337,12 @@ async fn get_procedure_state_from_db(id: &str) -> ProcedureState {
     let state = db_client()
       .await
       .updates
-      .find_one(
-        doc! {
-          "target.type": "Procedure",
-          "target.id": id,
-          "operation": "RunProcedure"
-        },
+      .find_one(doc! {
+        "target.type": "Procedure",
+        "target.id": id,
+        "operation": "RunProcedure"
+      })
+      .with_options(
         FindOneOptions::builder()
           .sort(doc! { "start_ts": -1 })
           .build(),

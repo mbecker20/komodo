@@ -130,7 +130,6 @@ impl super::MonitorResource for Server {
       .update_many(
         doc! { "config.params.server_id": &id },
         doc! { "$set": { "config.params.server_id": "" } },
-        None,
       )
       .await
       .context("failed to detach server from builders")?;
@@ -139,7 +138,6 @@ impl super::MonitorResource for Server {
       .update_many(
         doc! { "config.server_id": &id },
         doc! { "$set": { "config.server_id": "" } },
-        None,
       )
       .await
       .context("failed to detach server from deployments")?;
@@ -148,7 +146,6 @@ impl super::MonitorResource for Server {
       .update_many(
         doc! { "config.server_id": &id },
         doc! { "$set": { "config.server_id": "" } },
-        None,
       )
       .await
       .context("failed to detach server from repos")?;
@@ -160,7 +157,6 @@ impl super::MonitorResource for Server {
           "resolved": true,
           "resolved_ts": monitor_timestamp()
         } },
-        None,
       )
       .await
       .context("failed to detach server from repos")?;

@@ -37,7 +37,7 @@ impl Resolve<GetUserGroup, User> for State {
     db_client()
       .await
       .user_groups
-      .find_one(filter, None)
+      .find_one(filter)
       .await
       .context("failed to query db for user groups")?
       .context("no UserGroup found with given name or id")

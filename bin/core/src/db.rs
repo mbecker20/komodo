@@ -112,7 +112,7 @@ impl DbClient {
   }
 }
 
-async fn resource_collection<T>(
+async fn resource_collection<T: Send + Sync>(
   db: &Database,
   collection_name: &str,
 ) -> anyhow::Result<Collection<T>> {

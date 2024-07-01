@@ -137,7 +137,6 @@ impl super::MonitorResource for Builder {
         mungos::update::Update::Set(
           doc! { "config.builder.params.builder_id": "" },
         ),
-        None,
       )
       .await
       .context("failed to update_many builds on database")?;

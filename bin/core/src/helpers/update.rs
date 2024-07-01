@@ -45,7 +45,7 @@ pub async fn add_update(
   update.id = db_client()
     .await
     .updates
-    .insert_one(&update, None)
+    .insert_one(&update)
     .await
     .context("failed to insert update into db")?
     .inserted_id
