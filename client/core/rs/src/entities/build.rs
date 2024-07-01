@@ -143,7 +143,7 @@ pub struct BuildConfig {
   pub extra_args: Vec<String>,
 
   /// Docker build arguments.
-  /// 
+  ///
   /// These values are visible in the final image by running `docker inspect`.
   #[serde(
     default,
@@ -157,9 +157,15 @@ pub struct BuildConfig {
   pub build_args: Vec<EnvironmentVar>,
 
   /// Secret arguments.
-  /// 
+  ///
   /// These values remain hidden in the final image by using
   /// docker secret mounts. See `<https://docs.docker.com/build/building/secrets>`.
+  ///
+  /// To use the values, add commands like this in the Dockerfile:
+  /// ```
+  /// RUN --mount=type=secret,id=SECRET_KEY \
+  ///   SECRET_VALUE=$(cat /run/secrets/SECRET_KEY) ...
+  /// ```
   #[serde(
     default,
     deserialize_with = "super::env_vars_deserializer"

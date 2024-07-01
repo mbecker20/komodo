@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{
@@ -20,10 +20,7 @@ use crate::{
 };
 
 impl Resolve<build::Build> for State {
-  #[instrument(
-    name = "Build",
-    skip(self, registry_token, core_replacers, aws_ecr)
-  )]
+  #[instrument(name = "Build", skip_all)]
   async fn resolve(
     &self,
     build::Build {
@@ -43,6 +40,7 @@ impl Resolve<build::Build> for State {
           build_path,
           dockerfile_path,
           build_args,
+          secret_args,
           labels,
           extra_args,
           use_buildx,
@@ -88,6 +86,8 @@ impl Resolve<build::Build> for State {
     let image_name = get_image_name(&build, |_| aws_ecr)
       .context("failed to make image name")?;
     let build_args = parse_build_args(build_args);
+    let _secret_args =
+      parse_secret_args(secret_args, *skip_secret_interp)?;
     let labels = parse_labels(labels);
     let extra_args = parse_extra_args(extra_args);
     let buildx = if *use_buildx { " buildx" } else { "" };
@@ -100,9 +100,9 @@ impl Resolve<build::Build> for State {
 
     // Construct command
     let command = format!(
-    "cd {} && docker{buildx} build{build_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
-    build_dir.display()
-  );
+      "cd {} && docker{buildx} build{build_args}{_secret_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
+      build_dir.display()
+    );
 
     if *skip_secret_interp {
       let build_log =
@@ -133,6 +133,8 @@ impl Resolve<build::Build> for State {
       logs.push(build_log);
     }
 
+    cleanup_secret_env_vars(secret_args);
+
     Ok(logs)
   }
 }
@@ -150,6 +152,47 @@ fn parse_build_args(build_args: &[EnvironmentVar]) -> String {
     .map(|p| format!(" --build-arg {}=\"{}\"", p.variable, p.value))
     .collect::<Vec<_>>()
     .join("")
+}
+
+fn parse_secret_args(
+  secret_args: &[EnvironmentVar],
+  skip_secret_interp: bool,
+) -> anyhow::Result<String> {
+  let periphery_config = periphery_config();
+  Ok(
+    secret_args
+      .iter()
+      .map(|EnvironmentVar { variable, value }| {
+        if variable.is_empty() {
+          return Err(anyhow!("secret variable cannot be empty string"))
+        } else if variable.contains('=') {
+          return Err(anyhow!("invalid variable {variable}. variable cannot contain '='"))
+        }
+        let value = if skip_secret_interp {
+          value.to_string()
+        } else {
+          svi::interpolate_variables(
+            value,
+            &periphery_config.secrets,
+            svi::Interpolator::DoubleBrackets,
+            true,
+          )
+          .context(
+            "failed to interpolate periphery secrets into build secrets",
+          )?.0
+        };
+        std::env::set_var(variable, value);
+        anyhow::Ok(format!(" --secret id={variable}"))
+      })
+      .collect::<anyhow::Result<Vec<_>>>()?
+      .join(""),
+  )
+}
+
+fn cleanup_secret_env_vars(secret_args: &[EnvironmentVar]) {
+  secret_args.iter().for_each(
+    |EnvironmentVar { variable, .. }| std::env::remove_var(variable),
+  )
 }
 
 //

@@ -145,8 +145,10 @@ impl Resolve<RunBuild, (User, Update)> for State {
             "get builder",
             format_serror(&e.context("failed to get builder").into()),
           ));
-          return handle_early_return(update, build.id, build.name, false)
-            .await;
+          return handle_early_return(
+            update, build.id, build.name, false,
+          )
+          .await;
         }
       };
 
@@ -196,6 +198,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
       // Interpolate variables / secrets into build args
       let mut global_replacers = HashSet::new();
       let mut secret_replacers = HashSet::new();
+      let mut secret_replacers_for_log = HashSet::new();
+
+      // Interpolate into build args
       for arg in &mut build.config.build_args {
         // first pass - global variables
         let (res, more_replacers) = svi::interpolate_variables(
@@ -214,7 +219,37 @@ impl Resolve<RunBuild, (User, Update)> for State {
           false,
         )
         .context("failed to interpolate core secrets")?;
+        secret_replacers_for_log.extend(
+          more_replacers.iter().map(|(_, variable)| variable.clone()),
+        );
         secret_replacers.extend(more_replacers);
+        arg.value = res;
+      }
+
+      // Interpolate into secret args
+      for arg in &mut build.config.secret_args {
+        // first pass - global variables
+        let (res, more_replacers) = svi::interpolate_variables(
+          &arg.value,
+          &variables,
+          svi::Interpolator::DoubleBrackets,
+          false,
+        )
+        .context("failed to interpolate global variables")?;
+        global_replacers.extend(more_replacers);
+        // second pass - core secrets
+        let (res, more_replacers) = svi::interpolate_variables(
+          &res,
+          &core_config.secrets,
+          svi::Interpolator::DoubleBrackets,
+          false,
+        )
+        .context("failed to interpolate core secrets")?;
+        secret_replacers_for_log.extend(
+          more_replacers.into_iter().map(|(_, variable)| variable),
+        );
+        // Secret args don't need to be in replacers sent to periphery.
+        // The secret args don't end up in the command like build args do.
         arg.value = res;
       }
 
@@ -232,9 +267,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
       if !secret_replacers.is_empty() {
         update.push_simple_log(
           "interpolate core secrets",
-          secret_replacers
-            .iter()
-            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+          secret_replacers_for_log
+            .into_iter()
+            .map(|variable| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
             .collect::<Vec<_>>()
             .join("\n"),
         );
