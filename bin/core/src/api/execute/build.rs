@@ -264,7 +264,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
             .join("\n"),
         );
       }
-      if !secret_replacers.is_empty() {
+      if !secret_replacers_for_log.is_empty() {
         update.push_simple_log(
           "interpolate core secrets",
           secret_replacers_for_log

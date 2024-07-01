@@ -161,10 +161,10 @@ pub struct BuildConfig {
   /// These values remain hidden in the final image by using
   /// docker secret mounts. See `<https://docs.docker.com/build/building/secrets>`.
   ///
-  /// To use the values, add commands like this in the Dockerfile:
+  /// The values can be used in RUN commands:
   /// ```
   /// RUN --mount=type=secret,id=SECRET_KEY \
-  ///   SECRET_VALUE=$(cat /run/secrets/SECRET_KEY) ...
+  ///   SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
   /// ```
   #[serde(
     default,
