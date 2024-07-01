@@ -34,7 +34,6 @@ pub async fn migrate_deployments_in_place(
       .update_one(
         doc! { "name": &deployment.name },
         doc! { "$set": to_document(&deployment)? },
-        None,
       )
       .await
       .context("failed to insert deployments on target")?;
@@ -62,7 +61,6 @@ pub async fn migrate_builds_in_place(
       .update_one(
         doc! { "name": &build.name },
         doc! { "$set": to_document(&build)? },
-        None,
       )
       .await
       .context("failed to insert builds on target")?;

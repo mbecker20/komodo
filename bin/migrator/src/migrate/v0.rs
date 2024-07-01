@@ -46,7 +46,7 @@ pub async fn migrate_users(
 
   target_db
     .users
-    .insert_many(users, None)
+    .insert_many(users)
     .await
     .context("failed to insert users on target")?;
 
@@ -91,7 +91,7 @@ pub async fn migrate_servers(
   if !new_servers.is_empty() {
     target_db
       .servers
-      .insert_many(new_servers, None)
+      .insert_many(new_servers)
       .await
       .context("failed to insert servers on target")?;
   }
@@ -99,7 +99,7 @@ pub async fn migrate_servers(
   if !permissions.is_empty() {
     target_db
       .permissions
-      .insert_many(permissions, None)
+      .insert_many(permissions)
       .await
       .context("failed to insert server permissions on target")?;
   }
@@ -147,7 +147,7 @@ pub async fn migrate_deployments(
   if !new_deployments.is_empty() {
     target_db
       .deployments
-      .insert_many(new_deployments, None)
+      .insert_many(new_deployments)
       .await
       .context("failed to insert deployments on target")?;
   }
@@ -155,7 +155,7 @@ pub async fn migrate_deployments(
   if !permissions.is_empty() {
     target_db
       .permissions
-      .insert_many(permissions, None)
+      .insert_many(permissions)
       .await
       .context("failed to insert deployment permissions on target")?;
   }
@@ -201,7 +201,7 @@ pub async fn migrate_builds(
   if !new_builds.is_empty() {
     target_db
       .builds
-      .insert_many(new_builds, None)
+      .insert_many(new_builds)
       .await
       .context("failed to insert builds on target")?;
   }
@@ -209,7 +209,7 @@ pub async fn migrate_builds(
   if !permissions.is_empty() {
     target_db
       .permissions
-      .insert_many(permissions, None)
+      .insert_many(permissions)
       .await
       .context("failed to insert build permissions on target")?;
   }
@@ -239,7 +239,7 @@ pub async fn migrate_updates(
 
   target_db
     .updates
-    .insert_many(updates, None)
+    .insert_many(updates)
     .await
     .context("failed to insert updates on target")?;
 

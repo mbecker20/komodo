@@ -1,4 +1,4 @@
-use std::{collections::HashSet, time::Duration};
+use std::{collections::HashSet, future::IntoFuture, time::Duration};
 
 use anyhow::{anyhow, Context};
 use formatting::{format_serror, muted};
@@ -323,7 +323,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
               "info.last_built_at": monitor_timestamp(),
             }
           },
-          None,
         )
         .await;
     }
@@ -442,24 +441,28 @@ pub async fn validate_cancel_build(
     let db = db_client().await;
 
     let (latest_build, latest_cancel) = tokio::try_join!(
-      db.updates.find_one(
-        doc! {
+      db.updates
+        .find_one(doc! {
           "operation": "RunBuild",
           "target.id": &build.id,
-        },
-        FindOneOptions::builder()
-          .sort(doc! { "start_ts": -1 })
-          .build(),
-      ),
-      db.updates.find_one(
-        doc! {
+        },)
+        .with_options(
+          FindOneOptions::builder()
+            .sort(doc! { "start_ts": -1 })
+            .build()
+        )
+        .into_future(),
+      db.updates
+        .find_one(doc! {
           "operation": "CancelBuild",
           "target.id": &build.id,
-        },
-        FindOneOptions::builder()
-          .sort(doc! { "start_ts": -1 })
-          .build(),
-      )
+        },)
+        .with_options(
+          FindOneOptions::builder()
+            .sort(doc! { "start_ts": -1 })
+            .build()
+        )
+        .into_future()
     )?;
 
     match (latest_build, latest_cancel) {

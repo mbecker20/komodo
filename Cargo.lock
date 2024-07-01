@@ -39,7 +39,7 @@ dependencies = [
  "dotenv",
  "envy",
  "logger",
- "monitor_client 1.9.0",
+ "monitor_client",
  "serde",
  "tokio",
  "tracing",
@@ -241,9 +241,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ec2"
-version = "1.53.0"
+version = "1.55.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db7385f189e99cae1fbadbfa7e0ed58cd89f655e3b3884b8386fecd9d988b4d5"
+checksum = "e2fd9674e7f6fd95c7df47694c7826ea34d0c997529b62708df886de4bab6887"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -443,11 +443,11 @@ dependencies = [
  "http-body 1.0.0",
  "httparse",
  "hyper 0.14.28",
- "hyper-rustls",
+ "hyper-rustls 0.24.2",
  "once_cell",
  "pin-project-lite",
  "pin-utils",
- "rustls",
+ "rustls 0.21.12",
  "tokio",
  "tracing",
 ]
@@ -946,7 +946,7 @@ dependencies = [
 name = "command"
 version = "1.10.0-pre-0"
 dependencies = [
- "monitor_client 1.9.0",
+ "monitor_client",
  "run_command",
 ]
 
@@ -1456,7 +1456,7 @@ dependencies = [
  "anyhow",
  "command",
  "formatting",
- "monitor_client 1.9.0",
+ "monitor_client",
  "run_command",
  "tracing",
 ]
@@ -1685,7 +1685,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.5.7",
+ "socket2",
  "tokio",
  "tower-service",
  "tracing",
@@ -1738,10 +1738,27 @@ dependencies = [
  "http 0.2.12",
  "hyper 0.14.28",
  "log",
- "rustls",
+ "rustls 0.21.12",
  "rustls-native-certs",
  "tokio",
- "tokio-rustls",
+ "tokio-rustls 0.24.1",
+]
+
+[[package]]
+name = "hyper-rustls"
+version = "0.27.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ee4be2c948921a1a5320b629c4193916ed787a7f7f293fd3f7f5a6c9de74155"
+dependencies = [
+ "futures-util",
+ "http 1.1.0",
+ "hyper 1.3.1",
+ "hyper-util",
+ "rustls 0.23.10",
+ "rustls-pki-types",
+ "tokio",
+ "tokio-rustls 0.26.0",
+ "tower-service",
 ]
 
 [[package]]
@@ -1798,7 +1815,7 @@ dependencies = [
  "http-body 1.0.0",
  "hyper 1.3.1",
  "pin-project-lite",
- "socket2 0.5.7",
+ "socket2",
  "tokio",
  "tower",
  "tower-service",
@@ -1907,7 +1924,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b58db92f96b720de98181bbbe63c831e87005ab460c1bf306eb2622b4707997f"
 dependencies = [
- "socket2 0.5.7",
+ "socket2",
  "widestring",
  "windows-sys 0.48.0",
  "winreg 0.50.0",
@@ -2009,7 +2026,7 @@ name = "logger"
 version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
- "monitor_client 1.9.0",
+ "monitor_client",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
@@ -2082,7 +2099,7 @@ dependencies = [
  "dotenv",
  "envy",
  "logger",
- "monitor_client 1.9.0",
+ "monitor_client",
  "mungos",
  "serde",
  "tokio",
@@ -2127,9 +2144,9 @@ dependencies = [
 
 [[package]]
 name = "mongo_indexed"
-version = "0.3.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e837961dc668ca0d6e298066f22c1c9242bdfe7cc473b18f5e3d960f27e6adb"
+checksum = "202ab1775c25b55f035ae5a5e10c6505ddcb8319159bca055ebe3790542478e4"
 dependencies = [
  "anyhow",
  "mongo_indexed_derive",
@@ -2139,9 +2156,9 @@ dependencies = [
 
 [[package]]
 name = "mongo_indexed_derive"
-version = "0.3.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b1bfd94b65c8adb78d87177ccb5754204c175098be1057e7ad25282753dc4e8"
+checksum = "177b97b43773866e7ed1aa023acdbe438d973ce181d64d9769c303c002b3eaf5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2150,9 +2167,9 @@ dependencies = [
 
 [[package]]
 name = "mongodb"
-version = "2.8.2"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef206acb1b72389b49bc9985efe7eb1f8a9bb18e5680d262fac26c07f44025f1"
+checksum = "bb4af699cbb12a221e978134999b16cbf030d964c3a7cd6c4af2584734190e58"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
@@ -2167,32 +2184,44 @@ dependencies = [
  "futures-util",
  "hex",
  "hmac",
- "lazy_static",
  "md-5",
+ "mongodb-internal-macros",
+ "once_cell",
  "pbkdf2",
  "percent-encoding",
  "rand",
  "rustc_version_runtime",
- "rustls",
+ "rustls 0.21.12",
  "rustls-pemfile 1.0.4",
  "serde",
  "serde_bytes",
  "serde_with 1.14.0",
  "sha-1",
  "sha2",
- "socket2 0.4.10",
+ "socket2",
  "stringprep",
  "strsim 0.10.0",
  "take_mut",
  "thiserror",
  "tokio",
- "tokio-rustls",
+ "tokio-rustls 0.24.1",
  "tokio-util",
  "trust-dns-proto",
  "trust-dns-resolver",
  "typed-builder",
  "uuid",
  "webpki-roots",
+]
+
+[[package]]
+name = "mongodb-internal-macros"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1159486b5e1993138c385369c3c46f5608cb0b1c53734e503538366f3c4cedcc"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.64",
 ]
 
 [[package]]
@@ -2204,7 +2233,7 @@ dependencies = [
  "colored",
  "futures",
  "merge_config_files",
- "monitor_client 1.9.0",
+ "monitor_client",
  "partial_derive2",
  "serde",
  "serde_json",
@@ -2217,40 +2246,6 @@ dependencies = [
 
 [[package]]
 name = "monitor_client"
-version = "1.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9495b88560d38da0fc915379c69916caf2d209ca0b36a3eedcaf705d3c7d5cc"
-dependencies = [
- "anyhow",
- "async_timing_util",
- "bollard",
- "bson",
- "clap",
- "derive_builder",
- "derive_default_builder",
- "derive_empty_traits",
- "derive_variants",
- "envy",
- "futures",
- "mongo_indexed",
- "partial_derive2",
- "reqwest 0.12.4",
- "resolver_api",
- "serde",
- "serde_json",
- "serror",
- "strum 0.26.2",
- "thiserror",
- "tokio",
- "tokio-tungstenite 0.23.1",
- "tokio-util",
- "tracing",
- "typeshare",
- "uuid",
-]
-
-[[package]]
-name = "monitor_client"
 version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
@@ -2266,7 +2261,7 @@ dependencies = [
  "futures",
  "mongo_indexed",
  "partial_derive2",
- "reqwest 0.12.4",
+ "reqwest 0.12.5",
  "resolver_api",
  "serde",
  "serde_json",
@@ -2306,14 +2301,14 @@ dependencies = [
  "logger",
  "merge_config_files",
  "mongo_indexed",
- "monitor_client 1.9.0",
+ "monitor_client",
  "mungos",
  "ordered_hash_map",
  "parse_csl",
  "partial_derive2",
  "periphery_client",
  "rand",
- "reqwest 0.12.4",
+ "reqwest 0.12.5",
  "resolver_api",
  "run_command",
  "serde",
@@ -2352,7 +2347,7 @@ dependencies = [
  "git",
  "logger",
  "merge_config_files",
- "monitor_client 1.9.0",
+ "monitor_client",
  "parse_csl",
  "periphery_client",
  "resolver_api",
@@ -2369,15 +2364,16 @@ dependencies = [
 
 [[package]]
 name = "mungos"
-version = "0.5.6"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ba5223d327a4869d60eee6aaf505e88109c2299b6e4b26ff26f9f2e1d4cb65a"
+checksum = "9c89188a577f4e4464d83203336cc57ee5c835bf0e52ce3748f0abc090466ed8"
 dependencies = [
  "anyhow",
  "envy",
  "futures",
  "mongodb",
  "serde",
+ "serde_derive",
 ]
 
 [[package]]
@@ -2676,8 +2672,8 @@ name = "periphery_client"
 version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
- "monitor_client 1.9.0",
- "reqwest 0.12.4",
+ "monitor_client",
+ "reqwest 0.12.5",
  "resolver_api",
  "serde",
  "serde_json",
@@ -2895,9 +2891,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.4"
+version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "566cafdd92868e0939d3fb961bd0dc25fcfaaed179291093b3d43e6b3150ea10"
+checksum = "c7d6d2a27d57148378eb5e111173f4276ad26340ecc5c49a4a2152167a2d6a37"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -2909,6 +2905,7 @@ dependencies = [
  "http-body 1.0.0",
  "http-body-util",
  "hyper 1.3.1",
+ "hyper-rustls 0.27.2",
  "hyper-tls 0.6.0",
  "hyper-util",
  "ipnet",
@@ -2923,7 +2920,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "sync_wrapper 0.1.2",
+ "sync_wrapper 1.0.1",
  "system-configuration",
  "tokio",
  "tokio-native-tls",
@@ -2947,9 +2944,9 @@ dependencies = [
 
 [[package]]
 name = "resolver_api"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4e8831e742662de68dbce8ca6243d1f0a1a5a295e1b3fa9ad996f215d1645b5"
+checksum = "e86d2e3a6e01f92f8f964bc16a5e579028c02fa625612e5e1f159a6474e47969"
 dependencies = [
  "anyhow",
  "resolver_api_derive",
@@ -3048,8 +3045,21 @@ checksum = "3f56a14d1f48b391359b22f731fd4bd7e43c97f3c50eee276f3aa09c94784d3e"
 dependencies = [
  "log",
  "ring",
- "rustls-webpki",
+ "rustls-webpki 0.101.7",
  "sct",
+]
+
+[[package]]
+name = "rustls"
+version = "0.23.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05cff451f60db80f490f3c182b77c35260baace73209e9cdbbe526bfe3a4d402"
+dependencies = [
+ "once_cell",
+ "rustls-pki-types",
+ "rustls-webpki 0.102.4",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -3096,6 +3106,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b6275d1ee7a1cd780b64aca7726599a1dbc893b1e64144529e55c3c2f745765"
 dependencies = [
  "ring",
+ "untrusted",
+]
+
+[[package]]
+name = "rustls-webpki"
+version = "0.102.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff448f7e92e913c4b7d4c6d8e4540a1724b319b4152b8aef6d4cf8339712b33e"
+dependencies = [
+ "ring",
+ "rustls-pki-types",
  "untrusted",
 ]
 
@@ -3211,9 +3232,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.117"
+version = "1.0.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "455182ea6142b14f93f4bc5320a2b31c1f266b66a4a5c858b013302a5d8cbfc3"
+checksum = "e8eddb61f0697cc3989c5d64b452f5488e2b8a60fd7d5076a3045076ffef8cb0"
 dependencies = [
  "indexmap 2.2.6",
  "itoa",
@@ -3394,16 +3415,6 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
-
-[[package]]
-name = "socket2"
-version = "0.4.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f7916fc008ca5542385b89a3d3ce689953c143e9304a9bf8beec1de48994c0d"
-dependencies = [
- "libc",
- "winapi",
-]
 
 [[package]]
 name = "socket2"
@@ -3621,7 +3632,7 @@ dependencies = [
  "dotenv",
  "envy",
  "logger",
- "monitor_client 1.9.0",
+ "monitor_client",
  "mungos",
  "partial_derive2",
  "rand",
@@ -3721,7 +3732,7 @@ dependencies = [
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
- "socket2 0.5.7",
+ "socket2",
  "tokio-macros",
  "windows-sys 0.48.0",
 ]
@@ -3763,7 +3774,18 @@ version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c28327cf380ac148141087fbfb9de9d7bd4e84ab5d2c28fbc911d753de8a7081"
 dependencies = [
- "rustls",
+ "rustls 0.21.12",
+ "tokio",
+]
+
+[[package]]
+name = "tokio-rustls"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c7bc40d0e5a97695bb96e27995cd3a08538541b0a846f65bba7a359f36700d4"
+dependencies = [
+ "rustls 0.23.10",
+ "rustls-pki-types",
  "tokio",
 ]
 
@@ -4204,7 +4226,7 @@ version = "1.10.0-pre-0"
 dependencies = [
  "anyhow",
  "logger",
- "monitor_client 1.9.0",
+ "monitor_client",
  "tokio",
  "tracing",
 ]
@@ -4240,9 +4262,9 @@ checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 
 [[package]]
 name = "uuid"
-version = "1.8.0"
+version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a183cf7feeba97b4dd1c0d46788634f6221d87fa961b305bed08c851829efcc0"
+checksum = "5de17fd2f7da591098415cff336e12965a28061ddace43b59cb3c430179c9439"
 dependencies = [
  "getrandom",
  "rand",
