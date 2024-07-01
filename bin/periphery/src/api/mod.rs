@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
   config::{accounts_response, secrets_response},
-  docker, State,
+  State,
 };
 
 mod build;
@@ -154,6 +154,7 @@ impl Resolve<PruneSystem> for State {
     PruneSystem {}: PruneSystem,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::prune_system().await)
+    let command = String::from("docker system prune -a -f");
+    Ok(run_monitor_command("prune system", command).await)
   }
 }

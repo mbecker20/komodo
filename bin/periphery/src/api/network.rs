@@ -1,3 +1,4 @@
+use command::run_monitor_command;
 use monitor_client::entities::{
   server::docker_network::DockerNetwork, update::Log,
 };
@@ -6,10 +7,7 @@ use periphery_client::api::network::{
 };
 use resolver_api::Resolve;
 
-use crate::{
-  docker::{self, client::docker_client},
-  State,
-};
+use crate::{docker::docker_client, State};
 
 //
 
@@ -33,7 +31,12 @@ impl Resolve<CreateNetwork> for State {
     CreateNetwork { name, driver }: CreateNetwork,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::network::create_network(&name, driver).await)
+    let driver = match driver {
+      Some(driver) => format!(" -d {driver}"),
+      None => String::new(),
+    };
+    let command = format!("docker network create{driver} {name}");
+    Ok(run_monitor_command("create network", command).await)
   }
 }
 
@@ -46,7 +49,8 @@ impl Resolve<DeleteNetwork> for State {
     DeleteNetwork { name }: DeleteNetwork,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::network::delete_network(&name).await)
+    let command = format!("docker network rm {name}");
+    Ok(run_monitor_command("delete network", command).await)
   }
 }
 
@@ -59,6 +63,7 @@ impl Resolve<PruneNetworks> for State {
     _: PruneNetworks,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::network::prune_networks().await)
+    let command = String::from("docker network prune -f");
+    Ok(run_monitor_command("prune networks", command).await)
   }
 }

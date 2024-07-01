@@ -67,7 +67,7 @@ pub async fn pull(
   logs
 }
 
-#[tracing::instrument(skip(repo_dir, github_token))]
+#[tracing::instrument(skip(github_token))]
 pub async fn clone<T>(
   clone_args: T,
   repo_dir: &Path,

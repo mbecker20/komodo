@@ -14,10 +14,8 @@ use resolver_api::Resolve;
 
 use crate::{
   config::periphery_config,
-  docker::{
-    client::docker_client, docker_login, parse_extra_args,
-    parse_labels,
-  },
+  docker::docker_client,
+  helpers::{docker_login, parse_extra_args, parse_labels},
   State,
 };
 
