@@ -23,7 +23,13 @@ import {
 import { Card } from "@ui/card";
 import { UsableResource } from "@types";
 
-const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
+const UpdateCard = ({
+  update,
+  smallHidden,
+}: {
+  update: Types.UpdateListItem;
+  smallHidden?: boolean;
+}) => {
   const Icon = () => {
     if (update.status === UpdateStatus.Complete) {
       if (update.success) return <Check className="w-4 stroke-green-500" />;
@@ -33,7 +39,11 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
 
   return (
     <UpdateDetails id={update.id}>
-      <Card className="p-4 flex justify-between cursor-pointer hover:bg-accent/50 transition-colors text-sm">
+      <Card
+        className={`p-4 ${
+          smallHidden ? "hidden xl:" : ""
+        }flex justify-between cursor-pointer hover:bg-accent/50 transition-colors text-sm`}
+      >
         <div className="grid gap-1 items-start">
           <div className="flex items-center gap-2">
             <Icon />
@@ -103,9 +113,9 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
         </Link>
       }
     >
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {updates?.updates.slice(0, 3).map((update) => (
-          <UpdateCard update={update} key={update.id} />
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {updates?.updates.slice(0, 3).map((update, i) => (
+          <UpdateCard update={update} key={update.id} smallHidden={i > 1} />
         ))}
       </div>
     </Section>

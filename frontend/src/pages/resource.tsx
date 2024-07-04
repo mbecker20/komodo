@@ -46,14 +46,14 @@ export const Resource = () => {
       title={name}
       icon={<Components.BigIcon id={id} />}
       titleRight={
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-wrap gap-4 items-center">
           {Object.entries(Components.Status).map(([key, Status]) => (
             <Status key={key} id={id} />
           ))}
         </div>
       }
       subtitle={
-        <div className="flex gap-4 items-center text-muted-foreground">
+        <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
           {infoEntries.map(([key, Info], i) => (
             <Fragment key={key}>
               {i !== 0 && "| "}
@@ -65,8 +65,8 @@ export const Resource = () => {
         </div>
       }
       actions={
-        <div className="flex flex-col gap-4 items-end">
-          <div className="flex gap-2 items-center lg:justify-end">
+        <div className="flex flex-col gap-4 xl:items-end">
+          <div className="flex gap-2 items-center xl:justify-end">
             <div className="text-muted-foreground">tags:</div>
             <ResourceTags
               target={{ id, type }}

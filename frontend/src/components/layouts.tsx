@@ -64,9 +64,9 @@ export const Page = ({
 }: PageProps) => (
   <div className="flex flex-col gap-10 container py-8 pr-12">
     {(title || icon || subtitle || actions) && (
-      <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
+      <div className="flex flex-col gap-6 xl:flex-row xl:gap-0 xl:items-start xl:justify-between">
         <div className="flex flex-col gap-4">
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-wrap gap-4 items-center">
             {icon}
             <h1 className="text-4xl">{title}</h1>
             {titleRight}

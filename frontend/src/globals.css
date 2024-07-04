@@ -11,6 +11,7 @@
   *::-webkit-scrollbar {
     background-color: hsl(var(--border));
     @apply w-2;
+    @apply h-2;
   }
   *::-webkit-scrollbar-thumb {
     background-color: hsl(var(--primary));
