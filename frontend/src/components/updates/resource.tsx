@@ -83,9 +83,9 @@ export const AllUpdates = () => {
         </Link>
       }
     >
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {updates?.updates.slice(0, 3).map((update) => (
-          <UpdateCard update={update} key={update.id} />
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {updates?.updates.slice(0, 3).map((update, i) => (
+          <UpdateCard update={update} key={update.id} smallHidden={i > 1} />
         ))}
       </div>
     </Section>

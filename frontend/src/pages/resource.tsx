@@ -43,6 +43,7 @@ export const Resource = () => {
 
   return (
     <Page
+      wrapSize="xl"
       title={name}
       icon={<Components.BigIcon id={id} />}
       titleRight={

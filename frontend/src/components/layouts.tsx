@@ -51,6 +51,7 @@ interface PageProps {
   children?: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
+  wrapSize?: "md" | "lg" | "xl" | "2xl";
 }
 
 export const Page = ({
@@ -61,10 +62,13 @@ export const Page = ({
   subtitle,
   actions,
   children,
+  wrapSize = "lg",
 }: PageProps) => (
   <div className="flex flex-col gap-10 container py-8 pr-12">
     {(title || icon || subtitle || actions) && (
-      <div className="flex flex-col gap-6 xl:flex-row xl:gap-0 xl:items-start xl:justify-between">
+      <div
+        className={`flex flex-col gap-6 ${wrapSize}:flex-row ${wrapSize}:gap-0 ${wrapSize}:items-start ${wrapSize}:justify-between`}
+      >
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-4 items-center">
             {icon}
@@ -97,7 +101,7 @@ export const Section = ({
   children,
 }: SectionProps) => (
   <div className="flex flex-col gap-4">
-    <div className="flex items-start justify-between">
+    <div className="flex flex-wrap gap-2 items-start justify-between">
       {title || icon ? (
         <div className="flex items-center gap-2 text-muted-foreground">
           {icon}

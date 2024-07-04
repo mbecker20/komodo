@@ -77,7 +77,9 @@ const DeploymentLogsInner = ({
       actions={
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="text-muted-foreground">Invert Search </div>
+            <div className="text-muted-foreground">
+              Invert <div className="hidden xl:block">Search</div>
+            </div>
             <Switch checked={invert} onCheckedChange={setInvert} />
           </div>
           {terms.map((term, index) => (
@@ -100,7 +102,7 @@ const DeploymentLogsInner = ({
               onKeyDown={(e) => {
                 if (e.key === "Enter") addTerm();
               }}
-              className="w-[240px]"
+              className="w-[180px] xl:w-[240px]"
             />
             <Button
               variant="ghost"
