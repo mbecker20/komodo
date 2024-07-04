@@ -48,23 +48,25 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
   return (
     <div className="flex gap-4">
       <Components.Dashboard />
-      <div className="py-2">
-        <Separator orientation="vertical" />
-      </div>
-      <div className="flex flex-col gap-4 w-full pb-1">
-        <div className="flex gap-2 items-center text-muted-foreground">
-          <History className="w-4 h-4" />
-          <h3>Recent {type}s</h3>
+      <div className="hidden lg:flex gap-4 ">
+        <div className="py-2">
+          <Separator orientation="vertical" />
         </div>
-        <div className="grid grid-rows-2 grid-cols-2 2xl:grid-cols-3 gap-4 w-full h-full">
-          {ids.map((id, i) => (
-            <RecentCard
-              key={type + id}
-              type={type}
-              id={id}
-              className={i > 3 && "hidden 2xl:block"}
-            />
-          ))}
+        <div className="flex flex-col gap-4 w-full pb-1">
+          <div className="flex gap-2 items-center text-muted-foreground">
+            <History className="w-4 h-4" />
+            <h3>Recent {type}s</h3>
+          </div>
+          <div className="grid grid-rows-2 grid-cols-2 2xl:grid-cols-3 gap-4 w-full h-full">
+            {ids.map((id, i) => (
+              <RecentCard
+                key={type + id}
+                type={type}
+                id={id}
+                className={i > 3 && "hidden 2xl:block"}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
