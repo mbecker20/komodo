@@ -36,12 +36,8 @@ export const UserPage = () => {
   if (!user) return null;
   return (
     <Page
-      title={
-        <div className="flex gap-4 items-center">
-          {user?.username}{" "}
-          {avatar && <img src={avatar} alt="" className="w-7 h-7" />}
-        </div>
-      }
+      title={user?.username}
+      icon={avatar && <img src={avatar} alt="" className="w-7 h-7" />}
       subtitle={
         <div className="text-sm text-muted-foreground flex gap-2">
           <div className={enabledClass}>

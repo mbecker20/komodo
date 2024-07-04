@@ -2,8 +2,10 @@ import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { PermissionsTable } from "@components/users/permissions-table";
 import { UserTable } from "@components/users/table";
+import { ActionWithDialog } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { filterBySplit } from "@lib/utils";
+import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import {
   Command,
@@ -16,9 +18,9 @@ import {
 import { Input } from "@ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
-import { PlusCircle, Save, SearchX, User } from "lucide-react";
+import { PlusCircle, Save, SearchX, Trash, User, Users } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const UserGroupPage = () => {
   const { toast } = useToast();
@@ -53,7 +55,19 @@ export const UserGroupPage = () => {
   return (
     <Page
       title={group.name}
+      icon={<Users className="w-8 h-8" />}
       actions={<ExportButton user_groups={[group_id]} />}
+      subtitle={
+        <div className="text-sm text-muted-foreground flex gap-2">
+          <div>User Group</div>|
+          {group.users.length > 0 && (
+            <div>
+              {group.users.length} User{group.users.length > 1 ? "s" : ""}
+            </div>
+          )}
+          {group.users.length === 0 && <div>No Users</div>}
+        </div>
+      }
     >
       <Section
         title="Users"
@@ -72,21 +86,26 @@ export const UserGroupPage = () => {
         />
       </Section>
       <PermissionsTable user_target={{ type: "UserGroup", id: group_id }} />
-      <div className="flex justify-end w-full">
-        <div className="flex items-center gap-2">
-          <h2 className="text-muted-foreground">Rename</h2>
-          <Input
-            placeholder="Enter new name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") rename();
-            }}
-            className="w-[300px]"
-          />
-          <Button variant="secondary" onClick={rename}>
-            <Save className="w-4 h-4" />
-          </Button>
+      <div className="flex flex-col justify-end w-full gap-4">
+        <div className="flex justify-end w-full">
+          <div className="flex items-center gap-2">
+            <h2 className="text-muted-foreground">Rename</h2>
+            <Input
+              placeholder="Enter new name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") rename();
+              }}
+              className="w-[300px]"
+            />
+            <Button variant="secondary" onClick={rename}>
+              <Save className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex justify-end w-full">
+          <DeleteUserGroup group={group} />
         </div>
       </div>
     </Page>
@@ -132,7 +151,11 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
           Add User
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
+      <PopoverContent
+        className="w-[300px] max-h-[400px] p-0"
+        sideOffset={12}
+        align="end"
+      >
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search Users"
@@ -178,3 +201,31 @@ const UserAvatar = ({ avatar }: { avatar: string | undefined }) =>
   ) : (
     <User className="w-4" />
   );
+
+const DeleteUserGroup = ({ group }: { group: Types.UserGroup }) => {
+  const nav = useNavigate();
+  const inv = useInvalidate();
+  const { toast } = useToast();
+  const { mutate, isPending } = useWrite("DeleteUserGroup", {
+    onSuccess: () => {
+      inv(
+        ["ListUserGroups"],
+        ["GetUserGroup", { user_group: group._id?.$oid! }]
+      );
+      toast({ title: `Deleted User Group ${group.name}` });
+      nav("/settings");
+    },
+  });
+
+  return (
+    <ActionWithDialog
+      name={group.name}
+      title="Delete"
+      icon={<Trash className="h-4 w-4" />}
+      variant="destructive"
+      onClick={() => mutate({ id: group._id?.$oid! })}
+      disabled={isPending}
+      loading={isPending}
+    />
+  );
+};
