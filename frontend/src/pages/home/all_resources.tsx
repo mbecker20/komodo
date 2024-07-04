@@ -64,7 +64,7 @@ const TableSection = ({
 
   return (
     <Section key={type} title={type + "s"}>
-      <Components.Table resources={resources ?? []} />
+      <Components.Table resources={filtered ?? []} />
     </Section>
   );
 };
