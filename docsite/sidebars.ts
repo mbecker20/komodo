@@ -37,7 +37,7 @@ const sidebars: SidebarsConfig = {
       items: [
         "build-images/configuration",
         "build-images/pre-build",
-        "build-images/choosing-builder",
+        "build-images/builders",
         "build-images/versioning",
       ],
     },
