@@ -99,6 +99,7 @@ impl Resolve<CreateBuildWebhook, User> for State {
       host,
       github_webhook_base_url,
       github_webhook_app,
+      github_webhook_secret,
       ..
     } = core_config();
 
@@ -134,7 +135,7 @@ impl Resolve<CreateBuildWebhook, User> for State {
       active: Some(true),
       config: Some(ReposCreateWebhookRequestConfig {
         url,
-        secret: core_config().github_webhook_secret.to_string(),
+        secret: github_webhook_secret.to_string(),
         content_type: String::from("json"),
         insecure_ssl: None,
         digest: Default::default(),

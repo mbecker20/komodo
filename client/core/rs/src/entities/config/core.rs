@@ -235,8 +235,8 @@ fn default_config_path() -> String {
 /// # github_webhook_app.owners = ["mbecker20"] # List of the repo owners which the app has access to.
 ///
 /// ## Path to github webhook app private key.
-/// ## This is defaulted to `/github-private-key.pem`, and doesn't need to be changed if running in Docker.
-/// ## Just mount the private key pem file on the host to `/github-private-key.pem` in the container.
+/// ## This is defaulted to `/github/private-key.pem`, and doesn't need to be changed if running in Docker.
+/// ## Just mount the private key pem file on the host to `/github/private-key.pem` in the container.
 /// # github_webhook_app.pk_path = "/path/to/pk.pem"
 ///
 /// ## MUST comment back in some way to configure mongo.
@@ -607,7 +607,7 @@ pub struct GithubWebhookAppConfig {
 }
 
 fn default_private_key_path() -> String {
-  String::from("/github-private-key.pem")
+  String::from("/github/private-key.pem")
 }
 
 impl Default for GithubWebhookAppConfig {
