@@ -3,7 +3,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::build::{Build, _PartialBuildConfig};
+use crate::entities::{
+  build::{Build, _PartialBuildConfig},
+  NoData,
+};
 
 use super::MonitorWriteRequest;
 
@@ -77,3 +80,37 @@ pub struct UpdateBuild {
   /// The partial config update to apply.
   pub config: _PartialBuildConfig,
 }
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(CreateBuildWebhookResponse)]
+pub struct CreateBuildWebhook {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub build: String,
+}
+
+#[typeshare]
+pub type CreateBuildWebhookResponse = NoData;
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(DeleteBuildWebhookResponse)]
+pub struct DeleteBuildWebhook {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub build: String,
+}
+
+#[typeshare]
+pub type DeleteBuildWebhookResponse = NoData;

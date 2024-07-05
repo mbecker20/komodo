@@ -1520,6 +1520,10 @@ export type CreateApiKeyForServiceUserResponse = CreateApiKeyResponse;
 
 export type DeleteApiKeyForServiceUserResponse = NoData;
 
+export type CreateBuildWebhookResponse = NoData;
+
+export type DeleteBuildWebhookResponse = NoData;
+
 export type UpdateDescriptionResponse = NoData;
 
 export type UpdatePermissionOnTargetResponse = NoData;
@@ -1533,6 +1537,10 @@ export type CopyProcedureResponse = Procedure;
 export type DeleteProcedureResponse = Procedure;
 
 export type UpdateProcedureResponse = Procedure;
+
+export type CreateRepoWebhookResponse = NoData;
+
+export type DeleteRepoWebhookResponse = NoData;
 
 export type UpdateTagsOnResourceResponse = NoData;
 
@@ -2122,7 +2130,12 @@ export interface GetBuildWebhookEnabled {
 
 /** Response for [GetBuildWebhookEnabled] */
 export interface GetBuildWebhookEnabledResponse {
-	/** Whether pushes to branch trigger build */
+	/**
+	 * Whether the repo webhooks can even be managed.
+	 * The repo owner must be in `github_webhook_app.owners` list to be managed.
+	 */
+	managed: boolean;
+	/** Whether pushes to branch trigger build. Will always be false if managed is false. */
 	enabled: boolean;
 }
 
@@ -2478,9 +2491,14 @@ export interface GetRepoWebhooksEnabled {
 
 /** Response for [GetRepoWebhooksEnabled] */
 export interface GetRepoWebhooksEnabledResponse {
-	/** Whether pushes to branch trigger clone */
+	/**
+	 * Whether the repo webhooks can even be managed.
+	 * The repo owner must be in `github_webhook_app.owners` list to be managed.
+	 */
+	managed: boolean;
+	/** Whether pushes to branch trigger clone. Will always be false if managed is false. */
 	clone_enabled: boolean;
-	/** Whether pushes to branch trigger pull */
+	/** Whether pushes to branch trigger pull. Will always be false if managed is false. */
 	pull_enabled: boolean;
 }
 
@@ -3127,6 +3145,16 @@ export interface UpdateBuild {
 	config: _PartialBuildConfig;
 }
 
+export interface CreateBuildWebhook {
+	/** Id or name */
+	build: string;
+}
+
+export interface DeleteBuildWebhook {
+	/** Id or name */
+	build: string;
+}
+
 /** Partial representation of [BuilderConfig] */
 export type PartialBuilderConfig = 
 	| { type: "Server", params: _PartialServerBuilderConfig }
@@ -3368,6 +3396,16 @@ export interface UpdateRepo {
 	id: string;
 	/** The partial config update to apply. */
 	config: _PartialRepoConfig;
+}
+
+export interface CreateRepoWebhook {
+	/** Id or name */
+	repo: string;
+}
+
+export interface DeleteRepoWebhook {
+	/** Id or name */
+	repo: string;
 }
 
 /** Create a server. Response: [Server]. */
@@ -4104,6 +4142,8 @@ export type WriteRequest =
 	| { type: "CopyBuild", params: CopyBuild }
 	| { type: "DeleteBuild", params: DeleteBuild }
 	| { type: "UpdateBuild", params: UpdateBuild }
+	| { type: "CreateBuildWebhook", params: CreateBuildWebhook }
+	| { type: "DeleteBuildWebhook", params: DeleteBuildWebhook }
 	| { type: "CreateBuilder", params: CreateBuilder }
 	| { type: "CopyBuilder", params: CopyBuilder }
 	| { type: "DeleteBuilder", params: DeleteBuilder }
@@ -4116,6 +4156,8 @@ export type WriteRequest =
 	| { type: "CopyRepo", params: CopyRepo }
 	| { type: "DeleteRepo", params: DeleteRepo }
 	| { type: "UpdateRepo", params: UpdateRepo }
+	| { type: "CreateRepoWebhook", params: CreateRepoWebhook }
+	| { type: "DeleteRepoWebhook", params: DeleteRepoWebhook }
 	| { type: "CreateAlerter", params: CreateAlerter }
 	| { type: "CopyAlerter", params: CopyAlerter }
 	| { type: "DeleteAlerter", params: DeleteAlerter }

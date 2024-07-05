@@ -56,3 +56,23 @@ impl Resolve<UpdateRepo, User> for State {
     resource::update::<Repo>(&id, config, &user).await
   }
 }
+
+impl Resolve<CreateRepoWebhook, User> for State {
+  async fn resolve(
+    &self,
+    CreateRepoWebhook { repo }: CreateRepoWebhook,
+    _: User,
+  ) -> anyhow::Result<CreateRepoWebhookResponse> {
+    todo!()
+  }
+}
+
+impl Resolve<DeleteRepoWebhook, User> for State {
+  async fn resolve(
+    &self,
+    DeleteRepoWebhook { repo }: DeleteRepoWebhook,
+    _: User,
+  ) -> anyhow::Result<DeleteRepoWebhookResponse> {
+    todo!()
+  }
+}

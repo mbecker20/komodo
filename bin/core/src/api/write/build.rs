@@ -56,3 +56,23 @@ impl Resolve<UpdateBuild, User> for State {
     resource::update::<Build>(&id, config, &user).await
   }
 }
+
+impl Resolve<CreateBuildWebhook, User> for State {
+  async fn resolve(
+    &self,
+    CreateBuildWebhook { build }: CreateBuildWebhook,
+    user: User,
+  ) -> anyhow::Result<CreateBuildWebhookResponse> {
+    todo!()
+  }
+}
+
+impl Resolve<DeleteBuildWebhook, User> for State {
+  async fn resolve(
+    &self,
+    DeleteBuildWebhook { build }: DeleteBuildWebhook,
+    user: User,
+  ) -> anyhow::Result<DeleteBuildWebhookResponse> {
+    todo!()
+  }
+}

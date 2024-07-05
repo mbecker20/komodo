@@ -3,7 +3,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::repo::{Repo, _PartialRepoConfig};
+use crate::entities::{
+  repo::{Repo, _PartialRepoConfig},
+  NoData,
+};
 
 use super::MonitorWriteRequest;
 
@@ -80,3 +83,37 @@ pub struct UpdateRepo {
   /// The partial config update to apply.
   pub config: _PartialRepoConfig,
 }
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(CreateRepoWebhookResponse)]
+pub struct CreateRepoWebhook {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub repo: String,
+}
+
+#[typeshare]
+pub type CreateRepoWebhookResponse = NoData;
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(DeleteRepoWebhookResponse)]
+pub struct DeleteRepoWebhook {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub repo: String,
+}
+
+#[typeshare]
+pub type DeleteRepoWebhookResponse = NoData;

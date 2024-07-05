@@ -75,6 +75,8 @@ pub enum WriteRequest {
   CopyBuild(CopyBuild),
   DeleteBuild(DeleteBuild),
   UpdateBuild(UpdateBuild),
+  CreateBuildWebhook(CreateBuildWebhook),
+  DeleteBuildWebhook(DeleteBuildWebhook),
 
   // ==== BUILDER ====
   CreateBuilder(CreateBuilder),
@@ -93,6 +95,8 @@ pub enum WriteRequest {
   CopyRepo(CopyRepo),
   DeleteRepo(DeleteRepo),
   UpdateRepo(UpdateRepo),
+  CreateRepoWebhook(CreateRepoWebhook),
+  DeleteRepoWebhook(DeleteRepoWebhook),
 
   // ==== ALERTER ====
   CreateAlerter(CreateAlerter),

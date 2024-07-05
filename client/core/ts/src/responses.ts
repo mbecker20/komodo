@@ -186,6 +186,8 @@ export type WriteResponses = {
   CopyBuild: Types.Build;
   DeleteBuild: Types.Build;
   UpdateBuild: Types.Build;
+  CreateBuildWebhook: Types.CreateBuildWebhookResponse;
+  DeleteBuildWebhook: Types.DeleteBuildWebhookResponse;
 
   // ==== BUILDER ====
   CreateBuilder: Types.Builder;
@@ -204,6 +206,8 @@ export type WriteResponses = {
   CopyRepo: Types.Repo;
   DeleteRepo: Types.Repo;
   UpdateRepo: Types.Repo;
+  CreateRepoWebhook: Types.CreateRepoWebhookResponse;
+  DeleteRepoWebhook: Types.DeleteRepoWebhookResponse;
 
   // ==== ALERTER ====
   CreateAlerter: Types.Alerter;
