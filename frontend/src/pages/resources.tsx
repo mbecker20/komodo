@@ -36,10 +36,11 @@ export const Resources = () => {
 
   return (
     <Page
+      wrapSize="lg"
       title={`${name}s`}
       icon={<Components.BigIcon />}
       actions={
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
           <TagsFilter />
           <Components.New />
         </div>

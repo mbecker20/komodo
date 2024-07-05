@@ -1,5 +1,5 @@
 import { ExportButton } from "@components/export";
-import { Page, Section } from "@components/layouts";
+import { PageXlRow, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import {
   CopyResource,
@@ -42,8 +42,8 @@ export const Resource = () => {
   const infoEntries = Object.entries(Components.Info);
 
   return (
-    <Page
-      wrapSize="xl"
+    <PageXlRow
+      wrapSize="lg"
       title={name}
       icon={<Components.BigIcon id={id} />}
       titleRight={
@@ -111,6 +111,6 @@ export const Resource = () => {
           <Components.DangerZone id={id} />
         </Section>
       )}
-    </Page>
+    </PageXlRow>
   );
 };

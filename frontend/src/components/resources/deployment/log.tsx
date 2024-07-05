@@ -75,10 +75,11 @@ const DeploymentLogsInner = ({
     <Section
       titleOther={titleOther}
       actions={
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="text-muted-foreground">
-              Invert <div className="hidden xl:block">Search</div>
+            <div className="text-muted-foreground flex gap-1">
+              <div>Invert</div>
+              <div className="hidden xl:block">Search</div>
             </div>
             <Switch checked={invert} onCheckedChange={setInvert} />
           </div>

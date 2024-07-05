@@ -62,12 +62,41 @@ export const Page = ({
   subtitle,
   actions,
   children,
-  wrapSize = "lg",
 }: PageProps) => (
   <div className="flex flex-col gap-10 container py-8 pr-12">
     {(title || icon || subtitle || actions) && (
       <div
-        className={`flex flex-col gap-6 ${wrapSize}:flex-row ${wrapSize}:gap-0 ${wrapSize}:items-start ${wrapSize}:justify-between`}
+        className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            {icon}
+            <h1 className="text-4xl">{title}</h1>
+            {titleRight}
+          </div>
+          <div className="flex flex-col">{subtitle}</div>
+        </div>
+        {actions}
+      </div>
+    )}
+    {titleOther}
+    {children}
+  </div>
+);
+
+export const PageXlRow = ({
+  title,
+  icon,
+  titleRight,
+  titleOther,
+  subtitle,
+  actions,
+  children,
+}: PageProps) => (
+  <div className="flex flex-col gap-10 container py-8 pr-12">
+    {(title || icon || subtitle || actions) && (
+      <div
+        className={`flex flex-col gap-6 xl:flex-row xl:gap-0 xl:justify-between`}
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-4 items-center">
