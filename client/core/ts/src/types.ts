@@ -2118,11 +2118,7 @@ export interface ListCommonBuildExtraArgs {
 	query?: BuildQuery;
 }
 
-/**
- * Get whether a Build's target repo has a webhook for the build configured. Response: [GetBuildWebhookEnabledResponse].
- * 
- * Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
- */
+/** Get whether a Build's target repo has a webhook for the build configured. Response: [GetBuildWebhookEnabledResponse]. */
 export interface GetBuildWebhookEnabled {
 	/** Id or name */
 	build: string;
@@ -2479,11 +2475,7 @@ export interface GetReposSummaryResponse {
 	unknown: number;
 }
 
-/**
- * Get a target Repo's configured webhooks. Response: [GetRepoWebhooksEnabledResponse].
- * 
- * Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
- */
+/** Get a target Repo's configured webhooks. Response: [GetRepoWebhooksEnabledResponse]. */
 export interface GetRepoWebhooksEnabled {
 	/** Id or name */
 	repo: string;
