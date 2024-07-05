@@ -3145,11 +3145,19 @@ export interface UpdateBuild {
 	config: _PartialBuildConfig;
 }
 
+/**
+ * Create a webhook on the github repo attached to the build
+ * passed in request. Response: [CreateBuildWebhookResponse]
+ */
 export interface CreateBuildWebhook {
 	/** Id or name */
 	build: string;
 }
 
+/**
+ * Delete a webhook on the github repo attached to the build
+ * passed in request. Response: [CreateBuildWebhookResponse]
+ */
 export interface DeleteBuildWebhook {
 	/** Id or name */
 	build: string;
@@ -3398,14 +3406,31 @@ export interface UpdateRepo {
 	config: _PartialRepoConfig;
 }
 
+export enum RepoWebhookAction {
+	Clone = "Clone",
+	Pull = "Pull",
+}
+
+/**
+ * Create a webhook on the github repo attached to the (monitor) repo
+ * passed in request. Response: [CreateRepoWebhookResponse]
+ */
 export interface CreateRepoWebhook {
 	/** Id or name */
 	repo: string;
+	/** "Clone" or "Pull" */
+	action: RepoWebhookAction;
 }
 
+/**
+ * Delete the webhook on the github repo attached to the (monitor) repo
+ * passed in request. Response: [DeleteRepoWebhookResponse]
+ */
 export interface DeleteRepoWebhook {
 	/** Id or name */
 	repo: string;
+	/** "Clone" or "Pull" */
+	action: RepoWebhookAction;
 }
 
 /** Create a server. Response: [Server]. */
