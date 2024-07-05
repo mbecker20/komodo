@@ -1,10 +1,10 @@
-use std::time::Instant;
+use std::{sync::OnceLock, time::Instant};
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::read::*, entities::user::User};
-use resolver_api::{derive::Resolver, Resolve, Resolver};
+use resolver_api::{derive::Resolver, ResolveToString, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::Json;
 use typeshare::typeshare;
@@ -37,8 +37,11 @@ mod variable;
 #[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
 enum ReadRequest {
+  #[to_string_resolver]
   GetVersion(GetVersion),
+  #[to_string_resolver]
   GetCoreInfo(GetCoreInfo),
+  #[to_string_resolver]
   GetAvailableAwsEcrLabels(GetAvailableAwsEcrLabels),
 
   // ==== USER ====
@@ -201,28 +204,32 @@ async fn handler(
   Ok((TypedHeader(ContentType::json()), res?))
 }
 
-impl Resolve<GetVersion, User> for State {
-  #[instrument(name = "GetVersion", level = "debug", skip(self))]
-  async fn resolve(
+fn version() -> &'static String {
+  static VERSION: OnceLock<String> = OnceLock::new();
+  VERSION.get_or_init(|| {
+    serde_json::to_string(&GetVersionResponse {
+      version: env!("CARGO_PKG_VERSION").to_string(),
+    })
+    .context("failed to serialize GetVersionResponse")
+    .unwrap()
+  })
+}
+
+impl ResolveToString<GetVersion, User> for State {
+  async fn resolve_to_string(
     &self,
     GetVersion {}: GetVersion,
     _: User,
-  ) -> anyhow::Result<GetVersionResponse> {
-    Ok(GetVersionResponse {
-      version: env!("CARGO_PKG_VERSION").to_string(),
-    })
+  ) -> anyhow::Result<String> {
+    Ok(version().to_string())
   }
 }
 
-impl Resolve<GetCoreInfo, User> for State {
-  #[instrument(name = "GetCoreInfo", level = "debug", skip(self))]
-  async fn resolve(
-    &self,
-    GetCoreInfo {}: GetCoreInfo,
-    _: User,
-  ) -> anyhow::Result<GetCoreInfoResponse> {
+fn core_info() -> &'static String {
+  static CORE_INFO: OnceLock<String> = OnceLock::new();
+  CORE_INFO.get_or_init(|| {
     let config = core_config();
-    Ok(GetCoreInfoResponse {
+    let info = GetCoreInfoResponse {
       title: config.title.clone(),
       monitoring_interval: config.monitoring_interval,
       github_webhook_base_url: config
@@ -231,18 +238,45 @@ impl Resolve<GetCoreInfo, User> for State {
         .unwrap_or_else(|| config.host.clone()),
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
-      github_webhook_app: config.github_webhook_app.app_id != 0
-        && config.github_webhook_app.installation_id != 0,
-    })
+      github_webhook_owners: config.github_webhook_app.owners.clone(),
+    };
+    serde_json::to_string(&info)
+      .context("failed to serialize GetCoreInfoResponse")
+      .unwrap()
+  })
+}
+
+impl ResolveToString<GetCoreInfo, User> for State {
+  async fn resolve_to_string(
+    &self,
+    GetCoreInfo {}: GetCoreInfo,
+    _: User,
+  ) -> anyhow::Result<String> {
+    Ok(core_info().to_string())
   }
 }
 
-impl Resolve<GetAvailableAwsEcrLabels, User> for State {
-  async fn resolve(
+fn ecr_labels() -> &'static String {
+  static ECR_LABELS: OnceLock<String> = OnceLock::new();
+  ECR_LABELS.get_or_init(|| {
+    serde_json::to_string(
+      &core_config()
+        .aws_ecr_registries
+        .keys()
+        .cloned()
+        .collect::<Vec<_>>(),
+    )
+    .context("failed to serialize ecr registries")
+    .unwrap()
+  })
+}
+
+impl ResolveToString<GetAvailableAwsEcrLabels, User> for State {
+  async fn resolve_to_string(
     &self,
     GetAvailableAwsEcrLabels {}: GetAvailableAwsEcrLabels,
     _: User,
-  ) -> anyhow::Result<GetAvailableAwsEcrLabelsResponse> {
-    Ok(core_config().aws_ecr_registries.keys().cloned().collect())
+  ) -> anyhow::Result<String> {
+    Ok(ecr_labels().to_string())
   }
 }

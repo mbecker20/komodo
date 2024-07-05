@@ -2349,8 +2349,8 @@ export interface GetCoreInfoResponse {
 	transparent_mode: boolean;
 	/** Whether UI write access should be disabled */
 	ui_write_disabled: boolean;
-	/** Whether github webhook management api is available */
-	github_webhook_app: boolean;
+	/** The repo owners for which github webhook management api is available */
+	github_webhook_owners: string[];
 }
 
 /**
