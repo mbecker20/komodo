@@ -114,8 +114,6 @@ pub struct GetReposSummaryResponse {
 //
 
 /// Get a target Repo's configured webhooks. Response: [GetRepoWebhooksEnabledResponse].
-///
-/// Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

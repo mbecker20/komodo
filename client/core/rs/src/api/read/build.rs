@@ -262,8 +262,6 @@ pub type ListCommonBuildExtraArgsResponse = Vec<String>;
 //
 
 /// Get whether a Build's target repo has a webhook for the build configured. Response: [GetBuildWebhookEnabledResponse].
-///
-/// Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

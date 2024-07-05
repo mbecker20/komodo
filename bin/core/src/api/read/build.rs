@@ -3,7 +3,7 @@ use std::{
   sync::OnceLock,
 };
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
 use futures::TryStreamExt;
 use monitor_client::{
@@ -318,7 +318,10 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
     user: User,
   ) -> anyhow::Result<GetBuildWebhookEnabledResponse> {
     let Some(github) = github_client() else {
-      return Err(anyhow!("github_webhook_app is not configured in core config toml"));
+      return Ok(GetBuildWebhookEnabledResponse {
+        managed: false,
+        enabled: false,
+      });
     };
 
     let build = resource::get_check_permissions::<Build>(

@@ -4,16 +4,21 @@ import {
   ConfigItem,
   SystemCommand,
 } from "@components/config/util";
-import { useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
+import { useToast } from "@ui/use-toast";
+import { text_color_class_by_intention } from "@lib/color";
+import { ConfirmButton } from "@components/util";
+import { Ban, CirclePlus } from "lucide-react";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Repo", id },
   }).data;
   const config = useRead("GetRepo", { repo: id }).data?.config;
+  const webhooks = useRead("GetRepoWebhooksEnabled", { repo: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.RepoConfig>>({});
@@ -108,7 +113,130 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   <CopyGithubWebhook path={`/repo/${id}/pull`} />
                 </ConfigItem>
               ),
-              webhook_enabled: true,
+              webhook_enabled: webhooks !== undefined && !webhooks.managed,
+              ["managed" as any]: () => {
+                const inv = useInvalidate();
+                const { toast } = useToast();
+                const { mutate: createWebhook, isPending: createPending } =
+                  useWrite("CreateRepoWebhook", {
+                    onSuccess: () => {
+                      toast({ title: "Webhook Created" });
+                      inv(["GetRepoWebhooksEnabled", { repo: id }]);
+                    },
+                  });
+                const { mutate: deleteWebhook, isPending: deletePending } =
+                  useWrite("DeleteRepoWebhook", {
+                    onSuccess: () => {
+                      toast({ title: "Webhook Deleted" });
+                      inv(["GetRepoWebhooksEnabled", { repo: id }]);
+                    },
+                  });
+                if (!webhooks || !webhooks.managed) return;
+                return (
+                  <ConfigItem label="Manage Webhook">
+                    {webhooks.clone_enabled && (
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          Incoming webhook is{" "}
+                          <div
+                            className={text_color_class_by_intention("Good")}
+                          >
+                            ENABLED
+                          </div>
+                          and will trigger
+                          <div
+                            className={text_color_class_by_intention("Neutral")}
+                          >
+                            CLONE
+                          </div>
+                        </div>
+                        <ConfirmButton
+                          title="Disable"
+                          icon={<Ban className="w-4 h-4" />}
+                          variant="destructive"
+                          onClick={() =>
+                            deleteWebhook({
+                              repo: id,
+                              action: Types.RepoWebhookAction.Clone,
+                            })
+                          }
+                          loading={deletePending}
+                          disabled={disabled || deletePending}
+                        />
+                      </div>
+                    )}
+                    {!webhooks.clone_enabled && webhooks.pull_enabled && (
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          Incoming webhook is{" "}
+                          <div
+                            className={text_color_class_by_intention("Good")}
+                          >
+                            ENABLED
+                          </div>
+                          and will trigger
+                          <div
+                            className={text_color_class_by_intention("Neutral")}
+                          >
+                            PULL
+                          </div>
+                        </div>
+                        <ConfirmButton
+                          title="Disable"
+                          icon={<Ban className="w-4 h-4" />}
+                          variant="destructive"
+                          onClick={() =>
+                            deleteWebhook({
+                              repo: id,
+                              action: Types.RepoWebhookAction.Pull,
+                            })
+                          }
+                          loading={deletePending}
+                          disabled={disabled || deletePending}
+                        />
+                      </div>
+                    )}
+                    {!webhooks.clone_enabled && !webhooks.pull_enabled && (
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          Incoming webhook is{" "}
+                          <div
+                            className={text_color_class_by_intention(
+                              "Critical"
+                            )}
+                          >
+                            DISABLED
+                          </div>
+                        </div>
+                        <ConfirmButton
+                          title="Enable for Clone"
+                          icon={<CirclePlus className="w-4 h-4" />}
+                          onClick={() =>
+                            createWebhook({
+                              repo: id,
+                              action: Types.RepoWebhookAction.Clone,
+                            })
+                          }
+                          loading={createPending}
+                          disabled={disabled || createPending}
+                        />
+                        <ConfirmButton
+                          title="Enable for Pull"
+                          icon={<CirclePlus className="w-4 h-4" />}
+                          onClick={() =>
+                            createWebhook({
+                              repo: id,
+                              action: Types.RepoWebhookAction.Pull,
+                            })
+                          }
+                          loading={createPending}
+                          disabled={disabled || createPending}
+                        />
+                      </div>
+                    )}
+                  </ConfigItem>
+                );
+              },
             },
           },
         ],

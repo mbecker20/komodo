@@ -263,7 +263,7 @@ export const BuildConfig = ({
                           <div
                             className={text_color_class_by_intention("Good")}
                           >
-                            enabled
+                            ENABLED
                           </div>
                         </div>
                         <ConfirmButton
@@ -285,7 +285,7 @@ export const BuildConfig = ({
                               "Critical"
                             )}
                           >
-                            disabled
+                            DISABLED
                           </div>
                         </div>
                         <ConfirmButton
