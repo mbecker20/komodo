@@ -132,8 +132,11 @@ pub struct GetRepoWebhooksEnabled {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetRepoWebhooksEnabledResponse {
-  /// Whether pushes to branch trigger clone
+  /// Whether the repo webhooks can even be managed.
+  /// The repo owner must be in `github_webhook_app.owners` list to be managed.
+  pub managed: bool,
+  /// Whether pushes to branch trigger clone. Will always be false if managed is false.
   pub clone_enabled: bool,
-  /// Whether pushes to branch trigger pull
+  /// Whether pushes to branch trigger pull. Will always be false if managed is false.
   pub pull_enabled: bool,
 }

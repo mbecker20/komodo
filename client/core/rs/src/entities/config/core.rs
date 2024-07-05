@@ -97,6 +97,8 @@ pub struct Env {
   pub monitor_github_webhook_app_app_id: Option<i64>,
   /// Override `github_webhook_app.installation_id`
   pub monitor_github_webhook_app_installation_id: Option<i64>,
+  /// Override `github_webhook_app.owners`. Accepts comma seperated list.
+  pub monitor_github_webhook_app_owners: Option<Vec<String>>,
   /// Override `github_webhook_app.pk_path`
   pub monitor_github_webhook_app_pk_path: Option<String>,
 
@@ -230,6 +232,7 @@ fn default_config_path() -> String {
 /// ## Configure github webhook app. Enables webhook management apis.
 /// # github_webhook_app.app_id = 1234455 # Find on the app page.
 /// # github_webhook_app.installation_id = 1234455 # Get after installing the app to user / organization.
+/// # github_webhook_app.owners = ["mbecker20"] # List of the repo owners which the app has access to.
 ///
 /// ## Path to github webhook app private key.
 /// ## This is defaulted to `/github-private-key.pem`, and doesn't need to be changed if running in Docker.
@@ -596,6 +599,8 @@ pub struct GithubWebhookAppConfig {
   pub app_id: i64,
   /// Github app installation id
   pub installation_id: i64,
+  /// List of the repo owners which the app has access to.
+  pub owners: Vec<String>,
   /// Private key path. Default: /github-private-key.pem.
   #[serde(default = "default_private_key_path")]
   pub pk_path: String,
@@ -610,6 +615,7 @@ impl Default for GithubWebhookAppConfig {
     GithubWebhookAppConfig {
       app_id: 0,
       installation_id: 0,
+      owners: Default::default(),
       pk_path: default_private_key_path(),
     }
   }

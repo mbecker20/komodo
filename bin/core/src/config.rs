@@ -116,6 +116,9 @@ pub fn core_config() -> &'static CoreConfig {
         installation_id: env
           .monitor_github_webhook_app_installation_id
           .unwrap_or(config.github_webhook_app.installation_id),
+        owners: env
+          .monitor_github_webhook_app_owners
+          .unwrap_or(config.github_webhook_app.owners),
         pk_path: env
           .monitor_github_webhook_app_pk_path
           .unwrap_or(config.github_webhook_app.pk_path),

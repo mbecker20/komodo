@@ -54,6 +54,7 @@ pub fn github_client() -> Option<&'static octorust::Client> {
             app_id,
             installation_id,
             pk_path,
+            ..
           },
         ..
       } = core_config();

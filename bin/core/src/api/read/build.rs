@@ -329,11 +329,29 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
     .await?;
 
     if build.config.repo.is_empty() {
-      return Ok(GetBuildWebhookEnabledResponse { enabled: false });
+      return Ok(GetBuildWebhookEnabledResponse {
+        managed: false,
+        enabled: false,
+      });
     }
 
     let mut split = build.config.repo.split('/');
     let owner = split.next().context("Build repo has no owner")?;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      github_webhook_app,
+      ..
+    } = core_config();
+
+    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+      return Ok(GetBuildWebhookEnabledResponse {
+        managed: false,
+        enabled: false,
+      });
+    }
+
     let repo =
       split.next().context("Build repo has no repo after the /")?;
 
@@ -344,20 +362,21 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
       .context("failed to list all webhooks on repo")?
       .body;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      ..
-    } = core_config();
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {
       if webhook.active && webhook.config.url == url {
-        return Ok(GetBuildWebhookEnabledResponse { enabled: true });
+        return Ok(GetBuildWebhookEnabledResponse {
+          managed: true,
+          enabled: true,
+        });
       }
     }
 
-    Ok(GetBuildWebhookEnabledResponse { enabled: false })
+    Ok(GetBuildWebhookEnabledResponse {
+      managed: true,
+      enabled: false,
+    })
   }
 }

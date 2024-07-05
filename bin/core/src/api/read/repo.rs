@@ -140,6 +140,7 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
 
     if repo.config.repo.is_empty() {
       return Ok(GetRepoWebhooksEnabledResponse {
+        managed: false,
         clone_enabled: false,
         pull_enabled: false,
       });
@@ -147,6 +148,22 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
 
     let mut split = repo.config.repo.split('/');
     let owner = split.next().context("Repo repo has no owner")?;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      github_webhook_app,
+      ..
+    } = core_config();
+
+    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+      return Ok(GetRepoWebhooksEnabledResponse {
+        managed: false,
+        clone_enabled: false,
+        pull_enabled: false,
+      });
+    }
+
     let repo_name =
       split.next().context("Repo repo has no repo after the /")?;
 
@@ -157,11 +174,6 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
       .context("failed to list all webhooks on repo")?
       .body;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      ..
-    } = core_config();
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let clone_url =
       format!("{host}/listener/github/repo/{}/clone", repo.id);
@@ -181,6 +193,7 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
     }
 
     Ok(GetRepoWebhooksEnabledResponse {
+      managed: true,
       clone_enabled,
       pull_enabled,
     })
