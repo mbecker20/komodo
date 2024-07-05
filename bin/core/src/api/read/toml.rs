@@ -312,7 +312,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
       };
     }
 
-    add_user_groups(user_groups, &mut res, &user)
+    add_user_groups(user_groups, &mut res, &names, &user)
       .await
       .context("failed to add user groups")?;
 
@@ -424,6 +424,8 @@ struct ResourceNames {
   deployments: HashMap<String, String>,
   procedures: HashMap<String, String>,
   syncs: HashMap<String, String>,
+  alerters: HashMap<String, String>,
+  templates: HashMap<String, String>,
 }
 
 impl ResourceNames {
@@ -478,6 +480,18 @@ impl ResourceNames {
         .into_iter()
         .map(|t| (t.id, t.name))
         .collect::<HashMap<_, _>>(),
+      alerters: find_collect(&db.alerters, None, None)
+        .await
+        .context("failed to get all alerters")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      templates: find_collect(&db.server_templates, None, None)
+        .await
+        .context("failed to get all server templates")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
     })
   }
 }
@@ -485,6 +499,7 @@ impl ResourceNames {
 async fn add_user_groups(
   user_groups: Vec<String>,
   res: &mut ResourcesToml,
+  names: &ResourceNames,
   user: &User,
 ) -> anyhow::Result<()> {
   let db = db_client().await;
@@ -512,9 +527,43 @@ async fn add_user_groups(
       )
       .await?
       .into_iter()
-      .map(|permission| PermissionToml {
-        target: permission.resource_target,
-        level: permission.level,
+      .map(|mut permission| {
+        match &mut permission.resource_target {
+          ResourceTarget::Build(id) => {
+            *id = names.builds.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::Builder(id) => {
+            *id = names.builders.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::Deployment(id) => {
+            *id =
+              names.deployments.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::Server(id) => {
+            *id = names.servers.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::Repo(id) => {
+            *id = names.repos.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::Alerter(id) => {
+            *id = names.alerters.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::Procedure(id) => {
+            *id =
+              names.procedures.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::ServerTemplate(id) => {
+            *id = names.templates.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::ResourceSync(id) => {
+            *id = names.syncs.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::System(_) => {}
+        }
+        PermissionToml {
+          target: permission.resource_target,
+          level: permission.level,
+        }
       })
       .collect();
     res.user_groups.push(UserGroupToml {
