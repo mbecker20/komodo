@@ -53,20 +53,6 @@ passkey = "a_random_passkey"
 ## default: 0 (pruning disabled)
 # keep_alerts_for_days = 14
 
-## token that has to be given to github during repo webhook config as the secret
-## default: empty (none)
-# github_webhook_secret = "your_random_webhook_secret"
-
-## an alternate base url that is used to recieve github webhook requests
-## if empty or not specified, will use 'host' address as base
-## default: empty (none)
-# github_webhook_base_url = "https://github-webhook.monitor.dev"
-
-## these will be used by the GUI to attach to builds being pushed to ghcr.
-## when attached to build, image will be pushed to repo under the specified organization.
-## default: empty
-# github_organizations = ["your_github_org1", "your_github_org_2"]
-
 ## these will be used by the GUI to attach to builds being pushed to docker hub.
 ## when attached to build, image will be pushed to repo under the specified organization.
 ## default: empty
@@ -84,13 +70,37 @@ passkey = "a_random_passkey"
 ## default: false
 # local_auth = true
 
+# google_oauth.enabled = true
+# google_oauth.id = "your_google_client_id"
+# google_oauth.secret = "your_google_client_secret"
+
 # github_oauth.enabled = true
 # github_oauth.id = "your_github_client_id"
 # github_oauth.secret = "your_github_client_secret"
 
-# google_oauth.enabled = true
-# google_oauth.id = "your_google_client_id"
-# google_oauth.secret = "your_google_client_secret"
+## token that has to be given to github during repo webhook config as the secret
+## default: empty (none)
+# github_webhook_secret = "your_random_webhook_secret"
+
+## Configure github webhook app. Enables webhook management apis.
+# github_webhook_app.app_id = 1234455 # Find on the app page.
+# github_webhook_app.installation_id = 1234455 # Get after installing the app to user / organization.
+# github_webhook_app.owners = ["mbecker20"] # List of the repo owners which the app has access to.
+
+## Path to github webhook app private key.
+## This is defaulted to `/github-private-key.pem`, and doesn't need to be changed if running in Docker.
+## Just mount the private key pem file on the host to `/github-private-key.pem` in the container.
+# github_webhook_app.pk_path = "/path/to/pk.pem"
+
+## an alternate base url that is used to recieve github webhook requests
+## if empty or not specified, will use 'host' address as base
+## default: empty (none)
+# github_webhook_base_url = "https://github-webhook.monitor.dev"
+
+## these will be used by the GUI to attach to builds being pushed to ghcr.
+## when attached to build, image will be pushed to repo under the specified organization.
+## default: empty
+# github_organizations = ["your_github_org1", "your_github_org_2"]
 
 # mongo.uri = "mongodb://username:password@localhost:27017"
 ## ==== or ====
