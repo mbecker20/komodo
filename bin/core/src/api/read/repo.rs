@@ -128,7 +128,7 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
     user: User,
   ) -> anyhow::Result<GetRepoWebhooksEnabledResponse> {
     let Some(github) = github_client() else {
-      return Err(anyhow!("github_webhook_app is not configured"));
+      return Err(anyhow!("github_webhook_app is not configured in core config toml"));
     };
 
     let repo = resource::get_check_permissions::<Repo>(

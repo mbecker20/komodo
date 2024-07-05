@@ -318,7 +318,7 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
     user: User,
   ) -> anyhow::Result<GetBuildWebhookEnabledResponse> {
     let Some(github) = github_client() else {
-      return Err(anyhow!("github_webhook_app is not configured"));
+      return Err(anyhow!("github_webhook_app is not configured in core config toml"));
     };
 
     let build = resource::get_check_permissions::<Build>(

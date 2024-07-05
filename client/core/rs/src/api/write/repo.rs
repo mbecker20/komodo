@@ -87,6 +87,15 @@ pub struct UpdateRepo {
 //
 
 #[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum RepoWebhookAction {
+  Clone,
+  Pull,
+}
+
+/// Create a webhook on the github repo attached to the (monitor) repo
+/// passed in request. Response: [CreateRepoWebhookResponse]
+#[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
@@ -96,6 +105,8 @@ pub struct CreateRepoWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub repo: String,
+  /// "Clone" or "Pull"
+  pub action: RepoWebhookAction,
 }
 
 #[typeshare]
@@ -103,6 +114,8 @@ pub type CreateRepoWebhookResponse = NoData;
 
 //
 
+/// Delete the webhook on the github repo attached to the (monitor) repo
+/// passed in request. Response: [DeleteRepoWebhookResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -113,6 +126,8 @@ pub struct DeleteRepoWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub repo: String,
+  /// "Clone" or "Pull"
+  pub action: RepoWebhookAction,
 }
 
 #[typeshare]

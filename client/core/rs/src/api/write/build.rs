@@ -83,6 +83,8 @@ pub struct UpdateBuild {
 
 //
 
+/// Create a webhook on the github repo attached to the build
+/// passed in request. Response: [CreateBuildWebhookResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -100,6 +102,8 @@ pub type CreateBuildWebhookResponse = NoData;
 
 //
 
+/// Delete a webhook on the github repo attached to the build
+/// passed in request. Response: [CreateBuildWebhookResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
