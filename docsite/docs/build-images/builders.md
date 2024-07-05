@@ -2,7 +2,7 @@
 
 A builder is a machine running monitor periphery and docker, which is able to handle a RunBuild command from monitor core. Any server connected to monitor can be chosen as the builder for a build.
 
-Building on a machine running production software is usually not a great idea, as this process can use a lot of system resources. It is better to start up a temporary cloud machine dedicated for the build, then shut it down when the build is finished. Right now monitor supports AWS ec2 for this task.
+Building on a machine running production software is usually not a great idea, as this process can use a lot of system resources. It is better to start up a temporary cloud machine dedicated for the build, then shut it down when the build is finished. Monitor supports AWS EC2 for this task.
 
 ## AWS builder
 
