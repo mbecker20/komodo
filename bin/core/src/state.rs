@@ -1,9 +1,16 @@
 use std::sync::{Arc, OnceLock};
 
+use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  build::BuildState, deployment::DeploymentState,
-  procedure::ProcedureState, repo::RepoState,
+  build::BuildState,
+  config::core::{CoreConfig, GithubWebhookAppConfig},
+  deployment::DeploymentState,
+  procedure::ProcedureState,
+  repo::RepoState,
   sync::ResourceSyncState,
+};
+use octorust::auth::{
+  Credentials, InstallationTokenGenerator, JWTCredentials,
 };
 use tokio::sync::{Mutex, OnceCell};
 
@@ -34,6 +41,53 @@ pub async fn db_client() -> &'static DbClient {
 pub fn jwt_client() -> &'static JwtClient {
   static JWT_CLIENT: OnceLock<JwtClient> = OnceLock::new();
   JWT_CLIENT.get_or_init(|| JwtClient::new(core_config()))
+}
+
+pub fn github_client() -> Option<&'static octorust::Client> {
+  static GITHUB_CLIENT: OnceLock<Option<octorust::Client>> =
+    OnceLock::new();
+  GITHUB_CLIENT
+    .get_or_init(|| {
+      let CoreConfig {
+        github_webhook_app:
+          GithubWebhookAppConfig {
+            app_id,
+            installation_id,
+            pk_path,
+          },
+        ..
+      } = core_config();
+      if *app_id == 0 || *installation_id == 0 {
+        return None;
+      }
+      let private_key = std::fs::read(pk_path)
+        .context("github webhook app | failed to load private key")
+        .unwrap();
+
+      let private_key = nom_pem::decode_block(&private_key)
+        .map_err(|e| anyhow!("{e:?}"))
+        .context("github webhook app | failed to decode private key")
+        .unwrap();
+
+      let jwt = JWTCredentials::new(*app_id, private_key.data)
+        .context(
+          "github webhook app | failed to make github JWTCredentials",
+        )
+        .unwrap();
+
+      let token_generator =
+        InstallationTokenGenerator::new(*installation_id, jwt);
+
+      Some(
+        octorust::Client::new(
+          "github-app",
+          Credentials::InstallationToken(token_generator),
+        )
+        .context("failed to initialize github client")
+        .unwrap(),
+      )
+    })
+    .as_ref()
 }
 
 pub fn action_states() -> &'static ActionStates {

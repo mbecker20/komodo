@@ -42,12 +42,12 @@ enum ReadRequest {
   GetAvailableAwsEcrLabels(GetAvailableAwsEcrLabels),
 
   // ==== USER ====
-  ListUsers(ListUsers),
   GetUsername(GetUsername),
+  GetPermissionLevel(GetPermissionLevel),
+  ListUsers(ListUsers),
   ListApiKeys(ListApiKeys),
   ListApiKeysForServiceUser(ListApiKeysForServiceUser),
   ListPermissions(ListPermissions),
-  GetPermissionLevel(GetPermissionLevel),
   ListUserTargetPermissions(ListUserTargetPermissions),
 
   // ==== USER GROUP ====
@@ -66,15 +66,13 @@ enum ReadRequest {
 
   // ==== SERVER TEMPLATE ====
   GetServerTemplate(GetServerTemplate),
+  GetServerTemplatesSummary(GetServerTemplatesSummary),
   ListServerTemplates(ListServerTemplates),
   ListFullServerTemplates(ListFullServerTemplates),
-  GetServerTemplatesSummary(GetServerTemplatesSummary),
 
   // ==== SERVER ====
   GetServersSummary(GetServersSummary),
   GetServer(GetServer),
-  ListServers(ListServers),
-  ListFullServers(ListFullServers),
   GetServerState(GetServerState),
   GetPeripheryVersion(GetPeripheryVersion),
   GetDockerContainers(GetDockerContainers),
@@ -84,27 +82,30 @@ enum ReadRequest {
   GetHistoricalServerStats(GetHistoricalServerStats),
   GetAvailableAccounts(GetAvailableAccounts),
   GetAvailableSecrets(GetAvailableSecrets),
+  ListServers(ListServers),
+  ListFullServers(ListFullServers),
 
   // ==== DEPLOYMENT ====
   GetDeploymentsSummary(GetDeploymentsSummary),
   GetDeployment(GetDeployment),
-  ListDeployments(ListDeployments),
-  ListFullDeployments(ListFullDeployments),
   GetDeploymentContainer(GetDeploymentContainer),
   GetDeploymentActionState(GetDeploymentActionState),
   GetDeploymentStats(GetDeploymentStats),
   GetLog(GetLog),
   SearchLog(SearchLog),
+  ListDeployments(ListDeployments),
+  ListFullDeployments(ListFullDeployments),
   ListCommonDeploymentExtraArgs(ListCommonDeploymentExtraArgs),
 
   // ==== BUILD ====
   GetBuildsSummary(GetBuildsSummary),
   GetBuild(GetBuild),
-  ListBuilds(ListBuilds),
-  ListFullBuilds(ListFullBuilds),
   GetBuildActionState(GetBuildActionState),
   GetBuildMonthlyStats(GetBuildMonthlyStats),
   GetBuildVersions(GetBuildVersions),
+  GetBuildWebhookEnabled(GetBuildWebhookEnabled),
+  ListBuilds(ListBuilds),
+  ListFullBuilds(ListFullBuilds),
   ListCommonBuildExtraArgs(ListCommonBuildExtraArgs),
   #[to_string_resolver]
   ListGithubOrganizations(ListGithubOrganizations),
@@ -114,23 +115,24 @@ enum ReadRequest {
   // ==== REPO ====
   GetReposSummary(GetReposSummary),
   GetRepo(GetRepo),
+  GetRepoActionState(GetRepoActionState),
+  GetRepoWebhooksEnabled(GetRepoWebhooksEnabled),
   ListRepos(ListRepos),
   ListFullRepos(ListFullRepos),
-  GetRepoActionState(GetRepoActionState),
 
   // ==== SYNC ====
   GetResourceSyncsSummary(GetResourceSyncsSummary),
   GetResourceSync(GetResourceSync),
+  GetResourceSyncActionState(GetResourceSyncActionState),
   ListResourceSyncs(ListResourceSyncs),
   ListFullResourceSyncs(ListFullResourceSyncs),
-  GetResourceSyncActionState(GetResourceSyncActionState),
 
   // ==== BUILDER ====
   GetBuildersSummary(GetBuildersSummary),
   GetBuilder(GetBuilder),
+  GetBuilderAvailableAccounts(GetBuilderAvailableAccounts),
   ListBuilders(ListBuilders),
   ListFullBuilders(ListFullBuilders),
-  GetBuilderAvailableAccounts(GetBuilderAvailableAccounts),
 
   // ==== ALERTER ====
   GetAlertersSummary(GetAlertersSummary),
@@ -229,6 +231,8 @@ impl Resolve<GetCoreInfo, User> for State {
         .unwrap_or_else(|| config.host.clone()),
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
+      github_webhook_app: config.github_webhook_app.app_id != 0
+        && config.github_webhook_app.installation_id != 0,
     })
   }
 }

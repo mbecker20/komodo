@@ -4,8 +4,8 @@ use anyhow::Context;
 use merge_config_files::parse_config_file;
 use monitor_client::entities::{
   config::core::{
-    AwsCredentials, CoreConfig, Env, HetznerCredentials, MongoConfig,
-    OauthCredentials,
+    AwsCredentials, CoreConfig, Env, GithubWebhookAppConfig,
+    HetznerCredentials, MongoConfig, OauthCredentials,
   },
   logger::LogConfig,
 };
@@ -108,6 +108,17 @@ pub fn core_config() -> &'static CoreConfig {
         secret: env
           .monitor_github_oauth_secret
           .unwrap_or(config.github_oauth.secret),
+      },
+      github_webhook_app: GithubWebhookAppConfig {
+        app_id: env
+          .monitor_github_webhook_app_app_id
+          .unwrap_or(config.github_webhook_app.app_id),
+        installation_id: env
+          .monitor_github_webhook_app_installation_id
+          .unwrap_or(config.github_webhook_app.installation_id),
+        pk_path: env
+          .monitor_github_webhook_app_pk_path
+          .unwrap_or(config.github_webhook_app.pk_path),
       },
       aws: AwsCredentials {
         access_key_id: env

@@ -108,5 +108,3 @@ pub struct GetProceduresSummaryResponse {
   /// The number of procedures with unknown state.
   pub unknown: u32,
 }
-
-//

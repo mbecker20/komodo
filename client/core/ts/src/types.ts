@@ -399,10 +399,10 @@ export interface BuildConfig {
 	 * These values remain hidden in the final image by using
 	 * docker secret mounts. See `<https://docs.docker.com/build/building/secrets>`.
 	 * 
-	 * To use the values, add commands like this in the Dockerfile:
+	 * The values can be used in RUN commands:
 	 * ```
 	 * RUN --mount=type=secret,id=SECRET_KEY \
-	 * SECRET_VALUE=$(cat /run/secrets/SECRET_KEY) ...
+	 * SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
 	 * ```
 	 */
 	secret_args?: EnvironmentVar[] | string;
@@ -2110,6 +2110,22 @@ export interface ListCommonBuildExtraArgs {
 	query?: BuildQuery;
 }
 
+/**
+ * Get whether a Build's target repo has a webhook for the build configured. Response: [GetBuildWebhookEnabledResponse].
+ * 
+ * Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
+ */
+export interface GetBuildWebhookEnabled {
+	/** Id or name */
+	build: string;
+}
+
+/** Response for [GetBuildWebhookEnabled] */
+export interface GetBuildWebhookEnabledResponse {
+	/** Whether pushes to branch trigger build */
+	enabled: boolean;
+}
+
 /** Get a specific builder by id or name. Response: [Builder]. */
 export interface GetBuilder {
 	/** Id or name */
@@ -2320,6 +2336,8 @@ export interface GetCoreInfoResponse {
 	transparent_mode: boolean;
 	/** Whether UI write access should be disabled */
 	ui_write_disabled: boolean;
+	/** Whether github webhook management api is available */
+	github_webhook_app: boolean;
 }
 
 /**
@@ -2446,6 +2464,24 @@ export interface GetReposSummaryResponse {
 	failed: number;
 	/** The number of repos with unknown state. */
 	unknown: number;
+}
+
+/**
+ * Get a target Repo's configured webhooks. Response: [GetRepoWebhooksEnabledResponse].
+ * 
+ * Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
+ */
+export interface GetRepoWebhooksEnabled {
+	/** Id or name */
+	repo: string;
+}
+
+/** Response for [GetRepoWebhooksEnabled] */
+export interface GetRepoWebhooksEnabledResponse {
+	/** Whether pushes to branch trigger clone */
+	clone_enabled: boolean;
+	/** Whether pushes to branch trigger pull */
+	pull_enabled: boolean;
 }
 
 /** Find resources matching a common query. Response: [FindResourcesResponse]. */
@@ -3946,12 +3982,12 @@ export type ReadRequest =
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "GetAvailableAwsEcrLabels", params: GetAvailableAwsEcrLabels }
-	| { type: "ListUsers", params: ListUsers }
 	| { type: "GetUsername", params: GetUsername }
+	| { type: "GetPermissionLevel", params: GetPermissionLevel }
+	| { type: "ListUsers", params: ListUsers }
 	| { type: "ListApiKeys", params: ListApiKeys }
 	| { type: "ListApiKeysForServiceUser", params: ListApiKeysForServiceUser }
 	| { type: "ListPermissions", params: ListPermissions }
-	| { type: "GetPermissionLevel", params: GetPermissionLevel }
 	| { type: "ListUserTargetPermissions", params: ListUserTargetPermissions }
 	| { type: "GetUserGroup", params: GetUserGroup }
 	| { type: "ListUserGroups", params: ListUserGroups }
@@ -3962,13 +3998,11 @@ export type ReadRequest =
 	| { type: "ListProcedures", params: ListProcedures }
 	| { type: "ListFullProcedures", params: ListFullProcedures }
 	| { type: "GetServerTemplate", params: GetServerTemplate }
+	| { type: "GetServerTemplatesSummary", params: GetServerTemplatesSummary }
 	| { type: "ListServerTemplates", params: ListServerTemplates }
 	| { type: "ListFullServerTemplates", params: ListFullServerTemplates }
-	| { type: "GetServerTemplatesSummary", params: GetServerTemplatesSummary }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
-	| { type: "ListServers", params: ListServers }
-	| { type: "ListFullServers", params: ListFullServers }
 	| { type: "GetServerState", params: GetServerState }
 	| { type: "GetPeripheryVersion", params: GetPeripheryVersion }
 	| { type: "GetDockerContainers", params: GetDockerContainers }
@@ -3978,41 +4012,45 @@ export type ReadRequest =
 	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
 	| { type: "GetAvailableAccounts", params: GetAvailableAccounts }
 	| { type: "GetAvailableSecrets", params: GetAvailableSecrets }
+	| { type: "ListServers", params: ListServers }
+	| { type: "ListFullServers", params: ListFullServers }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
-	| { type: "ListDeployments", params: ListDeployments }
-	| { type: "ListFullDeployments", params: ListFullDeployments }
 	| { type: "GetDeploymentContainer", params: GetDeploymentContainer }
 	| { type: "GetDeploymentActionState", params: GetDeploymentActionState }
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
 	| { type: "GetLog", params: GetLog }
 	| { type: "SearchLog", params: SearchLog }
+	| { type: "ListDeployments", params: ListDeployments }
+	| { type: "ListFullDeployments", params: ListFullDeployments }
 	| { type: "ListCommonDeploymentExtraArgs", params: ListCommonDeploymentExtraArgs }
 	| { type: "GetBuildsSummary", params: GetBuildsSummary }
 	| { type: "GetBuild", params: GetBuild }
-	| { type: "ListBuilds", params: ListBuilds }
-	| { type: "ListFullBuilds", params: ListFullBuilds }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
 	| { type: "GetBuildMonthlyStats", params: GetBuildMonthlyStats }
 	| { type: "GetBuildVersions", params: GetBuildVersions }
+	| { type: "GetBuildWebhookEnabled", params: GetBuildWebhookEnabled }
+	| { type: "ListBuilds", params: ListBuilds }
+	| { type: "ListFullBuilds", params: ListFullBuilds }
 	| { type: "ListCommonBuildExtraArgs", params: ListCommonBuildExtraArgs }
 	| { type: "ListGithubOrganizations", params: ListGithubOrganizations }
 	| { type: "ListDockerOrganizations", params: ListDockerOrganizations }
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }
+	| { type: "GetRepoActionState", params: GetRepoActionState }
+	| { type: "GetRepoWebhooksEnabled", params: GetRepoWebhooksEnabled }
 	| { type: "ListRepos", params: ListRepos }
 	| { type: "ListFullRepos", params: ListFullRepos }
-	| { type: "GetRepoActionState", params: GetRepoActionState }
 	| { type: "GetResourceSyncsSummary", params: GetResourceSyncsSummary }
 	| { type: "GetResourceSync", params: GetResourceSync }
+	| { type: "GetResourceSyncActionState", params: GetResourceSyncActionState }
 	| { type: "ListResourceSyncs", params: ListResourceSyncs }
 	| { type: "ListFullResourceSyncs", params: ListFullResourceSyncs }
-	| { type: "GetResourceSyncActionState", params: GetResourceSyncActionState }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
+	| { type: "GetBuilderAvailableAccounts", params: GetBuilderAvailableAccounts }
 	| { type: "ListBuilders", params: ListBuilders }
 	| { type: "ListFullBuilders", params: ListFullBuilders }
-	| { type: "GetBuilderAvailableAccounts", params: GetBuilderAvailableAccounts }
 	| { type: "GetAlertersSummary", params: GetAlertersSummary }
 	| { type: "GetAlerter", params: GetAlerter }
 	| { type: "ListAlerters", params: ListAlerters }

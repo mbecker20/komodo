@@ -3,13 +3,14 @@ use std::{
   sync::OnceLock,
 };
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use futures::TryStreamExt;
 use monitor_client::{
   api::read::*,
   entities::{
     build::{Build, BuildActionState, BuildListItem, BuildState},
+    config::core::CoreConfig,
     permission::PermissionLevel,
     update::UpdateStatus,
     user::User,
@@ -25,7 +26,9 @@ use resolver_api::{Resolve, ResolveToString};
 use crate::{
   config::core_config,
   resource,
-  state::{action_states, build_state_cache, db_client, State},
+  state::{
+    action_states, build_state_cache, db_client, github_client, State,
+  },
 };
 
 impl Resolve<GetBuild, User> for State {
@@ -305,5 +308,56 @@ impl Resolve<ListCommonBuildExtraArgs, User> for State {
     let mut res = res.into_iter().collect::<Vec<_>>();
     res.sort();
     Ok(res)
+  }
+}
+
+impl Resolve<GetBuildWebhookEnabled, User> for State {
+  async fn resolve(
+    &self,
+    GetBuildWebhookEnabled { build }: GetBuildWebhookEnabled,
+    user: User,
+  ) -> anyhow::Result<GetBuildWebhookEnabledResponse> {
+    let Some(github) = github_client() else {
+      return Err(anyhow!("github_webhook_app is not configured"));
+    };
+
+    let build = resource::get_check_permissions::<Build>(
+      &build,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+
+    if build.config.repo.is_empty() {
+      return Ok(GetBuildWebhookEnabledResponse { enabled: false });
+    }
+
+    let mut split = build.config.repo.split('/');
+    let owner = split.next().context("Build repo has no owner")?;
+    let repo =
+      split.next().context("Build repo has no repo after the /")?;
+
+    let github_repos = github.repos();
+    let webhooks = github_repos
+      .list_all_webhooks(owner, repo)
+      .await
+      .context("failed to list all webhooks on repo")?
+      .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      ..
+    } = core_config();
+    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let url = format!("{host}/listener/github/build/{}", build.id);
+
+    for webhook in webhooks {
+      if webhook.active && webhook.config.url == url {
+        return Ok(GetBuildWebhookEnabledResponse { enabled: true });
+      }
+    }
+
+    Ok(GetBuildWebhookEnabledResponse { enabled: false })
   }
 }

@@ -258,3 +258,28 @@ pub struct ListCommonBuildExtraArgs {
 
 #[typeshare]
 pub type ListCommonBuildExtraArgsResponse = Vec<String>;
+
+//
+
+/// Get whether a Build's target repo has a webhook for the build configured. Response: [GetBuildWebhookEnabledResponse].
+///
+/// Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetBuildWebhookEnabledResponse)]
+pub struct GetBuildWebhookEnabled {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub build: String,
+}
+
+/// Response for [GetBuildWebhookEnabled]
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetBuildWebhookEnabledResponse {
+  /// Whether pushes to branch trigger build
+  pub enabled: bool,
+}

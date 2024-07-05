@@ -21,12 +21,12 @@ export type ReadResponses = {
   GetAvailableAwsEcrLabels: Types.GetAvailableAwsEcrLabelsResponse;
 
   // ==== USER ====
-  ListUsers: Types.ListUsersResponse;
   GetUsername: Types.GetUsernameResponse;
+  GetPermissionLevel: Types.GetPermissionLevelResponse;
+  ListUsers: Types.ListUsersResponse;
   ListApiKeys: Types.ListApiKeysResponse;
   ListApiKeysForServiceUser: Types.ListApiKeysForServiceUserResponse;
   ListPermissions: Types.ListPermissionsResponse;
-  GetPermissionLevel: Types.GetPermissionLevelResponse;
   ListUserTargetPermissions: Types.ListUserTargetPermissionsResponse;
 
   // ==== USER GROUP ====
@@ -45,15 +45,13 @@ export type ReadResponses = {
 
   // ==== SERVER TEMPLATE ====
   GetServerTemplate: Types.GetServerTemplateResponse;
+  GetServerTemplatesSummary: Types.GetServerTemplatesSummaryResponse;
   ListServerTemplates: Types.ListServerTemplatesResponse;
   ListFullServerTemplates: Types.ListFullServerTemplatesResponse;
-  GetServerTemplatesSummary: Types.GetServerTemplatesSummaryResponse;
 
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
   GetServer: Types.GetServerResponse;
-  ListServers: Types.ListServersResponse;
-  ListFullServers: Types.ListFullServersResponse;
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   GetSystemInformation: Types.GetSystemInformationResponse;
@@ -64,27 +62,30 @@ export type ReadResponses = {
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
   GetAvailableAccounts: Types.GetAvailableAccountsResponse;
   GetAvailableSecrets: Types.GetAvailableSecretsResponse;
+  ListServers: Types.ListServersResponse;
+  ListFullServers: Types.ListFullServersResponse;
 
   // ==== DEPLOYMENT ====
   GetDeploymentsSummary: Types.GetDeploymentsSummaryResponse;
   GetDeployment: Types.GetDeploymentResponse;
-  ListDeployments: Types.ListDeploymentsResponse;
-  ListFullDeployments: Types.ListFullDeploymentsResponse;
   GetDeploymentContainer: Types.GetDeploymentContainerResponse;
   GetDeploymentActionState: Types.GetDeploymentActionStateResponse;
   GetDeploymentStats: Types.GetDeploymentStatsResponse;
   GetLog: Types.GetLogResponse;
   SearchLog: Types.SearchLogResponse;
+  ListDeployments: Types.ListDeploymentsResponse;
+  ListFullDeployments: Types.ListFullDeploymentsResponse;
   ListCommonDeploymentExtraArgs: Types.ListCommonDeploymentExtraArgsResponse;
 
   // ==== BUILD ====
   GetBuildsSummary: Types.GetBuildsSummaryResponse;
   GetBuild: Types.GetBuildResponse;
-  ListBuilds: Types.ListBuildsResponse;
-  ListFullBuilds: Types.ListFullBuildsResponse;
   GetBuildActionState: Types.GetBuildActionStateResponse;
   GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
   GetBuildVersions: Types.GetBuildVersionsResponse;
+  GetBuildWebhookEnabled: Types.GetBuildWebhookEnabledResponse;
+  ListBuilds: Types.ListBuildsResponse;
+  ListFullBuilds: Types.ListFullBuildsResponse;
   ListCommonBuildExtraArgs: Types.ListCommonBuildExtraArgsResponse;
   ListGithubOrganizations: Types.ListGithubOrganizationsResponse;
   ListDockerOrganizations: Types.ListDockerOrganizationsResponse;
@@ -92,16 +93,17 @@ export type ReadResponses = {
   // ==== REPO ====
   GetReposSummary: Types.GetReposSummaryResponse;
   GetRepo: Types.GetRepoResponse;
+  GetRepoActionState: Types.GetRepoActionStateResponse;
+  GetRepoWebhooksEnabled: Types.GetRepoWebhooksEnabledResponse;
   ListRepos: Types.ListReposResponse;
   ListFullRepos: Types.ListFullReposResponse;
-  GetRepoActionState: Types.GetRepoActionStateResponse;
 
   // ==== BUILDER ====
   GetBuildersSummary: Types.GetBuildersSummaryResponse;
   GetBuilder: Types.GetBuilderResponse;
+  GetBuilderAvailableAccounts: Types.GetBuilderAvailableAccountsResponse;
   ListBuilders: Types.ListBuildersResponse;
   ListFullBuilders: Types.ListFullBuildersResponse;
-  GetBuilderAvailableAccounts: Types.GetBuilderAvailableAccountsResponse;
 
   // ==== ALERTER ====
   GetAlertersSummary: Types.GetAlertersSummaryResponse;
@@ -112,9 +114,9 @@ export type ReadResponses = {
   // ==== SYNC ====
   GetResourceSyncsSummary: Types.GetResourceSyncsSummaryResponse;
   GetResourceSync: Types.GetResourceSyncResponse;
+  GetResourceSyncActionState: Types.GetResourceSyncActionStateResponse;
   ListResourceSyncs: Types.ListResourceSyncsResponse;
   ListFullResourceSyncs: Types.ListFullResourceSyncsResponse;
-  GetResourceSyncActionState: Types.GetResourceSyncActionStateResponse;
 
   // ==== TOML ====
   ExportAllResourcesToToml: Types.ExportAllResourcesToTomlResponse;

@@ -91,6 +91,8 @@ pub struct GetCoreInfoResponse {
   pub transparent_mode: bool,
   /// Whether UI write access should be disabled
   pub ui_write_disabled: bool,
+  /// Whether github webhook management api is available
+  pub github_webhook_app: bool,
 }
 
 //

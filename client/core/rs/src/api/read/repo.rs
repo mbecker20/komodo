@@ -110,3 +110,30 @@ pub struct GetReposSummaryResponse {
   /// The number of repos with unknown state.
   pub unknown: u32,
 }
+
+//
+
+/// Get a target Repo's configured webhooks. Response: [GetRepoWebhooksEnabledResponse].
+///
+/// Note. Will fail with 500 if `github_webhook_app` is not configured in core config.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetRepoWebhooksEnabledResponse)]
+pub struct GetRepoWebhooksEnabled {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub repo: String,
+}
+
+/// Response for [GetRepoWebhooksEnabled]
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetRepoWebhooksEnabledResponse {
+  /// Whether pushes to branch trigger clone
+  pub clone_enabled: bool,
+  /// Whether pushes to branch trigger pull
+  pub pull_enabled: bool,
+}

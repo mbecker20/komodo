@@ -1,7 +1,8 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use monitor_client::{
   api::read::*,
   entities::{
+    config::core::CoreConfig,
     permission::PermissionLevel,
     repo::{Repo, RepoActionState, RepoListItem, RepoState},
     user::User,
@@ -10,8 +11,9 @@ use monitor_client::{
 use resolver_api::Resolve;
 
 use crate::{
+  config::core_config,
   resource,
-  state::{action_states, repo_state_cache, State},
+  state::{action_states, github_client, repo_state_cache, State},
 };
 
 impl Resolve<GetRepo, User> for State {
@@ -116,5 +118,71 @@ impl Resolve<GetReposSummary, User> for State {
     }
 
     Ok(res)
+  }
+}
+
+impl Resolve<GetRepoWebhooksEnabled, User> for State {
+  async fn resolve(
+    &self,
+    GetRepoWebhooksEnabled { repo }: GetRepoWebhooksEnabled,
+    user: User,
+  ) -> anyhow::Result<GetRepoWebhooksEnabledResponse> {
+    let Some(github) = github_client() else {
+      return Err(anyhow!("github_webhook_app is not configured"));
+    };
+
+    let repo = resource::get_check_permissions::<Repo>(
+      &repo,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+
+    if repo.config.repo.is_empty() {
+      return Ok(GetRepoWebhooksEnabledResponse {
+        clone_enabled: false,
+        pull_enabled: false,
+      });
+    }
+
+    let mut split = repo.config.repo.split('/');
+    let owner = split.next().context("Repo repo has no owner")?;
+    let repo_name =
+      split.next().context("Repo repo has no repo after the /")?;
+
+    let github_repos = github.repos();
+    let webhooks = github_repos
+      .list_all_webhooks(owner, repo_name)
+      .await
+      .context("failed to list all webhooks on repo")?
+      .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      ..
+    } = core_config();
+    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let clone_url =
+      format!("{host}/listener/github/repo/{}/clone", repo.id);
+    let pull_url =
+      format!("{host}/listener/github/repo/{}/pull", repo.id);
+
+    let mut clone_enabled = false;
+    let mut pull_enabled = false;
+
+    for webhook in webhooks {
+      if webhook.active && webhook.config.url == clone_url {
+        clone_enabled = true
+      }
+      if webhook.active && webhook.config.url == pull_url {
+        pull_enabled = true
+      }
+    }
+
+    Ok(GetRepoWebhooksEnabledResponse {
+      clone_enabled,
+      pull_enabled,
+    })
   }
 }

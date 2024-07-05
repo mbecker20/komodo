@@ -79,6 +79,13 @@ pub struct Env {
   /// Override `local_auth`
   pub monitor_local_auth: Option<bool>,
 
+  /// Override `google_oauth.enabled`
+  pub monitor_google_oauth_enabled: Option<bool>,
+  /// Override `google_oauth.id`
+  pub monitor_google_oauth_id: Option<String>,
+  /// Override `google_oauth.secret`
+  pub monitor_google_oauth_secret: Option<String>,
+
   /// Override `github_oauth.enabled`
   pub monitor_github_oauth_enabled: Option<bool>,
   /// Override `github_oauth.id`
@@ -86,12 +93,12 @@ pub struct Env {
   /// Override `github_oauth.secret`
   pub monitor_github_oauth_secret: Option<String>,
 
-  /// Override `google_oauth.enabled`
-  pub monitor_google_oauth_enabled: Option<bool>,
-  /// Override `google_oauth.id`
-  pub monitor_google_oauth_id: Option<String>,
-  /// Override `google_oauth.secret`
-  pub monitor_google_oauth_secret: Option<String>,
+  /// Override `github_webhook_app.app_id`
+  pub monitor_github_webhook_app_app_id: Option<i64>,
+  /// Override `github_webhook_app.installation_id`
+  pub monitor_github_webhook_app_installation_id: Option<i64>,
+  /// Override `github_webhook_app.pk_path`
+  pub monitor_github_webhook_app_pk_path: Option<String>,
 
   /// Override `mongo.uri`
   pub monitor_mongo_uri: Option<String>,
@@ -183,15 +190,6 @@ fn default_config_path() -> String {
 /// ## default: 0 (pruning disabled)
 /// keep_stats_for_days = 0
 ///
-/// ## token that has to be given to github during repo webhook config as the secret
-/// ## default: empty (none)
-/// github_webhook_secret = "your_random_webhook_secret"
-///
-/// ## an alternate base url that is used to recieve github webhook requests
-/// ## if empty or not specified, will use 'host' address as base
-/// ## default: empty (none)
-/// # github_webhook_base_url = "https://github-webhook.monitor.dev"
-///
 /// ## these will be used by the GUI to attach to builds.
 /// ## when attached to build, image will be pushed to repo under the specified organization.
 /// ## if empty, the "docker organization" config option will not be shown.
@@ -210,15 +208,33 @@ fn default_config_path() -> String {
 /// ## default: false
 /// # local_auth = true
 ///
+/// ## Use to configure google oauth
+/// # google_oauth.enabled = true
+/// # google_oauth.id = "your_google_client_id"
+/// # google_oauth.secret = "your_google_client_secret"
+///
 /// ## Use to configure github oauth
 /// # github_oauth.enabled = true
 /// # github_oauth.id = "your_github_client_id"
 /// # github_oauth.secret = "your_github_client_secret"
 ///
-/// ## Use to configure google oauth
-/// # google_oauth.enabled = true
-/// # google_oauth.id = "your_google_client_id"
-/// # google_oauth.secret = "your_google_client_secret"
+/// ## an alternate base url that is used to recieve github webhook requests
+/// ## if empty or not specified, will use 'host' address as base
+/// ## default: empty (none)
+/// # github_webhook_base_url = "https://github-webhook.monitor.dev"
+///
+/// ## token that has to be given to github during repo webhook config as the secret
+/// ## default: empty (none)
+/// github_webhook_secret = "your_random_webhook_secret"
+///
+/// ## Configure github webhook app. Enables webhook management apis.
+/// # github_webhook_app.app_id = 1234455 # Find on the app page.
+/// # github_webhook_app.installation_id = 1234455 # Get after installing the app to user / organization.
+///
+/// ## Path to github webhook app private key.
+/// ## This is defaulted to `/github-private-key.pem`, and doesn't need to be changed if running in Docker.
+/// ## Just mount the private key pem file on the host to `/github-private-key.pem` in the container.
+/// # github_webhook_app.pk_path = "/path/to/pk.pem"
 ///
 /// ## MUST comment back in some way to configure mongo.
 /// # mongo.uri = "mongodb://username:password@localhost:27017"
@@ -315,25 +331,6 @@ pub struct CoreConfig {
   #[serde(default)]
   pub keep_alerts_for_days: u64,
 
-  /// Used to verify validity from github webhooks.
-  /// Should be some secure hash maybe 20-40 chars.
-  /// It needs to be given to github when configuring the webhook.
-  #[serde(default)]
-  pub github_webhook_secret: String,
-
-  /// Used to form the frontend listener url, if None will use 'host'.
-  ///
-  /// This can be used if core sits on an internal network which is
-  /// unreachable directly from the open internet.
-  /// A reverse proxy in a public network (with its own DNS)
-  /// can forward webhooks to the internal monitor
-  pub github_webhook_base_url: Option<String>,
-
-  /// Allowed github orgs used with monitor.
-  /// Default: none.
-  #[serde(default)]
-  pub github_organizations: Vec<String>,
-
   /// Allowed docker orgs used with monitor.
   /// Default: none.
   #[serde(default)]
@@ -355,13 +352,37 @@ pub struct CoreConfig {
   #[serde(default)]
   pub local_auth: bool,
 
+  /// Configure google oauth
+  #[serde(default)]
+  pub google_oauth: OauthCredentials,
+
   /// Configure github oauth
   #[serde(default)]
   pub github_oauth: OauthCredentials,
 
-  /// Configure google oauth
+  /// Used to verify validity from github webhooks.
+  /// Should be some secure hash maybe 20-40 chars.
+  /// It needs to be given to github when configuring the webhook.
   #[serde(default)]
-  pub google_oauth: OauthCredentials,
+  pub github_webhook_secret: String,
+
+  /// Used to form the frontend listener url, if None will use 'host'.
+  ///
+  /// This can be used if core sits on an internal network which is
+  /// unreachable directly from the open internet.
+  /// A reverse proxy in a public network (with its own DNS)
+  /// can forward webhooks to the internal monitor
+  pub github_webhook_base_url: Option<String>,
+
+  /// Configure a Github Webhook app.
+  /// Allows users to manage repo webhooks from within the Monitor UI.
+  #[serde(default)]
+  pub github_webhook_app: GithubWebhookAppConfig,
+
+  /// Allowed github orgs used with monitor.
+  /// Default: none.
+  #[serde(default)]
+  pub github_organizations: Vec<String>,
 
   /// Configure core mongo connection.
   ///
@@ -397,7 +418,8 @@ pub struct CoreConfig {
 
   /// Configure aws ecr registries.
   #[serde(default, alias = "aws_ecr_registry")]
-  pub aws_ecr_registries: HashMap<String, AwsEcrConfigWithCredentials>,
+  pub aws_ecr_registries:
+    HashMap<String, AwsEcrConfigWithCredentials>,
 }
 
 fn default_title() -> String {
@@ -563,6 +585,32 @@ impl AwsEcrConfig {
     AwsEcrConfig {
       region: config.region.to_string(),
       account_id: config.account_id.to_string(),
+    }
+  }
+}
+
+/// Provide configuration for a Github Webhook app.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GithubWebhookAppConfig {
+  /// Github app id
+  pub app_id: i64,
+  /// Github app installation id
+  pub installation_id: i64,
+  /// Private key path. Default: /github-private-key.pem.
+  #[serde(default = "default_private_key_path")]
+  pub pk_path: String,
+}
+
+fn default_private_key_path() -> String {
+  String::from("/github-private-key.pem")
+}
+
+impl Default for GithubWebhookAppConfig {
+  fn default() -> Self {
+    GithubWebhookAppConfig {
+      app_id: 0,
+      installation_id: 0,
+      pk_path: default_private_key_path(),
     }
   }
 }
