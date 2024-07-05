@@ -1,6 +1,6 @@
 # Setup Monitor Periphery
 
-The easiest way to setup periphery is to use the setup script:
+The easiest way to setup periphery is to use the setup script (as root user):
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3

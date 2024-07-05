@@ -1,10 +1,8 @@
 # Resources
 
-Entities like `Server`, `Deployment`, and `Build` are abstracted under a `Resource`. A server is a type of resource, a build is a type of resource, and so on.
-All resources have common traits, such as a globally unique `name` and `id` amongst all other resources of the same resource type.
-All resources can also be assigned `tags`, which can be used to group related resources.
-For example, they can be grouped by environment (using `dev` or `prod` tags), or by function (`auth` or `ingress`), 
-or really by any way that fits best for your infra (they are all user defined).
+Entities like `Server`, `Deployment`, and `Build` all fall under the `Resource` abstraction. A server is a type of resource, a build is a type of resource, and so on.
+All resources have common traits, such as a unique `name` and `id` amongst all other resources of the same resource type.
+All resources can be assigned `tags`, which can be used to group related resources.
 
 Here is a list of the resources and their description:
 - `Server`: Represents a connected server. 
