@@ -84,7 +84,7 @@ export const Resource = () => {
       {/* Actions */}
       {canExecute && Object.keys(Components.Actions).length > 0 && (
         <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4 items-center flex-wrap">
             {Object.entries(Components.Actions).map(([key, Action]) => (
               <Action key={key} id={id} />
             ))}
