@@ -150,14 +150,14 @@ dependencies = [
 
 [[package]]
 name = "async_timing_util"
-version = "0.1.14"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9de37a9f9ebc2a377f452555a2278e89548c7746c9a47cf3047b30366af7168e"
+checksum = "4ecbb56dce3eb772cfb3f5a29e802838b3ba1fdb06303d4f1ff54e0d278dc876"
 dependencies = [
  "serde",
  "serde_derive",
- "strum 0.24.1",
- "strum_macros 0.24.3",
+ "strum 0.26.2",
+ "strum_macros 0.26.2",
  "tokio",
 ]
 
@@ -3457,12 +3457,6 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "strum"
-version = "0.24.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "063e6045c0e62079840579a7e47a355ae92f60eb74daaf156fb1e84ba164e63f"
-
-[[package]]
-name = "strum"
 version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "290d54ea6f91c969195bdbcd7442c8c2a2ba87da8bf60a7ee86a235d4bc1e125"
@@ -3474,19 +3468,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d8cec3501a5194c432b2b7976db6b7d10ec95c253208b45f83f7136aa985e29"
 dependencies = [
  "strum_macros 0.26.2",
-]
-
-[[package]]
-name = "strum_macros"
-version = "0.24.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e385be0d24f186b4ce2f9982191e7101bb737312ad61c1f2f984f34bcf85d59"
-dependencies = [
- "heck 0.4.1",
- "proc-macro2",
- "quote",
- "rustversion",
- "syn 1.0.109",
 ]
 
 [[package]]
