@@ -2,8 +2,11 @@ use anyhow::{anyhow, Context};
 use monitor_client::{
   api::write::*,
   entities::{
-    build::Build, config::core::CoreConfig,
-    permission::PermissionLevel, user::User, NoData,
+    build::{Build, PartialBuildConfig},
+    config::core::CoreConfig,
+    permission::PermissionLevel,
+    user::User,
+    NoData,
   },
 };
 use octorust::types::{
@@ -76,7 +79,9 @@ impl Resolve<CreateBuildWebhook, User> for State {
     user: User,
   ) -> anyhow::Result<CreateBuildWebhookResponse> {
     let Some(github) = github_client() else {
-      return Err(anyhow!("github_webhook_app is not configured in core config toml"));
+      return Err(anyhow!(
+        "github_webhook_app is not configured in core config toml"
+      ));
     };
 
     let build = resource::get_check_permissions::<Build>(
@@ -149,6 +154,22 @@ impl Resolve<CreateBuildWebhook, User> for State {
       .await
       .context("failed to create webhook")?;
 
+    if !build.config.webhook_enabled {
+      self
+        .resolve(
+          UpdateBuild {
+            id: build.id,
+            config: PartialBuildConfig {
+              webhook_enabled: Some(true),
+              ..Default::default()
+            },
+          },
+          user,
+        )
+        .await
+        .context("failed to update build to enable webhook")?;
+    }
+
     Ok(NoData {})
   }
 }
@@ -161,7 +182,9 @@ impl Resolve<DeleteBuildWebhook, User> for State {
     user: User,
   ) -> anyhow::Result<DeleteBuildWebhookResponse> {
     let Some(github) = github_client() else {
-      return Err(anyhow!("github_webhook_app is not configured in core config toml"));
+      return Err(anyhow!(
+        "github_webhook_app is not configured in core config toml"
+      ));
     };
 
     let build = resource::get_check_permissions::<Build>(

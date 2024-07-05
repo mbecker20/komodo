@@ -8,14 +8,17 @@ import {
   SecretSelector,
   SystemCommand,
 } from "@components/config/util";
-import { useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { env_to_text } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Textarea } from "@ui/textarea";
-import { PlusCircle } from "lucide-react";
+import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode, RefObject, createRef, useState } from "react";
 import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
+import { useToast } from "@ui/use-toast";
+import { text_color_class_by_intention } from "@lib/color";
+import { ConfirmButton } from "@components/util";
 
 export const BuildConfig = ({
   id,
@@ -28,9 +31,9 @@ export const BuildConfig = ({
     target: { type: "Build", id },
   }).data;
   const config = useRead("GetBuild", { build: id }).data?.config;
+  const webhook = useRead("GetBuildWebhookEnabled", { build: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  // const docker_organizations = useRead("ListDockerOrganizations", {}).data;
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
   const { mutateAsync } = useWrite("UpdateBuild");
 
@@ -145,29 +148,6 @@ export const BuildConfig = ({
               },
               build_path: true,
               dockerfile_path: true,
-              // docker_account: (account, set) =>
-              //   (update.builder_id ?? config.builder_id ? true : false) && (
-              //     <AccountSelector
-              //       id={update.builder_id ?? config.builder_id ?? undefined}
-              //       type="Builder"
-              //       account_type="docker"
-              //       selected={account}
-              //       onSelect={(docker_account) => set({ docker_account })}
-              //       disabled={disabled}
-              //       placeholder="None"
-              //     />
-              //   ),
-              // docker_organization:
-              //   docker_organizations === undefined ||
-              //   docker_organizations.length === 0
-              //     ? undefined
-              //     : (value, set) => (
-              //         <DockerOrganizations
-              //           value={value}
-              //           set={set}
-              //           disabled={disabled}
-              //         />
-              //       ),
               use_buildx: true,
             },
           },
@@ -251,11 +231,75 @@ export const BuildConfig = ({
             label: "Github Webhook",
             components: {
               ["build" as any]: () => (
-                <ConfigItem label="Build">
+                <ConfigItem label="Webhook Url">
                   <CopyGithubWebhook path={`/build/${id}`} />
                 </ConfigItem>
               ),
-              webhook_enabled: true,
+              webhook_enabled: webhook !== undefined && !webhook.managed,
+              ["managed" as any]: () => {
+                const inv = useInvalidate();
+                const { toast } = useToast();
+                const { mutate: createWebhook, isPending: createPending } =
+                  useWrite("CreateBuildWebhook", {
+                    onSuccess: () => {
+                      toast({ title: "Webhook Created" });
+                      inv(["GetBuildWebhookEnabled", { build: id }]);
+                    },
+                  });
+                const { mutate: deleteWebhook, isPending: deletePending } =
+                  useWrite("DeleteBuildWebhook", {
+                    onSuccess: () => {
+                      toast({ title: "Webhook Deleted" });
+                      inv(["GetBuildWebhookEnabled", { build: id }]);
+                    },
+                  });
+                if (!webhook || !webhook.managed) return;
+                return (
+                  <ConfigItem label="Manage Webhook">
+                    {webhook.enabled && (
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          Incoming webhook is{" "}
+                          <div
+                            className={text_color_class_by_intention("Good")}
+                          >
+                            enabled
+                          </div>
+                        </div>
+                        <ConfirmButton
+                          title="Disable"
+                          icon={<Ban className="w-4 h-4" />}
+                          variant="destructive"
+                          onClick={() => deleteWebhook({ build: id })}
+                          loading={deletePending}
+                          disabled={disabled || deletePending}
+                        />
+                      </div>
+                    )}
+                    {!webhook.enabled && (
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          Incoming webhook is{" "}
+                          <div
+                            className={text_color_class_by_intention(
+                              "Critical"
+                            )}
+                          >
+                            disabled
+                          </div>
+                        </div>
+                        <ConfirmButton
+                          title="Enable"
+                          icon={<CirclePlus className="w-4 h-4" />}
+                          onClick={() => createWebhook({ build: id })}
+                          loading={createPending}
+                          disabled={disabled || createPending}
+                        />
+                      </div>
+                    )}
+                  </ConfigItem>
+                );
+              },
             },
           },
         ],

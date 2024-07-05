@@ -2,8 +2,11 @@ use anyhow::{anyhow, Context};
 use monitor_client::{
   api::write::*,
   entities::{
-    config::core::CoreConfig, permission::PermissionLevel,
-    repo::Repo, user::User, NoData,
+    config::core::CoreConfig,
+    permission::PermissionLevel,
+    repo::{PartialRepoConfig, Repo},
+    user::User,
+    NoData,
   },
 };
 use octorust::types::{
@@ -157,6 +160,22 @@ impl Resolve<CreateRepoWebhook, User> for State {
       .create_webhook(owner, repo_name, &request)
       .await
       .context("failed to create webhook")?;
+
+    if !repo.config.webhook_enabled {
+      self
+        .resolve(
+          UpdateRepo {
+            id: repo.id,
+            config: PartialRepoConfig {
+              webhook_enabled: Some(true),
+              ..Default::default()
+            },
+          },
+          user,
+        )
+        .await
+        .context("failed to update repo to enable webhook")?;
+    }
 
     Ok(NoData {})
   }
