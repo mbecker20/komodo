@@ -129,7 +129,7 @@ export const Section = ({
   actions,
   children,
 }: SectionProps) => (
-  <div className="flex flex-col gap-4">
+  <div className="flex flex-col gap-4 max-w-[calc(100vw-100px)] lg:max-w-[calc(100vw-300px)] overflow-x-auto">
     <div className="flex flex-wrap gap-2 items-start justify-between">
       {title || icon ? (
         <div className="flex items-center gap-2 text-muted-foreground">

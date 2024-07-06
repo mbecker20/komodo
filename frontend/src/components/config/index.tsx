@@ -137,9 +137,9 @@ export const Config = <T,>({
         <div className="flex gap-4 items-center">
           {selector}
 
-          {/* Add the config page selector when view is small / md (lg:hidden) */}
+          {/* Add the config page selector when view is small / md / lg (xl:hidden) */}
           <Select value={show} onValueChange={setShow}>
-            <SelectTrigger className="w-32 capitalize lg:hidden">
+            <SelectTrigger className="w-32 capitalize xl:hidden">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-32">
