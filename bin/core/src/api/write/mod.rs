@@ -116,6 +116,8 @@ pub enum WriteRequest {
   DeleteResourceSync(DeleteResourceSync),
   UpdateResourceSync(UpdateResourceSync),
   RefreshResourceSyncPending(RefreshResourceSyncPending),
+  CreateSyncWebhook(CreateSyncWebhook),
+  DeleteSyncWebhook(DeleteSyncWebhook),
 
   // ==== TAG ====
   CreateTag(CreateTag),

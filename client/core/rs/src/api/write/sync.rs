@@ -3,9 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::sync::{
+use crate::entities::{sync::{
   ResourceSync, _PartialResourceSyncConfig,
-};
+}, NoData};
 
 use super::MonitorWriteRequest;
 
@@ -96,3 +96,52 @@ pub struct RefreshResourceSyncPending {
   /// Id or name
   pub sync: String,
 }
+
+//
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SyncWebhookAction {
+  Refresh,
+  Sync,
+}
+
+/// Create a webhook on the github repo attached to the sync
+/// passed in request. Response: [CreateSyncWebhookResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(CreateSyncWebhookResponse)]
+pub struct CreateSyncWebhook {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub sync: String,
+  /// "Refresh" or "Sync"
+  pub action: SyncWebhookAction,
+}
+
+#[typeshare]
+pub type CreateSyncWebhookResponse = NoData;
+
+//
+
+/// Delete the webhook on the github repo attached to the sync
+/// passed in request. Response: [DeleteSyncWebhookResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(DeleteSyncWebhookResponse)]
+pub struct DeleteSyncWebhook {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub sync: String,
+  /// "Refresh" or "Sync"
+  pub action: SyncWebhookAction,
+}
+
+#[typeshare]
+pub type DeleteSyncWebhookResponse = NoData;

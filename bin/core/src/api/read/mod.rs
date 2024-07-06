@@ -127,6 +127,7 @@ enum ReadRequest {
   GetResourceSyncsSummary(GetResourceSyncsSummary),
   GetResourceSync(GetResourceSync),
   GetResourceSyncActionState(GetResourceSyncActionState),
+  GetSyncWebhooksEnabled(GetSyncWebhooksEnabled),
   ListResourceSyncs(ListResourceSyncs),
   ListFullResourceSyncs(ListFullResourceSyncs),
 

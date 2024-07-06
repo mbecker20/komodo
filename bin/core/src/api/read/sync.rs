@@ -2,6 +2,7 @@ use anyhow::Context;
 use monitor_client::{
   api::read::*,
   entities::{
+    config::core::CoreConfig,
     permission::PermissionLevel,
     sync::{
       PendingSyncUpdatesData, ResourceSync, ResourceSyncActionState,
@@ -13,8 +14,11 @@ use monitor_client::{
 use resolver_api::Resolve;
 
 use crate::{
+  config::core_config,
   resource,
-  state::{action_states, resource_sync_state_cache, State},
+  state::{
+    action_states, github_client, resource_sync_state_cache, State,
+  },
 };
 
 impl Resolve<GetResourceSync, User> for State {
@@ -135,5 +139,88 @@ impl Resolve<GetResourceSyncsSummary, User> for State {
     }
 
     Ok(res)
+  }
+}
+
+impl Resolve<GetSyncWebhooksEnabled, User> for State {
+  async fn resolve(
+    &self,
+    GetSyncWebhooksEnabled { sync }: GetSyncWebhooksEnabled,
+    user: User,
+  ) -> anyhow::Result<GetSyncWebhooksEnabledResponse> {
+    let Some(github) = github_client() else {
+      return Ok(GetSyncWebhooksEnabledResponse {
+        managed: false,
+        refresh_enabled: false,
+        sync_enabled: false,
+      });
+    };
+
+    let sync = resource::get_check_permissions::<ResourceSync>(
+      &sync,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+
+    if sync.config.repo.is_empty() {
+      return Ok(GetSyncWebhooksEnabledResponse {
+        managed: false,
+        refresh_enabled: false,
+        sync_enabled: false,
+      });
+    }
+
+    let mut split = sync.config.repo.split('/');
+    let owner = split.next().context("Sync repo has no owner")?;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      github_webhook_app,
+      ..
+    } = core_config();
+
+    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+      return Ok(GetSyncWebhooksEnabledResponse {
+        managed: false,
+        refresh_enabled: false,
+        sync_enabled: false,
+      });
+    }
+
+    let repo_name =
+      split.next().context("Repo repo has no repo after the /")?;
+
+    let github_repos = github.repos();
+    let webhooks = github_repos
+      .list_all_webhooks(owner, repo_name)
+      .await
+      .context("failed to list all webhooks on repo")?
+      .body;
+
+    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let refresh_url =
+      format!("{host}/listener/github/sync/{}/refresh", sync.id);
+    let sync_url =
+      format!("{host}/listener/github/sync/{}/sync", sync.id);
+
+    let mut refresh_enabled = false;
+    let mut sync_enabled = false;
+
+    for webhook in webhooks {
+      if webhook.active && webhook.config.url == refresh_url {
+        refresh_enabled = true
+      }
+      if webhook.active && webhook.config.url == sync_url {
+        sync_enabled = true
+      }
+    }
+
+    Ok(GetSyncWebhooksEnabledResponse {
+      managed: true,
+      refresh_enabled,
+      sync_enabled,
+    })
   }
 }

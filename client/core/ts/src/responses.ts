@@ -115,6 +115,7 @@ export type ReadResponses = {
   GetResourceSyncsSummary: Types.GetResourceSyncsSummaryResponse;
   GetResourceSync: Types.GetResourceSyncResponse;
   GetResourceSyncActionState: Types.GetResourceSyncActionStateResponse;
+  GetSyncWebhooksEnabled: Types.GetSyncWebhooksEnabledResponse;
   ListResourceSyncs: Types.ListResourceSyncsResponse;
   ListFullResourceSyncs: Types.ListFullResourceSyncsResponse;
 
@@ -227,6 +228,8 @@ export type WriteResponses = {
   DeleteResourceSync: Types.ResourceSync;
   UpdateResourceSync: Types.ResourceSync;
   RefreshResourceSyncPending: Types.ResourceSync;
+  CreateSyncWebhook: Types.CreateSyncWebhookResponse;
+  DeleteSyncWebhook: Types.DeleteSyncWebhookResponse;
 
   // ==== TAG ====
   CreateTag: Types.Tag;

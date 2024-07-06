@@ -255,6 +255,7 @@ impl Resolve<DeleteRepoWebhook, User> for State {
       }
     }
 
-    Err(anyhow!("Didn't find any webhook to delete"))
+    // No webhook to delete, all good
+    Ok(NoData {})
   }
 }

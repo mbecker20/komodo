@@ -1542,6 +1542,10 @@ export type CreateRepoWebhookResponse = NoData;
 
 export type DeleteRepoWebhookResponse = NoData;
 
+export type CreateSyncWebhookResponse = NoData;
+
+export type DeleteSyncWebhookResponse = NoData;
+
 export type UpdateTagsOnResourceResponse = NoData;
 
 export type CreateServiceUserResponse = User;
@@ -2793,6 +2797,25 @@ export interface GetResourceSyncsSummaryResponse {
 	unknown: number;
 }
 
+/** Get a target Sync's configured webhooks. Response: [GetSyncWebhooksEnabledResponse]. */
+export interface GetSyncWebhooksEnabled {
+	/** Id or name */
+	sync: string;
+}
+
+/** Response for [GetSyncWebhooksEnabled] */
+export interface GetSyncWebhooksEnabledResponse {
+	/**
+	 * Whether the repo webhooks can even be managed.
+	 * The repo owner must be in `github_webhook_app.owners` list to be managed.
+	 */
+	managed: boolean;
+	/** Whether pushes to branch trigger refresh. Will always be false if managed is false. */
+	refresh_enabled: boolean;
+	/** Whether pushes to branch trigger sync execution. Will always be false if managed is false. */
+	sync_enabled: boolean;
+}
+
 /** Get data for a specific tag. Response [Tag]. */
 export interface GetTag {
 	/** Id or name */
@@ -3592,6 +3615,33 @@ export interface RefreshResourceSyncPending {
 	sync: string;
 }
 
+export enum SyncWebhookAction {
+	Refresh = "Refresh",
+	Sync = "Sync",
+}
+
+/**
+ * Create a webhook on the github repo attached to the sync
+ * passed in request. Response: [CreateSyncWebhookResponse]
+ */
+export interface CreateSyncWebhook {
+	/** Id or name */
+	sync: string;
+	/** "Refresh" or "Sync" */
+	action: SyncWebhookAction;
+}
+
+/**
+ * Delete the webhook on the github repo attached to the sync
+ * passed in request. Response: [DeleteSyncWebhookResponse]
+ */
+export interface DeleteSyncWebhook {
+	/** Id or name */
+	sync: string;
+	/** "Refresh" or "Sync" */
+	action: SyncWebhookAction;
+}
+
 /** Create a tag. Response: [Tag]. */
 export interface CreateTag {
 	/** The name of the tag. */
@@ -4099,6 +4149,7 @@ export type ReadRequest =
 	| { type: "GetResourceSyncsSummary", params: GetResourceSyncsSummary }
 	| { type: "GetResourceSync", params: GetResourceSync }
 	| { type: "GetResourceSyncActionState", params: GetResourceSyncActionState }
+	| { type: "GetSyncWebhooksEnabled", params: GetSyncWebhooksEnabled }
 	| { type: "ListResourceSyncs", params: ListResourceSyncs }
 	| { type: "ListFullResourceSyncs", params: ListFullResourceSyncs }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
@@ -4188,6 +4239,8 @@ export type WriteRequest =
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }
 	| { type: "UpdateResourceSync", params: UpdateResourceSync }
 	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
+	| { type: "CreateSyncWebhook", params: CreateSyncWebhook }
+	| { type: "DeleteSyncWebhook", params: DeleteSyncWebhook }
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "RenameTag", params: RenameTag }
