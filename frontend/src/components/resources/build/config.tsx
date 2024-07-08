@@ -73,7 +73,7 @@ export const BuildConfig = ({
                           variant="secondary"
                           onClick={() =>
                             set({
-                              version: { major: major + 1, minor, patch: 0 },
+                              version: { major: major + 1, minor: 0, patch: 0 },
                             })
                           }
                         >
