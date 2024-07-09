@@ -5,7 +5,8 @@ use merge_config_files::parse_config_file;
 use monitor_client::entities::{
   config::core::{
     AwsCredentials, CoreConfig, Env, GithubWebhookAppConfig,
-    HetznerCredentials, MongoConfig, OauthCredentials,
+    GithubWebhookAppInstallationConfig, HetznerCredentials,
+    MongoConfig, OauthCredentials,
   },
   logger::LogConfig,
 };
@@ -45,6 +46,27 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or_else(|e| {
           panic!("failed at parsing config at {config_path} | {e:#}")
         });
+    let installations = match (env.monitor_github_webhook_app_installations_ids, env.monitor_github_webhook_app_installations_namespaces) {
+      (Some(ids), Some(namespaces)) => {
+        if ids.len() != namespaces.len() {
+          panic!("MONITOR_GITHUB_WEBHOOK_APP_INSTALLATIONS_IDS length and MONITOR_GITHUB_WEBHOOK_APP_INSTALLATIONS_NAMESPACES length mismatch. Got {ids:?} and {namespaces:?}")
+        }
+        ids
+          .into_iter()
+          .zip(namespaces)
+          .map(|(id, namespace)| GithubWebhookAppInstallationConfig { 
+            id,
+            namespace
+          })
+          .collect()
+      },
+      (Some(_), None) | (None, Some(_)) => {
+        panic!("Got only one of MONITOR_GITHUB_WEBHOOK_APP_INSTALLATIONS_IDS or MONITOR_GITHUB_WEBHOOK_APP_INSTALLATIONS_NAMESPACES, both MUST be provided");
+      }
+      (None, None) => {
+        config.github_webhook_app.installations
+      }
+    };
     // recreating CoreConfig here makes sure we apply all env overrides.
     CoreConfig {
       title: env.monitor_title.unwrap_or(config.title),
@@ -113,15 +135,10 @@ pub fn core_config() -> &'static CoreConfig {
         app_id: env
           .monitor_github_webhook_app_app_id
           .unwrap_or(config.github_webhook_app.app_id),
-        installation_id: env
-          .monitor_github_webhook_app_installation_id
-          .unwrap_or(config.github_webhook_app.installation_id),
-        owners: env
-          .monitor_github_webhook_app_owners
-          .unwrap_or(config.github_webhook_app.owners),
         pk_path: env
           .monitor_github_webhook_app_pk_path
           .unwrap_or(config.github_webhook_app.pk_path),
+        installations,
       },
       aws: AwsCredentials {
         access_key_id: env

@@ -68,11 +68,9 @@ async fn prune_stats() -> anyhow::Result<()> {
   let res = db_client()
     .await
     .stats
-    .delete_many(
-      doc! {
-        "ts": { "$lt": delete_before_ts }
-      },
-    )
+    .delete_many(doc! {
+      "ts": { "$lt": delete_before_ts }
+    })
     .await?;
   info!("deleted {} stats from db", res.deleted_count);
   Ok(())
@@ -88,11 +86,9 @@ async fn prune_alerts() -> anyhow::Result<()> {
   let res = db_client()
     .await
     .alerts
-    .delete_many(
-      doc! {
-        "ts": { "$lt": delete_before_ts }
-      },
-    )
+    .delete_many(doc! {
+      "ts": { "$lt": delete_before_ts }
+    })
     .await?;
   info!("deleted {} alerts from db", res.deleted_count);
   Ok(())

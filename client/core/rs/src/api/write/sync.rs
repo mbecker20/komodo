@@ -3,9 +3,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{sync::{
-  ResourceSync, _PartialResourceSyncConfig,
-}, NoData};
+use crate::entities::{
+  sync::{ResourceSync, _PartialResourceSyncConfig},
+  NoData,
+};
 
 use super::MonitorWriteRequest;
 

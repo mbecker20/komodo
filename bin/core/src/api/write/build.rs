@@ -100,19 +100,11 @@ impl Resolve<CreateBuildWebhook, User> for State {
     let mut split = build.config.repo.split('/');
     let owner = split.next().context("Build repo has no owner")?;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      github_webhook_app,
-      github_webhook_secret,
-      ..
-    } = core_config();
-
-    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+    let Some(github) = github.get(owner) else {
       return Err(anyhow!(
         "Cannot manage repo webhooks under owner {owner}"
       ));
-    }
+    };
 
     let repo =
       split.next().context("Build repo has no repo after the /")?;
@@ -125,6 +117,13 @@ impl Resolve<CreateBuildWebhook, User> for State {
       .await
       .context("failed to list all webhooks on repo")?
       .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      github_webhook_secret,
+      ..
+    } = core_config();
 
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let url = format!("{host}/listener/github/build/{}", build.id);
@@ -203,18 +202,11 @@ impl Resolve<DeleteBuildWebhook, User> for State {
     let mut split = build.config.repo.split('/');
     let owner = split.next().context("Build repo has no owner")?;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      github_webhook_app,
-      ..
-    } = core_config();
-
-    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+    let Some(github) = github.get(owner) else {
       return Err(anyhow!(
         "Cannot manage repo webhooks under owner {owner}"
       ));
-    }
+    };
 
     let repo =
       split.next().context("Build repo has no repo after the /")?;
@@ -226,6 +218,12 @@ impl Resolve<DeleteBuildWebhook, User> for State {
       .await
       .context("failed to list all webhooks on repo")?
       .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      ..
+    } = core_config();
 
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let url = format!("{host}/listener/github/build/{}", build.id);

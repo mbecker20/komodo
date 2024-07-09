@@ -174,30 +174,30 @@ impl Resolve<GetSyncWebhooksEnabled, User> for State {
     let mut split = sync.config.repo.split('/');
     let owner = split.next().context("Sync repo has no owner")?;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      github_webhook_app,
-      ..
-    } = core_config();
-
-    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+    let Some(github) = github.get(owner) else {
       return Ok(GetSyncWebhooksEnabledResponse {
         managed: false,
         refresh_enabled: false,
         sync_enabled: false,
       });
-    }
+    };
 
     let repo_name =
       split.next().context("Repo repo has no repo after the /")?;
 
     let github_repos = github.repos();
+
     let webhooks = github_repos
       .list_all_webhooks(owner, repo_name)
       .await
       .context("failed to list all webhooks on repo")?
       .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      ..
+    } = core_config();
 
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let refresh_url =

@@ -341,29 +341,29 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
     let mut split = build.config.repo.split('/');
     let owner = split.next().context("Build repo has no owner")?;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      github_webhook_app,
-      ..
-    } = core_config();
-
-    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+    let Some(github) = github.get(owner) else {
       return Ok(GetBuildWebhookEnabledResponse {
         managed: false,
         enabled: false,
       });
-    }
+    };
 
     let repo =
       split.next().context("Build repo has no repo after the /")?;
 
     let github_repos = github.repos();
+
     let webhooks = github_repos
       .list_all_webhooks(owner, repo)
       .await
       .context("failed to list all webhooks on repo")?
       .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      ..
+    } = core_config();
 
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let url = format!("{host}/listener/github/build/{}", build.id);

@@ -1,4 +1,7 @@
-use std::sync::{Arc, OnceLock};
+use std::{
+  collections::HashMap,
+  sync::{Arc, OnceLock},
+};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
@@ -43,22 +46,24 @@ pub fn jwt_client() -> &'static JwtClient {
   JWT_CLIENT.get_or_init(|| JwtClient::new(core_config()))
 }
 
-pub fn github_client() -> Option<&'static octorust::Client> {
-  static GITHUB_CLIENT: OnceLock<Option<octorust::Client>> =
-    OnceLock::new();
+pub fn github_client(
+) -> Option<&'static HashMap<String, octorust::Client>> {
+  static GITHUB_CLIENT: OnceLock<
+    Option<HashMap<String, octorust::Client>>,
+  > = OnceLock::new();
   GITHUB_CLIENT
     .get_or_init(|| {
       let CoreConfig {
         github_webhook_app:
           GithubWebhookAppConfig {
             app_id,
-            installation_id,
+            installations,
             pk_path,
             ..
           },
         ..
       } = core_config();
-      if *app_id == 0 || *installation_id == 0 {
+      if *app_id == 0 || installations.is_empty() {
         return None;
       }
       let private_key = std::fs::read(pk_path)
@@ -76,17 +81,24 @@ pub fn github_client() -> Option<&'static octorust::Client> {
         )
         .unwrap();
 
-      let token_generator =
-        InstallationTokenGenerator::new(*installation_id, jwt);
+      let mut clients =
+        HashMap::with_capacity(installations.capacity());
 
-      Some(
-        octorust::Client::new(
+      for installation in installations {
+        let token_generator = InstallationTokenGenerator::new(
+          installation.id,
+          jwt.clone(),
+        );
+        let client = octorust::Client::new(
           "github-app",
           Credentials::InstallationToken(token_generator),
         )
         .context("failed to initialize github client")
-        .unwrap(),
-      )
+        .unwrap();
+        clients.insert(installation.namespace.to_string(), client);
+      }
+
+      Some(clients)
     })
     .as_ref()
 }

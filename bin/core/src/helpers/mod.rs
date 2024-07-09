@@ -103,14 +103,12 @@ pub async fn create_permission<T>(
   if let Err(e) = db_client()
     .await
     .permissions
-    .insert_one(
-      Permission {
-        id: Default::default(),
-        user_target: UserTarget::User(user.id.clone()),
-        resource_target: target.clone(),
-        level,
-      },
-    )
+    .insert_one(Permission {
+      id: Default::default(),
+      user_target: UserTarget::User(user.id.clone()),
+      resource_target: target.clone(),
+      level,
+    })
     .await
   {
     error!("failed to create permission for {target:?} | {e:#}");

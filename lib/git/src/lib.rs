@@ -153,7 +153,10 @@ where
   Ok(logs)
 }
 
-#[tracing::instrument(level = "debug", skip(destination, access_token))]
+#[tracing::instrument(
+  level = "debug",
+  skip(destination, access_token)
+)]
 async fn clone_inner(
   repo: &str,
   destination: &Path,

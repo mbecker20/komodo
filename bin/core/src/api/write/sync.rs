@@ -356,19 +356,11 @@ impl Resolve<CreateSyncWebhook, User> for State {
     let mut split = sync.config.repo.split('/');
     let owner = split.next().context("Sync repo has no owner")?;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      github_webhook_app,
-      github_webhook_secret,
-      ..
-    } = core_config();
-
-    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+    let Some(github) = github.get(owner) else {
       return Err(anyhow!(
         "Cannot manage repo webhooks under owner {owner}"
       ));
-    }
+    };
 
     let repo =
       split.next().context("Repo repo has no repo after the /")?;
@@ -381,6 +373,13 @@ impl Resolve<CreateSyncWebhook, User> for State {
       .await
       .context("failed to list all webhooks on repo")?
       .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      github_webhook_secret,
+      ..
+    } = core_config();
 
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let url = match action {
@@ -466,18 +465,11 @@ impl Resolve<DeleteSyncWebhook, User> for State {
     let mut split = sync.config.repo.split('/');
     let owner = split.next().context("Sync repo has no owner")?;
 
-    let CoreConfig {
-      host,
-      github_webhook_base_url,
-      github_webhook_app,
-      ..
-    } = core_config();
-
-    if !github_webhook_app.owners.iter().any(|o| o == owner) {
+    let Some(github) = github.get(owner) else {
       return Err(anyhow!(
         "Cannot manage repo webhooks under owner {owner}"
       ));
-    }
+    };
 
     let repo =
       split.next().context("Sync repo has no repo after the /")?;
@@ -490,6 +482,12 @@ impl Resolve<DeleteSyncWebhook, User> for State {
       .await
       .context("failed to list all webhooks on repo")?
       .body;
+
+    let CoreConfig {
+      host,
+      github_webhook_base_url,
+      ..
+    } = core_config();
 
     let host = github_webhook_base_url.as_ref().unwrap_or(host);
     let url = match action {

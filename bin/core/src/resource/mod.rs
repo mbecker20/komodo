@@ -612,12 +612,10 @@ where
   if let Err(e) = db_client()
     .await
     .permissions
-    .delete_many(
-      doc! {
-        "resource_target.type": variant.as_ref(),
-        "resource_target.id": &id
-      },
-    )
+    .delete_many(doc! {
+      "resource_target.type": variant.as_ref(),
+      "resource_target.id": &id
+    })
     .await
   {
     warn!("failed to delete_many permissions matching target {target:?} | {e:#}");
