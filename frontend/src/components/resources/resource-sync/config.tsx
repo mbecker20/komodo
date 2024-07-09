@@ -172,7 +172,7 @@ export const ResourceSyncConfig = ({
                           </div>
                         </div>
                         <ConfirmButton
-                          title="Enable for Refresh"
+                          title="Enable Refresh"
                           icon={<CirclePlus className="w-4 h-4" />}
                           onClick={() =>
                             createWebhook({
@@ -184,7 +184,7 @@ export const ResourceSyncConfig = ({
                           disabled={disabled || createPending}
                         />
                         <ConfirmButton
-                          title="Enable for Sync"
+                          title="Enable Sync"
                           icon={<CirclePlus className="w-4 h-4" />}
                           onClick={() =>
                             createWebhook({

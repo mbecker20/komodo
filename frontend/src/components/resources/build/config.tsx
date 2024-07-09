@@ -289,7 +289,7 @@ export const BuildConfig = ({
                           </div>
                         </div>
                         <ConfirmButton
-                          title="Enable"
+                          title="Enable Build"
                           icon={<CirclePlus className="w-4 h-4" />}
                           onClick={() => createWebhook({ build: id })}
                           loading={createPending}

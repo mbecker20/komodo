@@ -209,7 +209,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                           </div>
                         </div>
                         <ConfirmButton
-                          title="Enable for Clone"
+                          title="Enable Clone"
                           icon={<CirclePlus className="w-4 h-4" />}
                           onClick={() =>
                             createWebhook({
@@ -221,7 +221,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                           disabled={disabled || createPending}
                         />
                         <ConfirmButton
-                          title="Enable for Pull"
+                          title="Enable Pull"
                           icon={<CirclePlus className="w-4 h-4" />}
                           onClick={() =>
                             createWebhook({
