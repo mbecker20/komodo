@@ -105,7 +105,7 @@ where
     return Ok(logs);
   }
 
-  tracing::info!("repo at {repo_dir:?} cloned with clone_inner");
+  tracing::debug!("repo at {repo_dir:?} cloned");
 
   let commit_hash_log = get_commit_hash_log(&repo_dir).await?;
   logs.push(commit_hash_log);
@@ -122,7 +122,7 @@ where
         ),
       )
       .await;
-      tracing::info!(
+      tracing::debug!(
         "run repo on_clone command | command: {} | cwd: {:?}",
         command.command,
         on_clone_path
@@ -142,7 +142,7 @@ where
         ),
       )
       .await;
-      tracing::info!(
+      tracing::debug!(
         "run repo on_pull command | command: {} | cwd: {:?}",
         command.command,
         on_pull_path
