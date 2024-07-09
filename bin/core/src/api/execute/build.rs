@@ -359,7 +359,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
       warn!("build unsuccessful, alerting...");
       let target = update.target.clone();
       let version = update.version;
-      let err = update.logs.iter().find(|l| !l.success).cloned();
       tokio::spawn(async move {
         let alert = Alert {
           id: Default::default(),
@@ -371,7 +370,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
           data: AlertData::BuildFailed {
             id: build.id,
             name: build.name,
-            err,
             version,
           },
         };
@@ -410,7 +408,6 @@ async fn handle_early_return(
     warn!("build unsuccessful, alerting...");
     let target = update.target.clone();
     let version = update.version;
-    let err = update.logs.iter().find(|l| !l.success).cloned();
     tokio::spawn(async move {
       let alert = Alert {
         id: Default::default(),
@@ -423,7 +420,6 @@ async fn handle_early_return(
           id: build_id,
           name: build_name,
           version,
-          err,
         },
       };
       send_alerts(&[alert]).await

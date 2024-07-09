@@ -352,25 +352,12 @@ async fn send_slack_alert(
       id,
       name,
       version,
-      err,
     } => {
       let text = format!("{level} | Build {name} has failed");
-      let err = err
-        .as_ref()
-        .map(|log| {
-          let stdout = (!log.stdout.is_empty())
-            .then(|| format!("\nstdout: {}", log.stdout))
-            .unwrap_or_default();
-          let stderr = (!log.stderr.is_empty())
-            .then(|| format!("\nstderr: {}", log.stderr))
-            .unwrap_or_default();
-          format!("\nfailed at stage: {}{stdout}{stderr}", log.stage)
-        })
-        .unwrap_or_default();
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "build id: *{id}*\nbuild name: *{name}*\nversion: v{version}{err}",
+          "build id: *{id}*\nbuild name: *{name}*\nversion: v{version}",
         )),
         Block::section(resource_link(ResourceTargetVariant::Build, id))
       ];
