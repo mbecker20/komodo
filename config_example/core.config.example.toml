@@ -84,8 +84,10 @@ passkey = "a_random_passkey"
 
 ## Configure github webhook app. Enables webhook management apis.
 # github_webhook_app.app_id = 1234455 # Find on the app page.
-# github_webhook_app.installation_id = 1234455 # Get after installing the app to user / organization.
-# github_webhook_app.owners = ["mbecker20"] # List of the repo owners which the app has access to.
+# github_webhook_app.installations = [
+#   ## Find the id after installing the app to user / organization. "namespace" is the username / organization name.
+#   { id = 1234, namespace = "mbecker20" }
+# ]
 
 ## Path to github webhook app private key.
 ## This is defaulted to `/github/private-key.pem`, and doesn't need to be changed if running in Docker.
