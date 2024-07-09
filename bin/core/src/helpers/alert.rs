@@ -19,20 +19,18 @@ pub async fn send_alerts(alerts: &[Alert]) {
     return;
   }
 
-  let alerters = match find_collect(
+  let Ok(alerters) = find_collect(
     &db_client().await.alerters,
     doc! { "config.enabled": true },
     None,
   )
   .await
-  {
-    Ok(alerters) => alerters,
-    Err(e) => {
-      error!(
-        "ERROR sending alerts | failed to get alerters from db | {e:#}"
-      );
-      return;
-    }
+  .inspect_err(|e| {
+    error!(
+      "ERROR sending alerts | failed to get alerters from db | {e:#}"
+    )
+  }) else {
+    return;
   };
 
   let handles =

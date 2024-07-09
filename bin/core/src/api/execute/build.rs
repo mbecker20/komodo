@@ -354,9 +354,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
       // don't hold response up for user
       tokio::spawn(async move {
         handle_post_build_redeploy(&build.id).await;
-        info!("post build redeploy handled");
       });
     } else {
+      warn!("build unsuccessful, alerting...");
       let target = update.target.clone();
       let version = update.version;
       let err = update.logs.iter().find(|l| !l.success).cloned();
@@ -407,6 +407,7 @@ async fn handle_early_return(
   }
   update_update(update.clone()).await?;
   if !update.success && !is_cancel {
+    warn!("build unsuccessful, alerting...");
     let target = update.target.clone();
     let version = update.version;
     let err = update.logs.iter().find(|l| !l.success).cloned();
