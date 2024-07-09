@@ -13,7 +13,7 @@ use monitor_client::entities::{
 use run_command::async_run_command;
 use tracing::instrument;
 
-#[tracing::instrument]
+#[tracing::instrument(level = "debug")]
 pub async fn pull(
   path: &Path,
   branch: &Option<String>,
@@ -67,7 +67,7 @@ pub async fn pull(
   logs
 }
 
-#[tracing::instrument(skip(github_token))]
+#[tracing::instrument(level = "debug", skip(github_token))]
 pub async fn clone<T>(
   clone_args: T,
   repo_dir: &Path,
@@ -153,7 +153,7 @@ where
   Ok(logs)
 }
 
-#[tracing::instrument(skip(destination, access_token))]
+#[tracing::instrument(level = "debug", skip(destination, access_token))]
 async fn clone_inner(
   repo: &str,
   destination: &Path,
