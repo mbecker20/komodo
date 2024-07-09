@@ -44,8 +44,7 @@ const on_message = (
   const Components = ResourceComponents[update.target.type as UsableResource];
   const title = Components ? (
     <div className="flex items-center gap-2">
-      <div>Update</div> -
-      <div>{update.operation}</div> -
+      <div>Update</div> -<div>{update.operation}</div> -
       <div>
         <ResourceName
           type={update.target.type as UsableResource}
@@ -65,92 +64,95 @@ const on_message = (
   invalidate(["ListUpdates"]);
   invalidate(["GetUpdate", { id: update.id }]);
 
-  if (update.target.type === "Deployment") {
-    invalidate(
-      ["ListDeployments"],
-      ["GetDeployment"],
-      ["GetLog"],
-      ["GetDeploymentActionState"],
-      ["GetDeploymentContainer"],
-      ["GetDeploymentsSummary"]
-    );
-  }
+  // Do invalidations of local data only if update is completed
+  if (update.status === Types.UpdateStatus.Complete) {
+    if (update.target.type === "Deployment") {
+      invalidate(
+        ["ListDeployments"],
+        ["GetDeployment"],
+        ["GetLog"],
+        ["GetDeploymentActionState"],
+        ["GetDeploymentContainer"],
+        ["GetDeploymentsSummary"]
+      );
+    }
 
-  if (update.target.type === "Server") {
-    invalidate(
-      ["ListServers"],
-      ["GetServer"],
-      ["GetServerActionState"],
-      ["GetServerState"],
-      ["GetHistoricalServerStats"],
-      ["GetServersSummary"]
-    );
-  }
+    if (update.target.type === "Server") {
+      invalidate(
+        ["ListServers"],
+        ["GetServer"],
+        ["GetServerActionState"],
+        ["GetServerState"],
+        ["GetHistoricalServerStats"],
+        ["GetServersSummary"]
+      );
+    }
 
-  if (update.target.type === "Build") {
-    invalidate(
-      ["ListBuilds"],
-      ["GetBuild"],
-      ["GetBuildActionState"],
-      ["GetBuildMonthlyStats"],
-      ["GetBuildVersions"],
-      ["GetBuildsSummary"]
-    );
-  }
+    if (update.target.type === "Build") {
+      invalidate(
+        ["ListBuilds"],
+        ["GetBuild"],
+        ["GetBuildActionState"],
+        ["GetBuildMonthlyStats"],
+        ["GetBuildVersions"],
+        ["GetBuildsSummary"]
+      );
+    }
 
-  if (update.target.type === "Repo") {
-    invalidate(
-      ["ListRepos"],
-      ["GetRepo"],
-      ["GetRepoActionState"],
-      ["GetReposSummary"]
-    );
-  }
+    if (update.target.type === "Repo") {
+      invalidate(
+        ["ListRepos"],
+        ["GetRepo"],
+        ["GetRepoActionState"],
+        ["GetReposSummary"]
+      );
+    }
 
-  if (update.target.type === "Procedure") {
-    invalidate(
-      ["ListProcedures"],
-      ["GetProcedure"],
-      ["GetProcedureActionState"],
-      ["GetProceduresSummary"]
-    );
-  }
+    if (update.target.type === "Procedure") {
+      invalidate(
+        ["ListProcedures"],
+        ["GetProcedure"],
+        ["GetProcedureActionState"],
+        ["GetProceduresSummary"]
+      );
+    }
 
-  if (update.target.type === "Builder") {
-    invalidate(
-      ["ListBuilders"],
-      ["GetBuilder"],
-      ["GetBuilderAvailableAccounts"],
-      ["GetBuildersSummary"]
-    );
-  }
+    if (update.target.type === "Builder") {
+      invalidate(
+        ["ListBuilders"],
+        ["GetBuilder"],
+        ["GetBuilderAvailableAccounts"],
+        ["GetBuildersSummary"]
+      );
+    }
 
-  if (update.target.type === "Alerter") {
-    invalidate(["ListAlerters"], ["GetAlerter"], ["GetAlertersSummary"]);
-  }
+    if (update.target.type === "Alerter") {
+      invalidate(["ListAlerters"], ["GetAlerter"], ["GetAlertersSummary"]);
+    }
 
-  if (update.target.type === "ServerTemplate") {
-    invalidate(
-      ["ListServerTemplates"],
-      ["GetServerTemplate"],
-      ["GetServerTemplatesSummary"]
-    );
-  }
+    if (update.target.type === "ServerTemplate") {
+      invalidate(
+        ["ListServerTemplates"],
+        ["GetServerTemplate"],
+        ["GetServerTemplatesSummary"]
+      );
+    }
 
-  if (update.target.type === "ResourceSync") {
-    invalidate(
-      ["ListResourceSyncs"],
-      ["GetResourceSync"],
-      ["GetResourceSyncActionState"],
-      ["GetResourceSyncsSummary"]
-    );
-  }
+    if (update.target.type === "ResourceSync") {
+      invalidate(
+        ["ListResourceSyncs"],
+        ["GetResourceSync"],
+        ["GetResourceSyncActionState"],
+        ["GetResourceSyncsSummary"]
+      );
+    }
 
-  if (
-    update.target.type === "System" &&
-    update.operation.includes("Variable")
-  ) {
-    invalidate(["ListVariables"], ["GetVariable"]);
+    if (
+      update.target.type === "System" &&
+      update.operation.includes("Variable")
+    ) {
+      invalidate(["ListVariables"], ["GetVariable"]);
+    }
   }
 
   // Run any attached handlers
