@@ -7,7 +7,9 @@ use monitor_client::entities::{
   update::{ResourceTarget, Update},
   user::User,
 };
-use mungos::find::find_collect;
+use mungos::{
+  find::find_collect, mongodb::options::InsertManyOptions,
+};
 
 use crate::legacy::v0;
 
@@ -28,13 +30,21 @@ pub async fn migrate_users(
   legacy_db: &v0::DbClient,
   target_db: &crate::DbClient,
 ) -> anyhow::Result<()> {
+  let existing = find_collect(&target_db.users, None, None)
+    .await
+    .context("failed to get existing target users")?;
+
   let users = find_collect(&legacy_db.users, None, None)
     .await
     .context("failed to get legacy users")?
     .into_iter()
-    .filter_map(|s| {
-      let username = s.username.clone();
-      s.try_into()
+    .filter_map(|user| {
+      if existing.iter().any(|u| u.username == user.username) {
+        return None;
+      }
+
+      let username = user.username.clone();
+      user.try_into()
         .inspect_err(|e| {
           warn!("failed to convert user {username} | {e:#}")
         })
@@ -59,6 +69,10 @@ pub async fn migrate_servers(
   legacy_db: &v0::DbClient,
   target_db: &crate::DbClient,
 ) -> anyhow::Result<()> {
+  let existing = find_collect(&target_db.servers, None, None)
+    .await
+    .context("failed to get existing target servers")?;
+
   let servers = find_collect(&legacy_db.servers, None, None)
     .await
     .context("failed to get legacy servers")?;
@@ -67,6 +81,10 @@ pub async fn migrate_servers(
   let mut permissions = Vec::<Permission>::new();
 
   for server in servers {
+    if existing.iter().any(|s| s.name == server.name) {
+      continue;
+    }
+
     for (user_id, level) in &server.permissions {
       let permission = Permission {
         id: Default::default(),
@@ -92,6 +110,9 @@ pub async fn migrate_servers(
     target_db
       .servers
       .insert_many(new_servers)
+      .with_options(
+        InsertManyOptions::builder().ordered(false).build(),
+      )
       .await
       .context("failed to insert servers on target")?;
   }
@@ -100,6 +121,9 @@ pub async fn migrate_servers(
     target_db
       .permissions
       .insert_many(permissions)
+      .with_options(
+        InsertManyOptions::builder().ordered(false).build(),
+      )
       .await
       .context("failed to insert server permissions on target")?;
   }
@@ -113,6 +137,10 @@ pub async fn migrate_deployments(
   legacy_db: &v0::DbClient,
   target_db: &crate::DbClient,
 ) -> anyhow::Result<()> {
+  let existing = find_collect(&target_db.deployments, None, None)
+    .await
+    .context("failed to get existing target deployments")?;
+
   let deployments = find_collect(&legacy_db.deployments, None, None)
     .await
     .context("failed to get legacy deployments")?;
@@ -121,6 +149,10 @@ pub async fn migrate_deployments(
   let mut permissions = Vec::<Permission>::new();
 
   for deployment in deployments {
+    if existing.iter().any(|d| d.name == deployment.name) {
+      continue;
+    }
+
     for (user_id, level) in &deployment.permissions {
       let permission = Permission {
         id: Default::default(),
@@ -148,6 +180,9 @@ pub async fn migrate_deployments(
     target_db
       .deployments
       .insert_many(new_deployments)
+      .with_options(
+        InsertManyOptions::builder().ordered(false).build(),
+      )
       .await
       .context("failed to insert deployments on target")?;
   }
@@ -156,6 +191,9 @@ pub async fn migrate_deployments(
     target_db
       .permissions
       .insert_many(permissions)
+      .with_options(
+        InsertManyOptions::builder().ordered(false).build(),
+      )
       .await
       .context("failed to insert deployment permissions on target")?;
   }
@@ -169,6 +207,10 @@ pub async fn migrate_builds(
   legacy_db: &v0::DbClient,
   target_db: &crate::DbClient,
 ) -> anyhow::Result<()> {
+  let existing = find_collect(&target_db.builds, None, None)
+    .await
+    .context("failed to get existing target builds")?;
+
   let builds = find_collect(&legacy_db.builds, None, None)
     .await
     .context("failed to get legacy builds")?;
@@ -177,6 +219,10 @@ pub async fn migrate_builds(
   let mut permissions = Vec::<Permission>::new();
 
   for build in builds {
+    if existing.iter().any(|b| b.name == build.name) {
+      continue;
+    }
+
     for (user_id, level) in &build.permissions {
       let permission = Permission {
         id: Default::default(),
@@ -202,16 +248,28 @@ pub async fn migrate_builds(
     target_db
       .builds
       .insert_many(new_builds)
+      .with_options(
+        InsertManyOptions::builder().ordered(false).build(),
+      )
       .await
-      .context("failed to insert builds on target")?;
+      .inspect_err(|e| {
+        warn!("failed to insert builds on target | {e}")
+      })
+      .ok();
   }
 
   if !permissions.is_empty() {
     target_db
       .permissions
       .insert_many(permissions)
+      .with_options(
+        InsertManyOptions::builder().ordered(false).build(),
+      )
       .await
-      .context("failed to insert build permissions on target")?;
+      .inspect_err(|e| {
+        warn!("failed to insert build permissions on target | {e}")
+      })
+      .ok();
   }
 
   info!("builds have been migrated\n");
@@ -240,6 +298,7 @@ pub async fn migrate_updates(
   target_db
     .updates
     .insert_many(updates)
+    .with_options(InsertManyOptions::builder().ordered(false).build())
     .await
     .context("failed to insert updates on target")?;
 
