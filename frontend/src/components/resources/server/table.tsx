@@ -4,12 +4,20 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceLink } from "../common";
 import { Types } from "@monitor/client";
+import { useCallback } from "react";
 
 export const ServerTable = ({
   servers,
 }: {
   servers: Types.ServerListItem[];
 }) => {
+  const deployments = useRead("ListDeployments", {}).data;
+  const deploymentCount = useCallback(
+    (id: string) => {
+      return deployments?.filter((d) => d.info.server_id === id).length || 0;
+    },
+    [deployments]
+  );
   return (
     <DataTable
       tableKey="servers"
@@ -28,8 +36,8 @@ export const ServerTable = ({
         {
           accessorKey: "id",
           sortingFn: (a, b) => {
-            const sa = useDeploymentCount(a.original.id);
-            const sb = useDeploymentCount(b.original.id);
+            const sa = deploymentCount(a.original.id);
+            const sb = deploymentCount(b.original.id);
 
             if (!sa && !sb) return 0;
             if (!sa) return -1;
@@ -42,7 +50,12 @@ export const ServerTable = ({
           header: ({ column }) => (
             <SortableHeader column={column} title="Deployments" />
           ),
-          cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,
+          cell: ({ row }) => {
+            const count =
+              deployments?.filter((d) => d.info.server_id === row.original.id)
+                .length ?? 0;
+            return <>{count}</>;
+          },
         },
         {
           accessorKey: "info.region",
@@ -66,15 +79,4 @@ export const ServerTable = ({
       ]}
     />
   );
-};
-
-const DeploymentCountOnServer = ({ id }: { id: string }) => {
-  const count = useDeploymentCount(id);
-  return <>{count ?? 0}</>;
-};
-
-const useDeploymentCount = (id: string) => {
-  return useRead("ListDeployments", {}).data?.filter(
-    (d) => d.info.server_id === id
-  ).length;
 };
