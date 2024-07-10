@@ -62,7 +62,7 @@ docker run -d --name monitor-core \
 
 Core should now be accessible on the specified port, so navigating to `http://<address>:<port>` will display the login page. 
 
-The first user to log in will be auto enabled and made admin. any additional users to create accounts will be disabled by default.
+The first user to log in will be auto enabled and made an admin. Any additional users to create accounts will be disabled by default, and must be enabled by an admin.
 
 ## Tls
 
