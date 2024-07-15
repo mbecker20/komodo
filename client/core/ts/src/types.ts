@@ -23,6 +23,18 @@ export interface MongoIdObj {
 
 export type MongoId = MongoIdObj;
 
+/** The levels of permission that a User or UserGroup can have on a resource. */
+export enum PermissionLevel {
+	/** No permissions. */
+	None = "None",
+	/** Can see the rousource */
+	Read = "Read",
+	/** Can execute actions on the resource */
+	Execute = "Execute",
+	/** Can update the resource configuration */
+	Write = "Write",
+}
+
 export type UserConfig = 
 	/** User that logs in with username / password */
 	| { type: "Local", data: {
@@ -62,20 +74,14 @@ export interface User {
 	create_server_permissions?: boolean;
 	/** Whether the user has permission to create builds */
 	create_build_permissions?: boolean;
+	/** Give the user elevated permissions on all resources of a certain type */
+	all?: Record<ResourceTarget["type"], PermissionLevel>;
 	/** The user-type specific config. */
 	config: UserConfig;
 	/** When the user last opened updates dropdown. */
 	last_update_view?: I64;
-	/** Recently viewed server ids */
-	recent_servers?: string[];
-	/** Recently viewed deployment ids */
-	recent_deployments?: string[];
-	/** Recently viewed build ids */
-	recent_builds?: string[];
-	/** Recently viewed repo ids */
-	recent_repos?: string[];
-	/** Recently viewed procedure ids */
-	recent_procedures?: string[];
+	/** Recently viewed ids */
+	recents?: Record<ResourceTarget["type"], string[]>;
 	updated_at?: I64;
 }
 
@@ -202,8 +208,6 @@ export type AlertData =
 	name: string;
 	/** The version that failed to build */
 	version: Version;
-	/** The reason build failed */
-	err?: Log;
 }};
 
 /** Representation of an alert in the system. */
@@ -696,18 +700,6 @@ export type UserTarget =
 	| { type: "User", id: string }
 	/** UserGroup Id */
 	| { type: "UserGroup", id: string };
-
-/** The levels of permission that a User or UserGroup can have on a resource. */
-export enum PermissionLevel {
-	/** No permissions. */
-	None = "None",
-	/** Can see the rousource */
-	Read = "Read",
-	/** Can execute actions on the resource */
-	Execute = "Execute",
-	/** Can update the resource configuration */
-	Write = "Write",
-}
 
 /** Representation of a User or UserGroups permission on a resource. */
 export interface Permission {
@@ -1462,6 +1454,14 @@ export type ListApiKeysForServiceUserResponse = ApiKey[];
 
 export type ListUsersResponse = User[];
 
+/**
+ * Permission users at the group level.
+ * 
+ * All users that are part of a group inherit the group's permissions.
+ * A user can be a part of multiple groups. A user's permission on a particular resource
+ * will be resolved to be the maximum permission level between the user's own permissions and
+ * any groups they are a part of.
+ */
 export interface UserGroup {
 	/**
 	 * The Mongo ID of the UserGroup.
@@ -1469,9 +1469,13 @@ export interface UserGroup {
 	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
 	 */
 	_id?: MongoId;
+	/** A name for the user group */
 	name: string;
-	/** User ids */
+	/** User ids of group members */
 	users: string[];
+	/** Give the user group elevated permissions on all resources of a certain type */
+	all?: Record<ResourceTarget["type"], PermissionLevel>;
+	/** Unix time (ms) when user group last updated */
 	updated_at?: I64;
 }
 

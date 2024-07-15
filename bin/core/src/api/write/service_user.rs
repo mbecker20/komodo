@@ -51,11 +51,8 @@ impl Resolve<CreateServiceUser, User> for State {
       create_server_permissions: false,
       create_build_permissions: false,
       last_update_view: 0,
-      recent_servers: Vec::new(),
-      recent_deployments: Vec::new(),
-      recent_builds: Vec::new(),
-      recent_repos: Vec::new(),
-      recent_procedures: Vec::new(),
+      recents: Default::default(),
+      all: Default::default(),
       updated_at: monitor_timestamp(),
     };
     user.id = db_client()

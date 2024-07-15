@@ -11,10 +11,7 @@ use monitor_client::{
     PushRecentlyViewedResponse, SetLastSeenUpdate,
     SetLastSeenUpdateResponse,
   },
-  entities::{
-    api_key::ApiKey, monitor_timestamp, update::ResourceTarget,
-    user::User,
-  },
+  entities::{api_key::ApiKey, monitor_timestamp, user::User},
 };
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_bson};
 use resolver_api::{derive::Resolver, Resolve, Resolver};
@@ -90,33 +87,21 @@ impl Resolve<PushRecentlyViewed, User> for State {
   ) -> anyhow::Result<PushRecentlyViewedResponse> {
     let user = get_user(&user.id).await?;
 
-    let (recents, id, field) = match resource {
-      ResourceTarget::Server(id) => {
-        (user.recent_servers, id, "recent_servers")
+    let (resource_type, id) = resource.extract_variant_id();
+    let update = match user.recents.get(&resource_type) {
+      Some(recents) => {
+        let mut recents = recents
+          .iter()
+          .filter(|_id| !id.eq(*_id))
+          .take(RECENTLY_VIEWED_MAX - 1)
+          .collect::<VecDeque<_>>();
+        recents.push_front(id);
+        doc! { format!("recents.{resource_type}"): to_bson(&recents)? }
       }
-      ResourceTarget::Deployment(id) => {
-        (user.recent_deployments, id, "recent_deployments")
+      None => {
+        doc! { format!("recents.{resource_type}"): [id] }
       }
-      ResourceTarget::Build(id) => {
-        (user.recent_builds, id, "recent_builds")
-      }
-      ResourceTarget::Repo(id) => {
-        (user.recent_repos, id, "recent_repos")
-      }
-      ResourceTarget::Procedure(id) => {
-        (user.recent_procedures, id, "recent_procedures")
-      }
-      _ => return Ok(PushRecentlyViewedResponse {}),
     };
-
-    let mut recents = recents
-      .into_iter()
-      .filter(|_id| !id.eq(_id))
-      .take(RECENTLY_VIEWED_MAX - 1)
-      .collect::<VecDeque<_>>();
-    recents.push_front(id);
-    let update = doc! { field: to_bson(&recents)? };
-
     update_one_by_id(
       &db_client().await.users,
       &user.id,
@@ -124,7 +109,9 @@ impl Resolve<PushRecentlyViewed, User> for State {
       None,
     )
     .await
-    .with_context(|| format!("failed to update {field}"))?;
+    .with_context(|| {
+      format!("failed to update recents.{resource_type}")
+    })?;
 
     Ok(PushRecentlyViewedResponse {})
   }

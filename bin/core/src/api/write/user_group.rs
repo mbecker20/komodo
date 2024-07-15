@@ -29,6 +29,7 @@ impl Resolve<CreateUserGroup, User> for State {
     let user_group = UserGroup {
       id: Default::default(),
       users: Default::default(),
+      all: Default::default(),
       updated_at: monitor_timestamp(),
       name,
     };

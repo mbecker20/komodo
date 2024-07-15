@@ -187,19 +187,17 @@ impl Log {
 
 /// Used to reference a specific resource across all resource types
 #[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
+#[derive( 
   Debug,
   Clone,
   PartialEq,
   Eq,
   Hash,
+  Serialize,
+  Deserialize,
   EnumVariants,
 )]
 #[variant_derive(
-  Serialize,
-  Deserialize,
   Debug,
   Clone,
   Copy,
@@ -207,6 +205,9 @@ impl Log {
   Eq,
   PartialOrd,
   Ord,
+  Hash,
+  Serialize,
+  Deserialize,
   Display,
   EnumString,
   AsRefStr
@@ -214,14 +215,23 @@ impl Log {
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {
   System(String),
+  #[variant_attr(serde(alias = "builds"))]
   Build(String),
+  #[variant_attr(serde(alias = "builders"))]
   Builder(String),
+  #[variant_attr(serde(alias = "deployments"))]
   Deployment(String),
+  #[variant_attr(serde(alias = "servers"))]
   Server(String),
+  #[variant_attr(serde(alias = "repos"))]
   Repo(String),
+  #[variant_attr(serde(alias = "alerters"))]
   Alerter(String),
+  #[variant_attr(serde(alias = "procedures"))]
   Procedure(String),
+  #[variant_attr(serde(alias = "templates"))]
   ServerTemplate(String),
+  #[variant_attr(serde(alias = "syncs"))]
   ResourceSync(String),
 }
 

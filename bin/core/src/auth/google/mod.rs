@@ -102,11 +102,8 @@ async fn callback(
         create_build_permissions: no_users_exist,
         updated_at: ts,
         last_update_view: 0,
-        recent_servers: Vec::new(),
-        recent_deployments: Vec::new(),
-        recent_builds: Vec::new(),
-        recent_repos: Vec::new(),
-        recent_procedures: Vec::new(),
+        all: Default::default(),
+        recents: Default::default(),
         config: UserConfig::Google {
           google_id,
           avatar: google_user.picture,
