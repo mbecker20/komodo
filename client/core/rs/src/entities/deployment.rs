@@ -309,21 +309,13 @@ pub fn conversions_from_str(
     .enumerate()
     .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
-      let mut split = line.split('=');
-      let local = split
-        .next()
-        .with_context(|| {
-          format!("line {i} does not have 'local' key")
-        })?
-        .trim()
-        .to_string();
+      let (local, container) =
+        line.split_once('=').with_context(|| {
+          format!("line {i} missing assignment (=)")
+        })?;
+      let local = local.trim().to_string();
       // remove trailing comments
-      let mut container_split = split
-        .next()
-        .with_context(|| {
-          format!("line {i} does not have 'container' key")
-        })?
-        .split('#');
+      let mut container_split = container.split('#');
       let container = container_split
         .next()
         .with_context(|| {
@@ -618,20 +610,16 @@ pub fn term_signal_labels_from_str(
     .enumerate()
     .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
-      let mut split = line.split('=');
-      let signal = split
-        .next()
-        .with_context(|| format!("line {i} does not have signal"))?
-        .trim()
-        .parse::<TerminationSignal>()
-        .with_context(|| {
-          format!("line {i} does not have valid signal")
+      let (signal, label) =
+        line.split_once('=').with_context(|| {
+          format!("line {i} missing assignment (=)")
         })?;
+      let signal =
+        signal.trim().parse::<TerminationSignal>().with_context(
+          || format!("line {i} does not have valid signal"),
+        )?;
       // remove trailing comments
-      let mut label_split = split
-        .next()
-        .with_context(|| format!("line {i} does not have label"))?
-        .split('#');
+      let mut label_split = label.split('#');
       let label = label_split
         .next()
         .with_context(|| format!("line {i} does not have label"))?
