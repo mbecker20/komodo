@@ -62,7 +62,6 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
       create_build_permissions: no_users_exist,
       updated_at: ts,
       last_update_view: 0,
-      all: Default::default(),
       recents: Default::default(),
       config: UserConfig::Local { password },
     };

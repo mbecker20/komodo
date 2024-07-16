@@ -29,7 +29,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::query::get_resource_ids_for_non_admin,
+  helpers::query::get_resource_ids_for_user,
   resource,
   state::{db_client, State},
 };
@@ -45,43 +45,41 @@ impl Resolve<ListUpdates, User> for State {
     let query = if user.admin || core_config().transparent_mode {
       query
     } else {
-      let server_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let server_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Server,
       )
       .await?;
-      let deployment_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let deployment_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Deployment,
       )
       .await?;
-      let build_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let build_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Build,
       )
       .await?;
-      let repo_ids = get_resource_ids_for_non_admin(
-        &user.id,
-        ResourceTargetVariant::Repo,
-      )
-      .await?;
-      let procedure_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let repo_ids =
+        get_resource_ids_for_user(&user, ResourceTargetVariant::Repo)
+          .await?;
+      let procedure_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Procedure,
       )
       .await?;
-      let builder_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let builder_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Builder,
       )
       .await?;
-      let alerter_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let alerter_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Alerter,
       )
       .await?;
-      let server_template_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let server_template_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::ServerTemplate,
       )
       .await?;

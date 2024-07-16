@@ -102,7 +102,6 @@ async fn callback(
         create_build_permissions: no_users_exist,
         updated_at: ts,
         last_update_view: 0,
-        all: Default::default(),
         recents: Default::default(),
         config: UserConfig::Google {
           google_id,

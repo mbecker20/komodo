@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
-use super::{permission::PermissionLevel, update::ResourceTargetVariant};
+use super::update::ResourceTargetVariant;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -48,10 +48,6 @@ pub struct User {
   /// Whether the user has permission to create builds
   #[serde(default)]
   pub create_build_permissions: bool,
-
-  /// Give the user elevated permissions on all resources of a certain type
-  #[serde(default)]
-  pub all: HashMap<ResourceTargetVariant, PermissionLevel>,
 
   /// The user-type specific config.
   pub config: UserConfig,

@@ -44,7 +44,7 @@ impl Resolve<GetPermissionLevel, User> for State {
       return Ok(PermissionLevel::Write);
     }
     let (variant, id) = target.extract_variant_id();
-    get_user_permission_on_resource(&user.id, variant, id).await
+    get_user_permission_on_resource(&user, variant, id).await
   }
 }
 

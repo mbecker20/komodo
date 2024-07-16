@@ -52,7 +52,6 @@ impl Resolve<CreateServiceUser, User> for State {
       create_build_permissions: false,
       last_update_view: 0,
       recents: Default::default(),
-      all: Default::default(),
       updated_at: monitor_timestamp(),
     };
     user.id = db_client()

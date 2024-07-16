@@ -106,7 +106,6 @@ impl TryFrom<User> for monitor_client::entities::user::User {
       create_server_permissions: value.create_server_permissions,
       create_build_permissions: value.create_build_permissions,
       last_update_view: Default::default(),
-      all: Default::default(),
       recents: Default::default(),
       updated_at: unix_from_monitor_ts(&value.updated_at)?,
     };

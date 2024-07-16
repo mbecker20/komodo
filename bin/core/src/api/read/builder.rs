@@ -1,6 +1,7 @@
 use std::{collections::HashSet, str::FromStr};
 
 use anyhow::Context;
+use mongo_indexed::Document;
 use monitor_client::{
   api::read::{self, *},
   entities::{
@@ -15,7 +16,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::query::get_resource_ids_for_non_admin,
+  helpers::query::get_resource_ids_for_user,
   resource,
   state::{db_client, State},
 };
@@ -61,26 +62,27 @@ impl Resolve<GetBuildersSummary, User> for State {
     GetBuildersSummary {}: GetBuildersSummary,
     user: User,
   ) -> anyhow::Result<GetBuildersSummaryResponse> {
-    let query = if user.admin || core_config().transparent_mode {
-      None
-    } else {
-      let ids = get_resource_ids_for_non_admin(
-        &user.id,
-        ResourceTargetVariant::Builder,
-      )
-      .await?
-      .into_iter()
-      .flat_map(|id| ObjectId::from_str(&id))
-      .collect::<Vec<_>>();
-      let query = doc! {
-        "_id": { "$in": ids }
-      };
-      Some(query)
+    let query = match get_resource_ids_for_user(
+      &user,
+      ResourceTargetVariant::Builder,
+    )
+    .await?
+    {
+      Some(ids) => {
+        let ids = ids
+          .into_iter()
+          .flat_map(|id| ObjectId::from_str(&id))
+          .collect::<Vec<_>>();
+        doc! {
+          "_id": { "$in": ids }
+        }
+      }
+      None => Document::new(),
     };
     let total = db_client()
       .await
       .builders
-      .count_documents(query.unwrap_or_default())
+      .count_documents(query)
       .await
       .context("failed to count all builder documents")?;
     let res = GetBuildersSummaryResponse {
