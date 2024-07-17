@@ -3,7 +3,7 @@ resolver = "2"
 members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
-version = "1.10.4"
+version = "1.10.5"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
@@ -15,7 +15,7 @@ monitor_client = { path = "client/core/rs" }
 
 [workspace.dependencies]
 # LOCAL
-monitor_client = "1.10.4"
+monitor_client = "1.10.5"
 periphery_client = { path = "client/periphery/rs" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }

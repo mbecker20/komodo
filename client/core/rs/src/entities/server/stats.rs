@@ -155,11 +155,12 @@ pub struct ServerHealth {
   Debug,
   Clone,
   Copy,
+  PartialEq,
+  Eq,
+  PartialOrd,
   Default,
   Display,
   EnumString,
-  PartialEq,
-  Eq,
 )]
 #[serde(rename_all = "UPPERCASE")]
 #[strum(serialize_all = "UPPERCASE")]

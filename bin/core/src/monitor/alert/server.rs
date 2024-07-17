@@ -146,8 +146,8 @@ pub async fn alert_servers(
         SeverityLevel::Warning | SeverityLevel::Critical,
         Some(mut alert),
       ) => {
-        // modify alert level
-        if alert.level != health.cpu {
+        // modify alert level only if it has increased
+        if alert.level < health.cpu {
           alert.level = health.cpu;
           alert.data = AlertData::ServerCpu {
             id: server_status.id.clone(),
@@ -218,7 +218,8 @@ pub async fn alert_servers(
         SeverityLevel::Warning | SeverityLevel::Critical,
         Some(mut alert),
       ) => {
-        if alert.level != health.mem {
+        // modify alert level only if it has increased
+        if alert.level < health.mem {
           alert.level = health.mem;
           alert.data = AlertData::ServerMem {
             id: server_status.id.clone(),
@@ -299,6 +300,7 @@ pub async fn alert_servers(
           SeverityLevel::Warning | SeverityLevel::Critical,
           Some(mut alert),
         ) => {
+          // Disk is persistent, update alert if health changes regardless of direction
           if *health != alert.level {
             let disk =
               server_status.stats.as_ref().and_then(|stats| {
