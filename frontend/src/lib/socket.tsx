@@ -61,89 +61,101 @@ const on_message = (
     title,
   });
 
+  // Invalidate these every time
   invalidate(["ListUpdates"]);
   invalidate(["GetUpdate", { id: update.id }]);
+  if (update.target.type === "Deployment") {
+    invalidate(["GetDeploymentActionState", { deployment: update.target.id }]);
+  } else if (update.target.type === "Server") {
+    invalidate(["GetServerActionState", { server: update.target.id }]);
+  } else if (update.target.type === "Build") {
+    invalidate(["GetBuildActionState", { build: update.target.id }]);
+  } else if (update.target.type === "Repo") {
+    invalidate(["GetRepoActionState", { repo: update.target.id }]);
+  } else if (update.target.type === "Procedure") {
+    invalidate(["GetProcedureActionState", { procedure: update.target.id }]);
+  } else if (update.target.type === "ResourceSync") {
+    invalidate(["GetResourceSyncActionState", { sync: update.target.id }]);
+  }
 
-  // Do invalidations of local data only if update is completed
+  // Do invalidations of these only if update is completed
   if (update.status === Types.UpdateStatus.Complete) {
     if (update.target.type === "Deployment") {
       invalidate(
         ["ListDeployments"],
-        ["GetDeployment"],
-        ["GetLog"],
-        ["GetDeploymentActionState"],
-        ["GetDeploymentContainer"],
-        ["GetDeploymentsSummary"]
+        ["GetDeploymentsSummary"],
+        ["GetDeployment", { deployment: update.target.id }],
+        ["GetLog", { deployment: update.target.id }],
+        ["GetDeploymentContainer", { deployment: update.target.id }]
       );
     }
 
     if (update.target.type === "Server") {
       invalidate(
         ["ListServers"],
-        ["GetServer"],
-        ["GetServerActionState"],
-        ["GetServerState"],
-        ["GetHistoricalServerStats"],
-        ["GetServersSummary"]
+        ["GetServersSummary"],
+        ["GetServer", { server: update.target.id }],
+        ["GetServerState", { server: update.target.id }],
+        ["GetHistoricalServerStats", { server: update.target.id }]
       );
     }
 
     if (update.target.type === "Build") {
       invalidate(
         ["ListBuilds"],
-        ["GetBuild"],
-        ["GetBuildActionState"],
+        ["GetBuildsSummary"],
         ["GetBuildMonthlyStats"],
-        ["GetBuildVersions"],
-        ["GetBuildsSummary"]
+        ["GetBuild", { build: update.target.id }],
+        ["GetBuildVersions", { build: update.target.id }]
       );
     }
 
     if (update.target.type === "Repo") {
       invalidate(
         ["ListRepos"],
-        ["GetRepo"],
-        ["GetRepoActionState"],
-        ["GetReposSummary"]
+        ["GetReposSummary"],
+        ["GetRepo", { repo: update.target.id }]
       );
     }
 
     if (update.target.type === "Procedure") {
       invalidate(
         ["ListProcedures"],
-        ["GetProcedure"],
-        ["GetProcedureActionState"],
-        ["GetProceduresSummary"]
+        ["GetProceduresSummary"],
+        ["GetProcedure", { procedure: update.target.id }]
       );
     }
 
     if (update.target.type === "Builder") {
       invalidate(
         ["ListBuilders"],
-        ["GetBuilder"],
-        ["GetBuilderAvailableAccounts"],
-        ["GetBuildersSummary"]
+        ["GetBuildersSummary"],
+        ["GetBuilderAvailableAccounts", { builder: update.target.id }],
+        ["GetBuilder", { builder: update.target.id }]
       );
     }
 
     if (update.target.type === "Alerter") {
-      invalidate(["ListAlerters"], ["GetAlerter"], ["GetAlertersSummary"]);
+      invalidate(
+        ["ListAlerters"],
+        ["GetAlertersSummary"],
+        ["GetAlerter", { alerter: update.target.id }]
+      );
     }
 
     if (update.target.type === "ServerTemplate") {
       invalidate(
         ["ListServerTemplates"],
-        ["GetServerTemplate"],
-        ["GetServerTemplatesSummary"]
+        ["GetServerTemplatesSummary"],
+        ["GetServerTemplate", { server_template: update.target.id }]
       );
     }
 
     if (update.target.type === "ResourceSync") {
       invalidate(
         ["ListResourceSyncs"],
-        ["GetResourceSync"],
-        ["GetResourceSyncActionState"],
-        ["GetResourceSyncsSummary"]
+        ["GetResourceSyncsSummary"],
+        ["GetResourceSync", { sync: update.target.id }]
       );
     }
 
