@@ -2370,6 +2370,7 @@ dependencies = [
  "partial_derive2",
  "periphery_client",
  "rand",
+ "regex",
  "reqwest 0.12.5",
  "resolver_api",
  "run_command",

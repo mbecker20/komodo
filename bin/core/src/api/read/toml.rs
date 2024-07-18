@@ -573,6 +573,7 @@ async fn add_user_groups(
         .into_iter()
         .filter_map(|user_id| usernames.get(&user_id).cloned())
         .collect(),
+      all: ug.all,
       permissions,
     });
   }

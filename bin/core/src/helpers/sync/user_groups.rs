@@ -14,11 +14,12 @@ use monitor_client::{
     permission::UserTarget,
     sync::SyncUpdate,
     toml::{PermissionToml, UserGroupToml},
-    update::{Log, ResourceTarget},
+    update::{Log, ResourceTarget, ResourceTargetVariant},
     user::sync_user,
   },
 };
 use mungos::find::find_collect;
+use regex::Regex;
 use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
@@ -72,19 +73,45 @@ pub async fn get_updates_for_view(
     .collect::<HashMap<_, _>>();
 
   for mut user_group in user_groups {
+    user_group.permissions = expand_user_group_permissions(
+      user_group.permissions,
+      all_resources,
+    )
+    .await
+    .with_context(|| {
+      format!(
+        "failed to expand user group {} permissions",
+        user_group.name
+      )
+    })?;
+
     let original = match map.get(&user_group.name).cloned() {
       Some(original) => original,
       None => {
         update.to_create += 1;
-        update.log.push_str(&format!(
-          "\n\n{}: user group: {}\n{}: {:?}\n{}: {:?}",
-          colored("CREATE", Color::Green),
-          colored(&user_group.name, Color::Green),
-          muted("users"),
-          user_group.users,
-          muted("permissions"),
-          user_group.permissions,
-        ));
+        if user_group.all.is_empty() {
+          update.log.push_str(&format!(
+            "\n\n{}: user group: {}\n{}: {:#?}\n{}: {:#?}",
+            colored("CREATE", Color::Green),
+            colored(&user_group.name, Color::Green),
+            muted("users"),
+            user_group.users,
+            muted("permissions"),
+            user_group.permissions,
+          ));
+        } else {
+          update.log.push_str(&format!(
+            "\n\n{}: user group: {}\n{}: {:#?}\n{}: {:#?}\n{}: {:#?}",
+            colored("CREATE", Color::Green),
+            colored(&user_group.name, Color::Green),
+            muted("users"),
+            user_group.users,
+            muted("all"),
+            user_group.all,
+            muted("permissions"),
+            user_group.permissions,
+          ));
+        }
         continue;
       }
     };
@@ -326,6 +353,18 @@ pub async fn get_updates_for_execution(
     .collect::<HashMap<_, _>>();
 
   for mut user_group in user_groups {
+    user_group.permissions = expand_user_group_permissions(
+      user_group.permissions,
+      all_resources,
+    )
+    .await
+    .with_context(|| {
+      format!(
+        "failed to expand user group {} permissions",
+        user_group.name
+      )
+    })?;
+
     let original = match map.get(&user_group.name).cloned() {
       Some(original) => original,
       None => {
@@ -649,4 +688,140 @@ async fn run_update_permissions(
       ))
     }
   }
+}
+
+/// Expands any regex defined targets into the full list
+async fn expand_user_group_permissions(
+  permissions: Vec<PermissionToml>,
+  all_resources: &AllResourcesById,
+) -> anyhow::Result<Vec<PermissionToml>> {
+  let mut expanded =
+    Vec::<PermissionToml>::with_capacity(permissions.capacity());
+
+  for permission in permissions {
+    let (variant, id) = permission.target.extract_variant_id();
+    if id.is_empty() {
+      continue;
+    }
+    if id.starts_with("$reg|") && id.ends_with('|') {
+      let inner = &id[5..(id.len() - 1)];
+      let regex = Regex::new(inner)
+        .with_context(|| format!("invalid regex. got: {inner}"))?;
+      match variant {
+        ResourceTargetVariant::Build => {
+          let permissions = all_resources
+            .builds
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Build(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Builder => {
+          let permissions = all_resources
+            .builders
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Builder(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Deployment => {
+          let permissions = all_resources
+            .deployments
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Deployment(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Server => {
+          let permissions = all_resources
+            .servers
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Server(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Repo => {
+          let permissions = all_resources
+            .repos
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Repo(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Alerter => {
+          let permissions = all_resources
+            .alerters
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Alerter(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Procedure => {
+          let permissions = all_resources
+            .procedures
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Procedure(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::ServerTemplate => {
+          let permissions = all_resources
+            .templates
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::ServerTemplate(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::ResourceSync => {
+          let permissions = all_resources
+            .syncs
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::ResourceSync(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::System => {}
+      }
+    } else {
+      // No regex
+      expanded.push(permission);
+    }
+  }
+
+  Ok(expanded)
 }

@@ -11,7 +11,8 @@ use crate::entities::{
 use super::{
   alerter::Alerter, build::Build, builder::Builder,
   deployment::Deployment, procedure::Procedure, repo::Repo,
-  server::Server, server_template::ServerTemplate, Version,
+  server::Server, server_template::ServerTemplate,
+  sync::ResourceSync, Version,
 };
 
 /// Represents an action performed by Monitor.
@@ -187,7 +188,7 @@ impl Log {
 
 /// Used to reference a specific resource across all resource types
 #[typeshare]
-#[derive( 
+#[derive(
   Debug,
   Clone,
   PartialEq,
@@ -310,6 +311,12 @@ impl From<&Procedure> for ResourceTarget {
 impl From<&ServerTemplate> for ResourceTarget {
   fn from(server_template: &ServerTemplate) -> Self {
     Self::ServerTemplate(server_template.id.clone())
+  }
+}
+
+impl From<&ResourceSync> for ResourceTarget {
+  fn from(resource_sync: &ResourceSync) -> Self {
+    Self::ResourceSync(resource_sync.id.clone())
   }
 }
 
