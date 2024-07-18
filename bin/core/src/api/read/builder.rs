@@ -1,4 +1,4 @@
-use std::{collections::HashSet, str::FromStr};
+use std::collections::HashSet;
 
 use anyhow::Context;
 use mongo_indexed::Document;
@@ -11,7 +11,7 @@ use monitor_client::{
     user::User,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId};
+use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
