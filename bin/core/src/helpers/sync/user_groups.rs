@@ -30,7 +30,6 @@ use super::resource::AllResourcesById;
 pub struct UpdateItem {
   user_group: UserGroupToml,
   update_users: bool,
-  update_permissions: bool,
   all_diff: HashMap<ResourceTargetVariant, PermissionLevel>,
 }
 
@@ -543,37 +542,45 @@ pub async fn get_updates_for_execution(
     original_permissions.sort_by(sort_permissions);
 
     let update_users = user_group.users != original_users;
-    let update_permissions =
-      user_group.permissions != original_permissions;
-
-    // remove any permissions that already exist on original 
-    user_group.permissions.retain(|permission| {
-      // only keep it if its NOT in original
-      !original_permissions.contains(permission)
-    });
 
     // Extend permissions with any existing that have no target in incoming
     let to_remove = original_permissions
-      .into_iter()
+      .iter()
       .filter(|permission| {
         !user_group
           .permissions
           .iter()
           .any(|p| p.target == permission.target)
       })
-      .map(|mut permission| {
-        permission.level = PermissionLevel::None;
-        permission
+      .map(|permission| PermissionToml {
+        target: permission.target.clone(),
+        level: PermissionLevel::None,
       })
       .collect::<Vec<_>>();
     user_group.permissions.extend(to_remove);
 
+    // remove any permissions that already exist on original
+    user_group.permissions.retain(|permission| {
+      let Some(level) = original_permissions
+        .iter()
+        .find(|p| p.target == permission.target)
+        .map(|p| p.level)
+      else {
+        // not in original, keep it
+        return true;
+      };
+      // keep it if level doesn't match
+      level != permission.level
+    });
+
     // only push update after diff detected
-    if update_users || update_permissions || !all_diff.is_empty() {
+    if update_users
+      || !all_diff.is_empty()
+      || !user_group.permissions.is_empty()
+    {
       to_update.push(UpdateItem {
         user_group,
         update_users,
-        update_permissions,
         all_diff: all_diff
           .into_iter()
           .map(|(k, (_, v))| (k, v))
@@ -671,7 +678,6 @@ pub async fn run_updates(
   for UpdateItem {
     user_group,
     update_users,
-    update_permissions,
     all_diff,
   } in to_update
   {
@@ -693,7 +699,7 @@ pub async fn run_updates(
       )
       .await;
     }
-    if update_permissions {
+    if !user_group.permissions.is_empty() {
       run_update_permissions(
         user_group.name,
         user_group.permissions,
