@@ -23,18 +23,6 @@ export interface MongoIdObj {
 
 export type MongoId = MongoIdObj;
 
-/** The levels of permission that a User or UserGroup can have on a resource. */
-export enum PermissionLevel {
-	/** No permissions. */
-	None = "None",
-	/** Can see the rousource */
-	Read = "Read",
-	/** Can execute actions on the resource */
-	Execute = "Execute",
-	/** Can update the resource configuration */
-	Write = "Write",
-}
-
 export type UserConfig = 
 	/** User that logs in with username / password */
 	| { type: "Local", data: {
@@ -57,6 +45,18 @@ export type UserConfig =
 
 export type I64 = number;
 
+/** The levels of permission that a User or UserGroup can have on a resource. */
+export enum PermissionLevel {
+	/** No permissions. */
+	None = "None",
+	/** Can see the rousource */
+	Read = "Read",
+	/** Can execute actions on the resource */
+	Execute = "Execute",
+	/** Can update the resource configuration */
+	Write = "Write",
+}
+
 export interface User {
 	/**
 	 * The Mongo ID of the User.
@@ -74,14 +74,14 @@ export interface User {
 	create_server_permissions?: boolean;
 	/** Whether the user has permission to create builds */
 	create_build_permissions?: boolean;
-	/** Give the user elevated permissions on all resources of a certain type */
-	all?: Record<ResourceTarget["type"], PermissionLevel>;
 	/** The user-type specific config. */
 	config: UserConfig;
 	/** When the user last opened updates dropdown. */
 	last_update_view?: I64;
 	/** Recently viewed ids */
 	recents?: Record<ResourceTarget["type"], string[]>;
+	/** Give the user elevated permissions on all resources of a certain type */
+	all?: Record<ResourceTarget["type"], PermissionLevel>;
 	updated_at?: I64;
 }
 
