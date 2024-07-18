@@ -5,7 +5,9 @@ use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
-use super::update::ResourceTargetVariant;
+use super::{
+  permission::PermissionLevel, update::ResourceTargetVariant,
+};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -59,6 +61,10 @@ pub struct User {
   /// Recently viewed ids
   #[serde(default)]
   pub recents: HashMap<ResourceTargetVariant, Vec<String>>,
+
+  /// Give the user elevated permissions on all resources of a certain type
+  #[serde(default)]
+  pub all: HashMap<ResourceTargetVariant, PermissionLevel>,
 
   #[serde(default)]
   pub updated_at: I64,

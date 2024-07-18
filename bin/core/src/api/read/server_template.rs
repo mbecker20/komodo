@@ -65,15 +65,9 @@ impl Resolve<GetServerTemplatesSummary, User> for State {
     )
     .await?
     {
-      Some(ids) => {
-        let ids = ids
-          .into_iter()
-          .flat_map(|id| ObjectId::from_str(&id))
-          .collect::<Vec<_>>();
-        doc! {
-          "_id": { "$in": ids }
-        }
-      }
+      Some(ids) => doc! {
+        "_id": { "$in": ids }
+      },
       None => Document::new(),
     };
     let total = db_client()

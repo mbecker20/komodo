@@ -172,12 +172,27 @@ pub async fn get_user_permission_on_resource(
   if user.admin {
     return Ok(PermissionLevel::Write);
   }
-  let groups = get_user_user_groups(&user.id).await?;
+
+  // Start with base of Read or None
   let mut base = if core_config().transparent_mode {
     PermissionLevel::Read
   } else {
     PermissionLevel::None
   };
+
+  // Overlay users base on resource variant
+  if let Some(level) = user.all.get(&resource_variant).cloned() {
+    if level > base {
+      base = level;
+    }
+  }
+  if base == PermissionLevel::Write {
+    // No reason to keep going if already Write at this point.
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Overlay any user groups base on resource variant
+  let groups = get_user_user_groups(&user.id).await?;
   for group in &groups {
     if let Some(level) = group.all.get(&resource_variant).cloned() {
       if level > base {
@@ -189,6 +204,8 @@ pub async fn get_user_permission_on_resource(
     // No reason to keep going if already Write at this point.
     return Ok(PermissionLevel::Write);
   }
+
+  // Overlay any specific permissions
   let permission = find_collect(
     &db_client().await.permissions,
     doc! {
@@ -217,13 +234,21 @@ pub async fn get_user_permission_on_resource(
 pub async fn get_resource_ids_for_user(
   user: &User,
   resource_type: ResourceTargetVariant,
-) -> anyhow::Result<Option<Vec<String>>> {
+) -> anyhow::Result<Option<Vec<ObjectId>>> {
+  // Check admin or transparent mode
   if user.admin || core_config().transparent_mode {
     return Ok(None);
   }
 
-  let groups = get_user_user_groups(&user.id).await?;
+  // Check user 'all' on variant
+  if let Some(level) = user.all.get(&resource_type).cloned() {
+    if level > PermissionLevel::None {
+      return Ok(None);
+    }
+  }
 
+  // Check user groups 'all' on variant
+  let groups = get_user_user_groups(&user.id).await?;
   for group in &groups {
     if let Some(level) = group.all.get(&resource_type).cloned() {
       if level > PermissionLevel::None {
@@ -232,7 +257,8 @@ pub async fn get_resource_ids_for_user(
     }
   }
 
-  let permissions = find_collect(
+  // Get specific ids
+  let ids = find_collect(
     &db_client().await.permissions,
     doc! {
       "$or": user_target_query(&user.id, &groups)?,
@@ -246,8 +272,12 @@ pub async fn get_resource_ids_for_user(
   .into_iter()
   .map(|p| p.resource_target.extract_variant_id().1.to_string())
   // collect into hashset first to remove any duplicates
-  .collect::<HashSet<_>>();
-  Ok(Some(permissions.into_iter().collect()))
+  .collect::<HashSet<_>>()
+  .into_iter()
+  .flat_map(|id| ObjectId::from_str(&id))
+  .collect::<Vec<_>>();
+
+  Ok(Some(ids))
 }
 
 pub fn id_or_name_filter(id_or_name: &str) -> Document {

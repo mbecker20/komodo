@@ -63,6 +63,7 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
       updated_at: ts,
       last_update_view: 0,
       recents: Default::default(),
+      all: Default::default(),
       config: UserConfig::Local { password },
     };
 

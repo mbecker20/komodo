@@ -268,10 +268,6 @@ async fn list_full_for_user_using_document<T: MonitorResource>(
   if let Some(ids) =
     get_resource_ids_for_user(user, T::resource_type()).await?
   {
-    let ids = ids
-      .into_iter()
-      .flat_map(|id| ObjectId::from_str(&id))
-      .collect::<Vec<_>>();
     filters.insert("_id", doc! { "$in": ids });
   }
   find_collect(

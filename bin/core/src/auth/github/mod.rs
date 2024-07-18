@@ -88,6 +88,7 @@ async fn callback(
         updated_at: ts,
         last_update_view: 0,
         recents: Default::default(),
+        all: Default::default(),
         config: UserConfig::Github {
           github_id,
           avatar: github_user.avatar_url,

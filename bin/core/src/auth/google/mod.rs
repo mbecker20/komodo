@@ -103,6 +103,7 @@ async fn callback(
         updated_at: ts,
         last_update_view: 0,
         recents: Default::default(),
+        all: Default::default(),
         config: UserConfig::Google {
           google_id,
           avatar: google_user.picture,
