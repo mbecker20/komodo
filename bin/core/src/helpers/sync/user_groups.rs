@@ -546,6 +546,12 @@ pub async fn get_updates_for_execution(
     let update_permissions =
       user_group.permissions != original_permissions;
 
+    // remove any permissions that already exist on original 
+    user_group.permissions.retain(|permission| {
+      // only keep it if its NOT in original
+      !original_permissions.contains(permission)
+    });
+
     // Extend permissions with any existing that have no target in incoming
     let to_remove = original_permissions
       .into_iter()
