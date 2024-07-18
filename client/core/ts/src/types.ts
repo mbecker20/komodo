@@ -3749,6 +3749,19 @@ export interface SetUsersInUserGroup {
 	users: string[];
 }
 
+/**
+ * **Admin only.** Set the user group base permission levels on resource type
+ * Response: [UserGroup]
+ */
+export interface SetUserGroupResourceBasePermission {
+	/** Id or name. */
+	user_group: string;
+	/** The resource type: eg. Server, Build, Deployment, etc. */
+	resource_type: ResourceTarget["type"];
+	/** The base permission level. */
+	level: PermissionLevel;
+}
+
 /** **Admin only.** Create variable. Response: [Variable]. */
 export interface CreateVariable {
 	/** The name of the variable to create. */
@@ -4196,6 +4209,7 @@ export type WriteRequest =
 	| { type: "AddUserToUserGroup", params: AddUserToUserGroup }
 	| { type: "RemoveUserFromUserGroup", params: RemoveUserFromUserGroup }
 	| { type: "SetUsersInUserGroup", params: SetUsersInUserGroup }
+	| { type: "SetUserGroupResourceBasePermission", params: SetUserGroupResourceBasePermission }
 	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
 	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }

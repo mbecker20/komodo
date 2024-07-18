@@ -4,7 +4,8 @@ use anyhow::{anyhow, Context};
 use monitor_client::{
   api::write::{
     AddUserToUserGroup, CreateUserGroup, DeleteUserGroup,
-    RemoveUserFromUserGroup, RenameUserGroup, SetUsersInUserGroup,
+    RemoveUserFromUserGroup, RenameUserGroup,
+    SetUserGroupResourceBasePermission, SetUsersInUserGroup,
   },
   entities::{monitor_timestamp, user::User, user_group::UserGroup},
 };
@@ -230,7 +231,48 @@ impl Resolve<SetUsersInUserGroup, User> for State {
     db.user_groups
       .update_one(filter.clone(), doc! { "$set": { "users": users } })
       .await
-      .context("failed to add user to group on db")?;
+      .context("failed to set users on user group")?;
+    db.user_groups
+      .find_one(filter)
+      .await
+      .context("failed to query db for UserGroups")?
+      .context("no user group with given id")
+  }
+}
+
+impl Resolve<SetUserGroupResourceBasePermission, User> for State {
+  async fn resolve(
+    &self,
+    SetUserGroupResourceBasePermission {
+      user_group,
+      resource_type,
+      permission: level,
+    }: SetUserGroupResourceBasePermission,
+    admin: User,
+  ) -> anyhow::Result<UserGroup> {
+    if !admin.admin {
+      return Err(anyhow!("This call is admin-only"));
+    }
+
+    let filter = match ObjectId::from_str(&user_group) {
+      Ok(id) => doc! { "_id": id },
+      Err(_) => doc! { "name": &user_group },
+    };
+
+    let db = db_client().await;
+
+    db.user_groups
+      .update_one(
+        filter.clone(),
+        doc! {
+          "$set": {
+            format!("all.{resource_type}"): level.as_ref()
+          }
+        },
+      )
+      .await
+      .context("failed to set base permission on db")?;
+
     db.user_groups
       .find_one(filter)
       .await

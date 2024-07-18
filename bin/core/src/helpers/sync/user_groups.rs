@@ -6,12 +6,13 @@ use monitor_client::{
   api::{
     read::ListUserTargetPermissions,
     write::{
-      CreateUserGroup, DeleteUserGroup, SetUsersInUserGroup,
+      CreateUserGroup, DeleteUserGroup,
+      SetUserGroupResourceBasePermission, SetUsersInUserGroup,
       UpdatePermissionOnTarget,
     },
   },
   entities::{
-    permission::UserTarget,
+    permission::{PermissionLevel, UserTarget},
     sync::SyncUpdate,
     toml::{PermissionToml, UserGroupToml},
     update::{Log, ResourceTarget, ResourceTargetVariant},
@@ -30,6 +31,7 @@ pub struct UpdateItem {
   user_group: UserGroupToml,
   update_users: bool,
   update_permissions: bool,
+  all_diff: HashMap<ResourceTargetVariant, PermissionLevel>,
 }
 
 pub struct DeleteItem {
@@ -215,19 +217,24 @@ pub async fn get_updates_for_view(
     user_group.permissions.sort_by(sort_permissions);
     original_permissions.sort_by(sort_permissions);
 
+    let all_diff = diff_group_all(&original.all, &user_group.all);
+
     let update_users = user_group.users != original_users;
     let update_permissions =
       user_group.permissions != original_permissions;
+    let update_all = !all_diff.is_empty();
 
     // only add log after diff detected
-    if update_users || update_permissions {
+    if update_users || update_permissions || update_all {
       update.to_update += 1;
       update.log.push_str(&format!(
         "\n\n{}: user group: '{}'\n-------------------",
         colored("UPDATE", Color::Blue),
         bold(&user_group.name),
       ));
+
       let mut lines = Vec::<String>::new();
+
       if update_users {
         let adding = user_group
           .users
@@ -257,6 +264,27 @@ pub async fn get_updates_for_view(
           muted("adding"),
         ))
       }
+
+      if update_all {
+        let updates = all_diff
+          .into_iter()
+          .map(|(variant, (orig, incoming))| {
+            format!(
+              "{}: {} {} {}",
+              bold(variant),
+              colored(orig, Color::Red),
+              muted("->"),
+              colored(incoming, Color::Green)
+            )
+          })
+          .collect::<Vec<_>>()
+          .join("\n");
+        lines.push(format!(
+          "{}: 'base permission'\n{updates}",
+          muted("field"),
+        ))
+      }
+
       if update_permissions {
         let adding = user_group
           .permissions
@@ -290,6 +318,7 @@ pub async fn get_updates_for_view(
           muted("adding"),
         ))
       }
+
       update.log.push('\n');
       update.log.push_str(&lines.join("\n-------------------\n"));
     }
@@ -472,16 +501,22 @@ pub async fn get_updates_for_execution(
     user_group.permissions.sort_by(sort_permissions);
     original_permissions.sort_by(sort_permissions);
 
+    let all_diff = diff_group_all(&original.all, &user_group.all);
+
     let update_users = user_group.users != original_users;
     let update_permissions =
       user_group.permissions != original_permissions;
 
     // only push update after failed diff
-    if update_users || update_permissions {
+    if update_users || update_permissions || !all_diff.is_empty() {
       to_update.push(UpdateItem {
         user_group,
         update_users,
         update_permissions,
+        all_diff: all_diff
+          .into_iter()
+          .map(|(k, (_, v))| (k, v))
+          .collect(),
       });
     }
   }
@@ -555,6 +590,13 @@ pub async fn run_updates(
       &mut has_error,
     )
     .await;
+    run_update_all(
+      user_group.name.clone(),
+      user_group.all,
+      &mut log,
+      &mut has_error,
+    )
+    .await;
     run_update_permissions(
       user_group.name,
       user_group.permissions,
@@ -569,12 +611,22 @@ pub async fn run_updates(
     user_group,
     update_users,
     update_permissions,
+    all_diff,
   } in to_update
   {
     if update_users {
       set_users(
         user_group.name.clone(),
         user_group.users,
+        &mut log,
+        &mut has_error,
+      )
+      .await;
+    }
+    if !all_diff.is_empty() {
+      run_update_all(
+        user_group.name.clone(),
+        all_diff,
         &mut log,
         &mut has_error,
       )
@@ -655,6 +707,41 @@ async fn set_users(
   }
 }
 
+async fn run_update_all(
+  user_group: String,
+  all_diff: HashMap<ResourceTargetVariant, PermissionLevel>,
+  log: &mut String,
+  has_error: &mut bool,
+) {
+  for (resource_type, permission) in all_diff {
+    if let Err(e) = State
+      .resolve(
+        SetUserGroupResourceBasePermission {
+          user_group: user_group.clone(),
+          resource_type,
+          permission,
+        },
+        sync_user().to_owned(),
+      )
+      .await
+    {
+      *has_error = true;
+      log.push_str(&format!(
+        "\n{}: failed to set base permissions on {resource_type} in group {} | {e:#}",
+        colored("ERROR", Color::Red),
+        bold(&user_group)
+      ))
+    } else {
+      log.push_str(&format!(
+        "\n{}: {} user group '{}' base permissions on {resource_type}",
+        muted("INFO"),
+        colored("updated", Color::Blue),
+        bold(&user_group)
+      ))
+    }
+  }
+}
+
 async fn run_update_permissions(
   user_group: String,
   permissions: Vec<PermissionToml>,
@@ -675,7 +762,7 @@ async fn run_update_permissions(
     {
       *has_error = true;
       log.push_str(&format!(
-        "\n{}: failed to set permssion in group {} | target: {target:?} | {e:#}",
+        "\n{}: failed to set permission in group {} | target: {target:?} | {e:#}",
         colored("ERROR", Color::Red),
         bold(&user_group)
       ))
@@ -824,4 +911,37 @@ async fn expand_user_group_permissions(
   }
 
   Ok(expanded)
+}
+
+type AllDiff =
+  HashMap<ResourceTargetVariant, (PermissionLevel, PermissionLevel)>;
+
+/// diffs user_group.all
+fn diff_group_all(
+  original: &HashMap<ResourceTargetVariant, PermissionLevel>,
+  incoming: &HashMap<ResourceTargetVariant, PermissionLevel>,
+) -> AllDiff {
+  let mut to_update = HashMap::new();
+
+  // need to compare both forward and backward because either hashmap could be sparse.
+
+  // forward direction
+  for (variant, level) in incoming {
+    let original_level = original.get(variant).unwrap_or_default();
+    if level == original_level {
+      continue;
+    }
+    to_update.insert(*variant, (*original_level, *level));
+  }
+
+  // backward direction
+  for (variant, level) in original {
+    let incoming_level = incoming.get(variant).unwrap_or_default();
+    if level == incoming_level {
+      continue;
+    }
+    to_update.insert(*variant, (*level, *incoming_level));
+  }
+
+  to_update
 }

@@ -3,7 +3,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::user_group::UserGroup;
+use crate::entities::{
+  permission::PermissionLevel, update::ResourceTargetVariant,
+  user_group::UserGroup,
+};
 
 use super::MonitorWriteRequest;
 
@@ -96,4 +99,21 @@ pub struct SetUsersInUserGroup {
   pub user_group: String,
   /// The user ids or usernames to hard set as the group's users.
   pub users: Vec<String>,
+}
+
+/// **Admin only.** Set the user group base permission levels on resource type
+/// Response: [UserGroup]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(UserGroup)]
+pub struct SetUserGroupResourceBasePermission {
+  /// Id or name.
+  pub user_group: String,
+  /// The resource type: eg. Server, Build, Deployment, etc.
+  pub resource_type: ResourceTargetVariant,
+  /// The base permission level.
+  pub permission: PermissionLevel,
 }
