@@ -12,7 +12,9 @@ The UI will display the computed sync actions and only execute them upon manual 
 Or the sync execution Github webhook may be configured on the Github repo to
 automatically execute syncs upon pushes to the configured branch.
 
-## Server:
+## Example Declarations
+
+### Server
 
 - [Server config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/server/struct.ServerConfig.html)
 
@@ -26,7 +28,7 @@ config.region = "AshburnDc1"
 config.enabled = true # default: false
 ```
 
-## Builder and build:
+### Builder and build
 
 - [Builder config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/builder/struct.BuilderConfig.html)
 - [Build config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/build/struct.BuildConfig.html)
@@ -67,7 +69,7 @@ org.opencontainers.image.description = Logs randomly at INFO, WARN, ERROR levels
 org.opencontainers.image.licenses = GPL-3.0"""
 ```
 
-## Deployments:
+### Deployments
 
 - [Deployment config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/deployment/struct.DeploymentConfig.html)
 
@@ -125,7 +127,7 @@ VARIABLE_2 = value_2"""
 config.labels = "deployment.type = logger"
 ```
 
-## Procedure:
+### Procedure
 
 - [Procedure config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/procedure/struct.ProcedureConfig.html)
 
@@ -160,7 +162,7 @@ executions = [
 ]
 ```
 
-## Repo:
+### Repo
 
 - [Repo config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/repo/struct.RepoConfig.html)
 
@@ -176,7 +178,7 @@ config.on_pull.path = "."
 config.on_pull.command = "/root/.cargo/bin/cargo build -p monitor_periphery --release && cp ./target/release/periphery /root/periphery"
 ```
 
-## User Group:
+### User Group:
 
 - [UserGroup schema](https://docs.rs/monitor_client/latest/monitor_client/entities/toml/struct.UserGroupToml.html)
 
