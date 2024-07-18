@@ -175,3 +175,23 @@ config.repo = "mbecker20/monitor"
 config.on_pull.path = "."
 config.on_pull.command = "/root/.cargo/bin/cargo build -p monitor_periphery --release && cp ./target/release/periphery /root/periphery"
 ```
+
+## User Group:
+
+- [UserGroup schema](https://docs.rs/monitor_client/latest/monitor_client/entities/toml/struct.UserGroupToml.html)
+
+```toml
+[[user_group]]
+name = "groupo"
+users = ["mbecker20", "karamvirsingh98"]
+# Attach base level of Execute on all builds
+all.Build = "Execute"
+all.Alerter = "Write"
+permissions = [
+  # Attach permissions to specific resources by name
+  { target.type = "Repo", target.id = "monitor-periphery", level = "Execute" },
+  # Attach permissions to many resources with name matching regex (this uses '^(.+)-(.+)$' as regex expression)
+  { target.type = "Server", target.id = "$reg|^(.+)-(.+)$|", level = "Read" },
+  { target.type = "Deployment", target.id = "$reg|^immich|", level = "Execute" },
+]
+```
