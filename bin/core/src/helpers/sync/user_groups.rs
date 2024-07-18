@@ -75,6 +75,10 @@ pub async fn get_updates_for_view(
     .collect::<HashMap<_, _>>();
 
   for mut user_group in user_groups {
+    user_group
+      .permissions
+      .retain(|p| p.level > PermissionLevel::None);
+
     user_group.permissions = expand_user_group_permissions(
       user_group.permissions,
       all_resources,
@@ -108,7 +112,7 @@ pub async fn get_updates_for_view(
             colored(&user_group.name, Color::Green),
             muted("users"),
             user_group.users,
-            muted("all"),
+            muted("base permissions"),
             user_group.all,
             muted("permissions"),
             user_group.permissions,
@@ -136,6 +140,7 @@ pub async fn get_updates_for_view(
       .await
       .context("failed to query for existing UserGroup permissions")?
       .into_iter()
+      .filter(|p| p.level > PermissionLevel::None)
       .map(|mut p| {
         // replace the ids with names
         match &mut p.resource_target {
@@ -214,18 +219,18 @@ pub async fn get_updates_for_view(
     original_users.sort();
     user_group.users.sort();
 
+    let all_diff = diff_group_all(&original.all, &user_group.all);
+
     user_group.permissions.sort_by(sort_permissions);
     original_permissions.sort_by(sort_permissions);
 
-    let all_diff = diff_group_all(&original.all, &user_group.all);
-
     let update_users = user_group.users != original_users;
+    let update_all = !all_diff.is_empty();
     let update_permissions =
       user_group.permissions != original_permissions;
-    let update_all = !all_diff.is_empty();
 
     // only add log after diff detected
-    if update_users || update_permissions || update_all {
+    if update_users || update_all || update_permissions {
       update.to_update += 1;
       update.log.push_str(&format!(
         "\n\n{}: user group: '{}'\n-------------------",
@@ -290,7 +295,10 @@ pub async fn get_updates_for_view(
           .permissions
           .iter()
           .filter(|permission| {
-            !original_permissions.contains(permission)
+            // add if original has no exising permission on the target
+            !original_permissions
+              .iter()
+              .any(|p| p.target == permission.target)
           })
           .map(|permission| format!("{permission:?}"))
           .collect::<Vec<_>>();
@@ -299,10 +307,35 @@ pub async fn get_updates_for_view(
         } else {
           colored(&adding.join(", "), Color::Green)
         };
+        let updating = user_group
+          .permissions
+          .iter()
+          .filter(|permission| {
+            // update if original has exising permission on the target with different level
+            let Some(level) = original_permissions
+              .iter()
+              .find(|p| p.target == permission.target)
+              .map(|p| p.level)
+            else {
+              return false;
+            };
+            permission.level != level
+          })
+          .map(|permission| format!("{permission:?}"))
+          .collect::<Vec<_>>();
+        let updating = if updating.is_empty() {
+          String::from("None")
+        } else {
+          colored(&updating.join(", "), Color::Blue)
+        };
         let removing = original_permissions
           .iter()
           .filter(|permission| {
-            !user_group.permissions.contains(permission)
+            // remove if incoming has no permission on the target
+            !user_group
+              .permissions
+              .iter()
+              .any(|p| p.target == permission.target)
           })
           .map(|permission| format!("{permission:?}"))
           .collect::<Vec<_>>();
@@ -312,9 +345,10 @@ pub async fn get_updates_for_view(
           colored(&removing.join(", "), Color::Red)
         };
         lines.push(format!(
-          "{}:    'permissions'\n{}: {removing}\n{}:   {adding}",
+          "{}:    'permissions'\n{}: {removing}\n{}: {updating}\n{}:   {adding}",
           muted("field"),
           muted("removing"),
+          muted("updating"),
           muted("adding"),
         ))
       }
@@ -382,6 +416,10 @@ pub async fn get_updates_for_execution(
     .collect::<HashMap<_, _>>();
 
   for mut user_group in user_groups {
+    user_group
+      .permissions
+      .retain(|p| p.level > PermissionLevel::None);
+
     user_group.permissions = expand_user_group_permissions(
       user_group.permissions,
       all_resources,
@@ -420,6 +458,7 @@ pub async fn get_updates_for_execution(
       .await
       .context("failed to query for existing UserGroup permissions")?
       .into_iter()
+      .filter(|p| p.level > PermissionLevel::None)
       .map(|mut p| {
         // replace the ids with names
         match &mut p.resource_target {
@@ -498,16 +537,32 @@ pub async fn get_updates_for_execution(
     original_users.sort();
     user_group.users.sort();
 
+    let all_diff = diff_group_all(&original.all, &user_group.all);
+
     user_group.permissions.sort_by(sort_permissions);
     original_permissions.sort_by(sort_permissions);
-
-    let all_diff = diff_group_all(&original.all, &user_group.all);
 
     let update_users = user_group.users != original_users;
     let update_permissions =
       user_group.permissions != original_permissions;
 
-    // only push update after failed diff
+    // Extend permissions with any existing that have no target in incoming
+    let to_remove = original_permissions
+      .into_iter()
+      .filter(|permission| {
+        !user_group
+          .permissions
+          .iter()
+          .any(|p| p.target == permission.target)
+      })
+      .map(|mut permission| {
+        permission.level = PermissionLevel::None;
+        permission
+      })
+      .collect::<Vec<_>>();
+    user_group.permissions.extend(to_remove);
+
+    // only push update after diff detected
     if update_users || update_permissions || !all_diff.is_empty() {
       to_update.push(UpdateItem {
         user_group,
@@ -768,10 +823,12 @@ async fn run_update_permissions(
       ))
     } else {
       log.push_str(&format!(
-        "\n{}: {} user group '{}' permissions",
+        "\n{}: {} user group '{}' permissions | {}: {target:?} | {}: {level}",
         muted("INFO"),
         colored("updated", Color::Blue),
-        bold(&user_group)
+        bold(&user_group),
+        muted("target"),
+        muted("level")
       ))
     }
   }
