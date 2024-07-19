@@ -193,7 +193,7 @@ permissions = [
   # Attach permissions to specific resources by name
   { target.type = "Repo", target.id = "monitor-periphery", level = "Execute" },
   # Attach permissions to many resources with name matching regex (this uses '^(.+)-(.+)$' as regex expression)
-  { target.type = "Server", target.id = "$reg|^(.+)-(.+)$|", level = "Read" },
-  { target.type = "Deployment", target.id = "$reg|^immich|", level = "Execute" },
+  { target.type = "Server", target.id = "\\^(.+)-(.+)$\\", level = "Read" },
+  { target.type = "Deployment", target.id = "\\^immich\\", level = "Execute" },
 ]
 ```

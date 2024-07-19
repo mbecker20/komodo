@@ -859,8 +859,8 @@ async fn expand_user_group_permissions(
     if id.is_empty() {
       continue;
     }
-    if id.starts_with("$reg|") && id.ends_with('|') {
-      let inner = &id[5..(id.len() - 1)];
+    if id.starts_with('\\') && id.ends_with('\\') {
+      let inner = &id[1..(id.len() - 1)];
       let regex = Regex::new(inner)
         .with_context(|| format!("invalid regex. got: {inner}"))?;
       match variant {

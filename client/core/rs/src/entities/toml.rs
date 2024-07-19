@@ -152,7 +152,7 @@ pub struct UserGroupToml {
 pub struct PermissionToml {
   /// Id can be:
   ///   - resource name. `id = "abcd-build"`
-  ///   - regex matching resource names. `id = "$reg|^(.+)-build-([0-9]+)$|"`
+  ///   - regex matching resource names. `id = "\^(.+)-build-([0-9]+)$\"`
   pub target: ResourceTarget,
 
   /// The permission level:
