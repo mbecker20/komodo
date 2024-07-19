@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
   Select,
@@ -807,10 +807,16 @@ export const UserTargetPermissionsOnResourceTypes = ({
   user_target: Types.UserTarget;
 }) => {
   const { toast } = useToast();
+  const inv = useInvalidate();
 
   const { mutate } = useWrite("UpdatePermissionOnResourceType", {
     onSuccess: () => {
       toast({ title: "Updated permissions on target" });
+      if (user_target.type === "User") {
+        inv(["FindUser", { user: user_target.id }]);
+      } else if (user_target.type === "UserGroup") {
+        inv(["GetUserGroup", { user_group: user_target.id }]);
+      }
     },
   });
 
@@ -871,11 +877,11 @@ const PermissionsOnResourceType = ({
 }) => {
   return (
     <Section title="Base Permissions">
-      <div className="flex gap-4 items-center flex-wrap">
+      <div className="p-1 grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {RESOURCE_TARGETS.map((type) => {
           const level = all?.[type] ?? Types.PermissionLevel.None;
           return (
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center justify-between w-[270px]">
               {type}:
               <PermissionLevelSelector
                 level={level}

@@ -22,14 +22,10 @@ export const UserPage = () => {
     (user) => user._id?.$oid === user_id
   );
   const { mutate } = useWrite("UpdateUserBasePermissions", {
-    onSuccess: () => inv(["ListUsers"]),
-    onError: (e) => {
-      console.log("update user permission failure", e);
-      toast({
-        title: "Failed to update user permissions",
-        description: "See console for details",
-        variant: "destructive",
-      });
+    onSuccess: () => {
+      inv(["FindUser", { user: user_id }]);
+      inv(["ListUsers"]);
+      toast({ title: "Modify user base permissions" });
     },
   });
   const enabledClass = user?.enabled ? "text-green-500" : "text-red-500";
@@ -85,7 +81,7 @@ export const UserPage = () => {
       }
     >
       {user.config.type === "Service" && <ApiKeysTable user_id={user_id} />}
-      {!user.admin && (
+      {user.enabled && !user.admin && (
         <>
           <UserTargetPermissionsOnResourceTypes
             user_target={{ type: "User", id: user._id?.$oid! }}
