@@ -1,4 +1,4 @@
-import { UserTargetPermissionsOnResourceTypes } from "@components/config/util";
+import { UserTargetPermissionsOnResourceTypes } from "@components/users/resource-type-permissions";
 import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { PermissionsTable } from "@components/users/permissions-table";

@@ -43,7 +43,7 @@ export const PermissionsTable = ({
   });
   return (
     <Section
-      title="Permissions"
+      title="Specific Permissions"
       actions={
         <div className="flex gap-6 items-center">
           <Input
