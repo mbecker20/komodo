@@ -208,7 +208,7 @@ async fn user_can_see_update(
   }
   let (variant, id) = update_target.extract_variant_id();
   let permissions =
-    get_user_permission_on_resource(&user.id, variant, id).await?;
+    get_user_permission_on_resource(user, variant, id).await?;
   if permissions > PermissionLevel::None {
     Ok(())
   } else {

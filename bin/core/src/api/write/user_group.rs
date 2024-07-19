@@ -29,6 +29,7 @@ impl Resolve<CreateUserGroup, User> for State {
     let user_group = UserGroup {
       id: Default::default(),
       users: Default::default(),
+      all: Default::default(),
       updated_at: monitor_timestamp(),
       name,
     };
@@ -229,7 +230,7 @@ impl Resolve<SetUsersInUserGroup, User> for State {
     db.user_groups
       .update_one(filter.clone(), doc! { "$set": { "users": users } })
       .await
-      .context("failed to add user to group on db")?;
+      .context("failed to set users on user group")?;
     db.user_groups
       .find_one(filter)
       .await

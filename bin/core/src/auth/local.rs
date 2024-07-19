@@ -62,11 +62,8 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
       create_build_permissions: no_users_exist,
       updated_at: ts,
       last_update_view: 0,
-      recent_servers: Vec::new(),
-      recent_deployments: Vec::new(),
-      recent_builds: Vec::new(),
-      recent_repos: Vec::new(),
-      recent_procedures: Vec::new(),
+      recents: Default::default(),
+      all: Default::default(),
       config: UserConfig::Local { password },
     };
 

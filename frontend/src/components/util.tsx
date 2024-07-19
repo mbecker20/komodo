@@ -348,7 +348,7 @@ export const TextUpdateMenu = ({
           <div
             className={cn(
               "text-sm text-nowrap overflow-hidden overflow-ellipsis",
-              !value && "text-muted-foreground",
+              (!value || !!disabled) && "text-muted-foreground",
               triggerClassName
             )}
           >

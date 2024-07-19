@@ -45,6 +45,18 @@ export type UserConfig =
 
 export type I64 = number;
 
+/** The levels of permission that a User or UserGroup can have on a resource. */
+export enum PermissionLevel {
+	/** No permissions. */
+	None = "None",
+	/** Can see the rousource */
+	Read = "Read",
+	/** Can execute actions on the resource */
+	Execute = "Execute",
+	/** Can update the resource configuration */
+	Write = "Write",
+}
+
 export interface User {
 	/**
 	 * The Mongo ID of the User.
@@ -66,16 +78,10 @@ export interface User {
 	config: UserConfig;
 	/** When the user last opened updates dropdown. */
 	last_update_view?: I64;
-	/** Recently viewed server ids */
-	recent_servers?: string[];
-	/** Recently viewed deployment ids */
-	recent_deployments?: string[];
-	/** Recently viewed build ids */
-	recent_builds?: string[];
-	/** Recently viewed repo ids */
-	recent_repos?: string[];
-	/** Recently viewed procedure ids */
-	recent_procedures?: string[];
+	/** Recently viewed ids */
+	recents?: Record<ResourceTarget["type"], string[]>;
+	/** Give the user elevated permissions on all resources of a certain type */
+	all?: Record<ResourceTarget["type"], PermissionLevel>;
 	updated_at?: I64;
 }
 
@@ -202,8 +208,6 @@ export type AlertData =
 	name: string;
 	/** The version that failed to build */
 	version: Version;
-	/** The reason build failed */
-	err?: Log;
 }};
 
 /** Representation of an alert in the system. */
@@ -696,18 +700,6 @@ export type UserTarget =
 	| { type: "User", id: string }
 	/** UserGroup Id */
 	| { type: "UserGroup", id: string };
-
-/** The levels of permission that a User or UserGroup can have on a resource. */
-export enum PermissionLevel {
-	/** No permissions. */
-	None = "None",
-	/** Can see the rousource */
-	Read = "Read",
-	/** Can execute actions on the resource */
-	Execute = "Execute",
-	/** Can update the resource configuration */
-	Write = "Write",
-}
 
 /** Representation of a User or UserGroups permission on a resource. */
 export interface Permission {
@@ -1460,8 +1452,18 @@ export type ListApiKeysResponse = ApiKey[];
 
 export type ListApiKeysForServiceUserResponse = ApiKey[];
 
+export type FindUserResponse = User;
+
 export type ListUsersResponse = User[];
 
+/**
+ * Permission users at the group level.
+ * 
+ * All users that are part of a group inherit the group's permissions.
+ * A user can be a part of multiple groups. A user's permission on a particular resource
+ * will be resolved to be the maximum permission level between the user's own permissions and
+ * any groups they are a part of.
+ */
 export interface UserGroup {
 	/**
 	 * The Mongo ID of the UserGroup.
@@ -1469,9 +1471,13 @@ export interface UserGroup {
 	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
 	 */
 	_id?: MongoId;
+	/** A name for the user group */
 	name: string;
-	/** User ids */
+	/** User ids of group members */
 	users: string[];
+	/** Give the user group elevated permissions on all resources of a certain type */
+	all?: Record<ResourceTarget["type"], PermissionLevel>;
+	/** Unix time (ms) when user group last updated */
 	updated_at?: I64;
 }
 
@@ -1527,6 +1533,8 @@ export type DeleteBuildWebhookResponse = NoData;
 export type UpdateDescriptionResponse = NoData;
 
 export type UpdatePermissionOnTargetResponse = NoData;
+
+export type UpdatePermissionOnResourceTypeResponse = NoData;
 
 export type UpdateUserBasePermissionsResponse = NoData;
 
@@ -2928,19 +2936,29 @@ export interface ListApiKeys {
 }
 
 /**
- * Gets list of api keys for the user at ID.
  * **Admin only.**
+ * Gets list of api keys for the user.
  * Will still fail if you call for a user_id that isn't a service user.
  * Response: [ListApiKeysForServiceUserResponse]
  */
 export interface ListApiKeysForServiceUser {
-	/** The id of the user. */
-	user_id: string;
+	/** Id or username */
+	user: string;
 }
 
 /**
- * Gets list of monitor users.
  * **Admin only.**
+ * Find a user.
+ * Response: [FindUserResponse]
+ */
+export interface FindUser {
+	/** Id or username */
+	user: string;
+}
+
+/**
+ * **Admin only.**
+ * Gets list of monitor users.
  * Response: [ListUsersResponse]
  */
 export interface ListUsers {
@@ -3301,7 +3319,7 @@ export interface UpdateDescription {
 }
 
 /**
- * Update a user or user groups permission on a resource.
+ * **Admin only.** Update a user or user groups permission on a resource.
  * Response: [NoData].
  */
 export interface UpdatePermissionOnTarget {
@@ -3314,7 +3332,20 @@ export interface UpdatePermissionOnTarget {
 }
 
 /**
- * Update a user's "base" permissions, eg. "enabled".
+ * **Admin only.** Update a user or user groups base permission level on a resource type.
+ * Response: [NoData].
+ */
+export interface UpdatePermissionOnResourceType {
+	/** Specify the user or user group. */
+	user_target: UserTarget;
+	/** The resource type: eg. Server, Build, Deployment, etc. */
+	resource_type: ResourceTarget["type"];
+	/** The base permission level. */
+	permission: PermissionLevel;
+}
+
+/**
+ * **Admin only.** Update a user's "base" permissions, eg. "enabled".
  * Response: [NoData].
  */
 export interface UpdateUserBasePermissions {
@@ -4089,6 +4120,7 @@ export type ReadRequest =
 	| { type: "GetAvailableAwsEcrLabels", params: GetAvailableAwsEcrLabels }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetPermissionLevel", params: GetPermissionLevel }
+	| { type: "FindUser", params: FindUser }
 	| { type: "ListUsers", params: ListUsers }
 	| { type: "ListApiKeys", params: ListApiKeys }
 	| { type: "ListApiKeysForServiceUser", params: ListApiKeysForServiceUser }
@@ -4193,6 +4225,7 @@ export type WriteRequest =
 	| { type: "RemoveUserFromUserGroup", params: RemoveUserFromUserGroup }
 	| { type: "SetUsersInUserGroup", params: SetUsersInUserGroup }
 	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
+	| { type: "UpdatePermissionOnResourceType", params: UpdatePermissionOnResourceType }
 	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }
 	| { type: "CreateServer", params: CreateServer }

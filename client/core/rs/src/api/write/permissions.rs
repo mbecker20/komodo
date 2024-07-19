@@ -5,13 +5,13 @@ use typeshare::typeshare;
 
 use crate::entities::{
   permission::{PermissionLevel, UserTarget},
-  update::ResourceTarget,
+  update::{ResourceTarget, ResourceTargetVariant},
   NoData,
 };
 
 use super::MonitorWriteRequest;
 
-/// Update a user or user groups permission on a resource.
+/// **Admin only.** Update a user or user groups permission on a resource.
 /// Response: [NoData].
 #[typeshare]
 #[derive(
@@ -33,7 +33,29 @@ pub type UpdatePermissionOnTargetResponse = NoData;
 
 //
 
-/// Update a user's "base" permissions, eg. "enabled".
+/// **Admin only.** Update a user or user groups base permission level on a resource type.
+/// Response: [NoData].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(UpdatePermissionOnResourceTypeResponse)]
+pub struct UpdatePermissionOnResourceType {
+  /// Specify the user or user group.
+  pub user_target: UserTarget,
+  /// The resource type: eg. Server, Build, Deployment, etc.
+  pub resource_type: ResourceTargetVariant,
+  /// The base permission level.
+  pub permission: PermissionLevel,
+}
+
+#[typeshare]
+pub type UpdatePermissionOnResourceTypeResponse = NoData;
+
+//
+
+/// **Admin only.** Update a user's "base" permissions, eg. "enabled".
 /// Response: [NoData].
 #[typeshare]
 #[derive(

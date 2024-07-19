@@ -14,7 +14,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::query::get_resource_ids_for_non_admin,
+  helpers::query::get_resource_ids_for_user,
   state::{db_client, State},
 };
 
@@ -28,13 +28,13 @@ impl Resolve<ListAlerts, User> for State {
   ) -> anyhow::Result<ListAlertsResponse> {
     let mut query = query.unwrap_or_default();
     if !user.admin && !core_config().transparent_mode {
-      let server_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let server_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Server,
       )
       .await?;
-      let deployment_ids = get_resource_ids_for_non_admin(
-        &user.id,
+      let deployment_ids = get_resource_ids_for_user(
+        &user,
         ResourceTargetVariant::Deployment,
       )
       .await?;

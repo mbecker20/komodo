@@ -7,18 +7,19 @@ use monitor_client::{
     read::ListUserTargetPermissions,
     write::{
       CreateUserGroup, DeleteUserGroup, SetUsersInUserGroup,
-      UpdatePermissionOnTarget,
+      UpdatePermissionOnResourceType, UpdatePermissionOnTarget,
     },
   },
   entities::{
-    permission::UserTarget,
+    permission::{PermissionLevel, UserTarget},
     sync::SyncUpdate,
     toml::{PermissionToml, UserGroupToml},
-    update::{Log, ResourceTarget},
+    update::{Log, ResourceTarget, ResourceTargetVariant},
     user::sync_user,
   },
 };
 use mungos::find::find_collect;
+use regex::Regex;
 use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
@@ -28,7 +29,7 @@ use super::resource::AllResourcesById;
 pub struct UpdateItem {
   user_group: UserGroupToml,
   update_users: bool,
-  update_permissions: bool,
+  all_diff: HashMap<ResourceTargetVariant, PermissionLevel>,
 }
 
 pub struct DeleteItem {
@@ -72,19 +73,49 @@ pub async fn get_updates_for_view(
     .collect::<HashMap<_, _>>();
 
   for mut user_group in user_groups {
+    user_group
+      .permissions
+      .retain(|p| p.level > PermissionLevel::None);
+
+    user_group.permissions = expand_user_group_permissions(
+      user_group.permissions,
+      all_resources,
+    )
+    .await
+    .with_context(|| {
+      format!(
+        "failed to expand user group {} permissions",
+        user_group.name
+      )
+    })?;
+
     let original = match map.get(&user_group.name).cloned() {
       Some(original) => original,
       None => {
         update.to_create += 1;
-        update.log.push_str(&format!(
-          "\n\n{}: user group: {}\n{}: {:?}\n{}: {:?}",
-          colored("CREATE", Color::Green),
-          colored(&user_group.name, Color::Green),
-          muted("users"),
-          user_group.users,
-          muted("permissions"),
-          user_group.permissions,
-        ));
+        if user_group.all.is_empty() {
+          update.log.push_str(&format!(
+            "\n\n{}: user group: {}\n{}: {:#?}\n{}: {:#?}",
+            colored("CREATE", Color::Green),
+            colored(&user_group.name, Color::Green),
+            muted("users"),
+            user_group.users,
+            muted("permissions"),
+            user_group.permissions,
+          ));
+        } else {
+          update.log.push_str(&format!(
+            "\n\n{}: user group: {}\n{}: {:#?}\n{}: {:#?}\n{}: {:#?}",
+            colored("CREATE", Color::Green),
+            colored(&user_group.name, Color::Green),
+            muted("users"),
+            user_group.users,
+            muted("base permissions"),
+            user_group.all,
+            muted("permissions"),
+            user_group.permissions,
+          ));
+        }
         continue;
       }
     };
@@ -107,6 +138,7 @@ pub async fn get_updates_for_view(
       .await
       .context("failed to query for existing UserGroup permissions")?
       .into_iter()
+      .filter(|p| p.level > PermissionLevel::None)
       .map(|mut p| {
         // replace the ids with names
         match &mut p.resource_target {
@@ -185,22 +217,27 @@ pub async fn get_updates_for_view(
     original_users.sort();
     user_group.users.sort();
 
+    let all_diff = diff_group_all(&original.all, &user_group.all);
+
     user_group.permissions.sort_by(sort_permissions);
     original_permissions.sort_by(sort_permissions);
 
     let update_users = user_group.users != original_users;
+    let update_all = !all_diff.is_empty();
     let update_permissions =
       user_group.permissions != original_permissions;
 
     // only add log after diff detected
-    if update_users || update_permissions {
+    if update_users || update_all || update_permissions {
       update.to_update += 1;
       update.log.push_str(&format!(
         "\n\n{}: user group: '{}'\n-------------------",
         colored("UPDATE", Color::Blue),
         bold(&user_group.name),
       ));
+
       let mut lines = Vec::<String>::new();
+
       if update_users {
         let adding = user_group
           .users
@@ -230,12 +267,36 @@ pub async fn get_updates_for_view(
           muted("adding"),
         ))
       }
+
+      if update_all {
+        let updates = all_diff
+          .into_iter()
+          .map(|(variant, (orig, incoming))| {
+            format!(
+              "{}: {} {} {}",
+              bold(variant),
+              colored(orig, Color::Red),
+              muted("->"),
+              colored(incoming, Color::Green)
+            )
+          })
+          .collect::<Vec<_>>()
+          .join("\n");
+        lines.push(format!(
+          "{}: 'base permission'\n{updates}",
+          muted("field"),
+        ))
+      }
+
       if update_permissions {
         let adding = user_group
           .permissions
           .iter()
           .filter(|permission| {
-            !original_permissions.contains(permission)
+            // add if original has no exising permission on the target
+            !original_permissions
+              .iter()
+              .any(|p| p.target == permission.target)
           })
           .map(|permission| format!("{permission:?}"))
           .collect::<Vec<_>>();
@@ -244,10 +305,35 @@ pub async fn get_updates_for_view(
         } else {
           colored(&adding.join(", "), Color::Green)
         };
+        let updating = user_group
+          .permissions
+          .iter()
+          .filter(|permission| {
+            // update if original has exising permission on the target with different level
+            let Some(level) = original_permissions
+              .iter()
+              .find(|p| p.target == permission.target)
+              .map(|p| p.level)
+            else {
+              return false;
+            };
+            permission.level != level
+          })
+          .map(|permission| format!("{permission:?}"))
+          .collect::<Vec<_>>();
+        let updating = if updating.is_empty() {
+          String::from("None")
+        } else {
+          colored(&updating.join(", "), Color::Blue)
+        };
         let removing = original_permissions
           .iter()
           .filter(|permission| {
-            !user_group.permissions.contains(permission)
+            // remove if incoming has no permission on the target
+            !user_group
+              .permissions
+              .iter()
+              .any(|p| p.target == permission.target)
           })
           .map(|permission| format!("{permission:?}"))
           .collect::<Vec<_>>();
@@ -257,12 +343,14 @@ pub async fn get_updates_for_view(
           colored(&removing.join(", "), Color::Red)
         };
         lines.push(format!(
-          "{}:    'permissions'\n{}: {removing}\n{}:   {adding}",
+          "{}:    'permissions'\n{}: {removing}\n{}: {updating}\n{}:   {adding}",
           muted("field"),
           muted("removing"),
+          muted("updating"),
           muted("adding"),
         ))
       }
+
       update.log.push('\n');
       update.log.push_str(&lines.join("\n-------------------\n"));
     }
@@ -326,6 +414,22 @@ pub async fn get_updates_for_execution(
     .collect::<HashMap<_, _>>();
 
   for mut user_group in user_groups {
+    user_group
+      .permissions
+      .retain(|p| p.level > PermissionLevel::None);
+
+    user_group.permissions = expand_user_group_permissions(
+      user_group.permissions,
+      all_resources,
+    )
+    .await
+    .with_context(|| {
+      format!(
+        "failed to expand user group {} permissions",
+        user_group.name
+      )
+    })?;
+
     let original = match map.get(&user_group.name).cloned() {
       Some(original) => original,
       None => {
@@ -352,6 +456,7 @@ pub async fn get_updates_for_execution(
       .await
       .context("failed to query for existing UserGroup permissions")?
       .into_iter()
+      .filter(|p| p.level > PermissionLevel::None)
       .map(|mut p| {
         // replace the ids with names
         match &mut p.resource_target {
@@ -430,19 +535,55 @@ pub async fn get_updates_for_execution(
     original_users.sort();
     user_group.users.sort();
 
+    let all_diff = diff_group_all(&original.all, &user_group.all);
+
     user_group.permissions.sort_by(sort_permissions);
     original_permissions.sort_by(sort_permissions);
 
     let update_users = user_group.users != original_users;
-    let update_permissions =
-      user_group.permissions != original_permissions;
 
-    // only push update after failed diff
-    if update_users || update_permissions {
+    // Extend permissions with any existing that have no target in incoming
+    let to_remove = original_permissions
+      .iter()
+      .filter(|permission| {
+        !user_group
+          .permissions
+          .iter()
+          .any(|p| p.target == permission.target)
+      })
+      .map(|permission| PermissionToml {
+        target: permission.target.clone(),
+        level: PermissionLevel::None,
+      })
+      .collect::<Vec<_>>();
+    user_group.permissions.extend(to_remove);
+
+    // remove any permissions that already exist on original
+    user_group.permissions.retain(|permission| {
+      let Some(level) = original_permissions
+        .iter()
+        .find(|p| p.target == permission.target)
+        .map(|p| p.level)
+      else {
+        // not in original, keep it
+        return true;
+      };
+      // keep it if level doesn't match
+      level != permission.level
+    });
+
+    // only push update after diff detected
+    if update_users
+      || !all_diff.is_empty()
+      || !user_group.permissions.is_empty()
+    {
       to_update.push(UpdateItem {
         user_group,
         update_users,
-        update_permissions,
+        all_diff: all_diff
+          .into_iter()
+          .map(|(k, (_, v))| (k, v))
+          .collect(),
       });
     }
   }
@@ -516,6 +657,13 @@ pub async fn run_updates(
       &mut has_error,
     )
     .await;
+    run_update_all(
+      user_group.name.clone(),
+      user_group.all,
+      &mut log,
+      &mut has_error,
+    )
+    .await;
     run_update_permissions(
       user_group.name,
       user_group.permissions,
@@ -529,7 +677,7 @@ pub async fn run_updates(
   for UpdateItem {
     user_group,
     update_users,
-    update_permissions,
+    all_diff,
   } in to_update
   {
     if update_users {
@@ -541,7 +689,16 @@ pub async fn run_updates(
       )
       .await;
     }
-    if update_permissions {
+    if !all_diff.is_empty() {
+      run_update_all(
+        user_group.name.clone(),
+        all_diff,
+        &mut log,
+        &mut has_error,
+      )
+      .await;
+    }
+    if !user_group.permissions.is_empty() {
       run_update_permissions(
         user_group.name,
         user_group.permissions,
@@ -616,6 +773,41 @@ async fn set_users(
   }
 }
 
+async fn run_update_all(
+  user_group: String,
+  all_diff: HashMap<ResourceTargetVariant, PermissionLevel>,
+  log: &mut String,
+  has_error: &mut bool,
+) {
+  for (resource_type, permission) in all_diff {
+    if let Err(e) = State
+      .resolve(
+        UpdatePermissionOnResourceType {
+          user_target: UserTarget::UserGroup(user_group.clone()),
+          resource_type,
+          permission,
+        },
+        sync_user().to_owned(),
+      )
+      .await
+    {
+      *has_error = true;
+      log.push_str(&format!(
+        "\n{}: failed to set base permissions on {resource_type} in group {} | {e:#}",
+        colored("ERROR", Color::Red),
+        bold(&user_group)
+      ))
+    } else {
+      log.push_str(&format!(
+        "\n{}: {} user group '{}' base permissions on {resource_type}",
+        muted("INFO"),
+        colored("updated", Color::Blue),
+        bold(&user_group)
+      ))
+    }
+  }
+}
+
 async fn run_update_permissions(
   user_group: String,
   permissions: Vec<PermissionToml>,
@@ -636,17 +828,188 @@ async fn run_update_permissions(
     {
       *has_error = true;
       log.push_str(&format!(
-        "\n{}: failed to set permssion in group {} | target: {target:?} | {e:#}",
+        "\n{}: failed to set permission in group {} | target: {target:?} | {e:#}",
         colored("ERROR", Color::Red),
         bold(&user_group)
       ))
     } else {
       log.push_str(&format!(
-        "\n{}: {} user group '{}' permissions",
+        "\n{}: {} user group '{}' permissions | {}: {target:?} | {}: {level}",
         muted("INFO"),
         colored("updated", Color::Blue),
-        bold(&user_group)
+        bold(&user_group),
+        muted("target"),
+        muted("level")
       ))
     }
   }
+}
+
+/// Expands any regex defined targets into the full list
+async fn expand_user_group_permissions(
+  permissions: Vec<PermissionToml>,
+  all_resources: &AllResourcesById,
+) -> anyhow::Result<Vec<PermissionToml>> {
+  let mut expanded =
+    Vec::<PermissionToml>::with_capacity(permissions.capacity());
+
+  for permission in permissions {
+    let (variant, id) = permission.target.extract_variant_id();
+    if id.is_empty() {
+      continue;
+    }
+    if id.starts_with('\\') && id.ends_with('\\') {
+      let inner = &id[1..(id.len() - 1)];
+      let regex = Regex::new(inner)
+        .with_context(|| format!("invalid regex. got: {inner}"))?;
+      match variant {
+        ResourceTargetVariant::Build => {
+          let permissions = all_resources
+            .builds
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Build(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Builder => {
+          let permissions = all_resources
+            .builders
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Builder(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Deployment => {
+          let permissions = all_resources
+            .deployments
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Deployment(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Server => {
+          let permissions = all_resources
+            .servers
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Server(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Repo => {
+          let permissions = all_resources
+            .repos
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Repo(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Alerter => {
+          let permissions = all_resources
+            .alerters
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Alerter(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Procedure => {
+          let permissions = all_resources
+            .procedures
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Procedure(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::ServerTemplate => {
+          let permissions = all_resources
+            .templates
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::ServerTemplate(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::ResourceSync => {
+          let permissions = all_resources
+            .syncs
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::ResourceSync(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::System => {}
+      }
+    } else {
+      // No regex
+      expanded.push(permission);
+    }
+  }
+
+  Ok(expanded)
+}
+
+type AllDiff =
+  HashMap<ResourceTargetVariant, (PermissionLevel, PermissionLevel)>;
+
+/// diffs user_group.all
+fn diff_group_all(
+  original: &HashMap<ResourceTargetVariant, PermissionLevel>,
+  incoming: &HashMap<ResourceTargetVariant, PermissionLevel>,
+) -> AllDiff {
+  let mut to_update = HashMap::new();
+
+  // need to compare both forward and backward because either hashmap could be sparse.
+
+  // forward direction
+  for (variant, level) in incoming {
+    let original_level = original.get(variant).unwrap_or_default();
+    if level == original_level {
+      continue;
+    }
+    to_update.insert(*variant, (*original_level, *level));
+  }
+
+  // backward direction
+  for (variant, level) in original {
+    let incoming_level = incoming.get(variant).unwrap_or_default();
+    if level == incoming_level {
+      continue;
+    }
+    to_update.insert(*variant, (*level, *incoming_level));
+  }
+
+  to_update
 }

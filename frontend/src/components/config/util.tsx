@@ -406,6 +406,7 @@ export const SystemCommand = ({
             value={value?.command}
             onUpdate={(command) => set({ ...(value || {}), command })}
             triggerClassName="w-[200px] lg:w-[300px] xl:w-[400px]"
+            disabled={disabled}
           />
         </div>
       </div>
@@ -588,7 +589,7 @@ const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
   "None",
   "DockerHub",
   "Ghcr",
-  "AwsEcr"
+  "AwsEcr",
 ];
 
 const RegistryTypeSelector = ({
@@ -766,5 +767,35 @@ export const SecretSelector = ({
         </Command>
       </PopoverContent>
     </Popover>
+  );
+};
+
+export const PermissionLevelSelector = ({
+  level,
+  onSelect,
+}: {
+  level: Types.PermissionLevel;
+  onSelect: (level: Types.PermissionLevel) => void;
+}) => {
+  return (
+    <Select
+      value={level}
+      onValueChange={(value) => onSelect(value as Types.PermissionLevel)}
+    >
+      <SelectTrigger className="w-32 capitalize">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="w-32">
+        {Object.keys(Types.PermissionLevel).map((permission) => (
+          <SelectItem
+            value={permission}
+            key={permission}
+            className="capitalize"
+          >
+            {permission}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };

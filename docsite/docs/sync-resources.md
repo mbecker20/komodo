@@ -12,7 +12,11 @@ The UI will display the computed sync actions and only execute them upon manual 
 Or the sync execution Github webhook may be configured on the Github repo to
 automatically execute syncs upon pushes to the configured branch.
 
-## Example file:
+## Example Declarations
+
+### Server
+
+- [Server config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/server/struct.ServerConfig.html)
 
 ```toml
 [[server]] # Declare a new server
@@ -21,7 +25,30 @@ description = "the main mogh server"
 tags = ["monitor"]
 config.address = "http://localhost:8120"
 config.region = "AshburnDc1"
-config.enabled = true
+config.enabled = true # default: false
+```
+
+### Builder and build
+
+- [Builder config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/builder/struct.BuilderConfig.html)
+- [Build config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/build/struct.BuildConfig.html)
+
+```toml
+[[builder]] # Declare a builder
+name = "builder-01"
+tags = []
+config.type = "Aws"
+config.params.region = "us-east-2"
+config.params.ami_id = "ami-0e9bd154667944680"
+# These things come from your specific setup
+config.params.subnet_id = "subnet-xxxxxxxxxxxxxxxxxx"
+config.params.key_pair_name = "xxxxxxxx"
+config.params.assign_public_ip = true
+config.params.use_public_ip = true
+config.params.security_group_ids = [
+  "sg-xxxxxxxxxxxxxxxxxx",
+  "sg-xxxxxxxxxxxxxxxxxx"
+]
 
 ##
 
@@ -40,9 +67,13 @@ config.labels = """
 org.opencontainers.image.source = https://github.com/mbecker20/test_logger
 org.opencontainers.image.description = Logs randomly at INFO, WARN, ERROR levels to test logging setups
 org.opencontainers.image.licenses = GPL-3.0"""
+```
 
-##
+### Deployments
 
+- [Deployment config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/deployment/struct.DeploymentConfig.html)
+
+```toml
 [[variable]] # Declare variables
 name = "OTLP_ENDPOINT"
 value = "http://localhost:4317"
@@ -94,21 +125,13 @@ VARIABLE_1 = value_1
 VARIABLE_2 = value_2"""
 # Set Docker labels
 config.labels = "deployment.type = logger"
+```
 
-##
+### Procedure
 
-[[repo]]
-name = "monitor-periphery"
-description = "Builds new versions of the periphery binary. Requires Rust installed on the host."
-tags = ["monitor"]
-config.server_id = "server-01"
-config.repo = "mbecker20/monitor"
-# Run an action after the repo is pulled
-config.on_pull.path = "."
-config.on_pull.command = "/root/.cargo/bin/cargo build -p monitor_periphery --release && cp ./target/release/periphery /root/periphery"
+- [Procedure config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/procedure/struct.ProcedureConfig.html)
 
-##
-
+```toml
 [[procedure]]
 name = "test-procedure"
 description = "Do some things in a specific order"
@@ -137,22 +160,40 @@ enabled = true
 executions = [
   { execution.type = "Deploy", execution.params.deployment = "test-logger-02", enabled = true }
 ]
+```
 
-##
+### Repo
 
-[[builder]] # Declare a builder
-name = "builder-01"
-tags = []
-config.type = "Aws"
-config.params.region = "us-east-2"
-config.params.ami_id = "ami-0e9bd154667944680"
-# These things come from your specific setup
-config.params.subnet_id = "subnet-xxxxxxxxxxxxxxxxxx"
-config.params.key_pair_name = "xxxxxxxx"
-config.params.assign_public_ip = true
-config.params.use_public_ip = true
-config.params.security_group_ids = [
-  "sg-xxxxxxxxxxxxxxxxxx",
-  "sg-xxxxxxxxxxxxxxxxxx"
+- [Repo config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/repo/struct.RepoConfig.html)
+
+```toml
+[[repo]]
+name = "monitor-periphery"
+description = "Builds new versions of the periphery binary. Requires Rust installed on the host."
+tags = ["monitor"]
+config.server_id = "server-01"
+config.repo = "mbecker20/monitor"
+# Run an action after the repo is pulled
+config.on_pull.path = "."
+config.on_pull.command = "/root/.cargo/bin/cargo build -p monitor_periphery --release && cp ./target/release/periphery /root/periphery"
+```
+
+### User Group:
+
+- [UserGroup schema](https://docs.rs/monitor_client/latest/monitor_client/entities/toml/struct.UserGroupToml.html)
+
+```toml
+[[user_group]]
+name = "groupo"
+users = ["mbecker20", "karamvirsingh98"]
+# Attach base level of Execute on all builds
+all.Build = "Execute"
+all.Alerter = "Write"
+permissions = [
+  # Attach permissions to specific resources by name
+  { target.type = "Repo", target.id = "monitor-periphery", level = "Execute" },
+  # Attach permissions to many resources with name matching regex (this uses '^(.+)-(.+)$' as regex expression)
+  { target.type = "Server", target.id = "\\^(.+)-(.+)$\\", level = "Read" },
+  { target.type = "Deployment", target.id = "\\^immich\\", level = "Execute" },
 ]
 ```

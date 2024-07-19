@@ -1,9 +1,13 @@
-use std::sync::OnceLock;
+use std::{collections::HashMap, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
+
+use super::{
+  permission::PermissionLevel, update::ResourceTargetVariant,
+};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -54,25 +58,13 @@ pub struct User {
   #[serde(default)]
   pub last_update_view: I64,
 
-  /// Recently viewed server ids
+  /// Recently viewed ids
   #[serde(default)]
-  pub recent_servers: Vec<String>,
+  pub recents: HashMap<ResourceTargetVariant, Vec<String>>,
 
-  /// Recently viewed deployment ids
+  /// Give the user elevated permissions on all resources of a certain type
   #[serde(default)]
-  pub recent_deployments: Vec<String>,
-
-  /// Recently viewed build ids
-  #[serde(default)]
-  pub recent_builds: Vec<String>,
-
-  /// Recently viewed repo ids
-  #[serde(default)]
-  pub recent_repos: Vec<String>,
-
-  /// Recently viewed procedure ids
-  #[serde(default)]
-  pub recent_procedures: Vec<String>,
+  pub all: HashMap<ResourceTargetVariant, PermissionLevel>,
 
   #[serde(default)]
   pub updated_at: I64,

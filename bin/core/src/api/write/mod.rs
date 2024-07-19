@@ -50,6 +50,7 @@ pub enum WriteRequest {
 
   // ==== PERMISSIONS ====
   UpdateUserBasePermissions(UpdateUserBasePermissions),
+  UpdatePermissionOnResourceType(UpdatePermissionOnResourceType),
   UpdatePermissionOnTarget(UpdatePermissionOnTarget),
 
   // ==== DESCRIPTION ====

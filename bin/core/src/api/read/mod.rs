@@ -47,6 +47,7 @@ enum ReadRequest {
   // ==== USER ====
   GetUsername(GetUsername),
   GetPermissionLevel(GetPermissionLevel),
+  FindUser(FindUser),
   ListUsers(ListUsers),
   ListApiKeys(ListApiKeys),
   ListApiKeysForServiceUser(ListApiKeysForServiceUser),

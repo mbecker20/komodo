@@ -33,7 +33,7 @@ use crate::{
   helpers::{
     create_permission, flatten_document,
     query::{
-      get_resource_ids_for_non_admin, get_tag,
+      get_resource_ids_for_user, get_tag,
       get_user_permission_on_resource, id_or_name_filter,
     },
     update::{add_update, make_update},
@@ -211,7 +211,7 @@ pub async fn get_check_permissions<T: MonitorResource>(
     return Ok(resource);
   }
   let permissions = get_user_permission_on_resource(
-    &user.id,
+    user,
     T::resource_type(),
     &resource.id,
   )
@@ -265,13 +265,9 @@ async fn list_full_for_user_using_document<T: MonitorResource>(
   mut filters: Document,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
-  if !user.admin && !core_config().transparent_mode {
-    let ids =
-      get_resource_ids_for_non_admin(&user.id, T::resource_type())
-        .await?
-        .into_iter()
-        .flat_map(|id| ObjectId::from_str(&id))
-        .collect::<Vec<_>>();
+  if let Some(ids) =
+    get_resource_ids_for_user(user, T::resource_type()).await?
+  {
     filters.insert("_id", doc! { "$in": ids });
   }
   find_collect(

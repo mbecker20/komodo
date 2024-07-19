@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -6,7 +8,7 @@ use super::{
   permission::PermissionLevel, procedure::PartialProcedureConfig,
   repo::PartialRepoConfig, server::PartialServerConfig,
   server_template::PartialServerTemplateConfig,
-  sync::PartialResourceSyncConfig, update::ResourceTarget,
+  sync::PartialResourceSyncConfig, update::{ResourceTarget, ResourceTargetVariant},
   variable::Variable,
 };
 
@@ -137,13 +139,26 @@ pub struct UserGroupToml {
   #[serde(default)]
   pub users: Vec<String>,
 
+  /// Give the user group elevated permissions on all resources of a certain type
+  #[serde(default)]
+  pub all: HashMap<ResourceTargetVariant, PermissionLevel>,
+
   /// Permissions given to the group
-  #[serde(default, rename = "permission")]
+  #[serde(default, alias = "permission")]
   pub permissions: Vec<PermissionToml>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PermissionToml {
+  /// Id can be:
+  ///   - resource name. `id = "abcd-build"`
+  ///   - regex matching resource names. `id = "\^(.+)-build-([0-9]+)$\"`
   pub target: ResourceTarget,
+
+  /// The permission level:
+  ///   - None
+  ///   - Read
+  ///   - Execute
+  ///   - Write
   pub level: PermissionLevel,
 }

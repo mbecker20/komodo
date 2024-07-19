@@ -11,11 +11,11 @@ use monitor_client::entities::{
   tag::Tag,
   update::{ResourceTargetVariant, Update},
   user::{admin_service_user, User},
+  user_group::UserGroup,
   variable::Variable,
   Operation,
 };
 use mungos::{
-  by_id::find_one_by_id,
   find::find_collect,
   mongodb::{
     bson::{doc, oid::ObjectId, Document},
@@ -26,14 +26,18 @@ use mungos::{
 use crate::{config::core_config, resource, state::db_client};
 
 #[instrument(level = "debug")]
-pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
-  if let Some(user) = admin_service_user(user_id) {
+// user: Id or username
+pub async fn get_user(user: &str) -> anyhow::Result<User> {
+  if let Some(user) = admin_service_user(user) {
     return Ok(user);
   }
-  find_one_by_id(&db_client().await.users, user_id)
+  db_client()
+    .await
+    .users
+    .find_one(id_or_username_filter(user))
     .await
     .context("failed to query mongo for user")?
-    .with_context(|| format!("no user found with id {user_id}"))
+    .with_context(|| format!("no user found with {user}"))
 }
 
 #[instrument(level = "debug")]
@@ -120,10 +124,10 @@ pub async fn get_id_to_tags(
 }
 
 #[instrument(level = "debug")]
-pub async fn get_user_user_group_ids(
+pub async fn get_user_user_groups(
   user_id: &str,
-) -> anyhow::Result<Vec<String>> {
-  let res = find_collect(
+) -> anyhow::Result<Vec<UserGroup>> {
+  find_collect(
     &db_client().await.user_groups,
     doc! {
       "users": user_id
@@ -131,50 +135,84 @@ pub async fn get_user_user_group_ids(
     None,
   )
   .await
-  .context("failed to query db for user groups")?
-  .into_iter()
-  .map(|ug| ug.id)
-  .collect();
+  .context("failed to query db for user groups")
+}
+
+#[instrument(level = "debug")]
+pub async fn get_user_user_group_ids(
+  user_id: &str,
+) -> anyhow::Result<Vec<String>> {
+  let res = get_user_user_groups(user_id)
+    .await?
+    .into_iter()
+    .map(|ug| ug.id)
+    .collect();
   Ok(res)
 }
 
-/// Returns Vec of all queries on permissions that match against the user
-/// or any user groups that the user is a part of.
-/// Result used with Mongodb '$or'.
-#[instrument(level = "debug")]
-pub async fn user_target_query(
+pub fn user_target_query(
   user_id: &str,
+  user_groups: &[UserGroup],
 ) -> anyhow::Result<Vec<Document>> {
   let mut user_target_query = vec![
     doc! { "user_target.type": "User", "user_target.id": user_id },
   ];
-  let user_groups = get_user_user_group_ids(user_id)
-    .await?
-    .into_iter()
-    .map(|ug_id| {
-      doc! {
-        "user_target.type": "UserGroup", "user_target.id": ug_id,
-      }
-    });
+  let user_groups = user_groups.iter().map(|ug| {
+    doc! {
+      "user_target.type": "UserGroup", "user_target.id": &ug.id,
+    }
+  });
   user_target_query.extend(user_groups);
   Ok(user_target_query)
 }
 
 #[instrument(level = "debug")]
 pub async fn get_user_permission_on_resource(
-  user_id: &str,
+  user: &User,
   resource_variant: ResourceTargetVariant,
   resource_id: &str,
 ) -> anyhow::Result<PermissionLevel> {
-  let lowest_permission = if core_config().transparent_mode {
+  if user.admin {
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Start with base of Read or None
+  let mut base = if core_config().transparent_mode {
     PermissionLevel::Read
   } else {
     PermissionLevel::None
   };
+
+  // Overlay users base on resource variant
+  if let Some(level) = user.all.get(&resource_variant).cloned() {
+    if level > base {
+      base = level;
+    }
+  }
+  if base == PermissionLevel::Write {
+    // No reason to keep going if already Write at this point.
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Overlay any user groups base on resource variant
+  let groups = get_user_user_groups(&user.id).await?;
+  for group in &groups {
+    if let Some(level) = group.all.get(&resource_variant).cloned() {
+      if level > base {
+        base = level;
+      }
+    }
+  }
+  if base == PermissionLevel::Write {
+    // No reason to keep going if already Write at this point.
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Overlay any specific permissions
   let permission = find_collect(
     &db_client().await.permissions,
     doc! {
-      "$or": user_target_query(user_id).await?,
+      "$or": user_target_query(&user.id, &groups)?,
       "resource_target.type": resource_variant.as_ref(),
       "resource_target.id": resource_id
     },
@@ -184,7 +222,7 @@ pub async fn get_user_permission_on_resource(
   .context("failed to query db for permissions")?
   .into_iter()
   // get the max permission user has between personal / any user groups
-  .fold(lowest_permission, |level, permission| {
+  .fold(base, |level, permission| {
     if permission.level > level {
       permission.level
     } else {
@@ -194,15 +232,39 @@ pub async fn get_user_permission_on_resource(
   Ok(permission)
 }
 
+/// Returns None if still no need to filter by resource id (eg transparent mode, group membership with all access).
 #[instrument(level = "debug")]
-pub async fn get_resource_ids_for_non_admin(
-  user_id: &str,
+pub async fn get_resource_ids_for_user(
+  user: &User,
   resource_type: ResourceTargetVariant,
-) -> anyhow::Result<Vec<String>> {
-  let permissions = find_collect(
+) -> anyhow::Result<Option<Vec<ObjectId>>> {
+  // Check admin or transparent mode
+  if user.admin || core_config().transparent_mode {
+    return Ok(None);
+  }
+
+  // Check user 'all' on variant
+  if let Some(level) = user.all.get(&resource_type).cloned() {
+    if level > PermissionLevel::None {
+      return Ok(None);
+    }
+  }
+
+  // Check user groups 'all' on variant
+  let groups = get_user_user_groups(&user.id).await?;
+  for group in &groups {
+    if let Some(level) = group.all.get(&resource_type).cloned() {
+      if level > PermissionLevel::None {
+        return Ok(None);
+      }
+    }
+  }
+
+  // Get specific ids
+  let ids = find_collect(
     &db_client().await.permissions,
     doc! {
-      "$or": user_target_query(user_id).await?,
+      "$or": user_target_query(&user.id, &groups)?,
       "resource_target.type": resource_type.as_ref(),
       "level": { "$in": ["Read", "Execute", "Write"] }
     },
@@ -213,14 +275,25 @@ pub async fn get_resource_ids_for_non_admin(
   .into_iter()
   .map(|p| p.resource_target.extract_variant_id().1.to_string())
   // collect into hashset first to remove any duplicates
-  .collect::<HashSet<_>>();
-  Ok(permissions.into_iter().collect())
+  .collect::<HashSet<_>>()
+  .into_iter()
+  .flat_map(|id| ObjectId::from_str(&id))
+  .collect::<Vec<_>>();
+
+  Ok(Some(ids))
 }
 
 pub fn id_or_name_filter(id_or_name: &str) -> Document {
   match ObjectId::from_str(id_or_name) {
     Ok(id) => doc! { "_id": id },
     Err(_) => doc! { "name": id_or_name },
+  }
+}
+
+pub fn id_or_username_filter(id_or_username: &str) -> Document {
+  match ObjectId::from_str(id_or_username) {
+    Ok(id) => doc! { "_id": id },
+    Err(_) => doc! { "username": id_or_username },
   }
 }
 

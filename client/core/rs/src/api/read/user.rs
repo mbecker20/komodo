@@ -22,8 +22,8 @@ pub type ListApiKeysResponse = Vec<ApiKey>;
 
 //
 
-/// Gets list of api keys for the user at ID.
 /// **Admin only.**
+/// Gets list of api keys for the user.
 /// Will still fail if you call for a user_id that isn't a service user.
 /// Response: [ListApiKeysForServiceUserResponse]
 #[typeshare]
@@ -33,8 +33,9 @@ pub type ListApiKeysResponse = Vec<ApiKey>;
 #[empty_traits(MonitorReadRequest)]
 #[response(ListApiKeysForServiceUserResponse)]
 pub struct ListApiKeysForServiceUser {
-  /// The id of the user.
-  pub user_id: String,
+  /// Id or username
+  #[serde(alias = "id", alias = "username")]
+  pub user: String,
 }
 
 #[typeshare]
@@ -42,8 +43,28 @@ pub type ListApiKeysForServiceUserResponse = Vec<ApiKey>;
 
 //
 
-/// Gets list of monitor users.
 /// **Admin only.**
+/// Find a user.
+/// Response: [FindUserResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(FindUserResponse)]
+pub struct FindUser {
+  /// Id or username
+  #[serde(alias = "id", alias = "username")]
+  pub user: String,
+}
+
+#[typeshare]
+pub type FindUserResponse = User;
+
+//
+
+/// **Admin only.**
+/// Gets list of monitor users.
 /// Response: [ListUsersResponse]
 #[typeshare]
 #[derive(

@@ -1,6 +1,5 @@
-use std::str::FromStr;
-
 use anyhow::Context;
+use mongo_indexed::Document;
 use monitor_client::{
   api::read::*,
   entities::{
@@ -8,11 +7,11 @@ use monitor_client::{
     update::ResourceTargetVariant, user::User,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId};
+use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_non_admin,
+  helpers::query::get_resource_ids_for_user,
   resource,
   state::{db_client, State},
 };
@@ -58,26 +57,21 @@ impl Resolve<GetServerTemplatesSummary, User> for State {
     GetServerTemplatesSummary {}: GetServerTemplatesSummary,
     user: User,
   ) -> anyhow::Result<GetServerTemplatesSummaryResponse> {
-    let query = if user.admin {
-      None
-    } else {
-      let ids = get_resource_ids_for_non_admin(
-        &user.id,
-        ResourceTargetVariant::ServerTemplate,
-      )
-      .await?
-      .into_iter()
-      .flat_map(|id| ObjectId::from_str(&id))
-      .collect::<Vec<_>>();
-      let query = doc! {
+    let query = match get_resource_ids_for_user(
+      &user,
+      ResourceTargetVariant::ServerTemplate,
+    )
+    .await?
+    {
+      Some(ids) => doc! {
         "_id": { "$in": ids }
-      };
-      Some(query)
+      },
+      None => Document::new(),
     };
     let total = db_client()
       .await
       .server_templates
-      .count_documents(query.unwrap_or_default())
+      .count_documents(query)
       .await
       .context("failed to count all server template documents")?;
     let res = GetServerTemplatesSummaryResponse {

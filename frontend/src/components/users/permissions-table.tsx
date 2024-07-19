@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
+import { PermissionLevelSelector } from "@components/config/util";
 
 export const PermissionsTable = ({
   user_target,
@@ -42,7 +43,7 @@ export const PermissionsTable = ({
   });
   return (
     <Section
-      title="Permissions"
+      title="Specific Permissions"
       actions={
         <div className="flex gap-6 items-center">
           <Input
@@ -163,31 +164,16 @@ export const PermissionsTable = ({
               <SortableHeader column={column} title="Level" />
             ),
             cell: ({ row: { original: permission } }) => (
-              <Select
-                value={permission.level}
-                onValueChange={(value) =>
+              <PermissionLevelSelector
+                level={permission.level ?? Types.PermissionLevel.None}
+                onSelect={(value) =>
                   mutate({
                     ...permission,
                     user_target,
-                    permission: value as Types.PermissionLevel,
+                    permission: value,
                   })
                 }
-              >
-                <SelectTrigger className="w-32 capitalize">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="w-32">
-                  {Object.keys(Types.PermissionLevel).map((permission) => (
-                    <SelectItem
-                      value={permission}
-                      key={permission}
-                      className="capitalize"
-                    >
-                      {permission}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             ),
           },
         ]}
