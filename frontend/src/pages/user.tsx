@@ -1,3 +1,4 @@
+import { UserTargetPermissionsOnResourceTypes } from "@components/config/util";
 import { KeysTable } from "@components/keys/table";
 import { Page, Section } from "@components/layouts";
 import { PermissionsTable } from "@components/users/permissions-table";
@@ -85,14 +86,19 @@ export const UserPage = () => {
     >
       {user.config.type === "Service" && <ApiKeysTable user_id={user_id} />}
       {!user.admin && (
-        <PermissionsTable user_target={{ type: "User", id: user_id }} />
+        <>
+          <UserTargetPermissionsOnResourceTypes
+            user_target={{ type: "User", id: user._id?.$oid! }}
+          />
+          <PermissionsTable user_target={{ type: "User", id: user_id }} />
+        </>
       )}
     </Page>
   );
 };
 
 const ApiKeysTable = ({ user_id }: { user_id: string }) => {
-  const keys = useRead("ListApiKeysForServiceUser", { user_id }).data;
+  const keys = useRead("ListApiKeysForServiceUser", { user: user_id }).data;
   return (
     <Section
       title="Api Keys"

@@ -16,7 +16,6 @@ use monitor_client::entities::{
   Operation,
 };
 use mungos::{
-  by_id::find_one_by_id,
   find::find_collect,
   mongodb::{
     bson::{doc, oid::ObjectId, Document},
@@ -27,14 +26,18 @@ use mungos::{
 use crate::{config::core_config, resource, state::db_client};
 
 #[instrument(level = "debug")]
-pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
-  if let Some(user) = admin_service_user(user_id) {
+// user: Id or username
+pub async fn get_user(user: &str) -> anyhow::Result<User> {
+  if let Some(user) = admin_service_user(user) {
     return Ok(user);
   }
-  find_one_by_id(&db_client().await.users, user_id)
+  db_client()
+    .await
+    .users
+    .find_one(id_or_username_filter(user))
     .await
     .context("failed to query mongo for user")?
-    .with_context(|| format!("no user found with id {user_id}"))
+    .with_context(|| format!("no user found with {user}"))
 }
 
 #[instrument(level = "debug")]
@@ -284,6 +287,13 @@ pub fn id_or_name_filter(id_or_name: &str) -> Document {
   match ObjectId::from_str(id_or_name) {
     Ok(id) => doc! { "_id": id },
     Err(_) => doc! { "name": id_or_name },
+  }
+}
+
+pub fn id_or_username_filter(id_or_username: &str) -> Document {
+  match ObjectId::from_str(id_or_username) {
+    Ok(id) => doc! { "_id": id },
+    Err(_) => doc! { "username": id_or_username },
   }
 }
 

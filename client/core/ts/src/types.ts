@@ -1452,6 +1452,8 @@ export type ListApiKeysResponse = ApiKey[];
 
 export type ListApiKeysForServiceUserResponse = ApiKey[];
 
+export type FindUserResponse = User;
+
 export type ListUsersResponse = User[];
 
 /**
@@ -2934,19 +2936,29 @@ export interface ListApiKeys {
 }
 
 /**
- * Gets list of api keys for the user at ID.
  * **Admin only.**
+ * Gets list of api keys for the user.
  * Will still fail if you call for a user_id that isn't a service user.
  * Response: [ListApiKeysForServiceUserResponse]
  */
 export interface ListApiKeysForServiceUser {
-	/** The id of the user. */
-	user_id: string;
+	/** Id or username */
+	user: string;
 }
 
 /**
- * Gets list of monitor users.
  * **Admin only.**
+ * Find a user.
+ * Response: [FindUserResponse]
+ */
+export interface FindUser {
+	/** Id or username */
+	user: string;
+}
+
+/**
+ * **Admin only.**
+ * Gets list of monitor users.
  * Response: [ListUsersResponse]
  */
 export interface ListUsers {
@@ -4108,6 +4120,7 @@ export type ReadRequest =
 	| { type: "GetAvailableAwsEcrLabels", params: GetAvailableAwsEcrLabels }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetPermissionLevel", params: GetPermissionLevel }
+	| { type: "FindUser", params: FindUser }
 	| { type: "ListUsers", params: ListUsers }
 	| { type: "ListApiKeys", params: ListApiKeys }
 	| { type: "ListApiKeysForServiceUser", params: ListApiKeysForServiceUser }

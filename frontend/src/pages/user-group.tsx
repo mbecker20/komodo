@@ -1,3 +1,4 @@
+import { UserTargetPermissionsOnResourceTypes } from "@components/config/util";
 import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { PermissionsTable } from "@components/users/permissions-table";
@@ -85,6 +86,9 @@ export const UserGroupPage = () => {
           }
         />
       </Section>
+      <UserTargetPermissionsOnResourceTypes
+        user_target={{ type: "UserGroup", id: group._id?.$oid! }}
+      />
       <PermissionsTable user_target={{ type: "UserGroup", id: group_id }} />
       <div className="flex flex-col justify-end w-full gap-4">
         <div className="flex justify-end w-full">

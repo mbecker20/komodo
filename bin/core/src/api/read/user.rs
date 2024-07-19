@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Context};
 use monitor_client::{
   api::read::{
-    GetUsername, GetUsernameResponse, ListApiKeys,
-    ListApiKeysForServiceUser, ListApiKeysForServiceUserResponse,
-    ListApiKeysResponse, ListUsers, ListUsersResponse,
+    FindUser, FindUserResponse, GetUsername, GetUsernameResponse,
+    ListApiKeys, ListApiKeysForServiceUser,
+    ListApiKeysForServiceUserResponse, ListApiKeysResponse,
+    ListUsers, ListUsersResponse,
   },
   entities::user::{User, UserConfig},
 };
@@ -14,7 +15,10 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::state::{db_client, State};
+use crate::{
+  helpers::query::get_user,
+  state::{db_client, State},
+};
 
 impl Resolve<GetUsername, User> for State {
   async fn resolve(
@@ -37,6 +41,19 @@ impl Resolve<GetUsername, User> for State {
       username: user.username,
       avatar,
     })
+  }
+}
+
+impl Resolve<FindUser, User> for State {
+  async fn resolve(
+    &self,
+    FindUser { user }: FindUser,
+    admin: User,
+  ) -> anyhow::Result<FindUserResponse> {
+    if !admin.admin {
+      return Err(anyhow!("This method is admin only."));
+    }
+    get_user(&user).await
   }
 }
 
@@ -87,22 +104,21 @@ impl Resolve<ListApiKeys, User> for State {
 impl Resolve<ListApiKeysForServiceUser, User> for State {
   async fn resolve(
     &self,
-    ListApiKeysForServiceUser { user_id }: ListApiKeysForServiceUser,
+    ListApiKeysForServiceUser { user }: ListApiKeysForServiceUser,
     admin: User,
   ) -> anyhow::Result<ListApiKeysForServiceUserResponse> {
     if !admin.admin {
       return Err(anyhow!("This method is admin only."));
     }
-    let user = find_one_by_id(&db_client().await.users, &user_id)
-      .await
-      .context("failed to query db for users")?
-      .context("user at id not found")?;
+
+    let user = get_user(&user).await?;
+
     let UserConfig::Service { .. } = user.config else {
       return Err(anyhow!("Given user is not service user"));
     };
     let api_keys = find_collect(
       &db_client().await.api_keys,
-      doc! { "user_id": user_id },
+      doc! { "user_id": &user.id },
       None,
     )
     .await

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useRead } from "@lib/hooks";
+import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
   Select,
@@ -19,7 +19,7 @@ import {
   SearchX,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { cn, filterBySplit } from "@lib/utils";
+import { cn, filterBySplit, RESOURCE_TARGETS } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +39,8 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
+import { useToast } from "@ui/use-toast";
+import { Section } from "@components/layouts";
 
 export const ConfigItem = ({
   label,
@@ -588,7 +590,7 @@ const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
   "None",
   "DockerHub",
   "Ghcr",
-  "AwsEcr"
+  "AwsEcr",
 ];
 
 const RegistryTypeSelector = ({
@@ -766,5 +768,123 @@ export const SecretSelector = ({
         </Command>
       </PopoverContent>
     </Popover>
+  );
+};
+
+export const PermissionLevelSelector = ({
+  level,
+  onSelect,
+}: {
+  level: Types.PermissionLevel;
+  onSelect: (level: Types.PermissionLevel) => void;
+}) => {
+  return (
+    <Select
+      value={level}
+      onValueChange={(value) => onSelect(value as Types.PermissionLevel)}
+    >
+      <SelectTrigger className="w-32 capitalize">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="w-32">
+        {Object.keys(Types.PermissionLevel).map((permission) => (
+          <SelectItem
+            value={permission}
+            key={permission}
+            className="capitalize"
+          >
+            {permission}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+export const UserTargetPermissionsOnResourceTypes = ({
+  user_target,
+}: {
+  user_target: Types.UserTarget;
+}) => {
+  const { toast } = useToast();
+
+  const { mutate } = useWrite("UpdatePermissionOnResourceType", {
+    onSuccess: () => {
+      toast({ title: "Updated permissions on target" });
+    },
+  });
+
+  const update = (resource_type, permission) =>
+    mutate({ user_target, resource_type, permission });
+
+  if (user_target.type === "User") {
+    return (
+      <UserPermissionsOnResourceType user_id={user_target.id} update={update} />
+    );
+  } else if (user_target.type === "UserGroup") {
+    return (
+      <UserGroupPermissionsOnResourceType
+        group_id={user_target.id}
+        update={update}
+      />
+    );
+  }
+};
+
+const UserPermissionsOnResourceType = ({
+  user_id,
+  update,
+}: {
+  user_id: string;
+  update: (
+    resource_type: Types.ResourceTarget["type"],
+    permission: Types.PermissionLevel
+  ) => void;
+}) => {
+  const user = useRead("FindUser", { user: user_id }).data;
+  return <PermissionsOnResourceType all={user?.all} update={update} />;
+};
+
+const UserGroupPermissionsOnResourceType = ({
+  group_id,
+  update,
+}: {
+  group_id: string;
+  update: (
+    resource_type: Types.ResourceTarget["type"],
+    permission: Types.PermissionLevel
+  ) => void;
+}) => {
+  const group = useRead("GetUserGroup", { user_group: group_id }).data;
+  return <PermissionsOnResourceType all={group?.all} update={update} />;
+};
+
+const PermissionsOnResourceType = ({
+  all,
+  update,
+}: {
+  all: Types.User["all"];
+  update: (
+    resource_type: Types.ResourceTarget["type"],
+    permission: Types.PermissionLevel
+  ) => void;
+}) => {
+  return (
+    <Section title="Base Permissions">
+      <div className="flex gap-4 items-center flex-wrap">
+        {RESOURCE_TARGETS.map((type) => {
+          const level = all?.[type] ?? Types.PermissionLevel.None;
+          return (
+            <div className="flex gap-2 items-center">
+              {type}:
+              <PermissionLevelSelector
+                level={level}
+                onSelect={(level) => update(type, level)}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </Section>
   );
 };
