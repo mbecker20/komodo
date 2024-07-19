@@ -1532,6 +1532,8 @@ export type UpdateDescriptionResponse = NoData;
 
 export type UpdatePermissionOnTargetResponse = NoData;
 
+export type UpdatePermissionOnResourceTypeResponse = NoData;
+
 export type UpdateUserBasePermissionsResponse = NoData;
 
 export type CreateProcedureResponse = Procedure;
@@ -3305,7 +3307,7 @@ export interface UpdateDescription {
 }
 
 /**
- * Update a user or user groups permission on a resource.
+ * **Admin only.** Update a user or user groups permission on a resource.
  * Response: [NoData].
  */
 export interface UpdatePermissionOnTarget {
@@ -3318,7 +3320,20 @@ export interface UpdatePermissionOnTarget {
 }
 
 /**
- * Update a user's "base" permissions, eg. "enabled".
+ * **Admin only.** Update a user or user groups base permission level on a resource type.
+ * Response: [NoData].
+ */
+export interface UpdatePermissionOnResourceType {
+	/** Specify the user or user group. */
+	user_target: UserTarget;
+	/** The resource type: eg. Server, Build, Deployment, etc. */
+	resource_type: ResourceTarget["type"];
+	/** The base permission level. */
+	permission: PermissionLevel;
+}
+
+/**
+ * **Admin only.** Update a user's "base" permissions, eg. "enabled".
  * Response: [NoData].
  */
 export interface UpdateUserBasePermissions {
@@ -3747,19 +3762,6 @@ export interface SetUsersInUserGroup {
 	user_group: string;
 	/** The user ids or usernames to hard set as the group's users. */
 	users: string[];
-}
-
-/**
- * **Admin only.** Set the user group base permission levels on resource type
- * Response: [UserGroup]
- */
-export interface SetUserGroupResourceBasePermission {
-	/** Id or name. */
-	user_group: string;
-	/** The resource type: eg. Server, Build, Deployment, etc. */
-	resource_type: ResourceTarget["type"];
-	/** The base permission level. */
-	level: PermissionLevel;
 }
 
 /** **Admin only.** Create variable. Response: [Variable]. */
@@ -4209,8 +4211,8 @@ export type WriteRequest =
 	| { type: "AddUserToUserGroup", params: AddUserToUserGroup }
 	| { type: "RemoveUserFromUserGroup", params: RemoveUserFromUserGroup }
 	| { type: "SetUsersInUserGroup", params: SetUsersInUserGroup }
-	| { type: "SetUserGroupResourceBasePermission", params: SetUserGroupResourceBasePermission }
 	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
+	| { type: "UpdatePermissionOnResourceType", params: UpdatePermissionOnResourceType }
 	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }
 	| { type: "CreateServer", params: CreateServer }

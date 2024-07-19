@@ -6,9 +6,8 @@ use monitor_client::{
   api::{
     read::ListUserTargetPermissions,
     write::{
-      CreateUserGroup, DeleteUserGroup,
-      SetUserGroupResourceBasePermission, SetUsersInUserGroup,
-      UpdatePermissionOnTarget,
+      CreateUserGroup, DeleteUserGroup, SetUsersInUserGroup,
+      UpdatePermissionOnResourceType, UpdatePermissionOnTarget,
     },
   },
   entities::{
@@ -783,8 +782,8 @@ async fn run_update_all(
   for (resource_type, permission) in all_diff {
     if let Err(e) = State
       .resolve(
-        SetUserGroupResourceBasePermission {
-          user_group: user_group.clone(),
+        UpdatePermissionOnResourceType {
+          user_target: UserTarget::UserGroup(user_group.clone()),
           resource_type,
           permission,
         },

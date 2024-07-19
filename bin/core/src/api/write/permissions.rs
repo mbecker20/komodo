@@ -3,8 +3,10 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use monitor_client::{
   api::write::{
-    UpdatePermissionOnTarget, UpdatePermissionOnTargetResponse,
-    UpdateUserBasePermissions, UpdateUserBasePermissionsResponse,
+    UpdatePermissionOnResourceType,
+    UpdatePermissionOnResourceTypeResponse, UpdatePermissionOnTarget,
+    UpdatePermissionOnTargetResponse, UpdateUserBasePermissions,
+    UpdateUserBasePermissionsResponse,
   },
   entities::{
     permission::{UserTarget, UserTargetVariant},
@@ -41,6 +43,7 @@ impl Resolve<UpdateUserBasePermissions, User> for State {
     if !admin.admin {
       return Err(anyhow!("this method is admin only"));
     }
+
     let user = find_one_by_id(&db_client().await.users, &user_id)
       .await
       .context("failed to query mongo for user")?
@@ -70,6 +73,73 @@ impl Resolve<UpdateUserBasePermissions, User> for State {
     .await?;
 
     Ok(UpdateUserBasePermissionsResponse {})
+  }
+}
+
+impl Resolve<UpdatePermissionOnResourceType, User> for State {
+  #[instrument(
+    name = "UpdatePermissionOnResourceType",
+    skip(self, admin)
+  )]
+  async fn resolve(
+    &self,
+    UpdatePermissionOnResourceType {
+      user_target,
+      resource_type,
+      permission,
+    }: UpdatePermissionOnResourceType,
+    admin: User,
+  ) -> anyhow::Result<UpdatePermissionOnResourceTypeResponse> {
+    if !admin.admin {
+      return Err(anyhow!("this method is admin only"));
+    }
+
+    // Some extra checks if user target is an actual User
+    if let UserTarget::User(user_id) = &user_target {
+      let user = get_user(user_id).await?;
+      if user.admin {
+        return Err(anyhow!(
+          "cannot use this method to update other admins permissions"
+        ));
+      }
+      if !user.enabled {
+        return Err(anyhow!("user not enabled"));
+      }
+    }
+
+    let (user_target_variant, user_target_id) =
+      extract_user_target_with_validation(&user_target).await?;
+
+    let id = ObjectId::from_str(&user_target_id)
+      .context("id is not ObjectId")?;
+    let field = format!("all.{resource_type}");
+    let filter = doc! { "_id": id };
+    let update = doc! { "$set": { &field: permission.as_ref() } };
+
+    match user_target_variant {
+      UserTargetVariant::User => {
+        db_client()
+          .await
+          .users
+          .update_one(filter, update)
+          .await
+          .with_context(|| {
+            format!("failed to set {field}: {permission} on db")
+          })?;
+      }
+      UserTargetVariant::UserGroup => {
+        db_client()
+          .await
+          .user_groups
+          .update_one(filter, update)
+          .await
+          .with_context(|| {
+            format!("failed to set {field}: {permission} on db")
+          })?;
+      }
+    }
+
+    Ok(UpdatePermissionOnResourceTypeResponse {})
   }
 }
 

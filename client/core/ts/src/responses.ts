@@ -158,10 +158,10 @@ export type WriteResponses = {
   AddUserToUserGroup: Types.UserGroup;
   RemoveUserFromUserGroup: Types.UserGroup;
   SetUsersInUserGroup: Types.UserGroup;
-  SetUserGroupResourceBasePermission: Types.UserGroup;
 
   // ==== PERMISSIONS ====
   UpdateUserBasePermissions: Types.UpdateUserBasePermissionsResponse;
+  UpdatePermissionOnResourceType: Types.UpdatePermissionOnResourceTypeResponse;
   UpdatePermissionOnTarget: Types.UpdatePermissionOnTargetResponse;
 
   // ==== DESCRIPTION ====
