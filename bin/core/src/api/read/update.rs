@@ -45,56 +45,124 @@ impl Resolve<ListUpdates, User> for State {
     let query = if user.admin || core_config().transparent_mode {
       query
     } else {
-      let server_ids = get_resource_ids_for_user(
+      let server_query = get_resource_ids_for_user(
         &user,
         ResourceTargetVariant::Server,
       )
-      .await?;
-      let deployment_ids = get_resource_ids_for_user(
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "Server", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "Server" });
+
+      let deployment_query = get_resource_ids_for_user(
         &user,
         ResourceTargetVariant::Deployment,
       )
-      .await?;
-      let build_ids = get_resource_ids_for_user(
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "Deployment", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "Deployment" });
+
+      let build_query = get_resource_ids_for_user(
         &user,
         ResourceTargetVariant::Build,
       )
-      .await?;
-      let repo_ids =
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "Build", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "Build" });
+
+      let repo_query =
         get_resource_ids_for_user(&user, ResourceTargetVariant::Repo)
-          .await?;
-      let procedure_ids = get_resource_ids_for_user(
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Repo", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Repo" });
+
+      let procedure_query = get_resource_ids_for_user(
         &user,
         ResourceTargetVariant::Procedure,
       )
-      .await?;
-      let builder_ids = get_resource_ids_for_user(
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "Procedure", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "Procedure" });
+
+      let builder_query = get_resource_ids_for_user(
         &user,
         ResourceTargetVariant::Builder,
       )
-      .await?;
-      let alerter_ids = get_resource_ids_for_user(
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "Builder", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "Builder" });
+
+      let alerter_query = get_resource_ids_for_user(
         &user,
         ResourceTargetVariant::Alerter,
       )
-      .await?;
-      let server_template_ids = get_resource_ids_for_user(
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "Alerter", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "Alerter" });
+
+      let server_template_query = get_resource_ids_for_user(
         &user,
         ResourceTargetVariant::ServerTemplate,
       )
-      .await?;
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "ServerTemplate", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "ServerTemplate" });
+
+      let resource_sync_query = get_resource_ids_for_user(
+        &user,
+        ResourceTargetVariant::ResourceSync,
+      )
+      .await?
+      .map(|ids| {
+        doc! {
+          "target.type": "ResourceSync", "target.id": { "$in": ids }
+        }
+      })
+      .unwrap_or_else(|| doc! { "target.type": "ResourceSync" });
 
       let mut query = query.unwrap_or_default();
       query.extend(doc! {
         "$or": [
-          { "target.type": "Server", "target.id": { "$in": &server_ids } },
-          { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
-          { "target.type": "Build", "target.id": { "$in": &build_ids } },
-          { "target.type": "Repo", "target.id": { "$in": &repo_ids } },
-          { "target.type": "Procedure", "target.id": { "$in": &procedure_ids } },
-          { "target.type": "Builder", "target.id": { "$in": &builder_ids } },
-          { "target.type": "Alerter", "target.id": { "$in": &alerter_ids } },
-          { "target.type": "ServerTemplate", "target.id": { "$in": &server_template_ids } },
+          server_query,
+          build_query,
+          deployment_query,
+          repo_query,
+          procedure_query,
+          alerter_query,
+          builder_query,
+          server_template_query,
+          resource_sync_query,
         ]
       });
       query.into()

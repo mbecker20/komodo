@@ -408,6 +408,7 @@ export const SystemCommand = ({
             value={value?.command}
             onUpdate={(command) => set({ ...(value || {}), command })}
             triggerClassName="w-[200px] lg:w-[300px] xl:w-[400px]"
+            disabled={disabled}
           />
         </div>
       </div>
