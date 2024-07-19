@@ -34,6 +34,7 @@ export const ResourcesConfig = ({
   const servers = useRead("ListServers", {}).data ?? [];
   const deployments = useRead("ListDeployments", {}).data ?? [];
   const builds = useRead("ListBuilds", {}).data ?? [];
+  const syncs = useRead("ListResourceSyncs", {}).data ?? [];
   const all_resources = [
     ...servers.map((server) => {
       return {
@@ -62,6 +63,16 @@ export const ResourcesConfig = ({
       id: build.id,
       name: build.name.toLowerCase(),
       enabled: resources.find((r) => r.type === "Build" && r.id === build.id)
+        ? true
+        : false,
+    })),
+    ...syncs.map((sync) => ({
+      type: "ResourceSync",
+      id: sync.id,
+      name: sync.name.toLowerCase(),
+      enabled: resources.find(
+        (r) => r.type === "ResourceSync" && r.id === sync.id
+      )
         ? true
         : false,
     })),
