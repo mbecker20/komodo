@@ -335,7 +335,7 @@ async fn send_slack_alert(
     }
     AlertData::ResourceSyncPendingUpdates { id, name } => {
       let text =
-        format!("{level} | There are pending resource sync updates");
+        format!("{level} | Pending resource sync updates on {name}");
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
