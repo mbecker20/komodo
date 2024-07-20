@@ -79,9 +79,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
     )
     .await?;
 
-    let (registry_token, aws_ecr) =
-      validate_account_extract_registry_token_aws_ecr(&build).await?;
-
     // get the action state for the build (or insert default).
     let action_state =
       action_states().build.get_or_insert_default(&build.id).await;
@@ -90,6 +87,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
     // Will also check to ensure build not already busy before updating.
     let _action_guard =
       action_state.update(|state| state.building = true)?;
+
+    let (registry_token, aws_ecr) =
+      validate_account_extract_registry_token_aws_ecr(&build).await?;
 
     build.config.version.increment();
     update.version = build.config.version;
