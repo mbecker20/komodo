@@ -233,32 +233,30 @@ pub enum HetznerActionStatus {
 #[allow(clippy::enum_variant_names)]
 pub enum HetznerServerType {
   // Shared
-  #[serde(rename = "cx11")]
-  SharedIntel1Core2Ram20Disk,
   #[serde(rename = "cpx11")]
   SharedAmd2Core2Ram40Disk,
   #[serde(rename = "cax11")]
   SharedArm2Core4Ram40Disk,
-  #[serde(rename = "cx21")]
+  #[serde(rename = "cx22")]
   SharedIntel2Core4Ram40Disk,
   #[serde(rename = "cpx21")]
   SharedAmd3Core4Ram80Disk,
   #[serde(rename = "cax21")]
   SharedArm4Core8Ram80Disk,
-  #[serde(rename = "cx31")]
-  SharedIntel2Core8Ram80Disk,
+  #[serde(rename = "cx32")]
+  SharedIntel4Core8Ram80Disk,
   #[serde(rename = "cpx31")]
   SharedAmd4Core8Ram160Disk,
   #[serde(rename = "cax31")]
   SharedArm8Core16Ram160Disk,
-  #[serde(rename = "cx41")]
-  SharedIntel4Core16Ram160Disk,
+  #[serde(rename = "cx42")]
+  SharedIntel8Core16Ram160Disk,
   #[serde(rename = "cpx41")]
   SharedAmd8Core16Ram240Disk,
   #[serde(rename = "cax41")]
   SharedArm16Core32Ram320Disk,
-  #[serde(rename = "cx51")]
-  SharedIntel8Core32Ram240Disk,
+  #[serde(rename = "cx52")]
+  SharedIntel16Core32Ram320Disk,
   #[serde(rename = "cpx51")]
   SharedAmd16Core32Ram360Disk,
   // Dedicated

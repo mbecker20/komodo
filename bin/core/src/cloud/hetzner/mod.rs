@@ -218,9 +218,6 @@ fn hetzner_server_type(
   server_type: HetznerServerType,
 ) -> common::HetznerServerType {
   match server_type {
-    HetznerServerType::SharedIntel1Core2Ram20Disk => {
-      common::HetznerServerType::SharedIntel1Core2Ram20Disk
-    }
     HetznerServerType::SharedAmd2Core2Ram40Disk => {
       common::HetznerServerType::SharedAmd2Core2Ram40Disk
     }
@@ -236,8 +233,8 @@ fn hetzner_server_type(
     HetznerServerType::SharedArm4Core8Ram80Disk => {
       common::HetznerServerType::SharedArm4Core8Ram80Disk
     }
-    HetznerServerType::SharedIntel2Core8Ram80Disk => {
-      common::HetznerServerType::SharedIntel2Core8Ram80Disk
+    HetznerServerType::SharedIntel4Core8Ram80Disk => {
+      common::HetznerServerType::SharedIntel4Core8Ram80Disk
     }
     HetznerServerType::SharedAmd4Core8Ram160Disk => {
       common::HetznerServerType::SharedAmd4Core8Ram160Disk
@@ -245,8 +242,8 @@ fn hetzner_server_type(
     HetznerServerType::SharedArm8Core16Ram160Disk => {
       common::HetznerServerType::SharedArm8Core16Ram160Disk
     }
-    HetznerServerType::SharedIntel4Core16Ram160Disk => {
-      common::HetznerServerType::SharedIntel4Core16Ram160Disk
+    HetznerServerType::SharedIntel8Core16Ram160Disk => {
+      common::HetznerServerType::SharedIntel8Core16Ram160Disk
     }
     HetznerServerType::SharedAmd8Core16Ram240Disk => {
       common::HetznerServerType::SharedAmd8Core16Ram240Disk
@@ -254,8 +251,8 @@ fn hetzner_server_type(
     HetznerServerType::SharedArm16Core32Ram320Disk => {
       common::HetznerServerType::SharedArm16Core32Ram320Disk
     }
-    HetznerServerType::SharedIntel8Core32Ram240Disk => {
-      common::HetznerServerType::SharedIntel8Core32Ram240Disk
+    HetznerServerType::SharedIntel16Core32Ram320Disk => {
+      common::HetznerServerType::SharedIntel16Core32Ram320Disk
     }
     HetznerServerType::SharedAmd16Core32Ram360Disk => {
       common::HetznerServerType::SharedAmd16Core32Ram360Disk

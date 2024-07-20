@@ -3974,25 +3974,43 @@ export enum HetznerDatacenter {
 }
 
 export enum HetznerServerType {
-	SharedIntel1Core2Ram20Disk = "SharedIntel1Core2Ram20Disk",
+	/** CPX11 - AMD 2 Cores, 2 Gb Ram, 40 Gb disk */
 	SharedAmd2Core2Ram40Disk = "SharedAmd2Core2Ram40Disk",
+	/** CAX11 - Arm 2 Cores, 4 Gb Ram, 40 Gb disk */
 	SharedArm2Core4Ram40Disk = "SharedArm2Core4Ram40Disk",
+	/** CX22 - Intel 2 Cores, 4 Gb Ram, 40 Gb disk */
 	SharedIntel2Core4Ram40Disk = "SharedIntel2Core4Ram40Disk",
+	/** CPX21 - AMD 3 Cores, 4 Gb Ram, 80 Gb disk */
 	SharedAmd3Core4Ram80Disk = "SharedAmd3Core4Ram80Disk",
+	/** CAX21 - Arm 4 Cores, 8 Gb Ram, 80 Gb disk */
 	SharedArm4Core8Ram80Disk = "SharedArm4Core8Ram80Disk",
-	SharedIntel2Core8Ram80Disk = "SharedIntel2Core8Ram80Disk",
+	/** CX32 - Intel 4 Cores, 8 Gb Ram, 80 Gb disk */
+	SharedIntel4Core8Ram80Disk = "SharedIntel4Core8Ram80Disk",
+	/** CPX31 - AMD 4 Cores, 8 Gb Ram, 160 Gb disk */
 	SharedAmd4Core8Ram160Disk = "SharedAmd4Core8Ram160Disk",
+	/** CAX31 - Arm 8 Cores, 16 Gb Ram, 160 Gb disk */
 	SharedArm8Core16Ram160Disk = "SharedArm8Core16Ram160Disk",
-	SharedIntel4Core16Ram160Disk = "SharedIntel4Core16Ram160Disk",
+	/** CX42 - Intel 8 Cores, 16 Gb Ram, 160 Gb disk */
+	SharedIntel8Core16Ram160Disk = "SharedIntel8Core16Ram160Disk",
+	/** CPX41 - AMD 8 Cores, 16 Gb Ram, 240 Gb disk */
 	SharedAmd8Core16Ram240Disk = "SharedAmd8Core16Ram240Disk",
+	/** CAX41 - Arm 16 Cores, 32 Gb Ram, 320 Gb disk */
 	SharedArm16Core32Ram320Disk = "SharedArm16Core32Ram320Disk",
-	SharedIntel8Core32Ram240Disk = "SharedIntel8Core32Ram240Disk",
+	/** CX52 - Intel 16 Cores, 32 Gb Ram, 320 Gb disk */
+	SharedIntel16Core32Ram320Disk = "SharedIntel16Core32Ram320Disk",
+	/** CPX51 - AMD 16 Cores, 32 Gb Ram, 360 Gb disk */
 	SharedAmd16Core32Ram360Disk = "SharedAmd16Core32Ram360Disk",
+	/** CCX13 - AMD 2 Cores, 8 Gb Ram, 80 Gb disk */
 	DedicatedAmd2Core8Ram80Disk = "DedicatedAmd2Core8Ram80Disk",
+	/** CCX23 - AMD 4 Cores, 16 Gb Ram, 160 Gb disk */
 	DedicatedAmd4Core16Ram160Disk = "DedicatedAmd4Core16Ram160Disk",
+	/** CCX33 - AMD 8 Cores, 32 Gb Ram, 240 Gb disk */
 	DedicatedAmd8Core32Ram240Disk = "DedicatedAmd8Core32Ram240Disk",
+	/** CCX43 - AMD 16 Cores, 64 Gb Ram, 360 Gb disk */
 	DedicatedAmd16Core64Ram360Disk = "DedicatedAmd16Core64Ram360Disk",
+	/** CCX53 - AMD 32 Cores, 128 Gb Ram, 600 Gb disk */
 	DedicatedAmd32Core128Ram600Disk = "DedicatedAmd32Core128Ram600Disk",
+	/** CCX63 - AMD 48 Cores, 192 Gb Ram, 960 Gb disk */
 	DedicatedAmd48Core192Ram960Disk = "DedicatedAmd48Core192Ram960Disk",
 }
 
