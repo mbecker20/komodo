@@ -24,7 +24,7 @@ git = { path = "lib/git" }
 
 # MOGH
 run_command = { version = "0.0.6", features = ["async_tokio"] }
-serror = { version = "0.4.3", default-features = false }
+serror = { version = "0.4.6", default-features = false }
 slack = { version = "0.1.0", package = "slack_client_rs" }
 derive_default_builder = "0.1.8"
 derive_empty_traits = "0.1.0"
@@ -40,7 +40,7 @@ mungos = "1.0.0"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.38.0", features = ["full"] }
+tokio = { version = "1.38.1", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json"] }
 tokio-util = "0.7.11"
 futures = "0.3.30"
@@ -55,14 +55,14 @@ tokio-tungstenite = "0.23.1"
 
 # SER/DE
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
-serde = { version = "1.0.203", features = ["derive"] }
-strum = { version = "0.26.2", features = ["derive"] }
-serde_json = "1.0.118"
-toml = "0.8.14"
+serde = { version = "1.0.204", features = ["derive"] }
+strum = { version = "0.26.3", features = ["derive"] }
+serde_json = "1.0.120"
+toml = "0.8.15"
 
 # ERROR
 anyhow = "1.0.86"
-thiserror = "1.0.61"
+thiserror = "1.0.63"
 
 # LOGGING
 opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio"] }
@@ -73,12 +73,12 @@ opentelemetry = "0.23.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.7", features = ["derive"] }
+clap = { version = "4.5.9", features = ["derive"] }
 dotenv = "0.15.0"
 envy = "0.4.2"
 
 # CRYPTO
-uuid = { version = "1.9.1", features = ["v4", "fast-rng", "serde"] }
+uuid = { version = "1.10.0", features = ["v4", "fast-rng", "serde"] }
 urlencoding = "2.1.3"
 nom_pem = "4.0.0"
 bcrypt = "0.15.1"
@@ -91,12 +91,12 @@ hex = "0.4.3"
 
 # SYSTEM
 bollard = "0.16.1"
-sysinfo = "0.30.12"
+sysinfo = "0.30.13"
 
 # CLOUD
-aws-config = "1.5.3"
-aws-sdk-ec2 = "1.53.0"
-aws-sdk-ecr = "1.33.0"
+aws-config = "1.5.4"
+aws-sdk-ec2 = "1.60.0"
+aws-sdk-ecr = "1.35.0"
 
 # MISC
 derive_builder = "0.20.0"
