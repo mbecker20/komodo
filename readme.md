@@ -4,8 +4,9 @@ A tool to build and deploy software across many servers. [docs](https://mbecker2
 
 Docs for periphery setup script can be found in [scripts/readme.md](https://github.com/mbecker20/monitor/blob/main/scripts/readme.md).
 
-## Changelog
+## Changelog and Roadmap
 
+View the [roadmap](https://github.com/mbecker20/monitor/blob/main/roadmap.md)
 View the [changelog](https://github.com/mbecker20/monitor/blob/main/changelog.md)
 
 ## Screenshots
