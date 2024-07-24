@@ -6,8 +6,8 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 
 ## Changelog and Roadmap
 
-View the [roadmap](https://github.com/mbecker20/monitor/blob/main/roadmap.md)
-View the [changelog](https://github.com/mbecker20/monitor/blob/main/changelog.md)
+[roadmap](https://github.com/mbecker20/monitor/blob/main/roadmap.md)
+[changelog](https://github.com/mbecker20/monitor/blob/main/changelog.md)
 
 ## Screenshots
 
