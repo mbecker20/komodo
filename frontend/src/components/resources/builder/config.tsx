@@ -92,36 +92,38 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
           {
             label: "Github Accounts",
             contentHidden:
-              (update.github_accounts ?? config.github_accounts)?.length === 0,
+              (update.git_accounts ?? config.git_accounts)?.length === 0,
             actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    github_accounts: [
-                      ...(update.github_accounts ??
-                        config.github_accounts ??
-                        []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Github Account
-              </Button>
+              // <Button
+              //   variant="secondary"
+              //   onClick={() =>
+              //     set((update) => ({
+              //       ...update,
+              //       git_accounts: [
+              //         ...(update.git_accounts ??
+              //           config.git_accounts ??
+              //           []),
+              //         "",
+              //       ],
+              //     }))
+              //   }
+              //   className="flex items-center gap-2 w-[200px]"
+              // >
+              //   <PlusCircle className="w-4 h-4" />
+              //   Add Github Account
+              // </Button>
+              <></>
             ),
             components: {
-              github_accounts: (accounts, set) => (
-                <InputList
-                  field="github_accounts"
-                  values={accounts ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="Github Username"
-                />
+              git_accounts: (_accounts, _set) => (
+                // <InputList
+                //   field="github_accounts"
+                //   values={accounts ?? []}
+                //   set={set}
+                //   disabled={disabled}
+                //   placeholder="Github Username"
+                // />
+                <></>
               ),
             },
           },
@@ -130,34 +132,36 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
             contentHidden:
               (update.docker_accounts ?? config.docker_accounts)?.length === 0,
             actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    docker_accounts: [
-                      ...(update.docker_accounts ??
-                        config.docker_accounts ??
-                        []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Docker Account
-              </Button>
+              // <Button
+              //   variant="secondary"
+              //   onClick={() =>
+              //     set((update) => ({
+              //       ...update,
+              //       docker_accounts: [
+              //         ...(update.docker_accounts ??
+              //           config.docker_accounts ??
+              //           []),
+              //         "",
+              //       ],
+              //     }))
+              //   }
+              //   className="flex items-center gap-2 w-[200px]"
+              // >
+              //   <PlusCircle className="w-4 h-4" />
+              //   Add Docker Account
+              // </Button>
+              <></>
             ),
             components: {
-              docker_accounts: (accounts, set) => (
-                <InputList
-                  field="docker_accounts"
-                  values={accounts ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="Docker Username"
-                />
+              docker_accounts: (_accounts, _set) => (
+                // <InputList
+                //   field="docker_accounts"
+                //   values={accounts ?? []}
+                //   set={set}
+                //   disabled={disabled}
+                //   placeholder="Docker Username"
+                // />
+                <></>
               ),
             },
           },

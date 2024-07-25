@@ -115,15 +115,15 @@ export const BuildConfig = ({
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
               commit: { placeholder: "Enter specific commit hash. Optional." },
-              github_account:
+              git_account:
                 (update.builder_id ?? config.builder_id ? true : false) &&
                 ((account, set) => (
                   <AccountSelectorConfig
                     id={update.builder_id ?? config.builder_id ?? undefined}
                     type="Builder"
-                    account_type="github"
+                    account_type="git"
                     selected={account}
-                    onSelect={(github_account) => set({ github_account })}
+                    onSelect={(git_account) => set({ git_account })}
                     disabled={disabled}
                     placeholder="None"
                   />

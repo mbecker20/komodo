@@ -211,7 +211,7 @@ export const AccountSelector = ({
   disabled: boolean;
   id?: string;
   type: "Server" | "None" | "Builder";
-  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
+  account_type: keyof Types.GetAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
@@ -563,7 +563,7 @@ export const ImageRegistryConfig = ({
         <AccountSelector
           id={resource_id}
           type={type === "Build" ? "Builder" : "Server"}
-          account_type={_registry.type === "DockerHub" ? "docker" : "github"}
+          account_type={"docker"}
           selected={cloud_params?.account}
           onSelect={(account) =>
             setRegistry({
@@ -694,14 +694,14 @@ const default_registry_config = (
   switch (type) {
     case "None":
       return { type, params: {} };
+    case "AwsEcr":
+      return { type, params: "" };
     case "DockerHub":
       return { type, params: { account: "", organization: "" } };
     case "Ghcr":
       return { type, params: { account: "", organization: "" } };
-    case "AwsEcr":
-      return { type, params: "" };
     case "Custom":
-      return { type, params: "" };
+      return { type, params: { provider: "", account: "", organization: "" } };
   }
 };
 

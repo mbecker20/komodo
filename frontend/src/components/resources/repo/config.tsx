@@ -60,15 +60,15 @@ export const RepoConfig = ({ id }: { id: string }) => {
               path: {
                 placeholder: "Enter a specific clone path. Optional.",
               },
-              github_account: (value, set) => {
+              git_account: (value, set) => {
                 const server_id = update.server_id || config.server_id;
                 return (
                   <AccountSelectorConfig
                     id={server_id}
-                    account_type="github"
+                    account_type="git"
                     type={server_id ? "Server" : "None"}
                     selected={value}
-                    onSelect={(github_account) => set({ github_account })}
+                    onSelect={(git_account) => set({ git_account })}
                     disabled={disabled}
                     placeholder="None"
                   />

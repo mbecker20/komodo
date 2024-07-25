@@ -47,13 +47,13 @@ export const ResourceSyncConfig = ({
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
               commit: { placeholder: "Enter specific commit hash. Optional." },
-              github_account: (value, set) => {
+              git_account: (value, set) => {
                 return (
                   <AccountSelectorConfig
-                    account_type="github"
+                    account_type="git"
                     type="None"
                     selected={value}
-                    onSelect={(github_account) => set({ github_account })}
+                    onSelect={(git_account) => set({ git_account })}
                     disabled={disabled}
                     placeholder="None"
                   />
