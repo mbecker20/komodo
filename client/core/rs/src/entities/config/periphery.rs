@@ -236,12 +236,12 @@ pub struct PeripheryConfig {
 
   /// Configure git credentials used to clone private repos.
   /// Supports any git provider.
-  #[serde(default)]
+  #[serde(default, alias = "git_account")]
   pub git_accounts: Vec<GitAccount>,
 
   /// Configure docker credentials used to push / pull images.
   /// Supports any docker image repository.
-  #[serde(default)]
+  #[serde(default, alias = "docker_account")]
   pub docker_accounts: Vec<DockerAccount>,
 }
 
