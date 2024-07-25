@@ -1,4 +1,8 @@
-use monitor_client::entities::{update::Log, SystemCommand};
+use monitor_client::entities::{
+  config::{DockerAccount, GitAccount},
+  update::Log,
+  SystemCommand,
+};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
@@ -36,8 +40,8 @@ pub struct GetAccounts {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetAccountsResponse {
-  pub docker: Vec<String>,
-  pub github: Vec<String>,
+  pub git: Vec<GitAccount>,
+  pub docker: Vec<DockerAccount>,
 }
 
 //

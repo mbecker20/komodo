@@ -67,17 +67,18 @@ pub async fn pull(
   logs
 }
 
-#[tracing::instrument(level = "debug", skip(github_token))]
+#[tracing::instrument(level = "debug", skip(access_token))]
 pub async fn clone<T>(
   clone_args: T,
   repo_dir: &Path,
-  github_token: Option<String>,
+  access_token: Option<String>,
 ) -> anyhow::Result<Vec<Log>>
 where
   T: Into<CloneArgs> + std::fmt::Debug,
 {
   let CloneArgs {
     name,
+    provider,
     repo,
     branch,
     commit,
@@ -87,7 +88,11 @@ where
     ..
   } = clone_args.into();
 
-  let repo = repo.as_ref().context("build has no repo attached")?;
+  let provider = provider
+    .as_ref()
+    .context("resource has no provider attached")?;
+  let repo =
+    repo.as_ref().context("resource has no repo attached")?;
   let name = to_monitor_name(&name);
 
   let repo_dir = match destination {
@@ -96,12 +101,18 @@ where
     None => repo_dir.join(name),
   };
 
-  let mut logs =
-    clone_inner(repo, &repo_dir, &branch, &commit, github_token)
-      .await;
+  let mut logs = clone_inner(
+    provider,
+    repo,
+    &repo_dir,
+    &branch,
+    &commit,
+    access_token,
+  )
+  .await;
 
   if !all_logs_success(&logs) {
-    tracing::warn!("repo at {repo_dir:?} failed to clone");
+    tracing::warn!("failed to clone repo at {repo_dir:?}");
     return Ok(logs);
   }
 
@@ -158,6 +169,7 @@ where
   skip(destination, access_token)
 )]
 async fn clone_inner(
+  provider: &str,
   repo: &str,
   destination: &Path,
   branch: &Option<String>,
@@ -174,7 +186,7 @@ async fn clone_inner(
     None => String::new(),
   };
   let repo_url =
-    format!("https://{access_token_at}github.com/{repo}.git");
+    format!("https://{access_token_at}{provider}/{repo}.git");
   let command =
     format!("git clone {repo_url} {}{branch}", destination.display());
   let start_ts = monitor_timestamp();

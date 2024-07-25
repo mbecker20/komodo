@@ -22,6 +22,8 @@ use crate::entities::{
   Timelength,
 };
 
+use super::{DockerAccount, GitAccount};
+
 /// # Periphery Command Line Arguments.
 ///
 /// This structure represents the periphery command line arguments used to
@@ -192,7 +194,7 @@ fn default_config_paths() -> Vec<String> {
 /// docker_username1 = "docker_token1"
 /// docker_username2 = "docker_token2"
 /// ```
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct PeripheryConfig {
   /// The port periphery will run on.
   /// Default: `8120`
@@ -232,15 +234,15 @@ pub struct PeripheryConfig {
   #[serde(default)]
   pub secrets: HashMap<String, String>,
 
-  /// Mapping of github usernames to access tokens.
-  /// Default: none
+  /// Configure git credentials used to clone private repos.
+  /// Supports any git provider.
   #[serde(default)]
-  pub github_accounts: HashMap<String, String>,
+  pub git_accounts: Vec<GitAccount>,
 
-  /// Mapping of docker usernames to access tokens.
-  /// Default: none
+  /// Configure docker credentials used to push / pull images.
+  /// Supports any docker image repository.
   #[serde(default)]
-  pub docker_accounts: HashMap<String, String>,
+  pub docker_accounts: Vec<DockerAccount>,
 }
 
 fn default_periphery_port() -> u16 {

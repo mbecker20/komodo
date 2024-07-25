@@ -3,9 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::builder::{
+use crate::entities::{builder::{
   Builder, BuilderListItem, BuilderQuery,
-};
+}, config::{DockerAccount, GitAccount}};
 
 use super::MonitorReadRequest;
 
@@ -103,6 +103,6 @@ pub struct GetBuilderAvailableAccounts {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetBuilderAvailableAccountsResponse {
-  pub github: Vec<String>,
-  pub docker: Vec<String>,
+  pub git: Vec<GitAccount>,
+  pub docker: Vec<DockerAccount>,
 }

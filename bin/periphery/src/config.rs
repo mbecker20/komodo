@@ -6,7 +6,7 @@ use monitor_client::entities::{
   config::periphery::{CliArgs, Env, PeripheryConfig},
   logger::LogLevel,
 };
-use serde_json::json;
+use periphery_client::api::GetAccountsResponse;
 
 pub fn periphery_config() -> &'static PeripheryConfig {
   static PERIPHERY_CONFIG: OnceLock<PeripheryConfig> =
@@ -59,10 +59,14 @@ pub fn periphery_config() -> &'static PeripheryConfig {
 
 pub fn accounts_response() -> &'static String {
   static ACCOUNTS_RESPONSE: OnceLock<String> = OnceLock::new();
-  ACCOUNTS_RESPONSE.get_or_init(|| json!({
-    "docker": periphery_config().docker_accounts.keys().collect::<Vec<_>>(),
-    "github": periphery_config().github_accounts.keys().collect::<Vec<_>>(),
-  }).to_string())
+  ACCOUNTS_RESPONSE.get_or_init(|| {
+    let config = periphery_config();
+    let res = GetAccountsResponse {
+      git: config.git_accounts.clone(),
+      docker: config.docker_accounts.clone(),
+    };
+    serde_json::to_string(&res).unwrap()
+  })
 }
 
 pub fn secrets_response() -> &'static String {

@@ -23,7 +23,9 @@ pub struct RepoListItemInfo {
   pub server_id: String,
   /// Repo last cloned / pulled timestamp in ms.
   pub last_pulled_at: I64,
-  /// The configured github repo
+  /// The git provider domain
+  pub git_provider: String,
+  /// The configured repo
   pub repo: String,
   /// The configured branch
   pub branch: String,
@@ -77,6 +79,12 @@ pub struct RepoConfig {
   #[builder(default)]
   pub server_id: String,
 
+  /// The git provider domain. Default: github.com
+  #[serde(default = "default_git_provider")]
+  #[builder(default = "default_git_provider()")]
+  #[partial_default(default_git_provider())]
+  pub git_provider: String,
+
   /// The github repo to clone.
   #[serde(default)]
   #[builder(default)]
@@ -93,11 +101,14 @@ pub struct RepoConfig {
   #[builder(default)]
   pub commit: String,
 
-  /// The github account to use to clone.
-  /// It must be available in the server's periphery config.
-  #[serde(default)]
+  /// The git account used to access private repos.
+  /// Passing empty string can only clone public repos.
+  ///
+  /// Note. A token for the account must be available in the core config or the builder server's periphery config
+  /// for the configured git provider.
+  #[serde(default, alias = "github_account")]
   #[builder(default)]
-  pub github_account: String,
+  pub git_account: String,
 
   /// Explicitly specificy the folder to clone the repo in.
   #[serde(default)]
@@ -129,6 +140,10 @@ impl RepoConfig {
   }
 }
 
+fn default_git_provider() -> String {
+  String::from("github.com")
+}
+
 fn default_branch() -> String {
   String::from("main")
 }
@@ -141,10 +156,11 @@ impl Default for RepoConfig {
   fn default() -> Self {
     Self {
       server_id: Default::default(),
+      git_provider: default_git_provider(),
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),
-      github_account: Default::default(),
+      git_account: Default::default(),
       path: Default::default(),
       on_clone: Default::default(),
       on_pull: Default::default(),

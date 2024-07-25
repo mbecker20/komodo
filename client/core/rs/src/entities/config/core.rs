@@ -18,6 +18,8 @@ use crate::entities::{
   Timelength,
 };
 
+use super::{DockerAccount, GitAccount};
+
 /// # Monitor Core Environment Variables
 ///
 /// You can override any fields of the [CoreConfig] by passing the associated
@@ -414,17 +416,15 @@ pub struct CoreConfig {
   #[serde(default)]
   pub secrets: HashMap<String, String>,
 
-  /// Configure core-based github accounts. These will be preferentially attached to build / repo clone
-  /// requests if they contain a matching github account. Otherwise, the periphery will have to have the
-  /// account configured.
+  /// Configure git credentials used to clone private repos.
+  /// Supports any git provider.
   #[serde(default)]
-  pub github_accounts: HashMap<String, String>,
+  pub git_accounts: Vec<GitAccount>,
 
-  /// Configure core-based docker accounts. These will be preferentially attached to build / deploy
-  /// requests if they contain a matching docker account. Otherwise, the periphery will have to have the
-  /// account configured.
+  /// Configure docker credentials used to push / pull images.
+  /// Supports any docker image repository.
   #[serde(default)]
-  pub docker_accounts: HashMap<String, String>,
+  pub docker_accounts: Vec<DockerAccount>,
 
   /// Configure aws ecr registries.
   #[serde(default, alias = "aws_ecr_registry")]

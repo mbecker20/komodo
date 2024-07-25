@@ -207,9 +207,10 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         builder_id: String::new(),
         skip_secret_interp: value.skip_secret_interp,
         version: value.version.into(),
+        git_provider: String::from("github.com"),
         repo: value.repo.unwrap_or_default(),
         branch: value.branch.unwrap_or_default(),
-        github_account: value.github_account.unwrap_or_default(),
+        git_account: value.github_account.unwrap_or_default(),
         image_registry: ImageRegistry::DockerHub(
           CloudRegistryConfig {
             account: value.docker_account.unwrap_or_default(),

@@ -26,7 +26,9 @@ pub struct BuildListItemInfo {
   pub last_built_at: I64,
   /// The current version of the build
   pub version: Version,
-  /// The Github repo used as the source of the build
+  /// The git provider domain
+  pub git_provider: String,
+  /// The repo used as the source of the build
   pub repo: String,
   /// The branch of the repo
   pub branch: String,
@@ -76,7 +78,13 @@ pub struct BuildConfig {
   #[builder(default)]
   pub version: Version,
 
-  /// The Github repo used as the source of the build.
+  /// The git provider domain. Default: github.com
+  #[serde(default = "default_git_provider")]
+  #[builder(default = "default_git_provider()")]
+  #[partial_default(default_git_provider())]
+  pub git_provider: String,
+
+  /// The repo used as the source of the build.
   #[serde(default)]
   #[builder(default)]
   pub repo: String,
@@ -92,11 +100,14 @@ pub struct BuildConfig {
   #[builder(default)]
   pub commit: String,
 
-  /// The github account used to clone (used to access private repos).
-  /// Empty string is public clone (only public repos).
-  #[serde(default)]
+  /// The git account used to access private repos.
+  /// Passing empty string can only clone public repos.
+  ///
+  /// Note. A token for the account must be available in the core config or the builder server's periphery config
+  /// for the configured git provider.
+  #[serde(default, alias = "github_account")]
   #[builder(default)]
-  pub github_account: String,
+  pub git_account: String,
 
   /// The optional command run after repo clone and before docker build.
   #[serde(default)]
@@ -196,6 +207,10 @@ impl BuildConfig {
   }
 }
 
+fn default_git_provider() -> String {
+  String::from("github.com")
+}
+
 fn default_branch() -> String {
   String::from("main")
 }
@@ -218,10 +233,11 @@ impl Default for BuildConfig {
       builder_id: Default::default(),
       skip_secret_interp: Default::default(),
       version: Default::default(),
+      git_provider: default_git_provider(),
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),
-      github_account: Default::default(),
+      git_account: Default::default(),
       pre_build: Default::default(),
       build_path: default_build_path(),
       dockerfile_path: default_dockerfile_path(),
@@ -254,8 +270,8 @@ pub enum ImageRegistry {
   ///
   /// The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
   AwsEcr(String),
-  /// Todo. Will point to a custom "Registry" resource by id
-  Custom(String),
+  /// Push the image to a custom image registry (any domain)
+  Custom(CustomRegistryConfig),
 }
 
 impl Default for ImageRegistry {
@@ -271,6 +287,26 @@ impl Default for ImageRegistry {
 )]
 pub struct CloudRegistryConfig {
   /// Specify an account to use with the cloud registry.
+  #[serde(default)]
+  pub account: String,
+
+  /// Optional. Specify an organization to push the image under.
+  /// Empty string means no organization.
+  #[serde(default)]
+  pub organization: String,
+}
+
+/// Configuration for a custom image registry
+#[typeshare]
+#[derive(
+  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
+pub struct CustomRegistryConfig {
+  /// Specify the registry provider domain. Eg. `docker.io`
+  #[serde(default)]
+  pub provider: String,
+
+  /// Specify an account to use with the registry.
   #[serde(default)]
   pub account: String,
 

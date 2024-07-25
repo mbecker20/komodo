@@ -6,6 +6,7 @@ use monitor_client::{
   api::read::{self, *},
   entities::{
     builder::{Builder, BuilderConfig, BuilderListItem},
+    config::{DockerAccount, GitAccount},
     permission::PermissionLevel,
     update::ResourceTargetVariant,
     user::User,
@@ -98,9 +99,10 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
       PermissionLevel::Read,
     )
     .await?;
-    let (github, docker) = match builder.config {
+  
+    let (git, docker) = match builder.config {
       BuilderConfig::Aws(config) => {
-        (config.github_accounts, config.docker_accounts)
+        (config.git_accounts, config.docker_accounts)
       }
       BuilderConfig::Server(config) => {
         let res = self
@@ -111,26 +113,26 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
             user,
           )
           .await?;
-        (res.github, res.docker)
+        (res.git, res.docker)
       }
     };
 
-    let mut github_set = HashSet::<String>::new();
+    let mut git_set = HashSet::<GitAccount>::new();
 
-    github_set.extend(core_config().github_accounts.keys().cloned());
-    github_set.extend(github);
+    git_set.extend(core_config().git_accounts.clone());
+    git_set.extend(git);
 
-    let mut github = github_set.into_iter().collect::<Vec<_>>();
-    github.sort();
+    let mut git = git_set.into_iter().collect::<Vec<_>>();
+    git.sort();
 
-    let mut docker_set = HashSet::<String>::new();
+    let mut docker_set = HashSet::<DockerAccount>::new();
 
-    docker_set.extend(core_config().docker_accounts.keys().cloned());
+    docker_set.extend(core_config().docker_accounts.clone());
     docker_set.extend(docker);
 
     let mut docker = docker_set.into_iter().collect::<Vec<_>>();
     docker.sort();
 
-    Ok(GetBuilderAvailableAccountsResponse { github, docker })
+    Ok(GetBuilderAvailableAccountsResponse { git, docker })
   }
 }

@@ -10,7 +10,9 @@ use monitor_client::{
   entities::{
     alert::{Alert, AlertData},
     all_logs_success,
-    build::{Build, CloudRegistryConfig, ImageRegistry},
+    build::{
+      Build, CloudRegistryConfig, CustomRegistryConfig, ImageRegistry,
+    },
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
     config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
@@ -156,17 +158,20 @@ impl Resolve<RunBuild, (User, Update)> for State {
     let variables = get_global_variables().await?;
 
     // CLONE REPO
-
-    let github_token = core_config
-      .github_accounts
-      .get(&build.config.github_account)
-      .cloned();
+    let git_token = core_config
+      .git_accounts
+      .iter()
+      .find(|account| {
+        account.provider == build.config.git_provider
+          && account.username == build.config.git_account
+      })
+      .map(|account| account.token.clone());
 
     let res = tokio::select! {
       res = periphery
         .request(api::git::CloneRepo {
           args: (&build).into(),
-          github_token,
+          git_token,
         }) => res,
       _ = cancel.cancelled() => {
         info!("build cancelled during clone, cleaning up builder");
@@ -779,26 +784,10 @@ fn start_aws_builder_log(
 async fn validate_account_extract_registry_token_aws_ecr(
   build: &Build,
 ) -> anyhow::Result<(Option<String>, Option<AwsEcrConfig>)> {
-  match &build.config.image_registry {
-    ImageRegistry::None(_) => Ok((None, None)),
-    ImageRegistry::DockerHub(CloudRegistryConfig {
-      account, ..
-    }) => {
-      if account.is_empty() {
-        return Err(anyhow!(
-          "Must attach account to use DockerHub image registry"
-        ));
-      }
-      Ok((core_config().docker_accounts.get(account).cloned(), None))
-    }
-    ImageRegistry::Ghcr(CloudRegistryConfig { account, .. }) => {
-      if account.is_empty() {
-        return Err(anyhow!(
-          "Must attach account to use GithubContainerRegistry"
-        ));
-      }
-      Ok((core_config().github_accounts.get(account).cloned(), None))
-    }
+  let (provider, account) = match &build.config.image_registry {
+    // Early return for None
+    ImageRegistry::None(_) => return Ok((None, None)),
+    // Early return for AwsEcr
     ImageRegistry::AwsEcr(label) => {
       let config = core_config().aws_ecr_registries.get(label);
       let token = match config {
@@ -827,10 +816,34 @@ async fn validate_account_extract_registry_token_aws_ecr(
         }
         None => None,
       };
-      Ok((token, config.map(AwsEcrConfig::from)))
+      return Ok((token, config.map(AwsEcrConfig::from)));
     }
-    ImageRegistry::Custom(_) => {
-      Err(anyhow!("Custom image registry is not implemented"))
+    ImageRegistry::DockerHub(CloudRegistryConfig {
+      account, ..
+    }) => ("docker.io", account),
+    ImageRegistry::Ghcr(CloudRegistryConfig { account, .. }) => {
+      ("ghcr.io", account)
     }
+
+    ImageRegistry::Custom(CustomRegistryConfig {
+      provider,
+      account,
+      ..
+    }) => (provider.as_str(), account),
+  };
+
+  if account.is_empty() {
+    return Err(anyhow!(
+      "Must attach account to use registry provider {provider}"
+    ));
   }
+
+  Ok((
+    core_config()
+      .docker_accounts
+      .iter()
+      .find(|a| a.provider == provider && &a.username == account)
+      .map(|account| account.token.clone()),
+    None,
+  ))
 }

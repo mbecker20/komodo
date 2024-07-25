@@ -54,6 +54,7 @@ impl super::MonitorResource for ResourceSync {
       tags: resource_sync.tags,
       resource_type: ResourceTargetVariant::ResourceSync,
       info: ResourceSyncListItemInfo {
+        git_provider: resource_sync.config.git_provider,
         repo: resource_sync.config.repo,
         branch: resource_sync.config.branch,
         last_sync_ts: resource_sync.info.last_sync_ts,

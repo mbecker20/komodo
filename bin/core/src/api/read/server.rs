@@ -10,6 +10,7 @@ use async_timing_util::{
 use monitor_client::{
   api::read::*,
   entities::{
+    config::{DockerAccount, GitAccount},
     deployment::ContainerSummary,
     permission::PermissionLevel,
     server::{
@@ -389,7 +390,7 @@ impl Resolve<GetAvailableAccounts, User> for State {
     GetAvailableAccounts { server }: GetAvailableAccounts,
     user: User,
   ) -> anyhow::Result<GetAvailableAccountsResponse> {
-    let (github, docker) = match server {
+    let (git, docker) = match server {
       Some(server) => {
         let server = resource::get_check_permissions::<Server>(
           &server,
@@ -398,33 +399,34 @@ impl Resolve<GetAvailableAccounts, User> for State {
         )
         .await?;
 
-        let GetAccountsResponse { github, docker } =
+        let GetAccountsResponse { git, docker } =
           periphery_client(&server)?
             .request(api::GetAccounts {})
             .await
             .context("failed to get accounts from periphery")?;
-        (github, docker)
+          
+        (git, docker)
       }
       None => Default::default(),
     };
 
-    let mut github_set = HashSet::<String>::new();
+    let mut git_set = HashSet::<GitAccount>::new();
 
-    github_set.extend(core_config().github_accounts.keys().cloned());
-    github_set.extend(github);
+    git_set.extend(core_config().git_accounts.clone());
+    git_set.extend(git);
 
-    let mut github = github_set.into_iter().collect::<Vec<_>>();
-    github.sort();
+    let mut git = git_set.into_iter().collect::<Vec<_>>();
+    git.sort();
 
-    let mut docker_set = HashSet::<String>::new();
+    let mut docker_set = HashSet::<DockerAccount>::new();
 
-    docker_set.extend(core_config().docker_accounts.keys().cloned());
+    docker_set.extend(core_config().docker_accounts.clone());
     docker_set.extend(docker);
 
     let mut docker = docker_set.into_iter().collect::<Vec<_>>();
     docker.sort();
 
-    let res = GetAvailableAccountsResponse { github, docker };
+    let res = GetAvailableAccountsResponse { git, docker };
     Ok(res)
   }
 }

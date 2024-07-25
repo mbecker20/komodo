@@ -44,7 +44,8 @@ pub async fn migrate_users(
       }
 
       let username = user.username.clone();
-      user.try_into()
+      user
+        .try_into()
         .inspect_err(|e| {
           warn!("failed to convert user {username} | {e:#}")
         })

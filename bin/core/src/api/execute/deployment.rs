@@ -175,45 +175,66 @@ impl Resolve<Deploy, (User, Update)> for State {
     update.version = version;
     update_update(update.clone()).await?;
 
-    let (registry_token, aws_ecr) = match &deployment
-      .config
-      .image_registry
-    {
-      ImageRegistry::None(_) => (None, None),
-      ImageRegistry::DockerHub(params) => (
-        core_config.docker_accounts.get(&params.account).cloned(),
-        None,
-      ),
-      ImageRegistry::Ghcr(params) => (
-        core_config.github_accounts.get(&params.account).cloned(),
-        None,
-      ),
-      ImageRegistry::AwsEcr(label) => {
-        let config = core_config
-          .aws_ecr_registries
-          .get(label)
-          .with_context(|| {
-            format!(
-              "did not find config for aws ecr registry {label}"
-            )
-          })?;
-        (
-          Some(
-            ecr::get_ecr_token(
-              &config.region,
-              &config.access_key_id,
-              &config.secret_access_key,
-            )
-            .await
-            .context("failed to create aws ecr login token")?,
-          ),
-          Some(AwsEcrConfig::from(config)),
-        )
-      }
-      ImageRegistry::Custom(_) => {
-        return Err(anyhow!("Custom ImageRegistry not yet supported"))
-      }
-    };
+    let (registry_token, aws_ecr) =
+      match &deployment.config.image_registry {
+        ImageRegistry::None(_) => (None, None),
+        ImageRegistry::AwsEcr(label) => {
+          let config = core_config
+            .aws_ecr_registries
+            .get(label)
+            .with_context(|| {
+              format!(
+                "did not find config for aws ecr registry {label}"
+              )
+            })?;
+          (
+            Some(
+              ecr::get_ecr_token(
+                &config.region,
+                &config.access_key_id,
+                &config.secret_access_key,
+              )
+              .await
+              .context("failed to create aws ecr login token")?,
+            ),
+            Some(AwsEcrConfig::from(config)),
+          )
+        }
+        ImageRegistry::DockerHub(params) => (
+          core_config
+            .docker_accounts
+            .iter()
+            .find(|account| {
+              account.provider == "docker.io"
+                && account.username == params.account
+            })
+            .map(|account| account.token.clone()),
+          None,
+        ),
+        ImageRegistry::Ghcr(params) => (
+          core_config
+            .docker_accounts
+            .iter()
+            .find(|account| {
+              account.provider == "ghcr.io"
+                && account.username == params.account
+            })
+            .map(|account| account.token.clone()),
+          None,
+        ),
+
+        ImageRegistry::Custom(params) => (
+          core_config
+            .docker_accounts
+            .iter()
+            .find(|account| {
+              account.provider == params.provider
+                && account.username == params.account
+            })
+            .map(|account| account.token.clone()),
+          None,
+        ),
+      };
 
     match periphery
       .request(api::container::Deploy {

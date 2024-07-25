@@ -119,10 +119,11 @@ impl From<BuildConfig>
         minor: value.version.minor,
         patch: value.version.patch,
       },
+      git_provider: String::from("github.com"),
       repo: value.repo,
       branch: value.branch,
       commit: value.commit,
-      github_account: value.github_account,
+      git_account: value.github_account,
       pre_build: monitor_client::entities::SystemCommand {
         path: value.pre_build.path,
         command: value.pre_build.command,

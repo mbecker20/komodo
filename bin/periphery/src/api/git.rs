@@ -8,7 +8,7 @@ use periphery_client::api::git::{
 use resolver_api::Resolve;
 
 use crate::{
-  config::periphery_config, helpers::get_github_token, State,
+  config::periphery_config, helpers::get_git_token, State,
 };
 
 impl Resolve<GetLatestCommit, ()> for State {
@@ -31,22 +31,29 @@ impl Resolve<CloneRepo> for State {
   #[instrument(name = "CloneRepo", skip(self))]
   async fn resolve(
     &self,
-    CloneRepo { args, github_token }: CloneRepo,
+    CloneRepo { args, git_token }: CloneRepo,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    let CloneArgs { github_account, .. } = &args;
-    let github_token = match (github_account, github_token) {
-      (None, _) => None,
-      (Some(_), Some(token)) => Some(token),
-      (Some(account), None) => Some(
-        get_github_token(account)
-          .context(
-            "failed to get github token from periphery config",
+    let CloneArgs {
+      provider, account, ..
+    } = &args;
+    let token = match (account, provider, git_token) {
+      (None, _, _) => None,
+      (Some(_), None, _) => {
+        return Err(anyhow!(
+          "got incoming git account but no git provider"
+        ))
+      }
+      (Some(_), Some(_), Some(token)) => Some(token),
+      (Some(account), Some(provider), None) => Some(
+        get_git_token(provider, account)
+          .with_context(
+            || format!("failed to get git token from periphery config | provider: {provider} | account: {account}")
           )?
           .clone(),
       ),
     };
-    git::clone(args, &periphery_config().repo_dir, github_token).await
+    git::clone(args, &periphery_config().repo_dir, token).await
   }
 }
 

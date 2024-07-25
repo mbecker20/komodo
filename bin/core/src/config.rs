@@ -54,7 +54,7 @@ pub fn core_config() -> &'static CoreConfig {
         ids
           .into_iter()
           .zip(namespaces)
-          .map(|(id, namespace)| GithubWebhookAppInstallationConfig { 
+          .map(|(id, namespace)| GithubWebhookAppInstallationConfig {
             id,
             namespace
           })
@@ -186,7 +186,7 @@ pub fn core_config() -> &'static CoreConfig {
 
       // These can't be overridden on env
       secrets: config.secrets,
-      github_accounts: config.github_accounts,
+      git_accounts: config.git_accounts,
       docker_accounts: config.docker_accounts,
       aws_ecr_registries: config.aws_ecr_registries,
     }
