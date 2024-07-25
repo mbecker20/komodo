@@ -97,9 +97,15 @@ impl Resolve<Deploy, (User, Update)> for State {
         } else {
           version
         };
+        // Remove ending patch if it is 0, this means use latest patch.
+        let version_str = if version.patch == 0 {
+          format!("{}.{}", version.major, version.minor)
+        } else {
+          version.to_string()
+        };
         // replace image with corresponding build image.
         deployment.config.image = DeploymentImage::Image {
-          image: format!("{image_name}:{version}"),
+          image: format!("{image_name}:{version_str}"),
         };
         // set image registry to match build docker account if it's not overridden by deployment
         if matches!(
