@@ -21,6 +21,7 @@ pub struct GitAccount {
   #[serde(default = "default_git_provider")]
   pub provider: String,
   /// The account username. Required.
+  #[serde(alias = "account")]
   pub username: String,
   /// The account access token for private repos. Required.
   #[serde(default, skip_serializing)]
@@ -48,6 +49,7 @@ pub struct DockerAccount {
   #[serde(default = "default_docker_provider")]
   pub provider: String,
   /// The account username. Required.
+  #[serde(alias = "account")]
   pub username: String,
   /// The account access token for private images.
   #[serde(default, skip_serializing)]
