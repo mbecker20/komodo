@@ -109,3 +109,41 @@ pub struct GetAvailableAwsEcrLabels {}
 
 #[typeshare]
 pub type GetAvailableAwsEcrLabelsResponse = Vec<String>;
+
+//
+
+/// List the common git providers.
+/// Response: [ListCommonGitProvidersResponse].
+///
+/// Includes:
+///   - providers in core config
+///   - providers configured on builds, repos, syncs
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListCommonGitProvidersResponse)]
+pub struct ListCommonGitProviders {}
+
+#[typeshare]
+pub type ListCommonGitProvidersResponse = Vec<String>;
+
+//
+
+/// List the suggested docker registry providers.
+/// Response: [ListCommonDockerRegistryProvidersResponse].
+///
+/// Includes:
+///   - providers in core config
+///   - providers configured on builds, deployments
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListCommonDockerRegistryProvidersResponse)]
+pub struct ListCommonDockerRegistryProviders {}
+
+#[typeshare]
+pub type ListCommonDockerRegistryProvidersResponse = Vec<String>;

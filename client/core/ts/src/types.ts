@@ -347,8 +347,8 @@ export type ImageRegistry =
 	 * The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
 	 */
 	| { type: "AwsEcr", params: string }
-	/** Todo. Will point to a custom "Registry" resource by id */
-	| { type: "Custom", params: string };
+	/** Push the image to a custom image registry (any domain) */
+	| { type: "Custom", params: CustomRegistryConfig };
 
 export interface EnvironmentVar {
 	variable: string;
@@ -361,17 +361,22 @@ export interface BuildConfig {
 	builder_id?: string;
 	/** The current version of the build. */
 	version?: Version;
-	/** The Github repo used as the source of the build. */
+	/** The git provider domain. Default: github.com */
+	git_provider: string;
+	/** The repo used as the source of the build. */
 	repo?: string;
 	/** The branch of the repo. */
 	branch: string;
 	/** Optionally set a specific commit hash. */
 	commit?: string;
 	/**
-	 * The github account used to clone (used to access private repos).
-	 * Empty string is public clone (only public repos).
+	 * The git account used to access private repos.
+	 * Passing empty string can only clone public repos.
+	 * 
+	 * Note. A token for the account must be available in the core config or the builder server's periphery config
+	 * for the configured git provider.
 	 */
-	github_account?: string;
+	git_account?: string;
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
 	/** Configuration for the registry to push the built image to. */
@@ -438,7 +443,9 @@ export interface BuildListItemInfo {
 	last_built_at: I64;
 	/** The current version of the build */
 	version: Version;
-	/** The Github repo used as the source of the build */
+	/** The git provider domain */
+	git_provider: string;
+	/** The repo used as the source of the build */
 	repo: string;
 	/** The branch of the repo */
 	branch: string;
@@ -695,6 +702,10 @@ export type ListCommonDeploymentExtraArgsResponse = string[];
 
 export type GetAvailableAwsEcrLabelsResponse = string[];
 
+export type ListCommonGitProvidersResponse = string[];
+
+export type ListCommonDockerRegistryProvidersResponse = string[];
+
 export type UserTarget = 
 	/** User Id */
 	| { type: "User", id: string }
@@ -805,6 +816,8 @@ export type GetProcedureActionStateResponse = ProcedureActionState;
 export interface RepoConfig {
 	/** The server to clone the repo on. */
 	server_id?: string;
+	/** The git provider domain. Default: github.com */
+	git_provider: string;
 	/** The github repo to clone. */
 	repo?: string;
 	/** The repo branch. */
@@ -812,10 +825,13 @@ export interface RepoConfig {
 	/** Optionally set a specific commit hash. */
 	commit?: string;
 	/**
-	 * The github account to use to clone.
-	 * It must be available in the server's periphery config.
+	 * The git account used to access private repos.
+	 * Passing empty string can only clone public repos.
+	 * 
+	 * Note. A token for the account must be available in the core config or the builder server's periphery config
+	 * for the configured git provider.
 	 */
-	github_account?: string;
+	git_account?: string;
 	/** Explicitly specificy the folder to clone the repo in. */
 	path?: string;
 	/**
@@ -859,7 +875,9 @@ export interface RepoListItemInfo {
 	server_id: string;
 	/** Repo last cloned / pulled timestamp in ms. */
 	last_pulled_at: I64;
-	/** The configured github repo */
+	/** The git provider domain */
+	git_provider: string;
+	/** The configured repo */
 	repo: string;
 	/** The configured branch */
 	branch: string;
@@ -1204,6 +1222,8 @@ export type ListFullServerTemplatesResponse = ServerTemplate[];
 
 /** The sync configuration. */
 export interface ResourceSyncConfig {
+	/** The git provider domain. Default: github.com */
+	git_provider: string;
 	/** The Github repo used as the source of the build. */
 	repo?: string;
 	/** The branch of the repo. */
@@ -1211,10 +1231,13 @@ export interface ResourceSyncConfig {
 	/** Optionally set a specific commit hash. */
 	commit?: string;
 	/**
-	 * The github account used to clone (used to access private repos).
-	 * Empty string is public clone (only public repos).
+	 * The git account used to access private repos.
+	 * Passing empty string can only clone public repos.
+	 * 
+	 * Note. A token for the account must be available in the core config or the builder server's periphery config
+	 * for the configured git provider.
 	 */
-	github_account?: string;
+	git_account?: string;
 	/**
 	 * The github account used to clone (used to access private repos).
 	 * Empty string is public clone (only public repos).
@@ -1280,6 +1303,8 @@ export interface ResourceSyncListItemInfo {
 	last_sync_hash: string;
 	/** Commit message of last sync, or empty string */
 	last_sync_message: string;
+	/** The git provider domain */
+	git_provider: string;
 	/** The Github repo used as the source of the sync resources */
 	repo: string;
 	/** The branch of the repo */
@@ -2187,10 +2212,28 @@ export interface GetBuilderAvailableAccounts {
 	builder: string;
 }
 
+export interface GitAccount {
+	/** The git provider domain. Default: `github.com`. */
+	provider: string;
+	/** The account username. Required. */
+	username: string;
+	/** The account access token for private repos. Required. */
+	token?: string;
+}
+
+export interface DockerAccount {
+	/** The docker provider domain. Default: `docker.io`. */
+	provider: string;
+	/** The account username. Required. */
+	username: string;
+	/** The account access token for private images. */
+	token?: string;
+}
+
 /** Response for [GetBuilderAvailableAccounts]. */
 export interface GetBuilderAvailableAccountsResponse {
-	github: string[];
-	docker: string[];
+	git: GitAccount[];
+	docker: DockerAccount[];
 }
 
 /** Get a specific deployment by name or id. Response: [Deployment]. */
@@ -2366,6 +2409,28 @@ export interface GetCoreInfoResponse {
  * Response: [GetAvailableAwsEcrLabelsResponse].
  */
 export interface GetAvailableAwsEcrLabels {
+}
+
+/**
+ * List the common git providers.
+ * Response: [ListCommonGitProvidersResponse].
+ * 
+ * Includes:
+ * - providers in core config
+ * - providers configured on builds, repos, syncs
+ */
+export interface ListCommonGitProviders {
+}
+
+/**
+ * List the suggested docker registry providers.
+ * Response: [ListCommonDockerRegistryProvidersResponse].
+ * 
+ * Includes:
+ * - providers in core config
+ * - providers configured on builds, deployments
+ */
+export interface ListCommonDockerRegistryProviders {
 }
 
 /**
@@ -2701,7 +2766,7 @@ export interface GetServersSummaryResponse {
 }
 
 /**
- * Get the usernames for the available github / docker accounts
+ * Get the usernames / providers for the available git / docker accounts
  * on the target server, or only available globally if no server
  * is provided.
  * 
@@ -2714,10 +2779,10 @@ export interface GetAvailableAccounts {
 
 /** Response for [GetAvailableAccounts]. */
 export interface GetAvailableAccountsResponse {
-	/** The github usernames */
-	github: string[];
-	/** The docker usernames. */
-	docker: string[];
+	/** The github accounts. */
+	git: GitAccount[];
+	/** The docker accounts. */
+	docker: DockerAccount[];
 }
 
 /**
@@ -3830,6 +3895,19 @@ export interface CloudRegistryConfig {
 	organization?: string;
 }
 
+/** Configuration for a custom image registry */
+export interface CustomRegistryConfig {
+	/** Specify the registry provider domain. Eg. `docker.io` */
+	provider?: string;
+	/** Specify an account to use with the registry. */
+	account?: string;
+	/**
+	 * Optional. Specify an organization to push the image under.
+	 * Empty string means no organization.
+	 */
+	organization?: string;
+}
+
 /** Configuration for a monitor server builder. */
 export interface ServerBuilderConfig {
 	/** The server id of the builder */
@@ -3874,21 +3952,36 @@ export interface AwsBuilderConfig {
 	 * This should include a security group to allow core inbound access to the periphery port.
 	 */
 	security_group_ids: string[];
-	/** Which github accounts (usernames) are available on the AMI */
-	github_accounts?: string[];
-	/** Which dockerhub accounts (usernames) are available on the AMI */
-	docker_accounts?: string[];
+	/** Which git accounts are available on the AMI */
+	git_accounts?: GitAccount[];
+	/** Which docker accounts are available on the AMI. */
+	docker_accounts?: DockerAccount[];
+}
+
+export interface LatestCommit {
+	hash: string;
+	message: string;
 }
 
 export interface CloneArgs {
+	/** Resource name (eg Build name, Repo name) */
 	name: string;
+	/** Git provider domain. Default: `github.com` */
+	provider?: string;
+	/** Full repo identifier. <namespace>/<repo_name> */
 	repo?: string;
+	/** Git Branch. Default: `main` */
 	branch?: string;
+	/** Specific commit hash. Optional */
 	commit?: string;
+	/** The clone destination path */
 	destination?: string;
+	/** Command to run after the repo has been cloned */
 	on_clone?: SystemCommand;
+	/** Command to run after the repo has been pulled */
 	on_pull?: SystemCommand;
-	github_account?: string;
+	/** Configure the account used to access repo (if private) */
+	account?: string;
 }
 
 /** Info for the all system disks combined. */
@@ -4136,6 +4229,8 @@ export type ReadRequest =
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "GetAvailableAwsEcrLabels", params: GetAvailableAwsEcrLabels }
+	| { type: "ListCommonGitProviders", params: ListCommonGitProviders }
+	| { type: "ListCommonDockerRegistryProviders", params: ListCommonDockerRegistryProviders }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetPermissionLevel", params: GetPermissionLevel }
 	| { type: "FindUser", params: FindUser }

@@ -1,16 +1,29 @@
-use std::{sync::OnceLock, time::Instant};
+use std::{collections::HashSet, sync::OnceLock, time::Instant};
 
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::{api::read::*, entities::user::User};
-use resolver_api::{derive::Resolver, ResolveToString, Resolver};
+use monitor_client::{
+  api::read::*,
+  entities::{
+    build::{Build, CustomRegistryConfig, ImageRegistry},
+    deployment::Deployment,
+    repo::Repo,
+    sync::ResourceSync,
+    user::User,
+  },
+};
+use resolver_api::{
+  derive::Resolver, Resolve, ResolveToString, Resolver,
+};
 use serde::{Deserialize, Serialize};
 use serror::Json;
 use typeshare::typeshare;
 use uuid::Uuid;
 
-use crate::{auth::auth_request, config::core_config, state::State};
+use crate::{
+  auth::auth_request, config::core_config, resource, state::State,
+};
 
 mod alert;
 mod alerter;
@@ -43,6 +56,10 @@ enum ReadRequest {
   GetCoreInfo(GetCoreInfo),
   #[to_string_resolver]
   GetAvailableAwsEcrLabels(GetAvailableAwsEcrLabels),
+  ListCommonGitProviders(ListCommonGitProviders),
+  ListCommonDockerRegistryProviders(
+    ListCommonDockerRegistryProviders,
+  ),
 
   // ==== USER ====
   GetUsername(GetUsername),
@@ -285,5 +302,117 @@ impl ResolveToString<GetAvailableAwsEcrLabels, User> for State {
     _: User,
   ) -> anyhow::Result<String> {
     Ok(ecr_labels().to_string())
+  }
+}
+
+impl Resolve<ListCommonGitProviders, User> for State {
+  async fn resolve(
+    &self,
+    ListCommonGitProviders {}: ListCommonGitProviders,
+    user: User,
+  ) -> anyhow::Result<ListCommonGitProvidersResponse> {
+    let mut set = core_config()
+      .git_accounts
+      .iter()
+      .map(|a| a.provider.as_str())
+      .collect::<HashSet<_>>();
+
+    let (builds, repos, syncs) = tokio::try_join!(
+      resource::list_full_for_user::<Build>(
+        Default::default(),
+        &user
+      ),
+      resource::list_full_for_user::<Repo>(Default::default(), &user),
+      resource::list_full_for_user::<ResourceSync>(
+        Default::default(),
+        &user
+      ),
+    )?;
+
+    for build in &builds {
+      set.insert(&build.config.git_provider);
+    }
+    for repo in &repos {
+      set.insert(&repo.config.git_provider);
+    }
+    for sync in &syncs {
+      set.insert(&sync.config.git_provider);
+    }
+
+    let mut res =
+      set.into_iter().map(ToOwned::to_owned).collect::<Vec<_>>();
+    res.sort();
+
+    Ok(res)
+  }
+}
+
+impl Resolve<ListCommonDockerRegistryProviders, User> for State {
+  async fn resolve(
+    &self,
+    ListCommonDockerRegistryProviders {}: ListCommonDockerRegistryProviders,
+    user: User,
+  ) -> anyhow::Result<ListCommonDockerRegistryProvidersResponse> {
+    let mut set = core_config()
+      .docker_accounts
+      .iter()
+      .map(|a| a.provider.as_str())
+      .collect::<HashSet<_>>();
+
+    let (builds, deployments) = tokio::try_join!(
+      resource::list_full_for_user::<Build>(
+        Default::default(),
+        &user
+      ),
+      resource::list_full_for_user::<Deployment>(
+        Default::default(),
+        &user
+      ),
+    )?;
+
+    for build in &builds {
+      match &build.config.image_registry {
+        ImageRegistry::None(_) => {}
+        // Ecr is handled differently
+        ImageRegistry::AwsEcr(_) => {}
+        ImageRegistry::DockerHub(_) => {
+          set.insert("docker.io");
+        }
+        ImageRegistry::Ghcr(_) => {
+          set.insert("ghcr.io");
+        }
+        ImageRegistry::Custom(CustomRegistryConfig {
+          provider,
+          ..
+        }) => {
+          set.insert(provider);
+        }
+      }
+    }
+    for deployment in &deployments {
+      match &deployment.config.image_registry {
+        ImageRegistry::None(_) => {}
+        // Ecr is handled differently
+        ImageRegistry::AwsEcr(_) => {}
+        ImageRegistry::DockerHub(_) => {
+          set.insert("docker.io");
+        }
+        ImageRegistry::Ghcr(_) => {
+          set.insert("ghcr.io");
+        }
+        ImageRegistry::Custom(CustomRegistryConfig {
+          provider,
+          ..
+        }) => {
+          set.insert(provider);
+        }
+      }
+    }
+
+    let mut res =
+      set.into_iter().map(ToOwned::to_owned).collect::<Vec<_>>();
+    res.sort();
+
+    Ok(res)
   }
 }

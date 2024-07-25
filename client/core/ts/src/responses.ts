@@ -19,6 +19,8 @@ export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
   GetAvailableAwsEcrLabels: Types.GetAvailableAwsEcrLabelsResponse;
+  ListCommonGitProviders: Types.ListCommonGitProvidersResponse;
+  ListCommonDockerRegistryProviders: Types.ListCommonDockerRegistryProvidersResponse;
 
   // ==== USER ====
   GetUsername: Types.GetUsernameResponse;
