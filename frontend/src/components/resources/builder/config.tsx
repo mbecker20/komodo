@@ -1,5 +1,5 @@
 import { Config } from "@components/config";
-import { DoubleInput, InputList } from "@components/config/util";
+import { InputList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { useState } from "react";
@@ -92,71 +92,72 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
           {
             label: "Github Accounts",
             contentHidden:
-              (update.git_accounts ?? config.git_accounts)?.length === 0,
+              (update.git_providers ?? config.git_providers)?.length === 0,
             actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
                   set((update) => ({
                     ...update,
-                    git_accounts: [
-                      ...(update.git_accounts ?? config.git_accounts ?? []),
-                      { provider: "github.com", username: "" },
+                    git_providers: [
+                      ...(update.git_providers ?? config.git_providers ?? []),
+                      { domain: "github.com", accounts: [] },
                     ],
                   }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
                 <PlusCircle className="w-4 h-4" />
-                Add Git Account
+                Add Git Provider
               </Button>
             ),
             components: {
-              git_accounts: (accounts, set) =>
-                accounts && (
-                  <AccountsConfig
-                    type="git"
-                    accounts={accounts}
-                    set={set}
-                    disabled={disabled}
-                  />
-                ),
+              // git_providers: (providers, set) =>
+              //   providers && (
+              //     <ProvidersConfig
+              //       type="git"
+              //       providers={providers}
+              //       set={set}
+              //       disabled={disabled}
+              //     />
+              //   ),
             },
           },
           {
             label: "Docker Accounts",
             contentHidden:
-              (update.docker_accounts ?? config.docker_accounts)?.length === 0,
+              (update.docker_registries ?? config.docker_registries)?.length ===
+              0,
             actions: !disabled && (
               <Button
                 variant="secondary"
                 onClick={() =>
                   set((update) => ({
                     ...update,
-                    docker_accounts: [
-                      ...(update.docker_accounts ??
-                        config.docker_accounts ??
+                    docker_registries: [
+                      ...(update.docker_registries ??
+                        config.docker_registries ??
                         []),
-                      { provider: "docker.io", username: "" },
+                      { domain: "docker.io", accounts: [], organizations: [] },
                     ],
                   }))
                 }
                 className="flex items-center gap-2 w-[200px]"
               >
                 <PlusCircle className="w-4 h-4" />
-                Add Docker Account
+                Add Docker Registry
               </Button>
             ),
             components: {
-              docker_accounts: (accounts, set) =>
-                accounts && (
-                  <AccountsConfig
-                    type="docker"
-                    accounts={accounts}
-                    set={set}
-                    disabled={disabled}
-                  />
-                ),
+              // docker_registries: (providers, set) =>
+              //   providers && (
+              //     <ProvidersConfig
+              //       type="docker"
+              //       providers={providers}
+              //       set={set}
+              //       disabled={disabled}
+              //     />
+              //   ),
             },
           },
         ],
@@ -209,42 +210,43 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
   );
 };
 
-export const AccountsConfig = ({
-  accounts,
-  type,
-  set,
-  disabled,
-}: {
-  accounts: Types.GitAccount[] | Types.DockerAccount[];
-  type: "git" | "docker";
-  set: (input: Partial<Types.AwsBuilderConfig>) => void;
-  disabled: boolean;
-}) => {
-  const field = `${type}_accounts`;
-  const example_domain = type === "git" ? "github.com" : "docker.io";
-  return (
-    <div className="py-2 w-full flex justify-end">
-      <DoubleInput
-        disabled={disabled}
-        inputClassName="w-[300px] 2xl:w-[400px] max-w-full"
-        containerClassName="w-fit"
-        values={accounts}
-        leftval="provider"
-        leftpl={`Provider Domain (ex. ${example_domain})`}
-        rightval="username"
-        rightpl="Account Username"
-        onLeftChange={(provider, i) => {
-          accounts[i].provider = provider;
-          set({ [field]: [...accounts] });
-        }}
-        onRightChange={(username, i) => {
-          accounts[i].username = username;
-          set({ [field]: [...accounts] });
-        }}
-        onRemove={(idx) =>
-          set({ [field]: [...accounts.filter((_, i) => i !== idx)] })
-        }
-      />
-    </div>
-  );
-};
+// export const ProvidersConfig = ({
+//   providers,
+//   type,
+//   set,
+//   disabled,
+// }: {
+//   providers: Types.GitProvider[] | Types.DockerRegistry[];
+//   type: "git" | "docker";
+//   set: (input: Partial<Types.AwsBuilderConfig>) => void;
+//   disabled: boolean;
+// }) => {
+//   const field = `${type}_accounts`;
+//   const example_domain = type === "git" ? "github.com" : "docker.io";
+
+//   return (
+//     <div className="py-2 w-full flex justify-end">
+//       {/* <DoubleInput
+//         disabled={disabled}
+//         inputClassName="w-[300px] 2xl:w-[400px] max-w-full"
+//         containerClassName="w-fit"
+//         values={accounts}
+//         leftval="provider"
+//         leftpl={`Provider Domain (ex. ${example_domain})`}
+//         rightval="username"
+//         rightpl="Account Username"
+//         onLeftChange={(provider, i) => {
+//           accounts[i].provider = provider;
+//           set({ [field]: [...accounts] });
+//         }}
+//         onRightChange={(username, i) => {
+//           accounts[i].username = username;
+//           set({ [field]: [...accounts] });
+//         }}
+//         onRemove={(idx) =>
+//           set({ [field]: [...accounts.filter((_, i) => i !== idx)] })
+//         }
+//       /> */}
+//     </div>
+//   );
+// };

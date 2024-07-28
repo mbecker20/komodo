@@ -292,9 +292,19 @@ export const AccountSelector = ({
     type === "Server" || type === "None"
       ? ["GetAvailableAccounts", { server: id }]
       : ["GetBuilderAvailableAccounts", { builder: id! }];
-  const accounts = useRead(request, params).data?.[account_type]?.filter(
-    (account) => account.provider === provider
+  const providers = useRead(request, params).data?.[account_type]?.filter(
+    (_provider) => _provider.domain === provider
   );
+  const _accounts = new Set<string>();
+  if (providers) {
+    for (const provider of providers) {
+      for (const account of provider.accounts) {
+        _accounts.add(account.username);
+      }
+    }
+  }
+  const accounts = [..._accounts];
+  accounts.sort();
   return (
     <Select
       value={selected}
@@ -311,9 +321,9 @@ export const AccountSelector = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
-        {accounts?.map((account: Types.GitAccount | Types.DockerAccount) => (
-          <SelectItem key={account.username} value={account.username}>
-            {account.username}
+        {accounts?.map((account) => (
+          <SelectItem key={account} value={account}>
+            {account}
           </SelectItem>
         ))}
       </SelectContent>

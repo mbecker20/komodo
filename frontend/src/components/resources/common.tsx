@@ -372,7 +372,7 @@ export const LabelsConfig = ({
 );
 
 export const CopyGithubWebhook = ({ path }: { path: string }) => {
-  const base_url = useRead("GetCoreInfo", {}).data?.github_webhook_base_url;
+  const base_url = useRead("GetCoreInfo", {}).data?.webhook_base_url;
   const url = base_url + "/listener/github" + path;
   return (
     <div className="flex gap-2 items-center">
