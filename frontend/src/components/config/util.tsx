@@ -216,40 +216,38 @@ export const ProviderSelector = ({
   }
 
   return (
-    <div className="flex items-center">
-      <Select
-        value={selected}
-        onValueChange={(value) => {
-          if (value === "Custom") {
-            onSelect("");
-            setCustomMode(true);
-          } else {
-            onSelect(value);
-          }
-        }}
+    <Select
+      value={selected}
+      onValueChange={(value) => {
+        if (value === "Custom") {
+          onSelect("");
+          setCustomMode(true);
+        } else {
+          onSelect(value);
+        }
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        className="w-full lg:w-[200px] max-w-[50%]"
         disabled={disabled}
       >
-        <SelectTrigger
-          className="w-full lg:w-[200px] max-w-[50%]"
-          disabled={disabled}
-        >
-          <SelectValue placeholder="Select Provider" />
-        </SelectTrigger>
-        <SelectContent>
-          {providers?.map((provider) => (
-            <SelectItem key={provider} value={provider}>
-              {provider}
-            </SelectItem>
-          ))}
-          {providers !== undefined &&
-            selected &&
-            !providers.includes(selected) && (
-              <SelectItem value={selected}>{selected}</SelectItem>
-            )}
-          <SelectItem value={"Custom"}>Custom</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+        <SelectValue placeholder="Select Provider" />
+      </SelectTrigger>
+      <SelectContent>
+        {providers?.map((provider) => (
+          <SelectItem key={provider} value={provider}>
+            {provider}
+          </SelectItem>
+        ))}
+        {providers !== undefined &&
+          selected &&
+          !providers.includes(selected) && (
+            <SelectItem value={selected}>{selected}</SelectItem>
+          )}
+        <SelectItem value={"Custom"}>Custom</SelectItem>
+      </SelectContent>
+    </Select>
   );
 };
 

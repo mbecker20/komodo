@@ -1,5 +1,5 @@
 use monitor_client::entities::{
-  config::{DockerAccount, GitAccount},
+  config::{DockerRegistry, GitProvider},
   update::Log,
   SystemCommand,
 };
@@ -40,8 +40,8 @@ pub struct GetAccounts {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetAccountsResponse {
-  pub git: Vec<GitAccount>,
-  pub docker: Vec<DockerAccount>,
+  pub git: Vec<GitProvider>,
+  pub docker: Vec<DockerRegistry>,
 }
 
 //

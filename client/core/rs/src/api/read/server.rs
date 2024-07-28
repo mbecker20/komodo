@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  config::{DockerAccount, GitAccount},
+  config::{DockerRegistry, GitProvider},
   deployment::ContainerSummary,
   server::{
     docker_image::ImageSummary,
@@ -341,10 +341,10 @@ pub struct GetAvailableAccounts {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetAvailableAccountsResponse {
-  /// The github accounts.
-  pub git: Vec<GitAccount>,
-  /// The docker accounts.
-  pub docker: Vec<DockerAccount>,
+  /// The github providers.
+  pub git: Vec<GitProvider>,
+  /// The docker registries.
+  pub docker: Vec<DockerRegistry>,
 }
 
 //

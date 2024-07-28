@@ -361,11 +361,11 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
 
     let CoreConfig {
       host,
-      github_webhook_base_url,
+      webhook_base_url,
       ..
     } = core_config();
 
-    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {

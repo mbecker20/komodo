@@ -62,8 +62,8 @@ pub fn accounts_response() -> &'static String {
   ACCOUNTS_RESPONSE.get_or_init(|| {
     let config = periphery_config();
     let res = GetAccountsResponse {
-      git: config.git_accounts.clone(),
-      docker: config.docker_accounts.clone(),
+      git: config.git_providers.clone(),
+      docker: config.docker_registries.clone(),
     };
     serde_json::to_string(&res).unwrap()
   })

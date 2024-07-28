@@ -85,8 +85,8 @@ pub struct GetCoreInfoResponse {
   pub title: String,
   /// The monitoring interval of this core api.
   pub monitoring_interval: Timelength,
-  /// The github webhook base url to use with github webhooks.
-  pub github_webhook_base_url: String,
+  /// The webhook base url.
+  pub webhook_base_url: String,
   /// Whether transparent mode is enabled, which gives all users read access to all resources.
   pub transparent_mode: bool,
   /// Whether UI write access should be disabled

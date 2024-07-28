@@ -10,7 +10,7 @@ use async_timing_util::{
 use monitor_client::{
   api::read::*,
   entities::{
-    config::{DockerAccount, GitAccount},
+    config::{DockerRegistry, GitProvider},
     deployment::ContainerSummary,
     permission::PermissionLevel,
     server::{
@@ -404,23 +404,23 @@ impl Resolve<GetAvailableAccounts, User> for State {
             .request(api::GetAccounts {})
             .await
             .context("failed to get accounts from periphery")?;
-          
+
         (git, docker)
       }
       None => Default::default(),
     };
 
-    let mut git_set = HashSet::<GitAccount>::new();
+    let mut git_set = HashSet::<GitProvider>::new();
 
-    git_set.extend(core_config().git_accounts.clone());
+    git_set.extend(core_config().git_providers.clone());
     git_set.extend(git);
 
     let mut git = git_set.into_iter().collect::<Vec<_>>();
     git.sort();
 
-    let mut docker_set = HashSet::<DockerAccount>::new();
+    let mut docker_set = HashSet::<DockerRegistry>::new();
 
-    docker_set.extend(core_config().docker_accounts.clone());
+    docker_set.extend(core_config().docker_registries.clone());
     docker_set.extend(docker);
 
     let mut docker = docker_set.into_iter().collect::<Vec<_>>();

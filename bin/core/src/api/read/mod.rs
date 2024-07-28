@@ -251,8 +251,8 @@ fn core_info() -> &'static String {
     let info = GetCoreInfoResponse {
       title: config.title.clone(),
       monitoring_interval: config.monitoring_interval,
-      github_webhook_base_url: config
-        .github_webhook_base_url
+      webhook_base_url: config
+        .webhook_base_url
         .clone()
         .unwrap_or_else(|| config.host.clone()),
       transparent_mode: config.transparent_mode,
@@ -286,8 +286,8 @@ fn ecr_labels() -> &'static String {
     serde_json::to_string(
       &core_config()
         .aws_ecr_registries
-        .keys()
-        .cloned()
+        .iter()
+        .map(|reg| reg.label.clone())
         .collect::<Vec<_>>(),
     )
     .context("failed to serialize ecr registries")
@@ -312,9 +312,9 @@ impl Resolve<ListCommonGitProviders, User> for State {
     user: User,
   ) -> anyhow::Result<ListCommonGitProvidersResponse> {
     let mut set = core_config()
-      .git_accounts
+      .git_providers
       .iter()
-      .map(|a| a.provider.as_str())
+      .map(|provider| provider.domain.as_str())
       .collect::<HashSet<_>>();
 
     let (builds, repos, syncs) = tokio::try_join!(
@@ -354,9 +354,9 @@ impl Resolve<ListCommonDockerRegistryProviders, User> for State {
     user: User,
   ) -> anyhow::Result<ListCommonDockerRegistryProvidersResponse> {
     let mut set = core_config()
-      .docker_accounts
+      .docker_registries
       .iter()
-      .map(|a| a.provider.as_str())
+      .map(|registry| registry.domain.as_str())
       .collect::<HashSet<_>>();
 
     let (builds, deployments) = tokio::try_join!(

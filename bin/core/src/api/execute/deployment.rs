@@ -88,7 +88,8 @@ impl Resolve<Deploy, (User, Update)> for State {
         let image_name = get_image_name(&build, |label| {
           core_config()
             .aws_ecr_registries
-            .get(label)
+            .iter()
+            .find(|reg| &reg.label == label)
             .map(AwsEcrConfig::from)
         })
         .context("failed to create image name")?;
@@ -181,7 +182,8 @@ impl Resolve<Deploy, (User, Update)> for State {
         ImageRegistry::AwsEcr(label) => {
           let config = core_config
             .aws_ecr_registries
-            .get(label)
+            .iter()
+            .find(|reg| &reg.label == label)
             .with_context(|| {
               format!(
                 "did not find config for aws ecr registry {label}"
@@ -202,36 +204,45 @@ impl Resolve<Deploy, (User, Update)> for State {
         }
         ImageRegistry::DockerHub(params) => (
           core_config
-            .docker_accounts
+            .docker_registries
             .iter()
-            .find(|account| {
-              account.provider == "docker.io"
-                && account.username == params.account
-            })
-            .map(|account| account.token.clone()),
+            .find(|registry| registry.domain == "docker.io")
+            .and_then(|provider| {
+              provider
+                .accounts
+                .iter()
+                .find(|account| account.username == params.account)
+                .map(|account| account.token.clone())
+            }),
           None,
         ),
         ImageRegistry::Ghcr(params) => (
           core_config
-            .docker_accounts
+            .docker_registries
             .iter()
-            .find(|account| {
-              account.provider == "ghcr.io"
-                && account.username == params.account
-            })
-            .map(|account| account.token.clone()),
+            .find(|registry| registry.domain == "ghcr.io")
+            .and_then(|provider| {
+              provider
+                .accounts
+                .iter()
+                .find(|account| account.username == params.account)
+                .map(|account| account.token.clone())
+            }),
           None,
         ),
 
         ImageRegistry::Custom(params) => (
           core_config
-            .docker_accounts
+            .docker_registries
             .iter()
-            .find(|account| {
-              account.provider == params.provider
-                && account.username == params.account
-            })
-            .map(|account| account.token.clone()),
+            .find(|registry| registry.domain == params.provider)
+            .and_then(|provider| {
+              provider
+                .accounts
+                .iter()
+                .find(|account| account.username == params.account)
+                .map(|account| account.token.clone())
+            }),
           None,
         ),
       };

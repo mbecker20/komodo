@@ -159,13 +159,18 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     // CLONE REPO
     let git_token = core_config
-      .git_accounts
+      .git_providers
       .iter()
-      .find(|account| {
-        account.provider == build.config.git_provider
-          && account.username == build.config.git_account
-      })
-      .map(|account| account.token.clone());
+      .find(|provider| provider.domain == build.config.git_provider)
+      .and_then(|provider| {
+        provider
+          .accounts
+          .iter()
+          .find(|account| {
+            account.username == build.config.git_account
+          })
+          .map(|account| account.token.clone())
+      });
 
     let res = tokio::select! {
       res = periphery
@@ -789,7 +794,10 @@ async fn validate_account_extract_registry_token_aws_ecr(
     ImageRegistry::None(_) => return Ok((None, None)),
     // Early return for AwsEcr
     ImageRegistry::AwsEcr(label) => {
-      let config = core_config().aws_ecr_registries.get(label);
+      let config = core_config()
+        .aws_ecr_registries
+        .iter()
+        .find(|reg| &reg.label == label);
       let token = match config {
         Some(AwsEcrConfigWithCredentials {
           region,
@@ -840,10 +848,16 @@ async fn validate_account_extract_registry_token_aws_ecr(
 
   Ok((
     core_config()
-      .docker_accounts
+      .docker_registries
       .iter()
-      .find(|a| a.provider == provider && &a.username == account)
-      .map(|account| account.token.clone()),
+      .find(|_provider| _provider.domain == provider)
+      .and_then(|provider| {
+        provider
+          .accounts
+          .iter()
+          .find(|_account| &_account.username == account)
+          .map(|account| account.token.clone())
+      }),
     None,
   ))
 }

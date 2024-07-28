@@ -91,12 +91,12 @@ pub fn core_config() -> &'static CoreConfig {
       keep_alerts_for_days: env
         .monitor_keep_alerts_for_days
         .unwrap_or(config.keep_alerts_for_days),
-      github_webhook_secret: env
-        .monitor_github_webhook_secret
-        .unwrap_or(config.github_webhook_secret),
-      github_webhook_base_url: env
-        .monitor_github_webhook_base_url
-        .or(config.github_webhook_base_url),
+      webhook_secret: env
+        .monitor_webhook_secret
+        .unwrap_or(config.webhook_secret),
+      webhook_base_url: env
+        .monitor_webhook_base_url
+        .or(config.webhook_base_url),
       github_organizations: env.monitor_github_organizations
         .unwrap_or(config.github_organizations),
       docker_organizations: env
@@ -186,8 +186,8 @@ pub fn core_config() -> &'static CoreConfig {
 
       // These can't be overridden on env
       secrets: config.secrets,
-      git_accounts: config.git_accounts,
-      docker_accounts: config.docker_accounts,
+      git_providers: config.git_providers,
+      docker_registries: config.docker_registries,
       aws_ecr_registries: config.aws_ecr_registries,
     }
   })

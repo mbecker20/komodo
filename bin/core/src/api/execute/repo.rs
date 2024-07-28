@@ -58,13 +58,16 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     let periphery = periphery_client(&server)?;
 
     let git_token = core_config()
-      .git_accounts
+      .git_providers
       .iter()
-      .find(|account| {
-        account.provider == repo.config.git_provider
-          && account.username == repo.config.git_account
-      })
-      .map(|account| account.token.clone());
+      .find(|provider| provider.domain == repo.config.git_provider)
+      .and_then(|provider| {
+        provider
+          .accounts
+          .iter()
+          .find(|account| account.username == repo.config.git_account)
+          .map(|account| account.token.clone())
+      });
 
     let logs = match periphery
       .request(api::git::CloneRepo {

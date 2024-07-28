@@ -27,12 +27,12 @@ pub async fn get_remote_resources(
     (None, _) => None,
     (Some(_), None) => return Err(anyhow!("Account is configured, but provider is empty")),
     (Some(username), Some(provider)) => config
-      .git_accounts
+      .git_providers
       .iter()
-      .find(|account| {
-        provider == &account.provider && username == &account.username
+      .find(|_provider| {
+        &_provider.domain == provider
       })
-      .map(|account| &account.token)
+      .and_then(|provider| provider.accounts.iter().find(|account| &account.username == username).map(|account| &account.token))
       .with_context(|| format!("did not find git token for account {username} | provider: {provider}"))?
       .to_owned()
       .into(),

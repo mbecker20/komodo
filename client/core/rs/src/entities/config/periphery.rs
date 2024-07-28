@@ -22,7 +22,7 @@ use crate::entities::{
   Timelength,
 };
 
-use super::{DockerAccount, GitAccount};
+use super::{DockerRegistry, GitProvider};
 
 /// # Periphery Command Line Arguments.
 ///
@@ -236,13 +236,13 @@ pub struct PeripheryConfig {
 
   /// Configure git credentials used to clone private repos.
   /// Supports any git provider.
-  #[serde(default, alias = "git_account")]
-  pub git_accounts: Vec<GitAccount>,
+  #[serde(default, alias = "git_provider")]
+  pub git_providers: Vec<GitProvider>,
 
   /// Configure docker credentials used to push / pull images.
   /// Supports any docker image repository.
-  #[serde(default, alias = "docker_account")]
-  pub docker_accounts: Vec<DockerAccount>,
+  #[serde(default, alias = "docker_registry")]
+  pub docker_registries: Vec<DockerRegistry>,
 }
 
 fn default_periphery_port() -> u16 {

@@ -13,9 +13,12 @@ pub fn get_git_token(
   account_username: &str,
 ) -> anyhow::Result<&'static String> {
   periphery_config()
-    .git_accounts
-    .iter().find(|account| account.provider == provider && account.username == account_username)
-    .map(|account| &account.token)
+    .git_providers
+    .iter()
+    .find(|_provider| _provider.domain == provider)
+    .and_then(|provider| provider.accounts
+        .iter()
+          .find(|account| account.username == account_username).map(|account| &account.token))
     .with_context(|| format!("did not find token in config for git account {account_username} | provider {provider}"))
 }
 
@@ -24,9 +27,9 @@ pub fn get_docker_token(
   account_username: &str,
 ) -> anyhow::Result<&'static String> {
   periphery_config()
-    .docker_accounts
-    .iter().find(|account| account.provider == provider && account.username == account_username)
-    .map(|account| &account.token)
+    .docker_registries
+    .iter().find(|_provider| _provider.domain == provider)
+    .and_then(|provider| provider.accounts.iter().find(|account| account.username == account_username).map(|account| &account.token))
     .with_context(|| format!("did not find token in config for docker account {account_username} | provider {provider}"))
 }
 

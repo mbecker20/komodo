@@ -6,7 +6,7 @@ use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
-  config::{DockerAccount, GitAccount},
+  config::{DockerRegistry, GitProvider},
   resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
   MergePartial,
 };
@@ -225,12 +225,12 @@ impl MergePartial for BuilderConfig {
               .use_public_ip
               .unwrap_or(config.use_public_ip),
             port: partial.port.unwrap_or(config.port),
-            git_accounts: partial
-              .git_accounts
-              .unwrap_or(config.git_accounts),
-            docker_accounts: partial
-              .docker_accounts
-              .unwrap_or(config.docker_accounts),
+            git_providers: partial
+              .git_providers
+              .unwrap_or(config.git_providers),
+            docker_registries: partial
+              .docker_registries
+              .unwrap_or(config.docker_registries),
           };
           BuilderConfig::Aws(config)
         }
@@ -309,12 +309,12 @@ pub struct AwsBuilderConfig {
   /// This should include a security group to allow core inbound access to the periphery port.
   pub security_group_ids: Vec<String>,
 
-  /// Which git accounts are available on the AMI
+  /// Which git providers are available on the AMI
   #[serde(default)]
-  pub git_accounts: Vec<GitAccount>,
-  /// Which docker accounts are available on the AMI.
+  pub git_providers: Vec<GitProvider>,
+  /// Which docker registries are available on the AMI.
   #[serde(default)]
-  pub docker_accounts: Vec<DockerAccount>,
+  pub docker_registries: Vec<DockerRegistry>,
 }
 
 impl Default for AwsBuilderConfig {
@@ -330,8 +330,8 @@ impl Default for AwsBuilderConfig {
       key_pair_name: Default::default(),
       assign_public_ip: false,
       use_public_ip: false,
-      git_accounts: Default::default(),
-      docker_accounts: Default::default(),
+      git_providers: Default::default(),
+      docker_registries: Default::default(),
     }
   }
 }

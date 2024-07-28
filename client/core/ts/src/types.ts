@@ -2230,28 +2230,38 @@ export interface GetBuilderAvailableAccounts {
 	builder: string;
 }
 
-export interface GitAccount {
-	/** The git provider domain. Default: `github.com`. */
-	provider: string;
+export interface ProviderAccount {
 	/** The account username. Required. */
 	username: string;
-	/** The account access token for private repos. Required. */
+	/** The account access token. Required. */
 	token?: string;
 }
 
-export interface DockerAccount {
-	/** The docker provider domain. Default: `docker.io`. */
-	provider: string;
+export interface GitProvider {
+	/** The git provider domain. Default: `github.com`. */
+	domain: string;
 	/** The account username. Required. */
-	username: string;
-	/** The account access token for private images. */
-	token?: string;
+	accounts: ProviderAccount[];
+}
+
+export interface DockerRegistry {
+	/** The docker provider domain. Default: `docker.io`. */
+	domain: string;
+	/** The account username. Required. */
+	accounts: ProviderAccount[];
+	/**
+	 * Available organizations on the registry provider.
+	 * Used to push an image under an organization's repo rather than an account's repo.
+	 */
+	organizations: string[];
 }
 
 /** Response for [GetBuilderAvailableAccounts]. */
 export interface GetBuilderAvailableAccountsResponse {
-	git: GitAccount[];
-	docker: DockerAccount[];
+	/** The github providers. */
+	git: GitProvider[];
+	/** The docker registries. */
+	docker: DockerRegistry[];
 }
 
 /** Get a specific deployment by name or id. Response: [Deployment]. */
@@ -2412,8 +2422,8 @@ export interface GetCoreInfoResponse {
 	title: string;
 	/** The monitoring interval of this core api. */
 	monitoring_interval: Timelength;
-	/** The github webhook base url to use with github webhooks. */
-	github_webhook_base_url: string;
+	/** The webhook base url. */
+	webhook_base_url: string;
 	/** Whether transparent mode is enabled, which gives all users read access to all resources. */
 	transparent_mode: boolean;
 	/** Whether UI write access should be disabled */
@@ -2797,10 +2807,10 @@ export interface GetAvailableAccounts {
 
 /** Response for [GetAvailableAccounts]. */
 export interface GetAvailableAccountsResponse {
-	/** The github accounts. */
-	git: GitAccount[];
-	/** The docker accounts. */
-	docker: DockerAccount[];
+	/** The github providers. */
+	git: GitProvider[];
+	/** The docker registries. */
+	docker: DockerRegistry[];
 }
 
 /**
@@ -3970,10 +3980,10 @@ export interface AwsBuilderConfig {
 	 * This should include a security group to allow core inbound access to the periphery port.
 	 */
 	security_group_ids: string[];
-	/** Which git accounts are available on the AMI */
-	git_accounts?: GitAccount[];
-	/** Which docker accounts are available on the AMI. */
-	docker_accounts?: DockerAccount[];
+	/** Which git providers are available on the AMI */
+	git_providers?: GitProvider[];
+	/** Which docker registries are available on the AMI. */
+	docker_registries?: DockerRegistry[];
 }
 
 export interface LatestCommit {

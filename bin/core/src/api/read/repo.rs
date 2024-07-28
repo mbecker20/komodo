@@ -174,11 +174,11 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
 
     let CoreConfig {
       host,
-      github_webhook_base_url,
+      webhook_base_url,
       ..
     } = core_config();
 
-    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let host = webhook_base_url.as_ref().unwrap_or(host);
     let clone_url =
       format!("{host}/listener/github/repo/{}/clone", repo.id);
     let pull_url =

@@ -6,7 +6,7 @@ use monitor_client::{
   api::read::{self, *},
   entities::{
     builder::{Builder, BuilderConfig, BuilderListItem},
-    config::{DockerAccount, GitAccount},
+    config::{DockerRegistry, GitProvider},
     permission::PermissionLevel,
     update::ResourceTargetVariant,
     user::User,
@@ -99,10 +99,10 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
       PermissionLevel::Read,
     )
     .await?;
-  
+
     let (git, docker) = match builder.config {
       BuilderConfig::Aws(config) => {
-        (config.git_accounts, config.docker_accounts)
+        (config.git_providers, config.docker_registries)
       }
       BuilderConfig::Server(config) => {
         let res = self
@@ -117,17 +117,17 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
       }
     };
 
-    let mut git_set = HashSet::<GitAccount>::new();
+    let mut git_set = HashSet::<GitProvider>::new();
 
-    git_set.extend(core_config().git_accounts.clone());
+    git_set.extend(core_config().git_providers.clone());
     git_set.extend(git);
 
     let mut git = git_set.into_iter().collect::<Vec<_>>();
     git.sort();
 
-    let mut docker_set = HashSet::<DockerAccount>::new();
+    let mut docker_set = HashSet::<DockerRegistry>::new();
 
-    docker_set.extend(core_config().docker_accounts.clone());
+    docker_set.extend(core_config().docker_registries.clone());
     docker_set.extend(docker);
 
     let mut docker = docker_set.into_iter().collect::<Vec<_>>();

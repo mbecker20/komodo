@@ -85,7 +85,7 @@ pub struct BuildConfig {
   pub git_provider: String,
 
   /// Whether to use https to clone the repo (versus http). Default: true
-  /// 
+  ///
   /// Note. Monitor does not currently support cloning repos via ssh.
   #[serde(default = "default_git_https")]
   #[builder(default = "default_git_https()")]
