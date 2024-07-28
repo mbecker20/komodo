@@ -1,5 +1,9 @@
 import { Config } from "@components/config";
-import { AccountSelectorConfig, ConfigItem } from "@components/config/util";
+import {
+  AccountSelectorConfig,
+  ConfigItem,
+  ProviderSelectorConfig,
+} from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { ReactNode, useState } from "react";
@@ -44,6 +48,14 @@ export const ResourceSyncConfig = ({
           {
             label: "General",
             components: {
+              git_provider: (provider, set) => (
+                <ProviderSelectorConfig
+                  account_type="git"
+                  selected={provider}
+                  disabled={disabled}
+                  onSelect={(git_provider) => set({ git_provider })}
+                />
+              ),
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
               commit: { placeholder: "Enter specific commit hash. Optional." },
@@ -52,6 +64,7 @@ export const ResourceSyncConfig = ({
                   <AccountSelectorConfig
                     account_type="git"
                     type="None"
+                    provider={update.git_provider ?? config.git_provider}
                     selected={value}
                     onSelect={(git_account) => set({ git_account })}
                     disabled={disabled}

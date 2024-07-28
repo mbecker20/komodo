@@ -2,6 +2,7 @@ import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
   ConfigItem,
+  ProviderSelectorConfig,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
@@ -54,6 +55,14 @@ export const RepoConfig = ({ id }: { id: string }) => {
           {
             label: "General",
             components: {
+              git_provider: (provider, set) => (
+                <ProviderSelectorConfig
+                  account_type="git"
+                  selected={provider}
+                  disabled={disabled}
+                  onSelect={(git_provider) => set({ git_provider })}
+                />
+              ),
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
               commit: { placeholder: "Enter specific commit hash. Optional." },
@@ -65,8 +74,9 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 return (
                   <AccountSelectorConfig
                     id={server_id}
-                    account_type="git"
                     type={server_id ? "Server" : "None"}
+                    account_type="git"
+                    provider={update.git_provider ?? config.git_provider}
                     selected={value}
                     onSelect={(git_account) => set({ git_account })}
                     disabled={disabled}
