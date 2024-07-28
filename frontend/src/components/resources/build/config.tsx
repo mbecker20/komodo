@@ -5,6 +5,7 @@ import {
   ConfigItem,
   ImageRegistryConfig,
   InputList,
+  ProviderSelectorConfig,
   SecretSelector,
   SystemCommand,
 } from "@components/config/util";
@@ -112,6 +113,14 @@ export const BuildConfig = ({
           {
             label: "Git",
             components: {
+              git_provider: (provider, set) => (
+                <ProviderSelectorConfig
+                  account_type="git"
+                  selected={provider}
+                  disabled={disabled}
+                  onSelect={(git_provider) => set({ git_provider })}
+                />
+              ),
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
               commit: { placeholder: "Enter specific commit hash. Optional." },
@@ -122,6 +131,7 @@ export const BuildConfig = ({
                     id={update.builder_id ?? config.builder_id ?? undefined}
                     type="Builder"
                     account_type="git"
+                    provider={update.git_provider ?? config.git_provider}
                     selected={account}
                     onSelect={(git_account) => set({ git_account })}
                     disabled={disabled}

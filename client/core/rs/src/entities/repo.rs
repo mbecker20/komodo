@@ -110,6 +110,14 @@ pub struct RepoConfig {
   #[builder(default)]
   pub git_account: String,
 
+  /// Whether to use https to clone the repo (versus http). Default: true
+  /// 
+  /// Note. Monitor does not currently support cloning repos via ssh.
+  #[serde(default = "default_git_https")]
+  #[builder(default = "default_git_https()")]
+  #[partial_default(default_git_https())]
+  pub git_https: bool,
+
   /// Explicitly specificy the folder to clone the repo in.
   #[serde(default)]
   #[builder(default)]
@@ -144,6 +152,10 @@ fn default_git_provider() -> String {
   String::from("github.com")
 }
 
+fn default_git_https() -> bool {
+  true
+}
+
 fn default_branch() -> String {
   String::from("main")
 }
@@ -157,6 +169,7 @@ impl Default for RepoConfig {
     Self {
       server_id: Default::default(),
       git_provider: default_git_provider(),
+      git_https: default_git_https(),
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),

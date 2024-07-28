@@ -79,6 +79,7 @@ where
   let CloneArgs {
     name,
     provider,
+    https,
     repo,
     branch,
     commit,
@@ -103,10 +104,11 @@ where
 
   let mut logs = clone_inner(
     provider,
+    https,
     repo,
-    &repo_dir,
     &branch,
     &commit,
+    &repo_dir,
     access_token,
   )
   .await;
@@ -170,10 +172,11 @@ where
 )]
 async fn clone_inner(
   provider: &str,
+  https: bool,
   repo: &str,
-  destination: &Path,
   branch: &Option<String>,
   commit: &Option<String>,
+  destination: &Path,
   access_token: Option<String>,
 ) -> Vec<Log> {
   let _ = std::fs::remove_dir_all(destination);
@@ -185,8 +188,9 @@ async fn clone_inner(
     Some(branch) => format!(" -b {branch}"),
     None => String::new(),
   };
+  let protocol = if https { "https" } else { "http" };
   let repo_url =
-    format!("https://{access_token_at}{provider}/{repo}.git");
+    format!("{protocol}://{access_token_at}{provider}/{repo}.git");
   let command =
     format!("git clone {repo_url} {}{branch}", destination.display());
   let start_ts = monitor_timestamp();

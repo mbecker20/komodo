@@ -363,6 +363,12 @@ export interface BuildConfig {
 	version?: Version;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
 	/** The repo used as the source of the build. */
 	repo?: string;
 	/** The branch of the repo. */
@@ -832,6 +838,12 @@ export interface RepoConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
 	/** Explicitly specificy the folder to clone the repo in. */
 	path?: string;
 	/**
@@ -1224,6 +1236,12 @@ export type ListFullServerTemplatesResponse = ServerTemplate[];
 export interface ResourceSyncConfig {
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
 	/** The Github repo used as the source of the build. */
 	repo?: string;
 	/** The branch of the repo. */
@@ -3968,6 +3986,8 @@ export interface CloneArgs {
 	name: string;
 	/** Git provider domain. Default: `github.com` */
 	provider?: string;
+	/** Use https (vs http). */
+	https: boolean;
 	/** Full repo identifier. <namespace>/<repo_name> */
 	repo?: string;
 	/** Git Branch. Default: `main` */

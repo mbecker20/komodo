@@ -184,18 +184,84 @@ export const DoubleInput = <
   );
 };
 
-export const AccountSelectorConfig = (params: {
+export const ProviderSelector = ({
+  disabled,
+  account_type,
+  selected,
+  onSelect,
+}: {
   disabled: boolean;
-  id?: string;
-  type: "Server" | "None" | "Builder";
-  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
+  account_type: keyof Types.GetAvailableAccountsResponse;
+  selected: string | undefined;
+  onSelect: (provider: string) => void;
+}) => {
+  const request =
+    account_type === "git"
+      ? "ListCommonGitProviders"
+      : "ListCommonDockerRegistryProviders";
+  const providers = useRead(request, {}).data;
+  const [customMode, setCustomMode] = useState(false);
+
+  if (customMode) {
+    return (
+      <Input
+        placeholder="Input custom provider domain"
+        value={selected}
+        onChange={(e) => onSelect(e.target.value)}
+        className="max-w-[75%] lg:max-w-[400px]"
+        onBlur={() => setCustomMode(false)}
+        autoFocus
+      />
+    );
+  }
+
+  return (
+    <div className="flex items-center">
+      <Select
+        value={selected}
+        onValueChange={(value) => {
+          if (value === "Custom") {
+            onSelect("");
+            setCustomMode(true);
+          } else {
+            onSelect(value);
+          }
+        }}
+        disabled={disabled}
+      >
+        <SelectTrigger
+          className="w-full lg:w-[200px] max-w-[50%]"
+          disabled={disabled}
+        >
+          <SelectValue placeholder="Select Provider" />
+        </SelectTrigger>
+        <SelectContent>
+          {providers?.map((provider) => (
+            <SelectItem key={provider} value={provider}>
+              {provider}
+            </SelectItem>
+          ))}
+          {providers !== undefined &&
+            selected &&
+            !providers.includes(selected) && (
+              <SelectItem value={selected}>{selected}</SelectItem>
+            )}
+          <SelectItem value={"Custom"}>Custom</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
+export const ProviderSelectorConfig = (params: {
+  disabled: boolean;
+  account_type: keyof Types.GetAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
-  placeholder: string;
 }) => {
   return (
-    <ConfigItem label={`${params.account_type} Account`}>
-      <AccountSelector {...params} />
+    <ConfigItem label={`${params.account_type} Provider`}>
+      <ProviderSelector {...params} />
     </ConfigItem>
   );
 };
@@ -205,6 +271,7 @@ export const AccountSelector = ({
   id,
   type,
   account_type,
+  provider,
   selected,
   onSelect,
 }: {
@@ -212,14 +279,24 @@ export const AccountSelector = ({
   id?: string;
   type: "Server" | "None" | "Builder";
   account_type: keyof Types.GetAvailableAccountsResponse;
+  provider: string;
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const [request, params] =
+  if (type === "Builder" && !id) {
+    return (
+      <div>Builder provider selector, but id is undefing. this is an error</div>
+    );
+  }
+  const [request, params]:
+    | ["GetAvailableAccounts", { server: string | undefined }]
+    | ["GetBuilderAvailableAccounts", { builder: string }] =
     type === "Server" || type === "None"
       ? ["GetAvailableAccounts", { server: id }]
-      : ["GetBuilderAvailableAccounts", { builder: id }];
-  const accounts = useRead(request as any, params).data;
+      : ["GetBuilderAvailableAccounts", { builder: id! }];
+  const accounts = useRead(request, params).data?.[account_type]?.filter(
+    (account) => account.provider === provider
+  );
   return (
     <Select
       value={selected}
@@ -236,13 +313,30 @@ export const AccountSelector = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
-        {(accounts as any)?.[account_type]?.map((account: string) => (
-          <SelectItem key={account} value={account}>
-            {account}
+        {accounts?.map((account: Types.GitAccount | Types.DockerAccount) => (
+          <SelectItem key={account.username} value={account.username}>
+            {account.username}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
+  );
+};
+
+export const AccountSelectorConfig = (params: {
+  disabled: boolean;
+  id?: string;
+  type: "Server" | "None" | "Builder";
+  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
+  provider: string;
+  selected: string | undefined;
+  onSelect: (id: string) => void;
+  placeholder: string;
+}) => {
+  return (
+    <ConfigItem label={`${params.account_type} Account`}>
+      <AccountSelector {...params} />
+    </ConfigItem>
   );
 };
 
@@ -502,11 +596,8 @@ export const ImageRegistryConfig = ({
   registry_types?: Types.ImageRegistry["type"][];
 }) => {
   const _registry = registry ?? default_registry_config("None");
-  const cloud_params =
-    _registry.type === "DockerHub" || _registry.type === "Ghcr"
-      ? _registry.params
-      : undefined;
-  if (_registry.type === "None" || _registry.type === "Custom") {
+
+  if (_registry.type === "None") {
     return (
       <ConfigItem label="Image Registry">
         <RegistryTypeSelector
@@ -544,12 +635,20 @@ export const ImageRegistryConfig = ({
       </ConfigItem>
     );
   }
+
+  const [params, provider] =
+    _registry.type === "DockerHub"
+      ? [_registry.params, "docker.io"]
+      : _registry.type === "Ghcr"
+      ? [_registry.params, "gchr.io"]
+      : [_registry.params, _registry.params.provider!];
+
   return (
     <ConfigItem label="Image Registry">
       <div className="flex items-center justify-stretch gap-4">
-        {type === "Build" && cloud_params?.account && (
+        {type === "Build" && params?.account && (
           <OrganizationSelector
-            value={cloud_params?.organization}
+            value={params?.organization}
             set={(organization) =>
               setRegistry({
                 ..._registry,
@@ -563,8 +662,9 @@ export const ImageRegistryConfig = ({
         <AccountSelector
           id={resource_id}
           type={type === "Build" ? "Builder" : "Server"}
-          account_type={"docker"}
-          selected={cloud_params?.account}
+          account_type="docker"
+          provider={provider}
+          selected={params?.account}
           onSelect={(account) =>
             setRegistry({
               ..._registry,

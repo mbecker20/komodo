@@ -120,6 +120,7 @@ impl From<BuildConfig>
         patch: value.version.patch,
       },
       git_provider: String::from("github.com"),
+      git_https: true,
       repo: value.repo,
       branch: value.branch,
       commit: value.commit,

@@ -208,6 +208,7 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         skip_secret_interp: value.skip_secret_interp,
         version: value.version.into(),
         git_provider: String::from("github.com"),
+        git_https: true,
         repo: value.repo.unwrap_or_default(),
         branch: value.branch.unwrap_or_default(),
         git_account: value.github_account.unwrap_or_default(),

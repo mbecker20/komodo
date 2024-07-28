@@ -517,6 +517,8 @@ pub struct CloneArgs {
   pub name: String,
   /// Git provider domain. Default: `github.com`
   pub provider: Option<String>,
+  /// Use https (vs http).
+  pub https: bool,
   /// Full repo identifier. <namespace>/<repo_name>
   pub repo: Option<String>,
   /// Git Branch. Default: `main`
@@ -544,6 +546,7 @@ impl From<&self::build::Build> for CloneArgs {
       on_clone: build.config.pre_build.clone().into_option(),
       on_pull: None,
       provider: optional_string(&build.config.git_provider),
+      https: build.config.git_https,
       account: optional_string(&build.config.git_account),
     }
   }
@@ -560,6 +563,7 @@ impl From<&self::repo::Repo> for CloneArgs {
       on_clone: repo.config.on_clone.clone().into_option(),
       on_pull: repo.config.on_pull.clone().into_option(),
       provider: optional_string(&repo.config.git_provider),
+      https: repo.config.git_https,
       account: optional_string(&repo.config.git_account),
     }
   }
@@ -576,6 +580,7 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
       on_clone: None,
       on_pull: None,
       provider: Some(String::from("github.com")),
+      https: sync.config.git_https,
       account: optional_string(&sync.config.git_account),
     }
   }
