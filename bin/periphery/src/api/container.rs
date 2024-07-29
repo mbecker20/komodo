@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{
-  build::{StandardRegistryConfig, ImageRegistry},
+  build::{ImageRegistry, StandardRegistryConfig},
   deployment::{
     extract_registry_domain, ContainerSummary, Conversion,
     Deployment, DeploymentConfig, DeploymentImage,

@@ -1,5 +1,5 @@
 use monitor_client::entities::{
-  build::{StandardRegistryConfig, ImageRegistry},
+  build::{ImageRegistry, StandardRegistryConfig},
   NoData,
 };
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;

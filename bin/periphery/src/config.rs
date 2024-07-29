@@ -65,7 +65,8 @@ pub fn git_providers_response() -> &'static String {
 }
 
 pub fn docker_registries_response() -> &'static String {
-  static DOCKER_REGISTRIES_RESPONSE: OnceLock<String> = OnceLock::new();
+  static DOCKER_REGISTRIES_RESPONSE: OnceLock<String> =
+    OnceLock::new();
   DOCKER_REGISTRIES_RESPONSE.get_or_init(|| {
     let config = periphery_config();
     serde_json::to_string(&config.docker_registries).unwrap()

@@ -1,4 +1,7 @@
-use monitor_client::entities::{build::{StandardRegistryConfig, ImageRegistry}, NoData};
+use monitor_client::entities::{
+  build::{ImageRegistry, StandardRegistryConfig},
+  NoData,
+};
 use serde::{Deserialize, Serialize};
 
 use super::{

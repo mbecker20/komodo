@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  build::{StandardRegistryConfig, ImageRegistry},
+  build::{ImageRegistry, StandardRegistryConfig},
   config::core::AwsEcrConfig,
   EnvironmentVar,
 };
