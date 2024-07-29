@@ -8,7 +8,25 @@ use monitor_client::entities::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::build::ImageRegistry;
+use super::{build::ImageRegistry, resource::Resource};
+
+pub type Deployment = Resource<DeploymentConfig, ()>;
+
+impl From<Deployment>
+  for monitor_client::entities::deployment::Deployment
+{
+  fn from(value: Deployment) -> Self {
+    monitor_client::entities::deployment::Deployment {
+      id: value.id,
+      name: value.name,
+      description: value.description,
+      updated_at: value.updated_at,
+      tags: value.tags,
+      info: (),
+      config: value.config.into(),
+    }
+  }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DeploymentConfig {
@@ -114,4 +132,36 @@ fn default_termination_timeout() -> i32 {
 
 fn default_network() -> String {
   String::from("host")
+}
+
+impl From<DeploymentConfig>
+  for monitor_client::entities::deployment::DeploymentConfig
+{
+  fn from(value: DeploymentConfig) -> Self {
+    monitor_client::entities::deployment::DeploymentConfig {
+      server_id: value.server_id,
+      image: value.image,
+      image_registry_account: match value.image_registry {
+        ImageRegistry::None(_)
+        | ImageRegistry::AwsEcr(_)
+        | ImageRegistry::Custom(_) => String::new(),
+        ImageRegistry::DockerHub(params) => params.account,
+        ImageRegistry::Ghcr(params) => params.account,
+      },
+      skip_secret_interp: value.skip_secret_interp,
+      redeploy_on_build: value.redeploy_on_build,
+      send_alerts: value.send_alerts,
+      network: value.network,
+      restart: value.restart,
+      command: value.command,
+      termination_signal: value.termination_signal,
+      termination_timeout: value.termination_timeout,
+      extra_args: value.extra_args,
+      term_signal_labels: value.term_signal_labels,
+      ports: value.ports,
+      volumes: value.volumes,
+      environment: value.environment,
+      labels: value.labels,
+    }
+  }
 }

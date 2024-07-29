@@ -208,7 +208,7 @@ impl From<ImageRegistry>
 {
   fn from(value: ImageRegistry) -> Self {
     match value {
-      ImageRegistry::None(_) => {
+      ImageRegistry::None(_) | ImageRegistry::Custom(_) => {
         monitor_client::entities::build::ImageRegistry::None(
           NoData {},
         )
@@ -231,15 +231,8 @@ impl From<ImageRegistry>
           },
         )
       }
-      ImageRegistry::AwsEcr(_) => {
-        monitor_client::entities::build::ImageRegistry::None(
-          NoData {},
-        )
-      }
-      ImageRegistry::Custom(_) => {
-        monitor_client::entities::build::ImageRegistry::None(
-          NoData {},
-        )
+      ImageRegistry::AwsEcr(label) => {
+        monitor_client::entities::build::ImageRegistry::AwsEcr(label)
       }
     }
   }

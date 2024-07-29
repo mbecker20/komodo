@@ -292,8 +292,8 @@ impl Default for ImageRegistry {
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
 pub struct StandardRegistryConfig {
-  /// Specify the registry provider domain. Eg. `docker.io`
-  #[serde(default)]
+  /// Specify the registry provider domain. Default: `docker.io`
+  #[serde(default = "default_registry_domain")]
   pub domain: String,
 
   /// Specify an account to use with the registry.
@@ -304,6 +304,10 @@ pub struct StandardRegistryConfig {
   /// Empty string means no organization.
   #[serde(default)]
   pub organization: String,
+}
+
+fn default_registry_domain() -> String {
+  String::from("docker.io")
 }
 
 #[typeshare]

@@ -56,9 +56,6 @@ export const ResourceSyncConfig = ({
                   onSelect={(git_provider) => set({ git_provider })}
                 />
               ),
-              repo: { placeholder: "Enter repo" },
-              branch: { placeholder: "Enter branch" },
-              commit: { placeholder: "Enter specific commit hash. Optional." },
               git_account: (value, set) => {
                 return (
                   <AccountSelectorConfig
@@ -72,6 +69,9 @@ export const ResourceSyncConfig = ({
                   />
                 );
               },
+              repo: { placeholder: "Enter repo" },
+              branch: { placeholder: "Enter branch" },
+              commit: { placeholder: "Enter a specific commit hash. Optional." },
               resource_path: { placeholder: "./resources" },
               delete: { label: "Delete Unmatched Resources" },
             },

@@ -7,6 +7,7 @@ pub mod resource;
 
 pub struct DbClient {
   pub builds: Collection<build::Build>,
+  pub deployments: Collection<deployment::Deployment>,
 }
 
 impl DbClient {
@@ -22,6 +23,7 @@ impl DbClient {
     let db = client.database(legacy_db_name);
     DbClient {
       builds: db.collection("Build"),
+      deployments: db.collection("Deployment"),
     }
   }
 }
