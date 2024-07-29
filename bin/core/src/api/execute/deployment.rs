@@ -8,7 +8,9 @@ use monitor_client::{
   entities::{
     build::{Build, ImageRegistry},
     config::core::AwsEcrConfig,
-    deployment::{Deployment, DeploymentImage},
+    deployment::{
+      extract_registry_domain, Deployment, DeploymentImage,
+    },
     get_image_name,
     permission::PermissionLevel,
     server::ServerState,
@@ -80,46 +82,101 @@ impl Resolve<Deploy, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
-    // This block gets the version of the image to deploy in the Build case.
-    // It also gets the name of the image from the build and attaches it directly.
-    let version = match deployment.config.image {
-      DeploymentImage::Build { build_id, version } => {
-        let build = resource::get::<Build>(&build_id).await?;
-        let image_name = get_image_name(&build, |label| {
-          core_config()
-            .aws_ecr_registries
-            .iter()
-            .find(|reg| &reg.label == label)
-            .map(AwsEcrConfig::from)
-        })
-        .context("failed to create image name")?;
-        let version = if version.is_none() {
-          build.config.version
-        } else {
-          version
-        };
-        // Remove ending patch if it is 0, this means use latest patch.
-        let version_str = if version.patch == 0 {
-          format!("{}.{}", version.major, version.minor)
-        } else {
-          version.to_string()
-        };
-        // replace image with corresponding build image.
-        deployment.config.image = DeploymentImage::Image {
-          image: format!("{image_name}:{version_str}"),
-        };
-        // set image registry to match build docker account if it's not overridden by deployment
-        if matches!(
-          &deployment.config.image_registry,
-          ImageRegistry::None(_)
-        ) {
-          deployment.config.image_registry =
-            build.config.image_registry;
+    let (version, registry_token, aws_ecr) =
+      match &deployment.config.image {
+        DeploymentImage::Build { build_id, version } => {
+          let build = resource::get::<Build>(build_id).await?;
+          let image_name = get_image_name(&build, |label| {
+            core_config()
+              .aws_ecr_registries
+              .iter()
+              .find(|reg| &reg.label == label)
+              .map(AwsEcrConfig::from)
+          })
+          .context("failed to create image name")?;
+          let version = if version.is_none() {
+            build.config.version
+          } else {
+            *version
+          };
+          // Remove ending patch if it is 0, this means use latest patch.
+          let version_str = if version.patch == 0 {
+            format!("{}.{}", version.major, version.minor)
+          } else {
+            version.to_string()
+          };
+          // replace image with corresponding build image.
+          deployment.config.image = DeploymentImage::Image {
+            image: format!("{image_name}:{version_str}"),
+          };
+          match build.config.image_registry {
+            ImageRegistry::None(_) => (version, None, None),
+            ImageRegistry::AwsEcr(label) => {
+              let config = core_config()
+                .aws_ecr_registries
+                .iter()
+                .find(|reg| reg.label == label)
+                .with_context(|| {
+                  format!(
+                  "did not find config for aws ecr registry {label}"
+                )
+                })?;
+              let token = ecr::get_ecr_token(
+                &config.region,
+                &config.access_key_id,
+                &config.secret_access_key,
+              )
+              .await
+              .context("failed to create aws ecr login token")?;
+              (version, Some(token), Some(AwsEcrConfig::from(config)))
+            }
+            ImageRegistry::Custom(params) => {
+              if deployment.config.image_registry_account.is_empty() {
+                deployment.config.image_registry_account =
+                  params.account
+              }
+              let token = core_config()
+                .docker_registries
+                .iter()
+                .find(|registry| registry.domain == params.domain)
+                .and_then(|provider| {
+                  provider
+                    .accounts
+                    .iter()
+                    .find(|account| {
+                      account.username
+                        == deployment.config.image_registry_account
+                    })
+                    .map(|account| account.token.clone())
+                });
+              (version, token, None)
+            }
+          }
         }
-        version
-      }
-      DeploymentImage::Image { .. } => Version::default(),
-    };
+        DeploymentImage::Image { image } => {
+          let domain = extract_registry_domain(image)?;
+          let token =
+            (!deployment.config.image_registry_account.is_empty())
+              .then(|| {
+                core_config()
+                  .docker_registries
+                  .iter()
+                  .find(|registry| registry.domain == domain)
+                  .and_then(|provider| {
+                    provider
+                      .accounts
+                      .iter()
+                      .find(|account| {
+                        account.username
+                          == deployment.config.image_registry_account
+                      })
+                      .map(|account| account.token.clone())
+                  })
+              })
+              .flatten();
+          (Version::default(), token, None)
+        }
+      };
 
     let variables = get_global_variables().await?;
     let core_config = core_config();
@@ -175,77 +232,6 @@ impl Resolve<Deploy, (User, Update)> for State {
 
     update.version = version;
     update_update(update.clone()).await?;
-
-    let (registry_token, aws_ecr) =
-      match &deployment.config.image_registry {
-        ImageRegistry::None(_) => (None, None),
-        ImageRegistry::AwsEcr(label) => {
-          let config = core_config
-            .aws_ecr_registries
-            .iter()
-            .find(|reg| &reg.label == label)
-            .with_context(|| {
-              format!(
-                "did not find config for aws ecr registry {label}"
-              )
-            })?;
-          (
-            Some(
-              ecr::get_ecr_token(
-                &config.region,
-                &config.access_key_id,
-                &config.secret_access_key,
-              )
-              .await
-              .context("failed to create aws ecr login token")?,
-            ),
-            Some(AwsEcrConfig::from(config)),
-          )
-        }
-        ImageRegistry::DockerHub(params) => (
-          core_config
-            .docker_registries
-            .iter()
-            .find(|registry| registry.domain == "docker.io")
-            .and_then(|provider| {
-              provider
-                .accounts
-                .iter()
-                .find(|account| account.username == params.account)
-                .map(|account| account.token.clone())
-            }),
-          None,
-        ),
-        ImageRegistry::Ghcr(params) => (
-          core_config
-            .docker_registries
-            .iter()
-            .find(|registry| registry.domain == "ghcr.io")
-            .and_then(|provider| {
-              provider
-                .accounts
-                .iter()
-                .find(|account| account.username == params.account)
-                .map(|account| account.token.clone())
-            }),
-          None,
-        ),
-
-        ImageRegistry::Custom(params) => (
-          core_config
-            .docker_registries
-            .iter()
-            .find(|registry| registry.domain == params.provider)
-            .and_then(|provider| {
-              provider
-                .accounts
-                .iter()
-                .find(|account| account.username == params.account)
-                .map(|account| account.token.clone())
-            }),
-          None,
-        ),
-      };
 
     match periphery
       .request(api::container::Deploy {

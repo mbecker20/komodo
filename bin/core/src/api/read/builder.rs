@@ -1,12 +1,9 @@
-use std::collections::HashSet;
-
 use anyhow::Context;
 use mongo_indexed::Document;
 use monitor_client::{
-  api::read::{self, *},
+  api::read::*,
   entities::{
-    builder::{Builder, BuilderConfig, BuilderListItem},
-    config::{DockerRegistry, GitProvider},
+    builder::{Builder, BuilderListItem},
     permission::PermissionLevel,
     update::ResourceTargetVariant,
     user::User,
@@ -16,7 +13,6 @@ use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
-  config::core_config,
   helpers::query::get_resource_ids_for_user,
   resource,
   state::{db_client, State},
@@ -84,55 +80,5 @@ impl Resolve<GetBuildersSummary, User> for State {
       total: total as u32,
     };
     Ok(res)
-  }
-}
-
-impl Resolve<GetBuilderAvailableAccounts, User> for State {
-  async fn resolve(
-    &self,
-    GetBuilderAvailableAccounts { builder }: GetBuilderAvailableAccounts,
-    user: User,
-  ) -> anyhow::Result<GetBuilderAvailableAccountsResponse> {
-    let builder = resource::get_check_permissions::<Builder>(
-      &builder,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-
-    let (git, docker) = match builder.config {
-      BuilderConfig::Aws(config) => {
-        (config.git_providers, config.docker_registries)
-      }
-      BuilderConfig::Server(config) => {
-        let res = self
-          .resolve(
-            read::GetAvailableAccounts {
-              server: Some(config.server_id),
-            },
-            user,
-          )
-          .await?;
-        (res.git, res.docker)
-      }
-    };
-
-    let mut git_set = HashSet::<GitProvider>::new();
-
-    git_set.extend(core_config().git_providers.clone());
-    git_set.extend(git);
-
-    let mut git = git_set.into_iter().collect::<Vec<_>>();
-    git.sort();
-
-    let mut docker_set = HashSet::<DockerRegistry>::new();
-
-    docker_set.extend(core_config().docker_registries.clone());
-    docker_set.extend(docker);
-
-    let mut docker = docker_set.into_iter().collect::<Vec<_>>();
-    docker.sort();
-
-    Ok(GetBuilderAvailableAccountsResponse { git, docker })
   }
 }

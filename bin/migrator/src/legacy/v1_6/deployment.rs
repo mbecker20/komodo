@@ -1,10 +1,6 @@
-use monitor_client::entities::{
-  build::{CloudRegistryConfig, ImageRegistry},
-  deployment::{
-    Conversion, DeploymentImage, RestartMode, TerminationSignal,
-    TerminationSignalLabel,
-  },
-  NoData,
+use monitor_client::entities::deployment::{
+  Conversion, DeploymentImage, RestartMode, TerminationSignal,
+  TerminationSignalLabel,
 };
 use serde::{Deserialize, Serialize};
 
@@ -118,14 +114,7 @@ impl From<DeploymentConfig>
       server_id: value.server_id,
       send_alerts: value.send_alerts,
       image: value.image,
-      image_registry: if value.docker_account.is_empty() {
-        ImageRegistry::None(NoData {})
-      } else {
-        ImageRegistry::DockerHub(CloudRegistryConfig {
-          account: value.docker_account,
-          ..Default::default()
-        })
-      },
+      image_registry_account: value.docker_account,
       skip_secret_interp: value.skip_secret_interp,
       redeploy_on_build: value.redeploy_on_build,
       term_signal_labels: value.term_signal_labels,

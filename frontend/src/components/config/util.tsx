@@ -648,7 +648,7 @@ export const ImageRegistryConfig = ({
     _registry.type === "DockerHub"
       ? [_registry.params, "docker.io"]
       : _registry.type === "Ghcr"
-      ? [_registry.params, "gchr.io"]
+      ? [_registry.params, "ghcr.io"]
       : [_registry.params, _registry.params.provider!];
 
   return (

@@ -35,20 +35,24 @@ pub struct GetVersionResponse {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetAccountsResponse)]
-pub struct GetAccounts {}
+#[response(ListGitProvidersResponse)]
+pub struct ListGitProviders {}
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetAccountsResponse {
-  pub git: Vec<GitProvider>,
-  pub docker: Vec<DockerRegistry>,
-}
+pub type ListGitProvidersResponse = Vec<GitProvider>;
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(ListDockerRegistriesResponse)]
+pub struct ListDockerRegistries {}
+
+pub type ListDockerRegistriesResponse = Vec<DockerRegistry>;
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<String>)]
-pub struct GetSecrets {}
+pub struct ListSecrets {}
 
 //
 

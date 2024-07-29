@@ -185,8 +185,8 @@ impl GetBuildMonthlyStatsResponse {
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetBuildVersionsResponse)]
-pub struct GetBuildVersions {
+#[response(ListBuildVersionsResponse)]
+pub struct ListBuildVersions {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub build: String,
@@ -201,7 +201,7 @@ pub struct GetBuildVersions {
 }
 
 #[typeshare]
-pub type GetBuildVersionsResponse = Vec<BuildVersionResponseItem>;
+pub type ListBuildVersionsResponse = Vec<BuildVersionResponseItem>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -209,36 +209,6 @@ pub struct BuildVersionResponseItem {
   pub version: Version,
   pub ts: I64,
 }
-
-//
-
-/// List the available github organizations which can be attached to builds.
-/// Response: [ListGithubOrganizationsResponse].
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(ListGithubOrganizationsResponse)]
-pub struct ListGithubOrganizations {}
-
-#[typeshare]
-pub type ListGithubOrganizationsResponse = Vec<String>;
-
-//
-
-/// List the available docker organizations which can be attached to builds.
-/// Response: [ListDockerOrganizationsResponse].
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(ListDockerOrganizationsResponse)]
-pub struct ListDockerOrganizations {}
-
-#[typeshare]
-pub type ListDockerOrganizationsResponse = Vec<String>;
 
 //
 

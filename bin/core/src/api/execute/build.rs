@@ -10,9 +10,7 @@ use monitor_client::{
   entities::{
     alert::{Alert, AlertData},
     all_logs_success,
-    build::{
-      Build, CloudRegistryConfig, CustomRegistryConfig, ImageRegistry,
-    },
+    build::{Build, CustomRegistryConfig, ImageRegistry},
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
     config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
@@ -789,7 +787,7 @@ fn start_aws_builder_log(
 async fn validate_account_extract_registry_token_aws_ecr(
   build: &Build,
 ) -> anyhow::Result<(Option<String>, Option<AwsEcrConfig>)> {
-  let (provider, account) = match &build.config.image_registry {
+  let (domain, account) = match &build.config.image_registry {
     // Early return for None
     ImageRegistry::None(_) => return Ok((None, None)),
     // Early return for AwsEcr
@@ -826,23 +824,16 @@ async fn validate_account_extract_registry_token_aws_ecr(
       };
       return Ok((token, config.map(AwsEcrConfig::from)));
     }
-    ImageRegistry::DockerHub(CloudRegistryConfig {
-      account, ..
-    }) => ("docker.io", account),
-    ImageRegistry::Ghcr(CloudRegistryConfig { account, .. }) => {
-      ("ghcr.io", account)
-    }
-
     ImageRegistry::Custom(CustomRegistryConfig {
-      provider,
+      domain,
       account,
       ..
-    }) => (provider.as_str(), account),
+    }) => (domain.as_str(), account),
   };
 
   if account.is_empty() {
     return Err(anyhow!(
-      "Must attach account to use registry provider {provider}"
+      "Must attach account to use registry provider {domain}"
     ));
   }
 
@@ -850,7 +841,7 @@ async fn validate_account_extract_registry_token_aws_ecr(
     core_config()
       .docker_registries
       .iter()
-      .find(|_provider| _provider.domain == provider)
+      .find(|provider| provider.domain == domain)
       .and_then(|provider| {
         provider
           .accounts

@@ -59,10 +59,6 @@ pub struct Env {
   pub monitor_webhook_secret: Option<String>,
   /// Override `webhook_base_url`
   pub monitor_webhook_base_url: Option<String>,
-  /// Override `github_organizations`
-  pub monitor_github_organizations: Option<Vec<String>>,
-  /// Override `docker_organizations`
-  pub monitor_docker_organizations: Option<Vec<String>>,
 
   /// Override `logging.level`
   pub monitor_logging_level: Option<LogLevel>,
@@ -347,11 +343,6 @@ pub struct CoreConfig {
   #[serde(default)]
   pub keep_alerts_for_days: u64,
 
-  /// Allowed docker orgs used with monitor.
-  /// Default: none.
-  #[serde(default)]
-  pub docker_organizations: Vec<String>,
-
   /// Configure logging
   #[serde(default)]
   pub logging: LogConfig,
@@ -394,11 +385,6 @@ pub struct CoreConfig {
   /// Allows users to manage repo webhooks from within the Monitor UI.
   #[serde(default)]
   pub github_webhook_app: GithubWebhookAppConfig,
-
-  /// Allowed github orgs used with monitor.
-  /// Default: none.
-  #[serde(default)]
-  pub github_organizations: Vec<String>,
 
   /// Configure core mongo connection.
   ///

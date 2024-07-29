@@ -6,10 +6,13 @@ use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{
   api::read::*,
   entities::{
-    build::{Build, CustomRegistryConfig, ImageRegistry},
-    deployment::Deployment,
+    build::Build,
+    builder::{Builder, BuilderConfig},
+    config::{DockerRegistry, GitProvider},
     repo::Repo,
+    server::Server,
     sync::ResourceSync,
+    update::ResourceTarget,
     user::User,
   },
 };
@@ -22,7 +25,8 @@ use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
-  auth::auth_request, config::core_config, resource, state::State,
+  auth::auth_request, config::core_config, helpers::periphery_client,
+  resource, state::State,
 };
 
 mod alert;
@@ -55,11 +59,10 @@ enum ReadRequest {
   #[to_string_resolver]
   GetCoreInfo(GetCoreInfo),
   #[to_string_resolver]
-  GetAvailableAwsEcrLabels(GetAvailableAwsEcrLabels),
-  ListCommonGitProviders(ListCommonGitProviders),
-  ListCommonDockerRegistryProviders(
-    ListCommonDockerRegistryProviders,
-  ),
+  ListAwsEcrLabels(ListAwsEcrLabels),
+  ListSecrets(ListSecrets),
+  ListGitProviders(ListGitProviders),
+  ListDockerRegistries(ListDockerRegistries),
 
   // ==== USER ====
   GetUsername(GetUsername),
@@ -101,8 +104,6 @@ enum ReadRequest {
   GetDockerNetworks(GetDockerNetworks),
   GetServerActionState(GetServerActionState),
   GetHistoricalServerStats(GetHistoricalServerStats),
-  GetAvailableAccounts(GetAvailableAccounts),
-  GetAvailableSecrets(GetAvailableSecrets),
   ListServers(ListServers),
   ListFullServers(ListFullServers),
 
@@ -123,15 +124,11 @@ enum ReadRequest {
   GetBuild(GetBuild),
   GetBuildActionState(GetBuildActionState),
   GetBuildMonthlyStats(GetBuildMonthlyStats),
-  GetBuildVersions(GetBuildVersions),
+  ListBuildVersions(ListBuildVersions),
   GetBuildWebhookEnabled(GetBuildWebhookEnabled),
   ListBuilds(ListBuilds),
   ListFullBuilds(ListFullBuilds),
   ListCommonBuildExtraArgs(ListCommonBuildExtraArgs),
-  #[to_string_resolver]
-  ListGithubOrganizations(ListGithubOrganizations),
-  #[to_string_resolver]
-  ListDockerOrganizations(ListDockerOrganizations),
 
   // ==== REPO ====
   GetReposSummary(GetReposSummary),
@@ -152,7 +149,6 @@ enum ReadRequest {
   // ==== BUILDER ====
   GetBuildersSummary(GetBuildersSummary),
   GetBuilder(GetBuilder),
-  GetBuilderAvailableAccounts(GetBuilderAvailableAccounts),
   ListBuilders(ListBuilders),
   ListFullBuilders(ListFullBuilders),
 
@@ -295,27 +291,101 @@ fn ecr_labels() -> &'static String {
   })
 }
 
-impl ResolveToString<GetAvailableAwsEcrLabels, User> for State {
+impl ResolveToString<ListAwsEcrLabels, User> for State {
   async fn resolve_to_string(
     &self,
-    GetAvailableAwsEcrLabels {}: GetAvailableAwsEcrLabels,
+    ListAwsEcrLabels {}: ListAwsEcrLabels,
     _: User,
   ) -> anyhow::Result<String> {
     Ok(ecr_labels().to_string())
   }
 }
 
-impl Resolve<ListCommonGitProviders, User> for State {
+impl Resolve<ListSecrets, User> for State {
   async fn resolve(
     &self,
-    ListCommonGitProviders {}: ListCommonGitProviders,
-    user: User,
-  ) -> anyhow::Result<ListCommonGitProvidersResponse> {
-    let mut set = core_config()
-      .git_providers
-      .iter()
-      .map(|provider| provider.domain.as_str())
+    ListSecrets { target }: ListSecrets,
+    _: User,
+  ) -> anyhow::Result<ListSecretsResponse> {
+    let mut secrets = core_config()
+      .secrets
+      .keys()
+      .cloned()
       .collect::<HashSet<_>>();
+
+    if let Some(target) = target {
+      let server_id = match target {
+        ResourceTarget::Server(id) => Some(id),
+        ResourceTarget::Builder(id) => {
+          match resource::get::<Builder>(&id).await?.config {
+            BuilderConfig::Server(config) => Some(config.server_id),
+            BuilderConfig::Aws(config) => {
+              secrets.extend(config.secrets);
+              None
+            }
+          }
+        }
+        _ => {
+          return Err(anyhow!("target must be `Server` or `Builder`"))
+        }
+      };
+      if let Some(id) = server_id {
+        let server = resource::get::<Server>(&id).await?;
+        let more = periphery_client(&server)?
+          .request(periphery_client::api::ListSecrets {})
+          .await
+          .with_context(|| {
+            format!(
+              "failed to get secrets from server {}",
+              server.name
+            )
+          })?;
+        secrets.extend(more);
+      }
+    }
+
+    let mut secrets = secrets.into_iter().collect::<Vec<_>>();
+    secrets.sort();
+
+    Ok(secrets)
+  }
+}
+
+impl Resolve<ListGitProviders, User> for State {
+  async fn resolve(
+    &self,
+    ListGitProviders { target }: ListGitProviders,
+    user: User,
+  ) -> anyhow::Result<ListGitProvidersResponse> {
+    let mut providers = core_config().git_providers.clone();
+
+    if let Some(target) = target {
+      match target {
+        ResourceTarget::Server(id) => {
+          merge_git_providers_for_server(&mut providers, &id).await?;
+        }
+        ResourceTarget::Builder(id) => {
+          match resource::get::<Builder>(&id).await?.config {
+            BuilderConfig::Server(config) => {
+              merge_git_providers_for_server(
+                &mut providers,
+                &config.server_id,
+              )
+              .await?;
+            }
+            BuilderConfig::Aws(config) => {
+              merge_git_providers(
+                &mut providers,
+                config.git_providers,
+              );
+            }
+          }
+        }
+        _ => {
+          return Err(anyhow!("target must be `Server` or `Builder`"))
+        }
+      }
+    }
 
     let (builds, repos, syncs) = tokio::try_join!(
       resource::list_full_for_user::<Build>(
@@ -329,90 +399,161 @@ impl Resolve<ListCommonGitProviders, User> for State {
       ),
     )?;
 
-    for build in &builds {
-      set.insert(&build.config.git_provider);
+    for build in builds {
+      if !providers
+        .iter()
+        .any(|provider| provider.domain == build.config.git_provider)
+      {
+        providers.push(GitProvider {
+          domain: build.config.git_provider,
+          accounts: Default::default(),
+        });
+      }
     }
-    for repo in &repos {
-      set.insert(&repo.config.git_provider);
+    for repo in repos {
+      if !providers
+        .iter()
+        .any(|provider| provider.domain == repo.config.git_provider)
+      {
+        providers.push(GitProvider {
+          domain: repo.config.git_provider,
+          accounts: Default::default(),
+        });
+      }
     }
-    for sync in &syncs {
-      set.insert(&sync.config.git_provider);
+    for sync in syncs {
+      if !providers
+        .iter()
+        .any(|provider| provider.domain == sync.config.git_provider)
+      {
+        providers.push(GitProvider {
+          domain: sync.config.git_provider,
+          accounts: Default::default(),
+        });
+      }
     }
 
-    let mut res =
-      set.into_iter().map(ToOwned::to_owned).collect::<Vec<_>>();
-    res.sort();
+    providers.sort();
 
-    Ok(res)
+    Ok(providers)
   }
 }
 
-impl Resolve<ListCommonDockerRegistryProviders, User> for State {
+impl Resolve<ListDockerRegistries, User> for State {
   async fn resolve(
     &self,
-    ListCommonDockerRegistryProviders {}: ListCommonDockerRegistryProviders,
-    user: User,
-  ) -> anyhow::Result<ListCommonDockerRegistryProvidersResponse> {
-    let mut set = core_config()
-      .docker_registries
-      .iter()
-      .map(|registry| registry.domain.as_str())
-      .collect::<HashSet<_>>();
+    ListDockerRegistries { target }: ListDockerRegistries,
+    _: User,
+  ) -> anyhow::Result<ListDockerRegistriesResponse> {
+    let mut registries = core_config().docker_registries.clone();
 
-    let (builds, deployments) = tokio::try_join!(
-      resource::list_full_for_user::<Build>(
-        Default::default(),
-        &user
-      ),
-      resource::list_full_for_user::<Deployment>(
-        Default::default(),
-        &user
-      ),
-    )?;
-
-    for build in &builds {
-      match &build.config.image_registry {
-        ImageRegistry::None(_) => {}
-        // Ecr is handled differently
-        ImageRegistry::AwsEcr(_) => {}
-        ImageRegistry::DockerHub(_) => {
-          set.insert("docker.io");
+    if let Some(target) = target {
+      match target {
+        ResourceTarget::Server(id) => {
+          merge_docker_registries_for_server(&mut registries, &id)
+            .await?;
         }
-        ImageRegistry::Ghcr(_) => {
-          set.insert("ghcr.io");
+        ResourceTarget::Builder(id) => {
+          match resource::get::<Builder>(&id).await?.config {
+            BuilderConfig::Server(config) => {
+              merge_docker_registries_for_server(
+                &mut registries,
+                &config.server_id,
+              )
+              .await?;
+            }
+            BuilderConfig::Aws(config) => {
+              merge_docker_registries(
+                &mut registries,
+                config.docker_registries,
+              );
+            }
+          }
         }
-        ImageRegistry::Custom(CustomRegistryConfig {
-          provider,
-          ..
-        }) => {
-          set.insert(provider);
-        }
-      }
-    }
-    for deployment in &deployments {
-      match &deployment.config.image_registry {
-        ImageRegistry::None(_) => {}
-        // Ecr is handled differently
-        ImageRegistry::AwsEcr(_) => {}
-        ImageRegistry::DockerHub(_) => {
-          set.insert("docker.io");
-        }
-        ImageRegistry::Ghcr(_) => {
-          set.insert("ghcr.io");
-        }
-        ImageRegistry::Custom(CustomRegistryConfig {
-          provider,
-          ..
-        }) => {
-          set.insert(provider);
+        _ => {
+          return Err(anyhow!("target must be `Server` or `Builder`"))
         }
       }
     }
 
-    let mut res =
-      set.into_iter().map(ToOwned::to_owned).collect::<Vec<_>>();
-    res.sort();
+    registries.sort();
 
-    Ok(res)
+    Ok(registries)
+  }
+}
+
+async fn merge_git_providers_for_server(
+  providers: &mut Vec<GitProvider>,
+  server_id: &str,
+) -> anyhow::Result<()> {
+  let server = resource::get::<Server>(server_id).await?;
+  let more = periphery_client(&server)?
+    .request(periphery_client::api::ListGitProviders {})
+    .await
+    .with_context(|| {
+      format!(
+        "failed to get git providers from server {}",
+        server.name
+      )
+    })?;
+  merge_git_providers(providers, more);
+  Ok(())
+}
+
+fn merge_git_providers(
+  providers: &mut Vec<GitProvider>,
+  more: Vec<GitProvider>,
+) {
+  for incoming_provider in more {
+    if let Some(provider) = providers
+      .iter_mut()
+      .find(|provider| provider.domain == incoming_provider.domain)
+    {
+      for account in incoming_provider.accounts {
+        if !provider.accounts.contains(&account) {
+          provider.accounts.push(account);
+        }
+      }
+    } else {
+      providers.push(incoming_provider);
+    }
+  }
+}
+
+async fn merge_docker_registries_for_server(
+  registries: &mut Vec<DockerRegistry>,
+  server_id: &str,
+) -> anyhow::Result<()> {
+  let server = resource::get::<Server>(server_id).await?;
+  let more = periphery_client(&server)?
+    .request(periphery_client::api::ListDockerRegistries {})
+    .await
+    .with_context(|| {
+      format!(
+        "failed to get docker registries from server {}",
+        server.name
+      )
+    })?;
+  merge_docker_registries(registries, more);
+  Ok(())
+}
+
+fn merge_docker_registries(
+  registries: &mut Vec<DockerRegistry>,
+  more: Vec<DockerRegistry>,
+) {
+  for incoming_registry in more {
+    if let Some(registry) = registries
+      .iter_mut()
+      .find(|registry| registry.domain == incoming_registry.domain)
+    {
+      for account in incoming_registry.accounts {
+        if !registry.accounts.contains(&account) {
+          registry.accounts.push(account);
+        }
+      }
+    } else {
+      registries.push(incoming_registry);
+    }
   }
 }

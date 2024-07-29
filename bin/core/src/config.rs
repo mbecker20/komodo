@@ -37,9 +37,13 @@ pub fn frontend_path() -> &'static String {
 pub fn core_config() -> &'static CoreConfig {
   static CORE_CONFIG: OnceLock<CoreConfig> = OnceLock::new();
   CORE_CONFIG.get_or_init(|| {
-    let env: Env = envy::from_env()
-      .context("failed to parse core Env")
-      .unwrap();
+    let env: Env = match envy::from_env()
+      .context("failed to parse core Env") {
+        Ok(env) => env,
+        Err(e) => {
+          panic!("{e:#?}");
+        }
+      };
     let config_path = &env.monitor_config_path;
     let config =
       parse_config_file::<CoreConfig>(config_path.as_str())
@@ -97,11 +101,6 @@ pub fn core_config() -> &'static CoreConfig {
       webhook_base_url: env
         .monitor_webhook_base_url
         .or(config.webhook_base_url),
-      github_organizations: env.monitor_github_organizations
-        .unwrap_or(config.github_organizations),
-      docker_organizations: env
-        .monitor_docker_organizations
-        .unwrap_or(config.docker_organizations),
       transparent_mode: env
         .monitor_transparent_mode
         .unwrap_or(config.transparent_mode),

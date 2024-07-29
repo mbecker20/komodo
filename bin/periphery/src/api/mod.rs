@@ -1,16 +1,22 @@
 use anyhow::Context;
 use command::run_monitor_command;
-use monitor_client::entities::{update::Log, SystemCommand};
+use monitor_client::{
+  api::read::ListGitProviders,
+  entities::{update::Log, SystemCommand},
+};
 use periphery_client::api::{
-  build::*, container::*, git::*, network::*, stats::*, GetAccounts,
-  GetHealth, GetSecrets, GetVersion, GetVersionResponse, PruneSystem,
-  RunCommand,
+  build::*, container::*, git::*, network::*, stats::*, GetHealth,
+  GetVersion, GetVersionResponse, ListDockerRegistries, ListSecrets,
+  PruneSystem, RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-  config::{accounts_response, secrets_response},
+  config::{
+    docker_registries_response, git_providers_response,
+    secrets_response,
+  },
   State,
 };
 
@@ -31,9 +37,11 @@ pub enum PeripheryRequest {
 
   // Config
   #[to_string_resolver]
-  GetAccounts(GetAccounts),
+  ListGitProviders(ListGitProviders),
   #[to_string_resolver]
-  GetSecrets(GetSecrets),
+  ListDockerRegistries(ListDockerRegistries),
+  #[to_string_resolver]
+  ListSecrets(ListSecrets),
 
   // Stats / Info
   #[to_string_resolver]
@@ -101,24 +109,43 @@ impl Resolve<GetVersion> for State {
 
 //
 
-impl ResolveToString<GetAccounts> for State {
-  #[instrument(name = "GetAccounts", level = "debug", skip(self))]
+impl ResolveToString<ListGitProviders> for State {
+  #[instrument(
+    name = "ListGitProviders",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve_to_string(
     &self,
-    _: GetAccounts,
+    _: ListGitProviders,
     _: (),
   ) -> anyhow::Result<String> {
-    Ok(accounts_response().clone())
+    Ok(git_providers_response().clone())
+  }
+}
+
+impl ResolveToString<ListDockerRegistries> for State {
+  #[instrument(
+    name = "ListDockerRegistries",
+    level = "debug",
+    skip(self)
+  )]
+  async fn resolve_to_string(
+    &self,
+    _: ListDockerRegistries,
+    _: (),
+  ) -> anyhow::Result<String> {
+    Ok(docker_registries_response().clone())
   }
 }
 
 //
 
-impl ResolveToString<GetSecrets> for State {
-  #[instrument(name = "GetSecrets", level = "debug", skip(self))]
+impl ResolveToString<ListSecrets> for State {
+  #[instrument(name = "ListSecrets", level = "debug", skip(self))]
   async fn resolve_to_string(
     &self,
-    _: GetSecrets,
+    _: ListSecrets,
     _: (),
   ) -> anyhow::Result<String> {
     Ok(secrets_response().clone())

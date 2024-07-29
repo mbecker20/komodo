@@ -11,7 +11,6 @@ use mungos::{find::find_collect, mongodb::options::FindOptions};
 use resolver_api::Resolve;
 
 use crate::{
-  config::core_config,
   helpers::query::get_variable,
   state::{db_client, State},
 };
@@ -32,16 +31,12 @@ impl Resolve<ListVariables, User> for State {
     ListVariables {}: ListVariables,
     _: User,
   ) -> anyhow::Result<ListVariablesResponse> {
-    let variables = find_collect(
+    find_collect(
       &db_client().await.variables,
       None,
       FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )
     .await
-    .context("failed to query db for variables")?;
-    Ok(ListVariablesResponse {
-      variables,
-      secrets: core_config().secrets.keys().cloned().collect(),
-    })
+    .context("failed to query db for variables")
   }
 }

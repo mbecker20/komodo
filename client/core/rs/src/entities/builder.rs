@@ -39,6 +39,7 @@ pub struct BuilderListItemInfo {
   EnumString
 )]
 #[serde(tag = "type", content = "params")]
+#[allow(clippy::large_enum_variant)]
 pub enum BuilderConfig {
   /// Use a connected server an image builder.
   Server(ServerBuilderConfig),
@@ -66,6 +67,7 @@ impl Default for BuilderConfig {
   EnumString
 )]
 #[serde(tag = "type", content = "params")]
+#[allow(clippy::large_enum_variant)]
 pub enum PartialBuilderConfig {
   Server(_PartialServerBuilderConfig),
   Aws(_PartialAwsBuilderConfig),
@@ -231,6 +233,7 @@ impl MergePartial for BuilderConfig {
             docker_registries: partial
               .docker_registries
               .unwrap_or(config.docker_registries),
+            secrets: partial.secrets.unwrap_or(config.secrets),
           };
           BuilderConfig::Aws(config)
         }
@@ -315,6 +318,9 @@ pub struct AwsBuilderConfig {
   /// Which docker registries are available on the AMI.
   #[serde(default)]
   pub docker_registries: Vec<DockerRegistry>,
+  /// Which secrets are available on the AMI.
+  #[serde(default)]
+  pub secrets: Vec<String>,
 }
 
 impl Default for AwsBuilderConfig {
@@ -332,6 +338,7 @@ impl Default for AwsBuilderConfig {
       use_public_ip: false,
       git_providers: Default::default(),
       docker_registries: Default::default(),
+      secrets: Default::default(),
     }
   }
 }

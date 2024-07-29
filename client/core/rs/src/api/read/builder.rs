@@ -3,9 +3,8 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{
-  builder::{Builder, BuilderListItem, BuilderQuery},
-  config::{DockerRegistry, GitProvider},
+use crate::entities::builder::{
+  Builder, BuilderListItem, BuilderQuery,
 };
 
 use super::MonitorReadRequest;
@@ -80,32 +79,4 @@ pub struct GetBuildersSummary {}
 pub struct GetBuildersSummaryResponse {
   /// The total number of builders.
   pub total: u32,
-}
-
-//
-
-/// Get the docker / github accounts which are available for use on the builder.
-/// Response: [GetBuilderAvailableAccountsResponse].
-///
-/// Note. Builds using this builder can only use the docker / github accounts available in this response.
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetBuilderAvailableAccountsResponse)]
-pub struct GetBuilderAvailableAccounts {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub builder: String,
-}
-
-/// Response for [GetBuilderAvailableAccounts].
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetBuilderAvailableAccountsResponse {
-  /// The github providers.
-  pub git: Vec<GitProvider>,
-  /// The docker registries.
-  pub docker: Vec<DockerRegistry>,
 }

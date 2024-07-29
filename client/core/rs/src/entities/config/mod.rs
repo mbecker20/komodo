@@ -46,10 +46,11 @@ pub struct DockerRegistry {
   #[serde(default = "default_docker_provider")]
   pub domain: String,
   /// The account username. Required.
-  #[serde(alias = "account")]
+  #[serde(default, alias = "account")]
   pub accounts: Vec<ProviderAccount>,
   /// Available organizations on the registry provider.
   /// Used to push an image under an organization's repo rather than an account's repo.
+  #[serde(default, alias = "organization")]
   pub organizations: Vec<String>,
 }
 
@@ -74,6 +75,6 @@ pub struct ProviderAccount {
   #[serde(alias = "account")]
   pub username: String,
   /// The account access token. Required.
-  #[serde(default, skip_serializing)]
+  #[serde(skip_serializing)]
   pub token: String,
 }

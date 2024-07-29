@@ -20,7 +20,7 @@ pub fn name_to_build() -> &'static HashMap<String, Build> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullBuilds::default()),
     )
-    .expect("failed to get builds from monitor")
+    .expect("failed to get builds")
     .into_iter()
     .map(|build| (build.name.clone(), build))
     .collect()
@@ -34,7 +34,7 @@ pub fn id_to_build() -> &'static HashMap<String, Build> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullBuilds::default()),
     )
-    .expect("failed to get builds from monitor")
+    .expect("failed to get builds")
     .into_iter()
     .map(|build| (build.id.clone(), build))
     .collect()
@@ -48,7 +48,7 @@ pub fn name_to_deployment() -> &'static HashMap<String, Deployment> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullDeployments::default()),
     )
-    .expect("failed to get deployments from monitor")
+    .expect("failed to get deployments")
     .into_iter()
     .map(|deployment| (deployment.name.clone(), deployment))
     .collect()
@@ -62,7 +62,7 @@ pub fn id_to_deployment() -> &'static HashMap<String, Deployment> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullDeployments::default()),
     )
-    .expect("failed to get deployments from monitor")
+    .expect("failed to get deployments")
     .into_iter()
     .map(|deployment| (deployment.id.clone(), deployment))
     .collect()
@@ -76,7 +76,7 @@ pub fn name_to_server() -> &'static HashMap<String, Server> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullServers::default()),
     )
-    .expect("failed to get servers from monitor")
+    .expect("failed to get servers")
     .into_iter()
     .map(|server| (server.name.clone(), server))
     .collect()
@@ -90,7 +90,7 @@ pub fn id_to_server() -> &'static HashMap<String, Server> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullServers::default()),
     )
-    .expect("failed to get servers from monitor")
+    .expect("failed to get servers")
     .into_iter()
     .map(|server| (server.id.clone(), server))
     .collect()
@@ -104,7 +104,7 @@ pub fn name_to_builder() -> &'static HashMap<String, Builder> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullBuilders::default()),
     )
-    .expect("failed to get builders from monitor")
+    .expect("failed to get builders")
     .into_iter()
     .map(|builder| (builder.name.clone(), builder))
     .collect()
@@ -118,7 +118,7 @@ pub fn id_to_builder() -> &'static HashMap<String, Builder> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullBuilders::default()),
     )
-    .expect("failed to get builders from monitor")
+    .expect("failed to get builders")
     .into_iter()
     .map(|builder| (builder.id.clone(), builder))
     .collect()
@@ -132,7 +132,7 @@ pub fn name_to_alerter() -> &'static HashMap<String, Alerter> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullAlerters::default()),
     )
-    .expect("failed to get alerters from monitor")
+    .expect("failed to get alerters")
     .into_iter()
     .map(|alerter| (alerter.name.clone(), alerter))
     .collect()
@@ -146,7 +146,7 @@ pub fn id_to_alerter() -> &'static HashMap<String, Alerter> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullAlerters::default()),
     )
-    .expect("failed to get alerters from monitor")
+    .expect("failed to get alerters")
     .into_iter()
     .map(|alerter| (alerter.id.clone(), alerter))
     .collect()
@@ -160,7 +160,7 @@ pub fn name_to_repo() -> &'static HashMap<String, Repo> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullRepos::default()),
     )
-    .expect("failed to get repos from monitor")
+    .expect("failed to get repos")
     .into_iter()
     .map(|repo| (repo.name.clone(), repo))
     .collect()
@@ -174,7 +174,7 @@ pub fn id_to_repo() -> &'static HashMap<String, Repo> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullRepos::default()),
     )
-    .expect("failed to get repos from monitor")
+    .expect("failed to get repos")
     .into_iter()
     .map(|repo| (repo.id.clone(), repo))
     .collect()
@@ -188,7 +188,7 @@ pub fn name_to_procedure() -> &'static HashMap<String, Procedure> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullProcedures::default()),
     )
-    .expect("failed to get procedures from monitor")
+    .expect("failed to get procedures")
     .into_iter()
     .map(|procedure| (procedure.name.clone(), procedure))
     .collect()
@@ -202,7 +202,7 @@ pub fn id_to_procedure() -> &'static HashMap<String, Procedure> {
     futures::executor::block_on(
       monitor_client().read(read::ListFullProcedures::default()),
     )
-    .expect("failed to get procedures from monitor")
+    .expect("failed to get procedures")
     .into_iter()
     .map(|procedure| (procedure.id.clone(), procedure))
     .collect()
@@ -218,7 +218,7 @@ pub fn name_to_server_template(
     futures::executor::block_on(
       monitor_client().read(read::ListFullServerTemplates::default()),
     )
-    .expect("failed to get server templates from monitor")
+    .expect("failed to get server templates")
     .into_iter()
     .map(|procedure| (procedure.name.clone(), procedure))
     .collect()
@@ -234,7 +234,7 @@ pub fn id_to_server_template(
     futures::executor::block_on(
       monitor_client().read(read::ListFullServerTemplates::default()),
     )
-    .expect("failed to get server templates from monitor")
+    .expect("failed to get server templates")
     .into_iter()
     .map(|procedure| (procedure.id.clone(), procedure))
     .collect()
@@ -249,7 +249,7 @@ pub fn name_to_resource_sync(
     futures::executor::block_on(
       monitor_client().read(read::ListFullResourceSyncs::default()),
     )
-    .expect("failed to get syncs from monitor")
+    .expect("failed to get syncs")
     .into_iter()
     .map(|sync| (sync.name.clone(), sync))
     .collect()
@@ -264,7 +264,7 @@ pub fn id_to_resource_sync() -> &'static HashMap<String, ResourceSync>
     futures::executor::block_on(
       monitor_client().read(read::ListFullResourceSyncs::default()),
     )
-    .expect("failed to get syncs from monitor")
+    .expect("failed to get syncs")
     .into_iter()
     .map(|sync| (sync.id.clone(), sync))
     .collect()
@@ -278,7 +278,7 @@ pub fn name_to_user_group() -> &'static HashMap<String, UserGroup> {
     futures::executor::block_on(
       monitor_client().read(read::ListUserGroups::default()),
     )
-    .expect("failed to get user groups from monitor")
+    .expect("failed to get user groups")
     .into_iter()
     .map(|user_group| (user_group.name.clone(), user_group))
     .collect()
@@ -292,8 +292,7 @@ pub fn name_to_variable() -> &'static HashMap<String, Variable> {
     futures::executor::block_on(
       monitor_client().read(read::ListVariables::default()),
     )
-    .expect("failed to get user groups from monitor")
-    .variables
+    .expect("failed to get variables")
     .into_iter()
     .map(|variable| (variable.name.clone(), variable))
     .collect()
@@ -307,7 +306,7 @@ pub fn id_to_user() -> &'static HashMap<String, User> {
     futures::executor::block_on(
       monitor_client().read(read::ListUsers::default()),
     )
-    .expect("failed to get users from monitor")
+    .expect("failed to get users")
     .into_iter()
     .map(|user| (user.id.clone(), user))
     .collect()
@@ -320,7 +319,7 @@ pub fn id_to_tag() -> &'static HashMap<String, Tag> {
     futures::executor::block_on(
       monitor_client().read(read::ListTags::default()),
     )
-    .expect("failed to get tags from monitor")
+    .expect("failed to get tags")
     .into_iter()
     .map(|tag| (tag.id.clone(), tag))
     .collect()

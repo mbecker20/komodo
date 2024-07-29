@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  config::{DockerRegistry, GitProvider},
   deployment::ContainerSummary,
   server::{
     docker_image::ImageSummary,
@@ -317,51 +316,3 @@ pub struct GetServersSummaryResponse {
   /// The number of disabled servers.
   pub disabled: I64,
 }
-
-//
-
-/// Get the usernames / providers for the available git / docker accounts
-/// on the target server, or only available globally if no server
-/// is provided.
-///
-/// Response: [GetAvailableAccountsResponse].
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetAvailableAccountsResponse)]
-pub struct GetAvailableAccounts {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: Option<String>,
-}
-
-/// Response for [GetAvailableAccounts].
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetAvailableAccountsResponse {
-  /// The github providers.
-  pub git: Vec<GitProvider>,
-  /// The docker registries.
-  pub docker: Vec<DockerRegistry>,
-}
-
-//
-
-/// Get the keys for available secrets on the target server.
-/// Response: [GetAvailableSecretsResponse].
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetAvailableSecretsResponse)]
-pub struct GetAvailableSecrets {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetAvailableSecretsResponse = Vec<String>;

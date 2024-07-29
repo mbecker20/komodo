@@ -272,41 +272,18 @@ impl Default for BuildConfig {
 pub enum ImageRegistry {
   /// Don't push the image to any registry
   None(NoData),
-  /// Push the image to DockerHub
-  DockerHub(CloudRegistryConfig),
-  /// Push the image to the Github Container Registry.
-  ///
-  /// See [the Github docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images)
-  /// for information on creating an access token
-  Ghcr(CloudRegistryConfig),
+  /// Push the image to a custom image registry (any domain)
+  Custom(CustomRegistryConfig),
   /// Push the image to Aws Elastic Container Registry
   ///
   /// The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
   AwsEcr(String),
-  /// Push the image to a custom image registry (any domain)
-  Custom(CustomRegistryConfig),
 }
 
 impl Default for ImageRegistry {
   fn default() -> Self {
     Self::None(NoData {})
   }
-}
-
-/// Configuration for a cloud image registry, like account and organization.
-#[typeshare]
-#[derive(
-  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
-)]
-pub struct CloudRegistryConfig {
-  /// Specify an account to use with the cloud registry.
-  #[serde(default)]
-  pub account: String,
-
-  /// Optional. Specify an organization to push the image under.
-  /// Empty string means no organization.
-  #[serde(default)]
-  pub organization: String,
 }
 
 /// Configuration for a custom image registry
@@ -317,7 +294,7 @@ pub struct CloudRegistryConfig {
 pub struct CustomRegistryConfig {
   /// Specify the registry provider domain. Eg. `docker.io`
   #[serde(default)]
-  pub provider: String,
+  pub domain: String,
 
   /// Specify an account to use with the registry.
   #[serde(default)]

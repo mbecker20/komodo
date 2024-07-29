@@ -14,7 +14,6 @@ use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
-  build::ImageRegistry,
   resource::{Resource, ResourceListItem, ResourceQuery},
   EnvironmentVar, Version,
 };
@@ -61,16 +60,15 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub image: DeploymentImage,
 
-  /// Configure the registry used to pull the image from the registry.
+  /// Configure the account used to pull the image from the registry.
   /// Used with `docker login`.
   ///
-  /// When using attached build as image source:
-  ///  - If the field is `None` variant, will use the same ImageRegistry config as the build.
-  ///  - Otherwise, it must match the variant of the ImageRegistry build config.
-  ///  - Only the account is used, the organization is not needed here
+  ///  - If the field is empty string, will use the same account config as the build, or none at all if using image.
+  ///  - If the field contains an account, a token for the account must be available.
+  ///  - Will get the registry domain from the build / image
   #[serde(default)]
   #[builder(default)]
-  pub image_registry: ImageRegistry,
+  pub image_registry_account: String,
 
   /// Whether to skip secret interpolation into the deployment environment variables.
   #[serde(default)]
@@ -213,7 +211,7 @@ impl Default for DeploymentConfig {
       server_id: Default::default(),
       send_alerts: default_send_alerts(),
       image: Default::default(),
-      image_registry: Default::default(),
+      image_registry_account: Default::default(),
       skip_secret_interp: Default::default(),
       redeploy_on_build: Default::default(),
       term_signal_labels: default_term_signal_labels(),
@@ -777,5 +775,18 @@ impl super::resource::AddFilters for DeploymentQuerySpecifics {
         doc! { "$in": &self.build_ids },
       );
     }
+  }
+}
+
+pub fn extract_registry_domain(
+  image_name: &str,
+) -> anyhow::Result<String> {
+  let mut split = image_name.split('/');
+  let maybe_domain =
+    split.next().context("image name cannot be empty string")?;
+  if maybe_domain.contains('.') {
+    Ok(maybe_domain.to_string())
+  } else {
+    Ok(String::from("docker.io"))
   }
 }

@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
-use build::{CloudRegistryConfig, CustomRegistryConfig};
+use build::CustomRegistryConfig;
 use clap::Parser;
 use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
@@ -117,32 +117,7 @@ pub fn get_image_name(
 ) -> anyhow::Result<String> {
   let name = to_monitor_name(name);
   let name = match image_registry {
-    // TODO
     build::ImageRegistry::None(_) => name,
-    build::ImageRegistry::DockerHub(CloudRegistryConfig {
-      organization,
-      account,
-    }) => {
-      if !organization.is_empty() {
-        format!("{organization}/{name}")
-      } else if !account.is_empty() {
-        format!("{account}/{name}")
-      } else {
-        name
-      }
-    }
-    build::ImageRegistry::Ghcr(CloudRegistryConfig {
-      organization,
-      account,
-    }) => {
-      if !organization.is_empty() {
-        format!("ghcr.io/{organization}/{name}")
-      } else if !account.is_empty() {
-        format!("ghcr.io/{account}/{name}")
-      } else {
-        name
-      }
-    }
     build::ImageRegistry::AwsEcr(label) => {
       let AwsEcrConfig {
         region, account_id, ..
@@ -152,14 +127,14 @@ pub fn get_image_name(
       format!("{account_id}.dkr.ecr.{region}.amazonaws.com/{name}")
     }
     build::ImageRegistry::Custom(CustomRegistryConfig {
-      provider,
+      domain,
       account,
       organization,
     }) => {
       if !organization.is_empty() {
-        format!("{provider}/{organization}/{name}")
+        format!("{domain}/{organization}/{name}")
       } else if !account.is_empty() {
-        format!("{provider}/{account}/{name}")
+        format!("{domain}/{account}/{name}")
       } else {
         name
       }
@@ -169,7 +144,7 @@ pub fn get_image_name(
 }
 
 pub fn to_monitor_name(name: &str) -> String {
-  name.to_lowercase().replace(' ', "_")
+  name.to_lowercase().replace([' ', '.'], "_")
 }
 
 pub fn monitor_timestamp() -> i64 {
