@@ -292,7 +292,9 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
     )
     .await?;
 
-    if build.config.repo.is_empty() {
+    if build.config.git_provider != "github.com"
+      || build.config.repo.is_empty()
+    {
       return Ok(GetBuildWebhookEnabledResponse {
         managed: false,
         enabled: false,

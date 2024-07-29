@@ -456,6 +456,12 @@ impl Resolve<DeleteSyncWebhook, User> for State {
     )
     .await?;
 
+    if sync.config.git_provider != "github.com" {
+      return Err(anyhow!(
+        "Can only manage github.com repo webhooks"
+      ));
+    }
+
     if sync.config.repo.is_empty() {
       return Err(anyhow!(
         "No repo configured, can't create webhook"

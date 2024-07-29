@@ -163,7 +163,9 @@ impl Resolve<GetSyncWebhooksEnabled, User> for State {
     )
     .await?;
 
-    if sync.config.repo.is_empty() {
+    if sync.config.git_provider != "github.com"
+      || sync.config.repo.is_empty()
+    {
       return Ok(GetSyncWebhooksEnabledResponse {
         managed: false,
         refresh_enabled: false,

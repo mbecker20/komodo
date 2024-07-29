@@ -142,7 +142,9 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
     )
     .await?;
 
-    if repo.config.repo.is_empty() {
+    if repo.config.git_provider != "github.com"
+      || repo.config.repo.is_empty()
+    {
       return Ok(GetRepoWebhooksEnabledResponse {
         managed: false,
         clone_enabled: false,
