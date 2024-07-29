@@ -132,7 +132,8 @@ pub fn get_image_name(
       organization,
     }) => {
       if !organization.is_empty() {
-        format!("{domain}/{organization}/{name}")
+        let org = organization.to_lowercase();
+        format!("{domain}/{org}/{name}")
       } else if !account.is_empty() {
         format!("{domain}/{account}/{name}")
       } else {
