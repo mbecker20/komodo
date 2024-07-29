@@ -332,8 +332,8 @@ export interface SystemCommand {
 export type ImageRegistry = 
 	/** Don't push the image to any registry */
 	| { type: "None", params: NoData }
-	/** Push the image to a custom image registry (any domain) */
-	| { type: "Custom", params: CustomRegistryConfig }
+	/** Push the image to a standard image registry (any domain) */
+	| { type: "Standard", params: StandardRegistryConfig }
 	/**
 	 * Push the image to Aws Elastic Container Registry
 	 * 
@@ -3854,8 +3854,8 @@ export interface SlackAlerterEndpoint {
 	url: string;
 }
 
-/** Configuration for a custom image registry */
-export interface CustomRegistryConfig {
+/** Configuration for a standard image registry */
+export interface StandardRegistryConfig {
 	/** Specify the registry provider domain. Eg. `docker.io` */
 	domain?: string;
 	/** Specify an account to use with the registry. */

@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  build::{CustomRegistryConfig, ImageRegistry},
+  build::{StandardRegistryConfig, ImageRegistry},
   config::core::AwsEcrConfig,
   EnvironmentVar,
 };
@@ -86,7 +86,7 @@ pub async fn docker_login(
         ));
       }
     }
-    ImageRegistry::Custom(CustomRegistryConfig {
+    ImageRegistry::Standard(StandardRegistryConfig {
       domain,
       account,
       ..

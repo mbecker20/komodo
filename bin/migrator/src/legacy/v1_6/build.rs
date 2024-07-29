@@ -1,4 +1,4 @@
-use monitor_client::entities::{build::{CustomRegistryConfig, ImageRegistry}, NoData};
+use monitor_client::entities::{build::{StandardRegistryConfig, ImageRegistry}, NoData};
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -140,7 +140,7 @@ impl From<BuildConfig>
       image_registry: if value.docker_account.is_empty() {
         ImageRegistry::None(NoData {})
       } else {
-        ImageRegistry::Custom(CustomRegistryConfig {
+        ImageRegistry::Standard(StandardRegistryConfig {
           domain: String::from("docker.io"),
           account: value.docker_account,
           organization: value.docker_organization,

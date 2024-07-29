@@ -191,14 +191,12 @@ export const ProviderSelector = ({
   onSelect,
 }: {
   disabled: boolean;
-  account_type: keyof Types.GetAvailableAccountsResponse;
+  account_type: "git" | "docker";
   selected: string | undefined;
   onSelect: (provider: string) => void;
 }) => {
   const request =
-    account_type === "git"
-      ? "ListCommonGitProviders"
-      : "ListCommonDockerRegistryProviders";
+    account_type === "git" ? "ListGitProviders" : "ListDockerRegistries";
   const providers = useRead(request, {}).data;
   const [customMode, setCustomMode] = useState(false);
 
@@ -235,14 +233,21 @@ export const ProviderSelector = ({
         <SelectValue placeholder="Select Provider" />
       </SelectTrigger>
       <SelectContent>
-        {providers?.map((provider) => (
-          <SelectItem key={provider} value={provider}>
-            {provider}
-          </SelectItem>
-        ))}
+        {providers?.map(
+          (provider: Types.GitProvider | Types.DockerRegistry) => (
+            <SelectItem key={provider.domain} value={provider.domain}>
+              {provider.domain}
+            </SelectItem>
+          )
+        )}
         {providers !== undefined &&
           selected &&
-          !providers.includes(selected) && (
+          !providers
+            .map(
+              (provider: Types.GitProvider | Types.DockerRegistry) =>
+                provider.domain
+            )
+            .includes(selected) && (
             <SelectItem value={selected}>{selected}</SelectItem>
           )}
         <SelectItem value={"Custom"}>Custom</SelectItem>
@@ -253,7 +258,7 @@ export const ProviderSelector = ({
 
 export const ProviderSelectorConfig = (params: {
   disabled: boolean;
-  account_type: keyof Types.GetAvailableAccountsResponse;
+  account_type: "git" | "docker";
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
@@ -274,33 +279,25 @@ export const AccountSelector = ({
   onSelect,
 }: {
   disabled: boolean;
+  type: "Server" | "Builder" | "None";
   id?: string;
-  type: "Server" | "None" | "Builder";
-  account_type: keyof Types.GetAvailableAccountsResponse;
+  account_type: "git" | "docker";
   provider: string;
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  if (type === "Builder" && !id) {
-    return (
-      <div>Builder provider selector, but id is undefing. this is an error</div>
-    );
-  }
-  const [request, params]:
-    | ["GetAvailableAccounts", { server: string | undefined }]
-    | ["GetBuilderAvailableAccounts", { builder: string }] =
-    type === "Server" || type === "None"
-      ? ["GetAvailableAccounts", { server: id }]
-      : ["GetBuilderAvailableAccounts", { builder: id! }];
-  const providers = useRead(request, params).data?.[account_type]?.filter(
+  const request =
+    account_type === "git" ? "ListGitProviders" : "ListDockerRegistries";
+  const params =
+    type === "None" ? {} : { target: id ? { type, id } : undefined };
+  const providers = useRead(request, params).data?.filter(
     (_provider) => _provider.domain === provider
   );
+
   const _accounts = new Set<string>();
-  if (providers) {
-    for (const provider of providers) {
-      for (const account of provider.accounts) {
-        _accounts.add(account.username);
-      }
+  for (const provider of providers ?? []) {
+    for (const account of provider.accounts ?? []) {
+      _accounts.add(account.username);
     }
   }
   const accounts = [..._accounts];
@@ -334,8 +331,8 @@ export const AccountSelector = ({
 export const AccountSelectorConfig = (params: {
   disabled: boolean;
   id?: string;
-  type: "Server" | "None" | "Builder";
-  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
+  type: "Server" | "Builder" | "None";
+  account_type: "git" | "docker";
   provider: string;
   selected: string | undefined;
   onSelect: (id: string) => void;
@@ -357,7 +354,7 @@ export const AwsEcrLabelSelector = ({
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const labels = useRead("GetAvailableAwsEcrLabels", {}).data;
+  const labels = useRead("ListAwsEcrLabels", {}).data;
   return (
     <Select
       value={selected}
@@ -588,7 +585,7 @@ export const AddExtraArgMenu = ({
 };
 
 export const ImageRegistryConfig = ({
-  registry,
+  registry: _registry,
   setRegistry,
   disabled,
   type,
@@ -603,13 +600,13 @@ export const ImageRegistryConfig = ({
   resource_id?: string;
   registry_types?: Types.ImageRegistry["type"][];
 }) => {
-  const _registry = registry ?? default_registry_config("None");
+  const registry = _registry ?? default_registry_config("None");
 
-  if (_registry.type === "None") {
+  if (registry.type === "None") {
     return (
       <ConfigItem label="Image Registry">
         <RegistryTypeSelector
-          registry={_registry}
+          registry={registry}
           setRegistry={setRegistry}
           disabled={disabled}
           deployment={type === "Deployment"}
@@ -618,12 +615,12 @@ export const ImageRegistryConfig = ({
       </ConfigItem>
     );
   }
-  if (_registry.type === "AwsEcr") {
+  if (registry.type === "AwsEcr") {
     return (
       <ConfigItem label="Image Registry">
         <div className="flex items-center justify-stretch gap-4">
           <AwsEcrLabelSelector
-            selected={_registry.params}
+            selected={registry.params}
             onSelect={(label) =>
               setRegistry({
                 type: "AwsEcr",
@@ -633,7 +630,7 @@ export const ImageRegistryConfig = ({
             disabled={disabled}
           />
           <RegistryTypeSelector
-            registry={_registry}
+            registry={registry}
             setRegistry={setRegistry}
             disabled={disabled}
             deployment={type === "Deployment"}
@@ -644,45 +641,39 @@ export const ImageRegistryConfig = ({
     );
   }
 
-  const [params, provider] =
-    _registry.type === "DockerHub"
-      ? [_registry.params, "docker.io"]
-      : _registry.type === "Ghcr"
-      ? [_registry.params, "ghcr.io"]
-      : [_registry.params, _registry.params.provider!];
-
   return (
     <ConfigItem label="Image Registry">
       <div className="flex items-center justify-stretch gap-4">
-        {type === "Build" && params?.account && (
-          <OrganizationSelector
-            value={params?.organization}
-            set={(organization) =>
-              setRegistry({
-                ..._registry,
-                params: { ..._registry.params, organization },
-              })
-            }
-            disabled={disabled}
-            type={_registry.type === "DockerHub" ? "Docker" : "Github"}
-          />
+        {type === "Build" && registry.params?.account && (
+          // <OrganizationSelector
+          //   value={registry.params?.organization}
+          //   set={(organization) =>
+          //     setRegistry({
+          //       ...registry,
+          //       params: { ...registry.params, organization },
+          //     })
+          //   }
+          //   disabled={disabled}
+          //   type={registry.type === "DockerHub" ? "Docker" : "Github"}
+          // />
+          <></>
         )}
         <AccountSelector
           id={resource_id}
           type={type === "Build" ? "Builder" : "Server"}
           account_type="docker"
-          provider={provider}
-          selected={params?.account}
+          provider={registry.params.domain!}
+          selected={registry.params.account}
           onSelect={(account) =>
             setRegistry({
-              ..._registry,
-              params: { ..._registry.params, account },
+              ...registry,
+              params: { ...registry.params, account },
             })
           }
           disabled={disabled}
         />
         <RegistryTypeSelector
-          registry={_registry}
+          registry={registry}
           setRegistry={setRegistry}
           disabled={disabled}
           deployment={type === "Deployment"}
@@ -695,8 +686,7 @@ export const ImageRegistryConfig = ({
 
 const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
   "None",
-  "DockerHub",
-  "Ghcr",
+  "Standard",
   "AwsEcr",
 ];
 
@@ -743,42 +733,42 @@ const RegistryTypeSelector = ({
   );
 };
 
-const OrganizationSelector = ({
-  value,
-  set,
-  disabled,
-  type,
-}: {
-  value?: string;
-  set: (org: string) => void;
-  disabled: boolean;
-  type: "Docker" | "Github";
-}) => {
-  const organizations = useRead(`List${type}Organizations`, {}).data;
-  if (!organizations || organizations.length === 0) return null;
-  return (
-    <Select
-      value={value}
-      onValueChange={(v) => set(v === "Empty" ? "" : v)}
-      disabled={disabled}
-    >
-      <SelectTrigger
-        className="w-full lg:w-[200px] max-w-[50%]"
-        disabled={disabled}
-      >
-        <SelectValue placeholder="Select Organization" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={"Empty"}>None</SelectItem>
-        {organizations?.map((org) => (
-          <SelectItem key={org} value={org}>
-            {org}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-};
+// const OrganizationSelector = ({
+//   value,
+//   set,
+//   disabled,
+//   type,
+// }: {
+//   value?: string;
+//   set: (org: string) => void;
+//   disabled: boolean;
+//   type: "Docker" | "Github";
+// }) => {
+//   const organizations = useRead(`List${type}Organizations`, {}).data;
+//   if (!organizations || organizations.length === 0) return null;
+//   return (
+//     <Select
+//       value={value}
+//       onValueChange={(v) => set(v === "Empty" ? "" : v)}
+//       disabled={disabled}
+//     >
+//       <SelectTrigger
+//         className="w-full lg:w-[200px] max-w-[50%]"
+//         disabled={disabled}
+//       >
+//         <SelectValue placeholder="Select Organization" />
+//       </SelectTrigger>
+//       <SelectContent>
+//         <SelectItem value={"Empty"}>None</SelectItem>
+//         {organizations?.map((org) => (
+//           <SelectItem key={org} value={org}>
+//             {org}
+//           </SelectItem>
+//         ))}
+//       </SelectContent>
+//     </Select>
+//   );
+// };
 
 const to_readable_registry_type = (
   type: Types.ImageRegistry["type"],
@@ -804,12 +794,11 @@ const default_registry_config = (
       return { type, params: {} };
     case "AwsEcr":
       return { type, params: "" };
-    case "DockerHub":
-      return { type, params: { account: "", organization: "" } };
-    case "Ghcr":
-      return { type, params: { account: "", organization: "" } };
-    case "Custom":
-      return { type, params: { provider: "", account: "", organization: "" } };
+    case "Standard":
+      return {
+        type,
+        params: { domain: "docker.io", account: "", organization: "" },
+      };
   }
 };
 

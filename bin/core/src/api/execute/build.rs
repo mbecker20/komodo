@@ -10,7 +10,7 @@ use monitor_client::{
   entities::{
     alert::{Alert, AlertData},
     all_logs_success,
-    build::{Build, CustomRegistryConfig, ImageRegistry},
+    build::{Build, ImageRegistry, StandardRegistryConfig},
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
     config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
@@ -824,7 +824,7 @@ async fn validate_account_extract_registry_token_aws_ecr(
       };
       return Ok((token, config.map(AwsEcrConfig::from)));
     }
-    ImageRegistry::Custom(CustomRegistryConfig {
+    ImageRegistry::Standard(StandardRegistryConfig {
       domain,
       account,
       ..

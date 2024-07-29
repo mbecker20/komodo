@@ -106,7 +106,7 @@ const on_message = (
         ["GetBuildsSummary"],
         ["GetBuildMonthlyStats"],
         ["GetBuild", { build: update.target.id }],
-        ["GetBuildVersions", { build: update.target.id }]
+        ["ListBuildVersions", { build: update.target.id }]
       );
     }
 
@@ -130,7 +130,6 @@ const on_message = (
       invalidate(
         ["ListBuilders"],
         ["GetBuildersSummary"],
-        ["GetBuilderAvailableAccounts", { builder: update.target.id }],
         ["GetBuilder", { builder: update.target.id }]
       );
     }

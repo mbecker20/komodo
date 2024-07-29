@@ -396,10 +396,8 @@ const Secrets = ({
   setArgs: (args: string) => void;
   argsRef: RefObject<HTMLTextAreaElement>;
 }) => {
-  const { variables, secrets } = useRead("ListVariables", {}).data ?? {
-    variables: [],
-    secrets: [],
-  };
+  const variables = useRead("ListVariables", {}).data ?? [];
+  const secrets = useRead("ListSecrets", {}).data ?? [];
 
   const _args = args || "";
 

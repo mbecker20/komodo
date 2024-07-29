@@ -40,7 +40,7 @@ const BuildVersionSelector = ({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const versions = useRead(
-    "GetBuildVersions",
+    "ListBuildVersions",
     { build: buildId! },
     { enabled: !!buildId }
   ).data;

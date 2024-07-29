@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{
-  build::{CustomRegistryConfig, ImageRegistry},
+  build::{StandardRegistryConfig, ImageRegistry},
   deployment::{
     extract_registry_domain, ContainerSummary, Conversion,
     Deployment, DeploymentConfig, DeploymentImage,
@@ -282,7 +282,7 @@ impl Resolve<Deploy> for State {
     } else if deployment.config.image_registry_account.is_empty() {
       ImageRegistry::None(NoData {})
     } else {
-      ImageRegistry::Custom(CustomRegistryConfig {
+      ImageRegistry::Standard(StandardRegistryConfig {
         account: deployment.config.image_registry_account.clone(),
         domain: extract_registry_domain(image)?,
         ..Default::default()

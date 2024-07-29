@@ -130,7 +130,7 @@ impl Resolve<Deploy, (User, Update)> for State {
               .context("failed to create aws ecr login token")?;
               (version, Some(token), Some(AwsEcrConfig::from(config)))
             }
-            ImageRegistry::Custom(params) => {
+            ImageRegistry::Standard(params) => {
               if deployment.config.image_registry_account.is_empty() {
                 deployment.config.image_registry_account =
                   params.account

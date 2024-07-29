@@ -272,8 +272,8 @@ impl Default for BuildConfig {
 pub enum ImageRegistry {
   /// Don't push the image to any registry
   None(NoData),
-  /// Push the image to a custom image registry (any domain)
-  Custom(CustomRegistryConfig),
+  /// Push the image to a standard image registry (any domain)
+  Standard(StandardRegistryConfig),
   /// Push the image to Aws Elastic Container Registry
   ///
   /// The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
@@ -286,12 +286,12 @@ impl Default for ImageRegistry {
   }
 }
 
-/// Configuration for a custom image registry
+/// Configuration for a standard image registry
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
-pub struct CustomRegistryConfig {
+pub struct StandardRegistryConfig {
   /// Specify the registry provider domain. Eg. `docker.io`
   #[serde(default)]
   pub domain: String,

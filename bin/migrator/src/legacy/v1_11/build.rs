@@ -1,6 +1,6 @@
 use monitor_client::entities::{
-  build::CustomRegistryConfig, EnvironmentVar, NoData, SystemCommand,
-  Version, I64,
+  build::StandardRegistryConfig, EnvironmentVar, NoData,
+  SystemCommand, Version, I64,
 };
 use serde::{Deserialize, Serialize};
 
@@ -214,8 +214,8 @@ impl From<ImageRegistry>
         )
       }
       ImageRegistry::DockerHub(params) => {
-        monitor_client::entities::build::ImageRegistry::Custom(
-          CustomRegistryConfig {
+        monitor_client::entities::build::ImageRegistry::Standard(
+          StandardRegistryConfig {
             domain: String::from("docker.io"),
             account: params.account,
             organization: params.organization,
@@ -223,8 +223,8 @@ impl From<ImageRegistry>
         )
       }
       ImageRegistry::Ghcr(params) => {
-        monitor_client::entities::build::ImageRegistry::Custom(
-          CustomRegistryConfig {
+        monitor_client::entities::build::ImageRegistry::Standard(
+          StandardRegistryConfig {
             domain: String::from("ghcr.io"),
             account: params.account,
             organization: params.organization,

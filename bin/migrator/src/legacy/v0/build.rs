@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use monitor_client::entities::build::{
-  BuildConfig, BuildInfo, CustomRegistryConfig, ImageRegistry,
+  BuildConfig, BuildInfo, StandardRegistryConfig, ImageRegistry,
 };
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
@@ -212,7 +212,7 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         repo: value.repo.unwrap_or_default(),
         branch: value.branch.unwrap_or_default(),
         git_account: value.github_account.unwrap_or_default(),
-        image_registry: ImageRegistry::Custom(CustomRegistryConfig {
+        image_registry: ImageRegistry::Standard(StandardRegistryConfig {
           domain: String::from("docker.io"),
           account: value.docker_account.unwrap_or_default(),
           organization: value.docker_organization.unwrap_or_default(),

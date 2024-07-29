@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
-use build::CustomRegistryConfig;
+use build::StandardRegistryConfig;
 use clap::Parser;
 use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
@@ -126,7 +126,7 @@ pub fn get_image_name(
       })?;
       format!("{account_id}.dkr.ecr.{region}.amazonaws.com/{name}")
     }
-    build::ImageRegistry::Custom(CustomRegistryConfig {
+    build::ImageRegistry::Standard(StandardRegistryConfig {
       domain,
       account,
       organization,
