@@ -199,60 +199,16 @@ export const HetznerServerTemplateConfig = ({
             components: {
               volumes: (volumes, set) => {
                 return (
-                  <div className="w-full flex justify-end">
-                    <div className="flex flex-col gap-4 w-full max-w-[400px]">
-                      {volumes?.map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between gap-4"
-                        >
-                          <HetznerVolumeDialog
-                            volumes={volumes}
-                            index={index}
-                            set={set}
-                            disabled={disabled}
-                          />
-                          {!disabled && (
-                            <Button
-                              variant="secondary"
-                              disabled={disabled}
-                              onClick={() =>
-                                set({
-                                  volumes: volumes.filter(
-                                    (_, i) => i !== index
-                                  ),
-                                })
-                              }
-                            >
-                              <MinusCircle className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <HetznerVolumesConfig
+                    volumes={volumes ?? []}
+                    set={set}
+                    disabled={disabled}
+                  />
                 );
               },
             },
           },
-          {
-            label: "User Data",
-            labelHidden: true,
-            components: {
-              user_data: (user_data, set) => (
-                <ConfigItem label="User Data">
-                  <TextUpdateMenu
-                    title="Update User Data"
-                    placeholder="Set User Data"
-                    value={user_data}
-                    onUpdate={(user_data) => set({ user_data })}
-                    triggerClassName="min-w-[300px] max-w-[400px]"
-                    disabled={disabled}
-                  />
-                </ConfigItem>
-              ),
-            },
-          },
+
           {
             label: "SSH Keys",
             contentHidden: (update.ssh_keys ?? config.ssh_keys)?.length === 0,
@@ -285,6 +241,22 @@ export const HetznerServerTemplateConfig = ({
                 />
               ),
             },
+          },
+
+          {
+            label: "User Data",
+            contentHidden: true,
+            actions: (
+              <TextUpdateMenu
+                title="Update User Data"
+                placeholder="Set User Data"
+                value={update.user_data ?? config.user_data}
+                onUpdate={(user_data) => set({ ...update, user_data })}
+                triggerClassName="min-w-[300px] max-w-[400px]"
+                disabled={disabled}
+              />
+            ),
+            components: {},
           },
         ],
       }}
@@ -398,6 +370,36 @@ const ServerTypeSelector = ({
   );
 };
 
+const HetznerVolumesConfig = (params: {
+  volumes: Types.HetznerVolumeSpecs[];
+  set: (value: Partial<Types.HetznerServerTemplateConfig>) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <div className="w-full flex justify-end">
+      <div className="flex flex-col gap-4 w-full max-w-[400px]">
+        {params.volumes?.map((_, index) => (
+          <div key={index} className="flex items-center justify-between gap-4">
+            <HetznerVolumeDialog {...params} index={index} />
+            {!params.disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  params.set({
+                    volumes: params.volumes.filter((_, i) => i !== index),
+                  })
+                }
+              >
+                <MinusCircle className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const HetznerVolumeDialog = ({
   volumes,
   index,
@@ -407,7 +409,7 @@ const HetznerVolumeDialog = ({
   volumes: Types.HetznerVolumeSpecs[];
   index: number;
   set: (value: Partial<Types.HetznerServerTemplateConfig>) => void;
-  disabled?: boolean;
+  disabled: boolean;
 }) => {
   const volume = volumes[index];
   const [open, setOpen] = useState(false);

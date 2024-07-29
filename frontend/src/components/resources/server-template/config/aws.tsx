@@ -1,5 +1,5 @@
 import { Config } from "@components/config";
-import { ConfigItem, InputList } from "@components/config/util";
+import { InputList } from "@components/config/util";
 import { TextUpdateMenu } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { cn } from "@lib/utils";
@@ -160,21 +160,18 @@ export const AwsServerTemplateConfig = ({
           },
           {
             label: "User Data",
-            labelHidden: true,
-            components: {
-              user_data: (user_data, set) => (
-                <ConfigItem label="User Data">
-                  <TextUpdateMenu
-                    title="Update User Data"
-                    placeholder="Set User Data"
-                    value={user_data}
-                    onUpdate={(user_data) => set({ user_data })}
-                    triggerClassName="min-w-[300px] max-w-[400px]"
-                    disabled={disabled}
-                  />
-                </ConfigItem>
-              ),
-            },
+            contentHidden: true,
+            actions: (
+              <TextUpdateMenu
+                title="Update User Data"
+                placeholder="Set User Data"
+                value={update.user_data ?? config.user_data}
+                onUpdate={(user_data) => set({ ...update, user_data })}
+                triggerClassName="min-w-[300px] max-w-[400px]"
+                disabled={disabled}
+              />
+            ),
+            components: {},
           },
         ],
       }}

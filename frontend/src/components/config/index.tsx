@@ -198,7 +198,7 @@ export const Config = <T,>({
                   {!contentHidden && (
                     <CardContent
                       className={cn(
-                        "flex flex-col gap-2 pb-3",
+                        "flex flex-col gap-1 pb-3",
                         labelHidden && "pt-3"
                       )}
                     >
