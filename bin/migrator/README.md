@@ -6,6 +6,7 @@ Performs schema changes on the Monitor database
 Run this before upgrading to latest from versions 1.7 to 1.11.
 ```sh
 docker run --rm --name monitor-migrator \
+	--network "host" \
 	--env MIGRATION="v1.11" \
 	--env TARGET_URI="mongodb://<USERNAME>:<PASSWORD>@<ADDRESS>" \
 	--env TARGET_DB_NAME="<DB_NAME>" \
@@ -16,6 +17,7 @@ docker run --rm --name monitor-migrator \
 Run this before upgrading to latest from versions 1.0 to 1.6.
 ```sh
 docker run --rm --name monitor-migrator \
+	--network "host" \
 	--env MIGRATION="v1.6" \
 	--env TARGET_URI="mongodb://<USERNAME>:<PASSWORD>@<ADDRESS>" \
 	--env TARGET_DB_NAME="<DB_NAME>" \
@@ -30,6 +32,7 @@ It will create another database (TARGET) and migrate resources over, leaving the
 
 ```sh
 docker run --rm --name monitor-migrator \
+	--network "host" \
 	--env MIGRATION="v0" \
 	--env TARGET_URI="mongodb://<USERNAME>:<PASSWORD>@<ADDRESS>" \
 	--env TARGET_DB_NAME="<TARGET_DB_NAME>" \
