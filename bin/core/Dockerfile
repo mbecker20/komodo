@@ -1,11 +1,11 @@
 # Build Core
-FROM rust:1.79.0-bookworm as core-builder
+FROM rust:1.79.0-bookworm AS core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p monitor_core --release
 
 # Build Frontend
-FROM node:20.12-alpine as frontend-builder
+FROM node:20.12-alpine AS frontend-builder
 WORKDIR /builder
 COPY ./frontend ./frontend
 COPY ./client/core/ts ./client
