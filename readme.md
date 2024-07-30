@@ -16,8 +16,9 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 
 ![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Dashboard.png)
 ![Resources](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Resources.png)
-![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Server.png)
 ![Deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Deployment.png)
+![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Server.png)
+![Sync](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Sync.png)
 ![Procedure](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Procedure.png)
 ![UserGroup](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-UserGroup.png)
 ![Update](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Light-Update.png)
@@ -28,8 +29,9 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 
 ![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Dashboard.png)
 ![Resources](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Resources.png)
-![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Server.png)
 ![Deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Deployment.png)
+![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Server.png)
+![Sync](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Sync.png)
 ![Procedure](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Procedure.png)
 ![UserGroup](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-UserGroup.png)
 ![Update](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dark-Update.png)
