@@ -57,6 +57,7 @@ const sidebars: SidebarsConfig = {
     },
     "sync-resources",
     "permissioning",
+    "version-upgrades",
     "api",
   ],
 };
