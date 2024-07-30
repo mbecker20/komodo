@@ -1,7 +1,7 @@
 # Sync Resources
 
 Monitor is able to sync resources declared in TOML files by diffing them against the existing resources, 
-and apply updates based on the diffs. Simply use a Github repo to manage the files and create a `ResourceSync` pointing to the repo,
+and apply updates based on the diffs. Push the files to a remote git repo and create a `ResourceSync` pointing to the repo,
 and the core backend will poll for any updates (you can also manually trigger an update poll / execution in the UI).
 
 File detection is additive and recursive, so you can spread out your resource declarations across any number of files
@@ -9,7 +9,7 @@ and use any nesting of folders to organize resources inside a root folder. Addit
 and each sync will be handled independently. This allows different syncs to manage resources on a "per-project" basis.
 
 The UI will display the computed sync actions and only execute them upon manual confirmation.
-Or the sync execution Github webhook may be configured on the Github repo to
+Or the sync execution git webhook may be configured on the git repo to
 automatically execute syncs upon pushes to the configured branch.
 
 ## Example Declarations
@@ -59,9 +59,11 @@ tags = ["test"]
 config.builder_id = "builder-01"
 config.repo = "mbecker20/test_logger"
 config.branch = "master"
-config.github_account = "mbecker20"
-config.image_registry.type = "Ghcr"
-config.image_registry.params.account = "your_github_account"
+config.git_account = "mbecker20"
+config.image_registry.type = "Standard"
+config.image_registry.params.domain = "github.com" # or your custom domain
+config.image_registry.params.account = "your_username"
+config.image_registry.params.organization = "your_organization" # optinoal
 # Set docker labels
 config.labels = """
 org.opencontainers.image.source = https://github.com/mbecker20/test_logger
@@ -172,6 +174,8 @@ name = "monitor-periphery"
 description = "Builds new versions of the periphery binary. Requires Rust installed on the host."
 tags = ["monitor"]
 config.server_id = "server-01"
+config.git_provider = "git.mogh.tech" # use an alternate git provider (default is github.com)
+config.git_account = "mbecker20"
 config.repo = "mbecker20/monitor"
 # Run an action after the repo is pulled
 config.on_pull.path = "."
