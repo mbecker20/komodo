@@ -443,6 +443,10 @@ pub struct ContainerSummary {
   pub state: DeploymentState,
   /// The status string of the docker container.
   pub status: Option<String>,
+  /// The network mode of the container.
+  pub network_mode: Option<String>,
+  /// Network names attached to the container
+  pub networks: Option<Vec<String>>,
 }
 
 #[typeshare]

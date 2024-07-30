@@ -39,23 +39,31 @@ impl DockerClient {
       }))
       .await?
       .into_iter()
-      .map(|s| {
+      .map(|container| {
         let info = ContainerSummary {
-          id: s.id.unwrap_or_default(),
-          name: s
+          id: container.id.unwrap_or_default(),
+          name: container
             .names
             .context("no names on container")?
             .pop()
             .context("no names on container (empty vec)")?
             .replace('/', ""),
-          image: s.image.unwrap_or(String::from("unknown")),
-          state: s
+          image: container.image.unwrap_or(String::from("unknown")),
+          state: container
             .state
             .context("no container state")?
             .parse()
             .context("failed to parse container state")?,
-          status: s.status,
-          labels: s.labels.unwrap_or_default(),
+          status: container.status,
+          labels: container.labels.unwrap_or_default(),
+          network_mode: container
+            .host_config
+            .and_then(|config| config.network_mode),
+          networks: container.network_settings.and_then(|settings| {
+            settings
+              .networks
+              .map(|networks| networks.into_keys().collect())
+          }),
         };
         Ok::<_, anyhow::Error>(info)
       })
