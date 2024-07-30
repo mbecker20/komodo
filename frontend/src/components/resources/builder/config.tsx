@@ -111,7 +111,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
                     ...update,
                     git_providers: [
                       ...(update.git_providers ?? config.git_providers ?? []),
-                      { domain: "github.com", accounts: [] },
+                      { domain: "github.com", https: true, accounts: [] },
                     ],
                   }))
                 }

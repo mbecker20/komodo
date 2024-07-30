@@ -702,6 +702,8 @@ export interface ProviderAccount {
 export interface GitProvider {
 	/** The git provider domain. Default: `github.com`. */
 	domain: string;
+	/** Whether to use https. Default: true. */
+	https: boolean;
 	/** The account username. Required. */
 	accounts: ProviderAccount[];
 }
@@ -3856,8 +3858,8 @@ export interface SlackAlerterEndpoint {
 
 /** Configuration for a standard image registry */
 export interface StandardRegistryConfig {
-	/** Specify the registry provider domain. Eg. `docker.io` */
-	domain?: string;
+	/** Specify the registry provider domain. Default: `docker.io` */
+	domain: string;
 	/** Specify an account to use with the registry. */
 	account?: string;
 	/**

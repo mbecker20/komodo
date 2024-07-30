@@ -263,10 +263,21 @@ export const ProviderSelectorConfig = (params: {
   account_type: "git" | "docker";
   selected: string | undefined;
   onSelect: (id: string) => void;
+  https?: boolean;
+  onHttpsSwitch?: () => void;
 }) => {
   return (
     <ConfigItem label={`${params.account_type} Provider`}>
-      <ProviderSelector {...params} />
+      {params.account_type === "git" ? (
+        <div className="flex items-center justify-end gap-2 w-[75%]">
+          <Button variant="ghost" onClick={params.onHttpsSwitch} className="py-0 px-2">
+            {`http${params.https ? "s" : ""}://`}
+          </Button>
+          <ProviderSelector {...params} />
+        </div>
+      ) : (
+        <ProviderSelector {...params} />
+      )}
     </ConfigItem>
   );
 };

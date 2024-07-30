@@ -55,15 +55,19 @@ export const RepoConfig = ({ id }: { id: string }) => {
           {
             label: "General",
             components: {
-              git_provider: (provider, set) => (
-                <ProviderSelectorConfig
-                  account_type="git"
-                  selected={provider}
-                  disabled={disabled}
-                  onSelect={(git_provider) => set({ git_provider })}
-                />
-              ),
-              git_https: { label: "Use Https" },
+              git_provider: (provider, set) => {
+                const https = update.git_https ?? config.git_https;
+                return (
+                  <ProviderSelectorConfig
+                    account_type="git"
+                    selected={provider}
+                    disabled={disabled}
+                    onSelect={(git_provider) => set({ git_provider })}
+                    https={https}
+                    onHttpsSwitch={() => set({ git_https: !https })}
+                  />
+                );
+              },
               git_account: (value, set) => {
                 const server_id = update.server_id || config.server_id;
                 return (
