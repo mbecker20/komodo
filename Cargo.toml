@@ -15,7 +15,7 @@ monitor_client = { path = "client/core/rs" }
 
 [workspace.dependencies]
 # LOCAL
-monitor_client = "1.11.0"
+monitor_client = "1.12.0"
 periphery_client = { path = "client/periphery/rs" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }
