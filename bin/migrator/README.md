@@ -2,8 +2,8 @@
 
 Performs schema changes on the Monitor database
 
-## v1.7 - v1.11 migration (Run this to before upgrading to latest from version 1.7 to 1.11)
-
+## v1.7 - v1.11 migration 
+Run this before upgrading to latest from version 1.7 to 1.11.
 ```sh
 docker run --rm --name monitor-migrator \
 	--env MIGRATION="v1.11" \
@@ -12,8 +12,8 @@ docker run --rm --name monitor-migrator \
 	ghcr.io/mbecker20/monitor_migrator
 ```
 
-## v1.0 - v1.6 migration (Run this to before upgrading to latest from version 1.0 to 1.6)
-
+## v1.0 - v1.6 migration
+Run this before upgrading to latest from version 1.0 to 1.6.
 ```sh
 docker run --rm --name monitor-migrator \
 	--env MIGRATION="v1.6" \
@@ -22,7 +22,8 @@ docker run --rm --name monitor-migrator \
 	ghcr.io/mbecker20/monitor_migrator
 ```
 
-## v0.X migration (Run this to before upgrading to latest from version 0.X)
+## v0.X migration
+Run this before upgrading to latest from version 0.X.
 
 Note. As this is a major upgrade, this migration is not "in place". 
 It will create another database (TARGET) and migrate resources over, leaving the original database (LEGACY) unchanged.
