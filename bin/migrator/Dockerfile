@@ -1,4 +1,4 @@
-FROM rust:1.79.0-bookworm as builder
+FROM rust:1.79.0-bookworm AS builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p migrator --release
