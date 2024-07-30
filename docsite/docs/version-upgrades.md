@@ -1,4 +1,4 @@
-## Version Upgrades
+# Version Upgrades
 
 Most version upgrades only require a redeployment of the core container after pulling the latest version, and are fully backward compatible with the periphery clients, which may be updated later on as convenient. This is the default, and will be the case unless specifically mentioned in the [version release notes](https://github.com/mbecker20/monitor/releases).
 
