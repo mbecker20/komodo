@@ -24,9 +24,9 @@ The dockerfile's path is given relative to the build directory. So if your build
 
 ### Image registry
 
-Monitor supports pushing to DockerHub and Github Container Registry (ghcr.io). 
-Any of the Docker / Github accounts that are specified in config, between the core config and builder, will be available to use.
-Additionally, allowed organizations for both DockerHub and Github can be specified on the core config and attached to builds.
+Monitor supports pushing to any docker registry. 
+Any of the accounts that are specified in config for the specific registry, between the core config and builder, will be available to use for authentication against the registry.
+Additionally, allowed organizations on the docker registry can be specified on the core config and attached to builds.
 Doing so will cause the images to be published under the organization's namespace rather than the account's.
 
 When connecting a build to a deployments, the default behavior is for the deployment to inherit the registry configuration from the build.

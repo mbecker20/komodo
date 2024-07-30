@@ -21,5 +21,5 @@ Here is a list of the resources and their description:
 	- Holds builder config, like the AWS ami-id and security groups to allow for builder reachability.
 - `ServerTemplate`: Configure cloud server templates (currently AWS and Hetzner) to easily launch more instances and auto connect them to Monitor
 	- Holds the cloud server config
-- `ResourceSync`: Declare Monitor resources in TOML files, push them to a Github Repo, and sync Monitor config from them.
+- `ResourceSync`: Declare Monitor resources in TOML files, push them to a git repo, and sync Monitor config from them.
 	- Holds config for the source repo containing the files. Will display the computed diff and wait for user to execute.

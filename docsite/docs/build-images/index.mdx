@@ -4,8 +4,8 @@ slug: /build-images
 
 # Building Images
 
-Monitor builds docker images by cloning the source repository from Github, running `docker build`,
-and pushing the resulting image to docker hub. Any repo containing a `Dockerfile` is buildable using this method.
+Monitor builds docker images by cloning the source repository from the configured git provider, running `docker build`,
+and pushing the resulting image to the configured docker registry. Any repo containing a `Dockerfile` is buildable using this method.
 
 Build configuration involves passing file / directory paths,
 for more details about passing file paths, see the [file paths doc](/docs/file-paths).
