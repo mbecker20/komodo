@@ -271,16 +271,21 @@ fn default_config_path() -> String {
 /// [secrets]
 /// # SECRET_1 = "value_1"
 /// # SECRET_2 = "value_2"
-///
-/// ## provide core-based github accounts
-/// [github_accounts]
-/// # github_username_1 = "github_token_1"
-/// # github_username_2 = "github_token_2"
-///
-/// ## provide core-based docker accounts
-/// [docker_accounts]
-/// # docker_username_1 = "docker_token_1"
-/// # docker_username_2 = "docker_token_2"
+/// 
+/// ## configure git providers
+/// # [[git_provider]]
+/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+/// # accounts = [
+/// #     { username = "mbecker20", token = "access_token_for_account" },
+/// # ]
+/// 
+/// ## configure docker registries
+/// # [[docker_registry]]
+/// # domain = "docker.io"
+/// # accounts = [
+/// #     { username = "mbecker2020", token = "access_token_for_account" }
+/// # ]
+/// # organizations = ["DockerhubOrganization"]
 ///
 /// ## configure aws ecr registries
 /// # [aws_ecr_registry.label_1]

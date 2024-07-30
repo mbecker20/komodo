@@ -63,6 +63,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   onSelect={(git_provider) => set({ git_provider })}
                 />
               ),
+              git_https: { label: "Use Https" },
               git_account: (value, set) => {
                 const server_id = update.server_id || config.server_id;
                 return (
@@ -80,7 +81,9 @@ export const RepoConfig = ({ id }: { id: string }) => {
               },
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
-              commit: { placeholder: "Enter a specific commit hash. Optional." },
+              commit: {
+                placeholder: "Enter a specific commit hash. Optional.",
+              },
               path: {
                 placeholder: "Enter a specific clone path. Optional.",
               },

@@ -56,6 +56,7 @@ export const ResourceSyncConfig = ({
                   onSelect={(git_provider) => set({ git_provider })}
                 />
               ),
+              git_https: { label: "Use Https" },
               git_account: (value, set) => {
                 return (
                   <AccountSelectorConfig
@@ -71,7 +72,9 @@ export const ResourceSyncConfig = ({
               },
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
-              commit: { placeholder: "Enter a specific commit hash. Optional." },
+              commit: {
+                placeholder: "Enter a specific commit hash. Optional.",
+              },
               resource_path: { placeholder: "./resources" },
               delete: { label: "Delete Unmatched Resources" },
             },

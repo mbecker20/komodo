@@ -180,19 +180,25 @@ fn default_config_paths() -> Vec<String> {
 /// ## optional, default 'Monitor'.
 /// # logging.opentelemetry_service_name = "Monitor"
 ///
-/// ## optional. can inject these values into your deployments configuration.
+/// ## configure perihery-based secrets
 /// [secrets]
-/// secret_variable = "secret_value"
+/// # SECRET_1 = "value_1"
+/// # SECRET_2 = "value_2"
 ///
-/// ## optional. can use these accounts with deployments / builds.
-/// [github_accounts]
-/// github_username1 = "github_token1"
-/// github_username2 = "github_token2"
-///
-/// ## optional. can use these accounts with deployments / builds.
-/// [docker_accounts]
-/// docker_username1 = "docker_token1"
-/// docker_username2 = "docker_token2"
+/// ## configure periphery-based git providers
+/// # [[git_provider]]
+/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+/// # accounts = [
+/// #     { username = "mbecker20", token = "access_token_for_account" },
+/// # ]
+/// 
+/// ## configure periphery-based docker registries
+/// # [[docker_registry]]
+/// # domain = "docker.io"
+/// # accounts = [
+/// #     { username = "mbecker2020", token = "access_token_for_account" }
+/// # ]
+/// # organizations = ["DockerhubOrganization"]
 /// ```
 #[derive(Debug, Clone, Deserialize)]
 pub struct PeripheryConfig {

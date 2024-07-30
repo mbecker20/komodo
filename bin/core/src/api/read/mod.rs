@@ -406,6 +406,7 @@ impl Resolve<ListGitProviders, User> for State {
       {
         providers.push(GitProvider {
           domain: build.config.git_provider,
+          https: build.config.git_https,
           accounts: Default::default(),
         });
       }
@@ -417,6 +418,7 @@ impl Resolve<ListGitProviders, User> for State {
       {
         providers.push(GitProvider {
           domain: repo.config.git_provider,
+          https: repo.config.git_https,
           accounts: Default::default(),
         });
       }
@@ -428,6 +430,7 @@ impl Resolve<ListGitProviders, User> for State {
       {
         providers.push(GitProvider {
           domain: sync.config.git_provider,
+          https: sync.config.git_https,
           accounts: Default::default(),
         });
       }

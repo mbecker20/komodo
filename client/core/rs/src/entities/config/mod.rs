@@ -20,6 +20,9 @@ pub struct GitProvider {
   /// The git provider domain. Default: `github.com`.
   #[serde(default = "default_git_provider")]
   pub domain: String,
+  /// Whether to use https. Default: true.
+  #[serde(default = "default_git_https")]
+  pub https: bool,
   /// The account username. Required.
   #[serde(alias = "account")]
   pub accounts: Vec<ProviderAccount>,
@@ -27,6 +30,10 @@ pub struct GitProvider {
 
 fn default_git_provider() -> String {
   String::from("github.com")
+}
+
+fn default_git_https() -> bool {
+  true
 }
 
 #[typeshare]

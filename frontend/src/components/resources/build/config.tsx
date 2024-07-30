@@ -121,6 +121,7 @@ export const BuildConfig = ({
                   onSelect={(git_provider) => set({ git_provider })}
                 />
               ),
+              git_https: { label: "Use Https" },
               git_account: (account, set) => (
                 <AccountSelectorConfig
                   id={update.builder_id ?? config.builder_id ?? undefined}
@@ -135,7 +136,9 @@ export const BuildConfig = ({
               ),
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
-              commit: { placeholder: "Enter a specific commit hash. Optional." },
+              commit: {
+                placeholder: "Enter a specific commit hash. Optional.",
+              },
             },
           },
           {

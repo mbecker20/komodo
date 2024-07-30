@@ -19,7 +19,7 @@ pub async fn get_remote_resources(
   String,
 )> {
   let name = to_monitor_name(&sync.name);
-  let clone_args: CloneArgs = sync.into();
+  let mut clone_args: CloneArgs = sync.into();
 
   let config = core_config();
 
@@ -32,7 +32,10 @@ pub async fn get_remote_resources(
       .find(|_provider| {
         &_provider.domain == provider
       })
-      .and_then(|provider| provider.accounts.iter().find(|account| &account.username == username).map(|account| &account.token))
+      .and_then(|provider| {
+        clone_args.https = provider.https;
+        provider.accounts.iter().find(|account| &account.username == username).map(|account| &account.token)
+      })
       .with_context(|| format!("did not find git token for account {username} | provider: {provider}"))?
       .to_owned()
       .into(),

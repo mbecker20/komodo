@@ -161,6 +161,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
       .iter()
       .find(|provider| provider.domain == build.config.git_provider)
       .and_then(|provider| {
+        build.config.git_https = provider.https;
         provider
           .accounts
           .iter()
