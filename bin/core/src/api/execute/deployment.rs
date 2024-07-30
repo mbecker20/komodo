@@ -178,57 +178,65 @@ impl Resolve<Deploy, (User, Update)> for State {
         }
       };
 
-    let variables = get_global_variables().await?;
-    let core_config = core_config();
+    let secret_replacers = if !deployment.config.skip_secret_interp {
+      // Interpolate variables into environment
+      let variables = get_global_variables().await?;
+      let core_config = core_config();
 
-    // Interpolate variables into environment
-    let mut global_replacers = HashSet::new();
-    let mut secret_replacers = HashSet::new();
-    for env in &mut deployment.config.environment {
-      // first pass - global variables
-      let (res, more_replacers) = svi::interpolate_variables(
-        &env.value,
-        &variables,
-        svi::Interpolator::DoubleBrackets,
-        false,
-      )
-      .context("failed to interpolate global variables")?;
-      global_replacers.extend(more_replacers);
-      // second pass - core secrets
-      let (res, more_replacers) = svi::interpolate_variables(
-        &res,
-        &core_config.secrets,
-        svi::Interpolator::DoubleBrackets,
-        false,
-      )
-      .context("failed to interpolate core secrets")?;
-      secret_replacers.extend(more_replacers);
+      let mut global_replacers = HashSet::new();
+      let mut secret_replacers = HashSet::new();
 
-      // set env value with the result
-      env.value = res;
-    }
+      for env in &mut deployment.config.environment {
+        // first pass - global variables
+        let (res, more_replacers) = svi::interpolate_variables(
+          &env.value,
+          &variables,
+          svi::Interpolator::DoubleBrackets,
+          false,
+        )
+        .context("failed to interpolate global variables")?;
+        global_replacers.extend(more_replacers);
+        // second pass - core secrets
+        let (res, more_replacers) = svi::interpolate_variables(
+          &res,
+          &core_config.secrets,
+          svi::Interpolator::DoubleBrackets,
+          false,
+        )
+        .context("failed to interpolate core secrets")?;
+        secret_replacers.extend(more_replacers);
 
-    // Show which variables were interpolated
-    if !global_replacers.is_empty() {
-      update.push_simple_log(
-        "interpolate global variables",
-        global_replacers
-          .into_iter()
-          .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
-          .collect::<Vec<_>>()
-          .join("\n"),
-      );
-    }
-    if !secret_replacers.is_empty() {
-      update.push_simple_log(
-        "interpolate core secrets",
-        secret_replacers
-          .iter()
-          .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
-          .collect::<Vec<_>>()
-          .join("\n"),
-      );
-    }
+        // set env value with the result
+        env.value = res;
+      }
+
+      // Show which variables were interpolated
+      if !global_replacers.is_empty() {
+        update.push_simple_log(
+          "interpolate global variables",
+          global_replacers
+            .into_iter()
+            .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        );
+      }
+      
+      if !secret_replacers.is_empty() {
+        update.push_simple_log(
+          "interpolate core secrets",
+          secret_replacers
+            .iter()
+            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        );
+      }
+
+      secret_replacers
+    } else {
+      Default::default()
+    };
 
     update.version = version;
     update_update(update.clone()).await?;

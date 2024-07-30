@@ -204,85 +204,94 @@ impl Resolve<RunBuild, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     if all_logs_success(&update.logs) {
-      // Interpolate variables / secrets into build args
-      let mut global_replacers = HashSet::new();
-      let mut secret_replacers = HashSet::new();
-      let mut secret_replacers_for_log = HashSet::new();
+      let secret_replacers = if !build.config.skip_secret_interp {
+        // Interpolate variables / secrets into build args
+        let mut global_replacers = HashSet::new();
+        let mut secret_replacers = HashSet::new();
+        let mut secret_replacers_for_log = HashSet::new();
 
-      // Interpolate into build args
-      for arg in &mut build.config.build_args {
-        // first pass - global variables
-        let (res, more_replacers) = svi::interpolate_variables(
-          &arg.value,
-          &variables,
-          svi::Interpolator::DoubleBrackets,
-          false,
-        )
-        .context("failed to interpolate global variables")?;
-        global_replacers.extend(more_replacers);
-        // second pass - core secrets
-        let (res, more_replacers) = svi::interpolate_variables(
-          &res,
-          &core_config.secrets,
-          svi::Interpolator::DoubleBrackets,
-          false,
-        )
-        .context("failed to interpolate core secrets")?;
-        secret_replacers_for_log.extend(
-          more_replacers.iter().map(|(_, variable)| variable.clone()),
-        );
-        secret_replacers.extend(more_replacers);
-        arg.value = res;
-      }
+        // Interpolate into build args
+        for arg in &mut build.config.build_args {
+          // first pass - global variables
+          let (res, more_replacers) = svi::interpolate_variables(
+            &arg.value,
+            &variables,
+            svi::Interpolator::DoubleBrackets,
+            false,
+          )
+          .context("failed to interpolate global variables")?;
+          global_replacers.extend(more_replacers);
+          // second pass - core secrets
+          let (res, more_replacers) = svi::interpolate_variables(
+            &res,
+            &core_config.secrets,
+            svi::Interpolator::DoubleBrackets,
+            false,
+          )
+          .context("failed to interpolate core secrets")?;
+          secret_replacers_for_log.extend(
+            more_replacers
+              .iter()
+              .map(|(_, variable)| variable.clone()),
+          );
+          secret_replacers.extend(more_replacers);
+          arg.value = res;
+        }
 
-      // Interpolate into secret args
-      for arg in &mut build.config.secret_args {
-        // first pass - global variables
-        let (res, more_replacers) = svi::interpolate_variables(
-          &arg.value,
-          &variables,
-          svi::Interpolator::DoubleBrackets,
-          false,
-        )
-        .context("failed to interpolate global variables")?;
-        global_replacers.extend(more_replacers);
-        // second pass - core secrets
-        let (res, more_replacers) = svi::interpolate_variables(
-          &res,
-          &core_config.secrets,
-          svi::Interpolator::DoubleBrackets,
-          false,
-        )
-        .context("failed to interpolate core secrets")?;
-        secret_replacers_for_log.extend(
-          more_replacers.into_iter().map(|(_, variable)| variable),
-        );
-        // Secret args don't need to be in replacers sent to periphery.
-        // The secret args don't end up in the command like build args do.
-        arg.value = res;
-      }
+        // Interpolate into secret args
+        for arg in &mut build.config.secret_args {
+          // first pass - global variables
+          let (res, more_replacers) = svi::interpolate_variables(
+            &arg.value,
+            &variables,
+            svi::Interpolator::DoubleBrackets,
+            false,
+          )
+          .context("failed to interpolate global variables")?;
+          global_replacers.extend(more_replacers);
+          // second pass - core secrets
+          let (res, more_replacers) = svi::interpolate_variables(
+            &res,
+            &core_config.secrets,
+            svi::Interpolator::DoubleBrackets,
+            false,
+          )
+          .context("failed to interpolate core secrets")?;
+          secret_replacers_for_log.extend(
+            more_replacers.into_iter().map(|(_, variable)| variable),
+          );
+          // Secret args don't need to be in replacers sent to periphery.
+          // The secret args don't end up in the command like build args do.
+          arg.value = res;
+        }
 
-      // Show which variables were interpolated
-      if !global_replacers.is_empty() {
-        update.push_simple_log(
-          "interpolate global variables",
-          global_replacers
-            .into_iter()
-            .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
-            .collect::<Vec<_>>()
-            .join("\n"),
-        );
-      }
-      if !secret_replacers_for_log.is_empty() {
-        update.push_simple_log(
-          "interpolate core secrets",
-          secret_replacers_for_log
-            .into_iter()
-            .map(|variable| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
-            .collect::<Vec<_>>()
-            .join("\n"),
-        );
-      }
+        // Show which variables were interpolated
+        if !global_replacers.is_empty() {
+          update.push_simple_log(
+            "interpolate global variables",
+            global_replacers
+              .into_iter()
+              .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
+              .collect::<Vec<_>>()
+              .join("\n"),
+          );
+        }
+
+        if !secret_replacers_for_log.is_empty() {
+          update.push_simple_log(
+            "interpolate core secrets",
+            secret_replacers_for_log
+              .into_iter()
+              .map(|variable| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+              .collect::<Vec<_>>()
+              .join("\n"),
+          );
+        }
+
+        secret_replacers
+      } else {
+        Default::default()
+      };
 
       let res = tokio::select! {
         res = periphery
