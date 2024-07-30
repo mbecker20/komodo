@@ -38,11 +38,8 @@ export const Variables = () => {
       }
   >(false);
   const [search, setSearch] = useState("");
-  const { variables, secrets } = useRead("ListVariables", {}).data ?? {
-    variables: [],
-    secrets: [],
-  };
-  secrets.sort();
+  const variables = useRead("ListVariables", {}).data ?? [];
+  const secrets = useRead("ListSecrets", {}).data ?? [];
   const searchSplit = search?.toLowerCase().split(" ") || [];
   const filtered =
     variables?.filter((variable) => {

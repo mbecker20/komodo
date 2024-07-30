@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
-use build::CloudRegistryConfig;
+use build::StandardRegistryConfig;
 use clap::Parser;
 use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
@@ -117,32 +117,7 @@ pub fn get_image_name(
 ) -> anyhow::Result<String> {
   let name = to_monitor_name(name);
   let name = match image_registry {
-    // TODO
     build::ImageRegistry::None(_) => name,
-    build::ImageRegistry::DockerHub(CloudRegistryConfig {
-      organization,
-      account,
-    }) => {
-      if !organization.is_empty() {
-        format!("{organization}/{name}")
-      } else if !account.is_empty() {
-        format!("{account}/{name}")
-      } else {
-        name
-      }
-    }
-    build::ImageRegistry::Ghcr(CloudRegistryConfig {
-      organization,
-      account,
-    }) => {
-      if !organization.is_empty() {
-        format!("ghcr.io/{organization}/{name}")
-      } else if !account.is_empty() {
-        format!("ghcr.io/{account}/{name}")
-      } else {
-        name
-      }
-    }
     build::ImageRegistry::AwsEcr(label) => {
       let AwsEcrConfig {
         region, account_id, ..
@@ -151,16 +126,26 @@ pub fn get_image_name(
       })?;
       format!("{account_id}.dkr.ecr.{region}.amazonaws.com/{name}")
     }
-    build::ImageRegistry::Custom(_) => {
-      // TODO
-      name
+    build::ImageRegistry::Standard(StandardRegistryConfig {
+      domain,
+      account,
+      organization,
+    }) => {
+      if !organization.is_empty() {
+        let org = organization.to_lowercase();
+        format!("{domain}/{org}/{name}")
+      } else if !account.is_empty() {
+        format!("{domain}/{account}/{name}")
+      } else {
+        name
+      }
     }
   };
   Ok(name)
 }
 
 pub fn to_monitor_name(name: &str) -> String {
-  name.to_lowercase().replace(' ', "_")
+  name.to_lowercase().replace([' ', '.'], "_")
 }
 
 pub fn monitor_timestamp() -> i64 {
@@ -494,6 +479,7 @@ impl<'de> Visitor<'de> for OptionEnvVarVisitor {
   }
 }
 
+#[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LatestCommit {
   pub hash: String,
@@ -503,14 +489,26 @@ pub struct LatestCommit {
 #[typeshare]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CloneArgs {
+  /// Resource name (eg Build name, Repo name)
   pub name: String,
+  /// Git provider domain. Default: `github.com`
+  pub provider: Option<String>,
+  /// Use https (vs http).
+  pub https: bool,
+  /// Full repo identifier. <namespace>/<repo_name>
   pub repo: Option<String>,
+  /// Git Branch. Default: `main`
   pub branch: Option<String>,
+  /// Specific commit hash. Optional
   pub commit: Option<String>,
+  /// The clone destination path
   pub destination: Option<String>,
+  /// Command to run after the repo has been cloned
   pub on_clone: Option<SystemCommand>,
+  /// Command to run after the repo has been pulled
   pub on_pull: Option<SystemCommand>,
-  pub github_account: Option<String>,
+  /// Configure the account used to access repo (if private)
+  pub account: Option<String>,
 }
 
 impl From<&self::build::Build> for CloneArgs {
@@ -523,7 +521,9 @@ impl From<&self::build::Build> for CloneArgs {
       destination: None,
       on_clone: build.config.pre_build.clone().into_option(),
       on_pull: None,
-      github_account: optional_string(&build.config.github_account),
+      provider: optional_string(&build.config.git_provider),
+      https: build.config.git_https,
+      account: optional_string(&build.config.git_account),
     }
   }
 }
@@ -538,7 +538,9 @@ impl From<&self::repo::Repo> for CloneArgs {
       destination: optional_string(&repo.config.path),
       on_clone: repo.config.on_clone.clone().into_option(),
       on_pull: repo.config.on_pull.clone().into_option(),
-      github_account: optional_string(&repo.config.github_account),
+      provider: optional_string(&repo.config.git_provider),
+      https: repo.config.git_https,
+      account: optional_string(&repo.config.git_account),
     }
   }
 }
@@ -550,10 +552,12 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
       repo: optional_string(&sync.config.repo),
       branch: optional_string(&sync.config.branch),
       commit: optional_string(&sync.config.commit),
-      github_account: optional_string(&sync.config.github_account),
       destination: None,
       on_clone: None,
       on_pull: None,
+      provider: Some(String::from("github.com")),
+      https: sync.config.git_https,
+      account: optional_string(&sync.config.git_account),
     }
   }
 }

@@ -14,8 +14,8 @@ pub struct GetLatestCommit {
 #[response(Vec<Log>)]
 pub struct CloneRepo {
   pub args: CloneArgs,
-  /// Override github token with one sent from core.
-  pub github_token: Option<String>,
+  /// Override git token with one sent from core.
+  pub git_token: Option<String>,
 }
 
 //

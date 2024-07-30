@@ -4,7 +4,7 @@ use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
 use futures::future::join_all;
 use monitor_client::{
-  api::{execute::Deploy, read::GetBuildVersions},
+  api::{execute::Deploy, read::ListBuildVersions},
   entities::{
     deployment::{
       Deployment, DeploymentConfig, DeploymentImage, DeploymentState,
@@ -423,7 +423,7 @@ fn extract_to_deploy_and_state<'a>(
           // Needs to only check config fields that affect docker run
           let changed = diff.server_id.is_some()
             || diff.image.is_some()
-            || diff.image_registry.is_some()
+            || diff.image_registry_account.is_some()
             || diff.skip_secret_interp.is_some()
             || diff.network.is_some()
             || diff.restart.is_some()
@@ -467,7 +467,7 @@ fn extract_to_deploy_and_state<'a>(
               None => {
                 let Some(version) = State
                   .resolve(
-                    GetBuildVersions {
+                    ListBuildVersions {
                       build: build_id.to_string(),
                       limit: Some(1),
                       ..Default::default()

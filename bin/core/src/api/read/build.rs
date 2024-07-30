@@ -1,7 +1,4 @@
-use std::{
-  collections::{HashMap, HashSet},
-  sync::OnceLock,
-};
+use std::collections::{HashMap, HashSet};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -21,7 +18,7 @@ use mungos::{
   find::find_collect,
   mongodb::{bson::doc, options::FindOptions},
 };
-use resolver_api::{Resolve, ResolveToString};
+use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
@@ -193,16 +190,16 @@ fn ms_to_hour(duration: i64) -> f64 {
   duration as f64 / MS_TO_HOUR_DIVISOR
 }
 
-impl Resolve<GetBuildVersions, User> for State {
+impl Resolve<ListBuildVersions, User> for State {
   async fn resolve(
     &self,
-    GetBuildVersions {
+    ListBuildVersions {
       build,
       major,
       minor,
       patch,
       limit,
-    }: GetBuildVersions,
+    }: ListBuildVersions,
     user: User,
   ) -> anyhow::Result<Vec<BuildVersionResponseItem>> {
     let build = resource::get_check_permissions::<Build>(
@@ -247,42 +244,6 @@ impl Resolve<GetBuildVersions, User> for State {
     .map(|(version, ts)| BuildVersionResponseItem { version, ts })
     .collect();
     Ok(versions)
-  }
-}
-
-fn github_organizations() -> &'static String {
-  static GITHUB_ORGANIZATIONS: OnceLock<String> = OnceLock::new();
-  GITHUB_ORGANIZATIONS.get_or_init(|| {
-    serde_json::to_string(&core_config().github_organizations)
-      .expect("failed to serialize github organizations")
-  })
-}
-
-impl ResolveToString<ListGithubOrganizations, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListGithubOrganizations {}: ListGithubOrganizations,
-    _: User,
-  ) -> anyhow::Result<String> {
-    Ok(github_organizations().clone())
-  }
-}
-
-fn docker_organizations() -> &'static String {
-  static DOCKER_ORGANIZATIONS: OnceLock<String> = OnceLock::new();
-  DOCKER_ORGANIZATIONS.get_or_init(|| {
-    serde_json::to_string(&core_config().docker_organizations)
-      .expect("failed to serialize docker organizations")
-  })
-}
-
-impl ResolveToString<ListDockerOrganizations, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListDockerOrganizations {}: ListDockerOrganizations,
-    _: User,
-  ) -> anyhow::Result<String> {
-    Ok(docker_organizations().clone())
   }
 }
 
@@ -331,7 +292,9 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
     )
     .await?;
 
-    if build.config.repo.is_empty() {
+    if build.config.git_provider != "github.com"
+      || build.config.repo.is_empty()
+    {
       return Ok(GetBuildWebhookEnabledResponse {
         managed: false,
         enabled: false,
@@ -361,11 +324,11 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
 
     let CoreConfig {
       host,
-      github_webhook_base_url,
+      webhook_base_url,
       ..
     } = core_config();
 
-    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {

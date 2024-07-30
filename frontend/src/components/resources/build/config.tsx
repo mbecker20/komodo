@@ -5,6 +5,7 @@ import {
   ConfigItem,
   ImageRegistryConfig,
   InputList,
+  ProviderSelectorConfig,
   SecretSelector,
   SystemCommand,
 } from "@components/config/util";
@@ -112,43 +113,47 @@ export const BuildConfig = ({
           {
             label: "Git",
             components: {
+              git_provider: (provider, set) => (
+                <ProviderSelectorConfig
+                  account_type="git"
+                  selected={provider}
+                  disabled={disabled}
+                  onSelect={(git_provider) => set({ git_provider })}
+                />
+              ),
+              git_https: { label: "Use Https" },
+              git_account: (account, set) => (
+                <AccountSelectorConfig
+                  id={update.builder_id ?? config.builder_id ?? undefined}
+                  type="Builder"
+                  account_type="git"
+                  provider={update.git_provider ?? config.git_provider}
+                  selected={account}
+                  onSelect={(git_account) => set({ git_account })}
+                  disabled={disabled}
+                  placeholder="None"
+                />
+              ),
               repo: { placeholder: "Enter repo" },
               branch: { placeholder: "Enter branch" },
-              commit: { placeholder: "Enter specific commit hash. Optional." },
-              github_account:
-                (update.builder_id ?? config.builder_id ? true : false) &&
-                ((account, set) => (
-                  <AccountSelectorConfig
-                    id={update.builder_id ?? config.builder_id ?? undefined}
-                    type="Builder"
-                    account_type="github"
-                    selected={account}
-                    onSelect={(github_account) => set({ github_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                )),
+              commit: {
+                placeholder: "Enter a specific commit hash. Optional.",
+              },
             },
           },
           {
             label: "Docker",
             components: {
-              image_registry: (registry, set) => {
-                const builder_id = update.builder_id ?? config.builder_id;
-                if (!builder_id) return null;
-                return (
-                  <ImageRegistryConfig
-                    registry={registry}
-                    setRegistry={(image_registry) => set({ image_registry })}
-                    type="Build"
-                    resource_id={builder_id}
-                    disabled={disabled}
-                  />
-                );
-              },
+              image_registry: (registry, set) => (
+                <ImageRegistryConfig
+                  registry={registry}
+                  setRegistry={(image_registry) => set({ image_registry })}
+                  resource_id={update.builder_id ?? config.builder_id}
+                  disabled={disabled}
+                />
+              ),
               build_path: true,
               dockerfile_path: true,
-              use_buildx: true,
             },
           },
           {
@@ -386,10 +391,8 @@ const Secrets = ({
   setArgs: (args: string) => void;
   argsRef: RefObject<HTMLTextAreaElement>;
 }) => {
-  const { variables, secrets } = useRead("ListVariables", {}).data ?? {
-    variables: [],
-    secrets: [],
-  };
+  const variables = useRead("ListVariables", {}).data ?? [];
+  const secrets = useRead("ListSecrets", {}).data ?? [];
 
   const _args = args || "";
 

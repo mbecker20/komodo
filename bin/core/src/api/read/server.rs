@@ -1,5 +1,5 @@
 use std::{
-  collections::{HashMap, HashSet},
+  collections::HashMap,
   sync::{Arc, OnceLock},
 };
 
@@ -23,12 +23,11 @@ use mungos::{
   find::find_collect,
   mongodb::{bson::doc, options::FindOptions},
 };
-use periphery_client::api::{self, GetAccountsResponse};
+use periphery_client::api as periphery;
 use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  config::core_config,
   helpers::periphery_client,
   resource,
   state::{action_states, db_client, server_status_cache, State},
@@ -192,7 +191,7 @@ impl ResolveToString<GetSystemInformation, User> for State {
       }
       _ => {
         let stats = periphery_client(&server)?
-          .request(api::stats::GetSystemInformation {})
+          .request(periphery::stats::GetSystemInformation {})
           .await?;
         let res = serde_json::to_string(&stats)?;
         lock.insert(
@@ -259,7 +258,7 @@ impl ResolveToString<GetSystemProcesses, User> for State {
       }
       _ => {
         let stats = periphery_client(&server)?
-          .request(api::stats::GetSystemProcesses {})
+          .request(periphery::stats::GetSystemProcesses {})
           .await?;
         let res = serde_json::to_string(&stats)?;
         lock.insert(
@@ -342,7 +341,7 @@ impl Resolve<GetDockerImages, User> for State {
     )
     .await?;
     periphery_client(&server)?
-      .request(api::build::GetImageList {})
+      .request(periphery::build::GetImageList {})
       .await
   }
 }
@@ -360,7 +359,7 @@ impl Resolve<GetDockerNetworks, User> for State {
     )
     .await?;
     periphery_client(&server)?
-      .request(api::network::GetNetworkList {})
+      .request(periphery::network::GetNetworkList {})
       .await
   }
 }
@@ -378,74 +377,7 @@ impl Resolve<GetDockerContainers, User> for State {
     )
     .await?;
     periphery_client(&server)?
-      .request(api::container::GetContainerList {})
+      .request(periphery::container::GetContainerList {})
       .await
-  }
-}
-
-impl Resolve<GetAvailableAccounts, User> for State {
-  async fn resolve(
-    &self,
-    GetAvailableAccounts { server }: GetAvailableAccounts,
-    user: User,
-  ) -> anyhow::Result<GetAvailableAccountsResponse> {
-    let (github, docker) = match server {
-      Some(server) => {
-        let server = resource::get_check_permissions::<Server>(
-          &server,
-          &user,
-          PermissionLevel::Read,
-        )
-        .await?;
-
-        let GetAccountsResponse { github, docker } =
-          periphery_client(&server)?
-            .request(api::GetAccounts {})
-            .await
-            .context("failed to get accounts from periphery")?;
-        (github, docker)
-      }
-      None => Default::default(),
-    };
-
-    let mut github_set = HashSet::<String>::new();
-
-    github_set.extend(core_config().github_accounts.keys().cloned());
-    github_set.extend(github);
-
-    let mut github = github_set.into_iter().collect::<Vec<_>>();
-    github.sort();
-
-    let mut docker_set = HashSet::<String>::new();
-
-    docker_set.extend(core_config().docker_accounts.keys().cloned());
-    docker_set.extend(docker);
-
-    let mut docker = docker_set.into_iter().collect::<Vec<_>>();
-    docker.sort();
-
-    let res = GetAvailableAccountsResponse { github, docker };
-    Ok(res)
-  }
-}
-
-impl Resolve<GetAvailableSecrets, User> for State {
-  async fn resolve(
-    &self,
-    GetAvailableSecrets { server }: GetAvailableSecrets,
-    user: User,
-  ) -> anyhow::Result<GetAvailableSecretsResponse> {
-    let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let mut secrets = periphery_client(&server)?
-      .request(api::GetSecrets {})
-      .await
-      .context("failed to get accounts from periphery")?;
-    secrets.sort();
-    Ok(secrets)
   }
 }

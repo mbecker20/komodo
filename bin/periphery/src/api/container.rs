@@ -2,14 +2,15 @@ use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{
+  build::{ImageRegistry, StandardRegistryConfig},
   deployment::{
-    ContainerSummary, Conversion, Deployment, DeploymentConfig,
-    DeploymentImage, DockerContainerStats, RestartMode,
-    TerminationSignal,
+    extract_registry_domain, ContainerSummary, Conversion,
+    Deployment, DeploymentConfig, DeploymentImage,
+    DockerContainerStats, RestartMode, TerminationSignal,
   },
   to_monitor_name,
   update::Log,
-  EnvironmentVar, SearchCombinator,
+  EnvironmentVar, NoData, SearchCombinator,
 };
 use periphery_client::api::container::*;
 use resolver_api::Resolve;
@@ -259,21 +260,6 @@ impl Resolve<Deploy> for State {
     }: Deploy,
     _: (),
   ) -> anyhow::Result<Log> {
-    if let Err(e) = docker_login(
-      &deployment.config.image_registry,
-      registry_token.as_deref(),
-      aws_ecr.as_ref(),
-    )
-    .await
-    {
-      return Ok(Log::error(
-        "docker login",
-        format_serror(
-          &e.context("failed to login to docker registry").into(),
-        ),
-      ));
-    }
-
     let image = if let DeploymentImage::Image { image } =
       &deployment.config.image
     {
@@ -290,6 +276,33 @@ impl Resolve<Deploy> for State {
         String::from("deployment does not have image attached"),
       ));
     };
+
+    let image_registry = if aws_ecr.is_some() {
+      ImageRegistry::AwsEcr(String::new())
+    } else if deployment.config.image_registry_account.is_empty() {
+      ImageRegistry::None(NoData {})
+    } else {
+      ImageRegistry::Standard(StandardRegistryConfig {
+        account: deployment.config.image_registry_account.clone(),
+        domain: extract_registry_domain(image)?,
+        ..Default::default()
+      })
+    };
+
+    if let Err(e) = docker_login(
+      &image_registry,
+      registry_token.as_deref(),
+      aws_ecr.as_ref(),
+    )
+    .await
+    {
+      return Ok(Log::error(
+        "docker login",
+        format_serror(
+          &e.context("failed to login to docker registry").into(),
+        ),
+      ));
+    }
 
     let _ = pull_image(image).await;
     debug!("image pulled");

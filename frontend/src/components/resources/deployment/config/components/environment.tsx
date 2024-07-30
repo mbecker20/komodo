@@ -48,16 +48,10 @@ const Secrets = ({
   /// eg server id
   server: string;
 }) => {
-  const { variables, secrets: core_secrets } = useRead("ListVariables", {})
-    .data ?? {
-    variables: [],
-    secrets: [],
-  };
-  const periphery_secrets =
-    useRead("GetAvailableSecrets", { server }).data || [];
-
-  // Get unique list of secrets between core and periphery
-  const secrets = [...new Set([...core_secrets, ...periphery_secrets])];
+  const variables = useRead("ListVariables", {}).data ?? [];
+  const secrets =
+    useRead("ListSecrets", { target: { type: "Server", id: server } }).data ??
+    [];
 
   const _env = env || "";
 

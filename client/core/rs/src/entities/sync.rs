@@ -24,6 +24,8 @@ pub struct ResourceSyncListItemInfo {
   pub last_sync_hash: String,
   /// Commit message of last sync, or empty string
   pub last_sync_message: String,
+  /// The git provider domain
+  pub git_provider: String,
   /// The Github repo used as the source of the sync resources
   pub repo: String,
   /// The branch of the repo
@@ -165,6 +167,20 @@ pub type _PartialResourceSyncConfig = PartialResourceSyncConfig;
 #[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct ResourceSyncConfig {
+  /// The git provider domain. Default: github.com
+  #[serde(default = "default_git_provider")]
+  #[builder(default = "default_git_provider()")]
+  #[partial_default(default_git_provider())]
+  pub git_provider: String,
+
+  /// Whether to use https to clone the repo (versus http). Default: true
+  ///
+  /// Note. Monitor does not currently support cloning repos via ssh.
+  #[serde(default = "default_git_https")]
+  #[builder(default = "default_git_https()")]
+  #[partial_default(default_git_https())]
+  pub git_https: bool,
+
   /// The Github repo used as the source of the build.
   #[serde(default)]
   #[builder(default)]
@@ -181,11 +197,14 @@ pub struct ResourceSyncConfig {
   #[builder(default)]
   pub commit: String,
 
-  /// The github account used to clone (used to access private repos).
-  /// Empty string is public clone (only public repos).
-  #[serde(default)]
+  /// The git account used to access private repos.
+  /// Passing empty string can only clone public repos.
+  ///
+  /// Note. A token for the account must be available in the core config or the builder server's periphery config
+  /// for the configured git provider.
+  #[serde(default, alias = "github_account")]
   #[builder(default)]
-  pub github_account: String,
+  pub git_account: String,
 
   /// The github account used to clone (used to access private repos).
   /// Empty string is public clone (only public repos).
@@ -213,6 +232,14 @@ impl ResourceSyncConfig {
   }
 }
 
+fn default_git_provider() -> String {
+  String::from("github.com")
+}
+
+fn default_git_https() -> bool {
+  true
+}
+
 fn default_branch() -> String {
   String::from("main")
 }
@@ -228,10 +255,12 @@ fn default_webhook_enabled() -> bool {
 impl Default for ResourceSyncConfig {
   fn default() -> Self {
     Self {
+      git_provider: default_git_provider(),
+      git_https: default_git_https(),
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),
-      github_account: Default::default(),
+      git_account: Default::default(),
       resource_path: default_resource_path(),
       delete: Default::default(),
       webhook_enabled: default_webhook_enabled(),

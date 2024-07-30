@@ -2,6 +2,7 @@ import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
   ConfigItem,
+  ProviderSelectorConfig,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
@@ -54,25 +55,37 @@ export const RepoConfig = ({ id }: { id: string }) => {
           {
             label: "General",
             components: {
-              repo: { placeholder: "Enter repo" },
-              branch: { placeholder: "Enter branch" },
-              commit: { placeholder: "Enter specific commit hash. Optional." },
-              path: {
-                placeholder: "Enter a specific clone path. Optional.",
-              },
-              github_account: (value, set) => {
+              git_provider: (provider, set) => (
+                <ProviderSelectorConfig
+                  account_type="git"
+                  selected={provider}
+                  disabled={disabled}
+                  onSelect={(git_provider) => set({ git_provider })}
+                />
+              ),
+              git_https: { label: "Use Https" },
+              git_account: (value, set) => {
                 const server_id = update.server_id || config.server_id;
                 return (
                   <AccountSelectorConfig
                     id={server_id}
-                    account_type="github"
                     type={server_id ? "Server" : "None"}
+                    account_type="git"
+                    provider={update.git_provider ?? config.git_provider}
                     selected={value}
-                    onSelect={(github_account) => set({ github_account })}
+                    onSelect={(git_account) => set({ git_account })}
                     disabled={disabled}
                     placeholder="None"
                   />
                 );
+              },
+              repo: { placeholder: "Enter repo" },
+              branch: { placeholder: "Enter branch" },
+              commit: {
+                placeholder: "Enter a specific commit hash. Optional.",
+              },
+              path: {
+                placeholder: "Enter a specific clone path. Optional.",
               },
             },
           },

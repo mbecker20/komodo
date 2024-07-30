@@ -22,6 +22,8 @@ use crate::entities::{
   Timelength,
 };
 
+use super::{DockerRegistry, GitProvider};
+
 /// # Periphery Command Line Arguments.
 ///
 /// This structure represents the periphery command line arguments used to
@@ -178,21 +180,27 @@ fn default_config_paths() -> Vec<String> {
 /// ## optional, default 'Monitor'.
 /// # logging.opentelemetry_service_name = "Monitor"
 ///
-/// ## optional. can inject these values into your deployments configuration.
+/// ## configure perihery-based secrets
 /// [secrets]
-/// secret_variable = "secret_value"
+/// # SECRET_1 = "value_1"
+/// # SECRET_2 = "value_2"
 ///
-/// ## optional. can use these accounts with deployments / builds.
-/// [github_accounts]
-/// github_username1 = "github_token1"
-/// github_username2 = "github_token2"
-///
-/// ## optional. can use these accounts with deployments / builds.
-/// [docker_accounts]
-/// docker_username1 = "docker_token1"
-/// docker_username2 = "docker_token2"
+/// ## configure periphery-based git providers
+/// # [[git_provider]]
+/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+/// # accounts = [
+/// #     { username = "mbecker20", token = "access_token_for_account" },
+/// # ]
+/// 
+/// ## configure periphery-based docker registries
+/// # [[docker_registry]]
+/// # domain = "docker.io"
+/// # accounts = [
+/// #     { username = "mbecker2020", token = "access_token_for_account" }
+/// # ]
+/// # organizations = ["DockerhubOrganization"]
 /// ```
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct PeripheryConfig {
   /// The port periphery will run on.
   /// Default: `8120`
@@ -232,15 +240,15 @@ pub struct PeripheryConfig {
   #[serde(default)]
   pub secrets: HashMap<String, String>,
 
-  /// Mapping of github usernames to access tokens.
-  /// Default: none
-  #[serde(default)]
-  pub github_accounts: HashMap<String, String>,
+  /// Configure git credentials used to clone private repos.
+  /// Supports any git provider.
+  #[serde(default, alias = "git_provider")]
+  pub git_providers: Vec<GitProvider>,
 
-  /// Mapping of docker usernames to access tokens.
-  /// Default: none
-  #[serde(default)]
-  pub docker_accounts: HashMap<String, String>,
+  /// Configure docker credentials used to push / pull images.
+  /// Supports any docker image repository.
+  #[serde(default, alias = "docker_registry")]
+  pub docker_registries: Vec<DockerRegistry>,
 }
 
 fn default_periphery_port() -> u16 {

@@ -3,10 +3,13 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use super::{permission::PermissionLevel, update::ResourceTargetVariant, MongoId, I64};
+use super::{
+  permission::PermissionLevel, update::ResourceTargetVariant,
+  MongoId, I64,
+};
 
 /// Permission users at the group level.
-/// 
+///
 /// All users that are part of a group inherit the group's permissions.
 /// A user can be a part of multiple groups. A user's permission on a particular resource
 /// will be resolved to be the maximum permission level between the user's own permissions and

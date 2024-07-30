@@ -1,5 +1,5 @@
 use monitor_client::entities::{
-  build::{CloudRegistryConfig, ImageRegistry},
+  build::{ImageRegistry, StandardRegistryConfig},
   NoData,
 };
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
@@ -378,15 +378,10 @@ impl TryFrom<Deployment>
             .post_image
             .unwrap_or_default(),
           extra_args: value.docker_run_args.extra_args,
-          image_registry: match value.docker_run_args.docker_account {
-            Some(account) => {
-              ImageRegistry::DockerHub(CloudRegistryConfig {
-                account,
-                ..Default::default()
-              })
-            }
-            None => ImageRegistry::None(NoData {}),
-          },
+          image_registry_account: value
+            .docker_run_args
+            .docker_account
+            .unwrap_or_default(),
           labels: Default::default(),
         },
     };

@@ -18,6 +18,8 @@ use crate::entities::{
   Timelength,
 };
 
+use super::{DockerRegistry, GitProvider};
+
 /// # Monitor Core Environment Variables
 ///
 /// You can override any fields of the [CoreConfig] by passing the associated
@@ -53,14 +55,10 @@ pub struct Env {
   pub monitor_keep_stats_for_days: Option<u64>,
   /// Override `keep_alerts_for_days`
   pub monitor_keep_alerts_for_days: Option<u64>,
-  /// Override `github_webhook_secret`
-  pub monitor_github_webhook_secret: Option<String>,
-  /// Override `github_webhook_base_url`
-  pub monitor_github_webhook_base_url: Option<String>,
-  /// Override `github_organizations`
-  pub monitor_github_organizations: Option<Vec<String>>,
-  /// Override `docker_organizations`
-  pub monitor_docker_organizations: Option<Vec<String>>,
+  /// Override `webhook_secret`
+  pub monitor_webhook_secret: Option<String>,
+  /// Override `webhook_base_url`
+  pub monitor_webhook_base_url: Option<String>,
 
   /// Override `logging.level`
   pub monitor_logging_level: Option<LogLevel>,
@@ -150,55 +148,59 @@ fn default_config_path() -> String {
 /// ## default: 'Monitor'
 /// title = "Monitor"
 ///
-/// ## required for oauth functionality. this should be the url used to access monitor in browser,
+/// ## Required for oauth functionality. This should be the url used to access monitor in browser,
 /// ## potentially behind DNS.
-/// ## eg https://monitor.dev or http://12.34.56.78:9000.
-/// ## this should match the address configured in your oauth app.
-/// ## no default
+/// ## Eg https://monitor.dev or http://12.34.56.78:9000.
+/// ## This should match the address configured in your oauth app.
+/// ## Required (no default).
 /// host = "https://monitor.dev"
 ///
-/// ## the port the core system will run on. if running core in docker container,
-/// ## leave as this port as 9000 and use port bind eg. -p 9001:9000
-/// ## default: 9000
+/// ## The port the core system will run on. If running core in docker container,
+/// ## Leave as this port as 9000 and use port bind eg. -p 9001:9000
+/// ## Default: 9000
 /// port = 9000
 ///
-/// ## required to match a passkey in periphery config.
-/// ## token used to authenticate core requests to periphery
-/// ## no default
+/// ## Must match a passkey in periphery config to communicate with periphery.
+/// ## Required (No default)
 /// passkey = "a_random_passkey"
 ///
-/// ## specify the log level of the monitor core application
-/// ## default: info
-/// ## options: off, error, warn, info, debug, trace
+/// ## Specify the log level of the monitor core application.
+/// ## Default: `info`.
+/// ## Options: `off`, `error`, `warn`, `info`, `debug`, `trace`.
 /// logging.level = "info"
 ///
-/// ## specify the logging format for stdout / stderr.
-/// ## default: standard
-/// ## options: standard, json, none
+/// ## Specify the logging format for stdout / stderr.
+/// ## Default: standard
+/// ## Options: `standard`, `json`, `none`
 /// logging.stdio = "standard"
 ///
-/// ## specify a opentelemetry otlp endpoint to send traces to
-/// ## optional, default unassigned
+/// ## Specify a opentelemetry otlp endpoint to send traces to.
+/// ## Optional, default unassigned (don't export telemetry).
 /// # logging.otlp_endpoint = "http://localhost:4317"
 ///
-/// ## specify how long an issued jwt stays valid.
-/// ## all jwts are invalidated on application restart.
-/// ## default: 1-day.
-/// ## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
+/// ## Specify how long an issued jwt stays valid.
+/// ## All jwts are invalidated on application restart.
+/// ## Default: `1-day`.
+/// ## Options: `1-hr`, `12-hr`, `1-day`, `3-day`, `1-wk`, `2-wk`, `30-day`.
 /// jwt_valid_for = "1-day"
 ///
-/// ## controls the granularity of the system stats collection by monitor core
-/// ## default: 15-sec
-/// ## options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
+/// ## Controls the granularity of the system stats collection by monitor core.
+/// ## Options: `5-sec`, `15-sec`, `30-sec`, `1-min`, `2-min`, `5-min`.
+/// ## Default: `15-sec`.
 /// monitoring_interval = "15-sec"
 ///
-/// ## number of days to keep stats around, or 0 to disable pruning.
-/// ## stats older than this number of days are deleted daily
-/// ## default: 0 (pruning disabled)
-/// keep_stats_for_days = 0
+/// ## Number of days to store stats, or 0 to disable stats pruning.
+/// ## Stats older than this number of days are deleted daily
+/// ## Default: 0 (pruning disabled)
+/// keep_stats_for_days = 14
 ///
-/// ## these will be used by the GUI to attach to builds.
-/// ## when attached to build, image will be pushed to repo under the specified organization.
+/// ## Number of days to store alerts, or 0 to disable alert pruning.
+/// ## Alerts older than this number of days are deleted daily
+/// ## Default: 0 (pruning disabled)
+/// keep_alerts_for_days = 14
+///
+/// ## These will be available .
+/// ## When attached to build, image will be pushed to repo under the specified organization.
 /// ## if empty, the "docker organization" config option will not be shown.
 /// ## default: empty
 /// # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
@@ -269,16 +271,21 @@ fn default_config_path() -> String {
 /// [secrets]
 /// # SECRET_1 = "value_1"
 /// # SECRET_2 = "value_2"
-///
-/// ## provide core-based github accounts
-/// [github_accounts]
-/// # github_username_1 = "github_token_1"
-/// # github_username_2 = "github_token_2"
-///
-/// ## provide core-based docker accounts
-/// [docker_accounts]
-/// # docker_username_1 = "docker_token_1"
-/// # docker_username_2 = "docker_token_2"
+/// 
+/// ## configure git providers
+/// # [[git_provider]]
+/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+/// # accounts = [
+/// #     { username = "mbecker20", token = "access_token_for_account" },
+/// # ]
+/// 
+/// ## configure docker registries
+/// # [[docker_registry]]
+/// # domain = "docker.io"
+/// # accounts = [
+/// #     { username = "mbecker2020", token = "access_token_for_account" }
+/// # ]
+/// # organizations = ["DockerhubOrganization"]
 ///
 /// ## configure aws ecr registries
 /// # [aws_ecr_registry.label_1]
@@ -341,11 +348,6 @@ pub struct CoreConfig {
   #[serde(default)]
   pub keep_alerts_for_days: u64,
 
-  /// Allowed docker orgs used with monitor.
-  /// Default: none.
-  #[serde(default)]
-  pub docker_organizations: Vec<String>,
-
   /// Configure logging
   #[serde(default)]
   pub logging: LogConfig,
@@ -370,29 +372,24 @@ pub struct CoreConfig {
   #[serde(default)]
   pub github_oauth: OauthCredentials,
 
-  /// Used to verify validity from github webhooks.
+  /// Used to verify validity from webhooks.
   /// Should be some secure hash maybe 20-40 chars.
-  /// It needs to be given to github when configuring the webhook.
+  /// It is given to git provider when configuring the webhook.
   #[serde(default)]
-  pub github_webhook_secret: String,
+  pub webhook_secret: String,
 
-  /// Used to form the frontend listener url, if None will use 'host'.
+  /// Override the webhook listener base url, if None will use the address defined as 'host'.
+  /// Example: `https://webhooks.mogh.tech`
   ///
   /// This can be used if core sits on an internal network which is
   /// unreachable directly from the open internet.
-  /// A reverse proxy in a public network (with its own DNS)
-  /// can forward webhooks to the internal monitor
-  pub github_webhook_base_url: Option<String>,
+  /// A reverse proxy in a public network can forward webhooks to the internal monitor.
+  pub webhook_base_url: Option<String>,
 
   /// Configure a Github Webhook app.
   /// Allows users to manage repo webhooks from within the Monitor UI.
   #[serde(default)]
   pub github_webhook_app: GithubWebhookAppConfig,
-
-  /// Allowed github orgs used with monitor.
-  /// Default: none.
-  #[serde(default)]
-  pub github_organizations: Vec<String>,
 
   /// Configure core mongo connection.
   ///
@@ -414,22 +411,19 @@ pub struct CoreConfig {
   #[serde(default)]
   pub secrets: HashMap<String, String>,
 
-  /// Configure core-based github accounts. These will be preferentially attached to build / repo clone
-  /// requests if they contain a matching github account. Otherwise, the periphery will have to have the
-  /// account configured.
-  #[serde(default)]
-  pub github_accounts: HashMap<String, String>,
+  /// Configure git credentials used to clone private repos.
+  /// Supports any git provider.
+  #[serde(default, alias = "git_provider")]
+  pub git_providers: Vec<GitProvider>,
 
-  /// Configure core-based docker accounts. These will be preferentially attached to build / deploy
-  /// requests if they contain a matching docker account. Otherwise, the periphery will have to have the
-  /// account configured.
-  #[serde(default)]
-  pub docker_accounts: HashMap<String, String>,
+  /// Configure docker credentials used to push / pull images.
+  /// Supports any docker image repository.
+  #[serde(default, alias = "docker_registry")]
+  pub docker_registries: Vec<DockerRegistry>,
 
-  /// Configure aws ecr registries.
+  /// Configure aws ecr registries, which are handled differently than other registries
   #[serde(default, alias = "aws_ecr_registry")]
-  pub aws_ecr_registries:
-    HashMap<String, AwsEcrConfigWithCredentials>,
+  pub aws_ecr_registries: Vec<AwsEcrConfigWithCredentials>,
 }
 
 fn default_title() -> String {
@@ -458,8 +452,7 @@ impl CoreConfig {
     let mut config = self.clone();
 
     config.passkey = empty_or_redacted(&config.passkey);
-    config.github_webhook_secret =
-      empty_or_redacted(&config.github_webhook_secret);
+    config.webhook_secret = empty_or_redacted(&config.webhook_secret);
 
     config.github_oauth.id =
       empty_or_redacted(&config.github_oauth.id);
@@ -571,6 +564,8 @@ pub struct HetznerCredentials {
 /// Provide configuration for an Aws Ecr registry.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AwsEcrConfigWithCredentials {
+  /// A label for the registry
+  pub label: String,
   /// The Aws region
   pub region: String,
   /// The Aws account id

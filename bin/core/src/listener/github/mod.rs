@@ -175,7 +175,7 @@ async fn verify_gh_signature(
   }
   let signature = signature.unwrap().replace("sha256=", "");
   let mut mac = HmacSha256::new_from_slice(
-    core_config().github_webhook_secret.as_bytes(),
+    core_config().webhook_secret.as_bytes(),
   )
   .expect("github webhook | failed to create hmac sha256");
   mac.update(body.as_bytes());

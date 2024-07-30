@@ -18,7 +18,10 @@ export type UserResponses = {
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
-  GetAvailableAwsEcrLabels: Types.GetAvailableAwsEcrLabelsResponse;
+  ListAwsEcrLabels: Types.ListAwsEcrLabelsResponse;
+  ListSecrets: Types.ListSecretsResponse;
+  ListGitProviders: Types.ListGitProvidersResponse;
+  ListDockerRegistries: Types.ListDockerRegistriesResponse;
 
   // ==== USER ====
   GetUsername: Types.GetUsernameResponse;
@@ -61,8 +64,6 @@ export type ReadResponses = {
   GetDockerNetworks: Types.GetDockerNetworksResponse;
   GetServerActionState: Types.GetServerActionStateResponse;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
-  GetAvailableAccounts: Types.GetAvailableAccountsResponse;
-  GetAvailableSecrets: Types.GetAvailableSecretsResponse;
   ListServers: Types.ListServersResponse;
   ListFullServers: Types.ListFullServersResponse;
 
@@ -83,13 +84,11 @@ export type ReadResponses = {
   GetBuild: Types.GetBuildResponse;
   GetBuildActionState: Types.GetBuildActionStateResponse;
   GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
-  GetBuildVersions: Types.GetBuildVersionsResponse;
   GetBuildWebhookEnabled: Types.GetBuildWebhookEnabledResponse;
   ListBuilds: Types.ListBuildsResponse;
   ListFullBuilds: Types.ListFullBuildsResponse;
+  ListBuildVersions: Types.ListBuildVersionsResponse;
   ListCommonBuildExtraArgs: Types.ListCommonBuildExtraArgsResponse;
-  ListGithubOrganizations: Types.ListGithubOrganizationsResponse;
-  ListDockerOrganizations: Types.ListDockerOrganizationsResponse;
 
   // ==== REPO ====
   GetReposSummary: Types.GetReposSummaryResponse;
@@ -102,7 +101,6 @@ export type ReadResponses = {
   // ==== BUILDER ====
   GetBuildersSummary: Types.GetBuildersSummaryResponse;
   GetBuilder: Types.GetBuilderResponse;
-  GetBuilderAvailableAccounts: Types.GetBuilderAvailableAccountsResponse;
   ListBuilders: Types.ListBuildersResponse;
   ListFullBuilders: Types.ListFullBuildersResponse;
 

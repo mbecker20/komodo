@@ -332,23 +332,14 @@ export interface SystemCommand {
 export type ImageRegistry = 
 	/** Don't push the image to any registry */
 	| { type: "None", params: NoData }
-	/** Push the image to DockerHub */
-	| { type: "DockerHub", params: CloudRegistryConfig }
-	/**
-	 * Push the image to the Github Container Registry.
-	 * 
-	 * See [the Github docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images)
-	 * for information on creating an access token
-	 */
-	| { type: "Ghcr", params: CloudRegistryConfig }
+	/** Push the image to a standard image registry (any domain) */
+	| { type: "Standard", params: StandardRegistryConfig }
 	/**
 	 * Push the image to Aws Elastic Container Registry
 	 * 
 	 * The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
 	 */
-	| { type: "AwsEcr", params: string }
-	/** Todo. Will point to a custom "Registry" resource by id */
-	| { type: "Custom", params: string };
+	| { type: "AwsEcr", params: string };
 
 export interface EnvironmentVar {
 	variable: string;
@@ -361,17 +352,28 @@ export interface BuildConfig {
 	builder_id?: string;
 	/** The current version of the build. */
 	version?: Version;
-	/** The Github repo used as the source of the build. */
+	/** The git provider domain. Default: github.com */
+	git_provider: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
+	/** The repo used as the source of the build. */
 	repo?: string;
 	/** The branch of the repo. */
 	branch: string;
 	/** Optionally set a specific commit hash. */
 	commit?: string;
 	/**
-	 * The github account used to clone (used to access private repos).
-	 * Empty string is public clone (only public repos).
+	 * The git account used to access private repos.
+	 * Passing empty string can only clone public repos.
+	 * 
+	 * Note. A token for the account must be available in the core config or the builder server's periphery config
+	 * for the configured git provider.
 	 */
-	github_account?: string;
+	git_account?: string;
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
 	/** Configuration for the registry to push the built image to. */
@@ -438,7 +440,9 @@ export interface BuildListItemInfo {
 	last_built_at: I64;
 	/** The current version of the build */
 	version: Version;
-	/** The Github repo used as the source of the build */
+	/** The git provider domain */
+	git_provider: string;
+	/** The repo used as the source of the build */
 	repo: string;
 	/** The branch of the repo */
 	branch: string;
@@ -463,11 +467,7 @@ export interface BuildVersionResponseItem {
 	ts: I64;
 }
 
-export type GetBuildVersionsResponse = BuildVersionResponseItem[];
-
-export type ListGithubOrganizationsResponse = string[];
-
-export type ListDockerOrganizationsResponse = string[];
+export type ListBuildVersionsResponse = BuildVersionResponseItem[];
 
 export type ListCommonBuildExtraArgsResponse = string[];
 
@@ -544,15 +544,14 @@ export interface DeploymentConfig {
 	 */
 	image?: DeploymentImage;
 	/**
-	 * Configure the registry used to pull the image from the registry.
+	 * Configure the account used to pull the image from the registry.
 	 * Used with `docker login`.
 	 * 
-	 * When using attached build as image source:
-	 * - If the field is `None` variant, will use the same ImageRegistry config as the build.
-	 * - Otherwise, it must match the variant of the ImageRegistry build config.
-	 * - Only the account is used, the organization is not needed here
+	 * - If the field is empty string, will use the same account config as the build, or none at all if using image.
+	 * - If the field contains an account, a token for the account must be available.
+	 * - Will get the registry domain from the build / image
 	 */
-	image_registry?: ImageRegistry;
+	image_registry_account?: string;
 	/** Whether to skip secret interpolation into the deployment environment variables. */
 	skip_secret_interp?: boolean;
 	/** Whether to redeploy the deployment whenever the attached build finishes. */
@@ -693,7 +692,39 @@ export type GetDeploymentActionStateResponse = DeploymentActionState;
 
 export type ListCommonDeploymentExtraArgsResponse = string[];
 
-export type GetAvailableAwsEcrLabelsResponse = string[];
+export interface ProviderAccount {
+	/** The account username. Required. */
+	username: string;
+	/** The account access token. Required. */
+	token: string;
+}
+
+export interface GitProvider {
+	/** The git provider domain. Default: `github.com`. */
+	domain: string;
+	/** The account username. Required. */
+	accounts: ProviderAccount[];
+}
+
+export type ListGitProvidersResponse = GitProvider[];
+
+export interface DockerRegistry {
+	/** The docker provider domain. Default: `docker.io`. */
+	domain: string;
+	/** The account username. Required. */
+	accounts?: ProviderAccount[];
+	/**
+	 * Available organizations on the registry provider.
+	 * Used to push an image under an organization's repo rather than an account's repo.
+	 */
+	organizations?: string[];
+}
+
+export type ListDockerRegistriesResponse = DockerRegistry[];
+
+export type ListAwsEcrLabelsResponse = string[];
+
+export type ListSecretsResponse = string[];
 
 export type UserTarget = 
 	/** User Id */
@@ -805,6 +836,8 @@ export type GetProcedureActionStateResponse = ProcedureActionState;
 export interface RepoConfig {
 	/** The server to clone the repo on. */
 	server_id?: string;
+	/** The git provider domain. Default: github.com */
+	git_provider: string;
 	/** The github repo to clone. */
 	repo?: string;
 	/** The repo branch. */
@@ -812,10 +845,19 @@ export interface RepoConfig {
 	/** Optionally set a specific commit hash. */
 	commit?: string;
 	/**
-	 * The github account to use to clone.
-	 * It must be available in the server's periphery config.
+	 * The git account used to access private repos.
+	 * Passing empty string can only clone public repos.
+	 * 
+	 * Note. A token for the account must be available in the core config or the builder server's periphery config
+	 * for the configured git provider.
 	 */
-	github_account?: string;
+	git_account?: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
 	/** Explicitly specificy the folder to clone the repo in. */
 	path?: string;
 	/**
@@ -859,7 +901,9 @@ export interface RepoListItemInfo {
 	server_id: string;
 	/** Repo last cloned / pulled timestamp in ms. */
 	last_pulled_at: I64;
-	/** The configured github repo */
+	/** The git provider domain */
+	git_provider: string;
+	/** The configured repo */
 	repo: string;
 	/** The configured branch */
 	branch: string;
@@ -1177,8 +1221,6 @@ export interface SystemProcess {
 
 export type GetSystemProcessesResponse = SystemProcess[];
 
-export type GetAvailableSecretsResponse = string[];
-
 export type ServerTemplateConfig = 
 	/** Template to launch an AWS EC2 instance */
 	| { type: "Aws", params: AwsServerTemplateConfig }
@@ -1204,6 +1246,14 @@ export type ListFullServerTemplatesResponse = ServerTemplate[];
 
 /** The sync configuration. */
 export interface ResourceSyncConfig {
+	/** The git provider domain. Default: github.com */
+	git_provider: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
 	/** The Github repo used as the source of the build. */
 	repo?: string;
 	/** The branch of the repo. */
@@ -1211,10 +1261,13 @@ export interface ResourceSyncConfig {
 	/** Optionally set a specific commit hash. */
 	commit?: string;
 	/**
-	 * The github account used to clone (used to access private repos).
-	 * Empty string is public clone (only public repos).
+	 * The git account used to access private repos.
+	 * Passing empty string can only clone public repos.
+	 * 
+	 * Note. A token for the account must be available in the core config or the builder server's periphery config
+	 * for the configured git provider.
 	 */
-	github_account?: string;
+	git_account?: string;
 	/**
 	 * The github account used to clone (used to access private repos).
 	 * Empty string is public clone (only public repos).
@@ -1280,6 +1333,8 @@ export interface ResourceSyncListItemInfo {
 	last_sync_hash: string;
 	/** Commit message of last sync, or empty string */
 	last_sync_message: string;
+	/** The git provider domain */
+	git_provider: string;
 	/** The Github repo used as the source of the sync resources */
 	repo: string;
 	/** The branch of the repo */
@@ -1502,6 +1557,8 @@ export interface Variable {
 }
 
 export type GetVariableResponse = Variable;
+
+export type ListVariablesResponse = Variable[];
 
 export type PushRecentlyViewedResponse = NoData;
 
@@ -2094,7 +2151,7 @@ export interface GetBuildMonthlyStatsResponse {
  * sorted by most recent first.
  * Response: [GetBuildVersionsResponse].
  */
-export interface GetBuildVersions {
+export interface ListBuildVersions {
 	/** Id or name */
 	build: string;
 	/** Filter to only include versions matching this major version. */
@@ -2105,20 +2162,6 @@ export interface GetBuildVersions {
 	patch?: number;
 	/** Limit the number of included results. Default is no limit. */
 	limit?: I64;
-}
-
-/**
- * List the available github organizations which can be attached to builds.
- * Response: [ListGithubOrganizationsResponse].
- */
-export interface ListGithubOrganizations {
-}
-
-/**
- * List the available docker organizations which can be attached to builds.
- * Response: [ListDockerOrganizationsResponse].
- */
-export interface ListDockerOrganizations {
 }
 
 /**
@@ -2174,23 +2217,6 @@ export interface GetBuildersSummary {
 export interface GetBuildersSummaryResponse {
 	/** The total number of builders. */
 	total: number;
-}
-
-/**
- * Get the docker / github accounts which are available for use on the builder.
- * Response: [GetBuilderAvailableAccountsResponse].
- * 
- * Note. Builds using this builder can only use the docker / github accounts available in this response.
- */
-export interface GetBuilderAvailableAccounts {
-	/** Id or name */
-	builder: string;
-}
-
-/** Response for [GetBuilderAvailableAccounts]. */
-export interface GetBuilderAvailableAccountsResponse {
-	github: string[];
-	docker: string[];
 }
 
 /** Get a specific deployment by name or id. Response: [Deployment]. */
@@ -2339,7 +2365,7 @@ export interface GetVersionResponse {
 }
 
 /**
- * Get info about the core api.
+ * Get info about the core api configuration.
  * Response: [GetCoreInfoResponse].
  */
 export interface GetCoreInfo {
@@ -2351,8 +2377,8 @@ export interface GetCoreInfoResponse {
 	title: string;
 	/** The monitoring interval of this core api. */
 	monitoring_interval: Timelength;
-	/** The github webhook base url to use with github webhooks. */
-	github_webhook_base_url: string;
+	/** The webhook base url. */
+	webhook_base_url: string;
 	/** Whether transparent mode is enabled, which gives all users read access to all resources. */
 	transparent_mode: boolean;
 	/** Whether UI write access should be disabled */
@@ -2362,10 +2388,56 @@ export interface GetCoreInfoResponse {
 }
 
 /**
- * Get the available aws ecr config labels from the core config.
- * Response: [GetAvailableAwsEcrLabelsResponse].
+ * List the git providers.
+ * Response: [ListGitProvidersResponse].
+ * 
+ * Includes:
+ * - providers in core config
+ * - providers configured on builds, repos, syncs
+ * - providers on the optional Server or Builder
  */
-export interface GetAvailableAwsEcrLabels {
+export interface ListGitProviders {
+	/**
+	 * Accepts an optional Server or Builder target to expand the core list with
+	 * providers available on that specific resource.
+	 */
+	target?: ResourceTarget;
+}
+
+/**
+ * List the suggested docker registry providers.
+ * Response: [ListDockerRegistriesResponse].
+ * 
+ * Includes:
+ * - registries in core config
+ * - registries configured on builds, deployments
+ * - registries on the optional Server or Builder
+ */
+export interface ListDockerRegistries {
+	/**
+	 * Accepts an optional Server or Builder target to expand the core list with
+	 * providers available on that specific resource.
+	 */
+	target?: ResourceTarget;
+}
+
+/**
+ * List the available aws ecr config labels from the core config.
+ * Response: [ListAwsEcrLabelsResponse].
+ */
+export interface ListAwsEcrLabels {
+}
+
+/**
+ * List the available secrets from the core config.
+ * Response: [ListSecretsResponse].
+ */
+export interface ListSecrets {
+	/**
+	 * Accepts an optional Server or Builder target to expand the core list with
+	 * providers available on that specific resource.
+	 */
+	target?: ResourceTarget;
 }
 
 /**
@@ -2700,35 +2772,6 @@ export interface GetServersSummaryResponse {
 	disabled: I64;
 }
 
-/**
- * Get the usernames for the available github / docker accounts
- * on the target server, or only available globally if no server
- * is provided.
- * 
- * Response: [GetAvailableAccountsResponse].
- */
-export interface GetAvailableAccounts {
-	/** Id or name */
-	server?: string;
-}
-
-/** Response for [GetAvailableAccounts]. */
-export interface GetAvailableAccountsResponse {
-	/** The github usernames */
-	github: string[];
-	/** The docker usernames. */
-	docker: string[];
-}
-
-/**
- * Get the keys for available secrets on the target server.
- * Response: [GetAvailableSecretsResponse].
- */
-export interface GetAvailableSecrets {
-	/** Id or name */
-	server: string;
-}
-
 /** Get a specific server template by id or name. Response: [ServerTemplate]. */
 export interface GetServerTemplate {
 	/** Id or name */
@@ -3013,14 +3056,6 @@ export interface GetVariable {
  * Response: [ListVariablesResponse]
  */
 export interface ListVariables {
-}
-
-/** The response of [ListVariables]. */
-export interface ListVariablesResponse {
-	/** The available global variables. */
-	variables: Variable[];
-	/** The available global secret keys */
-	secrets: string[];
 }
 
 /**
@@ -3819,9 +3854,11 @@ export interface SlackAlerterEndpoint {
 	url: string;
 }
 
-/** Configuration for a cloud image registry, like account and organization. */
-export interface CloudRegistryConfig {
-	/** Specify an account to use with the cloud registry. */
+/** Configuration for a standard image registry */
+export interface StandardRegistryConfig {
+	/** Specify the registry provider domain. Eg. `docker.io` */
+	domain?: string;
+	/** Specify an account to use with the registry. */
 	account?: string;
 	/**
 	 * Optional. Specify an organization to push the image under.
@@ -3874,21 +3911,40 @@ export interface AwsBuilderConfig {
 	 * This should include a security group to allow core inbound access to the periphery port.
 	 */
 	security_group_ids: string[];
-	/** Which github accounts (usernames) are available on the AMI */
-	github_accounts?: string[];
-	/** Which dockerhub accounts (usernames) are available on the AMI */
-	docker_accounts?: string[];
+	/** Which git providers are available on the AMI */
+	git_providers?: GitProvider[];
+	/** Which docker registries are available on the AMI. */
+	docker_registries?: DockerRegistry[];
+	/** Which secrets are available on the AMI. */
+	secrets?: string[];
+}
+
+export interface LatestCommit {
+	hash: string;
+	message: string;
 }
 
 export interface CloneArgs {
+	/** Resource name (eg Build name, Repo name) */
 	name: string;
+	/** Git provider domain. Default: `github.com` */
+	provider?: string;
+	/** Use https (vs http). */
+	https: boolean;
+	/** Full repo identifier. <namespace>/<repo_name> */
 	repo?: string;
+	/** Git Branch. Default: `main` */
 	branch?: string;
+	/** Specific commit hash. Optional */
 	commit?: string;
+	/** The clone destination path */
 	destination?: string;
+	/** Command to run after the repo has been cloned */
 	on_clone?: SystemCommand;
+	/** Command to run after the repo has been pulled */
 	on_pull?: SystemCommand;
-	github_account?: string;
+	/** Configure the account used to access repo (if private) */
+	account?: string;
 }
 
 /** Info for the all system disks combined. */
@@ -4135,7 +4191,10 @@ export type ExecuteRequest =
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
-	| { type: "GetAvailableAwsEcrLabels", params: GetAvailableAwsEcrLabels }
+	| { type: "ListAwsEcrLabels", params: ListAwsEcrLabels }
+	| { type: "ListSecrets", params: ListSecrets }
+	| { type: "ListGitProviders", params: ListGitProviders }
+	| { type: "ListDockerRegistries", params: ListDockerRegistries }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetPermissionLevel", params: GetPermissionLevel }
 	| { type: "FindUser", params: FindUser }
@@ -4165,8 +4224,6 @@ export type ReadRequest =
 	| { type: "GetDockerNetworks", params: GetDockerNetworks }
 	| { type: "GetServerActionState", params: GetServerActionState }
 	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
-	| { type: "GetAvailableAccounts", params: GetAvailableAccounts }
-	| { type: "GetAvailableSecrets", params: GetAvailableSecrets }
 	| { type: "ListServers", params: ListServers }
 	| { type: "ListFullServers", params: ListFullServers }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
@@ -4183,13 +4240,11 @@ export type ReadRequest =
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
 	| { type: "GetBuildMonthlyStats", params: GetBuildMonthlyStats }
-	| { type: "GetBuildVersions", params: GetBuildVersions }
+	| { type: "ListBuildVersions", params: ListBuildVersions }
 	| { type: "GetBuildWebhookEnabled", params: GetBuildWebhookEnabled }
 	| { type: "ListBuilds", params: ListBuilds }
 	| { type: "ListFullBuilds", params: ListFullBuilds }
 	| { type: "ListCommonBuildExtraArgs", params: ListCommonBuildExtraArgs }
-	| { type: "ListGithubOrganizations", params: ListGithubOrganizations }
-	| { type: "ListDockerOrganizations", params: ListDockerOrganizations }
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }
 	| { type: "GetRepoActionState", params: GetRepoActionState }
@@ -4204,7 +4259,6 @@ export type ReadRequest =
 	| { type: "ListFullResourceSyncs", params: ListFullResourceSyncs }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
-	| { type: "GetBuilderAvailableAccounts", params: GetBuilderAvailableAccounts }
 	| { type: "ListBuilders", params: ListBuilders }
 	| { type: "ListFullBuilders", params: ListFullBuilders }
 	| { type: "GetAlertersSummary", params: GetAlertersSummary }

@@ -60,6 +60,7 @@ impl super::MonitorResource for Repo {
       info: RepoListItemInfo {
         server_id: repo.config.server_id,
         last_pulled_at: repo.info.last_pulled_at,
+        git_provider: repo.config.git_provider,
         repo: repo.config.repo,
         branch: repo.config.branch,
         state,

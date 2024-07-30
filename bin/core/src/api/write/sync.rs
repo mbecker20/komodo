@@ -376,12 +376,12 @@ impl Resolve<CreateSyncWebhook, User> for State {
 
     let CoreConfig {
       host,
-      github_webhook_base_url,
-      github_webhook_secret,
+      webhook_base_url,
+      webhook_secret,
       ..
     } = core_config();
 
-    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = match action {
       SyncWebhookAction::Refresh => {
         format!("{host}/listener/github/sync/{}/refresh", sync.id)
@@ -402,7 +402,7 @@ impl Resolve<CreateSyncWebhook, User> for State {
       active: Some(true),
       config: Some(ReposCreateWebhookRequestConfig {
         url,
-        secret: github_webhook_secret.to_string(),
+        secret: webhook_secret.to_string(),
         content_type: String::from("json"),
         insecure_ssl: None,
         digest: Default::default(),
@@ -456,6 +456,12 @@ impl Resolve<DeleteSyncWebhook, User> for State {
     )
     .await?;
 
+    if sync.config.git_provider != "github.com" {
+      return Err(anyhow!(
+        "Can only manage github.com repo webhooks"
+      ));
+    }
+
     if sync.config.repo.is_empty() {
       return Err(anyhow!(
         "No repo configured, can't create webhook"
@@ -485,11 +491,11 @@ impl Resolve<DeleteSyncWebhook, User> for State {
 
     let CoreConfig {
       host,
-      github_webhook_base_url,
+      webhook_base_url,
       ..
     } = core_config();
 
-    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = match action {
       SyncWebhookAction::Refresh => {
         format!("{host}/listener/github/sync/{}/refresh", sync.id)

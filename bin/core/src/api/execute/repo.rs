@@ -32,7 +32,7 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     CloneRepo { repo }: CloneRepo,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let repo = resource::get_check_permissions::<Repo>(
+    let mut repo = resource::get_check_permissions::<Repo>(
       &repo,
       &user,
       PermissionLevel::Execute,
@@ -57,15 +57,23 @@ impl Resolve<CloneRepo, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let github_token = core_config()
-      .github_accounts
-      .get(&repo.config.github_account)
-      .cloned();
+    let git_token = core_config()
+      .git_providers
+      .iter()
+      .find(|provider| provider.domain == repo.config.git_provider)
+      .and_then(|provider| {
+        repo.config.git_https = provider.https;
+        provider
+          .accounts
+          .iter()
+          .find(|account| account.username == repo.config.git_account)
+          .map(|account| account.token.clone())
+      });
 
     let logs = match periphery
       .request(api::git::CloneRepo {
         args: (&repo).into(),
-        github_token,
+        git_token,
       })
       .await
     {

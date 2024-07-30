@@ -80,29 +80,3 @@ pub struct GetBuildersSummaryResponse {
   /// The total number of builders.
   pub total: u32,
 }
-
-//
-
-/// Get the docker / github accounts which are available for use on the builder.
-/// Response: [GetBuilderAvailableAccountsResponse].
-///
-/// Note. Builds using this builder can only use the docker / github accounts available in this response.
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetBuilderAvailableAccountsResponse)]
-pub struct GetBuilderAvailableAccounts {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub builder: String,
-}
-
-/// Response for [GetBuilderAvailableAccounts].
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetBuilderAvailableAccountsResponse {
-  pub github: Vec<String>,
-  pub docker: Vec<String>,
-}

@@ -15,6 +15,15 @@ host = "https://monitor.dev"
 ## no default
 passkey = "a_random_passkey"
 
+## token that has to be given to git provider during repo webhook config as the secret
+## default: empty (none)
+webhook_secret = "a_random_webhook_secret"
+
+## an alternate base url that is used to recieve git webhook requests
+## if empty or not specified, will use 'host' address as base
+## default: empty (none)
+# webhook_base_url = "https://git-webhook.monitor.dev"
+
 ## specify the log level of the monitor core application
 ## default: info
 ## options: off, error, warn, info, debug, trace
@@ -53,11 +62,6 @@ passkey = "a_random_passkey"
 ## default: 0 (pruning disabled)
 # keep_alerts_for_days = 14
 
-## these will be used by the GUI to attach to builds being pushed to docker hub.
-## when attached to build, image will be pushed to repo under the specified organization.
-## default: empty
-# docker_organizations = ["your_docker_org1", "your_docker_org_2"]
-
 ## allows all users to have read access on all resources
 ## default: false
 # transparent_mode = true
@@ -78,10 +82,6 @@ passkey = "a_random_passkey"
 # github_oauth.id = "your_github_client_id"
 # github_oauth.secret = "your_github_client_secret"
 
-## token that has to be given to github during repo webhook config as the secret
-## default: empty (none)
-# github_webhook_secret = "your_random_webhook_secret"
-
 ## Configure github webhook app. Enables webhook management apis.
 # github_webhook_app.app_id = 1234455 # Find on the app page.
 # github_webhook_app.installations = [
@@ -93,16 +93,6 @@ passkey = "a_random_passkey"
 ## This is defaulted to `/github/private-key.pem`, and doesn't need to be changed if running in Docker.
 ## Just mount the private key pem file on the host to `/github/private-key.pem` in the container.
 # github_webhook_app.pk_path = "/path/to/pk.pem"
-
-## an alternate base url that is used to recieve github webhook requests
-## if empty or not specified, will use 'host' address as base
-## default: empty (none)
-# github_webhook_base_url = "https://github-webhook.monitor.dev"
-
-## these will be used by the GUI to attach to builds being pushed to ghcr.
-## when attached to build, image will be pushed to repo under the specified organization.
-## default: empty
-# github_organizations = ["your_github_org1", "your_github_org_2"]
 
 # mongo.uri = "mongodb://username:password@localhost:27017"
 ## ==== or ====
@@ -127,15 +117,41 @@ mongo.address = "localhost:27017"
 # SECRET_1 = "value_1"
 # SECRET_2 = "value_2"
 
-## provide core-based github accounts
-# [github_accounts]
-# github_username_1 = "github_token_1"
-# github_username_2 = "github_token_2"
+## configure git providers
+# [[git_provider]]
+# domain = "github.com"
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# 	{ username = "moghtech", token = "access_token_for_other_account" },
+# ]
 
-## provide core-based docker accounts
-# [docker_accounts]
-# docker_username_1 = "docker_token_1"
-# docker_username_2 = "docker_token_2"
+# [[git_provider]]
+# domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# ]
+
+# [[git_provider]]
+# domain = "localhost:8000" # use a custom provider, like self-hosted gitea
+# https = false # use http://localhost:8000 as base-url for clone
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# ]
+
+## configure docker registries
+# [[docker_registry]]
+# domain = "docker.io"
+# accounts = [
+# 	{ username = "mbecker2020", token = "access_token_for_account" }
+# ]
+# organizations = ["DockerhubOrganization"]
+
+# [[docker_registry]]
+# domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# ]
+# organizations = ["Mogh"] # These become available in the UI
 
 ## configure aws ecr registries
 # [aws_ecr_registry.label_1]

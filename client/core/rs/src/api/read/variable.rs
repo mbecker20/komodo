@@ -35,12 +35,5 @@ pub type GetVariableResponse = Variable;
 #[response(ListVariablesResponse)]
 pub struct ListVariables {}
 
-/// The response of [ListVariables].
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ListVariablesResponse {
-  /// The available global variables.
-  pub variables: Vec<Variable>,
-  /// The available global secret keys
-  pub secrets: Vec<String>,
-}
+pub type ListVariablesResponse = Vec<Variable>;

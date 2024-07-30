@@ -26,7 +26,9 @@ pub struct BuildListItemInfo {
   pub last_built_at: I64,
   /// The current version of the build
   pub version: Version,
-  /// The Github repo used as the source of the build
+  /// The git provider domain
+  pub git_provider: String,
+  /// The repo used as the source of the build
   pub repo: String,
   /// The branch of the repo
   pub branch: String,
@@ -76,7 +78,21 @@ pub struct BuildConfig {
   #[builder(default)]
   pub version: Version,
 
-  /// The Github repo used as the source of the build.
+  /// The git provider domain. Default: github.com
+  #[serde(default = "default_git_provider")]
+  #[builder(default = "default_git_provider()")]
+  #[partial_default(default_git_provider())]
+  pub git_provider: String,
+
+  /// Whether to use https to clone the repo (versus http). Default: true
+  ///
+  /// Note. Monitor does not currently support cloning repos via ssh.
+  #[serde(default = "default_git_https")]
+  #[builder(default = "default_git_https()")]
+  #[partial_default(default_git_https())]
+  pub git_https: bool,
+
+  /// The repo used as the source of the build.
   #[serde(default)]
   #[builder(default)]
   pub repo: String,
@@ -92,11 +108,14 @@ pub struct BuildConfig {
   #[builder(default)]
   pub commit: String,
 
-  /// The github account used to clone (used to access private repos).
-  /// Empty string is public clone (only public repos).
-  #[serde(default)]
+  /// The git account used to access private repos.
+  /// Passing empty string can only clone public repos.
+  ///
+  /// Note. A token for the account must be available in the core config or the builder server's periphery config
+  /// for the configured git provider.
+  #[serde(default, alias = "github_account")]
   #[builder(default)]
-  pub github_account: String,
+  pub git_account: String,
 
   /// The optional command run after repo clone and before docker build.
   #[serde(default)]
@@ -196,6 +215,14 @@ impl BuildConfig {
   }
 }
 
+fn default_git_provider() -> String {
+  String::from("github.com")
+}
+
+fn default_git_https() -> bool {
+  true
+}
+
 fn default_branch() -> String {
   String::from("main")
 }
@@ -218,10 +245,12 @@ impl Default for BuildConfig {
       builder_id: Default::default(),
       skip_secret_interp: Default::default(),
       version: Default::default(),
+      git_provider: default_git_provider(),
+      git_https: default_git_https(),
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),
-      github_account: Default::default(),
+      git_account: Default::default(),
       pre_build: Default::default(),
       build_path: default_build_path(),
       dockerfile_path: default_dockerfile_path(),
@@ -243,19 +272,12 @@ impl Default for BuildConfig {
 pub enum ImageRegistry {
   /// Don't push the image to any registry
   None(NoData),
-  /// Push the image to DockerHub
-  DockerHub(CloudRegistryConfig),
-  /// Push the image to the Github Container Registry.
-  ///
-  /// See [the Github docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images)
-  /// for information on creating an access token
-  Ghcr(CloudRegistryConfig),
+  /// Push the image to a standard image registry (any domain)
+  Standard(StandardRegistryConfig),
   /// Push the image to Aws Elastic Container Registry
   ///
   /// The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
   AwsEcr(String),
-  /// Todo. Will point to a custom "Registry" resource by id
-  Custom(String),
 }
 
 impl Default for ImageRegistry {
@@ -264,13 +286,17 @@ impl Default for ImageRegistry {
   }
 }
 
-/// Configuration for a cloud image registry, like account and organization.
+/// Configuration for a standard image registry
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
-pub struct CloudRegistryConfig {
-  /// Specify an account to use with the cloud registry.
+pub struct StandardRegistryConfig {
+  /// Specify the registry provider domain. Default: `docker.io`
+  #[serde(default = "default_registry_domain")]
+  pub domain: String,
+
+  /// Specify an account to use with the registry.
   #[serde(default)]
   pub account: String,
 
@@ -278,6 +304,10 @@ pub struct CloudRegistryConfig {
   /// Empty string means no organization.
   #[serde(default)]
   pub organization: String,
+}
+
+fn default_registry_domain() -> String {
+  String::from("docker.io")
 }
 
 #[typeshare]

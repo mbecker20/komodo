@@ -1,5 +1,5 @@
 use monitor_client::entities::{
-  build::{CloudRegistryConfig, ImageRegistry},
+  build::{ImageRegistry, StandardRegistryConfig},
   NoData,
 };
 use serde::{Deserialize, Serialize};
@@ -119,10 +119,12 @@ impl From<BuildConfig>
         minor: value.version.minor,
         patch: value.version.patch,
       },
+      git_provider: String::from("github.com"),
+      git_https: true,
       repo: value.repo,
       branch: value.branch,
       commit: value.commit,
-      github_account: value.github_account,
+      git_account: value.github_account,
       pre_build: monitor_client::entities::SystemCommand {
         path: value.pre_build.path,
         command: value.pre_build.command,
@@ -141,7 +143,8 @@ impl From<BuildConfig>
       image_registry: if value.docker_account.is_empty() {
         ImageRegistry::None(NoData {})
       } else {
-        ImageRegistry::DockerHub(CloudRegistryConfig {
+        ImageRegistry::Standard(StandardRegistryConfig {
+          domain: String::from("docker.io"),
           account: value.docker_account,
           organization: value.docker_organization,
         })

@@ -2,13 +2,17 @@
 
 Monitor just needs a bit of information in order to build your image.
 
-### Repo configuration
-To specify the github repo to build, just give it the name of the repo and the branch under *repo config*. The name is given like ```mbecker20/monitor```, it includes the username / organization that owns the repo.
+### Provider configuration
+Monitor supports cloning repos over http/s, from any provider that supports cloning private repos using `git clone https://<Token>@git-provider.net/<Owner>/<Repo>`.
 
-Many repos are private, in this case a Github access token is needed by the building server.
-It can either come from and account defined in the core configuration,
+Accounts / access tokens can be configured in either the [core config](../core-setup.md#1-create-the-configuration-file) or in the [periphery config](../connecting-servers/setup-periphery.md#manual-install-steps).
+
+### Repo configuration
+To specify the git repo to build, just give it the name of the repo and the branch under *repo config*. The name is given like ```mbecker20/monitor```, it includes the username / organization that owns the repo.
+
+Many repos are private, in this case an access token is needed by the building server.
+It can either come from a provider defined in the core configuration,
 or in the periphery configuration of the building server.
-These are specified in the config like `username = "access_token"`.
 
 ### Docker build configuration
 
@@ -43,3 +47,15 @@ BUILD_ARG2=some_other_value
 ```
 
 Note that these values are visible in the final image using `docker history`, so shouldn't be used to pass build time secrets. Use [secret mounts](https://docs.docker.com/engine/reference/builder/#run---mounttypesecret) for this instead.
+
+### Adding build secrets
+
+The Dockerfile may also make use of [build secrets](https://docs.docker.com/build/building/secrets).
+
+They are configured in the GUI the same way as build args. The values passed here can be used in RUN commands in the Dockerfile:
+```
+RUN --mount=type=secret,id=SECRET_KEY \
+  SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
+```
+
+These values will not be visible with `docker history` command.

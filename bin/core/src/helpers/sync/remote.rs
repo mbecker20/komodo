@@ -19,20 +19,27 @@ pub async fn get_remote_resources(
   String,
 )> {
   let name = to_monitor_name(&sync.name);
-  let clone_args: CloneArgs = sync.into();
+  let mut clone_args: CloneArgs = sync.into();
 
   let config = core_config();
 
-  let github_token = clone_args
-    .github_account
-    .as_ref()
-    .map(|account| {
-      config.github_accounts.get(account).ok_or_else(|| {
-        anyhow!("did not find github token for account {account}")
+  let access_token = match (&clone_args.account, &clone_args.provider) {
+    (None, _) => None,
+    (Some(_), None) => return Err(anyhow!("Account is configured, but provider is empty")),
+    (Some(username), Some(provider)) => config
+      .git_providers
+      .iter()
+      .find(|_provider| {
+        &_provider.domain == provider
       })
-    })
-    .transpose()?
-    .cloned();
+      .and_then(|provider| {
+        clone_args.https = provider.https;
+        provider.accounts.iter().find(|account| &account.username == username).map(|account| &account.token)
+      })
+      .with_context(|| format!("did not find git token for account {username} | provider: {provider}"))?
+      .to_owned()
+      .into(),
+  };
 
   fs::create_dir_all(&config.sync_directory)
     .context("failed to create sync directory")?;
@@ -44,7 +51,7 @@ pub async fn get_remote_resources(
   let _lock = lock.lock().await;
 
   let mut logs =
-    git::clone(clone_args, &config.sync_directory, github_token)
+    git::clone(clone_args, &config.sync_directory, access_token)
       .await
       .context("failed to clone resource repo")?;
 

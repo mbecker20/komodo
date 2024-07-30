@@ -163,7 +163,9 @@ impl Resolve<GetSyncWebhooksEnabled, User> for State {
     )
     .await?;
 
-    if sync.config.repo.is_empty() {
+    if sync.config.git_provider != "github.com"
+      || sync.config.repo.is_empty()
+    {
       return Ok(GetSyncWebhooksEnabledResponse {
         managed: false,
         refresh_enabled: false,
@@ -195,11 +197,11 @@ impl Resolve<GetSyncWebhooksEnabled, User> for State {
 
     let CoreConfig {
       host,
-      github_webhook_base_url,
+      webhook_base_url,
       ..
     } = core_config();
 
-    let host = github_webhook_base_url.as_ref().unwrap_or(host);
+    let host = webhook_base_url.as_ref().unwrap_or(host);
     let refresh_url =
       format!("{host}/listener/github/sync/{}/refresh", sync.id);
     let sync_url =

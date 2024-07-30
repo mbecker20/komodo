@@ -41,7 +41,11 @@ pub use user::*;
 pub use user_group::*;
 pub use variable::*;
 
-use crate::entities::Timelength;
+use crate::entities::{
+  config::{DockerRegistry, GitProvider},
+  update::ResourceTarget,
+  Timelength,
+};
 
 pub trait MonitorReadRequest: HasResponse {}
 
@@ -67,7 +71,7 @@ pub struct GetVersionResponse {
 
 //
 
-/// Get info about the core api.
+/// Get info about the core api configuration.
 /// Response: [GetCoreInfoResponse].
 #[typeshare]
 #[derive(
@@ -85,8 +89,8 @@ pub struct GetCoreInfoResponse {
   pub title: String,
   /// The monitoring interval of this core api.
   pub monitoring_interval: Timelength,
-  /// The github webhook base url to use with github webhooks.
-  pub github_webhook_base_url: String,
+  /// The webhook base url.
+  pub webhook_base_url: String,
   /// Whether transparent mode is enabled, which gives all users read access to all resources.
   pub transparent_mode: bool,
   /// Whether UI write access should be disabled
@@ -97,15 +101,82 @@ pub struct GetCoreInfoResponse {
 
 //
 
-/// Get the available aws ecr config labels from the core config.
-/// Response: [GetAvailableAwsEcrLabelsResponse].
+/// List the git providers.
+/// Response: [ListGitProvidersResponse].
+///
+/// Includes:
+///   - providers in core config
+///   - providers configured on builds, repos, syncs
+///   - providers on the optional Server or Builder
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetAvailableAwsEcrLabelsResponse)]
-pub struct GetAvailableAwsEcrLabels {}
+#[response(ListGitProvidersResponse)]
+pub struct ListGitProviders {
+  /// Accepts an optional Server or Builder target to expand the core list with
+  /// providers available on that specific resource.
+  pub target: Option<ResourceTarget>,
+}
 
 #[typeshare]
-pub type GetAvailableAwsEcrLabelsResponse = Vec<String>;
+pub type ListGitProvidersResponse = Vec<GitProvider>;
+
+//
+
+/// List the suggested docker registry providers.
+/// Response: [ListDockerRegistriesResponse].
+///
+/// Includes:
+///   - registries in core config
+///   - registries configured on builds, deployments
+///   - registries on the optional Server or Builder
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListDockerRegistriesResponse)]
+pub struct ListDockerRegistries {
+  /// Accepts an optional Server or Builder target to expand the core list with
+  /// providers available on that specific resource.
+  pub target: Option<ResourceTarget>,
+}
+
+#[typeshare]
+pub type ListDockerRegistriesResponse = Vec<DockerRegistry>;
+
+//
+
+/// List the available aws ecr config labels from the core config.
+/// Response: [ListAwsEcrLabelsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListAwsEcrLabelsResponse)]
+pub struct ListAwsEcrLabels {}
+
+#[typeshare]
+pub type ListAwsEcrLabelsResponse = Vec<String>;
+
+//
+
+/// List the available secrets from the core config.
+/// Response: [ListSecretsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListSecretsResponse)]
+pub struct ListSecrets {
+  /// Accepts an optional Server or Builder target to expand the core list with
+  /// providers available on that specific resource.
+  pub target: Option<ResourceTarget>,
+}
+
+#[typeshare]
+pub type ListSecretsResponse = Vec<String>;

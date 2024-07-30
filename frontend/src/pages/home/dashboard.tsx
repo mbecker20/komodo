@@ -45,7 +45,7 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
   return (
     <div className="flex gap-4">
       <Components.Dashboard />
-      <div className="hidden lg:flex gap-4 w-full">
+      <div className="hidden md:flex gap-4 w-full">
         <div className="py-2">
           <Separator orientation="vertical" />
         </div>

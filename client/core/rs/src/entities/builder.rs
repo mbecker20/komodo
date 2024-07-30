@@ -6,6 +6,7 @@ use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
+  config::{DockerRegistry, GitProvider},
   resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
   MergePartial,
 };
@@ -38,6 +39,7 @@ pub struct BuilderListItemInfo {
   EnumString
 )]
 #[serde(tag = "type", content = "params")]
+#[allow(clippy::large_enum_variant)]
 pub enum BuilderConfig {
   /// Use a connected server an image builder.
   Server(ServerBuilderConfig),
@@ -65,6 +67,7 @@ impl Default for BuilderConfig {
   EnumString
 )]
 #[serde(tag = "type", content = "params")]
+#[allow(clippy::large_enum_variant)]
 pub enum PartialBuilderConfig {
   Server(_PartialServerBuilderConfig),
   Aws(_PartialAwsBuilderConfig),
@@ -224,12 +227,13 @@ impl MergePartial for BuilderConfig {
               .use_public_ip
               .unwrap_or(config.use_public_ip),
             port: partial.port.unwrap_or(config.port),
-            github_accounts: partial
-              .github_accounts
-              .unwrap_or(config.github_accounts),
-            docker_accounts: partial
-              .docker_accounts
-              .unwrap_or(config.docker_accounts),
+            git_providers: partial
+              .git_providers
+              .unwrap_or(config.git_providers),
+            docker_registries: partial
+              .docker_registries
+              .unwrap_or(config.docker_registries),
+            secrets: partial.secrets.unwrap_or(config.secrets),
           };
           BuilderConfig::Aws(config)
         }
@@ -308,12 +312,15 @@ pub struct AwsBuilderConfig {
   /// This should include a security group to allow core inbound access to the periphery port.
   pub security_group_ids: Vec<String>,
 
-  /// Which github accounts (usernames) are available on the AMI
+  /// Which git providers are available on the AMI
   #[serde(default)]
-  pub github_accounts: Vec<String>,
-  /// Which dockerhub accounts (usernames) are available on the AMI
+  pub git_providers: Vec<GitProvider>,
+  /// Which docker registries are available on the AMI.
   #[serde(default)]
-  pub docker_accounts: Vec<String>,
+  pub docker_registries: Vec<DockerRegistry>,
+  /// Which secrets are available on the AMI.
+  #[serde(default)]
+  pub secrets: Vec<String>,
 }
 
 impl Default for AwsBuilderConfig {
@@ -329,8 +336,9 @@ impl Default for AwsBuilderConfig {
       key_pair_name: Default::default(),
       assign_public_ip: false,
       use_public_ip: false,
-      github_accounts: Default::default(),
-      docker_accounts: Default::default(),
+      git_providers: Default::default(),
+      docker_registries: Default::default(),
+      secrets: Default::default(),
     }
   }
 }

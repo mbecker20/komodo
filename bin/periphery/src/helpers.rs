@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  build::{CloudRegistryConfig, ImageRegistry},
+  build::{ImageRegistry, StandardRegistryConfig},
   config::core::AwsEcrConfig,
   EnvironmentVar,
 };
@@ -8,22 +8,29 @@ use run_command::async_run_command;
 
 use crate::config::periphery_config;
 
-pub fn get_github_token(
-  github_account: &String,
+pub fn get_git_token(
+  domain: &str,
+  account_username: &str,
 ) -> anyhow::Result<&'static String> {
   periphery_config()
-    .github_accounts
-    .get(github_account)
-    .with_context(|| format!("did not find token in config for github account {github_account}"))
+    .git_providers
+    .iter()
+    .find(|_provider| _provider.domain == domain)
+    .and_then(|provider| provider.accounts
+        .iter()
+          .find(|account| account.username == account_username).map(|account| &account.token))
+    .with_context(|| format!("did not find token in config for git account {account_username} | domain {domain}"))
 }
 
 pub fn get_docker_token(
-  docker_account: &String,
+  domain: &str,
+  account_username: &str,
 ) -> anyhow::Result<&'static String> {
   periphery_config()
-    .docker_accounts
-    .get(docker_account)
-    .with_context(|| format!("did not find token in config for docker account {docker_account}"))
+    .docker_registries
+    .iter().find(|registry| registry.domain == domain)
+    .and_then(|registry| registry.accounts.iter().find(|account| account.username == account_username).map(|account| &account.token))
+    .with_context(|| format!("did not find token in config for docker account {account_username} | domain {domain}"))
 }
 
 pub fn parse_extra_args(extra_args: &[String]) -> String {
@@ -52,76 +59,57 @@ pub async fn docker_login(
   // For local config override from core.
   aws_ecr: Option<&AwsEcrConfig>,
 ) -> anyhow::Result<bool> {
-  match registry {
-    ImageRegistry::None(_) => Ok(false),
-    ImageRegistry::DockerHub(CloudRegistryConfig {
-      account, ..
-    }) => {
-      if account.is_empty() {
-        return Err(anyhow!(
-          "Must configure account for DockerHub registry"
-        ));
-      }
-      let registry_token = match registry_token {
-        Some(token) => token,
-        None => get_docker_token(account)?,
-      };
-      let log = async_run_command(&format!(
-        "docker login -u {account} -p {registry_token}",
-      ))
-      .await;
-      if log.success() {
-        Ok(true)
-      } else {
-        Err(anyhow!(
-          "dockerhub login error: stdout: {} | stderr: {}",
-          log.stdout,
-          log.stderr
-        ))
-      }
-    }
-    ImageRegistry::Ghcr(CloudRegistryConfig { account, .. }) => {
-      if account.is_empty() {
-        return Err(anyhow!(
-          "Must configure account for GithubContainerRegistry"
-        ));
-      }
-      let registry_token = match registry_token {
-        Some(token) => token,
-        None => get_github_token(account)?,
-      };
-      let log = async_run_command(&format!(
-        "docker login ghcr.io -u {account} -p {registry_token}",
-      ))
-      .await;
-      if log.success() {
-        Ok(true)
-      } else {
-        Err(anyhow!(
-          "ghcr login error: stdout: {} | stderr: {}",
-          log.stdout,
-          log.stderr
-        ))
-      }
-    }
+  let (domain, account) = match registry {
+    // Early return for no login
+    ImageRegistry::None(_) => return Ok(false),
+    // Early return because Ecr is different
     ImageRegistry::AwsEcr(label) => {
       let AwsEcrConfig { region, account_id } = aws_ecr
         .with_context(|| {
-          format!("Could not find aws ecr config for label {label}")
+          if label.is_empty() {
+            String::from("Could not find aws ecr config")
+          } else {
+            format!("Could not find aws ecr config for label {label}")
+          }
         })?;
       let registry_token = registry_token
         .context("aws ecr build missing registry token from core")?;
-      let log = async_run_command(&format!("docker login {account_id}.dkr.ecr.{region}.amazonaws.com -u AWS -p {registry_token}")).await;
+      let command = format!("docker login {account_id}.dkr.ecr.{region}.amazonaws.com -u AWS -p {registry_token}");
+      let log = async_run_command(&command).await;
       if log.success() {
-        Ok(true)
+        return Ok(true);
       } else {
-        Err(anyhow!(
+        return Err(anyhow!(
           "aws ecr login error: stdout: {} | stderr: {}",
           log.stdout,
           log.stderr
-        ))
+        ));
       }
     }
-    ImageRegistry::Custom(_) => todo!(),
+    ImageRegistry::Standard(StandardRegistryConfig {
+      domain,
+      account,
+      ..
+    }) => (domain.as_str(), account),
+  };
+  if account.is_empty() {
+    return Err(anyhow!("Must configure account for registry domain {domain}, got empty string"));
+  }
+  let registry_token = match registry_token {
+    Some(token) => token,
+    None => get_docker_token(domain, account)?,
+  };
+  let log = async_run_command(&format!(
+    "docker login {domain} -u {account} -p {registry_token}",
+  ))
+  .await;
+  if log.success() {
+    Ok(true)
+  } else {
+    Err(anyhow!(
+      "{domain} login error: stdout: {} | stderr: {}",
+      log.stdout,
+      log.stderr
+    ))
   }
 }

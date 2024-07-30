@@ -1,4 +1,8 @@
-use monitor_client::entities::{update::Log, SystemCommand};
+use monitor_client::entities::{
+  config::{DockerRegistry, GitProvider},
+  update::Log,
+  SystemCommand,
+};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
@@ -31,20 +35,24 @@ pub struct GetVersionResponse {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetAccountsResponse)]
-pub struct GetAccounts {}
+#[response(ListGitProvidersResponse)]
+pub struct ListGitProviders {}
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetAccountsResponse {
-  pub docker: Vec<String>,
-  pub github: Vec<String>,
-}
+pub type ListGitProvidersResponse = Vec<GitProvider>;
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(ListDockerRegistriesResponse)]
+pub struct ListDockerRegistries {}
+
+pub type ListDockerRegistriesResponse = Vec<DockerRegistry>;
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<String>)]
-pub struct GetSecrets {}
+pub struct ListSecrets {}
 
 //
 
