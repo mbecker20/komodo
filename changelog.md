@@ -1,5 +1,9 @@
 # Changelog
 
+## <ins>v1.12 (July 2024)</ins>
+- Break free of Github dependance. Use other git providers, including self hosted ones.
+- Same for Docker registry. You can also now use any docker registry for your images.
+
 ## <ins>v1 (Spring 2024)</ins>
 
 - **New resource types**:
