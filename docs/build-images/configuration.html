@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.4.0">
 <title data-rh="true">Configuration | monitor</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs.monitor.mogh.tech/img/monitor-lizard.png"><meta data-rh="true" name="twitter:image" content="https://docs.monitor.mogh.tech/img/monitor-lizard.png"><meta data-rh="true" property="og:url" content="https://docs.monitor.mogh.tech/docs/build-images/configuration"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Configuration | monitor"><meta data-rh="true" name="description" content="Monitor just needs a bit of information in order to build your image."><meta data-rh="true" property="og:description" content="Monitor just needs a bit of information in order to build your image."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs.monitor.mogh.tech/docs/build-images/configuration"><link data-rh="true" rel="alternate" href="https://docs.monitor.mogh.tech/docs/build-images/configuration" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs.monitor.mogh.tech/docs/build-images/configuration" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.e113b30e.css">
-<script src="/assets/js/runtime~main.bdc8f30f.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.887d3e0c.js" defer="defer"></script>
 <script src="/assets/js/main.4ad01614.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -23,9 +23,9 @@ or in the periphery configuration of the building server.</p>
 <p>If the build directory is the root of the repository, you pass the build path as <code>.</code>. If the build directory is some folder of the repo, just pass the name of the the folder. Do not pass the preceding &quot;/&quot;. for example <code>build/directory</code></p>
 <p>The dockerfile&#x27;s path is given relative to the build directory. So if your build directory is <code>build/directory</code> and the dockerfile is in <code>build/directory/Dockerfile.example</code>, you give the dockerfile path simply as <code>Dockerfile.example</code>.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="image-registry">Image registry<a class="hash-link" aria-label="Direct link to Image registry" title="Direct link to Image registry" href="/docs/build-images/configuration#image-registry">​</a></h3>
-<p>Monitor supports pushing to DockerHub and Github Container Registry (ghcr.io).
-Any of the Docker / Github accounts that are specified in config, between the core config and builder, will be available to use.
-Additionally, allowed organizations for both DockerHub and Github can be specified on the core config and attached to builds.
+<p>Monitor supports pushing to any docker registry.
+Any of the accounts that are specified in config for the specific registry, between the core config and builder, will be available to use for authentication against the registry.
+Additionally, allowed organizations on the docker registry can be specified on the core config and attached to builds.
 Doing so will cause the images to be published under the organization&#x27;s namespace rather than the account&#x27;s.</p>
 <p>When connecting a build to a deployments, the default behavior is for the deployment to inherit the registry configuration from the build.
 In cases where that account isn&#x27;t available to the deployment, another account can be chosen in the deployment config.</p>
