@@ -300,6 +300,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
             registry_token,
             aws_ecr,
             replacers: secret_replacers.into_iter().collect(),
+            additional_tags: Default::default(),
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
           info!("build cancelled during build, cleaning up builder");
