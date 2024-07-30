@@ -271,14 +271,14 @@ fn default_config_path() -> String {
 /// [secrets]
 /// # SECRET_1 = "value_1"
 /// # SECRET_2 = "value_2"
-/// 
+///
 /// ## configure git providers
 /// # [[git_provider]]
 /// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
 /// # accounts = [
 /// #     { username = "mbecker20", token = "access_token_for_account" },
 /// # ]
-/// 
+///
 /// ## configure docker registries
 /// # [[docker_registry]]
 /// # domain = "docker.io"
@@ -475,6 +475,30 @@ impl CoreConfig {
       empty_or_redacted(&config.aws.access_key_id);
     config.aws.secret_access_key =
       empty_or_redacted(&config.aws.secret_access_key);
+
+    config.hetzner.token = empty_or_redacted(&config.hetzner.token);
+
+    config.secrets.iter_mut().for_each(|(_, secret)| {
+      *secret = empty_or_redacted(secret);
+    });
+
+    config.git_providers.iter_mut().for_each(|provider| {
+      provider.accounts.iter_mut().for_each(|account| {
+        account.token = empty_or_redacted(&account.token);
+      })
+    });
+
+    config.docker_registries.iter_mut().for_each(|provider| {
+      provider.accounts.iter_mut().for_each(|account| {
+        account.token = empty_or_redacted(&account.token);
+      })
+    });
+
+    config.aws_ecr_registries.iter_mut().for_each(|ecr| {
+      ecr.access_key_id = empty_or_redacted(&ecr.access_key_id);
+      ecr.secret_access_key =
+        empty_or_redacted(&ecr.secret_access_key);
+    });
 
     config
   }
