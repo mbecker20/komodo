@@ -15,7 +15,11 @@ export const Settings = () => {
   const currentView = view === "Users" && !user?.admin ? "Variables" : view;
   return (
     <Page>
-      <Tabs value={currentView} onValueChange={setView} className="grid gap-6">
+      <Tabs
+        value={currentView}
+        onValueChange={setView}
+        className="flex flex-col gap-6"
+      >
         <div className="flex items-center justify-between">
           <TabsList className="justify-start w-fit">
             <TabsTrigger value="Variables">Variables</TabsTrigger>

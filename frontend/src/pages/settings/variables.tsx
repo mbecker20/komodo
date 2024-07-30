@@ -94,12 +94,14 @@ export const Variables = () => {
         columns={[
           {
             accessorKey: "name",
+            size: 200,
             header: ({ column }) => (
               <SortableHeader column={column} title="Name" />
             ),
           },
           {
             accessorKey: "value",
+            size: 300,
             header: ({ column }) => (
               <SortableHeader column={column} title="Value" />
             ),
@@ -133,6 +135,7 @@ export const Variables = () => {
           },
           {
             accessorKey: "description",
+            size: 200,
             header: "Description",
             cell: ({ row }) => {
               return (
@@ -164,6 +167,7 @@ export const Variables = () => {
           },
           {
             header: "Delete",
+            maxSize: 200,
             cell: ({ row }) => <DeleteVariable name={row.original.name} />,
           },
         ]}
