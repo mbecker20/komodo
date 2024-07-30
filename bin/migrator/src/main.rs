@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate tracing;
 
+use anyhow::Context;
 use monitor_client::entities::{
   build::Build, deployment::Deployment, permission::Permission,
   server::Server, update::Update, user::User,
@@ -24,10 +25,12 @@ enum Migration {
 #[derive(Deserialize)]
 struct Env {
   migration: Migration,
-  legacy_uri: String,
-  legacy_db_name: String,
   target_uri: String,
   target_db_name: String,
+  /// Only needed for v0 migration
+  legacy_uri: Option<String>,
+  /// Only needed for v0 migration
+  legacy_db_name: Option<String>,
 }
 
 #[tokio::main]
@@ -42,8 +45,12 @@ async fn main() -> anyhow::Result<()> {
   match env.migration {
     Migration::V0 => {
       let legacy_db = legacy::v0::DbClient::new(
-        &env.legacy_uri,
-        &env.legacy_db_name,
+        &env.legacy_uri.context(
+          "must provide LEGACY_URI in env for v0 migration",
+        )?,
+        &env.legacy_db_name.context(
+          "must provide LEGACY_DB_NAME in env for v0 migration",
+        )?,
       )
       .await;
       let target_db =
