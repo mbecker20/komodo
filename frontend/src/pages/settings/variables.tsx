@@ -124,7 +124,7 @@ export const Variables = () => {
                       });
                     }}
                   >
-                    <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
+                    <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis text-muted-foreground w-[200px] xl:w-[240px] 2xl:w-[340px]">
                       {row.original.value || "Set value"}
                     </div>
                   </Card>
