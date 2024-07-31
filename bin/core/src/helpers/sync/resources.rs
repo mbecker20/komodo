@@ -2,16 +2,7 @@ use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::execute::Execution,
   entities::{
-    self,
-    alerter::Alerter,
-    build::Build,
-    builder::{Builder, BuilderConfig},
-    procedure::Procedure,
-    repo::Repo,
-    server::Server,
-    server_template::ServerTemplate,
-    update::{Log, ResourceTarget},
-    user::sync_user,
+    self, alerter::Alerter, build::Build, builder::{Builder, BuilderConfig}, procedure::Procedure, repo::Repo, server::Server, server_template::ServerTemplate, stack::Stack, update::{Log, ResourceTarget}, user::sync_user
   },
 };
 use partial_derive2::{MaybeNone, PartialDiff};
@@ -73,6 +64,27 @@ impl ResourceSync for Build {
 impl ResourceSync for Repo {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Repo(id)
+  }
+
+  fn get_diff(
+    mut original: Self::Config,
+    update: Self::PartialConfig,
+    resources: &AllResourcesById,
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    // Need to replace server id with name
+    original.server_id = resources
+      .servers
+      .get(&original.server_id)
+      .map(|s| s.name.clone())
+      .unwrap_or_default();
+
+    Ok(original.partial_diff(update))
+  }
+}
+
+impl ResourceSync for Stack {
+  fn resource_target(id: String) -> ResourceTarget {
+    ResourceTarget::Stack(id)
   }
 
   fn get_diff(
