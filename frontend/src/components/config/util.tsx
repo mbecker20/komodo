@@ -56,7 +56,11 @@ export const ConfigItem = ({
         className
       )}
     >
-      {label && <div>{snake_case_to_upper_space_case(label)}</div>}
+      {label && (
+        <div className="text-nowrap">
+          {snake_case_to_upper_space_case(label)}
+        </div>
+      )}
       {children}
     </div>
     <div className="w-full h-0 border-b last:hidden" />
@@ -270,7 +274,11 @@ export const ProviderSelectorConfig = (params: {
     <ConfigItem label={`${params.account_type} Provider`}>
       {params.account_type === "git" ? (
         <div className="flex items-center justify-end gap-2 w-[75%]">
-          <Button variant="ghost" onClick={params.onHttpsSwitch} className="py-0 px-2">
+          <Button
+            variant="ghost"
+            onClick={params.onHttpsSwitch}
+            className="py-0 px-2"
+          >
             {`http${params.https ? "s" : ""}://`}
           </Button>
           <ProviderSelector {...params} />

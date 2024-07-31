@@ -34,8 +34,8 @@ export const AlertTypeConfig = ({
   );
   return (
     <ConfigItem label="Alert Types">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4 justify-end">
+        <div className="flex items-center justify-end flex-wrap gap-2 w-[75%]">
           {alert_types.map((type) => (
             <Badge
               variant="secondary"
