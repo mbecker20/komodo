@@ -225,6 +225,7 @@ pub enum ResourceTarget {
   Procedure(String),
   ServerTemplate(String),
   ResourceSync(String),
+  Stack(String),
 }
 
 impl ResourceTarget {
@@ -242,6 +243,7 @@ impl ResourceTarget {
       ResourceTarget::Procedure(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
       ResourceTarget::ResourceSync(id) => id,
+      ResourceTarget::Stack(id) => id,
     };
     (self.extract_variant(), id)
   }

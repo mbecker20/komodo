@@ -3,7 +3,7 @@ resolver = "2"
 members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
-version = "1.12.0"
+version = "1.13.0"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
@@ -40,7 +40,7 @@ mungos = "1.0.0"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.38.1", features = ["full"] }
+tokio = { version = "1.39.2", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json"] }
 tokio-util = "0.7.11"
 futures = "0.3.30"
@@ -57,8 +57,8 @@ tokio-tungstenite = "0.23.1"
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 strum = { version = "0.26.3", features = ["derive"] }
-serde_json = "1.0.120"
-toml = "0.8.15"
+serde_json = "1.0.121"
+toml = "0.8.16"
 
 # ERROR
 anyhow = "1.0.86"
@@ -73,7 +73,7 @@ opentelemetry = "0.23.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.9", features = ["derive"] }
+clap = { version = "4.5.11", features = ["derive"] }
 dotenv = "0.15.0"
 envy = "0.4.2"
 
@@ -90,13 +90,13 @@ jwt = "0.16.0"
 hex = "0.4.3"
 
 # SYSTEM
-bollard = "0.16.1"
+bollard = "0.17.0"
 sysinfo = "0.30.13"
 
 # CLOUD
 aws-config = "1.5.4"
-aws-sdk-ec2 = "1.60.0"
-aws-sdk-ecr = "1.35.0"
+aws-sdk-ec2 = "1.61.0"
+aws-sdk-ecr = "1.36.0"
 
 # MISC
 derive_builder = "0.20.0"

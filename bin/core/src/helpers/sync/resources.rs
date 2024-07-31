@@ -261,6 +261,20 @@ impl ResourceSync for Procedure {
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
+          Execution::DeployStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DestroyStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
           Execution::Sleep(_) => {}
         }
       }

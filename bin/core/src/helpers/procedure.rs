@@ -337,6 +337,40 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::DeployStack(req) => {
+      // let req = ExecuteRequest::DeployStack(req);
+      // let update = init_execution_update(&req, &user).await?;
+      // let ExecuteRequest::DeployStack(req) = req else {
+      //   unreachable!()
+      // };
+      // let update_id = update.id.clone();
+      // handle_resolve_result(
+      //   State
+      //     .resolve(req, (user, update))
+      //     .await
+      //     .context("failed at DeployStack"),
+      //   &update_id,
+      // )
+      // .await?
+      todo!()
+    }
+    Execution::DestroyStack(req) => {
+      // let req = ExecuteRequest::DestroyStack(req);
+      // let update = init_execution_update(&req, &user).await?;
+      // let ExecuteRequest::DestroyStack(req) = req else {
+      //   unreachable!()
+      // };
+      // let update_id = update.id.clone();
+      // handle_resolve_result(
+      //   State
+      //     .resolve(req, (user, update))
+      //     .await
+      //     .context("failed at DestroyStack"),
+      //   &update_id,
+      // )
+      // .await?
+      todo!()
+    }
     Execution::Sleep(req) => {
       tokio::time::sleep(Duration::from_millis(
         req.duration_ms as u64,

@@ -15,6 +15,7 @@ use monitor_client::{
     repo::Repo,
     resource::Resource,
     server::Server,
+    stack::Stack,
     sync::ResourceSync,
     update::{ResourceTargetVariant, Update},
     user::User,
@@ -279,6 +280,24 @@ async fn validate_config(
           )
           .await?;
           params.sync = sync.id;
+        }
+        Execution::DeployStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
+        Execution::DestroyStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
         }
         Execution::Sleep(_) => {}
       }

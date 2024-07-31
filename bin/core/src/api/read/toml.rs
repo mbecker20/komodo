@@ -25,6 +25,7 @@ use monitor_client::{
     resource::{Resource, ResourceQuery},
     server::Server,
     server_template::ServerTemplate,
+    stack::Stack,
     sync::ResourceSync,
     toml::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
@@ -301,6 +302,24 @@ impl Resolve<ExportResourcesToToml, User> for State {
           );
           res.repos.push(convert_resource::<Repo>(repo, &names.tags))
         }
+        ResourceTarget::Stack(id) => {
+          let mut stack = resource::get_check_permissions::<Stack>(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          // replace stack server with name
+          stack.config.server_id.clone_from(
+            names
+              .servers
+              .get(&stack.config.server_id)
+              .unwrap_or(&String::new()),
+          );
+          res
+            .stacks
+            .push(convert_resource::<Stack>(stack, &names.tags))
+        }
         ResourceTarget::Procedure(id) => {
           add_procedure(&id, &mut res, &user, &names)
             .await
@@ -404,6 +423,12 @@ async fn add_procedure(
         Execution::RunSync(exec) => exec.sync.clone_from(
           names.syncs.get(&exec.sync).unwrap_or(&String::new()),
         ),
+        Execution::DeployStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
+        Execution::DestroyStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
         Execution::Sleep(_) | Execution::None(_) => {}
       }
     }
@@ -424,6 +449,7 @@ struct ResourceNames {
   deployments: HashMap<String, String>,
   procedures: HashMap<String, String>,
   syncs: HashMap<String, String>,
+  stacks: HashMap<String, String>,
   alerters: HashMap<String, String>,
   templates: HashMap<String, String>,
 }
@@ -477,6 +503,12 @@ impl ResourceNames {
       syncs: find_collect(&db.resource_syncs, None, None)
         .await
         .context("failed to get all resource syncs")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      stacks: find_collect(&db.stacks, None, None)
+        .await
+        .context("failed to get all stacks")?
         .into_iter()
         .map(|t| (t.id, t.name))
         .collect::<HashMap<_, _>>(),
@@ -557,6 +589,9 @@ async fn add_user_groups(
           }
           ResourceTarget::ResourceSync(id) => {
             *id = names.syncs.get(id).cloned().unwrap_or_default()
+          }
+          ResourceTarget::Stack(id) => {
+            *id = names.stacks.get(id).cloned().unwrap_or_default()
           }
           ResourceTarget::System(_) => {}
         }

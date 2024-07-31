@@ -520,6 +520,7 @@ pub struct AllResourcesById {
   pub alerters: HashMap<String, Alerter>,
   pub templates: HashMap<String, ServerTemplate>,
   pub syncs: HashMap<String, entities::sync::ResourceSync>,
+  pub stacks: HashMap<String, entities::stack::Stack>,
 }
 
 impl AllResourcesById {
@@ -547,6 +548,10 @@ impl AllResourcesById {
       .await?,
       syncs: crate::resource::get_id_to_resource_map::<
         entities::sync::ResourceSync,
+      >()
+      .await?,
+      stacks: crate::resource::get_id_to_resource_map::<
+        entities::stack::Stack,
       >()
       .await?,
     })

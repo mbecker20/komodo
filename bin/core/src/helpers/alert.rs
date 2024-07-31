@@ -422,6 +422,9 @@ fn resource_link(
     ResourceTargetVariant::ResourceSync => {
       format!("/resource-syncs/{id}")
     }
+    ResourceTargetVariant::Stack => {
+      format!("/stacks/{id}")
+    }
   };
 
   format!("{}{path}", core_config().host)

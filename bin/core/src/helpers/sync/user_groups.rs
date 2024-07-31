@@ -206,6 +206,13 @@ pub async fn get_updates_for_view(
               .map(|b| b.name.clone())
               .unwrap_or_default()
           }
+          ResourceTarget::Stack(id) => {
+            *id = all_resources
+              .stacks
+              .get(id)
+              .map(|b| b.name.clone())
+              .unwrap_or_default()
+          }
         }
         PermissionToml {
           target: p.resource_target,
@@ -520,6 +527,13 @@ pub async fn get_updates_for_execution(
           ResourceTarget::ResourceSync(id) => {
             *id = all_resources
               .syncs
+              .get(id)
+              .map(|b| b.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Stack(id) => {
+            *id = all_resources
+              .stacks
               .get(id)
               .map(|b| b.name.clone())
               .unwrap_or_default()
@@ -964,6 +978,19 @@ async fn expand_user_group_permissions(
             .filter(|resource| regex.is_match(&resource.name))
             .map(|resource| PermissionToml {
               target: ResourceTarget::ResourceSync(
+                resource.name.clone(),
+              ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Stack => {
+          let permissions = all_resources
+            .stacks
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Stack(
                 resource.name.clone(),
               ),
               level: permission.level,

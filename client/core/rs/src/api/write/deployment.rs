@@ -66,6 +66,9 @@ pub struct DeleteDeployment {
 /// Update the deployment at the given id, and return the updated deployment.
 /// Response: [Deployment].
 ///
+/// Note. If the attached server for the deployment changes,
+/// the deployment will be deleted / cleaned up on the old server.
+///
 /// Note. This method updates only the fields which are set in the [_PartialDeploymentConfig],
 /// effectively merging diffs into the final document.
 /// This is helpful when multiple users are using

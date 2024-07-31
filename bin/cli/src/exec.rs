@@ -60,6 +60,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunSync(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::DeployStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::DestroyStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::Sleep(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -109,6 +115,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::RunSync(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::DeployStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::DestroyStack(request) => {
       monitor_client().execute(request).await
     }
     Execution::Sleep(request) => {

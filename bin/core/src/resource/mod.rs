@@ -49,6 +49,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 
 pub use build::{
@@ -465,6 +466,9 @@ fn resource_target<T: MonitorResource>(id: String) -> ResourceTarget {
     }
     ResourceTargetVariant::ResourceSync => {
       ResourceTarget::ResourceSync(id)
+    }
+    ResourceTargetVariant::Stack => {
+      ResourceTarget::Stack(id)
     }
   }
 }

@@ -11,6 +11,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 
 pub use build::*;
@@ -19,6 +20,7 @@ pub use procedure::*;
 pub use repo::*;
 pub use server::*;
 pub use server_template::*;
+pub use stack::*;
 pub use sync::*;
 
 use crate::entities::{NoData, I64};
@@ -74,6 +76,10 @@ pub enum Execution {
 
   // SYNC
   RunSync(RunSync),
+
+  // STACK
+  DeployStack(DeployStack),
+  DestroyStack(DestroyStack),
 
   // SLEEP
   Sleep(Sleep),

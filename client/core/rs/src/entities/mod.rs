@@ -45,6 +45,8 @@ pub mod resource;
 pub mod server;
 /// Subtypes of [ServerTemplate][server_template::ServerTemplate].
 pub mod server_template;
+/// Subtypes of [Stack][stack::Stack]
+pub mod stack;
 /// Subtypes of [ResourceSync][sync::ResourceSync]
 pub mod sync;
 /// Subtypes of [Tag][tag::Tag].
@@ -556,6 +558,23 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
   }
 }
 
+impl From<&self::stack::Stack> for CloneArgs {
+  fn from(compose: &self::stack::Stack) -> Self {
+    CloneArgs {
+      name: compose.name.clone(),
+      repo: optional_string(&compose.config.repo),
+      branch: optional_string(&compose.config.branch),
+      commit: optional_string(&compose.config.commit),
+      destination: None,
+      on_clone: None,
+      on_pull: None,
+      provider: Some(String::from("github.com")),
+      https: compose.config.git_https,
+      account: optional_string(&compose.config.git_account),
+    }
+  }
+}
+
 #[typeshare]
 #[derive(
   Serialize,
@@ -732,6 +751,13 @@ pub enum Operation {
   UpdateResourceSync,
   DeleteResourceSync,
   RunSync,
+
+  // stack
+  CreateStack,
+  UpdateStack,
+  DeleteStack,
+  DeployStack,
+  DestroyStack,
 
   // variable
   CreateVariable,

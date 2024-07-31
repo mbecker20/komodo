@@ -5,7 +5,7 @@ use monitor_client::{
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, server_template::ServerTemplate,
+    server::Server, server_template::ServerTemplate, stack::Stack,
     sync::ResourceSync, tag::Tag, user::User, user_group::UserGroup,
     variable::Variable,
   },
@@ -267,6 +267,34 @@ pub fn id_to_resource_sync() -> &'static HashMap<String, ResourceSync>
     .expect("failed to get syncs")
     .into_iter()
     .map(|sync| (sync.id.clone(), sync))
+    .collect()
+  })
+}
+
+// pub fn name_to_stack() -> &'static HashMap<String, Stack> {
+//   static NAME_TO_STACK: OnceLock<HashMap<String, Stack>> =
+//     OnceLock::new();
+//   NAME_TO_STACK.get_or_init(|| {
+//     futures::executor::block_on(
+//       monitor_client().read(read::ListFullStacks::default()),
+//     )
+//     .expect("failed to get stacks")
+//     .into_iter()
+//     .map(|stack| (stack.name.clone(), stack))
+//     .collect()
+//   })
+// }
+
+pub fn id_to_stack() -> &'static HashMap<String, Stack> {
+  static ID_TO_STACK: OnceLock<HashMap<String, Stack>> =
+    OnceLock::new();
+  ID_TO_STACK.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListFullStacks::default()),
+    )
+    .expect("failed to get stacks")
+    .into_iter()
+    .map(|stack| (stack.id.clone(), stack))
     .collect()
   })
 }

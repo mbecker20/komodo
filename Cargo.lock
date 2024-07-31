@@ -41,7 +41,7 @@ dependencies = [
 
 [[package]]
 name = "alerter"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "axum 0.7.5",
@@ -778,9 +778,9 @@ dependencies = [
 
 [[package]]
 name = "bollard"
-version = "0.16.1"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0aed08d3adb6ebe0eff737115056652670ae290f177759aac19c30456135f94c"
+checksum = "4a063d51a634c7137ecd9f6390ec78e1c512e84c9ded80198ec7df3339a16a33"
 dependencies = [
  "base64 0.22.1",
  "bollard-stubs",
@@ -793,7 +793,7 @@ dependencies = [
  "hyper 1.4.1",
  "hyper-named-pipe",
  "hyper-util",
- "hyperlocal-next",
+ "hyperlocal",
  "log",
  "pin-project-lite",
  "serde",
@@ -811,9 +811,9 @@ dependencies = [
 
 [[package]]
 name = "bollard-stubs"
-version = "1.44.0-rc.2"
+version = "1.45.0-rc.26.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "709d9aa1c37abb89d40f19f5d0ad6f0d88cb1581264e571c9350fc5bb89cf1c5"
+checksum = "6d7c5415e3a6bc6d3e99eff6268e488fd4ee25e7b28c10f08fa6760bd9de16e4"
 dependencies = [
  "serde",
  "serde_repr",
@@ -967,7 +967,7 @@ dependencies = [
 
 [[package]]
 name = "command"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "monitor_client",
  "run_command",
@@ -1351,7 +1351,7 @@ dependencies = [
 
 [[package]]
 name = "formatting"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "serror",
 ]
@@ -1482,7 +1482,7 @@ checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
 name = "git"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "command",
@@ -1854,10 +1854,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "hyperlocal-next"
-version = "0.9.0"
+name = "hyperlocal"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acf569d43fa9848e510358c07b80f4adf34084ddc28c6a4a651ee8474c070dcc"
+checksum = "986c5ce3b994526b3cd75578e62554abd09f0899d6206de48b3e96ab34ccc8c7"
 dependencies = [
  "hex",
  "http-body-util",
@@ -2083,7 +2083,7 @@ dependencies = [
 
 [[package]]
 name = "logger"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "monitor_client",
@@ -2152,7 +2152,7 @@ dependencies = [
 
 [[package]]
 name = "migrator"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2287,7 +2287,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2307,7 +2307,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_client"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2339,7 +2339,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_core"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2396,7 +2396,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_periphery"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2830,7 +2830,7 @@ checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "periphery_client"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "monitor_client",
@@ -3970,7 +3970,7 @@ dependencies = [
 
 [[package]]
 name = "tests"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "dotenv",
@@ -4571,7 +4571,7 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "update_logger"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "logger",
