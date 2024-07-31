@@ -19,6 +19,8 @@ Will install to paths:
 
 ## User
 
+*Note*. The user running periphery must be a member of the docker group, in order to use the docker cli without sudo.
+
 ```sh
 curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3 - --user
 ```
