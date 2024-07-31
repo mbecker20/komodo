@@ -13,7 +13,7 @@ import { useAuth, useLoginOptions, useUserInvalidate } from "@lib/hooks";
 import { useState } from "react";
 import { ThemeToggle } from "@ui/theme";
 import { AUTH_TOKEN_STORAGE_KEY, MONITOR_BASE_URL } from "@main";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
 
 type OauthProvider = "Github" | "Google";
@@ -94,6 +94,10 @@ export const Login = () => {
     );
   }
 
+  const no_auth_configured =
+    options !== undefined &&
+    Object.values(options).every((value) => value === false);
+
   // Otherwise just standard login
   return (
     <div className="flex flex-col min-h-screen">
@@ -135,6 +139,12 @@ export const Login = () => {
                       />
                     </Button>
                   )
+              )}
+              {no_auth_configured && (
+                <Button variant="destructive" size="icon">
+                  {" "}
+                  <X className="w-4 h-4" />{" "}
+                </Button>
               )}
             </div>
           </CardHeader>
@@ -181,6 +191,21 @@ export const Login = () => {
                 </Button>
               </CardFooter>
             </>
+          )}
+          {no_auth_configured && (
+            <CardContent className="w-full gap-2 text-muted-foreground text-sm">
+              No login methods have been configured. See the
+              <Button variant="link" className="text-sm py-0 px-1">
+                <a
+                  href="https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml#L73"
+                  target="_blank"
+                  className="flex text-sm"
+                >
+                  example config
+                </a>
+              </Button>
+              for information on configuring auth.
+            </CardContent>
           )}
         </Card>
       </div>
