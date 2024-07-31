@@ -1,5 +1,6 @@
 import sys
 import os
+import platform
 import json
 import urllib.request
 
@@ -56,8 +57,14 @@ def copy_binary(user_install, bin_dir, version):
 	if os.path.isfile(bin_path):
 		os.remove(bin_path)
 
+	periphery_bin = "periphery"
+	arch = platform.machine().lower()
+	if arch == "aarch64" or arch == "amd64":
+		print("aarch64 detected")
+		periphery_bin = "periphery-aarch64"
+
 	# download the binary to bin path
-	print(os.popen(f'curl -sSL https://github.com/mbecker20/monitor/releases/download/{version}/periphery > {bin_path}').read())
+	print(os.popen(f'curl -sSL https://github.com/mbecker20/monitor/releases/download/{version}/{periphery_bin} > {bin_path}').read())
 
 	# add executable permissions
 	os.popen(f'chmod +x {bin_path}')
