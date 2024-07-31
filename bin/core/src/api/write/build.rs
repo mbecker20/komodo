@@ -38,13 +38,15 @@ impl Resolve<CopyBuild, User> for State {
     CopyBuild { name, id }: CopyBuild,
     user: User,
   ) -> anyhow::Result<Build> {
-    let Build { config, .. } =
+    let Build { mut config, .. } =
       resource::get_check_permissions::<Build>(
         &id,
         &user,
         PermissionLevel::Write,
       )
       .await?;
+    // reset version to 0.0.0
+    config.version = Default::default();
     resource::create::<Build>(&name, config.into(), &user).await
   }
 }
