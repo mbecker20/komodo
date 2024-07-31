@@ -27,6 +27,7 @@ mod sync;
 mod tag;
 mod user_group;
 mod variable;
+mod stack;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -119,6 +120,14 @@ pub enum WriteRequest {
   RefreshResourceSyncPending(RefreshResourceSyncPending),
   CreateSyncWebhook(CreateSyncWebhook),
   DeleteSyncWebhook(DeleteSyncWebhook),
+
+  // ==== STACK ====
+  CreateStack(CreateStack),
+  CopyStack(CopyStack),
+  DeleteStack(DeleteStack),
+  UpdateStack(UpdateStack),
+  CreateStackWebhook(CreateStackWebhook),
+  DeleteStackWebhook(DeleteStackWebhook),
 
   // ==== TAG ====
   CreateTag(CreateTag),

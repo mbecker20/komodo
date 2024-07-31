@@ -29,6 +29,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 
 #[typeshare]
@@ -65,6 +66,10 @@ pub enum ExecuteRequest {
 
   // ==== SYNC ====
   RunSync(RunSync),
+
+  // ==== STACK ====
+  DeployStack(DeployStack),
+  DestroyStack(DestroyStack),
 }
 
 pub fn router() -> Router {

@@ -7,6 +7,7 @@ use monitor_client::entities::{
   repo::Repo,
   server::Server,
   server_template::ServerTemplate,
+  stack::Stack,
   sync::ResourceSync,
   update::{ResourceTarget, Update, UpdateListItem},
   user::User,
@@ -212,6 +213,20 @@ pub async fn init_execution_update(
       Operation::RunSync,
       ResourceTarget::ResourceSync(
         resource::get::<ResourceSync>(&data.sync).await?.id,
+      ),
+    ),
+
+    // Stack
+    ExecuteRequest::DeployStack(data) => (
+      Operation::DeployStack,
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::DestroyStack(data) => (
+      Operation::DestroyStack,
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
   };

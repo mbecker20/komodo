@@ -40,6 +40,7 @@ mod repo;
 mod search;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 mod tag;
 mod toml;
@@ -145,6 +146,14 @@ enum ReadRequest {
   GetSyncWebhooksEnabled(GetSyncWebhooksEnabled),
   ListResourceSyncs(ListResourceSyncs),
   ListFullResourceSyncs(ListFullResourceSyncs),
+
+  // ==== STACK ====
+  GetStacksSummary(GetStacksSummary),
+  GetStack(GetStack),
+  GetStackActionState(GetStackActionState),
+  GetStackWebhooksEnabled(GetStackWebhooksEnabled),
+  ListStacks(ListStacks),
+  ListFullStacks(ListFullStacks),
 
   // ==== BUILDER ====
   GetBuildersSummary(GetBuildersSummary),

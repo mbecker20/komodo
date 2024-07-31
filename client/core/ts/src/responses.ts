@@ -118,6 +118,14 @@ export type ReadResponses = {
   ListResourceSyncs: Types.ListResourceSyncsResponse;
   ListFullResourceSyncs: Types.ListFullResourceSyncsResponse;
 
+  // ==== STACK ====
+  GetStacksSummary: Types.GetStacksSummaryResponse;
+  GetStack: Types.GetStackResponse;
+  GetStackActionState: Types.GetStackActionStateResponse;
+  GetStackWebhooksEnabled: Types.GetStackWebhooksEnabledResponse;
+  ListStacks: Types.ListStacksResponse;
+  ListFullStacks: Types.ListFullStacksResponse;
+
   // ==== TOML ====
   ExportAllResourcesToToml: Types.ExportAllResourcesToTomlResponse;
   ExportResourcesToToml: Types.ExportResourcesToTomlResponse;
@@ -231,6 +239,14 @@ export type WriteResponses = {
   CreateSyncWebhook: Types.CreateSyncWebhookResponse;
   DeleteSyncWebhook: Types.DeleteSyncWebhookResponse;
 
+  // ==== STACK ====
+  CreateStack: Types.Stack;
+  CopyStack: Types.Stack;
+  DeleteStack: Types.Stack;
+  UpdateStack: Types.Stack;
+  CreateStackWebhook: Types.CreateStackWebhookResponse;
+  DeleteStackWebhook: Types.DeleteStackWebhookResponse;
+
   // ==== TAG ====
   CreateTag: Types.Tag;
   DeleteTag: Types.Tag;
@@ -273,4 +289,8 @@ export type ExecuteResponses = {
 
   // ==== SYNC ====
   RunSync: Types.Update;
+
+  // ==== STACK ====
+  DeployStack: Types.Update;
+  DestroyStack: Types.Update;
 };

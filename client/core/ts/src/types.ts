@@ -114,7 +114,8 @@ export type ResourceTarget =
 	| { type: "Alerter", id: string }
 	| { type: "Procedure", id: string }
 	| { type: "ServerTemplate", id: string }
-	| { type: "ResourceSync", id: string };
+	| { type: "ResourceSync", id: string }
+	| { type: "Stack", id: string };
 
 /** The variants of data related to the alert. */
 export type AlertData = 
@@ -769,6 +770,8 @@ export type Execution =
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "RunSync", params: RunSync }
+	| { type: "DeployStack", params: DeployStack }
+	| { type: "DestroyStack", params: DestroyStack }
 	| { type: "Sleep", params: Sleep };
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
@@ -1117,6 +1120,10 @@ export interface ContainerSummary {
 	state: DeploymentState;
 	/** The status string of the docker container. */
 	status?: string;
+	/** The network mode of the container. */
+	network_mode?: string;
+	/** Network names attached to the container */
+	networks?: string[];
 }
 
 export type GetDockerContainersResponse = ContainerSummary[];
@@ -1246,6 +1253,89 @@ export type ListServerTemplatesResponse = ServerTemplateListItem[];
 
 export type ListFullServerTemplatesResponse = ServerTemplate[];
 
+/** The compose file configuration. */
+export interface StackConfig {
+	/** The server to deploy the stack on. */
+	server_id?: string;
+	/**
+	 * The contents of the file directly, for management in the UI.
+	 * If this is empty, it will fall back to checking git config for
+	 * repo based compose file.
+	 */
+	contents?: string;
+	/** The git provider domain. Default: github.com */
+	git_provider: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
+	/** The Github repo used as the source of the build. */
+	repo?: string;
+	/** The branch of the repo. */
+	branch: string;
+	/** Optionally set a specific commit hash. */
+	commit?: string;
+	/**
+	 * The git account used to access private repos.
+	 * Passing empty string can only clone public repos.
+	 * 
+	 * Note. A token for the account must be available in the core config or the builder server's periphery config
+	 * for the configured git provider.
+	 */
+	git_account?: string;
+	/** The path of the compose file, relative to the repo root. */
+	file_path: string;
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+}
+
+export interface StackInfo {
+	/**
+	 * If using a repo based compose file, will cache the contents here
+	 * for API delivery. Deploys will always pull directly from the repo.
+	 */
+	contents: string;
+}
+
+export type Stack = Resource<StackConfig, StackInfo>;
+
+export type GetStackResponse = Stack;
+
+export enum StackState {
+	/** The stack is deployed */
+	Up = "Up",
+	/** The stack is not deployed */
+	Down = "Down",
+	/** Last deploy failed */
+	Failed = "Failed",
+	/** Currently deploying */
+	Deploying = "Deploying",
+	/** Server not reachable */
+	Unknown = "Unknown",
+}
+
+export interface StackListItemInfo {
+	/** State of the sync. Reflects whether most recent sync successful. */
+	state: StackState;
+}
+
+export type StackListItem = ResourceListItem<StackListItemInfo>;
+
+export type ListStacksResponse = StackListItem[];
+
+export type ListFullStacksResponse = Stack[];
+
+export interface StackActionState {
+	/** Whether compose file currently deploying */
+	deploying: boolean;
+	/** Whether the stack is currently being destroyed */
+	destroying: boolean;
+}
+
+export type GetStackActionStateResponse = StackActionState;
+
 /** The sync configuration. */
 export interface ResourceSyncConfig {
 	/** The git provider domain. Default: github.com */
@@ -1271,8 +1361,9 @@ export interface ResourceSyncConfig {
 	 */
 	git_account?: string;
 	/**
-	 * The github account used to clone (used to access private repos).
-	 * Empty string is public clone (only public repos).
+	 * The path of the resource file(s) to sync, relative to the repo root.
+	 * Can be a specific file, or a directory containing multiple files / folders.
+	 * See `https://docs.monitor.mogh.tech/docs/sync-resources` for more information.
 	 */
 	resource_path: string;
 	/**
@@ -1430,6 +1521,11 @@ export enum Operation {
 	UpdateResourceSync = "UpdateResourceSync",
 	DeleteResourceSync = "DeleteResourceSync",
 	RunSync = "RunSync",
+	CreateStack = "CreateStack",
+	UpdateStack = "UpdateStack",
+	DeleteStack = "DeleteStack",
+	DeployStack = "DeployStack",
+	DestroyStack = "DestroyStack",
 	CreateVariable = "CreateVariable",
 	UpdateVariableValue = "UpdateVariableValue",
 	DeleteVariable = "DeleteVariable",
@@ -1609,6 +1705,10 @@ export type CreateRepoWebhookResponse = NoData;
 
 export type DeleteRepoWebhookResponse = NoData;
 
+export type CreateStackWebhookResponse = NoData;
+
+export type DeleteStackWebhookResponse = NoData;
+
 export type CreateSyncWebhookResponse = NoData;
 
 export type DeleteSyncWebhookResponse = NoData;
@@ -1741,6 +1841,15 @@ export interface ServerTemplateQuerySpecifics {
 }
 
 export type ServerTemplateQuery = ResourceQuery<ServerTemplateQuerySpecifics>;
+
+export type _PartialStackConfig = Partial<StackConfig>;
+
+export interface StackQuerySpecifics {
+	/** Filter syncs by their repo. */
+	repos: string[];
+}
+
+export type StackQuery = ResourceQuery<StackQuerySpecifics>;
 
 export type _PartialResourceSyncConfig = Partial<ResourceSyncConfig>;
 
@@ -1982,6 +2091,22 @@ export interface LaunchServer {
 	name: string;
 	/** The server template used to define the config. */
 	server_template: string;
+}
+
+/**
+ * Deploys the target stack. `docker compose up`. Response: [Update]
+ * 
+ * Note. If the stack is already deployed, it will be destroyed first.
+ */
+export interface DeployStack {
+	/** Id or name */
+	stack: string;
+}
+
+/** Destoys the target stack. `docker compose down`. Response: [Update] */
+export interface DestroyStack {
+	/** Id or name */
+	stack: string;
 }
 
 /** Runs the target resource sync. Response: [Update] */
@@ -2803,6 +2928,74 @@ export interface GetServerTemplatesSummaryResponse {
 	total: number;
 }
 
+/** Get a specific stack. Response: [Stack]. */
+export interface GetStack {
+	/** Id or name */
+	stack: string;
+}
+
+/** List stacks matching optional query. Response: [ListStacksResponse]. */
+export interface ListStacks {
+	/** optional structured query to filter syncs. */
+	query?: StackQuery;
+}
+
+/** List stacks matching optional query. Response: [ListFullStacksResponse]. */
+export interface ListFullStacks {
+	/** optional structured query to filter stacks. */
+	query?: StackQuery;
+}
+
+/** Get current action state for the stack. Response: [StackActionState]. */
+export interface GetStackActionState {
+	/** Id or name */
+	stack: string;
+}
+
+/**
+ * Gets a summary of data relating to all syncs.
+ * Response: [GetStacksSummaryResponse].
+ */
+export interface GetStacksSummary {
+}
+
+/** Response for [GetStacksSummary] */
+export interface GetStacksSummaryResponse {
+	/** The total number of syncs */
+	total: number;
+	/** The number of syncs with Up state. */
+	up: number;
+	/** The number of syncs with Down state. */
+	down: number;
+	/** The number of syncs currently deploying. */
+	deploying: number;
+	/** The number of syncs currently destroying. */
+	destroying: number;
+	/** The number of syncs with failed state. */
+	failed: number;
+	/** The number of syncs with unknown state. */
+	unknown: number;
+}
+
+/** Get a target stack's configured webhooks. Response: [GetStackWebhooksEnabledResponse]. */
+export interface GetStackWebhooksEnabled {
+	/** Id or name */
+	stack: string;
+}
+
+/** Response for [GetStackWebhooksEnabled] */
+export interface GetStackWebhooksEnabledResponse {
+	/**
+	 * Whether the repo webhooks can even be managed.
+	 * The repo owner must be in `github_webhook_app.owners` list to be managed.
+	 */
+	managed: boolean;
+	/** Whether pushes to branch trigger refresh. Will always be false if managed is false. */
+	refresh_enabled: boolean;
+	/** Whether pushes to branch trigger stack execution. Will always be false if managed is false. */
+	deploy_enabled: boolean;
+}
+
 /** Get a specific sync. Response: [ResourceSync]. */
 export interface GetResourceSync {
 	/** Id or name */
@@ -3318,6 +3511,9 @@ export interface DeleteDeployment {
  * Update the deployment at the given id, and return the updated deployment.
  * Response: [Deployment].
  * 
+ * Note. If the attached server for the deployment changes,
+ * the deployment will be deleted / cleaned up on the old server.
+ * 
  * Note. This method updates only the fields which are set in the [_PartialDeploymentConfig],
  * effectively merging diffs into the final document.
  * This is helpful when multiple users are using
@@ -3629,6 +3825,87 @@ export interface UpdateServerTemplate {
 	config: PartialServerTemplateConfig;
 }
 
+/** Create a stack. Response: [Stack]. */
+export interface CreateStack {
+	/** The name given to newly created stack. */
+	name: string;
+	/** Optional partial config to initialize the stack with. */
+	config: _PartialStackConfig;
+}
+
+/**
+ * Creates a new stack with given `name` and the configuration
+ * of the stack at the given `id`. Response: [Stack].
+ */
+export interface CopyStack {
+	/** The name of the new stack. */
+	name: string;
+	/** The id of the stack to copy. */
+	id: string;
+}
+
+/**
+ * Deletes the stack at the given id, and returns the deleted stack.
+ * Response: [Stack]
+ */
+export interface DeleteStack {
+	/** The id or name of the stack to delete. */
+	id: string;
+}
+
+/**
+ * Update the stack at the given id, and return the updated stack.
+ * Response: [Stack].
+ * 
+ * Note. If the attached server for the stack changes,
+ * the stack will be deleted / cleaned up on the old server.
+ * 
+ * Note. This method updates only the fields which are set in the [_PartialStackConfig],
+ * merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateStack {
+	/** The id of the Stack to update. */
+	id: string;
+	/** The partial config update to apply. */
+	config: _PartialStackConfig;
+}
+
+/** Trigger a refresh of the cached compose file contents. */
+export interface RefreshStackCache {
+	/** Id or name */
+	stack: string;
+}
+
+export enum StackWebhookAction {
+	Refresh = "Refresh",
+	Deploy = "Deploy",
+}
+
+/**
+ * Create a webhook on the github repo attached to the stack
+ * passed in request. Response: [CreateStackWebhookResponse]
+ */
+export interface CreateStackWebhook {
+	/** Id or name */
+	stack: string;
+	/** "Refresh" or "Deploy" */
+	action: StackWebhookAction;
+}
+
+/**
+ * Delete the webhook on the github repo attached to the stack
+ * passed in request. Response: [DeleteStackWebhookResponse]
+ */
+export interface DeleteStackWebhook {
+	/** Id or name */
+	stack: string;
+	/** "Refresh" or "Deploy" */
+	action: StackWebhookAction;
+}
+
 /** Create a sync. Response: [ResourceSync]. */
 export interface CreateResourceSync {
 	/** The name given to newly created sync. */
@@ -3660,9 +3937,6 @@ export interface DeleteResourceSync {
 /**
  * Update the sync at the given id, and return the updated sync.
  * Response: [ResourceSync].
- * 
- * Note. If the attached server for the sync changes,
- * the sync will be deleted / cleaned up on the old server.
  * 
  * Note. This method updates only the fields which are set in the [_PartialResourceSyncConfig],
  * effectively merging diffs into the final document.
@@ -4188,7 +4462,9 @@ export type ExecuteRequest =
 	| { type: "PullRepo", params: PullRepo }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "LaunchServer", params: LaunchServer }
-	| { type: "RunSync", params: RunSync };
+	| { type: "RunSync", params: RunSync }
+	| { type: "DeployStack", params: DeployStack }
+	| { type: "DestroyStack", params: DestroyStack };
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
@@ -4259,6 +4535,12 @@ export type ReadRequest =
 	| { type: "GetSyncWebhooksEnabled", params: GetSyncWebhooksEnabled }
 	| { type: "ListResourceSyncs", params: ListResourceSyncs }
 	| { type: "ListFullResourceSyncs", params: ListFullResourceSyncs }
+	| { type: "GetStacksSummary", params: GetStacksSummary }
+	| { type: "GetStack", params: GetStack }
+	| { type: "GetStackActionState", params: GetStackActionState }
+	| { type: "GetStackWebhooksEnabled", params: GetStackWebhooksEnabled }
+	| { type: "ListStacks", params: ListStacks }
+	| { type: "ListFullStacks", params: ListFullStacks }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }
@@ -4348,6 +4630,12 @@ export type WriteRequest =
 	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
 	| { type: "CreateSyncWebhook", params: CreateSyncWebhook }
 	| { type: "DeleteSyncWebhook", params: DeleteSyncWebhook }
+	| { type: "CreateStack", params: CreateStack }
+	| { type: "CopyStack", params: CopyStack }
+	| { type: "DeleteStack", params: DeleteStack }
+	| { type: "UpdateStack", params: UpdateStack }
+	| { type: "CreateStackWebhook", params: CreateStackWebhook }
+	| { type: "DeleteStackWebhook", params: DeleteStackWebhook }
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "RenameTag", params: RenameTag }

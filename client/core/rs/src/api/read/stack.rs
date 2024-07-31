@@ -99,10 +99,14 @@ pub struct GetStacksSummary {}
 pub struct GetStacksSummaryResponse {
   /// The total number of syncs
   pub total: u32,
-  /// The number of syncs with Ok state.
-  pub ok: u32,
+  /// The number of syncs with Up state.
+  pub up: u32,
+  /// The number of syncs with Down state.
+  pub down: u32,
   /// The number of syncs currently deploying.
   pub deploying: u32,
+  /// The number of syncs currently destroying.
+  pub destroying: u32,
   /// The number of syncs with failed state.
   pub failed: u32,
   /// The number of syncs with unknown state.
