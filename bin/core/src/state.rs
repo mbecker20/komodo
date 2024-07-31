@@ -174,3 +174,10 @@ pub fn resource_sync_lock_cache() -> &'static ResourceSyncLockCache {
     OnceLock::new();
   RESOURCE_SYNC_LOCK_CACHE.get_or_init(Default::default)
 }
+
+pub type StackLockCache = Cache<String, Arc<Mutex<()>>>;
+
+pub fn stack_lock_cache() -> &'static StackLockCache {
+  static STACK_LOCK_CACHE: OnceLock<StackLockCache> = OnceLock::new();
+  STACK_LOCK_CACHE.get_or_init(Default::default)
+}

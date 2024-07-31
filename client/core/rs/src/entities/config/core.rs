@@ -49,6 +49,8 @@ pub struct Env {
   pub monitor_jwt_valid_for: Option<Timelength>,
   /// Override `sync_directory`
   pub monitor_sync_directory: Option<String>,
+  /// Override `stack_directory`
+  pub monitor_stack_directory: Option<String>,
   /// Override `monitoring_interval`
   pub monitor_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
@@ -163,6 +165,15 @@ fn default_config_path() -> String {
 /// ## Must match a passkey in periphery config to communicate with periphery.
 /// ## Required (No default)
 /// passkey = "a_random_passkey"
+/// 
+/// ## token that has to be given to git provider during repo webhook config as the secret
+/// ## default: empty (none)
+/// webhook_secret = "a_random_webhook_secret"
+/// 
+/// ## an alternate base url that is used to recieve git webhook requests
+/// ## if empty or not specified, will use 'host' address as base
+/// ## default: empty (none)
+/// # webhook_base_url = "https://git-webhook.monitor.dev"
 ///
 /// ## Specify the log level of the monitor core application.
 /// ## Default: `info`.
@@ -199,12 +210,6 @@ fn default_config_path() -> String {
 /// ## Default: 0 (pruning disabled)
 /// keep_alerts_for_days = 14
 ///
-/// ## These will be available .
-/// ## When attached to build, image will be pushed to repo under the specified organization.
-/// ## if empty, the "docker organization" config option will not be shown.
-/// ## default: empty
-/// # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
-///
 /// ## allows all users to have read access on all resources
 /// ## default: false
 /// # transparent_mode = true
@@ -226,15 +231,6 @@ fn default_config_path() -> String {
 /// # github_oauth.enabled = true
 /// # github_oauth.id = "your_github_client_id"
 /// # github_oauth.secret = "your_github_client_secret"
-///
-/// ## an alternate base url that is used to recieve github webhook requests
-/// ## if empty or not specified, will use 'host' address as base
-/// ## default: empty (none)
-/// # github_webhook_base_url = "https://github-webhook.monitor.dev"
-///
-/// ## token that has to be given to github during repo webhook config as the secret
-/// ## default: empty (none)
-/// github_webhook_secret = "your_random_webhook_secret"
 ///
 /// ## Configure github webhook app. Enables webhook management apis.
 /// # github_webhook_app.app_id = 1234455 # Find on the app page.
@@ -332,6 +328,12 @@ pub struct CoreConfig {
   /// Default: `/syncs`
   #[serde(default = "default_sync_directory")]
   pub sync_directory: PathBuf,
+
+  /// Specify the directory used to clone stack repos. The default is fine when using a container.
+  /// This directory has no need for persistence, so no need to mount it.
+  /// Default: `/stacks`
+  #[serde(default = "default_stack_directory")]
+  pub stack_directory: PathBuf,
 
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
@@ -441,6 +443,11 @@ fn default_jwt_valid_for() -> Timelength {
 fn default_sync_directory() -> PathBuf {
   // `/syncs` will always be valid path
   PathBuf::from_str("/syncs").unwrap()
+}
+
+fn default_stack_directory() -> PathBuf {
+  // `/stacks` will always be valid path
+  PathBuf::from_str("/stacks").unwrap()
 }
 
 fn default_monitoring_interval() -> Timelength {

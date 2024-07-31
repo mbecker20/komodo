@@ -1,9 +1,8 @@
-use std::time::Duration;
-
 use anyhow::Context;
-use mongo_indexed::doc;
 use monitor_client::entities::{
+  permission::PermissionLevel,
   resource::Resource,
+  server::Server,
   stack::{
     PartialStackConfig, Stack, StackConfig, StackConfigDiff,
     StackInfo, StackListItem, StackListItemInfo, StackQuerySpecifics,
@@ -13,14 +12,15 @@ use monitor_client::entities::{
   user::User,
   Operation,
 };
-use mungos::{
-  find::find_collect,
-  mongodb::{options::FindOneOptions, Collection},
+use mungos::mongodb::Collection;
+
+use crate::{
+  monitor::update_cache_for_server,
+  resource,
+  state::{action_states, db_client},
 };
 
-use crate::state::{
-  action_states, db_client, resource_sync_state_cache,
-};
+use super::get_check_permissions;
 
 impl super::MonitorResource for Stack {
   type Config = StackConfig;
@@ -47,16 +47,15 @@ impl super::MonitorResource for Stack {
     //   &resource_sync.info.pending.data,
     // )
     // .await;
-    // StackListItem {
-    //   id: resource_sync.id,
-    //   name: resource_sync.name,
-    //   tags: resource_sync.tags,
-    //   resource_type: ResourceTargetVariant::Stack,
-    //   info: StackListItemInfo {
-    //     state,
-    //   },
-    // }
-    todo!()
+    StackListItem {
+      id: stack.id,
+      name: stack.name,
+      tags: stack.tags,
+      resource_type: ResourceTargetVariant::Stack,
+      info: StackListItemInfo {
+        state: StackState::Unknown,
+      },
+    }
   }
 
   async fn busy(id: &String) -> anyhow::Result<bool> {
@@ -79,16 +78,21 @@ impl super::MonitorResource for Stack {
   }
 
   async fn validate_create_config(
-    _config: &mut Self::PartialConfig,
-    _user: &User,
+    config: &mut Self::PartialConfig,
+    user: &User,
   ) -> anyhow::Result<()> {
-    Ok(())
+    validate_config(config, user).await
   }
 
   async fn post_create(
-    _created: &Resource<Self::Config, Self::Info>,
+    created: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    if !created.config.server_id.is_empty() {
+      let server =
+        resource::get::<Server>(&created.config.server_id).await?;
+      update_cache_for_server(&server).await;
+    }
     Ok(())
   }
 
@@ -100,16 +104,21 @@ impl super::MonitorResource for Stack {
 
   async fn validate_update_config(
     _id: &str,
-    _config: &mut Self::PartialConfig,
-    _user: &User,
+    config: &mut Self::PartialConfig,
+    user: &User,
   ) -> anyhow::Result<()> {
-    Ok(())
+    validate_config(config, user).await
   }
 
   async fn post_update(
-    _updated: &Resource<Self::Config, Self::Info>,
+    updated: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    if !updated.config.server_id.is_empty() {
+      let server =
+        resource::get::<Server>(&updated.config.server_id).await?;
+      update_cache_for_server(&server).await;
+    }
     Ok(())
   }
 
@@ -120,9 +129,10 @@ impl super::MonitorResource for Stack {
   }
 
   async fn pre_delete(
-    _resource: &Resource<Self::Config, Self::Info>,
-    _update: &mut Update,
+    stack: &Resource<Self::Config, Self::Info>,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
+    // If it is Up, it should be taken down
     Ok(())
   }
 
@@ -132,6 +142,23 @@ impl super::MonitorResource for Stack {
   ) -> anyhow::Result<()> {
     Ok(())
   }
+}
+
+#[instrument(skip(user))]
+async fn validate_config(
+  config: &mut PartialStackConfig,
+  user: &User,
+) -> anyhow::Result<()> {
+  if let Some(server_id) = &config.server_id {
+    if !server_id.is_empty() {
+      let server = get_check_permissions::<Server>(server_id, user, PermissionLevel::Write)
+          .await
+          .context("cannot create stack on this server. user must have update permissions on the server to perform this action.")?;
+      // in case it comes in as name
+      config.server_id = Some(server.id);
+    }
+  }
+  Ok(())
 }
 
 // pub fn spawn_resource_sync_state_refresh_loop() {

@@ -86,6 +86,12 @@ pub fn core_config() -> &'static CoreConfig {
           dir.parse()
             .context("failed to parse env MONITOR_SYNC_DIRECTORY as valid path").unwrap())
         .unwrap_or(config.sync_directory),
+      stack_directory: env
+        .monitor_stack_directory
+        .map(|dir|
+          dir.parse()
+            .context("failed to parse env MONITOR_STACK_DIRECTORY as valid path").unwrap())
+        .unwrap_or(config.stack_directory),
       monitoring_interval: env
         .monitor_monitoring_interval
         .unwrap_or(config.monitoring_interval),
