@@ -122,7 +122,7 @@ impl super::MonitorResource for ResourceSync {
   // DELETE
 
   fn delete_operation() -> Operation {
-    Operation::DeleteRepo
+    Operation::DeleteResourceSync
   }
 
   async fn pre_delete(
