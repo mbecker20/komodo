@@ -307,20 +307,12 @@ pub fn conversions_from_str(
     .enumerate()
     .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
-      let (local, container) =
-        line.split_once('=').with_context(|| {
-          format!("line {i} missing assignment (=)")
+      let (local, container) = line
+        .split_once('=')
+        .with_context(|| format!("line {i} missing assignment (=)"))
+        .map(|(local, container)| {
+          (local.trim().to_string(), container.trim().to_string())
         })?;
-      let local = local.trim().to_string();
-      // remove trailing comments
-      let mut container_split = container.split('#');
-      let container = container_split
-        .next()
-        .with_context(|| {
-          format!("line {i} does not have 'container' key")
-        })?
-        .trim()
-        .to_string();
       anyhow::Ok(Conversion { local, container })
     })
     .collect::<anyhow::Result<Vec<_>>>()?;
@@ -608,22 +600,21 @@ pub fn term_signal_labels_from_str(
     .enumerate()
     .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
-      let (signal, label) =
-        line.split_once('=').with_context(|| {
-          format!("line {i} missing assignment (=)")
+      let (signal, label) = line
+        .split_once('=')
+        .with_context(|| format!("line {i} missing assignment (=)"))
+        .map(|(signal, label)| {
+          (
+            signal.trim().parse::<TerminationSignal>().with_context(
+              || format!("line {i} does not have valid signal"),
+            ),
+            label.trim().to_string(),
+          )
         })?;
-      let signal =
-        signal.trim().parse::<TerminationSignal>().with_context(
-          || format!("line {i} does not have valid signal"),
-        )?;
-      // remove trailing comments
-      let mut label_split = label.split('#');
-      let label = label_split
-        .next()
-        .with_context(|| format!("line {i} does not have label"))?
-        .trim()
-        .to_string();
-      anyhow::Ok(TerminationSignalLabel { signal, label })
+      anyhow::Ok(TerminationSignalLabel {
+        signal: signal?,
+        label,
+      })
     })
     .collect::<anyhow::Result<Vec<_>>>()?;
   Ok(res)

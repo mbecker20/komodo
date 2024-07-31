@@ -353,18 +353,12 @@ pub fn environment_vars_from_str(
     .enumerate()
     .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
     .map(|(i, line)| {
-      let (variable, value) =
-        line.split_once('=').with_context(|| {
-          format!("line {i} missing assignment (=)")
+      let (variable, value) = line
+        .split_once('=')
+        .with_context(|| format!("line {i} missing assignment (=)"))
+        .map(|(variable, value)| {
+          (variable.trim().to_string(), value.trim().to_string())
         })?;
-      let variable = variable.trim().to_string();
-      // remove trailing comments
-      let mut value_split = value.split('#');
-      let value = value_split
-        .next()
-        .with_context(|| format!("line {i} does not have value"))?
-        .trim()
-        .to_string();
       anyhow::Ok(EnvironmentVar { variable, value })
     })
     .collect::<anyhow::Result<Vec<_>>>()?;
