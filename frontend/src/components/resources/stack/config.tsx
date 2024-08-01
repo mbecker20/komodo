@@ -54,6 +54,36 @@ export const StackConfig = ({ id }: { id: string }) => {
           {
             label: "General",
             components: {
+              registry_provider: (provider, set) => {
+                return (
+                  <ProviderSelectorConfig
+                    account_type="docker"
+                    selected={provider}
+                    disabled={disabled}
+                    onSelect={(registry_provider) => set({ registry_provider })}
+                  />
+                );
+              },
+              registry_account: (value, set) => {
+                const server_id = update.server_id || config.server_id;
+                const provider =
+                  update.registry_provider ?? config.registry_provider;
+                if (!provider) {
+                  return null;
+                }
+                return (
+                  <AccountSelectorConfig
+                    id={server_id}
+                    type={server_id ? "Server" : "None"}
+                    account_type="docker"
+                    provider={provider}
+                    selected={value}
+                    onSelect={(registry_account) => set({ registry_account })}
+                    disabled={disabled}
+                    placeholder="None"
+                  />
+                );
+              },
               git_provider: (provider, set) => {
                 const https = update.git_https ?? config.git_https;
                 return (

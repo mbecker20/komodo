@@ -1282,6 +1282,10 @@ export interface StackConfig {
 	 * repo based compose file.
 	 */
 	contents?: string;
+	/** Used with `registry_account` to login to a registry before docker compose up. */
+	registry_provider?: string;
+	/** Used with `registry_provider` to login to a registry before docker compose up. */
+	registry_account?: string;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**

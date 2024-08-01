@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use strum::Display;
 use typeshare::typeshare;
 
-use super::{resource::{Resource, ResourceListItem, ResourceQuery}, I64};
+use super::resource::{Resource, ResourceListItem, ResourceQuery};
 
 #[typeshare]
 pub type StackListItem = ResourceListItem<StackListItemInfo>;
@@ -85,6 +85,16 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub contents: String,
+
+  /// Used with `registry_account` to login to a registry before docker compose up.
+  #[serde(default)]
+  #[builder(default)]
+  pub registry_provider: String,
+
+  /// Used with `registry_provider` to login to a registry before docker compose up.
+  #[serde(default)]
+  #[builder(default)]
+  pub registry_account: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -169,6 +179,8 @@ impl Default for StackConfig {
     Self {
       server_id: Default::default(),
       contents: Default::default(),
+      registry_provider: Default::default(),
+      registry_account: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),
