@@ -43,8 +43,8 @@ export const ServerConfig = ({
           {
             label: "General",
             components: {
-              address: true,
-              region: true,
+              address: { placeholder: "http://localhost:8120. Required" },
+              region: { placeholder: "Region. Optional." },
               enabled: true,
               stats_monitoring: true,
               auto_prune: true,
