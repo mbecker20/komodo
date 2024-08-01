@@ -7,6 +7,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
 pub mod build;
+pub mod compose;
 pub mod container;
 pub mod git;
 pub mod network;

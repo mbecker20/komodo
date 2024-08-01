@@ -119,6 +119,8 @@ impl From<BuildConfig>
         minor: value.version.minor,
         patch: value.version.patch,
       },
+      image_name: Default::default(),
+      image_tag: Default::default(),
       git_provider: String::from("github.com"),
       git_https: true,
       repo: value.repo,

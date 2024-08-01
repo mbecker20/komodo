@@ -112,12 +112,21 @@ pub fn optional_string(string: &str) -> Option<String> {
 pub fn get_image_name(
   build::Build {
     name,
-    config: build::BuildConfig { image_registry, .. },
+    config:
+      build::BuildConfig {
+        image_name,
+        image_registry,
+        ..
+      },
     ..
   }: &build::Build,
   aws_ecr: impl FnOnce(&String) -> Option<AwsEcrConfig>,
 ) -> anyhow::Result<String> {
-  let name = to_monitor_name(name);
+  let name = if image_name.is_empty() {
+    to_monitor_name(name)
+  } else {
+    image_name.to_string()
+  };
   let name = match image_registry {
     build::ImageRegistry::None(_) => name,
     build::ImageRegistry::AwsEcr(label) => {

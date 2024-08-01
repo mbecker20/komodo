@@ -353,6 +353,25 @@ export interface BuildConfig {
 	builder_id?: string;
 	/** The current version of the build. */
 	version?: Version;
+	/**
+	 * An alternate name for the image pushed to the repository.
+	 * If this is empty, it will use the build name.
+	 * 
+	 * Can be used in conjunction with `image_tag` to direct multiple builds
+	 * with different configs to push to the same image registry, under different,
+	 * independantly versioned tags.
+	 */
+	image_name?: string;
+	/**
+	 * An extra tag put before the build version, for the image pushed to the repository.
+	 * Eg. in image tag of `aarch64` would push to mbecker20/monitor_core:aarch64-1.13.2.
+	 * If this is empty, the image tag will just be the build version.
+	 * 
+	 * Can be used in conjunction with `image_name` to direct multiple builds
+	 * with different configs to push to the same image registry, under different,
+	 * independantly versioned tags.
+	 */
+	image_tag?: string;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**

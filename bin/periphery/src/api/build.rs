@@ -37,6 +37,7 @@ impl Resolve<build::Build> for State {
       config:
         BuildConfig {
           version,
+          image_tag,
           skip_secret_interp,
           build_path,
           dockerfile_path,
@@ -93,7 +94,7 @@ impl Resolve<build::Build> for State {
     let extra_args = parse_extra_args(extra_args);
     let buildx = if *use_buildx { " buildx" } else { "" };
     let image_tags =
-      image_tags(&image_name, version, &additional_tags);
+      image_tags(&image_name, image_tag, version, &additional_tags);
     let push_command = should_push
       .then(|| {
         format!(" && docker image push --all-tags {image_name}")
@@ -143,17 +144,23 @@ impl Resolve<build::Build> for State {
 
 fn image_tags(
   image_name: &str,
+  image_tag: &str,
   version: &Version,
   additional: &[String],
 ) -> String {
   let Version { major, minor, .. } = version;
+  let image_tag = if image_tag.is_empty() {
+    String::new()
+  } else {
+    format!("{image_tag}-")
+  };
   let additional = additional
     .iter()
     .map(|tag| format!(" -t {image_name}:{tag}"))
     .collect::<Vec<_>>()
     .join("");
   format!(
-    " -t {image_name}:latest -t {image_name}:{version} -t {image_name}:{major}.{minor} -t {image_name}:{major}{additional}",
+    " -t {image_name}:{image_tag}latest -t {image_name}:{image_tag}{version} -t {image_name}:{image_tag}{major}.{minor} -t {image_name}:{image_tag}{major}{additional}",
   )
 }
 
