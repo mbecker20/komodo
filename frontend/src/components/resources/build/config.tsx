@@ -156,6 +156,14 @@ export const BuildConfig = ({
                   disabled={disabled}
                 />
               ),
+              image_name: {
+                placeholder:
+                  "Optional. Push the image under a name other than the build name.",
+              },
+              image_tag: {
+                placeholder:
+                  "Optional. Prefix the image version with a custom tag.",
+              },
               build_path: true,
               dockerfile_path: true,
             },
