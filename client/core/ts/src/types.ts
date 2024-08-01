@@ -882,7 +882,7 @@ export interface RepoConfig {
 	 * Note. Monitor does not currently support cloning repos via ssh.
 	 */
 	git_https: boolean;
-	/** Explicitly specificy the folder to clone the repo in. */
+	/** Explicitly specify the folder to clone the repo in. */
 	path?: string;
 	/**
 	 * Command to be run after the repo is cloned.
@@ -958,7 +958,7 @@ export type GetRepoActionStateResponse = RepoActionState;
 export interface ServerConfig {
 	/**
 	 * The http address of the periphery client.
-	 * Example: http://localhost:8120
+	 * Default: http://localhost:8120
 	 */
 	address: string;
 	/** An optional region label */
@@ -1316,6 +1316,10 @@ export interface StackInfo {
 	 * for API delivery. Deploys will always pull directly from the repo.
 	 */
 	contents: string;
+	/** Latest short commit hash, or empty string. */
+	latest_hash: string;
+	/** Latest commit message, or emptry string. */
+	latest_message: string;
 }
 
 export type Stack = Resource<StackConfig, StackInfo>;
@@ -1331,13 +1335,27 @@ export enum StackState {
 	Failed = "Failed",
 	/** Currently deploying */
 	Deploying = "Deploying",
+	/** Currently destroying */
+	Destroying = "Destroying",
 	/** Server not reachable */
 	Unknown = "Unknown",
 }
 
 export interface StackListItemInfo {
-	/** State of the sync. Reflects whether most recent sync successful. */
+	/** The server that stack is deployed on. */
+	server_id: string;
+	/** The git provider domain */
+	git_provider: string;
+	/** The configured repo */
+	repo: string;
+	/** The configured branch */
+	branch: string;
+	/** The stack state */
 	state: StackState;
+	/** Latest short commit hash, or empty string. */
+	latest_hash: string;
+	/** Latest commit message, or emptry string. */
+	latest_message: string;
 }
 
 export type StackListItem = ResourceListItem<StackListItemInfo>;

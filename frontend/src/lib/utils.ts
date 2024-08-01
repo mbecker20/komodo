@@ -18,6 +18,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
   "Deployment",
   "Build",
   "Repo",
+  "Stack",
   "Procedure",
   "Builder",
   "Alerter",

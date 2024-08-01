@@ -3,7 +3,6 @@ import {
   AccountSelectorConfig,
   ConfigItem,
   ProviderSelectorConfig,
-  SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
@@ -14,16 +13,16 @@ import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus } from "lucide-react";
 
-export const RepoConfig = ({ id }: { id: string }) => {
+export const StackConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
-    target: { type: "Repo", id },
+    target: { type: "Stack", id },
   }).data;
-  const config = useRead("GetRepo", { repo: id }).data?.config;
-  const webhooks = useRead("GetRepoWebhooksEnabled", { repo: id }).data;
+  const config = useRead("GetStack", { stack: id }).data?.config;
+  const webhooks = useRead("GetStackWebhooksEnabled", { stack: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.RepoConfig>>({});
-  const { mutateAsync } = useWrite("UpdateRepo");
+  const [update, set] = useState<Partial<Types.StackConfig>>({});
+  const { mutateAsync } = useWrite("UpdateStack");
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
@@ -83,39 +82,11 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   />
                 );
               },
-              repo: { placeholder: "Enter repo" },
+              repo: { placeholder: "Enter Repo" },
               branch: { placeholder: "Enter branch" },
               commit: {
                 placeholder: "Enter a specific commit hash. Optional.",
               },
-              path: {
-                placeholder:
-                  "Explicitly specify the folder to clone the repo in. Optional.",
-              },
-            },
-          },
-          {
-            label: "On Clone",
-            components: {
-              on_clone: (value, set) => (
-                <SystemCommand
-                  value={value}
-                  set={(value) => set({ on_clone: value })}
-                  disabled={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "On Pull",
-            components: {
-              on_pull: (value, set) => (
-                <SystemCommand
-                  value={value}
-                  set={(value) => set({ on_pull: value })}
-                  disabled={disabled}
-                />
-              ),
             },
           },
           {
@@ -123,12 +94,12 @@ export const RepoConfig = ({ id }: { id: string }) => {
             components: {
               ["clone" as any]: () => (
                 <ConfigItem label="Clone">
-                  <CopyGithubWebhook path={`/repo/${id}/clone`} />
+                  <CopyGithubWebhook path={`/Stack/${id}/clone`} />
                 </ConfigItem>
               ),
               ["pull" as any]: () => (
                 <ConfigItem label="Pull">
-                  <CopyGithubWebhook path={`/repo/${id}/pull`} />
+                  <CopyGithubWebhook path={`/Stack/${id}/pull`} />
                 </ConfigItem>
               ),
               webhook_enabled: webhooks !== undefined && !webhooks.managed,
@@ -136,23 +107,23 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 const inv = useInvalidate();
                 const { toast } = useToast();
                 const { mutate: createWebhook, isPending: createPending } =
-                  useWrite("CreateRepoWebhook", {
+                  useWrite("CreateStackWebhook", {
                     onSuccess: () => {
                       toast({ title: "Webhook Created" });
-                      inv(["GetRepoWebhooksEnabled", { repo: id }]);
+                      inv(["GetStackWebhooksEnabled", { stack: id }]);
                     },
                   });
                 const { mutate: deleteWebhook, isPending: deletePending } =
-                  useWrite("DeleteRepoWebhook", {
+                  useWrite("DeleteStackWebhook", {
                     onSuccess: () => {
                       toast({ title: "Webhook Deleted" });
-                      inv(["GetRepoWebhooksEnabled", { repo: id }]);
+                      inv(["GetStackWebhooksEnabled", { stack: id }]);
                     },
                   });
                 if (!webhooks || !webhooks.managed) return;
                 return (
                   <ConfigItem label="Manage Webhook">
-                    {webhooks.clone_enabled && (
+                    {webhooks.deploy_enabled && (
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
                           Incoming webhook is{" "}
@@ -165,7 +136,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                           <div
                             className={text_color_class_by_intention("Neutral")}
                           >
-                            CLONE
+                            DEPLOY
                           </div>
                         </div>
                         <ConfirmButton
@@ -174,8 +145,8 @@ export const RepoConfig = ({ id }: { id: string }) => {
                           variant="destructive"
                           onClick={() =>
                             deleteWebhook({
-                              repo: id,
-                              action: Types.RepoWebhookAction.Clone,
+                              stack: id,
+                              action: Types.StackWebhookAction.Deploy,
                             })
                           }
                           loading={deletePending}
@@ -183,7 +154,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                         />
                       </div>
                     )}
-                    {!webhooks.clone_enabled && webhooks.pull_enabled && (
+                    {!webhooks.deploy_enabled && webhooks.refresh_enabled && (
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
                           Incoming webhook is{" "}
@@ -196,7 +167,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                           <div
                             className={text_color_class_by_intention("Neutral")}
                           >
-                            PULL
+                            REFRESH
                           </div>
                         </div>
                         <ConfirmButton
@@ -205,8 +176,8 @@ export const RepoConfig = ({ id }: { id: string }) => {
                           variant="destructive"
                           onClick={() =>
                             deleteWebhook({
-                              repo: id,
-                              action: Types.RepoWebhookAction.Pull,
+                              stack: id,
+                              action: Types.StackWebhookAction.Refresh,
                             })
                           }
                           loading={deletePending}
@@ -214,7 +185,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                         />
                       </div>
                     )}
-                    {!webhooks.clone_enabled && !webhooks.pull_enabled && (
+                    {!webhooks.deploy_enabled && !webhooks.refresh_enabled && (
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
                           Incoming webhook is{" "}
@@ -227,24 +198,24 @@ export const RepoConfig = ({ id }: { id: string }) => {
                           </div>
                         </div>
                         <ConfirmButton
-                          title="Enable Clone"
+                          title="Enable Deploy"
                           icon={<CirclePlus className="w-4 h-4" />}
                           onClick={() =>
                             createWebhook({
-                              repo: id,
-                              action: Types.RepoWebhookAction.Clone,
+                              stack: id,
+                              action: Types.StackWebhookAction.Deploy,
                             })
                           }
                           loading={createPending}
                           disabled={disabled || createPending}
                         />
                         <ConfirmButton
-                          title="Enable Pull"
+                          title="Enable Refresh"
                           icon={<CirclePlus className="w-4 h-4" />}
                           onClick={() =>
                             createWebhook({
-                              repo: id,
-                              action: Types.RepoWebhookAction.Pull,
+                              stack: id,
+                              action: Types.StackWebhookAction.Refresh,
                             })
                           }
                           loading={createPending}

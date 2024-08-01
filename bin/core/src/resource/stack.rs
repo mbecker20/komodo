@@ -54,6 +54,12 @@ impl super::MonitorResource for Stack {
       resource_type: ResourceTargetVariant::Stack,
       info: StackListItemInfo {
         state: StackState::Unknown,
+        server_id: stack.config.server_id,
+        git_provider: stack.config.git_provider,
+        repo: stack.config.repo,
+        branch: stack.config.branch,
+        latest_hash: stack.info.latest_hash,
+        latest_message: stack.info.latest_message,
       },
     }
   }

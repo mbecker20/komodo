@@ -118,7 +118,7 @@ pub struct RepoConfig {
   #[partial_default(default_git_https())]
   pub git_https: bool,
 
-  /// Explicitly specificy the folder to clone the repo in.
+  /// Explicitly specify the folder to clone the repo in.
   #[serde(default)]
   #[builder(default)]
   pub path: String,

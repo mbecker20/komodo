@@ -161,6 +161,25 @@ export const repo_state_intention = (state?: Types.RepoState) => {
   }
 };
 
+export const stack_state_intention = (state?: Types.StackState) => {
+  switch (state) {
+    case undefined:
+      return "None";
+    case Types.StackState.Unknown:
+      return "Unknown";
+    case Types.StackState.Up:
+      return "Good";
+    case Types.StackState.Deploying:
+      return "Warning";
+    case Types.StackState.Destroying:
+      return "Warning";
+    case Types.StackState.Failed:
+      return "Critical";
+    default:
+      return "None";
+  }
+};
+
 export const procedure_state_intention = (status?: Types.ProcedureState) => {
   switch (status) {
     case undefined:
@@ -178,7 +197,9 @@ export const procedure_state_intention = (status?: Types.ProcedureState) => {
   }
 };
 
-export const resource_sync_state_intention = (status?: Types.ResourceSyncState) => {
+export const resource_sync_state_intention = (
+  status?: Types.ResourceSyncState
+) => {
   switch (status) {
     case undefined:
       return "None";

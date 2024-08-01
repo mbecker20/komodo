@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use strum::Display;
 use typeshare::typeshare;
 
-use super::resource::{Resource, ResourceListItem, ResourceQuery};
+use super::{resource::{Resource, ResourceListItem, ResourceQuery}, I64};
 
 #[typeshare]
 pub type StackListItem = ResourceListItem<StackListItemInfo>;
@@ -14,8 +14,20 @@ pub type StackListItem = ResourceListItem<StackListItemInfo>;
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StackListItemInfo {
-  /// State of the sync. Reflects whether most recent sync successful.
+  /// The server that stack is deployed on.
+  pub server_id: String,
+  /// The git provider domain
+  pub git_provider: String,
+  /// The configured repo
+  pub repo: String,
+  /// The configured branch
+  pub branch: String,
+  /// The stack state
   pub state: StackState,
+  /// Latest short commit hash, or empty string.
+  pub latest_hash: String,
+  /// Latest commit message, or emptry string.
+  pub latest_message: String,
 }
 
 #[typeshare]
@@ -31,6 +43,8 @@ pub enum StackState {
   Failed,
   /// Currently deploying
   Deploying,
+  /// Currently destroying
+  Destroying,
   /// Server not reachable
   #[default]
   Unknown,
@@ -45,6 +59,10 @@ pub struct StackInfo {
   /// If using a repo based compose file, will cache the contents here
   /// for API delivery. Deploys will always pull directly from the repo.
   pub contents: String,
+  /// Latest short commit hash, or empty string.
+  pub latest_hash: String,
+  /// Latest commit message, or emptry string.
+  pub latest_message: String,
 }
 
 #[typeshare(serialized_as = "Partial<StackConfig>")]
