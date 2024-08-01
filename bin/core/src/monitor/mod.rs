@@ -5,7 +5,7 @@ use monitor_client::entities::{
   server::{
     stats::{ServerHealth, SystemStats},
     Server, ServerState,
-  },
+  }, stack::StackState,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api::{self, git::GetLatestCommit};
@@ -54,6 +54,14 @@ pub struct CachedDeploymentStatus {
 pub struct CachedRepoStatus {
   pub latest_hash: Option<String>,
   pub latest_message: Option<String>,
+}
+
+#[derive(Default, Clone, Debug)]
+pub struct CachedStackStatus {
+  pub id: String,
+  pub state: StackState,
+  /// Store
+  pub containers: Option<Vec<ContainerSummary>>,
 }
 
 pub fn spawn_monitor_loop() -> anyhow::Result<()> {

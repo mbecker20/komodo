@@ -51,6 +51,8 @@ pub struct Env {
   pub monitor_sync_directory: Option<String>,
   /// Override `stack_directory`
   pub monitor_stack_directory: Option<String>,
+  /// Override `stack_poll_interval`
+  pub monitor_stack_poll_interval: Option<Timelength>,
   /// Override `monitoring_interval`
   pub monitor_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
@@ -165,11 +167,11 @@ fn default_config_path() -> String {
 /// ## Must match a passkey in periphery config to communicate with periphery.
 /// ## Required (No default)
 /// passkey = "a_random_passkey"
-/// 
+///
 /// ## token that has to be given to git provider during repo webhook config as the secret
 /// ## default: empty (none)
 /// webhook_secret = "a_random_webhook_secret"
-/// 
+///
 /// ## an alternate base url that is used to recieve git webhook requests
 /// ## if empty or not specified, will use 'host' address as base
 /// ## default: empty (none)
@@ -194,6 +196,11 @@ fn default_config_path() -> String {
 /// ## Default: `1-day`.
 /// ## Options: `1-hr`, `12-hr`, `1-day`, `3-day`, `1-wk`, `2-wk`, `30-day`.
 /// jwt_valid_for = "1-day"
+///
+/// ## Interval at which to poll stacks for any updates / automated actions.
+/// ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+/// ## Default: `5-min`.
+/// stack_poll_interval = "1-min"
 ///
 /// ## Controls the granularity of the system stats collection by monitor core.
 /// ## Options: `5-sec`, `15-sec`, `30-sec`, `1-min`, `2-min`, `5-min`.
@@ -335,6 +342,12 @@ pub struct CoreConfig {
   #[serde(default = "default_stack_directory")]
   pub stack_directory: PathBuf,
 
+  /// Interval at which to poll stacks for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_stack_poll_interval")]
+  pub stack_poll_interval: Timelength,
+
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
   #[serde(default = "default_monitoring_interval")]
@@ -446,8 +459,12 @@ fn default_sync_directory() -> PathBuf {
 }
 
 fn default_stack_directory() -> PathBuf {
-  // `/stacks` will always be valid path
+  // unwrap ok: `/stacks` will always be valid path
   PathBuf::from_str("/stacks").unwrap()
+}
+
+fn default_stack_poll_interval() -> Timelength {
+  Timelength::FiveMinutes
 }
 
 fn default_monitoring_interval() -> Timelength {

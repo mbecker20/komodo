@@ -116,6 +116,8 @@ pub struct Env {
   pub monitor_repo_dir: Option<PathBuf>,
   /// Override `stats_polling_rate`
   pub monitor_stats_polling_rate: Option<Timelength>,
+  /// Override `legacy_compose_cli`
+  pub monitor_legacy_compose_cli: Option<bool>,
 
   // LOGGING
   /// Override `logging.level`

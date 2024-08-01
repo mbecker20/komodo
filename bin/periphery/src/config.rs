@@ -4,7 +4,7 @@ use clap::Parser;
 use merge_config_files::parse_config_paths;
 use monitor_client::entities::{
   config::periphery::{CliArgs, Env, PeripheryConfig},
-  logger::LogLevel,
+  logger::{LogConfig, LogLevel},
 };
 
 pub fn periphery_config() -> &'static PeripheryConfig {
@@ -14,7 +14,7 @@ pub fn periphery_config() -> &'static PeripheryConfig {
     let env: Env = envy::from_env()
       .expect("failed to parse periphery environment");
     let args = CliArgs::parse();
-    let mut config = parse_config_paths::<PeripheryConfig>(
+    let config = parse_config_paths::<PeripheryConfig>(
       args.config_path.unwrap_or(env.monitor_config_paths),
       args.config_keyword.unwrap_or(env.monitor_config_keywords),
       args
@@ -26,33 +26,39 @@ pub fn periphery_config() -> &'static PeripheryConfig {
     )
     .expect("failed at parsing config from paths");
 
-    // Overrides
-    config.port = env.monitor_port.unwrap_or(config.port);
-    config.repo_dir = env.monitor_repo_dir.unwrap_or(config.repo_dir);
-    config.stats_polling_rate = env
-      .monitor_stats_polling_rate
-      .unwrap_or(config.stats_polling_rate);
-
-    // logging
-    config.logging.level = args
-      .log_level
-      .map(LogLevel::from)
-      .or(env.monitor_logging_level)
-      .unwrap_or(config.logging.level);
-    config.logging.stdio =
-      env.monitor_logging_stdio.unwrap_or(config.logging.stdio);
-    config.logging.otlp_endpoint = env
-      .monitor_logging_otlp_endpoint
-      .or(config.logging.otlp_endpoint);
-    config.logging.opentelemetry_service_name = env
-      .monitor_logging_opentelemetry_service_name
-      .unwrap_or(config.logging.opentelemetry_service_name);
-
-    config.allowed_ips =
-      env.monitor_allowed_ips.unwrap_or(config.allowed_ips);
-    config.passkeys = env.monitor_passkeys.unwrap_or(config.passkeys);
-
-    config
+    PeripheryConfig {
+      port: env.monitor_port.unwrap_or(config.port),
+      repo_dir: env.monitor_repo_dir.unwrap_or(config.repo_dir),
+      stats_polling_rate: env
+        .monitor_stats_polling_rate
+        .unwrap_or(config.stats_polling_rate),
+      legacy_compose_cli: env
+        .monitor_legacy_compose_cli
+        .unwrap_or(config.legacy_compose_cli),
+      logging: LogConfig {
+        level: args
+          .log_level
+          .map(LogLevel::from)
+          .or(env.monitor_logging_level)
+          .unwrap_or(config.logging.level),
+        stdio: env
+          .monitor_logging_stdio
+          .unwrap_or(config.logging.stdio),
+        otlp_endpoint: env
+          .monitor_logging_otlp_endpoint
+          .or(config.logging.otlp_endpoint),
+        opentelemetry_service_name: env
+          .monitor_logging_opentelemetry_service_name
+          .unwrap_or(config.logging.opentelemetry_service_name),
+      },
+      allowed_ips: env
+        .monitor_allowed_ips
+        .unwrap_or(config.allowed_ips),
+      passkeys: env.monitor_passkeys.unwrap_or(config.passkeys),
+      secrets: config.secrets,
+      git_providers: config.git_providers,
+      docker_registries: config.docker_registries,
+    }
   })
 }
 
