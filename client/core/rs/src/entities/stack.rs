@@ -37,14 +37,12 @@ pub struct StackListItemInfo {
 pub enum StackState {
   /// The stack is deployed
   Up,
+  /// Some containers are up, some are down.
+  Mixed,
   /// The stack is not deployed
   Down,
   /// Last deploy failed
   Failed,
-  /// Currently deploying
-  Deploying,
-  /// Currently destroying
-  Destroying,
   /// Server not reachable
   #[default]
   Unknown,
@@ -56,9 +54,19 @@ pub type Stack = Resource<StackConfig, StackInfo>;
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StackInfo {
+  /// This is the file currently deployed, or empty string.
+  /// It is needed to manage the currently deployed setup, incase there are updates.
+  pub deployed_contents: String,
+  /// Cached json representation of the compose file contents, or info about a parsing failure.
+  /// Obtained by calling `docker compose config`.
+  pub json: String,
+  /// There was an error in calling `docker compose config`
+  pub json_error: bool,
+
+  // Only for repo based stacks.
   /// If using a repo based compose file, will cache the contents here
   /// for API delivery. Deploys will always pull directly from the repo.
-  pub contents: String,
+  pub remote_contents: String,
   /// Latest short commit hash, or empty string.
   pub latest_hash: String,
   /// Latest commit message, or emptry string.
@@ -79,13 +87,6 @@ pub struct StackConfig {
   #[builder(default)]
   pub server_id: String,
 
-  /// The contents of the file directly, for management in the UI.
-  /// If this is empty, it will fall back to checking git config for
-  /// repo based compose file.
-  #[serde(default)]
-  #[builder(default)]
-  pub contents: String,
-
   /// Used with `registry_account` to login to a registry before docker compose up.
   #[serde(default)]
   #[builder(default)]
@@ -95,6 +96,13 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub registry_account: String,
+
+  /// The contents of the file directly, for management in the UI.
+  /// If this is empty, it will fall back to checking git config for
+  /// repo based compose file.
+  #[serde(default)]
+  #[builder(default)]
+  pub contents: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -178,9 +186,9 @@ impl Default for StackConfig {
   fn default() -> Self {
     Self {
       server_id: Default::default(),
-      contents: Default::default(),
       registry_provider: Default::default(),
       registry_account: Default::default(),
+      contents: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),

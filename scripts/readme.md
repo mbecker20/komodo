@@ -23,6 +23,9 @@ Will install to paths:
 
 *Note*. The user running periphery must be a member of the docker group, in order to use the docker cli without sudo.
 
+*Note*. Ensure the user running periphery has write access to the configure [repo directory](https://github.com/mbecker20/monitor/blob/5f0a9ad65228a5c43bdcdfd5335c6e4bf2112591/config_example/periphery.config.example.toml#L5).
+This allows periphery to clone repos and write compose files.
+
 ```sh
 curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3 - --user
 ```

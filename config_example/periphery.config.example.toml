@@ -7,6 +7,11 @@
 ## optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
 # stats_polling_rate = "1-sec"
 
+## Whether stack actions should use `docker-compose ...`
+## instead of `docker compose ...`.
+## default: false
+# legacy_compose_cli = true
+
 ## optional. default is empty, which will not block any request by ip.
 # allowed_ips = ["127.0.0.1"]
 

@@ -5,9 +5,9 @@ use monitor_client::{
   entities::{update::Log, SystemCommand},
 };
 use periphery_client::api::{
-  build::*, container::*, git::*, network::*, stats::*, GetHealth,
-  GetVersion, GetVersionResponse, ListDockerRegistries, ListSecrets,
-  PruneSystem, RunCommand,
+  build::*, compose::*, container::*, git::*, network::*, stats::*,
+  GetHealth, GetVersion, GetVersionResponse, ListDockerRegistries,
+  ListSecrets, PruneSystem, RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -21,7 +21,9 @@ use crate::{
 };
 
 mod build;
+mod compose;
 mod container;
+mod deploy;
 mod git;
 mod network;
 mod stats;
@@ -62,17 +64,43 @@ pub enum PeripheryRequest {
 
   // Actions
   RunCommand(RunCommand),
+
+  // Repo
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
   DeleteRepo(DeleteRepo),
+
+  // Build
   Build(Build),
   PruneImages(PruneImages),
+
+  // Container
   Deploy(Deploy),
   StartContainer(StartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
   StopContainer(StopContainer),
   RemoveContainer(RemoveContainer),
   RenameContainer(RenameContainer),
   PruneContainers(PruneContainers),
+
+  // Compose
+  ComposeUp(ComposeUp),
+  ComposeStart(ComposeStart),
+  ComposeRestart(ComposeRestart),
+  ComposePause(ComposePause),
+  ComposeStop(ComposeStop),
+  ComposeDown(ComposeDown),
+
+  // Compose Service
+  ComposeServiceUp(ComposeServiceUp),
+  ComposeServiceStart(ComposeServiceStart),
+  ComposeServiceRestart(ComposeServiceRestart),
+  ComposeServicePause(ComposeServicePause),
+  ComposeServiceStop(ComposeServiceStop),
+  ComposeServiceDown(ComposeServiceDown),
+
+  // Networks
   CreateNetwork(CreateNetwork),
   DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),

@@ -1,13 +1,18 @@
 use std::sync::OnceLock;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use bollard::{container::ListContainersOptions, Docker};
+use command::run_monitor_command;
 use monitor_client::entities::{
-  deployment::ContainerSummary,
-  server::{
+  build::{ImageRegistry, StandardRegistryConfig}, config::core::AwsEcrConfig, deployment::{
+    ContainerSummary, DockerContainerStats, TerminationSignal,
+  }, server::{
     docker_image::ImageSummary, docker_network::DockerNetwork,
-  },
+  }, to_monitor_name, update::Log
 };
+use run_command::async_run_command;
+
+use crate::helpers::get_docker_token;
 
 pub fn docker_client() -> &'static DockerClient {
   static DOCKER_CLIENT: OnceLock<DockerClient> = OnceLock::new();
@@ -95,5 +100,119 @@ impl DockerClient {
       .map(|i| i.into())
       .collect();
     Ok(images)
+  }
+}
+
+/// Returns whether build result should be pushed after build
+#[instrument(skip(registry_token))]
+pub async fn docker_login(
+  registry: &ImageRegistry,
+  // For local token override from core.
+  registry_token: Option<&str>,
+  // For local config override from core.
+  aws_ecr: Option<&AwsEcrConfig>,
+) -> anyhow::Result<bool> {
+  let (domain, account) = match registry {
+    // Early return for no login
+    ImageRegistry::None(_) => return Ok(false),
+    // Early return because Ecr is different
+    ImageRegistry::AwsEcr(label) => {
+      let AwsEcrConfig { region, account_id } = aws_ecr
+        .with_context(|| {
+          if label.is_empty() {
+            String::from("Could not find aws ecr config")
+          } else {
+            format!("Could not find aws ecr config for label {label}")
+          }
+        })?;
+      let registry_token = registry_token
+        .context("aws ecr build missing registry token from core")?;
+      let command = format!("docker login {account_id}.dkr.ecr.{region}.amazonaws.com -u AWS -p {registry_token}");
+      let log = async_run_command(&command).await;
+      if log.success() {
+        return Ok(true);
+      } else {
+        return Err(anyhow!(
+          "aws ecr login error: stdout: {} | stderr: {}",
+          log.stdout,
+          log.stderr
+        ));
+      }
+    }
+    ImageRegistry::Standard(StandardRegistryConfig {
+      domain,
+      account,
+      ..
+    }) => (domain.as_str(), account),
+  };
+  if account.is_empty() {
+    return Err(anyhow!("Must configure account for registry domain {domain}, got empty string"));
+  }
+  let registry_token = match registry_token {
+    Some(token) => token,
+    None => get_docker_token(domain, account)?,
+  };
+  let log = async_run_command(&format!(
+    "docker login {domain} -u {account} -p {registry_token}",
+  ))
+  .await;
+  if log.success() {
+    Ok(true)
+  } else {
+    Err(anyhow!(
+      "{domain} login error: stdout: {} | stderr: {}",
+      log.stdout,
+      log.stderr
+    ))
+  }
+}
+
+
+#[instrument]
+pub async fn pull_image(image: &str) -> Log {
+  let command = format!("docker pull {image}");
+  run_monitor_command("docker pull", command).await
+}
+
+pub fn stop_container_command(
+  container_name: &str,
+  signal: Option<TerminationSignal>,
+  time: Option<i32>,
+) -> String {
+  let container_name = to_monitor_name(container_name);
+  let signal = signal
+    .map(|signal| format!(" --signal {signal}"))
+    .unwrap_or_default();
+  let time = time
+    .map(|time| format!(" --time {time}"))
+    .unwrap_or_default();
+  format!("docker stop{signal}{time} {container_name}")
+}
+
+pub async fn container_stats(
+  container_name: Option<String>,
+) -> anyhow::Result<Vec<DockerContainerStats>> {
+  let format = "--format \"{{ json . }}\"";
+  let container_name = match container_name {
+    Some(name) => format!(" {name}"),
+    None => "".to_string(),
+  };
+  let command =
+    format!("docker stats{container_name} --no-stream {format}");
+  let output = async_run_command(&command).await;
+  if output.success() {
+    let res = output
+      .stdout
+      .split('\n')
+      .filter(|e| !e.is_empty())
+      .map(|e| {
+        let parsed = serde_json::from_str(e)
+          .context(format!("failed at parsing entry {e}"))?;
+        Ok(parsed)
+      })
+      .collect::<anyhow::Result<Vec<DockerContainerStats>>>()?;
+    Ok(res)
+  } else {
+    Err(anyhow!("{}", output.stderr.replace('\n', "")))
   }
 }

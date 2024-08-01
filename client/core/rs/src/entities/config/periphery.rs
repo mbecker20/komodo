@@ -155,6 +155,11 @@ fn default_config_paths() -> Vec<String> {
 /// ## can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min.
 /// ## controls granularity of system stats recorded
 /// stats_polling_rate = "5-sec"
+/// 
+/// ## Whether stack actions should use `docker-compose ...`
+/// ## instead of `docker compose ...`.
+/// ## default: false
+/// legacy_compose_cli = false
 ///
 /// ## optional. default is empty, which will not block any request by ip.
 /// allowed_ips = ["127.0.0.1"]
@@ -208,7 +213,7 @@ pub struct PeripheryConfig {
   pub port: u16,
 
   /// The system directory where monitor managed repos will be cloned.
-  /// Default: `/repos`
+  /// Default: `/etc/monitor/repos`
   #[serde(default = "default_repo_dir")]
   pub repo_dir: PathBuf,
 
@@ -216,6 +221,12 @@ pub struct PeripheryConfig {
   /// Default: `5-sec`
   #[serde(default = "default_stats_refresh_interval")]
   pub stats_polling_rate: Timelength,
+
+  /// Whether stack actions should use `docker-compose ...`
+  /// instead of `docker compose ...`.
+  /// Default: false
+  #[serde(default)]
+  pub legacy_compose_cli: bool,
 
   /// Logging configuration
   #[serde(default)]
