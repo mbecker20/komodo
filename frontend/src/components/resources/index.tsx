@@ -8,6 +8,7 @@ import { ServerComponents } from "./server";
 import { ProcedureComponents } from "./procedure/index";
 import { ServerTemplateComponents } from "./server-template";
 import { ResourceSyncComponents } from "./resource-sync";
+import { StackComponents } from "./stack";
 
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
@@ -16,6 +17,7 @@ export const ResourceComponents: {
   Deployment: DeploymentComponents,
   Build: BuildComponents,
   Repo: RepoComponents,
+  Stack: StackComponents,
   Procedure: ProcedureComponents,
   Builder: BuilderComponents,
   ServerTemplate: ServerTemplateComponents,

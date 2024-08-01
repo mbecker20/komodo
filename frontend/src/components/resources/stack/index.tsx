@@ -1,7 +1,7 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardHeader } from "@ui/card";
-import { FolderGit, GitBranch, Server } from "lucide-react";
+import { FolderGit, Layers, Server } from "lucide-react";
 import { StackConfig } from "./config";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { StackTable } from "./table";
@@ -25,7 +25,7 @@ export const useStack = (id?: string) =>
 const StackIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useStack(id)?.info.state;
   const color = stroke_color_class_by_intention(stack_state_intention(state));
-  return <GitBranch className={cn(`w-${size} h-${size}`, state && color)} />;
+  return <Layers className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 
 export const StackComponents: RequiredResourceComponents = {
@@ -79,7 +79,7 @@ export const StackComponents: RequiredResourceComponents = {
   },
 
   Info: {
-    Stack: ({ id }) => {
+    Repo: ({ id }) => {
       const repo = useStack(id)?.info.repo;
       return (
         <div className="flex items-center gap-2">

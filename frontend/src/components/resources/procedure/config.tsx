@@ -214,7 +214,8 @@ const ProcedureConfigInner = ({
                   <div className="text-muted-foreground">Enabled:</div>
                   <Switch
                     checked={
-                      config.webhook_enabled ?? procedure.config?.webhook_enabled
+                      config.webhook_enabled ??
+                      procedure.config?.webhook_enabled
                     }
                     onCheckedChange={(webhook_enabled) =>
                       setConfig({ ...config, webhook_enabled })
@@ -722,6 +723,28 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         type="ResourceSync"
         selected={params.sync}
         onSelect={(id) => setParams({ sync: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  DeployStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  DestroyStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
         disabled={disabled}
       />
     ),
