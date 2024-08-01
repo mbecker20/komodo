@@ -125,7 +125,7 @@ pub fn get_image_name(
   let name = if image_name.is_empty() {
     to_monitor_name(name)
   } else {
-    image_name.to_string()
+    to_monitor_name(image_name)
   };
   let name = match image_registry {
     build::ImageRegistry::None(_) => name,

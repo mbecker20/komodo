@@ -105,6 +105,12 @@ impl Resolve<Deploy, (User, Update)> for State {
           } else {
             version.to_string()
           };
+          // Potentially add the build image_tag prefix
+          let version_str = if build.config.image_tag.is_empty() {
+            version_str
+          } else {
+            format!("{}-{version_str}", build.config.image_tag)
+          };
           // replace image with corresponding build image.
           deployment.config.image = DeploymentImage::Image {
             image: format!("{image_name}:{version_str}"),
@@ -221,7 +227,7 @@ impl Resolve<Deploy, (User, Update)> for State {
             .join("\n"),
         );
       }
-      
+
       if !secret_replacers.is_empty() {
         update.push_simple_log(
           "interpolate core secrets",
