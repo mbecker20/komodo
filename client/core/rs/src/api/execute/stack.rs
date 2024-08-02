@@ -160,6 +160,9 @@ pub struct StopStack {
 pub struct DestroyStack {
   /// Id or name
   pub stack: String,
+  /// Pass `--remove-orphans`
+  #[serde(default)]
+  pub remove_orphans: bool,
   /// Override the default termination max time.
   pub stop_time: Option<i32>,
 }

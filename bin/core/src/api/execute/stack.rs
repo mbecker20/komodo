@@ -7,19 +7,44 @@ use monitor_client::{
     update::Update, user::User,
   },
 };
-use periphery_client::api::compose::{ComposeUp, ComposeUpResponse};
+use periphery_client::api::compose::{
+  ComposeDown, ComposeUp, ComposeUpResponse,
+};
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
   helpers::{
-    periphery_client, stack::refresh_stack_info,
+    periphery_client,
+    stack::{refresh_stack_info, remote::get_remote_compose_file},
     update::update_update,
   },
   monitor::update_cache_for_server,
   resource,
   state::State,
 };
+
+async fn get_stack_and_server(
+  stack: &str,
+  user: &User,
+) -> anyhow::Result<(Stack, Server)> {
+  let stack = resource::get_check_permissions::<Stack>(
+    stack,
+    user,
+    PermissionLevel::Execute,
+  )
+  .await?;
+
+  if stack.config.server_id.is_empty() {
+    return Err(anyhow!("Stack has no server configured"));
+  }
+
+  let server = resource::get::<Server>(&stack.config.server_id)
+    .await
+    .context("Stack has invalid server set")?;
+
+  Ok((stack, server))
+}
 
 impl Resolve<DeployStack, (User, Update)> for State {
   #[instrument(name = "DeployStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
@@ -28,20 +53,8 @@ impl Resolve<DeployStack, (User, Update)> for State {
     DeployStack { stack, stop_time }: DeployStack,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let mut stack = resource::get_check_permissions::<Stack>(
-      &stack,
-      &user,
-      PermissionLevel::Execute,
-    )
-    .await?;
-
-    if stack.config.server_id.is_empty() {
-      return Err(anyhow!("Stack has no server configured"));
-    }
-
-    let server = resource::get::<Server>(&stack.config.server_id)
-      .await
-      .context("Stack has invalid server set")?;
+    let (mut stack, server) =
+      get_stack_and_server(&stack, &user).await?;
 
     let core_config = core_config();
 
@@ -123,9 +136,47 @@ impl Resolve<DestroyStack, (User, Update)> for State {
   #[instrument(name = "DestroyStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    DestroyStack { stack, stop_time }: DestroyStack,
-    (user, update): (User, Update),
+    DestroyStack {
+      stack,
+      remove_orphans,
+      stop_time,
+    }: DestroyStack,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    todo!()
+    let (stack, server) = get_stack_and_server(&stack, &user).await?;
+
+    let file = if let Some(file) = stack.info.deployed_contents {
+      file
+    } else if stack.config.file_contents.is_empty() {
+      let (res, logs, _, _) =
+        get_remote_compose_file(&stack)
+          .await
+          .context("failed to get remote compose file")?;
+
+      update.logs.extend(logs);
+      update_update(update.clone()).await?;
+
+      res.context("failed to read remote compose file")?
+    } else {
+      stack.config.file_contents
+    };
+
+    let logs = periphery_client(&server)?
+      .request(ComposeDown {
+        file,
+        remove_orphans,
+        timeout: stop_time,
+      })
+      .await?;
+
+    update.logs.extend(logs);
+
+    // Ensure cached stack state up to date by updating server cache
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
   }
 }

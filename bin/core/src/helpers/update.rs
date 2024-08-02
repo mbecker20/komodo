@@ -62,8 +62,8 @@ pub async fn add_update(
 #[instrument(level = "debug")]
 pub async fn update_update(update: Update) -> anyhow::Result<()> {
   update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
-      .await
-      .context("failed to update the update on db. the update build process was deleted")?;
+    .await
+    .context("failed to update the update on db. the update build process was deleted")?;
   let update = update_list_item(update).await?;
   let _ = send_update(update).await;
   Ok(())
