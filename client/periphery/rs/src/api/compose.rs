@@ -17,8 +17,9 @@ pub struct ComposeUp {
 pub struct ComposeUpResponse {
   /// The logs produced by the deploy
   pub logs: Vec<Log>,
+  /// whether stack was successfully deployed
+  pub deployed: bool,
   /// The deploy compose file contents if they could be acquired, or null.
-  /// If th
   pub file_contents: Option<String>,
   /// If its a repo based stack, will include the latest commit hash
   pub commit_hash: Option<String>,

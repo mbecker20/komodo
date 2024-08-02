@@ -136,7 +136,10 @@ pub struct StackConfig {
   pub extra_args: Vec<String>,
 
   /// The environment variables passed to the compose file.
-  /// They will be written to local '.env'
+  /// They will be written to path defined in env_file_path, 
+  /// which is given relative to the run directory.
+  /// 
+  /// If it is empty, no file will be written.
   #[serde(
     default,
     deserialize_with = "super::env_vars_deserializer"
@@ -149,11 +152,17 @@ pub struct StackConfig {
   pub environment: Vec<EnvironmentVar>,
 
   /// The name of the written environment file before `docker compose up`.
+  /// Relative to the repo root.
   /// Default: .env
-  #[serde(default = "default_env_file_name")]
-  #[builder(default = "default_env_file_name()")]
-  #[partial_default(default_env_file_name())]
-  pub env_file_name: String,
+  #[serde(default = "default_env_file_path")]
+  #[builder(default = "default_env_file_path()")]
+  #[partial_default(default_env_file_path())]
+  pub env_file_path: String,
+
+  /// Whether to skip secret interpolation into the stack environment variables.
+  #[serde(default)]
+  #[builder(default)]
+  pub skip_secret_interp: bool,
 
   /// The contents of the file directly, for management in the UI.
   /// If this is empty, it will fall back to checking git config for
@@ -202,6 +211,7 @@ pub struct StackConfig {
   pub git_account: String,
 
   /// Directory to change to (`cd`) before running `docker compose up -d`.
+  /// If compose file defined locally in `file_contents`, this will always be `.`.
   /// Default: `.` (the repo root)
   #[serde(default = "default_run_directory")]
   #[builder(default = "default_run_directory()")]
@@ -209,6 +219,7 @@ pub struct StackConfig {
   pub run_directory: String,
 
   /// The path of the compose file, relative to the run path.
+  /// /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
   /// Default: `compose.yaml`
   #[serde(default = "default_file_path")]
   #[builder(default = "default_file_path()")]
@@ -228,7 +239,7 @@ impl StackConfig {
   }
 }
 
-fn default_env_file_name() -> String {
+fn default_env_file_path() -> String {
   String::from(".env")
 }
 
@@ -265,7 +276,8 @@ impl Default for StackConfig {
       file_contents: Default::default(),
       extra_args: Default::default(),
       environment: Default::default(),
-      env_file_name: default_env_file_name(),
+      env_file_path: default_env_file_path(),
+      skip_secret_interp: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),

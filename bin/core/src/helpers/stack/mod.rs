@@ -1,12 +1,14 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_timing_util::{wait_until_timelength, Timelength};
 use formatting::format_serror;
 use monitor_client::{
   api::write::RefreshStackCache,
   entities::{
+    permission::PermissionLevel,
+    server::{Server, ServerState},
     stack::{Stack, StackInfo},
     update::Update,
-    user::stack_user,
+    user::{stack_user, User},
   },
 };
 use mungos::{
@@ -17,9 +19,13 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  resource,
   state::{db_client, State},
 };
 
+use super::query::get_server_with_status;
+
+pub mod deploy;
 pub mod json;
 pub mod remote;
 pub mod services;
@@ -131,4 +137,30 @@ pub async fn refresh_stack_info(
     .await?;
 
   Ok(())
+}
+
+pub async fn get_stack_and_server(
+  stack: &str,
+  user: &User,
+) -> anyhow::Result<(Stack, Server)> {
+  let stack = resource::get_check_permissions::<Stack>(
+    stack,
+    user,
+    PermissionLevel::Execute,
+  )
+  .await?;
+
+  if stack.config.server_id.is_empty() {
+    return Err(anyhow!("Stack has no server configured"));
+  }
+
+  let (server, status) =
+    get_server_with_status(&stack.config.server_id).await?;
+  if status != ServerState::Ok {
+    return Err(anyhow!(
+      "cannot send action when server is unreachable or disabled"
+    ));
+  }
+
+  Ok((stack, server))
 }

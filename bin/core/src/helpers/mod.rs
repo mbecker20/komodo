@@ -1,15 +1,17 @@
-use std::time::Duration;
+use std::{collections::HashSet, time::Duration};
 
 use anyhow::{anyhow, Context};
 use mongo_indexed::Document;
 use monitor_client::entities::{
   permission::{Permission, PermissionLevel, UserTarget},
   server::Server,
-  update::ResourceTarget,
+  update::{ResourceTarget, Update},
   user::User,
+  EnvironmentVar,
 };
 use mungos::mongodb::bson::{doc, Bson};
 use periphery_client::PeripheryClient;
+use query::get_global_variables;
 use rand::{thread_rng, Rng};
 
 use crate::{config::core_config, state::db_client};
@@ -134,4 +136,71 @@ pub fn flatten_document(doc: Document) -> Document {
   }
 
   target
+}
+
+/// Returns the secret replacers
+pub async fn interpolate_variables_secrets_into_environment(
+  environment: &mut Vec<EnvironmentVar>,
+  update: &mut Update,
+) -> anyhow::Result<HashSet<(String, String)>> {
+  // Interpolate variables into environment
+  let variables = get_global_variables().await?;
+  let core_config = core_config();
+
+  let mut global_replacers = HashSet::new();
+  let mut secret_replacers = HashSet::new();
+
+  for env in environment {
+    // first pass - global variables
+    let (res, more_replacers) = svi::interpolate_variables(
+      &env.value,
+      &variables,
+      svi::Interpolator::DoubleBrackets,
+      false,
+    )
+    .with_context(|| {
+      format!(
+        "failed to interpolate global variables - {}",
+        env.variable
+      )
+    })?;
+    global_replacers.extend(more_replacers);
+    // second pass - core secrets
+    let (res, more_replacers) = svi::interpolate_variables(
+      &res,
+      &core_config.secrets,
+      svi::Interpolator::DoubleBrackets,
+      false,
+    )
+    .context("failed to interpolate core secrets")?;
+    secret_replacers.extend(more_replacers);
+
+    // set env value with the result
+    env.value = res;
+  }
+
+  // Show which variables were interpolated
+  if !global_replacers.is_empty() {
+    update.push_simple_log(
+      "interpolate global variables",
+      global_replacers
+        .into_iter()
+        .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
+        .collect::<Vec<_>>()
+        .join("\n"),
+    );
+  }
+
+  if !secret_replacers.is_empty() {
+    update.push_simple_log(
+      "interpolate core secrets",
+      secret_replacers
+        .iter()
+        .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+        .collect::<Vec<_>>()
+        .join("\n"),
+    );
+  }
+
+  Ok(secret_replacers)
 }

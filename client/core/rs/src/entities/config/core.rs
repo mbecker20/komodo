@@ -160,9 +160,9 @@ fn default_config_path() -> String {
 /// host = "https://monitor.dev"
 ///
 /// ## The port the core system will run on. If running core in docker container,
-/// ## Leave as this port as 9000 and use port bind eg. -p 9001:9000
-/// ## Default: 9000
-/// port = 9000
+/// ## Leave as this port as 9120 and use port bind eg. -p 9121:9120
+/// ## Default: 9120
+/// port = 9120
 ///
 /// ## Must match a passkey in periphery config to communicate with periphery.
 /// ## Required (No default)
@@ -317,7 +317,7 @@ pub struct CoreConfig {
   pub host: String,
 
   /// Port the core web server runs on.
-  /// Default: 9000.
+  /// Default: 9120.
   #[serde(default = "default_core_port")]
   pub port: u16,
 
@@ -446,7 +446,7 @@ fn default_title() -> String {
 }
 
 fn default_core_port() -> u16 {
-  9000
+  9120
 }
 
 fn default_jwt_valid_for() -> Timelength {

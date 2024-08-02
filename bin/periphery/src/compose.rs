@@ -1,9 +1,12 @@
+use std::path::Path;
+
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
+  environment_vars_to_string,
   stack::Stack,
   update::Log,
   CloneArgs,
@@ -69,6 +72,7 @@ pub async fn compose_up(
       if !all_logs_success(&logs) {
         return Ok(ComposeUpResponse {
           logs,
+          deployed: false,
           file_contents: None,
           commit_hash: None,
           commit_message: None,
@@ -104,8 +108,8 @@ pub async fn compose_up(
   // Login to the registry to pull private images if account is set
   if !stack.config.registry_account.is_empty() {
     let registry = ImageRegistry::Standard(StandardRegistryConfig {
-      domain: stack.config.registry_provider,
-      account: stack.config.registry_account,
+      domain: stack.config.registry_provider.clone(),
+      account: stack.config.registry_account.clone(),
       ..Default::default()
     });
     docker_login(&registry, registry_token.as_deref(), None)
@@ -134,6 +138,20 @@ pub async fn compose_up(
     logs.push(log);
     return Ok(ComposeUpResponse {
       logs,
+      deployed: false,
+      file_contents: Some(file_contents),
+      commit_hash,
+      commit_message,
+    });
+  }
+
+  if write_environment_file(&stack, &folder, &mut logs)
+    .await
+    .is_err()
+  {
+    return Ok(ComposeUpResponse {
+      logs,
+      deployed: false,
       file_contents: Some(file_contents),
       commit_hash,
       commit_message,
@@ -170,8 +188,80 @@ pub async fn compose_up(
 
   Ok(ComposeUpResponse {
     logs,
+    deployed: true,
     file_contents: Some(file_contents),
     commit_hash,
     commit_message,
   })
+}
+
+/// Check that all of the logs produced are succesful before continuing
+pub async fn write_environment_file(
+  stack: &Stack,
+  folder: &Path,
+  logs: &mut Vec<Log>,
+) -> Result<(), ()> {
+  if stack.config.environment.is_empty() {
+    return Ok(());
+  }
+
+  let contents =
+    environment_vars_to_string(&stack.config.environment);
+
+  let contents = if stack.config.skip_secret_interp {
+    contents
+  } else {
+    let res = svi::interpolate_variables(
+      &contents,
+      &periphery_config().secrets,
+      svi::Interpolator::DoubleBrackets,
+      true,
+    )
+    .context("failed to interpolate secrets into stack environment");
+
+    let (contents, replacers) = match res {
+      Ok(res) => res,
+      Err(e) => {
+        logs.push(Log::error(
+          "interpolate periphery secrets",
+          format_serror(&e.into()),
+        ));
+        return Err(());
+      }
+    };
+
+    if !replacers.is_empty() {
+      logs.push(Log::simple(
+        "interpolate periphery secrets",
+        replacers
+            .iter()
+            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+      ))
+    }
+
+    contents
+  };
+
+  let file = folder.join(&stack.config.env_file_path);
+
+  if let Err(e) =
+    fs::write(&file, contents).await.with_context(|| {
+      format!("failed to write environment file to {file:?}")
+    })
+  {
+    logs.push(Log::error(
+      "write environment file",
+      format_serror(&e.into()),
+    ));
+    return Err(());
+  }
+
+  logs.push(Log::simple(
+    "write environment file",
+    format!("environment written to {file:?}"),
+  ));
+
+  Ok(())
 }

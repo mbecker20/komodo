@@ -3,132 +3,40 @@ use formatting::format_serror;
 use monitor_client::{
   api::execute::{DeployStack, DestroyStack},
   entities::{
-    permission::PermissionLevel, server::Server, stack::Stack,
-    update::Update, user::User,
+    permission::PermissionLevel,
+    server::{Server, ServerState},
+    stack::Stack,
+    update::Update,
+    user::User,
   },
 };
 use periphery_client::api::compose::{
-  ComposeDown, ComposeUp, ComposeUpResponse,
+  ComposeDown, ComposeServiceUp, ComposeUp, ComposeUpResponse,
 };
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
   helpers::{
-    periphery_client,
-    stack::{refresh_stack_info, remote::get_remote_compose_file},
+    interpolate_variables_secrets_into_environment, periphery_client,
+    stack::{
+      deploy::deploy_stack_maybe_service, get_stack_and_server,
+      refresh_stack_info, remote::get_remote_compose_file,
+    },
     update::update_update,
   },
   monitor::update_cache_for_server,
-  resource,
-  state::State,
+  state::{action_states, State},
 };
-
-async fn get_stack_and_server(
-  stack: &str,
-  user: &User,
-) -> anyhow::Result<(Stack, Server)> {
-  let stack = resource::get_check_permissions::<Stack>(
-    stack,
-    user,
-    PermissionLevel::Execute,
-  )
-  .await?;
-
-  if stack.config.server_id.is_empty() {
-    return Err(anyhow!("Stack has no server configured"));
-  }
-
-  let server = resource::get::<Server>(&stack.config.server_id)
-    .await
-    .context("Stack has invalid server set")?;
-
-  Ok((stack, server))
-}
 
 impl Resolve<DeployStack, (User, Update)> for State {
   #[instrument(name = "DeployStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     DeployStack { stack, stop_time }: DeployStack,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (mut stack, server) =
-      get_stack_and_server(&stack, &user).await?;
-
-    let core_config = core_config();
-
-    let git_token = core_config
-      .git_providers
-      .iter()
-      .find(|provider| provider.domain == stack.config.git_provider)
-      .and_then(|provider| {
-        stack.config.git_https = provider.https;
-        provider
-          .accounts
-          .iter()
-          .find(|account| {
-            account.username == stack.config.git_account
-          })
-          .map(|account| account.token.clone())
-      });
-
-    let registry_token = core_config
-      .docker_registries
-      .iter()
-      .find(|provider| {
-        provider.domain == stack.config.registry_provider
-      })
-      .and_then(|provider| {
-        provider
-          .accounts
-          .iter()
-          .find(|account| {
-            account.username == stack.config.registry_account
-          })
-          .map(|account| account.token.clone())
-      });
-
-    let ComposeUpResponse {
-      logs,
-      file_contents,
-      commit_hash,
-      commit_message,
-    } = periphery_client(&server)?
-      .request(ComposeUp {
-        stack: stack.clone(),
-        git_token,
-        registry_token,
-      })
-      .await?;
-
-    update.logs.extend(logs);
-
-    if let Err(e) = refresh_stack_info(
-      &stack,
-      true,
-      file_contents,
-      commit_hash,
-      commit_message,
-      Some(&mut update),
-    )
-    .await
-    {
-      update.push_error_log(
-        "refresh stack info",
-        format_serror(
-          &e.context("failed to refresh stack info on db").into(),
-        ),
-      )
-    }
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    deploy_stack_maybe_service(&stack, user, update, None).await
   }
 }
 
@@ -144,6 +52,15 @@ impl Resolve<DestroyStack, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (stack, server) = get_stack_and_server(&stack, &user).await?;
+
+    // get the action state for the stack (or insert default).
+    let action_state =
+      action_states().stack.get_or_insert_default(&stack.id).await;
+
+    // Will check to ensure stack not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.destroying = true)?;
 
     let file = if let Some(file) = stack.info.deployed_contents {
       file

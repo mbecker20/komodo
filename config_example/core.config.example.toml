@@ -7,9 +7,9 @@
 ## no default
 host = "https://monitor.dev"
 
-## the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
-## default: 9000
-# port = 9001
+## the port the core system will run on.
+## default: 9120
+# port = 9121
 
 ## required to match a passkey in periphery config. token used to authenticate core requests to periphery
 ## no default
