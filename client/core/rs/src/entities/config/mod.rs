@@ -82,6 +82,6 @@ pub struct ProviderAccount {
   #[serde(alias = "account")]
   pub username: String,
   /// The account access token. Required.
-  #[serde(skip_serializing)]
+  #[serde(default, skip_serializing)]
   pub token: String,
 }
