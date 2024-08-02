@@ -8,6 +8,7 @@ If you have an idea for Monitor, feel free to open an issue beginning with the `
 
 - **v1.12**: Support any git provider / docker registry (supports self-hosted providers like Gitea) ✅
 - **v1.13**: Support "Compose" resource - Paste in a docker compose file and manage it like a Portainer "Stack"
-- **v1.14+**: Support "Cluster" resource - Manage Kubernetes cluster, can attach deployments to "Cluster" (in addition to existing "Server")
+- **v1.14**: Manage git provider / docker registry config, including accounts / tokens, in the UI. They will be admin only methods.
+- **v1.15+**: Support "Cluster" resource - Manage Kubernetes cluster, can attach deployments to "Cluster" (in addition to existing "Server")
 
 **Note. The specific versions associated with these features are not final.**
