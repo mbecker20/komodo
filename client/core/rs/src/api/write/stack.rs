@@ -92,7 +92,7 @@ pub struct UpdateStack {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
-#[response(Stack)]
+#[response(NoData)]
 pub struct RefreshStackCache {
   /// Id or name
   pub stack: String,

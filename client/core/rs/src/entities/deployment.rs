@@ -736,8 +736,10 @@ impl<'de> Visitor<'de> for OptionTermSignalLabelVisitor {
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct DeploymentActionState {
   pub deploying: bool,
-  pub stopping: bool,
   pub starting: bool,
+  pub restarting: bool,
+  pub pausing: bool,
+  pub stopping: bool,
   pub removing: bool,
   pub renaming: bool,
 }

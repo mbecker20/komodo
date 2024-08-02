@@ -77,7 +77,7 @@ impl Resolve<CloneRepo, (User, Update)> for State {
       })
       .await
     {
-      Ok(logs) => logs,
+      Ok(logs) => logs.logs,
       Err(e) => {
         vec![Log::error(
           "clone repo",
@@ -138,7 +138,7 @@ impl Resolve<PullRepo, (User, Update)> for State {
       })
       .await
     {
-      Ok(logs) => logs,
+      Ok(logs) => logs.logs,
       Err(e) => {
         vec![Log::error(
           "pull repo",

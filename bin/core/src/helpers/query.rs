@@ -8,6 +8,7 @@ use monitor_client::entities::{
   deployment::{Deployment, DeploymentState},
   permission::PermissionLevel,
   server::{Server, ServerState},
+  stack::{Stack, StackState},
   tag::Tag,
   update::{ResourceTargetVariant, Update},
   user::{admin_service_user, User},
@@ -82,6 +83,45 @@ pub async fn get_deployment_state(
   };
 
   Ok(state)
+}
+
+#[instrument(level = "debug")]
+pub async fn get_stack_state(
+  stack: &Stack,
+) -> anyhow::Result<StackState> {
+  if stack.config.server_id.is_empty() {
+    return Ok(StackState::Down);
+  }
+  let (server, status) =
+    get_server_with_status(&stack.config.server_id).await?;
+  if status != ServerState::Ok {
+    return Ok(StackState::Unknown);
+  }
+  let containers = super::periphery_client(&server)?
+    .request(periphery_client::api::container::GetContainerList {})
+    .await?
+    .into_iter()
+    .filter(|container| {
+      stack
+        .info
+        .services
+        .iter()
+        .any(|service| container.name == service.container_name)
+    })
+    .collect::<Vec<_>>();
+
+  if containers.is_empty() {
+    Ok(StackState::Down)
+  } else {
+    let healthy = containers
+      .iter()
+      .all(|container| container.state == DeploymentState::Running);
+    if healthy {
+      Ok(StackState::Healthy)
+    } else {
+      Ok(StackState::Unhealthy)
+    }
+  }
 }
 
 #[instrument(level = "debug")]

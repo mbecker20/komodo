@@ -3,30 +3,29 @@ use periphery_client::api::compose::{
   ComposeDown, ComposePause, ComposeRestart, ComposeServiceDown,
   ComposeServicePause, ComposeServiceRestart, ComposeServiceStart,
   ComposeServiceStop, ComposeServiceUp, ComposeStart, ComposeStop,
-  ComposeUp,
+  ComposeUp, ComposeUpResponse,
 };
 use resolver_api::Resolve;
 
 use crate::{
-  config::periphery_config, helpers::run_stack_command, State,
+  compose::{docker_compose, maybe_timeout},
+  helpers::run_stack_command,
+  State,
 };
 
 impl Resolve<ComposeUp> for State {
   #[instrument(name = "ComposeUp", skip_all)]
   async fn resolve(
     &self,
-    ComposeUp { file }: ComposeUp,
+    ComposeUp {
+      stack,
+      git_token,
+      registry_token,
+    }: ComposeUp,
     _: (),
-  ) -> anyhow::Result<Log> {
-    let docker_compose = docker_compose();
-    Ok(
-      run_stack_command(
-        &file,
-        "compose up",
-        format!("{docker_compose} up -d"),
-      )
-      .await,
-    )
+  ) -> anyhow::Result<ComposeUpResponse> {
+    crate::compose::compose_up(stack, git_token, registry_token, None)
+      .await
   }
 }
 
@@ -38,7 +37,7 @@ impl Resolve<ComposeStart> for State {
     &self,
     ComposeStart { file }: ComposeStart,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     Ok(
       run_stack_command(
@@ -59,7 +58,7 @@ impl Resolve<ComposeRestart> for State {
     &self,
     ComposeRestart { file }: ComposeRestart,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     Ok(
       run_stack_command(
@@ -80,7 +79,7 @@ impl Resolve<ComposePause> for State {
     &self,
     ComposePause { file }: ComposePause,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     Ok(
       run_stack_command(
@@ -99,7 +98,7 @@ impl Resolve<ComposeStop> for State {
     &self,
     ComposeStop { file, timeout }: ComposeStop,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     let maybe_timeout = maybe_timeout(timeout);
     Ok(
@@ -123,7 +122,7 @@ impl Resolve<ComposeDown> for State {
       timeout,
     }: ComposeDown,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     let maybe_timeout = maybe_timeout(timeout);
     let maybe_remove_orphans = if remove_orphans {
@@ -146,18 +145,21 @@ impl Resolve<ComposeServiceUp> for State {
   #[instrument(name = "ComposeServiceUp", skip_all)]
   async fn resolve(
     &self,
-    ComposeServiceUp { file, service }: ComposeServiceUp,
+    ComposeServiceUp {
+      stack,
+      git_token,
+      registry_token,
+      service,
+    }: ComposeServiceUp,
     _: (),
-  ) -> anyhow::Result<Log> {
-    let docker_compose = docker_compose();
-    Ok(
-      run_stack_command(
-        &file,
-        "compose up",
-        format!("{docker_compose} up -d {service}"),
-      )
-      .await,
+  ) -> anyhow::Result<ComposeUpResponse> {
+    crate::compose::compose_up(
+      stack,
+      git_token,
+      registry_token,
+      Some(&service),
     )
+    .await
   }
 }
 
@@ -169,7 +171,7 @@ impl Resolve<ComposeServiceStart> for State {
     &self,
     ComposeServiceStart { file, service }: ComposeServiceStart,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     Ok(
       run_stack_command(
@@ -190,7 +192,7 @@ impl Resolve<ComposeServiceRestart> for State {
     &self,
     ComposeServiceRestart { file, service }: ComposeServiceRestart,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     Ok(
       run_stack_command(
@@ -211,7 +213,7 @@ impl Resolve<ComposeServicePause> for State {
     &self,
     ComposeServicePause { file, service }: ComposeServicePause,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     Ok(
       run_stack_command(
@@ -234,7 +236,7 @@ impl Resolve<ComposeServiceStop> for State {
       timeout,
     }: ComposeServiceStop,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     let maybe_timeout = maybe_timeout(timeout);
     Ok(
@@ -259,7 +261,7 @@ impl Resolve<ComposeServiceDown> for State {
       timeout,
     }: ComposeServiceDown,
     _: (),
-  ) -> anyhow::Result<Log> {
+  ) -> anyhow::Result<Vec<Log>> {
     let docker_compose = docker_compose();
     let maybe_timeout = maybe_timeout(timeout);
     let maybe_remove_orphans = if remove_orphans {
@@ -275,23 +277,5 @@ impl Resolve<ComposeServiceDown> for State {
       )
       .await,
     )
-  }
-}
-
-//
-
-fn docker_compose() -> &'static str {
-  if periphery_config().legacy_compose_cli {
-    "docker-compose"
-  } else {
-    "docker compose"
-  }
-}
-
-fn maybe_timeout(timeout: Option<i32>) -> String {
-  if let Some(timeout) = timeout {
-    format!(" --timeout {timeout}")
-  } else {
-    String::new()
   }
 }

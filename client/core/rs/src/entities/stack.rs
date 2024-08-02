@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 use strum::Display;
 use typeshare::typeshare;
 
-use super::resource::{Resource, ResourceListItem, ResourceQuery};
+use super::{
+  resource::{Resource, ResourceListItem, ResourceQuery},
+  EnvironmentVar,
+};
 
 #[typeshare]
 pub type StackListItem = ResourceListItem<StackListItemInfo>;
@@ -24,10 +27,12 @@ pub struct StackListItemInfo {
   pub branch: String,
   /// The stack state
   pub state: StackState,
-  /// Latest short commit hash, or empty string.
-  pub latest_hash: String,
-  /// Latest commit message, or emptry string.
-  pub latest_message: String,
+  /// The service names that are part of the stack
+  pub services: Vec<String>,
+  /// Latest short commit hash, or null.
+  pub latest_hash: Option<String>,
+  /// Latest commit message, or null.
+  pub latest_message: Option<String>,
 }
 
 #[typeshare]
@@ -36,9 +41,9 @@ pub struct StackListItemInfo {
 )]
 pub enum StackState {
   /// The stack is deployed
-  Up,
+  Healthy,
   /// Some containers are up, some are down.
-  Mixed,
+  Unhealthy,
   /// The stack is not deployed
   Down,
   /// Last deploy failed
@@ -54,23 +59,50 @@ pub type Stack = Resource<StackConfig, StackInfo>;
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StackInfo {
-  /// This is the file currently deployed, or empty string.
-  /// It is needed to manage the currently deployed setup, incase there are updates.
-  pub deployed_contents: String,
-  /// Cached json representation of the compose file contents, or info about a parsing failure.
-  /// Obtained by calling `docker compose config`.
+  /// The deployed compose file.
+  pub deployed_contents: Option<String>,
+  /// The service / container names.
+  /// These only need to be matched against the start of the container name,
+  /// since the name is postfixed with a number.
+  ///
+  /// This is updated whenever deployed contents is updated
+  #[serde(default)]
+  pub services: Vec<StackServiceNames>,
+
+  /// Cached json representation of the compose file contents, info about a parsing failure, or empty string.
+  /// Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
+  #[serde(default)]
   pub json: String,
   /// There was an error in calling `docker compose config`
+  #[serde(default)]
   pub json_error: bool,
 
   // Only for repo based stacks.
   /// If using a repo based compose file, will cache the contents here
   /// for API delivery. Deploys will always pull directly from the repo.
-  pub remote_contents: String,
-  /// Latest short commit hash, or empty string.
-  pub latest_hash: String,
-  /// Latest commit message, or emptry string.
-  pub latest_message: String,
+  ///
+  /// Could be:
+  ///   - The file contents or null (remote_error: false)
+  ///   - An error message (remote_error: true)
+  pub remote_contents: Option<String>,
+  /// There was an error in getting the remote contents.
+  #[serde(default)]
+  pub remote_error: bool,
+  /// Deployed short commit hash, or empty string.
+  pub deployed_hash: Option<String>,
+  /// Deployed commit message, or null
+  pub deployed_message: Option<String>,
+  /// Latest commit hash, or null
+  pub latest_hash: Option<String>,
+  /// Latest commit message, or null
+  pub latest_message: Option<String>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct StackServiceNames {
+  pub container_name: String,
+  pub service_name: String,
 }
 
 #[typeshare(serialized_as = "Partial<StackConfig>")]
@@ -97,12 +129,38 @@ pub struct StackConfig {
   #[builder(default)]
   pub registry_account: String,
 
+  /// The extra arguments to pass to `docker compose up -d`.
+  /// If empty, no extra arguments will be passed.
+  #[serde(default)]
+  #[builder(default)]
+  pub deploy_args: String,
+
+  /// The environment variables passed to the compose file.
+  /// They will be written to local '.env'
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
+  #[builder(default)]
+  pub environment: Vec<EnvironmentVar>,
+
+  /// The name of the written environment file before `docker compose up`.
+  /// Default: .env
+  #[serde(default = "default_env_file_name")]
+  #[builder(default = "default_env_file_name()")]
+  #[partial_default(default_env_file_name())]
+  pub env_file_name: String,
+
   /// The contents of the file directly, for management in the UI.
   /// If this is empty, it will fall back to checking git config for
   /// repo based compose file.
   #[serde(default)]
   #[builder(default)]
-  pub contents: String,
+  pub file_contents: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -143,7 +201,15 @@ pub struct StackConfig {
   #[builder(default)]
   pub git_account: String,
 
-  /// The path of the compose file, relative to the repo root.
+  /// Directory to change to (`cd`) before running `docker compose up -d`.
+  /// Default: `.` (the repo root)
+  #[serde(default = "default_run_directory")]
+  #[builder(default = "default_run_directory()")]
+  #[partial_default(default_run_directory())]
+  pub run_directory: String,
+
+  /// The path of the compose file, relative to the run path.
+  /// Default: `compose.yaml`
   #[serde(default = "default_file_path")]
   #[builder(default = "default_file_path()")]
   #[partial_default(default_file_path())]
@@ -162,6 +228,10 @@ impl StackConfig {
   }
 }
 
+fn default_env_file_name() -> String {
+  String::from(".env")
+}
+
 fn default_git_provider() -> String {
   String::from("github.com")
 }
@@ -174,8 +244,12 @@ fn default_branch() -> String {
   String::from("main")
 }
 
+fn default_run_directory() -> String {
+  String::from(".")
+}
+
 fn default_file_path() -> String {
-  String::from("docker-compose.yaml")
+  String::from("compose.yaml")
 }
 
 fn default_webhook_enabled() -> bool {
@@ -188,13 +262,17 @@ impl Default for StackConfig {
       server_id: Default::default(),
       registry_provider: Default::default(),
       registry_account: Default::default(),
-      contents: Default::default(),
+      file_contents: Default::default(),
+      deploy_args: Default::default(),
+      environment: Default::default(),
+      env_file_name: default_env_file_name(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),
       git_account: Default::default(),
+      run_directory: default_run_directory(),
       file_path: default_file_path(),
       webhook_enabled: default_webhook_enabled(),
     }
@@ -204,9 +282,11 @@ impl Default for StackConfig {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct StackActionState {
-  /// Whether compose file currently deploying
   pub deploying: bool,
-  /// Whether the stack is currently being destroyed
+  pub starting: bool,
+  pub restarting: bool,
+  pub pausing: bool,
+  pub stopping: bool,
   pub destroying: bool,
 }
 

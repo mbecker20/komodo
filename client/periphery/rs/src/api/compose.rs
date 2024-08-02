@@ -1,20 +1,35 @@
-use monitor_client::entities::update::Log;
+use monitor_client::entities::{stack::Stack, update::Log};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
-//
-
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(ComposeUpResponse)]
 pub struct ComposeUp {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to deploy
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub registry_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComposeUpResponse {
+  /// The logs produced by the deploy
+  pub logs: Vec<Log>,
+  /// The deploy compose file contents if they could be acquired, or null.
+  /// If th
+  pub file_contents: Option<String>,
+  /// If its a repo based stack, will include the latest commit hash
+  pub commit_hash: Option<String>,
+  /// If its a repo based stack, will include the latest commit message
+  pub commit_message: Option<String>,
 }
 
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeStart {
   /// The compose file contents
   pub file: String,
@@ -23,7 +38,7 @@ pub struct ComposeStart {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeRestart {
   /// The compose file contents
   pub file: String,
@@ -32,7 +47,7 @@ pub struct ComposeRestart {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposePause {
   /// The compose file contents
   pub file: String,
@@ -41,7 +56,16 @@ pub struct ComposePause {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
+pub struct ComposeUnpause {
+  /// The compose file contents
+  pub file: String,
+}
+
+//
+
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(Vec<Log>)]
 pub struct ComposeStop {
   /// The compose file contents
   pub file: String,
@@ -52,7 +76,7 @@ pub struct ComposeStop {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeDown {
   /// The compose file contents
   pub file: String,
@@ -66,10 +90,14 @@ pub struct ComposeDown {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(ComposeUpResponse)]
 pub struct ComposeServiceUp {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to deploy
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub registry_token: Option<String>,
   /// The service name
   pub service: String,
 }
@@ -77,7 +105,7 @@ pub struct ComposeServiceUp {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeServiceStart {
   /// The compose file contents
   pub file: String,
@@ -88,7 +116,7 @@ pub struct ComposeServiceStart {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeServiceRestart {
   /// The compose file contents
   pub file: String,
@@ -99,7 +127,7 @@ pub struct ComposeServiceRestart {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeServicePause {
   /// The compose file contents
   pub file: String,
@@ -110,7 +138,7 @@ pub struct ComposeServicePause {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeServiceStop {
   /// The compose file contents
   pub file: String,
@@ -123,7 +151,7 @@ pub struct ComposeServiceStop {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Log)]
+#[response(Vec<Log>)]
 pub struct ComposeServiceDown {
   /// The compose file contents
   pub file: String,

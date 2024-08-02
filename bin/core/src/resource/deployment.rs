@@ -173,70 +173,71 @@ impl super::MonitorResource for Deployment {
     let state = get_deployment_state(deployment)
       .await
       .context("failed to get container state")?;
-    if !matches!(
+    if matches!(
       state,
       DeploymentState::NotDeployed | DeploymentState::Unknown
     ) {
-      // container needs to be destroyed
-      let server = match super::get::<Server>(
-        &deployment.config.server_id,
-      )
-      .await
-      {
-        Ok(server) => server,
-        Err(e) => {
-          update.push_error_log(
-            "remove container",
-            format_serror(
-              &e.context(format!(
-                "failed to retrieve server at {} from db.",
-                deployment.config.server_id
-              ))
-              .into(),
-            ),
-          );
-          return Ok(());
-        }
-      };
-      if !server.config.enabled {
-        // Don't need to
-        update.push_simple_log(
+      return Ok(());
+    }
+    // container needs to be destroyed
+    let server = match super::get::<Server>(
+      &deployment.config.server_id,
+    )
+    .await
+    {
+      Ok(server) => server,
+      Err(e) => {
+        update.push_error_log(
           "remove container",
-          "skipping container removal, server is disabled.",
+          format_serror(
+            &e.context(format!(
+              "failed to retrieve server at {} from db.",
+              deployment.config.server_id
+            ))
+            .into(),
+          ),
         );
         return Ok(());
       }
-      let periphery = match periphery_client(&server) {
-        Ok(periphery) => periphery,
-        Err(e) => {
-          // This case won't ever happen, as periphery_client only fallible if the server is disabled.
-          // Leaving it for completeness sake
-          update.push_error_log(
-            "remove container",
-            format_serror(
-              &e.context("failed to get periphery client").into(),
-            ),
-          );
-          return Ok(());
-        }
-      };
-      match periphery
-        .request(RemoveContainer {
-          name: deployment.name.clone(),
-          signal: deployment.config.termination_signal.into(),
-          time: deployment.config.termination_timeout.into(),
-        })
-        .await
-      {
-        Ok(log) => update.logs.push(log),
-        Err(e) => update.push_error_log(
+    };
+    if !server.config.enabled {
+      // Don't need to
+      update.push_simple_log(
+        "remove container",
+        "skipping container removal, server is disabled.",
+      );
+      return Ok(());
+    }
+    let periphery = match periphery_client(&server) {
+      Ok(periphery) => periphery,
+      Err(e) => {
+        // This case won't ever happen, as periphery_client only fallible if the server is disabled.
+        // Leaving it for completeness sake
+        update.push_error_log(
           "remove container",
           format_serror(
-            &e.context("failed to remove container").into(),
+            &e.context("failed to get periphery client").into(),
           ),
+        );
+        return Ok(());
+      }
+    };
+    match periphery
+      .request(RemoveContainer {
+        name: deployment.name.clone(),
+        signal: deployment.config.termination_signal.into(),
+        time: deployment.config.termination_timeout.into(),
+      })
+      .await
+    {
+      Ok(log) => update.logs.push(log),
+      Err(e) => update.push_error_log(
+        "remove container",
+        format_serror(
+          &e.context("failed to remove container").into(),
         ),
-      };
-    }
+      ),
+    };
     Ok(())
   }
 

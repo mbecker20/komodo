@@ -6,6 +6,7 @@ use std::{net::SocketAddr, str::FromStr};
 use anyhow::Context;
 
 mod api;
+mod compose;
 mod config;
 mod docker;
 mod helpers;

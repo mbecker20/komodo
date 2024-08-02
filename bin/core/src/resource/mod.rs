@@ -467,9 +467,7 @@ fn resource_target<T: MonitorResource>(id: String) -> ResourceTarget {
     ResourceTargetVariant::ResourceSync => {
       ResourceTarget::ResourceSync(id)
     }
-    ResourceTargetVariant::Stack => {
-      ResourceTarget::Stack(id)
-    }
+    ResourceTargetVariant::Stack => ResourceTarget::Stack(id),
   }
 }
 

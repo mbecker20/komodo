@@ -2,7 +2,17 @@ use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::execute::Execution,
   entities::{
-    self, alerter::Alerter, build::Build, builder::{Builder, BuilderConfig}, procedure::Procedure, repo::Repo, server::Server, server_template::ServerTemplate, stack::Stack, update::{Log, ResourceTarget}, user::sync_user
+    self,
+    alerter::Alerter,
+    build::Build,
+    builder::{Builder, BuilderConfig},
+    procedure::Procedure,
+    repo::Repo,
+    server::Server,
+    server_template::ServerTemplate,
+    stack::Stack,
+    update::{Log, ResourceTarget},
+    user::sync_user,
   },
 };
 use partial_derive2::{MaybeNone, PartialDiff};

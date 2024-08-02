@@ -53,17 +53,17 @@ pub async fn run_stack_command(
   file_contents: &str,
   stage: &str,
   command: String,
-) -> Log {
+) -> Vec<Log> {
   let dir = periphery_config().repo_dir.join(random_string(10));
   if let Err(e) = fs::create_dir_all(&dir)
     .await
     .with_context(|| format!("directory: {dir:?}"))
     .context("failed to create directory for compose file")
   {
-    return Log::error(
+    return vec![Log::error(
       "create compose directory",
       format_serror(&e.into()),
-    );
+    )];
   }
   let file_path = dir.join("compose.yaml");
   if let Err(e) = fs::write(&file_path, file_contents)
@@ -71,16 +71,18 @@ pub async fn run_stack_command(
     .with_context(|| format!("file: {file_path:?}"))
     .context("failed to write compose file")
   {
-    return Log::error(
+    return vec![Log::error(
       "write compose file",
       format_serror(&e.into()),
-    );
+    )];
   }
-  let mut log = run_monitor_command(
-    stage,
-    format!("cd {} && {command}", dir.display()),
-  )
-  .await;
+  let mut logs = vec![
+    run_monitor_command(
+      stage,
+      format!("cd {} && {command}", dir.display()),
+    )
+    .await,
+  ];
 
   if let Err(e) = fs::remove_dir_all(&dir)
     .await
@@ -88,15 +90,11 @@ pub async fn run_stack_command(
     .context("failed to remove compose directory")
   {
     error!("{e:#}");
-    if log.stderr.is_empty() {
-      log.stderr = format_serror(&e.into());
-    } else {
-      log.stderr.push_str("\n\n");
-      log.stderr.push_str(&format_serror(&e.into()));
-    }
+    logs
+      .push(Log::error("post run cleanup", format_serror(&e.into())));
   }
 
-  log
+  logs
 }
 
 pub fn random_string(length: usize) -> String {

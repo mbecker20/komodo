@@ -7,16 +7,18 @@ use monitor_client::entities::{
     },
     Server, ServerConfig, ServerState,
   },
+  stack::{Stack, StackState},
 };
 use serror::Serror;
 
 use crate::state::{
   deployment_status_cache, repo_status_cache, server_status_cache,
+  stack_status_cache,
 };
 
 use super::{
   CachedDeploymentStatus, CachedRepoStatus, CachedServerStatus,
-  History,
+  CachedStackStatus, History,
 };
 
 #[instrument(level = "debug", skip_all)]
@@ -54,6 +56,29 @@ pub async fn insert_repos_status_unknown(repos: Vec<Repo>) {
         CachedRepoStatus {
           latest_hash: None,
           latest_message: None,
+        }
+        .into(),
+      )
+      .await;
+  }
+}
+
+#[instrument(level = "debug", skip_all)]
+pub async fn insert_stacks_status_unknown(stacks: Vec<Stack>) {
+  let status_cache = stack_status_cache();
+  for stack in stacks {
+    let prev =
+      status_cache.get(&stack.id).await.map(|s| s.curr.state);
+    status_cache
+      .insert(
+        stack.id.clone(),
+        History {
+          curr: CachedStackStatus {
+            // id: stack.id,
+            state: StackState::Unknown,
+            containers: Vec::new(),
+          },
+          prev,
         }
         .into(),
       )

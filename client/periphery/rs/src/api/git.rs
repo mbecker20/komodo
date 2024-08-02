@@ -11,7 +11,7 @@ pub struct GetLatestCommit {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
+#[response(RepoActionResponse)]
 pub struct CloneRepo {
   pub args: CloneArgs,
   /// Override git token with one sent from core.
@@ -21,12 +21,21 @@ pub struct CloneRepo {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
+#[response(RepoActionResponse)]
 pub struct PullRepo {
   pub name: String,
   pub branch: Option<String>,
   pub commit: Option<String>,
   pub on_pull: Option<SystemCommand>,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RepoActionResponse {
+  pub logs: Vec<Log>,
+  pub commit_hash: Option<String>,
+  pub commit_message: Option<String>,
 }
 
 //

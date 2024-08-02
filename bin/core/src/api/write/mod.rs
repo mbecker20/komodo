@@ -23,11 +23,11 @@ mod repo;
 mod server;
 mod server_template;
 mod service_user;
+mod stack;
 mod sync;
 mod tag;
 mod user_group;
 mod variable;
-mod stack;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]

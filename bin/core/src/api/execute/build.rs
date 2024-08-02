@@ -187,10 +187,11 @@ impl Resolve<RunBuild, (User, Update)> for State {
       },
     };
 
-    match res {
-      Ok(clone_logs) => {
+    let (commit_hash, commit_message) = match res {
+      Ok(res) => {
         info!("finished repo clone");
-        update.logs.extend(clone_logs);
+        update.logs.extend(res.logs);
+        (res.commit_hash, res.commit_message)
       }
       Err(e) => {
         warn!("failed build at clone repo | {e:#}");
@@ -198,8 +199,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
           "clone repo",
           format_serror(&e.context("failed to clone repo").into()),
         );
+        (None, None)
       }
-    }
+    };
 
     update_update(update.clone()).await?;
 

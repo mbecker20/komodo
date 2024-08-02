@@ -72,7 +72,7 @@ webhook_secret = "a_random_webhook_secret"
 
 ## allow or deny user login with username / password
 ## default: false
-# local_auth = true
+local_auth = true
 
 # google_oauth.enabled = true
 # google_oauth.id = "your_google_client_id"
@@ -97,8 +97,8 @@ webhook_secret = "a_random_webhook_secret"
 # mongo.uri = "mongodb://username:password@localhost:27017"
 ## ==== or ====
 mongo.address = "localhost:27017"
-# mongo.username = "username"
-# mongo.password = "password"
+mongo.username = "admin"
+mongo.password = "admin"
 ## ==== other ====
 ## default: monitor. this is the name of the mongo database that monitor will create its collections in.
 # mongo.db_name = "monitor"

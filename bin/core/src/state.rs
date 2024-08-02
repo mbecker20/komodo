@@ -10,6 +10,7 @@ use monitor_client::entities::{
   deployment::DeploymentState,
   procedure::ProcedureState,
   repo::RepoState,
+  stack::StackState,
   sync::ResourceSyncState,
 };
 use octorust::auth::{
@@ -24,7 +25,7 @@ use crate::{
   helpers::{action_state::ActionStates, cache::Cache},
   monitor::{
     CachedDeploymentStatus, CachedRepoStatus, CachedServerStatus,
-    History,
+    CachedStackStatus, History,
   },
 };
 
@@ -119,6 +120,15 @@ pub fn deployment_status_cache() -> &'static DeploymentStatusCache {
   DEPLOYMENT_STATUS_CACHE.get_or_init(Default::default)
 }
 
+pub type StackStatusCache =
+  Cache<String, Arc<History<CachedStackStatus, StackState>>>;
+
+pub fn stack_status_cache() -> &'static StackStatusCache {
+  static STACK_STATUS_CACHE: OnceLock<StackStatusCache> =
+    OnceLock::new();
+  STACK_STATUS_CACHE.get_or_init(Default::default)
+}
+
 pub type ServerStatusCache = Cache<String, Arc<CachedServerStatus>>;
 
 pub fn server_status_cache() -> &'static ServerStatusCache {
@@ -173,11 +183,4 @@ pub fn resource_sync_lock_cache() -> &'static ResourceSyncLockCache {
   static RESOURCE_SYNC_LOCK_CACHE: OnceLock<ResourceSyncLockCache> =
     OnceLock::new();
   RESOURCE_SYNC_LOCK_CACHE.get_or_init(Default::default)
-}
-
-pub type StackLockCache = Cache<String, Arc<Mutex<()>>>;
-
-pub fn stack_lock_cache() -> &'static StackLockCache {
-  static STACK_LOCK_CACHE: OnceLock<StackLockCache> = OnceLock::new();
-  STACK_LOCK_CACHE.get_or_init(Default::default)
 }

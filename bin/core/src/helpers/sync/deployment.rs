@@ -193,7 +193,7 @@ pub async fn get_updates_for_view(
             format!(
               "{}: deployment is currently in {} state, {}",
               muted("deploy"),
-              colored(&state.to_string(), Color::Red),
+              colored(state.to_string(), Color::Red),
               bold("sync will trigger deploy")
             )
           };

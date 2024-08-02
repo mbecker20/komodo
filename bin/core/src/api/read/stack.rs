@@ -3,17 +3,18 @@ use monitor_client::{
   api::read::*,
   entities::{
     config::core::CoreConfig,
+    deployment::ContainerSummary,
     permission::PermissionLevel,
     stack::{Stack, StackActionState, StackListItem, StackState},
     user::User,
   },
 };
-use resolver_api::Resolve;
+use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
   config::core_config,
   resource,
-  state::{action_states, github_client, State},
+  state::{action_states, github_client, stack_status_cache, State},
 };
 
 impl Resolve<GetStack, User> for State {
@@ -28,6 +29,49 @@ impl Resolve<GetStack, User> for State {
       PermissionLevel::Read,
     )
     .await
+  }
+}
+
+impl ResolveToString<GetStackJson, User> for State {
+  async fn resolve_to_string(
+    &self,
+    GetStackJson { stack }: GetStackJson,
+    user: User,
+  ) -> anyhow::Result<String> {
+    let stack = resource::get_check_permissions::<Stack>(
+      &stack,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let res = format!(
+      "{{\"json\":{},\"error\":{}}}",
+      stack.info.json, stack.info.json_error
+    );
+    Ok(res)
+  }
+}
+
+impl Resolve<GetStackContainers, User> for State {
+  async fn resolve(
+    &self,
+    GetStackContainers { stack }: GetStackContainers,
+    user: User,
+  ) -> anyhow::Result<Vec<ContainerSummary>> {
+    let stack = resource::get_check_permissions::<Stack>(
+      &stack,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let containers = stack_status_cache()
+      .get(&stack.id)
+      .await
+      .unwrap_or_default()
+      .curr
+      .containers
+      .clone();
+    Ok(containers)
   }
 }
 
@@ -88,40 +132,21 @@ impl Resolve<GetStacksSummary, User> for State {
 
     let mut res = GetStacksSummaryResponse::default();
 
-    // let cache = resource_sync_state_cache();
-    // let action_states = action_states();
+    let cache = stack_status_cache();
 
-    // for stack in stacks {
-    //   res.total += 1;
+    for stack in stacks {
+      res.total += 1;
+      match cache.get(&stack.id).await.unwrap_or_default().curr.state
+      {
+        StackState::Healthy => res.healthy += 1,
+        StackState::Unhealthy => res.unhealthy += 1,
+        StackState::Down => res.down += 1,
+        StackState::Failed => res.failed += 1,
+        StackState::Unknown => res.unknown += 1,
+      }
+    }
 
-    //   match (
-    //     cache.get(&stack.id).await.unwrap_or_default(),
-    //     action_states
-    //       .stack
-    //       .get(&stack.id)
-    //       .await
-    //       .unwrap_or_default()
-    //       .get()?,
-    //   ) {
-    //     (_, action_states) if action_states.syncing => {
-    //       res.syncing += 1;
-    //     }
-    //     (StackState::Up, _) => res.ok += 1,
-    //     (StackState::Failed, _) => res.failed += 1,
-    //     (StackState::Unknown, _) => res.unknown += 1,
-    //     // will never come off the cache in the building state, since that comes from action states
-    //     (StackState::Syncing, _) => {
-    //       unreachable!()
-    //     }
-    //     (StackState::Pending, _) => {
-    //       unreachable!()
-    //     }
-    //   }
-    // }
-
-    // Ok(res)
-
-    todo!()
+    Ok(res)
   }
 }
 

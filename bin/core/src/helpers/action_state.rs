@@ -24,8 +24,7 @@ pub struct ActionStates {
     Cache<String, Arc<ActionState<ProcedureActionState>>>,
   pub resource_sync:
     Cache<String, Arc<ActionState<ResourceSyncActionState>>>,
-  pub stack:
-    Cache<String, Arc<ActionState<StackActionState>>>,
+  pub stack: Cache<String, Arc<ActionState<StackActionState>>>,
 }
 
 /// Need to be able to check "busy" with write lock acquired.

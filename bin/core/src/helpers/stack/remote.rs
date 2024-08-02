@@ -2,22 +2,22 @@ use std::fs;
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  stack::Stack, to_monitor_name, update::Log, CloneArgs, LatestCommit,
+  stack::Stack, update::Log, CloneArgs,
 };
 
-use crate::{config::core_config, state::stack_lock_cache};
+use crate::{auth::random_string, config::core_config};
 
+/// Return Result<(Result<contents>, logs, short hash, commit message)>
 pub async fn get_remote_compose_file(
   stack: &Stack,
 ) -> anyhow::Result<(
   anyhow::Result<String>,
   Vec<Log>,
   // commit short hash
-  String,
+  Option<String>,
   // commit message
-  String,
+  Option<String>,
 )> {
-  let name = to_monitor_name(&stack.name);
   let mut clone_args: CloneArgs = stack.into();
 
   let config = core_config();
@@ -40,29 +40,17 @@ pub async fn get_remote_compose_file(
       .into(),
   };
 
-  fs::create_dir_all(&config.stack_directory)
-    .context("failed to create stack directory")?;
+  let repo_path = config.stack_directory.join(random_string(10));
+  clone_args.destination = Some(repo_path.display().to_string());
 
-  // lock simultaneous access to same directory
-  let lock =
-    stack_lock_cache().get_or_insert_default(&stack.id).await;
-  let _lock = lock.lock().await;
-
-  // delete anything at the pat
-
-  let logs =
+  let (logs, hash, message) =
     git::clone(clone_args, &config.stack_directory, access_token)
       .await
       .context("failed to clone stack repo")?;
 
-  let repo_dir = config.stack_directory.join(&name);
-  let LatestCommit { hash, message } =
-    git::get_commit_hash_info(&repo_dir)
-      .await
-      .context("failed to get commit hash info")?;
-
-  let repo_path = config.stack_directory.join(&stack.name);
-  let file_path = repo_path.join(&stack.config.file_path);
+  let file_path = repo_path
+    .join(&stack.config.run_directory)
+    .join(&stack.config.file_path);
 
   let res = fs::read_to_string(file_path)
     .context("failed to read file contents");

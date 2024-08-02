@@ -100,6 +100,14 @@ pub struct PauseContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
+pub struct UnpauseContainer {
+  pub name: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
 pub struct StopContainer {
   pub name: String,
   pub signal: Option<TerminationSignal>,
@@ -132,5 +140,3 @@ pub struct RenameContainer {
 pub struct PruneContainers {}
 
 //
-
-

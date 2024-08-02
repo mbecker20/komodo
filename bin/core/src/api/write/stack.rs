@@ -1,14 +1,16 @@
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use monitor_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
     permission::PermissionLevel,
-    stack::{PartialStackConfig, Stack},
+    stack::{PartialStackConfig, Stack, StackInfo},
     user::User,
     NoData,
   },
 };
+use mungos::mongodb::bson::{doc, to_document};
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
@@ -16,8 +18,11 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::stack::{
+    json::get_config_json, remote::get_remote_compose_file,
+  },
   resource,
-  state::{github_client, State},
+  state::{db_client, github_client, State},
 };
 
 impl Resolve<CreateStack, User> for State {
@@ -68,6 +73,83 @@ impl Resolve<UpdateStack, User> for State {
     user: User,
   ) -> anyhow::Result<Stack> {
     resource::update::<Stack>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RefreshStackCache, User> for State {
+  #[instrument(name = "RefreshStackCache", skip(self, user))]
+  async fn resolve(
+    &self,
+    RefreshStackCache { stack }: RefreshStackCache,
+    user: User,
+  ) -> anyhow::Result<NoData> {
+    // Even though this is a write request, this doesn't change any config. Anyone that can execute the
+    // stack should be able to do this.
+    let stack = resource::get_check_permissions::<Stack>(
+      &stack,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    let info = if stack.config.file_contents.is_empty() {
+      let (res, _, latest_hash, latest_message) =
+        get_remote_compose_file(&stack)
+          .await
+          .context("failed to clone remote compose file")?;
+      match res {
+        Ok(remote_contents) => {
+          let (json, json_error) =
+            get_config_json(&remote_contents).await;
+          StackInfo {
+            json,
+            json_error,
+            remote_contents: Some(remote_contents),
+            remote_error: false,
+            latest_hash,
+            latest_message,
+            ..stack.info
+          }
+        }
+        Err(e) => {
+          let remote_contents = format_serror(
+            &e.context("failed to read remote compose file").into(),
+          );
+          StackInfo {
+            json: String::new(),
+            json_error: true,
+            remote_contents: Some(remote_contents),
+            remote_error: true,
+            latest_hash,
+            latest_message,
+            ..stack.info
+          }
+        }
+      }
+    } else {
+      let (json, json_error) =
+        get_config_json(&stack.config.file_contents).await;
+      StackInfo {
+        json,
+        json_error,
+        ..stack.info
+      }
+    };
+
+    let info = to_document(&info)
+      .context("failed to serialize stack info to bson")?;
+
+    db_client()
+      .await
+      .stacks
+      .update_one(
+        doc! { "name": &stack.name },
+        doc! { "$set": { "info": info } },
+      )
+      .await
+      .context("failed to update stack info on db")?;
+
+    Ok(NoData {})
   }
 }
 

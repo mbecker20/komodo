@@ -12,7 +12,7 @@
 //!   - X-Api-Secret: `your_api_secret`
 //!   - Use either Authorization *or* X-Api-Key and X-Api-Secret to authenticate requests.
 //! - Body: JSON specifying the request type (`type`) and the parameters (`params`).
-//! 
+//!
 //! To call the api, construct JSON bodies following
 //! the schemas given in [read], [mod@write], [execute], and so on.
 //!

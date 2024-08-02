@@ -4,11 +4,16 @@ use anyhow::{anyhow, Context};
 use bollard::{container::ListContainersOptions, Docker};
 use command::run_monitor_command;
 use monitor_client::entities::{
-  build::{ImageRegistry, StandardRegistryConfig}, config::core::AwsEcrConfig, deployment::{
+  build::{ImageRegistry, StandardRegistryConfig},
+  config::core::AwsEcrConfig,
+  deployment::{
     ContainerSummary, DockerContainerStats, TerminationSignal,
-  }, server::{
+  },
+  server::{
     docker_image::ImageSummary, docker_network::DockerNetwork,
-  }, to_monitor_name, update::Log
+  },
+  to_monitor_name,
+  update::Log,
 };
 use run_command::async_run_command;
 
@@ -166,7 +171,6 @@ pub async fn docker_login(
     ))
   }
 }
-
 
 #[instrument]
 pub async fn pull_image(image: &str) -> Log {

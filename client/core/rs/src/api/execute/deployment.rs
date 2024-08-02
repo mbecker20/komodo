@@ -34,8 +34,10 @@ pub struct Deploy {
   /// Name or id
   pub deployment: String,
   /// Override the default termination signal specified in the deployment.
+  /// Only used when deployment needs to be taken down before redeploy.
   pub stop_signal: Option<TerminationSignal>,
   /// Override the default termination max time.
+  /// Only used when deployment needs to be taken down before redeploy.
   pub stop_time: Option<i32>,
 }
 
@@ -58,6 +60,77 @@ pub struct Deploy {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct StartContainer {
+  /// Name or id
+  pub deployment: String,
+}
+
+//
+
+/// Restarts the container for the target deployment. Response: [Update]
+///
+/// 1. Runs `docker restart ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct RestartContainer {
+  /// Name or id
+  pub deployment: String,
+}
+
+//
+
+/// Pauses the container for the target deployment. Response: [Update]
+///
+/// 1. Runs `docker pause ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct PauseContainer {
+  /// Name or id
+  pub deployment: String,
+}
+
+//
+
+/// Unpauses the container for the target deployment. Response: [Update]
+///
+/// 1. Runs `docker unpause ${container_name}`.
+///
+/// Note. This is the only way to restart a paused container.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct UnpauseContainer {
   /// Name or id
   pub deployment: String,
 }

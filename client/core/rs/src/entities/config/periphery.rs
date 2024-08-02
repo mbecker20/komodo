@@ -157,7 +157,7 @@ fn default_config_paths() -> Vec<String> {
 /// ## can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min.
 /// ## controls granularity of system stats recorded
 /// stats_polling_rate = "5-sec"
-/// 
+///
 /// ## Whether stack actions should use `docker-compose ...`
 /// ## instead of `docker compose ...`.
 /// ## default: false
@@ -198,7 +198,7 @@ fn default_config_paths() -> Vec<String> {
 /// # accounts = [
 /// #     { username = "mbecker20", token = "access_token_for_account" },
 /// # ]
-/// 
+///
 /// ## configure periphery-based docker registries
 /// # [[docker_registry]]
 /// # domain = "docker.io"

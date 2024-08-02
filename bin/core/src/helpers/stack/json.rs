@@ -1,11 +1,25 @@
 use anyhow::Context;
+use formatting::format_serror;
 use run_command::async_run_command;
 use tokio::fs;
 
 use crate::{auth::random_string, config::core_config};
 
-/// Returns (message, is_error)
+/// returns (content, is_error)
 pub async fn get_config_json(
+  compose_contents: &str,
+) -> (String, bool) {
+  match get_config_json_inner(compose_contents).await {
+    Ok(res) => res,
+    Err(e) => (
+      format_serror(&e.context("failed to get config json").into()),
+      true,
+    ),
+  }
+}
+
+/// Returns (message, is_error)
+async fn get_config_json_inner(
   compose_contents: &str,
 ) -> anyhow::Result<(String, bool)> {
   // create a new folder to prevent collisions

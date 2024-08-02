@@ -1,4 +1,5 @@
 use anyhow::Context;
+use formatting::format_serror;
 use monitor_client::entities::{
   permission::PermissionLevel,
   resource::Resource,
@@ -13,11 +14,16 @@ use monitor_client::entities::{
   Operation,
 };
 use mungos::mongodb::Collection;
+use periphery_client::api::compose::ComposeDown;
 
 use crate::{
+  helpers::{
+    periphery_client, query::get_stack_state,
+    stack::remote::get_remote_compose_file,
+  },
   monitor::update_cache_for_server,
   resource,
-  state::{action_states, db_client},
+  state::{action_states, db_client, stack_status_cache},
 };
 
 use super::get_check_permissions;
@@ -42,18 +48,23 @@ impl super::MonitorResource for Stack {
   async fn to_list_item(
     stack: Resource<Self::Config, Self::Info>,
   ) -> Self::ListItem {
-    // let state = get_resource_sync_state(
-    //   &resource_sync.id,
-    //   &resource_sync.info.pending.data,
-    // )
-    // .await;
+    let status = stack_status_cache().get(&stack.id).await;
     StackListItem {
       id: stack.id,
       name: stack.name,
       tags: stack.tags,
       resource_type: ResourceTargetVariant::Stack,
       info: StackListItemInfo {
-        state: StackState::Unknown,
+        state: status
+          .as_ref()
+          .map(|s| s.curr.state)
+          .unwrap_or_default(),
+        services: stack
+          .info
+          .services
+          .into_iter()
+          .map(|service| service.service_name)
+          .collect(),
         server_id: stack.config.server_id,
         git_provider: stack.config.git_provider,
         repo: stack.config.repo,
@@ -139,6 +150,109 @@ impl super::MonitorResource for Stack {
     update: &mut Update,
   ) -> anyhow::Result<()> {
     // If it is Up, it should be taken down
+    let state = get_stack_state(stack)
+      .await
+      .context("failed to get stack state")?;
+    if matches!(state, StackState::Down | StackState::Unknown) {
+      return Ok(());
+    }
+    // stack needs to be destroyed
+    let server =
+      match super::get::<Server>(&stack.config.server_id).await {
+        Ok(server) => server,
+        Err(e) => {
+          update.push_error_log(
+            "destroy stack",
+            format_serror(
+              &e.context(format!(
+                "failed to retrieve server at {} from db.",
+                stack.config.server_id
+              ))
+              .into(),
+            ),
+          );
+          return Ok(());
+        }
+      };
+
+    if !server.config.enabled {
+      // Don't need to
+      update.push_simple_log(
+        "destroy stack",
+        "skipping stack destroy, server is disabled.",
+      );
+      return Ok(());
+    }
+
+    let periphery = match periphery_client(&server) {
+      Ok(periphery) => periphery,
+      Err(e) => {
+        // This case won't ever happen, as periphery_client only fallible if the server is disabled.
+        // Leaving it for completeness sake
+        update.push_error_log(
+          "destroy stack",
+          format_serror(
+            &e.context("failed to get periphery client").into(),
+          ),
+        );
+        return Ok(());
+      }
+    };
+
+    let contents = if stack.config.file_contents.is_empty() {
+      match get_remote_compose_file(stack).await {
+        Ok((res, logs, _commit_hash, _commit_msg)) => {
+          // the commit hash and message are already included in clone logs
+          // so don't need to add them again here.
+          update.logs.extend(logs);
+          match res {
+            Ok(contents) => contents,
+            Err(e) => {
+              update.push_error_log(
+                "destroy stack",
+                format_serror(
+                  &e.context("failed to read remote compose file")
+                    .into(),
+                ),
+              );
+              return Ok(());
+            }
+          }
+        }
+        Err(e) => {
+          update.push_error_log(
+            "destroy stack",
+            format_serror(
+              &e.context("failed to get remote compose file").into(),
+            ),
+          );
+          return Ok(());
+        }
+      }
+    } else {
+      stack.config.file_contents.clone()
+    };
+
+    match periphery
+      .request(ComposeDown {
+        file: contents,
+        remove_orphans: true,
+        timeout: None,
+      })
+      .await
+    {
+      Ok(logs) => update.logs.extend(logs),
+      Err(e) => update.push_error_log(
+        "destroy stack",
+        format_serror(
+          &e.context(
+            "failed to destroy stack on server before delete",
+          )
+          .into(),
+        ),
+      ),
+    };
+
     Ok(())
   }
 

@@ -20,10 +20,23 @@ impl Busy for ServerActionState {
 impl Busy for DeploymentActionState {
   fn busy(&self) -> bool {
     self.deploying
-      || self.removing
       || self.starting
+      || self.restarting
+      || self.pausing
       || self.stopping
+      || self.removing
       || self.renaming
+  }
+}
+
+impl Busy for StackActionState {
+  fn busy(&self) -> bool {
+    self.deploying
+      || self.starting
+      || self.restarting
+      || self.pausing
+      || self.stopping
+      || self.destroying
   }
 }
 
@@ -48,11 +61,5 @@ impl Busy for ProcedureActionState {
 impl Busy for ResourceSyncActionState {
   fn busy(&self) -> bool {
     self.syncing
-  }
-}
-
-impl Busy for StackActionState {
-  fn busy(&self) -> bool {
-    self.deploying || self.destroying
   }
 }
