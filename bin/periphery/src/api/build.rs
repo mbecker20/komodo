@@ -156,7 +156,7 @@ fn image_tags(
   };
   let additional = additional
     .iter()
-    .map(|tag| format!(" -t {image_name}:{tag}"))
+    .map(|tag| format!(" -t {image_name}:{image_tag}{tag}"))
     .collect::<Vec<_>>()
     .join("");
   format!(

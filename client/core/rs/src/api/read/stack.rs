@@ -6,6 +6,7 @@ use typeshare::typeshare;
 use crate::entities::{
   deployment::ContainerSummary,
   stack::{Stack, StackActionState, StackListItem, StackQuery},
+  update::Log,
   U64,
 };
 
@@ -98,7 +99,26 @@ fn default_tail() -> u64 {
 }
 
 #[typeshare]
-pub type GetStackServiceLogResponse = Vec<ContainerSummary>;
+pub type GetStackServiceLogResponse = Log;
+
+//
+
+/// Gets a list of existing values used as extra args across other stacks.
+/// Useful to offer suggestions. Response: [ListCommonStackExtraArgsResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListCommonStackExtraArgsResponse)]
+pub struct ListCommonStackExtraArgs {
+  /// optional structured query to filter stacks.
+  #[serde(default)]
+  pub query: StackQuery,
+}
+
+#[typeshare]
+pub type ListCommonStackExtraArgsResponse = Vec<String>;
 
 //
 

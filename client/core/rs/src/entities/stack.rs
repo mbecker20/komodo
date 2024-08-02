@@ -129,11 +129,11 @@ pub struct StackConfig {
   #[builder(default)]
   pub registry_account: String,
 
-  /// The extra arguments to pass to `docker compose up -d`.
+  /// The extra arguments to pass after `docker compose up -d`.
   /// If empty, no extra arguments will be passed.
   #[serde(default)]
   #[builder(default)]
-  pub deploy_args: String,
+  pub extra_args: Vec<String>,
 
   /// The environment variables passed to the compose file.
   /// They will be written to local '.env'
@@ -263,7 +263,7 @@ impl Default for StackConfig {
       registry_provider: Default::default(),
       registry_account: Default::default(),
       file_contents: Default::default(),
-      deploy_args: Default::default(),
+      extra_args: Default::default(),
       environment: Default::default(),
       env_file_name: default_env_file_name(),
       git_provider: default_git_provider(),

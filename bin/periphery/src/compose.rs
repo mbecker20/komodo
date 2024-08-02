@@ -16,8 +16,10 @@ use run_command::async_run_command;
 use tokio::fs;
 
 use crate::{
-  config::periphery_config, docker::docker_login,
-  helpers::random_string, State,
+  config::periphery_config,
+  docker::docker_login,
+  helpers::{parse_extra_args, random_string},
+  State,
 };
 
 const DEFAULT_FILE_NAME: &str = "compose.yaml";
@@ -35,14 +37,6 @@ pub fn maybe_timeout(timeout: Option<i32>) -> String {
     format!(" --timeout {timeout}")
   } else {
     String::new()
-  }
-}
-
-pub fn maybe_args(args: &str) -> String {
-  if args.is_empty() {
-    String::new()
-  } else {
-    format!(" {args}")
   }
 }
 
@@ -121,7 +115,7 @@ pub async fn compose_up(
 
   let run_directory = run_directory.display();
   let docker_compose = docker_compose();
-  let args = maybe_args(&stack.config.deploy_args);
+  let extra_args = parse_extra_args(&stack.config.extra_args);
   let service = service
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
@@ -157,7 +151,7 @@ pub async fn compose_up(
     run_monitor_command(
       "compose up",
       format!(
-        "cd {run_directory} && {docker_compose} -f {file_path} up -d{args}{service}",
+        "cd {run_directory} && {docker_compose} -f {file_path} up -d{extra_args}{service}",
       ),
     )
     .await,

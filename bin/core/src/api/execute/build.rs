@@ -187,11 +187,11 @@ impl Resolve<RunBuild, (User, Update)> for State {
       },
     };
 
-    let (commit_hash, commit_message) = match res {
+    let commit_hash = match res {
       Ok(res) => {
         info!("finished repo clone");
         update.logs.extend(res.logs);
-        (res.commit_hash, res.commit_message)
+        res.commit_hash
       }
       Err(e) => {
         warn!("failed build at clone repo | {e:#}");
@@ -199,7 +199,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           "clone repo",
           format_serror(&e.context("failed to clone repo").into()),
         );
-        (None, None)
+        None
       }
     };
 
@@ -302,7 +302,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
             registry_token,
             aws_ecr,
             replacers: secret_replacers.into_iter().collect(),
-            additional_tags: Default::default(),
+            // Push a commit hash tagged image
+            additional_tags: commit_hash.map(|hash| vec![hash]).unwrap_or_default(),
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
           info!("build cancelled during build, cleaning up builder");
