@@ -118,12 +118,11 @@ impl Resolve<RunBuild, (User, Update)> for State {
             id = cancel_recv.recv() => id?
           };
           if incoming_build_id == build_id {
-            let message = if is_server_builder {
-              "build cancellation is not possible on server builders at this time"
+            if is_server_builder {
+              update.push_error_log("cancel acknowledged", "build cancellation is not possible on server builders at this time");
             } else {
-              "the build cancellation has been queued, it may still take some time"
-            };
-            update.push_simple_log("cancel acknowledged", message);
+              update.push_simple_log("cancel acknowledged", "the build cancellation has been queued, it may still take some time");
+            }
             update.finalize();
             let id = update.id.clone();
             if let Err(e) = update_update(update).await {
