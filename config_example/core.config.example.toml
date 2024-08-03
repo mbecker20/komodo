@@ -3,7 +3,7 @@
 # title = "Monitor-02"
 
 ## required for oauth functionality. this should be the url used to access monitor in browser, potentially behind DNS.
-## eg https://monitor.dev or http://12.34.56.78:9000. this should match the address configured in your oauth app.
+## eg https://monitor.dev or http://12.34.56.78:9120. this should match the address configured in your oauth app.
 ## no default
 host = "https://monitor.dev"
 
