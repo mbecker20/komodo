@@ -134,7 +134,7 @@ pub struct BuildConfig {
   ///
   /// Note. A token for the account must be available in the core config or the builder server's periphery config
   /// for the configured git provider.
-  #[serde(default, alias = "github_account")]
+  #[serde(default)]
   #[builder(default)]
   pub git_account: String,
 

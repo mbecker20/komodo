@@ -54,7 +54,7 @@ pub struct CliArgs {
   #[arg(long)]
   pub config_keyword: Option<Vec<String>>,
 
-  /// Merges nested configs, eg. secrets, docker_accounts, github_accounts.
+  /// Merges nested configs, eg. secrets, providers.
   /// Will override the equivalent env configuration.
   /// Default: false
   #[arg(long)]
@@ -96,7 +96,7 @@ pub struct Env {
   #[serde(default)]
   pub monitor_config_keywords: Vec<String>,
 
-  /// Will merge nested config object (eg. secrets, github_accounts) across multiple
+  /// Will merge nested config object (eg. secrets, providers) across multiple
   /// config files. Default: `false`
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].

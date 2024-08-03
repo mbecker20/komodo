@@ -112,7 +112,7 @@ pub async fn update_cache_for_server(server: &Server) {
   {
     Ok(deployments) => deployments,
     Err(e) => {
-      error!("failed to get deployments list from mongo (update status cache) | server id: {} | {e:#}", server.id);
+      error!("failed to get deployments list from db (update status cache) | server id: {} | {e:#}", server.id);
       Vec::new()
     }
   };
@@ -126,7 +126,7 @@ pub async fn update_cache_for_server(server: &Server) {
   {
     Ok(repos) => repos,
     Err(e) => {
-      error!("failed to get repos list from mongo (update status cache) | server id: {} | {e:#}", server.id);
+      error!("failed to get repos list from db (update status cache) | server id: {} | {e:#}", server.id);
       Vec::new()
     }
   };
@@ -140,7 +140,7 @@ pub async fn update_cache_for_server(server: &Server) {
   {
     Ok(stacks) => stacks,
     Err(e) => {
-      error!("failed to get stacks list from mongo (update status cache) | server id: {} | {e:#}", server.id);
+      error!("failed to get stacks list from db (update status cache) | server id: {} | {e:#}", server.id);
       Vec::new()
     }
   };
