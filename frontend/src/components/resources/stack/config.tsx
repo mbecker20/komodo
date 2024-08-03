@@ -1,19 +1,21 @@
 import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
+  AddExtraArgMenu,
   ConfigItem,
+  InputList,
   ProviderSelectorConfig,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus } from "lucide-react";
 
-export const StackConfig = ({ id }: { id: string }) => {
+export const StackConfig = ({ id, titleOther }: { id: string; titleOther: ReactNode; }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Stack", id },
   }).data;
@@ -29,6 +31,7 @@ export const StackConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      titleOther={titleOther}
       disabled={disabled}
       config={config}
       update={update}
@@ -124,6 +127,37 @@ export const StackConfig = ({ id }: { id: string }) => {
             components: {
               run_directory: { placeholder: "." },
               file_path: { placeholder: "compose.yaml" },
+            },
+          },
+          {
+            label: "Extra Args",
+            contentHidden:
+              (update.extra_args ?? config.extra_args)?.length === 0,
+            actions: !disabled && (
+              <AddExtraArgMenu
+                type="Stack"
+                onSelect={(suggestion) =>
+                  set((update) => ({
+                    ...update,
+                    extra_args: [
+                      ...(update.extra_args ?? config.extra_args ?? []),
+                      suggestion,
+                    ],
+                  }))
+                }
+                disabled={disabled}
+              />
+            ),
+            components: {
+              extra_args: (value, set) => (
+                <InputList
+                  field="extra_args"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="--extra-arg=value"
+                />
+              ),
             },
           },
           {

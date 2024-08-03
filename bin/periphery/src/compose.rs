@@ -50,20 +50,6 @@ pub async fn run_compose_command(
     .stack_dir
     .join(to_monitor_name(&stack.name))
     .join(&stack.config.run_directory);
-  let run_directory = match run_directory
-    .canonicalize()
-    .with_context(|| format!("run directory: {run_directory:?}"))
-    .context("failed to canonicalize run directory")
-  {
-    Ok(dir) => dir,
-    Err(e) => {
-      res.logs.push(Log::error(
-        "canonicalize run directory",
-        format_serror(&e.into()),
-      ));
-      return res;
-    }
-  };
   let file_path = run_directory.join(&stack.config.file_path);
 
   if is_deploy || !file_path.exists() {

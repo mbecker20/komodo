@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::Context;
 use monitor_client::{
   api::read::*,
@@ -13,6 +15,7 @@ use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
   config::core_config,
+  helpers::{periphery_client, stack::get_stack_and_server},
   resource,
   state::{action_states, github_client, stack_status_cache, State},
 };
@@ -72,6 +75,67 @@ impl Resolve<GetStackContainers, User> for State {
       .containers
       .clone();
     Ok(containers)
+  }
+}
+
+impl Resolve<GetStackServiceLog, User> for State {
+  async fn resolve(
+    &self,
+    GetStackServiceLog {
+      stack,
+      service,
+      tail,
+    }: GetStackServiceLog,
+    user: User,
+  ) -> anyhow::Result<GetStackServiceLogResponse> {
+    let (stack, server) = get_stack_and_server(&stack, &user).await?;
+
+    todo!()
+  }
+}
+
+impl Resolve<SearchStackServiceLog, User> for State {
+  async fn resolve(
+    &self,
+    SearchStackServiceLog {
+      stack,
+      service,
+      terms,
+      combinator,
+      invert
+    }: SearchStackServiceLog,
+    user: User,
+  ) -> anyhow::Result<SearchStackServiceLogResponse> {
+    let (stack, server) = get_stack_and_server(&stack, &user).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    todo!()
+  }
+}
+
+impl Resolve<ListCommonStackExtraArgs, User> for State {
+  async fn resolve(
+    &self,
+    ListCommonStackExtraArgs { query }: ListCommonStackExtraArgs,
+    user: User,
+  ) -> anyhow::Result<ListCommonStackExtraArgsResponse> {
+    let stacks = resource::list_full_for_user::<Stack>(query, &user)
+      .await
+      .context("failed to get resources matching query")?;
+
+    // first collect with guaranteed uniqueness
+    let mut res = HashSet::<String>::new();
+
+    for stack in stacks {
+      for extra_arg in stack.config.extra_args {
+        res.insert(extra_arg);
+      }
+    }
+
+    let mut res = res.into_iter().collect::<Vec<_>>();
+    res.sort();
+    Ok(res)
   }
 }
 

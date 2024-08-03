@@ -33,6 +33,10 @@ pub struct StackListItemInfo {
   pub latest_hash: Option<String>,
   /// Latest commit message, or null.
   pub latest_message: Option<String>,
+  /// Deployed short commit hash, or null.
+  pub deployed_hash: Option<String>,
+  /// Deployed commit message, or null.
+  pub deployed_message: Option<String>,
 }
 
 #[typeshare]

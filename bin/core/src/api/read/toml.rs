@@ -91,6 +91,15 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .map(|resource| ResourceTarget::Deployment(resource.id)),
     );
     targets.extend(
+      resource::list_for_user::<Stack>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Stack(resource.id)),
+    );
+    targets.extend(
       resource::list_for_user::<Build>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
@@ -767,6 +776,30 @@ fn serialize_resources_toml(
     res.push_str(
       &toml_pretty::to_string(&parsed, options)
         .context("failed to serialize deployments to toml")?,
+    );
+  }
+
+  for stack in &resources.stacks {
+    if !res.is_empty() {
+      res.push_str("\n\n##\n\n");
+    }
+    res.push_str("[[stack]]\n");
+    let mut parsed: OrderedHashMap<String, Value> =
+      serde_json::from_str(&serde_json::to_string(&stack)?)?;
+    let config = parsed
+      .get_mut("config")
+      .context("stack has no config?")?
+      .as_object_mut()
+      .context("config is not object?")?;
+    if let Some(environment) = &stack.config.environment {
+      config.insert(
+        "environment".to_string(),
+        Value::String(environment_vars_to_string(environment)),
+      );
+    }
+    res.push_str(
+      &toml_pretty::to_string(&parsed, options)
+        .context("failed to serialize stacks to toml")?,
     );
   }
 

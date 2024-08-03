@@ -153,8 +153,11 @@ enum ReadRequest {
   GetStackContainers(GetStackContainers),
   GetStackActionState(GetStackActionState),
   GetStackWebhooksEnabled(GetStackWebhooksEnabled),
+  GetStackServiceLog(GetStackServiceLog),
+  SearchStackServiceLog(SearchStackServiceLog),
   ListStacks(ListStacks),
   ListFullStacks(ListFullStacks),
+  ListCommonStackExtraArgs(ListCommonStackExtraArgs),
   #[to_string_resolver]
   GetStackJson(GetStackJson),
 

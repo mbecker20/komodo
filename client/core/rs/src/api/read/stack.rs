@@ -4,10 +4,7 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  deployment::ContainerSummary,
-  stack::{Stack, StackActionState, StackListItem, StackQuery},
-  update::Log,
-  JsonValue, U64,
+  deployment::ContainerSummary, stack::{Stack, StackActionState, StackListItem, StackQuery}, update::Log, JsonValue, SearchCombinator, U64
 };
 
 use super::MonitorReadRequest;
@@ -100,6 +97,40 @@ fn default_tail() -> u64 {
 
 #[typeshare]
 pub type GetStackServiceLogResponse = Log;
+
+//
+
+/// Search the deployment log's tail using `grep`. All lines go to stdout.
+/// Response: [Log].
+///
+/// Note. This call will hit the underlying server directly for most up to date log.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(SearchStackServiceLogResponse)]
+pub struct SearchStackServiceLog {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub stack: String,
+  /// The service to get the log for.
+  pub service: String,
+  /// The terms to search for.
+  pub terms: Vec<String>,
+  /// When searching for multiple terms, can use `AND` or `OR` combinator.
+  ///
+  /// - `AND`: Only include lines with **all** terms present in that line.
+  /// - `OR`: Include lines that have one or more matches in the terms.
+  #[serde(default)]
+  pub combinator: SearchCombinator,
+  /// Invert the results, ie return all lines that DON'T match the terms / combinator.
+  #[serde(default)]
+  pub invert: bool,
+}
+
+#[typeshare]
+pub type SearchStackServiceLogResponse = Log;
 
 //
 

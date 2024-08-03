@@ -111,8 +111,11 @@ export type ReadResponses = {
   GetStackContainers: Types.GetStackContainersResponse;
   GetStackActionState: Types.GetStackActionStateResponse;
   GetStackWebhooksEnabled: Types.GetStackWebhooksEnabledResponse;
+  GetStackServiceLog: Types.GetStackServiceLogResponse;
+  SearchStackServiceLog: Types.SearchStackServiceLogResponse;
   ListStacks: Types.ListStacksResponse;
   ListFullStacks: Types.ListFullStacksResponse;
+  ListCommonStackExtraArgs: Types.ListCommonStackExtraArgsResponse;
   GetStackJson: Types.GetStackJsonResponse;
 
   // ==== BUILDER ====

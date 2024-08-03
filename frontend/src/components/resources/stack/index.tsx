@@ -16,6 +16,8 @@ import { StackDashboard } from "./dashboard";
 import { useServer } from "../server";
 import { Types } from "@monitor/client";
 import { DeployStack, DestroyStack } from "./actions";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -26,6 +28,61 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useStack(id)?.info.state;
   const color = stroke_color_class_by_intention(stack_state_intention(state));
   return <Layers className={cn(`w-${size} h-${size}`, state && color)} />;
+};
+
+const ConfigOrInfo = ({ id }: { id: string }) => {
+  const [view, setView] = useState("Config");
+  const state = useStack(id)?.info.state;
+  const infoDisabled =
+    state === undefined ||
+    state === Types.StackState.Unknown ||
+    state === Types.StackState.Down;
+  return (
+    <Tabs
+      value={infoDisabled ? "Config" : view}
+      onValueChange={setView}
+      className="grid gap-4"
+    >
+      <TabsContent value="Config">
+        <StackConfig
+          id={id}
+          titleOther={
+            <TabsList className="justify-start w-fit">
+              <TabsTrigger value="Config" className="w-[110px]">
+                Config
+              </TabsTrigger>
+              <TabsTrigger
+                value="Info"
+                className="w-[110px]"
+                disabled={infoDisabled}
+              >
+                Info
+              </TabsTrigger>
+            </TabsList>
+          }
+        />
+      </TabsContent>
+      <TabsContent value="Info">
+        {/* <DeploymentLogs
+          id={id}
+          titleOther={
+            <TabsList className="justify-start w-fit">
+              <TabsTrigger value="Config" className="w-[110px]">
+                Config
+              </TabsTrigger>
+              <TabsTrigger
+                value="Log"
+                className="w-[110px]"
+                disabled={logsDisabled}
+              >
+                Log
+              </TabsTrigger>
+            </TabsList>
+          }
+        /> */}
+      </TabsContent>
+    </Tabs>
+  );
 };
 
 export const StackComponents: RequiredResourceComponents = {
@@ -52,7 +109,34 @@ export const StackComponents: RequiredResourceComponents = {
         </Card>
       );
     },
-    Status: ({ id }) => {
+    Deployed: ({ id }) => {
+      const info = useStack(id)?.info;
+      if (info?.deployed_hash && info?.deployed_message) {
+        if (info?.latest_hash === info.deployed_hash) {
+          return null
+        }
+        return (
+          <HoverCard openDelay={200}>
+            <HoverCardTrigger asChild>
+              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                  deployed: {info.deployed_hash}
+                </div>
+              </Card>
+            </HoverCardTrigger>
+            <HoverCardContent align="start">
+              <div className="grid">
+                <div className="text-muted-foreground">commit message:</div>
+                {info.deployed_message}
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        );
+      } else {
+        return <div className="text-muted-foreground">{"Not cloned"}</div>;
+      }
+    },
+    Latest: ({ id }) => {
       const info = useStack(id)?.info;
       if (info?.latest_hash && info?.latest_message) {
         return (
@@ -60,7 +144,7 @@ export const StackComponents: RequiredResourceComponents = {
             <HoverCardTrigger asChild>
               <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
                 <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                  latest commit: {info.latest_hash}
+                  latest: {info.latest_hash}
                 </div>
               </Card>
             </HoverCardTrigger>
@@ -118,7 +202,7 @@ export const StackComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: StackConfig,
+  Config: ConfigOrInfo,
 
   DangerZone: ({ id }) => <DeleteResource type="Stack" id={id} />,
 };

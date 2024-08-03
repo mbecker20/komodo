@@ -1412,6 +1412,8 @@ export type GetStackContainersResponse = ContainerSummary[];
 
 export type GetStackServiceLogResponse = Log;
 
+export type SearchStackServiceLogResponse = Log;
+
 export type ListCommonStackExtraArgsResponse = string[];
 
 export enum StackState {
@@ -1442,6 +1444,10 @@ export interface StackListItemInfo {
 	latest_hash?: string;
 	/** Latest commit message, or null. */
 	latest_message?: string;
+	/** Deployed short commit hash, or null. */
+	deployed_hash?: string;
+	/** Deployed commit message, or null. */
+	deployed_message?: string;
 }
 
 export type StackListItem = ResourceListItem<StackListItemInfo>;
@@ -3270,6 +3276,30 @@ export interface GetStackServiceLog {
 }
 
 /**
+ * Search the deployment log's tail using `grep`. All lines go to stdout.
+ * Response: [Log].
+ * 
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface SearchStackServiceLog {
+	/** Id or name */
+	stack: string;
+	/** The service to get the log for. */
+	service: string;
+	/** The terms to search for. */
+	terms: string[];
+	/**
+	 * When searching for multiple terms, can use `AND` or `OR` combinator.
+	 * 
+	 * - `AND`: Only include lines with **all** terms present in that line.
+	 * - `OR`: Include lines that have one or more matches in the terms.
+	 */
+	combinator?: SearchCombinator;
+	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
+	invert?: boolean;
+}
+
+/**
  * Gets a list of existing values used as extra args across other stacks.
  * Useful to offer suggestions. Response: [ListCommonStackExtraArgsResponse]
  */
@@ -4892,8 +4922,11 @@ export type ReadRequest =
 	| { type: "GetStackContainers", params: GetStackContainers }
 	| { type: "GetStackActionState", params: GetStackActionState }
 	| { type: "GetStackWebhooksEnabled", params: GetStackWebhooksEnabled }
+	| { type: "GetStackServiceLog", params: GetStackServiceLog }
+	| { type: "SearchStackServiceLog", params: SearchStackServiceLog }
 	| { type: "ListStacks", params: ListStacks }
 	| { type: "ListFullStacks", params: ListFullStacks }
+	| { type: "ListCommonStackExtraArgs", params: ListCommonStackExtraArgs }
 	| { type: "GetStackJson", params: GetStackJson }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
