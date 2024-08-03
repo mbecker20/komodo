@@ -44,6 +44,7 @@ tokio-util.workspace = true
 axum-extra.workspace = true
 tower-http.workspace = true
 serde_json.workspace = true
+serde_yaml.workspace = true
 typeshare.workspace = true
 octorust.workspace = true
 tracing.workspace = true

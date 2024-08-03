@@ -80,9 +80,7 @@ impl Default for StatsClient {
 
 impl StatsClient {
   fn refresh(&mut self) {
-    self.system.refresh_cpu();
-    self.system.refresh_memory();
-    self.system.refresh_processes();
+    self.system.refresh_all();
     self.disks.refresh();
   }
 
@@ -92,7 +90,7 @@ impl StatsClient {
 
   pub fn get_system_stats(&self) -> SystemStats {
     SystemStats {
-      cpu_perc: self.system.global_cpu_info().cpu_usage(),
+      cpu_perc: self.system.global_cpu_usage(),
       mem_used_gb: self.system.used_memory() as f64 / BYTES_PER_GB,
       mem_total_gb: self.system.total_memory() as f64 / BYTES_PER_GB,
       disks: self.get_disks(),
@@ -132,13 +130,17 @@ impl StatsClient {
         let disk_usage = p.disk_usage();
         SystemProcess {
           pid: pid.as_u32(),
-          name: p.name().to_string(),
+          name: p.name().to_string_lossy().to_string(),
           exe: p
             .exe()
             .map(|exe| exe.to_str().unwrap_or_default())
             .unwrap_or_default()
             .to_string(),
-          cmd: p.cmd().to_vec(),
+          cmd: p
+            .cmd()
+            .iter()
+            .map(|cmd| cmd.to_string_lossy().to_string())
+            .collect(),
           start_time: (p.start_time() * 1000) as f64,
           cpu_perc: p.cpu_usage(),
           mem_mb: p.memory() as f64 / BYTES_PER_MB,
@@ -162,13 +164,17 @@ impl StatsClient {
 fn get_system_information(
   sys: &sysinfo::System,
 ) -> SystemInformation {
-  let cpu = sys.global_cpu_info();
   SystemInformation {
     name: System::name(),
     os: System::long_os_version(),
     kernel: System::kernel_version(),
     host_name: System::host_name(),
     core_count: sys.physical_core_count().map(|c| c as u32),
-    cpu_brand: cpu.brand().to_string(),
+    cpu_brand: sys
+      .cpus()
+      .iter()
+      .next()
+      .map(|cpu| cpu.brand().to_string())
+      .unwrap_or_default(),
   }
 }

@@ -5,10 +5,10 @@ use monitor_client::entities::stack::StackServiceNames;
 use serde::Deserialize;
 
 pub fn extract_services(
-  json_compose: &str,
+  compose_contents: &str,
 ) -> anyhow::Result<Vec<StackServiceNames>> {
-  serde_json::from_str::<ComposeFile>(json_compose)
-    .context("failed to parse compose json")
+  serde_yaml::from_str::<ComposeFile>(compose_contents)
+    .context("failed to parse service names from compose contents")
     .map(|file| {
       file
         .services
@@ -26,6 +26,7 @@ pub fn extract_services(
 
 #[derive(Deserialize)]
 pub struct ComposeFile {
+  #[serde(default)]
   pub services: HashMap<String, ComposeService>,
 }
 

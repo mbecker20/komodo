@@ -57,8 +57,9 @@ tokio-tungstenite = "0.23.1"
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 strum = { version = "0.26.3", features = ["derive"] }
-serde_json = "1.0.121"
-toml = "0.8.16"
+serde_json = "1.0.122"
+serde_yaml = "0.9.34"
+toml = "0.8.19"
 
 # ERROR
 anyhow = "1.0.86"
@@ -73,7 +74,7 @@ opentelemetry = "0.23.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.11", features = ["derive"] }
+clap = { version = "4.5.13", features = ["derive"] }
 dotenv = "0.15.0"
 envy = "0.4.2"
 
@@ -91,18 +92,18 @@ hex = "0.4.3"
 
 # SYSTEM
 bollard = "0.17.0"
-sysinfo = "0.30.13"
+sysinfo = "0.31.2"
 
 # CLOUD
 aws-config = "1.5.4"
-aws-sdk-ec2 = "1.61.0"
-aws-sdk-ecr = "1.36.0"
+aws-sdk-ec2 = "1.62.0"
+aws-sdk-ecr = "1.37.0"
 
 # MISC
 derive_builder = "0.20.0"
 typeshare = "1.0.3"
 octorust = "0.7.0"
 colored = "2.1.0"
-regex = "1.10.5"
+regex = "1.10.6"
 bson = "2.11.0"
 

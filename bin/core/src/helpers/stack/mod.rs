@@ -78,20 +78,16 @@ pub async fn refresh_stack_info(
     &file_contents
   {
     let (json, json_error) = json::get_config_json(contents).await;
-    if json_error {
-      (Vec::new(), json, json_error)
-    } else {
-      match services::extract_services(&json) {
-        Ok(services) => (services, json, json_error),
-        Err(e) => {
-          if let Some(update) = update {
-            update.push_error_log(
-              "extract services",
-              format_serror(&e.context("Failed to extract stack services. Things probably won't work correctly").into())
-            );
-          }
-          (Vec::new(), json, json_error)
+    match services::extract_services(contents) {
+      Ok(services) => (services, json, json_error),
+      Err(e) => {
+        if let Some(update) = update {
+          update.push_error_log(
+            "extract services",
+            format_serror(&e.context("Failed to extract stack services. Things probably won't work correctly").into())
+          );
         }
+        (Vec::new(), json, json_error)
       }
     }
   } else {
