@@ -27,7 +27,7 @@ pub async fn pull(
   };
 
   let command =
-    format!("cd {} && git pull origin {branch}", path.display());
+    format!("cd {} && git pull -f origin {branch}", path.display());
 
   let pull_log = run_monitor_command("git pull", command).await;
 
