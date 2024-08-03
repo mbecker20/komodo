@@ -124,6 +124,12 @@ export const DeploymentComponents: RequiredResourceComponents = {
       const color = bg_color_class_by_intention(
         deployment_state_intention(state)
       );
+
+      return (
+        <p className={cn("p-1 w-fit text-[10px] text-white rounded-md", color)}>
+          {snake_case_to_upper_space_case(state).toUpperCase()}
+        </p>
+      );
       return (
         <Card className={cn("w-fit", color)}>
           <CardHeader className="py-0 px-2">
