@@ -3,7 +3,6 @@ import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { FolderGit, Hammer } from "lucide-react";
 import { BuildConfig } from "./config";
-import { BuildDashboard } from "./dashboard";
 import { BuildTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import { DeploymentTable } from "../deployment/table";
@@ -19,6 +18,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceComponents } from "..";
 import { Types } from "@monitor/client";
+import { DashboardPieChart } from "@pages/home/dashboard";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -73,7 +73,31 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
 export const BuildComponents: RequiredResourceComponents = {
   list_item: (id) => useBuild(id),
 
-  Dashboard: BuildDashboard,
+  Dashboard: () => {
+    const summary = useRead("GetBuildsSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { title: "Ok", intention: "Good", value: summary?.ok ?? 0 },
+          {
+            title: "Building",
+            intention: "Warning",
+            value: summary?.building ?? 0,
+          },
+          {
+            title: "Failed",
+            intention: "Critical",
+            value: summary?.failed ?? 0,
+          },
+          {
+            title: "Unknown",
+            intention: "Unknown",
+            value: summary?.unknown ?? 0,
+          },
+        ]}
+      />
+    );
+  },
 
   New: () => <NewResource type="Build" />,
 
