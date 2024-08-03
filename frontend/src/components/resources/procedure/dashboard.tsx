@@ -11,12 +11,72 @@ import { Route } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@lib/utils";
 import {
+  ColorIntention,
   hex_color_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
 
+const Item = ({
+  intention,
+  label,
+  count,
+}: {
+  intention: ColorIntention;
+  label: string;
+  count: number | undefined;
+}) => (
+  <p className="flex gap-2 text-xs text-muted-foreground">
+    <span className={cn(text_color_class_by_intention(intention), "font-bold")}>
+      {count}
+    </span>
+    {label}
+  </p>
+);
+
 export const ProcedureDashboard = () => {
   const summary = useRead("GetProceduresSummary", {}).data;
+
+  return (
+    <div className="flex items-center gap-8">
+      <div className="flex flex-col gap-2 w-24">
+        <Item intention="Good" label="Ok" count={summary?.ok} />
+        <Item intention="Warning" label="Running" count={summary?.running} />
+        <Item intention="Critical" label="Failed" count={summary?.failed} />
+        <Item intention="Unknown" label="Unknown" count={summary?.unknown} />
+      </div>
+      <PieChart
+        className="w-32 h-32"
+        radius={42}
+        lineWidth={30}
+        data={[
+          {
+            color: hex_color_by_intention("Good"),
+            value: summary?.ok ?? 0,
+            title: "running",
+            key: "running",
+          },
+          {
+            color: hex_color_by_intention("Critical"),
+            value: summary?.running ?? 0,
+            title: "stopped",
+            key: "stopped",
+          },
+          {
+            color: hex_color_by_intention("Neutral"),
+            value: summary?.failed ?? 0,
+            title: "not-deployed",
+            key: "not-deployed",
+          },
+          {
+            color: hex_color_by_intention("Unknown"),
+            value: summary?.unknown ?? 0,
+            title: "unknown",
+            key: "unknown",
+          },
+        ]}
+      />
+    </div>
+  );
 
   return (
     <Link to="/procedures">

@@ -92,8 +92,8 @@ export const InnerStatChart = ({
           fontSize: 12,
         },
         grid: {
-          horzLines: { color: "#3f454d" },
-          vertLines: { color: "#3f454d" },
+          horzLines: { color: "#3f454d25" },
+          vertLines: { color: "#3f454d25" },
         },
         timeScale: { timeVisible: true },
         handleScale: false,

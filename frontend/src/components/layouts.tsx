@@ -28,6 +28,21 @@ export const Layout = () => {
   useShiftKeyListener("B", () => nav("/builds"));
   useShiftKeyListener("R", () => nav("/repos"));
   useShiftKeyListener("P", () => nav("/procedures"));
+
+  return (
+    <>
+      <Topbar />
+      <div className="container min-h-screen py-24">
+        <div className="flex">
+          <div className="relative">
+            <Sidebar />
+          </div>
+          <Outlet />
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <>
       <Topbar />
@@ -63,7 +78,7 @@ export const Page = ({
   actions,
   children,
 }: PageProps) => (
-  <div className="flex flex-col gap-10 container py-8 pr-12">
+  <div className="w-full flex flex-col gap-12 pl-8">
     {(title || icon || subtitle || actions) && (
       <div
         className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
@@ -132,7 +147,7 @@ export const Section = ({
   <div className="flex flex-col gap-4 max-w-[calc(100vw-100px)] lg:max-w-[calc(100vw-300px)] overflow-x-auto">
     <div className="flex flex-wrap gap-2 items-start justify-between py-1">
       {title || icon ? (
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="px-2 flex items-center gap-2 text-muted-foreground">
           {icon}
           {title && <h2 className="text-xl">{title}</h2>}
         </div>

@@ -39,11 +39,46 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { Badge } from "@ui/badge";
+import { TopbarAlerts } from "./alert/topbar";
 
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
   useShiftKeyListener("S", () => setOmniOpen(true));
   const version = useRead("GetVersion", {}).data?.version;
+
+  return (
+    <div className="fixed top-0 w-full bg-accent/50 backdrop-blur-2xl z-50 border-b shadow-sm">
+      <div className="container h-16 grid grid-cols-2 lg:grid-cols-3 items-center">
+        {/* Logo */}
+        <Link
+          to="/"
+          className="flex gap-3 items-center text-2xl tracking-widest md:mx-2"
+        >
+          <img src="/monitor-circle.png" className="w-[28px] dark:invert" />
+          <div className="hidden md:block">MONITOR</div>
+        </Link>
+
+        {/* Searchbar */}
+        <div className="hidden lg:flex justify-center">
+          <OmniSearch setOpen={setOmniOpen} />
+        </div>
+
+        {/* Shortcuts */}
+        <div className="flex justify-end items-center gap-2">
+          <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
+          <Version />
+          <WsStatusIndicator />
+          <KeyboardShortcuts />
+          <TopbarAlerts />
+          <TopbarUpdates />
+          <ThemeToggle />
+          <Logout />
+        </div>
+      </div>
+      <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
+    </div>
+  );
+
   return (
     <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
       <div className="w-full p-4 grid grid-cols-2 lg:grid-cols-3">
@@ -52,10 +87,7 @@ export const Topbar = () => {
             to="/"
             className="flex gap-3 items-center text-2xl tracking-widest md:mx-2"
           >
-            <img
-              src="/monitor-circle.png"
-              className="w-[28px] dark:invert"
-            />
+            <img src="/monitor-circle.png" className="w-[28px] dark:invert" />
             <div className="hidden md:block">MONITOR</div>
           </Link>
           <MobileDropdown />
@@ -84,6 +116,23 @@ export const Topbar = () => {
         <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
       </div>
     </div>
+  );
+};
+
+const Version = () => {
+  const version = useRead("GetVersion", {}).data?.version;
+
+  if (!version) return null;
+  return (
+    <a
+      href="https://docs.monitor.mogh.tech"
+      target="_blank"
+      className="hidden lg:block"
+    >
+      <Button variant="link" size="sm">
+        <div>v{version}</div>
+      </Button>
+    </a>
   );
 };
 
@@ -223,7 +272,7 @@ const KeyboardShortcuts = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="hidden md:flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="hidden md:flex">
           <Keyboard className="w-4 h-4" />
         </Button>
       </DialogTrigger>

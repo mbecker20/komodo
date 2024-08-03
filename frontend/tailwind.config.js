@@ -100,7 +100,7 @@ module.exports = {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "w-full",
+        "2xl": "1680px",
       },
     },
     extend: {
