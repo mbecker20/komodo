@@ -6,24 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { AlertTriangle, Clock } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { AlertLevel } from ".";
 import { ResourceLink } from "@components/resources/common";
 import { UsableResource } from "@types";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@ui/dialog";
-import { Types } from "@monitor/client";
-import { useState } from "react";
 
 export const TopbarAlerts = () => {
   const { data } = useRead("ListAlerts", { query: { resolved: false } });
-  const [alert, setAlert] = useState<Types.Alert>();
 
   return (
     <>
@@ -59,34 +48,34 @@ export const TopbarAlerts = () => {
   );
 };
 
-const AlertDetails = ({
-  alert,
-  onClose,
-}: {
-  alert: Types.Alert | undefined;
-  onClose: () => void;
-}) => (
-  <Dialog open={!!alert}>
-    <DialogTrigger asChild>
-      <Button variant="secondary" className="items-center gap-2">
-        Details
-      </Button>
-    </DialogTrigger>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>{alert?.target.type}</DialogTitle>
-        <DialogDescription>
-          <ResourceLink
-            type={alert?.target.type as UsableResource}
-            id={alert?.target.id!}
-          />
-        </DialogDescription>
-      </DialogHeader>
-      <div className="py-8 flex flex-col gap-4">
-        <p className="flex gap-4">
-          <Clock /> {new Date(alert?.ts!).toLocaleString()}
-        </p>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
+// const AlertDetails = ({
+//   alert,
+//   onClose,
+// }: {
+//   alert: Types.Alert | undefined;
+//   onClose: () => void;
+// }) => (
+//   <Dialog open={!!alert}>
+//     <DialogTrigger asChild>
+//       <Button variant="secondary" className="items-center gap-2">
+//         Details
+//       </Button>
+//     </DialogTrigger>
+//     <DialogContent>
+//       <DialogHeader>
+//         <DialogTitle>{alert?.target.type}</DialogTitle>
+//         <DialogDescription>
+//           <ResourceLink
+//             type={alert?.target.type as UsableResource}
+//             id={alert?.target.id!}
+//           />
+//         </DialogDescription>
+//       </DialogHeader>
+//       <div className="py-8 flex flex-col gap-4">
+//         <p className="flex gap-4">
+//           <Clock /> {new Date(alert?.ts!).toLocaleString()}
+//         </p>
+//       </div>
+//     </DialogContent>
+//   </Dialog>
+// );

@@ -1,9 +1,7 @@
-import { OpenAlerts } from "@components/alert";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { ResourceName } from "@components/resources/common";
 import { TagsWithBadge } from "@components/tags";
-import { AllUpdates } from "@components/updates/resource";
 import { useRead, useUser } from "@lib/hooks";
 import { cn, usableResourcePath } from "@lib/utils";
 import { UsableResource } from "@types";
