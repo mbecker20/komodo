@@ -75,18 +75,21 @@ pub async fn refresh_stack_info(
   latest_message: Option<String>,
   update: Option<&mut Update>,
 ) -> anyhow::Result<()> {
-  let (services, json, json_error) = if let Some(contents) =
+  let (new_services, json, json_error) = if let Some(contents) =
     &file_contents
   {
     let (json, json_error) = json::get_config_json(contents).await;
     if json_error {
       (Vec::new(), json, json_error)
     } else {
-      match services::extract_services(&json).context("Failed to extract stack services. Things probably won't work correctly") {
-        Ok(services) => (services, json, json_error, ),
+      match services::extract_services(&json) {
+        Ok(services) => (services, json, json_error),
         Err(e) => {
           if let Some(update) = update {
-            update.push_error_log("extract services", format_serror(&e.into()));
+            update.push_error_log(
+              "extract services",
+              format_serror(&e.context("Failed to extract stack services. Things probably won't work correctly").into())
+            );
           }
           (Vec::new(), json, json_error)
         }
@@ -113,7 +116,12 @@ pub async fn refresh_stack_info(
 
   let info = StackInfo {
     deployed_contents,
-    services,
+    // Only update services on a deploy, they should be the latest deployed services
+    services: if is_deploy {
+      new_services
+    } else {
+      stack.info.services.clone()
+    },
     json,
     json_error,
     remote_contents: file_contents.and_then(|contents| {

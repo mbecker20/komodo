@@ -42,6 +42,11 @@ webhook_secret = "a_random_webhook_secret"
 ## Default: "Monitor"
 # logging.opentelemetry_service_name = "Monitor-02"
 
+## Optionally provide a specific jwt secret.
+## Passing nothing or an empty string will cause one to be generated.
+## Default: "" (empty string)
+# jwt_secret = "your_random_secret"
+
 ## specify how long an issued jwt stays valid. all jwts are invalidated on application restart.
 ## default: 1-day. 
 ## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day

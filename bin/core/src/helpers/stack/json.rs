@@ -35,10 +35,12 @@ async fn get_config_json_inner(
   })?;
 
   let res = async_run_command(&format!(
-    "cd {} && docker-compose config --format json",
+    "cd {} && docker compose config --format json",
     dir.display()
   ))
   .await;
+
+  info!("got compose res {res:?}");
 
   // Don't fail the function call here, just log on this maintenance related information.
   fs::remove_dir_all(&dir)

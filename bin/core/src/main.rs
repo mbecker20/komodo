@@ -5,6 +5,7 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
+use state::{db_client, jwt_client};
 use tower_http::{
   cors::{Any, CorsLayer},
   services::{ServeDir, ServeFile},
@@ -30,6 +31,11 @@ async fn app() -> anyhow::Result<()> {
   logger::init(&config.logging)?;
   info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
   info!("config: {:?}", config.sanitized());
+
+  // init db_client to crash on failure
+  db_client().await;
+  // init jwt client to crash on failure
+  jwt_client();
 
   // Spawn tasks
   monitor::spawn_monitor_loop();

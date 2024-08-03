@@ -1,6 +1,10 @@
 use monitor_client::entities::update::Log;
 use periphery_client::api::compose::{
-  ComposeDown, ComposePause, ComposeRestart, ComposeServiceDown, ComposeServicePause, ComposeServiceRestart, ComposeServiceStart, ComposeServiceStop, ComposeServiceUnpause, ComposeServiceUp, ComposeStart, ComposeStop, ComposeUnpause, ComposeUp, ComposeUpResponse
+  ComposeDown, ComposePause, ComposeRestart, ComposeServiceDown,
+  ComposeServicePause, ComposeServiceRestart, ComposeServiceStart,
+  ComposeServiceStop, ComposeServiceUnpause, ComposeServiceUp,
+  ComposeStart, ComposeStop, ComposeUnpause, ComposeUp,
+  ComposeUpResponse,
 };
 use resolver_api::Resolve;
 

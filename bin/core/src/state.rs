@@ -3,7 +3,7 @@ use std::{
   sync::{Arc, OnceLock},
 };
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use monitor_client::entities::{
   build::BuildState,
   config::core::{CoreConfig, GithubWebhookAppConfig},
@@ -35,16 +35,29 @@ pub async fn db_client() -> &'static DbClient {
   static DB_CLIENT: OnceCell<DbClient> = OnceCell::const_new();
   DB_CLIENT
     .get_or_init(|| async {
-      DbClient::new(&core_config().mongo)
+      match DbClient::new(&core_config().mongo)
         .await
-        .expect("failed to initialize mongo client")
+        .context("failed to initialize mongo client")
+      {
+        Ok(client) => client,
+        Err(e) => {
+          error!("{e:#}");
+          panic!("Exiting");
+        }
+      }
     })
     .await
 }
 
 pub fn jwt_client() -> &'static JwtClient {
   static JWT_CLIENT: OnceLock<JwtClient> = OnceLock::new();
-  JWT_CLIENT.get_or_init(|| JwtClient::new(core_config()))
+  JWT_CLIENT.get_or_init(|| match JwtClient::new(core_config()) {
+    Ok(client) => client,
+    Err(e) => {
+      error!("failed to initialialize JwtClient | {e:#}");
+      panic!("Exiting");
+    }
+  })
 }
 
 pub fn github_client(
@@ -67,20 +80,29 @@ pub fn github_client(
       if *app_id == 0 || installations.is_empty() {
         return None;
       }
-      let private_key = std::fs::read(pk_path)
-        .context("github webhook app | failed to load private key")
-        .unwrap();
+      let private_key = match std::fs::read(pk_path).with_context(|| format!("github webhook app | failed to load private key at {pk_path}")) {
+        Ok(key) => key,
+        Err(e) => {
+          error!("{e:#}");
+          return None;
+        }
+      };
 
-      let private_key = nom_pem::decode_block(&private_key)
-        .map_err(|e| anyhow!("{e:?}"))
-        .context("github webhook app | failed to decode private key")
-        .unwrap();
+      let private_key = match nom_pem::decode_block(&private_key) {
+        Ok(key) => key,
+        Err(e) => {
+          error!("github webhook app | failed to decode private key at {pk_path} | {e:?}");
+          return None;
+        }
+      };
 
-      let jwt = JWTCredentials::new(*app_id, private_key.data)
-        .context(
-          "github webhook app | failed to make github JWTCredentials",
-        )
-        .unwrap();
+      let jwt = match JWTCredentials::new(*app_id, private_key.data).context("failed to initialize github JWTCredentials") {
+        Ok(jwt) => jwt,
+        Err(e) => {
+          error!("github webhook app | failed to make github JWTCredentials | pk path: {pk_path} | {e:#}");
+          return None
+        }
+      };
 
       let mut clients =
         HashMap::with_capacity(installations.capacity());
@@ -90,12 +112,16 @@ pub fn github_client(
           installation.id,
           jwt.clone(),
         );
-        let client = octorust::Client::new(
+        let client = match octorust::Client::new(
           "github-app",
           Credentials::InstallationToken(token_generator),
-        )
-        .context("failed to initialize github client")
-        .unwrap();
+        ).with_context(|| format!("failed to initialize github webhook client for installation {}", installation.id)) {
+          Ok(client) => client,
+          Err(e) => {
+            error!("{e:#}");
+            continue;
+          }
+        };
         clients.insert(installation.namespace.to_string(), client);
       }
 

@@ -86,7 +86,7 @@ pub enum Execution {
   StopStack(StopStack),
   DestroyStack(DestroyStack),
 
-   // STACK (Service)
+  // STACK (Service)
   DeployStackService(DeployStackService),
   StartStackService(StartStackService),
   RestartStackService(RestartStackService),

@@ -45,6 +45,8 @@ pub struct Env {
   pub monitor_port: Option<u16>,
   /// Override `passkey`
   pub monitor_passkey: Option<String>,
+  /// Override `jwt_secret`
+  pub monitor_jwt_secret: Option<String>,
   /// Override `jwt_valid_for`
   pub monitor_jwt_valid_for: Option<Timelength>,
   /// Override `sync_directory`
@@ -191,6 +193,12 @@ fn default_config_path() -> String {
 /// ## Optional, default unassigned (don't export telemetry).
 /// # logging.otlp_endpoint = "http://localhost:4317"
 ///
+///
+/// ## Optionally provide a specific jwt secret.
+/// ## Passing nothing or an empty string will cause one to be generated.
+/// ## Default: "" (empty string)
+/// # jwt_secret = "your_random_secret"
+///
 /// ## Specify how long an issued jwt stays valid.
 /// ## All jwts are invalidated on application restart.
 /// ## Default: `1-day`.
@@ -324,6 +332,12 @@ pub struct CoreConfig {
   /// Sent in auth header with req to periphery.
   /// Should be some secure hash, maybe 20-40 chars.
   pub passkey: String,
+
+  /// Optionally provide a specific jwt secret.
+  /// Passing nothing or an empty string will cause one to be generated.
+  /// Default: "" (empty string)
+  #[serde(default)]
+  pub jwt_secret: String,
 
   /// Control how long distributed JWT remain valid for.
   /// Default: `1-day`.
@@ -473,58 +487,96 @@ fn default_monitoring_interval() -> Timelength {
 
 impl CoreConfig {
   pub fn sanitized(&self) -> CoreConfig {
-    let mut config = self.clone();
-
-    config.passkey = empty_or_redacted(&config.passkey);
-    config.webhook_secret = empty_or_redacted(&config.webhook_secret);
-
-    config.github_oauth.id =
-      empty_or_redacted(&config.github_oauth.id);
-    config.github_oauth.secret =
-      empty_or_redacted(&config.github_oauth.secret);
-
-    config.google_oauth.id =
-      empty_or_redacted(&config.google_oauth.id);
-    config.google_oauth.secret =
-      empty_or_redacted(&config.google_oauth.secret);
-
-    config.mongo.uri =
-      config.mongo.uri.map(|cur| empty_or_redacted(&cur));
-    config.mongo.username =
-      config.mongo.username.map(|cur| empty_or_redacted(&cur));
-    config.mongo.password =
-      config.mongo.password.map(|cur| empty_or_redacted(&cur));
-
-    config.aws.access_key_id =
-      empty_or_redacted(&config.aws.access_key_id);
-    config.aws.secret_access_key =
-      empty_or_redacted(&config.aws.secret_access_key);
-
-    config.hetzner.token = empty_or_redacted(&config.hetzner.token);
-
-    config.secrets.iter_mut().for_each(|(_, secret)| {
-      *secret = empty_or_redacted(secret);
-    });
-
-    config.git_providers.iter_mut().for_each(|provider| {
-      provider.accounts.iter_mut().for_each(|account| {
-        account.token = empty_or_redacted(&account.token);
-      })
-    });
-
-    config.docker_registries.iter_mut().for_each(|provider| {
-      provider.accounts.iter_mut().for_each(|account| {
-        account.token = empty_or_redacted(&account.token);
-      })
-    });
-
-    config.aws_ecr_registries.iter_mut().for_each(|ecr| {
-      ecr.access_key_id = empty_or_redacted(&ecr.access_key_id);
-      ecr.secret_access_key =
-        empty_or_redacted(&ecr.secret_access_key);
-    });
-
-    config
+    let config = self.clone();
+    CoreConfig {
+      title: config.title,
+      host: config.host,
+      port: config.port,
+      passkey: empty_or_redacted(&config.passkey),
+      jwt_secret: empty_or_redacted(&config.jwt_secret),
+      jwt_valid_for: config.jwt_valid_for,
+      sync_directory: config.sync_directory,
+      stack_directory: config.stack_directory,
+      stack_poll_interval: config.stack_poll_interval,
+      monitoring_interval: config.monitoring_interval,
+      keep_stats_for_days: config.keep_stats_for_days,
+      keep_alerts_for_days: config.keep_alerts_for_days,
+      logging: config.logging,
+      transparent_mode: config.transparent_mode,
+      ui_write_disabled: config.ui_write_disabled,
+      local_auth: config.local_auth,
+      google_oauth: OauthCredentials {
+        enabled: config.google_oauth.enabled,
+        id: empty_or_redacted(&config.google_oauth.id),
+        secret: empty_or_redacted(&config.google_oauth.id),
+      },
+      github_oauth: OauthCredentials {
+        enabled: config.github_oauth.enabled,
+        id: empty_or_redacted(&config.github_oauth.id),
+        secret: empty_or_redacted(&config.github_oauth.id),
+      },
+      webhook_secret: empty_or_redacted(&config.webhook_secret),
+      webhook_base_url: config.webhook_base_url,
+      github_webhook_app: config.github_webhook_app,
+      mongo: MongoConfig {
+        uri: config.mongo.uri.map(|cur| empty_or_redacted(&cur)),
+        address: config.mongo.address,
+        username: config
+          .mongo
+          .username
+          .map(|cur| empty_or_redacted(&cur)),
+        password: config
+          .mongo
+          .password
+          .map(|cur| empty_or_redacted(&cur)),
+        app_name: config.mongo.app_name,
+        db_name: config.mongo.db_name,
+      },
+      aws: AwsCredentials {
+        access_key_id: empty_or_redacted(&config.aws.access_key_id),
+        secret_access_key: empty_or_redacted(
+          &config.aws.secret_access_key,
+        ),
+      },
+      hetzner: HetznerCredentials {
+        token: empty_or_redacted(&config.hetzner.token),
+      },
+      secrets: config
+        .secrets
+        .into_iter()
+        .map(|(id, secret)| (id, empty_or_redacted(&secret)))
+        .collect(),
+      git_providers: config
+        .git_providers
+        .into_iter()
+        .map(|mut provider| {
+          provider.accounts.iter_mut().for_each(|account| {
+            account.token = empty_or_redacted(&account.token);
+          });
+          provider
+        })
+        .collect(),
+      docker_registries: config
+        .docker_registries
+        .into_iter()
+        .map(|mut provider| {
+          provider.accounts.iter_mut().for_each(|account| {
+            account.token = empty_or_redacted(&account.token);
+          });
+          provider
+        })
+        .collect(),
+      aws_ecr_registries: config
+        .aws_ecr_registries
+        .into_iter()
+        .map(|mut ecr| {
+          ecr.access_key_id = empty_or_redacted(&ecr.access_key_id);
+          ecr.secret_access_key =
+            empty_or_redacted(&ecr.secret_access_key);
+          ecr
+        })
+        .collect(),
+    }
   }
 }
 

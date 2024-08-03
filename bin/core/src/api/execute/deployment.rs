@@ -299,7 +299,9 @@ impl Resolve<RestartContainer, (User, Update)> for State {
       Ok(log) => log,
       Err(e) => Log::error(
         "restart container",
-        format_serror(&e.context("failed to restart container").into()),
+        format_serror(
+          &e.context("failed to restart container").into(),
+        ),
       ),
     };
 
@@ -373,7 +375,9 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
       Ok(log) => log,
       Err(e) => Log::error(
         "unpause container",
-        format_serror(&e.context("failed to unpause container").into()),
+        format_serror(
+          &e.context("failed to unpause container").into(),
+        ),
       ),
     };
 

@@ -30,16 +30,21 @@ pub struct JwtClient {
 }
 
 impl JwtClient {
-  pub fn new(config: &CoreConfig) -> JwtClient {
-    let key = Hmac::new_from_slice(random_string(40).as_bytes())
-      .expect("failed at taking HmacSha256 of jwt secret");
-    JwtClient {
+  pub fn new(config: &CoreConfig) -> anyhow::Result<JwtClient> {
+    let secret = if config.jwt_secret.is_empty() {
+      random_string(40)
+    } else {
+      config.jwt_secret.clone()
+    };
+    let key = Hmac::new_from_slice(secret.as_bytes())
+      .context("failed at taking HmacSha256 of jwt secret")?;
+    Ok(JwtClient {
       key,
       valid_for_ms: get_timelength_in_ms(
-        config.jwt_valid_for.to_string().parse().unwrap(),
+        config.jwt_valid_for.to_string().parse()?,
       ),
       exchange_tokens: Default::default(),
-    }
+    })
   }
 
   pub fn generate(&self, user_id: String) -> anyhow::Result<String> {
