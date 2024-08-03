@@ -7,7 +7,7 @@ use crate::entities::{
   deployment::ContainerSummary,
   stack::{Stack, StackActionState, StackListItem, StackQuery},
   update::Log,
-  U64,
+  JsonValue, U64,
 };
 
 use super::MonitorReadRequest;
@@ -52,7 +52,7 @@ pub struct GetStackJson {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetStackJsonResponse {
-  pub json: serde_json::Value,
+  pub json: JsonValue,
   pub error: bool,
 }
 
@@ -190,17 +190,15 @@ pub struct GetStacksSummary {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetStacksSummaryResponse {
-  /// The total number of syncs
+  /// The total number of stacks
   pub total: u32,
-  /// The number of syncs with Healthy state.
+  /// The number of stacks with Healthy state.
   pub healthy: u32,
-  /// The number of syncs with Unhealthy state.
+  /// The number of stacks with Unhealthy state.
   pub unhealthy: u32,
-  /// The number of syncs with Down state.
+  /// The number of stacks with Down state.
   pub down: u32,
-  /// The number of syncs with Failed state.
-  pub failed: u32,
-  /// The number of syncs with Unknown state.
+  /// The number of stacks with Unknown state.
   pub unknown: u32,
 }
 

@@ -141,7 +141,6 @@ impl Resolve<GetStacksSummary, User> for State {
         StackState::Healthy => res.healthy += 1,
         StackState::Unhealthy => res.unhealthy += 1,
         StackState::Down => res.down += 1,
-        StackState::Failed => res.failed += 1,
         StackState::Unknown => res.unknown += 1,
       }
     }

@@ -14,7 +14,9 @@ export const DeployStack = ({ id }: { id: string }) => {
     { refetchInterval: 5000 }
   ).data?.deploying;
   const pending = isPending || deploying;
-  const deployed = state === Types.StackState.Up;
+  const deployed =
+    state !== undefined &&
+    [Types.StackState.Healthy, Types.StackState.Unhealthy].includes(state);
 
   if (deployed) {
     return (
@@ -50,7 +52,7 @@ export const DestroyStack = ({ id }: { id: string }) => {
     { refetchInterval: 5000 }
   ).data?.destroying;
 
-  if (state !== Types.StackState.Up && state !== Types.StackState.Destroying) {
+  if (state !== Types.StackState.Healthy && !destroying) {
     return null;
   }
 

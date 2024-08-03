@@ -165,18 +165,14 @@ export const stack_state_intention = (state?: Types.StackState) => {
   switch (state) {
     case undefined:
       return "None";
+    case Types.StackState.Healthy:
+      return "Good";
+    case Types.StackState.Down:
+      return "Neutral";
     case Types.StackState.Unknown:
       return "Unknown";
-    case Types.StackState.Up:
-      return "Good";
-    case Types.StackState.Deploying:
-      return "Warning";
-    case Types.StackState.Destroying:
-      return "Warning";
-    case Types.StackState.Failed:
-      return "Critical";
     default:
-      return "None";
+      return "Critical";
   }
 };
 

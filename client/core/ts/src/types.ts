@@ -705,6 +705,7 @@ export interface DeploymentActionState {
 	starting: boolean;
 	restarting: boolean;
 	pausing: boolean;
+	unpausing: boolean;
 	stopping: boolean;
 	removing: boolean;
 	renaming: boolean;
@@ -1414,14 +1415,12 @@ export type GetStackServiceLogResponse = Log;
 export type ListCommonStackExtraArgsResponse = string[];
 
 export enum StackState {
-	/** The stack is deployed */
+	/** The stack is deployed. All containers are running. */
 	Healthy = "Healthy",
-	/** Some containers are up, some are down. */
+	/** At least one container is not running. */
 	Unhealthy = "Unhealthy",
 	/** The stack is not deployed */
 	Down = "Down",
-	/** Last deploy failed */
-	Failed = "Failed",
 	/** Server not reachable */
 	Unknown = "Unknown",
 }
@@ -1456,6 +1455,7 @@ export interface StackActionState {
 	starting: boolean;
 	restarting: boolean;
 	pausing: boolean;
+	unpausing: boolean;
 	stopping: boolean;
 	destroying: boolean;
 }
@@ -1938,6 +1938,8 @@ export type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
 export type U64 = number;
 
 export type MongoDocument = any;
+
+export type JsonValue = any;
 
 export interface __Serror {
 	error: string;
@@ -3243,7 +3245,7 @@ export interface GetStackJson {
 
 /** Response for [GetStackJson] */
 export interface GetStackJsonResponse {
-	json: Value;
+	json: JsonValue;
 	error: boolean;
 }
 
@@ -3303,17 +3305,15 @@ export interface GetStacksSummary {
 
 /** Response for [GetStacksSummary] */
 export interface GetStacksSummaryResponse {
-	/** The total number of syncs */
+	/** The total number of stacks */
 	total: number;
-	/** The number of syncs with Healthy state. */
+	/** The number of stacks with Healthy state. */
 	healthy: number;
-	/** The number of syncs with Unhealthy state. */
+	/** The number of stacks with Unhealthy state. */
 	unhealthy: number;
-	/** The number of syncs with Down state. */
+	/** The number of stacks with Down state. */
 	down: number;
-	/** The number of syncs with Failed state. */
-	failed: number;
-	/** The number of syncs with Unknown state. */
+	/** The number of stacks with Unknown state. */
 	unknown: number;
 }
 

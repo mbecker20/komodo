@@ -39,9 +39,9 @@ export const StackDashboard = () => {
                   "font-bold"
                 )}
               >
-                {summary?.up}{" "}
+                {summary?.healthy}{" "}
               </span>
-              Up
+              Healthy
             </CardDescription>
             <CardDescription className="flex items-center gap-2">
               <span
@@ -50,20 +50,9 @@ export const StackDashboard = () => {
                   "font-bold"
                 )}
               >
-                {summary?.deploying ?? 0}{" "}
+                {summary?.unhealthy ?? 0}{" "}
               </span>
-              Deploying
-            </CardDescription>
-            <CardDescription className="flex items-center gap-2">
-              <span
-                className={cn(
-                  text_color_class_by_intention("Critical"),
-                  "font-bold"
-                )}
-              >
-                {summary?.failed}{" "}
-              </span>
-              Failed
+              Unhealthy
             </CardDescription>
             <CardDescription className="flex items-center gap-2">
               <span
@@ -85,21 +74,21 @@ export const StackDashboard = () => {
               data={[
                 {
                   color: hex_color_by_intention("Good"),
-                  value: summary?.up ?? 0,
-                  title: "up",
-                  key: "up",
-                },
-                {
-                  color: hex_color_by_intention("Warning"),
-                  value: summary?.deploying ?? 0,
-                  title: "deploying",
-                  key: "deploying",
+                  value: summary?.healthy ?? 0,
+                  title: "healthy",
+                  key: "healthy",
                 },
                 {
                   color: hex_color_by_intention("Critical"),
-                  value: summary?.failed ?? 0,
-                  title: "failed",
-                  key: "failed",
+                  value: summary?.unhealthy ?? 0,
+                  title: "unhealthy",
+                  key: "unhealthy",
+                },
+                {
+                  color: hex_color_by_intention("Neutral"),
+                  value: summary?.down ?? 0,
+                  title: "down",
+                  key: "down",
                 },
                 {
                   color: hex_color_by_intention("Unknown"),

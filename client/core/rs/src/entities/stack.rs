@@ -40,14 +40,12 @@ pub struct StackListItemInfo {
   Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
 )]
 pub enum StackState {
-  /// The stack is deployed
+  /// The stack is deployed. All containers are running.
   Healthy,
-  /// Some containers are up, some are down.
+  /// At least one container is not running.
   Unhealthy,
   /// The stack is not deployed
   Down,
-  /// Last deploy failed
-  Failed,
   /// Server not reachable
   #[default]
   Unknown,
@@ -136,9 +134,9 @@ pub struct StackConfig {
   pub extra_args: Vec<String>,
 
   /// The environment variables passed to the compose file.
-  /// They will be written to path defined in env_file_path, 
+  /// They will be written to path defined in env_file_path,
   /// which is given relative to the run directory.
-  /// 
+  ///
   /// If it is empty, no file will be written.
   #[serde(
     default,

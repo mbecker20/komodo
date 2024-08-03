@@ -58,7 +58,6 @@ export type ReadResponses = {
   GetServer: Types.GetServerResponse;
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
-  GetSystemInformation: Types.GetSystemInformationResponse;
   GetDockerContainers: Types.GetDockerContainersResponse;
   GetDockerImages: Types.GetDockerImagesResponse;
   GetDockerNetworks: Types.GetDockerNetworksResponse;
@@ -98,18 +97,6 @@ export type ReadResponses = {
   ListRepos: Types.ListReposResponse;
   ListFullRepos: Types.ListFullReposResponse;
 
-  // ==== BUILDER ====
-  GetBuildersSummary: Types.GetBuildersSummaryResponse;
-  GetBuilder: Types.GetBuilderResponse;
-  ListBuilders: Types.ListBuildersResponse;
-  ListFullBuilders: Types.ListFullBuildersResponse;
-
-  // ==== ALERTER ====
-  GetAlertersSummary: Types.GetAlertersSummaryResponse;
-  GetAlerter: Types.GetAlerterResponse;
-  ListAlerters: Types.ListAlertersResponse;
-  ListFullAlerters: Types.ListFullAlertersResponse;
-
   // ==== SYNC ====
   GetResourceSyncsSummary: Types.GetResourceSyncsSummaryResponse;
   GetResourceSync: Types.GetResourceSyncResponse;
@@ -121,10 +108,24 @@ export type ReadResponses = {
   // ==== STACK ====
   GetStacksSummary: Types.GetStacksSummaryResponse;
   GetStack: Types.GetStackResponse;
+  GetStackContainers: Types.GetStackContainersResponse;
   GetStackActionState: Types.GetStackActionStateResponse;
   GetStackWebhooksEnabled: Types.GetStackWebhooksEnabledResponse;
   ListStacks: Types.ListStacksResponse;
   ListFullStacks: Types.ListFullStacksResponse;
+  GetStackJson: Types.GetStackJsonResponse;
+
+  // ==== BUILDER ====
+  GetBuildersSummary: Types.GetBuildersSummaryResponse;
+  GetBuilder: Types.GetBuilderResponse;
+  ListBuilders: Types.ListBuildersResponse;
+  ListFullBuilders: Types.ListFullBuildersResponse;
+
+  // ==== ALERTER ====
+  GetAlertersSummary: Types.GetAlertersSummaryResponse;
+  GetAlerter: Types.GetAlerterResponse;
+  ListAlerters: Types.ListAlertersResponse;
+  ListFullAlerters: Types.ListFullAlertersResponse;
 
   // ==== TOML ====
   ExportAllResourcesToToml: Types.ExportAllResourcesToTomlResponse;
@@ -143,6 +144,7 @@ export type ReadResponses = {
   GetAlert: Types.GetAlertResponse;
 
   // ==== SERVER STATS ====
+  GetSystemInformation: Types.GetSystemInformationResponse;
   GetSystemStats: Types.GetSystemStatsResponse;
   GetSystemProcesses: Types.GetSystemProcessesResponse;
 
@@ -292,5 +294,19 @@ export type ExecuteResponses = {
 
   // ==== STACK ====
   DeployStack: Types.Update;
+  StartStack: Types.Update;
+  RestartStack: Types.Update;
+  StopStack: Types.Update;
+  PauseStack: Types.Update;
+  UnpauseStack: Types.Update;
   DestroyStack: Types.Update;
+
+  // ==== STACK Service ====
+  DeployStackService: Types.Update;
+  StartStackService: Types.Update;
+  RestartStackService: Types.Update;
+  StopStackService: Types.Update;
+  PauseStackService: Types.Update;
+  UnpauseStackService: Types.Update;
+  DestroyStackService: Types.Update;
 };

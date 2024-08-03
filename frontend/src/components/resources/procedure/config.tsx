@@ -400,7 +400,7 @@ const Stage = ({
                               execution: { type, params },
                             }
                           : item
-                      ),
+                      ) as Types.EnabledExecution[],
                     })
                   }
                 />
@@ -738,6 +738,61 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  StartStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  RestartStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PauseStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  UnpauseStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  StopStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
   DestroyStack: {
     params: { stack: "" },
     Component: ({ params, setParams, disabled }) => (
@@ -745,6 +800,83 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         type="Stack"
         selected={params.stack}
         onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  DeployStackService: {
+    params: { stack: "", service: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ ...params, stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  StartStackService: {
+    params: { stack: "", service: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ ...params, stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  RestartStackService: {
+    params: { stack: "", service: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ ...params, stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PauseStackService: {
+    params: { stack: "", service: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ ...params, stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  UnpauseStackService: {
+    params: { stack: "", service: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ ...params, stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  StopStackService: {
+    params: { stack: "", service: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ ...params, stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  DestroyStackService: {
+    params: { stack: "", service: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ ...params, stack: id })}
         disabled={disabled}
       />
     ),
