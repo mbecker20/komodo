@@ -6,7 +6,7 @@ use monitor_client::{
   entities::{
     permission::PermissionLevel,
     server::{Server, ServerState},
-    stack::{Stack, StackInfo},
+    stack::{Stack, StackActionState, StackInfo},
     update::Update,
     user::{stack_user, User},
   },
@@ -15,12 +15,14 @@ use mungos::{
   find::find_collect,
   mongodb::bson::{doc, to_document},
 };
+use remote::get_remote_compose_file;
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::update::update_update,
   resource,
-  state::{db_client, State},
+  state::{action_states, db_client, State},
 };
 
 use super::query::get_server_with_status;
@@ -163,4 +165,40 @@ pub async fn get_stack_and_server(
   }
 
   Ok((stack, server))
+}
+
+/// Returns (Stack, Server, file contents)
+pub async fn setup_stack_execution(
+  stack: &str,
+  user: &User,
+  set_in_progress: impl Fn(&mut StackActionState),
+  update: &mut Update,
+) -> anyhow::Result<(Server, String)> {
+  let (stack, server) = get_stack_and_server(stack, user).await?;
+
+  // get the action state for the stack (or insert default).
+  let action_state =
+    action_states().stack.get_or_insert_default(&stack.id).await;
+
+  // Will check to ensure stack not already busy before updating, and return Err if so.
+  // The returned guard will set the action state back to default when dropped.
+  let _action_guard = action_state.update(set_in_progress)?;
+
+  let file = if let Some(file) = stack.info.deployed_contents.clone()
+  {
+    file
+  } else if stack.config.file_contents.is_empty() {
+    let (res, logs, _, _) = get_remote_compose_file(&stack)
+      .await
+      .context("failed to get remote compose file")?;
+
+    update.logs.extend(logs);
+    update_update(update.clone()).await?;
+
+    res.context("failed to read remote compose file")?
+  } else {
+    stack.config.file_contents.clone()
+  };
+
+  Ok((server, file))
 }

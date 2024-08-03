@@ -79,6 +79,7 @@ pub enum PeripheryRequest {
   StartContainer(StartContainer),
   RestartContainer(RestartContainer),
   PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
   RemoveContainer(RemoveContainer),
   RenameContainer(RenameContainer),
@@ -89,6 +90,7 @@ pub enum PeripheryRequest {
   ComposeStart(ComposeStart),
   ComposeRestart(ComposeRestart),
   ComposePause(ComposePause),
+  ComposeUnpause(ComposeUnpause),
   ComposeStop(ComposeStop),
   ComposeDown(ComposeDown),
 
@@ -97,6 +99,7 @@ pub enum PeripheryRequest {
   ComposeServiceStart(ComposeServiceStart),
   ComposeServiceRestart(ComposeServiceRestart),
   ComposeServicePause(ComposeServicePause),
+  ComposeServiceUnpause(ComposeServiceUnpause),
   ComposeServiceStop(ComposeServiceStop),
   ComposeServiceDown(ComposeServiceDown),
 

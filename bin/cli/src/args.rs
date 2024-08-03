@@ -39,23 +39,12 @@ fn default_creds() -> String {
 
 #[derive(Debug, Clone, Subcommand)]
 pub enum Command {
-  /// Runs syncs on resource files
-  Sync {
-    /// The path of the resource folder / file
-    /// Folder paths will recursively incorporate all the resources it finds under the folder
-    #[arg(default_value_t = String::from("./resources"))]
-    path: String,
-
-    /// Will delete any resources that aren't included in the resource files.
-    #[arg(long, default_value_t = false)]
-    delete: bool,
-  },
-
   /// Runs an execution
   Execute {
     #[command(subcommand)]
     execution: Execution,
   },
+  // Room for more
 }
 
 #[derive(Debug, Deserialize)]

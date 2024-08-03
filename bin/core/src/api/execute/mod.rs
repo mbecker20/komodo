@@ -46,6 +46,7 @@ pub enum ExecuteRequest {
   // ==== DEPLOYMENT ====
   Deploy(Deploy),
   StartContainer(StartContainer),
+  // RestartContainer(RestartContainer),
   StopContainer(StopContainer),
   StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
@@ -69,7 +70,21 @@ pub enum ExecuteRequest {
 
   // ==== STACK ====
   DeployStack(DeployStack),
+  StartStack(StartStack),
+  RestartStack(RestartStack),
+  StopStack(StopStack),
+  PauseStack(PauseStack),
+  UnpauseStack(UnpauseStack),
   DestroyStack(DestroyStack),
+
+  // ==== STACK (Service) ====
+  DeployStackService(DeployStackService),
+  StartStackService(StartStackService),
+  RestartStackService(RestartStackService),
+  StopStackService(StopStackService),
+  PauseStackService(PauseStackService),
+  UnpauseStackService(UnpauseStackService),
+  DestroyStackService(DestroyStackService),
 }
 
 pub fn router() -> Router {

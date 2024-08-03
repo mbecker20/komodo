@@ -140,6 +140,17 @@ pub struct ComposeServicePause {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(Vec<Log>)]
+pub struct ComposeServiceUnpause {
+  /// The compose file contents
+  pub file: String,
+  /// The service name
+  pub service: String,
+}
+
+//
+
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(Vec<Log>)]
 pub struct ComposeServiceStop {
   /// The compose file contents
   pub file: String,

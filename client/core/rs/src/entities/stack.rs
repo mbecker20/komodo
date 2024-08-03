@@ -298,6 +298,7 @@ pub struct StackActionState {
   pub starting: bool,
   pub restarting: bool,
   pub pausing: bool,
+  pub unpausing: bool,
   pub stopping: bool,
   pub destroying: bool,
 }

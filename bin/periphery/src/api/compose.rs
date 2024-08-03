@@ -1,9 +1,6 @@
 use monitor_client::entities::update::Log;
 use periphery_client::api::compose::{
-  ComposeDown, ComposePause, ComposeRestart, ComposeServiceDown,
-  ComposeServicePause, ComposeServiceRestart, ComposeServiceStart,
-  ComposeServiceStop, ComposeServiceUp, ComposeStart, ComposeStop,
-  ComposeUp, ComposeUpResponse,
+  ComposeDown, ComposePause, ComposeRestart, ComposeServiceDown, ComposeServicePause, ComposeServiceRestart, ComposeServiceStart, ComposeServiceStop, ComposeServiceUnpause, ComposeServiceUp, ComposeStart, ComposeStop, ComposeUnpause, ComposeUp, ComposeUpResponse
 };
 use resolver_api::Resolve;
 
@@ -86,6 +83,25 @@ impl Resolve<ComposePause> for State {
         &file,
         "compose pause",
         format!("{docker_compose} pause"),
+      )
+      .await,
+    )
+  }
+}
+
+impl Resolve<ComposeUnpause> for State {
+  #[instrument(name = "ComposeUnpause", skip_all)]
+  async fn resolve(
+    &self,
+    ComposeUnpause { file }: ComposeUnpause,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let docker_compose = docker_compose();
+    Ok(
+      run_stack_command(
+        &file,
+        "compose unpause",
+        format!("{docker_compose} unpause"),
       )
       .await,
     )
@@ -220,6 +236,25 @@ impl Resolve<ComposeServicePause> for State {
         &file,
         "compose pause",
         format!("{docker_compose} pause {service}"),
+      )
+      .await,
+    )
+  }
+}
+
+impl Resolve<ComposeServiceUnpause> for State {
+  #[instrument(name = "ComposeServiceUnpause", skip_all)]
+  async fn resolve(
+    &self,
+    ComposeServiceUnpause { file, service }: ComposeServiceUnpause,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let docker_compose = docker_compose();
+    Ok(
+      run_stack_command(
+        &file,
+        "compose pause",
+        format!("{docker_compose} unpause {service}"),
       )
       .await,
     )

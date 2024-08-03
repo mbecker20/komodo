@@ -181,6 +181,23 @@ impl Resolve<PauseContainer> for State {
   }
 }
 
+impl Resolve<UnpauseContainer> for State {
+  #[instrument(name = "UnpauseContainer", skip(self))]
+  async fn resolve(
+    &self,
+    UnpauseContainer { name }: UnpauseContainer,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    Ok(
+      run_monitor_command(
+        "docker unpause",
+        format!("docker unpause {name}"),
+      )
+      .await,
+    )
+  }
+}
+
 //
 
 impl Resolve<StopContainer> for State {

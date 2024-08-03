@@ -63,7 +63,43 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::DeployStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::StartStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::RestartStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StopStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::DestroyStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::DeployStackService(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StartStackService(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::RestartStackService(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseStackService(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseStackService(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StopStackService(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::DestroyStackService(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::Sleep(data) => {
@@ -120,7 +156,43 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::DeployStack(request) => {
       monitor_client().execute(request).await
     }
+    Execution::StartStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::RestartStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::PauseStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::UnpauseStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::StopStack(request) => {
+      monitor_client().execute(request).await
+    }
     Execution::DestroyStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::DeployStackService(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::StartStackService(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::RestartStackService(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::PauseStackService(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::UnpauseStackService(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::StopStackService(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::DestroyStackService(request) => {
       monitor_client().execute(request).await
     }
     Execution::Sleep(request) => {

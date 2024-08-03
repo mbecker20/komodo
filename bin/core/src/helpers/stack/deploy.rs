@@ -32,7 +32,11 @@ pub async fn deploy_stack_maybe_service(
   // Will check to ensure stack not already busy before updating, and return Err if so.
   // The returned guard will set the action state back to default when dropped.
   let _action_guard =
-    action_state.update(|state| state.deploying = true)?;
+    action_state.update(|state| {
+      if service.is_none() {
+        state.deploying = true
+      }
+    })?;
 
   let core_config = core_config();
 

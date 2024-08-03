@@ -6,31 +6,7 @@ To run Monitor Core, you will need:
  - An instance of MongoDB to which Core can connect.
  - Docker must be installed on the host. See [the install docs](https://docs.docker.com/engine/install/).
 
-## Mongo
-
-Mongo can be run locally using the docker cli:
-
-```sh
-docker run --name monitor-mongo \
-	--network host \
-	-v /local/storage/path:/data/db \
-	-e MONGO_INITDB_ROOT_USERNAME="admin" \
-	-e MONGO_INITDB_ROOT_PASSWORD="admin" \
-	mongo:latest
-```
-
-You should replace the username and password with your own.
-See [the image docs](https://hub.docker.com/_/mongo) for more details.
-
-:::note
-The disk space requirements of Monitor are dominated by the storage of system stats.
-This depends on the number of connected servers (more system stats being produces / stored), stats collection frequency, and your stats pruning configuration.
-If you need to save on space, you can configure these fields in your core config:
-	- Stats poll frequency can be reduced using, for example, `monitoring_interval = "15-sec"`
-	- Pruning can be tuned more aggresively using, for example, `keep_stats_for_days = 7`.
-:::
-
-## 1. Create the configuration file
+## Configuration file
 
 Create a configuration file on the system, for example at `~/.config/monitor/core.config.toml`, and copy the [example config](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml). Fill in all the necessary information before continuing.
 
@@ -47,6 +23,43 @@ Most configuration can additionally be passed using environment variables, which
 See [config docs](https://docs.rs/monitor_client/latest/monitor_client/entities/config/core/index.html).
 :::
 
+## Compose
+
+```
+
+```
+
+## Docker cli
+
+### Mongo
+
+Mongo can be run locally using the docker cli:
+
+```sh
+docker run --name monitor-mongo \
+	--network host \
+	-v /local/storage/path:/data/db \
+	-e MONGO_INITDB_ROOT_USERNAME="admin" \
+	-e MONGO_INITDB_ROOT_PASSWORD="admin" \
+	mongo:latest
+```
+
+You should replace the username and password with your own.
+See [the image docs](https://hub.docker.com/_/mongo) for more details.
+
+Note that this uses "host" networking, which will allow core to connect over localhost.
+Many users will prefer the default "bridge" network, and to use port mapping with `-p 9120:9120`.
+
+:::note
+The disk space requirements of Monitor are dominated by the storage of system stats.
+This depends on the number of connected servers (more system stats being produces / stored), stats collection frequency, and your stats pruning configuration.
+If you need to save on space, you can configure these fields in your core config:
+	- Stats poll frequency can be reduced using, for example, `monitoring_interval = "15-sec"`
+	- Pruning can be tuned more aggresively using, for example, `keep_stats_for_days = 7`.
+:::
+
+
+
 ## 2. Start monitor core
 
 Monitor core is distributed via Github Container Registry under the package [mbecker20/monitor_core](https://github.com/mbecker20/monitor/pkgs/container/monitor_core).
@@ -57,6 +70,9 @@ docker run -d --name monitor-core \
 	-v $HOME/.monitor/core.config.toml:/config/config.toml \
 	ghcr.io/mbecker20/monitor_core
 ```
+
+Note that this uses "host" networking, which will allow it to connect to a local periphery agent on localhost.
+Many users will prefer the default "bridge" network, and to use port mapping with `-p 9120:9120`.
 
 ## First login
 

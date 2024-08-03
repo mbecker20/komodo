@@ -353,6 +353,86 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::StartStack(req) => {
+      let req = ExecuteRequest::StartStack(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StartStack(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at StartStack"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::RestartStack(req) => {
+      let req = ExecuteRequest::RestartStack(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RestartStack(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at RestartStack"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::PauseStack(req) => {
+      let req = ExecuteRequest::PauseStack(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PauseStack(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PauseStack"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::UnpauseStack(req) => {
+      let req = ExecuteRequest::UnpauseStack(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::UnpauseStack(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at UnpauseStack"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::StopStack(req) => {
+      let req = ExecuteRequest::StopStack(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StopStack(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at StopStack"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::DestroyStack(req) => {
       let req = ExecuteRequest::DestroyStack(req);
       let update = init_execution_update(&req, &user).await?;
@@ -365,6 +445,118 @@ async fn execute_execution(
           .resolve(req, (user, update))
           .await
           .context("failed at DestroyStack"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::DeployStackService(req) => {
+      let req = ExecuteRequest::DeployStackService(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::DeployStackService(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at DeployStackService"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::StartStackService(req) => {
+      let req = ExecuteRequest::StartStackService(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StartStackService(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at StartStackService"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::RestartStackService(req) => {
+      let req = ExecuteRequest::RestartStackService(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RestartStackService(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at RestartStackService"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::PauseStackService(req) => {
+      let req = ExecuteRequest::PauseStackService(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PauseStackService(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PauseStackService"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::UnpauseStackService(req) => {
+      let req = ExecuteRequest::UnpauseStackService(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::UnpauseStackService(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at UnpauseStackService"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::StopStackService(req) => {
+      let req = ExecuteRequest::StopStackService(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StopStackService(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at StopStackService"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::DestroyStackService(req) => {
+      let req = ExecuteRequest::DestroyStackService(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::DestroyStackService(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at DestroyStackService"),
         &update_id,
       )
       .await?

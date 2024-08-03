@@ -702,8 +702,10 @@ export type GetDeploymentStatsResponse = DockerContainerStats;
 
 export interface DeploymentActionState {
 	deploying: boolean;
-	stopping: boolean;
 	starting: boolean;
+	restarting: boolean;
+	pausing: boolean;
+	stopping: boolean;
 	removing: boolean;
 	renaming: boolean;
 }
@@ -716,7 +718,7 @@ export interface ProviderAccount {
 	/** The account username. Required. */
 	username: string;
 	/** The account access token. Required. */
-	token: string;
+	token?: string;
 }
 
 export interface GitProvider {
@@ -790,7 +792,19 @@ export type Execution =
 	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
+	| { type: "StartStack", params: StartStack }
+	| { type: "RestartStack", params: RestartStack }
+	| { type: "PauseStack", params: PauseStack }
+	| { type: "UnpauseStack", params: UnpauseStack }
+	| { type: "StopStack", params: StopStack }
 	| { type: "DestroyStack", params: DestroyStack }
+	| { type: "DeployStackService", params: DeployStackService }
+	| { type: "StartStackService", params: StartStackService }
+	| { type: "RestartStackService", params: RestartStackService }
+	| { type: "PauseStackService", params: PauseStackService }
+	| { type: "UnpauseStackService", params: UnpauseStackService }
+	| { type: "StopStackService", params: StopStackService }
+	| { type: "DestroyStackService", params: DestroyStackService }
 	| { type: "Sleep", params: Sleep };
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
@@ -1276,16 +1290,37 @@ export type ListFullServerTemplatesResponse = ServerTemplate[];
 export interface StackConfig {
 	/** The server to deploy the stack on. */
 	server_id?: string;
+	/** Used with `registry_account` to login to a registry before docker compose up. */
+	registry_provider?: string;
+	/** Used with `registry_provider` to login to a registry before docker compose up. */
+	registry_account?: string;
+	/**
+	 * The extra arguments to pass after `docker compose up -d`.
+	 * If empty, no extra arguments will be passed.
+	 */
+	extra_args?: string[];
+	/**
+	 * The environment variables passed to the compose file.
+	 * They will be written to path defined in env_file_path,
+	 * which is given relative to the run directory.
+	 * 
+	 * If it is empty, no file will be written.
+	 */
+	environment?: EnvironmentVar[] | string;
+	/**
+	 * The name of the written environment file before `docker compose up`.
+	 * Relative to the repo root.
+	 * Default: .env
+	 */
+	env_file_path: string;
+	/** Whether to skip secret interpolation into the stack environment variables. */
+	skip_secret_interp?: boolean;
 	/**
 	 * The contents of the file directly, for management in the UI.
 	 * If this is empty, it will fall back to checking git config for
 	 * repo based compose file.
 	 */
-	contents?: string;
-	/** Used with `registry_account` to login to a registry before docker compose up. */
-	registry_provider?: string;
-	/** Used with `registry_provider` to login to a registry before docker compose up. */
-	registry_account?: string;
+	file_contents?: string;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**
@@ -1308,39 +1343,85 @@ export interface StackConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
-	/** The path of the compose file, relative to the repo root. */
+	/**
+	 * Directory to change to (`cd`) before running `docker compose up -d`.
+	 * If compose file defined locally in `file_contents`, this will always be `.`.
+	 * Default: `.` (the repo root)
+	 */
+	run_directory: string;
+	/**
+	 * The path of the compose file, relative to the run path.
+	 * /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
+	 * Default: `compose.yaml`
+	 */
 	file_path: string;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
 }
 
+export interface StackServiceNames {
+	container_name: string;
+	service_name: string;
+}
+
 export interface StackInfo {
+	/** The deployed compose file. */
+	deployed_contents?: string;
+	/**
+	 * The service / container names.
+	 * These only need to be matched against the start of the container name,
+	 * since the name is postfixed with a number.
+	 * 
+	 * This is updated whenever deployed contents is updated
+	 */
+	services?: StackServiceNames[];
+	/**
+	 * Cached json representation of the compose file contents, info about a parsing failure, or empty string.
+	 * Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
+	 */
+	json?: string;
+	/** There was an error in calling `docker compose config` */
+	json_error?: boolean;
 	/**
 	 * If using a repo based compose file, will cache the contents here
 	 * for API delivery. Deploys will always pull directly from the repo.
+	 * 
+	 * Could be:
+	 * - The file contents or null (remote_error: false)
+	 * - An error message (remote_error: true)
 	 */
-	contents: string;
-	/** Latest short commit hash, or empty string. */
-	latest_hash: string;
-	/** Latest commit message, or emptry string. */
-	latest_message: string;
+	remote_contents?: string;
+	/** There was an error in getting the remote contents. */
+	remote_error?: boolean;
+	/** Deployed short commit hash, or empty string. */
+	deployed_hash?: string;
+	/** Deployed commit message, or null */
+	deployed_message?: string;
+	/** Latest commit hash, or null */
+	latest_hash?: string;
+	/** Latest commit message, or null */
+	latest_message?: string;
 }
 
 export type Stack = Resource<StackConfig, StackInfo>;
 
 export type GetStackResponse = Stack;
 
+export type GetStackContainersResponse = ContainerSummary[];
+
+export type GetStackServiceLogResponse = Log;
+
+export type ListCommonStackExtraArgsResponse = string[];
+
 export enum StackState {
 	/** The stack is deployed */
-	Up = "Up",
+	Healthy = "Healthy",
+	/** Some containers are up, some are down. */
+	Unhealthy = "Unhealthy",
 	/** The stack is not deployed */
 	Down = "Down",
 	/** Last deploy failed */
 	Failed = "Failed",
-	/** Currently deploying */
-	Deploying = "Deploying",
-	/** Currently destroying */
-	Destroying = "Destroying",
 	/** Server not reachable */
 	Unknown = "Unknown",
 }
@@ -1356,10 +1437,12 @@ export interface StackListItemInfo {
 	branch: string;
 	/** The stack state */
 	state: StackState;
-	/** Latest short commit hash, or empty string. */
-	latest_hash: string;
-	/** Latest commit message, or emptry string. */
-	latest_message: string;
+	/** The service names that are part of the stack */
+	services: string[];
+	/** Latest short commit hash, or null. */
+	latest_hash?: string;
+	/** Latest commit message, or null. */
+	latest_message?: string;
 }
 
 export type StackListItem = ResourceListItem<StackListItemInfo>;
@@ -1369,9 +1452,11 @@ export type ListStacksResponse = StackListItem[];
 export type ListFullStacksResponse = Stack[];
 
 export interface StackActionState {
-	/** Whether compose file currently deploying */
 	deploying: boolean;
-	/** Whether the stack is currently being destroyed */
+	starting: boolean;
+	restarting: boolean;
+	pausing: boolean;
+	stopping: boolean;
 	destroying: boolean;
 }
 
@@ -1566,7 +1651,19 @@ export enum Operation {
 	UpdateStack = "UpdateStack",
 	DeleteStack = "DeleteStack",
 	DeployStack = "DeployStack",
+	StartStack = "StartStack",
+	RestartStack = "RestartStack",
+	PauseStack = "PauseStack",
+	UnpauseStack = "UnpauseStack",
+	StopStack = "StopStack",
 	DestroyStack = "DestroyStack",
+	DeployStackService = "DeployStackService",
+	StartStackService = "StartStackService",
+	RestartStackService = "RestartStackService",
+	PauseStackService = "PauseStackService",
+	UnpauseStackService = "UnpauseStackService",
+	StopStackService = "StopStackService",
+	DestroyStackService = "DestroyStackService",
 	CreateVariable = "CreateVariable",
 	UpdateVariableValue = "UpdateVariableValue",
 	DeleteVariable = "DeleteVariable",
@@ -2003,9 +2100,15 @@ export interface CancelBuild {
 export interface Deploy {
 	/** Name or id */
 	deployment: string;
-	/** Override the default termination signal specified in the deployment. */
+	/**
+	 * Override the default termination signal specified in the deployment.
+	 * Only used when deployment needs to be taken down before redeploy.
+	 */
 	stop_signal?: TerminationSignal;
-	/** Override the default termination max time. */
+	/**
+	 * Override the default termination max time.
+	 * Only used when deployment needs to be taken down before redeploy.
+	 */
 	stop_time?: number;
 }
 
@@ -2015,6 +2118,38 @@ export interface Deploy {
  * 1. Runs `docker start ${container_name}`.
  */
 export interface StartContainer {
+	/** Name or id */
+	deployment: string;
+}
+
+/**
+ * Restarts the container for the target deployment. Response: [Update]
+ * 
+ * 1. Runs `docker restart ${container_name}`.
+ */
+export interface RestartContainer {
+	/** Name or id */
+	deployment: string;
+}
+
+/**
+ * Pauses the container for the target deployment. Response: [Update]
+ * 
+ * 1. Runs `docker pause ${container_name}`.
+ */
+export interface PauseContainer {
+	/** Name or id */
+	deployment: string;
+}
+
+/**
+ * Unpauses the container for the target deployment. Response: [Update]
+ * 
+ * 1. Runs `docker unpause ${container_name}`.
+ * 
+ * Note. This is the only way to restart a paused container.
+ */
+export interface UnpauseContainer {
 	/** Name or id */
 	deployment: string;
 }
@@ -2142,12 +2277,132 @@ export interface LaunchServer {
 export interface DeployStack {
 	/** Id or name */
 	stack: string;
+	/**
+	 * Override the default termination max time.
+	 * Only used if the stack needs to be taken down first.
+	 */
+	stop_time?: number;
+}
+
+/** Starts the target stack. `docker compose start`. Response: [Update] */
+export interface StartStack {
+	/** Id or name */
+	stack: string;
+}
+
+/** Restarts the target stack. `docker compose restart`. Response: [Update] */
+export interface RestartStack {
+	/** Id or name */
+	stack: string;
+}
+
+/** Pauses the target stack. `docker compose pause`. Response: [Update] */
+export interface PauseStack {
+	/** Id or name */
+	stack: string;
+}
+
+/**
+ * Unpauses the target stack. `docker compose unpause`. Response: [Update].
+ * 
+ * Note. This is the only way to restart a paused container.
+ */
+export interface UnpauseStack {
+	/** Id or name */
+	stack: string;
+}
+
+/** Starts the target stack. `docker compose stop`. Response: [Update] */
+export interface StopStack {
+	/** Id or name */
+	stack: string;
+	/** Override the default termination max time. */
+	stop_time?: number;
 }
 
 /** Destoys the target stack. `docker compose down`. Response: [Update] */
 export interface DestroyStack {
 	/** Id or name */
 	stack: string;
+	/** Pass `--remove-orphans` */
+	remove_orphans?: boolean;
+	/** Override the default termination max time. */
+	stop_time?: number;
+}
+
+/**
+ * Deploys the target stack service. `docker compose up -d service`. Response: [Update]
+ * 
+ * Note. If the stack is already deployed, it will be destroyed first.
+ */
+export interface DeployStackService {
+	/** Id or name */
+	stack: string;
+	/** The service name */
+	service: string;
+	/**
+	 * Override the default termination max time.
+	 * Only used if the stack needs to be taken down first.
+	 */
+	stop_time?: number;
+}
+
+/** Starts the target stack service. `docker compose start service`. Response: [Update] */
+export interface StartStackService {
+	/** Id or name */
+	stack: string;
+	/** The service name */
+	service: string;
+}
+
+/** Restarts the target stack service. `docker compose restart service`. Response: [Update] */
+export interface RestartStackService {
+	/** Id or name */
+	stack: string;
+	/** The service name */
+	service: string;
+}
+
+/** Pauses the target stack service. `docker compose pause service`. Response: [Update] */
+export interface PauseStackService {
+	/** Id or name */
+	stack: string;
+	/** The service name */
+	service: string;
+}
+
+/**
+ * Unpauses the target stack service. `docker compose unpause service`. Response: [Update].
+ * 
+ * Note. This is the only way to restart a paused container.
+ */
+export interface UnpauseStackService {
+	/** Id or name */
+	stack: string;
+	/** The service name */
+	service: string;
+}
+
+/** Starts the target stack service. `docker compose stop service`. Response: [Update] */
+export interface StopStackService {
+	/** Id or name */
+	stack: string;
+	/** The service name */
+	service: string;
+	/** Override the default termination max time. */
+	stop_time?: number;
+}
+
+/** Destoys the target stack service. `docker compose down service`. Response: [Update] */
+export interface DestroyStackService {
+	/** Id or name */
+	stack: string;
+	/** The service name */
+	service: string;
+	/** Pass `--remove-orphans` */
+	remove_orphans?: boolean;
+	/** Override the default termination max time. */
+	stop_time?: number;
 }
 
 /** Runs the target resource sync. Response: [Update] */
@@ -2975,6 +3230,52 @@ export interface GetStack {
 	stack: string;
 }
 
+/**
+ * Get a stacks compose-file JSON representation. Response: [serde_json::Value]
+ * (No schema provided for this, it comes from docker).
+ * 
+ * Obtained through [docker compose config --format json](https://docs.docker.com/reference/cli/docker/compose/config/).
+ */
+export interface GetStackJson {
+	/** Id or name */
+	stack: string;
+}
+
+/** Response for [GetStackJson] */
+export interface GetStackJsonResponse {
+	json: Value;
+	error: boolean;
+}
+
+/** Get a specific stacks containers. Response: [GetStackContainersResponse]. */
+export interface GetStackContainers {
+	/** Id or name */
+	stack: string;
+}
+
+/** Get a stack service's log. Response: [GetStackContainersResponse]. */
+export interface GetStackServiceLog {
+	/** Id or name */
+	stack: string;
+	/** The service to get the log for. */
+	service: string;
+	/**
+	 * The number of lines of the log tail to include.
+	 * Default: 100.
+	 * Max: 5000.
+	 */
+	tail: U64;
+}
+
+/**
+ * Gets a list of existing values used as extra args across other stacks.
+ * Useful to offer suggestions. Response: [ListCommonStackExtraArgsResponse]
+ */
+export interface ListCommonStackExtraArgs {
+	/** optional structured query to filter stacks. */
+	query?: StackQuery;
+}
+
 /** List stacks matching optional query. Response: [ListStacksResponse]. */
 export interface ListStacks {
 	/** optional structured query to filter syncs. */
@@ -3004,17 +3305,15 @@ export interface GetStacksSummary {
 export interface GetStacksSummaryResponse {
 	/** The total number of syncs */
 	total: number;
-	/** The number of syncs with Up state. */
-	up: number;
+	/** The number of syncs with Healthy state. */
+	healthy: number;
+	/** The number of syncs with Unhealthy state. */
+	unhealthy: number;
 	/** The number of syncs with Down state. */
 	down: number;
-	/** The number of syncs currently deploying. */
-	deploying: number;
-	/** The number of syncs currently destroying. */
-	destroying: number;
-	/** The number of syncs with failed state. */
+	/** The number of syncs with Failed state. */
 	failed: number;
-	/** The number of syncs with unknown state. */
+	/** The number of syncs with Unknown state. */
 	unknown: number;
 }
 
@@ -4505,7 +4804,19 @@ export type ExecuteRequest =
 	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
-	| { type: "DestroyStack", params: DestroyStack };
+	| { type: "StartStack", params: StartStack }
+	| { type: "RestartStack", params: RestartStack }
+	| { type: "StopStack", params: StopStack }
+	| { type: "PauseStack", params: PauseStack }
+	| { type: "UnpauseStack", params: UnpauseStack }
+	| { type: "DestroyStack", params: DestroyStack }
+	| { type: "DeployStackService", params: DeployStackService }
+	| { type: "StartStackService", params: StartStackService }
+	| { type: "RestartStackService", params: RestartStackService }
+	| { type: "StopStackService", params: StopStackService }
+	| { type: "PauseStackService", params: PauseStackService }
+	| { type: "UnpauseStackService", params: UnpauseStackService }
+	| { type: "DestroyStackService", params: DestroyStackService };
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
@@ -4578,10 +4889,12 @@ export type ReadRequest =
 	| { type: "ListFullResourceSyncs", params: ListFullResourceSyncs }
 	| { type: "GetStacksSummary", params: GetStacksSummary }
 	| { type: "GetStack", params: GetStack }
+	| { type: "GetStackContainers", params: GetStackContainers }
 	| { type: "GetStackActionState", params: GetStackActionState }
 	| { type: "GetStackWebhooksEnabled", params: GetStackWebhooksEnabled }
 	| { type: "ListStacks", params: ListStacks }
 	| { type: "ListFullStacks", params: ListFullStacks }
+	| { type: "GetStackJson", params: GetStackJson }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }

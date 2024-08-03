@@ -7,11 +7,12 @@ use monitor_client::{
     build::{Build, ImageRegistry},
     config::core::AwsEcrConfig,
     deployment::{
-      extract_registry_domain, Deployment, DeploymentImage,
+      extract_registry_domain, Deployment, DeploymentActionState,
+      DeploymentImage,
     },
     get_image_name,
     permission::PermissionLevel,
-    server::ServerState,
+    server::{Server, ServerState},
     update::{Log, Update},
     user::User,
     Version,
@@ -35,6 +36,43 @@ use crate::{
 
 use crate::helpers::update::init_execution_update;
 
+async fn setup_deployment_execution(
+  deployment: &str,
+  user: &User,
+  set_in_progress: impl Fn(&mut DeploymentActionState),
+) -> anyhow::Result<(Deployment, Server)> {
+  let deployment = resource::get_check_permissions::<Deployment>(
+    deployment,
+    user,
+    PermissionLevel::Execute,
+  )
+  .await?;
+
+  if deployment.config.server_id.is_empty() {
+    return Err(anyhow!("deployment has no server configured"));
+  }
+
+  // get the action state for the deployment (or insert default).
+  let action_state = action_states()
+    .deployment
+    .get_or_insert_default(&deployment.id)
+    .await;
+
+  // Will check to ensure deployment not already busy before updating, and return Err if so.
+  // The returned guard will set the action state back to default when dropped.
+  let _action_guard = action_state.update(set_in_progress)?;
+
+  let (server, status) =
+    get_server_with_status(&deployment.config.server_id).await?;
+  if status != ServerState::Ok {
+    return Err(anyhow!(
+      "cannot send action when server is unreachable or disabled"
+    ));
+  }
+
+  Ok((deployment, server))
+}
+
 impl Resolve<Deploy, (User, Update)> for State {
   #[instrument(name = "Deploy", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -46,36 +84,11 @@ impl Resolve<Deploy, (User, Update)> for State {
     }: Deploy,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let mut deployment =
-      resource::get_check_permissions::<Deployment>(
-        &deployment,
-        &user,
-        PermissionLevel::Execute,
-      )
+    let (mut deployment, server) =
+      setup_deployment_execution(&deployment, &user, |state| {
+        state.deploying = true
+      })
       .await?;
-
-    if deployment.config.server_id.is_empty() {
-      return Err(anyhow!("deployment has no server configured"));
-    }
-
-    // get the action state for the deployment (or insert default).
-    let action_state = action_states()
-      .deployment
-      .get_or_insert_default(&deployment.id)
-      .await;
-
-    // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.deploying = true)?;
-
-    let (server, status) =
-      get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerState::Ok {
-      return Err(anyhow!(
-        "cannot send action when server is unreachable or disabled"
-      ));
-    }
 
     let periphery = periphery_client(&server)?;
 
@@ -232,35 +245,11 @@ impl Resolve<StartContainer, (User, Update)> for State {
     StartContainer { deployment }: StartContainer,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let deployment = resource::get_check_permissions::<Deployment>(
-      &deployment,
-      &user,
-      PermissionLevel::Execute,
-    )
-    .await?;
-
-    // get the action state for the deployment (or insert default).
-    let action_state = action_states()
-      .deployment
-      .get_or_insert_default(&deployment.id)
-      .await;
-
-    // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.starting = true)?;
-
-    if deployment.config.server_id.is_empty() {
-      return Err(anyhow!("deployment has no server configured"));
-    }
-
-    let (server, status) =
-      get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerState::Ok {
-      return Err(anyhow!(
-        "cannot send action when server is unreachable or disabled"
-      ));
-    }
+    let (deployment, server) =
+      setup_deployment_execution(&deployment, &user, |state| {
+        state.starting = true
+      })
+      .await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -286,6 +275,117 @@ impl Resolve<StartContainer, (User, Update)> for State {
   }
 }
 
+impl Resolve<RestartContainer, (User, Update)> for State {
+  #[instrument(name = "RestartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    RestartContainer { deployment }: RestartContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let (deployment, server) =
+      setup_deployment_execution(&deployment, &user, |state| {
+        state.restarting = true
+      })
+      .await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::RestartContainer {
+        name: deployment.name.clone(),
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "restart container",
+        format_serror(&e.context("failed to restart container").into()),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<PauseContainer, (User, Update)> for State {
+  #[instrument(name = "PauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    PauseContainer { deployment }: PauseContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let (deployment, server) =
+      setup_deployment_execution(&deployment, &user, |state| {
+        state.pausing = true
+      })
+      .await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::PauseContainer {
+        name: deployment.name.clone(),
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "pause container",
+        format_serror(&e.context("failed to pause container").into()),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<UnpauseContainer, (User, Update)> for State {
+  #[instrument(name = "UnpauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    UnpauseContainer { deployment }: UnpauseContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let (deployment, server) =
+      setup_deployment_execution(&deployment, &user, |state| {
+        state.unpausing = true
+      })
+      .await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::UnpauseContainer {
+        name: deployment.name.clone(),
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "unpause container",
+        format_serror(&e.context("failed to unpause container").into()),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
 impl Resolve<StopContainer, (User, Update)> for State {
   #[instrument(name = "StopContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -297,35 +397,11 @@ impl Resolve<StopContainer, (User, Update)> for State {
     }: StopContainer,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let deployment = resource::get_check_permissions::<Deployment>(
-      &deployment,
-      &user,
-      PermissionLevel::Execute,
-    )
-    .await?;
-
-    // get the action state for the deployment (or insert default).
-    let action_state = action_states()
-      .deployment
-      .get_or_insert_default(&deployment.id)
-      .await;
-
-    // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.stopping = true)?;
-
-    if deployment.config.server_id.is_empty() {
-      return Err(anyhow!("deployment has no server configured"));
-    }
-
-    let (server, status) =
-      get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerState::Ok {
-      return Err(anyhow!(
-        "cannot send action when server is unreachable or disabled"
-      ));
-    }
+    let (deployment, server) =
+      setup_deployment_execution(&deployment, &user, |state| {
+        state.stopping = true
+      })
+      .await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -456,35 +532,11 @@ impl Resolve<RemoveContainer, (User, Update)> for State {
     }: RemoveContainer,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let deployment = resource::get_check_permissions::<Deployment>(
-      &deployment,
-      &user,
-      PermissionLevel::Execute,
-    )
-    .await?;
-
-    // get the action state for the deployment (or insert default).
-    let action_state = action_states()
-      .deployment
-      .get_or_insert_default(&deployment.id)
-      .await;
-
-    // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.removing = true)?;
-
-    if deployment.config.server_id.is_empty() {
-      return Err(anyhow!("deployment has no server configured"));
-    }
-
-    let (server, status) =
-      get_server_with_status(&deployment.config.server_id).await?;
-    if status != ServerState::Ok {
-      return Err(anyhow!(
-        "cannot send action when server is unreachable or disabled"
-      ));
-    }
+    let (deployment, server) =
+      setup_deployment_execution(&deployment, &user, |state| {
+        state.removing = true
+      })
+      .await?;
 
     let periphery = periphery_client(&server)?;
 
