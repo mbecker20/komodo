@@ -8,15 +8,15 @@
   * {
     @apply border-border;
   }
-  /* *::-webkit-scrollbar {
+  *::-webkit-scrollbar {
     background-color: hsl(var(--border));
-    @apply w-2;
-    @apply h-2;
+    @apply w-1;
+    @apply h-1;
   }
   *::-webkit-scrollbar-thumb {
     background-color: hsl(var(--primary));
     @apply rounded-lg;
-  } */
+  }
 
   body {
     @apply bg-background text-foreground;

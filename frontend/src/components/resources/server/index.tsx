@@ -23,7 +23,6 @@ import {
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
-import { ServersChart } from "./dashboard";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
 import { ActionWithDialog, ConfirmButton } from "@components/util";
@@ -33,6 +32,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
 import { ResourceComponents } from "..";
+import { DashboardPieChart } from "@pages/home/dashboard";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -113,7 +113,26 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
 export const ServerComponents: RequiredResourceComponents = {
   list_item: (id) => useServer(id),
 
-  Dashboard: ServersChart,
+  Dashboard: () => {
+    const summary = useRead("GetServersSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { title: "Healthy", intention: "Good", value: summary?.healthy ?? 0 },
+          {
+            title: "Unhealthy",
+            intention: "Warning",
+            value: summary?.unhealthy ?? 0,
+          },
+          {
+            title: "Disabled",
+            intention: "Neutral",
+            value: summary?.disabled ?? 0,
+          },
+        ]}
+      />
+    );
+  },
 
   New: () => <NewResource type="Server" />,
 

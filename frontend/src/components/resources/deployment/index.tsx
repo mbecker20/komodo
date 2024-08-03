@@ -19,7 +19,6 @@ import {
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { DeploymentTable } from "./table";
-import { DeploymentsChart } from "./dashboard";
 import { NewResource, ResourceLink } from "../common";
 import { Card, CardHeader } from "@ui/card";
 import { RunBuild } from "../build/actions";
@@ -27,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { DashboardPieChart } from "@pages/home/dashboard";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -102,7 +102,31 @@ const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
 export const DeploymentComponents: RequiredResourceComponents = {
   list_item: (id) => useDeployment(id),
 
-  Dashboard: DeploymentsChart,
+  Dashboard: () => {
+    const summary = useRead("GetDeploymentsSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { intention: "Good", value: summary?.running ?? 0, title: "Running" },
+          {
+            intention: "Critical",
+            value: summary?.stopped ?? 0,
+            title: "Stopped",
+          },
+          {
+            intention: "Neutral",
+            value: summary?.not_deployed ?? 0,
+            title: "Not Deployed",
+          },
+          {
+            intention: "Unknown",
+            value: summary?.unknown ?? 0,
+            title: "Unknown",
+          },
+        ]}
+      />
+    );
+  },
 
   New: ({ server_id, build_id }) => (
     <NewResource type="Deployment" server_id={server_id} build_id={build_id} />

@@ -1,4 +1,3 @@
-import { OpenAlerts } from "@components/alert";
 import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
@@ -29,7 +28,6 @@ export const AllResources = () => {
         </div>
       }
     >
-      <OpenAlerts />
       {Object.entries(ResourceComponents).map(([type, Components]) => (
         <TableSection
           key={type}

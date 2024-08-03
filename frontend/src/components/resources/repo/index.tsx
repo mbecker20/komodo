@@ -13,9 +13,9 @@ import {
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
-import { RepoDashboard } from "./dashboard";
 import { useServer } from "../server";
 import { Types } from "@monitor/client";
+import { DashboardPieChart } from "@pages/home/dashboard";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
@@ -31,7 +31,31 @@ const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
 export const RepoComponents: RequiredResourceComponents = {
   list_item: (id) => useRepo(id),
 
-  Dashboard: RepoDashboard,
+  Dashboard: () => {
+    const summary = useRead("GetReposSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { intention: "Good", value: summary?.ok ?? 0, title: "Ok" },
+          {
+            intention: "Warning",
+            value: (summary?.cloning ?? 0) + (summary?.pulling ?? 0),
+            title: "Pulling",
+          },
+          {
+            intention: "Critical",
+            value: summary?.failed ?? 0,
+            title: "Failed",
+          },
+          {
+            intention: "Unknown",
+            value: summary?.unknown ?? 0,
+            title: "Unknown",
+          },
+        ]}
+      />
+    );
+  },
 
   New: ({ server_id }) => <NewResource type="Repo" server_id={server_id} />,
 
