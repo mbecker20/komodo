@@ -101,6 +101,15 @@ impl Resolve<RunBuild, (User, Update)> for State {
       build_cancel_channel().receiver.resubscribe();
     let build_id = build.id.clone();
 
+    if build.config.builder_id.is_empty() {
+      return Err(anyhow!("build has not configured a builder"));
+    }
+    let builder =
+      resource::get::<Builder>(&build.config.builder_id).await?;
+
+    let is_server_builder =
+      matches!(&builder.config, BuilderConfig::Server(_));
+
     tokio::spawn(async move {
       let poll = async {
         loop {
@@ -109,16 +118,20 @@ impl Resolve<RunBuild, (User, Update)> for State {
             id = cancel_recv.recv() => id?
           };
           if incoming_build_id == build_id {
-            update.push_simple_log(
-              "cancel acknowledged",
-              "the build cancellation has been queued, it may still take some time",
-            );
+            let message = if is_server_builder {
+              "build cancellation is not possible on server builders at this time"
+            } else {
+              "the build cancellation has been queued, it may still take some time"
+            };
+            update.push_simple_log("cancel acknowledged", message);
             update.finalize();
             let id = update.id.clone();
             if let Err(e) = update_update(update).await {
               warn!("failed to update Update {id} | {e:#}");
             }
-            cancel_clone.cancel();
+            if !is_server_builder {
+              cancel_clone.cancel();
+            }
             return Ok(());
           }
         }
@@ -134,13 +147,13 @@ impl Resolve<RunBuild, (User, Update)> for State {
     // GET BUILDER PERIPHERY
 
     let (periphery, cleanup_data) =
-      match get_build_builder(&build, &mut update).await {
-        Ok(builder) => {
-          info!("got builder for build");
-          builder
-        }
+      match get_build_builder(&build, builder, &mut update).await {
+        Ok(builder) => builder,
         Err(e) => {
-          warn!("failed to get builder | {e:#}");
+          warn!(
+            "failed to get builder for build {} | {e:#}",
+            build.name
+          );
           update.logs.push(Log::error(
             "get builder",
             format_serror(&e.context("failed to get builder").into()),
@@ -559,16 +572,12 @@ impl Resolve<CancelBuild, (User, Update)> for State {
 const BUILDER_POLL_RATE_SECS: u64 = 2;
 const BUILDER_POLL_MAX_TRIES: usize = 30;
 
-#[instrument(skip_all, fields(build_id = build.id, update_id = update.id))]
+#[instrument(skip_all, fields(builder_id = builder.id, update_id = update.id))]
 async fn get_build_builder(
   build: &Build,
+  builder: Builder,
   update: &mut Update,
 ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
-  if build.config.builder_id.is_empty() {
-    return Err(anyhow!("build has not configured a builder"));
-  }
-  let builder =
-    resource::get::<Builder>(&build.config.builder_id).await?;
   match builder.config {
     BuilderConfig::Server(config) => {
       if config.server_id.is_empty() {
