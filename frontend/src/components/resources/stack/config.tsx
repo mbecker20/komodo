@@ -120,6 +120,13 @@ export const StackConfig = ({ id }: { id: string }) => {
             },
           },
           {
+            label: "Run Path / File",
+            components: {
+              run_directory: { placeholder: "." },
+              file_path: { placeholder: "compose.yaml" },
+            },
+          },
+          {
             label: "Github Webhooks",
             components: {
               ["clone" as any]: () => (

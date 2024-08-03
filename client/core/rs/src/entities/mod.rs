@@ -570,18 +570,18 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
 }
 
 impl From<&self::stack::Stack> for CloneArgs {
-  fn from(compose: &self::stack::Stack) -> Self {
+  fn from(stack: &self::stack::Stack) -> Self {
     CloneArgs {
-      name: compose.name.clone(),
-      repo: optional_string(&compose.config.repo),
-      branch: optional_string(&compose.config.branch),
-      commit: optional_string(&compose.config.commit),
+      name: stack.name.clone(),
+      repo: optional_string(&stack.config.repo),
+      branch: optional_string(&stack.config.branch),
+      commit: optional_string(&stack.config.commit),
       destination: None,
       on_clone: None,
       on_pull: None,
-      provider: Some(String::from("github.com")),
-      https: compose.config.git_https,
-      account: optional_string(&compose.config.git_account),
+      provider: optional_string(&stack.config.git_provider),
+      https: stack.config.git_https,
+      account: optional_string(&stack.config.git_account),
     }
   }
 }

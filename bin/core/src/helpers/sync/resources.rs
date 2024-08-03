@@ -565,6 +565,9 @@ impl ResourceSync for Procedure {
     }
     warn!("procedure sync loop exited after max iterations");
 
-    todo!()
+    Some(Log::error(
+      "run procedure",
+      String::from("procedure sync loop exited after max iterations"),
+    ))
   }
 }

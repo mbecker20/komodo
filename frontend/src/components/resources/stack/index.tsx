@@ -111,12 +111,12 @@ export const StackComponents: RequiredResourceComponents = {
     },
   },
 
-  Actions: {},
-
-  Page: {
+  Actions: {
     DeployStack,
     DestroyStack,
   },
+
+  Page: {},
 
   Config: StackConfig,
 
