@@ -8,9 +8,7 @@ use periphery_client::api::git::{
 };
 use resolver_api::Resolve;
 
-use crate::{
-  config::periphery_config, helpers::get_git_token, State,
-};
+use crate::{config::periphery_config, State};
 
 impl Resolve<GetLatestCommit, ()> for State {
   async fn resolve(
@@ -47,11 +45,10 @@ impl Resolve<CloneRepo> for State {
       }
       (Some(_), Some(_), Some(token)) => Some(token),
       (Some(account), Some(provider), None) => Some(
-        get_git_token(provider, account)
+        crate::helpers::git_token(provider, account).map(ToString::to_string)
           .with_context(
             || format!("failed to get git token from periphery config | provider: {provider} | account: {account}")
-          )?
-          .clone(),
+          )?,
       ),
     };
     git::clone(args, &periphery_config().repo_dir, token)

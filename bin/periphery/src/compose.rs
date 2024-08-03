@@ -4,36 +4,24 @@ use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{
-  all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
   environment_vars_to_string,
   stack::Stack,
+  to_monitor_name,
   update::Log,
   CloneArgs,
 };
 use periphery_client::api::{
-  compose::ComposeUpResponse, git::CloneRepo,
+  compose::ComposeResponse,
+  git::{CloneRepo, RepoActionResponse},
 };
 use resolver_api::Resolve;
 use run_command::async_run_command;
 use tokio::fs;
 
-use crate::{
-  config::periphery_config,
-  docker::docker_login,
-  helpers::{parse_extra_args, random_string},
-  State,
-};
+use crate::{config::periphery_config, docker::docker_login, State};
 
 const DEFAULT_FILE_NAME: &str = "compose.yaml";
-
-pub fn docker_compose() -> &'static str {
-  if periphery_config().legacy_compose_cli {
-    "docker-compose"
-  } else {
-    "docker compose"
-  }
-}
 
 pub fn maybe_timeout(timeout: Option<i32>) -> String {
   if let Some(timeout) = timeout {
@@ -43,159 +31,229 @@ pub fn maybe_timeout(timeout: Option<i32>) -> String {
   }
 }
 
-pub async fn compose_up(
-  stack: Stack,
+/// Checks if theres a directory at stack_dir/stack_name from the deploy.
+/// If not will take care of writing / cloning the file.
+///
+/// If its a deploy for a repo stack, will pull the repo
+pub async fn run_compose_command(
+  stack: &Stack,
+  service: Option<&str>,
   git_token: Option<String>,
   registry_token: Option<String>,
-  service: Option<&str>,
-) -> anyhow::Result<ComposeUpResponse> {
-  let mut logs = Vec::new();
+  is_deploy: bool,
+  stage: &str,
+  command: &str,
+) -> ComposeResponse {
+  let mut res = ComposeResponse::default();
 
-  let folder = periphery_config().repo_dir.join(random_string(10));
-
-  let (run_directory, file_path, commit_hash, commit_message) =
-    if stack.config.file_contents.is_empty() {
-      // try repo to stack contents
-      if stack.config.repo.is_empty() {
-        return Err(anyhow!("Must either input compose file contents directly or provide a repo. Got neither."));
-      }
-      let mut args: CloneArgs = (&stack).into();
-      // Set the clone destination to the one created for this run
-      args.destination = Some(folder.display().to_string());
-      let res = State
-        .resolve(CloneRepo { args, git_token }, ())
-        .await
-        .context("failed to clone compose repo")?;
-      logs.extend(res.logs);
-
-      // Failed to clone repo
-      if !all_logs_success(&logs) {
-        return Ok(ComposeUpResponse {
-          logs,
-          deployed: false,
-          file_contents: None,
-          commit_hash: None,
-          commit_message: None,
-        });
-      }
-
-      let run_directory = folder.join(&stack.config.run_directory);
-
-      (
-        run_directory,
-        stack.config.file_path.as_str(),
-        res.commit_hash,
-        res.commit_message,
-      )
-    } else {
-      // Use file_contents directly on the stack
-      let file_path = folder.join(DEFAULT_FILE_NAME);
-      fs::write(&file_path, &stack.config.file_contents)
-        .await
-        .context("failed to write compose file")?;
-      (folder.clone(), DEFAULT_FILE_NAME, None, None)
-    };
-
-  let run_directory = run_directory
+  let run_directory = periphery_config()
+    .stack_dir
+    .join(to_monitor_name(&stack.name))
+    .join(&stack.config.run_directory);
+  let run_directory = match run_directory
     .canonicalize()
-    .context("failed to get absolute path of run directory")?;
+    .with_context(|| format!("run directory: {run_directory:?}"))
+    .context("failed to canonicalize run directory")
+  {
+    Ok(dir) => dir,
+    Err(e) => {
+      res.logs.push(Log::error(
+        "canonicalize run directory",
+        format_serror(&e.into()),
+      ));
+      return res;
+    }
+  };
+  let file_path = run_directory.join(&stack.config.file_path);
 
-  let file_contents =
-    fs::read_to_string(run_directory.join(file_path))
-      .await
-      .context("failed to read compose file contents")?;
-
-  // Login to the registry to pull private images if account is set
-  if !stack.config.registry_account.is_empty() {
-    let registry = ImageRegistry::Standard(StandardRegistryConfig {
-      domain: stack.config.registry_provider.clone(),
-      account: stack.config.registry_account.clone(),
-      ..Default::default()
-    });
-    docker_login(&registry, registry_token.as_deref(), None)
-      .await
-      .context("failed to login to image registry")?;
+  if is_deploy || !file_path.exists() {
+    let git_token = match git_token {
+      Some(token) => Some(token),
+      None => {
+        if !stack.config.git_account.is_empty() {
+          match crate::helpers::git_token(
+            &stack.config.git_provider,
+            &stack.config.git_account,
+          ) {
+            Ok(token) => Some(token.to_string()),
+            Err(e) => {
+              res.logs.push(Log::error(
+                "find git token",
+                format_serror(&e.into()),
+              ));
+              return res;
+            }
+          }
+        } else {
+          None
+        }
+      }
+    };
+    // Write / clone the file
+    if let Err(e) = write_stack(stack, git_token, &mut res).await {
+      res.logs.push(Log::error(
+        "write stack compose file",
+        format_serror(
+          &e.context("failed to write / clone compose file").into(),
+        ),
+      ));
+      return res;
+    }
   }
 
-  let run_directory = run_directory.display();
-  let docker_compose = docker_compose();
-  let extra_args = parse_extra_args(&stack.config.extra_args);
+  let docker_compose = if periphery_config().legacy_compose_cli {
+    "docker-compose"
+  } else {
+    "docker compose"
+  };
+  let run_dir = run_directory.display();
+  let file = &stack.config.file_path;
   let service = service
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
 
-  // Pull images before destroying to minimize downtime
-  let log = run_monitor_command(
-    "compose pull",
-    format!(
-      "cd {run_directory} && {docker_compose} -f {file_path} pull{service}",
-    ),
-  )
-  .await;
+  if is_deploy {
+    match fs::read_to_string(&file_path).await.with_context(|| {
+      format!("failed to read compose file contents at {file_path:?}")
+    }) {
+      Ok(contents) => res.file_contents = Some(contents),
+      Err(e) => {
+        res.logs.push(Log::error(
+          "read compose contents",
+          format_serror(&e.into()),
+        ));
+        return res;
+      }
+    };
+    // Login to the registry to pull private images if account is set
+    if !stack.config.registry_account.is_empty() {
+      let registry =
+        ImageRegistry::Standard(StandardRegistryConfig {
+          domain: stack.config.registry_provider.clone(),
+          account: stack.config.registry_account.clone(),
+          ..Default::default()
+        });
+      if let Err(e) =
+        docker_login(&registry, registry_token.as_deref(), None)
+          .await
+          .with_context(|| {
+            format!(
+              "domain: {} | account: {}",
+              stack.config.registry_provider,
+              stack.config.registry_account
+            )
+          })
+          .context("failed to login to image registry")
+      {
+        res.logs.push(Log::error(
+          "login to registry",
+          format_serror(&e.into()),
+        ));
+        return res;
+      };
+    }
 
-  // Early exit if fail to pre pull required images.
-  if !log.success {
-    logs.push(log);
-    return Ok(ComposeUpResponse {
-      logs,
-      deployed: false,
-      file_contents: Some(file_contents),
-      commit_hash,
-      commit_message,
-    });
-  }
-
-  if write_environment_file(&stack, &folder, &mut logs)
-    .await
-    .is_err()
-  {
-    return Ok(ComposeUpResponse {
-      logs,
-      deployed: false,
-      file_contents: Some(file_contents),
-      commit_hash,
-      commit_message,
-    });
-  }
-
-  // Maybe destroy existing compose
-  async_run_command(&format!(
-    "cd {run_directory} && {docker_compose} -f {file_path} down{service}",
-  ))
-  .await;
-
-  // Deploy the compose file
-  logs.push(
-    run_monitor_command(
-      "compose up",
+    // Pull images before destroying to minimize downtime
+    let log = run_monitor_command(
+      "compose pull",
       format!(
-        "cd {run_directory} && {docker_compose} -f {file_path} up -d{extra_args}{service}",
+        "cd {run_dir} && {docker_compose} -f {file} pull{service}",
+      ),
+    )
+    .await;
+
+    if !log.success {
+      res.logs.push(log);
+      return res;
+    }
+
+    // Maybe destroy existing
+    async_run_command(&format!(
+      "cd {run_dir} && {docker_compose} -f {file} down{service}",
+    ))
+    .await;
+  }
+
+  res.logs.push(
+    run_monitor_command(
+      stage,
+      format!(
+        "cd {run_dir} && {docker_compose} -f {file} {command}",
       ),
     )
     .await,
   );
 
-  // Remove the folder afterwards
-  if let Err(e) = fs::remove_dir_all(&folder)
-    .await
-    .with_context(|| format!("directory: {folder:?}"))
-    .context("failed to remove compose directory")
-  {
-    error!("{e:#}");
-    logs
-      .push(Log::error("post run cleanup", format_serror(&e.into())));
-  }
-
-  Ok(ComposeUpResponse {
-    logs,
-    deployed: true,
-    file_contents: Some(file_contents),
-    commit_hash,
-    commit_message,
-  })
+  res
 }
 
-/// Check that all of the logs produced are succesful before continuing
+/// Either writes the stack file_contents to a file, or clones the repo.
+/// Returns the run directory.
+pub async fn write_stack(
+  stack: &Stack,
+  git_token: Option<String>,
+  res: &mut ComposeResponse,
+) -> anyhow::Result<()> {
+  let root = periphery_config()
+    .stack_dir
+    .join(to_monitor_name(&stack.name));
+
+  // Ensure directory is clear going in.
+  fs::remove_dir_all(&root).await.ok();
+
+  if stack.config.file_contents.is_empty() {
+    // Clone the repo
+    if stack.config.repo.is_empty() {
+      return Err(anyhow!("Must either input compose file contents directly or provide a repo. Got neither."));
+    }
+    let mut args: CloneArgs = stack.into();
+    // Set the clone destination to the one created for this run
+    args.destination = Some(root.display().to_string());
+    let RepoActionResponse {
+      logs,
+      commit_hash,
+      commit_message,
+    } = State
+      .resolve(CloneRepo { args, git_token }, ())
+      .await
+      .context("failed to clone stack repo")?;
+
+    res.logs.extend(logs);
+    res.commit_hash = commit_hash;
+    res.commit_message = commit_message;
+
+    let run_directory = root.join(&stack.config.run_directory);
+
+    if write_environment_file(stack, &run_directory, &mut res.logs)
+      .await
+      .is_err()
+    {
+      return Err(anyhow!("failed to write environment file"));
+    };
+    Ok(())
+  } else {
+    // Write the file
+    fs::create_dir_all(&root).await.with_context(|| {
+      format!("failed to create stack root directory at {root:?}")
+    })?;
+    if write_environment_file(stack, &root, &mut res.logs)
+      .await
+      .is_err()
+    {
+      return Err(anyhow!("failed to write environment file"));
+    };
+    fs::write(
+      root.join(DEFAULT_FILE_NAME),
+      &stack.config.file_contents,
+    )
+    .await
+    .context("failed to write compose file")?;
+
+    Ok(())
+  }
+}
+
+/// Check that result is Ok before continuing.
 pub async fn write_environment_file(
   stack: &Stack,
   folder: &Path,

@@ -1,11 +1,10 @@
 use formatting::format_serror;
 use monitor_client::entities::{update::Update, user::User};
 use periphery_client::api::compose::{
-  ComposeServiceUp, ComposeUp, ComposeUpResponse,
+  ComposeResponse, ComposeServiceUp, ComposeUp,
 };
 
 use crate::{
-  config::core_config,
   helpers::{
     interpolate_variables_secrets_into_environment, periphery_client,
     update::update_update,
@@ -37,36 +36,15 @@ pub async fn deploy_stack_maybe_service(
     }
   })?;
 
-  let core_config = core_config();
+  let git_token = crate::helpers::git_token(
+    &stack.config.git_provider,
+    &stack.config.git_account,
+  );
 
-  let git_token = core_config
-    .git_providers
-    .iter()
-    .find(|provider| provider.domain == stack.config.git_provider)
-    .and_then(|provider| {
-      stack.config.git_https = provider.https;
-      provider
-        .accounts
-        .iter()
-        .find(|account| account.username == stack.config.git_account)
-        .map(|account| account.token.clone())
-    });
-
-  let registry_token = core_config
-    .docker_registries
-    .iter()
-    .find(|provider| {
-      provider.domain == stack.config.registry_provider
-    })
-    .and_then(|provider| {
-      provider
-        .accounts
-        .iter()
-        .find(|account| {
-          account.username == stack.config.registry_account
-        })
-        .map(|account| account.token.clone())
-    });
+  let registry_token = crate::helpers::registry_token(
+    &stack.config.registry_provider,
+    &stack.config.registry_account,
+  );
 
   if !stack.config.skip_secret_interp {
     interpolate_variables_secrets_into_environment(
@@ -78,7 +56,7 @@ pub async fn deploy_stack_maybe_service(
 
   let periphery = periphery_client(&server)?;
 
-  let ComposeUpResponse {
+  let ComposeResponse {
     logs,
     deployed,
     file_contents,

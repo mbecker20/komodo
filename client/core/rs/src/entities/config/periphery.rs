@@ -114,6 +114,8 @@ pub struct Env {
   pub monitor_port: Option<u16>,
   /// Override `repo_dir`
   pub monitor_repo_dir: Option<PathBuf>,
+  /// Override `stack_dir`
+  pub monitor_stack_dir: Option<PathBuf>,
   /// Override `stats_polling_rate`
   pub monitor_stats_polling_rate: Option<Timelength>,
   /// Override `legacy_compose_cli`
@@ -150,8 +152,11 @@ fn default_config_paths() -> Vec<String> {
 /// ## optional. 8120 is default
 /// port = 8120
 ///
-/// ## optional. /repos is default.
-/// repo_dir = "/repos"
+/// ## optional. `/etc/monitor/repos` is default.
+/// repo_dir = "/etc/monitor/repos"
+/// 
+/// ## optional. `/etc/monitor/stacks` is default.
+/// stack_dir = "/etc/monitor/stacks"
 ///
 /// ## optional. 5-sec is default.
 /// ## can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min.
@@ -219,6 +224,11 @@ pub struct PeripheryConfig {
   #[serde(default = "default_repo_dir")]
   pub repo_dir: PathBuf,
 
+  /// The system directory where stacks will managed.
+  /// Default: `/etc/monitor/stacks`
+  #[serde(default = "default_stack_dir")]
+  pub stack_dir: PathBuf,
+
   /// The rate at which the system stats will be polled to update the cache.
   /// Default: `5-sec`
   #[serde(default = "default_stats_refresh_interval")]
@@ -270,6 +280,10 @@ fn default_periphery_port() -> u16 {
 
 fn default_repo_dir() -> PathBuf {
   "/etc/monitor/repos".parse().unwrap()
+}
+
+fn default_stack_dir() -> PathBuf {
+  "/etc/monitor/stacks".parse().unwrap()
 }
 
 fn default_stats_refresh_interval() -> Timelength {

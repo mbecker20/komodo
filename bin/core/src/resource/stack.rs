@@ -17,10 +17,7 @@ use mungos::mongodb::Collection;
 use periphery_client::api::compose::ComposeDown;
 
 use crate::{
-  helpers::{
-    periphery_client, query::get_stack_state,
-    stack::remote::get_remote_compose_file,
-  },
+  helpers::{git_token, periphery_client, query::get_stack_state},
   monitor::update_cache_for_server,
   resource,
   state::{action_states, db_client, stack_status_cache},
@@ -199,49 +196,19 @@ impl super::MonitorResource for Stack {
       }
     };
 
-    let contents = if stack.config.file_contents.is_empty() {
-      match get_remote_compose_file(stack).await {
-        Ok((res, logs, _commit_hash, _commit_msg)) => {
-          // the commit hash and message are already included in clone logs
-          // so don't need to add them again here.
-          update.logs.extend(logs);
-          match res {
-            Ok(contents) => contents,
-            Err(e) => {
-              update.push_error_log(
-                "destroy stack",
-                format_serror(
-                  &e.context("failed to read remote compose file")
-                    .into(),
-                ),
-              );
-              return Ok(());
-            }
-          }
-        }
-        Err(e) => {
-          update.push_error_log(
-            "destroy stack",
-            format_serror(
-              &e.context("failed to get remote compose file").into(),
-            ),
-          );
-          return Ok(());
-        }
-      }
-    } else {
-      stack.config.file_contents.clone()
-    };
-
     match periphery
       .request(ComposeDown {
-        file: contents,
+        stack: stack.clone(),
+        git_token: git_token(
+          &stack.config.git_provider,
+          &stack.config.git_account,
+        ),
         remove_orphans: true,
         timeout: None,
       })
       .await
     {
-      Ok(logs) => update.logs.extend(logs),
+      Ok(res) => update.logs.extend(res.logs),
       Err(e) => update.push_error_log(
         "destroy stack",
         format_serror(

@@ -2,7 +2,14 @@
 # port = 8120
 
 ## optional. /etc/monitor/repos is default.
+## The directory periphery will use to manage repos.
+## The periphery user must have write access to this directory.
 # repo_dir = "/home/ubuntu/monitor/repos"
+
+## optional. /etc/monitor/stacks is default.
+## The directory periphery will use to manage stacks.
+## The periphery user must have write access to this directory.
+# stack_dir = "/home/ubuntu/monitor/stacks"
 
 ## optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
 # stats_polling_rate = "1-sec"

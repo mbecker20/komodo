@@ -2,18 +2,12 @@ use monitor_client::{
   api::execute::*,
   entities::{update::Update, user::User},
 };
-use periphery_client::api::compose::*;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{
-    periphery_client,
-    stack::{
-      deploy::deploy_stack_maybe_service, setup_stack_execution,
-    },
-    update::update_update,
+  helpers::stack::{
+    deploy::deploy_stack_maybe_service, execute::execute_compose,
   },
-  monitor::update_cache_for_server,
   state::State,
 };
 
@@ -33,31 +27,16 @@ impl Resolve<StartStack, (User, Update)> for State {
   async fn resolve(
     &self,
     StartStack { stack }: StartStack,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<StartStack>(
       &stack,
       &user,
-      |state| {
-        state.starting = true;
-      },
-      &mut update,
+      |state| state.starting = true,
+      update,
+      (),
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeStart { file })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -66,31 +45,16 @@ impl Resolve<RestartStack, (User, Update)> for State {
   async fn resolve(
     &self,
     RestartStack { stack }: RestartStack,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<RestartStack>(
       &stack,
       &user,
-      |state| {
-        state.restarting = true;
-      },
-      &mut update,
+      |state| state.restarting = true,
+      update,
+      (),
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeRestart { file })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -99,31 +63,16 @@ impl Resolve<PauseStack, (User, Update)> for State {
   async fn resolve(
     &self,
     PauseStack { stack }: PauseStack,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<PauseStack>(
       &stack,
       &user,
-      |state| {
-        state.pausing = true;
-      },
-      &mut update,
+      |state| state.pausing = true,
+      update,
+      (),
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposePause { file })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -132,31 +81,16 @@ impl Resolve<UnpauseStack, (User, Update)> for State {
   async fn resolve(
     &self,
     UnpauseStack { stack }: UnpauseStack,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<UnpauseStack>(
       &stack,
       &user,
-      |state| {
-        state.unpausing = true;
-      },
-      &mut update,
+      |state| state.unpausing = true,
+      update,
+      (),
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeUnpause { file })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -165,34 +99,16 @@ impl Resolve<StopStack, (User, Update)> for State {
   async fn resolve(
     &self,
     StopStack { stack, stop_time }: StopStack,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<StopStack>(
       &stack,
       &user,
-      |state| {
-        state.stopping = true;
-      },
-      &mut update,
+      |state| state.stopping = true,
+      update,
+      stop_time,
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeStop {
-        file,
-        timeout: stop_time,
-      })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -205,35 +121,16 @@ impl Resolve<DestroyStack, (User, Update)> for State {
       remove_orphans,
       stop_time,
     }: DestroyStack,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<DestroyStack>(
       &stack,
       &user,
-      |state| {
-        state.destroying = true;
-      },
-      &mut update,
+      |state| state.destroying = true,
+      update,
+      (stop_time, remove_orphans),
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeDown {
-        file,
-        remove_orphans,
-        timeout: stop_time,
-      })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -258,31 +155,16 @@ impl Resolve<StartStackService, (User, Update)> for State {
   async fn resolve(
     &self,
     StartStackService { stack, service }: StartStackService,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<StartStackService>(
       &stack,
       &user,
-      |state| {
-        // state.starting = true;
-      },
-      &mut update,
+      |_| {},
+      update,
+      service,
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeServiceStart { file, service })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -291,31 +173,16 @@ impl Resolve<RestartStackService, (User, Update)> for State {
   async fn resolve(
     &self,
     RestartStackService { stack, service }: RestartStackService,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<RestartStackService>(
       &stack,
       &user,
-      |state| {
-        state.restarting = true;
-      },
-      &mut update,
+      |_| {},
+      update,
+      service,
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeServiceRestart { file, service })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -324,32 +191,16 @@ impl Resolve<PauseStackService, (User, Update)> for State {
   async fn resolve(
     &self,
     PauseStackService { stack, service }: PauseStackService,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<PauseStackService>(
       &stack,
       &user,
-      |state| {
-        // TODO handle service level state cache
-        // state.pausing = true;
-      },
-      &mut update,
+      |_| {},
+      update,
+      service,
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeServicePause { file, service })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -358,31 +209,16 @@ impl Resolve<UnpauseStackService, (User, Update)> for State {
   async fn resolve(
     &self,
     UnpauseStackService { stack, service }: UnpauseStackService,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<UnpauseStackService>(
       &stack,
       &user,
-      |state| {
-        // state.unpausing = true;
-      },
-      &mut update,
+      |_| {},
+      update,
+      service,
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeServiceUnpause { file, service })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -395,35 +231,16 @@ impl Resolve<StopStackService, (User, Update)> for State {
       service,
       stop_time,
     }: StopStackService,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<StopStackService>(
       &stack,
       &user,
-      |state| {
-        // state.stopping = true;
-      },
-      &mut update,
+      |_| {},
+      update,
+      (service, stop_time),
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeServiceStop {
-        file,
-        service,
-        timeout: stop_time,
-      })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }
 
@@ -437,35 +254,15 @@ impl Resolve<DestroyStackService, (User, Update)> for State {
       remove_orphans,
       stop_time,
     }: DestroyStackService,
-    (user, mut update): (User, Update),
+    (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, file) = setup_stack_execution(
+    execute_compose::<DestroyStackService>(
       &stack,
       &user,
-      |state| {
-        state.destroying = true;
-      },
-      &mut update,
+      |_| {},
+      update,
+      (service, stop_time, remove_orphans),
     )
-    .await?;
-
-    let logs = periphery_client(&server)?
-      .request(ComposeServiceDown {
-        file,
-        service,
-        remove_orphans,
-        timeout: stop_time,
-      })
-      .await?;
-
-    update.logs.extend(logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
+    .await
   }
 }

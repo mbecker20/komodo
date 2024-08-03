@@ -1,16 +1,20 @@
-use monitor_client::entities::update::Log;
+use anyhow::Context;
+use formatting::format_serror;
+use monitor_client::entities::{to_monitor_name, update::Log};
 use periphery_client::api::compose::{
-  ComposeDown, ComposePause, ComposeRestart, ComposeServiceDown,
-  ComposeServicePause, ComposeServiceRestart, ComposeServiceStart,
-  ComposeServiceStop, ComposeServiceUnpause, ComposeServiceUp,
-  ComposeStart, ComposeStop, ComposeUnpause, ComposeUp,
-  ComposeUpResponse,
+  ComposeDown, ComposePause, ComposeResponse, ComposeRestart,
+  ComposeServiceDown, ComposeServicePause, ComposeServiceRestart,
+  ComposeServiceStart, ComposeServiceStop, ComposeServiceUnpause,
+  ComposeServiceUp, ComposeStart, ComposeStop, ComposeUnpause,
+  ComposeUp,
 };
 use resolver_api::Resolve;
+use tokio::fs;
 
 use crate::{
-  compose::{docker_compose, maybe_timeout},
-  helpers::run_stack_command,
+  compose::{maybe_timeout, run_compose_command},
+  config::periphery_config,
+  helpers::parse_extra_args,
   State,
 };
 
@@ -24,9 +28,20 @@ impl Resolve<ComposeUp> for State {
       registry_token,
     }: ComposeUp,
     _: (),
-  ) -> anyhow::Result<ComposeUpResponse> {
-    crate::compose::compose_up(stack, git_token, registry_token, None)
-      .await
+  ) -> anyhow::Result<ComposeResponse> {
+    let extra_args = parse_extra_args(&stack.config.extra_args);
+    Ok(
+      run_compose_command(
+        &stack,
+        None,
+        git_token,
+        registry_token,
+        true,
+        "compose up",
+        &format!("up -d{extra_args}"),
+      )
+      .await,
+    )
   }
 }
 
@@ -36,15 +51,18 @@ impl Resolve<ComposeStart> for State {
   #[instrument(name = "ComposeStart", skip_all)]
   async fn resolve(
     &self,
-    ComposeStart { file }: ComposeStart,
+    ComposeStart { stack, git_token }: ComposeStart,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        None,
+        git_token,
+        None,
+        false,
         "compose start",
-        format!("{docker_compose} start"),
+        "start",
       )
       .await,
     )
@@ -57,15 +75,18 @@ impl Resolve<ComposeRestart> for State {
   #[instrument(name = "ComposeRestart", skip_all)]
   async fn resolve(
     &self,
-    ComposeRestart { file }: ComposeRestart,
+    ComposeRestart { stack, git_token }: ComposeRestart,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        None,
+        git_token,
+        None,
+        false,
         "compose restart",
-        format!("{docker_compose} restart"),
+        "restart",
       )
       .await,
     )
@@ -78,15 +99,18 @@ impl Resolve<ComposePause> for State {
   #[instrument(name = "ComposePause", skip_all)]
   async fn resolve(
     &self,
-    ComposePause { file }: ComposePause,
+    ComposePause { stack, git_token }: ComposePause,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        None,
+        git_token,
+        None,
+        false,
         "compose pause",
-        format!("{docker_compose} pause"),
+        "pause",
       )
       .await,
     )
@@ -97,15 +121,18 @@ impl Resolve<ComposeUnpause> for State {
   #[instrument(name = "ComposeUnpause", skip_all)]
   async fn resolve(
     &self,
-    ComposeUnpause { file }: ComposeUnpause,
+    ComposeUnpause { stack, git_token }: ComposeUnpause,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        None,
+        git_token,
+        None,
+        false,
         "compose unpause",
-        format!("{docker_compose} unpause"),
+        "unpause",
       )
       .await,
     )
@@ -116,16 +143,23 @@ impl Resolve<ComposeStop> for State {
   #[instrument(name = "ComposeStop", skip_all)]
   async fn resolve(
     &self,
-    ComposeStop { file, timeout }: ComposeStop,
+    ComposeStop {
+      stack,
+      git_token,
+      timeout,
+    }: ComposeStop,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     let maybe_timeout = maybe_timeout(timeout);
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        None,
+        git_token,
+        None,
+        false,
         "compose stop",
-        format!("{docker_compose} stop{maybe_timeout}"),
+        &format!("stop{maybe_timeout}"),
       )
       .await,
     )
@@ -137,27 +171,49 @@ impl Resolve<ComposeDown> for State {
   async fn resolve(
     &self,
     ComposeDown {
-      file,
+      stack,
+      git_token,
       remove_orphans,
       timeout,
     }: ComposeDown,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     let maybe_timeout = maybe_timeout(timeout);
     let maybe_remove_orphans = if remove_orphans {
       " --remove-orphans"
     } else {
       ""
     };
-    Ok(
-      run_stack_command(
-        &file,
-        "compose down",
-        format!("{docker_compose} down{maybe_timeout}{maybe_remove_orphans}"),
-      )
-      .await,
+    let mut res = run_compose_command(
+      &stack,
+      None,
+      git_token,
+      None,
+      false,
+      "compose stop",
+      &format!("down{maybe_timeout}{maybe_remove_orphans}"),
     )
+    .await;
+
+    let root = periphery_config()
+      .stack_dir
+      .join(to_monitor_name(&stack.name));
+
+    // delete root
+    match fs::remove_dir_all(&root).await.with_context(|| {
+      format!("failed to clean up stack directory at {root:?}")
+    }) {
+      Ok(_) => res.logs.push(Log::simple(
+        "cleanup stack directory",
+        format!("deleted directory {root:?}"),
+      )),
+      Err(e) => res.logs.push(Log::error(
+        "cleanup stack directory",
+        format_serror(&e.into()),
+      )),
+    };
+
+    Ok(res)
   }
 }
 
@@ -167,19 +223,25 @@ impl Resolve<ComposeServiceUp> for State {
     &self,
     ComposeServiceUp {
       stack,
+      service,
       git_token,
       registry_token,
-      service,
     }: ComposeServiceUp,
     _: (),
-  ) -> anyhow::Result<ComposeUpResponse> {
-    crate::compose::compose_up(
-      stack,
-      git_token,
-      registry_token,
-      Some(&service),
+  ) -> anyhow::Result<ComposeResponse> {
+    let extra_args = parse_extra_args(&stack.config.extra_args);
+    Ok(
+      run_compose_command(
+        &stack,
+        Some(&service),
+        git_token,
+        registry_token,
+        true,
+        "compose up",
+        &format!("up -d{extra_args} {service}"),
+      )
+      .await,
     )
-    .await
   }
 }
 
@@ -189,15 +251,22 @@ impl Resolve<ComposeServiceStart> for State {
   #[instrument(name = "ComposeServiceStart", skip_all)]
   async fn resolve(
     &self,
-    ComposeServiceStart { file, service }: ComposeServiceStart,
+    ComposeServiceStart {
+      stack,
+      service,
+      git_token,
+    }: ComposeServiceStart,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        Some(&service),
+        git_token,
+        None,
+        false,
         "compose start",
-        format!("{docker_compose} start {service}"),
+        &format!("start {service}"),
       )
       .await,
     )
@@ -210,15 +279,22 @@ impl Resolve<ComposeServiceRestart> for State {
   #[instrument(name = "ComposeServiceRestart", skip_all)]
   async fn resolve(
     &self,
-    ComposeServiceRestart { file, service }: ComposeServiceRestart,
+    ComposeServiceRestart {
+      stack,
+      service,
+      git_token,
+    }: ComposeServiceRestart,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        Some(&service),
+        git_token,
+        None,
+        false,
         "compose restart",
-        format!("{docker_compose} restart {service}"),
+        &format!("restart {service}"),
       )
       .await,
     )
@@ -231,15 +307,22 @@ impl Resolve<ComposeServicePause> for State {
   #[instrument(name = "ComposeServicePause", skip_all)]
   async fn resolve(
     &self,
-    ComposeServicePause { file, service }: ComposeServicePause,
+    ComposeServicePause {
+      stack,
+      service,
+      git_token,
+    }: ComposeServicePause,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        Some(&service),
+        git_token,
+        None,
+        false,
         "compose pause",
-        format!("{docker_compose} pause {service}"),
+        &format!("pause {service}"),
       )
       .await,
     )
@@ -250,15 +333,22 @@ impl Resolve<ComposeServiceUnpause> for State {
   #[instrument(name = "ComposeServiceUnpause", skip_all)]
   async fn resolve(
     &self,
-    ComposeServiceUnpause { file, service }: ComposeServiceUnpause,
+    ComposeServiceUnpause {
+      stack,
+      service,
+      git_token,
+    }: ComposeServiceUnpause,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     Ok(
-      run_stack_command(
-        &file,
-        "compose pause",
-        format!("{docker_compose} unpause {service}"),
+      run_compose_command(
+        &stack,
+        Some(&service),
+        git_token,
+        None,
+        false,
+        "compose unpause",
+        &format!("unpause {service}"),
       )
       .await,
     )
@@ -270,19 +360,23 @@ impl Resolve<ComposeServiceStop> for State {
   async fn resolve(
     &self,
     ComposeServiceStop {
-      file,
+      stack,
       service,
+      git_token,
       timeout,
     }: ComposeServiceStop,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     let maybe_timeout = maybe_timeout(timeout);
     Ok(
-      run_stack_command(
-        &file,
+      run_compose_command(
+        &stack,
+        Some(&service),
+        git_token,
+        None,
+        false,
         "compose stop",
-        format!("{docker_compose} stop{maybe_timeout} {service}"),
+        &format!("stop{maybe_timeout} {service}"),
       )
       .await,
     )
@@ -294,14 +388,14 @@ impl Resolve<ComposeServiceDown> for State {
   async fn resolve(
     &self,
     ComposeServiceDown {
-      file,
+      stack,
       service,
+      git_token,
       remove_orphans,
       timeout,
     }: ComposeServiceDown,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let docker_compose = docker_compose();
+  ) -> anyhow::Result<ComposeResponse> {
     let maybe_timeout = maybe_timeout(timeout);
     let maybe_remove_orphans = if remove_orphans {
       " --remove-orphans"
@@ -309,10 +403,16 @@ impl Resolve<ComposeServiceDown> for State {
       ""
     };
     Ok(
-      run_stack_command(
-        &file,
-        "compose down",
-        format!("{docker_compose} down{maybe_timeout}{maybe_remove_orphans} {service}"),
+      run_compose_command(
+        &stack,
+        Some(&service),
+        git_token,
+        None,
+        false,
+        "compose stop",
+        &format!(
+          "down{maybe_timeout}{maybe_remove_orphans} {service}"
+        ),
       )
       .await,
     )

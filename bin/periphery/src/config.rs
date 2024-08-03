@@ -29,6 +29,7 @@ pub fn periphery_config() -> &'static PeripheryConfig {
     PeripheryConfig {
       port: env.monitor_port.unwrap_or(config.port),
       repo_dir: env.monitor_repo_dir.unwrap_or(config.repo_dir),
+      stack_dir: env.monitor_stack_dir.unwrap_or(config.stack_dir),
       stats_polling_rate: env
         .monitor_stats_polling_rate
         .unwrap_or(config.stats_polling_rate),

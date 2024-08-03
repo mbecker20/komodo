@@ -125,7 +125,7 @@ where
   .await;
 
   if !all_logs_success(&logs) {
-    tracing::warn!("failed to clone repo at {repo_dir:?}");
+    tracing::warn!("failed to clone repo at {repo_dir:?} | {logs:?}");
     return Ok((logs, None, None));
   }
 

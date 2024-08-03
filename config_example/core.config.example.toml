@@ -24,6 +24,18 @@ webhook_secret = "a_random_webhook_secret"
 ## default: empty (none)
 # webhook_base_url = "https://git-webhook.monitor.dev"
 
+## allow or deny user login with username / password
+## default: false
+local_auth = true
+
+# google_oauth.enabled = true
+# google_oauth.id = "your_google_client_id"
+# google_oauth.secret = "your_google_client_secret"
+
+# github_oauth.enabled = true
+# github_oauth.id = "your_github_client_id"
+# github_oauth.secret = "your_github_client_secret"
+
 ## specify the log level of the monitor core application
 ## default: info
 ## options: off, error, warn, info, debug, trace
@@ -74,18 +86,6 @@ webhook_secret = "a_random_webhook_secret"
 ## disables write support on resources in the UI
 ## default: false
 # ui_write_disabled = true
-
-## allow or deny user login with username / password
-## default: false
-local_auth = true
-
-# google_oauth.enabled = true
-# google_oauth.id = "your_google_client_id"
-# google_oauth.secret = "your_google_client_secret"
-
-# github_oauth.enabled = true
-# github_oauth.id = "your_github_client_id"
-# github_oauth.secret = "your_github_client_secret"
 
 ## Configure github webhook app. Enables webhook management apis.
 # github_webhook_app.app_id = 1234455 # Find on the app page.

@@ -42,5 +42,4 @@ serde.workspace = true
 axum.workspace = true
 clap.workspace = true
 envy.workspace = true
-rand.workspace = true
 uuid.workspace = true

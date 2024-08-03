@@ -40,8 +40,6 @@ async fn get_config_json_inner(
   ))
   .await;
 
-  info!("got compose res {res:?}");
-
   // Don't fail the function call here, just log on this maintenance related information.
   fs::remove_dir_all(&dir)
     .await

@@ -17,8 +17,6 @@ use monitor_client::entities::{
 };
 use run_command::async_run_command;
 
-use crate::helpers::get_docker_token;
-
 pub fn docker_client() -> &'static DockerClient {
   static DOCKER_CLIENT: OnceLock<DockerClient> = OnceLock::new();
   DOCKER_CLIENT.get_or_init(Default::default)
@@ -155,7 +153,7 @@ pub async fn docker_login(
   }
   let registry_token = match registry_token {
     Some(token) => token,
-    None => get_docker_token(domain, account)?,
+    None => crate::helpers::registry_token(domain, account)?,
   };
   let log = async_run_command(&format!(
     "docker login {domain} -u {account} -p {registry_token}",

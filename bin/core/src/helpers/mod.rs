@@ -45,6 +45,40 @@ pub fn random_duration(min_ms: u64, max_ms: u64) -> Duration {
   Duration::from_millis(thread_rng().gen_range(min_ms..max_ms))
 }
 
+pub fn git_token(
+  provider_domain: &str,
+  account_username: &str,
+) -> Option<String> {
+  core_config()
+    .git_providers
+    .iter()
+    .find(|provider| provider.domain == provider_domain)
+    .and_then(|provider| {
+      provider
+        .accounts
+        .iter()
+        .find(|account| account.username == account_username)
+        .map(|account| account.token.clone())
+    })
+}
+
+pub fn registry_token(
+  provider_domain: &str,
+  account_username: &str,
+) -> Option<String> {
+  core_config()
+    .docker_registries
+    .iter()
+    .find(|provider| provider.domain == provider_domain)
+    .and_then(|provider| {
+      provider
+        .accounts
+        .iter()
+        .find(|account| account.username == account_username)
+        .map(|account| account.token.clone())
+    })
+}
+
 #[instrument]
 pub async fn remove_from_recently_viewed<T>(resource: T)
 where

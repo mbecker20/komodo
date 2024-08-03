@@ -2,19 +2,8 @@ use monitor_client::entities::{stack::Stack, update::Log};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(ComposeUpResponse)]
-pub struct ComposeUp {
-  /// The stack to deploy
-  pub stack: Stack,
-  /// If provided, use it to login in. Otherwise check periphery local registries.
-  pub git_token: Option<String>,
-  /// If provided, use it to login in. Otherwise check periphery local registries.
-  pub registry_token: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ComposeUpResponse {
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeResponse {
   /// The logs produced by the deploy
   pub logs: Vec<Log>,
   /// whether stack was successfully deployed
@@ -30,46 +19,69 @@ pub struct ComposeUpResponse {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
+pub struct ComposeUp {
+  /// The stack to deploy
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub registry_token: Option<String>,
+}
+
+//
+
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(ComposeResponse)]
 pub struct ComposeStart {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to start
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
 }
 
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeRestart {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to restart
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
 }
 
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposePause {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to pause
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
 }
 
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeUnpause {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to unpause
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
 }
 
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeStop {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to stop
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// The timeout before killing the process. Optional
   pub timeout: Option<i32>,
 }
@@ -77,10 +89,12 @@ pub struct ComposeStop {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeDown {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to bring down
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// Pass `--remove-orphans`.
   /// See https://docs.docker.com/reference/cli/docker/compose/down.
   pub remove_orphans: bool,
@@ -91,7 +105,7 @@ pub struct ComposeDown {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(ComposeUpResponse)]
+#[response(ComposeResponse)]
 pub struct ComposeServiceUp {
   /// The stack to deploy
   pub stack: Stack,
@@ -106,10 +120,12 @@ pub struct ComposeServiceUp {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeServiceStart {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to start
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// The service name
   pub service: String,
 }
@@ -117,10 +133,12 @@ pub struct ComposeServiceStart {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeServiceRestart {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to restart
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// The service name
   pub service: String,
 }
@@ -128,10 +146,12 @@ pub struct ComposeServiceRestart {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeServicePause {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to pause
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// The service name
   pub service: String,
 }
@@ -139,10 +159,12 @@ pub struct ComposeServicePause {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeServiceUnpause {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to unpause
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// The service name
   pub service: String,
 }
@@ -150,10 +172,12 @@ pub struct ComposeServiceUnpause {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeServiceStop {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to stop
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// The service name
   pub service: String,
   /// The timeout before killing the process. Optional
@@ -163,10 +187,12 @@ pub struct ComposeServiceStop {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
+#[response(ComposeResponse)]
 pub struct ComposeServiceDown {
-  /// The compose file contents
-  pub file: String,
+  /// The stack to bring down
+  pub stack: Stack,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
   /// The service name
   pub service: String,
   /// Pass `--remove-orphans`.
