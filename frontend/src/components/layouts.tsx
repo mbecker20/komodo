@@ -33,10 +33,8 @@ export const Layout = () => {
     <>
       <Topbar />
       <div className="container min-h-screen py-24">
-        <div className="flex">
-          <div className="relative">
-            <Sidebar />
-          </div>
+        <Sidebar />
+        <div className="ml-64">
           <Outlet />
         </div>
       </div>
