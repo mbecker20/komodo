@@ -375,17 +375,37 @@ async fn destroy_existing_containers(
         "failed to extract container names from compose file",
       )?;
 
+    let compose_name = match compose.name {
+      Some(name) => name,
+      None => {
+        // Name defaults to parent of compose file
+        let file = run_directory.join(file_path);
+        file
+          .parent()
+          .with_context(|| format!("Unable to get parent directory of compose file for default compose file name. path: {file:?}"))?
+          .file_name()
+          .with_context(|| format!("Unable to get parent directory of compose files name, cannot determine container names. path: {file:?}"))?
+          .to_string_lossy()
+          .to_string()
+      }
+    };
+
+    let services = compose
+      .services
+      .into_iter()
+      .map(|(service_name, config)| StackServiceNames {
+        container_name: config.container_name.unwrap_or_else(|| {
+          format!("{compose_name}-{service_name}")
+        }),
+        service_name,
+      })
+      .collect::<Vec<_>>();
+
     destroy_stack_by_containers(
-      &compose
-        .services
-        .into_iter()
-        .map(|(service_name, config)| StackServiceNames {
-          service_name,
-          container_name: config.container_name,
-        })
-        .collect::<Vec<_>>(),
+      &services,
       service,
       &mut res.logs,
+      false,
     )
     .await?;
   }
@@ -397,6 +417,7 @@ pub async fn destroy_stack_by_containers(
   services: &[StackServiceNames],
   service: Option<String>,
   logs: &mut Vec<Log>,
+  verbose: bool,
 ) -> anyhow::Result<()> {
   let containers = docker_client()
     .list_containers()
@@ -404,19 +425,20 @@ pub async fn destroy_stack_by_containers(
     .context("failed to get container list from the host")?;
 
   if let Some(service) = service {
-    let config = services
+    let StackServiceNames {
+      service_name,
+      container_name,
+    } = services
       .iter()
       .find(|s| s.service_name == service)
       .with_context(|| {
         format!("did not find service {service} in compose file")
       })?;
-    let name = if let Some(name) = &config.container_name {
-      Some(name)
-    } else {
-      let regex = Regex::new(&format!("compose-{service}-[0-9]*$"))
-        .context(
-        "failed to construct service name matching regex",
-      )?;
+    let name = {
+      let regex = compose_container_match_regex(container_name)
+        .with_context(
+          || format!("failed to construct service name matching regex for service {service_name}"),
+        )?;
       containers
         .iter()
         .find(|container| regex.is_match(&container.name))
@@ -433,26 +455,21 @@ pub async fn destroy_stack_by_containers(
         return Err(anyhow!(
           "Failed to destroy container {name}. Stopping."
         ));
+      } else if verbose {
+        logs.push(log);
       }
     }
+    return Ok(());
   }
 
   let to_stop = services.iter().filter_map(
-    |StackServiceNames {
-       service_name,
-       container_name,
-     }| {
-      if let Some(name) = container_name {
-        Some(name)
-      } else {
-        let regex =
-          Regex::new(&format!("compose-{service_name}-[0-9]*$"))
-            .ok()?;
-        containers
-          .iter()
-          .find(|container| regex.is_match(&container.name))
-          .map(|container| &container.name)
-      }
+    |StackServiceNames { container_name, .. }| {
+      let regex =
+        compose_container_match_regex(container_name).ok()?;
+      containers
+        .iter()
+        .find(|container| regex.is_match(&container.name))
+        .map(|container| &container.name)
     },
   );
   for name in to_stop {
@@ -466,8 +483,19 @@ pub async fn destroy_stack_by_containers(
       return Err(anyhow!(
         "Failed to destroy container {name}. Stopping."
       ));
+    } else if verbose {
+      logs.push(log);
     }
   }
 
   Ok(())
+}
+
+fn compose_container_match_regex(
+  container_name: &str,
+) -> anyhow::Result<Regex> {
+  let regex = format!("^{container_name}-?[0-9]*$");
+  Regex::new(&regex).with_context(|| {
+    format!("failed to construct valid regex from {regex}")
+  })
 }

@@ -67,7 +67,10 @@ export const DestroyStack = ({ id }: { id: string }) => {
     { refetchInterval: 5000 }
   ).data?.destroying;
 
-  if (state !== Types.StackState.Running && !destroying) {
+  if (
+    state === undefined ||
+    [Types.StackState.Unknown, Types.StackState.Down].includes(state)
+  ) {
     return null;
   }
 
@@ -168,7 +171,7 @@ export const PauseUnpauseStack = ({ id }: { id: string }) => {
 export const RefreshStackCache = ({ id }: { id: string }) => {
   const inv = useInvalidate();
   const { mutate, isPending } = useWrite("RefreshStackCache", {
-    onSuccess: () => inv(["GetStack", { stack: id }]),
+    onSuccess: () => inv(["ListStacks"], ["GetStack", { stack: id }]),
   });
   const pending = isPending;
   return (

@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
-use formatting::format_serror;
+use formatting::{bold, format_serror, muted};
 use monitor_client::entities::{to_monitor_name, update::Log};
 use periphery_client::api::compose::*;
 use resolver_api::Resolve;
@@ -27,6 +27,7 @@ impl Resolve<GetComposeInfo, ()> for State {
   ) -> anyhow::Result<GetComposeInfoReponse> {
     let file_missing = periphery_config()
       .stack_dir
+      .join(to_monitor_name(&name))
       .join(run_directory)
       .join(file_path)
       .try_exists()
@@ -199,7 +200,8 @@ impl Resolve<ComposeDestroy> for State {
   ) -> anyhow::Result<Vec<Log>> {
     let mut logs = Vec::new();
     if let Err(e) =
-      destroy_stack_by_containers(&services, None, &mut logs).await
+      destroy_stack_by_containers(&services, None, &mut logs, true)
+        .await
     {
       logs.push(Log::error(
         "destroy stack by containers",
@@ -208,6 +210,15 @@ impl Resolve<ComposeDestroy> for State {
             "failed to destroy stack with docker container rm",
           )
           .into(),
+        ),
+      ))
+    } else {
+      logs.push(Log::simple(
+        "destroy stack",
+        format!(
+          "{}: Stack containers have been destroyed using {}",
+          muted("INFO"),
+          bold("docker container rm")
         ),
       ))
     };

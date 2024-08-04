@@ -120,8 +120,21 @@ pub struct StackInfo {
 pub struct StackServiceNames {
   /// The name of the service
   pub service_name: String,
-  /// Only defined if compose file explicitly uses container_name
-  pub container_name: Option<String>,
+  /// Will either be the declared container_name in the compose file,
+  /// or a pattern to match auto named containers.
+  /// 
+  /// Auto named containers are composed of three parts:
+  /// 
+  /// 1. The name of the compose stack (top level name field of compose file).
+  ///    This defaults to the name of the parent folder of the compose file.
+  /// 2. The service name
+  /// 3. The replica number
+  /// 
+  /// Example: stacko-mongo-1.
+  /// 
+  /// This stores only 1. and 2., ie stacko-mongo.
+  /// Containers will be matched via regex like `^container_name-?[0-9]*$``
+  pub container_name: String,
 }
 
 #[typeshare(serialized_as = "Partial<StackConfig>")]
@@ -346,6 +359,8 @@ impl super::resource::AddFilters for StackQuerySpecifics {
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ComposeFile {
+  /// If not provided, will default to the parent folder holding the compose file.
+  pub name: Option<String>,
   #[serde(default)]
   pub services: HashMap<String, ComposeService>,
 }

@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use async_timing_util::{wait_until_timelength, Timelength};
 use monitor_client::{
   api::write::RefreshStackCache,
@@ -10,6 +10,7 @@ use monitor_client::{
   },
 };
 use mungos::find::find_collect;
+use regex::Regex;
 use resolver_api::Resolve;
 
 use crate::{
@@ -89,4 +90,9 @@ pub async fn get_stack_and_server(
   }
 
   Ok((stack, server))
+}
+
+pub fn compose_container_match_regex(container_name: &str) -> anyhow::Result<Regex> {
+  let regex = format!("^{container_name}-?[0-9]*$");
+  Regex::new(&regex).with_context(|| format!("failed to construct valid regex from {regex}"))
 }

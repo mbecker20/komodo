@@ -67,6 +67,7 @@ pub struct Update {
   /// - `Queued`
   /// - `InProgress`
   /// - `Complete`
+  #[cfg_attr(feature = "mongo", index)]
   pub status: UpdateStatus,
   /// An optional version on the update, ie build version or deployed version.
   #[serde(default, skip_serializing_if = "Version::is_none")]

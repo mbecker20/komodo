@@ -5,11 +5,11 @@ use mongo_indexed::Document;
 use monitor_client::entities::{
   permission::{Permission, PermissionLevel, UserTarget},
   server::Server,
-  update::{ResourceTarget, Update},
+  update::{Log, ResourceTarget, Update},
   user::User,
   EnvironmentVar,
 };
-use mungos::mongodb::bson::{doc, Bson};
+use mungos::mongodb::bson::{doc, to_document, Bson};
 use periphery_client::PeripheryClient;
 use query::get_global_variables;
 use rand::{thread_rng, Rng};
@@ -237,4 +237,33 @@ pub async fn interpolate_variables_secrets_into_environment(
   }
 
   Ok(secret_replacers)
+}
+
+/// Run on startup, as no updates should be in progress on startup
+pub async fn startup_in_progress_update_cleanup() {
+  let log = Log::error(
+    "monitor shutdown",
+    String::from("Monitor shutdown during execution. If this is a build, the builder may not have been terminated.")
+  );
+  // This static log won't fail to serialize, unwrap ok.
+  let log = to_document(&log).unwrap();
+  if let Err(e) = db_client()
+    .await
+    .updates
+    .update_many(
+      doc! { "status": "InProgress" },
+      doc! {
+        "$set": {
+          "status": "Complete",
+          "success": false,
+        },
+        "$push": {
+          "logs": log
+        }
+      },
+    )
+    .await
+  {
+    error!("failed to cleanup in progress updates on startup | {e:#}")
+  }
 }

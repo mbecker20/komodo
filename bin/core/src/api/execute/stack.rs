@@ -3,17 +3,12 @@ use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
-    permission::PermissionLevel,
-    stack::{ComposeFile, StackInfo, StackServiceNames},
-    update::Update,
+    permission::PermissionLevel, stack::StackInfo, update::Update,
     user::User,
   },
 };
 use mungos::mongodb::bson::{doc, to_document};
-use periphery_client::api::compose::{
-  ComposeDestroy, ComposeExecution, ComposeExecutionResponse,
-  ComposeUp, ComposeUpResponse,
-};
+use periphery_client::api::compose::*;
 use resolver_api::Resolve;
 
 use crate::{
@@ -101,7 +96,11 @@ impl Resolve<DeployStack, (User, Update)> for State {
         &file_contents
       {
         let (json, json_error) = get_config_json(contents).await;
-        match extract_services(contents) {
+        match extract_services(
+          contents,
+          &stack.config.run_directory,
+          &stack.config.file_path,
+        ) {
           Ok(services) => (services, json, json_error),
           Err(e) => {
             update.push_error_log(
@@ -368,8 +367,8 @@ impl Resolve<DestroyStack, (User, Update)> for State {
     let ComposeExecutionResponse { file_missing, log } = periphery
       .request(ComposeExecution {
         name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path: stack.config.file_path,
+        run_directory: stack.config.run_directory.clone(),
+        file_path: stack.config.file_path.clone(),
         command: format!(
           "down{maybe_timeout}{maybe_remove_orphans}{service}"
         ),
@@ -392,15 +391,12 @@ impl Resolve<DestroyStack, (User, Update)> for State {
               .context("Stack cached services are empty, and cannot get file contents, so do not know which containers to destroy")
           );
         };
-        serde_yaml::from_str::<ComposeFile>(&file_contents)
-          .context("failed to extract services from file_contents")?
-          .services
-          .into_iter()
-          .map(|(service_name, config)| StackServiceNames {
-            service_name,
-            container_name: config.container_name,
-          })
-          .collect()
+        extract_services(
+          &file_contents,
+          &stack.config.run_directory,
+          &stack.config.file_path,
+        )
+        .context("failed to extract services")?
       } else {
         stack.info.services
       };

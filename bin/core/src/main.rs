@@ -5,7 +5,8 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
-use state::{db_client, jwt_client};
+use helpers::startup_in_progress_update_cleanup;
+use state::jwt_client;
 use tower_http::{
   cors::{Any, CorsLayer},
   services::{ServeDir, ServeFile},
@@ -32,8 +33,8 @@ async fn app() -> anyhow::Result<()> {
   info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
   info!("config: {:?}", config.sanitized());
 
-  // init db_client to crash on failure
-  db_client().await;
+  // includes init db_client check to crash on db init failure
+  startup_in_progress_update_cleanup().await;
   // init jwt client to crash on failure
   jwt_client();
 

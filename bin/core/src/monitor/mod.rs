@@ -8,16 +8,18 @@ use monitor_client::entities::{
     stats::{ServerHealth, SystemStats},
     Server, ServerState,
   },
-  stack::{Stack, StackState},
+  stack::{Stack, StackServiceNames, StackState},
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api::{self, git::GetLatestCommit};
-use regex::Regex;
 use serror::Serror;
 
 use crate::{
   config::core_config,
-  helpers::{periphery_client, query::get_stack_stack_from_containers},
+  helpers::{
+    periphery_client, query::get_stack_stack_from_containers,
+    stack::compose_container_match_regex,
+  },
   monitor::{alert::check_alerts, record::record_server_stats},
   resource,
   state::{
@@ -253,21 +255,16 @@ pub async fn update_cache_for_server(server: &Server) {
         let containers = containers
           .iter()
           .filter(|container| {
-            stack.info.services.iter().any(|service| {
-              if let Some(name) = &service.container_name {
-                &container.name == name
-              } else {
-                match Regex::new(&format!(
-                  "compose-{}-[0-9]*$",
-                  service.service_name
-                )).with_context(|| format!("failed to construct container name matching regex for service {}", service.service_name)) {
-                  Ok(regex) => regex,
-                  Err(e) => {
-                    warn!("{e:#}");
-                    return false
-                  }
-                }.is_match(&container.name)
-              }
+            stack.info.services.iter().any(|StackServiceNames { service_name, container_name }| {
+              match compose_container_match_regex(container_name)
+                .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+              {
+                Ok(regex) => regex,
+                Err(e) => {
+                  warn!("{e:#}");
+                  return false
+                }
+              }.is_match(&container.name)
             })
           })
           .cloned()

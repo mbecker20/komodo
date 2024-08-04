@@ -8,7 +8,7 @@ use monitor_client::entities::{
   deployment::{ContainerSummary, Deployment, DeploymentState},
   permission::PermissionLevel,
   server::{Server, ServerState},
-  stack::{Stack, StackState},
+  stack::{Stack, StackServiceNames, StackState},
   tag::Tag,
   update::{ResourceTargetVariant, Update},
   user::{admin_service_user, User},
@@ -23,9 +23,10 @@ use mungos::{
     options::FindOneOptions,
   },
 };
-use regex::Regex;
 
 use crate::{config::core_config, resource, state::db_client};
+
+use super::stack::compose_container_match_regex;
 
 #[instrument(level = "debug")]
 // user: Id or username
@@ -104,9 +105,9 @@ pub fn get_stack_stack_from_containers(
   if paused {
     return StackState::Paused;
   }
-  let stopped = containers.iter().all(|container| {
-    container.state == DeploymentState::Exited
-  });
+  let stopped = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Exited);
   if stopped {
     return StackState::Stopped;
   }
@@ -142,21 +143,16 @@ pub async fn get_stack_state(
     .await?
     .into_iter()
     .filter(|container| {
-      stack.info.services.iter().any(|service| {
-        if let Some(name) = &service.container_name {
-          &container.name == name
-        } else {
-          match Regex::new(&format!(
-            "compose-{}-[0-9]*$",
-            service.service_name
-          )).with_context(|| format!("failed to construct container name matching regex for service {}", service.service_name)) {
-            Ok(regex) => regex,
-            Err(e) => {
-              warn!("{e:#}");
-              return false
-            }
-          }.is_match(&container.name)
-        }
+      stack.info.services.iter().any(|StackServiceNames { service_name, container_name }| {
+        match compose_container_match_regex(container_name)
+          .with_context(|| format!("failed to construct container name regex for service {service_name}")) 
+        {
+          Ok(regex) => regex,
+          Err(e) => {
+            warn!("{e:#}");
+            return false
+          }
+        }.is_match(&container.name)
       })
     })
     .collect::<Vec<_>>();
