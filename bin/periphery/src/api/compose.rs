@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{to_monitor_name, update::Log};
@@ -6,7 +6,9 @@ use periphery_client::api::compose::*;
 use resolver_api::Resolve;
 
 use crate::{
-  compose::{compose_up, docker_compose},
+  compose::{
+    compose_up, destroy_stack_by_containers, docker_compose,
+  },
   config::periphery_config,
   helpers::log_grep,
   State,
@@ -20,11 +22,19 @@ impl Resolve<GetComposeInfo, ()> for State {
       name,
       run_directory,
       file_path,
-      check_repo,
     }: GetComposeInfo,
     _: (),
   ) -> anyhow::Result<GetComposeInfoReponse> {
-    todo!()
+    let file_missing = periphery_config()
+      .stack_dir
+      .join(run_directory)
+      .join(file_path)
+      .try_exists()
+      .map(|exists| !exists)
+      .context(
+        "failed to reliably see whether the file is missing",
+      )?;
+    Ok(GetComposeInfoReponse { file_missing })
   }
 }
 
@@ -143,7 +153,7 @@ impl Resolve<ComposeUp> for State {
 //
 
 impl Resolve<ComposeExecution> for State {
-  #[instrument(name = "ComposeCommand", skip(self))]
+  #[instrument(name = "ComposeExecution", skip(self))]
   async fn resolve(
     &self,
     ComposeExecution {
@@ -177,5 +187,30 @@ impl Resolve<ComposeExecution> for State {
       file_missing: false,
       log: Some(log),
     })
+  }
+}
+
+impl Resolve<ComposeDestroy> for State {
+  #[instrument(name = "ComposeDestroy", skip(self))]
+  async fn resolve(
+    &self,
+    ComposeDestroy { services }: ComposeDestroy,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let mut logs = Vec::new();
+    if let Err(e) =
+      destroy_stack_by_containers(&services, None, &mut logs).await
+    {
+      logs.push(Log::error(
+        "destroy stack by containers",
+        format_serror(
+          &e.context(
+            "failed to destroy stack with docker container rm",
+          )
+          .into(),
+        ),
+      ))
+    };
+    Ok(logs)
   }
 }

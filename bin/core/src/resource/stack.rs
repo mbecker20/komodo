@@ -63,6 +63,7 @@ impl super::MonitorResource for Stack {
           .map(|service| service.service_name)
           .collect(),
         server_id: stack.config.server_id,
+        file_missing: stack.info.file_missing,
         git_provider: stack.config.git_provider,
         repo: stack.config.repo,
         branch: stack.config.branch,

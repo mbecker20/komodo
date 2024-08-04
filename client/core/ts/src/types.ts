@@ -1424,6 +1424,8 @@ export enum StackState {
 	Stopped = "Stopped",
 	/** All containers are restarting */
 	Restarting = "Restarting",
+	/** All containers are dead */
+	Dead = "Dead",
 	/** The containers are in a mix of states */
 	Unhealthy = "Unhealthy",
 	/** The stack is not deployed */
@@ -1445,6 +1447,11 @@ export interface StackListItemInfo {
 	state: StackState;
 	/** The service names that are part of the stack */
 	services: string[];
+	/**
+	 * Whether the compose file is missing on the host.
+	 * If true, this is an unhealthy state.
+	 */
+	file_missing: boolean;
 	/** Latest short commit hash, or null. */
 	latest_hash?: string;
 	/** Latest commit message, or null. */
@@ -3285,6 +3292,8 @@ export interface GetStacksSummaryResponse {
 	stopped: number;
 	/** The number of stacks with Restarting state. */
 	restarting: number;
+	/** The number of stacks with Dead state. */
+	dead: number;
 	/** The number of stacks with Unhealthy state. */
 	unhealthy: number;
 	/** The number of stacks with Down state. */
@@ -4980,6 +4989,7 @@ export type WriteRequest =
 	| { type: "CopyStack", params: CopyStack }
 	| { type: "DeleteStack", params: DeleteStack }
 	| { type: "UpdateStack", params: UpdateStack }
+	| { type: "RefreshStackCache", params: RefreshStackCache }
 	| { type: "CreateStackWebhook", params: CreateStackWebhook }
 	| { type: "DeleteStackWebhook", params: DeleteStackWebhook }
 	| { type: "CreateTag", params: CreateTag }

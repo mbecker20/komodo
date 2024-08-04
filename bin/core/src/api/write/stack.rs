@@ -160,7 +160,6 @@ impl Resolve<RefreshStackCache, User> for State {
         name: stack.name.clone(),
         run_directory: stack.config.run_directory.clone(),
         file_path: stack.config.file_path.clone(),
-        check_repo: file_contents_empty,
       })
       .await
       .map(|res| res.file_missing)
@@ -226,7 +225,8 @@ impl Resolve<RefreshStackCache, User> for State {
         match extract_services(&stack.config.file_contents) {
           Ok(services) => services,
           Err(e) => {
-            //
+            // let mut update = make_update(&stack, Operation::RefreshStackCache, user)
+            warn!("failed to extract stack services, things won't works correctly. stack: {} | {e:#}", stack.name);
             stack.info.services
           }
         }

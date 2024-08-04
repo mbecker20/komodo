@@ -51,6 +51,8 @@ pub struct Env {
   pub monitor_jwt_valid_for: Option<Timelength>,
   /// Override `sync_directory`
   pub monitor_sync_directory: Option<String>,
+  /// Override `sync_poll_interval`
+  pub monitor_sync_poll_interval: Option<Timelength>,
   /// Override `stack_directory`
   pub monitor_stack_directory: Option<String>,
   /// Override `stack_poll_interval`
@@ -204,11 +206,16 @@ fn default_config_path() -> String {
 /// ## Default: `1-day`.
 /// ## Options: `1-hr`, `12-hr`, `1-day`, `3-day`, `1-wk`, `2-wk`, `30-day`.
 /// jwt_valid_for = "1-day"
-///
-/// ## Interval at which to poll stacks for any updates / automated actions.
+/// 
+/// ## Interval at which to poll Stacks for any updates / automated actions.
 /// ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
 /// ## Default: `5-min`.
 /// stack_poll_interval = "1-min"
+/// 
+/// ## Interval at which to poll Syncs for any updates / automated actions.
+/// ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+/// ## Default: `5-min`.
+/// sync_poll_interval = "1-min"
 ///
 /// ## Controls the granularity of the system stats collection by monitor core.
 /// ## Options: `5-sec`, `15-sec`, `30-sec`, `1-min`, `2-min`, `5-min`.
@@ -350,6 +357,12 @@ pub struct CoreConfig {
   #[serde(default = "default_sync_directory")]
   pub sync_directory: PathBuf,
 
+  /// Interval at which to poll syncs for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_poll_interval")]
+  pub sync_poll_interval: Timelength,
+
   /// Specify the directory used to clone stack repos. The default is fine when using a container.
   /// This directory has no need for persistence, so no need to mount it.
   /// Default: `/stacks`
@@ -359,7 +372,7 @@ pub struct CoreConfig {
   /// Interval at which to poll stacks for any updates / automated actions.
   /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
   /// Default: `5-min`.  
-  #[serde(default = "default_stack_poll_interval")]
+  #[serde(default = "default_poll_interval")]
   pub stack_poll_interval: Timelength,
 
   /// Interval at which to collect server stats and send any alerts.
@@ -477,7 +490,7 @@ fn default_stack_directory() -> PathBuf {
   PathBuf::from_str("/stacks").unwrap()
 }
 
-fn default_stack_poll_interval() -> Timelength {
+fn default_poll_interval() -> Timelength {
   Timelength::FiveMinutes
 }
 
@@ -496,6 +509,7 @@ impl CoreConfig {
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_valid_for: config.jwt_valid_for,
       sync_directory: config.sync_directory,
+      sync_poll_interval: config.sync_poll_interval,
       stack_directory: config.stack_directory,
       stack_poll_interval: config.stack_poll_interval,
       monitoring_interval: config.monitoring_interval,

@@ -20,6 +20,7 @@ use super::get_stack_and_server;
 
 pub trait ExecuteCompose {
   type Extras;
+
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
@@ -209,7 +210,7 @@ impl ExecuteCompose for DestroyStack {
   }
 }
 
-fn maybe_timeout(timeout: Option<i32>) -> String {
+pub fn maybe_timeout(timeout: Option<i32>) -> String {
   if let Some(timeout) = timeout {
     format!(" --timeout {timeout}")
   } else {

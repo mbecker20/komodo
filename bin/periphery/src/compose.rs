@@ -7,7 +7,7 @@ use monitor_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
   environment_vars_to_string,
-  stack::{ComposeFile, Stack},
+  stack::{ComposeFile, Stack, StackServiceNames},
   to_monitor_name,
   update::Log,
   CloneArgs,
@@ -370,72 +370,102 @@ async fn destroy_existing_containers(
     // #############################
     // # Destroy by container name #
     // #############################
-    let containers = docker_client()
-      .list_containers()
-      .await
-      .context("failed to get container list from the host")?;
     let compose = serde_yaml::from_str::<ComposeFile>(file_contents)
       .context(
         "failed to extract container names from compose file",
       )?;
 
-    if let Some(service) = service {
-      let config =
-        compose.services.get(&service).with_context(|| {
-          format!("did not find service {service} in compose file")
-        })?;
-      let name = if let Some(name) = &config.container_name {
-        Some(name)
-      } else {
-        let regex = Regex::new(&format!("compose-{service}-[0-9]*$"))
-          .context(
-            "failed to construct service name matching regex",
-          )?;
-        containers
-          .iter()
-          .find(|container| regex.is_match(&container.name))
-          .map(|container| &container.name)
-      };
-      if let Some(name) = name {
-        let log = run_monitor_command(
-          "destroy container",
-          format!("docker stop {name} && docker container rm {name}"),
-        )
-        .await;
-        if !log.success {
-          res.logs.push(log);
-          return Err(anyhow!(
-            "Failed to destroy container {name}. Stopping."
-          ));
-        }
-      }
-    }
+    destroy_stack_by_containers(
+      &compose
+        .services
+        .into_iter()
+        .map(|(service_name, config)| StackServiceNames {
+          service_name,
+          container_name: config.container_name,
+        })
+        .collect::<Vec<_>>(),
+      service,
+      &mut res.logs,
+    )
+    .await?;
+  }
 
-    let to_stop =
-      compose.services.iter().filter_map(|(service, config)| {
-        if let Some(name) = &config.container_name {
-          Some(name)
-        } else {
-          let regex =
-            Regex::new(&format!("compose-{service}-[0-9]*$")).ok()?;
-          containers
-            .iter()
-            .find(|container| regex.is_match(&container.name))
-            .map(|container| &container.name)
-        }
-      });
-    for name in to_stop {
+  Ok(())
+}
+
+pub async fn destroy_stack_by_containers(
+  services: &[StackServiceNames],
+  service: Option<String>,
+  logs: &mut Vec<Log>,
+) -> anyhow::Result<()> {
+  let containers = docker_client()
+    .list_containers()
+    .await
+    .context("failed to get container list from the host")?;
+
+  if let Some(service) = service {
+    let config = services
+      .iter()
+      .find(|s| s.service_name == service)
+      .with_context(|| {
+        format!("did not find service {service} in compose file")
+      })?;
+    let name = if let Some(name) = &config.container_name {
+      Some(name)
+    } else {
+      let regex = Regex::new(&format!("compose-{service}-[0-9]*$"))
+        .context(
+        "failed to construct service name matching regex",
+      )?;
+      containers
+        .iter()
+        .find(|container| regex.is_match(&container.name))
+        .map(|container| &container.name)
+    };
+    if let Some(name) = name {
       let log = run_monitor_command(
         "destroy container",
         format!("docker stop {name} && docker container rm {name}"),
       )
       .await;
       if !log.success {
-        res.logs.push(log);
+        logs.push(log);
         return Err(anyhow!(
           "Failed to destroy container {name}. Stopping."
         ));
       }
+    }
+  }
+
+  let to_stop = services.iter().filter_map(
+    |StackServiceNames {
+       service_name,
+       container_name,
+     }| {
+      if let Some(name) = container_name {
+        Some(name)
+      } else {
+        let regex =
+          Regex::new(&format!("compose-{service_name}-[0-9]*$"))
+            .ok()?;
+        containers
+          .iter()
+          .find(|container| regex.is_match(&container.name))
+          .map(|container| &container.name)
+      }
+    },
+  );
+  for name in to_stop {
+    let log = run_monitor_command(
+      "destroy container",
+      format!("docker stop {name} && docker container rm {name}"),
+    )
+    .await;
+    if !log.success {
+      logs.push(log);
+      return Err(anyhow!(
+        "Failed to destroy container {name}. Stopping."
+      ));
     }
   }
 

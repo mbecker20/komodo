@@ -86,10 +86,12 @@ pub enum PeripheryRequest {
   PruneContainers(PruneContainers),
 
   // Compose
-  ComposeUp(ComposeUp),
-  ComposeExecution(ComposeExecution),
+  GetComposeInfo(GetComposeInfo),
   GetComposeServiceLog(GetComposeServiceLog),
   GetComposeServiceLogSearch(GetComposeServiceLogSearch),
+  ComposeUp(ComposeUp),
+  ComposeExecution(ComposeExecution),
+  ComposeDestroy(ComposeDestroy),
 
   // Networks
   CreateNetwork(CreateNetwork),

@@ -126,6 +126,7 @@ pub enum WriteRequest {
   CopyStack(CopyStack),
   DeleteStack(DeleteStack),
   UpdateStack(UpdateStack),
+  RefreshStackCache(RefreshStackCache),
   CreateStackWebhook(CreateStackWebhook),
   DeleteStackWebhook(DeleteStackWebhook),
 

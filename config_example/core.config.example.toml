@@ -64,6 +64,16 @@ local_auth = true
 ## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
 # jwt_valid_for = "3-day"
 
+## Interval at which to poll Stacks for any updates / automated actions.
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# stack_poll_interval = "1-min"
+
+## Interval at which to poll Syncs for any updates / automated actions.
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# sync_poll_interval = "1-min"
+
 ## controls the granularity of the system stats collection by monitor core
 ## default: 15-sec
 ## options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min

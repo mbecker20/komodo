@@ -15,10 +15,17 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { StackDashboard } from "./dashboard";
 import { useServer } from "../server";
 import { Types } from "@monitor/client";
-import { DeployStack, DestroyStack } from "./actions";
+import {
+  DeployStack,
+  DestroyStack,
+  PauseUnpauseStack,
+  RefreshStackCache,
+  StartStopStack,
+} from "./actions";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { StackInfo } from "./info";
+import { Badge } from "@ui/badge";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -88,10 +95,37 @@ export const StackComponents: RequiredResourceComponents = {
         </Card>
       );
     },
+    FileMissing: ({ id }) => {
+      const info = useStack(id)?.info;
+      if (!info?.file_missing || info?.state === Types.StackState.Down) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 bg-destructive/75 hover:bg-destructive transition-colors cursor-pointer">
+              <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                File Missing
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid gap-2">
+              The compose file is not on the host. Redeploy the Stack to access
+              other actions.
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
     Deployed: ({ id }) => {
       const info = useStack(id)?.info;
-      if (!info?.deployed_hash || !info?.deployed_message) {
-        return null
+      if (
+        info?.file_missing ||
+        !info?.deployed_hash ||
+        !info?.deployed_message
+      ) {
+        return null;
       }
       return (
         <HoverCard openDelay={200}>
@@ -104,7 +138,12 @@ export const StackComponents: RequiredResourceComponents = {
           </HoverCardTrigger>
           <HoverCardContent align="start">
             <div className="grid">
-              <div className="text-muted-foreground">commit message:</div>
+              <Badge
+                variant="secondary"
+                className="w-fit text-muted-foreground"
+              >
+                commit message
+              </Badge>
               {info.deployed_message}
             </div>
           </HoverCardContent>
@@ -113,7 +152,12 @@ export const StackComponents: RequiredResourceComponents = {
     },
     Latest: ({ id }) => {
       const info = useStack(id)?.info;
-      if (!info?.latest_hash || !info?.latest_message) {
+      if (
+        info?.file_missing ||
+        !info?.latest_hash ||
+        !info?.latest_message ||
+        info?.latest_hash === info?.deployed_hash
+      ) {
         return null;
       }
       return (
@@ -127,7 +171,12 @@ export const StackComponents: RequiredResourceComponents = {
           </HoverCardTrigger>
           <HoverCardContent align="start">
             <div className="grid">
-              <div className="text-muted-foreground">commit message:</div>
+              <Badge
+                variant="secondary"
+                className="w-fit text-muted-foreground"
+              >
+                commit message
+              </Badge>
               {info.latest_message}
             </div>
           </HoverCardContent>
@@ -170,7 +219,10 @@ export const StackComponents: RequiredResourceComponents = {
   },
 
   Actions: {
+    RefreshStackCache,
     DeployStack,
+    PauseUnpauseStack,
+    StartStopStack,
     DestroyStack,
   },
 

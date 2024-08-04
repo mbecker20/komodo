@@ -1,7 +1,7 @@
 import { ActionButton, ActionWithDialog } from "@components/util";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { sync_no_changes } from "@lib/utils";
-import { Loader2, RefreshCcw, SquarePlay } from "lucide-react";
+import { RefreshCcw, SquarePlay } from "lucide-react";
 
 export const RefreshSync = ({ id }: { id: string }) => {
   const inv = useInvalidate();
@@ -12,13 +12,7 @@ export const RefreshSync = ({ id }: { id: string }) => {
   return (
     <ActionButton
       title="Refresh"
-      icon={
-        pending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <RefreshCcw className="w-4 h-4" />
-        )
-      }
+      icon={<RefreshCcw className="w-4 h-4" />}
       onClick={() => mutate({ sync: id })}
       disabled={pending}
       loading={pending}

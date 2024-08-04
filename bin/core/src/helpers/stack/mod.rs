@@ -31,40 +31,43 @@ pub fn spawn_stack_refresh_loop() {
     .try_into()
     .expect("Invalid stack poll interval");
   tokio::spawn(async move {
-    let db = db_client().await;
-    let user = stack_user();
+    refresh_stacks().await;
     loop {
       wait_until_timelength(interval, 3000).await;
-      let Ok(stacks) =
-        find_collect(&db.stacks, None, None).await.inspect_err(|e| {
-          warn!(
-            "failed to get stacks from db in refresh task | {e:#}"
-          )
-        })
-      else {
-        continue;
-      };
-      for stack in stacks {
-        State
-          .resolve(
-            RefreshStackCache { stack: stack.id },
-            user.clone(),
-          )
-          .await
-          .inspect_err(|e| {
-            warn!("failed to refresh stack cache in refresh task | stack: {} | {e:#}", stack.name)
-          })
-          .ok();
-      }
+      refresh_stacks().await;
     }
   });
+}
+
+async fn refresh_stacks() {
+  let Ok(stacks) =
+    find_collect(&db_client().await.stacks, None, None)
+      .await
+      .inspect_err(|e| {
+        warn!("failed to get stacks from db in refresh task | {e:#}")
+      })
+  else {
+    return;
+  };
+  for stack in stacks {
+    State
+      .resolve(
+        RefreshStackCache { stack: stack.id },
+        stack_user().clone(),
+      )
+      .await
+      .inspect_err(|e| {
+        warn!("failed to refresh stack cache in refresh task | stack: {} | {e:#}", stack.name)
+      })
+      .ok();
+  }
 }
 
 pub async fn get_stack_and_server(
   stack: &str,
   user: &User,
   permission_level: PermissionLevel,
-  block_if_server_unreachable: bool
+  block_if_server_unreachable: bool,
 ) -> anyhow::Result<(Stack, Server)> {
   let stack = resource::get_check_permissions::<Stack>(
     stack,

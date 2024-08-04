@@ -7,8 +7,8 @@ export const StackInfo = ({ id, titleOther }: { id: string; titleOther: ReactNod
 	return (
     <Section titleOther={titleOther}>
       <div>file missing: {stack?.info?.file_missing ? "true" : "false"}</div>
-      <div>deployed contents: {stack?.info?.deployed_contents}</div>
-      <div>deployed json: {stack?.info?.deployed_json}</div>
+      <pre>deployed contents: {stack?.info?.deployed_contents}</pre>
+      <pre>deployed json: {stack?.info?.deployed_json}</pre>
       <div>deployed message: {stack?.info?.deployed_message}</div>
 
       <pre>latest contents: {stack?.info?.remote_contents}</pre>

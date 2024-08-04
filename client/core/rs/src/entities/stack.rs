@@ -31,6 +31,9 @@ pub struct StackListItemInfo {
   pub state: StackState,
   /// The service names that are part of the stack
   pub services: Vec<String>,
+  /// Whether the compose file is missing on the host. 
+  /// If true, this is an unhealthy state.
+  pub file_missing: bool,
   /// Latest short commit hash, or null.
   pub latest_hash: Option<String>,
   /// Latest commit message, or null.

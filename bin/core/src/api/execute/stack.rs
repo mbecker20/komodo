@@ -1,22 +1,29 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
-    permission::PermissionLevel, stack::StackInfo, update::Update,
+    permission::PermissionLevel,
+    stack::{ComposeFile, StackInfo, StackServiceNames},
+    update::Update,
     user::User,
   },
 };
 use mungos::mongodb::bson::{doc, to_document};
-use periphery_client::api::compose::{ComposeUp, ComposeUpResponse};
+use periphery_client::api::compose::{
+  ComposeDestroy, ComposeExecution, ComposeExecutionResponse,
+  ComposeUp, ComposeUpResponse,
+};
 use resolver_api::Resolve;
 
 use crate::{
   helpers::{
     interpolate_variables_secrets_into_environment, periphery_client,
     stack::{
-      execute::execute_compose, get_stack_and_server,
-      json::get_config_json, services::extract_services,
+      execute::{execute_compose, maybe_timeout},
+      get_stack_and_server,
+      json::get_config_json,
+      services::extract_services,
     },
     update::update_update,
   },
@@ -324,21 +331,96 @@ impl Resolve<DestroyStack, (User, Update)> for State {
       stop_time,
       service,
     }: DestroyStack,
-    (user, update): (User, Update),
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let no_service = service.is_none();
-    execute_compose::<DestroyStack>(
+    let (stack, server) = get_stack_and_server(
       &stack,
-      service,
       &user,
-      |state| {
-        if no_service {
-          state.destroying = true
-        }
-      },
-      update,
-      (stop_time, remove_orphans),
+      PermissionLevel::Execute,
+      true,
     )
-    .await
+    .await?;
+
+    // get the action state for the stack (or insert default).
+    let action_state =
+      action_states().stack.get_or_insert_default(&stack.id).await;
+
+    // Will check to ensure stack not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard = action_state.update(|state| {
+      if service.is_none() {
+        state.destroying = true
+      }
+    })?;
+
+    let periphery = periphery_client(&server)?;
+
+    let service = service
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+    let maybe_timeout = maybe_timeout(stop_time);
+    let maybe_remove_orphans = if remove_orphans {
+      " --remove-orphans"
+    } else {
+      ""
+    };
+
+    let ComposeExecutionResponse { file_missing, log } = periphery
+      .request(ComposeExecution {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path: stack.config.file_path,
+        command: format!(
+          "down{maybe_timeout}{maybe_remove_orphans}{service}"
+        ),
+      })
+      .await
+      .context(
+        "failed to bring destroy stack with docker compose down",
+      )?;
+
+    if file_missing {
+      let services = if stack.info.services.is_empty() {
+        let file_contents = if stack.config.file_contents.is_empty() {
+          stack.info.remote_contents
+        } else {
+          Some(stack.config.file_contents)
+        };
+        let Some(file_contents) = file_contents else {
+          return Err(
+            anyhow!("The compose file on the host is missing")
+              .context("Stack cached services are empty, and cannot get file contents, so do not know which containers to destroy")
+          );
+        };
+        serde_yaml::from_str::<ComposeFile>(&file_contents)
+          .context("failed to extract services from file_contents")?
+          .services
+          .into_iter()
+          .map(|(service_name, config)| StackServiceNames {
+            service_name,
+            container_name: config.container_name,
+          })
+          .collect()
+      } else {
+        stack.info.services
+      };
+      let logs = periphery
+        .request(ComposeDestroy { services })
+        .await
+        .context(
+          "failed to destroy stack with docker container rm",
+        )?;
+      update.logs.extend(logs);
+    } else if let Some(log) = log {
+      update.logs.push(log);
+    }
+
+    // Ensure cached stack state up to date by updating server cache
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
   }
 }
