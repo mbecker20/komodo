@@ -6,13 +6,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Clock } from "lucide-react";
 import { AlertLevel } from ".";
 import { ResourceLink } from "@components/resources/common";
 import { UsableResource } from "@types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@ui/dialog";
+import { Types } from "@monitor/client";
+import { useState } from "react";
 
 export const TopbarAlerts = () => {
   const { data } = useRead("ListAlerts", { query: { resolved: false } });
+  const [alert, setAlert] = useState<Types.Alert>();
 
   return (
     <>
@@ -29,53 +39,69 @@ export const TopbarAlerts = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {data?.alerts.map((alert) => (
-            <DropdownMenuItem className="flex items-center gap-8 border-b last:border-none">
+            <DropdownMenuItem
+              className="flex items-center gap-8 border-b last:border-none cursor-pointer"
+              onClick={() => setAlert(alert)}
+            >
               <div className="w-24">
                 <AlertLevel level={alert.level} />
               </div>
               <div className="w-64">
-                <ResourceLink
-                  type={alert.target.type as UsableResource}
-                  id={alert.target.id}
-                />
+                <div className="w-fit">
+                  <ResourceLink
+                    type={alert.target.type as UsableResource}
+                    id={alert.target.id}
+                  />
+                </div>
               </div>
               <p className="w-64">{alert.data.type}</p>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+      <AlertDetails alert={alert} onClose={() => setAlert(undefined)} />
     </>
   );
 };
 
-// const AlertDetails = ({
-//   alert,
-//   onClose,
-// }: {
-//   alert: Types.Alert | undefined;
-//   onClose: () => void;
-// }) => (
-//   <Dialog open={!!alert}>
-//     <DialogTrigger asChild>
-//       <Button variant="secondary" className="items-center gap-2">
-//         Details
-//       </Button>
-//     </DialogTrigger>
-//     <DialogContent>
-//       <DialogHeader>
-//         <DialogTitle>{alert?.target.type}</DialogTitle>
-//         <DialogDescription>
-//           <ResourceLink
-//             type={alert?.target.type as UsableResource}
-//             id={alert?.target.id!}
-//           />
-//         </DialogDescription>
-//       </DialogHeader>
-//       <div className="py-8 flex flex-col gap-4">
-//         <p className="flex gap-4">
-//           <Clock /> {new Date(alert?.ts!).toLocaleString()}
-//         </p>
-//       </div>
-//     </DialogContent>
-//   </Dialog>
-// );
+const AlertDetails = ({
+  alert,
+  onClose,
+}: {
+  alert: Types.Alert | undefined;
+  onClose: () => void;
+}) => (
+  <>
+    {alert && (
+      <Dialog open={!!alert} onOpenChange={(o) => !o && onClose()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alert - {alert?.data.type}</DialogTitle>
+            <DialogDescription className="flex items-center gap-2">
+              <Clock className="w-4" />
+              {new Date(alert?.ts!).toLocaleString()}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex flex-col gap-8">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <p className="text-muted-foreground">{alert?.target.type}:</p>
+                <ResourceLink
+                  type={alert?.target.type as UsableResource}
+                  id={alert?.target.id ?? ""}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <p className="text-muted-foreground">Alert Level:</p>
+                <AlertLevel level={alert?.level} />
+              </div>
+            </div>
+            <div>
+              <pre>{JSON.stringify(alert.data.data, undefined, 2)}</pre>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
+  </>
+);
