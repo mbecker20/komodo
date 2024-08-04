@@ -76,7 +76,7 @@ pub async fn insert_stacks_status_unknown(stacks: Vec<Stack>) {
           curr: CachedStackStatus {
             // id: stack.id,
             state: StackState::Unknown,
-            containers: Vec::new(),
+            services: Vec::new(),
           },
           prev,
         }

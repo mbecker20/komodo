@@ -8,7 +8,7 @@ use monitor_client::entities::{
     stats::{ServerHealth, SystemStats},
     Server, ServerState,
   },
-  stack::{Stack, StackServiceNames, StackState},
+  stack::{Stack, StackService, StackServiceNames, StackState},
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api::{self, git::GetLatestCommit};
@@ -73,11 +73,10 @@ pub struct CachedRepoStatus {
 
 #[derive(Default, Clone, Debug)]
 pub struct CachedStackStatus {
-  /// The stack id
-  // pub id: String,
+  /// The stack state
   pub state: StackState,
-  /// The containers connected to the stack
-  pub containers: Vec<ContainerSummary>,
+  /// The services connected to the stack
+  pub services: Vec<StackService>,
 }
 
 pub fn spawn_monitor_loop() {
@@ -256,46 +255,43 @@ pub async fn update_cache_for_server(server: &Server) {
 
       let stack_status_cache = stack_status_cache();
       for stack in stacks {
-        let containers = containers
-          .iter()
-          .filter(|container| {
-            stack.info.services.iter().any(|StackServiceNames { service_name, container_name }| {
-              match compose_container_match_regex(container_name)
-                .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
-              {
-                Ok(regex) => regex,
-                Err(e) => {
-                  warn!("{e:#}");
-                  return false
-                }
-              }.is_match(&container.name)
-            })
-          })
-          .cloned()
-          .collect::<Vec<_>>();
+        let services = match extract_services_from_stack(&stack).await
+        {
+          Ok(services) => services,
+          Err(e) => {
+            warn!("failed to extract services for stack {}. cannot match services to containers. (update status cache) | {e:?}", stack.name);
+            continue;
+          }
+        };
+        let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name }| {
+          let container = containers.iter().find(|container| {
+            match compose_container_match_regex(container_name)
+              .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+            {
+              Ok(regex) => regex,
+              Err(e) => {
+                warn!("{e:#}");
+                return false
+              }
+            }.is_match(&container.name)
+          }).cloned();
+          StackService {
+            service: service_name.clone(),
+            container,
+          }
+        }).collect::<Vec<_>>();
+        services_with_containers
+          .sort_by(|a, b| a.service.cmp(&b.service));
         let prev = stack_status_cache
           .get(&stack.id)
           .await
           .map(|s| s.curr.state);
-        let status = if containers.is_empty() {
-          // stack is down
-          CachedStackStatus {
-            // id: stack.id.clone(),
-            state: StackState::Down,
-            containers: Vec::new(),
-          }
-        } else {
-          let state = match extract_services_from_stack(&stack).await
-          {
-            Ok(services) => {
-              get_stack_state_from_containers(&services, &containers)
-            }
-            Err(e) => {
-              warn!("failed to extract services for stack {} (update status cache) | {e:?}", stack.name);
-              StackState::Unknown
-            }
-          };
-          CachedStackStatus { state, containers }
+        let status = CachedStackStatus {
+          state: get_stack_state_from_containers(
+            &services,
+            &containers,
+          ),
+          services: services_with_containers,
         };
         stack_status_cache
           .insert(stack.id, History { curr: status, prev }.into())

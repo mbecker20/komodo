@@ -1,10 +1,6 @@
-import {
-  ActionButton,
-  ActionWithDialog,
-  ConfirmButton,
-} from "@components/util";
-import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { Pause, Play, RefreshCcw, Rocket, Square, Trash2 } from "lucide-react";
+import { ActionWithDialog, ConfirmButton } from "@components/util";
+import { useExecute, useRead } from "@lib/hooks";
+import { Pause, Play, Rocket, Square, Trash2 } from "lucide-react";
 import { useStack } from ".";
 import { Types } from "@monitor/client";
 
@@ -166,21 +162,4 @@ export const PauseUnpauseStack = ({ id }: { id: string }) => {
       />
     );
   }
-};
-
-export const RefreshStackCache = ({ id }: { id: string }) => {
-  const inv = useInvalidate();
-  const { mutate, isPending } = useWrite("RefreshStackCache", {
-    onSuccess: () => inv(["ListStacks"], ["GetStack", { stack: id }]),
-  });
-  const pending = isPending;
-  return (
-    <ActionButton
-      title="Refresh"
-      icon={<RefreshCcw className="w-4 h-4" />}
-      onClick={() => mutate({ stack: id })}
-      disabled={pending}
-      loading={pending}
-    />
-  );
 };

@@ -90,10 +90,25 @@ pub async fn get_deployment_state(
   Ok(state)
 }
 
+/// Can pass all the containers from the same server
 pub fn get_stack_state_from_containers(
   services: &[StackServiceNames],
   containers: &[ContainerSummary],
 ) -> StackState {
+  // first filter the containers to only ones which match the service
+  let containers = containers.iter().filter(|container| {
+    services.iter().any(|StackServiceNames { service_name, container_name }| {
+      match compose_container_match_regex(container_name)
+        .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+      {
+        Ok(regex) => regex,
+        Err(e) => {
+          warn!("{e:#}");
+          return false
+        }
+      }.is_match(&container.name)
+    })
+  }).collect::<Vec<_>>();
   if containers.is_empty() {
     return StackState::Down;
   }
@@ -147,22 +162,7 @@ pub async fn get_stack_state(
   }
   let containers = super::periphery_client(&server)?
     .request(periphery_client::api::container::GetContainerList {})
-    .await?
-    .into_iter()
-    .filter(|container| {
-      stack.info.services.iter().any(|StackServiceNames { service_name, container_name }| {
-        match compose_container_match_regex(container_name)
-          .with_context(|| format!("failed to construct container name regex for service {service_name}")) 
-        {
-          Ok(regex) => regex,
-          Err(e) => {
-            warn!("{e:#}");
-            return false
-          }
-        }.is_match(&container.name)
-      })
-    })
-    .collect::<Vec<_>>();
+    .await?;
 
   let services = extract_services_from_stack(stack).await?;
 

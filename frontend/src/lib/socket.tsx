@@ -101,7 +101,7 @@ const on_message = (
         ["ListCommonStackExtraArgs"],
         ["GetStackJson", { stack: update.target.id }],
         ["GetStack", { stack: update.target.id }],
-        ["GetStackContainers", { stack: update.target.id }]
+        ["ListStackServices", { stack: update.target.id }]
       );
     }
 

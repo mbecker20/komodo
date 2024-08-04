@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  deployment::ContainerSummary,
-  stack::{Stack, StackActionState, StackListItem, StackQuery},
+  stack::{
+    Stack, StackActionState, StackListItem, StackQuery, StackService,
+  },
   update::Log,
   JsonValue, SearchCombinator, U64,
 };
@@ -60,21 +61,23 @@ pub struct GetStackJsonResponse {
 
 //
 
-/// Get a specific stacks containers. Response: [GetStackContainersResponse].
+/// Lists a specific stacks services (the containers). Response: [ListStackServicesResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetStackContainersResponse)]
-pub struct GetStackContainers {
+#[response(ListStackServicesResponse)]
+pub struct ListStackServices {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub stack: String,
 }
 
 #[typeshare]
-pub type GetStackContainersResponse = Vec<ContainerSummary>;
+pub type ListStackServicesResponse = Vec<StackService>;
+
+//
 
 /// Get a stack service's log. Response: [GetStackContainersResponse].
 #[typeshare]

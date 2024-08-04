@@ -108,13 +108,13 @@ export type ReadResponses = {
   // ==== STACK ====
   GetStacksSummary: Types.GetStacksSummaryResponse;
   GetStack: Types.GetStackResponse;
-  GetStackContainers: Types.GetStackContainersResponse;
   GetStackActionState: Types.GetStackActionStateResponse;
   GetStackWebhooksEnabled: Types.GetStackWebhooksEnabledResponse;
   GetStackServiceLog: Types.GetStackServiceLogResponse;
   SearchStackServiceLog: Types.SearchStackServiceLogResponse;
   ListStacks: Types.ListStacksResponse;
   ListFullStacks: Types.ListFullStacksResponse;
+  ListStackServices: Types.ListStackServicesResponse;
   ListCommonStackExtraArgs: Types.ListCommonStackExtraArgsResponse;
   GetStackJson: Types.GetStackJsonResponse;
 

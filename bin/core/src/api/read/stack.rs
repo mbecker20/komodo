@@ -5,7 +5,6 @@ use monitor_client::{
   api::read::*,
   entities::{
     config::core::CoreConfig,
-    deployment::ContainerSummary,
     permission::PermissionLevel,
     stack::{Stack, StackActionState, StackListItem, StackState},
     to_monitor_name,
@@ -66,26 +65,28 @@ impl ResolveToString<GetStackJson, User> for State {
   }
 }
 
-impl Resolve<GetStackContainers, User> for State {
+impl Resolve<ListStackServices, User> for State {
   async fn resolve(
     &self,
-    GetStackContainers { stack }: GetStackContainers,
+    ListStackServices { stack }: ListStackServices,
     user: User,
-  ) -> anyhow::Result<Vec<ContainerSummary>> {
+  ) -> anyhow::Result<ListStackServicesResponse> {
     let stack = resource::get_check_permissions::<Stack>(
       &stack,
       &user,
       PermissionLevel::Read,
     )
     .await?;
-    let containers = stack_status_cache()
+
+    let services = stack_status_cache()
       .get(&stack.id)
       .await
       .unwrap_or_default()
       .curr
-      .containers
+      .services
       .clone();
-    Ok(containers)
+
+    Ok(services)
   }
 }
 

@@ -9,8 +9,7 @@ use strum::Display;
 use typeshare::typeshare;
 
 use super::{
-  resource::{Resource, ResourceListItem, ResourceQuery},
-  EnvironmentVar,
+  deployment::ContainerSummary, resource::{Resource, ResourceListItem, ResourceQuery}, EnvironmentVar
 };
 
 #[typeshare]
@@ -31,7 +30,7 @@ pub struct StackListItemInfo {
   pub state: StackState,
   /// The service names that are part of the stack
   pub services: Vec<String>,
-  /// Whether the compose file is missing on the host. 
+  /// Whether the compose file is missing on the host.
   /// If true, this is an unhealthy state.
   pub file_missing: bool,
   /// Latest short commit hash, or null.
@@ -122,19 +121,28 @@ pub struct StackServiceNames {
   pub service_name: String,
   /// Will either be the declared container_name in the compose file,
   /// or a pattern to match auto named containers.
-  /// 
+  ///
   /// Auto named containers are composed of three parts:
-  /// 
+  ///
   /// 1. The name of the compose stack (top level name field of compose file).
   ///    This defaults to the name of the parent folder of the compose file.
   /// 2. The service name
   /// 3. The replica number
-  /// 
+  ///
   /// Example: stacko-mongo-1.
-  /// 
+  ///
   /// This stores only 1. and 2., ie stacko-mongo.
   /// Containers will be matched via regex like `^container_name-?[0-9]*$``
   pub container_name: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct StackService {
+  /// The service name
+  pub service: String,
+  /// The container
+  pub container: Option<ContainerSummary>,
 }
 
 #[typeshare(serialized_as = "Partial<StackConfig>")]

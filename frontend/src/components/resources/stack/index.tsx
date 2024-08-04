@@ -1,7 +1,7 @@
-import { useRead } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardHeader } from "@ui/card";
-import { FolderGit, Layers, Server } from "lucide-react";
+import { FolderGit, Layers, Loader2, RefreshCcw, Server } from "lucide-react";
 import { StackConfig } from "./config";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { StackTable } from "./table";
@@ -19,13 +19,15 @@ import {
   DeployStack,
   DestroyStack,
   PauseUnpauseStack,
-  RefreshStackCache,
   StartStopStack,
 } from "./actions";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { StackInfo } from "./info";
 import { Badge } from "@ui/badge";
+import { Button } from "@ui/button";
+import { useToast } from "@ui/use-toast";
+import { Services } from "./services";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -183,6 +185,32 @@ export const StackComponents: RequiredResourceComponents = {
         </HoverCard>
       );
     },
+    Refresh: ({ id }) => {
+      const { toast } = useToast();
+      const inv = useInvalidate();
+      const { mutate, isPending } = useWrite("RefreshStackCache", {
+        onSuccess: () => {
+          inv(["ListStacks"], ["GetStack", { stack: id }]);
+          toast({ title: "Refreshed stack status cache" });
+        },
+      });
+      return (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            mutate({ stack: id });
+            toast({ title: "Triggered refresh of stack status cache" });
+          }}
+        >
+          {isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <RefreshCcw className="w-4 h-4" />
+          )}
+        </Button>
+      );
+    },
   },
 
   Info: {
@@ -219,14 +247,15 @@ export const StackComponents: RequiredResourceComponents = {
   },
 
   Actions: {
-    RefreshStackCache,
     DeployStack,
     PauseUnpauseStack,
     StartStopStack,
     DestroyStack,
   },
 
-  Page: {},
+  Page: {
+    Services,
+  },
 
   Config: ConfigOrInfo,
 

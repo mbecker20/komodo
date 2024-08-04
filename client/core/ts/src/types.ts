@@ -1356,8 +1356,23 @@ export interface StackConfig {
 export interface StackServiceNames {
 	/** The name of the service */
 	service_name: string;
-	/** Only defined if compose file explicitly uses container_name */
-	container_name?: string;
+	/**
+	 * Will either be the declared container_name in the compose file,
+	 * or a pattern to match auto named containers.
+	 * 
+	 * Auto named containers are composed of three parts:
+	 * 
+	 * 1. The name of the compose stack (top level name field of compose file).
+	 * This defaults to the name of the parent folder of the compose file.
+	 * 2. The service name
+	 * 3. The replica number
+	 * 
+	 * Example: stacko-mongo-1.
+	 * 
+	 * This stores only 1. and 2., ie stacko-mongo.
+	 * Containers will be matched via regex like `^container_name-?[0-9]*$``
+	 */
+	container_name: string;
 }
 
 export interface StackInfo {
@@ -1407,7 +1422,14 @@ export type Stack = Resource<StackConfig, StackInfo>;
 
 export type GetStackResponse = Stack;
 
-export type GetStackContainersResponse = ContainerSummary[];
+export interface StackService {
+	/** The service name */
+	service: string;
+	/** The container */
+	container?: ContainerSummary;
+}
+
+export type ListStackServicesResponse = StackService[];
 
 export type GetStackServiceLogResponse = Log;
 
@@ -3202,8 +3224,8 @@ export interface GetStackJsonResponse {
 	latest_error: boolean;
 }
 
-/** Get a specific stacks containers. Response: [GetStackContainersResponse]. */
-export interface GetStackContainers {
+/** Lists a specific stacks services (the containers). Response: [ListStackServicesResponse]. */
+export interface ListStackServices {
 	/** Id or name */
 	stack: string;
 }
@@ -4742,6 +4764,8 @@ export interface ComposeService {
 
 /** Keeping this minimal for now as its only needed to parse the service names / container names */
 export interface ComposeFile {
+	/** If not provided, will default to the parent folder holding the compose file. */
+	name?: string;
 	services?: Record<string, ComposeService>;
 }
 
@@ -4887,13 +4911,13 @@ export type ReadRequest =
 	| { type: "ListFullResourceSyncs", params: ListFullResourceSyncs }
 	| { type: "GetStacksSummary", params: GetStacksSummary }
 	| { type: "GetStack", params: GetStack }
-	| { type: "GetStackContainers", params: GetStackContainers }
 	| { type: "GetStackActionState", params: GetStackActionState }
 	| { type: "GetStackWebhooksEnabled", params: GetStackWebhooksEnabled }
 	| { type: "GetStackServiceLog", params: GetStackServiceLog }
 	| { type: "SearchStackServiceLog", params: SearchStackServiceLog }
 	| { type: "ListStacks", params: ListStacks }
 	| { type: "ListFullStacks", params: ListFullStacks }
+	| { type: "ListStackServices", params: ListStackServices }
 	| { type: "ListCommonStackExtraArgs", params: ListCommonStackExtraArgs }
 	| { type: "GetStackJson", params: GetStackJson }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
