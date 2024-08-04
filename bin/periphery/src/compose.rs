@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
@@ -62,7 +62,8 @@ pub async fn compose_up(
 
   // Write the stack. For repos, will first delete existing folder to ensure fresh deploy.
   // Will also set additional fields on the reponse.
-  write_stack(&stack, git_token, res)
+  // Use the env_file_path in the compose command.
+  let env_file_path = write_stack(&stack, git_token, res)
     .await
     .context("failed to write / clone compose file")?;
 
@@ -148,10 +149,13 @@ pub async fn compose_up(
 
   // Run compose up
   let extra_args = parse_extra_args(&stack.config.extra_args);
+  let env_file = env_file_path
+    .map(|path| format!(" --env-file {}", path.display()))
+    .unwrap_or_default();
   let log = run_monitor_command(
     "compose up",
     format!(
-      "cd {run_dir} && {docker_compose} -f {file} up -d{extra_args}{service_arg}",
+      "cd {run_dir} && {docker_compose} -f {file}{env_file} up -d{extra_args}{service_arg}",
     ),
   )
   .await;
@@ -162,12 +166,12 @@ pub async fn compose_up(
 }
 
 /// Either writes the stack file_contents to a file, or clones the repo.
-/// Returns the run directory.
+/// Returns the env file path, to maybe include in command with --env-file.
 async fn write_stack(
   stack: &Stack,
   git_token: Option<String>,
   res: &mut ComposeUpResponse,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Option<PathBuf>> {
   let root = periphery_config()
     .stack_dir
     .join(to_monitor_name(&stack.name));
@@ -238,23 +242,35 @@ async fn write_stack(
       return Err(anyhow!("Stopped after clone failure"));
     }
 
-    if write_environment_file(stack, &run_directory, &mut res.logs)
-      .await
-      .is_err()
+    let env_file_path = match write_environment_file(
+      stack,
+      &run_directory,
+      &mut res.logs,
+    )
+    .await
     {
-      return Err(anyhow!("failed to write environment file"));
+      Ok(path) => path,
+      Err(_) => {
+        return Err(anyhow!("failed to write environment file"));
+      }
     };
-    Ok(())
+    Ok(env_file_path)
   } else {
     // Ensure run directory exists
     fs::create_dir_all(&run_directory).await.with_context(|| {
       format!("failed to create stack run directory at {root:?}")
     })?;
-    if write_environment_file(stack, &run_directory, &mut res.logs)
-      .await
-      .is_err()
+    let env_file_path = match write_environment_file(
+      stack,
+      &run_directory,
+      &mut res.logs,
+    )
+    .await
     {
-      return Err(anyhow!("failed to write environment file"));
+      Ok(path) => path,
+      Err(_) => {
+        return Err(anyhow!("failed to write environment file"));
+      }
     };
     let file = run_directory.join(&stack.config.file_path);
     fs::write(&file, &stack.config.file_contents)
@@ -263,18 +279,19 @@ async fn write_stack(
         format!("failed to write compose file to {file:?}")
       })?;
 
-    Ok(())
+    Ok(env_file_path)
   }
 }
 
-/// Check that result is Ok before continuing.
+/// If the environment was written and needs to be passed to the compose command,
+/// will return the env file PathBuf
 async fn write_environment_file(
   stack: &Stack,
   folder: &Path,
   logs: &mut Vec<Log>,
-) -> Result<(), ()> {
+) -> Result<Option<PathBuf>, ()> {
   if stack.config.environment.is_empty() {
-    return Ok(());
+    return Ok(None);
   }
 
   let contents =
@@ -335,7 +352,7 @@ async fn write_environment_file(
     format!("environment written to {file:?}"),
   ));
 
-  Ok(())
+  Ok(Some(file))
 }
 
 async fn destroy_existing_containers(
