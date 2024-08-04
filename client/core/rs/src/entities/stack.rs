@@ -46,9 +46,17 @@ pub struct StackListItemInfo {
   Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
 )]
 pub enum StackState {
-  /// The stack is deployed. All containers are running.
-  Healthy,
-  /// At least one container is not running.
+  /// All containers are running.
+  Running,
+  /// All containers are paused
+  Paused,
+  /// All contianers are stopped
+  Stopped,
+  /// All containers are restarting
+  Restarting,
+  /// All containers are dead
+  Dead,
+  /// The containers are in a mix of states
   Unhealthy,
   /// The stack is not deployed
   Down,

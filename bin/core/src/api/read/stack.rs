@@ -99,9 +99,13 @@ impl Resolve<GetStackServiceLog, User> for State {
     }: GetStackServiceLog,
     user: User,
   ) -> anyhow::Result<GetStackServiceLogResponse> {
-    let (stack, server) =
-      get_stack_and_server(&stack, &user, PermissionLevel::Read, true)
-        .await?;
+    let (stack, server) = get_stack_and_server(
+      &stack,
+      &user,
+      PermissionLevel::Read,
+      true,
+    )
+    .await?;
     let periphery = periphery_client(&server)?;
     let run_directory = to_monitor_name(&stack.name)
       .parse::<PathBuf>()
@@ -131,9 +135,13 @@ impl Resolve<SearchStackServiceLog, User> for State {
     }: SearchStackServiceLog,
     user: User,
   ) -> anyhow::Result<SearchStackServiceLogResponse> {
-    let (stack, server) =
-      get_stack_and_server(&stack, &user, PermissionLevel::Read, true)
-        .await?;
+    let (stack, server) = get_stack_and_server(
+      &stack,
+      &user,
+      PermissionLevel::Read,
+      true,
+    )
+    .await?;
     let periphery = periphery_client(&server)?;
     let run_directory = to_monitor_name(&stack.name)
       .parse::<PathBuf>()
@@ -241,7 +249,11 @@ impl Resolve<GetStacksSummary, User> for State {
       res.total += 1;
       match cache.get(&stack.id).await.unwrap_or_default().curr.state
       {
-        StackState::Healthy => res.healthy += 1,
+        StackState::Running => res.running += 1,
+        StackState::Paused => res.paused += 1,
+        StackState::Stopped => res.stopped += 1,
+        StackState::Restarting => res.restarting += 1,
+        StackState::Dead => res.dead += 1,
         StackState::Unhealthy => res.unhealthy += 1,
         StackState::Down => res.down += 1,
         StackState::Unknown => res.unknown += 1,

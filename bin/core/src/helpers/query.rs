@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  deployment::{Deployment, DeploymentState},
+  deployment::{ContainerSummary, Deployment, DeploymentState},
   permission::PermissionLevel,
   server::{Server, ServerState},
   stack::{Stack, StackState},
@@ -86,6 +86,45 @@ pub async fn get_deployment_state(
   Ok(state)
 }
 
+pub fn get_stack_stack_from_containers(
+  containers: &[ContainerSummary],
+) -> StackState {
+  if containers.is_empty() {
+    return StackState::Down;
+  }
+  let running = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Running);
+  if running {
+    return StackState::Running;
+  }
+  let paused = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Paused);
+  if paused {
+    return StackState::Paused;
+  }
+  let stopped = containers.iter().all(|container| {
+    container.state == DeploymentState::Exited
+  });
+  if stopped {
+    return StackState::Stopped;
+  }
+  let restarting = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Restarting);
+  if restarting {
+    return StackState::Restarting;
+  }
+  let dead = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Dead);
+  if dead {
+    return StackState::Dead;
+  }
+  StackState::Unhealthy
+}
+
 #[instrument(level = "debug")]
 pub async fn get_stack_state(
   stack: &Stack,
@@ -122,18 +161,7 @@ pub async fn get_stack_state(
     })
     .collect::<Vec<_>>();
 
-  if containers.is_empty() {
-    Ok(StackState::Down)
-  } else {
-    let healthy = containers
-      .iter()
-      .all(|container| container.state == DeploymentState::Running);
-    if healthy {
-      Ok(StackState::Healthy)
-    } else {
-      Ok(StackState::Unhealthy)
-    }
-  }
+  Ok(get_stack_stack_from_containers(&containers))
 }
 
 #[instrument(level = "debug")]

@@ -17,7 +17,6 @@ import {
 
 export const StackDashboard = () => {
   const summary = useRead("GetStacksSummary", {}).data;
-
   return (
     <Link to="/stacks">
       <Card className="hover:bg-accent/50 transition-colors cursor-pointer w-[300px]">
@@ -39,9 +38,9 @@ export const StackDashboard = () => {
                   "font-bold"
                 )}
               >
-                {summary?.healthy}{" "}
+                {summary?.running}{" "}
               </span>
-              Healthy
+              Running
             </CardDescription>
             <CardDescription className="flex items-center gap-2">
               <span
@@ -74,9 +73,9 @@ export const StackDashboard = () => {
               data={[
                 {
                   color: hex_color_by_intention("Good"),
-                  value: summary?.healthy ?? 0,
-                  title: "healthy",
-                  key: "healthy",
+                  value: summary?.running ?? 0,
+                  title: "running",
+                  key: "running",
                 },
                 {
                   color: hex_color_by_intention("Critical"),

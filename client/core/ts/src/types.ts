@@ -1354,8 +1354,10 @@ export interface StackConfig {
 }
 
 export interface StackServiceNames {
-	container_name: string;
+	/** The name of the service */
 	service_name: string;
+	/** Only defined if compose file explicitly uses container_name */
+	container_name?: string;
 }
 
 export interface StackInfo {
@@ -1414,9 +1416,15 @@ export type SearchStackServiceLogResponse = Log;
 export type ListCommonStackExtraArgsResponse = string[];
 
 export enum StackState {
-	/** The stack is deployed. All containers are running. */
-	Healthy = "Healthy",
-	/** At least one container is not running. */
+	/** All containers are running. */
+	Running = "Running",
+	/** All containers are paused */
+	Paused = "Paused",
+	/** All contianers are stopped */
+	Stopped = "Stopped",
+	/** All containers are restarting */
+	Restarting = "Restarting",
+	/** The containers are in a mix of states */
 	Unhealthy = "Unhealthy",
 	/** The stack is not deployed */
 	Down = "Down",
@@ -3269,8 +3277,14 @@ export interface GetStacksSummary {
 export interface GetStacksSummaryResponse {
 	/** The total number of stacks */
 	total: number;
-	/** The number of stacks with Healthy state. */
-	healthy: number;
+	/** The number of stacks with Running state. */
+	running: number;
+	/** The number of stacks with Paused state. */
+	paused: number;
+	/** The number of stacks with Stopped state. */
+	stopped: number;
+	/** The number of stacks with Restarting state. */
+	restarting: number;
 	/** The number of stacks with Unhealthy state. */
 	unhealthy: number;
 	/** The number of stacks with Down state. */

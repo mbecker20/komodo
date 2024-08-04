@@ -165,8 +165,14 @@ export const stack_state_intention = (state?: Types.StackState) => {
   switch (state) {
     case undefined:
       return "None";
-    case Types.StackState.Healthy:
+    case Types.StackState.Running:
       return "Good";
+    case Types.StackState.Paused:
+      return "Warning";
+    case Types.StackState.Stopped:
+      return "Critical";
+    case Types.StackState.Restarting:
+      return "Critical";
     case Types.StackState.Down:
       return "Neutral";
     case Types.StackState.Unknown:

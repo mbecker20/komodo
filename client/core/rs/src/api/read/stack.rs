@@ -228,8 +228,16 @@ pub struct GetStacksSummary {}
 pub struct GetStacksSummaryResponse {
   /// The total number of stacks
   pub total: u32,
-  /// The number of stacks with Healthy state.
-  pub healthy: u32,
+  /// The number of stacks with Running state.
+  pub running: u32,
+  /// The number of stacks with Paused state.
+  pub paused: u32,
+  /// The number of stacks with Stopped state.
+  pub stopped: u32,
+  /// The number of stacks with Restarting state.
+  pub restarting: u32,
+  /// The number of stacks with Dead state.
+  pub dead: u32,
   /// The number of stacks with Unhealthy state.
   pub unhealthy: u32,
   /// The number of stacks with Down state.

@@ -16,7 +16,13 @@ export const DeployStack = ({ id }: { id: string }) => {
   const pending = isPending || deploying;
   const deployed =
     state !== undefined &&
-    [Types.StackState.Healthy, Types.StackState.Unhealthy].includes(state);
+    [
+      Types.StackState.Running,
+      Types.StackState.Paused,
+      Types.StackState.Stopped,
+      Types.StackState.Restarting,
+      Types.StackState.Unhealthy,
+    ].includes(state);
 
   if (deployed) {
     return (
@@ -42,6 +48,38 @@ export const DeployStack = ({ id }: { id: string }) => {
   );
 };
 
+export const StartStopStack = ({ id }: { id: string }) => {
+  const stack = useStack(id);
+  const state = stack?.info.state;
+  const { mutate: destroy, isPending } = useExecute("DestroyStack");
+  const action_state = useRead(
+    "GetStackActionState",
+    { stack: id },
+    { refetchInterval: 5000 }
+  ).data;
+
+  if (state === Types.StackState.Stopped) {
+    
+  }
+
+  /// Stop
+  if (state === Types.StackState.Running) {
+    return null;
+  }
+
+  const pending = isPending;
+  return (
+    <ActionWithDialog
+      name={stack?.name ?? ""}
+      title="Destroy"
+      icon={<Trash2 className="h-4 w-4" />}
+      onClick={() => destroy({ stack: id })}
+      disabled={pending}
+      loading={pending}
+    />
+  );
+};
+
 export const DestroyStack = ({ id }: { id: string }) => {
   const stack = useStack(id);
   const state = stack?.info.state;
@@ -52,7 +90,7 @@ export const DestroyStack = ({ id }: { id: string }) => {
     { refetchInterval: 5000 }
   ).data?.destroying;
 
-  if (state !== Types.StackState.Healthy && !destroying) {
+  if (state !== Types.StackState.Running && !destroying) {
     return null;
   }
 

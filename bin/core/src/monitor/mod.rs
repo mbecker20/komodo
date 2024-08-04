@@ -17,7 +17,7 @@ use serror::Serror;
 
 use crate::{
   config::core_config,
-  helpers::periphery_client,
+  helpers::{periphery_client, query::get_stack_stack_from_containers},
   monitor::{alert::check_alerts, record::record_server_stats},
   resource,
   state::{
@@ -284,17 +284,8 @@ pub async fn update_cache_for_server(server: &Server) {
             containers: Vec::new(),
           }
         } else {
-          let healthy = containers.iter().all(|container| {
-            container.state == DeploymentState::Running
-          });
-          let state = if healthy {
-            StackState::Healthy
-          } else {
-            StackState::Unhealthy
-          };
           CachedStackStatus {
-            // id: stack.id.clone(),
-            state,
+            state: get_stack_stack_from_containers(&containers),
             containers,
           }
         };
