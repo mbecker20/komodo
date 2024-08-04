@@ -100,7 +100,7 @@ impl Resolve<GetStackServiceLog, User> for State {
     user: User,
   ) -> anyhow::Result<GetStackServiceLogResponse> {
     let (stack, server) =
-      get_stack_and_server(&stack, &user, PermissionLevel::Read)
+      get_stack_and_server(&stack, &user, PermissionLevel::Read, true)
         .await?;
     let periphery = periphery_client(&server)?;
     let run_directory = to_monitor_name(&stack.name)
@@ -132,7 +132,7 @@ impl Resolve<SearchStackServiceLog, User> for State {
     user: User,
   ) -> anyhow::Result<SearchStackServiceLogResponse> {
     let (stack, server) =
-      get_stack_and_server(&stack, &user, PermissionLevel::Read)
+      get_stack_and_server(&stack, &user, PermissionLevel::Read, true)
         .await?;
     let periphery = periphery_client(&server)?;
     let run_directory = to_monitor_name(&stack.name)

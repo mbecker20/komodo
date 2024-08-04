@@ -32,7 +32,7 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigOrInfo = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Config");
+  const [view, setView] = useState("Info");
   const state = useStack(id)?.info.state;
   const infoDisabled =
     state === undefined ||
@@ -90,54 +90,49 @@ export const StackComponents: RequiredResourceComponents = {
     },
     Deployed: ({ id }) => {
       const info = useStack(id)?.info;
-      if (info?.deployed_hash && info?.deployed_message) {
-        if (info?.latest_hash === info.deployed_hash) {
-          return null;
-        }
-        return (
-          <HoverCard openDelay={200}>
-            <HoverCardTrigger asChild>
-              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-                <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                  deployed: {info.deployed_hash}
-                </div>
-              </Card>
-            </HoverCardTrigger>
-            <HoverCardContent align="start">
-              <div className="grid">
-                <div className="text-muted-foreground">commit message:</div>
-                {info.deployed_message}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        );
-      } else {
-        return <div className="text-muted-foreground">{"Not cloned"}</div>;
+      if (!info?.deployed_hash || !info?.deployed_message) {
+        return null
       }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                deployed: {info.deployed_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid">
+              <div className="text-muted-foreground">commit message:</div>
+              {info.deployed_message}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
     },
     Latest: ({ id }) => {
       const info = useStack(id)?.info;
-      if (info?.latest_hash && info?.latest_message) {
-        return (
-          <HoverCard openDelay={200}>
-            <HoverCardTrigger asChild>
-              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-                <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                  latest: {info.latest_hash}
-                </div>
-              </Card>
-            </HoverCardTrigger>
-            <HoverCardContent align="start">
-              <div className="grid">
-                <div className="text-muted-foreground">commit message:</div>
-                {info.latest_message}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        );
-      } else {
-        return <div className="text-muted-foreground">{"Not cloned"}</div>;
+      if (!info?.latest_hash || !info?.latest_message) {
+        return null;
       }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                latest: {info.latest_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid">
+              <div className="text-muted-foreground">commit message:</div>
+              {info.latest_message}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
     },
   },
 

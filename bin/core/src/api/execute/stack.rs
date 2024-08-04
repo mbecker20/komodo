@@ -1,10 +1,13 @@
+use anyhow::Context;
 use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
-    permission::PermissionLevel, update::Update, user::User,
+    permission::PermissionLevel, stack::StackInfo, update::Update,
+    user::User,
   },
 };
+use mungos::mongodb::bson::{doc, to_document};
 use periphery_client::api::compose::{ComposeUp, ComposeUpResponse};
 use resolver_api::Resolve;
 
@@ -13,12 +16,12 @@ use crate::{
     interpolate_variables_secrets_into_environment, periphery_client,
     stack::{
       execute::execute_compose, get_stack_and_server,
-      refresh_stack_info,
+      json::get_config_json, services::extract_services,
     },
     update::update_update,
   },
   monitor::update_cache_for_server,
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 impl Resolve<DeployStack, (User, Update)> for State {
@@ -32,9 +35,13 @@ impl Resolve<DeployStack, (User, Update)> for State {
     }: DeployStack,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (mut stack, server) =
-      get_stack_and_server(&stack, &user, PermissionLevel::Execute)
-        .await?;
+    let (mut stack, server) = get_stack_and_server(
+      &stack,
+      &user,
+      PermissionLevel::Execute,
+      true,
+    )
+    .await?;
 
     // get the action state for the stack (or insert default).
     let action_state =
@@ -66,8 +73,8 @@ impl Resolve<DeployStack, (User, Update)> for State {
     let ComposeUpResponse {
       logs,
       deployed,
-      file_missing,
       file_contents,
+      file_missing,
       remote_error,
       commit_hash,
       commit_message,
@@ -82,19 +89,89 @@ impl Resolve<DeployStack, (User, Update)> for State {
 
     update.logs.extend(logs);
 
+    let update_info = async {
+      let (services, json, json_error) = if let Some(contents) =
+        &file_contents
+      {
+        let (json, json_error) = get_config_json(contents).await;
+        match extract_services(contents) {
+          Ok(services) => (services, json, json_error),
+          Err(e) => {
+            update.push_error_log(
+            "extract services",
+            format_serror(&e.context("Failed to extract stack services. Things probably won't work correctly").into())
+          );
+            (Vec::new(), json, json_error)
+          }
+        }
+      } else {
+        // maybe better to do something else here for services.
+        (stack.info.services.clone(), None, None)
+      };
+
+      let (
+        services,
+        deployed_contents,
+        deployed_hash,
+        deployed_message,
+        deployed_json,
+        deployed_json_error,
+      ) = if deployed {
+        (
+          services,
+          file_contents.clone(),
+          commit_hash.clone(),
+          commit_message.clone(),
+          json.clone(),
+          json_error.clone(),
+        )
+      } else {
+        (
+          stack.info.services,
+          stack.info.deployed_contents,
+          stack.info.deployed_hash,
+          stack.info.deployed_message,
+          stack.info.deployed_json,
+          stack.info.deployed_json_error,
+        )
+      };
+
+      let info = StackInfo {
+        file_missing,
+        deployed_contents,
+        deployed_hash,
+        deployed_message,
+        deployed_json,
+        deployed_json_error,
+        services,
+        latest_json: json,
+        latest_json_error: json_error,
+        remote_contents: file_contents.and_then(|contents| {
+          // Only store remote contents here (not defined in `file_contents`)
+          stack.config.file_contents.is_empty().then_some(contents)
+        }),
+        remote_error,
+        latest_hash: commit_hash,
+        latest_message: commit_message,
+      };
+
+      let info = to_document(&info)
+        .context("failed to serialize stack info to bson")?;
+
+      db_client()
+        .await
+        .stacks
+        .update_one(
+          doc! { "name": &stack.name },
+          doc! { "$set": { "info": info } },
+        )
+        .await
+        .context("failed to update stack info on db")?;
+      anyhow::Ok(())
+    };
+
     // This will be weird with single service deploys. Come back to it.
-    if let Err(e) = refresh_stack_info(
-      &stack,
-      deployed,
-      file_missing,
-      file_contents,
-      remote_error,
-      commit_hash,
-      commit_message,
-      Some(&mut update),
-    )
-    .await
-    {
+    if let Err(e) = update_info.await {
       update.push_error_log(
         "refresh stack info",
         format_serror(

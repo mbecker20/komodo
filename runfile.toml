@@ -18,6 +18,7 @@ cmd = "yarn build"
 [update-periphery]
 path = "."
 cmd = """
+cargo build -p monitor_periphery --release && \
 systemctl stop periphery && \
 cp ./target/release/periphery /usr/local/bin/periphery && \
 chmod +x /usr/local/bin/periphery && \

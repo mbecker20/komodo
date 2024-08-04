@@ -37,7 +37,7 @@ pub async fn execute_compose<T: ExecuteCompose>(
   extras: T::Extras,
 ) -> anyhow::Result<Update> {
   let (stack, server) =
-    get_stack_and_server(stack, user, PermissionLevel::Execute)
+    get_stack_and_server(stack, user, PermissionLevel::Execute, true)
       .await?;
 
   // get the action state for the stack (or insert default).

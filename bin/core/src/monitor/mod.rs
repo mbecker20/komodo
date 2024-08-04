@@ -1,3 +1,4 @@
+use anyhow::Context;
 use async_timing_util::wait_until_timelength;
 use futures::future::join_all;
 use helpers::insert_stacks_status_unknown;
@@ -7,16 +8,18 @@ use monitor_client::entities::{
     stats::{ServerHealth, SystemStats},
     Server, ServerState,
   },
-  stack::StackState,
+  stack::{Stack, StackState},
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api::{self, git::GetLatestCommit};
+use regex::Regex;
 use serror::Serror;
 
 use crate::{
   config::core_config,
   helpers::periphery_client,
   monitor::{alert::check_alerts, record::record_server_stats},
+  resource,
   state::{
     db_client, deployment_status_cache, repo_status_cache,
     stack_status_cache,
@@ -251,7 +254,20 @@ pub async fn update_cache_for_server(server: &Server) {
           .iter()
           .filter(|container| {
             stack.info.services.iter().any(|service| {
-              container.name.starts_with(&service.container_name)
+              if let Some(name) = &service.container_name {
+                &container.name == name
+              } else {
+                match Regex::new(&format!(
+                  "compose-{}-[0-9]*$",
+                  service.service_name
+                )).with_context(|| format!("failed to construct container name matching regex for service {}", service.service_name)) {
+                  Ok(regex) => regex,
+                  Err(e) => {
+                    warn!("{e:#}");
+                    return false
+                  }
+                }.is_match(&container.name)
+              }
             })
           })
           .cloned()
@@ -315,4 +331,20 @@ pub async fn update_cache_for_server(server: &Server) {
       )
       .await;
   }
+}
+
+#[instrument(level = "debug")]
+pub async fn update_cache_for_stack(stack: &Stack) {
+  if stack.config.server_id.is_empty() {
+    return;
+  }
+  let Ok(server) = resource::get::<Server>(&stack.config.server_id)
+    .await
+    .inspect_err(|e| {
+      warn!("Failed to get server for stack {} | {e:#}", stack.name)
+    })
+  else {
+    return;
+  };
+  update_cache_for_server(&server).await;
 }

@@ -148,15 +148,15 @@ pub async fn compose_up(
 
   // Run compose up
   let extra_args = parse_extra_args(&stack.config.extra_args);
-  res.logs.push(
-    run_monitor_command(
-      "compose up",
-      format!(
-        "cd {run_dir} && {docker_compose} -f {file} up -d{extra_args}{service_arg}",
-      ),
-    )
-    .await,
-  );
+  let log = run_monitor_command(
+    "compose up",
+    format!(
+      "cd {run_dir} && {docker_compose} -f {file} up -d{extra_args}{service_arg}",
+    ),
+  )
+  .await;
+  res.deployed = log.success;
+  res.logs.push(log);
 
   Ok(())
 }

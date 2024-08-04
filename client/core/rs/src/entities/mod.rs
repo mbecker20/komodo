@@ -767,6 +767,7 @@ pub enum Operation {
   CreateStack,
   UpdateStack,
   DeleteStack,
+  RefreshStackCache,
   DeployStack,
   StartStack,
   RestartStack,
@@ -774,13 +775,6 @@ pub enum Operation {
   UnpauseStack,
   StopStack,
   DestroyStack,
-  DeployStackService,
-  StartStackService,
-  RestartStackService,
-  PauseStackService,
-  UnpauseStackService,
-  StopStackService,
-  DestroyStackService,
 
   // variable
   CreateVariable,

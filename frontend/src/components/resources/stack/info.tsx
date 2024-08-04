@@ -1,12 +1,19 @@
 import { Section } from "@components/layouts"
 import { ReactNode } from "react";
-import { useStack } from ".";
+import { useRead } from "@lib/hooks";
 
 export const StackInfo = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
-	const stack = useStack(id)
+	const stack = useRead("GetStack", { stack: id }).data;
 	return (
-		<Section titleOther={titleOther}>
+    <Section titleOther={titleOther}>
+      <div>file missing: {stack?.info?.file_missing ? "true" : "false"}</div>
+      <div>deployed contents: {stack?.info?.deployed_contents}</div>
+      <div>deployed json: {stack?.info?.deployed_json}</div>
+      <div>deployed message: {stack?.info?.deployed_message}</div>
 
-		</Section>
-	)
+      <pre>latest contents: {stack?.info?.remote_contents}</pre>
+      <pre>latest json: {stack?.info?.latest_json}</pre>
+      <div>latest message: {stack?.info?.latest_message}</div>
+    </Section>
+  );
 }

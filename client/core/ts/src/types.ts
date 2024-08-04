@@ -799,13 +799,6 @@ export type Execution =
 	| { type: "UnpauseStack", params: UnpauseStack }
 	| { type: "StopStack", params: StopStack }
 	| { type: "DestroyStack", params: DestroyStack }
-	| { type: "DeployStackService", params: DeployStackService }
-	| { type: "StartStackService", params: StartStackService }
-	| { type: "RestartStackService", params: RestartStackService }
-	| { type: "PauseStackService", params: PauseStackService }
-	| { type: "UnpauseStackService", params: UnpauseStackService }
-	| { type: "StopStackService", params: StopStackService }
-	| { type: "DestroyStackService", params: DestroyStackService }
 	| { type: "Sleep", params: Sleep };
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
@@ -1352,7 +1345,7 @@ export interface StackConfig {
 	run_directory: string;
 	/**
 	 * The path of the compose file, relative to the run path.
-	 * /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
+	 * If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
 	 * Default: `compose.yaml`
 	 */
 	file_path: string;
@@ -1366,38 +1359,42 @@ export interface StackServiceNames {
 }
 
 export interface StackInfo {
-	/** The deployed compose file. */
+	/**
+	 * Whether the compose file is missing on the target host.
+	 * Monitor will have to redeploy the stack to fix this.
+	 */
+	file_missing?: boolean;
+	/** The deployed compose file.This is updated whenever Monitor successfully deploys the stack. */
 	deployed_contents?: string;
+	/** Deployed short commit hash, or null. Only for repo based stacks. */
+	deployed_hash?: string;
+	/** Deployed commit message, or null. Only for repo based stacks */
+	deployed_message?: string;
+	/**
+	 * Cached json representation of the deployed compose file contents
+	 * Obtained by calling `docker compose config`. Will be of the deployed config if it exists.
+	 */
+	deployed_json?: string;
+	/** If there was an error in calling `docker compose config`, the message will be here. */
+	deployed_json_error?: string;
 	/**
 	 * The service / container names.
 	 * These only need to be matched against the start of the container name,
 	 * since the name is postfixed with a number.
-	 * 
-	 * This is updated whenever deployed contents is updated
+	 * This is updated whenever it is empty, or deployed contents is updated
 	 */
 	services?: StackServiceNames[];
 	/**
-	 * Cached json representation of the compose file contents, info about a parsing failure, or empty string.
+	 * Cached json representation of the compose file contents.
 	 * Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
 	 */
-	json?: string;
-	/** There was an error in calling `docker compose config` */
-	json_error?: boolean;
-	/**
-	 * If using a repo based compose file, will cache the contents here
-	 * for API delivery. Deploys will always pull directly from the repo.
-	 * 
-	 * Could be:
-	 * - The file contents or null (remote_error: false)
-	 * - An error message (remote_error: true)
-	 */
+	latest_json?: string;
+	/** If there was an error in calling `docker compose config` on the latest contents, the message will be here */
+	latest_json_error?: string;
+	/** If using a repo based compose file, will cache the contents here for API delivery. */
 	remote_contents?: string;
-	/** There was an error in getting the remote contents. */
-	remote_error?: boolean;
-	/** Deployed short commit hash, or empty string. */
-	deployed_hash?: string;
-	/** Deployed commit message, or null */
-	deployed_message?: string;
+	/** If there was an error in getting the remote contents, it will be here. */
+	remote_error?: string;
 	/** Latest commit hash, or null */
 	latest_hash?: string;
 	/** Latest commit message, or null */
@@ -1656,6 +1653,7 @@ export enum Operation {
 	CreateStack = "CreateStack",
 	UpdateStack = "UpdateStack",
 	DeleteStack = "DeleteStack",
+	RefreshStackCache = "RefreshStackCache",
 	DeployStack = "DeployStack",
 	StartStack = "StartStack",
 	RestartStack = "RestartStack",
@@ -1663,13 +1661,6 @@ export enum Operation {
 	UnpauseStack = "UnpauseStack",
 	StopStack = "StopStack",
 	DestroyStack = "DestroyStack",
-	DeployStackService = "DeployStackService",
-	StartStackService = "StartStackService",
-	RestartStackService = "RestartStackService",
-	PauseStackService = "PauseStackService",
-	UnpauseStackService = "UnpauseStackService",
-	StopStackService = "StopStackService",
-	DestroyStackService = "DestroyStackService",
 	CreateVariable = "CreateVariable",
 	UpdateVariableValue = "UpdateVariableValue",
 	DeleteVariable = "DeleteVariable",
@@ -2285,6 +2276,8 @@ export interface LaunchServer {
 export interface DeployStack {
 	/** Id or name */
 	stack: string;
+	/** The optional service. Experimental for deploys. */
+	service?: string;
 	/**
 	 * Override the default termination max time.
 	 * Only used if the stack needs to be taken down first.
@@ -2296,18 +2289,24 @@ export interface DeployStack {
 export interface StartStack {
 	/** Id or name */
 	stack: string;
+	/** Optionally specify a specific service */
+	service?: string;
 }
 
 /** Restarts the target stack. `docker compose restart`. Response: [Update] */
 export interface RestartStack {
 	/** Id or name */
 	stack: string;
+	/** Optionally specify a specific service */
+	service?: string;
 }
 
 /** Pauses the target stack. `docker compose pause`. Response: [Update] */
 export interface PauseStack {
 	/** Id or name */
 	stack: string;
+	/** Optionally specify a specific service */
+	service?: string;
 }
 
 /**
@@ -2318,6 +2317,8 @@ export interface PauseStack {
 export interface UnpauseStack {
 	/** Id or name */
 	stack: string;
+	/** Optionally specify a specific service */
+	service?: string;
 }
 
 /** Starts the target stack. `docker compose stop`. Response: [Update] */
@@ -2326,6 +2327,8 @@ export interface StopStack {
 	stack: string;
 	/** Override the default termination max time. */
 	stop_time?: number;
+	/** Optionally specify a specific service */
+	service?: string;
 }
 
 /** Destoys the target stack. `docker compose down`. Response: [Update] */
@@ -2336,81 +2339,8 @@ export interface DestroyStack {
 	remove_orphans?: boolean;
 	/** Override the default termination max time. */
 	stop_time?: number;
-}
-
-/**
- * Deploys the target stack service. `docker compose up -d service`. Response: [Update]
- * 
- * Note. If the stack is already deployed, it will be destroyed first.
- */
-export interface DeployStackService {
-	/** Id or name */
-	stack: string;
-	/** The service name */
-	service: string;
-	/**
-	 * Override the default termination max time.
-	 * Only used if the stack needs to be taken down first.
-	 */
-	stop_time?: number;
-}
-
-/** Starts the target stack service. `docker compose start service`. Response: [Update] */
-export interface StartStackService {
-	/** Id or name */
-	stack: string;
-	/** The service name */
-	service: string;
-}
-
-/** Restarts the target stack service. `docker compose restart service`. Response: [Update] */
-export interface RestartStackService {
-	/** Id or name */
-	stack: string;
-	/** The service name */
-	service: string;
-}
-
-/** Pauses the target stack service. `docker compose pause service`. Response: [Update] */
-export interface PauseStackService {
-	/** Id or name */
-	stack: string;
-	/** The service name */
-	service: string;
-}
-
-/**
- * Unpauses the target stack service. `docker compose unpause service`. Response: [Update].
- * 
- * Note. This is the only way to restart a paused container.
- */
-export interface UnpauseStackService {
-	/** Id or name */
-	stack: string;
-	/** The service name */
-	service: string;
-}
-
-/** Starts the target stack service. `docker compose stop service`. Response: [Update] */
-export interface StopStackService {
-	/** Id or name */
-	stack: string;
-	/** The service name */
-	service: string;
-	/** Override the default termination max time. */
-	stop_time?: number;
-}
-
-/** Destoys the target stack service. `docker compose down service`. Response: [Update] */
-export interface DestroyStackService {
-	/** Id or name */
-	stack: string;
-	/** The service name */
-	service: string;
-	/** Pass `--remove-orphans` */
-	remove_orphans?: boolean;
-	/** Override the default termination max time. */
-	stop_time?: number;
+	/** Optionally specify a specific service */
+	service?: string;
 }
 
 /** Runs the target resource sync. Response: [Update] */
@@ -3251,8 +3181,10 @@ export interface GetStackJson {
 
 /** Response for [GetStackJson] */
 export interface GetStackJsonResponse {
-	json: JsonValue;
-	error: boolean;
+	deployed_json?: JsonValue;
+	deployed_error: boolean;
+	latest_json: JsonValue;
+	latest_error: boolean;
 }
 
 /** Get a specific stacks containers. Response: [GetStackContainersResponse]. */
@@ -4243,7 +4175,12 @@ export interface UpdateStack {
 	config: _PartialStackConfig;
 }
 
-/** Trigger a refresh of the cached compose file contents. */
+/**
+ * Trigger a refresh of the cached compose file contents.
+ * Refreshes:
+ * - Whether the remote file is missing
+ * - The latest json, and for repos, the remote contents, hash, and message.
+ */
 export interface RefreshStackCache {
 	/** Id or name */
 	stack: string;
@@ -4770,6 +4707,21 @@ export interface HetznerServerTemplateConfig {
 	port: number;
 }
 
+export interface ComposeServiceDeploy {
+	replicas: number;
+}
+
+export interface ComposeService {
+	image?: string;
+	container_name?: string;
+	deploy?: ComposeServiceDeploy;
+}
+
+/** Keeping this minimal for now as its only needed to parse the service names / container names */
+export interface ComposeFile {
+	services?: Record<string, ComposeService>;
+}
+
 export interface SyncUpdate {
 	/** Resources to create */
 	to_create: number;
@@ -4839,14 +4791,7 @@ export type ExecuteRequest =
 	| { type: "StopStack", params: StopStack }
 	| { type: "PauseStack", params: PauseStack }
 	| { type: "UnpauseStack", params: UnpauseStack }
-	| { type: "DestroyStack", params: DestroyStack }
-	| { type: "DeployStackService", params: DeployStackService }
-	| { type: "StartStackService", params: StartStackService }
-	| { type: "RestartStackService", params: RestartStackService }
-	| { type: "StopStackService", params: StopStackService }
-	| { type: "PauseStackService", params: PauseStackService }
-	| { type: "UnpauseStackService", params: UnpauseStackService }
-	| { type: "DestroyStackService", params: DestroyStackService };
+	| { type: "DestroyStack", params: DestroyStack };
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }

@@ -15,9 +15,8 @@ pub fn extract_services(
         .into_iter()
         .map(|(service_name, ComposeService { container_name })| {
           StackServiceNames {
-            container_name: container_name
-              .unwrap_or_else(|| service_name.clone()),
             service_name,
+            container_name,
           }
         })
         .collect()

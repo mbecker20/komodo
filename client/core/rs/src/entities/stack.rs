@@ -107,8 +107,10 @@ pub struct StackInfo {
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StackServiceNames {
-  pub container_name: String,
+  /// The name of the service
   pub service_name: String,
+  /// Only defined if compose file explicitly uses container_name
+  pub container_name: Option<String>,
 }
 
 #[typeshare(serialized_as = "Partial<StackConfig>")]

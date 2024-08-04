@@ -67,8 +67,10 @@ pub async fn get_remote_resources(
     },
   );
 
-  if let Err(e) = std::fs::remove_dir_all(&repo_path) {
-    warn!("failed to remove sync repo directory | {e:?}")
+  if repo_path.exists() {
+    if let Err(e) = std::fs::remove_dir_all(&repo_path) {
+      warn!("failed to remove sync repo directory | {e:?}")
+    }
   }
 
   Ok((res, logs, hash, message))

@@ -55,8 +55,10 @@ pub async fn get_remote_compose_file(
   let res = fs::read_to_string(file_path)
     .context("failed to read file contents");
 
-  if let Err(e) = std::fs::remove_dir_all(&repo_path) {
-    warn!("failed to remove stack repo directory | {e:?}")
+  if repo_path.exists() {
+    if let Err(e) = std::fs::remove_dir_all(&repo_path) {
+      warn!("failed to remove stack repo directory | {e:?}")
+    }
   }
 
   Ok((res, logs, hash, message))

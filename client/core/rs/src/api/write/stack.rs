@@ -87,6 +87,9 @@ pub struct UpdateStack {
 //
 
 /// Trigger a refresh of the cached compose file contents.
+/// Refreshes:
+///   - Whether the remote file is missing
+///   - The latest json, and for repos, the remote contents, hash, and message.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

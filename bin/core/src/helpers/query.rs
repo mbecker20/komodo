@@ -23,6 +23,7 @@ use mungos::{
     options::FindOneOptions,
   },
 };
+use regex::Regex;
 
 use crate::{config::core_config, resource, state::db_client};
 
@@ -102,11 +103,22 @@ pub async fn get_stack_state(
     .await?
     .into_iter()
     .filter(|container| {
-      stack
-        .info
-        .services
-        .iter()
-        .any(|service| container.name == service.container_name)
+      stack.info.services.iter().any(|service| {
+        if let Some(name) = &service.container_name {
+          &container.name == name
+        } else {
+          match Regex::new(&format!(
+            "compose-{}-[0-9]*$",
+            service.service_name
+          )).with_context(|| format!("failed to construct container name matching regex for service {}", service.service_name)) {
+            Ok(regex) => regex,
+            Err(e) => {
+              warn!("{e:#}");
+              return false
+            }
+          }.is_match(&container.name)
+        }
+      })
     })
     .collect::<Vec<_>>();
 

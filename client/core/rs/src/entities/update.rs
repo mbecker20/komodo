@@ -11,7 +11,7 @@ use crate::entities::{
 use super::{
   alerter::Alerter, build::Build, builder::Builder,
   deployment::Deployment, procedure::Procedure, repo::Repo,
-  server::Server, server_template::ServerTemplate,
+  server::Server, server_template::ServerTemplate, stack::Stack,
   sync::ResourceSync, Version,
 };
 
@@ -310,6 +310,12 @@ impl From<&ServerTemplate> for ResourceTarget {
 impl From<&ResourceSync> for ResourceTarget {
   fn from(resource_sync: &ResourceSync) -> Self {
     Self::ResourceSync(resource_sync.id.clone())
+  }
+}
+
+impl From<&Stack> for ResourceTarget {
+  fn from(resource_sync: &Stack) -> Self {
+    Self::Stack(resource_sync.id.clone())
   }
 }
 
