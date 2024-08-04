@@ -32,6 +32,7 @@ svi.workspace = true
 # external
 axum-extra.workspace = true
 serde_json.workspace = true
+serde_yaml.workspace = true
 tracing.workspace = true
 bollard.workspace = true
 sysinfo.workspace = true
@@ -39,6 +40,7 @@ dotenv.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
 serde.workspace = true
+regex.workspace = true
 axum.workspace = true
 clap.workspace = true
 envy.workspace = true

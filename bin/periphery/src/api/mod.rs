@@ -87,21 +87,9 @@ pub enum PeripheryRequest {
 
   // Compose
   ComposeUp(ComposeUp),
-  ComposeStart(ComposeStart),
-  ComposeRestart(ComposeRestart),
-  ComposePause(ComposePause),
-  ComposeUnpause(ComposeUnpause),
-  ComposeStop(ComposeStop),
-  ComposeDown(ComposeDown),
-
-  // Compose Service
-  ComposeServiceUp(ComposeServiceUp),
-  ComposeServiceStart(ComposeServiceStart),
-  ComposeServiceRestart(ComposeServiceRestart),
-  ComposeServicePause(ComposeServicePause),
-  ComposeServiceUnpause(ComposeServiceUnpause),
-  ComposeServiceStop(ComposeServiceStop),
-  ComposeServiceDown(ComposeServiceDown),
+  ComposeCommand(ComposeExecution),
+  GetComposeServiceLog(GetComposeServiceLog),
+  GetComposeServiceLogSearch(GetComposeServiceLogSearch),
 
   // Networks
   CreateNetwork(CreateNetwork),

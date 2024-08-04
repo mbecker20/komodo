@@ -332,55 +332,6 @@ impl ResourceSync for Procedure {
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
-          Execution::DeployStackService(config) => {
-            config.stack = resources
-              .stacks
-              .get(&config.stack)
-              .map(|s| s.name.clone())
-              .unwrap_or_default();
-          }
-          Execution::StartStackService(config) => {
-            config.stack = resources
-              .stacks
-              .get(&config.stack)
-              .map(|s| s.name.clone())
-              .unwrap_or_default();
-          }
-          Execution::RestartStackService(config) => {
-            config.stack = resources
-              .stacks
-              .get(&config.stack)
-              .map(|s| s.name.clone())
-              .unwrap_or_default();
-          }
-          Execution::PauseStackService(config) => {
-            config.stack = resources
-              .stacks
-              .get(&config.stack)
-              .map(|s| s.name.clone())
-              .unwrap_or_default();
-          }
-          Execution::UnpauseStackService(config) => {
-            config.stack = resources
-              .stacks
-              .get(&config.stack)
-              .map(|s| s.name.clone())
-              .unwrap_or_default();
-          }
-          Execution::StopStackService(config) => {
-            config.stack = resources
-              .stacks
-              .get(&config.stack)
-              .map(|s| s.name.clone())
-              .unwrap_or_default();
-          }
-          Execution::DestroyStackService(config) => {
-            config.stack = resources
-              .stacks
-              .get(&config.stack)
-              .map(|s| s.name.clone())
-              .unwrap_or_default();
-          }
           Execution::Sleep(_) => {}
         }
       }

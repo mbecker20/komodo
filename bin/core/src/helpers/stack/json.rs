@@ -5,23 +5,23 @@ use tokio::fs;
 
 use crate::{auth::random_string, config::core_config};
 
-/// returns (content, is_error)
 pub async fn get_config_json(
   compose_contents: &str,
-) -> (String, bool) {
+) -> (Option<String>, Option<String>) {
   match get_config_json_inner(compose_contents).await {
-    Ok(res) => res,
+    Ok(res) => (Some(res), None),
     Err(e) => (
-      format_serror(&e.context("failed to get config json").into()),
-      true,
+      None,
+      Some(format_serror(
+        &e.context("failed to get config json").into(),
+      )),
     ),
   }
 }
 
-/// Returns (message, is_error)
 async fn get_config_json_inner(
   compose_contents: &str,
-) -> anyhow::Result<(String, bool)> {
+) -> anyhow::Result<String> {
   // create a new folder to prevent collisions
   let dir = core_config().stack_directory.join(random_string(10));
 
@@ -50,8 +50,8 @@ async fn get_config_json_inner(
     .ok();
 
   if res.success() {
-    Ok((res.stdout, false))
+    Ok(res.stdout)
   } else {
-    Ok((res.stderr, true))
+    Err(anyhow::Error::msg(res.stderr))
   }
 }

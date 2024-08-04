@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, path::PathBuf};
 
 use anyhow::Context;
 use monitor_client::{
@@ -8,8 +8,12 @@ use monitor_client::{
     deployment::ContainerSummary,
     permission::PermissionLevel,
     stack::{Stack, StackActionState, StackListItem, StackState},
+    to_monitor_name,
     user::User,
   },
+};
+use periphery_client::api::compose::{
+  GetComposeServiceLog, GetComposeServiceLogSearch,
 };
 use resolver_api::{Resolve, ResolveToString};
 
@@ -47,9 +51,16 @@ impl ResolveToString<GetStackJson, User> for State {
       PermissionLevel::Read,
     )
     .await?;
+    let deployed_json =
+      stack.info.deployed_json.as_deref().unwrap_or("null");
+    let deployed_error =
+      stack.info.deployed_json_error.as_deref().unwrap_or("null");
+    let latest_json =
+      stack.info.latest_json.as_deref().unwrap_or("null");
+    let latest_error =
+      stack.info.latest_json_error.as_deref().unwrap_or("null");
     let res = format!(
-      "{{\"json\":{},\"error\":{}}}",
-      stack.info.json, stack.info.json_error
+      "{{\"deployed_json\":{deployed_json},\"deployed_error\":{deployed_error},\"latest_json\":{latest_json},\"latest_error\":{latest_error}}}",
     );
     Ok(res)
   }
@@ -88,9 +99,23 @@ impl Resolve<GetStackServiceLog, User> for State {
     }: GetStackServiceLog,
     user: User,
   ) -> anyhow::Result<GetStackServiceLogResponse> {
-    let (stack, server) = get_stack_and_server(&stack, &user).await?;
-
-    todo!()
+    let (stack, server) =
+      get_stack_and_server(&stack, &user, PermissionLevel::Read)
+        .await?;
+    let periphery = periphery_client(&server)?;
+    let run_directory = to_monitor_name(&stack.name)
+      .parse::<PathBuf>()
+      .context("stack name is not valid path")?
+      .join(&stack.config.run_directory);
+    periphery
+      .request(GetComposeServiceLog {
+        run_directory,
+        file_path: stack.config.file_path,
+        service,
+        tail,
+      })
+      .await
+      .context("failed to get stack service log from periphery")
   }
 }
 
@@ -102,15 +127,29 @@ impl Resolve<SearchStackServiceLog, User> for State {
       service,
       terms,
       combinator,
-      invert
+      invert,
     }: SearchStackServiceLog,
     user: User,
   ) -> anyhow::Result<SearchStackServiceLogResponse> {
-    let (stack, server) = get_stack_and_server(&stack, &user).await?;
-
+    let (stack, server) =
+      get_stack_and_server(&stack, &user, PermissionLevel::Read)
+        .await?;
     let periphery = periphery_client(&server)?;
-
-    todo!()
+    let run_directory = to_monitor_name(&stack.name)
+      .parse::<PathBuf>()
+      .context("stack name is not valid path")?
+      .join(&stack.config.run_directory);
+    periphery
+      .request(GetComposeServiceLogSearch {
+        run_directory,
+        file_path: stack.config.file_path,
+        service,
+        terms,
+        combinator,
+        invert,
+      })
+      .await
+      .context("failed to get stack service log from periphery")
   }
 }
 

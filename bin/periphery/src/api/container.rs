@@ -4,13 +4,13 @@ use monitor_client::entities::{
   deployment::{ContainerSummary, DockerContainerStats},
   to_monitor_name,
   update::Log,
-  SearchCombinator,
 };
 use periphery_client::api::container::*;
 use resolver_api::Resolve;
 
 use crate::{
   docker::{container_stats, docker_client, stop_container_command},
+  helpers::log_grep,
   State,
 };
 
@@ -67,18 +67,7 @@ impl Resolve<GetContainerLogSearch> for State {
     }: GetContainerLogSearch,
     _: (),
   ) -> anyhow::Result<Log> {
-    let maybe_invert = invert.then_some(" -v").unwrap_or_default();
-    let grep = match combinator {
-      SearchCombinator::Or => {
-        format!("grep{maybe_invert} -E '{}'", terms.join("|"))
-      }
-      SearchCombinator::And => {
-        format!(
-          "grep{maybe_invert} -P '^(?=.*{})'",
-          terms.join(")(?=.*")
-        )
-      }
-    };
+    let grep = log_grep(&terms, combinator, invert);
     let command =
       format!("docker logs {name} --tail 5000 2>&1 | {grep}");
     Ok(run_monitor_command("get container log grep", command).await)

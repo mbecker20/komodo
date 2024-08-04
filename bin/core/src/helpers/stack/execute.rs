@@ -1,6 +1,8 @@
+use anyhow::anyhow;
 use monitor_client::{
   api::execute::*,
   entities::{
+    permission::PermissionLevel,
     stack::{Stack, StackActionState},
     update::Update,
     user::User,
@@ -9,7 +11,7 @@ use monitor_client::{
 use periphery_client::{api::compose::*, PeripheryClient};
 
 use crate::{
-  helpers::{git_token, periphery_client, update::update_update},
+  helpers::{periphery_client, update::update_update},
   monitor::update_cache_for_server,
   state::action_states,
 };
@@ -21,19 +23,22 @@ pub trait ExecuteCompose {
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
-    git_token: Option<String>,
+    service: Option<String>,
     extras: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse>;
+  ) -> anyhow::Result<ComposeExecutionResponse>;
 }
 
 pub async fn execute_compose<T: ExecuteCompose>(
   stack: &str,
+  service: Option<String>,
   user: &User,
   set_in_progress: impl Fn(&mut StackActionState),
   mut update: Update,
   extras: T::Extras,
 ) -> anyhow::Result<Update> {
-  let (stack, server) = get_stack_and_server(stack, user).await?;
+  let (stack, server) =
+    get_stack_and_server(stack, user, PermissionLevel::Execute)
+      .await?;
 
   // get the action state for the stack (or insert default).
   let action_state =
@@ -43,14 +48,16 @@ pub async fn execute_compose<T: ExecuteCompose>(
   // The returned guard will set the action state back to default when dropped.
   let _action_guard = action_state.update(set_in_progress)?;
 
-  let git_token =
-    git_token(&stack.config.git_provider, &stack.config.git_account);
-
   let periphery = periphery_client(&server)?;
 
-  let res = T::execute(periphery, stack, git_token, extras).await?;
-
-  update.logs.extend(res.logs);
+  let ComposeExecutionResponse { file_missing, log } =
+    T::execute(periphery, stack, service, extras).await?;
+  if let Some(log) = log {
+    update.logs.push(log);
+  }
+  if file_missing {
+    return Err(anyhow!("Compose file is missing on Periphery. Redeploy the stack to fix."));
+  }
 
   // Ensure cached stack state up to date by updating server cache
   update_cache_for_server(&server).await;
@@ -66,10 +73,20 @@ impl ExecuteCompose for StartStack {
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
-    git_token: Option<String>,
+    service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery.request(ComposeStart { stack, git_token }).await
+  ) -> anyhow::Result<ComposeExecutionResponse> {
+    let service = service
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+    periphery
+      .request(ComposeExecution {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path: stack.config.file_path,
+        command: format!("start{service}"),
+      })
+      .await
   }
 }
 
@@ -78,10 +95,20 @@ impl ExecuteCompose for RestartStack {
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
-    git_token: Option<String>,
+    service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery.request(ComposeRestart { stack, git_token }).await
+  ) -> anyhow::Result<ComposeExecutionResponse> {
+    let service = service
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+    periphery
+      .request(ComposeExecution {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path: stack.config.file_path,
+        command: format!("restart{service}"),
+      })
+      .await
   }
 }
 
@@ -90,10 +117,20 @@ impl ExecuteCompose for PauseStack {
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
-    git_token: Option<String>,
+    service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery.request(ComposePause { stack, git_token }).await
+  ) -> anyhow::Result<ComposeExecutionResponse> {
+    let service = service
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+    periphery
+      .request(ComposeExecution {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path: stack.config.file_path,
+        command: format!("pause{service}"),
+      })
+      .await
   }
 }
 
@@ -102,10 +139,20 @@ impl ExecuteCompose for UnpauseStack {
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
-    git_token: Option<String>,
+    service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery.request(ComposeUnpause { stack, git_token }).await
+  ) -> anyhow::Result<ComposeExecutionResponse> {
+    let service = service
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+    periphery
+      .request(ComposeExecution {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path: stack.config.file_path,
+        command: format!("unpause{service}"),
+      })
+      .await
   }
 }
 
@@ -114,14 +161,19 @@ impl ExecuteCompose for StopStack {
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
-    git_token: Option<String>,
+    service: Option<String>,
     timeout: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
+  ) -> anyhow::Result<ComposeExecutionResponse> {
+    let service = service
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+    let maybe_timeout = maybe_timeout(timeout);
     periphery
-      .request(ComposeStop {
-        stack,
-        git_token,
-        timeout,
+      .request(ComposeExecution {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path: stack.config.file_path,
+        command: format!("stop{maybe_timeout}{service}"),
       })
       .await
   }
@@ -132,105 +184,35 @@ impl ExecuteCompose for DestroyStack {
   async fn execute(
     periphery: PeripheryClient,
     stack: Stack,
-    git_token: Option<String>,
+    service: Option<String>,
     (timeout, remove_orphans): Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
+  ) -> anyhow::Result<ComposeExecutionResponse> {
+    let service = service
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+    let maybe_timeout = maybe_timeout(timeout);
+    let maybe_remove_orphans = if remove_orphans {
+      " --remove-orphans"
+    } else {
+      ""
+    };
     periphery
-      .request(ComposeDown {
-        stack,
-        git_token,
-        timeout,
-        remove_orphans,
+      .request(ComposeExecution {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path: stack.config.file_path,
+        command: format!(
+          "down{maybe_timeout}{maybe_remove_orphans}{service}"
+        ),
       })
       .await
   }
 }
 
-impl ExecuteCompose for StartStackService {
-  type Extras = String;
-  async fn execute(
-    periphery: PeripheryClient,
-    stack: Stack,
-    git_token: Option<String>,
-    service: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery
-      .request(ComposeServiceStart { stack, service, git_token })
-      .await
-  }
-}
-
-impl ExecuteCompose for RestartStackService {
-  type Extras = String;
-  async fn execute(
-    periphery: PeripheryClient,
-    stack: Stack,
-    git_token: Option<String>,
-    service: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery.request(ComposeServiceRestart { stack, service, git_token }).await
-  }
-}
-
-impl ExecuteCompose for PauseStackService {
-  type Extras = String;
-  async fn execute(
-    periphery: PeripheryClient,
-    stack: Stack,
-    git_token: Option<String>,
-    service: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery.request(ComposeServicePause { stack, service, git_token }).await
-  }
-}
-
-impl ExecuteCompose for UnpauseStackService {
-  type Extras = String;
-  async fn execute(
-    periphery: PeripheryClient,
-    stack: Stack,
-    git_token: Option<String>,
-    service: Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery.request(ComposeServiceUnpause { stack, service, git_token }).await
-  }
-}
-
-impl ExecuteCompose for StopStackService {
-  type Extras = (String, Option<i32>);
-  async fn execute(
-    periphery: PeripheryClient,
-    stack: Stack,
-    git_token: Option<String>,
-    (service, timeout): Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery
-      .request(ComposeServiceStop {
-        stack,
-        service,
-        git_token,
-        timeout,
-      })
-      .await
-  }
-}
-
-impl ExecuteCompose for DestroyStackService {
-  type Extras = (String, Option<i32>, bool);
-  async fn execute(
-    periphery: PeripheryClient,
-    stack: Stack,
-    git_token: Option<String>,
-    (service, timeout, remove_orphans): Self::Extras,
-  ) -> anyhow::Result<ComposeResponse> {
-    periphery
-      .request(ComposeServiceDown {
-        stack,
-        service,
-        git_token,
-        timeout,
-        remove_orphans,
-      })
-      .await
+fn maybe_timeout(timeout: Option<i32>) -> String {
+  if let Some(timeout) = timeout {
+    format!(" --timeout {timeout}")
+  } else {
+    String::new()
   }
 }

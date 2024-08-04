@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_client::entities::EnvironmentVar;
+use monitor_client::entities::{EnvironmentVar, SearchCombinator};
 
 use crate::config::periphery_config;
 
@@ -46,4 +46,23 @@ pub fn parse_labels(labels: &[EnvironmentVar]) -> String {
     .map(|p| format!(" --label {}=\"{}\"", p.variable, p.value))
     .collect::<Vec<_>>()
     .join("")
+}
+
+pub fn log_grep(
+  terms: &[String],
+  combinator: SearchCombinator,
+  invert: bool,
+) -> String {
+  let maybe_invert = invert.then_some(" -v").unwrap_or_default();
+  match combinator {
+    SearchCombinator::Or => {
+      format!("grep{maybe_invert} -E '{}'", terms.join("|"))
+    }
+    SearchCombinator::And => {
+      format!(
+        "grep{maybe_invert} -P '^(?=.*{})'",
+        terms.join(")(?=.*")
+      )
+    }
+  }
 }

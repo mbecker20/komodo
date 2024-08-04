@@ -76,15 +76,6 @@ pub enum ExecuteRequest {
   PauseStack(PauseStack),
   UnpauseStack(UnpauseStack),
   DestroyStack(DestroyStack),
-
-  // ==== STACK (Service) ====
-  DeployStackService(DeployStackService),
-  StartStackService(StartStackService),
-  RestartStackService(RestartStackService),
-  StopStackService(StopStackService),
-  PauseStackService(PauseStackService),
-  UnpauseStackService(UnpauseStackService),
-  DestroyStackService(DestroyStackService),
 }
 
 pub fn router() -> Router {

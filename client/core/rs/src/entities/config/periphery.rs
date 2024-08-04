@@ -154,7 +154,7 @@ fn default_config_paths() -> Vec<String> {
 ///
 /// ## optional. `/etc/monitor/repos` is default.
 /// repo_dir = "/etc/monitor/repos"
-/// 
+///
 /// ## optional. `/etc/monitor/stacks` is default.
 /// stack_dir = "/etc/monitor/stacks"
 ///

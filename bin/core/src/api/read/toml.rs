@@ -453,33 +453,6 @@ async fn add_procedure(
         Execution::DestroyStack(exec) => exec.stack.clone_from(
           names.stacks.get(&exec.stack).unwrap_or(&String::new()),
         ),
-        Execution::DeployStackService(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::StartStackService(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::RestartStackService(exec) => {
-          exec.stack.clone_from(
-            names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-          )
-        }
-        Execution::PauseStackService(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::UnpauseStackService(exec) => {
-          exec.stack.clone_from(
-            names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-          )
-        }
-        Execution::StopStackService(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::DestroyStackService(exec) => {
-          exec.stack.clone_from(
-            names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-          )
-        }
         Execution::Sleep(_) | Execution::None(_) => {}
       }
     }

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
@@ -61,39 +63,41 @@ pub type Stack = Resource<StackConfig, StackInfo>;
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StackInfo {
-  /// The deployed compose file.
+  /// Whether the compose file is missing on the target host.
+  /// Monitor will have to redeploy the stack to fix this.
+  #[serde(default)]
+  pub file_missing: bool,
+
+  /// The deployed compose file.This is updated whenever Monitor successfully deploys the stack.
   pub deployed_contents: Option<String>,
+  /// Deployed short commit hash, or null. Only for repo based stacks.
+  pub deployed_hash: Option<String>,
+  /// Deployed commit message, or null. Only for repo based stacks
+  pub deployed_message: Option<String>,
+  /// Cached json representation of the deployed compose file contents
+  /// Obtained by calling `docker compose config`. Will be of the deployed config if it exists.
+  pub deployed_json: Option<String>,
+  /// If there was an error in calling `docker compose config`, the message will be here.
+  pub deployed_json_error: Option<String>,
   /// The service / container names.
   /// These only need to be matched against the start of the container name,
   /// since the name is postfixed with a number.
-  ///
-  /// This is updated whenever deployed contents is updated
+  /// This is updated whenever it is empty, or deployed contents is updated
   #[serde(default)]
   pub services: Vec<StackServiceNames>,
 
-  /// Cached json representation of the compose file contents, info about a parsing failure, or empty string.
+  /// Cached json representation of the compose file contents.
   /// Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
-  #[serde(default)]
-  pub json: String,
-  /// There was an error in calling `docker compose config`
-  #[serde(default)]
-  pub json_error: bool,
+  pub latest_json: Option<String>,
+  /// If there was an error in calling `docker compose config` on the latest contents, the message will be here
+  pub latest_json_error: Option<String>,
 
   // Only for repo based stacks.
-  /// If using a repo based compose file, will cache the contents here
-  /// for API delivery. Deploys will always pull directly from the repo.
-  ///
-  /// Could be:
-  ///   - The file contents or null (remote_error: false)
-  ///   - An error message (remote_error: true)
+  /// If using a repo based compose file, will cache the contents here for API delivery.
   pub remote_contents: Option<String>,
-  /// There was an error in getting the remote contents.
-  #[serde(default)]
-  pub remote_error: bool,
-  /// Deployed short commit hash, or empty string.
-  pub deployed_hash: Option<String>,
-  /// Deployed commit message, or null
-  pub deployed_message: Option<String>,
+  /// If there was an error in getting the remote contents, it will be here.
+  pub remote_error: Option<String>,
+
   /// Latest commit hash, or null
   pub latest_hash: Option<String>,
   /// Latest commit message, or null
@@ -221,7 +225,7 @@ pub struct StackConfig {
   pub run_directory: String,
 
   /// The path of the compose file, relative to the run path.
-  /// /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
+  /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
   /// Default: `compose.yaml`
   #[serde(default = "default_file_path")]
   #[builder(default = "default_file_path()")]
@@ -323,4 +327,26 @@ impl super::resource::AddFilters for StackQuerySpecifics {
       filters.insert("config.repo", doc! { "$in": &self.repos });
     }
   }
+}
+
+/// Keeping this minimal for now as its only needed to parse the service names / container names
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeFile {
+  #[serde(default)]
+  pub services: HashMap<String, ComposeService>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeService {
+  pub image: Option<String>,
+  pub container_name: Option<String>,
+  pub deploy: Option<ComposeServiceDeploy>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeServiceDeploy {
+  pub replicas: u8,
 }

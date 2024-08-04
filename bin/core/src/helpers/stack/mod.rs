@@ -69,9 +69,11 @@ pub fn spawn_stack_refresh_loop() {
 pub async fn refresh_stack_info(
   stack: &Stack,
   is_deploy: bool,
+  file_missing: bool,
   file_contents: Option<String>,
-  latest_hash: Option<String>,
-  latest_message: Option<String>,
+  remote_error: Option<String>,
+  hash: Option<String>,
+  message: Option<String>,
   update: Option<&mut Update>,
 ) -> anyhow::Result<()> {
   let (new_services, json, json_error) = if let Some(contents) =
@@ -91,42 +93,53 @@ pub async fn refresh_stack_info(
       }
     }
   } else {
-    (Vec::new(), String::new(), false)
+    (Vec::new(), None, None)
   };
 
-  let (deployed_contents, deployed_hash, deployed_message) =
-    if is_deploy {
-      (
-        file_contents.clone(),
-        latest_hash.clone(),
-        latest_message.clone(),
-      )
-    } else {
-      (
-        stack.info.deployed_contents.clone(),
-        stack.info.deployed_hash.clone(),
-        stack.info.deployed_message.clone(),
-      )
-    };
-
-  let info = StackInfo {
+  let (
+    services,
     deployed_contents,
-    // Only update services on a deploy, they should be the latest deployed services
-    services: if is_deploy {
-      new_services
-    } else {
-      stack.info.services.clone()
-    },
-    json,
-    json_error,
-    remote_contents: file_contents.and_then(|contents| {
-      stack.config.file_contents.is_empty().then_some(contents)
-    }),
-    remote_error: false,
-    latest_hash,
-    latest_message,
     deployed_hash,
     deployed_message,
+    deployed_json,
+    deployed_json_error,
+  ) = if is_deploy {
+    (
+      new_services,
+      file_contents.clone(),
+      hash.clone(),
+      message.clone(),
+      json.clone(),
+      json_error.clone(),
+    )
+  } else {
+    (
+      stack.info.services.clone(),
+      stack.info.deployed_contents.clone(),
+      stack.info.deployed_hash.clone(),
+      stack.info.deployed_message.clone(),
+      stack.info.deployed_json.clone(),
+      stack.info.deployed_json_error.clone(),
+    )
+  };
+
+  let info = StackInfo {
+    file_missing,
+    deployed_contents,
+    deployed_hash,
+    deployed_message,
+    deployed_json,
+    deployed_json_error,
+    services,
+    latest_json: json,
+    latest_json_error: json_error,
+    remote_contents: file_contents.and_then(|contents| {
+      // Only store remote contents here (not defined in `file_contents`)
+      stack.config.file_contents.is_empty().then_some(contents)
+    }),
+    remote_error,
+    latest_hash: hash,
+    latest_message: message,
   };
 
   let info = to_document(&info)
@@ -147,11 +160,12 @@ pub async fn refresh_stack_info(
 pub async fn get_stack_and_server(
   stack: &str,
   user: &User,
+  permission_level: PermissionLevel,
 ) -> anyhow::Result<(Stack, Server)> {
   let stack = resource::get_check_permissions::<Stack>(
     stack,
     user,
-    PermissionLevel::Execute,
+    permission_level,
   )
   .await?;
 

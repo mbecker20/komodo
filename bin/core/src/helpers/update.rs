@@ -259,50 +259,6 @@ pub async fn init_execution_update(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
-
-    // Stack (Service)
-    ExecuteRequest::DeployStackService(data) => (
-      Operation::DeployStackService,
-      ResourceTarget::Stack(
-        resource::get::<Stack>(&data.stack).await?.id,
-      ),
-    ),
-    ExecuteRequest::StartStackService(data) => (
-      Operation::StartStackService,
-      ResourceTarget::Stack(
-        resource::get::<Stack>(&data.stack).await?.id,
-      ),
-    ),
-    ExecuteRequest::RestartStackService(data) => (
-      Operation::RestartStackService,
-      ResourceTarget::Stack(
-        resource::get::<Stack>(&data.stack).await?.id,
-      ),
-    ),
-    ExecuteRequest::PauseStackService(data) => (
-      Operation::PauseStackService,
-      ResourceTarget::Stack(
-        resource::get::<Stack>(&data.stack).await?.id,
-      ),
-    ),
-    ExecuteRequest::UnpauseStackService(data) => (
-      Operation::UnpauseStackService,
-      ResourceTarget::Stack(
-        resource::get::<Stack>(&data.stack).await?.id,
-      ),
-    ),
-    ExecuteRequest::StopStackService(data) => (
-      Operation::StopStackService,
-      ResourceTarget::Stack(
-        resource::get::<Stack>(&data.stack).await?.id,
-      ),
-    ),
-    ExecuteRequest::DestroyStackService(data) => (
-      Operation::DestroyStackService,
-      ResourceTarget::Stack(
-        resource::get::<Stack>(&data.stack).await?.id,
-      ),
-    ),
   };
   let mut update = make_update(target, operation, user);
   update.in_progress();

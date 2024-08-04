@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use monitor_client::entities::{
   permission::PermissionLevel,
@@ -14,10 +14,10 @@ use monitor_client::entities::{
   Operation,
 };
 use mungos::mongodb::Collection;
-use periphery_client::api::compose::ComposeDown;
+use periphery_client::api::compose::ComposeExecution;
 
 use crate::{
-  helpers::{git_token, periphery_client, query::get_stack_state},
+  helpers::{periphery_client, query::get_stack_state},
   monitor::update_cache_for_server,
   resource,
   state::{action_states, db_client, stack_status_cache},
@@ -199,23 +199,30 @@ impl super::MonitorResource for Stack {
     };
 
     match periphery
-      .request(ComposeDown {
-        stack: stack.clone(),
-        git_token: git_token(
-          &stack.config.git_provider,
-          &stack.config.git_account,
-        ),
-        remove_orphans: true,
-        timeout: None,
+      .request(ComposeExecution {
+        name: stack.name.clone(),
+        run_directory: stack.config.run_directory.clone(),
+        file_path: stack.config.file_path.clone(),
+        command: String::from("down --remove-orphans"),
       })
       .await
     {
-      Ok(res) => update.logs.extend(res.logs),
-      Err(e) => update.push_error_log(
-        "destroy stack",
+      Ok(res) => {
+        if res.file_missing {
+          update.push_simple_log("Compose file missing", format_serror(&anyhow!(
+            "Found the compose file missing on periphery, skipping compose down before delete.",
+          )
+          .into()))
+        }
+        if let Some(log) = res.log {
+          update.logs.push(log)
+        }
+      },
+      Err(e) => update.push_simple_log(
+        "Failed to destroy stack",
         format_serror(
           &e.context(
-            "failed to destroy stack on server before delete",
+            "failed to destroy stack on periphery server before delete",
           )
           .into(),
         ),

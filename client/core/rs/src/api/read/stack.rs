@@ -4,7 +4,10 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  deployment::ContainerSummary, stack::{Stack, StackActionState, StackListItem, StackQuery}, update::Log, JsonValue, SearchCombinator, U64
+  deployment::ContainerSummary,
+  stack::{Stack, StackActionState, StackListItem, StackQuery},
+  update::Log,
+  JsonValue, SearchCombinator, U64,
 };
 
 use super::MonitorReadRequest;
@@ -49,8 +52,10 @@ pub struct GetStackJson {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetStackJsonResponse {
-  pub json: JsonValue,
-  pub error: bool,
+  pub deployed_json: Option<JsonValue>,
+  pub deployed_error: bool,
+  pub latest_json: JsonValue,
+  pub latest_error: bool,
 }
 
 //

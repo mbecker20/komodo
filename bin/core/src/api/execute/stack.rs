@@ -1,24 +1,115 @@
+use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
-  entities::{update::Update, user::User},
+  entities::{
+    permission::PermissionLevel, update::Update, user::User,
+  },
 };
+use periphery_client::api::compose::{ComposeUp, ComposeUpResponse};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::stack::{
-    deploy::deploy_stack_maybe_service, execute::execute_compose,
+  helpers::{
+    interpolate_variables_secrets_into_environment, periphery_client,
+    stack::{
+      execute::execute_compose, get_stack_and_server,
+      refresh_stack_info,
+    },
+    update::update_update,
   },
-  state::State,
+  monitor::update_cache_for_server,
+  state::{action_states, State},
 };
 
 impl Resolve<DeployStack, (User, Update)> for State {
   #[instrument(name = "DeployStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    DeployStack { stack, stop_time }: DeployStack,
-    (user, update): (User, Update),
+    DeployStack {
+      stack,
+      stop_time,
+      service,
+    }: DeployStack,
+    (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    deploy_stack_maybe_service(&stack, user, update, None).await
+    let (mut stack, server) =
+      get_stack_and_server(&stack, &user, PermissionLevel::Execute)
+        .await?;
+
+    // get the action state for the stack (or insert default).
+    let action_state =
+      action_states().stack.get_or_insert_default(&stack.id).await;
+
+    // Will check to ensure stack not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.deploying = true)?;
+
+    let git_token = crate::helpers::git_token(
+      &stack.config.git_provider,
+      &stack.config.git_account,
+    );
+
+    let registry_token = crate::helpers::registry_token(
+      &stack.config.registry_provider,
+      &stack.config.registry_account,
+    );
+
+    if !stack.config.skip_secret_interp {
+      interpolate_variables_secrets_into_environment(
+        &mut stack.config.environment,
+        &mut update,
+      )
+      .await?;
+    }
+
+    let ComposeUpResponse {
+      logs,
+      deployed,
+      file_missing,
+      file_contents,
+      remote_error,
+      commit_hash,
+      commit_message,
+    } = periphery_client(&server)?
+      .request(ComposeUp {
+        stack: stack.clone(),
+        service,
+        git_token,
+        registry_token,
+      })
+      .await?;
+
+    update.logs.extend(logs);
+
+    // This will be weird with single service deploys. Come back to it.
+    if let Err(e) = refresh_stack_info(
+      &stack,
+      deployed,
+      file_missing,
+      file_contents,
+      remote_error,
+      commit_hash,
+      commit_message,
+      Some(&mut update),
+    )
+    .await
+    {
+      update.push_error_log(
+        "refresh stack info",
+        format_serror(
+          &e.context("failed to refresh stack info on db").into(),
+        ),
+      )
+    }
+
+    // Ensure cached stack state up to date by updating server cache
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
   }
 }
 
@@ -26,13 +117,19 @@ impl Resolve<StartStack, (User, Update)> for State {
   #[instrument(name = "StartStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    StartStack { stack }: StartStack,
+    StartStack { stack, service }: StartStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
+    let no_service = service.is_none();
     execute_compose::<StartStack>(
       &stack,
+      service,
       &user,
-      |state| state.starting = true,
+      |state| {
+        if no_service {
+          state.starting = true
+        }
+      },
       update,
       (),
     )
@@ -44,13 +141,19 @@ impl Resolve<RestartStack, (User, Update)> for State {
   #[instrument(name = "RestartStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    RestartStack { stack }: RestartStack,
+    RestartStack { stack, service }: RestartStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
+    let no_service = service.is_none();
     execute_compose::<RestartStack>(
       &stack,
+      service,
       &user,
-      |state| state.restarting = true,
+      |state| {
+        if no_service {
+          state.restarting = true;
+        }
+      },
       update,
       (),
     )
@@ -62,13 +165,19 @@ impl Resolve<PauseStack, (User, Update)> for State {
   #[instrument(name = "PauseStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    PauseStack { stack }: PauseStack,
+    PauseStack { stack, service }: PauseStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
+    let no_service = service.is_none();
     execute_compose::<PauseStack>(
       &stack,
+      service,
       &user,
-      |state| state.pausing = true,
+      |state| {
+        if no_service {
+          state.pausing = true
+        }
+      },
       update,
       (),
     )
@@ -80,13 +189,19 @@ impl Resolve<UnpauseStack, (User, Update)> for State {
   #[instrument(name = "UnpauseStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    UnpauseStack { stack }: UnpauseStack,
+    UnpauseStack { stack, service }: UnpauseStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
+    let no_service = service.is_none();
     execute_compose::<UnpauseStack>(
       &stack,
+      service,
       &user,
-      |state| state.unpausing = true,
+      |state| {
+        if no_service {
+          state.unpausing = true
+        }
+      },
       update,
       (),
     )
@@ -98,13 +213,23 @@ impl Resolve<StopStack, (User, Update)> for State {
   #[instrument(name = "StopStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    StopStack { stack, stop_time }: StopStack,
+    StopStack {
+      stack,
+      stop_time,
+      service,
+    }: StopStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
+    let no_service = service.is_none();
     execute_compose::<StopStack>(
       &stack,
+      service,
       &user,
-      |state| state.stopping = true,
+      |state| {
+        if no_service {
+          state.stopping = true
+        }
+      },
       update,
       stop_time,
     )
@@ -120,148 +245,22 @@ impl Resolve<DestroyStack, (User, Update)> for State {
       stack,
       remove_orphans,
       stop_time,
+      service,
     }: DestroyStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
+    let no_service = service.is_none();
     execute_compose::<DestroyStack>(
       &stack,
+      service,
       &user,
-      |state| state.destroying = true,
+      |state| {
+        if no_service {
+          state.destroying = true
+        }
+      },
       update,
       (stop_time, remove_orphans),
-    )
-    .await
-  }
-}
-
-impl Resolve<DeployStackService, (User, Update)> for State {
-  #[instrument(name = "DeployStackService", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    DeployStackService {
-      stack,
-      service,
-      stop_time,
-    }: DeployStackService,
-    (user, update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    deploy_stack_maybe_service(&stack, user, update, Some(service))
-      .await
-  }
-}
-
-impl Resolve<StartStackService, (User, Update)> for State {
-  #[instrument(name = "StartStackService", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    StartStackService { stack, service }: StartStackService,
-    (user, update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    execute_compose::<StartStackService>(
-      &stack,
-      &user,
-      |_| {},
-      update,
-      service,
-    )
-    .await
-  }
-}
-
-impl Resolve<RestartStackService, (User, Update)> for State {
-  #[instrument(name = "RestartStackService", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    RestartStackService { stack, service }: RestartStackService,
-    (user, update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    execute_compose::<RestartStackService>(
-      &stack,
-      &user,
-      |_| {},
-      update,
-      service,
-    )
-    .await
-  }
-}
-
-impl Resolve<PauseStackService, (User, Update)> for State {
-  #[instrument(name = "PauseStackService", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    PauseStackService { stack, service }: PauseStackService,
-    (user, update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    execute_compose::<PauseStackService>(
-      &stack,
-      &user,
-      |_| {},
-      update,
-      service,
-    )
-    .await
-  }
-}
-
-impl Resolve<UnpauseStackService, (User, Update)> for State {
-  #[instrument(name = "UnpauseStackService", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    UnpauseStackService { stack, service }: UnpauseStackService,
-    (user, update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    execute_compose::<UnpauseStackService>(
-      &stack,
-      &user,
-      |_| {},
-      update,
-      service,
-    )
-    .await
-  }
-}
-
-impl Resolve<StopStackService, (User, Update)> for State {
-  #[instrument(name = "StopStackService", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    StopStackService {
-      stack,
-      service,
-      stop_time,
-    }: StopStackService,
-    (user, update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    execute_compose::<StopStackService>(
-      &stack,
-      &user,
-      |_| {},
-      update,
-      (service, stop_time),
-    )
-    .await
-  }
-}
-
-impl Resolve<DestroyStackService, (User, Update)> for State {
-  #[instrument(name = "DestroyStackService", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    DestroyStackService {
-      stack,
-      service,
-      remove_orphans,
-      stop_time,
-    }: DestroyStackService,
-    (user, update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    execute_compose::<DestroyStackService>(
-      &stack,
-      &user,
-      |_| {},
-      update,
-      (service, stop_time, remove_orphans),
     )
     .await
   }

@@ -27,6 +27,8 @@ use super::MonitorExecuteRequest;
 pub struct DeployStack {
   /// Id or name
   pub stack: String,
+  /// The optional service. Experimental for deploys.
+  pub service: Option<String>,
   /// Override the default termination max time.
   /// Only used if the stack needs to be taken down first.
   pub stop_time: Option<i32>,
@@ -51,6 +53,8 @@ pub struct DeployStack {
 pub struct StartStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service
+  pub service: Option<String>,
 }
 
 //
@@ -72,6 +76,8 @@ pub struct StartStack {
 pub struct RestartStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service
+  pub service: Option<String>,
 }
 
 //
@@ -93,6 +99,8 @@ pub struct RestartStack {
 pub struct PauseStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service
+  pub service: Option<String>,
 }
 
 //
@@ -116,6 +124,8 @@ pub struct PauseStack {
 pub struct UnpauseStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service
+  pub service: Option<String>,
 }
 
 //
@@ -139,6 +149,8 @@ pub struct StopStack {
   pub stack: String,
   /// Override the default termination max time.
   pub stop_time: Option<i32>,
+  /// Optionally specify a specific service
+  pub service: Option<String>,
 }
 
 //
@@ -165,181 +177,6 @@ pub struct DestroyStack {
   pub remove_orphans: bool,
   /// Override the default termination max time.
   pub stop_time: Option<i32>,
+  /// Optionally specify a specific service
+  pub service: Option<String>,
 }
-
-//
-
-/// Deploys the target stack service. `docker compose up -d service`. Response: [Update]
-///
-/// Note. If the stack is already deployed, it will be destroyed first.
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct DeployStackService {
-  /// Id or name
-  pub stack: String,
-  /// The service name
-  pub service: String,
-  /// Override the default termination max time.
-  /// Only used if the stack needs to be taken down first.
-  pub stop_time: Option<i32>,
-}
-
-//
-
-/// Starts the target stack service. `docker compose start service`. Response: [Update]
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct StartStackService {
-  /// Id or name
-  pub stack: String,
-  /// The service name
-  pub service: String,
-}
-
-//
-
-/// Restarts the target stack service. `docker compose restart service`. Response: [Update]
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct RestartStackService {
-  /// Id or name
-  pub stack: String,
-  /// The service name
-  pub service: String,
-}
-
-//
-
-/// Pauses the target stack service. `docker compose pause service`. Response: [Update]
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct PauseStackService {
-  /// Id or name
-  pub stack: String,
-  /// The service name
-  pub service: String,
-}
-
-//
-
-/// Unpauses the target stack service. `docker compose unpause service`. Response: [Update].
-///
-/// Note. This is the only way to restart a paused container.
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct UnpauseStackService {
-  /// Id or name
-  pub stack: String,
-  /// The service name
-  pub service: String,
-}
-
-//
-
-/// Starts the target stack service. `docker compose stop service`. Response: [Update]
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct StopStackService {
-  /// Id or name
-  pub stack: String,
-  /// The service name
-  pub service: String,
-  /// Override the default termination max time.
-  pub stop_time: Option<i32>,
-}
-
-//
-
-/// Destoys the target stack service. `docker compose down service`. Response: [Update]
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Serialize,
-  Deserialize,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct DestroyStackService {
-  /// Id or name
-  pub stack: String,
-  /// The service name
-  pub service: String,
-  /// Pass `--remove-orphans`
-  #[serde(default)]
-  pub remove_orphans: bool,
-  /// Override the default termination max time.
-  pub stop_time: Option<i32>,
-}
-
-//

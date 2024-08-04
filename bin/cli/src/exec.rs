@@ -81,27 +81,6 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::DestroyStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::DeployStackService(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::StartStackService(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::RestartStackService(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::PauseStackService(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::UnpauseStackService(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::StopStackService(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::DestroyStackService(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
     Execution::Sleep(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -172,27 +151,6 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::DestroyStack(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::DeployStackService(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::StartStackService(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::RestartStackService(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::PauseStackService(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::UnpauseStackService(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::StopStackService(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::DestroyStackService(request) => {
       monitor_client().execute(request).await
     }
     Execution::Sleep(request) => {

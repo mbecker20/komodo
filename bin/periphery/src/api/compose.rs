@@ -1,420 +1,181 @@
-use anyhow::Context;
+use anyhow::anyhow;
+use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{to_monitor_name, update::Log};
-use periphery_client::api::compose::{
-  ComposeDown, ComposePause, ComposeResponse, ComposeRestart,
-  ComposeServiceDown, ComposeServicePause, ComposeServiceRestart,
-  ComposeServiceStart, ComposeServiceStop, ComposeServiceUnpause,
-  ComposeServiceUp, ComposeStart, ComposeStop, ComposeUnpause,
-  ComposeUp,
-};
+use periphery_client::api::compose::*;
 use resolver_api::Resolve;
-use tokio::fs;
 
 use crate::{
-  compose::{maybe_timeout, run_compose_command},
+  compose::{compose_up, docker_compose},
   config::periphery_config,
-  helpers::parse_extra_args,
+  helpers::log_grep,
   State,
 };
 
+impl Resolve<GetComposeInfo, ()> for State {
+  #[instrument(name = "ComposeInfo", level = "debug", skip(self))]
+  async fn resolve(
+    &self,
+    GetComposeInfo {
+      name,
+      run_directory,
+      file_path,
+      check_repo,
+    }: GetComposeInfo,
+    _: (),
+  ) -> anyhow::Result<GetComposeInfoReponse> {
+    todo!()
+  }
+}
+
+//
+
+impl Resolve<GetComposeServiceLog> for State {
+  #[instrument(
+    name = "GetComposeServiceLog",
+    level = "debug",
+    skip(self)
+  )]
+  async fn resolve(
+    &self,
+    GetComposeServiceLog {
+      run_directory,
+      file_path,
+      service,
+      tail,
+    }: GetComposeServiceLog,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let run_directory =
+      periphery_config().stack_dir.join(&run_directory);
+
+    if !run_directory.exists() {
+      let e =
+        anyhow!("the directory {run_directory:?} does not exist");
+      return Ok(Log::error(
+        "get stack log",
+        format_serror(
+          &e.context("Was the running stack imported? Be sure to set the correct run directory and file path to begin managing the stack")
+            .context("Failed to get service log, stack run directory does not exist").into()
+        ),
+      ));
+    }
+
+    let run_directory = run_directory.display();
+    let docker_compose = docker_compose();
+    let command = format!("cd {run_directory} && {docker_compose} -f {file_path} logs {service} --tail {tail}");
+    Ok(run_monitor_command("get stack log", command).await)
+  }
+}
+
+impl Resolve<GetComposeServiceLogSearch> for State {
+  #[instrument(
+    name = "GetComposeServiceLogSearch",
+    level = "debug",
+    skip(self)
+  )]
+  async fn resolve(
+    &self,
+    GetComposeServiceLogSearch {
+      run_directory,
+      file_path,
+      service,
+      terms,
+      combinator,
+      invert,
+    }: GetComposeServiceLogSearch,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let run_directory =
+      periphery_config().stack_dir.join(&run_directory);
+
+    if !run_directory.exists() {
+      let e =
+        anyhow!("the directory {run_directory:?} does not exist");
+      return Ok(Log::error(
+        "get stack log",
+        format_serror(
+          &e.context("Was a running stack imported? Be sure to set the correct run directory and file path to begin managing the stack")
+            .context("Failed to get service log, stack run directory does not exist").into()
+        ),
+      ));
+    }
+
+    let run_directory = run_directory.display();
+    let docker_compose = docker_compose();
+    let grep = log_grep(&terms, combinator, invert);
+    let command = format!("cd {run_directory} && {docker_compose} -f {file_path} logs {service} --tail 5000 2>&1 | {grep}");
+    Ok(run_monitor_command("get stack log grep", command).await)
+  }
+}
+
+//
+
 impl Resolve<ComposeUp> for State {
-  #[instrument(name = "ComposeUp", skip_all)]
+  #[instrument(
+    name = "ComposeUp",
+    skip(self, git_token, registry_token)
+  )]
   async fn resolve(
     &self,
     ComposeUp {
       stack,
+      service,
       git_token,
       registry_token,
     }: ComposeUp,
     _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    let extra_args = parse_extra_args(&stack.config.extra_args);
-    Ok(
-      run_compose_command(
-        &stack,
-        None,
-        git_token,
-        registry_token,
-        true,
-        "compose up",
-        &format!("up -d{extra_args}"),
-      )
-      .await,
-    )
-  }
-}
-
-//
-
-impl Resolve<ComposeStart> for State {
-  #[instrument(name = "ComposeStart", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeStart { stack, git_token }: ComposeStart,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        None,
-        git_token,
-        None,
-        false,
-        "compose start",
-        "start",
-      )
-      .await,
-    )
-  }
-}
-
-//
-
-impl Resolve<ComposeRestart> for State {
-  #[instrument(name = "ComposeRestart", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeRestart { stack, git_token }: ComposeRestart,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        None,
-        git_token,
-        None,
-        false,
-        "compose restart",
-        "restart",
-      )
-      .await,
-    )
-  }
-}
-
-//
-
-impl Resolve<ComposePause> for State {
-  #[instrument(name = "ComposePause", skip_all)]
-  async fn resolve(
-    &self,
-    ComposePause { stack, git_token }: ComposePause,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        None,
-        git_token,
-        None,
-        false,
-        "compose pause",
-        "pause",
-      )
-      .await,
-    )
-  }
-}
-
-impl Resolve<ComposeUnpause> for State {
-  #[instrument(name = "ComposeUnpause", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeUnpause { stack, git_token }: ComposeUnpause,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        None,
-        git_token,
-        None,
-        false,
-        "compose unpause",
-        "unpause",
-      )
-      .await,
-    )
-  }
-}
-
-impl Resolve<ComposeStop> for State {
-  #[instrument(name = "ComposeStop", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeStop {
-      stack,
-      git_token,
-      timeout,
-    }: ComposeStop,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    let maybe_timeout = maybe_timeout(timeout);
-    Ok(
-      run_compose_command(
-        &stack,
-        None,
-        git_token,
-        None,
-        false,
-        "compose stop",
-        &format!("stop{maybe_timeout}"),
-      )
-      .await,
-    )
-  }
-}
-
-impl Resolve<ComposeDown> for State {
-  #[instrument(name = "ComposeDown", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeDown {
-      stack,
-      git_token,
-      remove_orphans,
-      timeout,
-    }: ComposeDown,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    let maybe_timeout = maybe_timeout(timeout);
-    let maybe_remove_orphans = if remove_orphans {
-      " --remove-orphans"
-    } else {
-      ""
-    };
-    let mut res = run_compose_command(
-      &stack,
-      None,
-      git_token,
-      None,
-      false,
-      "compose stop",
-      &format!("down{maybe_timeout}{maybe_remove_orphans}"),
-    )
-    .await;
-
-    let root = periphery_config()
-      .stack_dir
-      .join(to_monitor_name(&stack.name));
-
-    // delete root
-    match fs::remove_dir_all(&root).await.with_context(|| {
-      format!("failed to clean up stack directory at {root:?}")
-    }) {
-      Ok(_) => res.logs.push(Log::simple(
-        "cleanup stack directory",
-        format!("deleted directory {root:?}"),
-      )),
-      Err(e) => res.logs.push(Log::error(
-        "cleanup stack directory",
+  ) -> anyhow::Result<ComposeUpResponse> {
+    let mut res = ComposeUpResponse::default();
+    if let Err(e) =
+      compose_up(stack, service, git_token, registry_token, &mut res)
+        .await
+    {
+      res.logs.push(Log::error(
+        "compose up failed",
         format_serror(&e.into()),
-      )),
+      ));
     };
-
     Ok(res)
   }
 }
 
-impl Resolve<ComposeServiceUp> for State {
-  #[instrument(name = "ComposeServiceUp", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeServiceUp {
-      stack,
-      service,
-      git_token,
-      registry_token,
-    }: ComposeServiceUp,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    let extra_args = parse_extra_args(&stack.config.extra_args);
-    Ok(
-      run_compose_command(
-        &stack,
-        Some(&service),
-        git_token,
-        registry_token,
-        true,
-        "compose up",
-        &format!("up -d{extra_args} {service}"),
-      )
-      .await,
-    )
-  }
-}
-
 //
 
-impl Resolve<ComposeServiceStart> for State {
-  #[instrument(name = "ComposeServiceStart", skip_all)]
+impl Resolve<ComposeExecution> for State {
+  #[instrument(name = "ComposeCommand", skip(self))]
   async fn resolve(
     &self,
-    ComposeServiceStart {
-      stack,
-      service,
-      git_token,
-    }: ComposeServiceStart,
+    ComposeExecution {
+      name,
+      run_directory,
+      file_path,
+      command,
+    }: ComposeExecution,
     _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        Some(&service),
-        git_token,
-        None,
-        false,
-        "compose start",
-        &format!("start {service}"),
-      )
-      .await,
+  ) -> anyhow::Result<ComposeExecutionResponse> {
+    let root =
+      periphery_config().stack_dir.join(to_monitor_name(&name));
+    let run_directory = root.join(run_directory);
+    let file = run_directory.join(&file_path);
+    if !file.exists() {
+      return Ok(ComposeExecutionResponse {
+        file_missing: true,
+        log: None,
+      });
+    }
+    let run_dir = run_directory.display();
+    let docker_compose = docker_compose();
+    let log = run_monitor_command(
+      "compose command",
+      format!(
+        "cd {run_dir} && {docker_compose} -f {file_path} {command}"
+      ),
     )
-  }
-}
-
-//
-
-impl Resolve<ComposeServiceRestart> for State {
-  #[instrument(name = "ComposeServiceRestart", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeServiceRestart {
-      stack,
-      service,
-      git_token,
-    }: ComposeServiceRestart,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        Some(&service),
-        git_token,
-        None,
-        false,
-        "compose restart",
-        &format!("restart {service}"),
-      )
-      .await,
-    )
-  }
-}
-
-//
-
-impl Resolve<ComposeServicePause> for State {
-  #[instrument(name = "ComposeServicePause", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeServicePause {
-      stack,
-      service,
-      git_token,
-    }: ComposeServicePause,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        Some(&service),
-        git_token,
-        None,
-        false,
-        "compose pause",
-        &format!("pause {service}"),
-      )
-      .await,
-    )
-  }
-}
-
-impl Resolve<ComposeServiceUnpause> for State {
-  #[instrument(name = "ComposeServiceUnpause", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeServiceUnpause {
-      stack,
-      service,
-      git_token,
-    }: ComposeServiceUnpause,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    Ok(
-      run_compose_command(
-        &stack,
-        Some(&service),
-        git_token,
-        None,
-        false,
-        "compose unpause",
-        &format!("unpause {service}"),
-      )
-      .await,
-    )
-  }
-}
-
-impl Resolve<ComposeServiceStop> for State {
-  #[instrument(name = "ComposeServiceStop", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeServiceStop {
-      stack,
-      service,
-      git_token,
-      timeout,
-    }: ComposeServiceStop,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    let maybe_timeout = maybe_timeout(timeout);
-    Ok(
-      run_compose_command(
-        &stack,
-        Some(&service),
-        git_token,
-        None,
-        false,
-        "compose stop",
-        &format!("stop{maybe_timeout} {service}"),
-      )
-      .await,
-    )
-  }
-}
-
-impl Resolve<ComposeServiceDown> for State {
-  #[instrument(name = "ComposeServiceDown", skip_all)]
-  async fn resolve(
-    &self,
-    ComposeServiceDown {
-      stack,
-      service,
-      git_token,
-      remove_orphans,
-      timeout,
-    }: ComposeServiceDown,
-    _: (),
-  ) -> anyhow::Result<ComposeResponse> {
-    let maybe_timeout = maybe_timeout(timeout);
-    let maybe_remove_orphans = if remove_orphans {
-      " --remove-orphans"
-    } else {
-      ""
-    };
-    Ok(
-      run_compose_command(
-        &stack,
-        Some(&service),
-        git_token,
-        None,
-        false,
-        "compose stop",
-        &format!(
-          "down{maybe_timeout}{maybe_remove_orphans} {service}"
-        ),
-      )
-      .await,
-    )
+    .await;
+    Ok(ComposeExecutionResponse {
+      file_missing: false,
+      log: Some(log),
+    })
   }
 }

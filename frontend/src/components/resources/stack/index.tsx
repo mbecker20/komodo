@@ -18,6 +18,7 @@ import { Types } from "@monitor/client";
 import { DeployStack, DestroyStack } from "./actions";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
+import { StackInfo } from "./info";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -37,6 +38,16 @@ const ConfigOrInfo = ({ id }: { id: string }) => {
     state === undefined ||
     state === Types.StackState.Unknown ||
     state === Types.StackState.Down;
+  const title = (
+    <TabsList className="justify-start w-fit">
+      <TabsTrigger value="Config" className="w-[110px]">
+        Config
+      </TabsTrigger>
+      <TabsTrigger value="Info" className="w-[110px]" disabled={infoDisabled}>
+        Info
+      </TabsTrigger>
+    </TabsList>
+  );
   return (
     <Tabs
       value={infoDisabled ? "Config" : view}
@@ -44,42 +55,10 @@ const ConfigOrInfo = ({ id }: { id: string }) => {
       className="grid gap-4"
     >
       <TabsContent value="Config">
-        <StackConfig
-          id={id}
-          titleOther={
-            <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[110px]">
-                Config
-              </TabsTrigger>
-              <TabsTrigger
-                value="Info"
-                className="w-[110px]"
-                disabled={infoDisabled}
-              >
-                Info
-              </TabsTrigger>
-            </TabsList>
-          }
-        />
+        <StackConfig id={id} titleOther={title} />
       </TabsContent>
       <TabsContent value="Info">
-        {/* <DeploymentLogs
-          id={id}
-          titleOther={
-            <TabsList className="justify-start w-fit">
-              <TabsTrigger value="Config" className="w-[110px]">
-                Config
-              </TabsTrigger>
-              <TabsTrigger
-                value="Log"
-                className="w-[110px]"
-                disabled={logsDisabled}
-              >
-                Log
-              </TabsTrigger>
-            </TabsList>
-          }
-        /> */}
+        <StackInfo id={id} titleOther={title} />
       </TabsContent>
     </Tabs>
   );
@@ -113,7 +92,7 @@ export const StackComponents: RequiredResourceComponents = {
       const info = useStack(id)?.info;
       if (info?.deployed_hash && info?.deployed_message) {
         if (info?.latest_hash === info.deployed_hash) {
-          return null
+          return null;
         }
         return (
           <HoverCard openDelay={200}>

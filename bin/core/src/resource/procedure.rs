@@ -344,69 +344,6 @@ async fn validate_config(
           .await?;
           params.stack = stack.id;
         }
-        Execution::DeployStackService(params) => {
-          let stack = super::get_check_permissions::<Stack>(
-            &params.stack,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.stack = stack.id;
-        }
-        Execution::StartStackService(params) => {
-          let stack = super::get_check_permissions::<Stack>(
-            &params.stack,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.stack = stack.id;
-        }
-        Execution::RestartStackService(params) => {
-          let stack = super::get_check_permissions::<Stack>(
-            &params.stack,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.stack = stack.id;
-        }
-        Execution::PauseStackService(params) => {
-          let stack = super::get_check_permissions::<Stack>(
-            &params.stack,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.stack = stack.id;
-        }
-        Execution::UnpauseStackService(params) => {
-          let stack = super::get_check_permissions::<Stack>(
-            &params.stack,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.stack = stack.id;
-        }
-        Execution::StopStackService(params) => {
-          let stack = super::get_check_permissions::<Stack>(
-            &params.stack,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.stack = stack.id;
-        }
-        Execution::DestroyStackService(params) => {
-          let stack = super::get_check_permissions::<Stack>(
-            &params.stack,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.stack = stack.id;
-        }
         Execution::Sleep(_) => {}
       }
     }

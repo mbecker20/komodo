@@ -1,8 +1,8 @@
 use formatting::format_serror;
-use monitor_client::entities::{update::Update, user::User};
-use periphery_client::api::compose::{
-  ComposeResponse, ComposeServiceUp, ComposeUp,
+use monitor_client::entities::{
+  permission::PermissionLevel, update::Update, user::User,
 };
+use periphery_client::api::compose::{ComposeUp, ComposeUpResponse};
 
 use crate::{
   helpers::{
@@ -15,14 +15,15 @@ use crate::{
 
 use super::{get_stack_and_server, refresh_stack_info};
 
-pub async fn deploy_stack_maybe_service(
+pub async fn deploy_stack(
   stack: &str,
+  service: Option<String>,
   user: User,
   mut update: Update,
-  service: Option<String>,
 ) -> anyhow::Result<Update> {
   let (mut stack, server) =
-    get_stack_and_server(stack, &user).await?;
+    get_stack_and_server(stack, &user, PermissionLevel::Execute)
+      .await?;
 
   // get the action state for the stack (or insert default).
   let action_state =
@@ -30,11 +31,8 @@ pub async fn deploy_stack_maybe_service(
 
   // Will check to ensure stack not already busy before updating, and return Err if so.
   // The returned guard will set the action state back to default when dropped.
-  let _action_guard = action_state.update(|state| {
-    if service.is_none() {
-      state.deploying = true
-    }
-  })?;
+  let _action_guard =
+    action_state.update(|state| state.deploying = true)?;
 
   let git_token = crate::helpers::git_token(
     &stack.config.git_provider,
@@ -54,42 +52,32 @@ pub async fn deploy_stack_maybe_service(
     .await?;
   }
 
-  let periphery = periphery_client(&server)?;
-
-  let ComposeResponse {
+  let ComposeUpResponse {
     logs,
-    deployed,
+    deployed: is_deploy,
     file_contents,
+    file_missing,
+    remote_error,
     commit_hash,
     commit_message,
-  } = match service {
-    Some(service) => {
-      periphery
-        .request(ComposeServiceUp {
-          stack: stack.clone(),
-          git_token,
-          registry_token,
-          service,
-        })
-        .await?
-    }
-    None => {
-      periphery_client(&server)?
-        .request(ComposeUp {
-          stack: stack.clone(),
-          git_token,
-          registry_token,
-        })
-        .await?
-    }
-  };
+  } = periphery_client(&server)?
+    .request(ComposeUp {
+      stack: stack.clone(),
+      service,
+      git_token,
+      registry_token,
+    })
+    .await?;
 
   update.logs.extend(logs);
 
+  // This will be weird with single service deploys. Come back to it.
   if let Err(e) = refresh_stack_info(
     &stack,
-    deployed,
+    is_deploy,
+    file_missing,
     file_contents,
+    remote_error,
     commit_hash,
     commit_message,
     Some(&mut update),
