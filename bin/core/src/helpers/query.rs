@@ -26,7 +26,10 @@ use mungos::{
 
 use crate::{config::core_config, resource, state::db_client};
 
-use super::stack::compose_container_match_regex;
+use super::stack::{
+  compose_container_match_regex,
+  services::extract_services_from_stack,
+};
 
 #[instrument(level = "debug")]
 // user: Id or username
@@ -87,11 +90,15 @@ pub async fn get_deployment_state(
   Ok(state)
 }
 
-pub fn get_stack_stack_from_containers(
+pub fn get_stack_state_from_containers(
+  services: &[StackServiceNames],
   containers: &[ContainerSummary],
 ) -> StackState {
   if containers.is_empty() {
     return StackState::Down;
+  }
+  if services.len() != containers.len() {
+    return StackState::Unhealthy;
   }
   let running = containers
     .iter()
@@ -157,7 +164,9 @@ pub async fn get_stack_state(
     })
     .collect::<Vec<_>>();
 
-  Ok(get_stack_stack_from_containers(&containers))
+  let services = extract_services_from_stack(stack).await?;
+
+  Ok(get_stack_state_from_containers(&services, &containers))
 }
 
 #[instrument(level = "debug")]

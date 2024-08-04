@@ -17,8 +17,12 @@ use serror::Serror;
 use crate::{
   config::core_config,
   helpers::{
-    periphery_client, query::get_stack_stack_from_containers,
-    stack::compose_container_match_regex,
+    periphery_client,
+    query::get_stack_state_from_containers,
+    stack::{
+      compose_container_match_regex,
+      services::extract_services_from_stack,
+    },
   },
   monitor::{alert::check_alerts, record::record_server_stats},
   resource,
@@ -281,10 +285,17 @@ pub async fn update_cache_for_server(server: &Server) {
             containers: Vec::new(),
           }
         } else {
-          CachedStackStatus {
-            state: get_stack_stack_from_containers(&containers),
-            containers,
-          }
+          let state = match extract_services_from_stack(&stack).await
+          {
+            Ok(services) => {
+              get_stack_state_from_containers(&services, &containers)
+            }
+            Err(e) => {
+              warn!("failed to extract services for stack {} (update status cache) | {e:?}", stack.name);
+              StackState::Unknown
+            }
+          };
+          CachedStackStatus { state, containers }
         };
         stack_status_cache
           .insert(stack.id, History { curr: status, prev }.into())
