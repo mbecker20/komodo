@@ -14,6 +14,7 @@ import { Alerts } from "@pages/alerts";
 import { UserPage } from "@pages/user";
 import { UserGroupPage } from "@pages/user-group";
 import { Settings } from "@pages/settings";
+import { StackServicePage } from "@pages/stack-service";
 
 const ROUTER = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const ROUTER = createBrowserRouter([
           // { path: "", element: <UsersPage /> },
           { path: ":id", element: <UserPage /> },
         ],
+      },
+      {
+        path: "stacks/:id/:service",
+        element: <StackServicePage />
       },
       {
         path: ":type",

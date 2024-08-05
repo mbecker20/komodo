@@ -2,23 +2,27 @@ import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
-import { RefreshCw, X, AlertOctagon } from "lucide-react";
-import { ReactNode, useState } from "react";
-import { useDeployment } from ".";
+import { RefreshCw, X, AlertOctagon, ScrollText } from "lucide-react";
+import { useState } from "react";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
 import { Switch } from "@ui/switch";
 import { Log, TailLengthSelector } from "@components/log";
 
-export const DeploymentLogs = ({
+export const StackServiceLogs = ({
   id,
-  titleOther,
+  service,
 }: {
+  /// Stack id
   id: string;
-  titleOther: ReactNode;
+  service: string;
 }) => {
-  const state = useDeployment(id)?.info.state;
+  // const stack = useStack(id);
+  const services = useRead("ListStackServices", { stack: id }).data;
+  const container = services?.find((s) => s.service === service)?.container;
+  const state = container?.state ?? Types.DeploymentState.Unknown;
+
   if (
     state === undefined ||
     state === Types.DeploymentState.Unknown ||
@@ -26,15 +30,17 @@ export const DeploymentLogs = ({
   ) {
     return null;
   }
-  return <DeploymentLogsInner id={id} titleOther={titleOther} />;
+
+  return <StackLogsInner id={id} service={service} />;
 };
 
-const DeploymentLogsInner = ({
+const StackLogsInner = ({
   id,
-  titleOther,
+  service,
 }: {
+  /// Stack id
   id: string;
-  titleOther: ReactNode;
+  service: string;
 }) => {
   const { toast } = useToast();
   const [stream, setStream] = useState("stdout");
@@ -60,12 +66,14 @@ const DeploymentLogsInner = ({
   };
 
   const { Log, refetch, stderr } = terms.length
-    ? SearchLogs(id, terms, invert)
-    : NoSearchLogs(id, tail, stream);
+    ? SearchLogs(id, service, terms, invert)
+    : NoSearchLogs(id, service, tail, stream);
 
   return (
     <Section
-      titleOther={titleOther}
+      title="Log"
+      icon={<ScrollText className="w-4 h-4" />}
+			itemsCenterTitleRow
       actions={
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
@@ -131,10 +139,15 @@ const DeploymentLogsInner = ({
   );
 };
 
-const NoSearchLogs = (id: string, tail: string, stream: string) => {
+const NoSearchLogs = (
+  id: string,
+  service: string,
+  tail: string,
+  stream: string
+) => {
   const { data: log, refetch } = useRead(
-    "GetLog",
-    { deployment: id, tail: Number(tail) },
+    "GetStackServiceLog",
+    { stack: id, service, tail: Number(tail) },
     { refetchInterval: 30000 }
   );
   return {
@@ -148,9 +161,15 @@ const NoSearchLogs = (id: string, tail: string, stream: string) => {
   };
 };
 
-const SearchLogs = (id: string, terms: string[], invert: boolean) => {
-  const { data: log, refetch } = useRead("SearchLog", {
-    deployment: id,
+const SearchLogs = (
+  id: string,
+  service: string,
+  terms: string[],
+  invert: boolean
+) => {
+  const { data: log, refetch } = useRead("SearchStackServiceLog", {
+    stack: id,
+    service,
     terms,
     combinator: Types.SearchCombinator.And,
     invert,

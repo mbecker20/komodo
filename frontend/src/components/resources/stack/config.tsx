@@ -5,17 +5,26 @@ import {
   ConfigItem,
   InputList,
   ProviderSelectorConfig,
+  SecretsForEnvironment,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { ReactNode, useState } from "react";
+import { createRef, ReactNode, useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus } from "lucide-react";
+import { env_to_text } from "@lib/utils";
+import { Textarea } from "@ui/textarea";
 
-export const StackConfig = ({ id, titleOther }: { id: string; titleOther: ReactNode; }) => {
+export const StackConfig = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Stack", id },
   }).data;
@@ -300,7 +309,49 @@ export const StackConfig = ({ id, titleOther }: { id: string; titleOther: ReactN
             },
           },
         ],
+        environment: [
+          {
+            label: "Environment",
+            components: {
+              environment: (env, set) => {
+                const _env = typeof env === "object" ? env_to_text(env) : env;
+                return (
+                  <Environment env={_env ?? ""} set={set} disabled={disabled} />
+                );
+              },
+              skip_secret_interp: true,
+            },
+          },
+        ],
       }}
     />
+  );
+};
+
+const Environment = ({
+  env,
+  set,
+  disabled,
+}: {
+  env: string;
+  set: (input: Partial<Types.StackConfig>) => void;
+  disabled: boolean;
+}) => {
+  const ref = createRef<HTMLTextAreaElement>();
+  const setEnv = (environment: string) => set({ environment });
+  return (
+    <ConfigItem className="flex-col gap-4 items-start">
+      {!disabled && (
+        <SecretsForEnvironment env={env} setEnv={setEnv} envRef={ref} />
+      )}
+      <Textarea
+        ref={ref}
+        className="min-h-[400px]"
+        placeholder="VARIABLE=value"
+        value={env}
+        onChange={(e) => setEnv(e.target.value)}
+        disabled={disabled}
+      />
+    </ConfigItem>
   );
 };

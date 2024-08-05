@@ -15,7 +15,7 @@ import { ResourceComponents } from "./resources";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@ui/card";
 import { ResourceTags } from "./tags";
 import { Topbar } from "./topbar";
-import { usableResourcePath } from "@lib/utils";
+import { cn, usableResourcePath } from "@lib/utils";
 import { Sidebar } from "./sidebar";
 import { ResourceName } from "./resources/common";
 import { useShiftKeyListener } from "@lib/hooks";
@@ -133,6 +133,8 @@ interface SectionProps {
   titleOther?: ReactNode;
   children?: ReactNode;
   actions?: ReactNode;
+  // otherwise items-start
+  itemsCenterTitleRow?: boolean;
 }
 
 export const Section = ({
@@ -141,9 +143,15 @@ export const Section = ({
   titleOther,
   actions,
   children,
+  itemsCenterTitleRow,
 }: SectionProps) => (
   <div className="flex flex-col gap-4 max-w-[calc(100vw-100px)] lg:max-w-[calc(100vw-300px)] overflow-x-auto">
-    <div className="flex flex-wrap gap-2 items-start justify-between py-1">
+    <div
+      className={cn(
+        "flex flex-wrap gap-2 justify-between py-1",
+        itemsCenterTitleRow ? "items-center" : "items-start"
+      )}
+    >
       {title || icon ? (
         <div className="px-2 flex items-center gap-2 text-muted-foreground">
           {icon}

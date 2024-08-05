@@ -1,10 +1,16 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
-import { Pause, Play, Rocket, Square, Trash2 } from "lucide-react";
+import { Pause, Play, RefreshCcw, Rocket, Square, Trash2 } from "lucide-react";
 import { useStack } from ".";
 import { Types } from "@monitor/client";
 
-export const DeployStack = ({ id }: { id: string }) => {
+export const DeployStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: deploy, isPending } = useExecute("DeployStack");
@@ -32,10 +38,10 @@ export const DeployStack = ({ id }: { id: string }) => {
   if (deployed) {
     return (
       <ActionWithDialog
-        name={stack?.name ?? ""}
+        name={`${stack?.name}${service ? ` - ${service}` : ""}`}
         title="Redeploy"
         icon={<Rocket className="h-4 w-4" />}
-        onClick={() => deploy({ stack: id })}
+        onClick={() => deploy({ stack: id, service })}
         disabled={pending}
         loading={pending}
       />
@@ -46,14 +52,20 @@ export const DeployStack = ({ id }: { id: string }) => {
     <ConfirmButton
       title="Deploy"
       icon={<Rocket className="w-4 h-4" />}
-      onClick={() => deploy({ stack: id })}
+      onClick={() => deploy({ stack: id, service })}
       disabled={pending}
       loading={pending}
     />
   );
 };
 
-export const DestroyStack = ({ id }: { id: string }) => {
+export const DestroyStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: destroy, isPending } = useExecute("DestroyStack");
@@ -73,17 +85,60 @@ export const DestroyStack = ({ id }: { id: string }) => {
   const pending = isPending || destroying;
   return (
     <ActionWithDialog
-      name={stack?.name ?? ""}
+      name={`${stack?.name}${service ? ` - ${service}` : ""}`}
       title="Destroy"
       icon={<Trash2 className="h-4 w-4" />}
-      onClick={() => destroy({ stack: id })}
+      onClick={() => destroy({ stack: id, service })}
       disabled={pending}
       loading={pending}
     />
   );
 };
 
-export const StartStopStack = ({ id }: { id: string }) => {
+export const RestartStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
+  const stack = useStack(id);
+  const state = stack?.info.state;
+  const { mutate: restart, isPending: restartPending } =
+    useExecute("RestartStack");
+  const action_state = useRead(
+    "GetStackActionState",
+    { stack: id },
+    { refetchInterval: 5000 }
+  ).data;
+
+  if (stack?.info.file_missing) {
+    return null;
+  }
+
+  if (state !== Types.StackState.Running) {
+    return null;
+  }
+
+  return (
+    <ActionWithDialog
+      name={`${stack?.name}${service ? ` - ${service}` : ""}`}
+      title="Restart"
+      icon={<RefreshCcw className="h-4 w-4" />}
+      onClick={() => restart({ stack: id, service })}
+      disabled={restartPending}
+      loading={restartPending || action_state?.restarting}
+    />
+  );
+};
+
+export const StartStopStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: start, isPending: startPending } = useExecute("StartStack");
@@ -103,7 +158,7 @@ export const StartStopStack = ({ id }: { id: string }) => {
       <ConfirmButton
         title="Start"
         icon={<Play className="h-4 w-4" />}
-        onClick={() => start({ stack: id })}
+        onClick={() => start({ stack: id, service })}
         disabled={startPending}
         loading={startPending || action_state?.starting}
       />
@@ -112,10 +167,10 @@ export const StartStopStack = ({ id }: { id: string }) => {
   if (state === Types.StackState.Running) {
     return (
       <ActionWithDialog
-        name={stack?.name ?? ""}
+        name={`${stack?.name}${service ? ` - ${service}` : ""}`}
         title="Stop"
         icon={<Square className="h-4 w-4" />}
-        onClick={() => stop({ stack: id })}
+        onClick={() => stop({ stack: id, service })}
         disabled={stopPending}
         loading={stopPending || action_state?.stopping}
       />
@@ -123,7 +178,7 @@ export const StartStopStack = ({ id }: { id: string }) => {
   }
 };
 
-export const PauseUnpauseStack = ({ id }: { id: string }) => {
+export const PauseUnpauseStack = ({ id, service }: { id: string; service?: string }) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: unpause, isPending: unpausePending } =
@@ -144,7 +199,7 @@ export const PauseUnpauseStack = ({ id }: { id: string }) => {
       <ConfirmButton
         title="Unpause"
         icon={<Play className="h-4 w-4" />}
-        onClick={() => unpause({ stack: id })}
+        onClick={() => unpause({ stack: id, service })}
         disabled={unpausePending}
         loading={unpausePending || action_state?.unpausing}
       />
@@ -153,10 +208,10 @@ export const PauseUnpauseStack = ({ id }: { id: string }) => {
   if (state === Types.StackState.Running) {
     return (
       <ActionWithDialog
-        name={stack?.name ?? ""}
+        name={`${stack?.name}${service ? ` - ${service}` : ""}`}
         title="Pause"
         icon={<Pause className="h-4 w-4" />}
-        onClick={() => pause({ stack: id })}
+        onClick={() => pause({ stack: id, service })}
         disabled={pausePending}
         loading={pausePending || action_state?.pausing}
       />

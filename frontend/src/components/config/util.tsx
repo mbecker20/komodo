@@ -18,7 +18,7 @@ import {
   Save,
   SearchX,
 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, RefObject, useState } from "react";
 import { cn, filterBySplit } from "@lib/utils";
 import {
   Dialog,
@@ -917,5 +917,57 @@ export const PermissionLevelSelector = ({
         ))}
       </SelectContent>
     </Select>
+  );
+};
+
+/// Takes in env 
+export const SecretsForEnvironment = ({
+  env,
+  setEnv,
+  envRef,
+}: {
+  /// Environment file
+  env?: string;
+  setEnv: (env: string) => void;
+  envRef: RefObject<HTMLTextAreaElement>;
+}) => {
+  const variables = useRead("ListVariables", {}).data ?? [];
+  const secrets = useRead("ListSecrets", {}).data ?? [];
+
+  const _env = env || "";
+
+  if (variables.length === 0 && secrets.length === 0) return;
+
+  return (
+    <div className="flex items-center gap-2">
+      {variables.length > 0 && (
+        <SecretSelector
+          type="Variable"
+          keys={variables.map((v) => v.name)}
+          onSelect={(variable) =>
+            setEnv(
+              _env.slice(0, envRef.current?.selectionStart) +
+                `[[${variable}]]` +
+                _env.slice(envRef.current?.selectionStart, undefined)
+            )
+          }
+          disabled={false}
+        />
+      )}
+      {secrets.length > 0 && (
+        <SecretSelector
+          type="Secret"
+          keys={secrets}
+          onSelect={(secret) =>
+            setEnv(
+              _env.slice(0, envRef.current?.selectionStart) +
+                `[[${secret}]]` +
+                _env.slice(envRef.current?.selectionStart, undefined)
+            )
+          }
+          disabled={false}
+        />
+      )}
+    </div>
   );
 };

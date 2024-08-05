@@ -118,6 +118,8 @@ export const deployment_state_intention: (
       return "Good";
     case Types.DeploymentState.NotDeployed:
       return "Neutral";
+    case Types.DeploymentState.Paused:
+      return "Warning";
     case Types.DeploymentState.Unknown:
       return "Unknown";
     default:

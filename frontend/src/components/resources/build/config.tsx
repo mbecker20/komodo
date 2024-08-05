@@ -7,6 +7,7 @@ import {
   InputList,
   ProviderSelectorConfig,
   SecretSelector,
+  SecretsForEnvironment,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
@@ -381,7 +382,9 @@ const Args = ({
 
   return (
     <ConfigItem className="flex-col gap-4 items-start">
-      {!disabled && <Secrets args={args} setArgs={setArgs} argsRef={ref} />}
+      {!disabled && (
+        <SecretsForEnvironment env={args} setEnv={setArgs} envRef={ref} />
+      )}
       <Textarea
         ref={ref}
         className="min-h-[400px]"
@@ -391,55 +394,5 @@ const Args = ({
         disabled={disabled}
       />
     </ConfigItem>
-  );
-};
-
-const Secrets = ({
-  args,
-  setArgs,
-  argsRef,
-}: {
-  args?: string;
-  setArgs: (args: string) => void;
-  argsRef: RefObject<HTMLTextAreaElement>;
-}) => {
-  const variables = useRead("ListVariables", {}).data ?? [];
-  const secrets = useRead("ListSecrets", {}).data ?? [];
-
-  const _args = args || "";
-
-  if (variables.length === 0 && secrets.length === 0) return;
-
-  return (
-    <div className="flex items-center gap-2">
-      {variables.length > 0 && (
-        <SecretSelector
-          type="Variable"
-          keys={variables.map((v) => v.name)}
-          onSelect={(variable) =>
-            setArgs(
-              _args.slice(0, argsRef.current?.selectionStart) +
-                `[[${variable}]]` +
-                _args.slice(argsRef.current?.selectionStart, undefined)
-            )
-          }
-          disabled={false}
-        />
-      )}
-      {secrets.length > 0 && (
-        <SecretSelector
-          type="Secret"
-          keys={secrets}
-          onSelect={(secret) =>
-            setArgs(
-              _args.slice(0, argsRef.current?.selectionStart) +
-                `[[${secret}]]` +
-                _args.slice(argsRef.current?.selectionStart, undefined)
-            )
-          }
-          disabled={false}
-        />
-      )}
-    </div>
   );
 };

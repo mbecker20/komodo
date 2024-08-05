@@ -1,6 +1,6 @@
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardHeader } from "@ui/card";
+import { Card } from "@ui/card";
 import { FolderGit, Layers, Loader2, RefreshCcw, Server } from "lucide-react";
 import { StackConfig } from "./config";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
@@ -19,6 +19,7 @@ import {
   DeployStack,
   DestroyStack,
   PauseUnpauseStack,
+  RestartStack,
   StartStopStack,
 } from "./actions";
 import { useState } from "react";
@@ -27,7 +28,8 @@ import { StackInfo } from "./info";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
-import { Services } from "./services";
+import { StackServices } from "./services";
+import { snake_case_to_upper_space_case } from "@lib/formatting";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -40,10 +42,10 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
   return <Layers className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 
-const ConfigOrInfo = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Info");
+const ConfigServicesInfo = ({ id }: { id: string }) => {
+  const [view, setView] = useState("Services");
   const state = useStack(id)?.info.state;
-  const infoDisabled =
+  const stackDown =
     state === undefined ||
     state === Types.StackState.Unknown ||
     state === Types.StackState.Down;
@@ -52,19 +54,25 @@ const ConfigOrInfo = ({ id }: { id: string }) => {
       <TabsTrigger value="Config" className="w-[110px]">
         Config
       </TabsTrigger>
-      <TabsTrigger value="Info" className="w-[110px]" disabled={infoDisabled}>
+      <TabsTrigger value="Services" className="w-[110px]" disabled={stackDown}>
+        Services
+      </TabsTrigger>
+      <TabsTrigger value="Info" className="w-[110px]" disabled={stackDown}>
         Info
       </TabsTrigger>
     </TabsList>
   );
   return (
     <Tabs
-      value={infoDisabled ? "Config" : view}
+      value={stackDown ? "Config" : view}
       onValueChange={setView}
       className="grid gap-4"
     >
       <TabsContent value="Config">
         <StackConfig id={id} titleOther={title} />
+      </TabsContent>
+      <TabsContent value="Services">
+        <StackServices id={id} titleOther={title} />
       </TabsContent>
       <TabsContent value="Info">
         <StackInfo id={id} titleOther={title} />
@@ -89,12 +97,15 @@ export const StackComponents: RequiredResourceComponents = {
 
   Status: {
     State: ({ id }) => {
-      const state = useStack(id)?.info.state;
+      const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
       const color = bg_color_class_by_intention(stack_state_intention(state));
       return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{state}</CardHeader>
-        </Card>
+        <p className={cn("p-1 w-fit text-[10px] text-white rounded-md", color)}>
+          {snake_case_to_upper_space_case(state).toUpperCase()}
+        </p>
+        // <Card className={cn("w-fit", color)}>
+        //   <CardHeader className="py-0 px-2">{state}</CardHeader>
+        // </Card>
       );
     },
     FileMissing: ({ id }) => {
@@ -248,16 +259,15 @@ export const StackComponents: RequiredResourceComponents = {
 
   Actions: {
     DeployStack,
+    RestartStack,
     PauseUnpauseStack,
     StartStopStack,
     DestroyStack,
   },
 
-  Page: {
-    Services,
-  },
+  Page: {},
 
-  Config: ConfigOrInfo,
+  Config: ConfigServicesInfo,
 
   DangerZone: ({ id }) => <DeleteResource type="Stack" id={id} />,
 };
