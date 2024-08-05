@@ -57,9 +57,7 @@ const on_message = (
     `${update.operation}${update.success ? "" : " - FAILED"}`
   );
 
-  toast({
-    title,
-  });
+  toast({ title: title as any });
 
   // Invalidate these every time
   invalidate(["ListUpdates"]);
