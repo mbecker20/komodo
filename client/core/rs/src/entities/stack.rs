@@ -251,8 +251,7 @@ pub struct StackConfig {
   pub git_account: String,
 
   /// Directory to change to (`cd`) before running `docker compose up -d`.
-  /// If compose file defined locally in `file_contents`, this will always be `.`.
-  /// Default: `.` (the repo root)
+  /// Default: `./` (the repo root)
   #[serde(default = "default_run_directory")]
   #[builder(default = "default_run_directory()")]
   #[partial_default(default_run_directory())]
@@ -296,7 +295,7 @@ fn default_branch() -> String {
 }
 
 fn default_run_directory() -> String {
-  String::from(".")
+  String::from("./")
 }
 
 fn default_file_path() -> String {
