@@ -154,6 +154,12 @@ export type ReadResponses = {
   // ==== VARIABLE ====
   GetVariable: Types.GetVariableResponse;
   ListVariables: Types.ListVariablesResponse;
+
+  // ==== PROVIDER ====
+  GetGitProviderAccount: Types.GetGitProviderAccountResponse;
+  ListGitProviderAccounts: Types.ListGitProviderAccountsResponse;
+  GetDockerRegistryAccount: Types.GetDockerRegistryAccountResponse;
+  ListDockerRegistryAccounts: Types.ListDockerRegistryAccountsResponse;
 };
 
 export type WriteResponses = {
@@ -264,6 +270,14 @@ export type WriteResponses = {
   UpdateVariableValue: Types.UpdateVariableValueResponse;
   UpdateVariableDescription: Types.UpdateVariableDescriptionResponse;
   DeleteVariable: Types.DeleteVariableResponse;
+
+  // ==== PROVIDERS ====
+  CreateGitProviderAccount: Types.CreateGitProviderAccountResponse;
+  UpdateGitProviderAccount: Types.UpdateGitProviderAccountResponse;
+  DeleteGitProviderAccount: Types.DeleteGitProviderAccountResponse;
+  CreateDockerRegistryAccount: Types.CreateDockerRegistryAccountResponse;
+  UpdateDockerRegistryAccount: Types.UpdateDockerRegistryAccountResponse;
+  DeleteDockerRegistryAccount: Types.DeleteDockerRegistryAccountResponse;
 };
 
 export type ExecuteResponses = {

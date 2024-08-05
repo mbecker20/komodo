@@ -61,7 +61,7 @@ export interface User {
 	/**
 	 * The Mongo ID of the User.
 	 * This field is de/serialized from/to JSON as
-	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
+	 * `{ "_id": { "$oid": "..." }, ...(rest of User schema) }`
 	 */
 	_id?: MongoId;
 	/** The globally unique username for the user. */
@@ -864,6 +864,68 @@ export interface ProcedureActionState {
 }
 
 export type GetProcedureActionStateResponse = ProcedureActionState;
+
+/**
+ * Configuration to access private git repos from various git providers.
+ * Note. Cannot create two accounts with the same domain and username.
+ */
+export interface GitProviderAccount {
+	/**
+	 * The Mongo ID of the git provider account.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
+	 */
+	_id?: MongoId;
+	/**
+	 * The domain of the provider.
+	 * 
+	 * For git, this cannot include the protocol eg 'http://',
+	 * which is controlled with 'https' field.
+	 */
+	domain: string;
+	/** Whether git provider is accessed over http or https. */
+	https: boolean;
+	/** The account username */
+	username?: string;
+	/**
+	 * The token in plain text on the db.
+	 * If the database / host can be accessed this is insecure.
+	 */
+	token?: string;
+}
+
+export type GetGitProviderAccountResponse = GitProviderAccount;
+
+export type ListGitProviderAccountsResponse = GitProviderAccount[];
+
+/** Configuration to access private image repositories on various registries. */
+export interface DockerRegistryAccount {
+	/**
+	 * The Mongo ID of the docker registry account.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of DockerRegistryAccount) }`
+	 */
+	_id?: MongoId;
+	/**
+	 * The domain of the provider.
+	 * 
+	 * For docker registry, this can include 'http://...',
+	 * however this is not recommended and won't work unless "insecure registries" are enabled
+	 * on your hosts. See [https://docs.docker.com/reference/cli/dockerd/#insecure-registries].
+	 */
+	domain: string;
+	/** The account username */
+	username?: string;
+	/**
+	 * The token in plain text on the db.
+	 * If the database / host can be accessed this is insecure.
+	 */
+	token?: string;
+}
+
+export type GetDockerRegistryAccountResponse = DockerRegistryAccount;
+
+export type ListDockerRegistryAccountsResponse = DockerRegistryAccount[];
 
 export interface RepoConfig {
 	/** The server to clone the repo on. */
@@ -1727,6 +1789,12 @@ export enum Operation {
 	CreateVariable = "CreateVariable",
 	UpdateVariableValue = "UpdateVariableValue",
 	DeleteVariable = "DeleteVariable",
+	CreateGitProviderAccount = "CreateGitProviderAccount",
+	UpdateGitProviderAccount = "UpdateGitProviderAccount",
+	DeleteGitProviderAccount = "DeleteGitProviderAccount",
+	CreateDockerRegistryAccount = "CreateDockerRegistryAccount",
+	UpdateDockerRegistryAccount = "UpdateDockerRegistryAccount",
+	DeleteDockerRegistryAccount = "DeleteDockerRegistryAccount",
 }
 
 /** An update's status */
@@ -1899,6 +1967,18 @@ export type DeleteProcedureResponse = Procedure;
 
 export type UpdateProcedureResponse = Procedure;
 
+export type CreateGitProviderAccountResponse = GitProviderAccount;
+
+export type UpdateGitProviderAccountResponse = GitProviderAccount;
+
+export type DeleteGitProviderAccountResponse = GitProviderAccount;
+
+export type CreateDockerRegistryAccountResponse = DockerRegistryAccount;
+
+export type UpdateDockerRegistryAccountResponse = DockerRegistryAccount;
+
+export type DeleteDockerRegistryAccountResponse = DockerRegistryAccount;
+
 export type CreateRepoWebhookResponse = NoData;
 
 export type DeleteRepoWebhookResponse = NoData;
@@ -2014,6 +2094,10 @@ export interface ProcedureQuerySpecifics {
 }
 
 export type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
+
+export type _PartialGitProviderAccount = Partial<GitProviderAccount>;
+
+export type _PartialDockerRegistryAccount = Partial<DockerRegistryAccount>;
 
 export type _PartialRepoConfig = Partial<RepoConfig>;
 
@@ -2930,6 +3014,44 @@ export interface GetProceduresSummaryResponse {
 	failed: number;
 	/** The number of procedures with unknown state. */
 	unknown: number;
+}
+
+/**
+ * Get a specific git provider account.
+ * Response: [GetGitProviderAccountResponse].
+ */
+export interface GetGitProviderAccount {
+	id: string;
+}
+
+/**
+ * List git provider accounts matching optional query.
+ * Response: [ListGitProvidersResponse].
+ */
+export interface ListGitProviderAccounts {
+	/** Optionally filter by accounts with a specific domain. */
+	domain?: string;
+	/** Optionally filter by accounts with a specific username. */
+	username?: string;
+}
+
+/**
+ * Get a specific docker registry account.
+ * Response: [GetDockerRegistryAccountResponse].
+ */
+export interface GetDockerRegistryAccount {
+	id: string;
+}
+
+/**
+ * List docker registry accounts matching optional query.
+ * Response: [ListDockerRegistrysResponse].
+ */
+export interface ListDockerRegistryAccounts {
+	/** Optionally filter by accounts with a specific domain. */
+	domain?: string;
+	/** Optionally filter by accounts with a specific username. */
+	username?: string;
 }
 
 /** Get a specific repo. Response: [Repo]. */
@@ -4006,6 +4128,66 @@ export interface UpdateProcedure {
 	config: _PartialProcedureConfig;
 }
 
+/**
+ * **Admin only.** Create a git provider account.
+ * Response: [GitProviderAccount].
+ */
+export interface CreateGitProviderAccount {
+	/**
+	 * The initial account config. Anything in the _id field will be ignored,
+	 * as this is generated on creation.
+	 */
+	account: _PartialGitProviderAccount;
+}
+
+/**
+ * **Admin only.** Update a git provider account.
+ * Response: [GitProviderAccount].
+ */
+export interface UpdateGitProviderAccount {
+	/** The id of the git provider account to update. */
+	id: string;
+	/** The partial git provider account. */
+	account: _PartialGitProviderAccount;
+}
+
+/**
+ * **Admin only.** Delete a git provider account.
+ * Response: [User].
+ */
+export interface DeleteGitProviderAccount {
+	/** The id of the git provider to delete */
+	id: string;
+}
+
+/**
+ * **Admin only.** Create a docker registry account.
+ * Response: [DockerRegistryAccount].
+ */
+export interface CreateDockerRegistryAccount {
+	account: _PartialDockerRegistryAccount;
+}
+
+/**
+ * **Admin only.** Update a docker registry account.
+ * Response: [DockerRegistryAccount].
+ */
+export interface UpdateDockerRegistryAccount {
+	/** The id of the docker registry to update */
+	id: string;
+	/** The partial docker registry account. */
+	account: _PartialDockerRegistryAccount;
+}
+
+/**
+ * **Admin only.** Delete a docker registry account.
+ * Response: [DockerRegistryAccount].
+ */
+export interface DeleteDockerRegistryAccount {
+	/** The id of the docker registry account to delete */
+	id: string;
+}
+
 /** Create a repo. Response: [Repo]. */
 export interface CreateRepo {
 	/** The name given to newly created repo. */
@@ -4962,7 +5144,11 @@ export type ReadRequest =
 	| { type: "GetSystemStats", params: GetSystemStats }
 	| { type: "GetSystemProcesses", params: GetSystemProcesses }
 	| { type: "GetVariable", params: GetVariable }
-	| { type: "ListVariables", params: ListVariables };
+	| { type: "ListVariables", params: ListVariables }
+	| { type: "GetGitProviderAccount", params: GetGitProviderAccount }
+	| { type: "ListGitProviderAccounts", params: ListGitProviderAccounts }
+	| { type: "GetDockerRegistryAccount", params: GetDockerRegistryAccount }
+	| { type: "ListDockerRegistryAccounts", params: ListDockerRegistryAccounts };
 
 export type UserRequest = 
 	| { type: "PushRecentlyViewed", params: PushRecentlyViewed }
@@ -5045,7 +5231,13 @@ export type WriteRequest =
 	| { type: "CreateVariable", params: CreateVariable }
 	| { type: "UpdateVariableValue", params: UpdateVariableValue }
 	| { type: "UpdateVariableDescription", params: UpdateVariableDescription }
-	| { type: "DeleteVariable", params: DeleteVariable };
+	| { type: "DeleteVariable", params: DeleteVariable }
+	| { type: "CreateGitProviderAccount", params: CreateGitProviderAccount }
+	| { type: "UpdateGitProviderAccount", params: UpdateGitProviderAccount }
+	| { type: "DeleteGitProviderAccount", params: DeleteGitProviderAccount }
+	| { type: "CreateDockerRegistryAccount", params: CreateDockerRegistryAccount }
+	| { type: "UpdateDockerRegistryAccount", params: UpdateDockerRegistryAccount }
+	| { type: "DeleteDockerRegistryAccount", params: DeleteDockerRegistryAccount };
 
 export type WsLoginMessage = 
 	| { type: "Jwt", params: {

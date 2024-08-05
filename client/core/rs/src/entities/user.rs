@@ -21,7 +21,7 @@ use super::{
 pub struct User {
   /// The Mongo ID of the User.
   /// This field is de/serialized from/to JSON as
-  /// `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
+  /// `{ "_id": { "$oid": "..." }, ...(rest of User schema) }`
   #[serde(
     default,
     rename = "_id",

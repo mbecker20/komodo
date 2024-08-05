@@ -36,6 +36,7 @@ mod builder;
 mod deployment;
 mod permission;
 mod procedure;
+mod provider;
 mod repo;
 mod search;
 mod server;
@@ -200,6 +201,12 @@ enum ReadRequest {
   // ==== VARIABLE ====
   GetVariable(GetVariable),
   ListVariables(ListVariables),
+
+  // ==== PROVIDER ====
+  GetGitProviderAccount(GetGitProviderAccount),
+  ListGitProviderAccounts(ListGitProviderAccounts),
+  GetDockerRegistryAccount(GetDockerRegistryAccount),
+  ListDockerRegistryAccounts(ListDockerRegistryAccounts),
 }
 
 pub fn router() -> Router {

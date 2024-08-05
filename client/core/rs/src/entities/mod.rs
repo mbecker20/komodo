@@ -61,6 +61,8 @@ pub mod user;
 pub mod user_group;
 /// Subtypes of [Variable][variable::Variable]
 pub mod variable;
+/// Subtypes of [ProviderAccount][provider::ProviderAccount]
+pub mod provider;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;
@@ -780,6 +782,16 @@ pub enum Operation {
   CreateVariable,
   UpdateVariableValue,
   DeleteVariable,
+
+  // git provider
+  CreateGitProviderAccount,
+  UpdateGitProviderAccount,
+  DeleteGitProviderAccount,
+
+  // docker registry
+  CreateDockerRegistryAccount,
+  UpdateDockerRegistryAccount,
+  DeleteDockerRegistryAccount,
 }
 
 #[typeshare]

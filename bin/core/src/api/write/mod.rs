@@ -19,6 +19,7 @@ mod deployment;
 mod description;
 mod permissions;
 mod procedure;
+mod provider;
 mod repo;
 mod server;
 mod server_template;
@@ -141,6 +142,14 @@ pub enum WriteRequest {
   UpdateVariableValue(UpdateVariableValue),
   UpdateVariableDescription(UpdateVariableDescription),
   DeleteVariable(DeleteVariable),
+
+  // ==== PROVIDERS ====
+  CreateGitProviderAccount(CreateGitProviderAccount),
+  UpdateGitProviderAccount(UpdateGitProviderAccount),
+  DeleteGitProviderAccount(DeleteGitProviderAccount),
+  CreateDockerRegistryAccount(CreateDockerRegistryAccount),
+  UpdateDockerRegistryAccount(UpdateDockerRegistryAccount),
+  DeleteDockerRegistryAccount(DeleteDockerRegistryAccount),
 }
 
 pub fn router() -> Router {
