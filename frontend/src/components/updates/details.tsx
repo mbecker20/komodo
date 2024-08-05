@@ -147,7 +147,7 @@ export const UpdateDetailsInner = ({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent
-        className="w-[1200px] max-w-[100vw]"
+        className="mx-auto w-[1200px] max-w-[100vw] rounded-b-md"
         side="top"
         onClick={() => setOpen(false)}
       >
