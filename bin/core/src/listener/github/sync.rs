@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use axum::http::HeaderMap;
 use monitor_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
-  entities::{sync::ResourceSync, user::github_user},
+  entities::{sync::ResourceSync, user::git_webhook_user},
 };
 use resolver_api::Resolve;
 
@@ -40,7 +40,7 @@ pub async fn handle_sync_refresh_webhook(
   if request_branch != sync.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   State
     .resolve(RefreshResourceSyncPending { sync: sync_id }, user)
     .await?;
@@ -67,7 +67,7 @@ pub async fn handle_sync_execute_webhook(
   if request_branch != sync.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunSync(RunSync { sync: sync_id });
   let update = init_execution_update(&req, &user).await?;
   let ExecuteRequest::RunSync(req) = req else {

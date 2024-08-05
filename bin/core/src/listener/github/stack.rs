@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use axum::http::HeaderMap;
 use monitor_client::{
   api::{execute::DeployStack, write::RefreshStackCache},
-  entities::{stack::Stack, user::github_user},
+  entities::{stack::Stack, user::git_webhook_user},
 };
 use resolver_api::Resolve;
 
@@ -40,7 +40,7 @@ pub async fn handle_stack_refresh_webhook(
   if request_branch != stack.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   State
     .resolve(RefreshStackCache { stack: stack.id }, user)
     .await?;
@@ -67,7 +67,7 @@ pub async fn handle_stack_deploy_webhook(
   if request_branch != stack.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::DeployStack(DeployStack {
     stack: stack_id,
     stop_time: None,

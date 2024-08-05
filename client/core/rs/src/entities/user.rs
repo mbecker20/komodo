@@ -82,7 +82,8 @@ impl User {
     matches!(
       user_id,
       "Procedure"
-        | "Github"
+        | "Github" // Github can be removed later, just keeping for backward compat.
+        | "Git Webhook"
         | "Auto Redeploy"
         | "Resource Sync"
         | "Stack Wizard"
@@ -93,7 +94,9 @@ impl User {
 pub fn admin_service_user(user_id: &str) -> Option<User> {
   match user_id {
     "Procedure" => procedure_user().to_owned().into(),
-    "Github" => github_user().to_owned().into(),
+    // Github should be removed later, replaced by Git Webhook, just keeping for backward compat.
+    "Github" => git_webhook_user().to_owned().into(),
+    "Git Webhook" => git_webhook_user().to_owned().into(),
     "Auto Redeploy" => auto_redeploy_user().to_owned().into(),
     "Resource Sync" => sync_user().to_owned().into(),
     "Stack Wizard" => stack_user().to_owned().into(),
@@ -114,10 +117,10 @@ pub fn procedure_user() -> &'static User {
   })
 }
 
-pub fn github_user() -> &'static User {
-  static PROCEDURE_USER: OnceLock<User> = OnceLock::new();
-  PROCEDURE_USER.get_or_init(|| {
-    let id_name = String::from("Github");
+pub fn git_webhook_user() -> &'static User {
+  static GIT_WEBHOOK_USER: OnceLock<User> = OnceLock::new();
+  GIT_WEBHOOK_USER.get_or_init(|| {
+    let id_name = String::from("Git Webhook");
     User {
       id: id_name.clone(),
       username: id_name,
