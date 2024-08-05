@@ -96,11 +96,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
         &file_contents
       {
         let (json, json_error) = get_config_json(contents).await;
-        match extract_services(
-          contents,
-          &stack.config.run_directory,
-          &stack.config.file_path,
-        ) {
+        match extract_services(&stack, contents) {
           Ok(services) => (services, json, json_error),
           Err(e) => {
             update.push_error_log(
@@ -366,7 +362,7 @@ impl Resolve<DestroyStack, (User, Update)> for State {
 
     let ComposeExecutionResponse { file_missing, log } = periphery
       .request(ComposeExecution {
-        name: stack.name,
+        name: stack.name.clone(),
         run_directory: stack.config.run_directory.clone(),
         file_path: stack.config.file_path.clone(),
         command: format!(
@@ -381,9 +377,9 @@ impl Resolve<DestroyStack, (User, Update)> for State {
     if file_missing {
       let services = if stack.info.services.is_empty() {
         let file_contents = if stack.config.file_contents.is_empty() {
-          stack.info.remote_contents
+          stack.info.remote_contents.as_deref()
         } else {
-          Some(stack.config.file_contents)
+          Some(stack.config.file_contents.as_str())
         };
         let Some(file_contents) = file_contents else {
           return Err(
@@ -391,12 +387,7 @@ impl Resolve<DestroyStack, (User, Update)> for State {
               .context("Stack cached services are empty, and cannot get file contents, so do not know which containers to destroy")
           );
         };
-        extract_services(
-          &file_contents,
-          &stack.config.run_directory,
-          &stack.config.file_path,
-        )
-        .context("failed to extract services")?
+        extract_services(&stack, file_contents).context("failed to extract services")?
       } else {
         stack.info.services
       };

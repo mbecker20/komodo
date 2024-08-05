@@ -183,11 +183,7 @@ impl Resolve<RefreshStackCache, User> for State {
           let (json, json_error) =
             get_config_json(&remote_contents).await;
           let services = if stack.info.services.is_empty() {
-            match extract_services(
-              &remote_contents,
-              &stack.config.run_directory,
-              &stack.config.file_path,
-            ) {
+            match extract_services(&stack, &remote_contents) {
               Ok(services) => services,
               Err(e) => {
                 warn!("failed to extract stack services from stack {} | {e:#}", stack.name);
@@ -226,11 +222,7 @@ impl Resolve<RefreshStackCache, User> for State {
       let (json, json_error) =
         get_config_json(&stack.config.file_contents).await;
       let services = if stack.info.services.is_empty() {
-        match extract_services(
-          &stack.config.file_contents,
-          &stack.config.run_directory,
-          &stack.config.file_path,
-        ) {
+        match extract_services(&stack, &stack.config.file_contents) {
           Ok(services) => services,
           Err(e) => {
             // let mut update = make_update(&stack, Operation::RefreshStackCache, user)

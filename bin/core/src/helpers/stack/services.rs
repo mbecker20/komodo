@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
 use anyhow::Context;
-use monitor_client::entities::stack::{
-  ComposeFile, ComposeService, Stack, StackServiceNames,
+use monitor_client::entities::{
+  stack::{ComposeFile, ComposeService, Stack, StackServiceNames},
+  to_monitor_name,
 };
 
 use crate::helpers::stack::remote::get_remote_compose_file;
@@ -23,24 +24,26 @@ pub async fn extract_services_from_stack(
     stack.config.file_contents.clone()
   };
   extract_services(
+    stack,
     &compose_contents,
-    &stack.config.run_directory,
-    &stack.config.file_path,
   )
 }
 
 pub fn extract_services(
+  stack: &Stack,
   compose_contents: &str,
-  run_directory: &str,
-  file_path: &str,
 ) -> anyhow::Result<Vec<StackServiceNames>> {
+  let stack_name = to_monitor_name(&stack.name);
+
   let compose = serde_yaml::from_str::<ComposeFile>(compose_contents)
     .context("failed to parse service names from compose contents")?;
 
-  let run_directory: PathBuf = run_directory
+  let run_directory: PathBuf = stack
+    .config
+    .run_directory
     .parse()
     .context("run directory is not valid path")?;
-  let file = run_directory.join(file_path);
+  let file = run_directory.join(&stack.config.file_path);
 
   let compose_name = match compose.name {
     Some(name) => name,
@@ -49,9 +52,10 @@ pub fn extract_services(
         .parent()
         .with_context(|| format!("cannot get compose file parent for default compose name | path: {file:?}"))?
         .file_name()
-        .with_context(|| format!("cannot get compose file parent name for default compose name | path: {file:?}"))?
-        .to_string_lossy()
-        .to_string()
+        .map(|name| name .to_string_lossy().to_string())
+        // .file_name will fail if the parent path is empty. In this case, the parent will be
+        // the stack name, matching the folder name created when deploying the stack.
+        .unwrap_or_else(|| stack_name)
     }
   };
 
