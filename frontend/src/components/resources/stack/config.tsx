@@ -66,7 +66,7 @@ export const StackConfig = ({
           {
             label: "Project Name",
             description:
-              "Override the compose project name. Can import stacks by matching the project name",
+              "Optionally override the compose project name. Can import stacks by matching the project name",
             components: {
               project_name: { placeholder: "Input project name" },
             },

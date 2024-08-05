@@ -2,8 +2,6 @@ import { PageXlRow, Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useStack } from "@components/resources/stack";
 import {
-  DeployStack,
-  DestroyStack,
   PauseUnpauseStack,
   RestartStack,
   StartStopStack,
@@ -20,15 +18,14 @@ import { Types } from "@monitor/client";
 import { Box, Clapperboard, Layers2 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { StackServiceLogs } from "./log";
+import { ResourceUpdates } from "@components/updates/resource";
 
 type IdServiceComponent = React.FC<{ id: string; service?: string }>;
 
 const Actions: { [action: string]: IdServiceComponent } = {
-  DeployStack,
   RestartStack,
   PauseUnpauseStack,
   StartStopStack,
-  DestroyStack,
 };
 
 export const StackServicePage = () => {
@@ -98,7 +95,10 @@ export const StackServicePage = () => {
     >
       {/* Actions */}
       {canExecute && (
-        <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
+        <Section
+          title="Actions (Service)"
+          icon={<Clapperboard className="w-4 h-4" />}
+        >
           <div className="flex gap-4 items-center flex-wrap">
             {Object.entries(Actions).map(([key, Action]) => (
               <Action key={key} id={stack_id} service={service} />
@@ -106,6 +106,9 @@ export const StackServicePage = () => {
           </div>
         </Section>
       )}
+
+      {/* Updates */}
+      <ResourceUpdates type="Stack" id={stack_id} />
 
       {/* Logs */}
       <div className="pt-4">

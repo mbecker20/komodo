@@ -98,6 +98,7 @@ const on_message = (
         ["ListFullStacks"],
         ["GetStacksSummary"],
         ["GetStackServiceLog"],
+        ["SearchStackServiceLog"],
         ["ListCommonStackExtraArgs"],
         ["GetStackJson", { stack: update.target.id }],
         ["GetStack", { stack: update.target.id }],

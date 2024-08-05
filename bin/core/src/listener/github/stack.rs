@@ -70,7 +70,6 @@ pub async fn handle_stack_deploy_webhook(
   let user = github_user().to_owned();
   let req = ExecuteRequest::DeployStack(DeployStack {
     stack: stack_id,
-    service: None,
     stop_time: None,
   });
   let update = init_execution_update(&req, &user).await?;

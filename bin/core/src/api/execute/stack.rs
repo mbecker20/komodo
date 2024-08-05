@@ -28,11 +28,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
   #[instrument(name = "DeployStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    DeployStack {
-      stack,
-      stop_time,
-      service,
-    }: DeployStack,
+    DeployStack { stack, stop_time }: DeployStack,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (mut stack, server) = get_stack_and_server(
@@ -81,7 +77,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
     } = periphery_client(&server)?
       .request(ComposeUp {
         stack: stack.clone(),
-        service,
+        service: None,
         git_token,
         registry_token,
       })
@@ -327,20 +323,14 @@ impl Resolve<DestroyStack, (User, Update)> for State {
       stack,
       remove_orphans,
       stop_time,
-      service,
     }: DestroyStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let no_service = service.is_none();
     execute_compose::<DestroyStack>(
       &stack,
-      service,
+      None,
       &user,
-      |state| {
-        if no_service {
-          state.destroying = true
-        }
-      },
+      |state| state.destroying = true,
       update,
       (stop_time, remove_orphans),
     )

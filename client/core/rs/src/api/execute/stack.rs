@@ -27,8 +27,6 @@ use super::MonitorExecuteRequest;
 pub struct DeployStack {
   /// Id or name
   pub stack: String,
-  /// Optionally deploy only a specific service. Experimental.
-  pub service: Option<String>,
   /// Override the default termination max time.
   /// Only used if the stack needs to be taken down first.
   pub stop_time: Option<i32>,
@@ -177,6 +175,4 @@ pub struct DestroyStack {
   pub remove_orphans: bool,
   /// Override the default termination max time.
   pub stop_time: Option<i32>,
-  /// Optionally specify a specific service to destroy
-  pub service: Option<String>,
 }
