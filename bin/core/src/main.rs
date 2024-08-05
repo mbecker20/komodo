@@ -27,7 +27,7 @@ mod state;
 mod ws;
 
 async fn app() -> anyhow::Result<()> {
-  dotenv::dotenv().ok();
+  dotenvy::dotenv().ok();
   let config = core_config();
   logger::init(&config.logging)?;
   info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));

@@ -75,7 +75,7 @@ tracing = "0.1.40"
 
 # CONFIG
 clap = { version = "4.5.13", features = ["derive"] }
-dotenv = "0.15.0"
+dotenvy = "0.15.7"
 envy = "0.4.2"
 
 # CRYPTO

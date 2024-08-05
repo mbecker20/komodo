@@ -17,7 +17,7 @@ use crate::random_string;
 
 #[allow(unused)]
 pub async fn tests() -> anyhow::Result<()> {
-  dotenv::dotenv().ok();
+  dotenvy::dotenv().ok();
 
   let monitor = MonitorClient::new_from_env().await?;
 

@@ -45,7 +45,7 @@ version = "1.13.0"
 dependencies = [
  "anyhow",
  "axum 0.7.5",
- "dotenv",
+ "dotenvy",
  "envy",
  "logger",
  "monitor_client",
@@ -1244,10 +1244,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "dotenv"
-version = "0.15.0"
+name = "dotenvy"
+version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
+checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dyn-clone"
@@ -2156,7 +2156,7 @@ version = "1.13.0"
 dependencies = [
  "anyhow",
  "chrono",
- "dotenv",
+ "dotenvy",
  "envy",
  "logger",
  "monitor_client",
@@ -2351,7 +2351,7 @@ dependencies = [
  "base64 0.22.1",
  "bcrypt",
  "derive_variants",
- "dotenv",
+ "dotenvy",
  "envy",
  "formatting",
  "futures",
@@ -2406,7 +2406,7 @@ dependencies = [
  "bollard",
  "clap",
  "command",
- "dotenv",
+ "dotenvy",
  "envy",
  "formatting",
  "git",
@@ -3987,7 +3987,7 @@ name = "tests"
 version = "1.13.0"
 dependencies = [
  "anyhow",
- "dotenv",
+ "dotenvy",
  "envy",
  "logger",
  "monitor_client",

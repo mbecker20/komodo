@@ -19,5 +19,5 @@ tracing.workspace = true
 axum.workspace = true
 anyhow.workspace = true
 serde.workspace = true
-dotenv.workspace = true
+dotenvy.workspace = true
 envy.workspace = true

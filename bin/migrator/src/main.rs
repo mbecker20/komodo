@@ -35,7 +35,7 @@ struct Env {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  dotenv::dotenv().ok();
+  dotenvy::dotenv().ok();
   logger::init(&Default::default())?;
 
   info!("starting migrator");

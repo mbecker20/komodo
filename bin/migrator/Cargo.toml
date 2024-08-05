@@ -17,7 +17,7 @@ mungos.workspace = true
 #
 tokio.workspace = true
 anyhow.workspace = true
-dotenv.workspace = true
+dotenvy.workspace = true
 envy.workspace = true
 serde.workspace = true
 tracing.workspace = true
