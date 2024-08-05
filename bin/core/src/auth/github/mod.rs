@@ -81,7 +81,7 @@ async fn callback(
       let user = User {
         id: Default::default(),
         username: github_user.login,
-        enabled: no_users_exist,
+        enabled: no_users_exist || core_config().enable_new_users,
         admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,

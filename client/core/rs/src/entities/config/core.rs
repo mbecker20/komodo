@@ -81,6 +81,8 @@ pub struct Env {
   pub monitor_transparent_mode: Option<bool>,
   /// Override `ui_write_disabled`
   pub monitor_ui_write_disabled: Option<bool>,
+  /// Override `enable_new_users`
+  pub monitor_enable_new_users: Option<bool>,
 
   /// Override `local_auth`
   pub monitor_local_auth: Option<bool>,
@@ -175,6 +177,14 @@ fn default_config_path() -> String {
 /// ## token that has to be given to git provider during repo webhook config as the secret
 /// ## default: empty (none)
 /// webhook_secret = "a_random_webhook_secret"
+/// 
+/// ## allow or deny user login with username / password
+/// ## default: false
+/// # local_auth = true
+/// 
+/// ## new users will be automatically enabled
+/// ## default: false
+/// # enable_new_users = true
 ///
 /// ## an alternate base url that is used to recieve git webhook requests
 /// ## if empty or not specified, will use 'host' address as base
@@ -194,7 +204,6 @@ fn default_config_path() -> String {
 /// ## Specify a opentelemetry otlp endpoint to send traces to.
 /// ## Optional, default unassigned (don't export telemetry).
 /// # logging.otlp_endpoint = "http://localhost:4317"
-///
 ///
 /// ## Optionally provide a specific jwt secret.
 /// ## Passing nothing or an empty string will cause one to be generated.
@@ -239,10 +248,6 @@ fn default_config_path() -> String {
 /// ## disables write support on resources in the UI
 /// ## default: false
 /// # ui_write_disabled = true
-///
-/// ## allow or deny user login with username / password
-/// ## default: false
-/// # local_auth = true
 ///
 /// ## Use to configure google oauth
 /// # google_oauth.enabled = true
@@ -380,14 +385,16 @@ pub struct CoreConfig {
   #[serde(default = "default_monitoring_interval")]
   pub monitoring_interval: Timelength,
 
-  /// Number of days to keep stats, or 0 to disable pruning. stats older than this number of days are deleted on a daily cycle
-  /// Default: 0 (no pruning).
-  #[serde(default)]
+  /// Number of days to keep stats, or 0 to disable pruning.
+  /// Stats older than this number of days are deleted on a daily cycle
+  /// Default: 14
+  #[serde(default = "default_prune_days")]
   pub keep_stats_for_days: u64,
 
-  /// Number of days to keep alerts, or 0 to disable pruning. alerts older than this number of days are deleted on a daily cycle
-  /// Default: 0 (no pruning).
-  #[serde(default)]
+  /// Number of days to keep alerts, or 0 to disable pruning.
+  /// Alerts older than this number of days are deleted on a daily cycle
+  /// Default: 14
+  #[serde(default = "default_prune_days")]
   pub keep_alerts_for_days: u64,
 
   /// Configure logging
@@ -413,6 +420,11 @@ pub struct CoreConfig {
   /// Configure github oauth
   #[serde(default)]
   pub github_oauth: OauthCredentials,
+
+  /// New users will be automatically enabled.
+  /// Combined with transparent mode, this is suitable for a demo instance.
+  #[serde(default)]
+  pub enable_new_users: bool,
 
   /// Used to verify validity from webhooks.
   /// Should be some secure hash maybe 20-40 chars.
@@ -490,6 +502,10 @@ fn default_stack_directory() -> PathBuf {
   PathBuf::from_str("/stacks").unwrap()
 }
 
+fn default_prune_days() -> u64 {
+  14
+}
+
 fn default_poll_interval() -> Timelength {
   Timelength::FiveMinutes
 }
@@ -518,6 +534,7 @@ impl CoreConfig {
       logging: config.logging,
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
+      enable_new_users: config.enable_new_users,
       local_auth: config.local_auth,
       google_oauth: OauthCredentials {
         enabled: config.google_oauth.enabled,
