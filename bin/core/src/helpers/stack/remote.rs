@@ -5,7 +5,9 @@ use monitor_client::entities::{
   stack::Stack, update::Log, CloneArgs,
 };
 
-use crate::{auth::random_string, config::core_config};
+use crate::{
+  auth::random_string, config::core_config, helpers::git_token,
+};
 
 /// Return Result<(Result<contents>, logs, short hash, commit message)>
 pub async fn get_remote_compose_file(
@@ -22,22 +24,23 @@ pub async fn get_remote_compose_file(
 
   let config = core_config();
 
-  let access_token = match (&clone_args.account, &clone_args.provider) {
+  let access_token = match (&clone_args.account, &clone_args.provider)
+  {
     (None, _) => None,
-    (Some(_), None) => return Err(anyhow!("Account is configured, but provider is empty")),
-    (Some(username), Some(provider)) => config
-      .git_providers
-      .iter()
-      .find(|_provider| {
-        &_provider.domain == provider
+    (Some(_), None) => {
+      return Err(anyhow!(
+        "Account is configured, but provider is empty"
+      ))
+    }
+    (Some(username), Some(provider)) => {
+      git_token(provider, username, |https| {
+        clone_args.https = https
       })
-      .and_then(|provider| {
-        clone_args.https = provider.https;
-        provider.accounts.iter().find(|account| &account.username == username).map(|account| &account.token)
-      })
-      .with_context(|| format!("did not find git token for account {username} | provider: {provider}"))?
-      .to_owned()
-      .into(),
+      .await
+      .with_context(
+        || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+      )?
+    }
   };
 
   let repo_path = config.stack_directory.join(random_string(10));

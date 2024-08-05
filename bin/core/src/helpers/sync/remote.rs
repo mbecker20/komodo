@@ -5,7 +5,10 @@ use monitor_client::entities::{
   sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
 };
 
-use crate::{config::core_config, state::resource_sync_lock_cache};
+use crate::{
+  config::core_config, helpers::git_token,
+  state::resource_sync_lock_cache,
+};
 
 pub async fn get_remote_resources(
   sync: &ResourceSync,
@@ -21,22 +24,21 @@ pub async fn get_remote_resources(
 
   let config = core_config();
 
-  let access_token = match (&clone_args.account, &clone_args.provider) {
+  let access_token = match (&clone_args.account, &clone_args.provider)
+  {
     (None, _) => None,
-    (Some(_), None) => return Err(anyhow!("Account is configured, but provider is empty")),
-    (Some(username), Some(provider)) => config
-      .git_providers
-      .iter()
-      .find(|_provider| {
-        &_provider.domain == provider
-      })
-      .and_then(|provider| {
-        clone_args.https = provider.https;
-        provider.accounts.iter().find(|account| &account.username == username).map(|account| &account.token)
-      })
-      .with_context(|| format!("did not find git token for account {username} | provider: {provider}"))?
-      .to_owned()
-      .into(),
+    (Some(_), None) => {
+      return Err(anyhow!(
+        "Account is configured, but provider is empty"
+      ))
+    }
+    (Some(username), Some(provider)) => {
+      git_token(provider, username, |https| clone_args.https = https)
+        .await
+        .with_context(
+          || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+        )?
+    }
   };
 
   fs::create_dir_all(&config.sync_directory)

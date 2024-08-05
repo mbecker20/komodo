@@ -53,8 +53,9 @@ use crate::{
   helpers::{
     alert::send_alerts,
     channel::build_cancel_channel,
-    periphery_client,
+    git_token, periphery_client,
     query::{get_deployment_state, get_global_variables},
+    registry_token,
     update::update_update,
   },
   resource::{self, refresh_build_state_cache},
@@ -78,6 +79,16 @@ impl Resolve<RunBuild, (User, Update)> for State {
       PermissionLevel::Execute,
     )
     .await?;
+
+    let git_token = git_token(
+      &build.config.git_provider,
+      &build.config.git_account,
+      |https| build.config.git_https = https,
+    )
+    .await
+    .with_context(
+      || format!("Failed to get git token in call to db. Stopping run. | {} | {}", build.config.git_provider, build.config.git_account),
+    )?;
 
     // get the action state for the build (or insert default).
     let action_state =
@@ -168,20 +179,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
     let variables = get_global_variables().await?;
 
     // CLONE REPO
-    let git_token = core_config
-      .git_providers
-      .iter()
-      .find(|provider| provider.domain == build.config.git_provider)
-      .and_then(|provider| {
-        build.config.git_https = provider.https;
-        provider
-          .accounts
-          .iter()
-          .find(|account| {
-            account.username == build.config.git_account
-          })
-          .map(|account| account.token.clone())
-      });
 
     let res = tokio::select! {
       res = periphery
@@ -814,6 +811,7 @@ async fn validate_account_extract_registry_token_aws_ecr(
     ImageRegistry::None(_) => return Ok((None, None)),
     // Early return for AwsEcr
     ImageRegistry::AwsEcr(label) => {
+      // Note that aws ecr config still only lives in config file
       let config = core_config()
         .aws_ecr_registries
         .iter()
@@ -859,18 +857,9 @@ async fn validate_account_extract_registry_token_aws_ecr(
     ));
   }
 
-  Ok((
-    core_config()
-      .docker_registries
-      .iter()
-      .find(|provider| provider.domain == domain)
-      .and_then(|provider| {
-        provider
-          .accounts
-          .iter()
-          .find(|_account| &_account.username == account)
-          .map(|account| account.token.clone())
-      }),
-    None,
-  ))
+  let registry_token = registry_token(domain, account).await.with_context(
+    || format!("Failed to get registry token in call to db. Stopping run. | {domain} | {account}"),
+  )?;
+
+  Ok((registry_token, None))
 }

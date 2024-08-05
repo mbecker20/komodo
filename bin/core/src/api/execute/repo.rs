@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
@@ -19,8 +19,7 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  config::core_config,
-  helpers::{periphery_client, update::update_update},
+  helpers::{git_token, periphery_client, update::update_update},
   resource::{self, refresh_repo_state_cache},
   state::{action_states, db_client, State},
 };
@@ -39,6 +38,16 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     )
     .await?;
 
+    let git_token = git_token(
+      &repo.config.git_provider,
+      &repo.config.git_account,
+      |https| repo.config.git_https = https,
+    )
+    .await
+    .with_context(
+      || format!("Failed to get git token in call to db. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
+    )?;
+
     // get the action state for the repo (or insert default).
     let action_state =
       action_states().repo.get_or_insert_default(&repo.id).await;
@@ -56,19 +65,6 @@ impl Resolve<CloneRepo, (User, Update)> for State {
       resource::get::<Server>(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
-
-    let git_token = core_config()
-      .git_providers
-      .iter()
-      .find(|provider| provider.domain == repo.config.git_provider)
-      .and_then(|provider| {
-        repo.config.git_https = provider.https;
-        provider
-          .accounts
-          .iter()
-          .find(|account| account.username == repo.config.git_account)
-          .map(|account| account.token.clone())
-      });
 
     let logs = match periphery
       .request(api::git::CloneRepo {

@@ -45,38 +45,68 @@ pub fn random_duration(min_ms: u64, max_ms: u64) -> Duration {
   Duration::from_millis(thread_rng().gen_range(min_ms..max_ms))
 }
 
-pub fn git_token(
+/// First checks db for token, then checks core config.
+/// Only errors if db call errors.
+/// Returns (token, use_https)
+pub async fn git_token(
   provider_domain: &str,
   account_username: &str,
-) -> Option<String> {
-  core_config()
-    .git_providers
-    .iter()
-    .find(|provider| provider.domain == provider_domain)
-    .and_then(|provider| {
-      provider
-        .accounts
-        .iter()
-        .find(|account| account.username == account_username)
-        .map(|account| account.token.clone())
-    })
+  mut on_https_found: impl FnMut(bool),
+) -> anyhow::Result<Option<String>> {
+  let db_provider = db_client()
+    .await
+    .git_accounts
+    .find_one(doc! { "domain": provider_domain, "username": account_username })
+    .await
+    .context("failed to query db for git provider accounts")?;
+  if let Some(provider) = db_provider {
+    on_https_found(provider.https);
+    return Ok(Some(provider.token));
+  }
+  Ok(
+    core_config()
+      .git_providers
+      .iter()
+      .find(|provider| provider.domain == provider_domain)
+      .and_then(|provider| {
+        on_https_found(provider.https);
+        provider
+          .accounts
+          .iter()
+          .find(|account| account.username == account_username)
+          .map(|account| account.token.clone())
+      }),
+  )
 }
 
-pub fn registry_token(
+/// First checks db for token, then checks core config.
+/// Only errors if db call errors.
+pub async fn registry_token(
   provider_domain: &str,
   account_username: &str,
-) -> Option<String> {
-  core_config()
-    .docker_registries
-    .iter()
-    .find(|provider| provider.domain == provider_domain)
-    .and_then(|provider| {
-      provider
-        .accounts
-        .iter()
-        .find(|account| account.username == account_username)
-        .map(|account| account.token.clone())
-    })
+) -> anyhow::Result<Option<String>> {
+  let provider = db_client()
+    .await
+    .registry_accounts
+    .find_one(doc! { "domain": provider_domain, "username": account_username })
+    .await
+    .context("failed to query db for docker registry accounts")?;
+  if let Some(provider) = provider {
+    return Ok(Some(provider.token));
+  }
+  Ok(
+    core_config()
+      .docker_registries
+      .iter()
+      .find(|provider| provider.domain == provider_domain)
+      .and_then(|provider| {
+        provider
+          .accounts
+          .iter()
+          .find(|account| account.username == account_username)
+          .map(|account| account.token.clone())
+      }),
+  )
 }
 
 #[instrument]

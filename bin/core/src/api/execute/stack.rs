@@ -51,12 +51,17 @@ impl Resolve<DeployStack, (User, Update)> for State {
     let git_token = crate::helpers::git_token(
       &stack.config.git_provider,
       &stack.config.git_account,
-    );
+      |https| stack.config.git_https = https,
+    ).await.with_context(
+      || format!("Failed to get git token in call to db. Stopping run. | {} | {}", stack.config.git_provider, stack.config.git_account),
+    )?;
 
     let registry_token = crate::helpers::registry_token(
       &stack.config.registry_provider,
       &stack.config.registry_account,
-    );
+    ).await.with_context(
+      || format!("Failed to get registry token in call to db. Stopping run. | {} | {}", stack.config.registry_provider, stack.config.registry_account),
+    )?;
 
     if !stack.config.skip_secret_interp {
       interpolate_variables_secrets_into_environment(

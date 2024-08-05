@@ -27,7 +27,8 @@ use crate::{
   config::core_config,
   helpers::{
     interpolate_variables_secrets_into_environment, periphery_client,
-    query::get_server_with_status, update::update_update,
+    query::get_server_with_status, registry_token,
+    update::update_update,
   },
   monitor::update_cache_for_server,
   resource,
@@ -92,107 +93,98 @@ impl Resolve<Deploy, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let (version, registry_token, aws_ecr) =
-      match &deployment.config.image {
-        DeploymentImage::Build { build_id, version } => {
-          let build = resource::get::<Build>(build_id).await?;
-          let image_name = get_image_name(&build, |label| {
-            core_config()
+    let (version, registry_token, aws_ecr) = match &deployment
+      .config
+      .image
+    {
+      DeploymentImage::Build { build_id, version } => {
+        let build = resource::get::<Build>(build_id).await?;
+        let image_name = get_image_name(&build, |label| {
+          core_config()
+            .aws_ecr_registries
+            .iter()
+            .find(|reg| &reg.label == label)
+            .map(AwsEcrConfig::from)
+        })
+        .context("failed to create image name")?;
+        let version = if version.is_none() {
+          build.config.version
+        } else {
+          *version
+        };
+        // Remove ending patch if it is 0, this means use latest patch.
+        let version_str = if version.patch == 0 {
+          format!("{}.{}", version.major, version.minor)
+        } else {
+          version.to_string()
+        };
+        // Potentially add the build image_tag prefix
+        let version_str = if build.config.image_tag.is_empty() {
+          version_str
+        } else {
+          format!("{}-{version_str}", build.config.image_tag)
+        };
+        // replace image with corresponding build image.
+        deployment.config.image = DeploymentImage::Image {
+          image: format!("{image_name}:{version_str}"),
+        };
+        match build.config.image_registry {
+          ImageRegistry::None(_) => (version, None, None),
+          ImageRegistry::AwsEcr(label) => {
+            let config = core_config()
               .aws_ecr_registries
               .iter()
-              .find(|reg| &reg.label == label)
-              .map(AwsEcrConfig::from)
-          })
-          .context("failed to create image name")?;
-          let version = if version.is_none() {
-            build.config.version
-          } else {
-            *version
-          };
-          // Remove ending patch if it is 0, this means use latest patch.
-          let version_str = if version.patch == 0 {
-            format!("{}.{}", version.major, version.minor)
-          } else {
-            version.to_string()
-          };
-          // Potentially add the build image_tag prefix
-          let version_str = if build.config.image_tag.is_empty() {
-            version_str
-          } else {
-            format!("{}-{version_str}", build.config.image_tag)
-          };
-          // replace image with corresponding build image.
-          deployment.config.image = DeploymentImage::Image {
-            image: format!("{image_name}:{version_str}"),
-          };
-          match build.config.image_registry {
-            ImageRegistry::None(_) => (version, None, None),
-            ImageRegistry::AwsEcr(label) => {
-              let config = core_config()
-                .aws_ecr_registries
-                .iter()
-                .find(|reg| reg.label == label)
-                .with_context(|| {
-                  format!(
+              .find(|reg| reg.label == label)
+              .with_context(|| {
+                format!(
                   "did not find config for aws ecr registry {label}"
                 )
-                })?;
-              let token = ecr::get_ecr_token(
-                &config.region,
-                &config.access_key_id,
-                &config.secret_access_key,
-              )
-              .await
-              .context("failed to create aws ecr login token")?;
-              (version, Some(token), Some(AwsEcrConfig::from(config)))
+              })?;
+            let token = ecr::get_ecr_token(
+              &config.region,
+              &config.access_key_id,
+              &config.secret_access_key,
+            )
+            .await
+            .context("failed to create aws ecr login token")?;
+            (version, Some(token), Some(AwsEcrConfig::from(config)))
+          }
+          ImageRegistry::Standard(params) => {
+            if deployment.config.image_registry_account.is_empty() {
+              deployment.config.image_registry_account =
+                params.account
             }
-            ImageRegistry::Standard(params) => {
-              if deployment.config.image_registry_account.is_empty() {
-                deployment.config.image_registry_account =
-                  params.account
-              }
-              let token = core_config()
-                .docker_registries
-                .iter()
-                .find(|registry| registry.domain == params.domain)
-                .and_then(|provider| {
-                  provider
-                    .accounts
-                    .iter()
-                    .find(|account| {
-                      account.username
-                        == deployment.config.image_registry_account
-                    })
-                    .map(|account| account.token.clone())
-                });
-              (version, token, None)
-            }
+            let token = if !deployment
+              .config
+              .image_registry_account
+              .is_empty()
+            {
+              registry_token(&params.domain, &deployment.config.image_registry_account).await.with_context(
+                || format!("Failed to get git token in call to db. Stopping run. | {} | {}", params.domain, deployment.config.image_registry_account),
+              )?
+            } else {
+              None
+            };
+            (version, token, None)
           }
         }
-        DeploymentImage::Image { image } => {
-          let domain = extract_registry_domain(image)?;
-          let token =
-            (!deployment.config.image_registry_account.is_empty())
-              .then(|| {
-                core_config()
-                  .docker_registries
-                  .iter()
-                  .find(|registry| registry.domain == domain)
-                  .and_then(|provider| {
-                    provider
-                      .accounts
-                      .iter()
-                      .find(|account| {
-                        account.username
-                          == deployment.config.image_registry_account
-                      })
-                      .map(|account| account.token.clone())
-                  })
-              })
-              .flatten();
-          (Version::default(), token, None)
-        }
-      };
+      }
+      DeploymentImage::Image { image } => {
+        let domain = extract_registry_domain(image)?;
+        let token = if !deployment
+          .config
+          .image_registry_account
+          .is_empty()
+        {
+          registry_token(&domain, &deployment.config.image_registry_account).await.with_context(
+            || format!("Failed to get git token in call to db. Stopping run. | {domain} | {}", deployment.config.image_registry_account),
+          )?
+        } else {
+          None
+        };
+        (Version::default(), token, None)
+      }
+    };
 
     let secret_replacers = if !deployment.config.skip_secret_interp {
       interpolate_variables_secrets_into_environment(
