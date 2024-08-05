@@ -4,13 +4,7 @@ import { Pause, Play, RefreshCcw, Rocket, Square, Trash2 } from "lucide-react";
 import { useStack } from ".";
 import { Types } from "@monitor/client";
 
-export const DeployStack = ({
-  id,
-  service,
-}: {
-  id: string;
-  service?: string;
-}) => {
+export const DeployStack = ({ id }: { id: string }) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: deploy, isPending } = useExecute("DeployStack");
@@ -20,7 +14,7 @@ export const DeployStack = ({
     { refetchInterval: 5000 }
   ).data?.deploying;
 
-  if (state === Types.StackState.Unknown) {
+  if (!stack || state === Types.StackState.Unknown) {
     return null;
   }
 
@@ -38,10 +32,10 @@ export const DeployStack = ({
   if (deployed) {
     return (
       <ActionWithDialog
-        name={`${stack?.name}${service ? ` - ${service}` : ""}`}
+        name={stack.name}
         title="Redeploy"
         icon={<Rocket className="h-4 w-4" />}
-        onClick={() => deploy({ stack: id, service })}
+        onClick={() => deploy({ stack: id })}
         disabled={pending}
         loading={pending}
       />
@@ -52,20 +46,14 @@ export const DeployStack = ({
     <ConfirmButton
       title="Deploy"
       icon={<Rocket className="w-4 h-4" />}
-      onClick={() => deploy({ stack: id, service })}
+      onClick={() => deploy({ stack: id })}
       disabled={pending}
       loading={pending}
     />
   );
 };
 
-export const DestroyStack = ({
-  id,
-  service,
-}: {
-  id: string;
-  service?: string;
-}) => {
+export const DestroyStack = ({ id }: { id: string }) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: destroy, isPending } = useExecute("DestroyStack");
@@ -83,12 +71,17 @@ export const DestroyStack = ({
   }
 
   const pending = isPending || destroying;
+
+  if (!stack) {
+    return null;
+  }
+
   return (
     <ActionWithDialog
-      name={`${stack?.name}${service ? ` - ${service}` : ""}`}
+      name={stack.name}
       title="Destroy"
       icon={<Trash2 className="h-4 w-4" />}
-      onClick={() => destroy({ stack: id, service })}
+      onClick={() => destroy({ stack: id })}
       disabled={pending}
       loading={pending}
     />
@@ -111,12 +104,17 @@ export const RestartStack = ({
     { stack: id },
     { refetchInterval: 5000 }
   ).data;
+  const services = useRead("ListStackServices", { stack: id }).data;
+  const container_state =
+    (service &&
+      services?.find((s) => s.service === service)?.container?.state) ??
+    Types.DeploymentState.Unknown;
 
-  if (stack?.info.file_missing) {
-    return null;
-  }
-
-  if (state !== Types.StackState.Running) {
+  if (
+    stack?.info.project_missing ||
+    (service && container_state !== Types.DeploymentState.Running) ||
+    state !== Types.StackState.Running
+  ) {
     return null;
   }
 
@@ -148,12 +146,20 @@ export const StartStopStack = ({
     { stack: id },
     { refetchInterval: 5000 }
   ).data;
+  const services = useRead("ListStackServices", { stack: id }).data;
+  const container_state =
+    (service &&
+      services?.find((s) => s.service === service)?.container?.state) ??
+    Types.DeploymentState.Unknown;
 
-  if (stack?.info.file_missing) {
+  if (stack?.info.project_missing) {
     return null;
   }
 
-  if (state === Types.StackState.Stopped) {
+  if (
+    (service && container_state === Types.DeploymentState.Exited) ||
+    state === Types.StackState.Stopped
+  ) {
     return (
       <ConfirmButton
         title="Start"
@@ -164,7 +170,10 @@ export const StartStopStack = ({
       />
     );
   }
-  if (state === Types.StackState.Running) {
+  if (
+    (service && container_state === Types.DeploymentState.Running) ||
+    state === Types.StackState.Running
+  ) {
     return (
       <ActionWithDialog
         name={`${stack?.name}${service ? ` - ${service}` : ""}`}
@@ -178,7 +187,13 @@ export const StartStopStack = ({
   }
 };
 
-export const PauseUnpauseStack = ({ id, service }: { id: string; service?: string }) => {
+export const PauseUnpauseStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: unpause, isPending: unpausePending } =
@@ -189,12 +204,20 @@ export const PauseUnpauseStack = ({ id, service }: { id: string; service?: strin
     { stack: id },
     { refetchInterval: 5000 }
   ).data;
+  const services = useRead("ListStackServices", { stack: id }).data;
+  const container_state =
+    (service &&
+      services?.find((s) => s.service === service)?.container?.state) ??
+    Types.DeploymentState.Unknown;
 
-  if (stack?.info.file_missing) {
+  if (stack?.info.project_missing) {
     return null;
   }
 
-  if (state === Types.StackState.Paused) {
+  if (
+    (service && container_state === Types.DeploymentState.Paused) ||
+    state === Types.StackState.Paused
+  ) {
     return (
       <ConfirmButton
         title="Unpause"
@@ -205,7 +228,10 @@ export const PauseUnpauseStack = ({ id, service }: { id: string; service?: strin
       />
     );
   }
-  if (state === Types.StackState.Running) {
+  if (
+    (service && container_state === Types.DeploymentState.Running) ||
+    state === Types.StackState.Running
+  ) {
     return (
       <ActionWithDialog
         name={`${stack?.name}${service ? ` - ${service}` : ""}`}

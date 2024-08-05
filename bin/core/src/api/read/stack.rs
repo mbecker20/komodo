@@ -1,4 +1,4 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::collections::HashSet;
 
 use anyhow::Context;
 use monitor_client::{
@@ -7,7 +7,6 @@ use monitor_client::{
     config::core::CoreConfig,
     permission::PermissionLevel,
     stack::{Stack, StackActionState, StackListItem, StackState},
-    to_monitor_name,
     user::User,
   },
 };
@@ -107,16 +106,9 @@ impl Resolve<GetStackServiceLog, User> for State {
       true,
     )
     .await?;
-    let periphery = periphery_client(&server)?;
-    let run_directory = to_monitor_name(&stack.name)
-      .parse::<PathBuf>()
-      .context("stack name is not valid path")?
-      .join(&stack.config.run_directory);
-    periphery
+    periphery_client(&server)?
       .request(GetComposeServiceLog {
-        name: stack.name,
-        run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         service,
         tail,
       })
@@ -144,16 +136,9 @@ impl Resolve<SearchStackServiceLog, User> for State {
       true,
     )
     .await?;
-    let periphery = periphery_client(&server)?;
-    let run_directory = to_monitor_name(&stack.name)
-      .parse::<PathBuf>()
-      .context("stack name is not valid path")?
-      .join(&stack.config.run_directory);
-    periphery
+    periphery_client(&server)?
       .request(GetComposeServiceLogSearch {
-        name: stack.name,
-        run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         service,
         terms,
         combinator,

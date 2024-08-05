@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use command::run_monitor_command;
 use formatting::format_serror;
 use monitor_client::entities::{to_monitor_name, update::Log};
@@ -61,33 +61,16 @@ impl Resolve<GetComposeServiceLog> for State {
   async fn resolve(
     &self,
     GetComposeServiceLog {
-      name,
-      run_directory,
-      file_path,
+      project,
       service,
       tail,
     }: GetComposeServiceLog,
     _: (),
   ) -> anyhow::Result<Log> {
-    let run_directory =
-      periphery_config().stack_dir.join(&run_directory);
-
-    if !run_directory.exists() {
-      let e =
-        anyhow!("the directory {run_directory:?} does not exist");
-      return Ok(Log::error(
-        "get stack log",
-        format_serror(
-          &e.context("Was the running stack imported? Be sure to set the correct run directory and file path to begin managing the stack")
-            .context("Failed to get service log, stack run directory does not exist").into()
-        ),
-      ));
-    }
-
-    let run_directory = run_directory.display();
     let docker_compose = docker_compose();
-    let name = to_monitor_name(&name);
-    let command = format!("cd {run_directory} && {docker_compose} -p {name} logs {service} --tail {tail}");
+    let command = format!(
+      "{docker_compose} -p {project} logs {service} --tail {tail}"
+    );
     Ok(run_monitor_command("get stack log", command).await)
   }
 }
@@ -101,9 +84,7 @@ impl Resolve<GetComposeServiceLogSearch> for State {
   async fn resolve(
     &self,
     GetComposeServiceLogSearch {
-      name,
-      run_directory,
-      file_path,
+      project,
       service,
       terms,
       combinator,
@@ -111,26 +92,9 @@ impl Resolve<GetComposeServiceLogSearch> for State {
     }: GetComposeServiceLogSearch,
     _: (),
   ) -> anyhow::Result<Log> {
-    let run_directory =
-      periphery_config().stack_dir.join(&run_directory);
-
-    if !run_directory.exists() {
-      let e =
-        anyhow!("the directory {run_directory:?} does not exist");
-      return Ok(Log::error(
-        "get stack log",
-        format_serror(
-          &e.context("Was a running stack imported? Be sure to set the correct run directory and file path to begin managing the stack")
-            .context("Failed to get service log, stack run directory does not exist").into()
-        ),
-      ));
-    }
-
-    let run_directory = run_directory.display();
     let docker_compose = docker_compose();
     let grep = log_grep(&terms, combinator, invert);
-    let name = to_monitor_name(&name);
-    let command = format!("cd {run_directory} && {docker_compose} -p {name} logs {service} --tail 5000 2>&1 | {grep}");
+    let command = format!("{docker_compose} -p {project} logs {service} --tail 5000 2>&1 | {grep}");
     Ok(run_monitor_command("get stack log grep", command).await)
   }
 }

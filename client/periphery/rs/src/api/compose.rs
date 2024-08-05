@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use monitor_client::entities::{
   stack::Stack, update::Log, SearchCombinator,
 };
@@ -49,12 +47,8 @@ pub struct GetComposeInfoReponse {
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(Log)]
 pub struct GetComposeServiceLog {
-  /// The name of the stack (always set as the compose project name)
-  pub name: String,
-  /// The path of the compose file relative to periphery `stack_dir`.
-  pub run_directory: PathBuf,
-  /// The path of the compose file, relative to the run path.
-  pub file_path: String,
+  /// The name of the project
+  pub project: String,
   /// The service name
   pub service: String,
   /// pass `--tail` for only recent log contents
@@ -72,12 +66,8 @@ fn default_tail() -> u64 {
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(Log)]
 pub struct GetComposeServiceLogSearch {
-  /// The name of the stack (always set as the compose project name)
-  pub name: String,
-  /// The path of the compose file relative to periphery `stack_dir`.
-  pub run_directory: PathBuf,
-  /// The path of the compose file, relative to the run path.
-  pub file_path: String,
+  /// The name of the project
+  pub project: String,
   /// The service name
   pub service: String,
   /// The search terms.

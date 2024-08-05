@@ -1391,6 +1391,12 @@ export interface StackInfo {
 	 */
 	file_missing?: boolean;
 	/**
+	 * Whether the compose project is missing on the target host.
+	 * Ensure the stack project_name is correctly configured if this is true,
+	 * but the stack is definitely running.
+	 */
+	project_missing?: boolean;
+	/**
 	 * The deployed project name.
 	 * This is updated whenever Monitor successfully deploys the stack.
 	 * If it is present, Monitor will use it for actions over other options,
@@ -1488,6 +1494,12 @@ export interface StackListItemInfo {
 	 * If true, this is an unhealthy state.
 	 */
 	file_missing: boolean;
+	/**
+	 * Whether the compose project is missing on the host.
+	 * Ie, it does not show up in `docker compose ls`.
+	 * If true, and the stack is not Down, this is an unhealthy state.
+	 */
+	project_missing: boolean;
 	/** Latest short commit hash, or null. */
 	latest_hash?: string;
 	/** Latest commit message, or null. */
@@ -2327,8 +2339,6 @@ export interface LaunchServer {
 export interface DeployStack {
 	/** Id or name */
 	stack: string;
-	/** Optionally deploy only a specific service. Experimental. */
-	service?: string;
 	/**
 	 * Override the default termination max time.
 	 * Only used if the stack needs to be taken down first.
@@ -2390,8 +2400,6 @@ export interface DestroyStack {
 	remove_orphans?: boolean;
 	/** Override the default termination max time. */
 	stop_time?: number;
-	/** Optionally specify a specific service to destroy */
-	service?: string;
 }
 
 /** Runs the target resource sync. Response: [Update] */

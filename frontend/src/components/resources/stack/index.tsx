@@ -132,9 +132,9 @@ export const StackComponents: RequiredResourceComponents = {
         // </Card>
       );
     },
-    FileMissing: ({ id }) => {
+    ProjectMissing: ({ id }) => {
       const info = useStack(id)?.info;
-      if (!info?.file_missing || info?.state === Types.StackState.Down) {
+      if (!info?.project_missing || !info?.file_missing) {
         return null;
       }
       return (
@@ -142,14 +142,15 @@ export const StackComponents: RequiredResourceComponents = {
           <HoverCardTrigger asChild>
             <Card className="px-3 py-2 bg-destructive/75 hover:bg-destructive transition-colors cursor-pointer">
               <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                File Missing
+                Project Missing
               </div>
             </Card>
           </HoverCardTrigger>
           <HoverCardContent align="start">
             <div className="grid gap-2">
-              The compose file is not on the host. Redeploy the Stack to access
-              other actions.
+              The compose project is not on the host. If the compose stack is
+              running, the 'Project Name' needs to be set. This can be found
+              with 'docker compose ls'.
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -158,7 +159,7 @@ export const StackComponents: RequiredResourceComponents = {
     Deployed: ({ id }) => {
       const info = useStack(id)?.info;
       if (
-        info?.file_missing ||
+        info?.project_missing ||
         !info?.deployed_hash ||
         !info?.deployed_message
       ) {
@@ -190,7 +191,7 @@ export const StackComponents: RequiredResourceComponents = {
     Latest: ({ id }) => {
       const info = useStack(id)?.info;
       if (
-        info?.file_missing ||
+        info?.project_missing ||
         !info?.latest_hash ||
         !info?.latest_message ||
         info?.latest_hash === info?.deployed_hash
