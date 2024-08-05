@@ -15,9 +15,9 @@ export const ResourceComponents: {
 } = {
   Server: ServerComponents,
   Deployment: DeploymentComponents,
+  Stack: StackComponents,
   Build: BuildComponents,
   Repo: RepoComponents,
-  Stack: StackComponents,
   Procedure: ProcedureComponents,
   Builder: BuilderComponents,
   ServerTemplate: ServerTemplateComponents,

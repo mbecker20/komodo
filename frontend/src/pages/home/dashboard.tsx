@@ -20,8 +20,10 @@ export const Dashboard = () => (
       <div className="flex flex-col gap-6 w-full">
         <ResourceRow type="Server" />
         <ResourceRow type="Deployment" />
+        <ResourceRow type="Stack" />
         <ResourceRow type="Build" />
         <ResourceRow type="Repo" />
+        <ResourceRow type="ResourceSync" />
         <ResourceRow type="Procedure" />
       </div>
     </Section>
@@ -39,16 +41,21 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
   ];
   if (ids.length === 0) return;
   const Components = ResourceComponents[type];
-
+  const name =
+    type === "ServerTemplate"
+      ? "Server Template"
+      : type === "ResourceSync"
+      ? "Resource Sync"
+      : type;
   return (
     <div className="p-6 border rounded-md flex gap-8">
       <Link
-        to={`/${type.toLowerCase()}s`}
+        to={`/${usableResourcePath(type)}`}
         className="flex flex-col justify-between pr-8 border-r group"
       >
         <div className="flex items-center gap-4 text-xl group-hover:underline">
           <Components.Icon />
-          {type}s
+          {name}s
         </div>
         <Components.Dashboard />
       </Link>

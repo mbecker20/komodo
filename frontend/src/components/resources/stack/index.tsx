@@ -12,7 +12,6 @@ import {
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
-import { StackDashboard } from "./dashboard";
 import { useServer } from "../server";
 import { Types } from "@monitor/client";
 import {
@@ -30,6 +29,7 @@ import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
 import { StackServices } from "./services";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
+import { DashboardPieChart } from "@pages/home/dashboard";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -84,7 +84,31 @@ const ConfigServicesInfo = ({ id }: { id: string }) => {
 export const StackComponents: RequiredResourceComponents = {
   list_item: (id) => useStack(id),
 
-  Dashboard: StackDashboard,
+  Dashboard: () => {
+    const summary = useRead("GetStacksSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { intention: "Good", value: summary?.running ?? 0, title: "Running" },
+          {
+            intention: "Critical",
+            value: summary?.unhealthy ?? 0,
+            title: "Unhealthy",
+          },
+          {
+            intention: "Neutral",
+            value: summary?.down ?? 0,
+            title: "Down",
+          },
+          {
+            intention: "Unknown",
+            value: summary?.unknown ?? 0,
+            title: "Unknown",
+          },
+        ]}
+      />
+    );
+  },
 
   New: ({ server_id }) => <NewResource type="Stack" server_id={server_id} />,
 
