@@ -64,7 +64,7 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
           <History className="w-4" />
           Recently Viewed
         </p>
-        <div className=" grid grid-cols-3 gap-4">
+        <div className="h-52 grid grid-cols-3 gap-4">
           {ids.map((id, i) => (
             <RecentCard
               key={type + id}
@@ -99,7 +99,7 @@ const RecentCard = ({
   return (
     <Link
       to={`${usableResourcePath(type)}/${id}`}
-      className="w-full p-4 border rounded-md hover:bg-accent/25 hover:-translate-y-1 transition-all"
+      className="w-full p-4 border rounded-md hover:bg-accent/25 hover:-translate-y-1 transition-all h-24 flex flex-col justify-between"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm">
@@ -107,7 +107,7 @@ const RecentCard = ({
           <ResourceName type={type} id={id} />
         </div>
       </div>
-      <div className="flex gap-2 w-full mt-4">
+      <div className="flex gap-2 w-full">
         <TagsWithBadge tag_ids={tags} />
       </div>
     </Link>
