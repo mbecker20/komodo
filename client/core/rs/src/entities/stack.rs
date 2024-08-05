@@ -30,7 +30,9 @@ pub struct StackListItemInfo {
   pub branch: String,
   /// The stack state
   pub state: StackState,
-  /// The service names that are part of the stack
+  /// The service names that are part of the stack.
+  /// If deployed, will be `deployed_services`.
+  /// Otherwise, its `latest_services`
   pub services: Vec<String>,
   /// Whether the compose file is missing on the host.
   /// If true, this is an unhealthy state.
@@ -123,16 +125,20 @@ pub struct StackInfo {
   pub deployed_json: Option<String>,
   /// If there was an error in calling `docker compose config`, the message will be here.
   pub deployed_json_error: Option<String>,
-  /// The service names.
+  /// The deployed service names.
   /// This is updated whenever it is empty, or deployed contents is updated.
   #[serde(default)]
-  pub services: Vec<StackServiceNames>,
+  pub deployed_services: Vec<StackServiceNames>,
 
   /// Cached json representation of the compose file contents.
   /// Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
   pub latest_json: Option<String>,
   /// If there was an error in calling `docker compose config` on the latest contents, the message will be here
   pub latest_json_error: Option<String>,
+  /// The latest service names.
+  /// This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).
+  #[serde(default)]
+  pub latest_services: Vec<StackServiceNames>,
 
   // Only for repo based stacks.
   /// If using a repo based compose file, will cache the contents here for API delivery.

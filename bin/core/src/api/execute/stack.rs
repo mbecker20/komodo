@@ -91,11 +91,12 @@ impl Resolve<DeployStack, (User, Update)> for State {
     update.logs.extend(logs);
 
     let update_info = async {
-      let (services, json, json_error) = if let Some(contents) =
-        &file_contents
+      let (latest_services, json, json_error) = if let Some(
+        contents,
+      ) = &file_contents
       {
         let (json, json_error) = get_config_json(contents).await;
-        match extract_services(&stack, contents) {
+        match extract_services(&stack.project_name(true), contents) {
           Ok(services) => (services, json, json_error),
           Err(e) => {
             update.push_error_log(
@@ -107,13 +108,13 @@ impl Resolve<DeployStack, (User, Update)> for State {
         }
       } else {
         // maybe better to do something else here for services.
-        (stack.info.services.clone(), None, None)
+        (stack.info.latest_services.clone(), None, None)
       };
 
       let project_name = stack.project_name(true);
 
       let (
-        services,
+        deployed_services,
         deployed_contents,
         deployed_hash,
         deployed_message,
@@ -121,7 +122,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
         deployed_json_error,
       ) = if deployed {
         (
-          services,
+          latest_services.clone(),
           file_contents.clone(),
           commit_hash.clone(),
           commit_message.clone(),
@@ -130,7 +131,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
         )
       } else {
         (
-          stack.info.services,
+          stack.info.deployed_services,
           stack.info.deployed_contents,
           stack.info.deployed_hash,
           stack.info.deployed_message,
@@ -144,12 +145,13 @@ impl Resolve<DeployStack, (User, Update)> for State {
         // Maybe this still has some edge cases, but see how it does.
         project_missing: !deployed,
         deployed_project_name: project_name.into(),
+        deployed_services,
         deployed_contents,
         deployed_hash,
         deployed_message,
         deployed_json,
         deployed_json_error,
-        services,
+        latest_services,
         latest_json: json,
         latest_json_error: json_error,
         remote_contents: file_contents.and_then(|contents| {

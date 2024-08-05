@@ -46,22 +46,35 @@ impl super::MonitorResource for Stack {
     stack: Resource<Self::Config, Self::Info>,
   ) -> Self::ListItem {
     let status = stack_status_cache().get(&stack.id).await;
+    let state =
+      status.as_ref().map(|s| s.curr.state).unwrap_or_default();
+    let services = match (
+      state,
+      stack.info.deployed_services,
+      stack.info.latest_services,
+    ) {
+      // Always use latest if its down.
+      (StackState::Down, _, latest_services) => latest_services,
+      // Also use latest if deployed services is empty.
+      (_, deployed_services, latest_services)
+        if deployed_services.is_empty() =>
+      {
+        latest_services
+      }
+      // Otherwise use deployed services
+      (_, deployed_services, _) => deployed_services,
+    }
+    .into_iter()
+    .map(|service| service.service_name)
+    .collect();
     StackListItem {
       id: stack.id,
       name: stack.name,
       tags: stack.tags,
       resource_type: ResourceTargetVariant::Stack,
       info: StackListItemInfo {
-        state: status
-          .as_ref()
-          .map(|s| s.curr.state)
-          .unwrap_or_default(),
-        services: stack
-          .info
-          .services
-          .into_iter()
-          .map(|service| service.service_name)
-          .collect(),
+        state,
+        services,
         server_id: stack.config.server_id,
         file_missing: stack.info.file_missing,
         project_missing: stack.info.project_missing,

@@ -24,7 +24,7 @@ impl Resolve<GetComposeInfo, ()> for State {
       project,
     }: GetComposeInfo,
     _: (),
-  ) -> anyhow::Result<GetComposeInfoReponse> {
+  ) -> anyhow::Result<GetComposeInfoResponse> {
     let file_missing = periphery_config()
       .stack_dir
       .join(to_monitor_name(&name))
@@ -43,7 +43,7 @@ impl Resolve<GetComposeInfo, ()> for State {
     ))
     .await
     .success();
-    Ok(GetComposeInfoReponse {
+    Ok(GetComposeInfoResponse {
       file_missing,
       project_missing,
     })

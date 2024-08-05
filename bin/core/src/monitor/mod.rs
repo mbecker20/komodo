@@ -255,7 +255,10 @@ pub async fn update_cache_for_server(server: &Server) {
 
       let stack_status_cache = stack_status_cache();
       for stack in stacks {
-        let services = match extract_services_from_stack(&stack).await
+        let services = match extract_services_from_stack(
+          &stack, false,
+        )
+        .await
         {
           Ok(services) => services,
           Err(e) => {

@@ -5,12 +5,19 @@ use monitor_client::entities::stack::{
 
 use crate::helpers::stack::remote::get_remote_compose_file;
 
+/// Passing fresh will re-extract services from compose file, whether local or remote (repo)
 pub async fn extract_services_from_stack(
   stack: &Stack,
+  fresh: bool,
 ) -> anyhow::Result<Vec<StackServiceNames>> {
-  if !stack.info.services.is_empty() {
-    return Ok(stack.info.services.clone());
+  if !fresh {
+    if stack.info.deployed_services.is_empty() {
+      return Ok(stack.info.latest_services.clone());
+    } else {
+      return Ok(stack.info.deployed_services.clone());
+    }
   }
+
   let compose_contents = if stack.config.file_contents.is_empty() {
     let (res, _, _, _) =
       get_remote_compose_file(stack).await.context(
@@ -20,17 +27,16 @@ pub async fn extract_services_from_stack(
   } else {
     stack.config.file_contents.clone()
   };
-  extract_services(stack, &compose_contents)
+
+  extract_services(&stack.project_name(true), &compose_contents)
 }
 
 pub fn extract_services(
-  stack: &Stack,
+  project_name: &str,
   compose_contents: &str,
 ) -> anyhow::Result<Vec<StackServiceNames>> {
   let compose = serde_yaml::from_str::<ComposeFile>(compose_contents)
     .context("failed to parse service names from compose contents")?;
-
-  let project_name = stack.project_name(true);
 
   let services = compose
     .services

@@ -164,7 +164,7 @@ pub async fn get_stack_state(
     .request(periphery_client::api::container::GetContainerList {})
     .await?;
 
-  let services = extract_services_from_stack(stack).await?;
+  let services = extract_services_from_stack(stack, false).await?;
 
   Ok(get_stack_state_from_containers(&services, &containers))
 }

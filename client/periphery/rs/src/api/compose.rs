@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 /// Get the compose file health, contents, json
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(GetComposeInfoReponse)]
+#[response(GetComposeInfoResponse)]
 pub struct GetComposeInfo {
   /// The stack name, to get the root folder.
   pub name: String,
@@ -22,7 +22,7 @@ pub struct GetComposeInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetComposeInfoReponse {
+pub struct GetComposeInfoResponse {
   /// If the file is missing. Everything else will be null in this case.
   pub file_missing: bool,
   /// The compose project is missing on the host

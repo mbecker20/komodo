@@ -1479,10 +1479,10 @@ export interface StackInfo {
 	/** If there was an error in calling `docker compose config`, the message will be here. */
 	deployed_json_error?: string;
 	/**
-	 * The service names.
+	 * The deployed service names.
 	 * This is updated whenever it is empty, or deployed contents is updated.
 	 */
-	services?: StackServiceNames[];
+	deployed_services?: StackServiceNames[];
 	/**
 	 * Cached json representation of the compose file contents.
 	 * Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
@@ -1490,6 +1490,11 @@ export interface StackInfo {
 	latest_json?: string;
 	/** If there was an error in calling `docker compose config` on the latest contents, the message will be here */
 	latest_json_error?: string;
+	/**
+	 * The latest service names.
+	 * This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).
+	 */
+	latest_services?: StackServiceNames[];
 	/** If using a repo based compose file, will cache the contents here for API delivery. */
 	remote_contents?: string;
 	/** If there was an error in getting the remote contents, it will be here. */
@@ -1549,7 +1554,11 @@ export interface StackListItemInfo {
 	branch: string;
 	/** The stack state */
 	state: StackState;
-	/** The service names that are part of the stack */
+	/**
+	 * The service names that are part of the stack.
+	 * If deployed, will be `deployed_services`.
+	 * Otherwise, its `latest_services`
+	 */
 	services: string[];
 	/**
 	 * Whether the compose file is missing on the host.

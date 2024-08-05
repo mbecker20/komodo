@@ -15,7 +15,7 @@ use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
 use periphery_client::api::compose::{
-  GetComposeInfo, GetComposeInfoReponse,
+  GetComposeInfo, GetComposeInfoResponse,
 };
 use resolver_api::Resolve;
 
@@ -157,7 +157,7 @@ impl Resolve<RefreshStackCache, User> for State {
       return Err(anyhow!("Stack has neither file_contents nor repo configured. Cannot get info."));
     }
 
-    let GetComposeInfoReponse {
+    let GetComposeInfoResponse {
       file_missing,
       project_missing,
     } = periphery_client(&server)?
@@ -168,13 +168,13 @@ impl Resolve<RefreshStackCache, User> for State {
         project: stack.project_name(false),
       })
       .await
-      .unwrap_or(GetComposeInfoReponse {
+      .unwrap_or(GetComposeInfoResponse {
         file_missing: false,
         project_missing: false,
       });
 
     let (
-      services,
+      latest_services,
       remote_contents,
       remote_error,
       latest_json,
@@ -190,19 +190,22 @@ impl Resolve<RefreshStackCache, User> for State {
         Ok(remote_contents) => {
           let (json, json_error) =
             get_config_json(&remote_contents).await;
-          let services = if stack.info.services.is_empty() {
-            match extract_services(&stack, &remote_contents) {
-              Ok(services) => services,
-              Err(e) => {
-                warn!("failed to extract stack services from stack {} | {e:#}", stack.name);
-                stack.info.services
-              }
+          let latest_services = match extract_services(
+            // this should latest (not deployed), so make the project name fresh.
+            &stack.project_name(true),
+            &remote_contents,
+          ) {
+            Ok(services) => services,
+            Err(e) => {
+              warn!(
+                "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
+                stack.name
+              );
+              stack.info.latest_services
             }
-          } else {
-            stack.info.services
           };
           (
-            services,
+            latest_services,
             Some(remote_contents),
             None,
             json,
@@ -216,7 +219,7 @@ impl Resolve<RefreshStackCache, User> for State {
             &e.context("failed to read remote compose file").into(),
           );
           (
-            stack.info.services,
+            stack.info.latest_services,
             None,
             Some(remote_contents_error),
             None,
@@ -229,31 +232,34 @@ impl Resolve<RefreshStackCache, User> for State {
     } else {
       let (json, json_error) =
         get_config_json(&stack.config.file_contents).await;
-      let services = if stack.info.services.is_empty() {
-        match extract_services(&stack, &stack.config.file_contents) {
-          Ok(services) => services,
-          Err(e) => {
-            // let mut update = make_update(&stack, Operation::RefreshStackCache, user)
-            warn!("failed to extract stack services, things won't works correctly. stack: {} | {e:#}", stack.name);
-            stack.info.services
-          }
+      let latest_services = match extract_services(
+        // this should latest (not deployed), so make the project name fresh.
+        &stack.project_name(true),
+        &stack.config.file_contents,
+      ) {
+        Ok(services) => services,
+        Err(e) => {
+          warn!(
+            "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
+            stack.name
+          );
+          stack.info.latest_services
         }
-      } else {
-        stack.info.services
       };
-      (services, None, None, json, json_error, None, None)
+      (latest_services, None, None, json, json_error, None, None)
     };
 
     let info = StackInfo {
       file_missing,
       project_missing,
-      services,
+      deployed_services: stack.info.deployed_services,
       deployed_project_name: stack.info.deployed_project_name,
       deployed_contents: stack.info.deployed_contents,
       deployed_hash: stack.info.deployed_hash,
       deployed_message: stack.info.deployed_message,
       deployed_json: stack.info.deployed_json,
       deployed_json_error: stack.info.deployed_json_error,
+      latest_services,
       latest_json,
       latest_json_error,
       remote_contents,
