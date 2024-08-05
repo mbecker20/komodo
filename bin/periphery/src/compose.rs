@@ -7,7 +7,7 @@ use monitor_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
   environment_vars_to_string,
-  stack::{ComposeFile, Stack, StackServiceNames},
+  stack::Stack,
   to_monitor_name,
   update::Log,
   CloneArgs,
@@ -16,15 +16,12 @@ use periphery_client::api::{
   compose::ComposeUpResponse,
   git::{CloneRepo, RepoActionResponse},
 };
-use regex::Regex;
 use resolver_api::Resolve;
 use tokio::fs;
 
 use crate::{
-  config::periphery_config,
-  docker::{docker_client, docker_login},
-  helpers::parse_extra_args,
-  State,
+  config::periphery_config, docker::docker_login,
+  helpers::parse_extra_args, State,
 };
 
 pub fn docker_compose() -> &'static str {
@@ -56,9 +53,6 @@ pub async fn compose_up(
     .join(to_monitor_name(&stack.name))
     .join(&stack.config.run_directory);
   let file_path = run_directory.join(&stack.config.file_path);
-  // Store whether the file is healthy before clone.
-  // If it is not healthy, the containers will need to be taken down manually.
-  let file_healthy = file_path.exists();
 
   // Write the stack. For repos, will first delete existing folder to ensure fresh deploy.
   // Will also set additional fields on the reponse.
@@ -99,13 +93,15 @@ pub async fn compose_up(
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
   let file = &stack.config.file_path;
+  let last_project_name = stack.project_name(false);
+  let project_name = stack.project_name(true);
 
   // Pull images before destroying to minimize downtime.
   // If this fails, do not continue.
   let log = run_monitor_command(
     "compose pull",
     format!(
-      "cd {run_dir} && {docker_compose} -f {file} pull{service_arg}",
+      "cd {run_dir} && {docker_compose} -p {project_name} -f {file} pull{service_arg}",
     ),
   )
   .await;
@@ -135,12 +131,10 @@ pub async fn compose_up(
       .context("failed to login to image registry")?;
   }
 
-  // Take down the existing containers
+  // Take down the existing containers.
+  // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
   destroy_existing_containers(
-    file_healthy,
-    &run_directory,
-    &stack.config.file_path,
-    &file_contents,
+    &last_project_name,
     service,
     res,
   )
@@ -155,7 +149,7 @@ pub async fn compose_up(
   let log = run_monitor_command(
     "compose up",
     format!(
-      "cd {run_dir} && {docker_compose} -f {file}{env_file} up -d{extra_args}{service_arg}",
+      "cd {run_dir} && {docker_compose} -p {project_name} -f {file}{env_file} up -d{extra_args}{service_arg}",
     ),
   )
   .await;
@@ -356,163 +350,25 @@ async fn write_environment_file(
 }
 
 async fn destroy_existing_containers(
-  file_healthy: bool,
-  run_directory: &Path,
-  file_path: &str,
-  file_contents: &str,
+  project: &str,
   service: Option<String>,
   res: &mut ComposeUpResponse,
 ) -> anyhow::Result<()> {
-  if file_healthy {
-    // ########################
-    // # Destroy with compose #
-    // ########################
-    let docker_compose = docker_compose();
-    let run_dir = run_directory.display();
-    let service_arg = service
-      .as_ref()
-      .map(|service| format!(" {service}"))
-      .unwrap_or_default();
-    let log = run_monitor_command(
-      "destroy container",
-      format!("cd {run_dir} && {docker_compose} -f {file_path} down{service_arg}"),
-    )
-    .await;
-    let success = log.success;
-    res.logs.push(log);
-    if !success {
-      return Err(anyhow!("Failed to bring down existing container(s) with docker compose down. Stopping run."));
-    }
-  } else {
-    // #############################
-    // # Destroy by container name #
-    // #############################
-    let compose = serde_yaml::from_str::<ComposeFile>(file_contents)
-      .context(
-        "failed to extract container names from compose file",
-      )?;
-
-    let compose_name = match compose.name {
-      Some(name) => name,
-      None => {
-        // Name defaults to parent of compose file
-        let file = run_directory.join(file_path);
-        file
-          .parent()
-          .with_context(|| format!("Unable to get parent directory of compose file for default compose file name. path: {file:?}"))?
-          .file_name()
-          .with_context(|| format!("Unable to get parent directory of compose files name, cannot determine container names. path: {file:?}"))?
-          .to_string_lossy()
-          .to_string()
-      }
-    };
-
-    let services = compose
-      .services
-      .into_iter()
-      .map(|(service_name, config)| StackServiceNames {
-        container_name: config.container_name.unwrap_or_else(|| {
-          format!("{compose_name}-{service_name}")
-        }),
-        service_name,
-      })
-      .collect::<Vec<_>>();
-
-    destroy_stack_by_containers(
-      &services,
-      service,
-      &mut res.logs,
-      false,
-    )
-    .await?;
+  let docker_compose = docker_compose();
+  let service_arg = service
+    .as_ref()
+    .map(|service| format!(" {service}"))
+    .unwrap_or_default();
+  let log = run_monitor_command(
+    "destroy container",
+    format!("{docker_compose} -p {project} down{service_arg}"),
+  )
+  .await;
+  let success = log.success;
+  res.logs.push(log);
+  if !success {
+    return Err(anyhow!("Failed to bring down existing container(s) with docker compose down. Stopping run."));
   }
 
   Ok(())
-}
-
-pub async fn destroy_stack_by_containers(
-  services: &[StackServiceNames],
-  service: Option<String>,
-  logs: &mut Vec<Log>,
-  verbose: bool,
-) -> anyhow::Result<()> {
-  let containers = docker_client()
-    .list_containers()
-    .await
-    .context("failed to get container list from the host")?;
-
-  if let Some(service) = service {
-    let StackServiceNames {
-      service_name,
-      container_name,
-    } = services
-      .iter()
-      .find(|s| s.service_name == service)
-      .with_context(|| {
-        format!("did not find service {service} in compose file")
-      })?;
-    let name = {
-      let regex = compose_container_match_regex(container_name)
-        .with_context(
-          || format!("failed to construct service name matching regex for service {service_name}"),
-        )?;
-      containers
-        .iter()
-        .find(|container| regex.is_match(&container.name))
-        .map(|container| &container.name)
-    };
-    if let Some(name) = name {
-      let log = run_monitor_command(
-        "destroy container",
-        format!("docker stop {name} && docker container rm {name}"),
-      )
-      .await;
-      if !log.success {
-        logs.push(log);
-        return Err(anyhow!(
-          "Failed to destroy container {name}. Stopping."
-        ));
-      } else if verbose {
-        logs.push(log);
-      }
-    }
-    return Ok(());
-  }
-
-  let to_stop = services.iter().filter_map(
-    |StackServiceNames { container_name, .. }| {
-      let regex =
-        compose_container_match_regex(container_name).ok()?;
-      containers
-        .iter()
-        .find(|container| regex.is_match(&container.name))
-        .map(|container| &container.name)
-    },
-  );
-  for name in to_stop {
-    let log = run_monitor_command(
-      "destroy container",
-      format!("docker stop {name} && docker container rm {name}"),
-    )
-    .await;
-    if !log.success {
-      logs.push(log);
-      return Err(anyhow!(
-        "Failed to destroy container {name}. Stopping."
-      ));
-    } else if verbose {
-      logs.push(log);
-    }
-  }
-
-  Ok(())
-}
-
-fn compose_container_match_regex(
-  container_name: &str,
-) -> anyhow::Result<Regex> {
-  let regex = format!("^{container_name}-?[0-9]*$");
-  Regex::new(&regex).with_context(|| {
-    format!("failed to construct valid regex from {regex}")
-  })
 }

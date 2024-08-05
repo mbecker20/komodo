@@ -43,7 +43,7 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigServicesInfo = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Services");
+  const [view, setView] = useState("Config");
   const state = useStack(id)?.info.state;
   const stackDown =
     state === undefined ||

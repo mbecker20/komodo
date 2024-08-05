@@ -1,10 +1,9 @@
-use anyhow::anyhow;
 use monitor_client::{
   api::execute::*,
   entities::{
     permission::PermissionLevel,
     stack::{Stack, StackActionState},
-    update::Update,
+    update::{Log, Update},
     user::User,
   },
 };
@@ -26,7 +25,7 @@ pub trait ExecuteCompose {
     stack: Stack,
     service: Option<String>,
     extras: Self::Extras,
-  ) -> anyhow::Result<ComposeExecutionResponse>;
+  ) -> anyhow::Result<Log>;
 }
 
 pub async fn execute_compose<T: ExecuteCompose>(
@@ -51,14 +50,9 @@ pub async fn execute_compose<T: ExecuteCompose>(
 
   let periphery = periphery_client(&server)?;
 
-  let ComposeExecutionResponse { file_missing, log } =
-    T::execute(periphery, stack, service, extras).await?;
-  if let Some(log) = log {
-    update.logs.push(log);
-  }
-  if file_missing {
-    return Err(anyhow!("Compose file is missing on Periphery. Redeploy the stack to fix."));
-  }
+  update
+    .logs
+    .push(T::execute(periphery, stack, service, extras).await?);
 
   // Ensure cached stack state up to date by updating server cache
   update_cache_for_server(&server).await;
@@ -76,15 +70,13 @@ impl ExecuteCompose for StartStack {
     stack: Stack,
     service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeExecutionResponse> {
+  ) -> anyhow::Result<Log> {
     let service = service
       .map(|service| format!(" {service}"))
       .unwrap_or_default();
     periphery
       .request(ComposeExecution {
-        name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         command: format!("start{service}"),
       })
       .await
@@ -98,15 +90,13 @@ impl ExecuteCompose for RestartStack {
     stack: Stack,
     service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeExecutionResponse> {
+  ) -> anyhow::Result<Log> {
     let service = service
       .map(|service| format!(" {service}"))
       .unwrap_or_default();
     periphery
       .request(ComposeExecution {
-        name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         command: format!("restart{service}"),
       })
       .await
@@ -120,15 +110,13 @@ impl ExecuteCompose for PauseStack {
     stack: Stack,
     service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeExecutionResponse> {
+  ) -> anyhow::Result<Log> {
     let service = service
       .map(|service| format!(" {service}"))
       .unwrap_or_default();
     periphery
       .request(ComposeExecution {
-        name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         command: format!("pause{service}"),
       })
       .await
@@ -142,15 +130,13 @@ impl ExecuteCompose for UnpauseStack {
     stack: Stack,
     service: Option<String>,
     _: Self::Extras,
-  ) -> anyhow::Result<ComposeExecutionResponse> {
+  ) -> anyhow::Result<Log> {
     let service = service
       .map(|service| format!(" {service}"))
       .unwrap_or_default();
     periphery
       .request(ComposeExecution {
-        name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         command: format!("unpause{service}"),
       })
       .await
@@ -164,16 +150,14 @@ impl ExecuteCompose for StopStack {
     stack: Stack,
     service: Option<String>,
     timeout: Self::Extras,
-  ) -> anyhow::Result<ComposeExecutionResponse> {
+  ) -> anyhow::Result<Log> {
     let service = service
       .map(|service| format!(" {service}"))
       .unwrap_or_default();
     let maybe_timeout = maybe_timeout(timeout);
     periphery
       .request(ComposeExecution {
-        name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         command: format!("stop{maybe_timeout}{service}"),
       })
       .await
@@ -187,7 +171,7 @@ impl ExecuteCompose for DestroyStack {
     stack: Stack,
     service: Option<String>,
     (timeout, remove_orphans): Self::Extras,
-  ) -> anyhow::Result<ComposeExecutionResponse> {
+  ) -> anyhow::Result<Log> {
     let service = service
       .map(|service| format!(" {service}"))
       .unwrap_or_default();
@@ -199,9 +183,7 @@ impl ExecuteCompose for DestroyStack {
     };
     periphery
       .request(ComposeExecution {
-        name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path: stack.config.file_path,
+        project: stack.project_name(false),
         command: format!(
           "down{maybe_timeout}{maybe_remove_orphans}{service}"
         ),

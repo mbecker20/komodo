@@ -1,9 +1,7 @@
 use std::path::PathBuf;
 
 use monitor_client::entities::{
-  stack::{Stack, StackServiceNames},
-  update::Log,
-  SearchCombinator,
+  stack::Stack, update::Log, SearchCombinator,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -21,14 +19,16 @@ pub struct GetComposeInfo {
   /// The compose file path to check.
   /// Relative to `run_directory`.
   pub file_path: String,
-  // /// Whether to check repo commit hash / message
-  // pub check_repo: bool,
+  // The compose project name
+  pub project: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetComposeInfoReponse {
   /// If the file is missing. Everything else will be null in this case.
   pub file_missing: bool,
+  /// The compose project is missing on the host
+  pub project_missing: bool,
   // /// The compose file contents.
   // pub file_contents: Option<String>,
   // /// If there was an error in getting the contents.
@@ -49,6 +49,8 @@ pub struct GetComposeInfoReponse {
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(Log)]
 pub struct GetComposeServiceLog {
+  /// The name of the stack (always set as the compose project name)
+  pub name: String,
   /// The path of the compose file relative to periphery `stack_dir`.
   pub run_directory: PathBuf,
   /// The path of the compose file, relative to the run path.
@@ -70,6 +72,8 @@ fn default_tail() -> u64 {
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(Log)]
 pub struct GetComposeServiceLogSearch {
+  /// The name of the stack (always set as the compose project name)
+  pub name: String,
   /// The path of the compose file relative to periphery `stack_dir`.
   pub run_directory: PathBuf,
   /// The path of the compose file, relative to the run path.
@@ -126,33 +130,11 @@ pub struct ComposeUpResponse {
 
 /// General compose command runner
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(ComposeExecutionResponse)]
+#[response(Log)]
 pub struct ComposeExecution {
-  /// The name of the stack / folder under the `stack_dir`
-  pub name: String,
-  /// The directory to cd to before running command. Relative to `stack_dir/{name}`.
-  pub run_directory: String,
-  /// Relative to `run_directory`
-  pub file_path: String,
-  /// The command in `docker compose -f {file_path} {command}`
+  /// The compose project name to run the execution on.
+  /// Usually its he name of the stack / folder under the `stack_dir`.
+  pub project: String,
+  /// The command in `docker compose -p {project} {command}`
   pub command: String,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ComposeExecutionResponse {
-  /// The command won't work if the file is missing.
-  pub file_missing: bool,
-  /// The log produced by the command.
-  pub log: Option<Log>,
-}
-
-///
-
-/// Destroy a service, bypassing the compose file and just bringing down the containers.
-/// This is useful to bring down a Stack when the compose file is missing.
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<Log>)]
-pub struct ComposeDestroy {
-  /// The services to destroy.
-  pub services: Vec<StackServiceNames>,
 }

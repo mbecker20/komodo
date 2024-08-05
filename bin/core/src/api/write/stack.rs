@@ -14,7 +14,9 @@ use mungos::mongodb::bson::{doc, to_document};
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
-use periphery_client::api::compose::GetComposeInfo;
+use periphery_client::api::compose::{
+  GetComposeInfo, GetComposeInfoReponse,
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -155,15 +157,21 @@ impl Resolve<RefreshStackCache, User> for State {
       return Err(anyhow!("Stack has neither file_contents nor repo configured. Cannot get info."));
     }
 
-    let file_missing = periphery_client(&server)?
+    let GetComposeInfoReponse {
+      file_missing,
+      project_missing,
+    } = periphery_client(&server)?
       .request(GetComposeInfo {
         name: stack.name.clone(),
         run_directory: stack.config.run_directory.clone(),
         file_path: stack.config.file_path.clone(),
+        project: stack.project_name(false),
       })
       .await
-      .map(|res| res.file_missing)
-      .unwrap_or_default();
+      .unwrap_or(GetComposeInfoReponse {
+        file_missing: false,
+        project_missing: false,
+      });
 
     let (
       services,
@@ -238,7 +246,9 @@ impl Resolve<RefreshStackCache, User> for State {
 
     let info = StackInfo {
       file_missing,
+      project_missing,
       services,
+      deployed_project_name: stack.info.deployed_project_name,
       deployed_contents: stack.info.deployed_contents,
       deployed_hash: stack.info.deployed_hash,
       deployed_message: stack.info.deployed_message,

@@ -64,38 +64,28 @@ export const StackConfig = ({
             },
           },
           {
-            label: "General",
+            label: "Project Name",
+            description:
+              "Override the compose project name. Can import stacks by matching the project name",
             components: {
-              registry_provider: (provider, set) => {
-                return (
-                  <ProviderSelectorConfig
-                    account_type="docker"
-                    selected={provider}
-                    disabled={disabled}
-                    onSelect={(registry_provider) => set({ registry_provider })}
-                  />
-                );
+              project_name: { placeholder: "Input project name" },
+            },
+          },
+          {
+            label: "Run Path / File",
+            description:
+              "Set the cwd of compose command, and the compose file path",
+            components: {
+              run_directory: { placeholder: "Eg. './' Relative to repo root." },
+              file_path: {
+                placeholder: "Eg. 'compose.yaml'. Relative to run directory.",
               },
-              registry_account: (value, set) => {
-                const server_id = update.server_id || config.server_id;
-                const provider =
-                  update.registry_provider ?? config.registry_provider;
-                if (!provider) {
-                  return null;
-                }
-                return (
-                  <AccountSelectorConfig
-                    id={server_id}
-                    type={server_id ? "Server" : "None"}
-                    account_type="docker"
-                    provider={provider}
-                    selected={value}
-                    onSelect={(registry_account) => set({ registry_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                );
-              },
+            },
+          },
+          {
+            label: "Git Provider",
+            description: "Provide config for repo-based compose files",
+            components: {
               git_provider: (provider, set) => {
                 const https = update.git_https ?? config.git_https;
                 return (
@@ -131,13 +121,7 @@ export const StackConfig = ({
               },
             },
           },
-          {
-            label: "Run Path / File",
-            components: {
-              run_directory: { placeholder: "." },
-              file_path: { placeholder: "compose.yaml" },
-            },
-          },
+
           {
             label: "Extra Args",
             contentHidden:
@@ -170,16 +154,54 @@ export const StackConfig = ({
             },
           },
           {
-            label: "Github Webhooks",
+            label: "Docker Registry",
+            description: "Optional. Login to a registry to pull private images",
             components: {
-              ["clone" as any]: () => (
-                <ConfigItem label="Clone">
-                  <CopyGithubWebhook path={`/Stack/${id}/clone`} />
+              registry_provider: (provider, set) => {
+                return (
+                  <ProviderSelectorConfig
+                    account_type="docker"
+                    selected={provider}
+                    disabled={disabled}
+                    onSelect={(registry_provider) => set({ registry_provider })}
+                  />
+                );
+              },
+              registry_account: (value, set) => {
+                const server_id = update.server_id || config.server_id;
+                const provider =
+                  update.registry_provider ?? config.registry_provider;
+                if (!provider) {
+                  return null;
+                }
+                return (
+                  <AccountSelectorConfig
+                    id={server_id}
+                    type={server_id ? "Server" : "None"}
+                    account_type="docker"
+                    provider={provider}
+                    selected={value}
+                    onSelect={(registry_account) => set({ registry_account })}
+                    disabled={disabled}
+                    placeholder="None"
+                  />
+                );
+              },
+            },
+          },
+          {
+            label: "Git Webhooks",
+            description:
+              "Configure your repo provider to send webhooks to Monitor",
+            components: {
+              ["refresh" as any]: () => (
+                <ConfigItem label="Refresh Info Cache (recommended)">
+                  <CopyGithubWebhook path={`/stack/${id}/refresh`} />
                 </ConfigItem>
               ),
-              ["pull" as any]: () => (
-                <ConfigItem label="Pull">
-                  <CopyGithubWebhook path={`/Stack/${id}/pull`} />
+              ["Deploy" as any]: () => (
+                <ConfigItem label="Auto Redeploy">
+                  <CopyGithubWebhook path={`/stack/${id}/deploy`} />
                 </ConfigItem>
               ),
               webhook_enabled: webhooks !== undefined && !webhooks.managed,

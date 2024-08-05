@@ -91,7 +91,6 @@ pub enum PeripheryRequest {
   GetComposeServiceLogSearch(GetComposeServiceLogSearch),
   ComposeUp(ComposeUp),
   ComposeExecution(ComposeExecution),
-  ComposeDestroy(ComposeDestroy),
 
   // Networks
   CreateNetwork(CreateNetwork),

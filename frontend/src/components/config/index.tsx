@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { AlertTriangle, History, Settings } from "lucide-react";
+import { AlertTriangle, History, Info, Settings } from "lucide-react";
 import { Fragment, ReactNode, SetStateAction, useState } from "react";
 
 const keys = <T extends Record<string, unknown>>(obj: T) =>
@@ -88,6 +88,7 @@ type ConfigComponent<T> = {
   label: string;
   icon?: ReactNode;
   actions?: ReactNode;
+  description?: ReactNode;
   hidden?: boolean;
   labelHidden?: boolean;
   contentHidden?: boolean;
@@ -175,6 +176,7 @@ export const Config = <T,>({
               labelHidden,
               icon,
               actions,
+              description,
               hidden,
               contentHidden,
               components,
@@ -192,6 +194,12 @@ export const Config = <T,>({
                         {icon}
                         {label}
                       </CardTitle>
+                      {description && (
+                        <div className="flex gap-2 items-center text-muted-foreground text-sm">
+                          <Info className="w-4 h-4" />
+                          {description}
+                        </div>
+                      )}
                       {actions}
                     </CardHeader>
                   )}

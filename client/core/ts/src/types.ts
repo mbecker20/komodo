@@ -1284,6 +1284,25 @@ export type ListFullServerTemplatesResponse = ServerTemplate[];
 export interface StackConfig {
 	/** The server to deploy the stack on. */
 	server_id?: string;
+	/**
+	 * Optionally specify a custom project name for the stack.
+	 * If this is empty string, it will default to the stack name.
+	 * Used with `docker compose -p {project_name}`.
+	 * 
+	 * Note. Can be used to import pre-existing stacks.
+	 */
+	project_name?: string;
+	/**
+	 * Directory to change to (`cd`) before running `docker compose up -d`.
+	 * Default: `./` (the repo root)
+	 */
+	run_directory: string;
+	/**
+	 * The path of the compose file, relative to the run path.
+	 * If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
+	 * Default: `compose.yaml`
+	 */
+	file_path: string;
 	/** Used with `registry_account` to login to a registry before docker compose up. */
 	registry_provider?: string;
 	/** Used with `registry_provider` to login to a registry before docker compose up. */
@@ -1337,18 +1356,6 @@ export interface StackConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
-	/**
-	 * Directory to change to (`cd`) before running `docker compose up -d`.
-	 * If compose file defined locally in `file_contents`, this will always be `.`.
-	 * Default: `.` (the repo root)
-	 */
-	run_directory: string;
-	/**
-	 * The path of the compose file, relative to the run path.
-	 * If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
-	 * Default: `compose.yaml`
-	 */
-	file_path: string;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
 }
@@ -1362,8 +1369,10 @@ export interface StackServiceNames {
 	 * 
 	 * Auto named containers are composed of three parts:
 	 * 
-	 * 1. The name of the compose stack (top level name field of compose file).
+	 * 1. The name of the compose project (top level name field of compose file).
 	 * This defaults to the name of the parent folder of the compose file.
+	 * Monitor will always set it to be the name of the stack, but imported stacks
+	 * will have a different name.
 	 * 2. The service name
 	 * 3. The replica number
 	 * 
@@ -1381,6 +1390,13 @@ export interface StackInfo {
 	 * Monitor will have to redeploy the stack to fix this.
 	 */
 	file_missing?: boolean;
+	/**
+	 * The deployed project name.
+	 * This is updated whenever Monitor successfully deploys the stack.
+	 * If it is present, Monitor will use it for actions over other options,
+	 * to ensure control is maintained after changing the project name (there is no rename compose project api).
+	 */
+	deployed_project_name?: string;
 	/** The deployed compose file.This is updated whenever Monitor successfully deploys the stack. */
 	deployed_contents?: string;
 	/** Deployed short commit hash, or null. Only for repo based stacks. */
@@ -1395,10 +1411,8 @@ export interface StackInfo {
 	/** If there was an error in calling `docker compose config`, the message will be here. */
 	deployed_json_error?: string;
 	/**
-	 * The service / container names.
-	 * These only need to be matched against the start of the container name,
-	 * since the name is postfixed with a number.
-	 * This is updated whenever it is empty, or deployed contents is updated
+	 * The service names.
+	 * This is updated whenever it is empty, or deployed contents is updated.
 	 */
 	services?: StackServiceNames[];
 	/**
@@ -2313,7 +2327,7 @@ export interface LaunchServer {
 export interface DeployStack {
 	/** Id or name */
 	stack: string;
-	/** The optional service. Experimental for deploys. */
+	/** Optionally deploy only a specific service. Experimental. */
 	service?: string;
 	/**
 	 * Override the default termination max time.
@@ -2326,7 +2340,7 @@ export interface DeployStack {
 export interface StartStack {
 	/** Id or name */
 	stack: string;
-	/** Optionally specify a specific service */
+	/** Optionally specify a specific service to start */
 	service?: string;
 }
 
@@ -2334,7 +2348,7 @@ export interface StartStack {
 export interface RestartStack {
 	/** Id or name */
 	stack: string;
-	/** Optionally specify a specific service */
+	/** Optionally specify a specific service to restart */
 	service?: string;
 }
 
@@ -2342,7 +2356,7 @@ export interface RestartStack {
 export interface PauseStack {
 	/** Id or name */
 	stack: string;
-	/** Optionally specify a specific service */
+	/** Optionally specify a specific service to pause */
 	service?: string;
 }
 
@@ -2354,7 +2368,7 @@ export interface PauseStack {
 export interface UnpauseStack {
 	/** Id or name */
 	stack: string;
-	/** Optionally specify a specific service */
+	/** Optionally specify a specific service to unpause */
 	service?: string;
 }
 
@@ -2364,7 +2378,7 @@ export interface StopStack {
 	stack: string;
 	/** Override the default termination max time. */
 	stop_time?: number;
-	/** Optionally specify a specific service */
+	/** Optionally specify a specific service to stop */
 	service?: string;
 }
 
@@ -2376,7 +2390,7 @@ export interface DestroyStack {
 	remove_orphans?: boolean;
 	/** Override the default termination max time. */
 	stop_time?: number;
-	/** Optionally specify a specific service */
+	/** Optionally specify a specific service to destroy */
 	service?: string;
 }
 

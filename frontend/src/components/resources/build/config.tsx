@@ -6,7 +6,6 @@ import {
   ImageRegistryConfig,
   InputList,
   ProviderSelectorConfig,
-  SecretSelector,
   SecretsForEnvironment,
   SystemCommand,
 } from "@components/config/util";
@@ -16,7 +15,7 @@ import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Textarea } from "@ui/textarea";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { ReactNode, RefObject, createRef, useState } from "react";
+import { ReactNode, createRef, useState } from "react";
 import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
@@ -247,6 +246,8 @@ export const BuildConfig = ({
           },
           {
             label: "Github Webhook",
+            description:
+              "Configure your repo provider to send webhooks to Monitor",
             components: {
               ["build" as any]: () => (
                 <ConfigItem label="Webhook Url">

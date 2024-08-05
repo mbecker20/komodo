@@ -120,15 +120,17 @@ export const RepoConfig = ({ id }: { id: string }) => {
           },
           {
             label: "Github Webhooks",
+            description:
+              "Configure your repo provider to send webhooks to Monitor",
             components: {
-              ["clone" as any]: () => (
-                <ConfigItem label="Clone">
-                  <CopyGithubWebhook path={`/repo/${id}/clone`} />
-                </ConfigItem>
-              ),
               ["pull" as any]: () => (
                 <ConfigItem label="Pull">
                   <CopyGithubWebhook path={`/repo/${id}/pull`} />
+                </ConfigItem>
+              ),
+              ["clone" as any]: () => (
+                <ConfigItem label="Clone">
+                  <CopyGithubWebhook path={`/repo/${id}/clone`} />
                 </ConfigItem>
               ),
               webhook_enabled: webhooks !== undefined && !webhooks.managed,

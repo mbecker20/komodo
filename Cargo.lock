@@ -2415,7 +2415,6 @@ dependencies = [
  "monitor_client",
  "parse_csl",
  "periphery_client",
- "regex",
  "resolver_api",
  "run_command",
  "serde",

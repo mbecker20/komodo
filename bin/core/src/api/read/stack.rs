@@ -114,6 +114,7 @@ impl Resolve<GetStackServiceLog, User> for State {
       .join(&stack.config.run_directory);
     periphery
       .request(GetComposeServiceLog {
+        name: stack.name,
         run_directory,
         file_path: stack.config.file_path,
         service,
@@ -150,6 +151,7 @@ impl Resolve<SearchStackServiceLog, User> for State {
       .join(&stack.config.run_directory);
     periphery
       .request(GetComposeServiceLogSearch {
+        name: stack.name,
         run_directory,
         file_path: stack.config.file_path,
         service,

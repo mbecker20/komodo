@@ -9,7 +9,9 @@ use strum::Display;
 use typeshare::typeshare;
 
 use super::{
-  deployment::ContainerSummary, resource::{Resource, ResourceListItem, ResourceQuery}, EnvironmentVar
+  deployment::ContainerSummary,
+  resource::{Resource, ResourceListItem, ResourceQuery},
+  to_monitor_name, EnvironmentVar,
 };
 
 #[typeshare]
@@ -33,6 +35,10 @@ pub struct StackListItemInfo {
   /// Whether the compose file is missing on the host.
   /// If true, this is an unhealthy state.
   pub file_missing: bool,
+  /// Whether the compose project is missing on the host.
+  /// Ie, it does not show up in `docker compose ls`.
+  /// If true, and the stack is not Down, this is an unhealthy state.
+  pub project_missing: bool,
   /// Latest short commit hash, or null.
   pub latest_hash: Option<String>,
   /// Latest commit message, or null.
@@ -70,6 +76,24 @@ pub enum StackState {
 #[typeshare]
 pub type Stack = Resource<StackConfig, StackInfo>;
 
+impl Stack {
+  /// If fresh is passed, it will bypass the deployed project name.
+  /// and get the most up to date one from just project_name field falling back to stack name.
+  pub fn project_name(&self, fresh: bool) -> String {
+    if !fresh {
+      if let Some(project_name) = &self.info.deployed_project_name {
+        return project_name.clone();
+      }
+    }
+    self
+      .config
+      .project_name
+      .is_empty()
+      .then(|| to_monitor_name(&self.name))
+      .unwrap_or_else(|| to_monitor_name(&self.config.project_name))
+  }
+}
+
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StackInfo {
@@ -77,7 +101,17 @@ pub struct StackInfo {
   /// Monitor will have to redeploy the stack to fix this.
   #[serde(default)]
   pub file_missing: bool,
+  /// Whether the compose project is missing on the target host.
+  /// Ensure the stack project_name is correctly configured if this is true,
+  /// but the stack is definitely running.
+  #[serde(default)]
+  pub project_missing: bool,
 
+  /// The deployed project name.
+  /// This is updated whenever Monitor successfully deploys the stack.
+  /// If it is present, Monitor will use it for actions over other options,
+  /// to ensure control is maintained after changing the project name (there is no rename compose project api).
+  pub deployed_project_name: Option<String>,
   /// The deployed compose file.This is updated whenever Monitor successfully deploys the stack.
   pub deployed_contents: Option<String>,
   /// Deployed short commit hash, or null. Only for repo based stacks.
@@ -89,10 +123,8 @@ pub struct StackInfo {
   pub deployed_json: Option<String>,
   /// If there was an error in calling `docker compose config`, the message will be here.
   pub deployed_json_error: Option<String>,
-  /// The service / container names.
-  /// These only need to be matched against the start of the container name,
-  /// since the name is postfixed with a number.
-  /// This is updated whenever it is empty, or deployed contents is updated
+  /// The service names.
+  /// This is updated whenever it is empty, or deployed contents is updated.
   #[serde(default)]
   pub services: Vec<StackServiceNames>,
 
@@ -124,8 +156,10 @@ pub struct StackServiceNames {
   ///
   /// Auto named containers are composed of three parts:
   ///
-  /// 1. The name of the compose stack (top level name field of compose file).
+  /// 1. The name of the compose project (top level name field of compose file).
   ///    This defaults to the name of the parent folder of the compose file.
+  ///    Monitor will always set it to be the name of the stack, but imported stacks
+  ///    will have a different name.
   /// 2. The service name
   /// 3. The replica number
   ///
@@ -158,6 +192,30 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub server_id: String,
+
+  /// Optionally specify a custom project name for the stack.
+  /// If this is empty string, it will default to the stack name.
+  /// Used with `docker compose -p {project_name}`.
+  ///
+  /// Note. Can be used to import pre-existing stacks.
+  #[serde(default)]
+  #[builder(default)]
+  pub project_name: String,
+
+  /// Directory to change to (`cd`) before running `docker compose up -d`.
+  /// Default: `./` (the repo root)
+  #[serde(default = "default_run_directory")]
+  #[builder(default = "default_run_directory()")]
+  #[partial_default(default_run_directory())]
+  pub run_directory: String,
+
+  /// The path of the compose file, relative to the run path.
+  /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
+  /// Default: `compose.yaml`
+  #[serde(default = "default_file_path")]
+  #[builder(default = "default_file_path()")]
+  #[partial_default(default_file_path())]
+  pub file_path: String,
 
   /// Used with `registry_account` to login to a registry before docker compose up.
   #[serde(default)]
@@ -250,21 +308,6 @@ pub struct StackConfig {
   #[builder(default)]
   pub git_account: String,
 
-  /// Directory to change to (`cd`) before running `docker compose up -d`.
-  /// Default: `./` (the repo root)
-  #[serde(default = "default_run_directory")]
-  #[builder(default = "default_run_directory()")]
-  #[partial_default(default_run_directory())]
-  pub run_directory: String,
-
-  /// The path of the compose file, relative to the run path.
-  /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
-  /// Default: `compose.yaml`
-  #[serde(default = "default_file_path")]
-  #[builder(default = "default_file_path()")]
-  #[partial_default(default_file_path())]
-  pub file_path: String,
-
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
   #[builder(default = "default_webhook_enabled()")]
@@ -310,6 +353,9 @@ impl Default for StackConfig {
   fn default() -> Self {
     Self {
       server_id: Default::default(),
+      project_name: Default::default(),
+      run_directory: default_run_directory(),
+      file_path: default_file_path(),
       registry_provider: Default::default(),
       registry_account: Default::default(),
       file_contents: Default::default(),
@@ -323,8 +369,6 @@ impl Default for StackConfig {
       branch: default_branch(),
       commit: Default::default(),
       git_account: Default::default(),
-      run_directory: default_run_directory(),
-      file_path: default_file_path(),
       webhook_enabled: default_webhook_enabled(),
     }
   }

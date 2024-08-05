@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use formatting::format_serror;
 use monitor_client::entities::{
   permission::PermissionLevel,
@@ -64,6 +64,7 @@ impl super::MonitorResource for Stack {
           .collect(),
         server_id: stack.config.server_id,
         file_missing: stack.info.file_missing,
+        project_missing: stack.info.project_missing,
         git_provider: stack.config.git_provider,
         repo: stack.config.repo,
         branch: stack.config.branch,
@@ -201,24 +202,12 @@ impl super::MonitorResource for Stack {
 
     match periphery
       .request(ComposeExecution {
-        name: stack.name.clone(),
-        run_directory: stack.config.run_directory.clone(),
-        file_path: stack.config.file_path.clone(),
+        project: stack.project_name(false),
         command: String::from("down --remove-orphans"),
       })
       .await
     {
-      Ok(res) => {
-        if res.file_missing {
-          update.push_simple_log("Compose file missing", format_serror(&anyhow!(
-            "Found the compose file missing on periphery, skipping compose down before delete.",
-          )
-          .into()))
-        }
-        if let Some(log) = res.log {
-          update.logs.push(log)
-        }
-      },
+      Ok(log) => update.logs.push(log),
       Err(e) => update.push_simple_log(
         "Failed to destroy stack",
         format_serror(

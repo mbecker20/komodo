@@ -1,14 +1,13 @@
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
-use formatting::{bold, format_serror, muted};
+use formatting::format_serror;
 use monitor_client::entities::{to_monitor_name, update::Log};
 use periphery_client::api::compose::*;
 use resolver_api::Resolve;
+use run_command::async_run_command;
 
 use crate::{
-  compose::{
-    compose_up, destroy_stack_by_containers, docker_compose,
-  },
+  compose::{compose_up, docker_compose},
   config::periphery_config,
   helpers::log_grep,
   State,
@@ -22,6 +21,7 @@ impl Resolve<GetComposeInfo, ()> for State {
       name,
       run_directory,
       file_path,
+      project,
     }: GetComposeInfo,
     _: (),
   ) -> anyhow::Result<GetComposeInfoReponse> {
@@ -35,7 +35,18 @@ impl Resolve<GetComposeInfo, ()> for State {
       .context(
         "failed to reliably see whether the file is missing",
       )?;
-    Ok(GetComposeInfoReponse { file_missing })
+    let docker_compose = docker_compose();
+    // Note the space at the end of the regex:
+    // `^{project} ` <-- Ensures exact name matches, as spaces aren't allowed in the names.
+    let project_missing = !async_run_command(&format!(
+      "{docker_compose} ls 2>&1 | grep -E '^{project} '"
+    ))
+    .await
+    .success();
+    Ok(GetComposeInfoReponse {
+      file_missing,
+      project_missing,
+    })
   }
 }
 
@@ -50,6 +61,7 @@ impl Resolve<GetComposeServiceLog> for State {
   async fn resolve(
     &self,
     GetComposeServiceLog {
+      name,
       run_directory,
       file_path,
       service,
@@ -74,7 +86,8 @@ impl Resolve<GetComposeServiceLog> for State {
 
     let run_directory = run_directory.display();
     let docker_compose = docker_compose();
-    let command = format!("cd {run_directory} && {docker_compose} -f {file_path} logs {service} --tail {tail}");
+    let name = to_monitor_name(&name);
+    let command = format!("cd {run_directory} && {docker_compose} -p {name} logs {service} --tail {tail}");
     Ok(run_monitor_command("get stack log", command).await)
   }
 }
@@ -88,6 +101,7 @@ impl Resolve<GetComposeServiceLogSearch> for State {
   async fn resolve(
     &self,
     GetComposeServiceLogSearch {
+      name,
       run_directory,
       file_path,
       service,
@@ -115,7 +129,8 @@ impl Resolve<GetComposeServiceLogSearch> for State {
     let run_directory = run_directory.display();
     let docker_compose = docker_compose();
     let grep = log_grep(&terms, combinator, invert);
-    let command = format!("cd {run_directory} && {docker_compose} -f {file_path} logs {service} --tail 5000 2>&1 | {grep}");
+    let name = to_monitor_name(&name);
+    let command = format!("cd {run_directory} && {docker_compose} -p {name} logs {service} --tail 5000 2>&1 | {grep}");
     Ok(run_monitor_command("get stack log grep", command).await)
   }
 }
@@ -157,71 +172,15 @@ impl Resolve<ComposeExecution> for State {
   #[instrument(name = "ComposeExecution", skip(self))]
   async fn resolve(
     &self,
-    ComposeExecution {
-      name,
-      run_directory,
-      file_path,
-      command,
-    }: ComposeExecution,
+    ComposeExecution { project, command }: ComposeExecution,
     _: (),
-  ) -> anyhow::Result<ComposeExecutionResponse> {
-    let root =
-      periphery_config().stack_dir.join(to_monitor_name(&name));
-    let run_directory = root.join(run_directory);
-    let file = run_directory.join(&file_path);
-    if !file.exists() {
-      return Ok(ComposeExecutionResponse {
-        file_missing: true,
-        log: None,
-      });
-    }
-    let run_dir = run_directory.display();
+  ) -> anyhow::Result<Log> {
     let docker_compose = docker_compose();
     let log = run_monitor_command(
       "compose command",
-      format!(
-        "cd {run_dir} && {docker_compose} -f {file_path} {command}"
-      ),
+      format!("{docker_compose} -p {project} {command}"),
     )
     .await;
-    Ok(ComposeExecutionResponse {
-      file_missing: false,
-      log: Some(log),
-    })
-  }
-}
-
-impl Resolve<ComposeDestroy> for State {
-  #[instrument(name = "ComposeDestroy", skip(self))]
-  async fn resolve(
-    &self,
-    ComposeDestroy { services }: ComposeDestroy,
-    _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let mut logs = Vec::new();
-    if let Err(e) =
-      destroy_stack_by_containers(&services, None, &mut logs, true)
-        .await
-    {
-      logs.push(Log::error(
-        "destroy stack by containers",
-        format_serror(
-          &e.context(
-            "failed to destroy stack with docker container rm",
-          )
-          .into(),
-        ),
-      ))
-    } else {
-      logs.push(Log::simple(
-        "destroy stack",
-        format!(
-          "{}: Stack containers have been destroyed using {}",
-          muted("INFO"),
-          bold("docker container rm")
-        ),
-      ))
-    };
-    Ok(logs)
+    Ok(log)
   }
 }
