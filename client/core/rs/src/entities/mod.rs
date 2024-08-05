@@ -778,6 +778,13 @@ pub enum Operation {
   StopStack,
   DestroyStack,
 
+  // stack (service)
+  StartStackService,
+  RestartStackService,
+  PauseStackService,
+  UnpauseStackService,
+  StopStackService,
+
   // variable
   CreateVariable,
   UpdateVariableValue,

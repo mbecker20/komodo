@@ -224,31 +224,51 @@ pub async fn init_execution_update(
       ),
     ),
     ExecuteRequest::StartStack(data) => (
-      Operation::StartStack,
+      if data.service.is_some() {
+        Operation::StartStackService
+      } else {
+        Operation::StartStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
     ExecuteRequest::RestartStack(data) => (
-      Operation::RestartStack,
+      if data.service.is_some() {
+        Operation::RestartStackService
+      } else {
+        Operation::RestartStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
     ExecuteRequest::PauseStack(data) => (
-      Operation::PauseStack,
+      if data.service.is_some() {
+        Operation::PauseStackService
+      } else {
+        Operation::PauseStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
     ExecuteRequest::UnpauseStack(data) => (
-      Operation::UnpauseStack,
+      if data.service.is_some() {
+        Operation::UnpauseStackService
+      } else {
+        Operation::UnpauseStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
     ExecuteRequest::StopStack(data) => (
-      Operation::StopStack,
+      if data.service.is_some() {
+        Operation::StopStackService
+      } else {
+        Operation::StopStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
