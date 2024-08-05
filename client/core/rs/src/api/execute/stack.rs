@@ -27,7 +27,7 @@ use super::MonitorExecuteRequest;
 pub struct DeployStack {
   /// Id or name
   pub stack: String,
-  /// The optional service. Experimental for deploys.
+  /// Optionally deploy only a specific service. Experimental.
   pub service: Option<String>,
   /// Override the default termination max time.
   /// Only used if the stack needs to be taken down first.
@@ -53,7 +53,7 @@ pub struct DeployStack {
 pub struct StartStack {
   /// Id or name
   pub stack: String,
-  /// Optionally specify a specific service
+  /// Optionally specify a specific service to start
   pub service: Option<String>,
 }
 
@@ -76,7 +76,7 @@ pub struct StartStack {
 pub struct RestartStack {
   /// Id or name
   pub stack: String,
-  /// Optionally specify a specific service
+  /// Optionally specify a specific service to restart
   pub service: Option<String>,
 }
 
@@ -99,7 +99,7 @@ pub struct RestartStack {
 pub struct PauseStack {
   /// Id or name
   pub stack: String,
-  /// Optionally specify a specific service
+  /// Optionally specify a specific service to pause
   pub service: Option<String>,
 }
 
@@ -124,7 +124,7 @@ pub struct PauseStack {
 pub struct UnpauseStack {
   /// Id or name
   pub stack: String,
-  /// Optionally specify a specific service
+  /// Optionally specify a specific service to unpause
   pub service: Option<String>,
 }
 
@@ -149,7 +149,7 @@ pub struct StopStack {
   pub stack: String,
   /// Override the default termination max time.
   pub stop_time: Option<i32>,
-  /// Optionally specify a specific service
+  /// Optionally specify a specific service to stop
   pub service: Option<String>,
 }
 
@@ -177,6 +177,6 @@ pub struct DestroyStack {
   pub remove_orphans: bool,
   /// Override the default termination max time.
   pub stop_time: Option<i32>,
-  /// Optionally specify a specific service
+  /// Optionally specify a specific service to destroy
   pub service: Option<String>,
 }
