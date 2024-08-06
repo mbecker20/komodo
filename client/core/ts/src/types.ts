@@ -1363,11 +1363,10 @@ export interface StackConfig {
 	 */
 	run_directory: string;
 	/**
-	 * The path of the compose file, relative to the run path.
-	 * If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
-	 * Default: `compose.yaml`
+	 * Add paths to compose files, relative to the run path.
+	 * If this is empty, will use file `compose.yaml`.
 	 */
-	file_path: string;
+	file_paths?: string[];
 	/** Used with `registry_account` to login to a registry before docker compose up. */
 	registry_provider?: string;
 	/** Used with `registry_provider` to login to a registry before docker compose up. */
@@ -1425,6 +1424,13 @@ export interface StackConfig {
 	webhook_enabled: boolean;
 }
 
+export interface ComposeContents {
+	/** The path of the file on the host */
+	path: string;
+	/** The contents of the file */
+	contents: string;
+}
+
 export interface StackServiceNames {
 	/** The name of the service */
 	service_name: string;
@@ -1451,10 +1457,10 @@ export interface StackServiceNames {
 
 export interface StackInfo {
 	/**
-	 * Whether the compose file is missing on the target host.
-	 * Monitor will have to redeploy the stack to fix this.
+	 * If any of the expected files are missing on the target host,
+	 * the will be stored here.
 	 */
-	file_missing?: boolean;
+	missing_files?: string[];
 	/**
 	 * Whether the compose project is missing on the target host.
 	 * Ensure the stack project_name is correctly configured if this is true,
@@ -1468,8 +1474,6 @@ export interface StackInfo {
 	 * to ensure control is maintained after changing the project name (there is no rename compose project api).
 	 */
 	deployed_project_name?: string;
-	/** The deployed compose file.This is updated whenever Monitor successfully deploys the stack. */
-	deployed_contents?: string;
 	/** Deployed short commit hash, or null. Only for repo based stacks. */
 	deployed_hash?: string;
 	/** Deployed commit message, or null. Only for repo based stacks */
@@ -1478,9 +1482,11 @@ export interface StackInfo {
 	 * Cached json representation of the deployed compose file contents
 	 * Obtained by calling `docker compose config`. Will be of the deployed config if it exists.
 	 */
-	deployed_json?: string;
-	/** If there was an error in calling `docker compose config`, the message will be here. */
-	deployed_json_error?: string;
+	deployed_json?: ComposeContents[];
+	/** If there was an error in calling `docker compose config`, the message will be here with the associated file path. */
+	deployed_json_errors?: ComposeContents[];
+	/** The deployed compose file contents. This is updated whenever Monitor successfully deploys the stack. */
+	deployed_contents?: ComposeContents[];
 	/**
 	 * The deployed service names.
 	 * This is updated whenever it is empty, or deployed contents is updated.
@@ -1490,18 +1496,21 @@ export interface StackInfo {
 	 * Cached json representation of the compose file contents.
 	 * Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
 	 */
-	latest_json?: string;
+	latest_json?: ComposeContents[];
 	/** If there was an error in calling `docker compose config` on the latest contents, the message will be here */
-	latest_json_error?: string;
+	latest_json_errors?: ComposeContents[];
 	/**
 	 * The latest service names.
 	 * This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).
 	 */
 	latest_services?: StackServiceNames[];
-	/** If using a repo based compose file, will cache the contents here for API delivery. */
-	remote_contents?: string;
+	/**
+	 * The remote compose file contents. This is updated whenever Monitor refreshes the stack cache.
+	 * It will be empty if the file is defined directly in the stack config.
+	 */
+	remote_contents?: ComposeContents[];
 	/** If there was an error in getting the remote contents, it will be here. */
-	remote_error?: string;
+	remote_errors?: ComposeContents[];
 	/** Latest commit hash, or null */
 	latest_hash?: string;
 	/** Latest commit message, or null */
@@ -1564,16 +1573,16 @@ export interface StackListItemInfo {
 	 */
 	services: string[];
 	/**
-	 * Whether the compose file is missing on the host.
-	 * If true, this is an unhealthy state.
-	 */
-	file_missing: boolean;
-	/**
 	 * Whether the compose project is missing on the host.
 	 * Ie, it does not show up in `docker compose ls`.
 	 * If true, and the stack is not Down, this is an unhealthy state.
 	 */
 	project_missing: boolean;
+	/**
+	 * If any compose files are missing in the repo, the path will be here.
+	 * If there are paths here, this is an unhealthy state, and deploying will fail.
+	 */
+	missing_files: string[];
 	/** Deployed short commit hash, or null. Only for repo based stacks. */
 	deployed_hash?: string;
 	/** Latest short commit hash, or null. Only for repo based stacks */
@@ -3361,25 +3370,6 @@ export interface GetStack {
 	stack: string;
 }
 
-/**
- * Get a stacks compose-file JSON representation. Response: [serde_json::Value]
- * (No schema provided for this, it comes from docker).
- * 
- * Obtained through [docker compose config --format json](https://docs.docker.com/reference/cli/docker/compose/config/).
- */
-export interface GetStackJson {
-	/** Id or name */
-	stack: string;
-}
-
-/** Response for [GetStackJson] */
-export interface GetStackJsonResponse {
-	deployed_json?: JsonValue;
-	deployed_error: boolean;
-	latest_json: JsonValue;
-	latest_error: boolean;
-}
-
 /** Lists a specific stacks services (the containers). Response: [ListStackServicesResponse]. */
 export interface ListStackServices {
 	/** Id or name */
@@ -5138,7 +5128,6 @@ export type ReadRequest =
 	| { type: "ListFullStacks", params: ListFullStacks }
 	| { type: "ListStackServices", params: ListStackServices }
 	| { type: "ListCommonStackExtraArgs", params: ListCommonStackExtraArgs }
-	| { type: "GetStackJson", params: GetStackJson }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }

@@ -1,13 +1,15 @@
 use anyhow::Context;
 use command::run_monitor_command;
+use futures::TryFutureExt;
 use monitor_client::{
   api::read::ListGitProviders,
   entities::{update::Log, SystemCommand},
 };
 use periphery_client::api::{
   build::*, compose::*, container::*, git::*, network::*, stats::*,
-  GetHealth, GetVersion, GetVersionResponse, ListDockerRegistries,
-  ListSecrets, PruneSystem, RunCommand,
+  GetDockerLists, GetDockerListsResponse, GetHealth, GetVersion,
+  GetVersionResponse, ListDockerRegistries, ListSecrets, PruneSystem,
+  RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -17,6 +19,7 @@ use crate::{
     docker_registries_response, git_providers_response,
     secrets_response,
   },
+  docker::docker_client,
   State,
 };
 
@@ -53,6 +56,9 @@ pub enum PeripheryRequest {
   #[to_string_resolver]
   GetSystemProcesses(GetSystemProcesses),
   GetLatestCommit(GetLatestCommit),
+
+  // All in one
+  GetDockerLists(GetDockerLists),
 
   // Docker
   GetContainerList(GetContainerList),
@@ -170,6 +176,29 @@ impl ResolveToString<ListSecrets> for State {
     _: (),
   ) -> anyhow::Result<String> {
     Ok(secrets_response().clone())
+  }
+}
+
+impl Resolve<GetDockerLists> for State {
+  #[instrument(name = "GetDockerLists", skip(self))]
+  async fn resolve(
+    &self,
+    GetDockerLists {}: GetDockerLists,
+    _: (),
+  ) -> anyhow::Result<GetDockerListsResponse> {
+    let docker = docker_client();
+    let (containers, networks, images, projects) = tokio::join!(
+      docker.list_containers().map_err(Into::into),
+      docker.list_networks().map_err(Into::into),
+      docker.list_images().map_err(Into::into),
+      self.resolve(ListComposeProjects {}, ()).map_err(Into::into)
+    );
+    Ok(GetDockerListsResponse {
+      containers,
+      networks,
+      images,
+      projects
+    })
   }
 }
 

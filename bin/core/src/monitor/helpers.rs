@@ -1,13 +1,15 @@
 use monitor_client::entities::{
-  deployment::{Deployment, DeploymentState},
+  deployment::{ContainerSummary, Deployment, DeploymentState},
   repo::Repo,
   server::{
+    docker_image::ImageSummary,
+    docker_network::DockerNetwork,
     stats::{
       ServerHealth, SeverityLevel, SingleDiskUsage, SystemStats,
     },
     Server, ServerConfig, ServerState,
   },
-  stack::{Stack, StackState},
+  stack::{ComposeProject, Stack, StackState},
 };
 use serror::Serror;
 
@@ -86,12 +88,20 @@ pub async fn insert_stacks_status_unknown(stacks: Vec<Stack>) {
   }
 }
 
+type DockerLists = (
+  Option<Vec<ContainerSummary>>,
+  Option<Vec<DockerNetwork>>,
+  Option<Vec<ImageSummary>>,
+  Option<Vec<ComposeProject>>,
+);
+
 #[instrument(level = "debug", skip_all)]
 pub async fn insert_server_status(
   server: &Server,
   state: ServerState,
   version: String,
   stats: Option<SystemStats>,
+  (containers, networks, images, projects): DockerLists,
   err: impl Into<Option<Serror>>,
 ) {
   let health = stats.as_ref().map(|s| get_server_health(server, s));
@@ -104,6 +114,10 @@ pub async fn insert_server_status(
         version,
         stats,
         health,
+        containers,
+        networks,
+        images,
+        projects,
         err: err.into(),
       }
       .into(),

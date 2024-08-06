@@ -166,6 +166,17 @@ pub struct StackInfo {
 
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeProject {
+  /// The compose project name.
+  pub name: String,
+  /// The status of the project, as returned by docker.
+  pub status: Option<String>,
+  /// The compose files included in the project.
+  pub compose_files: Vec<String>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ComposeContents {
   /// The path of the file on the host
   pub path: String,

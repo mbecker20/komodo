@@ -1,14 +1,15 @@
-use anyhow::Context;
 use async_timing_util::wait_until_timelength;
 use futures::future::join_all;
 use helpers::insert_stacks_status_unknown;
 use monitor_client::entities::{
   deployment::{ContainerSummary, DeploymentState},
   server::{
+    docker_image::ImageSummary,
+    docker_network::DockerNetwork,
     stats::{ServerHealth, SystemStats},
     Server, ServerState,
   },
-  stack::{Stack, StackService, StackServiceNames, StackState},
+  stack::{ComposeProject, Stack, StackService, StackState},
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api::{self, git::GetLatestCommit};
@@ -16,20 +17,10 @@ use serror::Serror;
 
 use crate::{
   config::core_config,
-  helpers::{
-    periphery_client,
-    query::get_stack_state_from_containers,
-    stack::{
-      compose_container_match_regex,
-      services::extract_services_from_stack,
-    },
-  },
+  helpers::periphery_client,
   monitor::{alert::check_alerts, record::record_server_stats},
   resource,
-  state::{
-    db_client, deployment_status_cache, repo_status_cache,
-    stack_status_cache,
-  },
+  state::{db_client, deployment_status_cache, repo_status_cache},
 };
 
 use self::helpers::{
@@ -39,7 +30,9 @@ use self::helpers::{
 
 mod alert;
 mod helpers;
+mod lists;
 mod record;
+mod resources;
 
 #[derive(Default, Debug)]
 pub struct History<Curr: Default, Prev> {
@@ -54,6 +47,11 @@ pub struct CachedServerStatus {
   pub version: String,
   pub stats: Option<SystemStats>,
   pub health: Option<ServerHealth>,
+  pub containers: Option<Vec<ContainerSummary>>,
+  pub networks: Option<Vec<DockerNetwork>>,
+  pub images: Option<Vec<ImageSummary>>,
+  pub projects: Option<Vec<ComposeProject>>,
+  /// Store the error in reaching periphery
   pub err: Option<serror::Serror>,
 }
 
@@ -111,47 +109,27 @@ pub fn spawn_monitor_loop() {
 
 #[instrument(level = "debug")]
 pub async fn update_cache_for_server(server: &Server) {
-  let deployments = match find_collect(
-    &db_client().await.deployments,
-    doc! { "config.server_id": &server.id },
-    None,
-  )
-  .await
-  {
-    Ok(deployments) => deployments,
-    Err(e) => {
-      error!("failed to get deployments list from db (update status cache) | server : {} | {e:#}", server.name);
-      Vec::new()
-    }
-  };
+  let (deployments, repos, stacks) = tokio::join!(
+    find_collect(
+      &db_client().await.deployments,
+      doc! { "config.server_id": &server.id },
+      None,
+    ),
+    find_collect(
+      &db_client().await.repos,
+      doc! { "config.server_id": &server.id },
+      None,
+    ),
+    find_collect(
+      &db_client().await.stacks,
+      doc! { "config.server_id": &server.id },
+      None,
+    )
+  );
 
-  let repos = match find_collect(
-    &db_client().await.repos,
-    doc! { "config.server_id": &server.id },
-    None,
-  )
-  .await
-  {
-    Ok(repos) => repos,
-    Err(e) => {
-      error!("failed to get repos list from db (update status cache) | server: {} | {e:#}", server.name);
-      Vec::new()
-    }
-  };
-
-  let stacks = match find_collect(
-    &db_client().await.stacks,
-    doc! { "config.server_id": &server.id },
-    None,
-  )
-  .await
-  {
-    Ok(stacks) => stacks,
-    Err(e) => {
-      error!("failed to get stacks list from db (update status cache) | server: {} | {e:#}", server.name);
-      Vec::new()
-    }
-  };
+  let deployments =  deployments.inspect_err(|e| error!("failed to get deployments list from db (update status cache) | server : {} | {e:#}", server.name)).unwrap_or_default();
+  let repos = repos.inspect_err(|e|  error!("failed to get repos list from db (update status cache) | server: {} | {e:#}", server.name)).unwrap_or_default();
+  let stacks = stacks.inspect_err(|e|  error!("failed to get stacks list from db (update status cache) | server: {} | {e:#}", server.name)).unwrap_or_default();
 
   // Handle server disabled
   if !server.config.enabled {
@@ -163,6 +141,7 @@ pub async fn update_cache_for_server(server: &Server) {
       ServerState::Disabled,
       String::from("unknown"),
       None,
+      (None, None, None, None),
       None,
     )
     .await;
@@ -187,6 +166,7 @@ pub async fn update_cache_for_server(server: &Server) {
         ServerState::NotOk,
         String::from("unknown"),
         None,
+        (None, None, None, None),
         Serror::from(&e),
       )
       .await;
@@ -206,6 +186,7 @@ pub async fn update_cache_for_server(server: &Server) {
           ServerState::NotOk,
           String::from("unknown"),
           None,
+          (None, None, None, None),
           Serror::from(&e),
         )
         .await;
@@ -216,97 +197,44 @@ pub async fn update_cache_for_server(server: &Server) {
     None
   };
 
-  insert_server_status(server, ServerState::Ok, version, stats, None)
-    .await;
-
-  match periphery.request(api::container::GetContainerList {}).await {
-    Ok(mut containers) => {
-      containers.sort_by(|a, b| a.name.cmp(&b.name));
-
-      let deployment_status_cache = deployment_status_cache();
-      for deployment in deployments {
-        let container = containers
-          .iter()
-          .find(|container| container.name == deployment.name)
-          .cloned();
-        let prev = deployment_status_cache
-          .get(&deployment.id)
-          .await
-          .map(|s| s.curr.state);
-        let state = container
-          .as_ref()
-          .map(|c| c.state)
-          .unwrap_or(DeploymentState::NotDeployed);
-        deployment_status_cache
-          .insert(
-            deployment.id.clone(),
-            History {
-              curr: CachedDeploymentStatus {
-                id: deployment.id,
-                state,
-                container,
-              },
-              prev,
-            }
-            .into(),
-          )
-          .await;
-      }
-
-      let stack_status_cache = stack_status_cache();
-      for stack in stacks {
-        let services = match extract_services_from_stack(
-          &stack, false,
-        )
-        .await
-        {
-          Ok(services) => services,
-          Err(e) => {
-            warn!("failed to extract services for stack {}. cannot match services to containers. (update status cache) | {e:?}", stack.name);
-            continue;
-          }
-        };
-        let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name }| {
-          let container = containers.iter().find(|container| {
-            match compose_container_match_regex(container_name)
-              .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
-            {
-              Ok(regex) => regex,
-              Err(e) => {
-                warn!("{e:#}");
-                return false
-              }
-            }.is_match(&container.name)
-          }).cloned();
-          StackService {
-            service: service_name.clone(),
-            container,
-          }
-        }).collect::<Vec<_>>();
-        services_with_containers
-          .sort_by(|a, b| a.service.cmp(&b.service));
-        let prev = stack_status_cache
-          .get(&stack.id)
-          .await
-          .map(|s| s.curr.state);
-        let status = CachedStackStatus {
-          state: get_stack_state_from_containers(
-            &services,
-            &containers,
-          ),
-          services: services_with_containers,
-        };
-        stack_status_cache
-          .insert(stack.id, History { curr: status, prev }.into())
-          .await;
-      }
+  match lists::get_docker_lists(&periphery).await {
+    Ok((containers, networks, images, projects)) => {
+      tokio::join!(
+        resources::update_deployment_cache(deployments, &containers),
+        resources::update_stack_cache(stacks, &containers),
+      );
+      insert_server_status(
+        server,
+        ServerState::Ok,
+        version,
+        stats,
+        (
+          Some(containers.clone()),
+          Some(networks),
+          Some(images),
+          Some(projects),
+        ),
+        None,
+      )
+      .await;
     }
     Err(e) => {
-      warn!("could not get containers list | {e:#}");
+      warn!(
+        "could not get docker lists | (update status cache) | {e:#}"
+      );
       insert_deployments_status_unknown(deployments).await;
       insert_stacks_status_unknown(stacks).await;
+      insert_server_status(
+        server,
+        ServerState::Ok,
+        version,
+        stats,
+        (None, None, None, None),
+        Some(e.into()),
+      )
+      .await;
     }
-  };
+  }
 
   let status_cache = repo_status_cache();
   for repo in repos {

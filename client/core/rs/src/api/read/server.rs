@@ -15,6 +15,7 @@ use crate::entities::{
     Server, ServerActionState, ServerListItem, ServerQuery,
     ServerState,
   },
+  stack::ComposeProject,
   Timelength, I64,
 };
 
@@ -141,59 +142,78 @@ pub struct GetPeripheryVersionResponse {
 
 //
 
-/// Get the docker networks on the server. Response: [GetDockerNetworksResponse].
+/// List the docker networks on the server. Response: [ListDockerNetworksResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetDockerNetworksResponse)]
-pub struct GetDockerNetworks {
+#[response(ListDockerNetworksResponse)]
+pub struct ListDockerNetworks {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub server: String,
 }
 
 #[typeshare]
-pub type GetDockerNetworksResponse = Vec<DockerNetwork>;
+pub type ListDockerNetworksResponse = Vec<DockerNetwork>;
 
 //
 
-/// Get the docker images locally cached on the target server.
-/// Response: [GetDockerImagesResponse].
+/// List the docker images locally cached on the target server.
+/// Response: [ListDockerImagesResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetDockerImagesResponse)]
-pub struct GetDockerImages {
+#[response(ListDockerImagesResponse)]
+pub struct ListDockerImages {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub server: String,
 }
 
 #[typeshare]
-pub type GetDockerImagesResponse = Vec<ImageSummary>;
+pub type ListDockerImagesResponse = Vec<ImageSummary>;
 
 //
 
-/// Get all docker containers on the target server.
-/// Response: [GetDockerContainersResponse].
+/// List all docker containers on the target server.
+/// Response: [ListDockerContainersResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetDockerContainersResponse)]
-pub struct GetDockerContainers {
+#[response(ListDockerContainersResponse)]
+pub struct ListDockerContainers {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub server: String,
 }
 
 #[typeshare]
-pub type GetDockerContainersResponse = Vec<ContainerSummary>;
+pub type ListDockerContainersResponse = Vec<ContainerSummary>;
+
+//
+
+/// List all compose projects on the target server.
+/// Response: [ListComposeProjectsResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListComposeProjectsResponse)]
+pub struct ListComposeProjects {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+}
+
+#[typeshare]
+pub type ListComposeProjectsResponse = Vec<ComposeProject>;
 
 //
 
@@ -238,8 +258,8 @@ pub type GetSystemStatsResponse = SystemStats;
 
 //
 
-/// Get the processes running on the target server.
-/// Response: [GetSystemProcessesResponse].
+/// List the processes running on the target server.
+/// Response: [ListSystemProcessesResponse].
 ///
 /// Note. This does not hit the server directly. The procedures come from an
 /// in memory cache on the core, which hits the server periodically
@@ -249,15 +269,15 @@ pub type GetSystemStatsResponse = SystemStats;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetSystemProcessesResponse)]
-pub struct GetSystemProcesses {
+#[response(ListSystemProcessesResponse)]
+pub struct ListSystemProcesses {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub server: String,
 }
 
 #[typeshare]
-pub type GetSystemProcessesResponse = Vec<SystemProcess>;
+pub type ListSystemProcessesResponse = Vec<SystemProcess>;
 
 //
 

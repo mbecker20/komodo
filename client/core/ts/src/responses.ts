@@ -116,7 +116,6 @@ export type ReadResponses = {
   ListFullStacks: Types.ListFullStacksResponse;
   ListStackServices: Types.ListStackServicesResponse;
   ListCommonStackExtraArgs: Types.ListCommonStackExtraArgsResponse;
-  GetStackJson: Types.GetStackJsonResponse;
 
   // ==== BUILDER ====
   GetBuildersSummary: Types.GetBuildersSummaryResponse;

@@ -10,10 +10,8 @@ use async_timing_util::{
 use monitor_client::{
   api::read::*,
   entities::{
-    deployment::ContainerSummary,
     permission::PermissionLevel,
     server::{
-      docker_image::ImageSummary, docker_network::DockerNetwork,
       Server, ServerActionState, ServerListItem, ServerState,
     },
     user::User,
@@ -239,10 +237,10 @@ fn processes_cache() -> &'static ProcessesCache {
   PROCESSES_CACHE.get_or_init(Default::default)
 }
 
-impl ResolveToString<GetSystemProcesses, User> for State {
+impl ResolveToString<ListSystemProcesses, User> for State {
   async fn resolve_to_string(
     &self,
-    GetSystemProcesses { server }: GetSystemProcesses,
+    ListSystemProcesses { server }: ListSystemProcesses,
     user: User,
   ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
@@ -328,56 +326,98 @@ impl Resolve<GetHistoricalServerStats, User> for State {
   }
 }
 
-impl Resolve<GetDockerImages, User> for State {
-  async fn resolve(
+impl ResolveToString<ListDockerImages, User> for State {
+  async fn resolve_to_string(
     &self,
-    GetDockerImages { server }: GetDockerImages,
+    ListDockerImages { server }: ListDockerImages,
     user: User,
-  ) -> anyhow::Result<Vec<ImageSummary>> {
+  ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
     )
     .await?;
-    periphery_client(&server)?
-      .request(periphery::build::GetImageList {})
-      .await
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if let Some(images) = &cache.images {
+      serde_json::to_string(images)
+        .context("failed to serialize response")
+    } else {
+      Ok(String::from("[]"))
+    }
   }
 }
 
-impl Resolve<GetDockerNetworks, User> for State {
-  async fn resolve(
+impl ResolveToString<ListDockerNetworks, User> for State {
+  async fn resolve_to_string(
     &self,
-    GetDockerNetworks { server }: GetDockerNetworks,
+    ListDockerNetworks { server }: ListDockerNetworks,
     user: User,
-  ) -> anyhow::Result<Vec<DockerNetwork>> {
+  ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
     )
     .await?;
-    periphery_client(&server)?
-      .request(periphery::network::GetNetworkList {})
-      .await
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if let Some(networks) = &cache.networks {
+      serde_json::to_string(networks)
+        .context("failed to serialize response")
+    } else {
+      Ok(String::from("[]"))
+    }
   }
 }
 
-impl Resolve<GetDockerContainers, User> for State {
-  async fn resolve(
+impl ResolveToString<ListDockerContainers, User> for State {
+  async fn resolve_to_string(
     &self,
-    GetDockerContainers { server }: GetDockerContainers,
+    ListDockerContainers { server }: ListDockerContainers,
     user: User,
-  ) -> anyhow::Result<Vec<ContainerSummary>> {
+  ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
     )
     .await?;
-    periphery_client(&server)?
-      .request(periphery::container::GetContainerList {})
-      .await
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if let Some(containers) = &cache.containers {
+      serde_json::to_string(containers)
+        .context("failed to serialize response")
+    } else {
+      Ok(String::from("[]"))
+    }
+  }
+}
+
+impl ResolveToString<ListComposeProjects, User> for State {
+  async fn resolve_to_string(
+    &self,
+    ListComposeProjects { server }: ListComposeProjects,
+    user: User,
+  ) -> anyhow::Result<String> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if let Some(projects) = &cache.projects {
+      serde_json::to_string(projects)
+        .context("failed to serialize response")
+    } else {
+      Ok(String::from("[]"))
+    }
   }
 }

@@ -1,5 +1,5 @@
 use monitor_client::entities::{
-  stack::{ComposeContents, Stack}, update::Log, SearchCombinator,
+  stack::{ComposeContents, ComposeProject, Stack}, update::Log, SearchCombinator,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -10,17 +10,8 @@ use serde::{Deserialize, Serialize};
 /// Incoming from docker like:
 /// [{"Name":"project_name","Status":"running(1)","ConfigFiles":"/root/compose/compose.yaml,/root/compose/compose2.yaml"}]
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<ListComposeProjectsResponseItem>)]
+#[response(Vec<ComposeProject>)]
 pub struct ListComposeProjects {}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListComposeProjectsResponseItem {
-  pub name: String,
-  /// Don't need to parse, can infer state from containers.
-  pub status: Option<String>,
-  /// Comma seperated list of paths
-  pub config_files: Vec<String>,
-}
 
 //
 

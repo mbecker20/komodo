@@ -1,6 +1,3 @@
-mod deployment;
-mod server;
-
 use std::collections::HashMap;
 
 use anyhow::Context;
@@ -11,6 +8,9 @@ use monitor_client::entities::{
 };
 
 use crate::resource;
+
+mod deployment;
+mod server;
 
 // called after cache update
 #[instrument(level = "debug")]

@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
-use monitor_client::entities::update::Log;
+use monitor_client::entities::{stack::ComposeProject, update::Log};
 use periphery_client::api::compose::*;
 use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ impl Resolve<ListComposeProjects, ()> for State {
     &self,
     ListComposeProjects {}: ListComposeProjects,
     _: (),
-  ) -> anyhow::Result<Vec<ListComposeProjectsResponseItem>> {
+  ) -> anyhow::Result<Vec<ComposeProject>> {
     let docker_compose = docker_compose();
     let res = run_monitor_command(
       "list projects",
@@ -42,10 +42,10 @@ impl Resolve<ListComposeProjects, ()> for State {
         })?
         .into_iter()
         .filter(|item| !item.name.is_empty())
-        .map(|item| ListComposeProjectsResponseItem {
+        .map(|item| ComposeProject {
           name: item.name,
           status: item.status,
-          config_files: item
+          compose_files: item
             .config_files
             .split(',')
             .map(str::to_string)

@@ -101,13 +101,18 @@ enum ReadRequest {
   GetServer(GetServer),
   GetServerState(GetServerState),
   GetPeripheryVersion(GetPeripheryVersion),
-  GetDockerContainers(GetDockerContainers),
-  GetDockerImages(GetDockerImages),
-  GetDockerNetworks(GetDockerNetworks),
   GetServerActionState(GetServerActionState),
   GetHistoricalServerStats(GetHistoricalServerStats),
   ListServers(ListServers),
   ListFullServers(ListFullServers),
+  #[to_string_resolver]
+  ListDockerContainers(ListDockerContainers),
+  #[to_string_resolver]
+  ListDockerNetworks(ListDockerNetworks),
+  #[to_string_resolver]
+  ListDockerImages(ListDockerImages),
+  #[to_string_resolver]
+  ListComposeProjects(ListComposeProjects),
 
   // ==== DEPLOYMENT ====
   GetDeploymentsSummary(GetDeploymentsSummary),
@@ -194,7 +199,7 @@ enum ReadRequest {
   #[to_string_resolver]
   GetSystemStats(GetSystemStats),
   #[to_string_resolver]
-  GetSystemProcesses(GetSystemProcesses),
+  ListSystemProcesses(ListSystemProcesses),
 
   // ==== VARIABLE ====
   GetVariable(GetVariable),
