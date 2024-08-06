@@ -57,13 +57,15 @@ export const Topbar = () => {
           <div className="hidden md:block">MONITOR</div>
         </Link>
 
+        <MobileDropdown />
+
         {/* Searchbar */}
         <div className="hidden lg:flex justify-center">
           <OmniSearch setOpen={setOmniOpen} />
         </div>
 
         {/* Shortcuts */}
-        <div className="flex justify-end items-center gap-2">
+        <div className="hidden md:flex justify-end items-center gap-2">
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <Version />
           <WsStatusIndicator />
@@ -130,7 +132,7 @@ const MobileDropdown = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className="lg:hidden">
+      <DropdownMenuTrigger asChild className="md:hidden justify-self-end">
         <Button
           variant="ghost"
           className="flex justify-start items-center gap-2 w-36 px-3"
