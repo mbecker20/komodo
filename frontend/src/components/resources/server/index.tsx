@@ -16,7 +16,6 @@ import {
 import { Section } from "@components/layouts";
 import { RenameServer } from "./actions";
 import {
-  bg_color_class_by_intention,
   server_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -25,8 +24,7 @@ import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
-import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { Card, CardHeader } from "@ui/card";
+import { ActionWithDialog, ConfirmButton, StatusBadge } from "@components/util";
 import { Button } from "@ui/button";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
@@ -146,14 +144,8 @@ export const ServerComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useServer(id)?.info.state;
-      const color = bg_color_class_by_intention(server_state_intention(state));
-      return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">
-            {state === Types.ServerState.NotOk ? "Not Ok" : state}
-          </CardHeader>
-        </Card>
-      );
+      const intent = server_state_intention(state);
+      return <StatusBadge text={state} intent={intent} />;
     },
     Version: ({ id }) => {
       const version = useRead("GetPeripheryVersion", { server: id }).data

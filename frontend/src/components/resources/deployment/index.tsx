@@ -12,21 +12,19 @@ import {
   RenameDeployment,
 } from "./actions";
 import { DeploymentLogs } from "./log";
-import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
-  bg_color_class_by_intention,
   deployment_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { DeploymentTable } from "./table";
 import { NewResource, ResourceLink } from "../common";
-import { Card, CardHeader } from "@ui/card";
 import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { StatusBadge } from "@components/util";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -145,26 +143,15 @@ export const DeploymentComponents: RequiredResourceComponents = {
     State: ({ id }) => {
       const state =
         useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
-      const color = bg_color_class_by_intention(
-        deployment_state_intention(state)
-      );
 
-      return (
-        <p className={cn("p-1 w-fit text-[10px] text-white rounded-md", color)}>
-          {snake_case_to_upper_space_case(state).toUpperCase()}
-        </p>
-      );
-      return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">
-            {snake_case_to_upper_space_case(state)}
-          </CardHeader>
-        </Card>
-      );
+      const intention = deployment_state_intention(state);
+      return <StatusBadge text={state} intent={intention} />;
     },
     Status: ({ id }) => {
       const status = useDeployment(id)?.info.status;
-      return status && <div>{status}</div>;
+      return (
+        status && <p className="text-sm text-muted-foreground">{status}</p>
+      );
     },
   },
 

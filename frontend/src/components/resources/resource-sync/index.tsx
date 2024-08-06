@@ -1,6 +1,6 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardHeader } from "@ui/card";
+import { Card } from "@ui/card";
 import { Clock, FolderSync } from "lucide-react";
 import { DeleteResource, NewResource } from "../common";
 import { ResourceSyncTable } from "./table";
@@ -8,7 +8,6 @@ import { Types } from "@monitor/client";
 import { ExecuteSync, RefreshSync } from "./actions";
 import { PendingOrConfig } from "./pending-or-config";
 import {
-  bg_color_class_by_intention,
   resource_sync_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -16,6 +15,7 @@ import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { fmt_date } from "@lib/formatting";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { StatusBadge } from "@components/util";
 
 const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
@@ -76,14 +76,8 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useResourceSync(id)?.info.state;
-      const color = bg_color_class_by_intention(
-        resource_sync_state_intention(state)
-      );
-      return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{state}</CardHeader>
-        </Card>
-      );
+      const intent = resource_sync_state_intention(state);
+      return <StatusBadge text={state} intent={intent} />;
     },
     Status: ({ id }) => {
       const info = useResourceSync(id)?.info;
