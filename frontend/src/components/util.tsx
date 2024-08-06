@@ -415,9 +415,11 @@ export const StatusBadge = ({
   text,
   intent,
 }: {
-  text: string;
+  text: string | undefined;
   intent: ColorIntention;
 }) => {
+  if (!text) return null;
+
   const color = text_color_class_by_intention(intent);
   const background = hex_color_by_intention(intent) + "25";
 
