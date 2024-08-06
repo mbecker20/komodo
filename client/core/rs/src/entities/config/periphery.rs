@@ -82,10 +82,10 @@ pub struct CliArgs {
 pub struct Env {
   /// Specify the config paths (files or folders) used to build up the
   /// final [PeripheryConfig].
-  /// Default: `~/.config/monitor/periphery.config.toml`.
+  /// If not provided, will use Default config.
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
-  #[serde(default = "default_config_paths")]
+  #[serde(default)]
   pub monitor_config_paths: Vec<String>,
   /// If specifying folders, use this to narrow down which
   /// files will be matched to parse into the final [PeripheryConfig].
@@ -135,10 +135,6 @@ pub struct Env {
   pub monitor_allowed_ips: Option<Vec<IpAddr>>,
   /// Override `passkeys`
   pub monitor_passkeys: Option<Vec<String>>,
-}
-
-fn default_config_paths() -> Vec<String> {
-  vec!["~/.config/monitor/periphery.config.toml".to_string()]
 }
 
 /// # Periphery Configuration File
@@ -231,7 +227,7 @@ pub struct PeripheryConfig {
 
   /// The rate at which the system stats will be polled to update the cache.
   /// Default: `5-sec`
-  #[serde(default = "default_stats_refresh_interval")]
+  #[serde(default = "default_stats_polling_rate")]
   pub stats_polling_rate: Timelength,
 
   /// Whether stack actions should use `docker-compose ...`
@@ -286,6 +282,24 @@ fn default_stack_dir() -> PathBuf {
   "/etc/monitor/stacks".parse().unwrap()
 }
 
-fn default_stats_refresh_interval() -> Timelength {
+fn default_stats_polling_rate() -> Timelength {
   Timelength::FiveSeconds
+}
+
+impl Default for PeripheryConfig {
+  fn default() -> Self {
+      Self {
+        port: default_periphery_port(),
+        repo_dir: default_repo_dir(),
+        stack_dir: default_stack_dir(),
+        stats_polling_rate: default_stats_polling_rate(),
+        legacy_compose_cli: Default::default(),
+        logging: Default::default(),
+        allowed_ips: Default::default(),
+        passkeys: Default::default(),
+        secrets: Default::default(),
+        git_providers: Default::default(),
+        docker_registries: Default::default(),
+    }
+  }
 }

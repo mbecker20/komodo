@@ -118,7 +118,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
       let project_name = stack.project_name(true);
 
       let (
-        project_missing,
         deployed_services,
         deployed_contents,
         deployed_json,
@@ -127,7 +126,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
         deployed_message,
       ) = if deployed {
         (
-          false,
           Some(latest_services.clone()),
           Some(file_contents.clone()),
           Some(json.clone()),
@@ -137,7 +135,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
         )
       } else {
         (
-          stack.info.project_missing,
           stack.info.deployed_services,
           stack.info.deployed_contents,
           stack.info.deployed_json,
@@ -149,7 +146,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
 
       let info = StackInfo {
         missing_files,
-        project_missing,
         deployed_project_name: project_name.into(),
         deployed_services,
         deployed_contents,

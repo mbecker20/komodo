@@ -14,16 +14,13 @@ use mungos::mongodb::bson::{doc, to_document};
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
-use periphery_client::api::compose::ListComposeProjects;
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
   helpers::{
-    periphery_client,
     stack::{
-      get_stack_and_server, json::get_config_jsons,
-      remote::get_remote_compose_contents,
+      json::get_config_jsons, remote::get_remote_compose_contents,
       services::extract_services_into_res,
     },
     update::{add_update, make_update},
@@ -142,11 +139,10 @@ impl Resolve<RefreshStackCache, User> for State {
   ) -> anyhow::Result<NoData> {
     // Even though this is a write request, this doesn't change any config. Anyone that can execute the
     // stack should be able to do this.
-    let (stack, server) = get_stack_and_server(
+    let stack = resource::get_check_permissions::<Stack>(
       &stack,
       &user,
       PermissionLevel::Execute,
-      false,
     )
     .await?;
 
@@ -155,17 +151,6 @@ impl Resolve<RefreshStackCache, User> for State {
     if file_contents_empty && stack.config.repo.is_empty() {
       return Err(anyhow!("Stack has neither file_contents nor repo configured. Cannot get info."));
     }
-
-    let project_name = stack.project_name(false);
-
-    // False if the server is unreachable, maybe come back to this.
-    let project_missing = periphery_client(&server)?
-      .request(ListComposeProjects {})
-      .await
-      .map(|projects| {
-        projects.iter().any(|project| project.name == project_name)
-      })
-      .unwrap_or(false);
 
     let mut missing_files = Vec::new();
 
@@ -249,7 +234,6 @@ impl Resolve<RefreshStackCache, User> for State {
 
     let info = StackInfo {
       missing_files,
-      project_missing,
       deployed_services: stack.info.deployed_services,
       deployed_project_name: stack.info.deployed_project_name,
       deployed_contents: stack.info.deployed_contents,

@@ -109,15 +109,10 @@ pub enum StackState {
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StackInfo {
-  /// If any of the expected files are missing on the target host,
-  /// the will be stored here.
+  /// If any of the expected files are missing in the repo,
+  /// they will be stored here.
   #[serde(default)]
   pub missing_files: Vec<String>,
-  /// Whether the compose project is missing on the target host.
-  /// Ensure the stack project_name is correctly configured if this is true,
-  /// but the stack is definitely running.
-  #[serde(default)]
-  pub project_missing: bool,
 
   /// The deployed project name.
   /// This is updated whenever Monitor successfully deploys the stack.

@@ -20,7 +20,9 @@ use crate::{
   helpers::{periphery_client, query::get_stack_state},
   monitor::update_cache_for_server,
   resource,
-  state::{action_states, db_client, stack_status_cache},
+  state::{
+    action_states, db_client, server_status_cache, stack_status_cache,
+  },
 };
 
 use super::get_check_permissions;
@@ -48,6 +50,7 @@ impl super::MonitorResource for Stack {
     let status = stack_status_cache().get(&stack.id).await;
     let state =
       status.as_ref().map(|s| s.curr.state).unwrap_or_default();
+    let project_name = stack.project_name(false);
     let services = match (
       state,
       stack.info.deployed_services,
@@ -63,6 +66,24 @@ impl super::MonitorResource for Stack {
     .into_iter()
     .map(|service| service.service_name)
     .collect();
+    // This is only true if it is KNOWN to be true. so other cases are false.
+    let project_missing = if stack.config.server_id.is_empty()
+      || matches!(state, StackState::Down | StackState::Unknown)
+    {
+      false
+    } else if let Some(status) = server_status_cache()
+      .get(&stack.config.server_id)
+      .await
+      .as_ref()
+    {
+      if let Some(projects) = &status.projects {
+        projects.iter().any(|project| project.name == project_name)
+      } else {
+        false
+      }
+    } else {
+      false
+    };
     StackListItem {
       id: stack.id,
       name: stack.name,
@@ -71,8 +92,8 @@ impl super::MonitorResource for Stack {
       info: StackListItemInfo {
         state,
         services,
+        project_missing,
         server_id: stack.config.server_id,
-        project_missing: stack.info.project_missing,
         missing_files: stack.info.missing_files,
         git_provider: stack.config.git_provider,
         repo: stack.config.repo,

@@ -14,17 +14,23 @@ pub fn periphery_config() -> &'static PeripheryConfig {
     let env: Env = envy::from_env()
       .expect("failed to parse periphery environment");
     let args = CliArgs::parse();
-    let config = parse_config_paths::<PeripheryConfig>(
-      args.config_path.unwrap_or(env.monitor_config_paths),
-      args.config_keyword.unwrap_or(env.monitor_config_keywords),
-      args
-        .merge_nested_config
-        .unwrap_or(env.monitor_merge_nested_config),
-      args
-        .extend_config_arrays
-        .unwrap_or(env.monitor_extend_config_arrays),
-    )
-    .expect("failed at parsing config from paths");
+    let config_paths =
+      args.config_path.unwrap_or(env.monitor_config_paths);
+    let config = if config_paths.is_empty() {
+      PeripheryConfig::default()
+    } else {
+      parse_config_paths::<PeripheryConfig>(
+        config_paths,
+        args.config_keyword.unwrap_or(env.monitor_config_keywords),
+        args
+          .merge_nested_config
+          .unwrap_or(env.monitor_merge_nested_config),
+        args
+          .extend_config_arrays
+          .unwrap_or(env.monitor_extend_config_arrays),
+      )
+      .expect("failed at parsing config from paths")
+    };
 
     PeripheryConfig {
       port: env.monitor_port.unwrap_or(config.port),
