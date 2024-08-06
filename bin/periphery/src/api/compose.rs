@@ -1,53 +1,71 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
-use monitor_client::entities::{to_monitor_name, update::Log};
+use monitor_client::entities::update::Log;
 use periphery_client::api::compose::*;
 use resolver_api::Resolve;
-use run_command::async_run_command;
+use serde::{Deserialize, Serialize};
 
 use crate::{
   compose::{compose_up, docker_compose},
-  config::periphery_config,
   helpers::log_grep,
   State,
 };
 
-impl Resolve<GetComposeInfo, ()> for State {
+impl Resolve<ListComposeProjects, ()> for State {
   #[instrument(name = "ComposeInfo", level = "debug", skip(self))]
   async fn resolve(
     &self,
-    GetComposeInfo {
-      name,
-      run_directory,
-      file_path,
-      project,
-    }: GetComposeInfo,
+    ListComposeProjects {}: ListComposeProjects,
     _: (),
-  ) -> anyhow::Result<GetComposeInfoResponse> {
-    let file_missing = periphery_config()
-      .stack_dir
-      .join(to_monitor_name(&name))
-      .join(run_directory)
-      .join(file_path)
-      .try_exists()
-      .map(|exists| !exists)
-      .context(
-        "failed to reliably see whether the file is missing",
-      )?;
+  ) -> anyhow::Result<Vec<ListComposeProjectsResponseItem>> {
     let docker_compose = docker_compose();
-    // Note the space at the end of the regex:
-    // `^{project} ` <-- Ensures exact name matches, as spaces aren't allowed in the names.
-    let project_missing = !async_run_command(&format!(
-      "{docker_compose} ls 2>&1 | grep -E '^{project} '"
-    ))
-    .await
-    .success();
-    Ok(GetComposeInfoResponse {
-      file_missing,
-      project_missing,
-    })
+    let res = run_monitor_command(
+      "list projects",
+      format!("{docker_compose} ls --format json"),
+    )
+    .await;
+
+    if !res.success {
+      return Err(anyhow!("{}", res.combined()).context(format!(
+        "failed to list compose projects using {docker_compose} ls"
+      )));
+    }
+
+    let res =
+      serde_json::from_str::<Vec<DockerComposeLsItem>>(&res.stdout)
+        .with_context(|| res.stdout.clone())
+        .with_context(|| {
+          format!(
+            "failed to parse '{docker_compose} ls' response to json"
+          )
+        })?
+        .into_iter()
+        .filter(|item| !item.name.is_empty())
+        .map(|item| ListComposeProjectsResponseItem {
+          name: item.name,
+          status: item.status,
+          config_files: item
+            .config_files
+            .split(',')
+            .map(str::to_string)
+            .collect(),
+        })
+        .collect();
+
+    Ok(res)
   }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DockerComposeLsItem {
+  #[serde(default, alias = "Name")]
+  pub name: String,
+  #[serde(alias = "Status")]
+  pub status: Option<String>,
+  /// Comma seperated list of paths
+  #[serde(default, alias = "ConfigFiles")]
+  pub config_files: String,
 }
 
 //

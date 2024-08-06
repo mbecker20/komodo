@@ -783,11 +783,14 @@ export type Execution =
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartContainer", params: StartContainer }
+	| { type: "RestartContainer", params: RestartContainer }
+	| { type: "PauseContainer", params: PauseContainer }
+	| { type: "UnpauseContainer", params: UnpauseContainer }
 	| { type: "StopContainer", params: StopContainer }
-	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "RemoveContainer", params: RemoveContainer }
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
+	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneNetworks", params: PruneNetworks }
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "PruneContainers", params: PruneContainers }
@@ -1756,8 +1759,11 @@ export enum Operation {
 	UpdateDeployment = "UpdateDeployment",
 	DeleteDeployment = "DeleteDeployment",
 	Deploy = "Deploy",
-	StopContainer = "StopContainer",
 	StartContainer = "StartContainer",
+	RestartContainer = "RestartContainer",
+	PauseContainer = "PauseContainer",
+	UnpauseContainer = "UnpauseContainer",
+	StopContainer = "StopContainer",
 	RemoveContainer = "RemoveContainer",
 	RenameDeployment = "RenameDeployment",
 	CreateRepo = "CreateRepo",
@@ -2325,16 +2331,6 @@ export interface StopContainer {
 }
 
 /**
- * Stops all deployments on the target server. Response: [Update]
- * 
- * 1. Runs [StopContainer] on all deployments on the server concurrently.
- */
-export interface StopAllContainers {
-	/** Name or id */
-	server: string;
-}
-
-/**
  * Stops and removes the container for the target deployment.
  * Reponse: [Update].
  * 
@@ -2382,6 +2378,12 @@ export interface CloneRepo {
 export interface PullRepo {
 	/** Id or name */
 	repo: string;
+}
+
+/** Stops all containers on the target server. Response: [Update] */
+export interface StopAllContainers {
+	/** Name or id */
+	server: string;
 }
 
 /**
@@ -5031,28 +5033,31 @@ export type AuthRequest =
 	| { type: "GetUser", params: GetUser };
 
 export type ExecuteRequest = 
+	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "PruneNetworks", params: PruneNetworks }
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartContainer", params: StartContainer }
+	| { type: "RestartContainer", params: RestartContainer }
+	| { type: "PauseContainer", params: PauseContainer }
+	| { type: "UnpauseContainer", params: UnpauseContainer }
 	| { type: "StopContainer", params: StopContainer }
-	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "RemoveContainer", params: RemoveContainer }
-	| { type: "RunBuild", params: RunBuild }
-	| { type: "CancelBuild", params: CancelBuild }
-	| { type: "CloneRepo", params: CloneRepo }
-	| { type: "PullRepo", params: PullRepo }
-	| { type: "RunProcedure", params: RunProcedure }
-	| { type: "LaunchServer", params: LaunchServer }
-	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "StopStack", params: StopStack }
 	| { type: "PauseStack", params: PauseStack }
 	| { type: "UnpauseStack", params: UnpauseStack }
-	| { type: "DestroyStack", params: DestroyStack };
+	| { type: "DestroyStack", params: DestroyStack }
+	| { type: "RunBuild", params: RunBuild }
+	| { type: "CancelBuild", params: CancelBuild }
+	| { type: "CloneRepo", params: CloneRepo }
+	| { type: "PullRepo", params: PullRepo }
+	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "LaunchServer", params: LaunchServer }
+	| { type: "RunSync", params: RunSync };
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }

@@ -111,6 +111,12 @@ pub async fn init_execution_update(
 ) -> anyhow::Result<Update> {
   let (operation, target) = match &request {
     // Server
+    ExecuteRequest::StopAllContainers(data) => (
+      Operation::StopAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::PruneContainers(data) => (
       Operation::PruneImages,
       ResourceTarget::Server(
@@ -129,12 +135,6 @@ pub async fn init_execution_update(
         resource::get::<Server>(&data.server).await?.id,
       ),
     ),
-    ExecuteRequest::StopAllContainers(data) => (
-      Operation::StopAllContainers,
-      ResourceTarget::Server(
-        resource::get::<Server>(&data.server).await?.id,
-      ),
-    ),
 
     // Deployment
     ExecuteRequest::Deploy(data) => (
@@ -145,6 +145,24 @@ pub async fn init_execution_update(
     ),
     ExecuteRequest::StartContainer(data) => (
       Operation::StartContainer,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
+    ExecuteRequest::RestartContainer(data) => (
+      Operation::RestartContainer,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
+    ExecuteRequest::PauseContainer(data) => (
+      Operation::PauseContainer,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
+    ExecuteRequest::UnpauseContainer(data) => (
+      Operation::UnpauseContainer,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),

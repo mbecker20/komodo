@@ -159,8 +159,6 @@ enum ReadRequest {
   ListFullStacks(ListFullStacks),
   ListStackServices(ListStackServices),
   ListCommonStackExtraArgs(ListCommonStackExtraArgs),
-  #[to_string_resolver]
-  GetStackJson(GetStackJson),
 
   // ==== BUILDER ====
   GetBuildersSummary(GetBuildersSummary),

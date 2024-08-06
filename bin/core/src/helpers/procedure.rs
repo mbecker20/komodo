@@ -193,6 +193,54 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::RestartContainer(req) => {
+      let req = ExecuteRequest::RestartContainer(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RestartContainer(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at RestartContainer"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::PauseContainer(req) => {
+      let req = ExecuteRequest::PauseContainer(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PauseContainer(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PauseContainer"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::UnpauseContainer(req) => {
+      let req = ExecuteRequest::UnpauseContainer(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::UnpauseContainer(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at UnpauseContainer"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::StopContainer(req) => {
       let req = ExecuteRequest::StopContainer(req);
       let update = init_execution_update(&req, &user).await?;

@@ -33,6 +33,15 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::StartContainer(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::RestartContainer(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseContainer(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseContainer(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::StopContainer(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -103,6 +112,15 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::StartContainer(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::RestartContainer(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::PauseContainer(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::UnpauseContainer(request) => {
       monitor_client().execute(request).await
     }
     Execution::StopContainer(request) => {

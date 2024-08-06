@@ -220,6 +220,27 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::RestartContainer(config) => {
+            config.deployment = resources
+              .deployments
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PauseContainer(config) => {
+            config.deployment = resources
+              .deployments
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::UnpauseContainer(config) => {
+            config.deployment = resources
+              .deployments
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::StopContainer(config) => {
             config.deployment = resources
               .deployments

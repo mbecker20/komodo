@@ -185,6 +185,16 @@ impl Log {
       ..Default::default()
     }
   }
+
+  /// Combines stdout / stderr into one log
+  pub fn combined(&self) -> String {
+    match (self.stdout.is_empty(), self.stderr.is_empty()) {
+      (true, true) => format!("stdout: {}\n\nstderr: {}", self.stdout, self.stderr),
+      (true, false) => self.stdout.to_string(),
+      (false, true) => self.stderr.to_string(),
+      (false, false) => String::from("No log")
+    }
+  }
 }
 
 /// Used to reference a specific resource across all resource types

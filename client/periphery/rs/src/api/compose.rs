@@ -1,44 +1,25 @@
 use monitor_client::entities::{
-  stack::Stack, update::Log, SearchCombinator,
+  stack::{ComposeContents, Stack}, update::Log, SearchCombinator,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
-//
-
-/// Get the compose file health, contents, json
+/// List the compose project names that are on the host.
+/// List running `docker compose ls`
+///
+/// Incoming from docker like:
+/// [{"Name":"project_name","Status":"running(1)","ConfigFiles":"/root/compose/compose.yaml,/root/compose/compose2.yaml"}]
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(GetComposeInfoResponse)]
-pub struct GetComposeInfo {
-  /// The stack name, to get the root folder.
-  pub name: String,
-  /// The run directory. Relative to root of the folder.
-  pub run_directory: String,
-  /// The compose file path to check.
-  /// Relative to `run_directory`.
-  pub file_path: String,
-  // The compose project name
-  pub project: String,
-}
+#[response(Vec<ListComposeProjectsResponseItem>)]
+pub struct ListComposeProjects {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetComposeInfoResponse {
-  /// If the file is missing. Everything else will be null in this case.
-  pub file_missing: bool,
-  /// The compose project is missing on the host
-  pub project_missing: bool,
-  // /// The compose file contents.
-  // pub file_contents: Option<String>,
-  // /// If there was an error in getting the contents.
-  // pub content_error: Option<String>,
-  // /// The compose file json representation.
-  // pub json: Option<String>,
-  // /// If there was an error in getting the compose file json representation.
-  // pub json_error: Option<String>,
-  // /// If its a repo based stack, will include the latest commit hash
-  // pub commit_hash: Option<String>,
-  // /// If its a repo based stack, will include the latest commit message
-  // pub commit_message: Option<String>,
+pub struct ListComposeProjectsResponseItem {
+  pub name: String,
+  /// Don't need to parse, can infer state from containers.
+  pub status: Option<String>,
+  /// Comma seperated list of paths
+  pub config_files: Vec<String>,
 }
 
 //
@@ -100,16 +81,16 @@ pub struct ComposeUp {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ComposeUpResponse {
-  /// If the file is missing
-  pub file_missing: bool,
+  /// If any of the required files are missing, they will be here.
+  pub missing_files: Vec<String>,
   /// The logs produced by the deploy
   pub logs: Vec<Log>,
   /// whether stack was successfully deployed
   pub deployed: bool,
-  /// The deploy compose file contents if they could be acquired, or null.
-  pub file_contents: Option<String>,
-  /// The error in getting remote file contents, or null
-  pub remote_error: Option<String>,
+  /// The deploy compose file contents if they could be acquired, or empty vec.
+  pub file_contents: Vec<ComposeContents>,
+  /// The error in getting remote file contents at the path, or null
+  pub remote_errors: Vec<ComposeContents>,
   /// If its a repo based stack, will include the latest commit hash
   pub commit_hash: Option<String>,
   /// If its a repo based stack, will include the latest commit message

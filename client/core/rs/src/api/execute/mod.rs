@@ -61,6 +61,9 @@ pub enum Execution {
   // DEPLOYMENT
   Deploy(Deploy),
   StartContainer(StartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
   RemoveContainer(RemoveContainer),
 

@@ -730,8 +730,11 @@ pub enum Operation {
   UpdateDeployment,
   DeleteDeployment,
   Deploy,
-  StopContainer,
   StartContainer,
+  RestartContainer,
+  PauseContainer,
+  UnpauseContainer,
+  StopContainer,
   RemoveContainer,
   RenameDeployment,
 

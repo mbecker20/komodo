@@ -5,7 +5,7 @@ use monitor_client::{
   entities::{
     config::core::CoreConfig,
     permission::PermissionLevel,
-    stack::{PartialStackConfig, Stack, StackInfo},
+    stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
     user::User,
     NoData, Operation,
   },
@@ -14,9 +14,7 @@ use mungos::mongodb::bson::{doc, to_document};
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
-use periphery_client::api::compose::{
-  GetComposeInfo, GetComposeInfoResponse,
-};
+use periphery_client::api::compose::ListComposeProjects;
 use resolver_api::Resolve;
 
 use crate::{
@@ -24,8 +22,9 @@ use crate::{
   helpers::{
     periphery_client,
     stack::{
-      get_stack_and_server, json::get_config_json,
-      remote::get_remote_compose_file, services::extract_services,
+      get_stack_and_server, json::get_config_jsons,
+      remote::get_remote_compose_contents,
+      services::extract_services_into_res,
     },
     update::{add_update, make_update},
   },
@@ -157,100 +156,99 @@ impl Resolve<RefreshStackCache, User> for State {
       return Err(anyhow!("Stack has neither file_contents nor repo configured. Cannot get info."));
     }
 
-    let GetComposeInfoResponse {
-      file_missing,
-      project_missing,
-    } = periphery_client(&server)?
-      .request(GetComposeInfo {
-        name: stack.name.clone(),
-        run_directory: stack.config.run_directory.clone(),
-        file_path: stack.config.file_path.clone(),
-        project: stack.project_name(false),
-      })
+    let project_name = stack.project_name(false);
+
+    // False if the server is unreachable, maybe come back to this.
+    let project_missing = periphery_client(&server)?
+      .request(ListComposeProjects {})
       .await
-      .unwrap_or(GetComposeInfoResponse {
-        file_missing: false,
-        project_missing: false,
-      });
+      .map(|projects| {
+        projects.iter().any(|project| project.name == project_name)
+      })
+      .unwrap_or(false);
+
+    let mut missing_files = Vec::new();
 
     let (
       latest_services,
-      remote_contents,
-      remote_error,
       latest_json,
-      latest_json_error,
+      latest_json_errors,
+      remote_contents,
+      remote_errors,
       latest_hash,
       latest_message,
     ) = if file_contents_empty {
-      let (res, _, latest_hash, latest_message) =
-        get_remote_compose_file(&stack)
+      // REPO BASED STACK
+      let (
+        remote_contents,
+        remote_errors,
+        _,
+        latest_hash,
+        latest_message,
+      ) =
+        get_remote_compose_contents(&stack, Some(&mut missing_files))
           .await
           .context("failed to clone remote compose file")?;
-      match res {
-        Ok(remote_contents) => {
-          let (json, json_error) =
-            get_config_json(&remote_contents).await;
-          let latest_services = match extract_services(
-            // this should latest (not deployed), so make the project name fresh.
-            &stack.project_name(true),
-            &remote_contents,
-          ) {
-            Ok(services) => services,
-            Err(e) => {
-              warn!(
-                "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
-                stack.name
-              );
-              stack.info.latest_services
-            }
-          };
-          (
-            latest_services,
-            Some(remote_contents),
-            None,
-            json,
-            json_error,
-            latest_hash,
-            latest_message,
-          )
-        }
-        Err(e) => {
-          let remote_contents_error = format_serror(
-            &e.context("failed to read remote compose file").into(),
-          );
-          (
-            stack.info.latest_services,
-            None,
-            Some(remote_contents_error),
-            None,
-            None,
-            latest_hash,
-            latest_message,
-          )
-        }
-      }
-    } else {
-      let (json, json_error) =
-        get_config_json(&stack.config.file_contents).await;
-      let latest_services = match extract_services(
-        // this should latest (not deployed), so make the project name fresh.
-        &stack.project_name(true),
-        &stack.config.file_contents,
-      ) {
-        Ok(services) => services,
-        Err(e) => {
+      let project_name = stack.project_name(true);
+
+      let mut services = Vec::new();
+
+      for contents in &remote_contents {
+        if let Err(e) = extract_services_into_res(
+          &project_name,
+          &contents.contents,
+          &mut services,
+        ) {
           warn!(
             "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
             stack.name
           );
-          stack.info.latest_services
         }
+      }
+
+      let (jsons, json_errors) =
+        get_config_jsons(&remote_contents).await;
+
+      (
+        services,
+        jsons,
+        json_errors,
+        Some(remote_contents),
+        Some(remote_errors),
+        latest_hash,
+        latest_message,
+      )
+    } else {
+      let mut services = Vec::new();
+      if let Err(e) = extract_services_into_res(
+        // this should latest (not deployed), so make the project name fresh.
+        &stack.project_name(true),
+        &stack.config.file_contents,
+        &mut services,
+      ) {
+        warn!(
+          "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
+          stack.name
+        );
+        services.extend(stack.info.latest_services);
       };
-      (latest_services, None, None, json, json_error, None, None)
+      let (json, json_errors) =
+        get_config_jsons(&[ComposeContents {
+          path: stack
+            .config
+            .file_paths
+            .first()
+            .map(String::as_str)
+            .unwrap_or("compose.yaml")
+            .to_string(),
+          contents: stack.config.file_contents,
+        }])
+        .await;
+      (services, json, json_errors, None, None, None, None)
     };
 
     let info = StackInfo {
-      file_missing,
+      missing_files,
       project_missing,
       deployed_services: stack.info.deployed_services,
       deployed_project_name: stack.info.deployed_project_name,
@@ -258,12 +256,12 @@ impl Resolve<RefreshStackCache, User> for State {
       deployed_hash: stack.info.deployed_hash,
       deployed_message: stack.info.deployed_message,
       deployed_json: stack.info.deployed_json,
-      deployed_json_error: stack.info.deployed_json_error,
+      deployed_json_errors: stack.info.deployed_json_errors,
       latest_services,
       latest_json,
-      latest_json_error,
+      latest_json_errors,
       remote_contents,
-      remote_error,
+      remote_errors,
       latest_hash,
       latest_message,
     };

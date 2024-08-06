@@ -39,6 +39,7 @@ mod sync;
 #[serde(tag = "type", content = "params")]
 pub enum ExecuteRequest {
   // ==== SERVER ====
+  StopAllContainers(StopAllContainers),
   PruneContainers(PruneContainers),
   PruneImages(PruneImages),
   PruneNetworks(PruneNetworks),
@@ -46,10 +47,20 @@ pub enum ExecuteRequest {
   // ==== DEPLOYMENT ====
   Deploy(Deploy),
   StartContainer(StartContainer),
-  // RestartContainer(RestartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
-  StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
+
+  // ==== STACK ====
+  DeployStack(DeployStack),
+  StartStack(StartStack),
+  RestartStack(RestartStack),
+  StopStack(StopStack),
+  PauseStack(PauseStack),
+  UnpauseStack(UnpauseStack),
+  DestroyStack(DestroyStack),
 
   // ==== BUILD ====
   RunBuild(RunBuild),
@@ -67,15 +78,6 @@ pub enum ExecuteRequest {
 
   // ==== SYNC ====
   RunSync(RunSync),
-
-  // ==== STACK ====
-  DeployStack(DeployStack),
-  StartStack(StartStack),
-  RestartStack(RestartStack),
-  StopStack(StopStack),
-  PauseStack(PauseStack),
-  UnpauseStack(UnpauseStack),
-  DestroyStack(DestroyStack),
 }
 
 pub fn router() -> Router {

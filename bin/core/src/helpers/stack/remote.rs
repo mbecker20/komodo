@@ -1,19 +1,28 @@
 use std::fs;
 
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use monitor_client::entities::{
-  stack::Stack, update::Log, CloneArgs,
+  stack::{ComposeContents, Stack},
+  update::Log,
+  CloneArgs,
 };
 
 use crate::{
   auth::random_string, config::core_config, helpers::git_token,
 };
 
-/// Return Result<(Result<contents>, logs, short hash, commit message)>
-pub async fn get_remote_compose_file(
+/// Returns Result<(read paths, error paths, logs, short hash, commit message)>
+pub async fn get_remote_compose_contents(
   stack: &Stack,
+  // Collect any files which are missing in the repo.
+  mut missing_files: Option<&mut Vec<String>>,
 ) -> anyhow::Result<(
-  anyhow::Result<String>,
+  // Successful contents
+  Vec<ComposeContents>,
+  // error contents
+  Vec<ComposeContents>,
+  // logs
   Vec<Log>,
   // commit short hash
   Option<String>,
@@ -43,6 +52,7 @@ pub async fn get_remote_compose_file(
     }
   };
 
+  // This is cloning on core, its not running it and the directory doesn't matter.
   let repo_path = config.stack_directory.join(random_string(10));
   clone_args.destination = Some(repo_path.display().to_string());
 
@@ -51,18 +61,32 @@ pub async fn get_remote_compose_file(
       .await
       .context("failed to clone stack repo")?;
 
-  let file_path = repo_path
-    .join(&stack.config.run_directory)
-    .join(&stack.config.file_path);
+  let run_directory = repo_path.join(&stack.config.run_directory);
 
-  let res = fs::read_to_string(file_path)
-    .context("failed to read file contents");
+  let mut oks = Vec::new();
+  let mut errs = Vec::new();
 
-  if repo_path.exists() {
-    if let Err(e) = std::fs::remove_dir_all(&repo_path) {
-      warn!("failed to remove stack repo directory | {e:?}")
+  for path in stack.file_paths() {
+    let file_path = run_directory.join(path);
+    if !file_path.exists() {
+      if let Some(missing_files) = &mut missing_files {
+        missing_files.push(path.to_string());
+      }
+    }
+    // If file does not exist, will show up in err case so the log is handled
+    match fs::read_to_string(&file_path).with_context(|| {
+      format!("failed to read file contents from {file_path:?}")
+    }) {
+      Ok(contents) => oks.push(ComposeContents {
+        path: path.to_string(),
+        contents,
+      }),
+      Err(e) => errs.push(ComposeContents {
+        path: path.to_string(),
+        contents: format_serror(&e.into()),
+      }),
     }
   }
 
-  Ok((res, logs, hash, message))
+  Ok((oks, errs, logs, hash, message))
 }

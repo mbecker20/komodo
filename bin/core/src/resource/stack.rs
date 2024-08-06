@@ -56,13 +56,9 @@ impl super::MonitorResource for Stack {
       // Always use latest if its down.
       (StackState::Down, _, latest_services) => latest_services,
       // Also use latest if deployed services is empty.
-      (_, deployed_services, latest_services)
-        if deployed_services.is_empty() =>
-      {
-        latest_services
-      }
+      (_, Some(deployed_services), _) => deployed_services,
       // Otherwise use deployed services
-      (_, deployed_services, _) => deployed_services,
+      (_, _, latest_services) => latest_services,
     }
     .into_iter()
     .map(|service| service.service_name)
@@ -76,8 +72,8 @@ impl super::MonitorResource for Stack {
         state,
         services,
         server_id: stack.config.server_id,
-        file_missing: stack.info.file_missing,
         project_missing: stack.info.project_missing,
+        missing_files: stack.info.missing_files,
         git_provider: stack.config.git_provider,
         repo: stack.config.repo,
         branch: stack.config.branch,

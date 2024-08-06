@@ -282,6 +282,7 @@ export type WriteResponses = {
 
 export type ExecuteResponses = {
   // ==== SERVER ====
+  StopAllContainers: Types.Update;
   PruneContainers: Types.Update;
   PruneImages: Types.Update;
   PruneNetworks: Types.Update;
@@ -289,8 +290,10 @@ export type ExecuteResponses = {
   // ==== DEPLOYMENT ====
   Deploy: Types.Update;
   StartContainer: Types.Update;
+  RestartContainer: Types.Update;
+  PauseContainer: Types.Update;
+  UnpauseContainer: Types.Update;
   StopContainer: Types.Update;
-  StopAllContainers: Types.Update;
   RemoveContainer: Types.Update;
 
   // ==== BUILD ====

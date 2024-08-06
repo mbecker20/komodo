@@ -13,7 +13,7 @@ use monitor_client::{
 use periphery_client::api::compose::{
   GetComposeServiceLog, GetComposeServiceLogSearch,
 };
-use resolver_api::{Resolve, ResolveToString};
+use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
@@ -34,33 +34,6 @@ impl Resolve<GetStack, User> for State {
       PermissionLevel::Read,
     )
     .await
-  }
-}
-
-impl ResolveToString<GetStackJson, User> for State {
-  async fn resolve_to_string(
-    &self,
-    GetStackJson { stack }: GetStackJson,
-    user: User,
-  ) -> anyhow::Result<String> {
-    let stack = resource::get_check_permissions::<Stack>(
-      &stack,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let deployed_json =
-      stack.info.deployed_json.as_deref().unwrap_or("null");
-    let deployed_error =
-      stack.info.deployed_json_error.as_deref().unwrap_or("null");
-    let latest_json =
-      stack.info.latest_json.as_deref().unwrap_or("null");
-    let latest_error =
-      stack.info.latest_json_error.as_deref().unwrap_or("null");
-    let res = format!(
-      "{{\"deployed_json\":{deployed_json},\"deployed_error\":{deployed_error},\"latest_json\":{latest_json},\"latest_error\":{latest_error}}}",
-    );
-    Ok(res)
   }
 }
 

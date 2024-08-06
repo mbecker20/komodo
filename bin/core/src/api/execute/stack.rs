@@ -16,7 +16,7 @@ use crate::{
     interpolate_variables_secrets_into_environment, periphery_client,
     stack::{
       execute::execute_compose, get_stack_and_server,
-      json::get_config_json, services::extract_services,
+      json::get_config_jsons, services::extract_services_into_res,
     },
     update::update_update,
   },
@@ -75,8 +75,8 @@ impl Resolve<DeployStack, (User, Update)> for State {
       logs,
       deployed,
       file_contents,
-      file_missing,
-      remote_error,
+      missing_files,
+      remote_errors,
       commit_hash,
       commit_message,
     } = periphery_client(&server)?
@@ -91,74 +91,85 @@ impl Resolve<DeployStack, (User, Update)> for State {
     update.logs.extend(logs);
 
     let update_info = async {
-      let (latest_services, json, json_error) = if let Some(
-        contents,
-      ) = &file_contents
+      let (latest_services, json, json_errors) = if !file_contents
+        .is_empty()
       {
-        let (json, json_error) = get_config_json(contents).await;
-        match extract_services(&stack.project_name(true), contents) {
-          Ok(services) => (services, json, json_error),
-          Err(e) => {
+        let (jsons, json_errors) =
+          get_config_jsons(&file_contents).await;
+        let mut services = Vec::new();
+        for contents in &file_contents {
+          if let Err(e) = extract_services_into_res(
+            &stack.project_name(true),
+            &contents.contents,
+            &mut services,
+          ) {
             update.push_error_log(
-            "extract services",
-            format_serror(&e.context("Failed to extract stack services. Things probably won't work correctly").into())
-          );
-            (Vec::new(), json, json_error)
+              "extract services",
+              format_serror(&e.context(format!("Failed to extract stack services for compose file path {}. Things probably won't work correctly", contents.path)).into())
+            );
           }
         }
+        (services, jsons, json_errors)
       } else {
         // maybe better to do something else here for services.
-        (stack.info.latest_services.clone(), None, None)
+        (stack.info.latest_services.clone(), Vec::new(), Vec::new())
       };
 
       let project_name = stack.project_name(true);
 
       let (
+        project_missing,
         deployed_services,
         deployed_contents,
+        deployed_json,
+        deployed_json_errors,
         deployed_hash,
         deployed_message,
-        deployed_json,
-        deployed_json_error,
       ) = if deployed {
         (
-          latest_services.clone(),
-          file_contents.clone(),
+          false,
+          Some(latest_services.clone()),
+          Some(file_contents.clone()),
+          Some(json.clone()),
+          Some(json_errors.clone()),
           commit_hash.clone(),
           commit_message.clone(),
-          json.clone(),
-          json_error.clone(),
         )
       } else {
         (
+          stack.info.project_missing,
           stack.info.deployed_services,
           stack.info.deployed_contents,
+          stack.info.deployed_json,
+          stack.info.deployed_json_errors,
           stack.info.deployed_hash,
           stack.info.deployed_message,
-          stack.info.deployed_json,
-          stack.info.deployed_json_error,
         )
       };
 
       let info = StackInfo {
-        file_missing,
-        // Maybe this still has some edge cases, but see how it does.
-        project_missing: !deployed,
+        missing_files,
+        project_missing,
         deployed_project_name: project_name.into(),
         deployed_services,
         deployed_contents,
         deployed_hash,
         deployed_message,
         deployed_json,
-        deployed_json_error,
+        deployed_json_errors,
         latest_services,
         latest_json: json,
-        latest_json_error: json_error,
-        remote_contents: file_contents.and_then(|contents| {
-          // Only store remote contents here (not defined in `file_contents`)
-          stack.config.file_contents.is_empty().then_some(contents)
-        }),
-        remote_error,
+        latest_json_errors: json_errors,
+        remote_contents: stack
+          .config
+          .file_contents
+          .is_empty()
+          .then_some(file_contents),
+        remote_errors: stack
+          .config
+          .file_contents
+          .is_empty()
+          .then_some(remote_errors),
         latest_hash: commit_hash,
         latest_message: commit_message,
       };

@@ -8,7 +8,7 @@ use crate::entities::{
     Stack, StackActionState, StackListItem, StackQuery, StackService,
   },
   update::Log,
-  JsonValue, SearchCombinator, U64,
+  SearchCombinator, U64,
 };
 
 use super::MonitorReadRequest;
@@ -30,34 +30,6 @@ pub struct GetStack {
 
 #[typeshare]
 pub type GetStackResponse = Stack;
-
-//
-
-/// Get a stacks compose-file JSON representation. Response: [serde_json::Value]
-/// (No schema provided for this, it comes from docker).
-///
-/// Obtained through [docker compose config --format json](https://docs.docker.com/reference/cli/docker/compose/config/).
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetStackJsonResponse)]
-pub struct GetStackJson {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub stack: String,
-}
-
-/// Response for [GetStackJson]
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetStackJsonResponse {
-  pub deployed_json: Option<JsonValue>,
-  pub deployed_error: bool,
-  pub latest_json: JsonValue,
-  pub latest_error: bool,
-}
 
 //
 

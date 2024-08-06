@@ -1,9 +1,32 @@
 use anyhow::Context;
 use formatting::format_serror;
+use monitor_client::entities::stack::ComposeContents;
 use run_command::async_run_command;
 use tokio::fs;
 
 use crate::{auth::random_string, config::core_config};
+
+// Returns (Jsons, Errors)
+pub async fn get_config_jsons(
+  contents: &[ComposeContents],
+) -> (Vec<ComposeContents>, Vec<ComposeContents>) {
+  let mut oks = Vec::new();
+  let mut errs = Vec::new();
+  for contents in contents {
+    match get_config_json(&contents.contents).await {
+      (Some(json), _) => oks.push(ComposeContents {
+        path: contents.path.to_string(),
+        contents: json,
+      }),
+      (_, Some(err)) => errs.push(ComposeContents {
+        path: contents.path.to_string(),
+        contents: err,
+      }),
+      _ => unreachable!(),
+    }
+  }
+  (oks, errs)
+}
 
 pub async fn get_config_json(
   compose_contents: &str,

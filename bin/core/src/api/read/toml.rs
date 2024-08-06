@@ -397,6 +397,30 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
+        Execution::RestartContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::PauseContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::UnpauseContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
         Execution::StopContainer(exec) => exec.deployment.clone_from(
           names
             .deployments

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::OnceLock};
 
 use bson::{doc, Document};
 use derive_builder::Builder;
@@ -13,6 +13,41 @@ use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
   to_monitor_name, EnvironmentVar,
 };
+
+#[typeshare]
+pub type Stack = Resource<StackConfig, StackInfo>;
+
+impl Stack {
+  /// If fresh is passed, it will bypass the deployed project name.
+  /// and get the most up to date one from just project_name field falling back to stack name.
+  pub fn project_name(&self, fresh: bool) -> String {
+    if !fresh {
+      if let Some(project_name) = &self.info.deployed_project_name {
+        return project_name.clone();
+      }
+    }
+    self
+      .config
+      .project_name
+      .is_empty()
+      .then(|| to_monitor_name(&self.name))
+      .unwrap_or_else(|| to_monitor_name(&self.config.project_name))
+  }
+
+  pub fn file_paths(&self) -> &[String] {
+    if self.config.file_paths.is_empty() {
+      default_stack_file_paths()
+    } else {
+      &self.config.file_paths
+    }
+  }
+}
+
+fn default_stack_file_paths() -> &'static [String] {
+  static DEFAULT_FILE_PATHS: OnceLock<Vec<String>> = OnceLock::new();
+  DEFAULT_FILE_PATHS
+    .get_or_init(|| vec![String::from("compose.yaml")])
+}
 
 #[typeshare]
 pub type StackListItem = ResourceListItem<StackListItemInfo>;
@@ -34,13 +69,13 @@ pub struct StackListItemInfo {
   /// If deployed, will be `deployed_services`.
   /// Otherwise, its `latest_services`
   pub services: Vec<String>,
-  /// Whether the compose file is missing on the host.
-  /// If true, this is an unhealthy state.
-  pub file_missing: bool,
   /// Whether the compose project is missing on the host.
   /// Ie, it does not show up in `docker compose ls`.
   /// If true, and the stack is not Down, this is an unhealthy state.
   pub project_missing: bool,
+  /// If any compose files are missing in the repo, the path will be here.
+  /// If there are paths here, this is an unhealthy state, and deploying will fail.
+  pub missing_files: Vec<String>,
   /// Deployed short commit hash, or null. Only for repo based stacks.
   pub deployed_hash: Option<String>,
   /// Latest short commit hash, or null. Only for repo based stacks
@@ -72,33 +107,12 @@ pub enum StackState {
 }
 
 #[typeshare]
-pub type Stack = Resource<StackConfig, StackInfo>;
-
-impl Stack {
-  /// If fresh is passed, it will bypass the deployed project name.
-  /// and get the most up to date one from just project_name field falling back to stack name.
-  pub fn project_name(&self, fresh: bool) -> String {
-    if !fresh {
-      if let Some(project_name) = &self.info.deployed_project_name {
-        return project_name.clone();
-      }
-    }
-    self
-      .config
-      .project_name
-      .is_empty()
-      .then(|| to_monitor_name(&self.name))
-      .unwrap_or_else(|| to_monitor_name(&self.config.project_name))
-  }
-}
-
-#[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StackInfo {
-  /// Whether the compose file is missing on the target host.
-  /// Monitor will have to redeploy the stack to fix this.
+  /// If any of the expected files are missing on the target host,
+  /// the will be stored here.
   #[serde(default)]
-  pub file_missing: bool,
+  pub missing_files: Vec<String>,
   /// Whether the compose project is missing on the target host.
   /// Ensure the stack project_name is correctly configured if this is true,
   /// but the stack is definitely running.
@@ -110,42 +124,53 @@ pub struct StackInfo {
   /// If it is present, Monitor will use it for actions over other options,
   /// to ensure control is maintained after changing the project name (there is no rename compose project api).
   pub deployed_project_name: Option<String>,
-  /// The deployed compose file.This is updated whenever Monitor successfully deploys the stack.
-  pub deployed_contents: Option<String>,
+
   /// Deployed short commit hash, or null. Only for repo based stacks.
   pub deployed_hash: Option<String>,
   /// Deployed commit message, or null. Only for repo based stacks
   pub deployed_message: Option<String>,
   /// Cached json representation of the deployed compose file contents
   /// Obtained by calling `docker compose config`. Will be of the deployed config if it exists.
-  pub deployed_json: Option<String>,
-  /// If there was an error in calling `docker compose config`, the message will be here.
-  pub deployed_json_error: Option<String>,
+  pub deployed_json: Option<Vec<ComposeContents>>,
+  /// If there was an error in calling `docker compose config`, the message will be here with the associated file path.
+  pub deployed_json_errors: Option<Vec<ComposeContents>>,
+  /// The deployed compose file contents. This is updated whenever Monitor successfully deploys the stack.
+  pub deployed_contents: Option<Vec<ComposeContents>>,
   /// The deployed service names.
   /// This is updated whenever it is empty, or deployed contents is updated.
-  #[serde(default)]
-  pub deployed_services: Vec<StackServiceNames>,
+  pub deployed_services: Option<Vec<StackServiceNames>>,
 
   /// Cached json representation of the compose file contents.
   /// Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
-  pub latest_json: Option<String>,
+  #[serde(default)]
+  pub latest_json: Vec<ComposeContents>,
   /// If there was an error in calling `docker compose config` on the latest contents, the message will be here
-  pub latest_json_error: Option<String>,
+  #[serde(default)]
+  pub latest_json_errors: Vec<ComposeContents>,
   /// The latest service names.
   /// This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).
   #[serde(default)]
   pub latest_services: Vec<StackServiceNames>,
 
-  // Only for repo based stacks.
-  /// If using a repo based compose file, will cache the contents here for API delivery.
-  pub remote_contents: Option<String>,
+  /// The remote compose file contents. This is updated whenever Monitor refreshes the stack cache.
+  /// It will be empty if the file is defined directly in the stack config.
+  pub remote_contents: Option<Vec<ComposeContents>>,
   /// If there was an error in getting the remote contents, it will be here.
-  pub remote_error: Option<String>,
+  pub remote_errors: Option<Vec<ComposeContents>>,
 
   /// Latest commit hash, or null
   pub latest_hash: Option<String>,
   /// Latest commit message, or null
   pub latest_message: Option<String>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeContents {
+  /// The path of the file on the host
+  pub path: String,
+  /// The contents of the file
+  pub contents: String,
 }
 
 #[typeshare]
@@ -211,13 +236,11 @@ pub struct StackConfig {
   #[partial_default(default_run_directory())]
   pub run_directory: String,
 
-  /// The path of the compose file, relative to the run path.
-  /// If compose file defined locally in `file_contents`, this will always be `compose.yaml`.
-  /// Default: `compose.yaml`
-  #[serde(default = "default_file_path")]
-  #[builder(default = "default_file_path()")]
-  #[partial_default(default_file_path())]
-  pub file_path: String,
+  /// Add paths to compose files, relative to the run path.
+  /// If this is empty, will use file `compose.yaml`.
+  #[serde(default)]
+  #[builder(default)]
+  pub file_paths: Vec<String>,
 
   /// Used with `registry_account` to login to a registry before docker compose up.
   #[serde(default)]
@@ -343,10 +366,6 @@ fn default_run_directory() -> String {
   String::from("./")
 }
 
-fn default_file_path() -> String {
-  String::from("compose.yaml")
-}
-
 fn default_webhook_enabled() -> bool {
   true
 }
@@ -357,7 +376,7 @@ impl Default for StackConfig {
       server_id: Default::default(),
       project_name: Default::default(),
       run_directory: default_run_directory(),
-      file_path: default_file_path(),
+      file_paths: Default::default(),
       registry_provider: Default::default(),
       registry_account: Default::default(),
       file_contents: Default::default(),

@@ -198,6 +198,36 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
+        Execution::RestartContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::PauseContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::UnpauseContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
         Execution::StopContainer(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
