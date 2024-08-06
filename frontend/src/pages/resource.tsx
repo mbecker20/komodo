@@ -119,7 +119,7 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
               <Status key={key} id={id} />
             ))}
           </div>
-          {infoEntries.map(([key, Info], i) => (
+          {infoEntries.map(([key, Info]) => (
             <div key={key} className="pr-4 border-r last:pr-0 last:border-none">
               <Info id={id} />
             </div>
