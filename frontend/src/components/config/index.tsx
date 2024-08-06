@@ -194,13 +194,15 @@ export const Config = <T,>({
                         {icon}
                         {label}
                       </CardTitle>
-                      {description && (
-                        <div className="flex gap-2 items-center text-muted-foreground text-sm">
-                          <Info className="w-4 h-4" />
-                          {description}
-                        </div>
-                      )}
-                      {actions}
+                      <div className="flex items-center gap-3">
+                        {description && (
+                          <div className="flex gap-2 items-center text-muted-foreground text-sm">
+                            <Info className="w-4 h-4" />
+                            {description}
+                          </div>
+                        )}
+                        {actions}
+                      </div>
                     </CardHeader>
                   )}
                   {!contentHidden && (

@@ -17,6 +17,7 @@ import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus } from "lucide-react";
 import { env_to_text } from "@lib/utils";
 import { Textarea } from "@ui/textarea";
+import { Button } from "@ui/button";
 
 export const StackConfig = ({
   id,
@@ -34,6 +35,9 @@ export const StackConfig = ({
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.StackConfig>>({});
   const { mutateAsync } = useWrite("UpdateStack");
+  const [fileContentsOpen, setFileContentsOpen] = useState(false);
+  const fileContentsRef = createRef<HTMLTextAreaElement>();
+
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
@@ -64,6 +68,57 @@ export const StackConfig = ({
             },
           },
           {
+            label: "Compose File",
+            description:
+              "Paste the file contents directly here, or configure a git repo below.",
+            actions: (
+              <Button
+                variant="secondary"
+                onClick={() => setFileContentsOpen(!fileContentsOpen)}
+                className="w-[70px]"
+              >
+                {fileContentsOpen ? "Hide" : "Show"}
+              </Button>
+            ),
+            contentHidden: !fileContentsOpen,
+            components: {
+              file_contents: (file_contents, set) => {
+                return (
+                  <Textarea
+                    ref={fileContentsRef}
+                    value={file_contents}
+                    onChange={(e) => set({ file_contents: e.target.value })}
+                    className="min-h-[300px] h-fit"
+                    placeholder="Paste compose file contents"
+                    onKeyDown={(e) => {
+                      if (e.key === "Tab") {
+                        e.preventDefault();
+                        if (!fileContentsRef.current) return;
+
+                        const start = fileContentsRef.current.selectionStart;
+                        const end = fileContentsRef.current.selectionEnd;
+
+                        const SPACE_COUNT = 4;
+
+                        // set textarea value to: text before caret + tab + text after caret
+                        fileContentsRef.current.value =
+                          fileContentsRef.current.value.substring(0, start) +
+                          // Use four spaces for indent
+                          " ".repeat(SPACE_COUNT) +
+                          fileContentsRef.current.value.substring(end);
+
+                        // put caret at right position again
+                        fileContentsRef.current.selectionStart =
+                          fileContentsRef.current.selectionEnd =
+                            start + SPACE_COUNT;
+                      }
+                    }}
+                  />
+                );
+              },
+            },
+          },
+          {
             label: "Project Name",
             description:
               "Optionally override the compose project name. Can import stacks by matching the project name",
@@ -84,7 +139,8 @@ export const StackConfig = ({
           },
           {
             label: "Git Provider",
-            description: "Provide config for repo-based compose files",
+            description:
+              "Provide config for repo-based compose files. Not necessary if file contents are configured above.",
             components: {
               git_provider: (provider, set) => {
                 const https = update.git_https ?? config.git_https;
@@ -124,6 +180,7 @@ export const StackConfig = ({
 
           {
             label: "Extra Args",
+            description: "Add extra args inserted after 'docker compose up -d'",
             contentHidden:
               (update.extra_args ?? config.extra_args)?.length === 0,
             actions: !disabled && (
@@ -194,17 +251,34 @@ export const StackConfig = ({
             description:
               "Configure your repo provider to send webhooks to Monitor",
             components: {
-              ["refresh" as any]: () => (
-                <ConfigItem label="Refresh Info Cache (recommended)">
-                  <CopyGithubWebhook path={`/stack/${id}/refresh`} />
-                </ConfigItem>
-              ),
-              ["Deploy" as any]: () => (
-                <ConfigItem label="Auto Redeploy">
-                  <CopyGithubWebhook path={`/stack/${id}/deploy`} />
-                </ConfigItem>
-              ),
-              webhook_enabled: webhooks !== undefined && !webhooks.managed,
+              ["Guard" as any]: () => {
+                if (update.branch ?? config.branch) {
+                  return null;
+                }
+                return (
+                  <ConfigItem label="Configure Branch">
+                    <div>
+                      Must configure repo branch before webhooks will work
+                    </div>
+                  </ConfigItem>
+                );
+              },
+              ["Refresh" as any]: () =>
+                (update.branch ?? config.branch) && (
+                  <ConfigItem label="Refresh Cache">
+                    <CopyGithubWebhook path={`/stack/${id}/refresh`} />
+                  </ConfigItem>
+                ),
+              ["Deploy" as any]: () =>
+                (update.branch ?? config.branch) && (
+                  <ConfigItem label="Auto Redeploy">
+                    <CopyGithubWebhook path={`/stack/${id}/deploy`} />
+                  </ConfigItem>
+                ),
+              webhook_enabled:
+                !!(update.branch ?? config.branch) &&
+                webhooks !== undefined &&
+                !webhooks.managed,
               ["managed" as any]: () => {
                 const inv = useInvalidate();
                 const { toast } = useToast();
@@ -222,7 +296,15 @@ export const StackConfig = ({
                       inv(["GetStackWebhooksEnabled", { stack: id }]);
                     },
                   });
-                if (!webhooks || !webhooks.managed) return;
+
+                if (
+                  !(update.branch ?? config.branch) ||
+                  !webhooks ||
+                  !webhooks.managed
+                ) {
+                  return null;
+                }
+
                 return (
                   <ConfigItem label="Manage Webhook">
                     {webhooks.deploy_enabled && (
@@ -334,6 +416,7 @@ export const StackConfig = ({
         environment: [
           {
             label: "Environment",
+            description: "Pass these variables to the compose command",
             components: {
               environment: (env, set) => {
                 const _env = typeof env === "object" ? env_to_text(env) : env;
