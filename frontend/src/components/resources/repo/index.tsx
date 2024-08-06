@@ -1,13 +1,12 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardHeader } from "@ui/card";
+import { Card } from "@ui/card";
 import { FolderGit, GitBranch, Server } from "lucide-react";
 import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RepoTable } from "./table";
 import {
-  bg_color_class_by_intention,
   repo_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -16,6 +15,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { useServer } from "../server";
 import { Types } from "@monitor/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { StatusBadge } from "@components/util";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
@@ -69,12 +69,7 @@ export const RepoComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useRepo(id)?.info.state;
-      const color = bg_color_class_by_intention(repo_state_intention(state));
-      return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{state}</CardHeader>
-        </Card>
-      );
+      return <StatusBadge text={state} intent={repo_state_intention(state)} />;
     },
     Status: ({ id }) => {
       const info = useRepo(id)?.info;

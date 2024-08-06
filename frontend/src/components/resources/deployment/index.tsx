@@ -143,9 +143,9 @@ export const DeploymentComponents: RequiredResourceComponents = {
     State: ({ id }) => {
       const state =
         useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
-
-      const intention = deployment_state_intention(state);
-      return <StatusBadge text={state} intent={intention} />;
+      return (
+        <StatusBadge text={state} intent={deployment_state_intention(state)} />
+      );
     },
     Status: ({ id }) => {
       const status = useDeployment(id)?.info.status;
@@ -161,7 +161,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return info?.build_id ? (
         <ResourceLink type="Build" id={info.build_id} />
       ) : (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center text-sm">
           <HardDrive className="w-4 h-4" />
           <div>{info?.image || "N/A"}</div>
         </div>
@@ -173,7 +173,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return server?.id ? (
         <ResourceLink type="Server" id={server?.id} />
       ) : (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center text-sm">
           <Server className="w-4 h-4" />
           <div>Unknown Server</div>
         </div>

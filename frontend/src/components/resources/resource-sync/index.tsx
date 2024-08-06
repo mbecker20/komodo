@@ -76,8 +76,12 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useResourceSync(id)?.info.state;
-      const intent = resource_sync_state_intention(state);
-      return <StatusBadge text={state} intent={intent} />;
+      return (
+        <StatusBadge
+          text={state}
+          intent={resource_sync_state_intention(state)}
+        />
+      );
     },
     Status: ({ id }) => {
       const info = useResourceSync(id)?.info;

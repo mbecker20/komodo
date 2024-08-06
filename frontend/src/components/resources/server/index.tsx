@@ -144,8 +144,9 @@ export const ServerComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useServer(id)?.info.state;
-      const intent = server_state_intention(state);
-      return <StatusBadge text={state} intent={intent} />;
+      return (
+        <StatusBadge text={state} intent={server_state_intention(state)} />
+      );
     },
     Version: ({ id }) => {
       const version = useRead("GetPeripheryVersion", { server: id }).data

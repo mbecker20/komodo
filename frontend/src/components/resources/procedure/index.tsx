@@ -1,13 +1,11 @@
-import { ActionWithDialog } from "@components/util";
+import { ActionWithDialog, StatusBadge } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardHeader } from "@ui/card";
 import { Route } from "lucide-react";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import {
-  bg_color_class_by_intention,
   procedure_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -67,13 +65,8 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       let state = useProcedure(id)?.info.state;
-      const color = bg_color_class_by_intention(
-        procedure_state_intention(state)
-      );
       return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{state}</CardHeader>
-        </Card>
+        <StatusBadge text={state} intent={procedure_state_intention(state)} />
       );
     },
   },
