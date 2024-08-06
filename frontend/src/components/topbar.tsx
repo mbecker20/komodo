@@ -47,7 +47,7 @@ export const Topbar = () => {
   const version = useRead("GetVersion", {}).data?.version;
 
   return (
-    <div className="fixed top-0 w-full bg-accent/50 backdrop-blur-2xl z-50 border-b shadow-sm">
+    <div className="fixed top-0 w-full bg-background z-50 border-b shadow-sm">
       <div className="container h-16 grid grid-cols-2 lg:grid-cols-3 items-center">
         {/* Logo */}
         <Link
