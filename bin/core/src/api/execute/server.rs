@@ -1,11 +1,11 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
-    monitor_timestamp,
+    all_logs_success, monitor_timestamp,
     permission::PermissionLevel,
-    server::Server,
+    server::{Server, ServerState},
     update::{Log, Update, UpdateStatus},
     user::User,
   },
@@ -14,10 +14,56 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{periphery_client, update::update_update},
+  helpers::{
+    periphery_client, query::get_server_with_status,
+    update::update_update,
+  },
   resource,
   state::{action_states, State},
 };
+
+impl Resolve<StopAllContainers, (User, Update)> for State {
+  #[instrument(name = "StopAllContainers", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    StopAllContainers { server }: StopAllContainers,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let (server, status) = get_server_with_status(&server).await?;
+    if status != ServerState::Ok {
+      return Err(anyhow!(
+        "cannot send action when server is unreachable or disabled"
+      ));
+    }
+
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
+
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard = action_state
+      .update(|state| state.stopping_containers = true)?;
+
+    let logs = periphery_client(&server)?
+      .request(api::container::StopAllContainers {})
+      .await
+      .context("failed to stop all container on host")?;
+
+    update.logs.extend(logs);
+
+    if all_logs_success(&update.logs) {
+      update.push_simple_log("stop all containers", String::from("All containers have successfully been stopped on the host."));
+    }
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
 
 impl Resolve<PruneContainers, (User, Update)> for State {
   #[instrument(name = "PruneContainers", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]

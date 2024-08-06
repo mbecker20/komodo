@@ -81,6 +81,7 @@ pub enum PeripheryRequest {
   PauseContainer(PauseContainer),
   UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
+  StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
   RenameContainer(RenameContainer),
   PruneContainers(PruneContainers),

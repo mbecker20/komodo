@@ -2409,6 +2409,7 @@ dependencies = [
  "dotenvy",
  "envy",
  "formatting",
+ "futures",
  "git",
  "logger",
  "merge_config_files",

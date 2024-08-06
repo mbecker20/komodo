@@ -1,7 +1,10 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use command::run_monitor_command;
+use futures::future::join_all;
 use monitor_client::entities::{
-  deployment::{ContainerSummary, DockerContainerStats},
+  deployment::{
+    ContainerSummary, DeploymentState, DockerContainerStats,
+  },
   to_monitor_name,
   update::Log,
 };
@@ -213,6 +216,38 @@ impl Resolve<StopContainer> for State {
     } else {
       Ok(log)
     }
+  }
+}
+
+//
+
+impl Resolve<StopAllContainers> for State {
+  #[instrument(name = "StopAllContainers", skip(self))]
+  async fn resolve(
+    &self,
+    StopAllContainers {}: StopAllContainers,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let containers = docker_client()
+      .list_containers()
+      .await
+      .context("failed to list all containers on host")?;
+    let futures = containers.iter().filter_map(
+      |ContainerSummary { name, state, .. }| {
+        // only stop running containers. if not running, early exit.
+        if !matches!(state, DeploymentState::Running) {
+          return None;
+        }
+        Some(async move {
+          run_monitor_command(
+            &format!("docker stop {name}"),
+            stop_container_command(name, None, None),
+          )
+          .await
+        })
+      },
+    );
+    Ok(join_all(futures).await)
   }
 }
 

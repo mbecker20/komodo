@@ -1,6 +1,5 @@
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use futures::future::join_all;
 use monitor_client::{
   api::execute::*,
   entities::{
@@ -18,7 +17,6 @@ use monitor_client::{
     Version,
   },
 };
-use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api;
 use resolver_api::Resolve;
 
@@ -32,10 +30,8 @@ use crate::{
   },
   monitor::update_cache_for_server,
   resource,
-  state::{action_states, db_client, State},
+  state::{action_states, State},
 };
-
-use crate::helpers::update::init_execution_update;
 
 async fn setup_deployment_execution(
   deployment: &str,
@@ -422,94 +418,6 @@ impl Resolve<StopContainer, (User, Update)> for State {
 
     update.logs.push(log);
     update_cache_for_server(&server).await;
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
-  }
-}
-
-impl Resolve<StopAllContainers, (User, Update)> for State {
-  #[instrument(name = "StopAllContainers", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
-  async fn resolve(
-    &self,
-    StopAllContainers { server }: StopAllContainers,
-    (user, mut update): (User, Update),
-  ) -> anyhow::Result<Update> {
-    let (server, status) = get_server_with_status(&server).await?;
-    if status != ServerState::Ok {
-      return Err(anyhow!(
-        "cannot send action when server is unreachable or disabled"
-      ));
-    }
-
-    // get the action state for the server (or insert default).
-    let action_state = action_states()
-      .server
-      .get_or_insert_default(&server.id)
-      .await;
-
-    // Will check to ensure server not already busy before updating, and return Err if so.
-    // The returned guard will set the action state back to default when dropped.
-    let _action_guard = action_state
-      .update(|state| state.stopping_containers = true)?;
-
-    let deployments = find_collect(
-      &db_client().await.deployments,
-      doc! {
-        "config.server_id": &server.id
-      },
-      None,
-    )
-    .await
-    .context("failed to find deployments on server")?;
-
-    let futures = deployments.iter().map(|deployment| async {
-      let req = super::ExecuteRequest::StopContainer(StopContainer {
-        deployment: deployment.id.clone(),
-        signal: None,
-        time: None,
-      });
-      (
-        async {
-          let update = init_execution_update(&req, &user).await?;
-          State
-            .resolve(
-              StopContainer {
-                deployment: deployment.id.clone(),
-                signal: None,
-                time: None,
-              },
-              (user.clone(), update),
-            )
-            .await
-        }
-        .await,
-        deployment.name.clone(),
-        deployment.id.clone(),
-      )
-    });
-    let results = join_all(futures).await;
-    let deployment_names = deployments
-      .iter()
-      .map(|d| format!("{} ({})", d.name, d.id))
-      .collect::<Vec<_>>()
-      .join("\n");
-    update.push_simple_log("stopping containers", deployment_names);
-    for (res, name, id) in results {
-      if let Err(e) = res {
-        update.push_error_log(
-          "stop container failure",
-          format_serror(
-            &e.context(format!(
-              "failed to stop container {name} ({id})"
-            ))
-            .into(),
-          ),
-        );
-      }
-    }
-
     update.finalize();
     update_update(update.clone()).await?;
 

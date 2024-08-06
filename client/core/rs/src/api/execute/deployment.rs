@@ -162,27 +162,6 @@ pub struct StopContainer {
   pub time: Option<i32>,
 }
 
-/// Stops all deployments on the target server. Response: [Update]
-///
-/// 1. Runs [StopContainer] on all deployments on the server concurrently.
-#[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  PartialEq,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct StopAllContainers {
-  /// Name or id
-  pub server: String,
-}
-
 //
 
 /// Stops and removes the container for the target deployment.

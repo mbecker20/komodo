@@ -62,7 +62,6 @@ pub enum Execution {
   Deploy(Deploy),
   StartContainer(StartContainer),
   StopContainer(StopContainer),
-  StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
 
   // REPO
@@ -70,6 +69,7 @@ pub enum Execution {
   PullRepo(PullRepo),
 
   // SERVER
+  StopAllContainers(StopAllContainers),
   PruneNetworks(PruneNetworks),
   PruneImages(PruneImages),
   PruneContainers(PruneContainers),

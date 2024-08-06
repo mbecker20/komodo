@@ -117,6 +117,12 @@ pub struct StopContainer {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct StopAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct RemoveContainer {
   pub name: String,

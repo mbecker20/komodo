@@ -68,9 +68,21 @@ export const StackConfig = ({
             },
           },
           {
+            label: "Project Name",
+            labelHidden: true,
+            components: {
+              project_name: {
+                boldLabel: true,
+                placeholder: "Compose project name",
+                description:
+                  "Optionally override the compose project name. Can import stacks by matching the existing project name on your host.",
+              },
+            },
+          },
+          {
             label: "Compose File",
             description:
-              "Paste the file contents directly here, or configure a git repo below.",
+              "Paste the file contents here, or configure a git repo below.",
             actions: (
               <Button
                 variant="secondary"
@@ -118,14 +130,7 @@ export const StackConfig = ({
               },
             },
           },
-          {
-            label: "Project Name",
-            description:
-              "Optionally override the compose project name. Can import stacks by matching the project name",
-            components: {
-              project_name: { placeholder: "Input project name" },
-            },
-          },
+
           {
             label: "Run Path / File",
             description:
@@ -257,9 +262,7 @@ export const StackConfig = ({
                 }
                 return (
                   <ConfigItem label="Configure Branch">
-                    <div>
-                      Must configure Branch before webhooks will work.
-                    </div>
+                    <div>Must configure Branch before webhooks will work.</div>
                   </ConfigItem>
                 );
               },

@@ -13,6 +13,7 @@ import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import {
   CheckCircle,
+  Info,
   MinusCircle,
   PlusCircle,
   Save,
@@ -39,13 +40,19 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+import { Card } from "@ui/card";
 
 export const ConfigItem = ({
   label,
+  boldLabel,
+  description,
   children,
   className,
 }: {
   label?: string;
+  boldLabel?: boolean;
+  description?: string;
   children: ReactNode;
   className?: string;
 }) => (
@@ -56,11 +63,30 @@ export const ConfigItem = ({
         className
       )}
     >
-      {label && (
-        <div className="text-nowrap">
-          {snake_case_to_upper_space_case(label)}
-        </div>
-      )}
+      <div className="flex items-center gap-4">
+        {label && (
+          <div
+            className={cn(
+              "text-nowrap",
+              boldLabel && "font-semibold"
+            )}
+          >
+            {snake_case_to_upper_space_case(label)}
+          </div>
+        )}
+        {description && (
+          <HoverCard openDelay={200}>
+            <HoverCardTrigger asChild>
+              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                <Info className="w-4 h-4" />
+              </Card>
+            </HoverCardTrigger>
+            <HoverCardContent align="start" side="right">
+              {description}
+            </HoverCardContent>
+          </HoverCard>
+        )}
+      </div>
       {children}
     </div>
     <div className="w-full h-0 border-b last:hidden" />
@@ -69,20 +95,24 @@ export const ConfigItem = ({
 
 export const ConfigInput = ({
   label,
+  boldLabel,
   value,
+  description,
   disabled,
   placeholder,
   onChange,
   onBlur,
 }: {
   label: string;
+  boldLabel?: boolean;
   value: string | number | undefined;
+  description?: string;
   disabled?: boolean;
   placeholder?: string;
   onChange?: (value: string) => void;
   onBlur?: (value: string) => void;
 }) => (
-  <ConfigItem label={label}>
+  <ConfigItem label={label} boldLabel={boldLabel} description={description}>
     <Input
       className="max-w-[75%] lg:max-w-[400px]"
       type={typeof value === "number" ? "number" : undefined}
@@ -97,16 +127,20 @@ export const ConfigInput = ({
 
 export const ConfigSwitch = ({
   label,
+  boldLabel,
   value,
+  description,
   disabled,
   onChange,
 }: {
   label: string;
+  boldLabel?: boolean;
   value: boolean | undefined;
+  description?: string;
   disabled: boolean;
   onChange: (value: boolean) => void;
 }) => (
-  <ConfigItem label={label}>
+  <ConfigItem label={label} description={description} boldLabel={boldLabel}>
     <Switch checked={value} onCheckedChange={onChange} disabled={disabled} />
   </ConfigItem>
 );
@@ -920,7 +954,7 @@ export const PermissionLevelSelector = ({
   );
 };
 
-/// Takes in env 
+/// Takes in env
 export const SecretsForEnvironment = ({
   env,
   setEnv,

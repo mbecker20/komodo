@@ -396,7 +396,11 @@ export const ServerSelector = ({
   disabled: boolean;
   align?: "start" | "center" | "end";
 }) => (
-  <ConfigItem label="Server">
+  <ConfigItem
+    label="Server"
+    description="Choose the target server to host the resource"
+    boldLabel
+  >
     <ResourceSelector
       type="Server"
       selected={selected}

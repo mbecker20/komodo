@@ -8,6 +8,7 @@ import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import {
   Select,
   SelectContent,
@@ -82,7 +83,12 @@ export const ConfigLayout = <
   );
 };
 
-type PrimitiveConfigArgs = { placeholder?: string; label?: string };
+type PrimitiveConfigArgs = {
+  placeholder?: string;
+  label?: string;
+  boldLabel?: boolean;
+  description?: string;
+};
 
 type ConfigComponent<T> = {
   label: string;
@@ -190,19 +196,25 @@ export const Config = <T,>({
                         !contentHidden && "border-b"
                       )}
                     >
-                      <CardTitle className="flex gap-4">
-                        {icon}
-                        {label}
-                      </CardTitle>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
+                        <CardTitle className="flex gap-4">
+                          {icon}
+                          {label}
+                        </CardTitle>
                         {description && (
-                          <div className="flex gap-2 items-center text-muted-foreground text-sm">
-                            <Info className="w-4 h-4" />
-                            {description}
-                          </div>
+                          <HoverCard openDelay={200}>
+                            <HoverCardTrigger asChild>
+                              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                                <Info className="w-4 h-4" />
+                              </Card>
+                            </HoverCardTrigger>
+                            <HoverCardContent align="start" side="right">
+                              {description}
+                            </HoverCardContent>
+                          </HoverCard>
                         )}
-                        {actions}
                       </div>
+                      {actions}
                     </CardHeader>
                   )}
                   {!contentHidden && (
@@ -274,6 +286,8 @@ export const ConfigAgain = <
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
                   disabled={disabled}
                   placeholder={args?.placeholder}
+                  description={args?.description}
+                  boldLabel={args?.boldLabel}
                 />
               );
             case "number":
@@ -287,6 +301,8 @@ export const ConfigAgain = <
                   }
                   disabled={disabled}
                   placeholder={args?.placeholder}
+                  description={args?.description}
+                  boldLabel={args?.boldLabel}
                 />
               );
             case "boolean":
@@ -297,6 +313,8 @@ export const ConfigAgain = <
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
                   disabled={disabled}
+                  description={args?.description}
+                  boldLabel={args?.boldLabel}
                 />
               );
             default:
