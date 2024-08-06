@@ -47,7 +47,7 @@ export const Topbar = () => {
 
   return (
     <div className="fixed top-0 w-full bg-background z-50 border-b shadow-sm">
-      <div className="container h-16 grid grid-cols-2 lg:grid-cols-3 items-center">
+      <div className="container h-16 flex items-center justify-between md:grid md:grid-cols-2 lg:grid-cols-3">
         {/* Logo */}
         <Link
           to="/"
@@ -57,15 +57,14 @@ export const Topbar = () => {
           <div className="hidden md:block">MONITOR</div>
         </Link>
 
-        <MobileDropdown />
-
         {/* Searchbar */}
         <div className="hidden lg:flex justify-center">
           <OmniSearch setOpen={setOmniOpen} />
         </div>
 
         {/* Shortcuts */}
-        <div className="hidden md:flex justify-end items-center gap-2">
+        <div className="flex justify-end items-center gap-2">
+          <MobileDropdown />
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <Version />
           <WsStatusIndicator />
