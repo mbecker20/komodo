@@ -258,7 +258,7 @@ export const StackConfig = ({
                 return (
                   <ConfigItem label="Configure Branch">
                     <div>
-                      Must configure repo branch before webhooks will work
+                      Must configure Branch before webhooks will work.
                     </div>
                   </ConfigItem>
                 );

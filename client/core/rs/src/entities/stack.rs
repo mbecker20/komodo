@@ -41,14 +41,10 @@ pub struct StackListItemInfo {
   /// Ie, it does not show up in `docker compose ls`.
   /// If true, and the stack is not Down, this is an unhealthy state.
   pub project_missing: bool,
-  /// Latest short commit hash, or null.
-  pub latest_hash: Option<String>,
-  /// Latest commit message, or null.
-  pub latest_message: Option<String>,
-  /// Deployed short commit hash, or null.
+  /// Deployed short commit hash, or null. Only for repo based stacks.
   pub deployed_hash: Option<String>,
-  /// Deployed commit message, or null.
-  pub deployed_message: Option<String>,
+  /// Latest short commit hash, or null. Only for repo based stacks
+  pub latest_hash: Option<String>,
 }
 
 #[typeshare]

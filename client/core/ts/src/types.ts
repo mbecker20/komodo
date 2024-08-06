@@ -1571,14 +1571,10 @@ export interface StackListItemInfo {
 	 * If true, and the stack is not Down, this is an unhealthy state.
 	 */
 	project_missing: boolean;
-	/** Latest short commit hash, or null. */
-	latest_hash?: string;
-	/** Latest commit message, or null. */
-	latest_message?: string;
-	/** Deployed short commit hash, or null. */
+	/** Deployed short commit hash, or null. Only for repo based stacks. */
 	deployed_hash?: string;
-	/** Deployed commit message, or null. */
-	deployed_message?: string;
+	/** Latest short commit hash, or null. Only for repo based stacks */
+	latest_hash?: string;
 }
 
 export type StackListItem = ResourceListItem<StackListItemInfo>;

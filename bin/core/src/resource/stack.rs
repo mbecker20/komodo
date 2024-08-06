@@ -82,9 +82,7 @@ impl super::MonitorResource for Stack {
         repo: stack.config.repo,
         branch: stack.config.branch,
         latest_hash: stack.info.latest_hash,
-        latest_message: stack.info.latest_message,
         deployed_hash: stack.info.deployed_hash,
-        deployed_message: stack.info.deployed_message,
       },
     }
   }

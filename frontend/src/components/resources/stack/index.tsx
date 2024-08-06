@@ -36,6 +36,9 @@ export const useStack = (id?: string) =>
     (d) => d.id === id
   );
 
+export const useFullStack = (id: string) =>
+  useRead("GetStack", { stack: id }, { refetchInterval: 5000 }).data;
+
 const StackIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useStack(id)?.info.state;
   const color = stroke_color_class_by_intention(stack_state_intention(state));
@@ -157,7 +160,7 @@ export const StackComponents: RequiredResourceComponents = {
       );
     },
     Deployed: ({ id }) => {
-      const info = useStack(id)?.info;
+      const info = useFullStack(id)?.info;
       if (
         info?.project_missing ||
         !info?.deployed_hash ||
@@ -189,7 +192,7 @@ export const StackComponents: RequiredResourceComponents = {
       );
     },
     Latest: ({ id }) => {
-      const info = useStack(id)?.info;
+      const info = useFullStack(id)?.info;
       if (
         info?.project_missing ||
         !info?.latest_hash ||
