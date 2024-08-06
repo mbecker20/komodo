@@ -44,7 +44,6 @@ import { TopbarAlerts } from "./alert/topbar";
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
   useShiftKeyListener("S", () => setOmniOpen(true));
-  const version = useRead("GetVersion", {}).data?.version;
 
   return (
     <div className="fixed top-0 w-full bg-background z-50 border-b shadow-sm">
@@ -76,45 +75,6 @@ export const Topbar = () => {
         </div>
       </div>
       <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
-    </div>
-  );
-
-  return (
-    <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
-      <div className="w-full p-4 grid grid-cols-2 lg:grid-cols-3">
-        <div className="flex items-center justify-self-start w-fit gap-0 md:gap-4">
-          <Link
-            to="/"
-            className="flex gap-3 items-center text-2xl tracking-widest md:mx-2"
-          >
-            <img src="/monitor-circle.png" className="w-[28px] dark:invert" />
-            <div className="hidden md:block">MONITOR</div>
-          </Link>
-          <MobileDropdown />
-        </div>
-        <OmniSearch
-          setOpen={setOmniOpen}
-          className="hidden lg:flex justify-self-center"
-        />
-        <div className="flex md:gap-2 justify-self-end items-center">
-          <a
-            href="https://docs.monitor.mogh.tech"
-            target="_blank"
-            className="hidden lg:block"
-          >
-            <Button variant="link" className="text-muted-foreground p-2">
-              <div>v{version ? version : "x.x.x"}</div>
-            </Button>
-          </a>
-          <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
-          <WsStatusIndicator />
-          <KeyboardShortcuts />
-          <TopbarUpdates />
-          <ThemeToggle />
-          <Logout />
-        </div>
-        <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
-      </div>
     </div>
   );
 };
