@@ -32,7 +32,7 @@ export const Layout = () => {
   return (
     <>
       <Topbar />
-      <div className="h-[calc(100vh-64px)] overflow-y-auto">
+      <div className="h-screen overflow-y-auto">
         <div className="container py-24">
           <Sidebar />
           <div className="md:ml-64 md:pl-8">
