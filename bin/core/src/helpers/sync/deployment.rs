@@ -272,6 +272,7 @@ pub async fn get_updates_for_execution(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
+  to_deploy_cache: &mut HashMap<ResourceTarget, bool>,
 ) -> anyhow::Result<UpdatesResult> {
   let map = find_collect(Deployment::coll().await, None, None)
     .await
@@ -375,136 +376,159 @@ fn extract_to_deploy_and_state<'a>(
   map: &'a HashMap<String, Deployment>,
   resources: &'a [ResourceToml<PartialDeploymentConfig>],
   name: String,
-  // name to 'to_deploy'
-  cache: &'a mut HashMap<String, bool>,
+  // ResourceTarget(name) to 'to_deploy'
+  cache: &'a mut HashMap<ResourceTarget, bool>,
   // build id to latest built version string
   build_cache: &'a mut HashMap<String, String>,
 ) -> Res<'a> {
   Box::pin(async move {
+    let target = ResourceTarget::Deployment(name.clone());
     let mut reason = String::new();
     let Some(deployment) = resources.iter().find(|r| r.name == name)
     else {
       // this case should be unreachable, the names come off of a loop over resources
-      cache.insert(name, false);
+      cache.insert(target, false);
       return Ok((false, DeploymentState::Unknown, reason));
     };
-    if deployment.deploy {
-      let Some(original) = map.get(&name) else {
-        // not created, definitely deploy
-        cache.insert(name, true);
-        // Don't need reason here, will be populated automatically
-        return Ok((true, DeploymentState::NotDeployed, reason));
-      };
+    if !deployment.deploy {
+      // The state in this case doesn't matter and won't be read (as long as it isn't 'Unknown' which will log in all cases)
+      cache.insert(target, false);
+      return Ok((false, DeploymentState::NotDeployed, reason));
+    }
 
-      // First merge toml resource config (partial) onto default resource config.
-      // Makes sure things that aren't defined in toml (come through as None) actually get removed.
-      let config: DeploymentConfig = deployment.config.clone().into();
-      let mut config: PartialDeploymentConfig = config.into();
+    let Some(original) = map.get(&name) else {
+      // not created, definitely deploy
+      cache.insert(target, true);
+      // Don't need reason here, will be populated automatically
+      return Ok((true, DeploymentState::NotDeployed, reason));
+    };
 
-      Deployment::validate_partial_config(&mut config);
+    // First merge toml resource config (partial) onto default resource config.
+    // Makes sure things that aren't defined in toml (come through as None) actually get removed.
+    let config: DeploymentConfig = deployment.config.clone().into();
+    let mut config: PartialDeploymentConfig = config.into();
 
-      let mut diff = Deployment::get_diff(
-        original.config.clone(),
-        config,
-        all_resources,
-      )?;
+    Deployment::validate_partial_config(&mut config);
 
-      Deployment::validate_diff(&mut diff);
+    let mut diff = Deployment::get_diff(
+      original.config.clone(),
+      config,
+      all_resources,
+    )?;
 
-      let status = &deployment_status_cache()
-        .get_or_insert_default(&original.id)
-        .await
-        .curr;
-      let state = status.state;
+    Deployment::validate_diff(&mut diff);
 
-      let mut to_deploy = match state {
-        DeploymentState::Unknown => false,
-        DeploymentState::Running => {
-          // Needs to only check config fields that affect docker run
-          let changed = diff.server_id.is_some()
-            || diff.image.is_some()
-            || diff.image_registry_account.is_some()
-            || diff.skip_secret_interp.is_some()
-            || diff.network.is_some()
-            || diff.restart.is_some()
-            || diff.command.is_some()
-            || diff.extra_args.is_some()
-            || diff.ports.is_some()
-            || diff.volumes.is_some()
-            || diff.environment.is_some()
-            || diff.labels.is_some();
-          if changed {
-            reason = String::from("deployment config has changed")
-          }
-          changed
+    let status = &deployment_status_cache()
+      .get_or_insert_default(&original.id)
+      .await
+      .curr;
+    let state = status.state;
+
+    let mut to_deploy = match state {
+      DeploymentState::Unknown => false,
+      DeploymentState::Running => {
+        // Needs to only check config fields that affect docker run
+        let changed = diff.server_id.is_some()
+          || diff.image.is_some()
+          || diff.image_registry_account.is_some()
+          || diff.skip_secret_interp.is_some()
+          || diff.network.is_some()
+          || diff.restart.is_some()
+          || diff.command.is_some()
+          || diff.extra_args.is_some()
+          || diff.ports.is_some()
+          || diff.volumes.is_some()
+          || diff.environment.is_some()
+          || diff.labels.is_some();
+        if changed {
+          reason = String::from("deployment config has changed")
         }
-        // All other cases will require Deploy to enter Running state.
-        // Don't need reason here as this case is handled outside, using returned state.
-        _ => true,
-      };
+        changed
+      }
+      // All other cases will require Deploy to enter Running state.
+      // Don't need reason here as this case is handled outside, using returned state.
+      _ => true,
+    };
 
-      // Check if build attached, version latest, and there is a new build.
-      if !to_deploy {
-        // only need to check original, if diff.image was Some, to_deploy would be true.
-        if let DeploymentImage::Build { build_id, version } =
-          &original.config.image
-        {
-          // check if version is none, ie use latest build
-          if version.is_none() {
-            let deployed_version = status
-              .container
-              .as_ref()
-              .and_then(|c| c.image.split(':').last())
-              .unwrap_or("0.0.0");
-            match build_cache.get(build_id) {
-              Some(version) if deployed_version != version => {
+    if !to_deploy {
+      // only need to check original, if diff.image was Some, to_deploy would be true.
+      if let DeploymentImage::Build { build_id, version } =
+        &original.config.image
+      {
+        // check if version is none, ie use latest build
+        if version.is_none() {
+          let deployed_version = status
+            .container
+            .as_ref()
+            .and_then(|c| c.image.split(':').last())
+            .unwrap_or("0.0.0");
+          match build_cache.get(build_id) {
+            Some(version) if deployed_version != version => {
+              to_deploy = true;
+              reason =
+                format!("attached build has new version ({version})");
+            }
+            Some(_) => {}
+            None => {
+              let Some(version) = State
+                .resolve(
+                  ListBuildVersions {
+                    build: build_id.to_string(),
+                    limit: Some(1),
+                    ..Default::default()
+                  },
+                  sync_user().to_owned(),
+                )
+                .await
+                .context("failed to get build versions")?
+                .pop()
+              else {
+                // this case shouldn't ever happen, how would deployment be deployed if build was never built?
+                return Ok((
+                  false,
+                  DeploymentState::NotDeployed,
+                  reason,
+                ));
+              };
+              let version = version.version.to_string();
+              build_cache
+                .insert(build_id.to_string(), version.clone());
+              if deployed_version != version {
                 to_deploy = true;
                 reason = format!(
                   "attached build has new version ({version})"
                 );
               }
-              Some(_) => {}
-              None => {
-                let Some(version) = State
-                  .resolve(
-                    ListBuildVersions {
-                      build: build_id.to_string(),
-                      limit: Some(1),
-                      ..Default::default()
-                    },
-                    sync_user().to_owned(),
-                  )
-                  .await
-                  .context("failed to get build versions")?
-                  .pop()
-                else {
-                  // this case shouldn't ever happen, how would deployment be deployed if build was never built?
-                  return Ok((
-                    false,
-                    DeploymentState::NotDeployed,
-                    reason,
-                  ));
-                };
-                let version = version.version.to_string();
-                build_cache
-                  .insert(build_id.to_string(), version.clone());
-                if deployed_version != version {
-                  to_deploy = true;
-                  reason = format!(
-                    "attached build has new version ({version})"
-                  );
-                }
-              }
-            };
-          }
+            }
+          };
         }
       }
+    }
 
-      // Still need to check 'after' if they need deploy
-      if !to_deploy {
-        for name in &deployment.after {
-          match cache.get(name) {
-            Some(will_deploy) if *will_deploy => {
+    // Still need to check 'after' if they need deploy
+    if !to_deploy {
+      for name in &deployment.after {
+        match cache.get(name) {
+          Some(will_deploy) if *will_deploy => {
+            to_deploy = true;
+            reason = format!(
+              "parent dependency '{}' is deploying",
+              bold(name)
+            );
+            break;
+          }
+          Some(_) => {}
+          None => {
+            let (will_deploy, _, _) = extract_to_deploy_and_state(
+              all_resources,
+              map,
+              resources,
+              name.to_string(),
+              cache,
+              build_cache,
+            )
+            .await?;
+            if will_deploy {
               to_deploy = true;
               reason = format!(
                 "parent dependency '{}' is deploying",
@@ -512,37 +536,13 @@ fn extract_to_deploy_and_state<'a>(
               );
               break;
             }
-            Some(_) => {}
-            None => {
-              let (will_deploy, _, _) = extract_to_deploy_and_state(
-                all_resources,
-                map,
-                resources,
-                name.to_string(),
-                cache,
-                build_cache,
-              )
-              .await?;
-              if will_deploy {
-                to_deploy = true;
-                reason = format!(
-                  "parent dependency '{}' is deploying",
-                  bold(name)
-                );
-                break;
-              }
-            }
           }
         }
       }
-
-      cache.insert(name, to_deploy);
-      Ok((to_deploy, state, reason))
-    } else {
-      // The state in this case doesn't matter and won't be read (as long as it isn't 'Unknown' which will log in all cases)
-      cache.insert(name, false);
-      Ok((false, DeploymentState::NotDeployed, reason))
     }
+
+    cache.insert(name, to_deploy);
+    Ok((to_deploy, state, reason))
   })
 }
 

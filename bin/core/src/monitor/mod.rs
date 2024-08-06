@@ -71,6 +71,8 @@ pub struct CachedRepoStatus {
 
 #[derive(Default, Clone, Debug)]
 pub struct CachedStackStatus {
+  /// The stack id
+  pub id: String,
   /// The stack state
   pub state: StackState,
   /// The services connected to the stack

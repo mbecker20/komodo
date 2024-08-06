@@ -15,7 +15,7 @@ use crate::{
 #[instrument(level = "debug")]
 pub async fn alert_deployments(
   ts: i64,
-  server_names: HashMap<String, String>,
+  server_names: &HashMap<String, String>,
 ) {
   let mut alerts = Vec::<Alert>::new();
   for status in deployment_status_cache().get_list().await {

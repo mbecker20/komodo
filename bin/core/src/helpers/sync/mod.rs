@@ -18,6 +18,7 @@ pub mod variables;
 
 mod file;
 mod resources;
+mod deploy;
 
 pub fn spawn_sync_refresh_loop() {
   let interval: Timelength = core_config()

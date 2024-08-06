@@ -91,6 +91,7 @@ pub async fn update_stack_cache(
       .await
       .map(|s| s.curr.state);
     let status = CachedStackStatus {
+      id: stack.id.clone(),
       state: get_stack_state_from_containers(&services, containers),
       services: services_with_containers,
     };

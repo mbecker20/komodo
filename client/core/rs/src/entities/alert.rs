@@ -7,8 +7,7 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  _Serror, deployment::DeploymentState, server::stats::SeverityLevel,
-  update::ResourceTarget, Version,
+  _Serror, deployment::DeploymentState, server::stats::SeverityLevel, stack::StackState, update::ResourceTarget, Version
 };
 
 /// Representation of an alert in the system.
@@ -133,7 +132,7 @@ pub enum AlertData {
     id: String,
     /// The name of the deployment
     name: String,
-    /// The server id of server deployment is on
+    /// The server id of server that the deployment is on
     server_id: String,
     /// The server name
     server_name: String,
@@ -141,6 +140,22 @@ pub enum AlertData {
     from: DeploymentState,
     /// The current container state
     to: DeploymentState,
+  },
+
+  /// A stack's state has changed unexpectedly.
+  StackStateChange {
+    /// The id of the stack
+    id: String,
+    /// The name of the stack
+    name: String,
+    /// The server id of server that the stack is on
+    server_id: String,
+    /// The server name
+    server_name: String,
+    /// The previous stack state
+    from: StackState,
+    /// The current stack state
+    to: StackState,
   },
 
   /// An AWS builder failed to terminate.

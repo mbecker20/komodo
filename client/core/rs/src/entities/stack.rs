@@ -84,7 +84,15 @@ pub struct StackListItemInfo {
 
 #[typeshare]
 #[derive(
-  Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
+  Debug,
+  Clone,
+  Copy,
+  Default,
+  PartialEq,
+  Eq,
+  Serialize,
+  Deserialize,
+  Display,
 )]
 pub enum StackState {
   /// All containers are running.
@@ -344,6 +352,12 @@ pub struct StackConfig {
   #[builder(default = "default_webhook_enabled()")]
   #[partial_default(default_webhook_enabled())]
   pub webhook_enabled: bool,
+
+  /// Whether to send StackStateChange alerts for this stack.
+  #[serde(default = "default_send_alerts")]
+  #[builder(default = "default_send_alerts()")]
+  #[partial_default(default_send_alerts())]
+  pub send_alerts: bool,
 }
 
 impl StackConfig {
@@ -376,6 +390,10 @@ fn default_webhook_enabled() -> bool {
   true
 }
 
+fn default_send_alerts() -> bool {
+  true
+}
+
 impl Default for StackConfig {
   fn default() -> Self {
     Self {
@@ -397,6 +415,7 @@ impl Default for StackConfig {
       commit: Default::default(),
       git_account: Default::default(),
       webhook_enabled: default_webhook_enabled(),
+      send_alerts: default_send_alerts(),
     }
   }
 }
