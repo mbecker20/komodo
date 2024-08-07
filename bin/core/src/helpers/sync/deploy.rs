@@ -249,12 +249,25 @@ pub async fn build_deploy_cache(
     .await?;
   }
 
+  let cache = cache
+    .into_iter()
+    .filter_map(|(target, entry)| {
+      let (reason, after) = entry?;
+      Some((target, (reason, after)))
+    })
+    .collect::<HashMap<_, _>>();
+
+  // Have to clone here to use it after 'into_iter' below.
+  // All entries in cache at this point are deploying.
+  let clone = cache.clone();
+
   Ok(
     cache
       .into_iter()
-      .filter_map(|(target, entry)| {
-        let (reason, after) = entry?;
-        Some((target, reason, after))
+      .map(|(target, (reason, mut after))| {
+        // Only keep targets which are deploying.
+        after.retain(|target| clone.contains_key(target));
+        (target, reason, after)
       })
       .collect(),
   )
