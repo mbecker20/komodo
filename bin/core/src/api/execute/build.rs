@@ -130,14 +130,14 @@ impl Resolve<RunBuild, (User, Update)> for State {
           };
           if incoming_build_id == build_id {
             if is_server_builder {
-              update.push_error_log("cancel acknowledged", "build cancellation is not possible on server builders at this time");
+              update.push_error_log("Cancel acknowledged", "Build cancellation is not possible on server builders at this time. Use an AWS builder to enable this feature.");
             } else {
-              update.push_simple_log("cancel acknowledged", "the build cancellation has been queued, it may still take some time");
+              update.push_simple_log("Cancel acknowledged", "The build cancellation has been queued, it may still take some time.");
             }
             update.finalize();
             let id = update.id.clone();
             if let Err(e) = update_update(update).await {
-              warn!("failed to update Update {id} | {e:#}");
+              warn!("failed to modify Update {id} on db | {e:#}");
             }
             if !is_server_builder {
               cancel_clone.cancel();
