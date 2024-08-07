@@ -157,12 +157,14 @@ export const BuildConfig = ({
                 />
               ),
               image_name: {
-                placeholder:
-                  "Optional. Push the image under a name other than the build name.",
+                description:
+                  "Optional. Push the image under a different name",
+                placeholder: "Custom image name"
               },
               image_tag: {
-                placeholder:
-                  "Optional. Prefix the image version with a custom tag.",
+                description:
+                  "Optional. Postfix the image version with a custom tag.",
+                placeholder: ""
               },
               build_path: true,
               dockerfile_path: true,

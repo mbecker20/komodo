@@ -144,23 +144,23 @@ impl Resolve<build::Build> for State {
 
 fn image_tags(
   image_name: &str,
-  image_tag: &str,
+  custom_tag: &str,
   version: &Version,
   additional: &[String],
 ) -> String {
   let Version { major, minor, .. } = version;
-  let image_tag = if image_tag.is_empty() {
+  let custom_tag = if custom_tag.is_empty() {
     String::new()
   } else {
-    format!("{image_tag}-")
+    format!("-{custom_tag}")
   };
   let additional = additional
     .iter()
-    .map(|tag| format!(" -t {image_name}:{image_tag}{tag}"))
+    .map(|tag| format!(" -t {image_name}:{tag}{custom_tag}"))
     .collect::<Vec<_>>()
     .join("");
   format!(
-    " -t {image_name}:{image_tag}latest -t {image_name}:{image_tag}{version} -t {image_name}:{image_tag}{major}.{minor} -t {image_name}:{image_tag}{major}{additional}",
+    " -t {image_name}:latest{custom_tag} -t {image_name}:{version}{custom_tag} -t {image_name}:{major}.{minor}{custom_tag} -t {image_name}:{major}{custom_tag}{additional}",
   )
 }
 
