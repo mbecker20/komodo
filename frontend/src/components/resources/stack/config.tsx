@@ -82,7 +82,7 @@ export const StackConfig = ({
           {
             label: "Compose File",
             description:
-              "Paste the file contents here, or configure a git repo below.",
+              "Paste the file contents here, or configure a git repo.",
             actions: (
               <Button
                 variant="secondary"
@@ -130,11 +130,80 @@ export const StackConfig = ({
               },
             },
           },
-
+          {
+            label: "Extra Args",
+            description: "Add extra args inserted after 'docker compose up -d'",
+            contentHidden:
+              (update.extra_args ?? config.extra_args)?.length === 0,
+            actions: !disabled && (
+              <AddExtraArgMenu
+                type="Stack"
+                onSelect={(suggestion) =>
+                  set((update) => ({
+                    ...update,
+                    extra_args: [
+                      ...(update.extra_args ?? config.extra_args ?? []),
+                      suggestion,
+                    ],
+                  }))
+                }
+                disabled={disabled}
+              />
+            ),
+            components: {
+              extra_args: (value, set) => (
+                <InputList
+                  field="extra_args"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="--extra-arg=value"
+                />
+              ),
+            },
+          },
+          {
+            label: "Docker Registry",
+            description: "Optional. Login to a registry to pull private images",
+            components: {
+              registry_provider: (provider, set) => {
+                return (
+                  <ProviderSelectorConfig
+                    account_type="docker"
+                    selected={provider}
+                    disabled={disabled}
+                    onSelect={(registry_provider) => set({ registry_provider })}
+                  />
+                );
+              },
+              registry_account: (value, set) => {
+                const server_id = update.server_id || config.server_id;
+                const provider =
+                  update.registry_provider ?? config.registry_provider;
+                if (!provider) {
+                  return null;
+                }
+                return (
+                  <AccountSelectorConfig
+                    id={server_id}
+                    type={server_id ? "Server" : "None"}
+                    account_type="docker"
+                    provider={provider}
+                    selected={value}
+                    onSelect={(registry_account) => set({ registry_account })}
+                    disabled={disabled}
+                    placeholder="None"
+                  />
+                );
+              },
+            },
+          },
+        ],
+        "Git Repo": [
           {
             label: "Git Provider",
             description:
-              "Provide config for repo-based compose files. Not necessary if file contents are configured above.",
+              "Provide config for repo-based compose files. Not necessary if file contents are configured in UI.",
             components: {
               git_provider: (provider, set) => {
                 const https = update.git_https ?? config.git_https;
@@ -216,74 +285,6 @@ export const StackConfig = ({
                   placeholder="compose.yaml"
                 />
               ),
-            },
-          },
-          {
-            label: "Extra Args",
-            description: "Add extra args inserted after 'docker compose up -d'",
-            contentHidden:
-              (update.extra_args ?? config.extra_args)?.length === 0,
-            actions: !disabled && (
-              <AddExtraArgMenu
-                type="Stack"
-                onSelect={(suggestion) =>
-                  set((update) => ({
-                    ...update,
-                    extra_args: [
-                      ...(update.extra_args ?? config.extra_args ?? []),
-                      suggestion,
-                    ],
-                  }))
-                }
-                disabled={disabled}
-              />
-            ),
-            components: {
-              extra_args: (value, set) => (
-                <InputList
-                  field="extra_args"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-          {
-            label: "Docker Registry",
-            description: "Optional. Login to a registry to pull private images",
-            components: {
-              registry_provider: (provider, set) => {
-                return (
-                  <ProviderSelectorConfig
-                    account_type="docker"
-                    selected={provider}
-                    disabled={disabled}
-                    onSelect={(registry_provider) => set({ registry_provider })}
-                  />
-                );
-              },
-              registry_account: (value, set) => {
-                const server_id = update.server_id || config.server_id;
-                const provider =
-                  update.registry_provider ?? config.registry_provider;
-                if (!provider) {
-                  return null;
-                }
-                return (
-                  <AccountSelectorConfig
-                    id={server_id}
-                    type={server_id ? "Server" : "None"}
-                    account_type="docker"
-                    provider={provider}
-                    selected={value}
-                    onSelect={(registry_account) => set({ registry_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                );
-              },
             },
           },
           {

@@ -187,7 +187,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           git_token,
         }) => res,
       _ = cancel.cancelled() => {
-        info!("build cancelled during clone, cleaning up builder");
+        debug!("build cancelled during clone, cleaning up builder");
         update.push_error_log("build cancelled", String::from("user cancelled build during repo clone"));
         cleanup_builder_instance(periphery, cleanup_data, &mut update)
           .await;
@@ -198,7 +198,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     let commit_hash = match res {
       Ok(res) => {
-        info!("finished repo clone");
+        debug!("finished repo clone");
         update.logs.extend(res.logs);
         res.commit_hash
       }
@@ -325,7 +325,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
       match res {
         Ok(logs) => {
-          info!("finished build");
+          debug!("finished build");
           update.logs.extend(logs);
         }
         Err(e) => {
