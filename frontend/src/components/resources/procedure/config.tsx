@@ -694,13 +694,35 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  StopAllContainers: {
-    params: { server: "" },
+  RestartContainer: {
+    params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
-        type="Server"
-        selected={params.server}
-        onSelect={(id) => setParams({ server: id })}
+        type="Deployment"
+        selected={params.deployment}
+        onSelect={(deployment) => setParams({ deployment })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PauseContainer: {
+    params: { deployment: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Deployment"
+        selected={params.deployment}
+        onSelect={(deployment) => setParams({ deployment })}
+        disabled={disabled}
+      />
+    ),
+  },
+  UnpauseContainer: {
+    params: { deployment: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Deployment"
+        selected={params.deployment}
+        onSelect={(deployment) => setParams({ deployment })}
         disabled={disabled}
       />
     ),
@@ -712,6 +734,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         type="Deployment"
         selected={params.deployment}
         onSelect={(id) => setParams({ deployment: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  StopAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
         disabled={disabled}
       />
     ),

@@ -14,7 +14,7 @@ import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
-import { Ban, CirclePlus } from "lucide-react";
+import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { env_to_text } from "@lib/utils";
 import { Textarea } from "@ui/textarea";
 import { Button } from "@ui/button";
@@ -130,16 +130,51 @@ export const StackConfig = ({
               },
             },
           },
-
           {
-            label: "Run Path / File",
-            description:
-              "Set the cwd of compose command, and the compose file path",
+            label: "Run Path",
+            labelHidden: true,
             components: {
-              run_directory: { placeholder: "Eg. './' Relative to repo root." },
-              file_path: {
-                placeholder: "Eg. 'compose.yaml'. Relative to run directory.",
+              run_directory: {
+                placeholder: "Eg. './' Relative to repo root.",
+                description: "Set the cwd of compose command",
+                boldLabel: true,
               },
+            },
+          },
+          {
+            label: "Compose Files",
+            description:
+              "Add files to include using 'docker compose -f {file_path}'. If empty, uses just 'compose.yaml'.",
+            contentHidden:
+              (update.file_paths ?? config.file_paths)?.length === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    file_paths: [
+                      ...(update.file_paths ?? config.file_paths ?? []),
+                      "",
+                    ],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add File
+              </Button>
+            ),
+            components: {
+              file_paths: (value, set) => (
+                <InputList
+                  field="file_paths"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="compose.yaml"
+                />
+              ),
             },
           },
           {

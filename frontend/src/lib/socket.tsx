@@ -84,6 +84,9 @@ const on_message = (
       invalidate(
         ["ListDeployments"],
         ["GetDeploymentsSummary"],
+        ["ListDockerContainers"],
+        ["ListDockerNetworks"],
+        ["ListDockerImages"],
         ["GetDeployment", { deployment: update.target.id }],
         ["GetLog", { deployment: update.target.id }],
         ["GetDeploymentContainer", { deployment: update.target.id }]
@@ -98,7 +101,10 @@ const on_message = (
         ["GetStackServiceLog"],
         ["SearchStackServiceLog"],
         ["ListCommonStackExtraArgs"],
-        ["GetStackJson", { stack: update.target.id }],
+        ["ListComposeProjects"],
+        ["ListDockerContainers"],
+        ["ListDockerNetworks"],
+        ["ListDockerImages"],
         ["GetStack", { stack: update.target.id }],
         ["ListStackServices", { stack: update.target.id }]
       );

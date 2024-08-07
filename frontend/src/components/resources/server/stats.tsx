@@ -240,7 +240,7 @@ const Processes = ({ id }: { id: string }) => {
   const [search, setSearch] = useState("");
   const searchSplit = search.split(" ");
 
-  const { data: processes } = useRead("GetSystemProcesses", { server: id });
+  const { data: processes } = useRead("ListSystemProcesses", { server: id });
   if (!processes || processes.length === 0) return;
 
   return (

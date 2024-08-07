@@ -128,7 +128,11 @@ export const StackComponents: RequiredResourceComponents = {
     },
     ProjectMissing: ({ id }) => {
       const info = useStack(id)?.info;
-      if (!info?.project_missing || !info?.file_missing) {
+      const state = info?.state ?? Types.StackState.Unknown;
+      if (
+        !info?.project_missing ||
+        ![Types.StackState.Down, Types.StackState.Unknown].includes(state)
+      ) {
         return null;
       }
       return (
@@ -151,11 +155,12 @@ export const StackComponents: RequiredResourceComponents = {
       );
     },
     Deployed: ({ id }) => {
-      const info = useFullStack(id)?.info;
+      const info = useStack(id)?.info;
+      const fullInfo = useFullStack(id)?.info;
       if (
         info?.project_missing ||
-        !info?.deployed_hash ||
-        !info?.deployed_message
+        !fullInfo?.deployed_hash ||
+        !fullInfo?.deployed_message
       ) {
         return null;
       }
@@ -164,7 +169,7 @@ export const StackComponents: RequiredResourceComponents = {
           <HoverCardTrigger asChild>
             <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
               <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                deployed: {info.deployed_hash}
+                deployed: {fullInfo.deployed_hash}
               </div>
             </Card>
           </HoverCardTrigger>
@@ -176,18 +181,19 @@ export const StackComponents: RequiredResourceComponents = {
               >
                 commit message
               </Badge>
-              {info.deployed_message}
+              {fullInfo.deployed_message}
             </div>
           </HoverCardContent>
         </HoverCard>
       );
     },
     Latest: ({ id }) => {
-      const info = useFullStack(id)?.info;
+      const info = useStack(id)?.info;
+      const fullInfo = useFullStack(id)?.info;
       if (
         info?.project_missing ||
         !info?.latest_hash ||
-        !info?.latest_message ||
+        !fullInfo?.latest_message ||
         info?.latest_hash === info?.deployed_hash
       ) {
         return null;
@@ -209,7 +215,7 @@ export const StackComponents: RequiredResourceComponents = {
               >
                 commit message
               </Badge>
-              {info.latest_message}
+              {fullInfo.latest_message}
             </div>
           </HoverCardContent>
         </HoverCard>
