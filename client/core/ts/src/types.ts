@@ -1588,6 +1588,8 @@ export interface StackListItemInfo {
 	branch: string;
 	/** The stack state */
 	state: StackState;
+	/** A string given by docker conveying the status of the stack. */
+	status?: string;
 	/**
 	 * The service names that are part of the stack.
 	 * If deployed, will be `deployed_services`.

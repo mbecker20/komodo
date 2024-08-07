@@ -67,22 +67,27 @@ impl super::MonitorResource for Stack {
     .map(|service| service.service_name)
     .collect();
     // This is only true if it is KNOWN to be true. so other cases are false.
-    let project_missing = if stack.config.server_id.is_empty()
+    let (project_missing, status) = if stack.config.server_id.is_empty()
       || matches!(state, StackState::Down | StackState::Unknown)
     {
-      false
+      (false, None)
     } else if let Some(status) = server_status_cache()
       .get(&stack.config.server_id)
       .await
       .as_ref()
     {
       if let Some(projects) = &status.projects {
-        projects.iter().any(|project| project.name == project_name)
+        if let Some(project) = projects.iter().find(|project| project.name == project_name) {
+          (false, project.status.clone())
+        } else {
+          // The project doesn't exist
+          (true, None)
+        }
       } else {
-        false
+        (false, None)
       }
     } else {
-      false
+      (false, None)
     };
     StackListItem {
       id: stack.id,
@@ -91,6 +96,7 @@ impl super::MonitorResource for Stack {
       resource_type: ResourceTargetVariant::Stack,
       info: StackListItemInfo {
         state,
+        status,
         services,
         project_missing,
         server_id: stack.config.server_id,

@@ -65,6 +65,8 @@ pub struct StackListItemInfo {
   pub branch: String,
   /// The stack state
   pub state: StackState,
+  /// A string given by docker conveying the status of the stack.
+  pub status: Option<String>,
   /// The service names that are part of the stack.
   /// If deployed, will be `deployed_services`.
   /// Otherwise, its `latest_services`
