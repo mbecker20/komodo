@@ -13,7 +13,7 @@ import {
   useResourceParamType,
   useSetTitle,
 } from "@lib/hooks";
-import { has_minimum_permissions } from "@lib/utils";
+import { has_minimum_permissions, usableResourcePath } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
@@ -41,7 +41,14 @@ export const Resource = () => {
 
   const { canWrite, canExecute } = useEditPermissions({ type, id });
 
+  const resources = useRead(`List${type}s`, {}).data;
+  const resource = resources?.find((resource) => resource.id === id);
+
   if (!type || !id) return null;
+
+  if (resources && !resource) {
+    return <NotFound type={type} />;
+  }
 
   const Components = ResourceComponents[type];
 
@@ -74,7 +81,7 @@ export const Resource = () => {
       {canWrite && (
         <Section
           title="Danger Zone"
-          icon={<AlertTriangle className="w-4 h-4" />}
+          icon={<AlertTriangle className="w-6 h-6" />}
           actions={type !== "Server" && <CopyResource type={type} id={id} />}
         >
           <Components.DangerZone id={id} />
@@ -97,28 +104,32 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between mb-4">
-        <Button className="gap-2" variant="secondary" onClick={() => nav(-1)}>
+        <Button
+          className="gap-2"
+          variant="secondary"
+          onClick={() => nav("/" + usableResourcePath(type))}
+        >
           <ChevronLeft className="w-4" /> Back
         </Button>
         <ExportButton targets={[{ type, id }]} />
       </div>
       <div className="grid lg:grid-cols-2 gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <div className="mt-1">
-            <Components.Icon id={id} />
+            <Components.BigIcon id={id} />
           </div>
           <h1 className="text-3xl">{name}</h1>
+          <div className="flex items-center gap-4">
+            {Object.entries(Components.Status).map(([key, Status]) => (
+              <Status key={key} id={id} />
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-2 lg:justify-self-end">
           <p className="text-sm text-muted-foreground">Description: </p>
           <ResourceDescription type={type} id={id} disabled={!canWrite} />
         </div>
         <div className="flex items-center gap-4 row-start-2 lg:row-auto">
-          <div className="pr-4 border-r flex items-center gap-4">
-            {Object.entries(Components.Status).map(([key, Status]) => (
-              <Status key={key} id={id} />
-            ))}
-          </div>
           {infoEntries.map(([key, Info]) => (
             <div key={key} className="pr-4 border-r last:pr-0 last:border-none">
               <Info id={id} />
@@ -134,6 +145,32 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
             click_to_delete
           />
           {canWrite && <AddTags target={{ id, type }} />}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const NotFound = ({ type }: { type: UsableResource }) => {
+  const nav = useNavigate();
+  const Components = ResourceComponents[type];
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between mb-4">
+        <Button
+          className="gap-2"
+          variant="secondary"
+          onClick={() => nav("/" + usableResourcePath(type))}
+        >
+          <ChevronLeft className="w-4" /> Back
+        </Button>
+      </div>
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="flex items-center gap-4">
+          <div className="mt-1">
+            <Components.BigIcon />
+          </div>
+          <h1 className="text-3xl">{type} not found</h1>
         </div>
       </div>
     </div>

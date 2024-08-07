@@ -37,9 +37,10 @@ export const TopbarAlerts = () => {
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent sideOffset={20}>
           {data?.alerts.map((alert) => (
             <DropdownMenuItem
+              key={alert._id?.$oid}
               className="flex items-center gap-8 border-b last:border-none cursor-pointer"
               onClick={() => setAlert(alert)}
             >

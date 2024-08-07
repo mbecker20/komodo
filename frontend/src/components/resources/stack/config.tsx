@@ -130,53 +130,7 @@ export const StackConfig = ({
               },
             },
           },
-          {
-            label: "Run Path",
-            labelHidden: true,
-            components: {
-              run_directory: {
-                placeholder: "Eg. './' Relative to repo root.",
-                description: "Set the cwd of compose command",
-                boldLabel: true,
-              },
-            },
-          },
-          {
-            label: "Compose Files",
-            description:
-              "Add files to include using 'docker compose -f {file_path}'. If empty, uses just 'compose.yaml'.",
-            contentHidden:
-              (update.file_paths ?? config.file_paths)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    file_paths: [
-                      ...(update.file_paths ?? config.file_paths ?? []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add File
-              </Button>
-            ),
-            components: {
-              file_paths: (value, set) => (
-                <InputList
-                  field="file_paths"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="compose.yaml"
-                />
-              ),
-            },
-          },
+
           {
             label: "Git Provider",
             description:
@@ -217,7 +171,53 @@ export const StackConfig = ({
               },
             },
           },
-
+          {
+            label: "Run Path",
+            labelHidden: true,
+            components: {
+              run_directory: {
+                placeholder: "Eg. './' Relative to repo root.",
+                description: "Set the cwd of compose command",
+                boldLabel: true,
+              },
+            },
+          },
+          {
+            label: "File Paths",
+            description:
+              "Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'.",
+            contentHidden:
+              (update.file_paths ?? config.file_paths)?.length === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    file_paths: [
+                      ...(update.file_paths ?? config.file_paths ?? []),
+                      "",
+                    ],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add File
+              </Button>
+            ),
+            components: {
+              file_paths: (value, set) => (
+                <InputList
+                  field="file_paths"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="compose.yaml"
+                />
+              ),
+            },
+          },
           {
             label: "Extra Args",
             description: "Add extra args inserted after 'docker compose up -d'",

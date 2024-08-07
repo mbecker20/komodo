@@ -42,7 +42,7 @@ export const TopbarUpdates = () => {
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[100vw] md:w-[500px] h-[500px] overflow-auto">
+      <DropdownMenuContent className="w-[100vw] md:w-[500px] h-[500px] overflow-auto" sideOffset={20}>
         <DropdownMenuGroup>
           {updates?.updates.map((update) => (
             <SingleUpdate update={update} key={update.id} />

@@ -149,7 +149,8 @@ impl Resolve<RefreshStackCache, User> for State {
     let file_contents_empty = stack.config.file_contents.is_empty();
 
     if file_contents_empty && stack.config.repo.is_empty() {
-      return Err(anyhow!("Stack has neither file_contents nor repo configured. Cannot get info."));
+      // Nothing to do without one of these
+      return Ok(NoData {});
     }
 
     let mut missing_files = Vec::new();
