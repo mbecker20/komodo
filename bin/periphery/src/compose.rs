@@ -40,17 +40,20 @@ pub async fn compose_up(
   registry_token: Option<String>,
   res: &mut ComposeUpResponse,
 ) -> anyhow::Result<()> {
-  let root = periphery_config()
-    .stack_dir
-    .join(to_monitor_name(&stack.name));
-  let run_directory = root.join(&stack.config.run_directory);
-
-  // Write the stack. For repos, will first delete any existing folder to ensure fresh deploy.
+  // Write the stack to local disk. For repos, will first delete any existing folder to ensure fresh deploy.
   // Will also set additional fields on the reponse.
   // Use the env_file_path in the compose command.
   let env_file_path = write_stack(&stack, git_token, res)
     .await
     .context("failed to write / clone compose file")?;
+
+  let root = periphery_config()
+    .stack_dir
+    .join(to_monitor_name(&stack.name));
+  let run_directory = root.join(&stack.config.run_directory);
+  let run_directory = run_directory
+    .canonicalize()
+    .context("failed to canonicalize run directory on host")?;
 
   let file_paths = stack
     .file_paths()
@@ -68,29 +71,28 @@ pub async fn compose_up(
   }
 
   for (path, full_path) in &file_paths {
-    let file_contents = match fs::read_to_string(&full_path)
-      .await
-      .with_context(|| {
+    let file_contents =
+      match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
           "failed to read compose file contents at {full_path:?}"
         )
       }) {
-      Ok(res) => res,
-      Err(e) => {
-        let error = format_serror(&e.into());
-        res
-          .logs
-          .push(Log::error("read compose file", error.clone()));
-        // This should only happen for repo stacks, ie remote error
-        res.remote_errors.push(ComposeContents {
-          path: path.to_string(),
-          contents: error,
-        });
-        return Err(anyhow!(
-            "failed to read compose file at {full_path:?}, stopping run"
-          ));
-      }
-    };
+        Ok(res) => res,
+        Err(e) => {
+          let error = format_serror(&e.into());
+          res
+            .logs
+            .push(Log::error("read compose file", error.clone()));
+          // This should only happen for repo stacks, ie remote error
+          res.remote_errors.push(ComposeContents {
+            path: path.to_string(),
+            contents: error,
+          });
+          return Err(anyhow!(
+          "failed to read compose file at {full_path:?}, stopping run"
+        ));
+        }
+      };
     res.file_contents.push(ComposeContents {
       path: full_path.display().to_string(),
       contents: file_contents,
@@ -98,7 +100,10 @@ pub async fn compose_up(
   }
 
   let docker_compose = docker_compose();
-  let run_dir = run_directory.display();
+  let run_dir = run_directory
+    .canonicalize()
+    .context("failed to canonicalize run directory on host")?;
+  let run_dir = run_dir.display();
   let service_arg = service
     .as_ref()
     .map(|service| format!(" {service}"))

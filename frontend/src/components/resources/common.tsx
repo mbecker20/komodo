@@ -321,8 +321,7 @@ export const DeleteResource = ({
   if (!resource) return null;
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Delete {type}</div>
+    <div className="flex items-center justify-end">
       <ActionWithDialog
         name={resource.name}
         title="Delete"
