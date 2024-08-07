@@ -58,7 +58,7 @@ async fn get_config_json_inner(
   })?;
 
   let res = async_run_command(&format!(
-    "cd {} && docker compose config --format json",
+    "cd {} && docker-compose config --format json",
     dir.display()
   ))
   .await;
