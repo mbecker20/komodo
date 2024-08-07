@@ -5,9 +5,9 @@
 ## This is the offical "Default" config file for Monitor.
 ## It serves as documentation for the meaning of the fields. 
 
-## This file is also bundled into the official image, `ghcr.io/mbecker20/monitor`,
-## as the default config at `/config/config.toml`, so that the Monitor image can start with
-## no external config file mounted.
+## This file is bundled into the official image, `ghcr.io/mbecker20/monitor`,
+## as the default config at `/config/config.toml`.
+## Monitor can start with no external config file mounted.
 
 ## There is usually no need to create this file on your host.
 ## Most fields can instead be configured using environment variables.
@@ -113,14 +113,14 @@ local_auth = true
 
 ## Specify how long a user can stay logged in before they have to log in again.
 ## All jwts are invalidated on application restart unless `jwt_secret` is set.
-## Env: MONITOR_JWT_VALID_FOR
+## Env: MONITOR_JWT_TTL
 ## Default: 1-day. 
 ## Options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
-# jwt_valid_for = "3-day"
+# jwt_ttl = "3-day"
 
-###############
-# OAUTH LOGIN #
-###############
+#########
+# OAUTH #
+#########
 
 ## Google
 

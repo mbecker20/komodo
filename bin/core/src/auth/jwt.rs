@@ -25,7 +25,7 @@ pub struct JwtClaims {
 
 pub struct JwtClient {
   pub key: Hmac<Sha256>,
-  valid_for_ms: u128,
+  ttl_ms: u128,
   exchange_tokens: ExchangeTokenMap,
 }
 
@@ -40,8 +40,8 @@ impl JwtClient {
       .context("failed at taking HmacSha256 of jwt secret")?;
     Ok(JwtClient {
       key,
-      valid_for_ms: get_timelength_in_ms(
-        config.jwt_valid_for.to_string().parse()?,
+      ttl_ms: get_timelength_in_ms(
+        config.jwt_ttl.to_string().parse()?,
       ),
       exchange_tokens: Default::default(),
     })
@@ -49,7 +49,7 @@ impl JwtClient {
 
   pub fn generate(&self, user_id: String) -> anyhow::Result<String> {
     let iat = unix_timestamp_ms();
-    let exp = iat + self.valid_for_ms;
+    let exp = iat + self.ttl_ms;
     let claims = JwtClaims {
       id: user_id,
       iat,

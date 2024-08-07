@@ -47,8 +47,8 @@ pub struct Env {
   pub monitor_passkey: Option<String>,
   /// Override `jwt_secret`
   pub monitor_jwt_secret: Option<String>,
-  /// Override `jwt_valid_for`
-  pub monitor_jwt_valid_for: Option<Timelength>,
+  /// Override `jwt_ttl`
+  pub monitor_jwt_ttl: Option<Timelength>,
   /// Override `sync_directory`
   pub monitor_sync_directory: Option<String>,
   /// Override `sync_poll_interval`
@@ -214,7 +214,7 @@ fn default_config_path() -> String {
 /// ## All jwts are invalidated on application restart.
 /// ## Default: `1-day`.
 /// ## Options: `1-hr`, `12-hr`, `1-day`, `3-day`, `1-wk`, `2-wk`, `30-day`.
-/// jwt_valid_for = "1-day"
+/// jwt_ttl = "1-day"
 /// 
 /// ## Interval at which to poll Stacks for any updates / automated actions.
 /// ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
@@ -353,8 +353,8 @@ pub struct CoreConfig {
 
   /// Control how long distributed JWT remain valid for.
   /// Default: `1-day`.
-  #[serde(default = "default_jwt_valid_for")]
-  pub jwt_valid_for: Timelength,
+  #[serde(default = "default_jwt_ttl")]
+  pub jwt_ttl: Timelength,
 
   /// Specify the directory used to clone sync repos. The default is fine when using a container.
   /// This directory has no need for persistence, so no need to mount it.
@@ -488,7 +488,7 @@ fn default_core_port() -> u16 {
   9120
 }
 
-fn default_jwt_valid_for() -> Timelength {
+fn default_jwt_ttl() -> Timelength {
   Timelength::OneDay
 }
 
@@ -523,7 +523,7 @@ impl CoreConfig {
       port: config.port,
       passkey: empty_or_redacted(&config.passkey),
       jwt_secret: empty_or_redacted(&config.jwt_secret),
-      jwt_valid_for: config.jwt_valid_for,
+      jwt_ttl: config.jwt_ttl,
       sync_directory: config.sync_directory,
       sync_poll_interval: config.sync_poll_interval,
       stack_directory: config.stack_directory,

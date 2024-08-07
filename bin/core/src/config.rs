@@ -78,9 +78,9 @@ pub fn core_config() -> &'static CoreConfig {
       port: env.monitor_port.unwrap_or(config.port),
       passkey: env.monitor_passkey.unwrap_or(config.passkey),
       jwt_secret: env.monitor_jwt_secret.unwrap_or(config.jwt_secret),
-      jwt_valid_for: env
-        .monitor_jwt_valid_for
-        .unwrap_or(config.jwt_valid_for),
+      jwt_ttl: env
+        .monitor_jwt_ttl
+        .unwrap_or(config.jwt_ttl),
       sync_directory: env
         .monitor_sync_directory
         .map(|dir|
