@@ -1,4 +1,3 @@
-import { OpenAlerts } from "@components/alert";
 import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
@@ -36,7 +35,6 @@ export const Tree = () => {
         </div>
       }
     >
-      <OpenAlerts />
       <Section>
         <div className="grid gap-6">
           {servers?.map((server) => (

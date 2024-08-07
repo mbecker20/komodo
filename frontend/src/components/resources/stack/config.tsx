@@ -14,7 +14,13 @@ import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
-import { Ban, CirclePlus, PlusCircle } from "lucide-react";
+import {
+  Ban,
+  ChevronDown,
+  ChevronUp,
+  CirclePlus,
+  PlusCircle,
+} from "lucide-react";
 import { env_to_text } from "@lib/utils";
 import { Textarea } from "@ui/textarea";
 import { Button } from "@ui/button";
@@ -85,11 +91,17 @@ export const StackConfig = ({
               "Paste the file contents here, or configure a git repo.",
             actions: (
               <Button
-                variant="secondary"
+                size="sm"
+                variant="outline"
+                className="gap-4"
                 onClick={() => setFileContentsOpen(!fileContentsOpen)}
-                className="w-[70px]"
               >
                 {fileContentsOpen ? "Hide" : "Show"}
+                {fileContentsOpen ? (
+                  <ChevronUp className="w-4" />
+                ) : (
+                  <ChevronDown className="w-4" />
+                )}
               </Button>
             ),
             contentHidden: !fileContentsOpen,

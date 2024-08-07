@@ -11,9 +11,17 @@ export const StackInfo = ({
   titleOther: ReactNode;
 }) => {
   const stack = useRead("GetStack", { stack: id }).data;
+  const projects = useRead("ListComposeProjects", {
+    server: stack?.config?.server_id!,
+  }).data;
   const info = useStack(id)?.info;
   return (
     <Section titleOther={titleOther}>
+      <pre>
+        {projects?.map((project) => (
+          <pre>{JSON.stringify(project, undefined, 2)}</pre>
+        ))}
+      </pre>
       <div>project missing: {info?.project_missing ? "true" : "false"}</div>
       <pre>
         deployed contents:{" "}
@@ -47,6 +55,15 @@ export const StackInfo = ({
       <pre>
         latest json:{" "}
         {stack?.info?.latest_json?.map((content) => (
+          <div>
+            path: {content.path}
+            <pre>{content.contents}</pre>
+          </div>
+        ))}
+      </pre>
+      <pre>
+        latest json error:{" "}
+        {stack?.info?.latest_json_errors?.map((content) => (
           <div>
             path: {content.path}
             <pre>{content.contents}</pre>
