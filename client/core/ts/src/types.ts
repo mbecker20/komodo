@@ -178,7 +178,7 @@ export type AlertData =
 	id: string;
 	/** The name of the deployment */
 	name: string;
-	/** The server id of server deployment is on */
+	/** The server id of server that the deployment is on */
 	server_id: string;
 	/** The server name */
 	server_name: string;
@@ -186,6 +186,21 @@ export type AlertData =
 	from: DeploymentState;
 	/** The current container state */
 	to: DeploymentState;
+}}
+	/** A stack's state has changed unexpectedly. */
+	| { type: "StackStateChange", data: {
+	/** The id of the stack */
+	id: string;
+	/** The name of the stack */
+	name: string;
+	/** The server id of server that the stack is on */
+	server_id: string;
+	/** The server name */
+	server_name: string;
+	/** The previous stack state */
+	from: StackState;
+	/** The current stack state */
+	to: StackState;
 }}
 	/** An AWS builder failed to terminate. */
 	| { type: "AwsBuilderTerminationFailed", data: {
@@ -1170,7 +1185,7 @@ export interface DockerNetwork {
 	Labels?: Record<string, string>;
 }
 
-export type GetDockerNetworksResponse = DockerNetwork[];
+export type ListDockerNetworksResponse = DockerNetwork[];
 
 /** Summary of a docker image cached on a server */
 export interface ImageSummary {
@@ -1196,7 +1211,7 @@ export interface ImageSummary {
 	Containers: I64;
 }
 
-export type GetDockerImagesResponse = ImageSummary[];
+export type ListDockerImagesResponse = ImageSummary[];
 
 /** A summary of a docker container on a server. */
 export interface ContainerSummary {
@@ -1218,7 +1233,18 @@ export interface ContainerSummary {
 	networks?: string[];
 }
 
-export type GetDockerContainersResponse = ContainerSummary[];
+export type ListDockerContainersResponse = ContainerSummary[];
+
+export interface ComposeProject {
+	/** The compose project name. */
+	name: string;
+	/** The status of the project, as returned by docker. */
+	status?: string;
+	/** The compose files included in the project. */
+	compose_files: string[];
+}
+
+export type ListComposeProjectsResponse = ComposeProject[];
 
 /** System information of a server */
 export interface SystemInformation {
@@ -1320,7 +1346,7 @@ export interface SystemProcess {
 	disk_write_kb: number;
 }
 
-export type GetSystemProcessesResponse = SystemProcess[];
+export type ListSystemProcessesResponse = SystemProcess[];
 
 export type ServerTemplateConfig = 
 	/** Template to launch an AWS EC2 instance */
@@ -1406,12 +1432,6 @@ export interface StackConfig {
 	 * Note. Monitor does not currently support cloning repos via ssh.
 	 */
 	git_https: boolean;
-	/** The Github repo used as the source of the build. */
-	repo?: string;
-	/** The branch of the repo. */
-	branch: string;
-	/** Optionally set a specific commit hash. */
-	commit?: string;
 	/**
 	 * The git account used to access private repos.
 	 * Passing empty string can only clone public repos.
@@ -1420,8 +1440,16 @@ export interface StackConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
+	/** The Github repo used as the source of the build. */
+	repo?: string;
+	/** The branch of the repo. */
+	branch: string;
+	/** Optionally set a specific commit hash. */
+	commit?: string;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
+	/** Whether to send StackStateChange alerts for this stack. */
+	send_alerts: boolean;
 }
 
 export interface ComposeContents {
@@ -1457,16 +1485,10 @@ export interface StackServiceNames {
 
 export interface StackInfo {
 	/**
-	 * If any of the expected files are missing on the target host,
-	 * the will be stored here.
+	 * If any of the expected files are missing in the repo,
+	 * they will be stored here.
 	 */
 	missing_files?: string[];
-	/**
-	 * Whether the compose project is missing on the target host.
-	 * Ensure the stack project_name is correctly configured if this is true,
-	 * but the stack is definitely running.
-	 */
-	project_missing?: boolean;
 	/**
 	 * The deployed project name.
 	 * This is updated whenever Monitor successfully deploys the stack.
@@ -3214,26 +3236,35 @@ export interface GetPeripheryVersionResponse {
 	version: string;
 }
 
-/** Get the docker networks on the server. Response: [GetDockerNetworksResponse]. */
-export interface GetDockerNetworks {
+/** List the docker networks on the server. Response: [ListDockerNetworksResponse]. */
+export interface ListDockerNetworks {
 	/** Id or name */
 	server: string;
 }
 
 /**
- * Get the docker images locally cached on the target server.
- * Response: [GetDockerImagesResponse].
+ * List the docker images locally cached on the target server.
+ * Response: [ListDockerImagesResponse].
  */
-export interface GetDockerImages {
+export interface ListDockerImages {
 	/** Id or name */
 	server: string;
 }
 
 /**
- * Get all docker containers on the target server.
- * Response: [GetDockerContainersResponse].
+ * List all docker containers on the target server.
+ * Response: [ListDockerContainersResponse].
  */
-export interface GetDockerContainers {
+export interface ListDockerContainers {
+	/** Id or name */
+	server: string;
+}
+
+/**
+ * List all compose projects on the target server.
+ * Response: [ListComposeProjectsResponse].
+ */
+export interface ListComposeProjects {
 	/** Id or name */
 	server: string;
 }
@@ -3260,14 +3291,14 @@ export interface GetSystemStats {
 }
 
 /**
- * Get the processes running on the target server.
- * Response: [GetSystemProcessesResponse].
+ * List the processes running on the target server.
+ * Response: [ListSystemProcessesResponse].
  * 
  * Note. This does not hit the server directly. The procedures come from an
  * in memory cache on the core, which hits the server periodically
  * to keep it up to date.
  */
-export interface GetSystemProcesses {
+export interface ListSystemProcesses {
 	/** Id or name */
 	server: string;
 }
@@ -4986,11 +5017,20 @@ export interface SyncUpdate {
 	log: string;
 }
 
+export interface SyncDeployUpdate {
+	/** Resources to deploy */
+	to_deploy: number;
+	/** A readable log of all the changes to be applied */
+	log: string;
+}
+
 export interface PendingSyncUpdatesDataOk {
 	/** Readable log of any pending server updates */
 	server_updates?: SyncUpdate;
 	/** Readable log of any pending deployment updates */
 	deployment_updates?: SyncUpdate;
+	/** Readable log of any pending deployment updates */
+	stack_updates?: SyncUpdate;
 	/** Readable log of any pending build updates */
 	build_updates?: SyncUpdate;
 	/** Readable log of any pending repo updates */
@@ -5009,6 +5049,8 @@ export interface PendingSyncUpdatesDataOk {
 	variable_updates?: SyncUpdate;
 	/** Readable log of any pending user group updates */
 	user_group_updates?: SyncUpdate;
+	/** Readable log of any deploy actions that will be performed */
+	deploy_updates?: SyncDeployUpdate;
 }
 
 export interface PendingSyncUpdatesDataErr {
@@ -5080,13 +5122,14 @@ export type ReadRequest =
 	| { type: "GetServer", params: GetServer }
 	| { type: "GetServerState", params: GetServerState }
 	| { type: "GetPeripheryVersion", params: GetPeripheryVersion }
-	| { type: "GetDockerContainers", params: GetDockerContainers }
-	| { type: "GetDockerImages", params: GetDockerImages }
-	| { type: "GetDockerNetworks", params: GetDockerNetworks }
 	| { type: "GetServerActionState", params: GetServerActionState }
 	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
 	| { type: "ListServers", params: ListServers }
 	| { type: "ListFullServers", params: ListFullServers }
+	| { type: "ListDockerContainers", params: ListDockerContainers }
+	| { type: "ListDockerNetworks", params: ListDockerNetworks }
+	| { type: "ListDockerImages", params: ListDockerImages }
+	| { type: "ListComposeProjects", params: ListComposeProjects }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "GetDeploymentContainer", params: GetDeploymentContainer }
@@ -5146,7 +5189,7 @@ export type ReadRequest =
 	| { type: "GetAlert", params: GetAlert }
 	| { type: "GetSystemInformation", params: GetSystemInformation }
 	| { type: "GetSystemStats", params: GetSystemStats }
-	| { type: "GetSystemProcesses", params: GetSystemProcesses }
+	| { type: "ListSystemProcesses", params: ListSystemProcesses }
 	| { type: "GetVariable", params: GetVariable }
 	| { type: "ListVariables", params: ListVariables }
 	| { type: "GetGitProviderAccount", params: GetGitProviderAccount }

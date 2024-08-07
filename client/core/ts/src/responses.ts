@@ -58,9 +58,10 @@ export type ReadResponses = {
   GetServer: Types.GetServerResponse;
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
-  GetDockerContainers: Types.GetDockerContainersResponse;
-  GetDockerImages: Types.GetDockerImagesResponse;
-  GetDockerNetworks: Types.GetDockerNetworksResponse;
+  ListDockerContainers: Types.ListDockerContainersResponse;
+  ListDockerImages: Types.ListDockerImagesResponse;
+  ListDockerNetworks: Types.ListDockerNetworksResponse;
+  ListComposeProjects: Types.ListComposeProjectsResponse;
   GetServerActionState: Types.GetServerActionStateResponse;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
   ListServers: Types.ListServersResponse;
@@ -148,7 +149,7 @@ export type ReadResponses = {
   // ==== SERVER STATS ====
   GetSystemInformation: Types.GetSystemInformationResponse;
   GetSystemStats: Types.GetSystemStatsResponse;
-  GetSystemProcesses: Types.GetSystemProcessesResponse;
+  ListSystemProcesses: Types.ListSystemProcessesResponse;
 
   // ==== VARIABLE ====
   GetVariable: Types.GetVariableResponse;
