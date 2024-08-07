@@ -3,6 +3,7 @@ use futures::future::join_all;
 use helpers::insert_stacks_status_unknown;
 use monitor_client::entities::{
   deployment::{ContainerSummary, DeploymentState},
+  monitor_timestamp,
   server::{
     docker_image::ImageSummary,
     docker_network::DockerNetwork,
@@ -85,28 +86,36 @@ pub fn spawn_monitor_loop() {
     .try_into()
     .expect("Invalid monitoring interval");
   tokio::spawn(async move {
+    refresh_server_cache(monitor_timestamp()).await;
     loop {
       let ts =
         (wait_until_timelength(interval, 2000).await - 500) as i64;
-      let servers =
-        match find_collect(&db_client().await.servers, None, None)
-          .await
-        {
-          Ok(servers) => servers,
-          Err(e) => {
-            error!(
-            "failed to get server list (manage status cache) | {e:#}"
-          );
-            continue;
-          }
-        };
-      let futures = servers.into_iter().map(|server| async move {
-        update_cache_for_server(&server).await;
-      });
-      join_all(futures).await;
-      tokio::join!(check_alerts(ts), record_server_stats(ts));
+      refresh_server_cache(ts).await;
     }
   });
+}
+
+async fn refresh_server_cache(ts: i64) {
+  let servers = match find_collect(
+    &db_client().await.servers,
+    None,
+    None,
+  )
+  .await
+  {
+    Ok(servers) => servers,
+    Err(e) => {
+      error!(
+        "failed to get server list (manage status cache) | {e:#}"
+      );
+      return;
+    }
+  };
+  let futures = servers.into_iter().map(|server| async move {
+    update_cache_for_server(&server).await;
+  });
+  join_all(futures).await;
+  tokio::join!(check_alerts(ts), record_server_stats(ts));
 }
 
 #[instrument(level = "debug")]
