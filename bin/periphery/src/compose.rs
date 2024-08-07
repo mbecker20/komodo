@@ -51,9 +51,9 @@ pub async fn compose_up(
     .stack_dir
     .join(to_monitor_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
-  let run_directory = run_directory
-    .canonicalize()
-    .context("failed to canonicalize run directory on host")?;
+  let run_directory = run_directory.canonicalize().context(
+    "failed to validate run directory on host after stack write (canonicalize error)",
+  )?;
 
   let file_paths = stack
     .file_paths()
