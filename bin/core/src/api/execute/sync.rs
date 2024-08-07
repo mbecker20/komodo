@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::{anyhow, Context};
 use formatting::{colored, format_serror, Color};
 use mongo_indexed::doc;
@@ -8,12 +10,14 @@ use monitor_client::{
     alerter::Alerter,
     build::Build,
     builder::Builder,
+    deployment::Deployment,
     monitor_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
     server::Server,
     server_template::ServerTemplate,
+    stack::Stack,
     update::{Log, Update},
     user::{sync_user, User},
   },
@@ -25,7 +29,9 @@ use crate::{
   helpers::{
     query::get_id_to_tags,
     sync::{
-      deployment,
+      deploy::{
+        build_deploy_cache, deploy_from_cache, SyncDeployParams,
+      },
       resource::{
         get_updates_for_execution, AllResourcesById, ResourceSync,
       },
@@ -62,8 +68,28 @@ impl Resolve<RunSync, (User, Update)> for State {
 
     let resources = res?;
 
-    let all_resources = AllResourcesById::load().await?;
     let id_to_tags = get_id_to_tags(None).await?;
+    let all_resources = AllResourcesById::load().await?;
+
+    let deployments_by_name = all_resources
+      .deployments
+      .values()
+      .map(|deployment| (deployment.name.clone(), deployment.clone()))
+      .collect::<HashMap<_, _>>();
+    let stacks_by_name = all_resources
+      .stacks
+      .values()
+      .map(|stack| (stack.name.clone(), stack.clone()))
+      .collect::<HashMap<_, _>>();
+
+    let deploy_cache = build_deploy_cache(SyncDeployParams {
+      deployments: &resources.deployments,
+      deployment_map: &deployments_by_name,
+      stacks: &resources.stacks,
+      stack_map: &stacks_by_name,
+      all_resources: &all_resources,
+    })
+    .await?;
 
     let (servers_to_create, servers_to_update, servers_to_delete) =
       get_updates_for_execution::<Server>(
@@ -77,13 +103,21 @@ impl Resolve<RunSync, (User, Update)> for State {
       deployments_to_create,
       deployments_to_update,
       deployments_to_delete,
-    ) = deployment::get_updates_for_execution(
+    ) = get_updates_for_execution::<Deployment>(
       resources.deployments,
       sync.config.delete,
       &all_resources,
       &id_to_tags,
     )
     .await?;
+    let (stacks_to_create, stacks_to_update, stacks_to_delete) =
+      get_updates_for_execution::<Stack>(
+        resources.stacks,
+        sync.config.delete,
+        &all_resources,
+        &id_to_tags,
+      )
+      .await?;
     let (builds_to_create, builds_to_update, builds_to_delete) =
       get_updates_for_execution::<Build>(
         resources.builds,
@@ -169,7 +203,8 @@ impl Resolve<RunSync, (User, Update)> for State {
     )
     .await?;
 
-    if resource_syncs_to_create.is_empty()
+    if deploy_cache.is_empty()
+      && resource_syncs_to_create.is_empty()
       && resource_syncs_to_update.is_empty()
       && resource_syncs_to_delete.is_empty()
       && server_templates_to_create.is_empty()
@@ -181,6 +216,9 @@ impl Resolve<RunSync, (User, Update)> for State {
       && deployments_to_create.is_empty()
       && deployments_to_update.is_empty()
       && deployments_to_delete.is_empty()
+      && stacks_to_create.is_empty()
+      && stacks_to_update.is_empty()
+      && stacks_to_delete.is_empty()
       && builds_to_create.is_empty()
       && builds_to_update.is_empty()
       && builds_to_delete.is_empty()
@@ -305,15 +343,25 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
 
     // Dependant on server / build
-    if let Some(res) = deployment::run_updates(
-      deployments_to_create,
-      deployments_to_update,
-      deployments_to_delete,
-    )
-    .await
-    {
-      update.logs.extend(res);
-    }
+    maybe_extend(
+      &mut update.logs,
+      Deployment::run_updates(
+        deployments_to_create,
+        deployments_to_update,
+        deployments_to_delete,
+      )
+      .await,
+    );
+    // stack only depends on server, but maybe will depend on build later.
+    maybe_extend(
+      &mut update.logs,
+      Stack::run_updates(
+        stacks_to_create,
+        stacks_to_update,
+        stacks_to_delete,
+      )
+      .await,
+    );
 
     // Dependant on everything
     maybe_extend(
@@ -325,6 +373,9 @@ impl Resolve<RunSync, (User, Update)> for State {
       )
       .await,
     );
+
+    // Execute the deploy cache
+    deploy_from_cache(deploy_cache, &mut update.logs).await;
 
     let db = db_client().await;
 

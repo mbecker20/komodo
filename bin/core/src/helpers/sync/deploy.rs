@@ -1,10 +1,21 @@
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
-use formatting::{bold, colored, muted, Color};
+use anyhow::{anyhow, Context};
+use formatting::{bold, colored, format_serror, muted, Color};
 use futures::future::join_all;
 use monitor_client::{
-  api::execute::{Deploy, DeployStack},
+  api::{
+    execute::{Deploy, DeployStack},
+    read::ListBuildVersions,
+  },
   entities::{
+    deployment::{
+      Deployment, DeploymentConfig, DeploymentImage, DeploymentState,
+      PartialDeploymentConfig,
+    },
+    stack::{PartialStackConfig, Stack, StackConfig, StackState},
+    sync::SyncDeployUpdate,
+    toml::ResourceToml,
     update::{Log, ResourceTarget},
     user::sync_user,
   },
@@ -13,17 +24,32 @@ use resolver_api::Resolve;
 
 use crate::{
   api::execute::ExecuteRequest,
-  helpers::update::init_execution_update, state::State,
+  helpers::update::init_execution_update,
+  state::{deployment_status_cache, stack_status_cache, State},
 };
 
-/// (Deployment or Stack, Dependencies).
-/// They all come as names, not ids.
-pub type ToDeploy = Vec<(ResourceTarget, Vec<ResourceTarget>)>;
+use super::resource::{AllResourcesById, ResourceSync};
 
-pub async fn deploy(
-  mut to_deploy: ToDeploy,
+/// All entries in here are due to be deployed,
+/// after the given dependencies,
+/// with the given reason.
+pub type ToDeployCache =
+  Vec<(ResourceTarget, String, Vec<ResourceTarget>)>;
+
+#[derive(Clone, Copy)]
+pub struct SyncDeployParams<'a> {
+  pub deployments: &'a [ResourceToml<PartialDeploymentConfig>],
+  // Names to deployments
+  pub deployment_map: &'a HashMap<String, Deployment>,
+  pub stacks: &'a [ResourceToml<PartialStackConfig>],
+  // Names to stacks
+  pub stack_map: &'a HashMap<String, Stack>,
+  pub all_resources: &'a AllResourcesById,
+}
+
+pub async fn deploy_from_cache(
+  mut to_deploy: ToDeployCache,
   logs: &mut Vec<Log>,
-  has_error: &mut bool,
 ) {
   let mut log = format!(
     "{}: running executions to sync deployment / stack state",
@@ -36,15 +62,19 @@ pub async fn deploy(
     // Collect all waiting deployments without waiting dependencies.
     let good_to_deploy = to_deploy
       .iter()
-      .filter(|(_, after)| {
-        to_deploy.iter().all(|(name, _)| !after.contains(name))
+      .filter(|(_, _, after)| {
+        to_deploy
+          .iter()
+          .all(|(target, _, _)| !after.contains(target))
       })
-      .map(|(name, _)| name.clone())
-      .collect::<Vec<_>>();
+      // The target / reason need the be cloned out to to_deploy is not borrowed from.
+      // to_deploy will be mutably accessed later.
+      .map(|(target, reason, _)| (target.clone(), reason.clone()))
+      .collect::<HashMap<_, _>>();
 
     // Deploy the ones ready for deployment
-    let res =
-      join_all(good_to_deploy.iter().map(|target| async move {
+    let res = join_all(good_to_deploy.iter().map(
+      |(target, reason)| async move {
         let res = async {
           match &target {
             ResourceTarget::Deployment(name) => {
@@ -76,15 +106,18 @@ pub async fn deploy(
           }
         }
         .await;
-        (target, res)
-      }))
-      .await;
+        (target, reason, res)
+      },
+    ))
+    .await;
+
+    let mut has_error = false;
 
     // Log results of deploy
-    for (target, res) in res {
+    for (target, reason, res) in res {
       let (resource, name) = target.extract_variant_id();
       if let Err(e) = res {
-        *has_error = true;
+        has_error = true;
         log.push_str(&format!(
           "\n{}: failed to deploy {resource} '{}' in round {} | {e:#}",
           colored("ERROR", Color::Red),
@@ -93,7 +126,7 @@ pub async fn deploy(
         ));
       } else {
         log.push_str(&format!(
-          "\n{}: deployed {resource} '{}' in round {}",
+          "\n{}: deployed {resource} '{}' in round {} with reason: {reason}",
           muted("INFO"),
           bold(name),
           bold(round)
@@ -102,19 +135,20 @@ pub async fn deploy(
     }
 
     // Early exit if any deploy has errors
-    if *has_error {
+    if has_error {
       log.push_str(&format!(
         "\n{}: exited in round {} {}",
         muted("INFO"),
         bold(round),
         colored("with errors", Color::Red)
       ));
-      logs.push(Log::error("Sync Deployment / Stack State", log));
+      logs.push(Log::error("Sync Deploy", log));
       return;
     }
 
     // Remove the deployed ones from 'to_deploy'
-    to_deploy.retain(|(name, _)| !good_to_deploy.contains(name));
+    to_deploy
+      .retain(|(target, _, _)| !good_to_deploy.contains_key(target));
 
     // If there must be another round, these are dependent on the first round.
     // Sleep for 1s to allow for first round to startup
@@ -132,5 +166,558 @@ pub async fn deploy(
     (round > 1).then_some("s").unwrap_or_default()
   ));
 
-  logs.push(Log::simple("Sync Deployment State", log));
+  logs.push(Log::simple("Sync Deploy", log));
+}
+
+pub async fn get_updates_for_view(
+  params: SyncDeployParams<'_>,
+) -> Option<SyncDeployUpdate> {
+  let inner = async {
+    let mut update = SyncDeployUpdate {
+      to_deploy: 0,
+      log: String::from("Deploy Updates"),
+    };
+    let mut lines = Vec::<String>::new();
+    for (target, reason, after) in build_deploy_cache(params).await? {
+      update.to_deploy += 1;
+      let mut line = format!(
+        "{target:?}: sync will {}. reason: {reason}",
+        bold("trigger redeploy")
+      );
+      if !after.is_empty() {
+        line.push_str(&format!(
+          "\ndeploy after: {}",
+          after
+            .iter()
+            .map(|target| format!("{target:?}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+        ))
+      }
+      lines.push(line);
+    }
+
+    update.log.push_str(&lines.join("\n-------------------\n"));
+
+    anyhow::Ok((update.to_deploy > 0).then_some(update))
+  };
+  match inner.await {
+    Ok(res) => res,
+    Err(e) => Some(SyncDeployUpdate {
+      to_deploy: 0,
+      log: format_serror(
+        &e.context("failed to get deploy updates for view").into(),
+      ),
+    }),
+  }
+}
+
+/// Entries are keyed by ResourceTargets wrapping "name" instead of "id".
+/// If entry is None, it is confirmed no-deploy.
+/// If it is Some, it is confirmed deploy with provided reason and dependencies.
+///
+/// Used to build up resources to deploy earlier in the sync.
+type ToDeployCacheInner =
+  HashMap<ResourceTarget, Option<(String, Vec<ResourceTarget>)>>;
+
+/// Maps build ids to latest versions as string.
+type BuildVersionCache = HashMap<String, String>;
+
+pub async fn build_deploy_cache(
+  params: SyncDeployParams<'_>,
+) -> anyhow::Result<ToDeployCache> {
+  let mut cache = ToDeployCacheInner::new();
+  let mut build_version_cache = BuildVersionCache::new();
+
+  // Just ensure they are all in the cache by looping through them all
+  for deployment in params.deployments {
+    build_cache_for_deployment(
+      deployment,
+      params,
+      &mut cache,
+      &mut build_version_cache,
+    )
+    .await?;
+  }
+  for stack in params.stacks {
+    build_cache_for_stack(
+      stack,
+      params,
+      &mut cache,
+      &mut build_version_cache,
+    )
+    .await?;
+  }
+
+  Ok(
+    cache
+      .into_iter()
+      .filter_map(|(target, entry)| {
+        let (reason, after) = entry?;
+        Some((target, reason, after))
+      })
+      .collect(),
+  )
+}
+
+type BuildRes<'a> = std::pin::Pin<
+  Box<
+    dyn std::future::Future<Output = anyhow::Result<()>> + Send + 'a,
+  >,
+>;
+
+fn build_cache_for_deployment<'a>(
+  deployment: &'a ResourceToml<PartialDeploymentConfig>,
+  SyncDeployParams {
+    deployments,
+    deployment_map,
+    stacks,
+    stack_map,
+    all_resources,
+  }: SyncDeployParams<'a>,
+  cache: &'a mut ToDeployCacheInner,
+  build_version_cache: &'a mut BuildVersionCache,
+) -> BuildRes<'a> {
+  Box::pin(async move {
+    let target = ResourceTarget::Deployment(deployment.name.clone());
+
+    // First check existing, and continue if already handled.
+    if cache.contains_key(&target) {
+      return Ok(());
+    }
+
+    // Check if deployment doesn't have "deploy" enabled.
+    if !deployment.deploy {
+      cache.insert(target, None);
+      return Ok(());
+    }
+
+    let after = get_after_as_resource_targets(
+      &deployment.name,
+      &deployment.after,
+      deployment_map,
+      stack_map,
+    )?;
+
+    let Some(original) = deployment_map.get(&deployment.name) else {
+      // This block is the None case, deployment is not created, should definitely deploy
+      cache.insert(
+        target,
+        Some((String::from("deploy on creation"), after)),
+      );
+      return Ok(());
+    };
+
+    let status = &deployment_status_cache()
+      .get_or_insert_default(&original.id)
+      .await
+      .curr;
+    let state = status.state;
+
+    match state {
+      DeploymentState::Unknown => {
+        // Can't do anything with unknown state
+        cache.insert(target, None);
+        return Ok(());
+      }
+      DeploymentState::Running => {
+        // Here can diff the changes, to see if they merit a redeploy.
+
+        // First merge toml resource config (partial) onto default resource config.
+        // Makes sure things that aren't defined in toml (come through as None) actually get removed.
+        let config: DeploymentConfig =
+          deployment.config.clone().into();
+        let mut config: PartialDeploymentConfig = config.into();
+
+        Deployment::validate_partial_config(&mut config);
+
+        let mut diff = Deployment::get_diff(
+          original.config.clone(),
+          config,
+          all_resources,
+        )?;
+
+        Deployment::validate_diff(&mut diff);
+        // Needs to only check config fields that affect docker run
+        let changed = diff.server_id.is_some()
+          || diff.image.is_some()
+          || diff.image_registry_account.is_some()
+          || diff.skip_secret_interp.is_some()
+          || diff.network.is_some()
+          || diff.restart.is_some()
+          || diff.command.is_some()
+          || diff.extra_args.is_some()
+          || diff.ports.is_some()
+          || diff.volumes.is_some()
+          || diff.environment.is_some()
+          || diff.labels.is_some();
+        if changed {
+          cache.insert(
+            target,
+            Some((
+              String::from("deployment config has changed"),
+              after,
+            )),
+          );
+          return Ok(());
+        }
+      }
+      // All other cases will require Deploy to enter Running state.
+      _ => {
+        cache.insert(
+          target,
+          Some((format!("deployment has {state} state"), after)),
+        );
+        return Ok(());
+      }
+    };
+
+    // We know the config hasn't changed at this point, but still need
+    // to check if attached build has updated. Can check original for this (know it hasn't changed)
+    if let DeploymentImage::Build { build_id, version } =
+      &original.config.image
+    {
+      // check if version is none, ie use latest build
+      if !version.is_none() {
+        let deployed_version = status
+          .container
+          .as_ref()
+          .and_then(|c| c.image.split(':').last())
+          .unwrap_or("0.0.0");
+        match build_version_cache.get(build_id) {
+          Some(version) if deployed_version != version => {
+            cache.insert(
+              target,
+              Some((
+                format!("build has new version: {version}"),
+                after,
+              )),
+            );
+            return Ok(());
+          }
+          // Build version is the same, still need to check 'after'
+          Some(_) => {}
+          None => {
+            let Some(version) = State
+              .resolve(
+                ListBuildVersions {
+                  build: build_id.to_string(),
+                  limit: Some(1),
+                  ..Default::default()
+                },
+                sync_user().to_owned(),
+              )
+              .await
+              .context("failed to get build versions")?
+              .pop()
+            else {
+              // The build has never been built.
+              // Skip deploy regardless of 'after' (it can't be deployed)
+              // Not sure how this would be reached on Running deployment...
+              cache.insert(target, None);
+              return Ok(());
+            };
+            let version = version.version.to_string();
+            build_version_cache
+              .insert(build_id.to_string(), version.clone());
+            if deployed_version != version {
+              // Same as 'Some' case out of the cache
+              cache.insert(
+                target,
+                Some((
+                  format!("build has new version: {version}"),
+                  after,
+                )),
+              );
+              return Ok(());
+            }
+          }
+        }
+      }
+    };
+
+    // Check 'after' to see if they deploy.
+    insert_target_using_after(
+      target,
+      after,
+      SyncDeployParams {
+        deployments,
+        deployment_map,
+        stacks,
+        stack_map,
+        all_resources,
+      },
+      cache,
+      build_version_cache,
+    )
+    .await
+  })
+}
+
+fn build_cache_for_stack<'a>(
+  stack: &'a ResourceToml<PartialStackConfig>,
+  SyncDeployParams {
+    deployments,
+    deployment_map,
+    stacks,
+    stack_map,
+    all_resources,
+  }: SyncDeployParams<'a>,
+  cache: &'a mut ToDeployCacheInner,
+  build_version_cache: &'a mut BuildVersionCache,
+) -> BuildRes<'a> {
+  Box::pin(async move {
+    let target = ResourceTarget::Stack(stack.name.clone());
+
+    // First check existing, and continue if already handled.
+    if cache.contains_key(&target) {
+      return Ok(());
+    }
+
+    // Check if stack doesn't have "deploy" enabled.
+    if !stack.deploy {
+      cache.insert(target, None);
+      return Ok(());
+    }
+
+    let after = get_after_as_resource_targets(
+      &stack.name,
+      &stack.after,
+      deployment_map,
+      stack_map,
+    )?;
+
+    let Some(original) = stack_map.get(&stack.name) else {
+      // This block is the None case, deployment is not created, should definitely deploy
+      cache.insert(
+        target,
+        Some((String::from("deploy on creation"), after)),
+      );
+      return Ok(());
+    };
+
+    let status = &stack_status_cache()
+      .get_or_insert_default(&original.id)
+      .await
+      .curr;
+    let state = status.state;
+
+    match state {
+      StackState::Unknown => {
+        // Can't do anything with unknown state
+        cache.insert(target, None);
+        return Ok(());
+      }
+      StackState::Running => {
+        // Here can diff the changes, to see if they merit a redeploy.
+
+        // First merge toml resource config (partial) onto default resource config.
+        // Makes sure things that aren't defined in toml (come through as None) actually get removed.
+        let config: StackConfig = stack.config.clone().into();
+        let mut config: PartialStackConfig = config.into();
+
+        Stack::validate_partial_config(&mut config);
+
+        let mut diff = Stack::get_diff(
+          original.config.clone(),
+          config,
+          all_resources,
+        )?;
+
+        Stack::validate_diff(&mut diff);
+        // Needs to only check config fields that affect docker compose command
+        let changed = diff.server_id.is_some()
+          || diff.project_name.is_some()
+          || diff.run_directory.is_some()
+          || diff.file_paths.is_some()
+          || diff.file_contents.is_some()
+          || diff.skip_secret_interp.is_some()
+          || diff.extra_args.is_some()
+          || diff.environment.is_some()
+          || diff.env_file_path.is_some()
+          || diff.repo.is_some()
+          || diff.branch.is_some()
+          || diff.commit.is_some();
+        if changed {
+          cache.insert(
+            target,
+            Some((String::from("stack config has changed"), after)),
+          );
+          return Ok(());
+        }
+      }
+      // All other cases will require Deploy to enter Running state.
+      _ => {
+        cache.insert(
+          target,
+          Some((format!("stack has {state} state"), after)),
+        );
+        return Ok(());
+      }
+    };
+
+    // Check 'after' to see if they deploy.
+    insert_target_using_after(
+      target,
+      after,
+      SyncDeployParams {
+        deployments,
+        deployment_map,
+        stacks,
+        stack_map,
+        all_resources,
+      },
+      cache,
+      build_version_cache,
+    )
+    .await
+  })
+}
+
+async fn insert_target_using_after<'a>(
+  target: ResourceTarget,
+  after: Vec<ResourceTarget>,
+  SyncDeployParams {
+    deployments,
+    deployment_map,
+    stacks,
+    stack_map,
+    all_resources,
+  }: SyncDeployParams<'a>,
+  cache: &'a mut ToDeployCacheInner,
+  build_version_cache: &'a mut BuildVersionCache,
+) -> anyhow::Result<()> {
+  for parent in &after {
+    match cache.get(parent) {
+      Some(Some(_)) => {
+        // a parent will deploy
+        let (variant, name) = parent.extract_variant_id();
+        cache.insert(
+          target.to_owned(),
+          Some((
+            format!(
+              "{variant} parent dependency '{}' is deploying",
+              bold(name)
+            ),
+            after,
+          )),
+        );
+        return Ok(());
+      }
+      // The parent will not deploy, do nothing here.
+      Some(None) => {}
+      None => {
+        match parent {
+          ResourceTarget::Deployment(name) => {
+            let Some(parent_deployment) =
+              deployments.iter().find(|d| &d.name == name)
+            else {
+              // The parent is not in the sync, so won't be deploying
+              // Note that cross-sync deploy dependencies are not currently supported.
+              continue;
+            };
+            // Recurse to add the parent to cache, then check again.
+            build_cache_for_deployment(
+              parent_deployment,
+              SyncDeployParams {
+                deployments,
+                deployment_map,
+                stacks,
+                stack_map,
+                all_resources,
+              },
+              cache,
+              build_version_cache,
+            )
+            .await?;
+            match cache.get(parent) {
+              Some(Some(_)) => {
+                // Same as the 'Some' case above
+                let (variant, name) = parent.extract_variant_id();
+                cache.insert(
+                  target.to_owned(),
+                  Some((
+                    format!(
+                      "{variant} parent dependency '{}' is deploying",
+                      bold(name)
+                    ),
+                    after,
+                  )),
+                );
+                return Ok(());
+              },
+              // The parent will not deploy, do nothing here.
+              Some(None) => {},
+              None => return Err(anyhow!("Did not find parent in cache after build recursion. This should not happen."))
+            }
+          }
+          ResourceTarget::Stack(name) => {
+            let Some(parent_stack) =
+              stacks.iter().find(|d| &d.name == name)
+            else {
+              // The parent is not in the sync, so won't be deploying
+              // Note that cross-sync deploy dependencies are not currently supported.
+              continue;
+            };
+            // Recurse to add the parent to cache, then check again.
+            build_cache_for_stack(
+              parent_stack,
+              SyncDeployParams {
+                deployments,
+                deployment_map,
+                stacks,
+                stack_map,
+                all_resources,
+              },
+              cache,
+              build_version_cache,
+            )
+            .await?;
+            match cache.get(parent) {
+              Some(Some(_)) => {
+                // Same as the 'Some' case above
+                let (variant, name) = parent.extract_variant_id();
+                cache.insert(
+                  target.to_owned(),
+                  Some((
+                    format!(
+                      "{variant} parent dependency '{}' is deploying",
+                      bold(name)
+                    ),
+                    after,
+                  )),
+                );
+                return Ok(());
+              },
+              // The parent will not deploy, do nothing here.
+              Some(None) => {},
+              None => return Err(anyhow!("Did not find parent in cache after build recursion. This should not happen."))
+            }
+          }
+          _ => unreachable!(),
+        }
+      }
+    }
+  }
+
+  // If it has reached here, its not deploying
+  cache.insert(target, None);
+  Ok(())
+}
+
+fn get_after_as_resource_targets(
+  resource_name: &str,
+  after: &[String],
+  // Names to deployments
+  deployment_map: &HashMap<String, Deployment>,
+  // Names to stacks
+  stack_map: &HashMap<String, Stack>,
+) -> anyhow::Result<Vec<ResourceTarget>> {
+  after.iter().map(|name| match deployment_map.get(name) {
+    Some(_) => Ok(ResourceTarget::Deployment(name.clone())),
+    None => match stack_map.get(name) {
+      Some(_) => Ok(ResourceTarget::Stack(name.clone())),
+      None => Err(anyhow!("failed to match deploy dependency in 'after' | resource: {resource_name} | dependency: {name}"))
+    }
+  }).collect()
 }

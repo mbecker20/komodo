@@ -6,6 +6,7 @@ use monitor_client::{
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig},
+    deployment::{Deployment, DeploymentImage},
     procedure::Procedure,
     repo::Repo,
     server::Server,
@@ -43,6 +44,63 @@ impl ResourceSync for Server {
   }
 }
 
+impl ResourceSync for Deployment {
+  fn resource_target(id: String) -> ResourceTarget {
+    ResourceTarget::Deployment(id)
+  }
+
+  fn get_diff(
+    mut original: Self::Config,
+    update: Self::PartialConfig,
+    resources: &AllResourcesById,
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    // need to replace the server id with name
+    original.server_id = resources
+      .servers
+      .get(&original.server_id)
+      .map(|s| s.name.clone())
+      .unwrap_or_default();
+
+    // need to replace the build id with name
+    if let DeploymentImage::Build { build_id, version } =
+      &original.image
+    {
+      original.image = DeploymentImage::Build {
+        build_id: resources
+          .builds
+          .get(build_id)
+          .map(|b| b.name.clone())
+          .unwrap_or_default(),
+        version: *version,
+      };
+    }
+
+    Ok(original.partial_diff(update))
+  }
+}
+
+impl ResourceSync for Stack {
+  fn resource_target(id: String) -> ResourceTarget {
+    ResourceTarget::Stack(id)
+  }
+
+  fn get_diff(
+    mut original: Self::Config,
+    update: Self::PartialConfig,
+    resources: &AllResourcesById,
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    // Need to replace server id with name
+    original.server_id = resources
+      .servers
+      .get(&original.server_id)
+      .map(|s| s.name.clone())
+      .unwrap_or_default();
+
+    Ok(original.partial_diff(update))
+  }
+}
+
+
 impl ResourceSync for Build {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Build(id)
@@ -64,6 +122,9 @@ impl ResourceSync for Build {
 
   fn validate_diff(diff: &mut Self::ConfigDiff) {
     if let Some((_, to)) = &diff.version {
+      // When setting a build back to "latest" version,
+      // Don't actually set version to None.
+      // You can do this on the db, or set it to 0.0.1
       if to.is_none() {
         diff.version = None;
       }
@@ -74,27 +135,6 @@ impl ResourceSync for Build {
 impl ResourceSync for Repo {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Repo(id)
-  }
-
-  fn get_diff(
-    mut original: Self::Config,
-    update: Self::PartialConfig,
-    resources: &AllResourcesById,
-  ) -> anyhow::Result<Self::ConfigDiff> {
-    // Need to replace server id with name
-    original.server_id = resources
-      .servers
-      .get(&original.server_id)
-      .map(|s| s.name.clone())
-      .unwrap_or_default();
-
-    Ok(original.partial_diff(update))
-  }
-}
-
-impl ResourceSync for Stack {
-  fn resource_target(id: String) -> ResourceTarget {
-    ResourceTarget::Stack(id)
   }
 
   fn get_diff(

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use monitor_client::{
@@ -9,12 +11,14 @@ use monitor_client::{
     build::Build,
     builder::Builder,
     config::core::CoreConfig,
+    deployment::Deployment,
     monitor_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
     server::{stats::SeverityLevel, Server},
     server_template::ServerTemplate,
+    stack::Stack,
     sync::{
       PartialResourceSyncConfig, PendingSyncUpdates,
       PendingSyncUpdatesData, PendingSyncUpdatesDataErr,
@@ -40,7 +44,7 @@ use crate::{
     alert::send_alerts,
     query::get_id_to_tags,
     sync::{
-      deployment,
+      deploy::SyncDeployParams,
       resource::{get_updates_for_view, AllResourcesById},
     },
   },
@@ -124,8 +128,33 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           .context("failed to get remote resources")?;
       let resources = res?;
 
-      let all_resources = AllResourcesById::load().await?;
       let id_to_tags = get_id_to_tags(None).await?;
+      let all_resources = AllResourcesById::load().await?;
+
+      let deployments_by_name = all_resources
+        .deployments
+        .values()
+        .map(|deployment| {
+          (deployment.name.clone(), deployment.clone())
+        })
+        .collect::<HashMap<_, _>>();
+      let stacks_by_name = all_resources
+        .stacks
+        .values()
+        .map(|stack| (stack.name.clone(), stack.clone()))
+        .collect::<HashMap<_, _>>();
+
+      let deploy_updates =
+        crate::helpers::sync::deploy::get_updates_for_view(
+          SyncDeployParams {
+            deployments: &resources.deployments,
+            deployment_map: &deployments_by_name,
+            stacks: &resources.stacks,
+            stack_map: &stacks_by_name,
+            all_resources: &all_resources,
+          },
+        )
+        .await;
 
       let data = PendingSyncUpdatesDataOk {
         server_updates: get_updates_for_view::<Server>(
@@ -136,7 +165,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         )
         .await
         .context("failed to get server updates")?,
-        deployment_updates: deployment::get_updates_for_view(
+        deployment_updates: get_updates_for_view::<Deployment>(
           resources.deployments,
           sync.config.delete,
           &all_resources,
@@ -144,6 +173,14 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         )
         .await
         .context("failed to get deployment updates")?,
+        stack_updates: get_updates_for_view::<Stack>(
+          resources.stacks,
+          sync.config.delete,
+          &all_resources,
+          &id_to_tags,
+        )
+        .await
+        .context("failed to get stack updates")?,
         build_updates: get_updates_for_view::<Build>(
           resources.builds,
           sync.config.delete,
@@ -218,6 +255,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           )
           .await
           .context("failed to get user group updates")?,
+        deploy_updates,
       };
       anyhow::Ok((hash, message, data))
     }

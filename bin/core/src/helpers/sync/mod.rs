@@ -10,15 +10,15 @@ use crate::{
   state::{db_client, State},
 };
 
-pub mod deployment;
+// pub mod deployment;
 pub mod remote;
 pub mod resource;
 pub mod user_groups;
 pub mod variables;
+pub mod deploy;
 
 mod file;
 mod resources;
-mod deploy;
 
 pub fn spawn_sync_refresh_loop() {
   let interval: Timelength = core_config()

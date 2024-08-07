@@ -103,6 +103,8 @@ pub struct PendingSyncUpdatesDataOk {
   pub server_updates: Option<SyncUpdate>,
   /// Readable log of any pending deployment updates
   pub deployment_updates: Option<SyncUpdate>,
+  /// Readable log of any pending deployment updates
+  pub stack_updates: Option<SyncUpdate>,
   /// Readable log of any pending build updates
   pub build_updates: Option<SyncUpdate>,
   /// Readable log of any pending repo updates
@@ -121,6 +123,8 @@ pub struct PendingSyncUpdatesDataOk {
   pub variable_updates: Option<SyncUpdate>,
   /// Readable log of any pending user group updates
   pub user_group_updates: Option<SyncUpdate>,
+  /// Readable log of any deploy actions that will be performed
+  pub deploy_updates: Option<SyncDeployUpdate>,
 }
 
 impl PendingSyncUpdatesDataOk {
@@ -148,6 +152,15 @@ pub struct SyncUpdate {
   pub to_update: i32,
   /// Resources to delete
   pub to_delete: i32,
+  /// A readable log of all the changes to be applied
+  pub log: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SyncDeployUpdate {
+  /// Resources to deploy
+  pub to_deploy: i32,
   /// A readable log of all the changes to be applied
   pub log: String,
 }

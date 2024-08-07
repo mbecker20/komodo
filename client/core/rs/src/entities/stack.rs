@@ -322,6 +322,15 @@ pub struct StackConfig {
   #[partial_default(default_git_https())]
   pub git_https: bool,
 
+  /// The git account used to access private repos.
+  /// Passing empty string can only clone public repos.
+  ///
+  /// Note. A token for the account must be available in the core config or the builder server's periphery config
+  /// for the configured git provider.
+  #[serde(default)]
+  #[builder(default)]
+  pub git_account: String,
+
   /// The Github repo used as the source of the build.
   #[serde(default)]
   #[builder(default)]
@@ -337,15 +346,6 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub commit: String,
-
-  /// The git account used to access private repos.
-  /// Passing empty string can only clone public repos.
-  ///
-  /// Note. A token for the account must be available in the core config or the builder server's periphery config
-  /// for the configured git provider.
-  #[serde(default)]
-  #[builder(default)]
-  pub git_account: String,
 
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]

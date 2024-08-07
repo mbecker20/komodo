@@ -14,6 +14,7 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     server_template::ServerTemplate,
+    stack::Stack,
     sync::SyncUpdate,
     tag::Tag,
     toml::ResourceToml,
@@ -513,6 +514,7 @@ pub async fn run_update_description<Resource: ResourceSync>(
 pub struct AllResourcesById {
   pub servers: HashMap<String, Server>,
   pub deployments: HashMap<String, Deployment>,
+  pub stacks: HashMap<String, Stack>,
   pub builds: HashMap<String, Build>,
   pub repos: HashMap<String, Repo>,
   pub procedures: HashMap<String, Procedure>,
@@ -520,7 +522,6 @@ pub struct AllResourcesById {
   pub alerters: HashMap<String, Alerter>,
   pub templates: HashMap<String, ServerTemplate>,
   pub syncs: HashMap<String, entities::sync::ResourceSync>,
-  pub stacks: HashMap<String, entities::stack::Stack>,
 }
 
 impl AllResourcesById {
