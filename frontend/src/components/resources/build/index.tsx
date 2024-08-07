@@ -8,17 +8,16 @@ import { DeleteResource, NewResource } from "../common";
 import { DeploymentTable } from "../deployment/table";
 import { RunBuild } from "./actions";
 import {
-  bg_color_class_by_intention,
   build_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
-import { Card, CardHeader } from "@ui/card";
 import { cn } from "@lib/utils";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceComponents } from "..";
 import { Types } from "@monitor/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { StatusBadge } from "@components/util";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -111,12 +110,7 @@ export const BuildComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       let state = useBuild(id)?.info.state;
-      const color = bg_color_class_by_intention(build_state_intention(state));
-      return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{state}</CardHeader>
-        </Card>
-      );
+      return <StatusBadge text={state} intent={build_state_intention(state)} />;
     },
   },
 

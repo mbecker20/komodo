@@ -6,7 +6,6 @@ import { StackConfig } from "./config";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { StackTable } from "./table";
 import {
-  bg_color_class_by_intention,
   stack_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -28,8 +27,8 @@ import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
 import { StackServices } from "./services";
-import { snake_case_to_upper_space_case } from "@lib/formatting";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { StatusBadge } from "@components/util";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -125,15 +124,7 @@ export const StackComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
-      const color = bg_color_class_by_intention(stack_state_intention(state));
-      return (
-        <p className={cn("p-1 w-fit text-[10px] text-white rounded-md", color)}>
-          {snake_case_to_upper_space_case(state).toUpperCase()}
-        </p>
-        // <Card className={cn("w-fit", color)}>
-        //   <CardHeader className="py-0 px-2">{state}</CardHeader>
-        // </Card>
-      );
+      return <StatusBadge text={state} intent={stack_state_intention(state)} />;
     },
     ProjectMissing: ({ id }) => {
       const info = useStack(id)?.info;

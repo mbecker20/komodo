@@ -32,10 +32,10 @@ export const Layout = () => {
   return (
     <>
       <Topbar />
-      <div className="h-[calc(100vh-64px)] overflow-y-auto">
-        <div className="container  py-24">
+      <div className="h-screen overflow-y-auto">
+        <div className="container">
           <Sidebar />
-          <div className="ml-64">
+          <div className="md:ml-64 md:pl-8 py-24">
             <Outlet />
           </div>
         </div>
@@ -64,7 +64,7 @@ export const Page = ({
   actions,
   children,
 }: PageProps) => (
-  <div className="w-full flex flex-col gap-12 pl-8">
+  <div className="w-full flex flex-col gap-12">
     {(title || icon || subtitle || actions) && (
       <div
         className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
@@ -133,7 +133,7 @@ export const Section = ({
   children,
   itemsCenterTitleRow,
 }: SectionProps) => (
-  <div className="flex flex-col gap-4 max-w-[calc(100vw-100px)] lg:max-w-[calc(100vw-300px)] overflow-x-auto">
+  <div className="flex flex-col gap-4 overflow-x-auto">
     <div
       className={cn(
         "flex flex-wrap gap-2 justify-between py-1",

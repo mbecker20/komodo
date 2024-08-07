@@ -173,11 +173,10 @@ export const ResourceLink = ({
     <Link
       to={`/${usableResourcePath(type)}/${id}`}
       onClick={(e) => e.stopPropagation()}
+      className="flex items-center gap-2 text-sm"
     >
-      <Button variant="link" className="flex gap-2 items-center p-0">
-        <Components.Icon id={id} />
-        <ResourceName type={type} id={id} />
-      </Button>
+      <Components.Icon id={id} />
+      <ResourceName type={type} id={id} />
     </Link>
   );
 };

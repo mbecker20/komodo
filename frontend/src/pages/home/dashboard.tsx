@@ -48,10 +48,10 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
       ? "Resource Sync"
       : type;
   return (
-    <div className="p-6 border rounded-md flex gap-8">
+    <div className="p-6 border rounded-md flex flex-col lg:flex-row gap-8">
       <Link
         to={`/${usableResourcePath(type)}`}
-        className="flex flex-col justify-between pr-8 border-r group"
+        className="flex flex-col justify-between pr-8 lg:border-r group"
       >
         <div className="flex items-center gap-4 text-xl group-hover:underline">
           <Components.Icon />
@@ -64,14 +64,14 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
           <History className="w-4" />
           Recently Viewed
         </p>
-        <div className="h-52 grid grid-cols-3 gap-4">
+        <div className="h-52 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {ids.map((id, i) => (
             <RecentCard
               key={type + id}
               type={type}
               id={id}
               className={
-                i > 3 ? "hidden 2xl:block" : i > 1 ? "hidden xl:block" : false
+                i > 3 ? "hidden lg:flex" : i > 1 ? "hidden md:flex" : undefined
               }
             />
           ))}
@@ -84,10 +84,11 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
 const RecentCard = ({
   type,
   id,
+  className,
 }: {
   type: UsableResource;
   id: string;
-  className: string | false;
+  className?: string;
 }) => {
   const Components = ResourceComponents[type];
   const resource = Components.list_item(id);
@@ -99,7 +100,10 @@ const RecentCard = ({
   return (
     <Link
       to={`${usableResourcePath(type)}/${id}`}
-      className="w-full p-4 border rounded-md hover:bg-accent/25 hover:-translate-y-1 transition-all h-24 flex flex-col justify-between"
+      className={cn(
+        "w-full p-4 border rounded-md hover:bg-accent/25 hover:-translate-y-1 transition-all h-24 flex flex-col justify-between",
+        className
+      )}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm">
