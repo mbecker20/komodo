@@ -82,7 +82,7 @@ impl Resolve<CreateGitProviderAccount, User> for State {
 impl Resolve<UpdateGitProviderAccount, User> for State {
   async fn resolve(
     &self,
-    UpdateGitProviderAccount { id, account }: UpdateGitProviderAccount,
+    UpdateGitProviderAccount { id, mut account }: UpdateGitProviderAccount,
     user: User,
   ) -> anyhow::Result<UpdateGitProviderAccountResponse> {
     if !user.admin {
@@ -106,6 +106,9 @@ impl Resolve<UpdateGitProviderAccount, User> for State {
         ));
       }
     }
+
+    // Ensure update does not change id
+    account.id = None;
 
     let mut update = make_update(
       ResourceTarget::system(),
