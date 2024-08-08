@@ -198,6 +198,13 @@ impl Resolve<DeleteGitProviderAccount, User> for State {
 
     update.finalize();
 
+    add_update(update)
+      .await
+      .inspect_err(|e| {
+        error!("failed to add update for delete git provider account | {e:#}")
+      })
+      .ok();
+
     Ok(account)
   }
 }
@@ -382,6 +389,13 @@ impl Resolve<DeleteDockerRegistryAccount, User> for State {
     );
 
     update.finalize();
+
+    add_update(update)
+      .await
+      .inspect_err(|e| {
+        error!("failed to add update for delete docker registry account | {e:#}")
+      })
+      .ok();
 
     Ok(account)
   }
