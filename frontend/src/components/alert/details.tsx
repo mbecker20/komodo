@@ -31,6 +31,7 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
                   <ResourceLink
                     type={alert.target.type as UsableResource}
                     id={alert.target.id}
+                    onClick={() => set(false)}
                   />
                   <div className="text-muted-foreground">
                     {fmt_date_with_minutes(new Date(alert.ts))}

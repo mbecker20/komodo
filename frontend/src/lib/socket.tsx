@@ -80,6 +80,8 @@ const on_message = (
 
   // Do invalidations of these only if update is completed
   if (update.status === Types.UpdateStatus.Complete) {
+    invalidate(["ListAlerts"]);
+
     if (update.target.type === "Deployment") {
       invalidate(
         ["ListDeployments"],

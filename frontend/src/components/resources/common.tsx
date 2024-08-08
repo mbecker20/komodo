@@ -164,15 +164,20 @@ export const ResourceSelector = ({
 export const ResourceLink = ({
   type,
   id,
+  onClick,
 }: {
   type: UsableResource;
   id: string;
+  onClick?: () => void;
 }) => {
   const Components = ResourceComponents[type];
   return (
     <Link
       to={`/${usableResourcePath(type)}/${id}`}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
       className="flex items-center gap-2 text-sm"
     >
       <Components.Icon id={id} />
