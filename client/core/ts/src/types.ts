@@ -746,7 +746,7 @@ export interface GitProvider {
 	accounts: ProviderAccount[];
 }
 
-export type ListGitProvidersResponse = GitProvider[];
+export type ListGitProvidersFromConfigResponse = GitProvider[];
 
 export interface DockerRegistry {
 	/** The docker provider domain. Default: `docker.io`. */
@@ -760,7 +760,7 @@ export interface DockerRegistry {
 	organizations?: string[];
 }
 
-export type ListDockerRegistriesResponse = DockerRegistry[];
+export type ListDockerRegistriesFromConfigResponse = DockerRegistry[];
 
 export type ListAwsEcrLabelsResponse = string[];
 
@@ -2937,15 +2937,15 @@ export interface GetCoreInfoResponse {
 }
 
 /**
- * List the git providers.
- * Response: [ListGitProvidersResponse].
+ * List the git providers available in Core / Periphery config files.
+ * Response: [ListGitProvidersFromConfigResponse].
  * 
  * Includes:
  * - providers in core config
  * - providers configured on builds, repos, syncs
  * - providers on the optional Server or Builder
  */
-export interface ListGitProviders {
+export interface ListGitProvidersFromConfig {
 	/**
 	 * Accepts an optional Server or Builder target to expand the core list with
 	 * providers available on that specific resource.
@@ -2954,15 +2954,15 @@ export interface ListGitProviders {
 }
 
 /**
- * List the suggested docker registry providers.
- * Response: [ListDockerRegistriesResponse].
+ * List the docker registry providers available in Core / Periphery config files.
+ * Response: [ListDockerRegistriesFromConfigResponse].
  * 
  * Includes:
  * - registries in core config
  * - registries configured on builds, deployments
  * - registries on the optional Server or Builder
  */
-export interface ListDockerRegistries {
+export interface ListDockerRegistriesFromConfig {
 	/**
 	 * Accepts an optional Server or Builder target to expand the core list with
 	 * providers available on that specific resource.
@@ -5008,6 +5008,13 @@ export interface ComposeFile {
 	services?: Record<string, ComposeService>;
 }
 
+export interface SyncDeployUpdate {
+	/** Resources to deploy */
+	to_deploy: number;
+	/** A readable log of all the changes to be applied */
+	log: string;
+}
+
 export interface SyncUpdate {
 	/** Resources to create */
 	to_create: number;
@@ -5019,20 +5026,15 @@ export interface SyncUpdate {
 	log: string;
 }
 
-export interface SyncDeployUpdate {
-	/** Resources to deploy */
-	to_deploy: number;
-	/** A readable log of all the changes to be applied */
-	log: string;
-}
-
 export interface PendingSyncUpdatesDataOk {
-	/** Readable log of any pending server updates */
-	server_updates?: SyncUpdate;
+	/** Readable log of any deploy actions that will be performed */
+	deploy_updates?: SyncDeployUpdate;
 	/** Readable log of any pending deployment updates */
 	deployment_updates?: SyncUpdate;
 	/** Readable log of any pending deployment updates */
 	stack_updates?: SyncUpdate;
+	/** Readable log of any pending server updates */
+	server_updates?: SyncUpdate;
 	/** Readable log of any pending build updates */
 	build_updates?: SyncUpdate;
 	/** Readable log of any pending repo updates */
@@ -5051,8 +5053,6 @@ export interface PendingSyncUpdatesDataOk {
 	variable_updates?: SyncUpdate;
 	/** Readable log of any pending user group updates */
 	user_group_updates?: SyncUpdate;
-	/** Readable log of any deploy actions that will be performed */
-	deploy_updates?: SyncDeployUpdate;
 }
 
 export interface PendingSyncUpdatesDataErr {
@@ -5098,8 +5098,8 @@ export type ReadRequest =
 	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "ListAwsEcrLabels", params: ListAwsEcrLabels }
 	| { type: "ListSecrets", params: ListSecrets }
-	| { type: "ListGitProviders", params: ListGitProviders }
-	| { type: "ListDockerRegistries", params: ListDockerRegistries }
+	| { type: "ListGitProvidersFromConfig", params: ListGitProvidersFromConfig }
+	| { type: "ListDockerRegistriesFromConfig", params: ListDockerRegistriesFromConfig }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetPermissionLevel", params: GetPermissionLevel }
 	| { type: "FindUser", params: FindUser }

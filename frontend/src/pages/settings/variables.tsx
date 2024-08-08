@@ -49,8 +49,13 @@ export const Variables = () => {
       } else return true;
     }) ?? [];
   const { toast } = useToast();
-  const { mutate: updateValue } = useWrite("UpdateVariableValue");
   const inv = useInvalidate();
+  const { mutate: updateValue } = useWrite("UpdateVariableValue", {
+    onSuccess: () => {
+      inv(["ListVariables"], ["GetVariable"]);
+      toast({ title: "Updated variable value" });
+    },
+  });
   const { mutate: updateDescription } = useWrite("UpdateVariableDescription", {
     onSuccess: () => {
       inv(["ListVariables"], ["GetVariable"]);
@@ -197,15 +202,6 @@ export const CreateVariable = () => {
       toast({ title: "Variable Created" });
       setOpen(false);
     },
-    onError: (e) => {
-      console.log("create variable error:" + e);
-      toast({
-        title: "Failed to create variable",
-        description: "See console for details",
-        variant: "destructive",
-      });
-      setOpen(false);
-    },
   });
   const submit = () => mutate({ name });
   return (
@@ -228,6 +224,7 @@ export const CreateVariable = () => {
               onChange={(e) =>
                 setName(e.target.value.toUpperCase().replaceAll(" ", "_"))
               }
+              placeholder="Input variable name"
             />
           </div>
         </div>
@@ -252,15 +249,7 @@ const DeleteVariable = ({ name }: { name: string }) => {
   const { mutate, isPending } = useWrite("DeleteVariable", {
     onSuccess: () => {
       invalidate(["ListVariables"], ["GetVariable"]);
-      toast({ title: "Variable Deleted" });
-    },
-    onError: (e) => {
-      console.log("delete variable error:" + e);
-      toast({
-        title: "Failed to delete variable",
-        description: "See console for details",
-        variant: "destructive",
-      });
+      toast({ title: "Variable deleted" });
     },
   });
   return (

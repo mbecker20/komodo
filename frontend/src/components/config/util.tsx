@@ -65,12 +65,7 @@ export const ConfigItem = ({
     >
       <div className="flex items-center gap-4">
         {label && (
-          <div
-            className={cn(
-              "text-nowrap",
-              boldLabel && "font-semibold"
-            )}
-          >
+          <div className={cn("text-nowrap", boldLabel && "font-semibold")}>
             {snake_case_to_upper_space_case(label)}
           </div>
         )}
@@ -235,9 +230,14 @@ export const ProviderSelector = ({
   onSelect: (provider: string) => void;
   showCustom?: boolean;
 }) => {
-  const request =
-    account_type === "git" ? "ListGitProviders" : "ListDockerRegistries";
-  const providers = useRead(request, {}).data;
+  const [db_request, config_request]:
+    | ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+    | ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"] =
+    account_type === "git"
+      ? ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+      : ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"];
+  const db_providers = useRead(db_request, {}).data;
+  const config_providers = useRead(config_request, {}).data;
   const [customMode, setCustomMode] = useState(false);
 
   if (customMode) {
@@ -252,6 +252,16 @@ export const ProviderSelector = ({
       />
     );
   }
+
+  const domains = new Set<string>();
+  for (const provider of db_providers ?? []) {
+    domains.add(provider.domain);
+  }
+  for (const provider of config_providers ?? []) {
+    domains.add(provider.domain);
+  }
+  const providers = [...domains];
+  providers.sort();
 
   return (
     <Select
@@ -273,21 +283,14 @@ export const ProviderSelector = ({
         <SelectValue placeholder="Select Provider" />
       </SelectTrigger>
       <SelectContent>
-        {providers?.map(
-          (provider: Types.GitProvider | Types.DockerRegistry) => (
-            <SelectItem key={provider.domain} value={provider.domain}>
-              {provider.domain}
-            </SelectItem>
-          )
-        )}
+        {providers?.map((provider) => (
+          <SelectItem key={provider} value={provider}>
+            {provider}
+          </SelectItem>
+        ))}
         {providers !== undefined &&
           selected &&
-          !providers
-            .map(
-              (provider: Types.GitProvider | Types.DockerRegistry) =>
-                provider.domain
-            )
-            .includes(selected) && (
+          !providers.includes(selected) && (
             <SelectItem value={selected}>{selected}</SelectItem>
           )}
         {showCustom && <SelectItem value={"Custom"}>Custom</SelectItem>}
@@ -341,16 +344,28 @@ export const AccountSelector = ({
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const request =
-    account_type === "git" ? "ListGitProviders" : "ListDockerRegistries";
-  const params =
+  const [db_request, config_request]:
+    | ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+    | ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"] =
+    account_type === "git"
+      ? ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+      : ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"];
+  const config_params =
     type === "None" ? {} : { target: id ? { type, id } : undefined };
-  const providers = useRead(request, params).data?.filter(
+  const db_accounts = useRead(db_request, {}).data?.filter(
+    (account) => account.domain === provider
+  );
+  const config_providers = useRead(config_request, config_params).data?.filter(
     (_provider) => _provider.domain === provider
   );
 
   const _accounts = new Set<string>();
-  for (const provider of providers ?? []) {
+  for (const account of db_accounts ?? []) {
+    if (account.username) {
+      _accounts.add(account.username);
+    }
+  }
+  for (const provider of config_providers ?? []) {
     for (const account of provider.accounts ?? []) {
       _accounts.add(account.username);
     }
@@ -655,7 +670,8 @@ export const ImageRegistryConfig = ({
 }) => {
   const registry = _registry ?? default_registry_config("None");
 
-  const provider = useRead("ListDockerRegistries", {
+  // This is the only way to get organizations for now
+  const config_provider = useRead("ListDockerRegistriesFromConfig", {
     target: resource_id ? { type: "Builder", id: resource_id } : undefined,
   }).data?.find((provider) => {
     if (registry.type === "Standard") {
@@ -702,7 +718,7 @@ export const ImageRegistryConfig = ({
     );
   }
 
-  const organizations = provider?.organizations ?? [];
+  const organizations = config_provider?.organizations ?? [];
 
   return (
     <>
@@ -732,7 +748,7 @@ export const ImageRegistryConfig = ({
         <ConfigItem label="Organization">
           <OrganizationSelector
             organizations={organizations}
-            selected={registry.params?.organization}
+            selected={registry.params?.organization!}
             set={(organization) =>
               setRegistry({
                 ...registry,
@@ -814,15 +830,43 @@ const OrganizationSelector = ({
   disabled,
 }: {
   organizations: string[];
-  selected?: string;
+  selected: string;
   set: (org: string) => void;
   disabled: boolean;
 }) => {
-  if (organizations.length === 0) return null;
+  const [customMode, setCustomMode] = useState(false);
+  if (customMode || organizations.length === 0) {
+    return (
+      <Input
+        placeholder="Input custom organization name"
+        value={selected}
+        onChange={(e) => set(e.target.value)}
+        className="max-w-[75%] lg:max-w-[400px]"
+        onBlur={() => setCustomMode(false)}
+        autoFocus
+      />
+    );
+  }
+
+  const orgs =
+    selected === "" || organizations.includes(selected)
+      ? organizations
+      : [...organizations, selected];
+  orgs.sort();
+
   return (
     <Select
       value={selected}
-      onValueChange={(v) => set(v === "Empty" ? "" : v)}
+      onValueChange={(organization) => {
+        if (organization === "Custom") {
+          set("");
+          setCustomMode(true);
+        } else if (organization === "Empty") {
+          set("");
+        } else {
+          set(organization);
+        }
+      }}
       disabled={disabled}
     >
       <SelectTrigger
@@ -833,11 +877,12 @@ const OrganizationSelector = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
-        {organizations?.map((org) => (
+        {orgs?.map((org) => (
           <SelectItem key={org} value={org}>
             {org}
           </SelectItem>
         ))}
+        <SelectItem value={"Custom"}>Custom</SelectItem>
       </SelectContent>
     </Select>
   );

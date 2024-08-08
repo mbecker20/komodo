@@ -7,12 +7,16 @@ import { CreateKey, Keys } from "./keys";
 import { Page } from "@components/layouts";
 import { useState } from "react";
 import { Input } from "@ui/input";
+import { ProvidersPage } from "./providers";
 
 export const Settings = () => {
   const user = useUser().data;
   const [view, setView] = useLocalStorage("settings-view-v0", "Variables");
   const [search, setSearch] = useState("");
-  const currentView = view === "Users" && !user?.admin ? "Variables" : view;
+  const currentView =
+    (view === "Users" || view === "Providers") && !user?.admin
+      ? "Variables"
+      : view;
   return (
     <Page>
       <Tabs
@@ -24,6 +28,9 @@ export const Settings = () => {
           <TabsList className="justify-start w-fit">
             <TabsTrigger value="Variables">Variables</TabsTrigger>
             <TabsTrigger value="Tags">Tags</TabsTrigger>
+            {user?.admin && (
+              <TabsTrigger value="Providers">Providers</TabsTrigger>
+            )}
             {user?.admin && <TabsTrigger value="Users">Users</TabsTrigger>}
             <TabsTrigger value="Api Keys">Api Keys</TabsTrigger>
           </TabsList>
@@ -47,6 +54,11 @@ export const Settings = () => {
         <TabsContent value="Tags">
           <Tags />
         </TabsContent>
+        {user?.admin && (
+          <TabsContent value="Providers">
+            <ProvidersPage />
+          </TabsContent>
+        )}
         {user?.admin && (
           <TabsContent value="Users">
             <UsersPage search={search} />

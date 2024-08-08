@@ -1,15 +1,12 @@
 use anyhow::Context;
 use command::run_monitor_command;
 use futures::TryFutureExt;
-use monitor_client::{
-  api::read::ListGitProviders,
-  entities::{update::Log, SystemCommand},
-};
+use monitor_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
   build::*, compose::*, container::*, git::*, network::*, stats::*,
   GetDockerLists, GetDockerListsResponse, GetHealth, GetVersion,
-  GetVersionResponse, ListDockerRegistries, ListSecrets, PruneSystem,
-  RunCommand,
+  GetVersionResponse, ListDockerRegistries, ListGitProviders,
+  ListSecrets, PruneSystem, RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -197,7 +194,7 @@ impl Resolve<GetDockerLists> for State {
       containers,
       networks,
       images,
-      projects
+      projects,
     })
   }
 }

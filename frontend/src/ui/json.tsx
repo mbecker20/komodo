@@ -1,4 +1,8 @@
 export const Json = ({ json }: any) => {
+  if (!json) {
+    return <p>null</p>;
+  }
+
   const type = typeof json;
 
   if (type === "function") {
@@ -21,12 +25,22 @@ export const Json = ({ json }: any) => {
     return <p>{json}</p>;
   }
 
-  // Type is object
+  // Type is object or array
+  if (Array.isArray(json)) {
+    return (
+      <div className="flex flex-col gap-2">
+        {(json as any[]).map((json) => (
+          <Json json={json} />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-2">
-      {Object.entries(json).map(([key, json]) => (
+      {Object.keys(json).map((key) => (
         <div className="flex gap-2">
-          <p>{key}</p>: <Json json={json} />
+          <p>{key}</p>: <Json json={json[key]} />
         </div>
       ))}
     </div>

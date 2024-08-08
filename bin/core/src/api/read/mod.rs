@@ -63,8 +63,8 @@ enum ReadRequest {
   #[to_string_resolver]
   ListAwsEcrLabels(ListAwsEcrLabels),
   ListSecrets(ListSecrets),
-  ListGitProviders(ListGitProviders),
-  ListDockerRegistries(ListDockerRegistries),
+  ListGitProvidersFromConfig(ListGitProvidersFromConfig),
+  ListDockerRegistriesFromConfig(ListDockerRegistriesFromConfig),
 
   // ==== USER ====
   GetUsername(GetUsername),
@@ -376,12 +376,12 @@ impl Resolve<ListSecrets, User> for State {
   }
 }
 
-impl Resolve<ListGitProviders, User> for State {
+impl Resolve<ListGitProvidersFromConfig, User> for State {
   async fn resolve(
     &self,
-    ListGitProviders { target }: ListGitProviders,
+    ListGitProvidersFromConfig { target }: ListGitProvidersFromConfig,
     user: User,
-  ) -> anyhow::Result<ListGitProvidersResponse> {
+  ) -> anyhow::Result<ListGitProvidersFromConfigResponse> {
     let mut providers = core_config().git_providers.clone();
 
     if let Some(target) = target {
@@ -467,12 +467,12 @@ impl Resolve<ListGitProviders, User> for State {
   }
 }
 
-impl Resolve<ListDockerRegistries, User> for State {
+impl Resolve<ListDockerRegistriesFromConfig, User> for State {
   async fn resolve(
     &self,
-    ListDockerRegistries { target }: ListDockerRegistries,
+    ListDockerRegistriesFromConfig { target }: ListDockerRegistriesFromConfig,
     _: User,
-  ) -> anyhow::Result<ListDockerRegistriesResponse> {
+  ) -> anyhow::Result<ListDockerRegistriesFromConfigResponse> {
     let mut registries = core_config().docker_registries.clone();
 
     if let Some(target) = target {

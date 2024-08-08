@@ -157,14 +157,13 @@ export const BuildConfig = ({
                 />
               ),
               image_name: {
-                description:
-                  "Optional. Push the image under a different name",
-                placeholder: "Custom image name"
+                description: "Optional. Push the image under a different name",
+                placeholder: "Custom image name",
               },
               image_tag: {
                 description:
                   "Optional. Postfix the image version with a custom tag.",
-                placeholder: ""
+                placeholder: "Custom image tag",
               },
               build_path: true,
               dockerfile_path: true,
@@ -236,6 +235,8 @@ export const BuildConfig = ({
           },
           {
             label: "Pre Build",
+            description:
+              "Execute a shell command before running docker build. The given Cwd is relative to repo root.",
             components: {
               pre_build: (value, set) => (
                 <SystemCommand

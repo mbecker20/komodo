@@ -105,8 +105,8 @@ pub struct GetCoreInfoResponse {
 
 //
 
-/// List the git providers.
-/// Response: [ListGitProvidersResponse].
+/// List the git providers available in Core / Periphery config files.
+/// Response: [ListGitProvidersFromConfigResponse].
 ///
 /// Includes:
 ///   - providers in core config
@@ -117,20 +117,20 @@ pub struct GetCoreInfoResponse {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(ListGitProvidersResponse)]
-pub struct ListGitProviders {
+#[response(ListGitProvidersFromConfigResponse)]
+pub struct ListGitProvidersFromConfig {
   /// Accepts an optional Server or Builder target to expand the core list with
   /// providers available on that specific resource.
   pub target: Option<ResourceTarget>,
 }
 
 #[typeshare]
-pub type ListGitProvidersResponse = Vec<GitProvider>;
+pub type ListGitProvidersFromConfigResponse = Vec<GitProvider>;
 
 //
 
-/// List the suggested docker registry providers.
-/// Response: [ListDockerRegistriesResponse].
+/// List the docker registry providers available in Core / Periphery config files.
+/// Response: [ListDockerRegistriesFromConfigResponse].
 ///
 /// Includes:
 ///   - registries in core config
@@ -141,15 +141,15 @@ pub type ListGitProvidersResponse = Vec<GitProvider>;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(ListDockerRegistriesResponse)]
-pub struct ListDockerRegistries {
+#[response(ListDockerRegistriesFromConfigResponse)]
+pub struct ListDockerRegistriesFromConfig {
   /// Accepts an optional Server or Builder target to expand the core list with
   /// providers available on that specific resource.
   pub target: Option<ResourceTarget>,
 }
 
 #[typeshare]
-pub type ListDockerRegistriesResponse = Vec<DockerRegistry>;
+pub type ListDockerRegistriesFromConfigResponse = Vec<DockerRegistry>;
 
 //
 

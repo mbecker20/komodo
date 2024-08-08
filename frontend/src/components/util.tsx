@@ -309,6 +309,7 @@ export const CopyButton = ({
 
 export const TextUpdateMenu = ({
   title,
+  titleRight,
   value = "",
   triggerClassName,
   onUpdate,
@@ -321,6 +322,7 @@ export const TextUpdateMenu = ({
   triggerHidden,
 }: {
   title: string;
+  titleRight?: ReactNode;
   value: string | undefined;
   onUpdate: (value: string) => void;
   triggerClassName?: string;
@@ -363,9 +365,20 @@ export const TextUpdateMenu = ({
         </Card>
       </DialogTrigger>
       <DialogContent className="min-w-[50vw]">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
+        {titleRight && (
+          <div className="flex items-center gap-4">
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+            </DialogHeader>
+            {titleRight}
+          </div>
+        )}
+        {!titleRight && (
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+        )}
+
         <Textarea
           value={_value}
           onChange={(e) => setValue(e.target.value)}
