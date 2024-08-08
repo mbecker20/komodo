@@ -267,7 +267,7 @@ impl Resolve<CreateDockerRegistryAccount, User> for State {
 impl Resolve<UpdateDockerRegistryAccount, User> for State {
   async fn resolve(
     &self,
-    UpdateDockerRegistryAccount { id, account }: UpdateDockerRegistryAccount,
+    UpdateDockerRegistryAccount { id, mut account }: UpdateDockerRegistryAccount,
     user: User,
   ) -> anyhow::Result<UpdateDockerRegistryAccountResponse> {
     if !user.admin {
@@ -292,6 +292,8 @@ impl Resolve<UpdateDockerRegistryAccount, User> for State {
       }
     }
 
+    account.id = None;
+
     let mut update = make_update(
       ResourceTarget::system(),
       Operation::UpdateDockerRegistryAccount,
@@ -301,7 +303,7 @@ impl Resolve<UpdateDockerRegistryAccount, User> for State {
     let account = to_document(&account).context(
       "failed to serialize partial docker registry account account to bson",
     )?;
-		
+
     let db = db_client().await;
     update_one_by_id(
       &db.registry_accounts,
