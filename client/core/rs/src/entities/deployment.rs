@@ -305,7 +305,11 @@ pub fn conversions_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
+    .filter(|(_, line)| {
+      !line.is_empty()
+        && !line.starts_with('#')
+        && !line.starts_with("//")
+    })
     .map(|(i, line)| {
       let (local, container) = line
         .split_once('=')
@@ -602,7 +606,11 @@ pub fn term_signal_labels_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
+    .filter(|(_, line)| {
+      !line.is_empty()
+        && !line.starts_with('#')
+        && !line.starts_with("//")
+    })
     .map(|(i, line)| {
       let (signal, label) = line
         .split_once('=')

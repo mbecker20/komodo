@@ -37,6 +37,8 @@ pub mod logger;
 pub mod permission;
 /// Subtypes of [Procedure][procedure::Procedure].
 pub mod procedure;
+/// Subtypes of [ProviderAccount][provider::ProviderAccount]
+pub mod provider;
 /// Subtypes of [Repo][repo::Repo].
 pub mod repo;
 /// Subtypes of [Resource][resource::Resource].
@@ -61,8 +63,6 @@ pub mod user;
 pub mod user_group;
 /// Subtypes of [Variable][variable::Variable]
 pub mod variable;
-/// Subtypes of [ProviderAccount][provider::ProviderAccount]
-pub mod provider;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;
@@ -366,7 +366,11 @@ pub fn environment_vars_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
+    .filter(|(_, line)| {
+      !line.is_empty()
+        && !line.starts_with('#')
+        && !line.starts_with("//")
+    })
     .map(|(i, line)| {
       let (variable, value) = line
         .split_once('=')
