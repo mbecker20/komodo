@@ -381,7 +381,13 @@ fn build_cache_for_deployment<'a>(
       _ => {
         cache.insert(
           target,
-          Some((format!("deployment has {state} state"), after)),
+          Some((
+            format!(
+              "deployment has {} state",
+              colored(state, Color::Red)
+            ),
+            after,
+          )),
         );
         return Ok(());
       }
@@ -565,7 +571,10 @@ fn build_cache_for_stack<'a>(
       _ => {
         cache.insert(
           target,
-          Some((format!("stack has {state} state"), after)),
+          Some((
+            format!("stack has {} state", colored(state, Color::Red)),
+            after,
+          )),
         );
         return Ok(());
       }
