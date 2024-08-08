@@ -1,8 +1,11 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { useExecute, useRead } from "@lib/hooks";
-import { Pause, Play, RefreshCcw, Rocket, Square, Trash2 } from "lucide-react";
+import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { Pause, Pen, Play, RefreshCcw, Rocket, Square, Trash2 } from "lucide-react";
 import { useStack } from ".";
 import { Types } from "@monitor/client";
+import { useToast } from "@ui/use-toast";
+import { useState } from "react";
+import { Input } from "@ui/input";
 
 export const DeployStack = ({ id }: { id: string }) => {
   const stack = useStack(id);
@@ -245,4 +248,37 @@ export const PauseUnpauseStack = ({
       />
     );
   }
+};
+
+export const RenameStack = ({ id }: { id: string }) => {
+  const invalidate = useInvalidate();
+  const [name, set] = useState("");
+  const { toast } = useToast();
+  const { mutate, isPending } = useWrite("RenameStack", {
+    onSuccess: () => {
+      invalidate(["ListStacks"]);
+      toast({ title: "Stack renamed" });
+      set("");
+    },
+  });
+  return (
+    <div className="flex items-center justify-between">
+      <div className="w-full">Rename Stack</div>
+      <div className="flex gap-4 w-full justify-end">
+        <Input
+          value={name}
+          onChange={(e) => set(e.target.value)}
+          className="w-96"
+          placeholder="Enter new name"
+        />
+        <ConfirmButton
+          title="Rename"
+          icon={<Pen className="w-4 h-4" />}
+          loading={isPending}
+          disabled={!name || isPending}
+          onClick={() => mutate({ id, name })}
+        />
+      </div>
+    </div>
+  );
 };

@@ -17,6 +17,7 @@ import {
   DeployStack,
   DestroyStack,
   PauseUnpauseStack,
+  RenameStack,
   RestartStack,
   StartStopStack,
 } from "./actions";
@@ -294,5 +295,10 @@ export const StackComponents: RequiredResourceComponents = {
 
   Config: ConfigServicesInfo,
 
-  DangerZone: ({ id }) => <DeleteResource type="Stack" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameStack id={id} />
+      <DeleteResource type="Stack" id={id} />
+    </>
+  ),
 };

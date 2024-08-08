@@ -255,6 +255,7 @@ export type WriteResponses = {
   CopyStack: Types.Stack;
   DeleteStack: Types.Stack;
   UpdateStack: Types.Stack;
+  RenameStack: Types.Update;
   RefreshStackCache: Types.NoData;
   CreateStackWebhook: Types.CreateStackWebhookResponse;
   DeleteStackWebhook: Types.DeleteStackWebhookResponse;

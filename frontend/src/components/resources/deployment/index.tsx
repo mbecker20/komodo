@@ -8,7 +8,6 @@ import {
   DeployContainer,
   StartStopContainer,
   RemoveContainer,
-  DeleteDeployment,
   RenameDeployment,
   RestartContainer,
   PauseUnpauseContainer,
@@ -19,7 +18,7 @@ import {
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { DeploymentTable } from "./table";
-import { NewResource, ResourceLink } from "../common";
+import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
@@ -214,7 +213,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
   DangerZone: ({ id }) => (
     <>
       <RenameDeployment id={id} />
-      <DeleteDeployment id={id} />
+      <DeleteResource type="Deployment" id={id} />
     </>
   ),
 };

@@ -1821,6 +1821,7 @@ export enum Operation {
 	RunSync = "RunSync",
 	CreateStack = "CreateStack",
 	UpdateStack = "UpdateStack",
+	RenameStack = "RenameStack",
 	DeleteStack = "DeleteStack",
 	RefreshStackCache = "RefreshStackCache",
 	DeployStack = "DeployStack",
@@ -4459,6 +4460,14 @@ export interface UpdateStack {
 	config: _PartialStackConfig;
 }
 
+/** Rename the stack at id to the given name. Response: [Update]. */
+export interface RenameStack {
+	/** The id of the stack to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
 /**
  * Trigger a refresh of the cached compose file contents.
  * Refreshes:
@@ -5270,6 +5279,7 @@ export type WriteRequest =
 	| { type: "CopyStack", params: CopyStack }
 	| { type: "DeleteStack", params: DeleteStack }
 	| { type: "UpdateStack", params: UpdateStack }
+	| { type: "RenameStack", params: RenameStack }
 	| { type: "RefreshStackCache", params: RefreshStackCache }
 	| { type: "CreateStackWebhook", params: CreateStackWebhook }
 	| { type: "DeleteStackWebhook", params: DeleteStackWebhook }

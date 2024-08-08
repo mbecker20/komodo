@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  stack::{Stack, _PartialStackConfig},
-  NoData,
+  stack::{Stack, _PartialStackConfig}, update::Update, NoData
 };
 
 use super::MonitorWriteRequest;
@@ -82,6 +81,22 @@ pub struct UpdateStack {
   pub id: String,
   /// The partial config update to apply.
   pub config: _PartialStackConfig,
+}
+
+//
+
+/// Rename the stack at id to the given name. Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(Update)]
+pub struct RenameStack {
+  /// The id of the stack to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }
 
 //

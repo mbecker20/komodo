@@ -1,7 +1,6 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { Play, Trash, Pause, Rocket, Pen, RefreshCcw } from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { useNavigate } from "react-router-dom";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { useEffect, useState } from "react";
@@ -314,45 +313,17 @@ export const PauseUnpauseContainer = ({ id }: DeploymentId) => {
   }
 };
 
-export const DeleteDeployment = ({ id }: { id: string }) => {
-  const nav = useNavigate();
-  const { data: d } = useRead("GetDeployment", { deployment: id });
-  const { mutateAsync, isPending } = useWrite("DeleteDeployment");
-
-  if (!d) return null;
-  return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Delete Deployment</div>
-      <ActionWithDialog
-        name={d.name}
-        title="Delete"
-        icon={<Trash className="h-4 w-4" />}
-        variant="destructive"
-        onClick={async () => {
-          await mutateAsync({ id });
-          nav("/deployments");
-        }}
-        disabled={isPending}
-        loading={isPending}
-      />
-    </div>
-  );
-};
-
 export const RenameDeployment = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();
-
+  const [name, set] = useState("");
   const { toast } = useToast();
   const { mutate, isPending } = useWrite("RenameDeployment", {
     onSuccess: () => {
       invalidate(["ListDeployments"]);
-      toast({ title: "Deployment Renamed" });
+      toast({ title: "Deployment renamed" });
       set("");
     },
   });
-
-  const [name, set] = useState("");
-
   return (
     <div className="flex items-center justify-between">
       <div className="w-full">Rename Deployment</div>

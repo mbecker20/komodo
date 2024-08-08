@@ -4,13 +4,18 @@ use monitor_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
+    monitor_timestamp,
     permission::PermissionLevel,
     stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
+    update::Update,
     user::User,
     NoData, Operation,
   },
 };
-use mungos::mongodb::bson::{doc, to_document};
+use mungos::{
+  by_id::update_one_by_id,
+  mongodb::bson::{doc, to_document},
+};
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
@@ -127,6 +132,46 @@ impl Resolve<UpdateStack, User> for State {
       update_cache_for_stack(stack).await;
     }
     res
+  }
+}
+
+impl Resolve<RenameStack, User> for State {
+  #[instrument(name = "RenameStack", skip(self, user))]
+  async fn resolve(
+    &self,
+    RenameStack { id, name }: RenameStack,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    let stack = resource::get_check_permissions::<Stack>(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
+
+    let mut update =
+      make_update(&stack, Operation::RenameStack, &user);
+
+    update_one_by_id(
+      &db_client().await.stacks,
+      &stack.id,
+      mungos::update::Update::Set(
+        doc! { "name": &name, "updated_at": monitor_timestamp() },
+      ),
+      None,
+    )
+    .await
+    .context("failed to update stack name on db")?;
+
+    update.push_simple_log(
+      "rename stack",
+      format!("renamed stack from {} to {}", stack.name, name),
+    );
+    update.finalize();
+
+    add_update(update.clone()).await?;
+
+    Ok(update)
   }
 }
 
