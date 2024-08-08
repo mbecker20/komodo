@@ -99,12 +99,14 @@ impl Default for PendingSyncUpdatesData {
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PendingSyncUpdatesDataOk {
-  /// Readable log of any pending server updates
-  pub server_updates: Option<SyncUpdate>,
+  /// Readable log of any deploy actions that will be performed
+  pub deploy_updates: Option<SyncDeployUpdate>,
   /// Readable log of any pending deployment updates
   pub deployment_updates: Option<SyncUpdate>,
   /// Readable log of any pending deployment updates
   pub stack_updates: Option<SyncUpdate>,
+  /// Readable log of any pending server updates
+  pub server_updates: Option<SyncUpdate>,
   /// Readable log of any pending build updates
   pub build_updates: Option<SyncUpdate>,
   /// Readable log of any pending repo updates
@@ -123,14 +125,14 @@ pub struct PendingSyncUpdatesDataOk {
   pub variable_updates: Option<SyncUpdate>,
   /// Readable log of any pending user group updates
   pub user_group_updates: Option<SyncUpdate>,
-  /// Readable log of any deploy actions that will be performed
-  pub deploy_updates: Option<SyncDeployUpdate>,
 }
 
 impl PendingSyncUpdatesDataOk {
   pub fn no_updates(&self) -> bool {
-    self.server_updates.is_none()
+    self.deploy_updates.is_none()
       && self.deployment_updates.is_none()
+      && self.stack_updates.is_none()
+      && self.server_updates.is_none()
       && self.build_updates.is_none()
       && self.repo_updates.is_none()
       && self.procedure_updates.is_none()

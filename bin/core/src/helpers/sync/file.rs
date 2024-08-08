@@ -45,15 +45,17 @@ fn read_resources_recursive(
 
     resources.servers.extend(more.servers);
     resources.deployments.extend(more.deployments);
+    resources.stacks.extend(more.stacks);
     resources.builds.extend(more.builds);
     resources.repos.extend(more.repos);
     resources.procedures.extend(more.procedures);
-    resources.builders.extend(more.builders);
     resources.alerters.extend(more.alerters);
+    resources.builders.extend(more.builders);
     resources.server_templates.extend(more.server_templates);
     resources.resource_syncs.extend(more.resource_syncs);
     resources.user_groups.extend(more.user_groups);
     resources.variables.extend(more.variables);
+
     Ok(())
   } else if res.is_dir() {
     let directory = fs::read_dir(path)

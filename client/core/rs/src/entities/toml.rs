@@ -37,6 +37,13 @@ pub struct ResourcesToml {
 
   #[serde(
     default,
+    rename = "stack",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub stacks: Vec<ResourceToml<PartialStackConfig>>,
+
+  #[serde(
+    default,
     rename = "build",
     skip_serializing_if = "Vec::is_empty"
   )]
@@ -84,13 +91,6 @@ pub struct ResourcesToml {
     skip_serializing_if = "Vec::is_empty"
   )]
   pub resource_syncs: Vec<ResourceToml<PartialResourceSyncConfig>>,
-
-  #[serde(
-    default,
-    rename = "stack",
-    skip_serializing_if = "Vec::is_empty"
-  )]
-  pub stacks: Vec<ResourceToml<PartialStackConfig>>,
 
   #[serde(
     default,
