@@ -6,10 +6,12 @@ import { cn } from "@lib/utils";
 import { useServer } from "../server";
 import {
   DeployContainer,
-  StartOrStopContainer,
+  StartStopContainer,
   RemoveContainer,
   DeleteDeployment,
   RenameDeployment,
+  RestartContainer,
+  PauseUnpauseContainer,
 } from "./actions";
 import { DeploymentLogs } from "./log";
 import {
@@ -199,7 +201,9 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return <RunBuild id={build_id} />;
     },
     DeployContainer,
-    StartOrStopContainer,
+    RestartContainer,
+    PauseUnpauseContainer,
+    StartStopContainer,
     RemoveContainer,
   },
 

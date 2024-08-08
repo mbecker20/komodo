@@ -64,6 +64,7 @@ export const DestroyStack = ({ id }: { id: string }) => {
   ).data?.destroying;
 
   if (
+    !stack ||
     state === undefined ||
     [Types.StackState.Unknown, Types.StackState.Down].includes(state)
   ) {
@@ -111,6 +112,7 @@ export const RestartStack = ({
     Types.DeploymentState.Unknown;
 
   if (
+    !stack ||
     stack?.info.project_missing ||
     (service && container_state !== Types.DeploymentState.Running) ||
     state !== Types.StackState.Running
@@ -152,7 +154,7 @@ export const StartStopStack = ({
       services?.find((s) => s.service === service)?.container?.state) ??
     Types.DeploymentState.Unknown;
 
-  if (stack?.info.project_missing) {
+  if (!stack || stack?.info.project_missing) {
     return null;
   }
 
@@ -210,7 +212,7 @@ export const PauseUnpauseStack = ({
       services?.find((s) => s.service === service)?.container?.state) ??
     Types.DeploymentState.Unknown;
 
-  if (stack?.info.project_missing) {
+  if (!stack || stack?.info.project_missing) {
     return null;
   }
 
