@@ -32,7 +32,7 @@ use mungos::{
   },
 };
 use periphery_client::{
-  api::{self, GetVersionResponse},
+  api::{self, git::RepoActionResponseV1_13, GetVersionResponse},
   PeripheryClient,
 };
 use resolver_api::Resolve;
@@ -199,6 +199,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
     let commit_hash = match res {
       Ok(res) => {
         debug!("finished repo clone");
+        let res: RepoActionResponseV1_13 = res.into();
         update.logs.extend(res.logs);
         res.commit_hash
       }

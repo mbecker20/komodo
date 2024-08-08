@@ -4,7 +4,7 @@ use monitor_client::entities::{
 };
 use periphery_client::api::git::{
   CloneRepo, DeleteRepo, GetLatestCommit, PullRepo,
-  RepoActionResponse,
+  RepoActionResponse, RepoActionResponseV1_13,
 };
 use resolver_api::Resolve;
 
@@ -53,10 +53,13 @@ impl Resolve<CloneRepo> for State {
     };
     git::clone(args, &periphery_config().repo_dir, token)
       .await
-      .map(|(logs, commit_hash, commit_message)| RepoActionResponse {
-        logs,
-        commit_hash,
-        commit_message,
+      .map(|(logs, commit_hash, commit_message)| {
+        RepoActionResponseV1_13 {
+          logs,
+          commit_hash,
+          commit_message,
+        }
+        .into()
       })
   }
 }
@@ -83,11 +86,14 @@ impl Resolve<PullRepo> for State {
       &on_pull,
     )
     .await;
-    Ok(RepoActionResponse {
-      logs,
-      commit_hash,
-      commit_message,
-    })
+    Ok(
+      RepoActionResponseV1_13 {
+        logs,
+        commit_hash,
+        commit_message,
+      }
+      .into(),
+    )
   }
 }
 

@@ -15,7 +15,7 @@ use mungos::{
   by_id::update_one_by_id,
   mongodb::bson::{doc, to_document},
 };
-use periphery_client::api;
+use periphery_client::api::{self, git::RepoActionResponseV1_13};
 use resolver_api::Resolve;
 
 use crate::{
@@ -73,7 +73,10 @@ impl Resolve<CloneRepo, (User, Update)> for State {
       })
       .await
     {
-      Ok(logs) => logs.logs,
+      Ok(res) => {
+        let res: RepoActionResponseV1_13 = res.into();
+        res.logs
+      }
       Err(e) => {
         vec![Log::error(
           "clone repo",
@@ -134,7 +137,10 @@ impl Resolve<PullRepo, (User, Update)> for State {
       })
       .await
     {
-      Ok(logs) => logs.logs,
+      Ok(res) => {
+        let res: RepoActionResponseV1_13 = res.into();
+        res.logs
+      }
       Err(e) => {
         vec![Log::error(
           "pull repo",

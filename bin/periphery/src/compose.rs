@@ -14,7 +14,7 @@ use monitor_client::entities::{
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
-  git::{CloneRepo, RepoActionResponse},
+  git::{CloneRepo, RepoActionResponseV1_13},
 };
 use resolver_api::Resolve;
 use tokio::fs;
@@ -237,12 +237,12 @@ async fn write_stack(
     // Ensure directory is clear going in.
     fs::remove_dir_all(&root).await.ok();
 
-    let RepoActionResponse {
+    let RepoActionResponseV1_13 {
       logs,
       commit_hash,
       commit_message,
     } = match State.resolve(CloneRepo { args, git_token }, ()).await {
-      Ok(res) => res,
+      Ok(res) => res.into(),
       Err(e) => {
         let error = format_serror(
           &e.context("failed to clone stack repo").into(),
