@@ -22,11 +22,14 @@ import { useState } from "react";
 
 export const TopbarAlerts = () => {
   const { data } = useRead("ListAlerts", { query: { resolved: false } });
+  const [open, setOpen] = useState(false);
+
+  // If this is set, details will open.
   const [alert, setAlert] = useState<Types.Alert>();
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger disabled={!data?.alerts.length}>
           <Button variant="ghost" size="icon" className="relative">
             <AlertTriangle className="w-4 h-4" />
@@ -52,6 +55,7 @@ export const TopbarAlerts = () => {
                   <ResourceLink
                     type={alert.target.type as UsableResource}
                     id={alert.target.id}
+                    onClick={() => setOpen(false)}
                   />
                 </div>
               </div>
@@ -90,6 +94,7 @@ const AlertDetails = ({
                 <ResourceLink
                   type={alert?.target.type as UsableResource}
                   id={alert?.target.id ?? ""}
+                  onClick={onClose}
                 />
               </div>
               <div className="flex items-center gap-2">
