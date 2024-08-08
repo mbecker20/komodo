@@ -175,18 +175,20 @@ pub async fn get_updates_for_view(
   let inner = async {
     let mut update = SyncDeployUpdate {
       to_deploy: 0,
-      log: String::from("Deploy Updates"),
+      log: String::from("Deploy Updates\n-------------------\n"),
     };
     let mut lines = Vec::<String>::new();
     for (target, reason, after) in build_deploy_cache(params).await? {
       update.to_deploy += 1;
       let mut line = format!(
-        "{target:?}: sync will {}. reason: {reason}",
-        bold("trigger redeploy")
+        "{}: {}. reason: {reason}",
+        colored("Deploy", Color::Green),
+        bold(format!("{target:?}")),
       );
       if !after.is_empty() {
         line.push_str(&format!(
-          "\ndeploy after: {}",
+          "\n{}: {}",
+          colored("After", Color::Blue),
           after
             .iter()
             .map(|target| format!("{target:?}"))

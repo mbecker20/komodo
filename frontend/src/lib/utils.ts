@@ -183,7 +183,9 @@ export const sync_no_changes = (sync: Types.ResourceSync) => {
   if (pending.type === "Err") return false;
   return (
     !pending.data.server_updates &&
+    !pending.data.deploy_updates &&
     !pending.data.deployment_updates &&
+    !pending.data.stack_updates &&
     !pending.data.build_updates &&
     !pending.data.repo_updates &&
     !pending.data.procedure_updates &&
