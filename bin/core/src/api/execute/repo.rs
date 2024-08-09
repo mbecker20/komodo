@@ -3,6 +3,7 @@ use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
+    builder::Builder,
     monitor_timestamp, optional_string,
     permission::PermissionLevel,
     repo::Repo,
@@ -45,7 +46,7 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     )
     .await
     .with_context(
-      || format!("Failed to get git token in call to db. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
+      || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
     )?;
 
     // get the action state for the repo (or insert default).
@@ -197,5 +198,136 @@ async fn update_last_pulled_time(repo_name: &str) {
     warn!(
       "failed to update repo last_pulled_at | repo: {repo_name} | {e:#}",
     );
+  }
+}
+
+impl Resolve<BuildRepo, (User, Update)> for State {
+  #[instrument(name = "BuildRepo", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    BuildRepo { repo }: BuildRepo,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let mut repo = resource::get_check_permissions::<Repo>(
+      &repo,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    let git_token = git_token(
+      &repo.config.git_provider,
+      &repo.config.git_account,
+      |https| repo.config.git_https = https,
+    )
+    .await
+    .with_context(
+      || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
+    )?;
+
+    // get the action state for the repo (or insert default).
+    let action_state =
+      action_states().repo.get_or_insert_default(&repo.id).await;
+
+    // This will set action state back to default when dropped.
+    // Will also check to ensure repo not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.building = true)?;
+
+    if repo.config.builder_id.is_empty() {
+      return Err(anyhow!("repo has no builder attached"));
+    }
+
+    let builder =
+      resource::get::<Builder>(&repo.config.builder_id).await?;
+
+    todo!()
+
+    // let periphery = periphery_client(&server)?;
+
+    // let logs = match periphery
+    //   .request(api::git::CloneRepo {
+    //     args: (&repo).into(),
+    //     git_token,
+    //   })
+    //   .await
+    // {
+    //   Ok(res) => {
+    //     let res: RepoActionResponseV1_13 = res.into();
+    //     res.logs
+    //   }
+    //   Err(e) => {
+    //     vec![Log::error(
+    //       "pull repo",
+    //       format_serror(&e.context("failed to pull repo").into()),
+    //     )]
+    //   }
+    // };
+
+    // update.logs.extend(logs);
+
+    // update.finalize();
+
+    // if update.success {
+    //   update_last_pulled_time(&repo.name).await;
+    // }
+
+    // handle_update_return(update).await
+  }
+}
+
+impl Resolve<CancelRepoBuild, (User, Update)> for State {
+  #[instrument(name = "CancelRepoBuild", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    CancelRepoBuild { repo }: CancelRepoBuild,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let mut repo = resource::get_check_permissions::<Repo>(
+      &repo,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    if repo.config.builder_id.is_empty() {
+      return Err(anyhow!("repo has no builder attached"));
+    }
+
+    let builder =
+      resource::get::<Builder>(&repo.config.builder_id).await?;
+
+    todo!()
+
+    // let periphery = periphery_client(&server)?;
+
+    // let logs = match periphery
+    //   .request(api::git::CloneRepo {
+    //     args: (&repo).into(),
+    //     git_token,
+    //   })
+    //   .await
+    // {
+    //   Ok(res) => {
+    //     let res: RepoActionResponseV1_13 = res.into();
+    //     res.logs
+    //   }
+    //   Err(e) => {
+    //     vec![Log::error(
+    //       "pull repo",
+    //       format_serror(&e.context("failed to pull repo").into()),
+    //     )]
+    //   }
+    // };
+
+    // update.logs.extend(logs);
+
+    // update.finalize();
+
+    // if update.success {
+    //   update_last_pulled_time(&repo.name).await;
+    // }
+
+    // handle_update_return(update).await
   }
 }

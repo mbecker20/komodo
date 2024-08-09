@@ -57,6 +57,7 @@ pub enum Execution {
 
   // BUILD
   RunBuild(RunBuild),
+  CancelBuild(CancelBuild),
 
   // DEPLOYMENT
   Deploy(Deploy),
@@ -70,6 +71,8 @@ pub enum Execution {
   // REPO
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
+  BuildRepo(BuildRepo),
+  CancelRepoBuild(CancelRepoBuild),
 
   // SERVER
   StopAllContainers(StopAllContainers),

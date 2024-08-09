@@ -748,6 +748,8 @@ pub enum Operation {
   DeleteRepo,
   CloneRepo,
   PullRepo,
+  BuildRepo,
+  CancelRepoBuild,
 
   // alerter
   CreateAlerter,

@@ -207,6 +207,18 @@ pub async fn init_execution_update(
         resource::get::<Repo>(&data.repo).await?.id,
       ),
     ),
+    ExecuteRequest::BuildRepo(data) => (
+      Operation::BuildRepo,
+      ResourceTarget::Repo(
+        resource::get::<Repo>(&data.repo).await?.id,
+      ),
+    ),
+    ExecuteRequest::CancelRepoBuild(data) => (
+      Operation::CancelRepoBuild,
+      ResourceTarget::Repo(
+        resource::get::<Repo>(&data.repo).await?.id,
+      ),
+    ),
 
     // Procedure
     ExecuteRequest::RunProcedure(data) => (

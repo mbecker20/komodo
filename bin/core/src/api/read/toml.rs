@@ -383,6 +383,9 @@ async fn add_procedure(
         Execution::RunBuild(exec) => exec.build.clone_from(
           names.builds.get(&exec.build).unwrap_or(&String::new()),
         ),
+        Execution::CancelBuild(exec) => exec.build.clone_from(
+          names.builds.get(&exec.build).unwrap_or(&String::new()),
+        ),
         Execution::Deploy(exec) => exec.deployment.clone_from(
           names
             .deployments
@@ -439,6 +442,12 @@ async fn add_procedure(
           names.repos.get(&exec.repo).unwrap_or(&String::new()),
         ),
         Execution::PullRepo(exec) => exec.repo.clone_from(
+          names.repos.get(&exec.repo).unwrap_or(&String::new()),
+        ),
+        Execution::BuildRepo(exec) => exec.repo.clone_from(
+          names.repos.get(&exec.repo).unwrap_or(&String::new()),
+        ),
+        Execution::CancelRepoBuild(exec) => exec.repo.clone_from(
           names.repos.get(&exec.repo).unwrap_or(&String::new()),
         ),
         Execution::StopAllContainers(exec) => exec.server.clone_from(

@@ -100,7 +100,6 @@ impl ResourceSync for Stack {
   }
 }
 
-
 impl ResourceSync for Build {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Build(id)
@@ -246,6 +245,13 @@ impl ResourceSync for Procedure {
               .map(|b| b.name.clone())
               .unwrap_or_default();
           }
+          Execution::CancelBuild(config) => {
+            config.build = resources
+              .builds
+              .get(&config.build)
+              .map(|b| b.name.clone())
+              .unwrap_or_default();
+          }
           Execution::Deploy(config) => {
             config.deployment = resources
               .deployments
@@ -303,6 +309,20 @@ impl ResourceSync for Procedure {
               .unwrap_or_default();
           }
           Execution::PullRepo(config) => {
+            config.repo = resources
+              .repos
+              .get(&config.repo)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::BuildRepo(config) => {
+            config.repo = resources
+              .repos
+              .get(&config.repo)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::CancelRepoBuild(config) => {
             config.repo = resources
               .repos
               .get(&config.repo)

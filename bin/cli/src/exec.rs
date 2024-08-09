@@ -27,6 +27,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunBuild(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::CancelBuild(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::Deploy(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -55,6 +58,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::PullRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BuildRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::CancelRepoBuild(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::PruneNetworks(data) => {
@@ -108,6 +117,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunBuild(request) => {
       monitor_client().execute(request).await
     }
+    Execution::CancelBuild(request) => {
+      monitor_client().execute(request).await
+    }
     Execution::Deploy(request) => {
       monitor_client().execute(request).await
     }
@@ -136,6 +148,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::PullRepo(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::BuildRepo(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::CancelRepoBuild(request) => {
       monitor_client().execute(request).await
     }
     Execution::PruneNetworks(request) => {

@@ -178,6 +178,15 @@ async fn validate_config(
           .await?;
           params.build = build.id;
         }
+        Execution::CancelBuild(params) => {
+          let build = super::get_check_permissions::<Build>(
+            &params.build,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.build = build.id;
+        }
         Execution::Deploy(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
@@ -267,6 +276,24 @@ async fn validate_config(
           params.repo = repo.id;
         }
         Execution::PullRepo(params) => {
+          let repo = super::get_check_permissions::<Repo>(
+            &params.repo,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.repo = repo.id;
+        }
+        Execution::BuildRepo(params) => {
+          let repo = super::get_check_permissions::<Repo>(
+            &params.repo,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.repo = repo.id;
+        }
+        Execution::CancelRepoBuild(params) => {
           let repo = super::get_check_permissions::<Repo>(
             &params.repo,
             user,

@@ -299,11 +299,13 @@ export type ExecuteResponses = {
 
   // ==== BUILD ====
   RunBuild: Types.Update;
-  CancelBuild: Types.CancelBuildResponse;
+  CancelBuild: Types.Update;
 
   // ==== REPO ====
   CloneRepo: Types.Update;
   PullRepo: Types.Update;
+  BuildRepo: Types.Update;
+  CancelRepoBuild: Types.Update;
 
   // ==== PROCEDURE ====
   RunProcedure: Types.Update;

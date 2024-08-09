@@ -74,10 +74,14 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct RepoConfig {
   /// The server to clone the repo on.
-  #[serde(default, alias = "server")]
-  #[partial_attr(serde(alias = "server"))]
+  #[serde(default)]
   #[builder(default)]
   pub server_id: String,
+
+  /// Attach a builder to 'build' the repo.
+  #[serde(default)]
+  #[builder(default)]
+  pub builder_id: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -168,6 +172,7 @@ impl Default for RepoConfig {
   fn default() -> Self {
     Self {
       server_id: Default::default(),
+      builder_id: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),
@@ -189,6 +194,8 @@ pub struct RepoActionState {
   pub cloning: bool,
   /// Whether repo currently pulling
   pub pulling: bool,
+  /// Whether repo currently building, using the attached builder.
+  pub building: bool,
 }
 
 #[typeshare]

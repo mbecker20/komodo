@@ -161,6 +161,22 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::CancelBuild(req) => {
+      let req = ExecuteRequest::CancelBuild(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::CancelBuild(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at CancelBuild"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::Deploy(req) => {
       let req = ExecuteRequest::Deploy(req);
       let update = init_execution_update(&req, &user).await?;
@@ -317,6 +333,38 @@ async fn execute_execution(
           .resolve(req, (user, update))
           .await
           .context("failed at PullRepo"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::BuildRepo(req) => {
+      let req = ExecuteRequest::BuildRepo(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::BuildRepo(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at BuildRepo"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::CancelRepoBuild(req) => {
+      let req = ExecuteRequest::CancelRepoBuild(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::CancelRepoBuild(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at CancelRepoBuild"),
         &update_id,
       )
       .await?

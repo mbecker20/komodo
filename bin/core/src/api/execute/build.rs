@@ -4,9 +4,7 @@ use anyhow::{anyhow, Context};
 use formatting::{format_serror, muted};
 use futures::future::join_all;
 use monitor_client::{
-  api::execute::{
-    CancelBuild, CancelBuildResponse, Deploy, RunBuild,
-  },
+  api::execute::{CancelBuild, Deploy, RunBuild},
   entities::{
     alert::{Alert, AlertData},
     all_logs_success,
@@ -513,7 +511,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     &self,
     CancelBuild { build }: CancelBuild,
     (user, mut update): (User, Update),
-  ) -> anyhow::Result<CancelBuildResponse> {
+  ) -> anyhow::Result<Update> {
     let build = resource::get_check_permissions::<Build>(
       &build,
       &user,
@@ -538,16 +536,15 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     );
     update_update(update.clone()).await?;
 
-    let update_id = update.id.clone();
-
     build_cancel_channel()
       .sender
       .lock()
       .await
-      .send((build.id, update))?;
+      .send((build.id, update.clone()))?;
 
     // Make sure cancel is set to complete after some time in case
     // no reciever is there to do it. Prevents update stuck in InProgress.
+    let update_id = update.id.clone();
     tokio::spawn(async move {
       tokio::time::sleep(Duration::from_secs(60)).await;
       if let Err(e) = update_one_by_id(
@@ -562,7 +559,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
       }
     });
 
-    Ok(CancelBuildResponse {})
+    Ok(update)
   }
 }
 

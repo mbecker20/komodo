@@ -69,6 +69,8 @@ pub enum ExecuteRequest {
   // ==== REPO ====
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
+  BuildRepo(BuildRepo),
+  CancelRepoBuild(CancelRepoBuild),
 
   // ==== PROCEDURE ====
   RunProcedure(RunProcedure),

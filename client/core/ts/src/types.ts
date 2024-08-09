@@ -87,12 +87,6 @@ export interface User {
 
 export type GetUserResponse = User;
 
-/** Represents an empty json object: `{}` */
-export interface NoData {
-}
-
-export type CancelBuildResponse = NoData;
-
 /** Severity level of problem. */
 export enum SeverityLevel {
 	/** No problem. */
@@ -272,6 +266,11 @@ export interface Resource<Config, Info> {
 	info?: Info;
 	/** Resource-specific configuration. */
 	config?: Config;
+	/**
+	 * Set a base permission level that all users will have on the
+	 * resource.
+	 */
+	base_permission?: PermissionLevel;
 }
 
 export type AlerterEndpoint = 
@@ -796,6 +795,7 @@ export type Execution =
 	| { type: "None", params: NoData }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "RunBuild", params: RunBuild }
+	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartContainer", params: StartContainer }
 	| { type: "RestartContainer", params: RestartContainer }
@@ -805,6 +805,8 @@ export type Execution =
 	| { type: "RemoveContainer", params: RemoveContainer }
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
+	| { type: "BuildRepo", params: BuildRepo }
+	| { type: "CancelRepoBuild", params: CancelRepoBuild }
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneNetworks", params: PruneNetworks }
 	| { type: "PruneImages", params: PruneImages }
@@ -948,6 +950,8 @@ export type ListDockerRegistryAccountsResponse = DockerRegistryAccount[];
 export interface RepoConfig {
 	/** The server to clone the repo on. */
 	server_id?: string;
+	/** Attach a builder to 'build' the repo. */
+	builder_id?: string;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/** The github repo to clone. */
@@ -1038,6 +1042,8 @@ export interface RepoActionState {
 	cloning: boolean;
 	/** Whether repo currently pulling */
 	pulling: boolean;
+	/** Whether repo currently building, using the attached builder. */
+	building: boolean;
 }
 
 export type GetRepoActionStateResponse = RepoActionState;
@@ -1804,6 +1810,8 @@ export enum Operation {
 	DeleteRepo = "DeleteRepo",
 	CloneRepo = "CloneRepo",
 	PullRepo = "PullRepo",
+	BuildRepo = "BuildRepo",
+	CancelRepoBuild = "CancelRepoBuild",
 	CreateAlerter = "CreateAlerter",
 	UpdateAlerter = "UpdateAlerter",
 	DeleteAlerter = "DeleteAlerter",
@@ -1974,6 +1982,10 @@ export type GetVariableResponse = Variable;
 
 export type ListVariablesResponse = Variable[];
 
+/** Represents an empty json object: `{}` */
+export interface NoData {
+}
+
 export type PushRecentlyViewedResponse = NoData;
 
 export type SetLastSeenUpdateResponse = NoData;
@@ -2066,7 +2078,6 @@ export enum TagBehavior {
 
 /** Passing empty Vec is the same as not filtering by that field */
 export interface ResourceQuery<T> {
-	ids?: string[];
 	names?: string[];
 	/** Pass Vec of tag ids or tag names */
 	tags?: string[];
@@ -2392,6 +2403,8 @@ export interface RunProcedure {
 /**
  * Clones the target repo. Response: [Update].
  * 
+ * Note. Repo must have server attached at `server_id`.
+ * 
  * 1. Clones the repo on the target server using `git clone https://{$token?}@github.com/${repo} -b ${branch}`.
  * The token will only be used if a github account is specified,
  * and must be declared in the periphery configuration on the target server.
@@ -2406,11 +2419,40 @@ export interface CloneRepo {
 /**
  * Pulls the target repo. Response: [Update].
  * 
+ * Note. Repo must have server attached at `server_id`.
+ * 
  * 1. Pulls the repo on the target server using `git pull`.
  * 2. If `on_pull` is specified, it will be executed after the pull is complete.
  */
 export interface PullRepo {
 	/** Id or name */
+	repo: string;
+}
+
+/**
+ * Builds the target repo, using the attached builder. Response: [Update].
+ * 
+ * Note. Repo must have builder attached at `builder_id`.
+ * 
+ * 1. Spawns the target builder instance (For AWS type. For Server type, just use CloneRepo).
+ * 2. Clones the repo on the builder using `git clone https://{$token?}@github.com/${repo} -b ${branch}`.
+ * The token will only be used if a github account is specified,
+ * and must be declared in the periphery configuration on the builder instance.
+ * 3. If `on_clone` and `on_pull` are specified, they will be executed.
+ * `on_clone` will be executed before `on_pull`.
+ */
+export interface BuildRepo {
+	/** Id or name */
+	repo: string;
+}
+
+/**
+ * Cancels the target repo build.
+ * Only does anything if the repo build is `building` when called.
+ * Response: [Update]
+ */
+export interface CancelRepoBuild {
+	/** Can be id or name */
 	repo: string;
 }
 
@@ -5098,6 +5140,8 @@ export type ExecuteRequest =
 	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
+	| { type: "BuildRepo", params: BuildRepo }
+	| { type: "CancelRepoBuild", params: CancelRepoBuild }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "RunSync", params: RunSync };
