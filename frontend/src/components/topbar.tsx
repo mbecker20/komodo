@@ -154,12 +154,12 @@ const MobileDropdown = () => {
             to="/"
             onClick={() => setView("Resources")}
           />
-          <DropdownLinkItem
+          {/* <DropdownLinkItem
             label="Tree"
             icon={<FolderTree className="w-4 h-4" />}
             to="/"
             onClick={() => setView("Tree")}
-          />
+          /> */}
 
           <DropdownMenuSeparator />
 

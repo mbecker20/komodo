@@ -5,7 +5,6 @@ import {
   Bell,
   Box,
   Boxes,
-  FolderTree,
   Settings,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -35,13 +34,13 @@ export const Sidebar = () => {
           onClick={() => setView("Resources")}
           highlighted={view === "Resources"}
         />
-        <SidebarLink
+        {/* <SidebarLink
           label="Tree"
           to="/"
           icon={<FolderTree className="w-4 h-4" />}
           onClick={() => setView("Tree")}
           highlighted={view === "Tree"}
-        />
+        /> */}
         <Separator className="my-3" />
 
         <p className="pl-4 pb-1 text-xs text-muted-foreground">Resources</p>
