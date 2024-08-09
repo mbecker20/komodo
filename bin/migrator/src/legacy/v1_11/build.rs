@@ -20,6 +20,7 @@ impl From<Build> for monitor_client::entities::build::Build {
         last_built_at: value.info.last_built_at,
       },
       config: value.config.into(),
+      base_permission: Default::default(),
     }
   }
 }

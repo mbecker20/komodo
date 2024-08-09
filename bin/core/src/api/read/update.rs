@@ -15,9 +15,7 @@ use monitor_client::{
     server_template::ServerTemplate,
     stack::Stack,
     sync::ResourceSync,
-    update::{
-      ResourceTarget, ResourceTargetVariant, Update, UpdateListItem,
-    },
+    update::{ResourceTarget, Update, UpdateListItem},
     user::User,
   },
 };
@@ -30,7 +28,6 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::query::get_resource_ids_for_user,
   resource,
   state::{db_client, State},
 };
@@ -46,44 +43,48 @@ impl Resolve<ListUpdates, User> for State {
     let query = if user.admin || core_config().transparent_mode {
       query
     } else {
-      let server_query = get_resource_ids_for_user(
-        &user,
-        ResourceTargetVariant::Server,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "Server", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "Server" });
+      let server_query =
+        resource::get_resource_ids_for_user::<Server>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Server", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Server" });
 
-      let deployment_query = get_resource_ids_for_user(
-        &user,
-        ResourceTargetVariant::Deployment,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "Deployment", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "Deployment" });
+      let deployment_query =
+        resource::get_resource_ids_for_user::<Deployment>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Deployment", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Deployment" });
 
-      let build_query = get_resource_ids_for_user(
-        &user,
-        ResourceTargetVariant::Build,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "Build", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "Build" });
+      let stack_query =
+        resource::get_resource_ids_for_user::<Stack>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Stack", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Stack" });
+
+      let build_query =
+        resource::get_resource_ids_for_user::<Build>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Build", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Build" });
 
       let repo_query =
-        get_resource_ids_for_user(&user, ResourceTargetVariant::Repo)
+        resource::get_resource_ids_for_user::<Repo>(&user)
           .await?
           .map(|ids| {
             doc! {
@@ -92,45 +93,38 @@ impl Resolve<ListUpdates, User> for State {
           })
           .unwrap_or_else(|| doc! { "target.type": "Repo" });
 
-      let procedure_query = get_resource_ids_for_user(
-        &user,
-        ResourceTargetVariant::Procedure,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "Procedure", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "Procedure" });
+      let procedure_query =
+        resource::get_resource_ids_for_user::<Procedure>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Procedure", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Procedure" });
 
-      let builder_query = get_resource_ids_for_user(
-        &user,
-        ResourceTargetVariant::Builder,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "Builder", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "Builder" });
+      let builder_query =
+        resource::get_resource_ids_for_user::<Builder>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Builder", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Builder" });
 
-      let alerter_query = get_resource_ids_for_user(
-        &user,
-        ResourceTargetVariant::Alerter,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "Alerter", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "Alerter" });
+      let alerter_query =
+        resource::get_resource_ids_for_user::<Alerter>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Alerter", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Alerter" });
 
-      let server_template_query = get_resource_ids_for_user(
+      let server_template_query = resource::get_resource_ids_for_user::<ServerTemplate>(
         &user,
-        ResourceTargetVariant::ServerTemplate,
       )
       .await?
       .map(|ids| {
@@ -140,9 +134,8 @@ impl Resolve<ListUpdates, User> for State {
       })
       .unwrap_or_else(|| doc! { "target.type": "ServerTemplate" });
 
-      let resource_sync_query = get_resource_ids_for_user(
+      let resource_sync_query = resource::get_resource_ids_for_user::<ResourceSync>(
         &user,
-        ResourceTargetVariant::ResourceSync,
       )
       .await?
       .map(|ids| {
@@ -156,8 +149,9 @@ impl Resolve<ListUpdates, User> for State {
       query.extend(doc! {
         "$or": [
           server_query,
-          build_query,
           deployment_query,
+          stack_query,
+          build_query,
           repo_query,
           procedure_query,
           alerter_query,

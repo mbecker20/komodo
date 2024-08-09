@@ -1,6 +1,4 @@
-use std::str::FromStr;
-
-use bson::{doc, oid::ObjectId, Document};
+use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use serde::{Deserialize, Serialize};
@@ -8,7 +6,9 @@ use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
-use super::update::ResourceTargetVariant;
+use super::{
+  permission::PermissionLevel, update::ResourceTargetVariant,
+};
 
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize, Builder)]
@@ -53,6 +53,12 @@ pub struct Resource<Config: Default, Info: Default = ()> {
   #[serde(default)]
   #[builder(default)]
   pub config: Config,
+
+  /// Set a base permission level that all users will have on the
+  /// resource.
+  #[serde(default)]
+  #[builder(default)]
+  pub base_permission: PermissionLevel,
 }
 
 #[typeshare]
@@ -77,8 +83,6 @@ pub struct ResourceListItem<Info> {
   Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
 )]
 pub struct ResourceQuery<T: Default> {
-  #[serde(default)]
-  pub ids: Vec<String>,
   #[serde(default)]
   pub names: Vec<String>,
   /// Pass Vec of tag ids or tag names
@@ -108,14 +112,6 @@ impl AddFilters for () {}
 
 impl<T: AddFilters + Default> AddFilters for ResourceQuery<T> {
   fn add_filters(&self, filters: &mut Document) {
-    if !self.ids.is_empty() {
-      let ids = self
-        .ids
-        .iter()
-        .flat_map(|id| ObjectId::from_str(id))
-        .collect::<Vec<_>>();
-      filters.insert("_id", doc! { "$in": &ids });
-    }
     if !self.names.is_empty() {
       filters.insert("name", doc! { "$in": &self.names });
     }

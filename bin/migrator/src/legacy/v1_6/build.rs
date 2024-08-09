@@ -21,6 +21,7 @@ impl From<Build> for monitor_client::entities::build::Build {
       info: monitor_client::entities::build::BuildInfo {
         last_built_at: value.info.last_built_at,
       },
+      base_permission: Default::default(),
       config: value.config.into(),
     }
   }

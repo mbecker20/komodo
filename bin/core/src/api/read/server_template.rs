@@ -4,14 +4,13 @@ use monitor_client::{
   api::read::*,
   entities::{
     permission::PermissionLevel, server_template::ServerTemplate,
-    update::ResourceTargetVariant, user::User,
+    user::User,
   },
 };
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_user,
   resource,
   state::{db_client, State},
 };
@@ -57,10 +56,9 @@ impl Resolve<GetServerTemplatesSummary, User> for State {
     GetServerTemplatesSummary {}: GetServerTemplatesSummary,
     user: User,
   ) -> anyhow::Result<GetServerTemplatesSummaryResponse> {
-    let query = match get_resource_ids_for_user(
-      &user,
-      ResourceTargetVariant::ServerTemplate,
-    )
+    let query = match resource::get_resource_ids_for_user::<
+      ServerTemplate,
+    >(&user)
     .await?
     {
       Some(ids) => doc! {

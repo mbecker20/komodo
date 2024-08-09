@@ -25,7 +25,7 @@ use crate::{
   auth::{auth_api_key_check_enabled, auth_jwt_check_enabled},
   db::DbClient,
   helpers::{
-    channel::update_channel, query::get_user_permission_on_resource,
+    channel::update_channel, query::get_user_permission_on_target,
   },
   state::db_client,
 };
@@ -206,12 +206,13 @@ async fn user_can_see_update(
   if user.admin {
     return Ok(());
   }
-  let (variant, id) = update_target.extract_variant_id();
   let permissions =
-    get_user_permission_on_resource(user, variant, id).await?;
+    get_user_permission_on_target(user, update_target).await?;
   if permissions > PermissionLevel::None {
     Ok(())
   } else {
-    Err(anyhow!("user does not have permissions on {variant} {id}"))
+    Err(anyhow!(
+      "user does not have permissions on {update_target:?}"
+    ))
   }
 }

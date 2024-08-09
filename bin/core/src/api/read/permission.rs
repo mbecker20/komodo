@@ -11,7 +11,7 @@ use mungos::{find::find_collect, mongodb::bson::doc};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_user_permission_on_resource,
+  helpers::query::get_user_permission_on_target,
   state::{db_client, State},
 };
 
@@ -43,8 +43,7 @@ impl Resolve<GetPermissionLevel, User> for State {
     if user.admin {
       return Ok(PermissionLevel::Write);
     }
-    let (variant, id) = target.extract_variant_id();
-    get_user_permission_on_resource(&user, variant, id).await
+    get_user_permission_on_target(&user, &target).await
   }
 }
 

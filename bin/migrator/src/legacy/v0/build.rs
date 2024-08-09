@@ -203,6 +203,7 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
       info: BuildInfo {
         last_built_at: unix_from_monitor_ts(&value.last_built_at)?,
       },
+      base_permission: Default::default(),
       config: BuildConfig {
         builder_id: String::new(),
         skip_secret_interp: value.skip_secret_interp,

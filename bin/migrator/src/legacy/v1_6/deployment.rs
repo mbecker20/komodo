@@ -20,6 +20,7 @@ impl From<Deployment>
       tags: value.tags,
       info: value.info,
       config: value.config.into(),
+      base_permission: Default::default(),
     }
   }
 }
