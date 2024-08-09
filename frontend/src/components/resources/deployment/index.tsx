@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useLocalStorage, useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
@@ -22,7 +22,6 @@ import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StatusBadge } from "@components/util";
@@ -36,7 +35,7 @@ export const useDeployment = (id?: string) =>
 
 const ConfigOrLog = ({ id }: { id: string }) => {
   // const [view, setView] = useAtom(configOrLog);
-  const [view, setView] = useState("Config");
+  const [view, setView] = useLocalStorage("deployment-tabs-v1","Config");
   const state = useDeployment(id)?.info.state;
   const logsDisabled =
     state === undefined ||

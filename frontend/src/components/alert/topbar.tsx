@@ -27,6 +27,10 @@ export const TopbarAlerts = () => {
   // If this is set, details will open.
   const [alert, setAlert] = useState<Types.Alert>();
 
+  if (!data || data.alerts.length === 0) {
+    return null;
+  }
+
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>

@@ -52,7 +52,7 @@ export const ConfigItem = ({
 }: {
   label?: string;
   boldLabel?: boolean;
-  description?: string;
+  description?: ReactNode;
   children: ReactNode;
   className?: string;
 }) => (

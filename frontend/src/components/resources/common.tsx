@@ -273,12 +273,16 @@ export const NewResource = ({
       : type === "ResourceSync"
       ? "resource-sync"
       : type.toLowerCase();
-  const config =
+  const config: Types._PartialDeploymentConfig =
     type === "Deployment"
       ? {
           server_id,
-          image: build_id ?? { type: "Build", params: { build_id } },
+          image: build_id
+            ? { type: "Build", params: { build_id } }
+            : { type: "Image", params: { image: "" } },
         }
+      : type === "Stack"
+      ? { server_id }
       : type === "Repo"
       ? { server_id }
       : {};

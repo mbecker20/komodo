@@ -257,8 +257,9 @@ export const StackConfig = ({
             labelHidden: true,
             components: {
               run_directory: {
-                placeholder: "Eg. './' Relative to repo root.",
-                description: "Set the cwd of compose command",
+                placeholder: "Eg. './'",
+                description:
+                  "Set the cwd when running compose up command. Relative to the repo root.",
                 boldLabel: true,
               },
             },

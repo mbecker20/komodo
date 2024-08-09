@@ -1,4 +1,4 @@
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
 import { FolderGit, Layers, Loader2, RefreshCcw, Server } from "lucide-react";
@@ -21,7 +21,6 @@ import {
   RestartStack,
   StartStopStack,
 } from "./actions";
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { StackInfo } from "./info";
 import { Badge } from "@ui/badge";
@@ -46,7 +45,7 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigServicesInfo = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Info");
+  const [view, setView] = useLocalStorage("stack-tabs-v1", "Config");
   const state = useStack(id)?.info.state;
   const stackDown =
     state === undefined ||

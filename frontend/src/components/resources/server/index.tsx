@@ -1,4 +1,4 @@
-import { useExecute, useRead } from "@lib/hooks";
+import { useExecute, useLocalStorage, useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
@@ -26,11 +26,11 @@ import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
 import { ActionWithDialog, ConfirmButton, StatusBadge } from "@components/util";
 import { Button } from "@ui/button";
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
 import { ResourceComponents } from "..";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { StackTable } from "../stack/table";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -50,7 +50,7 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigOrChildResources = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Config");
+  const [view, setView] = useLocalStorage("server-tabs-v1", "Config");
   const deployments = useRead("ListDeployments", {}).data?.filter(
     (deployment) => deployment.info.server_id === id
   );
@@ -59,6 +59,10 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
     (repo) => repo.info.server_id === id
   );
   const reposDisabled = (repos?.length || 0) === 0;
+  const stacks = useRead("ListStacks", {}).data?.filter(
+    (stack) => stack.info.server_id === id
+  );
+  const stacksDisabled = (stacks?.length || 0) === 0;
   const currentView =
     (view === "Deployments" && deploymentsDisabled) ||
     (view === "Repos" && reposDisabled)
@@ -75,6 +79,13 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         disabled={deploymentsDisabled}
       >
         Deployments
+      </TabsTrigger>
+      <TabsTrigger
+        value="Stacks"
+        className="w-[110px]"
+        disabled={stacksDisabled}
+      >
+        Stacks
       </TabsTrigger>
       <TabsTrigger value="Repos" className="w-[110px]" disabled={reposDisabled}>
         Repos
@@ -93,6 +104,15 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
           actions={<ResourceComponents.Deployment.New server_id={id} />}
         >
           <DeploymentTable deployments={deployments ?? []} />
+        </Section>
+      </TabsContent>
+
+      <TabsContent value="Stacks">
+        <Section
+          titleOther={tabsList}
+          actions={<ResourceComponents.Stack.New server_id={id} />}
+        >
+          <StackTable stacks={stacks ?? []} />
         </Section>
       </TabsContent>
 

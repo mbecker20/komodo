@@ -23,6 +23,7 @@ import { TextUpdateMenu } from "@components/util";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
 import { env_to_text } from "@lib/utils";
+import { Link } from "react-router-dom";
 
 export const DeploymentConfig = ({
   id,
@@ -42,11 +43,8 @@ export const DeploymentConfig = ({
 
   if (!config) return null;
 
-  const hide_ports = update.network
-    ? update.network === "host" || update.network === "none"
-    : config.network
-    ? config.network === "host" || config.network === "none"
-    : false;
+  const network = update.network ?? config.network;
+  const hide_ports = network === "host" || network === "none";
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
@@ -98,7 +96,22 @@ export const DeploymentConfig = ({
                 />
               ),
               command: (value, set) => (
-                <ConfigItem label="Command">
+                <ConfigItem
+                  label="Command"
+                  description={
+                    <div className="flex flex-row flex-wrap">
+                      <div>Replace the CMD, or extend the ENTRYPOINT.</div>
+                      <Link
+                        to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
+                        target="_blank"
+                      >
+                        <Button variant="link" className="p-0">
+                          See docker docs.
+                        </Button>
+                      </Link>
+                    </div>
+                  }
+                >
                   <TextUpdateMenu
                     title="Update Command"
                     placeholder="Set custom command"
@@ -113,6 +126,7 @@ export const DeploymentConfig = ({
           },
           {
             label: "Ports",
+            description: "Configure the port bindings for the container.",
             hidden: hide_ports,
             contentHidden: (update.ports ?? config.ports)?.length === 0,
             actions: !disabled && (
@@ -145,6 +159,7 @@ export const DeploymentConfig = ({
           },
           {
             label: "Volumes",
+            description: "Configure the volume bindings for the container.",
             contentHidden: (update.volumes ?? config.volumes)?.length === 0,
             actions: !disabled && (
               <Button
@@ -176,6 +191,19 @@ export const DeploymentConfig = ({
           },
           {
             label: "Extra Args",
+            description: (
+              <div className="flex flex-row flex-wrap">
+                <div>Pass extra arguments to 'docker run'.</div>
+                <Link
+                  to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
+                  target="_blank"
+                >
+                  <Button variant="link" className="p-0">
+                    See docker docs.
+                  </Button>
+                </Link>
+              </div>
+            ),
             contentHidden:
               (update.extra_args ?? config.extra_args)?.length === 0,
             actions: !disabled && (
@@ -207,6 +235,7 @@ export const DeploymentConfig = ({
           },
           {
             label: "Labels",
+            description: "Attach --labels to the container.",
             contentHidden: (update.labels ?? config.labels)?.length === 0,
             actions: !disabled && (
               <Button
@@ -248,6 +277,8 @@ export const DeploymentConfig = ({
         environment: [
           {
             label: "Environment",
+            description:
+              "Pass environment variables to the container. You can interpolate variables and secrets using '[[VAR_NAME]]'",
             components: {
               environment: (vars, set) => {
                 const env = typeof vars === "object" ? env_to_text(vars) : vars;
@@ -267,6 +298,8 @@ export const DeploymentConfig = ({
         termination: [
           {
             label: "Termination",
+            description:
+              "Configure the ways to 'docker stop' the container.",
             components: {
               termination_signal: (value, set) => (
                 <DefaultTerminationSignal
