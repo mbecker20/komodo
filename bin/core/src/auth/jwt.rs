@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::sync::Mutex;
 
-use super::random_string;
+use crate::helpers::random_string;
 
 type ExchangeTokenMap = Mutex<HashMap<String, (String, u128)>>;
 

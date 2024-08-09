@@ -4,7 +4,7 @@ use monitor_client::entities::stack::ComposeContents;
 use run_command::async_run_command;
 use tokio::fs;
 
-use crate::{auth::random_string, config::core_config};
+use crate::{config::core_config, helpers::random_string};
 
 // Returns (Jsons, Errors)
 pub async fn get_config_jsons(

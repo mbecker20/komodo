@@ -24,7 +24,11 @@ use resolver_api::Resolve;
 
 use crate::{
   api::execute::ExecuteRequest,
-  helpers::update::init_execution_update,
+  config::core_config,
+  helpers::{
+    random_string, stack::remote::clone_remote_repo,
+    update::init_execution_update,
+  },
   state::{deployment_status_cache, stack_status_cache, State},
 };
 
@@ -458,7 +462,7 @@ fn build_cache_for_deployment<'a>(
     };
 
     // Check 'after' to see if they deploy.
-    insert_target_using_after(
+    insert_target_using_after_list(
       target,
       after,
       SyncDeployParams {
@@ -580,8 +584,44 @@ fn build_cache_for_stack<'a>(
       }
     };
 
+    // We know the config hasn't changed at this point, but still need
+    // to check if its a repo based stack, and the hash has updated.
+    // Can use 'original' for this (config hasn't changed)
+    if stack.latest_hash {
+      if let Some(deployed_hash) = &original.info.deployed_hash {
+        let repo_path =
+          core_config().stack_directory.join(random_string(10));
+        let (_, hash, _) = clone_remote_repo(&repo_path, original)
+          .await
+          .context("failed to get latest hash for repo based stack")
+          .with_context(|| {
+            format!(
+              "Stack {} {}",
+              bold(&stack.name),
+              colored("has errors", Color::Red)
+            )
+          })?;
+        if let Some(hash) = hash {
+          if &hash != deployed_hash {
+            cache.insert(
+              target,
+              Some((
+                format!(
+                  "outdated hash. deployed: {} -> latest: {}",
+                  colored(deployed_hash, Color::Red),
+                  colored(hash, Color::Green)
+                ),
+                after,
+              )),
+            );
+            return Ok(());
+          }
+        }
+      }
+    }
+
     // Check 'after' to see if they deploy.
-    insert_target_using_after(
+    insert_target_using_after_list(
       target,
       after,
       SyncDeployParams {
@@ -598,7 +638,7 @@ fn build_cache_for_stack<'a>(
   })
 }
 
-async fn insert_target_using_after<'a>(
+async fn insert_target_using_after_list<'a>(
   target: ResourceTarget,
   after: Vec<ResourceTarget>,
   SyncDeployParams {

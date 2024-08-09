@@ -20,8 +20,8 @@ use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
-  auth::{auth_request, random_string},
-  helpers::query::get_user,
+  auth::auth_request,
+  helpers::{query::get_user, random_string},
   state::{db_client, State},
 };
 

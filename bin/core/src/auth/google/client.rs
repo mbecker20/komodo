@@ -11,8 +11,8 @@ use serde_json::Value;
 use tokio::sync::Mutex;
 
 use crate::{
-  auth::{random_string, STATE_PREFIX_LENGTH},
-  config::core_config,
+  auth::STATE_PREFIX_LENGTH, config::core_config,
+  helpers::random_string,
 };
 
 pub fn google_oauth_client() -> &'static Option<GoogleOauthClient> {

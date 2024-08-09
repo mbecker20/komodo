@@ -680,6 +680,7 @@ fn convert_resource<R: MonitorResource>(
     description: resource.description,
     deploy: false,
     after: Default::default(),
+    latest_hash: false,
     config,
   }
 }
