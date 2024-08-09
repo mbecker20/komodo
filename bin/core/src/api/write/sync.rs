@@ -105,6 +105,7 @@ impl Resolve<UpdateResourceSync, User> for State {
 }
 
 impl Resolve<RefreshResourceSyncPending, User> for State {
+  #[instrument(name = "RefreshResourceSyncPending", level = "debug", skip(self, user))]
   async fn resolve(
     &self,
     RefreshResourceSyncPending { sync }: RefreshResourceSyncPending,

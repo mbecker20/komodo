@@ -176,7 +176,7 @@ impl Resolve<RenameStack, User> for State {
 }
 
 impl Resolve<RefreshStackCache, User> for State {
-  #[instrument(name = "RefreshStackCache", skip(self, user))]
+  #[instrument(name = "RefreshStackCache", level = "debug", skip(self, user))]
   async fn resolve(
     &self,
     RefreshStackCache { stack }: RefreshStackCache,
