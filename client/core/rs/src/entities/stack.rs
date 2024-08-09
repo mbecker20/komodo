@@ -96,6 +96,10 @@ pub struct StackListItemInfo {
   Deserialize,
   Display,
 )]
+// Do this one snake_case in line with DeploymentState.
+// Also in line with docker terminology.
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum StackState {
   /// All containers are running.
   Running,

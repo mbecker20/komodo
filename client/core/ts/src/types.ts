@@ -1560,21 +1560,21 @@ export type ListCommonStackExtraArgsResponse = string[];
 
 export enum StackState {
 	/** All containers are running. */
-	Running = "Running",
+	Running = "running",
 	/** All containers are paused */
-	Paused = "Paused",
+	Paused = "paused",
 	/** All contianers are stopped */
-	Stopped = "Stopped",
+	Stopped = "stopped",
 	/** All containers are restarting */
-	Restarting = "Restarting",
+	Restarting = "restarting",
 	/** All containers are dead */
-	Dead = "Dead",
+	Dead = "dead",
 	/** The containers are in a mix of states */
-	Unhealthy = "Unhealthy",
+	Unhealthy = "unhealthy",
 	/** The stack is not deployed */
-	Down = "Down",
+	Down = "down",
 	/** Server not reachable */
-	Unknown = "Unknown",
+	Unknown = "unknown",
 }
 
 export interface StackListItemInfo {
