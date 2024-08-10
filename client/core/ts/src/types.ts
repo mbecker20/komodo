@@ -218,6 +218,13 @@ export type AlertData =
 	name: string;
 	/** The version that failed to build */
 	version: Version;
+}}
+	/** A repo has failed */
+	| { type: "RepoBuildFailed", data: {
+	/** The id of the repo */
+	id: string;
+	/** The name of the repo */
+	name: string;
 }};
 
 /** Representation of an alert in the system. */
@@ -986,6 +993,22 @@ export interface RepoConfig {
 	 * The path is relative to the root of the repo.
 	 */
 	on_pull?: SystemCommand;
+	/**
+	 * The environment variables passed to the compose file.
+	 * They will be written to path defined in env_file_path,
+	 * which is given relative to the run directory.
+	 * 
+	 * If it is empty, no file will be written.
+	 */
+	environment?: EnvironmentVar[] | string;
+	/**
+	 * The name of the written environment file before `docker compose up`.
+	 * Relative to the repo root.
+	 * Default: .env
+	 */
+	env_file_path: string;
+	/** Whether to skip secret interpolation into the repo environment variable file. */
+	skip_secret_interp?: boolean;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
 }

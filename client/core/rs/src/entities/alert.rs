@@ -7,7 +7,8 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  _Serror, deployment::DeploymentState, server::stats::SeverityLevel, stack::StackState, update::ResourceTarget, Version
+  _Serror, deployment::DeploymentState, server::stats::SeverityLevel,
+  stack::StackState, update::ResourceTarget, Version,
 };
 
 /// Representation of an alert in the system.
@@ -182,6 +183,14 @@ pub enum AlertData {
     name: String,
     /// The version that failed to build
     version: Version,
+  },
+
+  /// A repo has failed
+  RepoBuildFailed {
+    /// The id of the repo
+    id: String,
+    /// The name of the repo
+    name: String,
   },
 }
 

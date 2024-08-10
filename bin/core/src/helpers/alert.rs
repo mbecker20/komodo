@@ -382,6 +382,21 @@ async fn send_slack_alert(
       ];
       (text, blocks.into())
     }
+    AlertData::RepoBuildFailed { id, name } => {
+      let text =
+        format!("{level} | Repo build for {name} has failed");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "repo id: *{id}*\nrepo name: *{name}*",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Repo,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
     AlertData::None {} => Default::default(),
   };
   if !text.is_empty() {

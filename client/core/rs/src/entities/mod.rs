@@ -338,7 +338,7 @@ impl Version {
 
 #[typeshare]
 #[derive(
-  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+  Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize,
 )]
 pub struct EnvironmentVar {
   pub variable: String,

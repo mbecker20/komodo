@@ -50,10 +50,16 @@ pub async fn get_remote_resources(
     .await;
   let _lock = lock.lock().await;
 
-  let (mut logs, hash, message) =
-    git::clone(clone_args, &config.sync_directory, access_token)
-      .await
-      .context("failed to clone resource repo")?;
+  let (mut logs, hash, message, _) = git::clone(
+    clone_args,
+    &config.sync_directory,
+    access_token,
+    &[],
+    "",
+    None,
+  )
+  .await
+  .context("failed to clone resource repo")?;
 
   let hash = hash.context("failed to get commit hash")?;
   let message =

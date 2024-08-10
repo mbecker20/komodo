@@ -10,7 +10,7 @@ use crate::entities::I64;
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
-  SystemCommand,
+  EnvironmentVar, SystemCommand,
 };
 
 #[typeshare]
@@ -139,6 +139,35 @@ pub struct RepoConfig {
   #[builder(default)]
   pub on_pull: SystemCommand,
 
+  /// The environment variables passed to the compose file.
+  /// They will be written to path defined in env_file_path,
+  /// which is given relative to the run directory.
+  ///
+  /// If it is empty, no file will be written.
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
+  #[builder(default)]
+  pub environment: Vec<EnvironmentVar>,
+
+  /// The name of the written environment file before `docker compose up`.
+  /// Relative to the repo root.
+  /// Default: .env
+  #[serde(default = "default_env_file_path")]
+  #[builder(default = "default_env_file_path()")]
+  #[partial_default(default_env_file_path())]
+  pub env_file_path: String,
+
+  /// Whether to skip secret interpolation into the repo environment variable file.
+  #[serde(default)]
+  #[builder(default)]
+  pub skip_secret_interp: bool,
+
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
   #[builder(default = "default_webhook_enabled()")]
@@ -164,6 +193,10 @@ fn default_branch() -> String {
   String::from("main")
 }
 
+fn default_env_file_path() -> String {
+  String::from(".env")
+}
+
 fn default_webhook_enabled() -> bool {
   true
 }
@@ -182,6 +215,9 @@ impl Default for RepoConfig {
       path: Default::default(),
       on_clone: Default::default(),
       on_pull: Default::default(),
+      environment: Default::default(),
+      env_file_path: default_env_file_path(),
+      skip_secret_interp: Default::default(),
       webhook_enabled: default_webhook_enabled(),
     }
   }

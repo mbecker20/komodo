@@ -1489,6 +1489,8 @@ dependencies = [
  "formatting",
  "monitor_client",
  "run_command",
+ "svi",
+ "tokio",
  "tracing",
 ]
 

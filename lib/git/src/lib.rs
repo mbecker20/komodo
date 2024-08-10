@@ -1,4 +1,5 @@
 use std::{
+  collections::HashMap,
   path::{Path, PathBuf},
   str::FromStr,
 };
@@ -7,10 +8,12 @@ use anyhow::Context;
 use command::run_monitor_command;
 use formatting::{bold, format_serror, muted};
 use monitor_client::entities::{
-  all_logs_success, monitor_timestamp, to_monitor_name, update::Log,
-  CloneArgs, LatestCommit, SystemCommand,
+  all_logs_success, environment_vars_to_string, monitor_timestamp,
+  to_monitor_name, update::Log, CloneArgs, EnvironmentVar,
+  LatestCommit, SystemCommand,
 };
 use run_command::async_run_command;
+use tokio::fs;
 use tracing::instrument;
 
 /// Return (logs, commit hash, commit msg)
@@ -77,13 +80,21 @@ pub async fn pull(
   (logs, hash, message)
 }
 
-/// return (logs, commit hash, commit message)
+/// (logs, commit hash, commit message, env_file_path)
+pub type CloneRes =
+  (Vec<Log>, Option<String>, Option<String>, Option<PathBuf>);
+
+/// returns (logs, commit hash, commit message, env_file_path)
 #[tracing::instrument(level = "debug", skip(access_token))]
 pub async fn clone<T>(
   clone_args: T,
   repo_dir: &Path,
   access_token: Option<String>,
-) -> anyhow::Result<(Vec<Log>, Option<String>, Option<String>)>
+  environment: &[EnvironmentVar],
+  env_file_path: &str,
+  // if skip_secret_interp is none, make sure to pass None here
+  secrets: Option<&HashMap<String, String>>,
+) -> anyhow::Result<CloneRes>
 where
   T: Into<CloneArgs> + std::fmt::Debug,
 {
@@ -126,7 +137,7 @@ where
 
   if !all_logs_success(&logs) {
     tracing::warn!("failed to clone repo at {repo_dir:?} | {logs:?}");
-    return Ok((logs, None, None));
+    return Ok((logs, None, None, None));
   }
 
   tracing::debug!("repo at {repo_dir:?} cloned");
@@ -145,6 +156,18 @@ where
       ));
       (None, None)
     }
+  };
+
+  let Ok(env_file_path) = write_environment_file(
+    environment,
+    env_file_path,
+    secrets,
+    &repo_dir,
+    &mut logs,
+  )
+  .await
+  else {
+    return Ok((logs, hash, message, None));
   };
 
   if let Some(command) = on_clone {
@@ -187,7 +210,8 @@ where
       logs.push(on_pull_log);
     }
   }
-  Ok((logs, hash, message))
+
+  Ok((logs, hash, message, env_file_path))
 }
 
 #[tracing::instrument(
@@ -316,4 +340,77 @@ pub async fn get_commit_hash_log(
     end_ts: monitor_timestamp(),
   };
   Ok((log, short_hash, msg))
+}
+
+/// If the environment was written and needs to be passed to the compose command,
+/// will return the env file PathBuf
+pub async fn write_environment_file(
+  environment: &[EnvironmentVar],
+  env_file_path: &str,
+  secrets: Option<&HashMap<String, String>>,
+  folder: &Path,
+  logs: &mut Vec<Log>,
+) -> Result<Option<PathBuf>, ()> {
+  if environment.is_empty() {
+    return Ok(None);
+  }
+
+  let contents = environment_vars_to_string(environment);
+
+  let contents = if let Some(secrets) = secrets {
+    let res = svi::interpolate_variables(
+      &contents,
+      secrets,
+      svi::Interpolator::DoubleBrackets,
+      true,
+    )
+    .context("failed to interpolate secrets into environment");
+
+    let (contents, replacers) = match res {
+      Ok(res) => res,
+      Err(e) => {
+        logs.push(Log::error(
+          "interpolate periphery secrets",
+          format_serror(&e.into()),
+        ));
+        return Err(());
+      }
+    };
+
+    if !replacers.is_empty() {
+      logs.push(Log::simple(
+        "interpolate periphery secrets",
+        replacers
+            .iter()
+            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+      ))
+    }
+
+    contents
+  } else {
+    contents
+  };
+
+  let file = folder.join(env_file_path);
+
+  if let Err(e) =
+    fs::write(&file, contents).await.with_context(|| {
+      format!("failed to write environment file to {file:?}")
+    })
+  {
+    logs.push(Log::error(
+      "write environment file",
+      format_serror(&e.into()),
+    ));
+    return Err(());
+  }
+
+  logs.push(Log::simple(
+    "write environment file",
+    format!("environment written to {file:?}"),
+  ));
+
+  Ok(Some(file))
 }

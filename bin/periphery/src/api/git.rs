@@ -30,7 +30,13 @@ impl Resolve<CloneRepo> for State {
   #[instrument(name = "CloneRepo", skip(self))]
   async fn resolve(
     &self,
-    CloneRepo { args, git_token }: CloneRepo,
+    CloneRepo {
+      args,
+      git_token,
+      environment,
+      env_file_path,
+      skip_secret_interp,
+    }: CloneRepo,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
     let CloneArgs {
@@ -51,16 +57,24 @@ impl Resolve<CloneRepo> for State {
           )?,
       ),
     };
-    git::clone(args, &periphery_config().repo_dir, token)
-      .await
-      .map(|(logs, commit_hash, commit_message)| {
-        RepoActionResponseV1_13 {
-          logs,
-          commit_hash,
-          commit_message,
-        }
-        .into()
-      })
+    git::clone(
+      args,
+      &periphery_config().repo_dir,
+      token,
+      &environment,
+      &env_file_path,
+      skip_secret_interp.then_some(&periphery_config().secrets),
+    )
+    .await
+    .map(|(logs, commit_hash, commit_message, env_file_path)| {
+      RepoActionResponseV1_13 {
+        logs,
+        commit_hash,
+        commit_message,
+        env_file_path,
+      }
+      .into()
+    })
   }
 }
 
@@ -91,6 +105,7 @@ impl Resolve<PullRepo> for State {
         logs,
         commit_hash,
         commit_message,
+        env_file_path: None,
       }
       .into(),
     )

@@ -1,12 +1,12 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
+use git::write_environment_file;
 use monitor_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
-  environment_vars_to_string,
   stack::{ComposeContents, Stack},
   to_monitor_name,
   update::Log,
@@ -241,7 +241,20 @@ async fn write_stack(
       logs,
       commit_hash,
       commit_message,
-    } = match State.resolve(CloneRepo { args, git_token }, ()).await {
+      env_file_path,
+    } = match State
+      .resolve(
+        CloneRepo {
+          args,
+          git_token,
+          environment: stack.config.environment.clone(),
+          env_file_path: stack.config.env_file_path.clone(),
+          skip_secret_interp: stack.config.skip_secret_interp,
+        },
+        (),
+      )
+      .await
+    {
       Ok(res) => res.into(),
       Err(e) => {
         let error = format_serror(
@@ -266,18 +279,6 @@ async fn write_stack(
       return Err(anyhow!("Stopped after clone failure"));
     }
 
-    let env_file_path = match write_environment_file(
-      stack,
-      &run_directory,
-      &mut res.logs,
-    )
-    .await
-    {
-      Ok(path) => path,
-      Err(_) => {
-        return Err(anyhow!("failed to write environment file"));
-      }
-    };
     Ok(env_file_path)
   } else {
     // Ensure run directory exists
@@ -285,7 +286,12 @@ async fn write_stack(
       format!("failed to create stack run directory at {root:?}")
     })?;
     let env_file_path = match write_environment_file(
-      stack,
+      &stack.config.environment,
+      &stack.config.env_file_path,
+      stack
+        .config
+        .skip_secret_interp
+        .then_some(&periphery_config().secrets),
       &run_directory,
       &mut res.logs,
     )
@@ -313,78 +319,6 @@ async fn write_stack(
 
     Ok(env_file_path)
   }
-}
-
-/// If the environment was written and needs to be passed to the compose command,
-/// will return the env file PathBuf
-async fn write_environment_file(
-  stack: &Stack,
-  folder: &Path,
-  logs: &mut Vec<Log>,
-) -> Result<Option<PathBuf>, ()> {
-  if stack.config.environment.is_empty() {
-    return Ok(None);
-  }
-
-  let contents =
-    environment_vars_to_string(&stack.config.environment);
-
-  let contents = if stack.config.skip_secret_interp {
-    contents
-  } else {
-    let res = svi::interpolate_variables(
-      &contents,
-      &periphery_config().secrets,
-      svi::Interpolator::DoubleBrackets,
-      true,
-    )
-    .context("failed to interpolate secrets into stack environment");
-
-    let (contents, replacers) = match res {
-      Ok(res) => res,
-      Err(e) => {
-        logs.push(Log::error(
-          "interpolate periphery secrets",
-          format_serror(&e.into()),
-        ));
-        return Err(());
-      }
-    };
-
-    if !replacers.is_empty() {
-      logs.push(Log::simple(
-        "interpolate periphery secrets",
-        replacers
-            .iter()
-            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
-            .collect::<Vec<_>>()
-            .join("\n"),
-      ))
-    }
-
-    contents
-  };
-
-  let file = folder.join(&stack.config.env_file_path);
-
-  if let Err(e) =
-    fs::write(&file, contents).await.with_context(|| {
-      format!("failed to write environment file to {file:?}")
-    })
-  {
-    logs.push(Log::error(
-      "write environment file",
-      format_serror(&e.into()),
-    ));
-    return Err(());
-  }
-
-  logs.push(Log::simple(
-    "write environment file",
-    format!("environment written to {file:?}"),
-  ));
-
-  Ok(Some(file))
 }
 
 async fn destroy_existing_containers(

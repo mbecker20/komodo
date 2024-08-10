@@ -18,6 +18,7 @@ use crate::{config::core_config, state::db_client};
 
 pub mod action_state;
 pub mod alert;
+pub mod builder;
 pub mod cache;
 pub mod channel;
 pub mod procedure;

@@ -8,7 +8,10 @@ use monitor_client::entities::{
   CloneArgs,
 };
 
-use crate::{config::core_config, helpers::{git_token, random_string}};
+use crate::{
+  config::core_config,
+  helpers::{git_token, random_string},
+};
 
 /// Returns Result<(read paths, error paths, logs, short hash, commit message)>
 pub async fn get_remote_compose_contents(
@@ -94,7 +97,15 @@ pub async fn clone_remote_repo(
 
   clone_args.destination = Some(repo_path.display().to_string());
 
-  git::clone(clone_args, &config.stack_directory, access_token)
-    .await
-    .context("failed to clone stack repo")
+  git::clone(
+    clone_args,
+    &config.stack_directory,
+    access_token,
+    &[],
+    "",
+    None,
+  )
+  .await
+  .context("failed to clone stack repo")
+  .map(|(a, b, c, _)| (a, b, c))
 }
