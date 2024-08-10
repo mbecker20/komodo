@@ -476,6 +476,11 @@ export const StackConfig = ({
                   <Environment env={_env ?? ""} set={set} disabled={disabled} />
                 );
               },
+              env_file_path: {
+                description:
+                  "The path to write the file to, relative to the root of the repo.",
+                placeholder: ".env",
+              },
               skip_secret_interp: true,
             },
           },

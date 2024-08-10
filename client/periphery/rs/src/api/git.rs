@@ -39,6 +39,12 @@ pub struct PullRepo {
   pub branch: Option<String>,
   pub commit: Option<String>,
   pub on_pull: Option<SystemCommand>,
+  #[serde(default)]
+  pub environment: Vec<EnvironmentVar>,
+  #[serde(default = "default_env_file_path")]
+  pub env_file_path: String,
+  #[serde(default)]
+  pub skip_secret_interp: bool,
 }
 
 //

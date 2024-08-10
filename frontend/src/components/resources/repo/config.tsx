@@ -3,16 +3,19 @@ import {
   AccountSelectorConfig,
   ConfigItem,
   ProviderSelectorConfig,
+  SecretsForEnvironment,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { useState } from "react";
-import { CopyGithubWebhook, ServerSelector } from "../common";
+import { createRef, useState } from "react";
+import { BuilderSelector, CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus } from "lucide-react";
+import { env_to_text } from "@lib/utils";
+import { Textarea } from "@ui/textarea";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -45,6 +48,19 @@ export const RepoConfig = ({ id }: { id: string }) => {
             components: {
               server_id: (value, set) => (
                 <ServerSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Builder Id",
+            labelHidden: true,
+            components: {
+              builder_id: (value, set) => (
+                <BuilderSelector
                   selected={value}
                   set={set}
                   disabled={disabled}
@@ -260,7 +276,56 @@ export const RepoConfig = ({ id }: { id: string }) => {
             },
           },
         ],
+        environment: [
+          {
+            label: "Environment",
+            description:
+              "Write these variables to a .env-formatted file at the specified path, before on_clone / on_pull are run.",
+            components: {
+              environment: (env, set) => {
+                const _env = typeof env === "object" ? env_to_text(env) : env;
+                return (
+                  <Environment env={_env ?? ""} set={set} disabled={disabled} />
+                );
+              },
+              env_file_path: {
+                description:
+                  "The path to write the file to, relative to the root of the repo.",
+                placeholder: ".env",
+              },
+              skip_secret_interp: true,
+            },
+          },
+        ],
       }}
     />
+  );
+};
+
+const Environment = ({
+  env,
+  set,
+  disabled,
+}: {
+  env: string;
+  set: (input: Partial<Types.RepoConfig>) => void;
+  disabled: boolean;
+}) => {
+  const ref = createRef<HTMLTextAreaElement>();
+  const setEnv = (environment: string) => set({ environment });
+  return (
+    <ConfigItem className="flex-col gap-4 items-start">
+      {!disabled && (
+        <SecretsForEnvironment env={env} setEnv={setEnv} envRef={ref} />
+      )}
+      <Textarea
+        ref={ref}
+        className="min-h-[400px]"
+        placeholder="VARIABLE=value"
+        value={env}
+        onChange={(e) => setEnv(e.target.value)}
+        disabled={disabled}
+      />
+    </ConfigItem>
   );
 };

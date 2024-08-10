@@ -23,7 +23,11 @@ pub async fn pull(
   branch: &Option<String>,
   commit: &Option<String>,
   on_pull: &Option<SystemCommand>,
-) -> (Vec<Log>, Option<String>, Option<String>) {
+  environment: &[EnvironmentVar],
+  env_file_path: &str,
+  // if skip_secret_interp is none, make sure to pass None here
+  secrets: Option<&HashMap<String, String>>,
+) -> (Vec<Log>, Option<String>, Option<String>, Option<PathBuf>) {
   let branch = match branch {
     Some(branch) => branch.to_owned(),
     None => "main".to_string(),
@@ -37,7 +41,7 @@ pub async fn pull(
   let mut logs = vec![pull_log];
 
   if !logs[0].success {
-    return (logs, None, None);
+    return (logs, None, None, None);
   }
 
   if let Some(commit) = commit {
@@ -65,6 +69,18 @@ pub async fn pull(
     }
   };
 
+  let Ok(env_file_path) = write_environment_file(
+    environment,
+    env_file_path,
+    secrets,
+    path,
+    &mut logs,
+  )
+  .await
+  else {
+    return (logs, hash, message, None);
+  };
+
   if let Some(on_pull) = on_pull {
     if !on_pull.path.is_empty() && !on_pull.command.is_empty() {
       let path = path.join(&on_pull.path);
@@ -77,7 +93,7 @@ pub async fn pull(
     }
   }
 
-  (logs, hash, message)
+  (logs, hash, message, env_file_path)
 }
 
 /// (logs, commit hash, commit message, env_file_path)

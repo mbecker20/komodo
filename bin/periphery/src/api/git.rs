@@ -63,7 +63,7 @@ impl Resolve<CloneRepo> for State {
       token,
       &environment,
       &env_file_path,
-      skip_secret_interp.then_some(&periphery_config().secrets),
+      (!skip_secret_interp).then_some(&periphery_config().secrets),
     )
     .await
     .map(|(logs, commit_hash, commit_message, env_file_path)| {
@@ -89,23 +89,30 @@ impl Resolve<PullRepo> for State {
       branch,
       commit,
       on_pull,
+      environment,
+      env_file_path,
+      skip_secret_interp,
     }: PullRepo,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
     let name = to_monitor_name(&name);
-    let (logs, commit_hash, commit_message) = git::pull(
-      &periphery_config().repo_dir.join(name),
-      &branch,
-      &commit,
-      &on_pull,
-    )
-    .await;
+    let (logs, commit_hash, commit_message, env_file_path) =
+      git::pull(
+        &periphery_config().repo_dir.join(name),
+        &branch,
+        &commit,
+        &on_pull,
+        &environment,
+        &env_file_path,
+        (!skip_secret_interp).then_some(&periphery_config().secrets),
+      )
+      .await;
     Ok(
       RepoActionResponseV1_13 {
         logs,
         commit_hash,
         commit_message,
-        env_file_path: None,
+        env_file_path,
       }
       .into(),
     )

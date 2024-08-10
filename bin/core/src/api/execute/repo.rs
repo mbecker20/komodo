@@ -153,6 +153,9 @@ impl Resolve<PullRepo, (User, Update)> for State {
         branch: optional_string(&repo.config.branch),
         commit: optional_string(&repo.config.commit),
         on_pull: repo.config.on_pull.into_option(),
+        environment: repo.config.environment,
+        env_file_path: repo.config.env_file_path,
+        skip_secret_interp: repo.config.skip_secret_interp,
       })
       .await
     {

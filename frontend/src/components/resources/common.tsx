@@ -417,3 +417,29 @@ export const ServerSelector = ({
     />
   </ConfigItem>
 );
+
+export const BuilderSelector = ({
+  selected,
+  set,
+  disabled,
+  align,
+}: {
+  selected: string | undefined;
+  set: (input: Partial<Types.BuildConfig>) => void;
+  disabled: boolean;
+  align?: "start" | "center" | "end";
+}) => (
+  <ConfigItem
+    label="Builder"
+    description="Choose the target builder to build the resource"
+    boldLabel
+  >
+    <ResourceSelector
+      type="Builder"
+      selected={selected}
+      onSelect={(builder_id) => set({ builder_id })}
+      disabled={disabled}
+      align={align}
+    />
+  </ConfigItem>
+);

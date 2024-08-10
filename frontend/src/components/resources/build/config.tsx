@@ -16,7 +16,11 @@ import { Button } from "@ui/button";
 import { Textarea } from "@ui/textarea";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode, createRef, useState } from "react";
-import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
+import {
+  BuilderSelector,
+  CopyGithubWebhook,
+  LabelsConfig,
+} from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
@@ -98,15 +102,7 @@ export const BuildConfig = ({
                 );
               },
               builder_id: (id, set) => (
-                <ConfigItem label="Builder">
-                  <ResourceSelector
-                    type="Builder"
-                    selected={id}
-                    onSelect={(builder_id) => set({ builder_id })}
-                    disabled={disabled}
-                    align="end"
-                  />
-                </ConfigItem>
+                <BuilderSelector selected={id} set={set} disabled={disabled} />
               ),
             },
           },
