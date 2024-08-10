@@ -75,7 +75,7 @@ export const Page = ({
             className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
           >
             <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 items-center">
                 {icon}
                 <h1 className="text-4xl">{title}</h1>
                 {titleRight}
@@ -92,7 +92,7 @@ export const Page = ({
           className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
         >
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 items-center">
               {icon}
               <h1 className="text-4xl">{title}</h1>
               {titleRight}
