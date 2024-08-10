@@ -315,7 +315,9 @@ fn build_cache_for_deployment<'a>(
       &deployment.name,
       &deployment.after,
       deployment_map,
+      deployments,
       stack_map,
+      stacks,
     )?;
 
     let Some(original) = deployment_map.get(&deployment.name) else {
@@ -509,7 +511,9 @@ fn build_cache_for_stack<'a>(
       &stack.name,
       &stack.after,
       deployment_map,
+      deployments,
       stack_map,
+      stacks,
     )?;
 
     let Some(original) = stack_map.get(&stack.name) else {
@@ -774,14 +778,37 @@ fn get_after_as_resource_targets(
   after: &[String],
   // Names to deployments
   deployment_map: &HashMap<String, Deployment>,
+  deployments: &[ResourceToml<PartialDeploymentConfig>],
   // Names to stacks
   stack_map: &HashMap<String, Stack>,
+  stacks: &[ResourceToml<PartialStackConfig>],
 ) -> anyhow::Result<Vec<ResourceTarget>> {
-  after.iter().map(|name| match deployment_map.get(name) {
-    Some(_) => Ok(ResourceTarget::Deployment(name.clone())),
-    None => match stack_map.get(name) {
-      Some(_) => Ok(ResourceTarget::Stack(name.clone())),
-      None => Err(anyhow!("failed to match deploy dependency in 'after' | resource: {resource_name} | dependency: {name}"))
-    }
-  }).collect()
+  after
+    .iter()
+    .map(|name| match deployment_map.get(name) {
+      Some(_) => Ok(ResourceTarget::Deployment(name.clone())),
+      None => {
+        if deployments
+          .iter()
+          .any(|deployment| deployment.name.as_str() == resource_name)
+        {
+          Ok(ResourceTarget::Deployment(name.clone()))
+        } else {
+          match stack_map.get(name) {
+            Some(_) => Ok(ResourceTarget::Stack(name.clone())),
+            None => {
+              if stacks
+                .iter()
+                .any(|stack| stack.name.as_str() == resource_name)
+              {
+                Ok(ResourceTarget::Stack(name.clone()))
+              } else {
+                Err(anyhow!("failed to match deploy dependency in 'after' list | resource: {resource_name} | dependency: {name}"))
+              }
+            }
+          }
+        }
+      }
+    })
+    .collect()
 }
