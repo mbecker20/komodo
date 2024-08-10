@@ -202,6 +202,10 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
       tags: Vec::new(),
       info: BuildInfo {
         last_built_at: unix_from_monitor_ts(&value.last_built_at)?,
+        built_hash: None,
+        built_message: None,
+        latest_hash: None,
+        latest_message: None,
       },
       base_permission: Default::default(),
       config: BuildConfig {

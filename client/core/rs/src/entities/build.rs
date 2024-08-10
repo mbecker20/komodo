@@ -56,6 +56,14 @@ pub enum BuildState {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BuildInfo {
   pub last_built_at: I64,
+  /// Latest built short commit hash, or null.
+  pub built_hash: Option<String>,
+  /// Latest built commit message, or null. Only for repo based stacks
+  pub built_message: Option<String>,
+  /// Latest remote short commit hash, or null.
+  pub latest_hash: Option<String>,
+  /// Latest remote commit message, or null
+  pub latest_message: Option<String>,
 }
 
 #[typeshare(serialized_as = "Partial<BuildConfig>")]

@@ -18,6 +18,10 @@ impl From<Build> for monitor_client::entities::build::Build {
       tags: value.tags,
       info: monitor_client::entities::build::BuildInfo {
         last_built_at: value.info.last_built_at,
+        built_hash: None,
+        built_message: None,
+        latest_hash: None,
+        latest_message: None,
       },
       config: value.config.into(),
       base_permission: Default::default(),
