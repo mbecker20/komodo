@@ -1,7 +1,14 @@
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
-import { ArrowDownToDot, ArrowDownToLine, Loader2 } from "lucide-react";
+import {
+  ArrowDownToDot,
+  ArrowDownToLine,
+  Ban,
+  Hammer,
+  Loader2,
+} from "lucide-react";
 import { useRepo } from ".";
+import { Types } from "@monitor/client";
 
 export const CloneRepo = ({ id }: { id: string }) => {
   const hash = useRepo(id)?.info.latest_hash;
@@ -31,7 +38,6 @@ export const CloneRepo = ({ id }: { id: string }) => {
 };
 
 export const PullRepo = ({ id }: { id: string }) => {
-  
   const { mutate, isPending } = useExecute("PullRepo");
   const pulling = useRead(
     "GetRepoActionState",
@@ -57,4 +63,72 @@ export const PullRepo = ({ id }: { id: string }) => {
       loading={pending}
     />
   );
+};
+
+export const BuildRepo = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Repo", id },
+  }).data;
+  const building = useRead(
+    "GetRepoActionState",
+    { repo: id },
+    { refetchInterval: 5000 }
+  ).data?.building;
+  const updates = useRead("ListUpdates", {
+    query: {
+      "target.type": "Repo",
+      "target.id": id,
+    },
+  }).data;
+  const { mutate: run_mutate, isPending: runPending } = useExecute("BuildRepo");
+  const { mutate: cancel_mutate, isPending: cancelPending } =
+    useExecute("CancelRepoBuild");
+
+  // make sure hidden without perms.
+  // not usually necessary, but this button also used in deployment actions.
+  if (
+    perms !== Types.PermissionLevel.Execute &&
+    perms !== Types.PermissionLevel.Write
+  )
+    return null;
+
+  // updates come in in descending order, so 'find' will find latest update matching operation
+  const latestBuild = updates?.updates.find(
+    (u) => u.operation === Types.Operation.BuildRepo
+  );
+  const latestCancel = updates?.updates.find(
+    (u) => u.operation === Types.Operation.CancelRepoBuild
+  );
+  const cancelDisabled =
+    cancelPending ||
+    (latestCancel && latestBuild
+      ? latestCancel!.start_ts > latestBuild!.start_ts
+      : false);
+
+  if (building) {
+    return (
+      <ConfirmButton
+        title="Cancel Build"
+        variant="destructive"
+        icon={<Ban className="h-4 w-4" />}
+        onClick={() => cancel_mutate({ repo: id })}
+        disabled={cancelDisabled}
+      />
+    );
+  } else {
+    return (
+      <ConfirmButton
+        title="Build"
+        icon={
+          runPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Hammer className="h-4 w-4" />
+          )
+        }
+        onClick={() => run_mutate({ repo: id })}
+        disabled={runPending}
+      />
+    );
+  }
 };

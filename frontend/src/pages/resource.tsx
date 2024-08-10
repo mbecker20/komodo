@@ -120,7 +120,7 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
             <div className="mt-1">
               <Components.BigIcon id={id} />
             </div>
-            <h1 className="text-3xl">{name}</h1>
+            <h1 className="text-3xl text-nowrap">{name}</h1>
             <div className="flex items-center gap-4 flex-wrap">
               {Object.entries(Components.Status).map(([key, Status]) => (
                 <Status key={key} id={id} />

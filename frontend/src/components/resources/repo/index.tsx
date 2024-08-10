@@ -9,7 +9,7 @@ import {
   Server,
 } from "lucide-react";
 import { RepoConfig } from "./config";
-import { CloneRepo, PullRepo } from "./actions";
+import { BuildRepo, CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RepoTable } from "./table";
 import {
@@ -227,7 +227,7 @@ export const RepoComponents: RequiredResourceComponents = {
     },
   },
 
-  Actions: { PullRepo, CloneRepo },
+  Actions: { BuildRepo, PullRepo, CloneRepo },
 
   Page: {},
 
