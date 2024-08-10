@@ -99,19 +99,32 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   />
                 );
               },
-              repo: { placeholder: "Enter repo" },
-              branch: { placeholder: "Enter branch" },
+              repo: {
+                placeholder: "Enter repo",
+                description:
+                  "The repo path on the provider. {namespace}/{repo_name}",
+              },
+              branch: {
+                placeholder: "Enter branch",
+                description: "Select a custom branch, or default to 'main'.",
+              },
               commit: {
                 placeholder: "Enter a specific commit hash. Optional.",
+                description:
+                  "Switch to a specific hash after cloning the branch.",
               },
               path: {
-                placeholder:
-                  "Explicitly specify the folder to clone the repo in. Optional.",
+                label: "Clone Path",
+                placeholder: "/clone/path/on/host",
+                description:
+                  "Explicitly specify the folder on the host to clone the repo in. Optional.",
               },
             },
           },
           {
             label: "On Clone",
+            description:
+              "Execute a shell command after cloning the repo. The given Cwd is relative to repo root.",
             components: {
               on_clone: (value, set) => (
                 <SystemCommand
@@ -124,6 +137,8 @@ export const RepoConfig = ({ id }: { id: string }) => {
           },
           {
             label: "On Pull",
+            description:
+              "Execute a shell command after pulling the repo. The given Cwd is relative to repo root.",
             components: {
               on_pull: (value, set) => (
                 <SystemCommand

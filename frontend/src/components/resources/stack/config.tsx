@@ -213,7 +213,7 @@ export const StackConfig = ({
         ],
         "Git Repo": [
           {
-            label: "Git Provider",
+            label: "Git",
             description:
               "Provide config for repo-based compose files. Not necessary if file contents are configured in UI.",
             components: {

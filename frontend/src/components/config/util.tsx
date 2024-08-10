@@ -307,8 +307,13 @@ export const ProviderSelectorConfig = (params: {
   https?: boolean;
   onHttpsSwitch?: () => void;
 }) => {
+  const select =
+    params.account_type === "git" ? "git provider" : "docker registry";
   return (
-    <ConfigItem label={`${params.account_type} Provider`}>
+    <ConfigItem
+      label={`${params.account_type} Provider`}
+      description={`Select ${select} domain`}
+    >
       {params.account_type === "git" ? (
         <div className="flex items-center justify-end gap-2 w-[75%]">
           <Button
@@ -409,7 +414,10 @@ export const AccountSelectorConfig = (params: {
   placeholder: string;
 }) => {
   return (
-    <ConfigItem label="Account">
+    <ConfigItem
+      label="Account"
+      description="Select the account used to log in to the provider"
+    >
       <AccountSelector {...params} />
     </ConfigItem>
   );
@@ -654,6 +662,8 @@ export const AddExtraArgMenu = ({
   );
 };
 
+const IMAGE_REGISTRY_DESCRIPTION = "Configure where the built image is pushed.";
+
 export const ImageRegistryConfig = ({
   registry: _registry,
   setRegistry,
@@ -683,7 +693,10 @@ export const ImageRegistryConfig = ({
 
   if (registry.type === "None") {
     return (
-      <ConfigItem label="Image Registry">
+      <ConfigItem
+        label="Image Registry"
+        description={IMAGE_REGISTRY_DESCRIPTION}
+      >
         <RegistryTypeSelector
           registry={registry}
           setRegistry={setRegistry}
@@ -695,7 +708,10 @@ export const ImageRegistryConfig = ({
   }
   if (registry.type === "AwsEcr") {
     return (
-      <ConfigItem label="Image Registry">
+      <ConfigItem
+        label="Image Registry"
+        description={IMAGE_REGISTRY_DESCRIPTION}
+      >
         <div className="flex items-center justify-stretch gap-4">
           <AwsEcrLabelSelector
             selected={registry.params}
@@ -722,7 +738,10 @@ export const ImageRegistryConfig = ({
 
   return (
     <>
-      <ConfigItem label="Image Registry">
+      <ConfigItem
+        label="Image Registry"
+        description={IMAGE_REGISTRY_DESCRIPTION}
+      >
         <div className="flex items-center justify-stretch gap-4">
           <ProviderSelector
             disabled={disabled}
@@ -745,7 +764,10 @@ export const ImageRegistryConfig = ({
         </div>
       </ConfigItem>
       {organizations.length > 0 && (
-        <ConfigItem label="Organization">
+        <ConfigItem
+          label="Organization"
+          description="Push the build under an organization namespace, rather than the account namespace."
+        >
           <OrganizationSelector
             organizations={organizations}
             selected={registry.params?.organization!}
@@ -759,7 +781,10 @@ export const ImageRegistryConfig = ({
           />
         </ConfigItem>
       )}
-      <ConfigItem label="Account">
+      <ConfigItem
+        label="Account"
+        description="Select the account used to authenticate against the registry."
+      >
         <AccountSelector
           id={resource_id}
           type="Builder"

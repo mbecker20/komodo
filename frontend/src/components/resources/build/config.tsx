@@ -16,14 +16,11 @@ import { Button } from "@ui/button";
 import { Textarea } from "@ui/textarea";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode, createRef, useState } from "react";
-import {
-  BuilderSelector,
-  CopyGithubWebhook,
-  LabelsConfig,
-} from "../common";
+import { BuilderSelector, CopyGithubWebhook, LabelsConfig } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
+import { Link } from "react-router-dom";
 
 export const BuildConfig = ({
   id,
@@ -59,7 +56,17 @@ export const BuildConfig = ({
       components={{
         general: [
           {
-            label: "General",
+            label: "Builder",
+            labelHidden: true,
+            components: {
+              builder_id: (id, set) => (
+                <BuilderSelector selected={id} set={set} disabled={disabled} />
+              ),
+            },
+          },
+          {
+            label: "Version",
+            labelHidden: true,
             components: {
               version: (version, set) => {
                 const { major, minor, patch } = version ?? {
@@ -68,7 +75,10 @@ export const BuildConfig = ({
                   patch: 0,
                 };
                 return (
-                  <ConfigItem label="Version">
+                  <ConfigItem
+                    label="Version"
+                    description="Increment the build's major / minor version. The patch number will be incremented for every build."
+                  >
                     <div className="flex gap-4 items-center">
                       <div className="text-xl">
                         v{major}.{minor}.{patch}
@@ -101,9 +111,20 @@ export const BuildConfig = ({
                   </ConfigItem>
                 );
               },
-              builder_id: (id, set) => (
-                <BuilderSelector selected={id} set={set} disabled={disabled} />
-              ),
+            },
+          },
+          {
+            label: "Custom Name / Tag",
+            components: {
+              image_name: {
+                description: "Optional. Push the image under a different name",
+                placeholder: "Custom image name",
+              },
+              image_tag: {
+                description:
+                  "Optional. Postfix the image version with a custom tag.",
+                placeholder: "Custom image tag",
+              },
             },
           },
           {
@@ -134,16 +155,35 @@ export const BuildConfig = ({
                   placeholder="None"
                 />
               ),
-              repo: { placeholder: "Enter repo" },
-              branch: { placeholder: "Enter branch" },
+              repo: {
+                placeholder: "Enter repo",
+                description:
+                  "The repo path on the provider. {namespace}/{repo_name}",
+              },
+              branch: {
+                placeholder: "Enter branch",
+                description: "Select a custom branch, or default to 'main'.",
+              },
               commit: {
                 placeholder: "Enter a specific commit hash. Optional.",
+                description:
+                  "Switch to a specific hash after cloning the branch.",
               },
             },
           },
           {
             label: "Docker",
             components: {
+              build_path: {
+                placeholder: ".",
+                description:
+                  "The cwd to run 'docker build', relative to the root of the repo.",
+              },
+              dockerfile_path: {
+                placeholder: "Dockerfile",
+                description:
+                  "The path to the dockerfile, relative to the build path.",
+              },
               image_registry: (registry, set) => (
                 <ImageRegistryConfig
                   registry={registry}
@@ -152,21 +192,23 @@ export const BuildConfig = ({
                   disabled={disabled}
                 />
               ),
-              image_name: {
-                description: "Optional. Push the image under a different name",
-                placeholder: "Custom image name",
-              },
-              image_tag: {
-                description:
-                  "Optional. Postfix the image version with a custom tag.",
-                placeholder: "Custom image tag",
-              },
-              build_path: true,
-              dockerfile_path: true,
             },
           },
           {
             label: "Extra Args",
+            description: (
+              <div className="flex flex-row flex-wrap">
+                <div>Pass extra arguments to 'docker build'.</div>
+                <Link
+                  to="https://docs.docker.com/reference/cli/docker/buildx/build/"
+                  target="_blank"
+                >
+                  <Button variant="link" className="p-0">
+                    See docker docs.
+                  </Button>
+                </Link>
+              </div>
+            ),
             contentHidden:
               (update.extra_args ?? config.extra_args)?.length === 0,
             actions: !disabled && (
@@ -198,6 +240,7 @@ export const BuildConfig = ({
           },
           {
             label: "Labels",
+            description: "Attach --labels to image.",
             contentHidden: (update.labels ?? config.labels)?.length === 0,
             actions: !disabled && (
               <Button
@@ -324,6 +367,8 @@ export const BuildConfig = ({
         "Build Args": [
           {
             label: "Build Args",
+            description:
+              "Pass build args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
             components: {
               build_args: (vars, set) => {
                 const args =
@@ -344,6 +389,8 @@ export const BuildConfig = ({
         "Secret Args": [
           {
             label: "Secret Args",
+            description:
+              "Pass secret args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
             components: {
               secret_args: (vars, set) => {
                 const args =
