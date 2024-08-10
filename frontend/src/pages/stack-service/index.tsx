@@ -1,5 +1,8 @@
-import { PageXlRow, Section } from "@components/layouts";
-import { ResourceLink } from "@components/resources/common";
+import { Section } from "@components/layouts";
+import {
+  ResourceDescription,
+  ResourceLink,
+} from "@components/resources/common";
 import { useStack } from "@components/resources/stack";
 import {
   PauseUnpauseStack,
@@ -7,18 +10,20 @@ import {
   StartStopStack,
 } from "@components/resources/stack/actions";
 import {
-  bg_color_class_by_intention,
   deployment_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
-import { snake_case_to_upper_space_case } from "@lib/formatting";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { cn, has_minimum_permissions } from "@lib/utils";
 import { Types } from "@monitor/client";
-import { Box, Clapperboard, Layers2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Box, ChevronLeft, Clapperboard, Layers2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { StackServiceLogs } from "./log";
 import { ResourceUpdates } from "@components/updates/resource";
+import { Button } from "@ui/button";
+import { ExportButton } from "@components/export";
+import { AddTags, ResourceTags } from "@components/tags";
+import { StatusBadge } from "@components/util";
 
 type IdServiceComponent = React.FC<{ id: string; service?: string }>;
 
@@ -35,6 +40,7 @@ export const StackServicePage = () => {
   };
   const stack = useStack(stack_id);
   useSetTitle(`${stack?.name} | ${service}`);
+  const nav = useNavigate();
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Stack", id: stack_id },
   }).data;
@@ -42,57 +48,80 @@ export const StackServicePage = () => {
     perms,
     Types.PermissionLevel.Execute
   );
+  const canWrite = has_minimum_permissions(perms, Types.PermissionLevel.Write);
   const services = useRead("ListStackServices", { stack: stack_id }).data;
   const container = services?.find((s) => s.service === service)?.container;
   const state = container?.state ?? Types.DeploymentState.Unknown;
   const intention = deployment_state_intention(state);
-  const bg_color = bg_color_class_by_intention(intention);
   const stroke_color = stroke_color_class_by_intention(intention);
 
   return (
-    <PageXlRow
-      wrapSize="lg"
-      title={service}
-      icon={<Layers2 className={cn("w-8 h-8", stroke_color)} />}
-      titleRight={
-        // <Card className={cn("w-fit", bg_color)}>
-        //   <CardHeader className="py-0 px-2">
-        //     {snake_case_to_upper_space_case(state).toUpperCase()}
-        //   </CardHeader>
-        // </Card>
-        <div className="flex flex-wrap gap-4 items-center">
-          <p
-            className={cn(
-              "p-1 w-fit text-[10px] text-white rounded-md",
-              bg_color
-            )}
+    <div className="flex flex-col gap-16">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            className="gap-2"
+            variant="secondary"
+            onClick={() => nav("/stacks/" + stack_id)}
           >
-            {snake_case_to_upper_space_case(state).toUpperCase()}
-          </p>
-          {container?.status && <div>{container?.status}</div>}
+            <ChevronLeft className="w-4" /> Back
+          </Button>
+          <ExportButton targets={[{ type: "Stack", id: stack_id }]} />
         </div>
-      }
-      subtitle={
-        <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
-          <ResourceLink type="Stack" id={stack_id} />
-          {stack?.info.server_id && (
-            <>
-              |
-              <ResourceLink type="Server" id={stack.info.server_id} />
-            </>
-          )}
-          {container && container?.name !== service && (
-            <>
-              |
-              <div className="flex gap-2 items-center">
-                <Box className="w-4 h-4" />
-                {container.name}
-              </div>
-            </>
-          )}
+
+        <div className="grid lg:grid-cols-2 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="mt-1">
+              <Layers2 className={cn("w-8 h-8", stroke_color)} />
+            </div>
+            <h1 className="text-3xl">{service}</h1>
+            <div className="flex flex-wrap gap-4 items-center">
+              <StatusBadge text={state} intent={intention} />
+              {container?.status && <div>{container?.status}</div>}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 lg:justify-self-end">
+            <p className="text-sm text-muted-foreground">Description: </p>
+            <ResourceDescription
+              type="Stack"
+              id={stack_id}
+              disabled={!canWrite}
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
+            <ResourceLink type="Stack" id={stack_id} />
+            {stack?.info.server_id && (
+              <>
+                |
+                <ResourceLink type="Server" id={stack.info.server_id} />
+              </>
+            )}
+            {container && container?.name !== service && (
+              <>
+                |
+                <div className="flex gap-2 items-center">
+                  <Box className="w-4 h-4" />
+                  {container.name}
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 h-7 lg:justify-self-end">
+            <p className="text-sm text-muted-foreground">Tags:</p>
+            <ResourceTags
+              target={{ id: stack_id, type: "Stack" }}
+              className="text-sm"
+              disabled={!canWrite}
+              click_to_delete
+            />
+            {canWrite && <AddTags target={{ id: stack_id, type: "Stack" }} />}
+          </div>
         </div>
-      }
-    >
+      </div>
+
       {/* Actions */}
       {canExecute && (
         <Section
@@ -114,6 +143,6 @@ export const StackServicePage = () => {
       <div className="pt-4">
         <StackServiceLogs id={stack_id} service={service} />
       </div>
-    </PageXlRow>
+    </div>
   );
 };

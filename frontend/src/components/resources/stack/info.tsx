@@ -1,9 +1,8 @@
 import { Section } from "@components/layouts";
 import { ReactNode } from "react";
-import { useRead } from "@lib/hooks";
-import { useStack } from ".";
-import { Card, CardDescription, CardHeader } from "@ui/card";
-import { sanitizeOnlySpan } from "@lib/utils";
+import { Card, CardHeader } from "@ui/card";
+import { useFullStack, useStack } from ".";
+import { Types } from "@monitor/client";
 
 export const StackInfo = ({
   id,
@@ -12,51 +11,18 @@ export const StackInfo = ({
   id: string;
   titleOther: ReactNode;
 }) => {
-  const stack = useRead("GetStack", { stack: id }).data;
-  const info = useStack(id)?.info;
+  const stack = useFullStack(id);
+  const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
+  const is_down = [Types.StackState.Down, Types.StackState.Unknown].includes(
+    state
+  );
   return (
     <Section titleOther={titleOther}>
-      <div>project missing: {info?.project_missing ? "true" : "false"}</div>
-      {stack?.info?.deployed_message && (
-        <div>deployed message: {stack?.info?.deployed_message}</div>
-      )}
-      {stack?.info?.deployed_contents && (
-        <div>
-          <CardDescription>Deployed File</CardDescription>
-          {stack?.info?.deployed_contents?.map((content) => (
-            <pre className="flex flex-col gap-2">
-              path: {content.path}
-              <pre
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeOnlySpan(content.contents),
-                }}
-                className="max-h-[500px] overflow-y-auto"
-              />
-            </pre>
-          ))}
-        </div>
-        // <Card>
-        //   <CardHeader>
-        //     deployed contents:{" "}
-        //     {stack?.info?.deployed_contents?.map((content) => (
-        //       <pre className="flex flex-col gap-2">
-        //         path: {content.path}
-        //         <pre>{content.contents}</pre>
-        //       </pre>
-        //     ))}
-        //   </CardHeader>
-        // </Card>
-      )}
-
-      {/* LATEST */}
-      {stack?.info?.latest_message && (
-        <div>latest message: {stack?.info?.latest_message}</div>
-      )}
-      {stack?.info?.remote_contents && (
+      {!is_down && stack?.info?.deployed_contents && (
         <Card>
           <CardHeader>
-            remote contents:{" "}
-            {stack?.info?.remote_contents?.map((content) => (
+            deployed contents:{" "}
+            {stack?.info?.deployed_contents?.map((content) => (
               <pre className="flex flex-col gap-2">
                 path: {content.path}
                 <pre>{content.contents}</pre>
@@ -65,7 +31,34 @@ export const StackInfo = ({
           </CardHeader>
         </Card>
       )}
-      {stack?.info?.remote_errors && (
+
+      {stack?.config?.file_contents ? (
+        <Card>
+          <CardHeader>
+            latest contents:{" "}
+            <pre className="flex flex-col gap-2">
+              defined in UI:
+              <pre>{stack?.config?.file_contents}</pre>
+            </pre>
+          </CardHeader>
+        </Card>
+      ) : (
+        stack?.info?.remote_contents &&
+        stack?.info?.remote_contents.length > 0 && (
+          <Card>
+            <CardHeader>
+              latest contents:{" "}
+              {stack?.info?.remote_contents?.map((content) => (
+                <pre className="flex flex-col gap-2">
+                  path: {content.path}
+                  <pre>{content.contents}</pre>
+                </pre>
+              ))}
+            </CardHeader>
+          </Card>
+        )
+      )}
+      {stack?.info?.remote_errors && stack?.info?.remote_errors.length > 0 && (
         <Card>
           <CardHeader>
             remote errors:{" "}
@@ -78,17 +71,20 @@ export const StackInfo = ({
           </CardHeader>
         </Card>
       )}
-      {stack?.info?.latest_json_errors && (
-        <pre>
-          latest json error:{" "}
-          {stack?.info?.latest_json_errors?.map((content) => (
-            <div>
-              path: {content.path}
-              <pre>{content.contents}</pre>
-            </div>
-          ))}
-        </pre>
-      )}
+      {stack?.info?.latest_json_errors &&
+        stack?.info?.latest_json_errors.length > 0 && (
+          <Card>
+            <CardHeader>
+              parsing errors:{" "}
+              {stack?.info?.latest_json_errors?.map((content) => (
+                <pre className="flex flex-col gap-2">
+                  path: {content.path}
+                  <pre>{content.contents}</pre>
+                </pre>
+              ))}
+            </CardHeader>
+          </Card>
+        )}
     </Section>
   );
 };

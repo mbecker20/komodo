@@ -44,7 +44,7 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
   return <Layers className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 
-const ConfigServicesInfo = ({ id }: { id: string }) => {
+const ConfigInfoServices = ({ id }: { id: string }) => {
   const [view, setView] = useLocalStorage("stack-tabs-v1", "Config");
   const state = useStack(id)?.info.state;
   const stackDown =
@@ -56,28 +56,28 @@ const ConfigServicesInfo = ({ id }: { id: string }) => {
       <TabsTrigger value="Config" className="w-[110px]">
         Config
       </TabsTrigger>
+      <TabsTrigger value="Info" className="w-[110px]">
+        Info
+      </TabsTrigger>
       <TabsTrigger value="Services" className="w-[110px]" disabled={stackDown}>
         Services
-      </TabsTrigger>
-      <TabsTrigger value="Info" className="w-[110px]" disabled={stackDown}>
-        Info
       </TabsTrigger>
     </TabsList>
   );
   return (
     <Tabs
-      value={stackDown ? "Config" : view}
+      value={stackDown && view === "Services" ? "Config" : view}
       onValueChange={setView}
       className="grid gap-4"
     >
       <TabsContent value="Config">
         <StackConfig id={id} titleOther={title} />
       </TabsContent>
-      <TabsContent value="Services">
-        <StackServices id={id} titleOther={title} />
-      </TabsContent>
       <TabsContent value="Info">
         <StackInfo id={id} titleOther={title} />
+      </TabsContent>
+      <TabsContent value="Services">
+        <StackServices id={id} titleOther={title} />
       </TabsContent>
     </Tabs>
   );
@@ -157,7 +157,13 @@ export const StackComponents: RequiredResourceComponents = {
     Deployed: ({ id }) => {
       const info = useStack(id)?.info;
       const fullInfo = useFullStack(id)?.info;
+      const state = info?.state;
+      const stackDown =
+        state === undefined ||
+        state === Types.StackState.Unknown ||
+        state === Types.StackState.Down;
       if (
+        stackDown ||
         info?.project_missing ||
         !fullInfo?.deployed_hash ||
         !fullInfo?.deployed_message
@@ -292,7 +298,7 @@ export const StackComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: ConfigServicesInfo,
+  Config: ConfigInfoServices,
 
   DangerZone: ({ id }) => (
     <>

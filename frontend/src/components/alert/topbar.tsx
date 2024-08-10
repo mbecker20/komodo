@@ -21,7 +21,11 @@ import { Types } from "@monitor/client";
 import { useState } from "react";
 
 export const TopbarAlerts = () => {
-  const { data } = useRead("ListAlerts", { query: { resolved: false } });
+  const { data } = useRead(
+    "ListAlerts",
+    { query: { resolved: false } },
+    { refetchInterval: 5000 }
+  );
   const [open, setOpen] = useState(false);
 
   // If this is set, details will open.
