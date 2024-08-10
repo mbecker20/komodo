@@ -147,7 +147,7 @@ export const DashboardPieChart = ({
     <div className="flex items-center gap-8">
       <div className="flex flex-col gap-2 w-24">
         {data.map(({ title, value, intention }) => (
-          <p className="flex gap-2 text-xs text-muted-foreground">
+          <p key={title} className="flex gap-2 text-xs text-muted-foreground">
             <span
               className={cn(
                 "font-bold",

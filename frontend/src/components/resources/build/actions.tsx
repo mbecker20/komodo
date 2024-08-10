@@ -3,7 +3,6 @@ import { useExecute, useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Ban, Hammer, Loader2 } from "lucide-react";
 import { useBuilder } from "../builder";
-import { useBuild } from ".";
 
 export const RunBuild = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -23,7 +22,9 @@ export const RunBuild = ({ id }: { id: string }) => {
   const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild");
   const { mutate: cancel_mutate, isPending: cancelPending } =
     useExecute("CancelBuild");
-  const build = useBuild(id);
+  const build = useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.find(
+    (d) => d.id === id
+  );
   const builder = useBuilder(build?.info.builder_id);
   const canCancel = builder?.info.builder_type !== "Server";
 
