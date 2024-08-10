@@ -23,7 +23,10 @@ pub type _PartialBuilderConfig = PartialBuilderConfig;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BuilderListItemInfo {
+  /// 'Server' or 'Aws'
   pub builder_type: String,
+  /// If 'Server': the server id
+  /// If 'Aws': the instance type (eg. c5.xlarge)
   pub instance_type: Option<String>,
 }
 

@@ -21,6 +21,8 @@ pub type RepoListItem = ResourceListItem<RepoListItemInfo>;
 pub struct RepoListItemInfo {
   /// The server that repo sits on.
   pub server_id: String,
+  /// The builder that builds the repo.
+  pub builder_id: String,
   /// Repo last cloned / pulled timestamp in ms.
   pub last_pulled_at: I64,
   /// Repo last built timestamp in ms.

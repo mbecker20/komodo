@@ -53,6 +53,7 @@ impl super::MonitorResource for Build {
       info: BuildListItemInfo {
         last_built_at: build.info.last_built_at,
         version: build.config.version,
+        builder_id: build.config.builder_id,
         git_provider: build.config.git_provider,
         repo: build.config.repo,
         branch: build.config.branch,

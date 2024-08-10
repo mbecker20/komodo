@@ -26,6 +26,8 @@ pub struct BuildListItemInfo {
   pub last_built_at: I64,
   /// The current version of the build
   pub version: Version,
+  /// The builder attached to build.
+  pub builder_id: String,
   /// The git provider domain
   pub git_provider: String,
   /// The repo used as the source of the build

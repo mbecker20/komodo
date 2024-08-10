@@ -2,6 +2,8 @@ import { ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Ban, Hammer, Loader2 } from "lucide-react";
+import { useBuilder } from "../builder";
+import { useBuild } from ".";
 
 export const RunBuild = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -21,6 +23,9 @@ export const RunBuild = ({ id }: { id: string }) => {
   const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild");
   const { mutate: cancel_mutate, isPending: cancelPending } =
     useExecute("CancelBuild");
+  const build = useBuild(id);
+  const builder = useBuilder(build?.info.builder_id);
+  const canCancel = builder?.info.builder_type !== "Server";
 
   // make sure hidden without perms.
   // not usually necessary, but this button also used in deployment actions.
@@ -38,6 +43,7 @@ export const RunBuild = ({ id }: { id: string }) => {
     (u) => u.operation === Types.Operation.CancelBuild
   );
   const cancelDisabled =
+    !canCancel ||
     cancelPending ||
     (latestCancel && latestBuild
       ? latestCancel!.start_ts > latestBuild!.start_ts

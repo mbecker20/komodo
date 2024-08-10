@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useRepo } from ".";
 import { Types } from "@monitor/client";
+import { useBuilder } from "../builder";
 
 export const CloneRepo = ({ id }: { id: string }) => {
   const hash = useRepo(id)?.info.latest_hash;
@@ -84,6 +85,10 @@ export const BuildRepo = ({ id }: { id: string }) => {
   const { mutate: cancel_mutate, isPending: cancelPending } =
     useExecute("CancelRepoBuild");
 
+  const repo = useRepo(id);
+  const builder = useBuilder(repo?.info.builder_id);
+  const canCancel = builder?.info.builder_type !== "Server";
+
   // make sure hidden without perms.
   // not usually necessary, but this button also used in deployment actions.
   if (
@@ -100,6 +105,7 @@ export const BuildRepo = ({ id }: { id: string }) => {
     (u) => u.operation === Types.Operation.CancelRepoBuild
   );
   const cancelDisabled =
+    !canCancel ||
     cancelPending ||
     (latestCancel && latestBuild
       ? latestCancel!.start_ts > latestBuild!.start_ts

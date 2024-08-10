@@ -19,8 +19,10 @@ import { BuilderConfig } from "./config";
 import { DeleteResource, ResourceLink } from "../common";
 import { BuilderTable } from "./table";
 
-const useBuilder = (id?: string) =>
-  useRead("ListBuilders", {}).data?.find((d) => d.id === id);
+export const useBuilder = (id?: string) =>
+  useRead("ListBuilders", {}, { refetchInterval: 5000 }).data?.find(
+    (d) => d.id === id
+  );
 
 export const BuilderInstanceType = ({ id }: { id: string }) => {
   let info = useBuilder(id)?.info;

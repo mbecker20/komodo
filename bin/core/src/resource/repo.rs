@@ -59,6 +59,7 @@ impl super::MonitorResource for Repo {
       resource_type: ResourceTargetVariant::Repo,
       info: RepoListItemInfo {
         server_id: repo.config.server_id,
+        builder_id: repo.config.builder_id,
         last_pulled_at: repo.info.last_pulled_at,
         last_built_at: repo.info.last_built_at,
         git_provider: repo.config.git_provider,

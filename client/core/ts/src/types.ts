@@ -489,6 +489,8 @@ export interface BuildListItemInfo {
 	last_built_at: I64;
 	/** The current version of the build */
 	version: Version;
+	/** The builder attached to build. */
+	builder_id: string;
 	/** The git provider domain */
 	git_provider: string;
 	/** The repo used as the source of the build */
@@ -535,7 +537,12 @@ export type Builder = Resource<BuilderConfig, undefined>;
 export type GetBuilderResponse = Builder;
 
 export interface BuilderListItemInfo {
+	/** 'Server' or 'Aws' */
 	builder_type: string;
+	/**
+	 * If 'Server': the server id
+	 * If 'Aws': the instance type (eg. c5.xlarge)
+	 */
 	instance_type?: string;
 }
 
@@ -1060,6 +1067,8 @@ export enum RepoState {
 export interface RepoListItemInfo {
 	/** The server that repo sits on. */
 	server_id: string;
+	/** The builder that builds the repo. */
+	builder_id: string;
 	/** Repo last cloned / pulled timestamp in ms. */
 	last_pulled_at: I64;
 	/** Repo last built timestamp in ms. */

@@ -24,7 +24,7 @@ import { Badge } from "@ui/badge";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
 
-const useBuild = (id?: string) =>
+export const useBuild = (id?: string) =>
   useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
