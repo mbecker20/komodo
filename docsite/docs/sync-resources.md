@@ -1,6 +1,6 @@
 # Sync Resources
 
-Monitor is able to sync resources declared in TOML files by diffing them against the existing resources, 
+Monitor is able to create, update, delete, and deploy resources declared in TOML files by diffing them against the existing resources, 
 and apply updates based on the diffs. Push the files to a remote git repo and create a `ResourceSync` pointing to the repo,
 and the core backend will poll for any updates (you can also manually trigger an update poll / execution in the UI).
 
