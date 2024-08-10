@@ -1,6 +1,6 @@
 # Monitor 🦎
 
-A tool to build and deploy software across many servers. [docs](https://mbecker20.github.io/monitor)
+A tool to build and deploy software across many servers. [See the docs](https://docs.monitor.dev)
 
 Docs for periphery setup script can be found in [scripts/readme.md](https://github.com/mbecker20/monitor/blob/main/scripts/readme.md).
 
