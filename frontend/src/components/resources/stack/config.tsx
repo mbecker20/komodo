@@ -114,6 +114,7 @@ export const StackConfig = ({
                     onChange={(e) => set({ file_contents: e.target.value })}
                     className="min-h-[300px] h-fit"
                     placeholder="Paste compose file contents"
+                    spellCheck={false}
                     onKeyDown={(e) => {
                       if (e.key === "Tab") {
                         e.preventDefault();
@@ -523,6 +524,7 @@ const Environment = ({
         value={env}
         onChange={(e) => setEnv(e.target.value)}
         disabled={disabled}
+        spellCheck={false}
       />
     </ConfigItem>
   );

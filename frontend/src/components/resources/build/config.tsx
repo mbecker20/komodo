@@ -439,6 +439,7 @@ const Args = ({
         value={args}
         onChange={(e) => setArgs(e.target.value)}
         disabled={disabled}
+        spellCheck={false}
       />
     </ConfigItem>
   );

@@ -31,6 +31,7 @@ export const EnvVars = ({
         value={env}
         onChange={(e) => setEnv(e.target.value)}
         disabled={disabled}
+        spellCheck={false}
       />
     </ConfigItem>
   );
