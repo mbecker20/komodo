@@ -92,14 +92,9 @@ impl Resolve<RefreshRepoCache, User> for State {
 
     let config = core_config();
 
+    let repo_dir = config.repo_directory.join(random_string(10));
     let mut clone_args: CloneArgs = (&repo).into();
-    clone_args.destination = Some(
-      config
-        .repo_directory
-        .join(random_string(10))
-        .display()
-        .to_string(),
-    );
+    clone_args.destination = Some(repo_dir.display().to_string());
 
     let access_token = match (&clone_args.account, &clone_args.provider)
     {
@@ -152,6 +147,14 @@ impl Resolve<RefreshRepoCache, User> for State {
       )
       .await
       .context("failed to update repo info on db")?;
+
+    if repo_dir.exists() {
+      if let Err(e) = std::fs::remove_dir_all(&repo_dir) {
+        warn!(
+          "failed to remove repo (resource) cache update repo directory | {e:?}"
+        )
+      }
+    }
 
     Ok(NoData {})
   }

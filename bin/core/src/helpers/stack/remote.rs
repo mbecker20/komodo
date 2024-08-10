@@ -64,6 +64,12 @@ pub async fn get_remote_compose_contents(
     }
   }
 
+  if repo_path.exists() {
+    if let Err(e) = std::fs::remove_dir_all(&repo_path) {
+      warn!("failed to remove stack repo directory | {e:?}")
+    }
+  }
+
   Ok((oks, errs, logs, hash, message))
 }
 
