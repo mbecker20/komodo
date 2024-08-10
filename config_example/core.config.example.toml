@@ -92,7 +92,7 @@ mongo.address = "localhost:27017"
 ##
 ## Env: MONITOR_LOCAL_AUTH
 ## Default: false
-local_auth = true
+# local_auth = true
 
 ## Allows all users to have Read level access to all resources.
 ## Env: MONITOR_TRANSPARENT_MODE
