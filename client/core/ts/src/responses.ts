@@ -20,8 +20,8 @@ export type ReadResponses = {
   GetCoreInfo: Types.GetCoreInfoResponse;
   ListAwsEcrLabels: Types.ListAwsEcrLabelsResponse;
   ListSecrets: Types.ListSecretsResponse;
-  ListGitProviders: Types.ListGitProvidersResponse;
-  ListDockerRegistries: Types.ListDockerRegistriesResponse;
+  ListGitProvidersFromConfig: Types.ListGitProvidersFromConfigResponse;
+  ListDockerRegistriesFromConfig: Types.ListDockerRegistriesFromConfigResponse;
 
   // ==== USER ====
   GetUsername: Types.GetUsernameResponse;
@@ -58,10 +58,10 @@ export type ReadResponses = {
   GetServer: Types.GetServerResponse;
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
-  GetSystemInformation: Types.GetSystemInformationResponse;
-  GetDockerContainers: Types.GetDockerContainersResponse;
-  GetDockerImages: Types.GetDockerImagesResponse;
-  GetDockerNetworks: Types.GetDockerNetworksResponse;
+  ListDockerContainers: Types.ListDockerContainersResponse;
+  ListDockerImages: Types.ListDockerImagesResponse;
+  ListDockerNetworks: Types.ListDockerNetworksResponse;
+  ListComposeProjects: Types.ListComposeProjectsResponse;
   GetServerActionState: Types.GetServerActionStateResponse;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
   ListServers: Types.ListServersResponse;
@@ -98,6 +98,26 @@ export type ReadResponses = {
   ListRepos: Types.ListReposResponse;
   ListFullRepos: Types.ListFullReposResponse;
 
+  // ==== SYNC ====
+  GetResourceSyncsSummary: Types.GetResourceSyncsSummaryResponse;
+  GetResourceSync: Types.GetResourceSyncResponse;
+  GetResourceSyncActionState: Types.GetResourceSyncActionStateResponse;
+  GetSyncWebhooksEnabled: Types.GetSyncWebhooksEnabledResponse;
+  ListResourceSyncs: Types.ListResourceSyncsResponse;
+  ListFullResourceSyncs: Types.ListFullResourceSyncsResponse;
+
+  // ==== STACK ====
+  GetStacksSummary: Types.GetStacksSummaryResponse;
+  GetStack: Types.GetStackResponse;
+  GetStackActionState: Types.GetStackActionStateResponse;
+  GetStackWebhooksEnabled: Types.GetStackWebhooksEnabledResponse;
+  GetStackServiceLog: Types.GetStackServiceLogResponse;
+  SearchStackServiceLog: Types.SearchStackServiceLogResponse;
+  ListStacks: Types.ListStacksResponse;
+  ListFullStacks: Types.ListFullStacksResponse;
+  ListStackServices: Types.ListStackServicesResponse;
+  ListCommonStackExtraArgs: Types.ListCommonStackExtraArgsResponse;
+
   // ==== BUILDER ====
   GetBuildersSummary: Types.GetBuildersSummaryResponse;
   GetBuilder: Types.GetBuilderResponse;
@@ -109,14 +129,6 @@ export type ReadResponses = {
   GetAlerter: Types.GetAlerterResponse;
   ListAlerters: Types.ListAlertersResponse;
   ListFullAlerters: Types.ListFullAlertersResponse;
-
-  // ==== SYNC ====
-  GetResourceSyncsSummary: Types.GetResourceSyncsSummaryResponse;
-  GetResourceSync: Types.GetResourceSyncResponse;
-  GetResourceSyncActionState: Types.GetResourceSyncActionStateResponse;
-  GetSyncWebhooksEnabled: Types.GetSyncWebhooksEnabledResponse;
-  ListResourceSyncs: Types.ListResourceSyncsResponse;
-  ListFullResourceSyncs: Types.ListFullResourceSyncsResponse;
 
   // ==== TOML ====
   ExportAllResourcesToToml: Types.ExportAllResourcesToTomlResponse;
@@ -135,12 +147,19 @@ export type ReadResponses = {
   GetAlert: Types.GetAlertResponse;
 
   // ==== SERVER STATS ====
+  GetSystemInformation: Types.GetSystemInformationResponse;
   GetSystemStats: Types.GetSystemStatsResponse;
-  GetSystemProcesses: Types.GetSystemProcessesResponse;
+  ListSystemProcesses: Types.ListSystemProcessesResponse;
 
   // ==== VARIABLE ====
   GetVariable: Types.GetVariableResponse;
   ListVariables: Types.ListVariablesResponse;
+
+  // ==== PROVIDER ====
+  GetGitProviderAccount: Types.GetGitProviderAccountResponse;
+  ListGitProviderAccounts: Types.ListGitProviderAccountsResponse;
+  GetDockerRegistryAccount: Types.GetDockerRegistryAccountResponse;
+  ListDockerRegistryAccounts: Types.ListDockerRegistryAccountsResponse;
 };
 
 export type WriteResponses = {
@@ -187,6 +206,7 @@ export type WriteResponses = {
   CopyBuild: Types.Build;
   DeleteBuild: Types.Build;
   UpdateBuild: Types.Build;
+  RefreshBuildCache: Types.NoData;
   CreateBuildWebhook: Types.CreateBuildWebhookResponse;
   DeleteBuildWebhook: Types.DeleteBuildWebhookResponse;
 
@@ -207,6 +227,7 @@ export type WriteResponses = {
   CopyRepo: Types.Repo;
   DeleteRepo: Types.Repo;
   UpdateRepo: Types.Repo;
+  RefreshRepoCache: Types.NoData;
   CreateRepoWebhook: Types.CreateRepoWebhookResponse;
   DeleteRepoWebhook: Types.DeleteRepoWebhookResponse;
 
@@ -231,6 +252,16 @@ export type WriteResponses = {
   CreateSyncWebhook: Types.CreateSyncWebhookResponse;
   DeleteSyncWebhook: Types.DeleteSyncWebhookResponse;
 
+  // ==== STACK ====
+  CreateStack: Types.Stack;
+  CopyStack: Types.Stack;
+  DeleteStack: Types.Stack;
+  UpdateStack: Types.Stack;
+  RenameStack: Types.Update;
+  RefreshStackCache: Types.NoData;
+  CreateStackWebhook: Types.CreateStackWebhookResponse;
+  DeleteStackWebhook: Types.DeleteStackWebhookResponse;
+
   // ==== TAG ====
   CreateTag: Types.Tag;
   DeleteTag: Types.Tag;
@@ -242,10 +273,19 @@ export type WriteResponses = {
   UpdateVariableValue: Types.UpdateVariableValueResponse;
   UpdateVariableDescription: Types.UpdateVariableDescriptionResponse;
   DeleteVariable: Types.DeleteVariableResponse;
+
+  // ==== PROVIDERS ====
+  CreateGitProviderAccount: Types.CreateGitProviderAccountResponse;
+  UpdateGitProviderAccount: Types.UpdateGitProviderAccountResponse;
+  DeleteGitProviderAccount: Types.DeleteGitProviderAccountResponse;
+  CreateDockerRegistryAccount: Types.CreateDockerRegistryAccountResponse;
+  UpdateDockerRegistryAccount: Types.UpdateDockerRegistryAccountResponse;
+  DeleteDockerRegistryAccount: Types.DeleteDockerRegistryAccountResponse;
 };
 
 export type ExecuteResponses = {
   // ==== SERVER ====
+  StopAllContainers: Types.Update;
   PruneContainers: Types.Update;
   PruneImages: Types.Update;
   PruneNetworks: Types.Update;
@@ -253,17 +293,21 @@ export type ExecuteResponses = {
   // ==== DEPLOYMENT ====
   Deploy: Types.Update;
   StartContainer: Types.Update;
+  RestartContainer: Types.Update;
+  PauseContainer: Types.Update;
+  UnpauseContainer: Types.Update;
   StopContainer: Types.Update;
-  StopAllContainers: Types.Update;
   RemoveContainer: Types.Update;
 
   // ==== BUILD ====
   RunBuild: Types.Update;
-  CancelBuild: Types.CancelBuildResponse;
+  CancelBuild: Types.Update;
 
   // ==== REPO ====
   CloneRepo: Types.Update;
   PullRepo: Types.Update;
+  BuildRepo: Types.Update;
+  CancelRepoBuild: Types.Update;
 
   // ==== PROCEDURE ====
   RunProcedure: Types.Update;
@@ -273,4 +317,22 @@ export type ExecuteResponses = {
 
   // ==== SYNC ====
   RunSync: Types.Update;
+
+  // ==== STACK ====
+  DeployStack: Types.Update;
+  StartStack: Types.Update;
+  RestartStack: Types.Update;
+  StopStack: Types.Update;
+  PauseStack: Types.Update;
+  UnpauseStack: Types.Update;
+  DestroyStack: Types.Update;
+
+  // ==== STACK Service ====
+  DeployStackService: Types.Update;
+  StartStackService: Types.Update;
+  RestartStackService: Types.Update;
+  StopStackService: Types.Update;
+  PauseStackService: Types.Update;
+  UnpauseStackService: Types.Update;
+  DestroyStackService: Types.Update;
 };

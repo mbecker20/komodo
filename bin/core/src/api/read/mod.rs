@@ -36,10 +36,12 @@ mod builder;
 mod deployment;
 mod permission;
 mod procedure;
+mod provider;
 mod repo;
 mod search;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 mod tag;
 mod toml;
@@ -61,8 +63,8 @@ enum ReadRequest {
   #[to_string_resolver]
   ListAwsEcrLabels(ListAwsEcrLabels),
   ListSecrets(ListSecrets),
-  ListGitProviders(ListGitProviders),
-  ListDockerRegistries(ListDockerRegistries),
+  ListGitProvidersFromConfig(ListGitProvidersFromConfig),
+  ListDockerRegistriesFromConfig(ListDockerRegistriesFromConfig),
 
   // ==== USER ====
   GetUsername(GetUsername),
@@ -99,13 +101,18 @@ enum ReadRequest {
   GetServer(GetServer),
   GetServerState(GetServerState),
   GetPeripheryVersion(GetPeripheryVersion),
-  GetDockerContainers(GetDockerContainers),
-  GetDockerImages(GetDockerImages),
-  GetDockerNetworks(GetDockerNetworks),
   GetServerActionState(GetServerActionState),
   GetHistoricalServerStats(GetHistoricalServerStats),
   ListServers(ListServers),
   ListFullServers(ListFullServers),
+  #[to_string_resolver]
+  ListDockerContainers(ListDockerContainers),
+  #[to_string_resolver]
+  ListDockerNetworks(ListDockerNetworks),
+  #[to_string_resolver]
+  ListDockerImages(ListDockerImages),
+  #[to_string_resolver]
+  ListComposeProjects(ListComposeProjects),
 
   // ==== DEPLOYMENT ====
   GetDeploymentsSummary(GetDeploymentsSummary),
@@ -146,6 +153,18 @@ enum ReadRequest {
   ListResourceSyncs(ListResourceSyncs),
   ListFullResourceSyncs(ListFullResourceSyncs),
 
+  // ==== STACK ====
+  GetStacksSummary(GetStacksSummary),
+  GetStack(GetStack),
+  GetStackActionState(GetStackActionState),
+  GetStackWebhooksEnabled(GetStackWebhooksEnabled),
+  GetStackServiceLog(GetStackServiceLog),
+  SearchStackServiceLog(SearchStackServiceLog),
+  ListStacks(ListStacks),
+  ListFullStacks(ListFullStacks),
+  ListStackServices(ListStackServices),
+  ListCommonStackExtraArgs(ListCommonStackExtraArgs),
+
   // ==== BUILDER ====
   GetBuildersSummary(GetBuildersSummary),
   GetBuilder(GetBuilder),
@@ -180,11 +199,17 @@ enum ReadRequest {
   #[to_string_resolver]
   GetSystemStats(GetSystemStats),
   #[to_string_resolver]
-  GetSystemProcesses(GetSystemProcesses),
+  ListSystemProcesses(ListSystemProcesses),
 
   // ==== VARIABLE ====
   GetVariable(GetVariable),
   ListVariables(ListVariables),
+
+  // ==== PROVIDER ====
+  GetGitProviderAccount(GetGitProviderAccount),
+  ListGitProviderAccounts(ListGitProviderAccounts),
+  GetDockerRegistryAccount(GetDockerRegistryAccount),
+  ListDockerRegistryAccounts(ListDockerRegistryAccounts),
 }
 
 pub fn router() -> Router {
@@ -351,12 +376,12 @@ impl Resolve<ListSecrets, User> for State {
   }
 }
 
-impl Resolve<ListGitProviders, User> for State {
+impl Resolve<ListGitProvidersFromConfig, User> for State {
   async fn resolve(
     &self,
-    ListGitProviders { target }: ListGitProviders,
+    ListGitProvidersFromConfig { target }: ListGitProvidersFromConfig,
     user: User,
-  ) -> anyhow::Result<ListGitProvidersResponse> {
+  ) -> anyhow::Result<ListGitProvidersFromConfigResponse> {
     let mut providers = core_config().git_providers.clone();
 
     if let Some(target) = target {
@@ -442,12 +467,12 @@ impl Resolve<ListGitProviders, User> for State {
   }
 }
 
-impl Resolve<ListDockerRegistries, User> for State {
+impl Resolve<ListDockerRegistriesFromConfig, User> for State {
   async fn resolve(
     &self,
-    ListDockerRegistries { target }: ListDockerRegistries,
+    ListDockerRegistriesFromConfig { target }: ListDockerRegistriesFromConfig,
     _: User,
-  ) -> anyhow::Result<ListDockerRegistriesResponse> {
+  ) -> anyhow::Result<ListDockerRegistriesFromConfigResponse> {
     let mut registries = core_config().docker_registries.clone();
 
     if let Some(target) = target {

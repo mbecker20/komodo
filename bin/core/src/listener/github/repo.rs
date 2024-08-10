@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use axum::http::HeaderMap;
 use monitor_client::{
   api::execute::{CloneRepo, PullRepo},
-  entities::{repo::Repo, user::github_user},
+  entities::{repo::Repo, user::git_webhook_user},
 };
 use resolver_api::Resolve;
 
@@ -39,7 +39,7 @@ pub async fn handle_repo_clone_webhook(
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   let req =
     crate::api::execute::ExecuteRequest::CloneRepo(CloneRepo {
       repo: repo_id,
@@ -73,7 +73,7 @@ pub async fn handle_repo_pull_webhook(
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   let req = crate::api::execute::ExecuteRequest::PullRepo(PullRepo {
     repo: repo_id,
   });

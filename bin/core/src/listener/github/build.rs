@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use axum::http::HeaderMap;
 use monitor_client::{
   api::execute::RunBuild,
-  entities::{build::Build, user::github_user},
+  entities::{build::Build, user::git_webhook_user},
 };
 use resolver_api::Resolve;
 
@@ -40,7 +40,7 @@ pub async fn handle_build_webhook(
   if request_branch != build.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunBuild(RunBuild { build: build_id });
   let update = init_execution_update(&req, &user).await?;
   let ExecuteRequest::RunBuild(req) = req else {

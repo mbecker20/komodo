@@ -39,51 +39,61 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { Badge } from "@ui/badge";
+import { TopbarAlerts } from "./alert/topbar";
 
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
   useShiftKeyListener("S", () => setOmniOpen(true));
-  const version = useRead("GetVersion", {}).data?.version;
+
   return (
-    <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
-      <div className="w-full p-4 grid grid-cols-2 lg:grid-cols-3">
-        <div className="flex items-center justify-self-start w-fit gap-0 md:gap-4">
-          <Link
-            to="/"
-            className="flex gap-3 items-center text-2xl tracking-widest md:mx-2"
-          >
-            <img
-              src="/monitor-circle.png"
-              className="w-[28px] dark:invert"
-            />
-            <div className="hidden md:block">MONITOR</div>
-          </Link>
-          <MobileDropdown />
+    <div className="fixed top-0 w-full bg-background z-50 border-b shadow-sm">
+      <div className="container h-16 flex items-center justify-between md:grid md:grid-cols-2 lg:grid-cols-3">
+        {/* Logo */}
+        <Link
+          to="/"
+          className="flex gap-3 items-center text-2xl tracking-widest md:mx-2"
+        >
+          <img src="/monitor-circle.png" className="w-[28px] dark:invert" />
+          <div className="hidden md:block">MONITOR</div>
+        </Link>
+
+        {/* Searchbar */}
+        <div className="hidden lg:flex justify-center">
+          <OmniSearch setOpen={setOmniOpen} />
         </div>
-        <OmniSearch
-          setOpen={setOmniOpen}
-          className="hidden lg:flex justify-self-center"
-        />
-        <div className="flex md:gap-2 justify-self-end items-center">
-          <a
-            href="https://docs.monitor.mogh.tech"
-            target="_blank"
-            className="hidden lg:block"
-          >
-            <Button variant="link" className="text-muted-foreground p-2">
-              <div>v{version ? version : "x.x.x"}</div>
-            </Button>
-          </a>
+
+        {/* Shortcuts */}
+        <div className="flex justify-end items-center gap-2">
+          <MobileDropdown />
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
+          <Version />
           <WsStatusIndicator />
           <KeyboardShortcuts />
+          <TopbarAlerts />
           <TopbarUpdates />
           <ThemeToggle />
           <Logout />
         </div>
-        <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
       </div>
+      <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
     </div>
+  );
+};
+
+const Version = () => {
+  const version = useRead("GetVersion", {}).data?.version;
+
+  if (!version) return null;
+  return (
+    <a
+      href="https://docs.monitor.dev"
+      target="_blank"
+      className="hidden lg:block"
+    >
+      <Button variant="link" size="sm">
+        <div>v{version}</div>
+      </Button>
+    </a>
   );
 };
 
@@ -121,7 +131,7 @@ const MobileDropdown = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className="lg:hidden">
+      <DropdownMenuTrigger asChild className="md:hidden justify-self-end">
         <Button
           variant="ghost"
           className="flex justify-start items-center gap-2 w-36 px-3"
@@ -144,12 +154,12 @@ const MobileDropdown = () => {
             to="/"
             onClick={() => setView("Resources")}
           />
-          <DropdownLinkItem
+          {/* <DropdownLinkItem
             label="Tree"
             icon={<FolderTree className="w-4 h-4" />}
             to="/"
             onClick={() => setView("Tree")}
-          />
+          /> */}
 
           <DropdownMenuSeparator />
 
@@ -223,7 +233,7 @@ const KeyboardShortcuts = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="hidden md:flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="hidden md:flex">
           <Keyboard className="w-4 h-4" />
         </Button>
       </DialogTrigger>

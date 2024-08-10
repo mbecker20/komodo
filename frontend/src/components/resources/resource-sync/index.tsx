@@ -1,21 +1,21 @@
 import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { Card } from "@ui/card";
 import { Clock, FolderSync } from "lucide-react";
-import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
 import { ResourceSyncTable } from "./table";
 import { Types } from "@monitor/client";
 import { ExecuteSync, RefreshSync } from "./actions";
 import { PendingOrConfig } from "./pending-or-config";
 import {
-  bg_color_class_by_intention,
   resource_sync_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { fmt_date } from "@lib/formatting";
+import { DashboardPieChart } from "@pages/home/dashboard";
+import { StatusBadge } from "@components/util";
 
 const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
@@ -33,22 +33,36 @@ const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
 export const ResourceSyncComponents: RequiredResourceComponents = {
   list_item: (id) => useResourceSync(id),
 
+  Description: () => <>Define resources in git-checked files.</>,
+
   Dashboard: () => {
-    const syncs_count = useRead("ListResourceSyncs", {}).data?.length;
+    const summary = useRead("GetResourceSyncsSummary", {}).data;
     return (
-      <Link to="/resource-syncs/" className="w-full">
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <CardHeader>
-            <div className="flex justify-between">
-              <div>
-                <CardTitle>Resource Syncs</CardTitle>
-                <CardDescription>{syncs_count} Total</CardDescription>
-              </div>
-              <FolderSync className="w-4 h-4" />
-            </div>
-          </CardHeader>
-        </Card>
-      </Link>
+      <DashboardPieChart
+        data={[
+          { title: "Ok", intention: "Good", value: summary?.ok ?? 0 },
+          {
+            title: "Syncing",
+            intention: "Warning",
+            value: summary?.syncing ?? 0,
+          },
+          {
+            title: "Pending",
+            intention: "Neutral",
+            value: summary?.pending ?? 0,
+          },
+          {
+            title: "Failed",
+            intention: "Critical",
+            value: summary?.failed ?? 0,
+          },
+          {
+            title: "Unknown",
+            intention: "Unknown",
+            value: summary?.unknown ?? 0,
+          },
+        ]}
+      />
     );
   },
 
@@ -64,13 +78,11 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useResourceSync(id)?.info.state;
-      const color = bg_color_class_by_intention(
-        resource_sync_state_intention(state)
-      );
       return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{state}</CardHeader>
-        </Card>
+        <StatusBadge
+          text={state}
+          intent={resource_sync_state_intention(state)}
+        />
       );
     },
     Status: ({ id }) => {

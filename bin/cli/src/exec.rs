@@ -27,10 +27,22 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunBuild(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::CancelBuild(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::Deploy(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::StartContainer(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::RestartContainer(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseContainer(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseContainer(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::StopContainer(data) => {
@@ -48,6 +60,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::PullRepo(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::BuildRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::CancelRepoBuild(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::PruneNetworks(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -58,6 +76,27 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::RunSync(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::DeployStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StartStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::RestartStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StopStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::DestroyStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::Sleep(data) => {
@@ -78,10 +117,22 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunBuild(request) => {
       monitor_client().execute(request).await
     }
+    Execution::CancelBuild(request) => {
+      monitor_client().execute(request).await
+    }
     Execution::Deploy(request) => {
       monitor_client().execute(request).await
     }
     Execution::StartContainer(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::RestartContainer(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::PauseContainer(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::UnpauseContainer(request) => {
       monitor_client().execute(request).await
     }
     Execution::StopContainer(request) => {
@@ -99,6 +150,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::PullRepo(request) => {
       monitor_client().execute(request).await
     }
+    Execution::BuildRepo(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::CancelRepoBuild(request) => {
+      monitor_client().execute(request).await
+    }
     Execution::PruneNetworks(request) => {
       monitor_client().execute(request).await
     }
@@ -109,6 +166,27 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::RunSync(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::DeployStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::StartStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::RestartStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::PauseStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::UnpauseStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::StopStack(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::DestroyStack(request) => {
       monitor_client().execute(request).await
     }
     Execution::Sleep(request) => {

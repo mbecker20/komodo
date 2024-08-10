@@ -18,8 +18,13 @@ impl From<Build> for monitor_client::entities::build::Build {
       tags: value.tags,
       info: monitor_client::entities::build::BuildInfo {
         last_built_at: value.info.last_built_at,
+        built_hash: None,
+        built_message: None,
+        latest_hash: None,
+        latest_message: None,
       },
       config: value.config.into(),
+      base_permission: Default::default(),
     }
   }
 }
@@ -134,6 +139,8 @@ impl From<BuildConfig>
         minor: value.version.minor,
         patch: value.version.patch,
       },
+      image_name: Default::default(),
+      image_tag: Default::default(),
       git_provider: String::from("github.com"),
       git_https: true,
       repo: value.repo,

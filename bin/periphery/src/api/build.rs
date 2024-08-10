@@ -14,8 +14,8 @@ use resolver_api::Resolve;
 
 use crate::{
   config::periphery_config,
-  docker::docker_client,
-  helpers::{docker_login, parse_extra_args, parse_labels},
+  docker::{docker_client, docker_login},
+  helpers::{parse_extra_args, parse_labels},
   State,
 };
 
@@ -27,6 +27,7 @@ impl Resolve<build::Build> for State {
       build,
       aws_ecr,
       registry_token,
+      additional_tags,
       replacers: core_replacers,
     }: build::Build,
     _: (),
@@ -36,6 +37,7 @@ impl Resolve<build::Build> for State {
       config:
         BuildConfig {
           version,
+          image_tag,
           skip_secret_interp,
           build_path,
           dockerfile_path,
@@ -91,7 +93,8 @@ impl Resolve<build::Build> for State {
     let labels = parse_labels(labels);
     let extra_args = parse_extra_args(extra_args);
     let buildx = if *use_buildx { " buildx" } else { "" };
-    let image_tags = image_tags(&image_name, version);
+    let image_tags =
+      image_tags(&image_name, image_tag, version, &additional_tags);
     let push_command = should_push
       .then(|| {
         format!(" && docker image push --all-tags {image_name}")
@@ -139,10 +142,25 @@ impl Resolve<build::Build> for State {
   }
 }
 
-fn image_tags(image_name: &str, version: &Version) -> String {
+fn image_tags(
+  image_name: &str,
+  custom_tag: &str,
+  version: &Version,
+  additional: &[String],
+) -> String {
   let Version { major, minor, .. } = version;
+  let custom_tag = if custom_tag.is_empty() {
+    String::new()
+  } else {
+    format!("-{custom_tag}")
+  };
+  let additional = additional
+    .iter()
+    .map(|tag| format!(" -t {image_name}:{tag}{custom_tag}"))
+    .collect::<Vec<_>>()
+    .join("");
   format!(
-    " -t {image_name}:latest -t {image_name}:{version} -t {image_name}:{major}.{minor} -t {image_name}:{major}",
+    " -t {image_name}:latest{custom_tag} -t {image_name}:{version}{custom_tag} -t {image_name}:{major}.{minor}{custom_tag} -t {image_name}:{major}{custom_tag}{additional}",
   )
 }
 

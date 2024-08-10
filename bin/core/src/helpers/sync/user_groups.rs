@@ -206,6 +206,13 @@ pub async fn get_updates_for_view(
               .map(|b| b.name.clone())
               .unwrap_or_default()
           }
+          ResourceTarget::Stack(id) => {
+            *id = all_resources
+              .stacks
+              .get(id)
+              .map(|b| b.name.clone())
+              .unwrap_or_default()
+          }
         }
         PermissionToml {
           target: p.resource_target,
@@ -248,7 +255,7 @@ pub async fn get_updates_for_view(
         let adding = if adding.is_empty() {
           String::from("None")
         } else {
-          colored(&adding.join(", "), Color::Green)
+          colored(adding.join(", "), Color::Green)
         };
         let removing = original_users
           .iter()
@@ -258,7 +265,7 @@ pub async fn get_updates_for_view(
         let removing = if removing.is_empty() {
           String::from("None")
         } else {
-          colored(&removing.join(", "), Color::Red)
+          colored(removing.join(", "), Color::Red)
         };
         lines.push(format!(
           "{}:    'users'\n{}: {removing}\n{}:   {adding}",
@@ -303,7 +310,7 @@ pub async fn get_updates_for_view(
         let adding = if adding.is_empty() {
           String::from("None")
         } else {
-          colored(&adding.join(", "), Color::Green)
+          colored(adding.join(", "), Color::Green)
         };
         let updating = user_group
           .permissions
@@ -324,7 +331,7 @@ pub async fn get_updates_for_view(
         let updating = if updating.is_empty() {
           String::from("None")
         } else {
-          colored(&updating.join(", "), Color::Blue)
+          colored(updating.join(", "), Color::Blue)
         };
         let removing = original_permissions
           .iter()
@@ -340,7 +347,7 @@ pub async fn get_updates_for_view(
         let removing = if removing.is_empty() {
           String::from("None")
         } else {
-          colored(&removing.join(", "), Color::Red)
+          colored(removing.join(", "), Color::Red)
         };
         lines.push(format!(
           "{}:    'permissions'\n{}: {removing}\n{}: {updating}\n{}:   {adding}",
@@ -520,6 +527,13 @@ pub async fn get_updates_for_execution(
           ResourceTarget::ResourceSync(id) => {
             *id = all_resources
               .syncs
+              .get(id)
+              .map(|b| b.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Stack(id) => {
+            *id = all_resources
+              .stacks
               .get(id)
               .map(|b| b.name.clone())
               .unwrap_or_default()
@@ -966,6 +980,17 @@ async fn expand_user_group_permissions(
               target: ResourceTarget::ResourceSync(
                 resource.name.clone(),
               ),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
+        ResourceTargetVariant::Stack => {
+          let permissions = all_resources
+            .stacks
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Stack(resource.name.clone()),
               level: permission.level,
             });
           expanded.extend(permissions);

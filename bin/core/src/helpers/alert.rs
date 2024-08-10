@@ -6,6 +6,7 @@ use monitor_client::entities::{
   alerter::*,
   deployment::DeploymentState,
   server::stats::SeverityLevel,
+  stack::StackState,
   update::ResourceTargetVariant,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
@@ -305,7 +306,7 @@ async fn send_slack_alert(
       ..
     } => {
       let to = fmt_docker_container_state(to);
-      let text = format!("📦 container *{name}* is now {to}");
+      let text = format!("📦 Container *{name}* is now {to}");
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
@@ -313,6 +314,28 @@ async fn send_slack_alert(
         )),
         Block::section(resource_link(
           ResourceTargetVariant::Deployment,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
+    AlertData::StackStateChange {
+      name,
+      server_name,
+      from,
+      to,
+      id,
+      ..
+    } => {
+      let to = fmt_stack_state(to);
+      let text = format!("🥞 Stack *{name}* is now {to}");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server: {server_name}\nprevious: {from}",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Stack,
           id,
         )),
       ];
@@ -359,6 +382,21 @@ async fn send_slack_alert(
       ];
       (text, blocks.into())
     }
+    AlertData::RepoBuildFailed { id, name } => {
+      let text =
+        format!("{level} | Repo build for {name} has failed");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "repo id: *{id}*\nrepo name: *{name}*",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Repo,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
     AlertData::None {} => Default::default(),
   };
   if !text.is_empty() {
@@ -385,6 +423,16 @@ fn fmt_docker_container_state(state: &DeploymentState) -> String {
   }
 }
 
+fn fmt_stack_state(state: &StackState) -> String {
+  match state {
+    StackState::Running => String::from("Running ▶️"),
+    StackState::Stopped => String::from("Stopped 🛑"),
+    StackState::Restarting => String::from("Restarting 🔄"),
+    StackState::Down => String::from("Down ⬇️"),
+    _ => state.to_string(),
+  }
+}
+
 fn fmt_level(level: SeverityLevel) -> &'static str {
   match level {
     SeverityLevel::Critical => "CRITICAL 🚨",
@@ -405,6 +453,9 @@ fn resource_link(
     }
     ResourceTargetVariant::Deployment => {
       format!("/deployments/{id}")
+    }
+    ResourceTargetVariant::Stack => {
+      format!("/stacks/{id}")
     }
     ResourceTargetVariant::Server => {
       format!("/servers/{id}")

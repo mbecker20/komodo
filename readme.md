@@ -4,6 +4,11 @@ A tool to build and deploy software across many servers. [docs](https://mbecker2
 
 Docs for periphery setup script can be found in [scripts/readme.md](https://github.com/mbecker20/monitor/blob/main/scripts/readme.md).
 
+## Disclaimer
+
+Warning. This is open source software (GPL-V3), and while the Monitor team makes a best effort to ensure main is stable,
+there are no warranties. Use at your own risk.
+
 ## Links
 
 [roadmap](https://github.com/mbecker20/monitor/blob/main/roadmap.md)

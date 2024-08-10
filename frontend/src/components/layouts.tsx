@@ -15,7 +15,7 @@ import { ResourceComponents } from "./resources";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@ui/card";
 import { ResourceTags } from "./tags";
 import { Topbar } from "./topbar";
-import { usableResourcePath } from "@lib/utils";
+import { cn, usableResourcePath } from "@lib/utils";
 import { Sidebar } from "./sidebar";
 import { ResourceName } from "./resources/common";
 import { useShiftKeyListener } from "@lib/hooks";
@@ -28,13 +28,14 @@ export const Layout = () => {
   useShiftKeyListener("B", () => nav("/builds"));
   useShiftKeyListener("R", () => nav("/repos"));
   useShiftKeyListener("P", () => nav("/procedures"));
+
   return (
     <>
       <Topbar />
-      <div className="flex">
-        <Sidebar />
-        <div className="w-full h-[calc(100vh-70px)] overflow-y-auto">
-          <div className="pb-24">
+      <div className="h-screen overflow-y-auto">
+        <div className="container">
+          <Sidebar />
+          <div className="md:ml-64 md:pl-8 py-24">
             <Outlet />
           </div>
         </div>
@@ -51,10 +52,12 @@ interface PageProps {
   children?: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
+  superHeader?: ReactNode;
   wrapSize?: "md" | "lg" | "xl" | "2xl";
 }
 
 export const Page = ({
+  superHeader,
   title,
   icon,
   titleRight,
@@ -63,21 +66,42 @@ export const Page = ({
   actions,
   children,
 }: PageProps) => (
-  <div className="flex flex-col gap-10 container py-8 pr-12">
-    {(title || icon || subtitle || actions) && (
-      <div
-        className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
-      >
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap gap-4 items-center">
-            {icon}
-            <h1 className="text-4xl">{title}</h1>
-            {titleRight}
+  <div className="w-full flex flex-col gap-12">
+    {superHeader ? (
+      <div className="flex flex-col gap-4">
+        {superHeader}
+        {(title || icon || subtitle || actions) && (
+          <div
+            className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-4">
+                {icon}
+                <h1 className="text-4xl">{title}</h1>
+                {titleRight}
+              </div>
+              <div className="flex flex-col">{subtitle}</div>
+            </div>
+            {actions}
           </div>
-          <div className="flex flex-col">{subtitle}</div>
-        </div>
-        {actions}
+        )}
       </div>
+    ) : (
+      (title || icon || subtitle || actions) && (
+        <div
+          className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap gap-4">
+              {icon}
+              <h1 className="text-4xl">{title}</h1>
+              {titleRight}
+            </div>
+            <div className="flex flex-col">{subtitle}</div>
+          </div>
+          {actions}
+        </div>
+      )
     )}
     {titleOther}
     {children}
@@ -85,6 +109,7 @@ export const Page = ({
 );
 
 export const PageXlRow = ({
+  superHeader,
   title,
   icon,
   titleRight,
@@ -94,20 +119,41 @@ export const PageXlRow = ({
   children,
 }: PageProps) => (
   <div className="flex flex-col gap-10 container py-8 pr-12">
-    {(title || icon || subtitle || actions) && (
-      <div
-        className={`flex flex-col gap-6 xl:flex-row xl:gap-0 xl:justify-between`}
-      >
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap gap-4 items-center">
-            {icon}
-            <h1 className="text-4xl">{title}</h1>
-            {titleRight}
+    {superHeader ? (
+      <div className="flex flex-col gap-4">
+        {superHeader}
+        {(title || icon || subtitle || actions) && (
+          <div
+            className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-4 items-center">
+                {icon}
+                <h1 className="text-4xl">{title}</h1>
+                {titleRight}
+              </div>
+              <div className="flex flex-col">{subtitle}</div>
+            </div>
+            {actions}
           </div>
-          <div className="flex flex-col">{subtitle}</div>
-        </div>
-        {actions}
+        )}
       </div>
+    ) : (
+      (title || icon || subtitle || actions) && (
+        <div
+          className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap gap-4 items-center">
+              {icon}
+              <h1 className="text-4xl">{title}</h1>
+              {titleRight}
+            </div>
+            <div className="flex flex-col">{subtitle}</div>
+          </div>
+          {actions}
+        </div>
+      )
     )}
     {titleOther}
     {children}
@@ -120,6 +166,8 @@ interface SectionProps {
   titleOther?: ReactNode;
   children?: ReactNode;
   actions?: ReactNode;
+  // otherwise items-start
+  itemsCenterTitleRow?: boolean;
 }
 
 export const Section = ({
@@ -128,11 +176,17 @@ export const Section = ({
   titleOther,
   actions,
   children,
+  itemsCenterTitleRow,
 }: SectionProps) => (
-  <div className="flex flex-col gap-4 max-w-[calc(100vw-100px)] lg:max-w-[calc(100vw-300px)] overflow-x-auto">
-    <div className="flex flex-wrap gap-2 items-start justify-between py-1">
+  <div className="flex flex-col gap-4 overflow-x-auto">
+    <div
+      className={cn(
+        "flex flex-wrap gap-2 justify-between py-1",
+        itemsCenterTitleRow ? "items-center" : "items-start"
+      )}
+    >
       {title || icon ? (
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="px-2 flex items-center gap-2 text-muted-foreground">
           {icon}
           {title && <h2 className="text-xl">{title}</h2>}
         </div>

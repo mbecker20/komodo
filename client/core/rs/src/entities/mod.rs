@@ -37,6 +37,8 @@ pub mod logger;
 pub mod permission;
 /// Subtypes of [Procedure][procedure::Procedure].
 pub mod procedure;
+/// Subtypes of [ProviderAccount][provider::ProviderAccount]
+pub mod provider;
 /// Subtypes of [Repo][repo::Repo].
 pub mod repo;
 /// Subtypes of [Resource][resource::Resource].
@@ -45,6 +47,8 @@ pub mod resource;
 pub mod server;
 /// Subtypes of [ServerTemplate][server_template::ServerTemplate].
 pub mod server_template;
+/// Subtypes of [Stack][stack::Stack]
+pub mod stack;
 /// Subtypes of [ResourceSync][sync::ResourceSync]
 pub mod sync;
 /// Subtypes of [Tag][tag::Tag].
@@ -66,6 +70,8 @@ pub type I64 = i64;
 pub type U64 = u64;
 #[typeshare(serialized_as = "any")]
 pub type MongoDocument = bson::Document;
+#[typeshare(serialized_as = "any")]
+pub type JsonValue = serde_json::Value;
 #[typeshare(serialized_as = "MongoIdObj")]
 pub type MongoId = String;
 #[typeshare(serialized_as = "__Serror")]
@@ -110,12 +116,21 @@ pub fn optional_string(string: &str) -> Option<String> {
 pub fn get_image_name(
   build::Build {
     name,
-    config: build::BuildConfig { image_registry, .. },
+    config:
+      build::BuildConfig {
+        image_name,
+        image_registry,
+        ..
+      },
     ..
   }: &build::Build,
   aws_ecr: impl FnOnce(&String) -> Option<AwsEcrConfig>,
 ) -> anyhow::Result<String> {
-  let name = to_monitor_name(name);
+  let name = if image_name.is_empty() {
+    to_monitor_name(name)
+  } else {
+    to_monitor_name(image_name)
+  };
   let name = match image_registry {
     build::ImageRegistry::None(_) => name,
     build::ImageRegistry::AwsEcr(label) => {
@@ -323,7 +338,7 @@ impl Version {
 
 #[typeshare]
 #[derive(
-  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+  Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize,
 )]
 pub struct EnvironmentVar {
   pub variable: String,
@@ -351,7 +366,11 @@ pub fn environment_vars_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
+    .filter(|(_, line)| {
+      !line.is_empty()
+        && !line.starts_with('#')
+        && !line.starts_with("//")
+    })
     .map(|(i, line)| {
       let (variable, value) = line
         .split_once('=')
@@ -549,9 +568,26 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
       destination: None,
       on_clone: None,
       on_pull: None,
-      provider: Some(String::from("github.com")),
+      provider: optional_string(&sync.config.git_provider),
       https: sync.config.git_https,
       account: optional_string(&sync.config.git_account),
+    }
+  }
+}
+
+impl From<&self::stack::Stack> for CloneArgs {
+  fn from(stack: &self::stack::Stack) -> Self {
+    CloneArgs {
+      name: stack.name.clone(),
+      repo: optional_string(&stack.config.repo),
+      branch: optional_string(&stack.config.branch),
+      commit: optional_string(&stack.config.commit),
+      destination: None,
+      on_clone: None,
+      on_pull: None,
+      provider: optional_string(&stack.config.git_provider),
+      https: stack.config.git_https,
+      account: optional_string(&stack.config.git_account),
     }
   }
 }
@@ -698,8 +734,11 @@ pub enum Operation {
   UpdateDeployment,
   DeleteDeployment,
   Deploy,
-  StopContainer,
   StartContainer,
+  RestartContainer,
+  PauseContainer,
+  UnpauseContainer,
+  StopContainer,
   RemoveContainer,
   RenameDeployment,
 
@@ -709,6 +748,8 @@ pub enum Operation {
   DeleteRepo,
   CloneRepo,
   PullRepo,
+  BuildRepo,
+  CancelRepoBuild,
 
   // alerter
   CreateAlerter,
@@ -733,10 +774,41 @@ pub enum Operation {
   DeleteResourceSync,
   RunSync,
 
+  // stack
+  CreateStack,
+  UpdateStack,
+  RenameStack,
+  DeleteStack,
+  RefreshStackCache,
+  DeployStack,
+  StartStack,
+  RestartStack,
+  PauseStack,
+  UnpauseStack,
+  StopStack,
+  DestroyStack,
+
+  // stack (service)
+  StartStackService,
+  RestartStackService,
+  PauseStackService,
+  UnpauseStackService,
+  StopStackService,
+
   // variable
   CreateVariable,
   UpdateVariableValue,
   DeleteVariable,
+
+  // git provider
+  CreateGitProviderAccount,
+  UpdateGitProviderAccount,
+  DeleteGitProviderAccount,
+
+  // docker registry
+  CreateDockerRegistryAccount,
+  UpdateDockerRegistryAccount,
+  DeleteDockerRegistryAccount,
 }
 
 #[typeshare]

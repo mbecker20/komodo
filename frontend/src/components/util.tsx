@@ -31,6 +31,13 @@ import { Link } from "react-router-dom";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 import { Textarea } from "@ui/textarea";
 import { Card } from "@ui/card";
+import { snake_case_to_upper_space_case } from "@lib/formatting";
+import {
+  ColorIntention,
+  hex_color_by_intention,
+  text_color_class_by_intention,
+} from "@lib/color";
+import { Types } from "@monitor/client";
 
 export const WithLoading = ({
   children,
@@ -303,6 +310,7 @@ export const CopyButton = ({
 
 export const TextUpdateMenu = ({
   title,
+  titleRight,
   value = "",
   triggerClassName,
   onUpdate,
@@ -315,6 +323,7 @@ export const TextUpdateMenu = ({
   triggerHidden,
 }: {
   title: string;
+  titleRight?: ReactNode;
   value: string | undefined;
   onUpdate: (value: string) => void;
   triggerClassName?: string;
@@ -357,9 +366,20 @@ export const TextUpdateMenu = ({
         </Card>
       </DialogTrigger>
       <DialogContent className="min-w-[50vw]">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
+        {titleRight && (
+          <div className="flex items-center gap-4">
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+            </DialogHeader>
+            {titleRight}
+          </div>
+        )}
+        {!titleRight && (
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+        )}
+
         <Textarea
           value={_value}
           onChange={(e) => setValue(e.target.value)}
@@ -404,3 +424,30 @@ export const UserAvatar = ({
   ) : (
     <User className={`w-${size} h-${size}`} />
   );
+
+export const StatusBadge = ({
+  text,
+  intent,
+}: {
+  text: string | undefined;
+  intent: ColorIntention;
+}) => {
+  if (!text) return null;
+
+  const color = text_color_class_by_intention(intent);
+  const background = hex_color_by_intention(intent) + "25";
+
+  const _text = text === Types.ServerState.NotOk ? "Not Ok" : text;
+
+  return (
+    <p
+      className={cn(
+        "px-2 py-1 w-fit text-xs text-white rounded-md font-medium tracking-wide",
+        color
+      )}
+      style={{ background }}
+    >
+      {snake_case_to_upper_space_case(_text).toUpperCase()}
+    </p>
+  );
+};

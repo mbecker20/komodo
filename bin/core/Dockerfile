@@ -1,5 +1,5 @@
 # Build Core
-FROM rust:1.79.0-bookworm AS core-builder
+FROM rust:1.80.0-bookworm AS core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p monitor_core --release
@@ -17,6 +17,8 @@ FROM debian:bookworm-slim
 
 # Install Deps
 RUN apt update && apt install -y git curl unzip ca-certificates && \
+	curl -SL https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose && \
+	chmod +x /usr/local/bin/docker-compose && \
 	curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
 	unzip awscliv2.zip && \
 	./aws/install

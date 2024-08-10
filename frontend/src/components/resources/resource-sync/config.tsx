@@ -74,25 +74,50 @@ export const ResourceSyncConfig = ({
                   />
                 );
               },
-              repo: { placeholder: "Enter repo" },
-              branch: { placeholder: "Enter branch" },
+              repo: {
+                placeholder: "Enter repo",
+                description:
+                  "The repo path on the provider. {namespace}/{repo_name}",
+              },
+              branch: {
+                placeholder: "Enter branch",
+                description: "Select a custom branch, or default to 'main'.",
+              },
               commit: {
                 placeholder: "Enter a specific commit hash. Optional.",
+                description:
+                  "Switch to a specific hash after cloning the branch.",
               },
-              resource_path: { placeholder: "./resources" },
-              delete: { label: "Delete Unmatched Resources" },
+              resource_path: {
+                placeholder: "./resources",
+                description:
+                  "Provide the path to resource file / folder, relative to the root of the repo",
+              },
+              delete: {
+                label: "Delete Unmatched Resources",
+                description:
+                  "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
+              },
             },
           },
           {
             label: "Github Webhooks",
+            description:
+              "Configure your repo provider to send webhooks to Monitor",
             components: {
               ["refresh" as any]: () => (
-                <ConfigItem label="Refresh Pending">
+                <ConfigItem
+                  label="Refresh Pending"
+                  description="Trigger an update of the pending sync cache, to display the changes in the UI on push."
+                >
                   <CopyGithubWebhook path={`/sync/${id}/refresh`} />
                 </ConfigItem>
               ),
               ["sync" as any]: () => (
-                <ConfigItem label="Execute Sync">
+                <ConfigItem
+                  label="Execute Sync"
+                  description="Trigger an execution of the sync on push."
+                >
                   <CopyGithubWebhook path={`/sync/${id}/sync`} />
                 </ConfigItem>
               ),

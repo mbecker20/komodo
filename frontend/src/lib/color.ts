@@ -118,6 +118,8 @@ export const deployment_state_intention: (
       return "Good";
     case Types.DeploymentState.NotDeployed:
       return "Neutral";
+    case Types.DeploymentState.Paused:
+      return "Warning";
     case Types.DeploymentState.Unknown:
       return "Unknown";
     default:
@@ -161,6 +163,27 @@ export const repo_state_intention = (state?: Types.RepoState) => {
   }
 };
 
+export const stack_state_intention = (state?: Types.StackState) => {
+  switch (state) {
+    case undefined:
+      return "None";
+    case Types.StackState.Running:
+      return "Good";
+    case Types.StackState.Paused:
+      return "Warning";
+    case Types.StackState.Stopped:
+      return "Critical";
+    case Types.StackState.Restarting:
+      return "Critical";
+    case Types.StackState.Down:
+      return "Neutral";
+    case Types.StackState.Unknown:
+      return "Unknown";
+    default:
+      return "Critical";
+  }
+};
+
 export const procedure_state_intention = (status?: Types.ProcedureState) => {
   switch (status) {
     case undefined:
@@ -178,7 +201,9 @@ export const procedure_state_intention = (status?: Types.ProcedureState) => {
   }
 };
 
-export const resource_sync_state_intention = (status?: Types.ResourceSyncState) => {
+export const resource_sync_state_intention = (
+  status?: Types.ResourceSyncState
+) => {
   switch (status) {
     case undefined:
       return "None";

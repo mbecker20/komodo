@@ -1,4 +1,4 @@
-import { useExecute, useRead } from "@lib/hooks";
+import { useExecute, useLocalStorage, useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
@@ -16,23 +16,21 @@ import {
 import { Section } from "@components/layouts";
 import { RenameServer } from "./actions";
 import {
-  bg_color_class_by_intention,
   server_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
-import { ServersChart } from "./dashboard";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
-import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { Card, CardHeader } from "@ui/card";
+import { ActionWithDialog, ConfirmButton, StatusBadge } from "@components/util";
 import { Button } from "@ui/button";
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
 import { ResourceComponents } from "..";
+import { DashboardPieChart } from "@pages/home/dashboard";
+import { StackTable } from "../stack/table";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -52,7 +50,7 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigOrChildResources = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Config");
+  const [view, setView] = useLocalStorage("server-tabs-v1", "Config");
   const deployments = useRead("ListDeployments", {}).data?.filter(
     (deployment) => deployment.info.server_id === id
   );
@@ -61,6 +59,10 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
     (repo) => repo.info.server_id === id
   );
   const reposDisabled = (repos?.length || 0) === 0;
+  const stacks = useRead("ListStacks", {}).data?.filter(
+    (stack) => stack.info.server_id === id
+  );
+  const stacksDisabled = (stacks?.length || 0) === 0;
   const currentView =
     (view === "Deployments" && deploymentsDisabled) ||
     (view === "Repos" && reposDisabled)
@@ -77,6 +79,13 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         disabled={deploymentsDisabled}
       >
         Deployments
+      </TabsTrigger>
+      <TabsTrigger
+        value="Stacks"
+        className="w-[110px]"
+        disabled={stacksDisabled}
+      >
+        Stacks
       </TabsTrigger>
       <TabsTrigger value="Repos" className="w-[110px]" disabled={reposDisabled}>
         Repos
@@ -98,6 +107,15 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         </Section>
       </TabsContent>
 
+      <TabsContent value="Stacks">
+        <Section
+          titleOther={tabsList}
+          actions={<ResourceComponents.Stack.New server_id={id} />}
+        >
+          <StackTable stacks={stacks ?? []} />
+        </Section>
+      </TabsContent>
+
       <TabsContent value="Repos">
         <Section
           titleOther={tabsList}
@@ -113,7 +131,30 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
 export const ServerComponents: RequiredResourceComponents = {
   list_item: (id) => useServer(id),
 
-  Dashboard: ServersChart,
+  Description: () => (
+    <>Connect servers for alerting, building, and deploying.</>
+  ),
+
+  Dashboard: () => {
+    const summary = useRead("GetServersSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { title: "Healthy", intention: "Good", value: summary?.healthy ?? 0 },
+          {
+            title: "Unhealthy",
+            intention: "Warning",
+            value: summary?.unhealthy ?? 0,
+          },
+          {
+            title: "Disabled",
+            intention: "Neutral",
+            value: summary?.disabled ?? 0,
+          },
+        ]}
+      />
+    );
+  },
 
   New: () => <NewResource type="Server" />,
 
@@ -127,18 +168,16 @@ export const ServerComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useServer(id)?.info.state;
-      const color = bg_color_class_by_intention(server_state_intention(state));
       return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">
-            {state === Types.ServerState.NotOk ? "Not Ok" : state}
-          </CardHeader>
-        </Card>
+        <StatusBadge text={state} intent={server_state_intention(state)} />
       );
     },
     Version: ({ id }) => {
-      const version = useRead("GetPeripheryVersion", { server: id }).data
-        ?.version;
+      const version = useRead(
+        "GetPeripheryVersion",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.version;
       const _version =
         version === undefined || version === "unknown" ? "unknown" : version;
       return (
@@ -165,7 +204,10 @@ export const ServerComponents: RequiredResourceComponents = {
         useRead(
           "GetSystemInformation",
           { server: id },
-          { enabled: server ? server.info.state !== "Disabled" : false }
+          {
+            enabled: server ? server.info.state !== "Disabled" : false,
+            refetchInterval: 5000,
+          }
         ).data?.core_count ?? 0;
       return (
         <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
@@ -179,7 +221,10 @@ export const ServerComponents: RequiredResourceComponents = {
       const stats = useRead(
         "GetSystemStats",
         { server: id },
-        { enabled: server ? server.info.state !== "Disabled" : false }
+        {
+          enabled: server ? server.info.state !== "Disabled" : false,
+          refetchInterval: 5000,
+        }
       ).data;
       return (
         <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
@@ -193,7 +238,10 @@ export const ServerComponents: RequiredResourceComponents = {
       const stats = useRead(
         "GetSystemStats",
         { server: id },
-        { enabled: server ? server.info.state !== "Disabled" : false }
+        {
+          enabled: server ? server.info.state !== "Disabled" : false,
+          refetchInterval: 5000,
+        }
       ).data;
       const disk_total_gb = stats?.disks.reduce(
         (acc, curr) => acc + curr.total_gb,
@@ -219,8 +267,11 @@ export const ServerComponents: RequiredResourceComponents = {
   Actions: {
     Prune: ({ id }) => {
       const { mutate, isPending } = useExecute(`PruneImages`);
-      const pruning = useRead("GetServerActionState", { server: id }).data
-        ?.pruning_images;
+      const pruning = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pruning_images;
       const pending = isPending || pruning;
       return (
         <ConfirmButton
@@ -256,30 +307,7 @@ export const ServerComponents: RequiredResourceComponents = {
     },
   },
 
-  Page: {
-    // Alerts: ({ id }) => {
-    //   const alerts = useRead("ListAlerts", {
-    //     query: { "target.type": "Server", "target.id": id },
-    //   }).data?.alerts.slice(0, 3);
-    //   return (
-    //     (alerts?.length || 0) > 0 && (
-    //       <Section
-    //         title="Alerts"
-    //         icon={<AlertTriangle className="w-4 h-4" />}
-    //         actions={
-    //           <Link to={`/servers/${id}/alerts`}>
-    //             <Button variant="secondary" size="icon">
-    //               <ExternalLink className="w-4 h-4" />
-    //             </Button>
-    //           </Link>
-    //         }
-    //       >
-    //         <AlertsTable alerts={alerts ?? []} />
-    //       </Section>
-    //     )
-    //   );
-    // },
-  },
+  Page: {},
 
   Config: ConfigOrChildResources,
 

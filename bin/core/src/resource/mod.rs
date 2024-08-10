@@ -1,8 +1,11 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{
+  collections::{HashMap, HashSet},
+  str::FromStr,
+};
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use futures::future::join_all;
+use futures::{future::join_all, FutureExt};
 use monitor_client::{
   api::write::CreateTag,
   entities::{
@@ -33,8 +36,8 @@ use crate::{
   helpers::{
     create_permission, flatten_document,
     query::{
-      get_resource_ids_for_user, get_tag,
-      get_user_permission_on_resource, id_or_name_filter,
+      get_tag, get_user_user_groups, id_or_name_filter,
+      user_target_query,
     },
     update::{add_update, make_update},
   },
@@ -49,6 +52,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 
 pub use build::{
@@ -205,17 +209,16 @@ pub async fn get_check_permissions<T: MonitorResource>(
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {
   let resource = get::<T>(id_or_name).await?;
   if user.admin
+    // Allow if its just read or below, and transparent mode enabled
     || (permission_level <= PermissionLevel::Read
       && core_config().transparent_mode)
+    // Allow if resource has base permission level greater than or equal to required permission level
+    || resource.base_permission >= permission_level
   {
     return Ok(resource);
   }
-  let permissions = get_user_permission_on_resource(
-    user,
-    T::resource_type(),
-    &resource.id,
-  )
-  .await?;
+  let permissions =
+    get_user_permission_on_resource::<T>(user, &resource.id).await?;
   if permissions >= permission_level {
     Ok(resource)
   } else {
@@ -230,6 +233,147 @@ pub async fn get_check_permissions<T: MonitorResource>(
 // LIST
 // ======
 
+/// Returns None if still no need to filter by resource id (eg transparent mode, group membership with all access).
+#[instrument(level = "debug")]
+pub async fn get_resource_ids_for_user<T: MonitorResource>(
+  user: &User,
+) -> anyhow::Result<Option<Vec<ObjectId>>> {
+  // Check admin or transparent mode
+  if user.admin || core_config().transparent_mode {
+    return Ok(None);
+  }
+
+  let resource_type = T::resource_type();
+
+  // Check user 'all' on variant
+  if let Some(level) = user.all.get(&resource_type).cloned() {
+    if level > PermissionLevel::None {
+      return Ok(None);
+    }
+  }
+
+  // Check user groups 'all' on variant
+  let groups = get_user_user_groups(&user.id).await?;
+  for group in &groups {
+    if let Some(level) = group.all.get(&resource_type).cloned() {
+      if level > PermissionLevel::None {
+        return Ok(None);
+      }
+    }
+  }
+
+  let (base, perms) = tokio::try_join!(
+    // Get any resources with non-none base permission,
+    find_collect(
+      T::coll().await,
+      doc! { "base_permission": { "$ne": "None" } },
+      None,
+    )
+    .map(|res| res.with_context(|| format!(
+      "failed to query {resource_type} on db"
+    ))),
+    // And any ids using the permissions table
+    find_collect(
+      &db_client().await.permissions,
+      doc! {
+        "$or": user_target_query(&user.id, &groups)?,
+        "resource_target.type": resource_type.as_ref(),
+        "level": { "$in": ["Read", "Execute", "Write"] }
+      },
+      None,
+    )
+    .map(|res| res.context("failed to query permissions on db"))
+  )?;
+
+  // Add specific ids
+  let ids = perms
+    .into_iter()
+    .map(|p| p.resource_target.extract_variant_id().1.to_string())
+    // Chain in the ones with non-None base permissions
+    .chain(base.into_iter().map(|res| res.id))
+    // collect into hashset first to remove any duplicates
+    .collect::<HashSet<_>>()
+    .into_iter()
+    .flat_map(|id| ObjectId::from_str(&id))
+    .collect::<HashSet<_>>();
+
+  Ok(Some(ids.into_iter().collect()))
+}
+
+#[instrument(level = "debug")]
+pub async fn get_user_permission_on_resource<T: MonitorResource>(
+  user: &User,
+  resource_id: &str,
+) -> anyhow::Result<PermissionLevel> {
+  if user.admin {
+    return Ok(PermissionLevel::Write);
+  }
+
+  let resource_type = T::resource_type();
+
+  // Start with base of Read or None
+  let mut base = if core_config().transparent_mode {
+    PermissionLevel::Read
+  } else {
+    PermissionLevel::None
+  };
+
+  // Add in the resource level global base permission
+  let resource_base = get::<T>(resource_id).await?.base_permission;
+  if resource_base > base {
+    base = resource_base;
+  }
+
+  // Overlay users base on resource variant
+  if let Some(level) = user.all.get(&resource_type).cloned() {
+    if level > base {
+      base = level;
+    }
+  }
+  if base == PermissionLevel::Write {
+    // No reason to keep going if already Write at this point.
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Overlay any user groups base on resource variant
+  let groups = get_user_user_groups(&user.id).await?;
+  for group in &groups {
+    if let Some(level) = group.all.get(&resource_type).cloned() {
+      if level > base {
+        base = level;
+      }
+    }
+  }
+  if base == PermissionLevel::Write {
+    // No reason to keep going if already Write at this point.
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Overlay any specific permissions
+  let permission = find_collect(
+    &db_client().await.permissions,
+    doc! {
+      "$or": user_target_query(&user.id, &groups)?,
+      "resource_target.type": resource_type.as_ref(),
+      "resource_target.id": resource_id
+    },
+    None,
+  )
+  .await
+  .context("failed to query db for permissions")?
+  .into_iter()
+  // get the max permission user has between personal / any user groups
+  .fold(base, |level, permission| {
+    if permission.level > level {
+      permission.level
+    } else {
+      level
+    }
+  });
+  Ok(permission)
+}
+
+#[instrument(level = "debug")]
 pub async fn list_for_user<T: MonitorResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
@@ -251,6 +395,7 @@ pub async fn list_for_user_using_document<T: MonitorResource>(
   Ok(join_all(list).await)
 }
 
+#[instrument(level = "debug")]
 pub async fn list_full_for_user<T: MonitorResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
@@ -261,13 +406,12 @@ pub async fn list_full_for_user<T: MonitorResource>(
   list_full_for_user_using_document::<T>(filters, user).await
 }
 
+#[instrument(level = "debug")]
 async fn list_full_for_user_using_document<T: MonitorResource>(
   mut filters: Document,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
-  if let Some(ids) =
-    get_resource_ids_for_user(user, T::resource_type()).await?
-  {
+  if let Some(ids) = get_resource_ids_for_user::<T>(user).await? {
     filters.insert("_id", doc! { "$in": ids });
   }
   find_collect(
@@ -281,8 +425,17 @@ async fn list_full_for_user_using_document<T: MonitorResource>(
   })
 }
 
+pub type IdResourceMap<T> = HashMap<
+  String,
+  Resource<
+    <T as MonitorResource>::Config,
+    <T as MonitorResource>::Info,
+  >,
+>;
+
+#[instrument(level = "debug")]
 pub async fn get_id_to_resource_map<T: MonitorResource>(
-) -> anyhow::Result<HashMap<String, Resource<T::Config, T::Info>>> {
+) -> anyhow::Result<IdResourceMap<T>> {
   let res = find_collect(T::coll().await, None, None)
     .await
     .with_context(|| {
@@ -328,6 +481,7 @@ pub async fn create<T: MonitorResource>(
     tags: Default::default(),
     config: config.into(),
     info: T::default_info().await?,
+    base_permission: PermissionLevel::None,
   };
 
   let resource_id = T::coll()
@@ -466,6 +620,7 @@ fn resource_target<T: MonitorResource>(id: String) -> ResourceTarget {
     ResourceTargetVariant::ResourceSync => {
       ResourceTarget::ResourceSync(id)
     }
+    ResourceTargetVariant::Stack => ResourceTarget::Stack(id),
   }
 }
 

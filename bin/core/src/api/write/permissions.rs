@@ -389,5 +389,20 @@ async fn extract_resource_target_with_validation(
         .id;
       Ok((ResourceTargetVariant::ResourceSync, id))
     }
+    ResourceTarget::Stack(ident) => {
+      let filter = match ObjectId::from_str(ident) {
+        Ok(id) => doc! { "_id": id },
+        Err(_) => doc! { "name": ident },
+      };
+      let id = db_client()
+        .await
+        .stacks
+        .find_one(filter)
+        .await
+        .context("failed to query db for stacks")?
+        .context("no matching stack found")?
+        .id;
+      Ok((ResourceTargetVariant::Stack, id))
+    }
   }
 }

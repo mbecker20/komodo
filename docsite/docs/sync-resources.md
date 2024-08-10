@@ -129,6 +129,24 @@ VARIABLE_2 = value_2"""
 config.labels = "deployment.type = logger"
 ```
 
+### Stack
+
+- [Stack config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/stack/struct.StackConfig.html)
+
+```toml
+[[stack]]
+name = "test-stack"
+description = "stack test"
+deploy = true
+after = ["test-logger-01"] # Stacks can depend on deployments, and vice versa.
+tags = ["test"]
+config.server_id = "monitor-01"
+config.file_paths = ["mongo.yaml", "redis.yaml"]
+config.git_provider = "git.mogh.tech"
+config.git_account = "mbecker20" # clone private repo by specifying account
+config.repo = "mbecker20/stack_test"
+```
+
 ### Procedure
 
 - [Procedure config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/procedure/struct.ProcedureConfig.html)

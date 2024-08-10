@@ -11,7 +11,7 @@ use crate::entities::{
 use super::{
   alerter::Alerter, build::Build, builder::Builder,
   deployment::Deployment, procedure::Procedure, repo::Repo,
-  server::Server, server_template::ServerTemplate,
+  server::Server, server_template::ServerTemplate, stack::Stack,
   sync::ResourceSync, Version,
 };
 
@@ -67,10 +67,14 @@ pub struct Update {
   /// - `Queued`
   /// - `InProgress`
   /// - `Complete`
+  #[cfg_attr(feature = "mongo", index)]
   pub status: UpdateStatus,
   /// An optional version on the update, ie build version or deployed version.
   #[serde(default, skip_serializing_if = "Version::is_none")]
   pub version: Version,
+  /// An optional commit hash associated with the update, ie cloned hash or deployed hash.
+  #[serde(default, skip_serializing_if = "String::is_empty")]
+  pub commit_hash: String,
   /// Some unstructured, operation specific data. Not for general usage.
   #[serde(default, skip_serializing_if = "String::is_empty")]
   pub other_data: String,
@@ -184,6 +188,18 @@ impl Log {
       ..Default::default()
     }
   }
+
+  /// Combines stdout / stderr into one log
+  pub fn combined(&self) -> String {
+    match (self.stdout.is_empty(), self.stderr.is_empty()) {
+      (true, true) => {
+        format!("stdout: {}\n\nstderr: {}", self.stdout, self.stderr)
+      }
+      (true, false) => self.stdout.to_string(),
+      (false, true) => self.stderr.to_string(),
+      (false, false) => String::from("No log"),
+    }
+  }
 }
 
 /// Used to reference a specific resource across all resource types
@@ -225,6 +241,7 @@ pub enum ResourceTarget {
   Procedure(String),
   ServerTemplate(String),
   ResourceSync(String),
+  Stack(String),
 }
 
 impl ResourceTarget {
@@ -242,6 +259,7 @@ impl ResourceTarget {
       ResourceTarget::Procedure(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
       ResourceTarget::ResourceSync(id) => id,
+      ResourceTarget::Stack(id) => id,
     };
     (self.extract_variant(), id)
   }
@@ -308,6 +326,12 @@ impl From<&ServerTemplate> for ResourceTarget {
 impl From<&ResourceSync> for ResourceTarget {
   fn from(resource_sync: &ResourceSync) -> Self {
     Self::ResourceSync(resource_sync.id.clone())
+  }
+}
+
+impl From<&Stack> for ResourceTarget {
+  fn from(resource_sync: &Stack) -> Self {
+    Self::Stack(resource_sync.id.clone())
   }
 }
 

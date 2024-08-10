@@ -5,6 +5,8 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
+use helpers::startup_in_progress_update_cleanup;
+use state::jwt_client;
 use tower_http::{
   cors::{Any, CorsLayer},
   services::{ServeDir, ServeFile},
@@ -25,16 +27,24 @@ mod state;
 mod ws;
 
 async fn app() -> anyhow::Result<()> {
-  dotenv::dotenv().ok();
+  dotenvy::dotenv().ok();
   let config = core_config();
   logger::init(&config.logging)?;
   info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
   info!("config: {:?}", config.sanitized());
 
-  // Spawn monitoring loops
-  monitor::spawn_monitor_loop()?;
+  // includes init db_client check to crash on db init failure
+  startup_in_progress_update_cleanup().await;
+  // init jwt client to crash on failure
+  jwt_client();
+
+  // Spawn tasks
+  monitor::spawn_monitor_loop();
   helpers::prune::spawn_prune_loop();
+  helpers::stack::spawn_stack_refresh_loop();
   helpers::sync::spawn_sync_refresh_loop();
+  helpers::build::spawn_build_refresh_loop();
+  helpers::repo::spawn_repo_refresh_loop();
   resource::spawn_build_state_refresh_loop();
   resource::spawn_repo_state_refresh_loop();
   resource::spawn_procedure_state_refresh_loop();

@@ -1,12 +1,19 @@
 use monitor_client::entities::{
   config::{DockerRegistry, GitProvider},
+  deployment::ContainerSummary,
+  server::{
+    docker_image::ImageSummary, docker_network::DockerNetwork,
+  },
+  stack::ComposeProject,
   update::Log,
   SystemCommand,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
+use serror::Serror;
 
 pub mod build;
+pub mod compose;
 pub mod container;
 pub mod git;
 pub mod network;
@@ -30,6 +37,19 @@ pub struct GetVersion {}
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetVersionResponse {
   pub version: String,
+}
+
+/// Returns all containers, networks, images, compose projects
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetDockerListsResponse)]
+pub struct GetDockerLists {}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetDockerListsResponse {
+  pub containers: Result<Vec<ContainerSummary>, Serror>,
+  pub networks: Result<Vec<DockerNetwork>, Serror>,
+  pub images: Result<Vec<ImageSummary>, Serror>,
+  pub projects: Result<Vec<ComposeProject>, Serror>,
 }
 
 //

@@ -15,18 +15,7 @@ const sidebars: SidebarsConfig = {
     "intro",
     "resources",
     "core-setup",
-    {
-      type: "category",
-      label: "Connecting Servers",
-      link: {
-        type: "doc",
-        id: "connecting-servers/index",
-      },
-      items: [
-        "connecting-servers/setup-periphery",
-        "connecting-servers/add-server",
-      ],
-    },
+    "connecting-servers",
     {
       type: "category",
       label: "Build Images",

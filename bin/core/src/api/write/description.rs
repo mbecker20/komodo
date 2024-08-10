@@ -4,7 +4,7 @@ use monitor_client::{
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, server_template::ServerTemplate,
+    server::Server, server_template::ServerTemplate, stack::Stack,
     sync::ResourceSync, update::ResourceTarget, user::User,
   },
 };
@@ -94,6 +94,14 @@ impl Resolve<UpdateDescription, User> for State {
       }
       ResourceTarget::ResourceSync(id) => {
         resource::update_description::<ResourceSync>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
+      }
+      ResourceTarget::Stack(id) => {
+        resource::update_description::<Stack>(
           &id,
           &description,
           &user,

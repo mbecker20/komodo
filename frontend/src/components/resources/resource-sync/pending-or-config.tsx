@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 
 const PENDING_TYPE_KEYS: Array<[string, string]> = [
   ["Server", "server_updates"],
+  ["Deploy", "deploy_updates"],
   ["Deployment", "deployment_updates"],
+  ["Stack", "stack_updates"],
   ["Build", "build_updates"],
   ["Repo", "repo_updates"],
   ["Procedure", "procedure_updates"],

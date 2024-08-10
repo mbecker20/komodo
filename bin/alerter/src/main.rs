@@ -21,7 +21,7 @@ fn default_port() -> u16 {
 }
 
 async fn app() -> anyhow::Result<()> {
-  dotenv::dotenv().ok();
+  dotenvy::dotenv().ok();
   logger::init(&Default::default())?;
 
   let Env { port } =

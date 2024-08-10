@@ -38,6 +38,8 @@ export const BuilderInstanceType = ({ id }: { id: string }) => {
 export const BuilderComponents: RequiredResourceComponents = {
   list_item: (id) => useBuilder(id),
 
+  Description: () => <>Build on your servers, or single-use AWS instances.</>,
+
   Dashboard: () => {
     const builders_count = useRead("ListBuilders", {}).data?.length;
     return (

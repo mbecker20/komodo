@@ -3,16 +3,19 @@ import {
   AccountSelectorConfig,
   ConfigItem,
   ProviderSelectorConfig,
+  SecretsForEnvironment,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { useState } from "react";
-import { CopyGithubWebhook, ServerSelector } from "../common";
+import { createRef, useState } from "react";
+import { BuilderSelector, CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus } from "lucide-react";
+import { env_to_text } from "@lib/utils";
+import { Textarea } from "@ui/textarea";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -53,6 +56,19 @@ export const RepoConfig = ({ id }: { id: string }) => {
             },
           },
           {
+            label: "Builder Id",
+            labelHidden: true,
+            components: {
+              builder_id: (value, set) => (
+                <BuilderSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+            },
+          },
+          {
             label: "General",
             components: {
               git_provider: (provider, set) => {
@@ -83,18 +99,32 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   />
                 );
               },
-              repo: { placeholder: "Enter repo" },
-              branch: { placeholder: "Enter branch" },
+              repo: {
+                placeholder: "Enter repo",
+                description:
+                  "The repo path on the provider. {namespace}/{repo_name}",
+              },
+              branch: {
+                placeholder: "Enter branch",
+                description: "Select a custom branch, or default to 'main'.",
+              },
               commit: {
                 placeholder: "Enter a specific commit hash. Optional.",
+                description:
+                  "Switch to a specific hash after cloning the branch.",
               },
               path: {
-                placeholder: "Enter a specific clone path. Optional.",
+                label: "Clone Path",
+                placeholder: "/clone/path/on/host",
+                description:
+                  "Explicitly specify the folder on the host to clone the repo in. Optional.",
               },
             },
           },
           {
             label: "On Clone",
+            description:
+              "Execute a shell command after cloning the repo. The given Cwd is relative to repo root.",
             components: {
               on_clone: (value, set) => (
                 <SystemCommand
@@ -107,6 +137,8 @@ export const RepoConfig = ({ id }: { id: string }) => {
           },
           {
             label: "On Pull",
+            description:
+              "Execute a shell command after pulling the repo. The given Cwd is relative to repo root.",
             components: {
               on_pull: (value, set) => (
                 <SystemCommand
@@ -119,15 +151,17 @@ export const RepoConfig = ({ id }: { id: string }) => {
           },
           {
             label: "Github Webhooks",
+            description:
+              "Configure your repo provider to send webhooks to Monitor",
             components: {
-              ["clone" as any]: () => (
-                <ConfigItem label="Clone">
-                  <CopyGithubWebhook path={`/repo/${id}/clone`} />
-                </ConfigItem>
-              ),
               ["pull" as any]: () => (
                 <ConfigItem label="Pull">
                   <CopyGithubWebhook path={`/repo/${id}/pull`} />
+                </ConfigItem>
+              ),
+              ["clone" as any]: () => (
+                <ConfigItem label="Clone">
+                  <CopyGithubWebhook path={`/repo/${id}/clone`} />
                 </ConfigItem>
               ),
               webhook_enabled: webhooks !== undefined && !webhooks.managed,
@@ -257,7 +291,56 @@ export const RepoConfig = ({ id }: { id: string }) => {
             },
           },
         ],
+        environment: [
+          {
+            label: "Environment",
+            description:
+              "Write these variables to a .env-formatted file at the specified path, before on_clone / on_pull are run.",
+            components: {
+              environment: (env, set) => {
+                const _env = typeof env === "object" ? env_to_text(env) : env;
+                return (
+                  <Environment env={_env ?? ""} set={set} disabled={disabled} />
+                );
+              },
+              env_file_path: {
+                description:
+                  "The path to write the file to, relative to the root of the repo.",
+                placeholder: ".env",
+              },
+              skip_secret_interp: true,
+            },
+          },
+        ],
       }}
     />
+  );
+};
+
+const Environment = ({
+  env,
+  set,
+  disabled,
+}: {
+  env: string;
+  set: (input: Partial<Types.RepoConfig>) => void;
+  disabled: boolean;
+}) => {
+  const ref = createRef<HTMLTextAreaElement>();
+  const setEnv = (environment: string) => set({ environment });
+  return (
+    <ConfigItem className="flex-col gap-4 items-start">
+      {!disabled && (
+        <SecretsForEnvironment env={env} setEnv={setEnv} envRef={ref} />
+      )}
+      <Textarea
+        ref={ref}
+        className="min-h-[400px]"
+        placeholder="VARIABLE=value"
+        value={env}
+        onChange={(e) => setEnv(e.target.value)}
+        disabled={disabled}
+      />
+    </ConfigItem>
   );
 };

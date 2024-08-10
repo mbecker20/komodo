@@ -1,23 +1,20 @@
 use std::{collections::HashSet, future::IntoFuture, time::Duration};
 
 use anyhow::{anyhow, Context};
-use formatting::{format_serror, muted};
+use formatting::format_serror;
 use futures::future::join_all;
 use monitor_client::{
-  api::execute::{
-    CancelBuild, CancelBuildResponse, Deploy, RunBuild,
-  },
+  api::execute::{CancelBuild, Deploy, RunBuild},
   entities::{
     alert::{Alert, AlertData},
     all_logs_success,
     build::{Build, ImageRegistry, StandardRegistryConfig},
-    builder::{AwsBuilderConfig, Builder, BuilderConfig},
+    builder::{Builder, BuilderConfig},
     config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
     monitor_timestamp,
     permission::PermissionLevel,
-    server::{stats::SeverityLevel, Server},
-    server_template::aws::AwsServerTemplateConfig,
+    server::stats::SeverityLevel,
     to_monitor_name,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
@@ -31,30 +28,20 @@ use mungos::{
     options::FindOneOptions,
   },
 };
-use periphery_client::{
-  api::{self, GetVersionResponse},
-  PeripheryClient,
-};
+use periphery_client::api::{self, git::RepoActionResponseV1_13};
 use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-  cloud::{
-    aws::{
-      ec2::{
-        launch_ec2_instance, terminate_ec2_instance_with_retry,
-        Ec2Instance,
-      },
-      ecr,
-    },
-    BuildCleanupData,
-  },
+  cloud::aws::ecr,
   config::core_config,
   helpers::{
     alert::send_alerts,
+    builder::{cleanup_builder_instance, get_builder_periphery},
     channel::build_cancel_channel,
-    periphery_client,
+    git_token,
     query::{get_deployment_state, get_global_variables},
+    registry_token,
     update::update_update,
   },
   resource::{self, refresh_build_state_cache},
@@ -79,6 +66,20 @@ impl Resolve<RunBuild, (User, Update)> for State {
     )
     .await?;
 
+    if build.config.builder_id.is_empty() {
+      return Err(anyhow!("Must attach builder to RunBuild"));
+    }
+
+    let git_token = git_token(
+      &build.config.git_provider,
+      &build.config.git_account,
+      |https| build.config.git_https = https,
+    )
+    .await
+    .with_context(
+      || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", build.config.git_provider, build.config.git_account),
+    )?;
+
     // get the action state for the build (or insert default).
     let action_state =
       action_states().build.get_or_insert_default(&build.id).await;
@@ -101,6 +102,12 @@ impl Resolve<RunBuild, (User, Update)> for State {
       build_cancel_channel().receiver.resubscribe();
     let build_id = build.id.clone();
 
+    let builder =
+      resource::get::<Builder>(&build.config.builder_id).await?;
+
+    let is_server_builder =
+      matches!(&builder.config, BuilderConfig::Server(_));
+
     tokio::spawn(async move {
       let poll = async {
         loop {
@@ -109,16 +116,19 @@ impl Resolve<RunBuild, (User, Update)> for State {
             id = cancel_recv.recv() => id?
           };
           if incoming_build_id == build_id {
-            update.push_simple_log(
-              "cancel acknowledged",
-              "the build cancellation has been queued, it may still take some time",
-            );
+            if is_server_builder {
+              update.push_error_log("Cancel acknowledged", "Build cancellation is not possible on server builders at this time. Use an AWS builder to enable this feature.");
+            } else {
+              update.push_simple_log("Cancel acknowledged", "The build cancellation has been queued, it may still take some time.");
+            }
             update.finalize();
             let id = update.id.clone();
             if let Err(e) = update_update(update).await {
-              warn!("failed to update Update {id} | {e:#}");
+              warn!("failed to modify Update {id} on db | {e:#}");
             }
-            cancel_clone.cancel();
+            if !is_server_builder {
+              cancel_clone.cancel();
+            }
             return Ok(());
           }
         }
@@ -133,52 +143,44 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     // GET BUILDER PERIPHERY
 
-    let (periphery, cleanup_data) =
-      match get_build_builder(&build, &mut update).await {
-        Ok(builder) => {
-          info!("got builder for build");
-          builder
-        }
-        Err(e) => {
-          warn!("failed to get builder | {e:#}");
-          update.logs.push(Log::error(
-            "get builder",
-            format_serror(&e.context("failed to get builder").into()),
-          ));
-          return handle_early_return(
-            update, build.id, build.name, false,
-          )
-          .await;
-        }
-      };
-
-    let core_config = core_config();
-    let variables = get_global_variables().await?;
+    let (periphery, cleanup_data) = match get_builder_periphery(
+      build.name.clone(),
+      Some(build.config.version),
+      builder,
+      &mut update,
+    )
+    .await
+    {
+      Ok(builder) => builder,
+      Err(e) => {
+        warn!(
+          "failed to get builder for build {} | {e:#}",
+          build.name
+        );
+        update.logs.push(Log::error(
+          "get builder",
+          format_serror(&e.context("failed to get builder").into()),
+        ));
+        return handle_early_return(
+          update, build.id, build.name, false,
+        )
+        .await;
+      }
+    };
 
     // CLONE REPO
-    let git_token = core_config
-      .git_providers
-      .iter()
-      .find(|provider| provider.domain == build.config.git_provider)
-      .and_then(|provider| {
-        build.config.git_https = provider.https;
-        provider
-          .accounts
-          .iter()
-          .find(|account| {
-            account.username == build.config.git_account
-          })
-          .map(|account| account.token.clone())
-      });
 
     let res = tokio::select! {
       res = periphery
         .request(api::git::CloneRepo {
           args: (&build).into(),
           git_token,
+          environment: Default::default(),
+          env_file_path: Default::default(),
+          skip_secret_interp: Default::default(),
         }) => res,
       _ = cancel.cancelled() => {
-        info!("build cancelled during clone, cleaning up builder");
+        debug!("build cancelled during clone, cleaning up builder");
         update.push_error_log("build cancelled", String::from("user cancelled build during repo clone"));
         cleanup_builder_instance(periphery, cleanup_data, &mut update)
           .await;
@@ -187,10 +189,14 @@ impl Resolve<RunBuild, (User, Update)> for State {
       },
     };
 
-    match res {
-      Ok(clone_logs) => {
-        info!("finished repo clone");
-        update.logs.extend(clone_logs);
+    let commit_message = match res {
+      Ok(res) => {
+        debug!("finished repo clone");
+        let res: RepoActionResponseV1_13 = res.into();
+        update.logs.extend(res.logs);
+        update.commit_hash =
+          res.commit_hash.unwrap_or_default().to_string();
+        res.commit_message.unwrap_or_default()
       }
       Err(e) => {
         warn!("failed build at clone repo | {e:#}");
@@ -198,13 +204,16 @@ impl Resolve<RunBuild, (User, Update)> for State {
           "clone repo",
           format_serror(&e.context("failed to clone repo").into()),
         );
+        Default::default()
       }
-    }
+    };
 
     update_update(update.clone()).await?;
 
     if all_logs_success(&update.logs) {
       let secret_replacers = if !build.config.skip_secret_interp {
+        let core_config = core_config();
+        let variables = get_global_variables().await?;
         // Interpolate variables / secrets into build args
         let mut global_replacers = HashSet::new();
         let mut secret_replacers = HashSet::new();
@@ -300,6 +309,12 @@ impl Resolve<RunBuild, (User, Update)> for State {
             registry_token,
             aws_ecr,
             replacers: secret_replacers.into_iter().collect(),
+            // Push a commit hash tagged image
+            additional_tags: if update.commit_hash.is_empty() {
+              Default::default()
+            } else {
+              vec![update.commit_hash.clone()]
+            },
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
           info!("build cancelled during build, cleaning up builder");
@@ -312,7 +327,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
       match res {
         Ok(logs) => {
-          info!("finished build");
+          debug!("finished build");
           update.logs.extend(logs);
         }
         Err(e) => {
@@ -334,13 +349,13 @@ impl Resolve<RunBuild, (User, Update)> for State {
         .builds
         .update_one(
           doc! { "name": &build.name },
-          doc! {
-            "$set": {
-              "config.version": to_bson(&build.config.version)
-                .context("failed at converting version to bson")?,
-              "info.last_built_at": monitor_timestamp(),
-            }
-          },
+          doc! { "$set": {
+            "config.version": to_bson(&build.config.version)
+              .context("failed at converting version to bson")?,
+            "info.last_built_at": monitor_timestamp(),
+            "info.built_hash": &update.commit_hash,
+            "info.built_message": commit_message
+          }},
         )
         .await;
     }
@@ -499,7 +514,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     &self,
     CancelBuild { build }: CancelBuild,
     (user, mut update): (User, Update),
-  ) -> anyhow::Result<CancelBuildResponse> {
+  ) -> anyhow::Result<Update> {
     let build = resource::get_check_permissions::<Build>(
       &build,
       &user,
@@ -524,16 +539,15 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     );
     update_update(update.clone()).await?;
 
-    let update_id = update.id.clone();
-
     build_cancel_channel()
       .sender
       .lock()
       .await
-      .send((build.id, update))?;
+      .send((build.id, update.clone()))?;
 
     // Make sure cancel is set to complete after some time in case
     // no reciever is there to do it. Prevents update stuck in InProgress.
+    let update_id = update.id.clone();
     tokio::spawn(async move {
       tokio::time::sleep(Duration::from_secs(60)).await;
       if let Err(e) = update_one_by_id(
@@ -544,160 +558,11 @@ impl Resolve<CancelBuild, (User, Update)> for State {
       )
       .await
       {
-        warn!("failed to set BuildCancel Update status Complete after timeout | {e:#}")
+        warn!("failed to set CancelBuild Update status Complete after timeout | {e:#}")
       }
     });
 
-    Ok(CancelBuildResponse {})
-  }
-}
-
-const BUILDER_POLL_RATE_SECS: u64 = 2;
-const BUILDER_POLL_MAX_TRIES: usize = 30;
-
-#[instrument(skip_all, fields(build_id = build.id, update_id = update.id))]
-async fn get_build_builder(
-  build: &Build,
-  update: &mut Update,
-) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
-  if build.config.builder_id.is_empty() {
-    return Err(anyhow!("build has not configured a builder"));
-  }
-  let builder =
-    resource::get::<Builder>(&build.config.builder_id).await?;
-  match builder.config {
-    BuilderConfig::Server(config) => {
-      if config.server_id.is_empty() {
-        return Err(anyhow!("builder has not configured a server"));
-      }
-      let server = resource::get::<Server>(&config.server_id).await?;
-      let periphery = periphery_client(&server)?;
-      Ok((
-        periphery,
-        BuildCleanupData::Server {
-          repo_name: build.name.clone(),
-        },
-      ))
-    }
-    BuilderConfig::Aws(config) => {
-      get_aws_builder(build, config, update).await
-    }
-  }
-}
-
-#[instrument(skip_all, fields(build_id = build.id, update_id = update.id))]
-async fn get_aws_builder(
-  build: &Build,
-  config: AwsBuilderConfig,
-  update: &mut Update,
-) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
-  let start_create_ts = monitor_timestamp();
-
-  let instance_name =
-    format!("BUILDER-{}-v{}", build.name, build.config.version);
-  let Ec2Instance { instance_id, ip } = launch_ec2_instance(
-    &instance_name,
-    AwsServerTemplateConfig::from_builder_config(&config),
-  )
-  .await?;
-
-  info!("ec2 instance launched");
-
-  let log = Log {
-    stage: "start build instance".to_string(),
-    success: true,
-    stdout: start_aws_builder_log(&instance_id, &ip, &config),
-    start_ts: start_create_ts,
-    end_ts: monitor_timestamp(),
-    ..Default::default()
-  };
-
-  update.logs.push(log);
-
-  update_update(update.clone()).await?;
-
-  let periphery_address = format!("http://{ip}:{}", config.port);
-  let periphery =
-    PeripheryClient::new(&periphery_address, &core_config().passkey);
-
-  let start_connect_ts = monitor_timestamp();
-  let mut res = Ok(GetVersionResponse {
-    version: String::new(),
-  });
-  for _ in 0..BUILDER_POLL_MAX_TRIES {
-    let version = periphery
-      .request(api::GetVersion {})
-      .await
-      .context("failed to reach periphery client on builder");
-    if let Ok(GetVersionResponse { version }) = &version {
-      let connect_log = Log {
-        stage: "build instance connected".to_string(),
-        success: true,
-        stdout: format!(
-          "established contact with periphery on builder\nperiphery version: v{}",
-          version
-        ),
-        start_ts: start_connect_ts,
-        end_ts: monitor_timestamp(),
-        ..Default::default()
-      };
-      update.logs.push(connect_log);
-      update_update(update.clone()).await?;
-      return Ok((
-        periphery,
-        BuildCleanupData::Aws {
-          instance_id,
-          region: config.region,
-        },
-      ));
-    }
-    res = version;
-    tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS))
-      .await;
-  }
-
-  // Spawn terminate task in failure case (if loop is passed without return)
-  tokio::spawn(async move {
-    let _ =
-      terminate_ec2_instance_with_retry(config.region, &instance_id)
-        .await;
-  });
-
-  // Unwrap is safe, only way to get here is after check Ok / early return, so it must be err
-  Err(
-    res.err().unwrap().context(
-      "failed to start usable builder. terminating instance.",
-    ),
-  )
-}
-
-#[instrument(skip(periphery, update))]
-async fn cleanup_builder_instance(
-  periphery: PeripheryClient,
-  cleanup_data: BuildCleanupData,
-  update: &mut Update,
-) {
-  match cleanup_data {
-    BuildCleanupData::Server { repo_name } => {
-      let _ = periphery
-        .request(api::git::DeleteRepo { name: repo_name })
-        .await;
-    }
-    BuildCleanupData::Aws {
-      instance_id,
-      region,
-    } => {
-      let _instance_id = instance_id.clone();
-      tokio::spawn(async move {
-        let _ =
-          terminate_ec2_instance_with_retry(region, &_instance_id)
-            .await;
-      });
-      update.push_simple_log(
-        "terminate instance",
-        format!("termination queued for instance id {instance_id}"),
-      );
-    }
+    Ok(update)
   }
 }
 
@@ -759,38 +624,6 @@ async fn handle_post_build_redeploy(build_id: &str) {
   }
 }
 
-fn start_aws_builder_log(
-  instance_id: &str,
-  ip: &str,
-  config: &AwsBuilderConfig,
-) -> String {
-  let AwsBuilderConfig {
-    ami_id,
-    instance_type,
-    volume_gb,
-    subnet_id,
-    assign_public_ip,
-    security_group_ids,
-    use_public_ip,
-    ..
-  } = config;
-
-  let readable_sec_group_ids = security_group_ids.join(", ");
-
-  [
-    format!("{}: {instance_id}", muted("instance id")),
-    format!("{}: {ip}", muted("ip")),
-    format!("{}: {ami_id}", muted("ami id")),
-    format!("{}: {instance_type}", muted("instance type")),
-    format!("{}: {volume_gb} GB", muted("volume size")),
-    format!("{}: {subnet_id}", muted("subnet id")),
-    format!("{}: {readable_sec_group_ids}", muted("security groups")),
-    format!("{}: {assign_public_ip}", muted("assign public ip")),
-    format!("{}: {use_public_ip}", muted("use public ip")),
-  ]
-  .join("\n")
-}
-
 /// This will make sure that a build with non-none image registry has an account attached,
 /// and will check the core config for a token / aws ecr config matching requirements.
 /// Otherwise it is left to periphery.
@@ -802,6 +635,7 @@ async fn validate_account_extract_registry_token_aws_ecr(
     ImageRegistry::None(_) => return Ok((None, None)),
     // Early return for AwsEcr
     ImageRegistry::AwsEcr(label) => {
+      // Note that aws ecr config still only lives in config file
       let config = core_config()
         .aws_ecr_registries
         .iter()
@@ -847,18 +681,9 @@ async fn validate_account_extract_registry_token_aws_ecr(
     ));
   }
 
-  Ok((
-    core_config()
-      .docker_registries
-      .iter()
-      .find(|provider| provider.domain == domain)
-      .and_then(|provider| {
-        provider
-          .accounts
-          .iter()
-          .find(|_account| &_account.username == account)
-          .map(|account| account.token.clone())
-      }),
-    None,
-  ))
+  let registry_token = registry_token(domain, account).await.with_context(
+    || format!("Failed to get registry token in call to db. Stopping run. | {domain} | {account}"),
+  )?;
+
+  Ok((registry_token, None))
 }

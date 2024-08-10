@@ -1,22 +1,26 @@
 use monitor_client::entities::{
-  deployment::{Deployment, DeploymentState},
+  deployment::{ContainerSummary, Deployment, DeploymentState},
   repo::Repo,
   server::{
+    docker_image::ImageSummary,
+    docker_network::DockerNetwork,
     stats::{
       ServerHealth, SeverityLevel, SingleDiskUsage, SystemStats,
     },
     Server, ServerConfig, ServerState,
   },
+  stack::{ComposeProject, Stack, StackState},
 };
 use serror::Serror;
 
 use crate::state::{
   deployment_status_cache, repo_status_cache, server_status_cache,
+  stack_status_cache,
 };
 
 use super::{
   CachedDeploymentStatus, CachedRepoStatus, CachedServerStatus,
-  History,
+  CachedStackStatus, History,
 };
 
 #[instrument(level = "debug", skip_all)]
@@ -62,11 +66,42 @@ pub async fn insert_repos_status_unknown(repos: Vec<Repo>) {
 }
 
 #[instrument(level = "debug", skip_all)]
+pub async fn insert_stacks_status_unknown(stacks: Vec<Stack>) {
+  let status_cache = stack_status_cache();
+  for stack in stacks {
+    let prev =
+      status_cache.get(&stack.id).await.map(|s| s.curr.state);
+    status_cache
+      .insert(
+        stack.id.clone(),
+        History {
+          curr: CachedStackStatus {
+            id: stack.id,
+            state: StackState::Unknown,
+            services: Vec::new(),
+          },
+          prev,
+        }
+        .into(),
+      )
+      .await;
+  }
+}
+
+type DockerLists = (
+  Option<Vec<ContainerSummary>>,
+  Option<Vec<DockerNetwork>>,
+  Option<Vec<ImageSummary>>,
+  Option<Vec<ComposeProject>>,
+);
+
+#[instrument(level = "debug", skip_all)]
 pub async fn insert_server_status(
   server: &Server,
   state: ServerState,
   version: String,
   stats: Option<SystemStats>,
+  (containers, networks, images, projects): DockerLists,
   err: impl Into<Option<Serror>>,
 ) {
   let health = stats.as_ref().map(|s| get_server_health(server, s));
@@ -79,6 +114,10 @@ pub async fn insert_server_status(
         version,
         stats,
         health,
+        containers,
+        networks,
+        images,
+        projects,
         err: err.into(),
       }
       .into(),

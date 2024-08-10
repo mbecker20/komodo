@@ -9,9 +9,11 @@ use monitor_client::entities::{
   deployment::Deployment,
   permission::Permission,
   procedure::Procedure,
+  provider::{DockerRegistryAccount, GitProviderAccount},
   repo::Repo,
   server::{stats::SystemStatsRecord, Server},
   server_template::ServerTemplate,
+  stack::Stack,
   sync::ResourceSync,
   tag::Tag,
   update::Update,
@@ -31,6 +33,8 @@ pub struct DbClient {
   pub api_keys: Collection<ApiKey>,
   pub tags: Collection<Tag>,
   pub variables: Collection<Variable>,
+  pub git_accounts: Collection<GitProviderAccount>,
+  pub registry_accounts: Collection<DockerRegistryAccount>,
   pub updates: Collection<Update>,
   pub alerts: Collection<Alert>,
   pub stats: Collection<SystemStatsRecord>,
@@ -44,6 +48,7 @@ pub struct DbClient {
   pub alerters: Collection<Alerter>,
   pub server_templates: Collection<ServerTemplate>,
   pub resource_syncs: Collection<ResourceSync>,
+  pub stacks: Collection<Stack>,
   //
   pub db: Database,
 }
@@ -90,6 +95,8 @@ impl DbClient {
       api_keys: mongo_indexed::collection(&db, true).await?,
       tags: mongo_indexed::collection(&db, true).await?,
       variables: mongo_indexed::collection(&db, true).await?,
+      git_accounts: mongo_indexed::collection(&db, true).await?,
+      registry_accounts: mongo_indexed::collection(&db, true).await?,
       updates: mongo_indexed::collection(&db, true).await?,
       alerts: mongo_indexed::collection(&db, true).await?,
       stats: mongo_indexed::collection(&db, true).await?,
@@ -105,6 +112,7 @@ impl DbClient {
         .await?,
       resource_syncs: resource_collection(&db, "ResourceSync")
         .await?,
+      stacks: resource_collection(&db, "Stack").await?,
       //
       db,
     };

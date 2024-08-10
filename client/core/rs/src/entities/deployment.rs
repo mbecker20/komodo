@@ -305,7 +305,11 @@ pub fn conversions_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
+    .filter(|(_, line)| {
+      !line.is_empty()
+        && !line.starts_with('#')
+        && !line.starts_with("//")
+    })
     .map(|(i, line)| {
       let (local, container) = line
         .split_once('=')
@@ -443,6 +447,10 @@ pub struct ContainerSummary {
   pub state: DeploymentState,
   /// The status string of the docker container.
   pub status: Option<String>,
+  /// The network mode of the container.
+  pub network_mode: Option<String>,
+  /// Network names attached to the container
+  pub networks: Option<Vec<String>>,
 }
 
 #[typeshare]
@@ -598,7 +606,11 @@ pub fn term_signal_labels_from_str(
     .split('\n')
     .map(|line| line.trim())
     .enumerate()
-    .filter(|(_, line)| !line.is_empty() && !line.starts_with('#'))
+    .filter(|(_, line)| {
+      !line.is_empty()
+        && !line.starts_with('#')
+        && !line.starts_with("//")
+    })
     .map(|(i, line)| {
       let (signal, label) = line
         .split_once('=')
@@ -732,8 +744,11 @@ impl<'de> Visitor<'de> for OptionTermSignalLabelVisitor {
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct DeploymentActionState {
   pub deploying: bool,
-  pub stopping: bool,
   pub starting: bool,
+  pub restarting: bool,
+  pub pausing: bool,
+  pub unpausing: bool,
+  pub stopping: bool,
   pub removing: bool,
   pub renaming: bool,
 }

@@ -11,6 +11,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 
 pub use build::*;
@@ -19,6 +20,7 @@ pub use procedure::*;
 pub use repo::*;
 pub use server::*;
 pub use server_template::*;
+pub use stack::*;
 pub use sync::*;
 
 use crate::entities::{NoData, I64};
@@ -55,25 +57,40 @@ pub enum Execution {
 
   // BUILD
   RunBuild(RunBuild),
+  CancelBuild(CancelBuild),
 
   // DEPLOYMENT
   Deploy(Deploy),
   StartContainer(StartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
-  StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
 
   // REPO
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
+  BuildRepo(BuildRepo),
+  CancelRepoBuild(CancelRepoBuild),
 
   // SERVER
+  StopAllContainers(StopAllContainers),
   PruneNetworks(PruneNetworks),
   PruneImages(PruneImages),
   PruneContainers(PruneContainers),
 
   // SYNC
   RunSync(RunSync),
+
+  // STACK
+  DeployStack(DeployStack),
+  StartStack(StartStack),
+  RestartStack(RestartStack),
+  PauseStack(PauseStack),
+  UnpauseStack(UnpauseStack),
+  StopStack(StopStack),
+  DestroyStack(DestroyStack),
 
   // SLEEP
   Sleep(Sleep),

@@ -4,7 +4,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{update::Update, NoData};
+use crate::entities::update::Update;
 
 use super::MonitorExecuteRequest;
 
@@ -41,14 +41,18 @@ pub struct RunBuild {
 /// Response: [Update]
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
 )]
 #[empty_traits(MonitorExecuteRequest)]
-#[response(CancelBuildResponse)]
+#[response(Update)]
 pub struct CancelBuild {
   /// Can be id or name
   pub build: String,
 }
-
-#[typeshare]
-pub type CancelBuildResponse = NoData;

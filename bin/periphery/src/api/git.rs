@@ -4,12 +4,11 @@ use monitor_client::entities::{
 };
 use periphery_client::api::git::{
   CloneRepo, DeleteRepo, GetLatestCommit, PullRepo,
+  RepoActionResponse, RepoActionResponseV1_13,
 };
 use resolver_api::Resolve;
 
-use crate::{
-  config::periphery_config, helpers::get_git_token, State,
-};
+use crate::{config::periphery_config, State};
 
 impl Resolve<GetLatestCommit, ()> for State {
   async fn resolve(
@@ -31,9 +30,15 @@ impl Resolve<CloneRepo> for State {
   #[instrument(name = "CloneRepo", skip(self))]
   async fn resolve(
     &self,
-    CloneRepo { args, git_token }: CloneRepo,
+    CloneRepo {
+      args,
+      git_token,
+      environment,
+      env_file_path,
+      skip_secret_interp,
+    }: CloneRepo,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> anyhow::Result<RepoActionResponse> {
     let CloneArgs {
       provider, account, ..
     } = &args;
@@ -46,14 +51,30 @@ impl Resolve<CloneRepo> for State {
       }
       (Some(_), Some(_), Some(token)) => Some(token),
       (Some(account), Some(provider), None) => Some(
-        get_git_token(provider, account)
+        crate::helpers::git_token(provider, account).map(ToString::to_string)
           .with_context(
             || format!("failed to get git token from periphery config | provider: {provider} | account: {account}")
-          )?
-          .clone(),
+          )?,
       ),
     };
-    git::clone(args, &periphery_config().repo_dir, token).await
+    git::clone(
+      args,
+      &periphery_config().repo_dir,
+      token,
+      &environment,
+      &env_file_path,
+      (!skip_secret_interp).then_some(&periphery_config().secrets),
+    )
+    .await
+    .map(|(logs, commit_hash, commit_message, env_file_path)| {
+      RepoActionResponseV1_13 {
+        logs,
+        commit_hash,
+        commit_message,
+        env_file_path,
+      }
+      .into()
+    })
   }
 }
 
@@ -68,18 +89,32 @@ impl Resolve<PullRepo> for State {
       branch,
       commit,
       on_pull,
+      environment,
+      env_file_path,
+      skip_secret_interp,
     }: PullRepo,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> anyhow::Result<RepoActionResponse> {
     let name = to_monitor_name(&name);
-    Ok(
+    let (logs, commit_hash, commit_message, env_file_path) =
       git::pull(
         &periphery_config().repo_dir.join(name),
         &branch,
         &commit,
         &on_pull,
+        &environment,
+        &env_file_path,
+        (!skip_secret_interp).then_some(&periphery_config().secrets),
       )
-      .await,
+      .await;
+    Ok(
+      RepoActionResponseV1_13 {
+        logs,
+        commit_hash,
+        commit_message,
+        env_file_path,
+      }
+      .into(),
     )
   }
 }

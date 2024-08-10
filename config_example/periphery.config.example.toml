@@ -1,40 +1,52 @@
-## optional. 8120 is default
+############################
+# MONITOR PERIPHERY CONFIG #
+############################
+
+## Optional. The port the server runs on. 8120 is default
 # port = 8120
 
-## optional. /etc/monitor/repos is default.
+## Optional. /etc/monitor/repos is default.
+## The directory periphery will use to manage repos.
+## The periphery user must have write access to this directory.
 # repo_dir = "/home/ubuntu/monitor/repos"
 
-## optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
+## Optional. /etc/monitor/stacks is default.
+## The directory periphery will use to manage stacks.
+## The periphery user must have write access to this directory.
+# stack_dir = "/home/ubuntu/monitor/stacks"
+
+## Optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
 # stats_polling_rate = "1-sec"
 
-## optional. default is empty, which will not block any request by ip.
+## Whether stack actions should use `docker-compose ...`
+## instead of `docker compose ...`.
+## default: false
+# legacy_compose_cli = true
+
+########
+# AUTH #
+########
+
+## Optional. Limit the ip addresses which can call the periphery api.
+## Default is empty, which will not block any request by ip.
 # allowed_ips = ["127.0.0.1"]
 
-## optional. default is empty, which will not require any passkey to be passed by core.
+## Optional. Require callers to provide on of the provided passkeys to access the periphery api.
+## Default is empty, which will not require any passkey to be passed by core.
 # passkeys = ["abcdefghijk"]
 
-## specify the log level of the monitor core application
-## default: info
-## options: off, error, warn, info, debug, trace
-# logging.level = "debug"
-
-## specify the logging format for stdout / stderr.
-## default: standard
-## options: standard, json, none
-# logging.stdio = "json"
-
-## specify a opentelemetry otlp endpoint to send traces to
-## optional, default unassigned
-# logging.otlp_endpoint = "http://localhost:4317"
-
-## Set the opentelemetry service name attached to the telemetry this periphery will send.
-## Default: "Monitor"
-# logging.opentelemetry_service_name = "Monitor-02"
+###########
+# SECRETS #
+###########
 
 ## provide periphery-based secrets
 # [secrets]
 # SECRET_1 = "value_1"
 # SECRET_2 = "value_2"
+
+#################
+# GIT PROVIDERS #
+#################
 
 ## configure periphery-based git providers
 # [[git_provider]]
@@ -57,6 +69,10 @@
 # 	{ username = "mbecker20", token = "access_token_for_account" },
 # ]
 
+######################
+# REGISTRY PROVIDERS #
+######################
+
 ## configure periphery-based docker registries
 # [[docker_registry]]
 # domain = "docker.io"
@@ -71,3 +87,25 @@
 # 	{ username = "mbecker20", token = "access_token_for_account" },
 # ]
 # organizations = ["Mogh"] # These become available in the UI
+
+###########
+# LOGGING #
+###########
+
+## Specify the log level of the monitor core application
+## Default: info
+## Options: off, error, warn, info, debug, trace
+# logging.level = "debug"
+
+## Specify the logging format for stdout / stderr.
+## Default: standard
+## Options: standard, json, none
+# logging.stdio = "json"
+
+## Specify a opentelemetry otlp endpoint to send traces to
+## Optional, default unassigned
+# logging.otlp_endpoint = "http://localhost:4317"
+
+## Set the opentelemetry service name attached to the telemetry this periphery will send.
+## Default: "Monitor"
+# logging.opentelemetry_service_name = "Periphery-02"

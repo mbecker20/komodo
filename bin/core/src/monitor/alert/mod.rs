@@ -1,6 +1,3 @@
-mod deployment;
-mod server;
-
 use std::collections::HashMap;
 
 use anyhow::Context;
@@ -12,21 +9,25 @@ use monitor_client::entities::{
 
 use crate::resource;
 
+mod deployment;
+mod server;
+mod stack;
+
 // called after cache update
 #[instrument(level = "debug")]
 pub async fn check_alerts(ts: i64) {
-  let servers = get_all_servers_map().await;
-
-  if let Err(e) = servers {
-    error!("{e:#?}");
-    return;
-  }
-
-  let (servers, server_names) = servers.unwrap();
+  let (servers, server_names) = match get_all_servers_map().await {
+    Ok(res) => res,
+    Err(e) => {
+      error!("{e:#?}");
+      return;
+    }
+  };
 
   tokio::join!(
     server::alert_servers(ts, servers),
-    deployment::alert_deployments(ts, server_names)
+    deployment::alert_deployments(ts, &server_names),
+    stack::alert_stacks(ts, &server_names)
   );
 }
 

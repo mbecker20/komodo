@@ -164,17 +164,24 @@ export const ResourceSelector = ({
 export const ResourceLink = ({
   type,
   id,
+  onClick,
 }: {
   type: UsableResource;
   id: string;
+  onClick?: () => void;
 }) => {
   const Components = ResourceComponents[type];
   return (
-    <Link to={`/${usableResourcePath(type)}/${id}`}>
-      <Button variant="link" className="flex gap-2 items-center p-0">
-        <Components.Icon id={id} />
-        <ResourceName type={type} id={id} />
-      </Button>
+    <Link
+      to={`/${usableResourcePath(type)}/${id}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      className="flex items-center gap-2 text-sm"
+    >
+      <Components.Icon id={id} />
+      <ResourceName type={type} id={id} />
     </Link>
   );
 };
@@ -266,12 +273,16 @@ export const NewResource = ({
       : type === "ResourceSync"
       ? "resource-sync"
       : type.toLowerCase();
-  const config =
+  const config: Types._PartialDeploymentConfig =
     type === "Deployment"
       ? {
           server_id,
-          image: build_id ?? { type: "Build", params: { build_id } },
+          image: build_id
+            ? { type: "Build", params: { build_id } }
+            : { type: "Image", params: { image: "" } },
         }
+      : type === "Stack"
+      ? { server_id }
       : type === "Repo"
       ? { server_id }
       : {};
@@ -319,8 +330,7 @@ export const DeleteResource = ({
   if (!resource) return null;
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Delete {type}</div>
+    <div className="flex items-center justify-end">
       <ActionWithDialog
         name={resource.name}
         title="Delete"
@@ -393,11 +403,41 @@ export const ServerSelector = ({
   disabled: boolean;
   align?: "start" | "center" | "end";
 }) => (
-  <ConfigItem label="Server">
+  <ConfigItem
+    label="Server"
+    description="Choose the target server to host the resource"
+    boldLabel
+  >
     <ResourceSelector
       type="Server"
       selected={selected}
       onSelect={(server_id) => set({ server_id })}
+      disabled={disabled}
+      align={align}
+    />
+  </ConfigItem>
+);
+
+export const BuilderSelector = ({
+  selected,
+  set,
+  disabled,
+  align,
+}: {
+  selected: string | undefined;
+  set: (input: Partial<Types.BuildConfig>) => void;
+  disabled: boolean;
+  align?: "start" | "center" | "end";
+}) => (
+  <ConfigItem
+    label="Builder"
+    description="Choose the target builder to build the resource"
+    boldLabel
+  >
+    <ResourceSelector
+      type="Builder"
+      selected={selected}
+      onSelect={(builder_id) => set({ builder_id })}
       disabled={disabled}
       align={align}
     />

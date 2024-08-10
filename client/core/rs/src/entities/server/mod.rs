@@ -44,7 +44,10 @@ pub type _PartialServerConfig = PartialServerConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct ServerConfig {
   /// The http address of the periphery client.
-  /// Example: http://localhost:8120
+  /// Default: http://localhost:8120
+  #[serde(default = "default_address")]
+  #[builder(default = "default_address()")]
+  #[partial_default(default_address())]
   pub address: String,
 
   /// An optional region label
@@ -140,6 +143,10 @@ impl ServerConfig {
   pub fn builder() -> ServerConfigBuilder {
     ServerConfigBuilder::default()
   }
+}
+
+fn default_address() -> String {
+  String::from("http://localhost:8120")
 }
 
 fn default_enabled() -> bool {

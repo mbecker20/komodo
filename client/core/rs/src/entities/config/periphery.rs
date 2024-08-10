@@ -54,7 +54,7 @@ pub struct CliArgs {
   #[arg(long)]
   pub config_keyword: Option<Vec<String>>,
 
-  /// Merges nested configs, eg. secrets, docker_accounts, github_accounts.
+  /// Merges nested configs, eg. secrets, providers.
   /// Will override the equivalent env configuration.
   /// Default: false
   #[arg(long)]
@@ -82,10 +82,10 @@ pub struct CliArgs {
 pub struct Env {
   /// Specify the config paths (files or folders) used to build up the
   /// final [PeripheryConfig].
-  /// Default: `~/.config/monitor/periphery.config.toml`.
+  /// If not provided, will use Default config.
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
-  #[serde(default = "default_config_paths")]
+  #[serde(default)]
   pub monitor_config_paths: Vec<String>,
   /// If specifying folders, use this to narrow down which
   /// files will be matched to parse into the final [PeripheryConfig].
@@ -96,7 +96,7 @@ pub struct Env {
   #[serde(default)]
   pub monitor_config_keywords: Vec<String>,
 
-  /// Will merge nested config object (eg. secrets, github_accounts) across multiple
+  /// Will merge nested config object (eg. secrets, providers) across multiple
   /// config files. Default: `false`
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
@@ -114,8 +114,12 @@ pub struct Env {
   pub monitor_port: Option<u16>,
   /// Override `repo_dir`
   pub monitor_repo_dir: Option<PathBuf>,
+  /// Override `stack_dir`
+  pub monitor_stack_dir: Option<PathBuf>,
   /// Override `stats_polling_rate`
   pub monitor_stats_polling_rate: Option<Timelength>,
+  /// Override `legacy_compose_cli`
+  pub monitor_legacy_compose_cli: Option<bool>,
 
   // LOGGING
   /// Override `logging.level`
@@ -133,10 +137,6 @@ pub struct Env {
   pub monitor_passkeys: Option<Vec<String>>,
 }
 
-fn default_config_paths() -> Vec<String> {
-  vec!["~/.config/monitor/periphery.config.toml".to_string()]
-}
-
 /// # Periphery Configuration File
 ///
 /// The periphery agent initializes it's configuration by reading the environment,
@@ -148,13 +148,21 @@ fn default_config_paths() -> Vec<String> {
 /// ## optional. 8120 is default
 /// port = 8120
 ///
-/// ## optional. /repos is default.
-/// repo_dir = "/repos"
+/// ## optional. `/etc/monitor/repos` is default.
+/// repo_dir = "/etc/monitor/repos"
+///
+/// ## optional. `/etc/monitor/stacks` is default.
+/// stack_dir = "/etc/monitor/stacks"
 ///
 /// ## optional. 5-sec is default.
 /// ## can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min.
 /// ## controls granularity of system stats recorded
 /// stats_polling_rate = "5-sec"
+///
+/// ## Whether stack actions should use `docker-compose ...`
+/// ## instead of `docker compose ...`.
+/// ## default: false
+/// legacy_compose_cli = false
 ///
 /// ## optional. default is empty, which will not block any request by ip.
 /// allowed_ips = ["127.0.0.1"]
@@ -191,7 +199,7 @@ fn default_config_paths() -> Vec<String> {
 /// # accounts = [
 /// #     { username = "mbecker20", token = "access_token_for_account" },
 /// # ]
-/// 
+///
 /// ## configure periphery-based docker registries
 /// # [[docker_registry]]
 /// # domain = "docker.io"
@@ -208,14 +216,25 @@ pub struct PeripheryConfig {
   pub port: u16,
 
   /// The system directory where monitor managed repos will be cloned.
-  /// Default: `/repos`
+  /// Default: `/etc/monitor/repos`
   #[serde(default = "default_repo_dir")]
   pub repo_dir: PathBuf,
 
+  /// The system directory where stacks will managed.
+  /// Default: `/etc/monitor/stacks`
+  #[serde(default = "default_stack_dir")]
+  pub stack_dir: PathBuf,
+
   /// The rate at which the system stats will be polled to update the cache.
   /// Default: `5-sec`
-  #[serde(default = "default_stats_refresh_interval")]
+  #[serde(default = "default_stats_polling_rate")]
   pub stats_polling_rate: Timelength,
+
+  /// Whether stack actions should use `docker-compose ...`
+  /// instead of `docker compose ...`.
+  /// Default: false
+  #[serde(default)]
+  pub legacy_compose_cli: bool,
 
   /// Logging configuration
   #[serde(default)]
@@ -259,6 +278,28 @@ fn default_repo_dir() -> PathBuf {
   "/etc/monitor/repos".parse().unwrap()
 }
 
-fn default_stats_refresh_interval() -> Timelength {
+fn default_stack_dir() -> PathBuf {
+  "/etc/monitor/stacks".parse().unwrap()
+}
+
+fn default_stats_polling_rate() -> Timelength {
   Timelength::FiveSeconds
+}
+
+impl Default for PeripheryConfig {
+  fn default() -> Self {
+      Self {
+        port: default_periphery_port(),
+        repo_dir: default_repo_dir(),
+        stack_dir: default_stack_dir(),
+        stats_polling_rate: default_stats_polling_rate(),
+        legacy_compose_cli: Default::default(),
+        logging: Default::default(),
+        allowed_ips: Default::default(),
+        passkeys: Default::default(),
+        secrets: Default::default(),
+        git_providers: Default::default(),
+        docker_registries: Default::default(),
+    }
+  }
 }

@@ -7,6 +7,7 @@ use monitor_client::entities::{
   repo::Repo,
   server::Server,
   server_template::ServerTemplate,
+  stack::Stack,
   sync::ResourceSync,
   update::{ResourceTarget, Update, UpdateListItem},
   user::User,
@@ -61,8 +62,8 @@ pub async fn add_update(
 #[instrument(level = "debug")]
 pub async fn update_update(update: Update) -> anyhow::Result<()> {
   update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
-      .await
-      .context("failed to update the update on db. the update build process was deleted")?;
+    .await
+    .context("failed to update the update on db. the update build process was deleted")?;
   let update = update_list_item(update).await?;
   let _ = send_update(update).await;
   Ok(())
@@ -110,6 +111,12 @@ pub async fn init_execution_update(
 ) -> anyhow::Result<Update> {
   let (operation, target) = match &request {
     // Server
+    ExecuteRequest::StopAllContainers(data) => (
+      Operation::StopAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::PruneContainers(data) => (
       Operation::PruneImages,
       ResourceTarget::Server(
@@ -128,12 +135,6 @@ pub async fn init_execution_update(
         resource::get::<Server>(&data.server).await?.id,
       ),
     ),
-    ExecuteRequest::StopAllContainers(data) => (
-      Operation::StopAllContainers,
-      ResourceTarget::Server(
-        resource::get::<Server>(&data.server).await?.id,
-      ),
-    ),
 
     // Deployment
     ExecuteRequest::Deploy(data) => (
@@ -144,6 +145,24 @@ pub async fn init_execution_update(
     ),
     ExecuteRequest::StartContainer(data) => (
       Operation::StartContainer,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
+    ExecuteRequest::RestartContainer(data) => (
+      Operation::RestartContainer,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
+    ExecuteRequest::PauseContainer(data) => (
+      Operation::PauseContainer,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
+    ExecuteRequest::UnpauseContainer(data) => (
+      Operation::UnpauseContainer,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
@@ -188,6 +207,18 @@ pub async fn init_execution_update(
         resource::get::<Repo>(&data.repo).await?.id,
       ),
     ),
+    ExecuteRequest::BuildRepo(data) => (
+      Operation::BuildRepo,
+      ResourceTarget::Repo(
+        resource::get::<Repo>(&data.repo).await?.id,
+      ),
+    ),
+    ExecuteRequest::CancelRepoBuild(data) => (
+      Operation::CancelRepoBuild,
+      ResourceTarget::Repo(
+        resource::get::<Repo>(&data.repo).await?.id,
+      ),
+    ),
 
     // Procedure
     ExecuteRequest::RunProcedure(data) => (
@@ -212,6 +243,70 @@ pub async fn init_execution_update(
       Operation::RunSync,
       ResourceTarget::ResourceSync(
         resource::get::<ResourceSync>(&data.sync).await?.id,
+      ),
+    ),
+
+    // Stack
+    ExecuteRequest::DeployStack(data) => (
+      Operation::DeployStack,
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::StartStack(data) => (
+      if data.service.is_some() {
+        Operation::StartStackService
+      } else {
+        Operation::StartStack
+      },
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::RestartStack(data) => (
+      if data.service.is_some() {
+        Operation::RestartStackService
+      } else {
+        Operation::RestartStack
+      },
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::PauseStack(data) => (
+      if data.service.is_some() {
+        Operation::PauseStackService
+      } else {
+        Operation::PauseStack
+      },
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::UnpauseStack(data) => (
+      if data.service.is_some() {
+        Operation::UnpauseStackService
+      } else {
+        Operation::UnpauseStack
+      },
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::StopStack(data) => (
+      if data.service.is_some() {
+        Operation::StopStackService
+      } else {
+        Operation::StopStack
+      },
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::DestroyStack(data) => (
+      Operation::DestroyStack,
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
   };

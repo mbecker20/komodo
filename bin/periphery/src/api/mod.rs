@@ -1,13 +1,12 @@
 use anyhow::Context;
 use command::run_monitor_command;
-use monitor_client::{
-  api::read::ListGitProviders,
-  entities::{update::Log, SystemCommand},
-};
+use futures::TryFutureExt;
+use monitor_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
-  build::*, container::*, git::*, network::*, stats::*, GetHealth,
-  GetVersion, GetVersionResponse, ListDockerRegistries, ListSecrets,
-  PruneSystem, RunCommand,
+  build::*, compose::*, container::*, git::*, network::*, stats::*,
+  GetDockerLists, GetDockerListsResponse, GetHealth, GetVersion,
+  GetVersionResponse, ListDockerRegistries, ListGitProviders,
+  ListSecrets, PruneSystem, RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -17,11 +16,14 @@ use crate::{
     docker_registries_response, git_providers_response,
     secrets_response,
   },
+  docker::docker_client,
   State,
 };
 
 mod build;
+mod compose;
 mod container;
+mod deploy;
 mod git;
 mod network;
 mod stats;
@@ -52,6 +54,9 @@ pub enum PeripheryRequest {
   GetSystemProcesses(GetSystemProcesses),
   GetLatestCommit(GetLatestCommit),
 
+  // All in one
+  GetDockerLists(GetDockerLists),
+
   // Docker
   GetContainerList(GetContainerList),
   GetContainerLog(GetContainerLog),
@@ -62,17 +67,36 @@ pub enum PeripheryRequest {
 
   // Actions
   RunCommand(RunCommand),
+
+  // Repo
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
   DeleteRepo(DeleteRepo),
+
+  // Build
   Build(Build),
   PruneImages(PruneImages),
+
+  // Container
   Deploy(Deploy),
   StartContainer(StartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
+  StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
   RenameContainer(RenameContainer),
   PruneContainers(PruneContainers),
+
+  // Compose
+  ListComposeProjects(ListComposeProjects),
+  GetComposeServiceLog(GetComposeServiceLog),
+  GetComposeServiceLogSearch(GetComposeServiceLogSearch),
+  ComposeUp(ComposeUp),
+  ComposeExecution(ComposeExecution),
+
+  // Networks
   CreateNetwork(CreateNetwork),
   DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),
@@ -149,6 +173,29 @@ impl ResolveToString<ListSecrets> for State {
     _: (),
   ) -> anyhow::Result<String> {
     Ok(secrets_response().clone())
+  }
+}
+
+impl Resolve<GetDockerLists> for State {
+  #[instrument(name = "GetDockerLists", skip(self))]
+  async fn resolve(
+    &self,
+    GetDockerLists {}: GetDockerLists,
+    _: (),
+  ) -> anyhow::Result<GetDockerListsResponse> {
+    let docker = docker_client();
+    let (containers, networks, images, projects) = tokio::join!(
+      docker.list_containers().map_err(Into::into),
+      docker.list_networks().map_err(Into::into),
+      docker.list_images().map_err(Into::into),
+      self.resolve(ListComposeProjects {}, ()).map_err(Into::into)
+    );
+    Ok(GetDockerListsResponse {
+      containers,
+      networks,
+      images,
+      projects,
+    })
   }
 }
 

@@ -38,10 +38,12 @@ export const Tags = () => {
         columns={[
           {
             header: "Name",
+            size: 200,
             accessorKey: "name",
           },
           {
             header: "Owner",
+            size: 200,
             cell: ({ row }) =>
               row.original.owner ? (
                 <UpdateUser user_id={row.original.owner} />
@@ -51,6 +53,7 @@ export const Tags = () => {
           },
           {
             header: "Delete",
+            size: 200,
             cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
           },
         ]}

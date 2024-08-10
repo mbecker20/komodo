@@ -1,12 +1,10 @@
 import { RESOURCE_TARGETS, cn, usableResourcePath } from "@lib/utils";
 import { Button } from "@ui/button";
-import { Card, CardContent } from "@ui/card";
 import {
   AlertTriangle,
   Bell,
   Box,
   Boxes,
-  FolderTree,
   Settings,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -19,8 +17,9 @@ import { homeViewAtom } from "@main";
 export const Sidebar = () => {
   const [view, setView] = useAtom(homeViewAtom);
   return (
-    <Card className="h-fit m-4 hidden lg:flex">
-      <CardContent className="h-fit grid gap-[4px] px-6 py-2">
+    <div className="fixed top-24 w-64 border-r hidden md:block pr-8 pb-4 h-[85vh] overflow-y-auto">
+      <div className="flex flex-col gap-1">
+        <p className="pl-4 pb-1 text-xs text-muted-foreground">Overviews</p>
         <SidebarLink
           label="Dashboard"
           to="/"
@@ -35,16 +34,16 @@ export const Sidebar = () => {
           onClick={() => setView("Resources")}
           highlighted={view === "Resources"}
         />
-        <SidebarLink
+        {/* <SidebarLink
           label="Tree"
           to="/"
           icon={<FolderTree className="w-4 h-4" />}
           onClick={() => setView("Tree")}
           highlighted={view === "Tree"}
-        />
+        /> */}
+        <Separator className="my-3" />
 
-        <Separator />
-
+        <p className="pl-4 pb-1 text-xs text-muted-foreground">Resources</p>
         {RESOURCE_TARGETS.map((type) => {
           const RTIcon = ResourceComponents[type].Icon;
           const name =
@@ -62,30 +61,29 @@ export const Sidebar = () => {
             />
           );
         })}
+        <Separator className="my-3" />
 
-        <Separator />
-
+        <p className="pl-4 pb-1 text-xs text-muted-foreground">Notifications</p>
         <SidebarLink
           label="Alerts"
           to="/alerts"
           icon={<AlertTriangle className="w-4 h-4" />}
         />
-
         <SidebarLink
           label="Updates"
           to="/updates"
           icon={<Bell className="w-4 h-4" />}
         />
-
-        <Separator />
+        <Separator className="my-3" />
 
         <SidebarLink
           label="Settings"
           to="/settings"
           icon={<Settings className="w-4 h-4" />}
         />
-      </CardContent>
-    </Card>
+        {/* <Separator className="mt-3" /> */}
+      </div>
+    </div>
   );
 };
 

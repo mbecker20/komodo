@@ -25,6 +25,7 @@ use monitor_client::{
     resource::{Resource, ResourceQuery},
     server::Server,
     server_template::ServerTemplate,
+    stack::Stack,
     sync::ResourceSync,
     toml::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
@@ -88,6 +89,15 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .await?
       .into_iter()
       .map(|resource| ResourceTarget::Deployment(resource.id)),
+    );
+    targets.extend(
+      resource::list_for_user::<Stack>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Stack(resource.id)),
     );
     targets.extend(
       resource::list_for_user::<Build>(
@@ -301,6 +311,24 @@ impl Resolve<ExportResourcesToToml, User> for State {
           );
           res.repos.push(convert_resource::<Repo>(repo, &names.tags))
         }
+        ResourceTarget::Stack(id) => {
+          let mut stack = resource::get_check_permissions::<Stack>(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          // replace stack server with name
+          stack.config.server_id.clone_from(
+            names
+              .servers
+              .get(&stack.config.server_id)
+              .unwrap_or(&String::new()),
+          );
+          res
+            .stacks
+            .push(convert_resource::<Stack>(stack, &names.tags))
+        }
         ResourceTarget::Procedure(id) => {
           add_procedure(&id, &mut res, &user, &names)
             .await
@@ -355,6 +383,9 @@ async fn add_procedure(
         Execution::RunBuild(exec) => exec.build.clone_from(
           names.builds.get(&exec.build).unwrap_or(&String::new()),
         ),
+        Execution::CancelBuild(exec) => exec.build.clone_from(
+          names.builds.get(&exec.build).unwrap_or(&String::new()),
+        ),
         Execution::Deploy(exec) => exec.deployment.clone_from(
           names
             .deployments
@@ -362,6 +393,30 @@ async fn add_procedure(
             .unwrap_or(&String::new()),
         ),
         Execution::StartContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::RestartContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::PauseContainer(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::UnpauseContainer(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -389,6 +444,12 @@ async fn add_procedure(
         Execution::PullRepo(exec) => exec.repo.clone_from(
           names.repos.get(&exec.repo).unwrap_or(&String::new()),
         ),
+        Execution::BuildRepo(exec) => exec.repo.clone_from(
+          names.repos.get(&exec.repo).unwrap_or(&String::new()),
+        ),
+        Execution::CancelRepoBuild(exec) => exec.repo.clone_from(
+          names.repos.get(&exec.repo).unwrap_or(&String::new()),
+        ),
         Execution::StopAllContainers(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
@@ -403,6 +464,27 @@ async fn add_procedure(
         ),
         Execution::RunSync(exec) => exec.sync.clone_from(
           names.syncs.get(&exec.sync).unwrap_or(&String::new()),
+        ),
+        Execution::DeployStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
+        Execution::StartStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
+        Execution::RestartStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
+        Execution::PauseStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
+        Execution::UnpauseStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
+        Execution::StopStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
+        ),
+        Execution::DestroyStack(exec) => exec.stack.clone_from(
+          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
         ),
         Execution::Sleep(_) | Execution::None(_) => {}
       }
@@ -424,6 +506,7 @@ struct ResourceNames {
   deployments: HashMap<String, String>,
   procedures: HashMap<String, String>,
   syncs: HashMap<String, String>,
+  stacks: HashMap<String, String>,
   alerters: HashMap<String, String>,
   templates: HashMap<String, String>,
 }
@@ -477,6 +560,12 @@ impl ResourceNames {
       syncs: find_collect(&db.resource_syncs, None, None)
         .await
         .context("failed to get all resource syncs")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      stacks: find_collect(&db.stacks, None, None)
+        .await
+        .context("failed to get all stacks")?
         .into_iter()
         .map(|t| (t.id, t.name))
         .collect::<HashMap<_, _>>(),
@@ -558,6 +647,9 @@ async fn add_user_groups(
           ResourceTarget::ResourceSync(id) => {
             *id = names.syncs.get(id).cloned().unwrap_or_default()
           }
+          ResourceTarget::Stack(id) => {
+            *id = names.stacks.get(id).cloned().unwrap_or_default()
+          }
           ResourceTarget::System(_) => {}
         }
         PermissionToml {
@@ -597,6 +689,7 @@ fn convert_resource<R: MonitorResource>(
     description: resource.description,
     deploy: false,
     after: Default::default(),
+    latest_hash: false,
     config,
   }
 }
@@ -690,6 +783,30 @@ fn serialize_resources_toml(
     res.push_str(
       &toml_pretty::to_string(&parsed, options)
         .context("failed to serialize deployments to toml")?,
+    );
+  }
+
+  for stack in &resources.stacks {
+    if !res.is_empty() {
+      res.push_str("\n\n##\n\n");
+    }
+    res.push_str("[[stack]]\n");
+    let mut parsed: OrderedHashMap<String, Value> =
+      serde_json::from_str(&serde_json::to_string(&stack)?)?;
+    let config = parsed
+      .get_mut("config")
+      .context("stack has no config?")?
+      .as_object_mut()
+      .context("config is not object?")?;
+    if let Some(environment) = &stack.config.environment {
+      config.insert(
+        "environment".to_string(),
+        Value::String(environment_vars_to_string(environment)),
+      );
+    }
+    res.push_str(
+      &toml_pretty::to_string(&parsed, options)
+        .context("failed to serialize stacks to toml")?,
     );
   }
 

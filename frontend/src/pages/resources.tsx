@@ -38,9 +38,14 @@ export const Resources = () => {
     <Page
       wrapSize="lg"
       title={`${name}s`}
+      subtitle={
+        <div className="text-muted-foreground">
+          <Components.Description />
+        </div>
+      }
       icon={<Components.BigIcon />}
       actions={
-        <div className="flex items-center gap-4">
+        <div className="flex items-center h-fit gap-4">
           <TagsFilter />
           <Components.New />
         </div>

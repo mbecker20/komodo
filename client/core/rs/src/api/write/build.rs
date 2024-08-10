@@ -83,6 +83,20 @@ pub struct UpdateBuild {
 
 //
 
+/// Trigger a refresh of the cached latest hash and message.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(NoData)]
+pub struct RefreshBuildCache {
+  /// Id or name
+  pub build: String,
+}
+
+//
+
 /// Create a webhook on the github repo attached to the build
 /// passed in request. Response: [CreateBuildWebhookResponse]
 #[typeshare]

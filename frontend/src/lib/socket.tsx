@@ -57,15 +57,15 @@ const on_message = (
     `${update.operation}${update.success ? "" : " - FAILED"}`
   );
 
-  toast({
-    title,
-  });
+  toast({ title: title as any });
 
   // Invalidate these every time
   invalidate(["ListUpdates"]);
   invalidate(["GetUpdate", { id: update.id }]);
   if (update.target.type === "Deployment") {
     invalidate(["GetDeploymentActionState", { deployment: update.target.id }]);
+  } else if (update.target.type === "Stack") {
+    invalidate(["GetStackActionState", { stack: update.target.id }]);
   } else if (update.target.type === "Server") {
     invalidate(["GetServerActionState", { server: update.target.id }]);
   } else if (update.target.type === "Build") {
@@ -80,19 +80,42 @@ const on_message = (
 
   // Do invalidations of these only if update is completed
   if (update.status === Types.UpdateStatus.Complete) {
+    invalidate(["ListAlerts"]);
+
     if (update.target.type === "Deployment") {
       invalidate(
         ["ListDeployments"],
         ["GetDeploymentsSummary"],
+        ["ListDockerContainers"],
+        ["ListDockerNetworks"],
+        ["ListDockerImages"],
         ["GetDeployment", { deployment: update.target.id }],
         ["GetLog", { deployment: update.target.id }],
         ["GetDeploymentContainer", { deployment: update.target.id }]
       );
     }
 
+    if (update.target.type === "Stack") {
+      invalidate(
+        ["ListStacks"],
+        ["ListFullStacks"],
+        ["GetStacksSummary"],
+        ["GetStackServiceLog"],
+        ["SearchStackServiceLog"],
+        ["ListCommonStackExtraArgs"],
+        ["ListComposeProjects"],
+        ["ListDockerContainers"],
+        ["ListDockerNetworks"],
+        ["ListDockerImages"],
+        ["GetStack", { stack: update.target.id }],
+        ["ListStackServices", { stack: update.target.id }]
+      );
+    }
+
     if (update.target.type === "Server") {
       invalidate(
         ["ListServers"],
+        ["ListFullServers"],
         ["GetServersSummary"],
         ["GetServer", { server: update.target.id }],
         ["GetServerState", { server: update.target.id }],
@@ -103,6 +126,7 @@ const on_message = (
     if (update.target.type === "Build") {
       invalidate(
         ["ListBuilds"],
+        ["ListFullBuilds"],
         ["GetBuildsSummary"],
         ["GetBuildMonthlyStats"],
         ["GetBuild", { build: update.target.id }],
@@ -113,6 +137,7 @@ const on_message = (
     if (update.target.type === "Repo") {
       invalidate(
         ["ListRepos"],
+        ["ListFullRepos"],
         ["GetReposSummary"],
         ["GetRepo", { repo: update.target.id }]
       );
@@ -121,6 +146,7 @@ const on_message = (
     if (update.target.type === "Procedure") {
       invalidate(
         ["ListProcedures"],
+        ["ListFullProcedures"],
         ["GetProceduresSummary"],
         ["GetProcedure", { procedure: update.target.id }]
       );
@@ -129,6 +155,7 @@ const on_message = (
     if (update.target.type === "Builder") {
       invalidate(
         ["ListBuilders"],
+        ["ListFullBuilders"],
         ["GetBuildersSummary"],
         ["GetBuilder", { builder: update.target.id }]
       );
@@ -137,6 +164,7 @@ const on_message = (
     if (update.target.type === "Alerter") {
       invalidate(
         ["ListAlerters"],
+        ["ListFullAlerters"],
         ["GetAlertersSummary"],
         ["GetAlerter", { alerter: update.target.id }]
       );
@@ -145,6 +173,7 @@ const on_message = (
     if (update.target.type === "ServerTemplate") {
       invalidate(
         ["ListServerTemplates"],
+        ["ListFullServerTemplates"],
         ["GetServerTemplatesSummary"],
         ["GetServerTemplate", { server_template: update.target.id }]
       );
@@ -153,6 +182,7 @@ const on_message = (
     if (update.target.type === "ResourceSync") {
       invalidate(
         ["ListResourceSyncs"],
+        ["ListFullResourceSyncs"],
         ["GetResourceSyncsSummary"],
         ["GetResourceSync", { sync: update.target.id }]
       );

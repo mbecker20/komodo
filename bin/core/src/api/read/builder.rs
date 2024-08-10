@@ -5,7 +5,6 @@ use monitor_client::{
   entities::{
     builder::{Builder, BuilderListItem},
     permission::PermissionLevel,
-    update::ResourceTargetVariant,
     user::User,
   },
 };
@@ -13,7 +12,6 @@ use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::get_resource_ids_for_user,
   resource,
   state::{db_client, State},
 };
@@ -59,17 +57,15 @@ impl Resolve<GetBuildersSummary, User> for State {
     GetBuildersSummary {}: GetBuildersSummary,
     user: User,
   ) -> anyhow::Result<GetBuildersSummaryResponse> {
-    let query = match get_resource_ids_for_user(
-      &user,
-      ResourceTargetVariant::Builder,
-    )
-    .await?
-    {
-      Some(ids) => doc! {
-        "_id": { "$in": ids }
-      },
-      None => Document::new(),
-    };
+    let query =
+      match resource::get_resource_ids_for_user::<Builder>(&user)
+        .await?
+      {
+        Some(ids) => doc! {
+          "_id": { "$in": ids }
+        },
+        None => Document::new(),
+      };
     let total = db_client()
       .await
       .builders

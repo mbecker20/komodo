@@ -153,7 +153,9 @@ export const ServerStats = ({ id }: { id: string }) => {
                   Types.Timelength.SixHours,
                   Types.Timelength.OneDay,
                 ].map((timelength) => (
-                  <SelectItem value={timelength}>{timelength}</SelectItem>
+                  <SelectItem key={timelength} value={timelength}>
+                    {timelength}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -240,7 +242,7 @@ const Processes = ({ id }: { id: string }) => {
   const [search, setSearch] = useState("");
   const searchSplit = search.split(" ");
 
-  const { data: processes } = useRead("GetSystemProcesses", { server: id });
+  const { data: processes } = useRead("ListSystemProcesses", { server: id });
   if (!processes || processes.length === 0) return;
 
   return (

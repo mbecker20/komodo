@@ -71,7 +71,7 @@ impl Resolve<UpdateVariableValue, User> for State {
     user: User,
   ) -> anyhow::Result<UpdateVariableValueResponse> {
     if !user.admin {
-      return Err(anyhow!("only admins can create variables"));
+      return Err(anyhow!("only admins can update variables"));
     }
 
     let variable = get_variable(&name).await?;
@@ -118,7 +118,7 @@ impl Resolve<UpdateVariableDescription, User> for State {
     user: User,
   ) -> anyhow::Result<UpdateVariableDescriptionResponse> {
     if !user.admin {
-      return Err(anyhow!("only admins can create variables"));
+      return Err(anyhow!("only admins can update variables"));
     }
     db_client()
       .await
@@ -140,7 +140,7 @@ impl Resolve<DeleteVariable, User> for State {
     user: User,
   ) -> anyhow::Result<DeleteVariableResponse> {
     if !user.admin {
-      return Err(anyhow!("only admins can create variables"));
+      return Err(anyhow!("only admins can delete variables"));
     }
     let variable = get_variable(&name).await?;
     db_client()

@@ -9,8 +9,8 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::sync::Mutex;
 
 use crate::{
-  auth::{random_string, STATE_PREFIX_LENGTH},
-  config::core_config,
+  auth::STATE_PREFIX_LENGTH, config::core_config,
+  helpers::random_string,
 };
 
 pub fn github_oauth_client() -> &'static Option<GithubOauthClient> {

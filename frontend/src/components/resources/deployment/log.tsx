@@ -2,22 +2,14 @@ import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
-import { RefreshCw, ChevronDown, X, AlertOctagon } from "lucide-react";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { RefreshCw, X, AlertOctagon } from "lucide-react";
+import { ReactNode, useState } from "react";
 import { useDeployment } from ".";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ui/select";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
-import { logToHtml } from "@lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
 import { Switch } from "@ui/switch";
+import { Log, TailLengthSelector } from "@components/log";
 
 export const DeploymentLogs = ({
   id,
@@ -173,64 +165,3 @@ const SearchLogs = (id: string, terms: string[], invert: boolean) => {
     stderr: !!log?.stderr,
   };
 };
-
-const Log = ({
-  log,
-  stream,
-}: {
-  log: Types.Log | undefined;
-  stream: "stdout" | "stderr";
-}) => {
-  const _log = log?.[stream as keyof typeof log] as string | undefined;
-  const ref = useRef<HTMLDivElement>(null);
-  const scroll = () =>
-    ref.current?.scroll({
-      top: ref.current.scrollHeight,
-      behavior: "smooth",
-    });
-  useEffect(scroll, [_log]);
-  return (
-    <>
-      <div ref={ref} className="h-[75vh] overflow-y-auto">
-        <pre
-          dangerouslySetInnerHTML={{
-            __html: _log ? logToHtml(_log) : `no ${stream} logs`,
-          }}
-          className="-scroll-mt-24 pb-[20vh]"
-        />
-      </div>
-      <Button
-        variant="secondary"
-        className="absolute top-4 right-4"
-        onClick={scroll}
-      >
-        <ChevronDown className="h-4 w-4" />
-      </Button>
-    </>
-  );
-};
-
-const TailLengthSelector = ({
-  selected,
-  onSelect,
-  disabled,
-}: {
-  selected: string;
-  onSelect: (value: string) => void;
-  disabled?: boolean;
-}) => (
-  <Select value={selected} onValueChange={onSelect} disabled={disabled}>
-    <SelectTrigger className="w-[120px]">
-      <SelectValue />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectGroup>
-        {["100", "500", "1000", "5000"].map((length) => (
-          <SelectItem key={length} value={length}>
-            {length} lines
-          </SelectItem>
-        ))}
-      </SelectGroup>
-    </SelectContent>
-  </Select>
-);

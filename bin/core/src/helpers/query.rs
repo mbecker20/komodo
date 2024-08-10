@@ -1,15 +1,20 @@
-use std::{
-  collections::{HashMap, HashSet},
-  str::FromStr,
-};
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  deployment::{Deployment, DeploymentState},
+  alerter::Alerter,
+  build::Build,
+  builder::Builder,
+  deployment::{ContainerSummary, Deployment, DeploymentState},
   permission::PermissionLevel,
+  procedure::Procedure,
+  repo::Repo,
   server::{Server, ServerState},
+  server_template::ServerTemplate,
+  stack::{Stack, StackServiceNames, StackState},
+  sync::ResourceSync,
   tag::Tag,
-  update::{ResourceTargetVariant, Update},
+  update::{ResourceTarget, ResourceTargetVariant, Update},
   user::{admin_service_user, User},
   user_group::UserGroup,
   variable::Variable,
@@ -23,7 +28,15 @@ use mungos::{
   },
 };
 
-use crate::{config::core_config, resource, state::db_client};
+use crate::{
+  resource::{self, get_user_permission_on_resource},
+  state::db_client,
+};
+
+use super::stack::{
+  compose_container_match_regex,
+  services::extract_services_from_stack,
+};
 
 #[instrument(level = "debug")]
 // user: Id or username
@@ -82,6 +95,85 @@ pub async fn get_deployment_state(
   };
 
   Ok(state)
+}
+
+/// Can pass all the containers from the same server
+pub fn get_stack_state_from_containers(
+  services: &[StackServiceNames],
+  containers: &[ContainerSummary],
+) -> StackState {
+  // first filter the containers to only ones which match the service
+  let containers = containers.iter().filter(|container| {
+    services.iter().any(|StackServiceNames { service_name, container_name }| {
+      match compose_container_match_regex(container_name)
+        .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+      {
+        Ok(regex) => regex,
+        Err(e) => {
+          warn!("{e:#}");
+          return false
+        }
+      }.is_match(&container.name)
+    })
+  }).collect::<Vec<_>>();
+  if containers.is_empty() {
+    return StackState::Down;
+  }
+  if services.len() != containers.len() {
+    return StackState::Unhealthy;
+  }
+  let running = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Running);
+  if running {
+    return StackState::Running;
+  }
+  let paused = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Paused);
+  if paused {
+    return StackState::Paused;
+  }
+  let stopped = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Exited);
+  if stopped {
+    return StackState::Stopped;
+  }
+  let restarting = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Restarting);
+  if restarting {
+    return StackState::Restarting;
+  }
+  let dead = containers
+    .iter()
+    .all(|container| container.state == DeploymentState::Dead);
+  if dead {
+    return StackState::Dead;
+  }
+  StackState::Unhealthy
+}
+
+#[instrument(level = "debug")]
+pub async fn get_stack_state(
+  stack: &Stack,
+) -> anyhow::Result<StackState> {
+  if stack.config.server_id.is_empty() {
+    return Ok(StackState::Down);
+  }
+  let (server, status) =
+    get_server_with_status(&stack.config.server_id).await?;
+  if status != ServerState::Ok {
+    return Ok(StackState::Unknown);
+  }
+  let containers = super::periphery_client(&server)?
+    .request(periphery_client::api::container::GetContainerList {})
+    .await?;
+
+  let services = extract_services_from_stack(stack, false).await?;
+
+  Ok(get_stack_state_from_containers(&services, &containers))
 }
 
 #[instrument(level = "debug")]
@@ -166,121 +258,44 @@ pub fn user_target_query(
   Ok(user_target_query)
 }
 
-#[instrument(level = "debug")]
-pub async fn get_user_permission_on_resource(
+pub async fn get_user_permission_on_target(
   user: &User,
-  resource_variant: ResourceTargetVariant,
-  resource_id: &str,
+  target: &ResourceTarget,
 ) -> anyhow::Result<PermissionLevel> {
-  if user.admin {
-    return Ok(PermissionLevel::Write);
-  }
-
-  // Start with base of Read or None
-  let mut base = if core_config().transparent_mode {
-    PermissionLevel::Read
-  } else {
-    PermissionLevel::None
-  };
-
-  // Overlay users base on resource variant
-  if let Some(level) = user.all.get(&resource_variant).cloned() {
-    if level > base {
-      base = level;
+  match target {
+    ResourceTarget::System(_) => Ok(PermissionLevel::None),
+    ResourceTarget::Build(id) => {
+      get_user_permission_on_resource::<Build>(user, id).await
+    }
+    ResourceTarget::Builder(id) => {
+      get_user_permission_on_resource::<Builder>(user, id).await
+    }
+    ResourceTarget::Deployment(id) => {
+      get_user_permission_on_resource::<Deployment>(user, id).await
+    }
+    ResourceTarget::Server(id) => {
+      get_user_permission_on_resource::<Server>(user, id).await
+    }
+    ResourceTarget::Repo(id) => {
+      get_user_permission_on_resource::<Repo>(user, id).await
+    }
+    ResourceTarget::Alerter(id) => {
+      get_user_permission_on_resource::<Alerter>(user, id).await
+    }
+    ResourceTarget::Procedure(id) => {
+      get_user_permission_on_resource::<Procedure>(user, id).await
+    }
+    ResourceTarget::ServerTemplate(id) => {
+      get_user_permission_on_resource::<ServerTemplate>(user, id)
+        .await
+    }
+    ResourceTarget::ResourceSync(id) => {
+      get_user_permission_on_resource::<ResourceSync>(user, id).await
+    }
+    ResourceTarget::Stack(id) => {
+      get_user_permission_on_resource::<Stack>(user, id).await
     }
   }
-  if base == PermissionLevel::Write {
-    // No reason to keep going if already Write at this point.
-    return Ok(PermissionLevel::Write);
-  }
-
-  // Overlay any user groups base on resource variant
-  let groups = get_user_user_groups(&user.id).await?;
-  for group in &groups {
-    if let Some(level) = group.all.get(&resource_variant).cloned() {
-      if level > base {
-        base = level;
-      }
-    }
-  }
-  if base == PermissionLevel::Write {
-    // No reason to keep going if already Write at this point.
-    return Ok(PermissionLevel::Write);
-  }
-
-  // Overlay any specific permissions
-  let permission = find_collect(
-    &db_client().await.permissions,
-    doc! {
-      "$or": user_target_query(&user.id, &groups)?,
-      "resource_target.type": resource_variant.as_ref(),
-      "resource_target.id": resource_id
-    },
-    None,
-  )
-  .await
-  .context("failed to query db for permissions")?
-  .into_iter()
-  // get the max permission user has between personal / any user groups
-  .fold(base, |level, permission| {
-    if permission.level > level {
-      permission.level
-    } else {
-      level
-    }
-  });
-  Ok(permission)
-}
-
-/// Returns None if still no need to filter by resource id (eg transparent mode, group membership with all access).
-#[instrument(level = "debug")]
-pub async fn get_resource_ids_for_user(
-  user: &User,
-  resource_type: ResourceTargetVariant,
-) -> anyhow::Result<Option<Vec<ObjectId>>> {
-  // Check admin or transparent mode
-  if user.admin || core_config().transparent_mode {
-    return Ok(None);
-  }
-
-  // Check user 'all' on variant
-  if let Some(level) = user.all.get(&resource_type).cloned() {
-    if level > PermissionLevel::None {
-      return Ok(None);
-    }
-  }
-
-  // Check user groups 'all' on variant
-  let groups = get_user_user_groups(&user.id).await?;
-  for group in &groups {
-    if let Some(level) = group.all.get(&resource_type).cloned() {
-      if level > PermissionLevel::None {
-        return Ok(None);
-      }
-    }
-  }
-
-  // Get specific ids
-  let ids = find_collect(
-    &db_client().await.permissions,
-    doc! {
-      "$or": user_target_query(&user.id, &groups)?,
-      "resource_target.type": resource_type.as_ref(),
-      "level": { "$in": ["Read", "Execute", "Write"] }
-    },
-    None,
-  )
-  .await
-  .context("failed to query permissions on db")?
-  .into_iter()
-  .map(|p| p.resource_target.extract_variant_id().1.to_string())
-  // collect into hashset first to remove any duplicates
-  .collect::<HashSet<_>>()
-  .into_iter()
-  .flat_map(|id| ObjectId::from_str(&id))
-  .collect::<Vec<_>>();
-
-  Ok(Some(ids))
 }
 
 pub fn id_or_name_filter(id_or_name: &str) -> Document {

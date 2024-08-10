@@ -1,27 +1,25 @@
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
-use formatting::format_serror;
+use futures::future::join_all;
 use monitor_client::entities::{
-  build::{ImageRegistry, StandardRegistryConfig},
   deployment::{
-    extract_registry_domain, ContainerSummary, Conversion,
-    Deployment, DeploymentConfig, DeploymentImage,
-    DockerContainerStats, RestartMode, TerminationSignal,
+    ContainerSummary, DeploymentState, DockerContainerStats,
   },
   to_monitor_name,
   update::Log,
-  EnvironmentVar, NoData, SearchCombinator,
 };
 use periphery_client::api::container::*;
 use resolver_api::Resolve;
-use run_command::async_run_command;
 
 use crate::{
-  config::periphery_config,
-  docker::docker_client,
-  helpers::{docker_login, parse_extra_args, parse_labels},
+  docker::{container_stats, docker_client, stop_container_command},
+  helpers::log_grep,
   State,
 };
+
+// ======
+//  READ
+// ======
 
 //
 
@@ -72,18 +70,7 @@ impl Resolve<GetContainerLogSearch> for State {
     }: GetContainerLogSearch,
     _: (),
   ) -> anyhow::Result<Log> {
-    let maybe_invert = invert.then_some(" -v").unwrap_or_default();
-    let grep = match combinator {
-      SearchCombinator::Or => {
-        format!("grep{maybe_invert} -E '{}'", terms.join("|"))
-      }
-      SearchCombinator::And => {
-        format!(
-          "grep{maybe_invert} -P '^(?=.*{})'",
-          terms.join(")(?=.*")
-        )
-      }
-    };
+    let grep = log_grep(&terms, combinator, invert);
     let command =
       format!("docker logs {name} --tail 5000 2>&1 | {grep}");
     Ok(run_monitor_command("get container log grep", command).await)
@@ -127,7 +114,9 @@ impl Resolve<GetContainerStatsList> for State {
   }
 }
 
-//
+// =========
+//  ACTIONS
+// =========
 
 impl Resolve<StartContainer> for State {
   #[instrument(name = "StartContainer", skip(self))]
@@ -140,6 +129,61 @@ impl Resolve<StartContainer> for State {
       run_monitor_command(
         "docker start",
         format!("docker start {name}"),
+      )
+      .await,
+    )
+  }
+}
+
+//
+
+impl Resolve<RestartContainer> for State {
+  #[instrument(name = "RestartContainer", skip(self))]
+  async fn resolve(
+    &self,
+    RestartContainer { name }: RestartContainer,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    Ok(
+      run_monitor_command(
+        "docker restart",
+        format!("docker restart {name}"),
+      )
+      .await,
+    )
+  }
+}
+
+//
+
+impl Resolve<PauseContainer> for State {
+  #[instrument(name = "PauseContainer", skip(self))]
+  async fn resolve(
+    &self,
+    PauseContainer { name }: PauseContainer,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    Ok(
+      run_monitor_command(
+        "docker pause",
+        format!("docker pause {name}"),
+      )
+      .await,
+    )
+  }
+}
+
+impl Resolve<UnpauseContainer> for State {
+  #[instrument(name = "UnpauseContainer", skip(self))]
+  async fn resolve(
+    &self,
+    UnpauseContainer { name }: UnpauseContainer,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    Ok(
+      run_monitor_command(
+        "docker unpause",
+        format!("docker unpause {name}"),
       )
       .await,
     )
@@ -172,6 +216,38 @@ impl Resolve<StopContainer> for State {
     } else {
       Ok(log)
     }
+  }
+}
+
+//
+
+impl Resolve<StopAllContainers> for State {
+  #[instrument(name = "StopAllContainers", skip(self))]
+  async fn resolve(
+    &self,
+    StopAllContainers {}: StopAllContainers,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let containers = docker_client()
+      .list_containers()
+      .await
+      .context("failed to list all containers on host")?;
+    let futures = containers.iter().filter_map(
+      |ContainerSummary { name, state, .. }| {
+        // only stop running containers. if not running, early exit.
+        if !matches!(state, DeploymentState::Running) {
+          return None;
+        }
+        Some(async move {
+          run_monitor_command(
+            &format!("docker stop {name}"),
+            stop_container_command(name, None, None),
+          )
+          .await
+        })
+      },
+    );
+    Ok(join_all(futures).await)
   }
 }
 
@@ -239,234 +315,4 @@ impl Resolve<PruneContainers> for State {
     let command = String::from("docker container prune -f");
     Ok(run_monitor_command("prune containers", command).await)
   }
-}
-
-//
-
-impl Resolve<Deploy> for State {
-  #[instrument(
-    name = "Deploy",
-    skip(self, core_replacers, aws_ecr, registry_token)
-  )]
-  async fn resolve(
-    &self,
-    Deploy {
-      deployment,
-      stop_signal,
-      stop_time,
-      registry_token,
-      replacers: core_replacers,
-      aws_ecr,
-    }: Deploy,
-    _: (),
-  ) -> anyhow::Result<Log> {
-    let image = if let DeploymentImage::Image { image } =
-      &deployment.config.image
-    {
-      if image.is_empty() {
-        return Ok(Log::error(
-          "get image",
-          String::from("deployment does not have image attached"),
-        ));
-      }
-      image
-    } else {
-      return Ok(Log::error(
-        "get image",
-        String::from("deployment does not have image attached"),
-      ));
-    };
-
-    let image_registry = if aws_ecr.is_some() {
-      ImageRegistry::AwsEcr(String::new())
-    } else if deployment.config.image_registry_account.is_empty() {
-      ImageRegistry::None(NoData {})
-    } else {
-      ImageRegistry::Standard(StandardRegistryConfig {
-        account: deployment.config.image_registry_account.clone(),
-        domain: extract_registry_domain(image)?,
-        ..Default::default()
-      })
-    };
-
-    if let Err(e) = docker_login(
-      &image_registry,
-      registry_token.as_deref(),
-      aws_ecr.as_ref(),
-    )
-    .await
-    {
-      return Ok(Log::error(
-        "docker login",
-        format_serror(
-          &e.context("failed to login to docker registry").into(),
-        ),
-      ));
-    }
-
-    let _ = pull_image(image).await;
-    debug!("image pulled");
-    let _ = State
-      .resolve(
-        RemoveContainer {
-          name: deployment.name.clone(),
-          signal: stop_signal,
-          time: stop_time,
-        },
-        (),
-      )
-      .await;
-    debug!("container stopped and removed");
-
-    let command = docker_run_command(&deployment, image);
-    debug!("docker run command: {command}");
-
-    if deployment.config.skip_secret_interp {
-      Ok(run_monitor_command("docker run", command).await)
-    } else {
-      let command = svi::interpolate_variables(
-        &command,
-        &periphery_config().secrets,
-        svi::Interpolator::DoubleBrackets,
-        true,
-      )
-      .context(
-        "failed to interpolate secrets into docker run command",
-      );
-      if let Err(e) = command {
-        return Ok(Log::error("docker run", format!("{e:?}")));
-      }
-      let (command, mut replacers) = command.unwrap();
-      replacers.extend(core_replacers);
-      let mut log = run_monitor_command("docker run", command).await;
-      log.command = svi::replace_in_string(&log.command, &replacers);
-      log.stdout = svi::replace_in_string(&log.stdout, &replacers);
-      log.stderr = svi::replace_in_string(&log.stderr, &replacers);
-      Ok(log)
-    }
-  }
-}
-
-//
-
-fn docker_run_command(
-  Deployment {
-    name,
-    config:
-      DeploymentConfig {
-        volumes,
-        ports,
-        network,
-        command,
-        restart,
-        environment,
-        labels,
-        extra_args,
-        ..
-      },
-    ..
-  }: &Deployment,
-  image: &str,
-) -> String {
-  let name = to_monitor_name(name);
-  let ports = parse_conversions(ports, "-p");
-  let volumes = volumes.to_owned();
-  let volumes = parse_conversions(&volumes, "-v");
-  let network = parse_network(network);
-  let restart = parse_restart(restart);
-  let environment = parse_environment(environment);
-  let labels = parse_labels(labels);
-  let command = parse_command(command);
-  let extra_args = parse_extra_args(extra_args);
-  format!("docker run -d --name {name}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{command}")
-}
-
-fn parse_conversions(
-  conversions: &[Conversion],
-  flag: &str,
-) -> String {
-  conversions
-    .iter()
-    .map(|p| format!(" {flag} {}:{}", p.local, p.container))
-    .collect::<Vec<_>>()
-    .join("")
-}
-
-fn parse_environment(environment: &[EnvironmentVar]) -> String {
-  environment
-    .iter()
-    .map(|p| format!(" --env {}=\"{}\"", p.variable, p.value))
-    .collect::<Vec<_>>()
-    .join("")
-}
-
-fn parse_network(network: &str) -> String {
-  format!(" --network {network}")
-}
-
-fn parse_restart(restart: &RestartMode) -> String {
-  let restart = match restart {
-    RestartMode::OnFailure => "on-failure:10".to_string(),
-    _ => restart.to_string(),
-  };
-  format!(" --restart {restart}")
-}
-
-fn parse_command(command: &str) -> String {
-  if command.is_empty() {
-    String::new()
-  } else {
-    format!(" {command}")
-  }
-}
-
-//
-
-async fn container_stats(
-  container_name: Option<String>,
-) -> anyhow::Result<Vec<DockerContainerStats>> {
-  let format = "--format \"{{ json . }}\"";
-  let container_name = match container_name {
-    Some(name) => format!(" {name}"),
-    None => "".to_string(),
-  };
-  let command =
-    format!("docker stats{container_name} --no-stream {format}");
-  let output = async_run_command(&command).await;
-  if output.success() {
-    let res = output
-      .stdout
-      .split('\n')
-      .filter(|e| !e.is_empty())
-      .map(|e| {
-        let parsed = serde_json::from_str(e)
-          .context(format!("failed at parsing entry {e}"))?;
-        Ok(parsed)
-      })
-      .collect::<anyhow::Result<Vec<DockerContainerStats>>>()?;
-    Ok(res)
-  } else {
-    Err(anyhow!("{}", output.stderr.replace('\n', "")))
-  }
-}
-
-#[instrument]
-async fn pull_image(image: &str) -> Log {
-  let command = format!("docker pull {image}");
-  run_monitor_command("docker pull", command).await
-}
-
-fn stop_container_command(
-  container_name: &str,
-  signal: Option<TerminationSignal>,
-  time: Option<i32>,
-) -> String {
-  let container_name = to_monitor_name(container_name);
-  let signal = signal
-    .map(|signal| format!(" --signal {signal}"))
-    .unwrap_or_default();
-  let time = time
-    .map(|time| format!(" --time {time}"))
-    .unwrap_or_default();
-  format!("docker stop{signal}{time} {container_name}")
 }

@@ -6,10 +6,12 @@ use monitor_client::{
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig},
+    deployment::{Deployment, DeploymentImage},
     procedure::Procedure,
     repo::Repo,
     server::Server,
     server_template::ServerTemplate,
+    stack::Stack,
     update::{Log, ResourceTarget},
     user::sync_user,
   },
@@ -42,6 +44,62 @@ impl ResourceSync for Server {
   }
 }
 
+impl ResourceSync for Deployment {
+  fn resource_target(id: String) -> ResourceTarget {
+    ResourceTarget::Deployment(id)
+  }
+
+  fn get_diff(
+    mut original: Self::Config,
+    update: Self::PartialConfig,
+    resources: &AllResourcesById,
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    // need to replace the server id with name
+    original.server_id = resources
+      .servers
+      .get(&original.server_id)
+      .map(|s| s.name.clone())
+      .unwrap_or_default();
+
+    // need to replace the build id with name
+    if let DeploymentImage::Build { build_id, version } =
+      &original.image
+    {
+      original.image = DeploymentImage::Build {
+        build_id: resources
+          .builds
+          .get(build_id)
+          .map(|b| b.name.clone())
+          .unwrap_or_default(),
+        version: *version,
+      };
+    }
+
+    Ok(original.partial_diff(update))
+  }
+}
+
+impl ResourceSync for Stack {
+  fn resource_target(id: String) -> ResourceTarget {
+    ResourceTarget::Stack(id)
+  }
+
+  fn get_diff(
+    mut original: Self::Config,
+    update: Self::PartialConfig,
+    resources: &AllResourcesById,
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    // Need to replace server id with name
+    original.server_id = resources
+      .servers
+      .get(&original.server_id)
+      .map(|s| s.name.clone())
+      .unwrap_or_default();
+
+    Ok(original.partial_diff(update))
+  }
+}
+
 impl ResourceSync for Build {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Build(id)
@@ -63,6 +121,9 @@ impl ResourceSync for Build {
 
   fn validate_diff(diff: &mut Self::ConfigDiff) {
     if let Some((_, to)) = &diff.version {
+      // When setting a build back to "latest" version,
+      // Don't actually set version to None.
+      // You can do this on the db, or set it to 0.0.1
       if to.is_none() {
         diff.version = None;
       }
@@ -184,6 +245,13 @@ impl ResourceSync for Procedure {
               .map(|b| b.name.clone())
               .unwrap_or_default();
           }
+          Execution::CancelBuild(config) => {
+            config.build = resources
+              .builds
+              .get(&config.build)
+              .map(|b| b.name.clone())
+              .unwrap_or_default();
+          }
           Execution::Deploy(config) => {
             config.deployment = resources
               .deployments
@@ -192,6 +260,27 @@ impl ResourceSync for Procedure {
               .unwrap_or_default();
           }
           Execution::StartContainer(config) => {
+            config.deployment = resources
+              .deployments
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RestartContainer(config) => {
+            config.deployment = resources
+              .deployments
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PauseContainer(config) => {
+            config.deployment = resources
+              .deployments
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::UnpauseContainer(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
@@ -220,6 +309,20 @@ impl ResourceSync for Procedure {
               .unwrap_or_default();
           }
           Execution::PullRepo(config) => {
+            config.repo = resources
+              .repos
+              .get(&config.repo)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::BuildRepo(config) => {
+            config.repo = resources
+              .repos
+              .get(&config.repo)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::CancelRepoBuild(config) => {
             config.repo = resources
               .repos
               .get(&config.repo)
@@ -258,6 +361,55 @@ impl ResourceSync for Procedure {
             config.sync = resources
               .syncs
               .get(&config.sync)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DeployStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StartStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RestartStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PauseStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::UnpauseStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StopStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DestroyStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
@@ -445,6 +597,9 @@ impl ResourceSync for Procedure {
     }
     warn!("procedure sync loop exited after max iterations");
 
-    todo!()
+    Some(Log::error(
+      "run procedure",
+      String::from("procedure sync loop exited after max iterations"),
+    ))
   }
 }

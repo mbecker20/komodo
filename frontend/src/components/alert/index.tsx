@@ -1,16 +1,12 @@
 import { Section } from "@components/layouts";
-import {
-  alert_level_intention,
-  bg_color_class_by_intention,
-} from "@lib/color";
+import { alert_level_intention } from "@lib/color";
 import { useRead, atomWithStorage } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { useAtom } from "jotai";
 import { AlertTriangle } from "lucide-react";
 import { AlertsTable } from "./table";
-import { Card, CardHeader } from "@ui/card";
-import { cn } from "@lib/utils";
+import { StatusBadge } from "@components/util";
 
 const openAtom = atomWithStorage("show-alerts-v0", true);
 
@@ -34,11 +30,11 @@ export const OpenAlerts = () => {
   );
 };
 
-export const AlertLevel = ({ level }: { level: Types.SeverityLevel }) => {
-  const color = bg_color_class_by_intention(alert_level_intention(level));
-  return (
-    <Card className={cn("w-fit", color)}>
-      <CardHeader className="py-0 px-2">{level}</CardHeader>
-    </Card>
-  );
+export const AlertLevel = ({
+  level,
+}: {
+  level: Types.SeverityLevel | undefined;
+}) => {
+  if (!level) return null;
+  return <StatusBadge text={level} intent={alert_level_intention(level)} />;
 };

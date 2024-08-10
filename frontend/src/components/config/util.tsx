@@ -13,12 +13,13 @@ import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import {
   CheckCircle,
+  Info,
   MinusCircle,
   PlusCircle,
   Save,
   SearchX,
 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, RefObject, useState } from "react";
 import { cn, filterBySplit } from "@lib/utils";
 import {
   Dialog,
@@ -39,13 +40,19 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+import { Card } from "@ui/card";
 
 export const ConfigItem = ({
   label,
+  boldLabel,
+  description,
   children,
   className,
 }: {
   label?: string;
+  boldLabel?: boolean;
+  description?: ReactNode;
   children: ReactNode;
   className?: string;
 }) => (
@@ -56,7 +63,25 @@ export const ConfigItem = ({
         className
       )}
     >
-      {label && <div>{snake_case_to_upper_space_case(label)}</div>}
+      <div className="flex items-center gap-4">
+        {label && (
+          <div className={cn("text-nowrap", boldLabel && "font-semibold")}>
+            {snake_case_to_upper_space_case(label)}
+          </div>
+        )}
+        {description && (
+          <HoverCard openDelay={200}>
+            <HoverCardTrigger asChild>
+              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                <Info className="w-4 h-4" />
+              </Card>
+            </HoverCardTrigger>
+            <HoverCardContent align="start" side="right">
+              {description}
+            </HoverCardContent>
+          </HoverCard>
+        )}
+      </div>
       {children}
     </div>
     <div className="w-full h-0 border-b last:hidden" />
@@ -65,20 +90,24 @@ export const ConfigItem = ({
 
 export const ConfigInput = ({
   label,
+  boldLabel,
   value,
+  description,
   disabled,
   placeholder,
   onChange,
   onBlur,
 }: {
   label: string;
+  boldLabel?: boolean;
   value: string | number | undefined;
+  description?: string;
   disabled?: boolean;
   placeholder?: string;
   onChange?: (value: string) => void;
   onBlur?: (value: string) => void;
 }) => (
-  <ConfigItem label={label}>
+  <ConfigItem label={label} boldLabel={boldLabel} description={description}>
     <Input
       className="max-w-[75%] lg:max-w-[400px]"
       type={typeof value === "number" ? "number" : undefined}
@@ -93,16 +122,20 @@ export const ConfigInput = ({
 
 export const ConfigSwitch = ({
   label,
+  boldLabel,
   value,
+  description,
   disabled,
   onChange,
 }: {
   label: string;
+  boldLabel?: boolean;
   value: boolean | undefined;
+  description?: string;
   disabled: boolean;
   onChange: (value: boolean) => void;
 }) => (
-  <ConfigItem label={label}>
+  <ConfigItem label={label} description={description} boldLabel={boldLabel}>
     <Switch checked={value} onCheckedChange={onChange} disabled={disabled} />
   </ConfigItem>
 );
@@ -197,9 +230,14 @@ export const ProviderSelector = ({
   onSelect: (provider: string) => void;
   showCustom?: boolean;
 }) => {
-  const request =
-    account_type === "git" ? "ListGitProviders" : "ListDockerRegistries";
-  const providers = useRead(request, {}).data;
+  const [db_request, config_request]:
+    | ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+    | ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"] =
+    account_type === "git"
+      ? ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+      : ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"];
+  const db_providers = useRead(db_request, {}).data;
+  const config_providers = useRead(config_request, {}).data;
   const [customMode, setCustomMode] = useState(false);
 
   if (customMode) {
@@ -210,10 +248,25 @@ export const ProviderSelector = ({
         onChange={(e) => onSelect(e.target.value)}
         className="max-w-[75%] lg:max-w-[400px]"
         onBlur={() => setCustomMode(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            setCustomMode(false)
+          }
+        }}
         autoFocus
       />
     );
   }
+
+  const domains = new Set<string>();
+  for (const provider of db_providers ?? []) {
+    domains.add(provider.domain);
+  }
+  for (const provider of config_providers ?? []) {
+    domains.add(provider.domain);
+  }
+  const providers = [...domains];
+  providers.sort();
 
   return (
     <Select
@@ -235,21 +288,14 @@ export const ProviderSelector = ({
         <SelectValue placeholder="Select Provider" />
       </SelectTrigger>
       <SelectContent>
-        {providers?.map(
-          (provider: Types.GitProvider | Types.DockerRegistry) => (
-            <SelectItem key={provider.domain} value={provider.domain}>
-              {provider.domain}
-            </SelectItem>
-          )
-        )}
+        {providers?.map((provider) => (
+          <SelectItem key={provider} value={provider}>
+            {provider}
+          </SelectItem>
+        ))}
         {providers !== undefined &&
           selected &&
-          !providers
-            .map(
-              (provider: Types.GitProvider | Types.DockerRegistry) =>
-                provider.domain
-            )
-            .includes(selected) && (
+          !providers.includes(selected) && (
             <SelectItem value={selected}>{selected}</SelectItem>
           )}
         {showCustom && <SelectItem value={"Custom"}>Custom</SelectItem>}
@@ -266,11 +312,20 @@ export const ProviderSelectorConfig = (params: {
   https?: boolean;
   onHttpsSwitch?: () => void;
 }) => {
+  const select =
+    params.account_type === "git" ? "git provider" : "docker registry";
   return (
-    <ConfigItem label={`${params.account_type} Provider`}>
+    <ConfigItem
+      label={`${params.account_type} Provider`}
+      description={`Select ${select} domain`}
+    >
       {params.account_type === "git" ? (
         <div className="flex items-center justify-end gap-2 w-[75%]">
-          <Button variant="ghost" onClick={params.onHttpsSwitch} className="py-0 px-2">
+          <Button
+            variant="ghost"
+            onClick={params.onHttpsSwitch}
+            className="py-0 px-2"
+          >
             {`http${params.https ? "s" : ""}://`}
           </Button>
           <ProviderSelector {...params} />
@@ -299,16 +354,28 @@ export const AccountSelector = ({
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const request =
-    account_type === "git" ? "ListGitProviders" : "ListDockerRegistries";
-  const params =
+  const [db_request, config_request]:
+    | ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+    | ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"] =
+    account_type === "git"
+      ? ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
+      : ["ListDockerRegistryAccounts", "ListDockerRegistriesFromConfig"];
+  const config_params =
     type === "None" ? {} : { target: id ? { type, id } : undefined };
-  const providers = useRead(request, params).data?.filter(
+  const db_accounts = useRead(db_request, {}).data?.filter(
+    (account) => account.domain === provider
+  );
+  const config_providers = useRead(config_request, config_params).data?.filter(
     (_provider) => _provider.domain === provider
   );
 
   const _accounts = new Set<string>();
-  for (const provider of providers ?? []) {
+  for (const account of db_accounts ?? []) {
+    if (account.username) {
+      _accounts.add(account.username);
+    }
+  }
+  for (const provider of config_providers ?? []) {
     for (const account of provider.accounts ?? []) {
       _accounts.add(account.username);
     }
@@ -352,7 +419,10 @@ export const AccountSelectorConfig = (params: {
   placeholder: string;
 }) => {
   return (
-    <ConfigItem label="Account">
+    <ConfigItem
+      label="Account"
+      description="Select the account used to log in to the provider"
+    >
       <AccountSelector {...params} />
     </ConfigItem>
   );
@@ -532,7 +602,7 @@ export const AddExtraArgMenu = ({
   disabled,
 }: {
   onSelect: (suggestion: string) => void;
-  type: "Deployment" | "Build";
+  type: "Deployment" | "Build" | "Stack";
   disabled?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
@@ -597,6 +667,8 @@ export const AddExtraArgMenu = ({
   );
 };
 
+const IMAGE_REGISTRY_DESCRIPTION = "Configure where the built image is pushed.";
+
 export const ImageRegistryConfig = ({
   registry: _registry,
   setRegistry,
@@ -613,7 +685,8 @@ export const ImageRegistryConfig = ({
 }) => {
   const registry = _registry ?? default_registry_config("None");
 
-  const provider = useRead("ListDockerRegistries", {
+  // This is the only way to get organizations for now
+  const config_provider = useRead("ListDockerRegistriesFromConfig", {
     target: resource_id ? { type: "Builder", id: resource_id } : undefined,
   }).data?.find((provider) => {
     if (registry.type === "Standard") {
@@ -625,7 +698,10 @@ export const ImageRegistryConfig = ({
 
   if (registry.type === "None") {
     return (
-      <ConfigItem label="Image Registry">
+      <ConfigItem
+        label="Image Registry"
+        description={IMAGE_REGISTRY_DESCRIPTION}
+      >
         <RegistryTypeSelector
           registry={registry}
           setRegistry={setRegistry}
@@ -637,7 +713,10 @@ export const ImageRegistryConfig = ({
   }
   if (registry.type === "AwsEcr") {
     return (
-      <ConfigItem label="Image Registry">
+      <ConfigItem
+        label="Image Registry"
+        description={IMAGE_REGISTRY_DESCRIPTION}
+      >
         <div className="flex items-center justify-stretch gap-4">
           <AwsEcrLabelSelector
             selected={registry.params}
@@ -660,11 +739,14 @@ export const ImageRegistryConfig = ({
     );
   }
 
-  const organizations = provider?.organizations ?? [];
+  const organizations = config_provider?.organizations ?? [];
 
   return (
     <>
-      <ConfigItem label="Image Registry">
+      <ConfigItem
+        label="Image Registry"
+        description={IMAGE_REGISTRY_DESCRIPTION}
+      >
         <div className="flex items-center justify-stretch gap-4">
           <ProviderSelector
             disabled={disabled}
@@ -687,10 +769,13 @@ export const ImageRegistryConfig = ({
         </div>
       </ConfigItem>
       {organizations.length > 0 && (
-        <ConfigItem label="Organization">
+        <ConfigItem
+          label="Organization"
+          description="Push the build under an organization namespace, rather than the account namespace."
+        >
           <OrganizationSelector
             organizations={organizations}
-            selected={registry.params?.organization}
+            selected={registry.params?.organization!}
             set={(organization) =>
               setRegistry({
                 ...registry,
@@ -701,7 +786,10 @@ export const ImageRegistryConfig = ({
           />
         </ConfigItem>
       )}
-      <ConfigItem label="Account">
+      <ConfigItem
+        label="Account"
+        description="Select the account used to authenticate against the registry."
+      >
         <AccountSelector
           id={resource_id}
           type="Builder"
@@ -772,15 +860,48 @@ const OrganizationSelector = ({
   disabled,
 }: {
   organizations: string[];
-  selected?: string;
+  selected: string;
   set: (org: string) => void;
   disabled: boolean;
 }) => {
-  if (organizations.length === 0) return null;
+  const [customMode, setCustomMode] = useState(false);
+  if (customMode || organizations.length === 0) {
+    return (
+      <Input
+        placeholder="Input custom organization name"
+        value={selected}
+        onChange={(e) => set(e.target.value)}
+        className="max-w-[75%] lg:max-w-[400px]"
+        onBlur={() => setCustomMode(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            setCustomMode(false);
+          }
+        }}
+        autoFocus
+      />
+    );
+  }
+
+  const orgs =
+    selected === "" || organizations.includes(selected)
+      ? organizations
+      : [...organizations, selected];
+  orgs.sort();
+
   return (
     <Select
       value={selected}
-      onValueChange={(v) => set(v === "Empty" ? "" : v)}
+      onValueChange={(organization) => {
+        if (organization === "Custom") {
+          set("");
+          setCustomMode(true);
+        } else if (organization === "Empty") {
+          set("");
+        } else {
+          set(organization);
+        }
+      }}
       disabled={disabled}
     >
       <SelectTrigger
@@ -791,11 +912,12 @@ const OrganizationSelector = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
-        {organizations?.map((org) => (
+        {orgs?.map((org) => (
           <SelectItem key={org} value={org}>
             {org}
           </SelectItem>
         ))}
+        <SelectItem value={"Custom"}>Custom</SelectItem>
       </SelectContent>
     </Select>
   );
@@ -909,5 +1031,57 @@ export const PermissionLevelSelector = ({
         ))}
       </SelectContent>
     </Select>
+  );
+};
+
+/// Takes in env
+export const SecretsForEnvironment = ({
+  env,
+  setEnv,
+  envRef,
+}: {
+  /// Environment file
+  env?: string;
+  setEnv: (env: string) => void;
+  envRef: RefObject<HTMLTextAreaElement>;
+}) => {
+  const variables = useRead("ListVariables", {}).data ?? [];
+  const secrets = useRead("ListSecrets", {}).data ?? [];
+
+  const _env = env || "";
+
+  if (variables.length === 0 && secrets.length === 0) return;
+
+  return (
+    <div className="flex items-center gap-2">
+      {variables.length > 0 && (
+        <SecretSelector
+          type="Variable"
+          keys={variables.map((v) => v.name)}
+          onSelect={(variable) =>
+            setEnv(
+              _env.slice(0, envRef.current?.selectionStart) +
+                `[[${variable}]]` +
+                _env.slice(envRef.current?.selectionStart, undefined)
+            )
+          }
+          disabled={false}
+        />
+      )}
+      {secrets.length > 0 && (
+        <SecretSelector
+          type="Secret"
+          keys={secrets}
+          onSelect={(secret) =>
+            setEnv(
+              _env.slice(0, envRef.current?.selectionStart) +
+                `[[${secret}]]` +
+                _env.slice(envRef.current?.selectionStart, undefined)
+            )
+          }
+          disabled={false}
+        />
+      )}
+    </div>
   );
 };

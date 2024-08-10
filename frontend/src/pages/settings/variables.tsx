@@ -49,8 +49,13 @@ export const Variables = () => {
       } else return true;
     }) ?? [];
   const { toast } = useToast();
-  const { mutate: updateValue } = useWrite("UpdateVariableValue");
   const inv = useInvalidate();
+  const { mutate: updateValue } = useWrite("UpdateVariableValue", {
+    onSuccess: () => {
+      inv(["ListVariables"], ["GetVariable"]);
+      toast({ title: "Updated variable value" });
+    },
+  });
   const { mutate: updateDescription } = useWrite("UpdateVariableDescription", {
     onSuccess: () => {
       inv(["ListVariables"], ["GetVariable"]);
@@ -94,12 +99,14 @@ export const Variables = () => {
         columns={[
           {
             accessorKey: "name",
+            size: 200,
             header: ({ column }) => (
               <SortableHeader column={column} title="Name" />
             ),
           },
           {
             accessorKey: "value",
+            size: 300,
             header: ({ column }) => (
               <SortableHeader column={column} title="Value" />
             ),
@@ -122,7 +129,7 @@ export const Variables = () => {
                       });
                     }}
                   >
-                    <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
+                    <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis text-muted-foreground w-[200px] xl:w-[240px] 2xl:w-[340px]">
                       {row.original.value || "Set value"}
                     </div>
                   </Card>
@@ -133,6 +140,7 @@ export const Variables = () => {
           },
           {
             accessorKey: "description",
+            size: 200,
             header: "Description",
             cell: ({ row }) => {
               return (
@@ -164,20 +172,21 @@ export const Variables = () => {
           },
           {
             header: "Delete",
+            maxSize: 200,
             cell: ({ row }) => <DeleteVariable name={row.original.name} />,
           },
         ]}
       />
 
       {/** SECRETS */}
-      {secrets.length && (
+      {secrets.length ? (
         <div className="flex items-center gap-2 text-muted-foreground">
           <div>Core Secrets:</div>
           {secrets.map((secret) => (
             <Badge variant="secondary">{secret}</Badge>
           ))}
         </div>
-      )}
+      ) : undefined}
     </div>
   );
 };
@@ -191,15 +200,6 @@ export const CreateVariable = () => {
     onSuccess: () => {
       invalidate(["ListVariables"], ["GetVariable"]);
       toast({ title: "Variable Created" });
-      setOpen(false);
-    },
-    onError: (e) => {
-      console.log("create variable error:" + e);
-      toast({
-        title: "Failed to create variable",
-        description: "See console for details",
-        variant: "destructive",
-      });
       setOpen(false);
     },
   });
@@ -224,6 +224,7 @@ export const CreateVariable = () => {
               onChange={(e) =>
                 setName(e.target.value.toUpperCase().replaceAll(" ", "_"))
               }
+              placeholder="Input variable name"
             />
           </div>
         </div>
@@ -248,15 +249,7 @@ const DeleteVariable = ({ name }: { name: string }) => {
   const { mutate, isPending } = useWrite("DeleteVariable", {
     onSuccess: () => {
       invalidate(["ListVariables"], ["GetVariable"]);
-      toast({ title: "Variable Deleted" });
-    },
-    onError: (e) => {
-      console.log("delete variable error:" + e);
-      toast({
-        title: "Failed to delete variable",
-        description: "See console for details",
-        variant: "destructive",
-      });
+      toast({ title: "Variable deleted" });
     },
   });
   return (

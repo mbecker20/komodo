@@ -45,10 +45,20 @@ pub struct Env {
   pub monitor_port: Option<u16>,
   /// Override `passkey`
   pub monitor_passkey: Option<String>,
-  /// Override `jwt_valid_for`
-  pub monitor_jwt_valid_for: Option<Timelength>,
-  /// Override `sync_directory`
-  pub monitor_sync_directory: Option<String>,
+  /// Override `jwt_secret`
+  pub monitor_jwt_secret: Option<String>,
+  /// Override `jwt_ttl`
+  pub monitor_jwt_ttl: Option<Timelength>,
+  /// Override `repo_directory`
+  pub monitor_repo_directory: Option<String>,
+  /// Override `sync_poll_interval`
+  pub monitor_sync_poll_interval: Option<Timelength>,
+  /// Override `stack_poll_interval`
+  pub monitor_stack_poll_interval: Option<Timelength>,
+  /// Override `build_poll_interval`
+  pub monitor_build_poll_interval: Option<Timelength>,
+  /// Override `repo_poll_interval`
+  pub monitor_repo_poll_interval: Option<Timelength>,
   /// Override `monitoring_interval`
   pub monitor_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
@@ -73,6 +83,8 @@ pub struct Env {
   pub monitor_transparent_mode: Option<bool>,
   /// Override `ui_write_disabled`
   pub monitor_ui_write_disabled: Option<bool>,
+  /// Override `enable_new_users`
+  pub monitor_enable_new_users: Option<bool>,
 
   /// Override `local_auth`
   pub monitor_local_auth: Option<bool>,
@@ -142,164 +154,7 @@ fn default_config_path() -> String {
 /// to `/config/config.toml` inside the container, or simply override whichever fields
 /// you need using the environment.
 ///
-/// ## Example TOML
-/// ```toml
-/// ## this will be the document title on the web page (shows up as text in the browser tab).
-/// ## default: 'Monitor'
-/// title = "Monitor"
-///
-/// ## Required for oauth functionality. This should be the url used to access monitor in browser,
-/// ## potentially behind DNS.
-/// ## Eg https://monitor.dev or http://12.34.56.78:9000.
-/// ## This should match the address configured in your oauth app.
-/// ## Required (no default).
-/// host = "https://monitor.dev"
-///
-/// ## The port the core system will run on. If running core in docker container,
-/// ## Leave as this port as 9000 and use port bind eg. -p 9001:9000
-/// ## Default: 9000
-/// port = 9000
-///
-/// ## Must match a passkey in periphery config to communicate with periphery.
-/// ## Required (No default)
-/// passkey = "a_random_passkey"
-///
-/// ## Specify the log level of the monitor core application.
-/// ## Default: `info`.
-/// ## Options: `off`, `error`, `warn`, `info`, `debug`, `trace`.
-/// logging.level = "info"
-///
-/// ## Specify the logging format for stdout / stderr.
-/// ## Default: standard
-/// ## Options: `standard`, `json`, `none`
-/// logging.stdio = "standard"
-///
-/// ## Specify a opentelemetry otlp endpoint to send traces to.
-/// ## Optional, default unassigned (don't export telemetry).
-/// # logging.otlp_endpoint = "http://localhost:4317"
-///
-/// ## Specify how long an issued jwt stays valid.
-/// ## All jwts are invalidated on application restart.
-/// ## Default: `1-day`.
-/// ## Options: `1-hr`, `12-hr`, `1-day`, `3-day`, `1-wk`, `2-wk`, `30-day`.
-/// jwt_valid_for = "1-day"
-///
-/// ## Controls the granularity of the system stats collection by monitor core.
-/// ## Options: `5-sec`, `15-sec`, `30-sec`, `1-min`, `2-min`, `5-min`.
-/// ## Default: `15-sec`.
-/// monitoring_interval = "15-sec"
-///
-/// ## Number of days to store stats, or 0 to disable stats pruning.
-/// ## Stats older than this number of days are deleted daily
-/// ## Default: 0 (pruning disabled)
-/// keep_stats_for_days = 14
-///
-/// ## Number of days to store alerts, or 0 to disable alert pruning.
-/// ## Alerts older than this number of days are deleted daily
-/// ## Default: 0 (pruning disabled)
-/// keep_alerts_for_days = 14
-///
-/// ## These will be available .
-/// ## When attached to build, image will be pushed to repo under the specified organization.
-/// ## if empty, the "docker organization" config option will not be shown.
-/// ## default: empty
-/// # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
-///
-/// ## allows all users to have read access on all resources
-/// ## default: false
-/// # transparent_mode = true
-///
-/// ## disables write support on resources in the UI
-/// ## default: false
-/// # ui_write_disabled = true
-///
-/// ## allow or deny user login with username / password
-/// ## default: false
-/// # local_auth = true
-///
-/// ## Use to configure google oauth
-/// # google_oauth.enabled = true
-/// # google_oauth.id = "your_google_client_id"
-/// # google_oauth.secret = "your_google_client_secret"
-///
-/// ## Use to configure github oauth
-/// # github_oauth.enabled = true
-/// # github_oauth.id = "your_github_client_id"
-/// # github_oauth.secret = "your_github_client_secret"
-///
-/// ## an alternate base url that is used to recieve github webhook requests
-/// ## if empty or not specified, will use 'host' address as base
-/// ## default: empty (none)
-/// # github_webhook_base_url = "https://github-webhook.monitor.dev"
-///
-/// ## token that has to be given to github during repo webhook config as the secret
-/// ## default: empty (none)
-/// github_webhook_secret = "your_random_webhook_secret"
-///
-/// ## Configure github webhook app. Enables webhook management apis.
-/// # github_webhook_app.app_id = 1234455 # Find on the app page.
-/// # github_webhook_app.installations = [
-/// #   ## Find the id after installing the app to user / organization. "namespace" is the username / organization name.
-/// #   { id = 1234, namespace = "mbecker20" }
-/// # ]
-///
-/// ## Path to github webhook app private key.
-/// ## This is defaulted to `/github/private-key.pem`, and doesn't need to be changed if running in Docker.
-/// ## Just mount the private key pem file on the host to `/github/private-key.pem` in the container.
-/// # github_webhook_app.pk_path = "/path/to/pk.pem"
-///
-/// ## MUST comment back in some way to configure mongo.
-/// # mongo.uri = "mongodb://username:password@localhost:27017"
-/// ## ==== or ====
-/// mongo.address = "localhost:27017"
-/// # mongo.username = "username"
-/// # mongo.password = "password"
-/// ## ==== other ====
-/// ## default: monitor. this is the name of the mongo database that monitor will create its collections in.
-/// mongo.db_name = "monitor"
-/// ## default: monitor_core. this is the assigned app_name of the mongo client
-/// mongo.app_name = "monitor_core"
-///
-/// ## provide aws api keys for ephemeral builders
-/// # aws.access_key_id = "your_aws_key_id"
-/// # aws.secret_access_key = "your_aws_secret_key"
-///
-/// ## provide hetzner api token for ephemeral builders
-/// # hetzner.token = "your_hetzner_token"
-///
-/// ## provide core-base secrets
-/// [secrets]
-/// # SECRET_1 = "value_1"
-/// # SECRET_2 = "value_2"
-///
-/// ## configure git providers
-/// # [[git_provider]]
-/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
-/// # accounts = [
-/// #     { username = "mbecker20", token = "access_token_for_account" },
-/// # ]
-///
-/// ## configure docker registries
-/// # [[docker_registry]]
-/// # domain = "docker.io"
-/// # accounts = [
-/// #     { username = "mbecker2020", token = "access_token_for_account" }
-/// # ]
-/// # organizations = ["DockerhubOrganization"]
-///
-/// ## configure aws ecr registries
-/// # [aws_ecr_registry.label_1]
-/// # region = "us-east-1"
-/// # account_id = "123456677"
-/// # access_key_id = "your_aws_key_id_1"
-/// # secret_access_key = "your_aws_secret_key_1"
-///
-/// # [aws_ecr_registry.label_2]
-/// # region = "us-west-1"
-/// # account_id = "123456677"
-/// # access_key_id = "your_aws_key_id_2"
-/// # secret_access_key = "your_aws_secret_key_2"
-/// ```
+/// Refer to the [example file](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml) for a full example.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
   /// The title of this monitor deployment. Will be used in the browser page title.
@@ -314,7 +169,7 @@ pub struct CoreConfig {
   pub host: String,
 
   /// Port the core web server runs on.
-  /// Default: 9000.
+  /// Default: 9120.
   #[serde(default = "default_core_port")]
   pub port: u16,
 
@@ -322,30 +177,63 @@ pub struct CoreConfig {
   /// Should be some secure hash, maybe 20-40 chars.
   pub passkey: String,
 
+  /// Optionally provide a specific jwt secret.
+  /// Passing nothing or an empty string will cause one to be generated.
+  /// Default: "" (empty string)
+  #[serde(default)]
+  pub jwt_secret: String,
+
   /// Control how long distributed JWT remain valid for.
   /// Default: `1-day`.
-  #[serde(default = "default_jwt_valid_for")]
-  pub jwt_valid_for: Timelength,
+  #[serde(default = "default_jwt_ttl")]
+  pub jwt_ttl: Timelength,
 
-  /// Specify the directory used to clone sync repos. The default is fine when using a container.
+  /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
+  /// The default is fine when using a container.
   /// This directory has no need for persistence, so no need to mount it.
-  /// Default: `/syncs`
-  #[serde(default = "default_sync_directory")]
-  pub sync_directory: PathBuf,
+  /// Default: `/repos`
+  #[serde(default = "default_repo_directory")]
+  pub repo_directory: PathBuf,
+
+  /// Interval at which to poll stacks for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_poll_interval")]
+  pub stack_poll_interval: Timelength,
+
+  /// Interval at which to poll syncs for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_poll_interval")]
+  pub sync_poll_interval: Timelength,
+
+  /// Interval at which to poll build commit hash for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_poll_interval")]
+  pub build_poll_interval: Timelength,
+
+  /// Interval at which to poll repo commit hash for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_poll_interval")]
+  pub repo_poll_interval: Timelength,
 
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
   #[serde(default = "default_monitoring_interval")]
   pub monitoring_interval: Timelength,
 
-  /// Number of days to keep stats, or 0 to disable pruning. stats older than this number of days are deleted on a daily cycle
-  /// Default: 0 (no pruning).
-  #[serde(default)]
+  /// Number of days to keep stats, or 0 to disable pruning.
+  /// Stats older than this number of days are deleted on a daily cycle
+  /// Default: 14
+  #[serde(default = "default_prune_days")]
   pub keep_stats_for_days: u64,
 
-  /// Number of days to keep alerts, or 0 to disable pruning. alerts older than this number of days are deleted on a daily cycle
-  /// Default: 0 (no pruning).
-  #[serde(default)]
+  /// Number of days to keep alerts, or 0 to disable pruning.
+  /// Alerts older than this number of days are deleted on a daily cycle
+  /// Default: 14
+  #[serde(default = "default_prune_days")]
   pub keep_alerts_for_days: u64,
 
   /// Configure logging
@@ -371,6 +259,11 @@ pub struct CoreConfig {
   /// Configure github oauth
   #[serde(default)]
   pub github_oauth: OauthCredentials,
+
+  /// New users will be automatically enabled.
+  /// Combined with transparent mode, this is suitable for a demo instance.
+  #[serde(default)]
+  pub enable_new_users: bool,
 
   /// Used to verify validity from webhooks.
   /// Should be some secure hash maybe 20-40 chars.
@@ -431,16 +324,24 @@ fn default_title() -> String {
 }
 
 fn default_core_port() -> u16 {
-  9000
+  9120
 }
 
-fn default_jwt_valid_for() -> Timelength {
+fn default_jwt_ttl() -> Timelength {
   Timelength::OneDay
 }
 
-fn default_sync_directory() -> PathBuf {
-  // `/syncs` will always be valid path
-  PathBuf::from_str("/syncs").unwrap()
+fn default_repo_directory() -> PathBuf {
+  // unwrap ok: `/repos` will always be valid path
+  PathBuf::from_str("/repos").unwrap()
+}
+
+fn default_prune_days() -> u64 {
+  14
+}
+
+fn default_poll_interval() -> Timelength {
+  Timelength::FiveMinutes
 }
 
 fn default_monitoring_interval() -> Timelength {
@@ -449,58 +350,99 @@ fn default_monitoring_interval() -> Timelength {
 
 impl CoreConfig {
   pub fn sanitized(&self) -> CoreConfig {
-    let mut config = self.clone();
-
-    config.passkey = empty_or_redacted(&config.passkey);
-    config.webhook_secret = empty_or_redacted(&config.webhook_secret);
-
-    config.github_oauth.id =
-      empty_or_redacted(&config.github_oauth.id);
-    config.github_oauth.secret =
-      empty_or_redacted(&config.github_oauth.secret);
-
-    config.google_oauth.id =
-      empty_or_redacted(&config.google_oauth.id);
-    config.google_oauth.secret =
-      empty_or_redacted(&config.google_oauth.secret);
-
-    config.mongo.uri =
-      config.mongo.uri.map(|cur| empty_or_redacted(&cur));
-    config.mongo.username =
-      config.mongo.username.map(|cur| empty_or_redacted(&cur));
-    config.mongo.password =
-      config.mongo.password.map(|cur| empty_or_redacted(&cur));
-
-    config.aws.access_key_id =
-      empty_or_redacted(&config.aws.access_key_id);
-    config.aws.secret_access_key =
-      empty_or_redacted(&config.aws.secret_access_key);
-
-    config.hetzner.token = empty_or_redacted(&config.hetzner.token);
-
-    config.secrets.iter_mut().for_each(|(_, secret)| {
-      *secret = empty_or_redacted(secret);
-    });
-
-    config.git_providers.iter_mut().for_each(|provider| {
-      provider.accounts.iter_mut().for_each(|account| {
-        account.token = empty_or_redacted(&account.token);
-      })
-    });
-
-    config.docker_registries.iter_mut().for_each(|provider| {
-      provider.accounts.iter_mut().for_each(|account| {
-        account.token = empty_or_redacted(&account.token);
-      })
-    });
-
-    config.aws_ecr_registries.iter_mut().for_each(|ecr| {
-      ecr.access_key_id = empty_or_redacted(&ecr.access_key_id);
-      ecr.secret_access_key =
-        empty_or_redacted(&ecr.secret_access_key);
-    });
-
-    config
+    let config = self.clone();
+    CoreConfig {
+      title: config.title,
+      host: config.host,
+      port: config.port,
+      passkey: empty_or_redacted(&config.passkey),
+      jwt_secret: empty_or_redacted(&config.jwt_secret),
+      jwt_ttl: config.jwt_ttl,
+      repo_directory: config.repo_directory,
+      sync_poll_interval: config.sync_poll_interval,
+      stack_poll_interval: config.stack_poll_interval,
+      build_poll_interval: config.build_poll_interval,
+      repo_poll_interval: config.repo_poll_interval,
+      monitoring_interval: config.monitoring_interval,
+      keep_stats_for_days: config.keep_stats_for_days,
+      keep_alerts_for_days: config.keep_alerts_for_days,
+      logging: config.logging,
+      transparent_mode: config.transparent_mode,
+      ui_write_disabled: config.ui_write_disabled,
+      enable_new_users: config.enable_new_users,
+      local_auth: config.local_auth,
+      google_oauth: OauthCredentials {
+        enabled: config.google_oauth.enabled,
+        id: empty_or_redacted(&config.google_oauth.id),
+        secret: empty_or_redacted(&config.google_oauth.id),
+      },
+      github_oauth: OauthCredentials {
+        enabled: config.github_oauth.enabled,
+        id: empty_or_redacted(&config.github_oauth.id),
+        secret: empty_or_redacted(&config.github_oauth.id),
+      },
+      webhook_secret: empty_or_redacted(&config.webhook_secret),
+      webhook_base_url: config.webhook_base_url,
+      github_webhook_app: config.github_webhook_app,
+      mongo: MongoConfig {
+        uri: config.mongo.uri.map(|cur| empty_or_redacted(&cur)),
+        address: config.mongo.address,
+        username: config
+          .mongo
+          .username
+          .map(|cur| empty_or_redacted(&cur)),
+        password: config
+          .mongo
+          .password
+          .map(|cur| empty_or_redacted(&cur)),
+        app_name: config.mongo.app_name,
+        db_name: config.mongo.db_name,
+      },
+      aws: AwsCredentials {
+        access_key_id: empty_or_redacted(&config.aws.access_key_id),
+        secret_access_key: empty_or_redacted(
+          &config.aws.secret_access_key,
+        ),
+      },
+      hetzner: HetznerCredentials {
+        token: empty_or_redacted(&config.hetzner.token),
+      },
+      secrets: config
+        .secrets
+        .into_iter()
+        .map(|(id, secret)| (id, empty_or_redacted(&secret)))
+        .collect(),
+      git_providers: config
+        .git_providers
+        .into_iter()
+        .map(|mut provider| {
+          provider.accounts.iter_mut().for_each(|account| {
+            account.token = empty_or_redacted(&account.token);
+          });
+          provider
+        })
+        .collect(),
+      docker_registries: config
+        .docker_registries
+        .into_iter()
+        .map(|mut provider| {
+          provider.accounts.iter_mut().for_each(|account| {
+            account.token = empty_or_redacted(&account.token);
+          });
+          provider
+        })
+        .collect(),
+      aws_ecr_registries: config
+        .aws_ecr_registries
+        .into_iter()
+        .map(|mut ecr| {
+          ecr.access_key_id = empty_or_redacted(&ecr.access_key_id);
+          ecr.secret_access_key =
+            empty_or_redacted(&ecr.secret_access_key);
+          ecr
+        })
+        .collect(),
+    }
   }
 }
 

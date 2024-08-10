@@ -16,7 +16,7 @@
 //!
 //! ## Client Example
 //! ```
-//! dotenv::dotenv().ok();
+//! dotenvy::dotenv().ok();
 //!
 //! let client = MonitorClient::new_from_env()?;
 //!

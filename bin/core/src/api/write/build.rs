@@ -1,14 +1,16 @@
 use anyhow::{anyhow, Context};
+use mongo_indexed::doc;
 use monitor_client::{
   api::write::*,
   entities::{
-    build::{Build, PartialBuildConfig},
+    build::{Build, BuildInfo, PartialBuildConfig},
     config::core::CoreConfig,
     permission::PermissionLevel,
     user::User,
-    NoData,
+    CloneArgs, NoData,
   },
 };
+use mungos::mongodb::bson::to_document;
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
@@ -16,8 +18,9 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::{git_token, random_string},
   resource,
-  state::{github_client, State},
+  state::{db_client, github_client, State},
 };
 
 impl Resolve<CreateBuild, User> for State {
@@ -70,6 +73,89 @@ impl Resolve<UpdateBuild, User> for State {
     user: User,
   ) -> anyhow::Result<Build> {
     resource::update::<Build>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RefreshBuildCache, User> for State {
+  #[instrument(name = "RefreshBuildCache", skip(self, user))]
+  async fn resolve(
+    &self,
+    RefreshBuildCache { build }: RefreshBuildCache,
+    user: User,
+  ) -> anyhow::Result<NoData> {
+    // Even though this is a write request, this doesn't change any config. Anyone that can execute the
+    // build should be able to do this.
+    let build = resource::get_check_permissions::<Build>(
+      &build,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    let config = core_config();
+
+    let repo_dir = config.repo_directory.join(random_string(10));
+    let mut clone_args: CloneArgs = (&build).into();
+    clone_args.destination = Some(repo_dir.display().to_string());
+
+    let access_token = match (&clone_args.account, &clone_args.provider)
+    {
+      (None, _) => None,
+      (Some(_), None) => {
+        return Err(anyhow!(
+          "Account is configured, but provider is empty"
+        ))
+      }
+      (Some(username), Some(provider)) => {
+        git_token(provider, username, |https| {
+          clone_args.https = https
+        })
+        .await
+        .with_context(
+          || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+        )?
+      }
+    };
+
+    let (_, latest_hash, latest_message, _) = git::clone(
+      clone_args,
+      &config.repo_directory,
+      access_token,
+      &[],
+      "",
+      None,
+    )
+    .await
+    .context("failed to clone build repo")?;
+
+    let info = BuildInfo {
+      last_built_at: build.info.last_built_at,
+      built_hash: build.info.built_hash,
+      built_message: build.info.built_message,
+      latest_hash,
+      latest_message,
+    };
+
+    let info = to_document(&info)
+      .context("failed to serialize build info to bson")?;
+
+    db_client()
+      .await
+      .builds
+      .update_one(
+        doc! { "name": &build.name },
+        doc! { "$set": { "info": info } },
+      )
+      .await
+      .context("failed to update build info on db")?;
+
+    if repo_dir.exists() {
+      if let Err(e) = std::fs::remove_dir_all(&repo_dir) {
+        warn!("failed to remove build cache update repo directory | {e:?}")
+      }
+    }
+
+    Ok(NoData {})
   }
 }
 

@@ -3,12 +3,12 @@ resolver = "2"
 members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
-version = "1.12.0"
+version = "1.13.0"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/mbecker20/monitor"
-homepage = "https://docs.monitor.mogh.tech"
+homepage = "https://docs.monitor.dev"
 
 [patch.crates-io]
 monitor_client = { path = "client/core/rs" }
@@ -40,7 +40,7 @@ mungos = "1.0.0"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.38.1", features = ["full"] }
+tokio = { version = "1.39.2", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json"] }
 tokio-util = "0.7.11"
 futures = "0.3.30"
@@ -57,8 +57,9 @@ tokio-tungstenite = "0.23.1"
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 strum = { version = "0.26.3", features = ["derive"] }
-serde_json = "1.0.120"
-toml = "0.8.15"
+serde_json = "1.0.122"
+serde_yaml = "0.9.34"
+toml = "0.8.19"
 
 # ERROR
 anyhow = "1.0.86"
@@ -73,8 +74,8 @@ opentelemetry = "0.23.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.9", features = ["derive"] }
-dotenv = "0.15.0"
+clap = { version = "4.5.13", features = ["derive"] }
+dotenvy = "0.15.7"
 envy = "0.4.2"
 
 # CRYPTO
@@ -90,19 +91,19 @@ jwt = "0.16.0"
 hex = "0.4.3"
 
 # SYSTEM
-bollard = "0.16.1"
-sysinfo = "0.30.13"
+bollard = "0.17.0"
+sysinfo = "0.31.2"
 
 # CLOUD
 aws-config = "1.5.4"
-aws-sdk-ec2 = "1.60.0"
-aws-sdk-ecr = "1.35.0"
+aws-sdk-ec2 = "1.62.0"
+aws-sdk-ecr = "1.37.0"
 
 # MISC
 derive_builder = "0.20.0"
 typeshare = "1.0.3"
 octorust = "0.7.0"
 colored = "2.1.0"
-regex = "1.10.5"
+regex = "1.10.6"
 bson = "2.11.0"
 

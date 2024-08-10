@@ -142,6 +142,14 @@ impl super::MonitorResource for Server {
       .await
       .context("failed to detach server from deployments")?;
 
+    db.stacks
+      .update_many(
+        doc! { "config.server_id": &id },
+        doc! { "$set": { "config.server_id": "" } },
+      )
+      .await
+      .context("failed to detach server from stacks")?;
+
     db.repos
       .update_many(
         doc! { "config.server_id": &id },

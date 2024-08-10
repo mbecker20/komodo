@@ -19,10 +19,12 @@ mod deployment;
 mod description;
 mod permissions;
 mod procedure;
+mod provider;
 mod repo;
 mod server;
 mod server_template;
 mod service_user;
+mod stack;
 mod sync;
 mod tag;
 mod user_group;
@@ -76,6 +78,7 @@ pub enum WriteRequest {
   CopyBuild(CopyBuild),
   DeleteBuild(DeleteBuild),
   UpdateBuild(UpdateBuild),
+  RefreshBuildCache(RefreshBuildCache),
   CreateBuildWebhook(CreateBuildWebhook),
   DeleteBuildWebhook(DeleteBuildWebhook),
 
@@ -96,6 +99,7 @@ pub enum WriteRequest {
   CopyRepo(CopyRepo),
   DeleteRepo(DeleteRepo),
   UpdateRepo(UpdateRepo),
+  RefreshRepoCache(RefreshRepoCache),
   CreateRepoWebhook(CreateRepoWebhook),
   DeleteRepoWebhook(DeleteRepoWebhook),
 
@@ -120,6 +124,16 @@ pub enum WriteRequest {
   CreateSyncWebhook(CreateSyncWebhook),
   DeleteSyncWebhook(DeleteSyncWebhook),
 
+  // ==== STACK ====
+  CreateStack(CreateStack),
+  CopyStack(CopyStack),
+  DeleteStack(DeleteStack),
+  UpdateStack(UpdateStack),
+  RenameStack(RenameStack),
+  RefreshStackCache(RefreshStackCache),
+  CreateStackWebhook(CreateStackWebhook),
+  DeleteStackWebhook(DeleteStackWebhook),
+
   // ==== TAG ====
   CreateTag(CreateTag),
   DeleteTag(DeleteTag),
@@ -131,6 +145,14 @@ pub enum WriteRequest {
   UpdateVariableValue(UpdateVariableValue),
   UpdateVariableDescription(UpdateVariableDescription),
   DeleteVariable(DeleteVariable),
+
+  // ==== PROVIDERS ====
+  CreateGitProviderAccount(CreateGitProviderAccount),
+  UpdateGitProviderAccount(UpdateGitProviderAccount),
+  DeleteGitProviderAccount(DeleteGitProviderAccount),
+  CreateDockerRegistryAccount(CreateDockerRegistryAccount),
+  UpdateDockerRegistryAccount(UpdateDockerRegistryAccount),
+  DeleteDockerRegistryAccount(DeleteDockerRegistryAccount),
 }
 
 pub fn router() -> Router {

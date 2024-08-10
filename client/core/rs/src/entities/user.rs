@@ -21,7 +21,7 @@ use super::{
 pub struct User {
   /// The Mongo ID of the User.
   /// This field is de/serialized from/to JSON as
-  /// `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
+  /// `{ "_id": { "$oid": "..." }, ...(rest of User schema) }`
   #[serde(
     default,
     rename = "_id",
@@ -81,7 +81,14 @@ impl User {
   pub fn is_service_user(user_id: &str) -> bool {
     matches!(
       user_id,
-      "Procedure" | "Github" | "Auto Redeploy" | "Resource Sync"
+      "Procedure"
+        | "Github" // Github can be removed later, just keeping for backward compat.
+        | "Git Webhook"
+        | "Auto Redeploy"
+        | "Resource Sync"
+        | "Stack Wizard"
+        | "Build Manager"
+        | "Repo Manager"
     )
   }
 }
@@ -89,9 +96,14 @@ impl User {
 pub fn admin_service_user(user_id: &str) -> Option<User> {
   match user_id {
     "Procedure" => procedure_user().to_owned().into(),
-    "Github" => github_user().to_owned().into(),
+    // Github should be removed later, replaced by Git Webhook, just keeping for backward compat.
+    "Github" => git_webhook_user().to_owned().into(),
+    "Git Webhook" => git_webhook_user().to_owned().into(),
     "Auto Redeploy" => auto_redeploy_user().to_owned().into(),
     "Resource Sync" => sync_user().to_owned().into(),
+    "Stack Wizard" => stack_user().to_owned().into(),
+    "Build Manager" => build_user().to_owned().into(),
+    "Repo Manager" => repo_user().to_owned().into(),
     _ => None,
   }
 }
@@ -109,10 +121,10 @@ pub fn procedure_user() -> &'static User {
   })
 }
 
-pub fn github_user() -> &'static User {
-  static PROCEDURE_USER: OnceLock<User> = OnceLock::new();
-  PROCEDURE_USER.get_or_init(|| {
-    let id_name = String::from("Github");
+pub fn git_webhook_user() -> &'static User {
+  static GIT_WEBHOOK_USER: OnceLock<User> = OnceLock::new();
+  GIT_WEBHOOK_USER.get_or_init(|| {
+    let id_name = String::from("Git Webhook");
     User {
       id: id_name.clone(),
       username: id_name,
@@ -139,6 +151,45 @@ pub fn sync_user() -> &'static User {
   static SYNC_USER: OnceLock<User> = OnceLock::new();
   SYNC_USER.get_or_init(|| {
     let id_name = String::from("Resource Sync");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
+}
+
+pub fn stack_user() -> &'static User {
+  static STACK_USER: OnceLock<User> = OnceLock::new();
+  STACK_USER.get_or_init(|| {
+    let id_name = String::from("Stack Wizard");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
+}
+
+pub fn build_user() -> &'static User {
+  static BUILD_USER: OnceLock<User> = OnceLock::new();
+  BUILD_USER.get_or_init(|| {
+    let id_name = String::from("Build Manager");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
+}
+
+pub fn repo_user() -> &'static User {
+  static REPO_USER: OnceLock<User> = OnceLock::new();
+  REPO_USER.get_or_init(|| {
+    let id_name = String::from("Repo Manager");
     User {
       id: id_name.clone(),
       username: id_name,

@@ -6,6 +6,7 @@ use std::{net::SocketAddr, str::FromStr};
 use anyhow::Context;
 
 mod api;
+mod compose;
 mod config;
 mod docker;
 mod helpers;
@@ -15,7 +16,7 @@ mod stats;
 struct State;
 
 async fn app() -> anyhow::Result<()> {
-  dotenv::dotenv().ok();
+  dotenvy::dotenv().ok();
   let config = config::periphery_config();
   logger::init(&config.logging)?;
 

@@ -77,15 +77,28 @@ pub fn core_config() -> &'static CoreConfig {
       host: env.monitor_host.unwrap_or(config.host),
       port: env.monitor_port.unwrap_or(config.port),
       passkey: env.monitor_passkey.unwrap_or(config.passkey),
-      jwt_valid_for: env
-        .monitor_jwt_valid_for
-        .unwrap_or(config.jwt_valid_for),
-      sync_directory: env
-        .monitor_sync_directory
+      jwt_secret: env.monitor_jwt_secret.unwrap_or(config.jwt_secret),
+      jwt_ttl: env
+        .monitor_jwt_ttl
+        .unwrap_or(config.jwt_ttl),
+      repo_directory: env
+        .monitor_repo_directory
         .map(|dir|
           dir.parse()
-            .context("failed to parse env MONITOR_SYNC_DIRECTORY as valid path").unwrap())
-        .unwrap_or(config.sync_directory),
+            .context("failed to parse env MONITOR_REPO_DIRECTORY as valid path").unwrap())
+        .unwrap_or(config.repo_directory),
+      stack_poll_interval: env
+        .monitor_stack_poll_interval
+        .unwrap_or(config.stack_poll_interval),
+      sync_poll_interval: env
+        .monitor_sync_poll_interval
+        .unwrap_or(config.sync_poll_interval),
+      build_poll_interval: env
+        .monitor_build_poll_interval
+        .unwrap_or(config.build_poll_interval),
+      repo_poll_interval: env
+        .monitor_repo_poll_interval
+        .unwrap_or(config.repo_poll_interval),
       monitoring_interval: env
         .monitor_monitoring_interval
         .unwrap_or(config.monitoring_interval),
@@ -107,6 +120,8 @@ pub fn core_config() -> &'static CoreConfig {
       ui_write_disabled: env
         .monitor_ui_write_disabled
         .unwrap_or(config.ui_write_disabled),
+      enable_new_users: env.monitor_enable_new_users
+        .unwrap_or(config.enable_new_users),
       local_auth: env.monitor_local_auth.unwrap_or(config.local_auth),
       google_oauth: OauthCredentials {
         enabled: env

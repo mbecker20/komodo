@@ -1,33 +1,59 @@
-import { ActionWithDialog } from "@components/util";
+import { ActionWithDialog, StatusBadge } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Card, CardHeader } from "@ui/card";
 import { Route } from "lucide-react";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import {
-  bg_color_class_by_intention,
   procedure_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
-import { ProcedureDashboard } from "./dashboard";
 import { Types } from "@monitor/client";
+import { DashboardPieChart } from "@pages/home/dashboard";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
 
 const ProcedureIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useProcedure(id)?.info.state;
-  const color = stroke_color_class_by_intention(procedure_state_intention(state));
+  const color = stroke_color_class_by_intention(
+    procedure_state_intention(state)
+  );
   return <Route className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 
 export const ProcedureComponents: RequiredResourceComponents = {
   list_item: (id) => useProcedure(id),
 
-  Dashboard: ProcedureDashboard,
+  Description: () => <>Compose monitor actions together.</>,
+
+  Dashboard: () => {
+    const summary = useRead("GetProceduresSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { title: "Ok", intention: "Good", value: summary?.ok ?? 0 },
+          {
+            title: "Running",
+            intention: "Warning",
+            value: summary?.running ?? 0,
+          },
+          {
+            title: "Failed",
+            intention: "Critical",
+            value: summary?.failed ?? 0,
+          },
+          {
+            title: "Unknown",
+            intention: "Unknown",
+            value: summary?.unknown ?? 0,
+          },
+        ]}
+      />
+    );
+  },
 
   New: () => <NewResource type="Procedure" />,
 
@@ -41,13 +67,8 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       let state = useProcedure(id)?.info.state;
-      const color = bg_color_class_by_intention(
-        procedure_state_intention(state)
-      );
       return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">{state}</CardHeader>
-        </Card>
+        <StatusBadge text={state} intent={procedure_state_intention(state)} />
       );
     },
   },

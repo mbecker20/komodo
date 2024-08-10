@@ -34,6 +34,10 @@ pub struct BuildListItemInfo {
   pub branch: String,
   /// State of the build. Reflects whether most recent build successful.
   pub state: BuildState,
+  /// Latest built short commit hash, or null.
+  pub built_hash: Option<String>,
+  /// Latest short commit hash, or null. Only for repo based stacks
+  pub latest_hash: Option<String>,
 }
 
 #[typeshare]
@@ -56,6 +60,14 @@ pub enum BuildState {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BuildInfo {
   pub last_built_at: I64,
+  /// Latest built short commit hash, or null.
+  pub built_hash: Option<String>,
+  /// Latest built commit message, or null. Only for repo based stacks
+  pub built_message: Option<String>,
+  /// Latest remote short commit hash, or null.
+  pub latest_hash: Option<String>,
+  /// Latest remote commit message, or null
+  pub latest_message: Option<String>,
 }
 
 #[typeshare(serialized_as = "Partial<BuildConfig>")]
@@ -77,6 +89,27 @@ pub struct BuildConfig {
   #[serde(default)]
   #[builder(default)]
   pub version: Version,
+
+  /// An alternate name for the image pushed to the repository.
+  /// If this is empty, it will use the build name.
+  ///
+  /// Can be used in conjunction with `image_tag` to direct multiple builds
+  /// with different configs to push to the same image registry, under different,
+  /// independantly versioned tags.
+  #[serde(default)]
+  #[builder(default)]
+  pub image_name: String,
+
+  /// An extra tag put before the build version, for the image pushed to the repository.
+  /// Eg. in image tag of `aarch64` would push to mbecker20/monitor_core:aarch64-1.13.2.
+  /// If this is empty, the image tag will just be the build version.
+  ///
+  /// Can be used in conjunction with `image_name` to direct multiple builds
+  /// with different configs to push to the same image registry, under different,
+  /// independantly versioned tags.
+  #[serde(default)]
+  #[builder(default)]
+  pub image_tag: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -113,7 +146,7 @@ pub struct BuildConfig {
   ///
   /// Note. A token for the account must be available in the core config or the builder server's periphery config
   /// for the configured git provider.
-  #[serde(default, alias = "github_account")]
+  #[serde(default)]
   #[builder(default)]
   pub git_account: String,
 
@@ -245,6 +278,8 @@ impl Default for BuildConfig {
       builder_id: Default::default(),
       skip_secret_interp: Default::default(),
       version: Default::default(),
+      image_name: Default::default(),
+      image_tag: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),

@@ -7,7 +7,6 @@ use axum::{
 };
 use monitor_client::entities::{monitor_timestamp, user::User};
 use mungos::mongodb::bson::doc;
-use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use reqwest::StatusCode;
 use serde::Deserialize;
 use serror::AddStatusCode;
@@ -43,14 +42,6 @@ pub async fn auth_request(
     .status_code(StatusCode::UNAUTHORIZED)?;
   req.extensions_mut().insert(user);
   Ok(next.run(req).await)
-}
-
-pub fn random_string(length: usize) -> String {
-  thread_rng()
-    .sample_iter(&Alphanumeric)
-    .take(length)
-    .map(char::from)
-    .collect()
 }
 
 #[instrument(level = "debug")]

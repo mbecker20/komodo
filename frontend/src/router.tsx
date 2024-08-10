@@ -14,6 +14,7 @@ import { Alerts } from "@pages/alerts";
 import { UserPage } from "@pages/user";
 import { UserGroupPage } from "@pages/user-group";
 import { Settings } from "@pages/settings";
+import { StackServicePage } from "@pages/stack-service";
 
 const ROUTER = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ const ROUTER = createBrowserRouter([
         ],
       },
       {
+        path: "stacks/:id/:service",
+        element: <StackServicePage />,
+      },
+      {
         path: ":type",
         children: [
           { path: "", element: <Resources /> },
@@ -54,7 +59,7 @@ const ROUTER = createBrowserRouter([
 export const Router = () => {
   const { data: user, isLoading } = useUser();
 
-  if (isLoading) return null;
+  if (isLoading && !user) return null;
   if (!user) return <Login />;
   if (!user.enabled) return <UserDisabled />;
 

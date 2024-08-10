@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useLocalStorage, useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
@@ -6,27 +6,25 @@ import { cn } from "@lib/utils";
 import { useServer } from "../server";
 import {
   DeployContainer,
-  StartOrStopContainer,
+  StartStopContainer,
   RemoveContainer,
-  DeleteDeployment,
   RenameDeployment,
+  RestartContainer,
+  PauseUnpauseContainer,
 } from "./actions";
 import { DeploymentLogs } from "./log";
-import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
-  bg_color_class_by_intention,
   deployment_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { DeploymentTable } from "./table";
-import { DeploymentsChart } from "./dashboard";
-import { NewResource, ResourceLink } from "../common";
-import { Card, CardHeader } from "@ui/card";
+import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { DashboardPieChart } from "@pages/home/dashboard";
+import { StatusBadge } from "@components/util";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -37,7 +35,7 @@ export const useDeployment = (id?: string) =>
 
 const ConfigOrLog = ({ id }: { id: string }) => {
   // const [view, setView] = useAtom(configOrLog);
-  const [view, setView] = useState("Config");
+  const [view, setView] = useLocalStorage("deployment-tabs-v1","Config");
   const state = useDeployment(id)?.info.state;
   const logsDisabled =
     state === undefined ||
@@ -102,7 +100,33 @@ const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
 export const DeploymentComponents: RequiredResourceComponents = {
   list_item: (id) => useDeployment(id),
 
-  Dashboard: DeploymentsChart,
+  Description: () => <>Deploy containers on your servers.</>,
+
+  Dashboard: () => {
+    const summary = useRead("GetDeploymentsSummary", {}).data;
+    return (
+      <DashboardPieChart
+        data={[
+          { intention: "Good", value: summary?.running ?? 0, title: "Running" },
+          {
+            intention: "Critical",
+            value: summary?.stopped ?? 0,
+            title: "Stopped",
+          },
+          {
+            intention: "Neutral",
+            value: summary?.not_deployed ?? 0,
+            title: "Not Deployed",
+          },
+          {
+            intention: "Unknown",
+            value: summary?.unknown ?? 0,
+            title: "Unknown",
+          },
+        ]}
+      />
+    );
+  },
 
   New: ({ server_id, build_id }) => (
     <NewResource type="Deployment" server_id={server_id} build_id={build_id} />
@@ -121,20 +145,15 @@ export const DeploymentComponents: RequiredResourceComponents = {
     State: ({ id }) => {
       const state =
         useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
-      const color = bg_color_class_by_intention(
-        deployment_state_intention(state)
-      );
       return (
-        <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">
-            {snake_case_to_upper_space_case(state)}
-          </CardHeader>
-        </Card>
+        <StatusBadge text={state} intent={deployment_state_intention(state)} />
       );
     },
     Status: ({ id }) => {
       const status = useDeployment(id)?.info.status;
-      return status && <div>{status}</div>;
+      return (
+        status && <p className="text-sm text-muted-foreground">{status}</p>
+      );
     },
   },
 
@@ -144,7 +163,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return info?.build_id ? (
         <ResourceLink type="Build" id={info.build_id} />
       ) : (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center text-sm">
           <HardDrive className="w-4 h-4" />
           <div>{info?.image || "N/A"}</div>
         </div>
@@ -156,7 +175,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return server?.id ? (
         <ResourceLink type="Server" id={server?.id} />
       ) : (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center text-sm">
           <Server className="w-4 h-4" />
           <div>Unknown Server</div>
         </div>
@@ -182,7 +201,9 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return <RunBuild id={build_id} />;
     },
     DeployContainer,
-    StartOrStopContainer,
+    RestartContainer,
+    PauseUnpauseContainer,
+    StartStopContainer,
     RemoveContainer,
   },
 
@@ -193,7 +214,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
   DangerZone: ({ id }) => (
     <>
       <RenameDeployment id={id} />
-      <DeleteDeployment id={id} />
+      <DeleteResource type="Deployment" id={id} />
     </>
   ),
 };

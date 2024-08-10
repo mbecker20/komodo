@@ -12,6 +12,7 @@ use super::{
   repo::PartialRepoConfig,
   server::PartialServerConfig,
   server_template::PartialServerTemplateConfig,
+  stack::PartialStackConfig,
   sync::PartialResourceSyncConfig,
   update::{ResourceTarget, ResourceTargetVariant},
   variable::Variable,
@@ -33,6 +34,13 @@ pub struct ResourcesToml {
     skip_serializing_if = "Vec::is_empty"
   )]
   pub deployments: Vec<ResourceToml<PartialDeploymentConfig>>,
+
+  #[serde(
+    default,
+    rename = "stack",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub stacks: Vec<ResourceToml<PartialStackConfig>>,
 
   #[serde(
     default,
@@ -112,19 +120,28 @@ pub struct ResourceToml<PartialConfig: Default> {
   #[serde(default, skip_serializing_if = "Vec::is_empty")]
   pub tags: Vec<String>,
 
-  /// Optional. Only relevant for deployments.
+  /// Optional. Only relevant for deployments / stacks.
   ///
-  /// Will ensure deployment is running with the latest configuration.
+  /// Will ensure deployment / stack is running with the latest configuration.
   /// Deploy actions to achieve this will be included in the sync.
+  /// Default is false.
   #[serde(default, skip_serializing_if = "is_false")]
   pub deploy: bool,
 
-  /// Optional. Only relevant for deployments using the 'deploy' sync feature.
+  /// Optional. Only relevant for deployments / stacks using the 'deploy' sync feature.
   ///
-  /// Specify other deployments as dependencies.
-  /// The sync will ensure the deployment will only be deployed 'after' its dependencies.
+  /// Specify other deployments / stacks by name as dependencies.
+  /// The sync will ensure the deployment / stack will only be deployed 'after' its dependencies.
   #[serde(default, skip_serializing_if = "Vec::is_empty")]
   pub after: Vec<String>,
+
+  /// Optional. Only relevant for stacks / repos.
+  ///
+  /// Will ensure stacks with 'deploy = true' are running with the latest commit hash for the repo.
+  /// Deploy actions to achieve this will be included in the sync.
+  /// Default is false.
+  #[serde(default, skip_serializing_if = "is_false")]
+  pub latest_hash: bool,
 
   /// Resource specific configuration.
   #[serde(default)]

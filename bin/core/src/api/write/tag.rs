@@ -10,8 +10,8 @@ use monitor_client::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, permission::PermissionLevel,
     procedure::Procedure, repo::Repo, server::Server,
-    server_template::ServerTemplate, sync::ResourceSync, tag::Tag,
-    update::ResourceTarget, user::User,
+    server_template::ServerTemplate, stack::Stack,
+    sync::ResourceSync, tag::Tag, update::ResourceTarget, user::User,
   },
 };
 use mungos::{
@@ -199,6 +199,15 @@ impl Resolve<UpdateTagsOnResource, User> for State {
         )
         .await?;
         resource::update_tags::<ResourceSync>(&id, tags, user).await?
+      }
+      ResourceTarget::Stack(id) => {
+        resource::get_check_permissions::<Stack>(
+          &id,
+          &user,
+          PermissionLevel::Write,
+        )
+        .await?;
+        resource::update_tags::<Stack>(&id, tags, user).await?
       }
     };
     Ok(UpdateTagsOnResourceResponse {})

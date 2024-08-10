@@ -29,7 +29,9 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
     CreateLocalUser { username, password }: CreateLocalUser,
     _: HeaderMap,
   ) -> anyhow::Result<CreateLocalUserResponse> {
-    if !core_config().local_auth {
+    let core_config = core_config();
+
+    if !core_config.local_auth {
       return Err(anyhow!("local auth is not enabled"));
     }
 
@@ -39,6 +41,10 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
 
     if ObjectId::from_str(&username).is_ok() {
       return Err(anyhow!("username cannot be valid ObjectId"));
+    }
+
+    if password.is_empty() {
+      return Err(anyhow!("password cannot be empty string"));
     }
 
     let password = bcrypt::hash(password, BCRYPT_COST)
@@ -56,7 +62,7 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
     let user = User {
       id: Default::default(),
       username,
-      enabled: no_users_exist,
+      enabled: no_users_exist || core_config.enable_new_users,
       admin: no_users_exist,
       create_server_permissions: no_users_exist,
       create_build_permissions: no_users_exist,

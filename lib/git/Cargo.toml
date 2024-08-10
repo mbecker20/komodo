@@ -13,6 +13,8 @@ formatting.workspace = true
 command.workspace = true
 #
 run_command.workspace = true
+svi.workspace = true
 #
 tracing.workspace = true
 anyhow.workspace = true
+tokio.workspace = true

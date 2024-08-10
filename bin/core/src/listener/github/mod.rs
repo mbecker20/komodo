@@ -17,6 +17,7 @@ use crate::{
 mod build;
 mod procedure;
 mod repo;
+mod stack;
 mod sync;
 
 type HmacSha256 = Hmac<Sha256>;
@@ -80,6 +81,42 @@ pub fn router() -> Router {
               let res = repo::handle_repo_pull_webhook(id.clone(), headers, body).await;
               if let Err(e) = res {
                 warn!("failed to run repo pull webook for repo {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
+					});
+				},
+			)
+		)
+    .route(
+			"/stack/:id/refresh", 
+			post(
+				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+					tokio::spawn(async move {
+						let span = info_span!("stack_clone_webhook", id);
+            async {
+              let res = stack::handle_stack_refresh_webhook(id.clone(), headers, body).await;
+              if let Err(e) = res {
+                warn!("failed to run stack clone webook for stack {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
+					});
+				},
+			)
+		)
+		.route(
+			"/stack/:id/deploy", 
+			post(
+				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+					tokio::spawn(async move {
+            let span = info_span!("stack_pull_webhook", id);
+            async {
+              let res = stack::handle_stack_deploy_webhook(id.clone(), headers, body).await;
+              if let Err(e) = res {
+                warn!("failed to run stack pull webook for stack {id} | {e:#}");
               }
             }
               .instrument(span)

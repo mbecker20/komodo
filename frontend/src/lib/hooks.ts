@@ -338,3 +338,41 @@ export const useShiftKeyListener = (listenKey: string, onPress: () => void) => {
     return () => document.removeEventListener("keydown", keydown);
   });
 };
+
+// Returns true if monitor has no resources.
+export const useNoResources = () => {
+  const servers =
+    useRead("ListServers", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const deployments =
+    useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const stacks =
+    useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const builds =
+    useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const repos =
+    useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const procedures =
+    useRead("ListProcedures", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const builders =
+    useRead("ListBuilders", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const alerters =
+    useRead("ListAlerters", {}, { refetchInterval: 5000 }).data?.length ?? 0;
+  const templates =
+    useRead("ListServerTemplates", {}, { refetchInterval: 5000 }).data
+      ?.length ?? 0;
+  const syncs =
+    useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.length ??
+    0;
+  return (
+    servers === 0 &&
+    deployments === 0 &&
+    stacks === 0 &&
+    builds === 0 &&
+    repos === 0 &&
+    procedures === 0 &&
+    builders === 0 &&
+    alerters === 0 &&
+    templates === 0 &&
+    syncs === 0
+  );
+};

@@ -1,39 +1,47 @@
 use std::{
+  collections::HashMap,
   path::{Path, PathBuf},
   str::FromStr,
 };
 
 use anyhow::Context;
 use command::run_monitor_command;
-use formatting::{bold, muted};
+use formatting::{bold, format_serror, muted};
 use monitor_client::entities::{
-  all_logs_success, monitor_timestamp, to_monitor_name, update::Log,
-  CloneArgs, LatestCommit, SystemCommand,
+  all_logs_success, environment_vars_to_string, monitor_timestamp,
+  to_monitor_name, update::Log, CloneArgs, EnvironmentVar,
+  LatestCommit, SystemCommand,
 };
 use run_command::async_run_command;
+use tokio::fs;
 use tracing::instrument;
 
+/// Return (logs, commit hash, commit msg)
 #[tracing::instrument(level = "debug")]
 pub async fn pull(
   path: &Path,
   branch: &Option<String>,
   commit: &Option<String>,
   on_pull: &Option<SystemCommand>,
-) -> Vec<Log> {
+  environment: &[EnvironmentVar],
+  env_file_path: &str,
+  // if skip_secret_interp is none, make sure to pass None here
+  secrets: Option<&HashMap<String, String>>,
+) -> (Vec<Log>, Option<String>, Option<String>, Option<PathBuf>) {
   let branch = match branch {
     Some(branch) => branch.to_owned(),
     None => "main".to_string(),
   };
 
   let command =
-    format!("cd {} && git pull origin {branch}", path.display());
+    format!("cd {} && git pull -f origin {branch}", path.display());
 
   let pull_log = run_monitor_command("git pull", command).await;
 
   let mut logs = vec![pull_log];
 
   if !logs[0].success {
-    return logs;
+    return (logs, None, None, None);
   }
 
   if let Some(commit) = commit {
@@ -45,12 +53,33 @@ pub async fn pull(
     logs.push(reset_log);
   }
 
-  let commit_hash_log =
-    get_commit_hash_log(path).await.unwrap_or(Log::simple(
-      "latest commit",
-      String::from("failed to get latest commit"),
-    ));
-  logs.push(commit_hash_log);
+  let (hash, message) = match get_commit_hash_log(path).await {
+    Ok((log, hash, message)) => {
+      logs.push(log);
+      (Some(hash), Some(message))
+    }
+    Err(e) => {
+      logs.push(Log::simple(
+        "latest commit",
+        format_serror(
+          &e.context("failed to get latest commit").into(),
+        ),
+      ));
+      (None, None)
+    }
+  };
+
+  let Ok(env_file_path) = write_environment_file(
+    environment,
+    env_file_path,
+    secrets,
+    path,
+    &mut logs,
+  )
+  .await
+  else {
+    return (logs, hash, message, None);
+  };
 
   if let Some(on_pull) = on_pull {
     if !on_pull.path.is_empty() && !on_pull.command.is_empty() {
@@ -64,15 +93,24 @@ pub async fn pull(
     }
   }
 
-  logs
+  (logs, hash, message, env_file_path)
 }
 
+/// (logs, commit hash, commit message, env_file_path)
+pub type CloneRes =
+  (Vec<Log>, Option<String>, Option<String>, Option<PathBuf>);
+
+/// returns (logs, commit hash, commit message, env_file_path)
 #[tracing::instrument(level = "debug", skip(access_token))]
 pub async fn clone<T>(
   clone_args: T,
   repo_dir: &Path,
   access_token: Option<String>,
-) -> anyhow::Result<Vec<Log>>
+  environment: &[EnvironmentVar],
+  env_file_path: &str,
+  // if skip_secret_interp is none, make sure to pass None here
+  secrets: Option<&HashMap<String, String>>,
+) -> anyhow::Result<CloneRes>
 where
   T: Into<CloneArgs> + std::fmt::Debug,
 {
@@ -114,14 +152,39 @@ where
   .await;
 
   if !all_logs_success(&logs) {
-    tracing::warn!("failed to clone repo at {repo_dir:?}");
-    return Ok(logs);
+    tracing::warn!("failed to clone repo at {repo_dir:?} | {logs:?}");
+    return Ok((logs, None, None, None));
   }
 
   tracing::debug!("repo at {repo_dir:?} cloned");
 
-  let commit_hash_log = get_commit_hash_log(&repo_dir).await?;
-  logs.push(commit_hash_log);
+  let (hash, message) = match get_commit_hash_log(&repo_dir).await {
+    Ok((log, hash, message)) => {
+      logs.push(log);
+      (Some(hash), Some(message))
+    }
+    Err(e) => {
+      logs.push(Log::simple(
+        "latest commit",
+        format_serror(
+          &e.context("failed to get latest commit").into(),
+        ),
+      ));
+      (None, None)
+    }
+  };
+
+  let Ok(env_file_path) = write_environment_file(
+    environment,
+    env_file_path,
+    secrets,
+    &repo_dir,
+    &mut logs,
+  )
+  .await
+  else {
+    return Ok((logs, hash, message, None));
+  };
 
   if let Some(command) = on_clone {
     if !command.path.is_empty() && !command.command.is_empty() {
@@ -163,7 +226,8 @@ where
       logs.push(on_pull_log);
     }
   }
-  Ok(logs)
+
+  Ok((logs, hash, message, env_file_path))
 }
 
 #[tracing::instrument(
@@ -256,18 +320,25 @@ pub async fn get_commit_hash_info(
   Ok(LatestCommit { hash, message })
 }
 
+/// returns (Log, commit hash, commit message)
 #[instrument(level = "debug")]
 pub async fn get_commit_hash_log(
   repo_dir: &Path,
-) -> anyhow::Result<Log> {
+) -> anyhow::Result<(Log, String, String)> {
   let start_ts = monitor_timestamp();
   let command = format!("cd {} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B", repo_dir.display());
   let output = async_run_command(&command).await;
   let mut split = output.stdout.split('\n');
-  let (short, _, msg) = (
-    split.next().context("failed to get short commit hash")?,
+  let (short_hash, _, msg) = (
+    split
+      .next()
+      .context("failed to get short commit hash")?
+      .to_string(),
     split.next().context("failed to get long commit hash")?,
-    split.next().context("failed to get commit message")?,
+    split
+      .next()
+      .context("failed to get commit message")?
+      .to_string(),
   );
   let log = Log {
     stage: "latest commit".into(),
@@ -275,14 +346,87 @@ pub async fn get_commit_hash_log(
     stdout: format!(
       "{} {}\n{} {}",
       muted("hash:"),
-      bold(short),
+      bold(&short_hash),
       muted("message:"),
-      bold(msg),
+      bold(&msg),
     ),
     stderr: String::new(),
     success: true,
     start_ts,
     end_ts: monitor_timestamp(),
   };
-  Ok(log)
+  Ok((log, short_hash, msg))
+}
+
+/// If the environment was written and needs to be passed to the compose command,
+/// will return the env file PathBuf
+pub async fn write_environment_file(
+  environment: &[EnvironmentVar],
+  env_file_path: &str,
+  secrets: Option<&HashMap<String, String>>,
+  folder: &Path,
+  logs: &mut Vec<Log>,
+) -> Result<Option<PathBuf>, ()> {
+  if environment.is_empty() {
+    return Ok(None);
+  }
+
+  let contents = environment_vars_to_string(environment);
+
+  let contents = if let Some(secrets) = secrets {
+    let res = svi::interpolate_variables(
+      &contents,
+      secrets,
+      svi::Interpolator::DoubleBrackets,
+      true,
+    )
+    .context("failed to interpolate secrets into environment");
+
+    let (contents, replacers) = match res {
+      Ok(res) => res,
+      Err(e) => {
+        logs.push(Log::error(
+          "interpolate periphery secrets",
+          format_serror(&e.into()),
+        ));
+        return Err(());
+      }
+    };
+
+    if !replacers.is_empty() {
+      logs.push(Log::simple(
+        "interpolate periphery secrets",
+        replacers
+            .iter()
+            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+      ))
+    }
+
+    contents
+  } else {
+    contents
+  };
+
+  let file = folder.join(env_file_path);
+
+  if let Err(e) =
+    fs::write(&file, contents).await.with_context(|| {
+      format!("failed to write environment file to {file:?}")
+    })
+  {
+    logs.push(Log::error(
+      "write environment file",
+      format_serror(&e.into()),
+    ));
+    return Err(());
+  }
+
+  logs.push(Log::simple(
+    "write environment file",
+    format!("environment written to {file:?}"),
+  ));
+
+  Ok(Some(file))
 }

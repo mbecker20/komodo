@@ -15,6 +15,7 @@ use monitor_client::{
     repo::Repo,
     resource::Resource,
     server::Server,
+    stack::Stack,
     sync::ResourceSync,
     update::{ResourceTargetVariant, Update},
     user::User,
@@ -177,6 +178,15 @@ async fn validate_config(
           .await?;
           params.build = build.id;
         }
+        Execution::CancelBuild(params) => {
+          let build = super::get_check_permissions::<Build>(
+            &params.build,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.build = build.id;
+        }
         Execution::Deploy(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
@@ -188,6 +198,36 @@ async fn validate_config(
           params.deployment = deployment.id;
         }
         Execution::StartContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::RestartContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::PauseContainer(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
+        Execution::UnpauseContainer(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -244,6 +284,24 @@ async fn validate_config(
           .await?;
           params.repo = repo.id;
         }
+        Execution::BuildRepo(params) => {
+          let repo = super::get_check_permissions::<Repo>(
+            &params.repo,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.repo = repo.id;
+        }
+        Execution::CancelRepoBuild(params) => {
+          let repo = super::get_check_permissions::<Repo>(
+            &params.repo,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.repo = repo.id;
+        }
         Execution::PruneNetworks(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,
@@ -279,6 +337,69 @@ async fn validate_config(
           )
           .await?;
           params.sync = sync.id;
+        }
+        Execution::DeployStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
+        Execution::StartStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
+        Execution::RestartStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
+        Execution::PauseStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
+        Execution::UnpauseStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
+        Execution::StopStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
+        Execution::DestroyStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
         }
         Execution::Sleep(_) => {}
       }

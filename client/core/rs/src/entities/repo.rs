@@ -10,7 +10,7 @@ use crate::entities::I64;
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
-  SystemCommand,
+  EnvironmentVar, SystemCommand,
 };
 
 #[typeshare]
@@ -23,6 +23,8 @@ pub struct RepoListItemInfo {
   pub server_id: String,
   /// Repo last cloned / pulled timestamp in ms.
   pub last_pulled_at: I64,
+  /// Repo last built timestamp in ms.
+  pub last_built_at: I64,
   /// The git provider domain
   pub git_provider: String,
   /// The configured repo
@@ -31,10 +33,14 @@ pub struct RepoListItemInfo {
   pub branch: String,
   /// The repo state
   pub state: RepoState,
-  /// If the repo is cloned, will be the latest short commit hash.
+  /// If the repo is cloned, will be the cloned short commit hash.
+  pub cloned_hash: Option<String>,
+  /// If the repo is cloned, will be the cloned commit message.
+  pub cloned_message: Option<String>,
+  /// If the repo is built, will be the latest built short commit hash.
+  pub built_hash: Option<String>,
+  /// Will be the latest remote short commit hash.
   pub latest_hash: Option<String>,
-  /// If the repo is cloned, will be the latest commit message.
-  pub latest_message: Option<String>,
 }
 
 #[typeshare]
@@ -62,7 +68,19 @@ pub type Repo = Resource<RepoConfig, RepoInfo>;
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RepoInfo {
   /// When repo was last pulled
+  #[serde(default)]
   pub last_pulled_at: I64,
+  /// When repo was last built
+  #[serde(default)]
+  pub last_built_at: I64,
+  /// Latest built short commit hash, or null.
+  pub built_hash: Option<String>,
+  /// Latest built commit message, or null. Only for repo based stacks
+  pub built_message: Option<String>,
+  /// Latest remote short commit hash, or null.
+  pub latest_hash: Option<String>,
+  /// Latest remote commit message, or null
+  pub latest_message: Option<String>,
 }
 
 #[typeshare(serialized_as = "Partial<RepoConfig>")]
@@ -74,10 +92,14 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct RepoConfig {
   /// The server to clone the repo on.
-  #[serde(default, alias = "server")]
-  #[partial_attr(serde(alias = "server"))]
+  #[serde(default)]
   #[builder(default)]
   pub server_id: String,
+
+  /// Attach a builder to 'build' the repo.
+  #[serde(default)]
+  #[builder(default)]
+  pub builder_id: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -106,7 +128,7 @@ pub struct RepoConfig {
   ///
   /// Note. A token for the account must be available in the core config or the builder server's periphery config
   /// for the configured git provider.
-  #[serde(default, alias = "github_account")]
+  #[serde(default)]
   #[builder(default)]
   pub git_account: String,
 
@@ -118,7 +140,7 @@ pub struct RepoConfig {
   #[partial_default(default_git_https())]
   pub git_https: bool,
 
-  /// Explicitly specificy the folder to clone the repo in.
+  /// Explicitly specify the folder to clone the repo in.
   #[serde(default)]
   #[builder(default)]
   pub path: String,
@@ -134,6 +156,35 @@ pub struct RepoConfig {
   #[serde(default)]
   #[builder(default)]
   pub on_pull: SystemCommand,
+
+  /// The environment variables passed to the compose file.
+  /// They will be written to path defined in env_file_path,
+  /// which is given relative to the run directory.
+  ///
+  /// If it is empty, no file will be written.
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
+  #[builder(default)]
+  pub environment: Vec<EnvironmentVar>,
+
+  /// The name of the written environment file before `docker compose up`.
+  /// Relative to the repo root.
+  /// Default: .env
+  #[serde(default = "default_env_file_path")]
+  #[builder(default = "default_env_file_path()")]
+  #[partial_default(default_env_file_path())]
+  pub env_file_path: String,
+
+  /// Whether to skip secret interpolation into the repo environment variable file.
+  #[serde(default)]
+  #[builder(default)]
+  pub skip_secret_interp: bool,
 
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
@@ -160,6 +211,10 @@ fn default_branch() -> String {
   String::from("main")
 }
 
+fn default_env_file_path() -> String {
+  String::from(".env")
+}
+
 fn default_webhook_enabled() -> bool {
   true
 }
@@ -168,6 +223,7 @@ impl Default for RepoConfig {
   fn default() -> Self {
     Self {
       server_id: Default::default(),
+      builder_id: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),
@@ -177,6 +233,9 @@ impl Default for RepoConfig {
       path: Default::default(),
       on_clone: Default::default(),
       on_pull: Default::default(),
+      environment: Default::default(),
+      env_file_path: default_env_file_path(),
+      skip_secret_interp: Default::default(),
       webhook_enabled: default_webhook_enabled(),
     }
   }
@@ -189,6 +248,8 @@ pub struct RepoActionState {
   pub cloning: bool,
   /// Whether repo currently pulling
   pub pulling: bool,
+  /// Whether repo currently building, using the attached builder.
+  pub building: bool,
 }
 
 #[typeshare]

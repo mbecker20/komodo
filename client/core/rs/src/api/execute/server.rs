@@ -10,6 +10,27 @@ use super::MonitorExecuteRequest;
 
 //
 
+/// Stops all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct StopAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
 /// Prunes the docker networks on the target server. Response: [Update].
 ///
 /// 1. Runs `docker network prune -f`.

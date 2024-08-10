@@ -29,6 +29,7 @@ mod procedure;
 mod repo;
 mod server;
 mod server_template;
+mod stack;
 mod sync;
 
 #[typeshare]
@@ -38,6 +39,7 @@ mod sync;
 #[serde(tag = "type", content = "params")]
 pub enum ExecuteRequest {
   // ==== SERVER ====
+  StopAllContainers(StopAllContainers),
   PruneContainers(PruneContainers),
   PruneImages(PruneImages),
   PruneNetworks(PruneNetworks),
@@ -45,9 +47,20 @@ pub enum ExecuteRequest {
   // ==== DEPLOYMENT ====
   Deploy(Deploy),
   StartContainer(StartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
-  StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
+
+  // ==== STACK ====
+  DeployStack(DeployStack),
+  StartStack(StartStack),
+  RestartStack(RestartStack),
+  StopStack(StopStack),
+  PauseStack(PauseStack),
+  UnpauseStack(UnpauseStack),
+  DestroyStack(DestroyStack),
 
   // ==== BUILD ====
   RunBuild(RunBuild),
@@ -56,6 +69,8 @@ pub enum ExecuteRequest {
   // ==== REPO ====
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
+  BuildRepo(BuildRepo),
+  CancelRepoBuild(CancelRepoBuild),
 
   // ==== PROCEDURE ====
   RunProcedure(RunProcedure),

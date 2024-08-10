@@ -99,10 +99,14 @@ impl Default for PendingSyncUpdatesData {
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PendingSyncUpdatesDataOk {
-  /// Readable log of any pending server updates
-  pub server_updates: Option<SyncUpdate>,
+  /// Readable log of any deploy actions that will be performed
+  pub deploy_updates: Option<SyncDeployUpdate>,
   /// Readable log of any pending deployment updates
   pub deployment_updates: Option<SyncUpdate>,
+  /// Readable log of any pending deployment updates
+  pub stack_updates: Option<SyncUpdate>,
+  /// Readable log of any pending server updates
+  pub server_updates: Option<SyncUpdate>,
   /// Readable log of any pending build updates
   pub build_updates: Option<SyncUpdate>,
   /// Readable log of any pending repo updates
@@ -125,8 +129,10 @@ pub struct PendingSyncUpdatesDataOk {
 
 impl PendingSyncUpdatesDataOk {
   pub fn no_updates(&self) -> bool {
-    self.server_updates.is_none()
+    self.deploy_updates.is_none()
       && self.deployment_updates.is_none()
+      && self.stack_updates.is_none()
+      && self.server_updates.is_none()
       && self.build_updates.is_none()
       && self.repo_updates.is_none()
       && self.procedure_updates.is_none()
@@ -148,6 +154,15 @@ pub struct SyncUpdate {
   pub to_update: i32,
   /// Resources to delete
   pub to_delete: i32,
+  /// A readable log of all the changes to be applied
+  pub log: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SyncDeployUpdate {
+  /// Resources to deploy
+  pub to_deploy: i32,
   /// A readable log of all the changes to be applied
   pub log: String,
 }
@@ -202,12 +217,13 @@ pub struct ResourceSyncConfig {
   ///
   /// Note. A token for the account must be available in the core config or the builder server's periphery config
   /// for the configured git provider.
-  #[serde(default, alias = "github_account")]
+  #[serde(default)]
   #[builder(default)]
   pub git_account: String,
 
-  /// The github account used to clone (used to access private repos).
-  /// Empty string is public clone (only public repos).
+  /// The path of the resource file(s) to sync, relative to the repo root.
+  /// Can be a specific file, or a directory containing multiple files / folders.
+  /// See `https://docs.monitor.dev/docs/sync-resources` for more information.
   #[serde(default = "default_resource_path")]
   #[builder(default = "default_resource_path()")]
   #[partial_default(default_resource_path())]

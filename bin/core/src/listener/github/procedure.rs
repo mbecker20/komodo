@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use axum::http::HeaderMap;
 use monitor_client::{
   api::execute::RunProcedure,
-  entities::{procedure::Procedure, user::github_user},
+  entities::{procedure::Procedure, user::git_webhook_user},
 };
 use resolver_api::Resolve;
 
@@ -42,7 +42,7 @@ pub async fn handle_procedure_webhook(
   if !procedure.config.webhook_enabled {
     return Err(anyhow!("procedure does not have webhook enabled"));
   }
-  let user = github_user().to_owned();
+  let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunProcedure(RunProcedure {
     procedure: procedure_id,
   });
