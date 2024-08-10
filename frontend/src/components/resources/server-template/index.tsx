@@ -26,7 +26,7 @@ export const useServerTemplate = (id?: string) =>
 export const ServerTemplateComponents: RequiredResourceComponents = {
   list_item: (id) => useServerTemplate(id),
 
-  Description: () => <>Deploy more cloud-base VPS on button click.</>,
+  Description: () => <>Deploy more cloud-based servers on a button click.</>,
 
   Dashboard: () => {
     const count = useRead("ListServerTemplates", {}).data?.length;
