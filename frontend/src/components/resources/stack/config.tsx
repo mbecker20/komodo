@@ -175,8 +175,9 @@ export const StackConfig = ({
             },
           },
           {
-            label: "Docker Registry",
-            description: "Optional. Login to a registry to pull private images",
+            label: "Image Registry",
+            description:
+              "Optional. Login to an image registry to pull private images",
             components: {
               registry_provider: (provider, set) => {
                 return (

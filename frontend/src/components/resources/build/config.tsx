@@ -172,7 +172,7 @@ export const BuildConfig = ({
             },
           },
           {
-            label: "Docker",
+            label: "Image",
             components: {
               build_path: {
                 placeholder: ".",
