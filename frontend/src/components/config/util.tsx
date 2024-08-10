@@ -248,6 +248,11 @@ export const ProviderSelector = ({
         onChange={(e) => onSelect(e.target.value)}
         className="max-w-[75%] lg:max-w-[400px]"
         onBlur={() => setCustomMode(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            setCustomMode(false)
+          }
+        }}
         autoFocus
       />
     );
@@ -868,6 +873,11 @@ const OrganizationSelector = ({
         onChange={(e) => set(e.target.value)}
         className="max-w-[75%] lg:max-w-[400px]"
         onBlur={() => setCustomMode(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            setCustomMode(false);
+          }
+        }}
         autoFocus
       />
     );

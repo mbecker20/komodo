@@ -10,7 +10,7 @@ services:
       - monitor-network
     ports:
       - 9120:9120
-    extra_hosts: # allows for local periphery connection over "localhost"
+    extra_hosts: # allows for local periphery connection at "http://host.docker.internal:8120"
       - host.docker.internal:host-gateway
     environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
       MONITOR_HOST: https://demo.monitor.dev
@@ -37,18 +37,22 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin # change these
       MONGO_INITDB_ROOT_PASSWORD: admin
       
-  monitor-proxy: npm 
-    image: jc21/nginx-proxy-manager
-    networks:
-      - monitor-network
-    ports:
-      - 443:443
-      - 80:80
-    
-
+  # monitor-proxy: npm 
+  #   image: jc21/nginx-proxy-manager
+  #   restart: unless-stopped
+  #   networks:
+  #     - monitor-network
+  #   ports:
+  #     - 443:443
+  #     - 80:80
+  #   volumes:
+  #     - proxy-data:/data
+  #     - letsencrypt:/etc/letsencrypt
 
 volumes:
   db-data:
+  # proxy-data:
+  # letsencrypt:
 
 networks:
   monitor-network: {}

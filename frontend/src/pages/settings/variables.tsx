@@ -179,14 +179,14 @@ export const Variables = () => {
       />
 
       {/** SECRETS */}
-      {secrets.length && (
+      {secrets.length ? (
         <div className="flex items-center gap-2 text-muted-foreground">
           <div>Core Secrets:</div>
           {secrets.map((secret) => (
             <Badge variant="secondary">{secret}</Badge>
           ))}
         </div>
-      )}
+      ) : undefined}
     </div>
   );
 };

@@ -31,7 +31,10 @@ export const NetworkModeSelector = ({
       .map((network) => network.Name) ?? [];
   const [customMode, setCustomMode] = useState(false);
 
-  const networks = !selected ? _networks : [..._networks, selected];
+  const networks =
+    !selected || _networks.includes(selected)
+      ? _networks
+      : [..._networks, selected];
 
   return (
     <ConfigItem
@@ -45,6 +48,11 @@ export const NetworkModeSelector = ({
           onChange={(e) => onSelect(e.target.value)}
           className="max-w-[75%] lg:max-w-[400px]"
           onBlur={() => setCustomMode(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setCustomMode(false);
+            }
+          }}
           autoFocus
         />
       ) : (
