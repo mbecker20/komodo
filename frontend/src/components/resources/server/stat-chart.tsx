@@ -40,6 +40,8 @@ export const StatChart = ({
     })
     .reverse();
 
+  console.log(stats);
+
   return (
     <div className={className}>
       {isPending ? (
@@ -88,7 +90,7 @@ export const InnerStatChart = ({
         height: container_ref.current.clientHeight,
         layout: {
           background: { type: ColorType.Solid, color: "transparent" },
-          textColor: "grey",
+          // textColor: "grey",
           fontSize: 12,
         },
         grid: {

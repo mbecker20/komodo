@@ -6,12 +6,12 @@ import dotenv from "dotenv"
 dotenv.config();
 
 const config: Config = {
-  title: "monitor",
-  tagline: "build and deployment system",
+  title: "Monitor",
+  tagline: "Build and deployment system",
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://docs.monitor.mogh.tech",
+  url: "https://docs.monitor.dev",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   // baseUrl: "/monitor/",
@@ -69,11 +69,11 @@ const config: Config = {
       },
     },
     navbar: {
-      title: "monitor",
+      title: "Monitor",
       logo: {
         alt: "monitor lizard",
-        src: "img/monitor-lizard.png",
-        width: "46px"
+        src: "img/logo512.png",
+        width: "34px",
       },
       items: [
         {

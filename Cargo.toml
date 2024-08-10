@@ -8,7 +8,7 @@ edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/mbecker20/monitor"
-homepage = "https://docs.monitor.mogh.tech"
+homepage = "https://docs.monitor.dev"
 
 [patch.crates-io]
 monitor_client = { path = "client/core/rs" }

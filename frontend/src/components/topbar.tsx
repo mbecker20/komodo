@@ -86,7 +86,7 @@ const Version = () => {
   if (!version) return null;
   return (
     <a
-      href="https://docs.monitor.mogh.tech"
+      href="https://docs.monitor.dev"
       target="_blank"
       className="hidden lg:block"
     >

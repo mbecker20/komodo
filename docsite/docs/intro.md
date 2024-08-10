@@ -8,11 +8,12 @@ Monitor is a web app to provide structure for managing your servers, builds, dep
 
 With Monitor you can:
 
- 1. Connect all of your remote servers (across clouds + on premise) to be viewable from a unified 'monitor' (hence the name).
- 2. Build application source into auto-versioned Docker images. 
- 3. Create, start, stop, and restart Docker containers on the connected servers, and view their status and logs.
- 4. Manage repositories on connected servers.
- 5. Keep a record of all the actions that are performed and by whom.
+ - Connect all of your servers, and alert on CPU usage, memory usage, and disk usage.
+ - Create, start, stop, and restart Docker containers on the connected servers, and view their status and logs.
+ - Deploy docker compose stacks. The file can be defined in UI, or in a git repo, with auto deploy on git push.
+ - Build application source into auto-versioned Docker images, auto built on webhook. Deploy single-use AWS instances for infinite capacity.
+ - Manage repositories on connected servers, which can perform automation via scripting / webhooks.
+ - Keep a record of all the actions that are performed and by whom.
 
 ## Docker
 

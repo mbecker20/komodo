@@ -12,7 +12,7 @@ const FeatureList: FeatureItem[] = [
     title: "automated builds 🛠️",
     description: (
       <>
-        build auto versioned docker images from github repos, trigger builds on
+        Build auto versioned docker images from github repos, trigger builds on
         git push
       </>
     ),
@@ -21,7 +21,7 @@ const FeatureList: FeatureItem[] = [
     title: "deploy docker containers 🚀",
     description: (
       <>
-        deploy your builds (or any docker image), see uptime and logs across all
+        Deploy containers, deploy docker compose, see uptime and logs across all
         your servers
       </>
     ),

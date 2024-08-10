@@ -1,25 +1,61 @@
 # Resources
 
-Entities like `Server`, `Deployment`, and `Build` all fall under the `Resource` abstraction. A server is a type of resource, a build is a type of resource, and so on.
+Monitor is extendible through the **Resource** abstraction. Entities like `Server`, `Deployment`, and `Stack` are all **Monitor Resources**.
+
 All resources have common traits, such as a unique `name` and `id` amongst all other resources of the same resource type.
 All resources can be assigned `tags`, which can be used to group related resources.
 
-Here is a list of the resources and their description:
-- `Server`: Represents a connected server. 
- 	- Holds server config, like the address.
-- `Deployment`: Represents a docker container on a server, whether it is actually deployed or not.
-	- Holds deployment config, like the server it should deploy on, and the image / build to deploy.
-- `Build`: Represents a docker image.
-	- Holds build config, like the source repo, Dockerfile location, and version
-- `Repo`: Represents a repo on a server, whether it is cloned or not.
-	- Holds repo config, like the source repo, and the `on_clone` and `on_pull` commands, which run after the repo is cloned / pulled
-- `Procedure`: Configure higher level actions by composing lower level actions.
-	- Holds the actions to execute, like `RunBuild build_1` and `Deploy deployment_1`, and the order to execute them
-- `Alerter`: Route the various alerts produced by monitor to alerting endpoints
-	- Holds the alerting endpoint (Slack channel or Custom http POST), the alerting types to forward (eg. `ServerUnreachable` or `ContainerStateChange`).
-- `Builder`: Represents a server used as the "builder" for builds. Can be connected server or ephemeral AWS server.
-	- Holds builder config, like the AWS ami-id and security groups to allow for builder reachability.
-- `ServerTemplate`: Configure cloud server templates (currently AWS and Hetzner) to easily launch more instances and auto connect them to Monitor
-	- Holds the cloud server config
-- `ResourceSync`: Declare Monitor resources in TOML files, push them to a git repo, and sync Monitor config from them.
-	- Holds config for the source repo containing the files. Will display the computed diff and wait for user to execute.
+:::note
+Many resources need access to git repos / docker registries. There is an in-built token management system (managed in UI or in config file) to give resources access to credentials.
+All resources which depend on git repos / docker registries are able to use these credentials to access private repos.
+:::
+
+## Server
+
+-- Configure the connection to periphery agents.<br></br>
+-- Set alerting thresholds.<br></br>
+-- Can be attached to **Deployments**, **Stacks**, **Repos**, and **Builders**.
+
+## Deployment
+
+-- Deploy a docker container on the attached Server.<br></br>
+-- Manage services at the container level, perform orchestration using **Procedures** and **ResourceSyncs**.
+
+## Stack
+
+-- Deploy with docker compose.<br></br>
+-- Provide the compose file in UI, or move the files to a git repo and use a webhook for auto redeploy on push.<br></br>
+-- Supports composing multiple compose files using `docker compose -f ... -f ...`.
+
+## Repo
+
+-- Put scripts in git repos, and run them on a server every time they are pushed to.
+
+## Build
+
+-- Build application source into docker images, and push them to
+
+## Builder
+
+-- Either points to a connected server, or holds configuration to launch a single-use AWS instance to build the image.<br></br>
+-- Can be attached to **Builds** and **Repos**.
+
+## Procedure
+
+-- Compose many actions on other resource type, like `RunBuild` or `DeployStack`, and run it on button push (or with a webhook).<br></br>
+-- Can run one or more actions in parallel "stages", and compose a series of parallel stages to run sequentially.
+
+## ResourceSync
+
+-- Orchestrate all your configuration declaratively by defining it in `toml` files, which are checked into a git repo.<br></br>
+-- Can deploy **Deployments** and **Stacks** if changes are suggested. Specify deploy ordering with `after` array. (like docker compose `depends_on` but can span across servers.).
+
+## Alerter
+
+-- Route alerts to various endpoints<br></br>
+-- Can configure rules on each Alerter, such as resource whitelist, blacklist, or alert type filter.
+
+## ServerTemplate
+
+-- Easily expand your cloud network by storing cloud server lauch templates on various providers.<br></br>
+-- Auto connect the server to monitor on launch, using `User Data` launch scripts.

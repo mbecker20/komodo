@@ -1,6 +1,6 @@
 services:
   monitor-core:
-    image: git.mogh.tech/mbecker20/monitor:latest-next
+    image: ghcr.io/mbecker20/monitor:latest ## use ghcr.io/mbecker20/monitor:latest-aarch64 for arm support
     restart: unless-stopped
     depends_on:
       monitor-mongo:
@@ -36,23 +36,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin # change these
       MONGO_INITDB_ROOT_PASSWORD: admin
-      
-  # monitor-proxy: npm 
-  #   image: jc21/nginx-proxy-manager
-  #   restart: unless-stopped
-  #   networks:
-  #     - monitor-network
-  #   ports:
-  #     - 443:443
-  #     - 80:80
-  #   volumes:
-  #     - proxy-data:/data
-  #     - letsencrypt:/etc/letsencrypt
 
 volumes:
   db-data:
-  # proxy-data:
-  # letsencrypt:
 
 networks:
   monitor-network: {}

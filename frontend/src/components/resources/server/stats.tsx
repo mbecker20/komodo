@@ -153,7 +153,9 @@ export const ServerStats = ({ id }: { id: string }) => {
                   Types.Timelength.SixHours,
                   Types.Timelength.OneDay,
                 ].map((timelength) => (
-                  <SelectItem value={timelength}>{timelength}</SelectItem>
+                  <SelectItem key={timelength} value={timelength}>
+                    {timelength}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

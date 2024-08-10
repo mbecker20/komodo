@@ -25,7 +25,7 @@ function HomepageHeader() {
                 transform: "translate(-50%, -50%)",
               }}
             >
-              monitor
+              Monitor
             </h1>
           </div>
         </div>

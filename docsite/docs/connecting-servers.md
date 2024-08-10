@@ -1,18 +1,33 @@
-# Setup Monitor Periphery
+# Connecting Servers
 
-The easiest way to setup periphery is to use the setup script (as root user):
+Connecting a server to monitor has 2 steps:
+
+1.  Install the Periphery agent on the server
+2.  Adding the server to monitor via the core API
+
+Once step 1. is complete, you can just connect the server to Monitor Core from the UI.
+
+## Install the Periphery agent
+
+The easiest way to setup and update periphery is to use the setup script (as root user):
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3
 ```
 
+Periphery can also be installed to run as the calling user, just note this comes with some additional configuration.
+
+```sh
+curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3 - --user
+```
+
 You can find more information (and view the script) in the [readme](https://github.com/mbecker20/monitor/tree/main/scripts).
 
-:::note
+:::info
 This script can be run multiple times without issue, and it won't change existing config after the first run. Just run it again after a Monitor version release, and it will update the periphery version.
 :::
 
-### Manual install steps
+## Manual install steps
 
 1.  Download the periphery binary from the latest [release](https://github.com/mbecker20/monitor/releases).
 

@@ -223,7 +223,7 @@ pub struct ResourceSyncConfig {
 
   /// The path of the resource file(s) to sync, relative to the repo root.
   /// Can be a specific file, or a directory containing multiple files / folders.
-  /// See `https://docs.monitor.mogh.tech/docs/sync-resources` for more information.
+  /// See `https://docs.monitor.dev/docs/sync-resources` for more information.
   #[serde(default = "default_resource_path")]
   #[builder(default = "default_resource_path()")]
   #[partial_default(default_resource_path())]
