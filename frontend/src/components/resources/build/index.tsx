@@ -1,7 +1,7 @@
 import { Section } from "@components/layouts";
-import { useRead } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { FolderGit, Hammer } from "lucide-react";
+import { FolderGit, Hammer, Loader2, RefreshCcw } from "lucide-react";
 import { BuildConfig } from "./config";
 import { BuildTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
@@ -18,9 +18,19 @@ import { ResourceComponents } from "..";
 import { Types } from "@monitor/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StatusBadge } from "@components/util";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+import { Card } from "@ui/card";
+import { Badge } from "@ui/badge";
+import { useToast } from "@ui/use-toast";
+import { Button } from "@ui/button";
 
 const useBuild = (id?: string) =>
-  useRead("ListBuilds", {}).data?.find((d) => d.id === id);
+  useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.find(
+    (d) => d.id === id
+  );
+
+export const useFullBuild = (id: string) =>
+  useRead("GetBuild", { build: id }, { refetchInterval: 5000 }).data;
 
 const BuildIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useBuild(id)?.info.state;
@@ -111,6 +121,88 @@ export const BuildComponents: RequiredResourceComponents = {
     State: ({ id }) => {
       let state = useBuild(id)?.info.state;
       return <StatusBadge text={state} intent={build_state_intention(state)} />;
+    },
+    Built: ({ id }) => {
+      const info = useFullBuild(id)?.info;
+      if (!info?.built_hash) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                built: {info.built_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid">
+              <Badge
+                variant="secondary"
+                className="w-fit text-muted-foreground"
+              >
+                commit message
+              </Badge>
+              {info.built_message}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    Latest: ({ id }) => {
+      const info = useFullBuild(id)?.info;
+      if (!info?.latest_hash || info.latest_hash === info?.built_hash) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                latest: {info.latest_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid">
+              <Badge
+                variant="secondary"
+                className="w-fit text-muted-foreground"
+              >
+                commit message
+              </Badge>
+              {info.latest_message}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    Refresh: ({ id }) => {
+      const { toast } = useToast();
+      const inv = useInvalidate();
+      const { mutate, isPending } = useWrite("RefreshBuildCache", {
+        onSuccess: () => {
+          inv(["ListBuilds"], ["GetBuild", { build: id }]);
+          toast({ title: "Refreshed build status cache" });
+        },
+      });
+      return (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            mutate({ build: id });
+            toast({ title: "Triggered refresh of build status cache" });
+          }}
+        >
+          {isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <RefreshCcw className="w-4 h-4" />
+          )}
+        </Button>
+      );
     },
   },
 

@@ -1,7 +1,13 @@
-import { useRead } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
-import { FolderGit, GitBranch, Server } from "lucide-react";
+import {
+  FolderGit,
+  GitBranch,
+  Loader2,
+  RefreshCcw,
+  Server,
+} from "lucide-react";
 import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
@@ -16,11 +22,17 @@ import { useServer } from "../server";
 import { Types } from "@monitor/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StatusBadge } from "@components/util";
+import { Badge } from "@ui/badge";
+import { useToast } from "@ui/use-toast";
+import { Button } from "@ui/button";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
+
+export const useFullRepo = (id: string) =>
+  useRead("GetRepo", { repo: id }, { refetchInterval: 5000 }).data;
 
 const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useRepo(id)?.info.state;
@@ -71,29 +83,112 @@ export const RepoComponents: RequiredResourceComponents = {
       const state = useRepo(id)?.info.state;
       return <StatusBadge text={state} intent={repo_state_intention(state)} />;
     },
-    Status: ({ id }) => {
+    Cloned: ({ id }) => {
       const info = useRepo(id)?.info;
-      if (info?.cloned_hash) {
-        return (
-          <HoverCard openDelay={200}>
-            <HoverCardTrigger asChild>
-              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-                <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                  cloned commit: {info.latest_hash}
-                </div>
-              </Card>
-            </HoverCardTrigger>
-            <HoverCardContent align="start">
-              <div className="grid">
-                <div className="text-muted-foreground">commit message:</div>
-                {info.cloned_message}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        );
-      } else {
-        return <div className="text-muted-foreground">{"Not cloned"}</div>;
+      if (!info?.cloned_hash || info.cloned_hash === info.latest_hash) {
+        return null;
       }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                cloned: {info.cloned_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid">
+              <div className="text-muted-foreground">commit message:</div>
+              {info.cloned_message}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    Built: ({ id }) => {
+      const info = useRepo(id)?.info;
+      const fullInfo = useFullRepo(id)?.info;
+      if (!info?.built_hash || info.built_hash === info.latest_hash) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                built: {info.built_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid">
+              <Badge
+                variant="secondary"
+                className="w-fit text-muted-foreground"
+              >
+                commit message
+              </Badge>
+              {fullInfo?.built_message}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    Latest: ({ id }) => {
+      const info = useRepo(id)?.info;
+      const fullInfo = useFullRepo(id)?.info;
+      if (!info?.latest_hash) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                latest: {info.latest_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid">
+              <Badge
+                variant="secondary"
+                className="w-fit text-muted-foreground"
+              >
+                commit message
+              </Badge>
+              {fullInfo?.latest_message}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    Refresh: ({ id }) => {
+      const { toast } = useToast();
+      const inv = useInvalidate();
+      const { mutate, isPending } = useWrite("RefreshRepoCache", {
+        onSuccess: () => {
+          inv(["ListRepos"], ["GetRepo", { repo: id }]);
+          toast({ title: "Refreshed repo status cache" });
+        },
+      });
+      return (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            mutate({ repo: id });
+            toast({ title: "Triggered refresh of repo status cache" });
+          }}
+        >
+          {isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <RefreshCcw className="w-4 h-4" />
+          )}
+        </Button>
+      );
     },
   },
 
