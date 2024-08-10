@@ -6,7 +6,7 @@ use monitor_client::{
     config::core::CoreConfig,
     monitor_timestamp,
     permission::PermissionLevel,
-    stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
+    stack::{PartialStackConfig, Stack, StackInfo},
     update::Update,
     user::User,
     NoData, Operation,
@@ -25,7 +25,7 @@ use crate::{
   config::core_config,
   helpers::{
     stack::{
-      json::get_config_jsons, remote::get_remote_compose_contents,
+      remote::get_remote_compose_contents,
       services::extract_services_into_res,
     },
     update::{add_update, make_update},
@@ -176,7 +176,11 @@ impl Resolve<RenameStack, User> for State {
 }
 
 impl Resolve<RefreshStackCache, User> for State {
-  #[instrument(name = "RefreshStackCache", level = "debug", skip(self, user))]
+  #[instrument(
+    name = "RefreshStackCache",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     RefreshStackCache { stack }: RefreshStackCache,
@@ -202,8 +206,6 @@ impl Resolve<RefreshStackCache, User> for State {
 
     let (
       latest_services,
-      latest_json,
-      latest_json_errors,
       remote_contents,
       remote_errors,
       latest_hash,
@@ -237,13 +239,8 @@ impl Resolve<RefreshStackCache, User> for State {
         }
       }
 
-      let (jsons, json_errors) =
-        get_config_jsons(&remote_contents).await;
-
       (
         services,
-        jsons,
-        json_errors,
         Some(remote_contents),
         Some(remote_errors),
         latest_hash,
@@ -263,19 +260,7 @@ impl Resolve<RefreshStackCache, User> for State {
         );
         services.extend(stack.info.latest_services);
       };
-      let (json, json_errors) =
-        get_config_jsons(&[ComposeContents {
-          path: stack
-            .config
-            .file_paths
-            .first()
-            .map(String::as_str)
-            .unwrap_or("compose.yaml")
-            .to_string(),
-          contents: stack.config.file_contents,
-        }])
-        .await;
-      (services, json, json_errors, None, None, None, None)
+      (services, None, None, None, None)
     };
 
     let info = StackInfo {
@@ -285,11 +270,7 @@ impl Resolve<RefreshStackCache, User> for State {
       deployed_contents: stack.info.deployed_contents,
       deployed_hash: stack.info.deployed_hash,
       deployed_message: stack.info.deployed_message,
-      deployed_json: stack.info.deployed_json,
-      deployed_json_errors: stack.info.deployed_json_errors,
       latest_services,
-      latest_json,
-      latest_json_errors,
       remote_contents,
       remote_errors,
       latest_hash,

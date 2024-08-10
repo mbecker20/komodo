@@ -16,7 +16,7 @@ use crate::{
     interpolate_variables_secrets_into_environment, periphery_client,
     stack::{
       execute::execute_compose, get_stack_and_server,
-      json::get_config_jsons, services::extract_services_into_res,
+      services::extract_services_into_res,
     },
     update::update_update,
   },
@@ -91,11 +91,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
     update.logs.extend(logs);
 
     let update_info = async {
-      let (latest_services, json, json_errors) = if !file_contents
-        .is_empty()
-      {
-        let (jsons, json_errors) =
-          get_config_jsons(&file_contents).await;
+      let latest_services = if !file_contents.is_empty() {
         let mut services = Vec::new();
         for contents in &file_contents {
           if let Err(e) = extract_services_into_res(
@@ -109,10 +105,10 @@ impl Resolve<DeployStack, (User, Update)> for State {
             );
           }
         }
-        (services, jsons, json_errors)
+        services
       } else {
         // maybe better to do something else here for services.
-        (stack.info.latest_services.clone(), Vec::new(), Vec::new())
+        stack.info.latest_services.clone()
       };
 
       let project_name = stack.project_name(true);
@@ -120,16 +116,12 @@ impl Resolve<DeployStack, (User, Update)> for State {
       let (
         deployed_services,
         deployed_contents,
-        deployed_json,
-        deployed_json_errors,
         deployed_hash,
         deployed_message,
       ) = if deployed {
         (
           Some(latest_services.clone()),
           Some(file_contents.clone()),
-          Some(json.clone()),
-          Some(json_errors.clone()),
           commit_hash.clone(),
           commit_message.clone(),
         )
@@ -137,8 +129,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
         (
           stack.info.deployed_services,
           stack.info.deployed_contents,
-          stack.info.deployed_json,
-          stack.info.deployed_json_errors,
           stack.info.deployed_hash,
           stack.info.deployed_message,
         )
@@ -151,11 +141,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
         deployed_contents,
         deployed_hash,
         deployed_message,
-        deployed_json,
-        deployed_json_errors,
         latest_services,
-        latest_json: json,
-        latest_json_errors: json_errors,
         remote_contents: stack
           .config
           .file_contents

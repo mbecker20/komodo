@@ -22,7 +22,6 @@ use crate::{
 use super::query::get_server_with_status;
 
 pub mod execute;
-pub mod json;
 pub mod remote;
 pub mod services;
 

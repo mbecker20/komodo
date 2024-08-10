@@ -138,24 +138,12 @@ pub struct StackInfo {
   pub deployed_hash: Option<String>,
   /// Deployed commit message, or null. Only for repo based stacks
   pub deployed_message: Option<String>,
-  /// Cached json representation of the deployed compose file contents
-  /// Obtained by calling `docker compose config`. Will be of the deployed config if it exists.
-  pub deployed_json: Option<Vec<ComposeContents>>,
-  /// If there was an error in calling `docker compose config`, the message will be here with the associated file path.
-  pub deployed_json_errors: Option<Vec<ComposeContents>>,
   /// The deployed compose file contents. This is updated whenever Monitor successfully deploys the stack.
   pub deployed_contents: Option<Vec<ComposeContents>>,
   /// The deployed service names.
   /// This is updated whenever it is empty, or deployed contents is updated.
   pub deployed_services: Option<Vec<StackServiceNames>>,
 
-  /// Cached json representation of the compose file contents.
-  /// Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
-  #[serde(default)]
-  pub latest_json: Vec<ComposeContents>,
-  /// If there was an error in calling `docker compose config` on the latest contents, the message will be here
-  #[serde(default)]
-  pub latest_json_errors: Vec<ComposeContents>,
   /// The latest service names.
   /// This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).
   #[serde(default)]

@@ -1566,13 +1566,6 @@ export interface StackInfo {
 	deployed_hash?: string;
 	/** Deployed commit message, or null. Only for repo based stacks */
 	deployed_message?: string;
-	/**
-	 * Cached json representation of the deployed compose file contents
-	 * Obtained by calling `docker compose config`. Will be of the deployed config if it exists.
-	 */
-	deployed_json?: ComposeContents[];
-	/** If there was an error in calling `docker compose config`, the message will be here with the associated file path. */
-	deployed_json_errors?: ComposeContents[];
 	/** The deployed compose file contents. This is updated whenever Monitor successfully deploys the stack. */
 	deployed_contents?: ComposeContents[];
 	/**
@@ -1580,13 +1573,6 @@ export interface StackInfo {
 	 * This is updated whenever it is empty, or deployed contents is updated.
 	 */
 	deployed_services?: StackServiceNames[];
-	/**
-	 * Cached json representation of the compose file contents.
-	 * Obtained by calling `docker compose config`. Will be of the latest config, not the deployed config.
-	 */
-	latest_json?: ComposeContents[];
-	/** If there was an error in calling `docker compose config` on the latest contents, the message will be here */
-	latest_json_errors?: ComposeContents[];
 	/**
 	 * The latest service names.
 	 * This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).

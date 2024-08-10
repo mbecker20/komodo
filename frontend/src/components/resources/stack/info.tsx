@@ -25,7 +25,6 @@ export const StackInfo = ({
             {stack?.info?.deployed_contents?.map((content) => (
               <pre className="flex flex-col gap-2">
                 path: {content.path}
-                
                 <pre>{content.contents}</pre>
               </pre>
             ))}
@@ -72,20 +71,6 @@ export const StackInfo = ({
           </CardHeader>
         </Card>
       )}
-      {stack?.info?.latest_json_errors &&
-        stack?.info?.latest_json_errors.length > 0 && (
-          <Card>
-            <CardHeader>
-              parsing errors:{" "}
-              {stack?.info?.latest_json_errors?.map((content) => (
-                <pre className="flex flex-col gap-2">
-                  path: {content.path}
-                  <pre>{content.contents}</pre>
-                </pre>
-              ))}
-            </CardHeader>
-          </Card>
-        )}
     </Section>
   );
 };
