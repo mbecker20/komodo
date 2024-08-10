@@ -3,7 +3,7 @@ services:
     image: ghcr.io/mbecker20/monitor:latest ## use ghcr.io/mbecker20/monitor:latest-aarch64 for arm support
     restart: unless-stopped
     depends_on:
-      monitor-mongo:
+      - monitor-mongo
     logging:
       driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
     networks:
