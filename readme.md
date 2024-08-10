@@ -6,7 +6,7 @@ Docs for periphery setup script can be found in [scripts/readme.md](https://gith
 
 ## Disclaimer
 
-Warning. This is open source software (GPL-V3), and while the Monitor team makes a best effort to ensure main is stable,
+Warning. This is open source software (GPL-V3), and while the Monitor team (mainly me) makes a best effort to ensure releases are stable and bug-free,
 there are no warranties. Use at your own risk.
 
 ## Links
