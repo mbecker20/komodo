@@ -18,7 +18,7 @@ services:
       MONITOR_MONGO_USERNAME: admin # match ones below
       MONITOR_MONGO_PASSWORD: admin
       MONITOR_PASSKEY: a_random_passkey # used to auth against periphery
-      MONITOR_WEBHOOK_SECRET: a_random_secret
+      MONITOR_WEBHOOK_SECRET: a_random_secret # used to authenticate incoming webhooks
       MONITOR_LOCAL_AUTH: true # the default is false.
 
   monitor-mongo:
