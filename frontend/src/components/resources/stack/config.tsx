@@ -246,10 +246,19 @@ export const StackConfig = ({
                   />
                 );
               },
-              repo: { placeholder: "Enter Repo" },
-              branch: { placeholder: "Enter branch" },
+              repo: {
+                placeholder: "Enter repo",
+                description:
+                  "The repo path on the provider. {namespace}/{repo_name}",
+              },
+              branch: {
+                placeholder: "Enter branch",
+                description: "Select a custom branch, or default to 'main'.",
+              },
               commit: {
                 placeholder: "Enter a specific commit hash. Optional.",
+                description:
+                  "Switch to a specific hash after cloning the branch.",
               },
             },
           },
