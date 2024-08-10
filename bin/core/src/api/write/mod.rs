@@ -99,6 +99,7 @@ pub enum WriteRequest {
   CopyRepo(CopyRepo),
   DeleteRepo(DeleteRepo),
   UpdateRepo(UpdateRepo),
+  RefreshRepoCache(RefreshRepoCache),
   CreateRepoWebhook(CreateRepoWebhook),
   DeleteRepoWebhook(DeleteRepoWebhook),
 

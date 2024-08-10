@@ -56,6 +56,8 @@ impl super::MonitorResource for Build {
         git_provider: build.config.git_provider,
         repo: build.config.repo,
         branch: build.config.branch,
+        built_hash: build.info.built_hash,
+        latest_hash: build.info.latest_hash,
         state,
       },
     }

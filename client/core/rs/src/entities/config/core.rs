@@ -57,6 +57,8 @@ pub struct Env {
   pub monitor_stack_poll_interval: Option<Timelength>,
   /// Override `build_poll_interval`
   pub monitor_build_poll_interval: Option<Timelength>,
+  /// Override `repo_poll_interval`
+  pub monitor_repo_poll_interval: Option<Timelength>,
   /// Override `monitoring_interval`
   pub monitor_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
@@ -211,6 +213,12 @@ pub struct CoreConfig {
   #[serde(default = "default_poll_interval")]
   pub build_poll_interval: Timelength,
 
+  /// Interval at which to poll repo commit hash for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_poll_interval")]
+  pub repo_poll_interval: Timelength,
+
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
   #[serde(default = "default_monitoring_interval")]
@@ -354,6 +362,7 @@ impl CoreConfig {
       sync_poll_interval: config.sync_poll_interval,
       stack_poll_interval: config.stack_poll_interval,
       build_poll_interval: config.build_poll_interval,
+      repo_poll_interval: config.repo_poll_interval,
       monitoring_interval: config.monitoring_interval,
       keep_stats_for_days: config.keep_stats_for_days,
       keep_alerts_for_days: config.keep_alerts_for_days,

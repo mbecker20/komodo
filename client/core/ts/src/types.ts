@@ -497,6 +497,10 @@ export interface BuildListItemInfo {
 	branch: string;
 	/** State of the build. Reflects whether most recent build successful. */
 	state: BuildState;
+	/** Latest built short commit hash, or null. */
+	built_hash?: string;
+	/** Latest short commit hash, or null. Only for repo based stacks */
+	latest_hash?: string;
 }
 
 export type BuildListItem = ResourceListItem<BuildListItemInfo>;
@@ -1024,6 +1028,16 @@ export interface RepoConfig {
 export interface RepoInfo {
 	/** When repo was last pulled */
 	last_pulled_at: I64;
+	/** When repo was last built */
+	last_built_at: I64;
+	/** Latest built short commit hash, or null. */
+	built_hash?: string;
+	/** Latest built commit message, or null. Only for repo based stacks */
+	built_message?: string;
+	/** Latest remote short commit hash, or null. */
+	latest_hash?: string;
+	/** Latest remote commit message, or null */
+	latest_message?: string;
 }
 
 export type Repo = Resource<RepoConfig, RepoInfo>;
@@ -1048,6 +1062,8 @@ export interface RepoListItemInfo {
 	server_id: string;
 	/** Repo last cloned / pulled timestamp in ms. */
 	last_pulled_at: I64;
+	/** Repo last built timestamp in ms. */
+	last_built_at: I64;
 	/** The git provider domain */
 	git_provider: string;
 	/** The configured repo */
@@ -1056,10 +1072,14 @@ export interface RepoListItemInfo {
 	branch: string;
 	/** The repo state */
 	state: RepoState;
-	/** If the repo is cloned, will be the latest short commit hash. */
+	/** If the repo is cloned, will be the cloned short commit hash. */
+	cloned_hash?: string;
+	/** If the repo is cloned, will be the cloned commit message. */
+	cloned_message?: string;
+	/** If the repo is built, will be the latest built short commit hash. */
+	built_hash?: string;
+	/** Will be the latest remote short commit hash. */
 	latest_hash?: string;
-	/** If the repo is cloned, will be the latest commit message. */
-	latest_message?: string;
 }
 
 export type RepoListItem = ResourceListItem<RepoListItemInfo>;
@@ -4353,6 +4373,12 @@ export interface UpdateRepo {
 	config: _PartialRepoConfig;
 }
 
+/** Trigger a refresh of the cached latest hash and message. */
+export interface RefreshRepoCache {
+	/** Id or name */
+	repo: string;
+}
+
 export enum RepoWebhookAction {
 	Clone = "Clone",
 	Pull = "Pull",
@@ -5342,6 +5368,7 @@ export type WriteRequest =
 	| { type: "CopyRepo", params: CopyRepo }
 	| { type: "DeleteRepo", params: DeleteRepo }
 	| { type: "UpdateRepo", params: UpdateRepo }
+	| { type: "RefreshRepoCache", params: RefreshRepoCache }
 	| { type: "CreateRepoWebhook", params: CreateRepoWebhook }
 	| { type: "DeleteRepoWebhook", params: DeleteRepoWebhook }
 	| { type: "CreateAlerter", params: CreateAlerter }

@@ -189,19 +189,80 @@ webhook_secret = "a_random_webhook_secret"
 # github_webhook_app.pk_path = "/path/to/pk.pem"
 
 ###########
-# SECRETS #
+# LOGGING #
 ###########
 
-## Provide core-based secrets.
-## These will be available to interpolate into your Deployment / Stack environments,
-## and will be hidden in the UI and logs.
-## These are available to use on any periphery (Server),
-## but you can also limit access more by placing them in a single peripheries config instead.
-## These cannot be configured on the environment.
+## Specify the log level of the monitor core application
+## Env: MONITOR_LOGGING_LEVEL
+## Options: off, error, warn, info, debug, trace
+## Default: info
+# logging.level = "info"
 
-# [secrets]
-# SECRET_1 = "value_1"
-# SECRET_2 = "value_2"
+## Specify the logging format for stdout / stderr.
+## Env: MONITOR_LOGGING_STDIO
+## Options: standard, json, none
+## Default: standard
+# logging.stdio = "standard"
+
+## Optionally specify a opentelemetry otlp endpoint to send traces to.
+## Env: MONITOR_OTLP_ENDPOINT
+# logging.otlp_endpoint = "http://localhost:4317"
+
+## Set the opentelemetry service name.
+## This will be attached to the telemetry Monitor will send.
+## Env: MONITOR_OPENTELEMETRY_SERVICE_NAME
+## Default: "Monitor"
+# logging.opentelemetry_service_name = "Monitor-02"
+
+###########
+# PRUNING #
+###########
+
+## The number of days to keep historical system stats around, or 0 to disable pruning. 
+## Stats older that are than this number of days are deleted on a daily cycle.
+## Env: MONITOR_KEEP_STATS_FOR_DAYS
+## Default: 14
+# keep_stats_for_days = 14
+
+## The number of days to keep alerts around, or 0 to disable pruning. 
+## Alerts older that are than this number of days are deleted on a daily cycle.
+## Env: MONITOR_KEEP_ALERTS_FOR_DAYS
+## Default: 14
+# keep_alerts_for_days = 14
+
+##################
+# POLL INTERVALS #
+##################
+
+## Interval at which to poll Stacks for any updates / automated actions.
+## Env: MONITOR_STACK_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# stack_poll_interval = "1-min"
+
+## Interval at which to poll Syncs for any updates / automated actions.
+## Env: MONITOR_SYNC_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# sync_poll_interval = "1-min"
+
+## Interval at which to poll Builds (latest commit hash) for any updates / automated actions.
+## Env: MONITOR_STACK_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# build_poll_interval = "1-min"
+
+## Interval at which to poll Repos (latest commit hash) for any updates / automated actions.
+## Env: MONITOR_REPO_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# repo_poll_interval = "1-min"
+
+## Controls the rate at which servers are polled for health, system stats, and container status.
+## This affects network usage, and the size of the stats stored in mongo.
+## Default: 15-sec
+## Options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
+# monitoring_interval = "5-sec"
 
 ###################
 # CLOUD PROVIDERS #
@@ -222,7 +283,7 @@ webhook_secret = "a_random_webhook_secret"
 # aws.secret_access_key = "your_aws_secret_key"
 
 ## Provide hetzner api token for server launch
-## MONITOR_HETZNER_TOKEN
+## Env: MONITOR_HETZNER_TOKEN
 # hetzner.token = "your_hetzner_token"
 
 #################
@@ -295,62 +356,16 @@ webhook_secret = "a_random_webhook_secret"
 # secret_access_key = "your_aws_secret_key_2"
 
 ###########
-# LOGGING #
+# SECRETS #
 ###########
 
-## Specify the log level of the monitor core application
-## Options: off, error, warn, info, debug, trace
-## Default: info
-# logging.level = "info"
+## Provide core-based secrets.
+## These will be available to interpolate into your Deployment / Stack environments,
+## and will be hidden in the UI and logs.
+## These are available to use on any periphery (Server),
+## but you can also limit access more by placing them in a single peripheries config instead.
+## These cannot be configured on the environment.
 
-## Specify the logging format for stdout / stderr.
-## Options: standard, json, none
-## Default: standard
-# logging.stdio = "standard"
-
-## Optionally specify a opentelemetry otlp endpoint to send traces to.
-# logging.otlp_endpoint = "http://localhost:4317"
-
-## Set the opentelemetry service name.
-## This will be attached to the telemetry Monitor will send.
-## Default: "Monitor"
-# logging.opentelemetry_service_name = "Monitor-02"
-
-##################
-# POLL INTERVALS #
-##################
-
-## Interval at which to poll Stacks for any updates / automated actions.
-## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-# stack_poll_interval = "1-min"
-
-## Interval at which to poll Syncs for any updates / automated actions.
-## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-# sync_poll_interval = "1-min"
-
-## Interval at which to poll Builds (latest commit hash) for any updates / automated actions.
-## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-# build_poll_interval = "1-min"
-
-## Controls the rate at which servers are polled for health, system stats, and container status.
-## This affects network usage, and the size of the stats stored in mongo.
-## Default: 15-sec
-## Options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
-# monitoring_interval = "5-sec"
-
-###########
-# PRUNING #
-###########
-
-## The number of days to keep historical system stats around, or 0 to disable pruning. 
-## Stats older that are than this number of days are deleted on a daily cycle.
-## Default: 14
-# keep_stats_for_days = 14
-
-## The number of days to keep alerts around, or 0 to disable pruning. 
-## Alerts older that are than this number of days are deleted on a daily cycle.
-## Default: 14
-# keep_alerts_for_days = 14
+# [secrets]
+# SECRET_1 = "value_1"
+# SECRET_2 = "value_2"

@@ -593,6 +593,28 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  BuildRepo: {
+    params: { repo: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Repo"
+        selected={params.repo}
+        onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
+      />
+    ),
+  },
+  CancelRepoBuild: {
+    params: { repo: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Repo"
+        selected={params.repo}
+        onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
+      />
+    ),
+  },
   Deploy: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => {
@@ -662,6 +684,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
     ),
   },
   RunBuild: {
+    params: { build: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Build"
+        selected={params.build}
+        onSelect={(build) => setParams({ build })}
+        disabled={disabled}
+      />
+    ),
+  },
+  CancelBuild: {
     params: { build: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector

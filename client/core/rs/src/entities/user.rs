@@ -88,6 +88,7 @@ impl User {
         | "Resource Sync"
         | "Stack Wizard"
         | "Build Manager"
+        | "Repo Manager"
     )
   }
 }
@@ -102,6 +103,7 @@ pub fn admin_service_user(user_id: &str) -> Option<User> {
     "Resource Sync" => sync_user().to_owned().into(),
     "Stack Wizard" => stack_user().to_owned().into(),
     "Build Manager" => build_user().to_owned().into(),
+    "Repo Manager" => repo_user().to_owned().into(),
     _ => None,
   }
 }
@@ -175,6 +177,19 @@ pub fn build_user() -> &'static User {
   static BUILD_USER: OnceLock<User> = OnceLock::new();
   BUILD_USER.get_or_init(|| {
     let id_name = String::from("Build Manager");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
+}
+
+pub fn repo_user() -> &'static User {
+  static REPO_USER: OnceLock<User> = OnceLock::new();
+  REPO_USER.get_or_init(|| {
+    let id_name = String::from("Repo Manager");
     User {
       id: id_name.clone(),
       username: id_name,

@@ -96,6 +96,9 @@ pub fn core_config() -> &'static CoreConfig {
       build_poll_interval: env
         .monitor_build_poll_interval
         .unwrap_or(config.build_poll_interval),
+      repo_poll_interval: env
+        .monitor_repo_poll_interval
+        .unwrap_or(config.repo_poll_interval),
       monitoring_interval: env
         .monitor_monitoring_interval
         .unwrap_or(config.monitoring_interval),

@@ -34,6 +34,10 @@ pub struct BuildListItemInfo {
   pub branch: String,
   /// State of the build. Reflects whether most recent build successful.
   pub state: BuildState,
+  /// Latest built short commit hash, or null.
+  pub built_hash: Option<String>,
+  /// Latest short commit hash, or null. Only for repo based stacks
+  pub latest_hash: Option<String>,
 }
 
 #[typeshare]

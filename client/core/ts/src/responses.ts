@@ -227,6 +227,7 @@ export type WriteResponses = {
   CopyRepo: Types.Repo;
   DeleteRepo: Types.Repo;
   UpdateRepo: Types.Repo;
+  RefreshRepoCache: Types.NoData;
   CreateRepoWebhook: Types.CreateRepoWebhookResponse;
   DeleteRepoWebhook: Types.DeleteRepoWebhookResponse;
 

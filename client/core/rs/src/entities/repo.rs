@@ -23,6 +23,8 @@ pub struct RepoListItemInfo {
   pub server_id: String,
   /// Repo last cloned / pulled timestamp in ms.
   pub last_pulled_at: I64,
+  /// Repo last built timestamp in ms.
+  pub last_built_at: I64,
   /// The git provider domain
   pub git_provider: String,
   /// The configured repo
@@ -31,10 +33,14 @@ pub struct RepoListItemInfo {
   pub branch: String,
   /// The repo state
   pub state: RepoState,
-  /// If the repo is cloned, will be the latest short commit hash.
+  /// If the repo is cloned, will be the cloned short commit hash.
+  pub cloned_hash: Option<String>,
+  /// If the repo is cloned, will be the cloned commit message.
+  pub cloned_message: Option<String>,
+  /// If the repo is built, will be the latest built short commit hash.
+  pub built_hash: Option<String>,
+  /// Will be the latest remote short commit hash.
   pub latest_hash: Option<String>,
-  /// If the repo is cloned, will be the latest commit message.
-  pub latest_message: Option<String>,
 }
 
 #[typeshare]
@@ -63,6 +69,16 @@ pub type Repo = Resource<RepoConfig, RepoInfo>;
 pub struct RepoInfo {
   /// When repo was last pulled
   pub last_pulled_at: I64,
+  /// When repo was last built
+  pub last_built_at: I64,
+  /// Latest built short commit hash, or null.
+  pub built_hash: Option<String>,
+  /// Latest built commit message, or null. Only for repo based stacks
+  pub built_message: Option<String>,
+  /// Latest remote short commit hash, or null.
+  pub latest_hash: Option<String>,
+  /// Latest remote commit message, or null
+  pub latest_message: Option<String>,
 }
 
 #[typeshare(serialized_as = "Partial<RepoConfig>")]

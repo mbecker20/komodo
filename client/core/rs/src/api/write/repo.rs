@@ -86,6 +86,20 @@ pub struct UpdateRepo {
 
 //
 
+/// Trigger a refresh of the cached latest hash and message.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(NoData)]
+pub struct RefreshRepoCache {
+  /// Id or name
+  pub repo: String,
+}
+
+//
+
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum RepoWebhookAction {

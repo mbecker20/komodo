@@ -1,14 +1,16 @@
 use anyhow::{anyhow, Context};
+use mongo_indexed::doc;
 use monitor_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
     permission::PermissionLevel,
-    repo::{PartialRepoConfig, Repo},
+    repo::{PartialRepoConfig, Repo, RepoInfo},
     user::User,
-    NoData,
+    CloneArgs, NoData,
   },
 };
+use mungos::mongodb::bson::to_document;
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
@@ -16,8 +18,9 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::{git_token, random_string},
   resource,
-  state::{github_client, State},
+  state::{db_client, github_client, State},
 };
 
 impl Resolve<CreateRepo, User> for State {
@@ -68,6 +71,89 @@ impl Resolve<UpdateRepo, User> for State {
     user: User,
   ) -> anyhow::Result<Repo> {
     resource::update::<Repo>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RefreshRepoCache, User> for State {
+  #[instrument(name = "RefreshRepoCache", skip(self, user))]
+  async fn resolve(
+    &self,
+    RefreshRepoCache { repo }: RefreshRepoCache,
+    user: User,
+  ) -> anyhow::Result<NoData> {
+    // Even though this is a write request, this doesn't change any config. Anyone that can execute the
+    // repo should be able to do this.
+    let repo = resource::get_check_permissions::<Repo>(
+      &repo,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    let config = core_config();
+
+    let mut clone_args: CloneArgs = (&repo).into();
+    clone_args.destination = Some(
+      config
+        .repo_directory
+        .join(random_string(10))
+        .display()
+        .to_string(),
+    );
+
+    let access_token = match (&clone_args.account, &clone_args.provider)
+    {
+      (None, _) => None,
+      (Some(_), None) => {
+        return Err(anyhow!(
+          "Account is configured, but provider is empty"
+        ))
+      }
+      (Some(username), Some(provider)) => {
+        git_token(provider, username, |https| {
+          clone_args.https = https
+        })
+        .await
+        .with_context(
+          || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+        )?
+      }
+    };
+
+    let (_, latest_hash, latest_message, _) = git::clone(
+      clone_args,
+      &config.repo_directory,
+      access_token,
+      &[],
+      "",
+      None,
+    )
+    .await
+    .context("failed to clone repo (the resource) repo")?;
+
+    let info = RepoInfo {
+      last_pulled_at: repo.info.last_pulled_at,
+      last_built_at: repo.info.last_built_at,
+      built_hash: repo.info.built_hash,
+      built_message: repo.info.built_message,
+      latest_hash,
+      latest_message,
+    };
+
+    let info = to_document(&info)
+      .context("failed to serialize repo info to bson")?;
+
+    db_client()
+      .await
+      .repos
+      .update_one(
+        doc! { "name": &repo.name },
+        doc! { "$set": { "info": info } },
+      )
+      .await
+      .context("failed to update repo info on db")?;
+
+    Ok(NoData {})
   }
 }
 

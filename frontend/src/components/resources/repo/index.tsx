@@ -73,20 +73,20 @@ export const RepoComponents: RequiredResourceComponents = {
     },
     Status: ({ id }) => {
       const info = useRepo(id)?.info;
-      if (info?.latest_hash && info?.latest_message) {
+      if (info?.cloned_hash) {
         return (
           <HoverCard openDelay={200}>
             <HoverCardTrigger asChild>
               <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
                 <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                  latest commit: {info.latest_hash}
+                  cloned commit: {info.latest_hash}
                 </div>
               </Card>
             </HoverCardTrigger>
             <HoverCardContent align="start">
               <div className="grid">
                 <div className="text-muted-foreground">commit message:</div>
-                {info.latest_message}
+                {info.cloned_message}
               </div>
             </HoverCardContent>
           </HoverCard>

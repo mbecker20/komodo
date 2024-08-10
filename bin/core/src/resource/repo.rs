@@ -60,12 +60,15 @@ impl super::MonitorResource for Repo {
       info: RepoListItemInfo {
         server_id: repo.config.server_id,
         last_pulled_at: repo.info.last_pulled_at,
+        last_built_at: repo.info.last_built_at,
         git_provider: repo.config.git_provider,
         repo: repo.config.repo,
         branch: repo.config.branch,
         state,
-        latest_hash: status.latest_hash.clone(),
-        latest_message: status.latest_message.clone(),
+        cloned_hash: status.latest_hash.clone(),
+        cloned_message: status.latest_message.clone(),
+        latest_hash: repo.info.latest_hash,
+        built_hash: repo.info.built_hash,
       },
     }
   }

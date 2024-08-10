@@ -161,6 +161,7 @@ impl Resolve<PullRepo, (User, Update)> for State {
     {
       Ok(res) => {
         let res: RepoActionResponseV1_13 = res.into();
+        update.commit_hash = res.commit_hash.unwrap_or_default();
         res.logs
       }
       Err(e) => {
@@ -349,21 +350,40 @@ impl Resolve<BuildRepo, (User, Update)> for State {
       },
     };
 
-    match res {
+    let commit_message = match res {
       Ok(res) => {
         debug!("finished repo clone");
         let res: RepoActionResponseV1_13 = res.into();
         update.logs.extend(res.logs);
+        update.commit_hash = res.commit_hash.unwrap_or_default();
+        res.commit_message.unwrap_or_default()
       }
       Err(e) => {
         update.push_error_log(
           "clone repo",
           format_serror(&e.context("failed to clone repo").into()),
         );
+        Default::default()
       }
     };
 
     update.finalize();
+
+    let db = db_client().await;
+
+    if update.success {
+      let _ = db
+        .repos
+        .update_one(
+          doc! { "name": &repo.name },
+          doc! { "$set": {
+            "info.last_built_at": monitor_timestamp(),
+            "info.built_hash": &update.commit_hash,
+            "info.built_message": commit_message
+          }},
+        )
+        .await;
+    }
 
     // stop the cancel listening task from going forever
     cancel.cancel();
@@ -377,7 +397,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
     // but will fail to update cache in that case.
     if let Ok(update_doc) = to_document(&update) {
       let _ = update_one_by_id(
-        &db_client().await.updates,
+        &db.updates,
         &update.id,
         mungos::update::Update::Set(update_doc),
         None,
