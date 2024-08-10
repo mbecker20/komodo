@@ -14,12 +14,24 @@ services:
       - host.docker.internal:host-gateway
     environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
       MONITOR_HOST: https://demo.monitor.dev
+      ## MONGO
       MONITOR_MONGO_ADDRESS: monitor-mongo:27017
       MONITOR_MONGO_USERNAME: admin # match ones below
       MONITOR_MONGO_PASSWORD: admin
+      ## KEYS
       MONITOR_PASSKEY: a_random_passkey # used to auth against periphery
       MONITOR_WEBHOOK_SECRET: a_random_secret # used to authenticate incoming webhooks
+      MONITOR_JWT_SECRET: a_random_jwt_secret # Optional. If empty, will have to log in again on restart.
+      ## AUTH
       MONITOR_LOCAL_AUTH: true # the default is false.
+      # MONITOR_GITHUB_OAUTH_ENABLED: true # also support google oauth
+      # MONITOR_GITHUB_OAUTH_ID: your_oauth_id
+      # MONITOR_GITHUB_OAUTH_SECRET: your_oauth_secret
+      ## AWS
+      # MONITOR_AWS_ACCESS_KEY_ID: your_aws_key_id
+      # MONITOR_AWS_SECRET_ACCESS_KEY: your_secret_access_key
+      ## HETZNER
+      # MONITOR_HETZNER_TOKEN: your_hetzner_token
 
   monitor-mongo:
     image: mongo
