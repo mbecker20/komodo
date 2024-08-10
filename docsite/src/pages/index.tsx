@@ -1,14 +1,14 @@
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
+import clsx from "clsx";
+import Link from "@docusaurus/Link";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import Layout from "@theme/Layout";
+import HomepageFeatures from "@site/src/components/HomepageFeatures";
 
-import styles from './index.module.css';
-import MonitorLogo from '../components/MonitorLogo';
+import styles from "./index.module.css";
+import MonitorLogo from "../components/MonitorLogo";
 
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
@@ -36,13 +36,13 @@ function HomepageHeader() {
               className="button button--secondary button--lg"
               to="/docs/intro"
             >
-              docs
+              Docs
             </Link>
             <Link
               className="button button--secondary button--lg"
               to="https://github.com/mbecker20/monitor"
             >
-              github
+              Github
             </Link>
             <Link
               className="button button--secondary button--lg"
@@ -53,7 +53,18 @@ function HomepageHeader() {
                 gridColumn: "span 2",
               }}
             >
-              screenshots
+              Screenshots
+            </Link>
+            <Link
+              className="button button--secondary button--lg"
+              to="https://demo.monitor.dev"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                gridColumn: "span 2",
+              }}
+            >
+              Demo
             </Link>
           </div>
         </div>
@@ -63,7 +74,7 @@ function HomepageHeader() {
 }
 
 export default function Home(): JSX.Element {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <Layout title="monitor docs" description={siteConfig.tagline}>
       <HomepageHeader />
