@@ -96,6 +96,9 @@ impl Resolve<RefreshBuildCache, User> for State {
 
     let repo_dir = config.repo_directory.join(random_string(10));
     let mut clone_args: CloneArgs = (&build).into();
+    // Don't want to run these on core.
+    clone_args.on_clone = None;
+    clone_args.on_pull = None;
     clone_args.destination = Some(repo_dir.display().to_string());
 
     let access_token = match (&clone_args.account, &clone_args.provider)

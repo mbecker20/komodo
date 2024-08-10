@@ -55,6 +55,10 @@ pub async fn get_remote_resources(
   // This overrides any other method of determining clone path.
   clone_args.destination = Some(repo_path.display().to_string());
 
+  // Don't want to run these on core.
+  clone_args.on_clone = None;
+  clone_args.on_pull = None;
+
   let (mut logs, hash, message, _) = git::clone(
     clone_args,
     &config.repo_directory,

@@ -101,6 +101,9 @@ pub async fn clone_remote_repo(
     }
   };
 
+  // Don't want to run these on core.
+  clone_args.on_clone = None;
+  clone_args.on_pull = None;
   clone_args.destination = Some(repo_path.display().to_string());
 
   git::clone(
