@@ -68,8 +68,10 @@ pub type Repo = Resource<RepoConfig, RepoInfo>;
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RepoInfo {
   /// When repo was last pulled
+  #[serde(default)]
   pub last_pulled_at: I64,
   /// When repo was last built
+  #[serde(default)]
   pub last_built_at: I64,
   /// Latest built short commit hash, or null.
   pub built_hash: Option<String>,
