@@ -1,5 +1,19 @@
 # Changelog
 
+## <ins>Monitor v1.13 - Komodo (Aug 2024)</ins>
+- This is the first named release, as I think it is really big. The Komodo Dragon is the largest species of Monitor lizard.
+- **Deploy docker compose** with the new **Stack** resource.
+	- Can define the compose file in the UI, or direct Monitor to clone a git repo containing compose files.
+	- Use webhooks to redeploy the stack on push to the repo
+	- Manage the environment variables passed to the compose command.
+- **Builds** can now be configured with an alternate repository name to push the image under.
+	-An optional tag can also be configured to be postfixed onto the version, like image:1.13-aarch64. 
+	This helps for pushing alternate build configurations under the same image repo, just under different tags.
+- **Repos** can now be "built" using builders. The idea is, you spawn an AWS instance, clone a repo, execute a shell command
+(like running a script in the repo), and terminating the instance. The script can build a binary, and push it to some binary repository.
+Users will have to manage their own versioning though.
+- **High level UI Updates** courtesy of @karamvirsingh98
+
 ## <ins>v1.12 (July 2024)</ins>
 - Break free of Github dependance. Use other git providers, including self hosted ones.
 - Same for Docker registry. You can also now use any docker registry for your images.

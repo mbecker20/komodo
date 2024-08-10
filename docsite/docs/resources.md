@@ -26,6 +26,7 @@ All resources which depend on git repos / docker registries are able to use thes
 -- Deploy with docker compose.<br></br>
 -- Provide the compose file in UI, or move the files to a git repo and use a webhook for auto redeploy on push.<br></br>
 -- Supports composing multiple compose files using `docker compose -f ... -f ...`.
+-- Pass environment variables usable within the compose file. Interpolate in app-wide variables / secrets.
 
 ## Repo
 

@@ -13,6 +13,7 @@ With Monitor you can:
  - Deploy docker compose stacks. The file can be defined in UI, or in a git repo, with auto deploy on git push.
  - Build application source into auto-versioned Docker images, auto built on webhook. Deploy single-use AWS instances for infinite capacity.
  - Manage repositories on connected servers, which can perform automation via scripting / webhooks.
+ - Manage all your configuration / environment variables, with shared global variable and secret interpolation.
  - Keep a record of all the actions that are performed and by whom.
 
 ## Docker
