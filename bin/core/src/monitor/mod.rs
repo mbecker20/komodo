@@ -80,6 +80,8 @@ pub struct CachedStackStatus {
   pub services: Vec<StackService>,
 }
 
+const ADDITIONAL_MS: u128 = 500;
+
 pub fn spawn_monitor_loop() {
   let interval: async_timing_util::Timelength = core_config()
     .monitoring_interval
@@ -88,8 +90,8 @@ pub fn spawn_monitor_loop() {
   tokio::spawn(async move {
     refresh_server_cache(monitor_timestamp()).await;
     loop {
-      let ts =
-        (wait_until_timelength(interval, 2000).await - 500) as i64;
+      let ts = (wait_until_timelength(interval, ADDITIONAL_MS).await
+        - ADDITIONAL_MS) as i64;
       refresh_server_cache(ts).await;
     }
   });

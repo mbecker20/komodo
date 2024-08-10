@@ -39,9 +39,7 @@ export const StatChart = ({
       };
     })
     .reverse();
-
-  console.log(stats);
-
+    
   return (
     <div className={className}>
       {isPending ? (
