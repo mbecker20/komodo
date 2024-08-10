@@ -126,7 +126,35 @@ export const StackComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
+      const config = useFullStack(id)?.config;
+      if (!config?.file_contents && !config?.repo) {
+        return null;
+      }
       return <StatusBadge text={state} intent={stack_state_intention(state)} />;
+    },
+    NoConfig: ({ id }) => {
+      const config = useFullStack(id)?.config;
+      if (config?.file_contents || config?.repo) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 bg-destructive/75 hover:bg-destructive transition-colors cursor-pointer">
+              <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                Config Missing
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid gap-2">
+              No configuration provided for stack. Cannot get stack state. Either
+              paste the compose file contents into the UI, or configure a git repo
+              containing your files.
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
     },
     ProjectMissing: ({ id }) => {
       const info = useStack(id)?.info;

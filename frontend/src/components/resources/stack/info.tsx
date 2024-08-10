@@ -25,6 +25,7 @@ export const StackInfo = ({
             {stack?.info?.deployed_contents?.map((content) => (
               <pre className="flex flex-col gap-2">
                 path: {content.path}
+                
                 <pre>{content.contents}</pre>
               </pre>
             ))}

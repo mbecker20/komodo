@@ -24,7 +24,7 @@ export const TopbarAlerts = () => {
   const { data } = useRead(
     "ListAlerts",
     { query: { resolved: false } },
-    { refetchInterval: 5000 }
+    { refetchInterval: 3000 }
   );
   const [open, setOpen] = useState(false);
 
