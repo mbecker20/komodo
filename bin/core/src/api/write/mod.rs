@@ -78,6 +78,7 @@ pub enum WriteRequest {
   CopyBuild(CopyBuild),
   DeleteBuild(DeleteBuild),
   UpdateBuild(UpdateBuild),
+  RefreshBuildCache(RefreshBuildCache),
   CreateBuildWebhook(CreateBuildWebhook),
   DeleteBuildWebhook(DeleteBuildWebhook),
 

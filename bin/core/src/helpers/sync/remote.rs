@@ -6,7 +6,8 @@ use monitor_client::entities::{
 };
 
 use crate::{
-  config::core_config, helpers::git_token,
+  config::core_config,
+  helpers::{git_token, random_string},
   state::resource_sync_lock_cache,
 };
 
@@ -41,7 +42,7 @@ pub async fn get_remote_resources(
     }
   };
 
-  fs::create_dir_all(&config.sync_directory)
+  fs::create_dir_all(&config.repo_directory)
     .context("failed to create sync directory")?;
 
   // lock simultaneous access to same directory
@@ -50,9 +51,13 @@ pub async fn get_remote_resources(
     .await;
   let _lock = lock.lock().await;
 
+  let repo_path = config.repo_directory.join(random_string(10));
+  // This overrides any other method of determining clone path.
+  clone_args.destination = Some(repo_path.display().to_string());
+
   let (mut logs, hash, message, _) = git::clone(
     clone_args,
-    &config.sync_directory,
+    &config.repo_directory,
     access_token,
     &[],
     "",
@@ -65,7 +70,6 @@ pub async fn get_remote_resources(
   let message =
     message.context("failed to get commit hash message")?;
 
-  let repo_path = config.sync_directory.join(&sync.name);
   let resource_path = repo_path.join(&sync.config.resource_path);
 
   let res = super::file::read_resources(&resource_path).map(

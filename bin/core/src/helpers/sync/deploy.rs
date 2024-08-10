@@ -590,7 +590,7 @@ fn build_cache_for_stack<'a>(
     if stack.latest_hash {
       if let Some(deployed_hash) = &original.info.deployed_hash {
         let repo_path =
-          core_config().stack_directory.join(random_string(10));
+          core_config().repo_directory.join(random_string(10));
         let (_, hash, _) = clone_remote_repo(&repo_path, original)
           .await
           .context("failed to get latest hash for repo based stack")

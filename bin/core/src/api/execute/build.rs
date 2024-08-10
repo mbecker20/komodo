@@ -189,12 +189,14 @@ impl Resolve<RunBuild, (User, Update)> for State {
       },
     };
 
-    let commit_hash = match res {
+    let commit_message = match res {
       Ok(res) => {
         debug!("finished repo clone");
         let res: RepoActionResponseV1_13 = res.into();
         update.logs.extend(res.logs);
-        res.commit_hash
+        update.commit_hash =
+          res.commit_hash.unwrap_or_default().to_string();
+        res.commit_message.unwrap_or_default()
       }
       Err(e) => {
         warn!("failed build at clone repo | {e:#}");
@@ -202,7 +204,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           "clone repo",
           format_serror(&e.context("failed to clone repo").into()),
         );
-        None
+        Default::default()
       }
     };
 
@@ -308,7 +310,11 @@ impl Resolve<RunBuild, (User, Update)> for State {
             aws_ecr,
             replacers: secret_replacers.into_iter().collect(),
             // Push a commit hash tagged image
-            additional_tags: commit_hash.map(|hash| vec![hash]).unwrap_or_default(),
+            additional_tags: if update.commit_hash.is_empty() {
+              Default::default()
+            } else {
+              vec![update.commit_hash.clone()]
+            },
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
           info!("build cancelled during build, cleaning up builder");
@@ -343,13 +349,13 @@ impl Resolve<RunBuild, (User, Update)> for State {
         .builds
         .update_one(
           doc! { "name": &build.name },
-          doc! {
-            "$set": {
-              "config.version": to_bson(&build.config.version)
-                .context("failed at converting version to bson")?,
-              "info.last_built_at": monitor_timestamp(),
-            }
-          },
+          doc! { "$set": {
+            "config.version": to_bson(&build.config.version)
+              .context("failed at converting version to bson")?,
+            "info.last_built_at": monitor_timestamp(),
+            "info.built_hash": &update.commit_hash,
+            "info.built_message": commit_message
+          }},
         )
         .await;
     }

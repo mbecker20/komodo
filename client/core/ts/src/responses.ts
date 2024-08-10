@@ -206,6 +206,7 @@ export type WriteResponses = {
   CopyBuild: Types.Build;
   DeleteBuild: Types.Build;
   UpdateBuild: Types.Build;
+  RefreshBuildCache: Types.NoData;
   CreateBuildWebhook: Types.CreateBuildWebhookResponse;
   DeleteBuildWebhook: Types.DeleteBuildWebhookResponse;
 

@@ -46,7 +46,7 @@ async fn get_config_json_inner(
   compose_contents: &str,
 ) -> anyhow::Result<String> {
   // create a new folder to prevent collisions
-  let dir = core_config().stack_directory.join(random_string(10));
+  let dir = core_config().repo_directory.join(random_string(10));
 
   fs::create_dir_all(&dir)
     .await

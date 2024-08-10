@@ -81,24 +81,21 @@ pub fn core_config() -> &'static CoreConfig {
       jwt_ttl: env
         .monitor_jwt_ttl
         .unwrap_or(config.jwt_ttl),
-      sync_directory: env
-        .monitor_sync_directory
+      repo_directory: env
+        .monitor_repo_directory
         .map(|dir|
           dir.parse()
-            .context("failed to parse env MONITOR_SYNC_DIRECTORY as valid path").unwrap())
-        .unwrap_or(config.sync_directory),
-      stack_directory: env
-        .monitor_stack_directory
-        .map(|dir|
-          dir.parse()
-            .context("failed to parse env MONITOR_STACK_DIRECTORY as valid path").unwrap())
-        .unwrap_or(config.stack_directory),
+            .context("failed to parse env MONITOR_REPO_DIRECTORY as valid path").unwrap())
+        .unwrap_or(config.repo_directory),
       stack_poll_interval: env
         .monitor_stack_poll_interval
         .unwrap_or(config.stack_poll_interval),
       sync_poll_interval: env
         .monitor_sync_poll_interval
         .unwrap_or(config.sync_poll_interval),
+      build_poll_interval: env
+        .monitor_build_poll_interval
+        .unwrap_or(config.build_poll_interval),
       monitoring_interval: env
         .monitor_monitoring_interval
         .unwrap_or(config.monitoring_interval),

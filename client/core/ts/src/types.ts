@@ -459,6 +459,14 @@ export interface BuildConfig {
 
 export interface BuildInfo {
 	last_built_at: I64;
+	/** Latest built short commit hash, or null. */
+	built_hash?: string;
+	/** Latest built commit message, or null. Only for repo based stacks */
+	built_message?: string;
+	/** Latest remote short commit hash, or null. */
+	latest_hash?: string;
+	/** Latest remote commit message, or null */
+	latest_message?: string;
 }
 
 export type Build = Resource<BuildConfig, BuildInfo>;
@@ -1926,6 +1934,8 @@ export interface Update {
 	status: UpdateStatus;
 	/** An optional version on the update, ie build version or deployed version. */
 	version?: Version;
+	/** An optional commit hash associated with the update, ie cloned hash or deployed hash. */
+	commit_hash?: string;
 	/** Some unstructured, operation specific data. Not for general usage. */
 	other_data?: string;
 }
@@ -4000,6 +4010,12 @@ export interface UpdateBuild {
 	config: _PartialBuildConfig;
 }
 
+/** Trigger a refresh of the cached latest hash and message. */
+export interface RefreshBuildCache {
+	/** Id or name */
+	build: string;
+}
+
 /**
  * Create a webhook on the github repo attached to the build
  * passed in request. Response: [CreateBuildWebhookResponse]
@@ -5311,6 +5327,7 @@ export type WriteRequest =
 	| { type: "CopyBuild", params: CopyBuild }
 	| { type: "DeleteBuild", params: DeleteBuild }
 	| { type: "UpdateBuild", params: UpdateBuild }
+	| { type: "RefreshBuildCache", params: RefreshBuildCache }
 	| { type: "CreateBuildWebhook", params: CreateBuildWebhook }
 	| { type: "DeleteBuildWebhook", params: DeleteBuildWebhook }
 	| { type: "CreateBuilder", params: CreateBuilder }

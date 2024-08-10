@@ -49,14 +49,14 @@ pub struct Env {
   pub monitor_jwt_secret: Option<String>,
   /// Override `jwt_ttl`
   pub monitor_jwt_ttl: Option<Timelength>,
-  /// Override `sync_directory`
-  pub monitor_sync_directory: Option<String>,
+  /// Override `repo_directory`
+  pub monitor_repo_directory: Option<String>,
   /// Override `sync_poll_interval`
   pub monitor_sync_poll_interval: Option<Timelength>,
-  /// Override `stack_directory`
-  pub monitor_stack_directory: Option<String>,
   /// Override `stack_poll_interval`
   pub monitor_stack_poll_interval: Option<Timelength>,
+  /// Override `build_poll_interval`
+  pub monitor_build_poll_interval: Option<Timelength>,
   /// Override `monitoring_interval`
   pub monitor_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
@@ -152,177 +152,7 @@ fn default_config_path() -> String {
 /// to `/config/config.toml` inside the container, or simply override whichever fields
 /// you need using the environment.
 ///
-/// ## Example TOML
-/// ```toml
-/// ## this will be the document title on the web page (shows up as text in the browser tab).
-/// ## default: 'Monitor'
-/// title = "Monitor"
-///
-/// ## Required for oauth functionality. This should be the url used to access monitor in browser,
-/// ## potentially behind DNS.
-/// ## Eg https://monitor.dev or http://12.34.56.78:9000.
-/// ## This should match the address configured in your oauth app.
-/// ## Required (no default).
-/// host = "https://monitor.dev"
-///
-/// ## The port the core system will run on. If running core in docker container,
-/// ## Leave as this port as 9120 and use port bind eg. -p 9121:9120
-/// ## Default: 9120
-/// port = 9120
-///
-/// ## Must match a passkey in periphery config to communicate with periphery.
-/// ## Required (No default)
-/// passkey = "a_random_passkey"
-///
-/// ## token that has to be given to git provider during repo webhook config as the secret
-/// ## default: empty (none)
-/// webhook_secret = "a_random_webhook_secret"
-/// 
-/// ## allow or deny user login with username / password
-/// ## default: false
-/// # local_auth = true
-/// 
-/// ## new users will be automatically enabled
-/// ## default: false
-/// # enable_new_users = true
-///
-/// ## an alternate base url that is used to recieve git webhook requests
-/// ## if empty or not specified, will use 'host' address as base
-/// ## default: empty (none)
-/// # webhook_base_url = "https://git-webhook.monitor.dev"
-///
-/// ## Specify the log level of the monitor core application.
-/// ## Default: `info`.
-/// ## Options: `off`, `error`, `warn`, `info`, `debug`, `trace`.
-/// logging.level = "info"
-///
-/// ## Specify the logging format for stdout / stderr.
-/// ## Default: standard
-/// ## Options: `standard`, `json`, `none`
-/// logging.stdio = "standard"
-///
-/// ## Specify a opentelemetry otlp endpoint to send traces to.
-/// ## Optional, default unassigned (don't export telemetry).
-/// # logging.otlp_endpoint = "http://localhost:4317"
-///
-/// ## Optionally provide a specific jwt secret.
-/// ## Passing nothing or an empty string will cause one to be generated.
-/// ## Default: "" (empty string)
-/// # jwt_secret = "your_random_secret"
-///
-/// ## Specify how long an issued jwt stays valid.
-/// ## All jwts are invalidated on application restart.
-/// ## Default: `1-day`.
-/// ## Options: `1-hr`, `12-hr`, `1-day`, `3-day`, `1-wk`, `2-wk`, `30-day`.
-/// jwt_ttl = "1-day"
-/// 
-/// ## Interval at which to poll Stacks for any updates / automated actions.
-/// ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-/// ## Default: `5-min`.
-/// stack_poll_interval = "1-min"
-/// 
-/// ## Interval at which to poll Syncs for any updates / automated actions.
-/// ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-/// ## Default: `5-min`.
-/// sync_poll_interval = "1-min"
-///
-/// ## Controls the granularity of the system stats collection by monitor core.
-/// ## Options: `5-sec`, `15-sec`, `30-sec`, `1-min`, `2-min`, `5-min`.
-/// ## Default: `15-sec`.
-/// monitoring_interval = "15-sec"
-///
-/// ## Number of days to store stats, or 0 to disable stats pruning.
-/// ## Stats older than this number of days are deleted daily
-/// ## Default: 0 (pruning disabled)
-/// keep_stats_for_days = 14
-///
-/// ## Number of days to store alerts, or 0 to disable alert pruning.
-/// ## Alerts older than this number of days are deleted daily
-/// ## Default: 0 (pruning disabled)
-/// keep_alerts_for_days = 14
-///
-/// ## allows all users to have read access on all resources
-/// ## default: false
-/// # transparent_mode = true
-///
-/// ## disables write support on resources in the UI
-/// ## default: false
-/// # ui_write_disabled = true
-///
-/// ## Use to configure google oauth
-/// # google_oauth.enabled = true
-/// # google_oauth.id = "your_google_client_id"
-/// # google_oauth.secret = "your_google_client_secret"
-///
-/// ## Use to configure github oauth
-/// # github_oauth.enabled = true
-/// # github_oauth.id = "your_github_client_id"
-/// # github_oauth.secret = "your_github_client_secret"
-///
-/// ## Configure github webhook app. Enables webhook management apis.
-/// # github_webhook_app.app_id = 1234455 # Find on the app page.
-/// # github_webhook_app.installations = [
-/// #   ## Find the id after installing the app to user / organization. "namespace" is the username / organization name.
-/// #   { id = 1234, namespace = "mbecker20" }
-/// # ]
-///
-/// ## Path to github webhook app private key.
-/// ## This is defaulted to `/github/private-key.pem`, and doesn't need to be changed if running in Docker.
-/// ## Just mount the private key pem file on the host to `/github/private-key.pem` in the container.
-/// # github_webhook_app.pk_path = "/path/to/pk.pem"
-///
-/// ## MUST comment back in some way to configure mongo.
-/// # mongo.uri = "mongodb://username:password@localhost:27017"
-/// ## ==== or ====
-/// mongo.address = "localhost:27017"
-/// # mongo.username = "username"
-/// # mongo.password = "password"
-/// ## ==== other ====
-/// ## default: monitor. this is the name of the mongo database that monitor will create its collections in.
-/// mongo.db_name = "monitor"
-/// ## default: monitor_core. this is the assigned app_name of the mongo client
-/// mongo.app_name = "monitor_core"
-///
-/// ## provide aws api keys for ephemeral builders
-/// # aws.access_key_id = "your_aws_key_id"
-/// # aws.secret_access_key = "your_aws_secret_key"
-///
-/// ## provide hetzner api token for ephemeral builders
-/// # hetzner.token = "your_hetzner_token"
-///
-/// ## provide core-base secrets
-/// [secrets]
-/// # SECRET_1 = "value_1"
-/// # SECRET_2 = "value_2"
-///
-/// ## configure git providers
-/// # [[git_provider]]
-/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
-/// # accounts = [
-/// #     { username = "mbecker20", token = "access_token_for_account" },
-/// # ]
-///
-/// ## configure docker registries
-/// # [[docker_registry]]
-/// # domain = "docker.io"
-/// # accounts = [
-/// #     { username = "mbecker2020", token = "access_token_for_account" }
-/// # ]
-/// # organizations = ["DockerhubOrganization"]
-///
-/// ## configure aws ecr registries
-/// # [aws_ecr_registry.label_1]
-/// # region = "us-east-1"
-/// # account_id = "123456677"
-/// # access_key_id = "your_aws_key_id_1"
-/// # secret_access_key = "your_aws_secret_key_1"
-///
-/// # [aws_ecr_registry.label_2]
-/// # region = "us-west-1"
-/// # account_id = "123456677"
-/// # access_key_id = "your_aws_key_id_2"
-/// # secret_access_key = "your_aws_secret_key_2"
-/// ```
+/// Refer to the [example file](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml) for a full example.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
   /// The title of this monitor deployment. Will be used in the browser page title.
@@ -356,11 +186,18 @@ pub struct CoreConfig {
   #[serde(default = "default_jwt_ttl")]
   pub jwt_ttl: Timelength,
 
-  /// Specify the directory used to clone sync repos. The default is fine when using a container.
+  /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
+  /// The default is fine when using a container.
   /// This directory has no need for persistence, so no need to mount it.
-  /// Default: `/syncs`
-  #[serde(default = "default_sync_directory")]
-  pub sync_directory: PathBuf,
+  /// Default: `/repos`
+  #[serde(default = "default_repo_directory")]
+  pub repo_directory: PathBuf,
+
+  /// Interval at which to poll stacks for any updates / automated actions.
+  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
+  /// Default: `5-min`.  
+  #[serde(default = "default_poll_interval")]
+  pub stack_poll_interval: Timelength,
 
   /// Interval at which to poll syncs for any updates / automated actions.
   /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
@@ -368,17 +205,11 @@ pub struct CoreConfig {
   #[serde(default = "default_poll_interval")]
   pub sync_poll_interval: Timelength,
 
-  /// Specify the directory used to clone stack repos. The default is fine when using a container.
-  /// This directory has no need for persistence, so no need to mount it.
-  /// Default: `/stacks`
-  #[serde(default = "default_stack_directory")]
-  pub stack_directory: PathBuf,
-
-  /// Interval at which to poll stacks for any updates / automated actions.
+  /// Interval at which to poll build commit hash for any updates / automated actions.
   /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
   /// Default: `5-min`.  
   #[serde(default = "default_poll_interval")]
-  pub stack_poll_interval: Timelength,
+  pub build_poll_interval: Timelength,
 
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
@@ -492,14 +323,9 @@ fn default_jwt_ttl() -> Timelength {
   Timelength::OneDay
 }
 
-fn default_sync_directory() -> PathBuf {
-  // `/syncs` will always be valid path
-  PathBuf::from_str("/syncs").unwrap()
-}
-
-fn default_stack_directory() -> PathBuf {
-  // unwrap ok: `/stacks` will always be valid path
-  PathBuf::from_str("/stacks").unwrap()
+fn default_repo_directory() -> PathBuf {
+  // unwrap ok: `/repos` will always be valid path
+  PathBuf::from_str("/repos").unwrap()
 }
 
 fn default_prune_days() -> u64 {
@@ -524,10 +350,10 @@ impl CoreConfig {
       passkey: empty_or_redacted(&config.passkey),
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_ttl: config.jwt_ttl,
-      sync_directory: config.sync_directory,
+      repo_directory: config.repo_directory,
       sync_poll_interval: config.sync_poll_interval,
-      stack_directory: config.stack_directory,
       stack_poll_interval: config.stack_poll_interval,
+      build_poll_interval: config.build_poll_interval,
       monitoring_interval: config.monitoring_interval,
       keep_stats_for_days: config.keep_stats_for_days,
       keep_alerts_for_days: config.keep_alerts_for_days,

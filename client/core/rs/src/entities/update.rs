@@ -74,7 +74,7 @@ pub struct Update {
   pub version: Version,
   /// An optional commit hash associated with the update, ie cloned hash or deployed hash.
   #[serde(default, skip_serializing_if = "String::is_empty")]
-  pub hash: String,
+  pub commit_hash: String,
   /// Some unstructured, operation specific data. Not for general usage.
   #[serde(default, skip_serializing_if = "String::is_empty")]
   pub other_data: String,

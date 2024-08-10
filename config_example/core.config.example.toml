@@ -3,7 +3,8 @@
 #######################
 
 ## This is the offical "Default" config file for Monitor.
-## It serves as documentation for the meaning of the fields. 
+## It serves as documentation for the meaning of the fields.
+## It is located at [https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml).
 
 ## This file is bundled into the official image, `ghcr.io/mbecker20/monitor`,
 ## as the default config at `/config/config.toml`.
@@ -328,6 +329,11 @@ webhook_secret = "a_random_webhook_secret"
 ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
 ## Default: `5-min`.
 # sync_poll_interval = "1-min"
+
+## Interval at which to poll Builds (latest commit hash) for any updates / automated actions.
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# build_poll_interval = "1-min"
 
 ## Controls the rate at which servers are polled for health, system stats, and container status.
 ## This affects network usage, and the size of the stats stored in mongo.

@@ -31,7 +31,7 @@ pub async fn get_remote_compose_contents(
   Option<String>,
 )> {
   let repo_path =
-    core_config().stack_directory.join(random_string(10));
+    core_config().repo_directory.join(random_string(10));
 
   let (logs, hash, message) = clone_remote_repo(&repo_path, stack)
     .await
@@ -99,7 +99,7 @@ pub async fn clone_remote_repo(
 
   git::clone(
     clone_args,
-    &config.stack_directory,
+    &config.repo_directory,
     access_token,
     &[],
     "",
