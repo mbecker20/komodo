@@ -131,7 +131,9 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
 export const ServerComponents: RequiredResourceComponents = {
   list_item: (id) => useServer(id),
 
-  Description: () => <>Connect servers for alerting, building, and deploying.</>,
+  Description: () => (
+    <>Connect servers for alerting, building, and deploying.</>
+  ),
 
   Dashboard: () => {
     const summary = useRead("GetServersSummary", {}).data;
@@ -171,8 +173,11 @@ export const ServerComponents: RequiredResourceComponents = {
       );
     },
     Version: ({ id }) => {
-      const version = useRead("GetPeripheryVersion", { server: id }).data
-        ?.version;
+      const version = useRead(
+        "GetPeripheryVersion",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.version;
       const _version =
         version === undefined || version === "unknown" ? "unknown" : version;
       return (
@@ -199,7 +204,10 @@ export const ServerComponents: RequiredResourceComponents = {
         useRead(
           "GetSystemInformation",
           { server: id },
-          { enabled: server ? server.info.state !== "Disabled" : false }
+          {
+            enabled: server ? server.info.state !== "Disabled" : false,
+            refetchInterval: 5000,
+          }
         ).data?.core_count ?? 0;
       return (
         <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
@@ -213,7 +221,10 @@ export const ServerComponents: RequiredResourceComponents = {
       const stats = useRead(
         "GetSystemStats",
         { server: id },
-        { enabled: server ? server.info.state !== "Disabled" : false }
+        {
+          enabled: server ? server.info.state !== "Disabled" : false,
+          refetchInterval: 5000,
+        }
       ).data;
       return (
         <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
@@ -227,7 +238,10 @@ export const ServerComponents: RequiredResourceComponents = {
       const stats = useRead(
         "GetSystemStats",
         { server: id },
-        { enabled: server ? server.info.state !== "Disabled" : false }
+        {
+          enabled: server ? server.info.state !== "Disabled" : false,
+          refetchInterval: 5000,
+        }
       ).data;
       const disk_total_gb = stats?.disks.reduce(
         (acc, curr) => acc + curr.total_gb,
@@ -253,8 +267,11 @@ export const ServerComponents: RequiredResourceComponents = {
   Actions: {
     Prune: ({ id }) => {
       const { mutate, isPending } = useExecute(`PruneImages`);
-      const pruning = useRead("GetServerActionState", { server: id }).data
-        ?.pruning_images;
+      const pruning = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pruning_images;
       const pending = isPending || pruning;
       return (
         <ConfirmButton
@@ -290,30 +307,7 @@ export const ServerComponents: RequiredResourceComponents = {
     },
   },
 
-  Page: {
-    // Alerts: ({ id }) => {
-    //   const alerts = useRead("ListAlerts", {
-    //     query: { "target.type": "Server", "target.id": id },
-    //   }).data?.alerts.slice(0, 3);
-    //   return (
-    //     (alerts?.length || 0) > 0 && (
-    //       <Section
-    //         title="Alerts"
-    //         icon={<AlertTriangle className="w-4 h-4" />}
-    //         actions={
-    //           <Link to={`/servers/${id}/alerts`}>
-    //             <Button variant="secondary" size="icon">
-    //               <ExternalLink className="w-4 h-4" />
-    //             </Button>
-    //           </Link>
-    //         }
-    //       >
-    //         <AlertsTable alerts={alerts ?? []} />
-    //       </Section>
-    //     )
-    //   );
-    // },
-  },
+  Page: {},
 
   Config: ConfigOrChildResources,
 

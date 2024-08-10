@@ -1,0 +1,54 @@
+services:
+  monitor-core:
+    image: git.mogh.tech/mbecker20/monitor:latest-next
+    restart: unless-stopped
+    depends_on:
+      monitor-mongo:
+    logging:
+      driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
+    networks:
+      - monitor-network
+    ports:
+      - 9120:9120
+    extra_hosts: # allows for local periphery connection over "localhost"
+      - host.docker.internal:host-gateway
+    environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
+      MONITOR_HOST: https://demo.monitor.dev
+      MONITOR_MONGO_ADDRESS: monitor-mongo:27017
+      MONITOR_MONGO_USERNAME: admin # match ones below
+      MONITOR_MONGO_PASSWORD: admin
+      MONITOR_PASSKEY: a_random_passkey # used to auth against periphery
+      MONITOR_WEBHOOK_SECRET: a_random_secret
+      MONITOR_LOCAL_AUTH: true # the default is false.
+
+  monitor-mongo:
+    image: mongo
+    command: --quiet # suppress mongo logs a bit
+    restart: unless-stopped
+    logging:
+      driver: local
+    networks:
+      - monitor-network
+    ports:
+      - 27017:27017
+    volumes:
+      - db-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin # change these
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      
+  monitor-proxy: npm 
+    image: jc21/nginx-proxy-manager
+    networks:
+      - monitor-network
+    ports:
+      - 443:443
+      - 80:80
+    
+
+
+volumes:
+  db-data:
+
+networks:
+  monitor-network: {}

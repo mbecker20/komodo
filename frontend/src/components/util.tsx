@@ -37,6 +37,7 @@ import {
   hex_color_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
+import { Types } from "@monitor/client";
 
 export const WithLoading = ({
   children,
@@ -436,6 +437,8 @@ export const StatusBadge = ({
   const color = text_color_class_by_intention(intent);
   const background = hex_color_by_intention(intent) + "25";
 
+  const _text = text === Types.ServerState.NotOk ? "Not Ok" : text;
+
   return (
     <p
       className={cn(
@@ -444,7 +447,7 @@ export const StatusBadge = ({
       )}
       style={{ background }}
     >
-      {snake_case_to_upper_space_case(text).toUpperCase()}
+      {snake_case_to_upper_space_case(_text).toUpperCase()}
     </p>
   );
 };
