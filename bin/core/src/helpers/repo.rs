@@ -1,7 +1,6 @@
 use async_timing_util::{wait_until_timelength, Timelength};
 use monitor_client::{
-  api::write::{RefreshBuildCache, RefreshRepoCache},
-  entities::user::{build_user, repo_user},
+  api::write::RefreshRepoCache, entities::user::repo_user,
 };
 use mungos::find::find_collect;
 use resolver_api::Resolve;
