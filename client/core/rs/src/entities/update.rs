@@ -72,6 +72,9 @@ pub struct Update {
   /// An optional version on the update, ie build version or deployed version.
   #[serde(default, skip_serializing_if = "Version::is_none")]
   pub version: Version,
+  /// An optional commit hash associated with the update, ie cloned hash or deployed hash.
+  #[serde(default, skip_serializing_if = "String::is_empty")]
+  pub hash: String,
   /// Some unstructured, operation specific data. Not for general usage.
   #[serde(default, skip_serializing_if = "String::is_empty")]
   pub other_data: String,
@@ -189,10 +192,12 @@ impl Log {
   /// Combines stdout / stderr into one log
   pub fn combined(&self) -> String {
     match (self.stdout.is_empty(), self.stderr.is_empty()) {
-      (true, true) => format!("stdout: {}\n\nstderr: {}", self.stdout, self.stderr),
+      (true, true) => {
+        format!("stdout: {}\n\nstderr: {}", self.stdout, self.stderr)
+      }
       (true, false) => self.stdout.to_string(),
       (false, true) => self.stderr.to_string(),
-      (false, false) => String::from("No log")
+      (false, false) => String::from("No log"),
     }
   }
 }
