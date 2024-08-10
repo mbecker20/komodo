@@ -568,7 +568,7 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
       destination: None,
       on_clone: None,
       on_pull: None,
-      provider: Some(String::from("github.com")),
+      provider: optional_string(&sync.config.git_provider),
       https: sync.config.git_https,
       account: optional_string(&sync.config.git_account),
     }
