@@ -113,38 +113,49 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
         </Button>
         <ExportButton targets={[{ type, id }]} />
       </div>
-      <div className="grid lg:grid-cols-2 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="mt-1">
-            <Components.BigIcon id={id} />
-          </div>
-          <h1 className="text-3xl">{name}</h1>
+
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-4 justify-between flex-wrap">
           <div className="flex items-center gap-4">
-            {Object.entries(Components.Status).map(([key, Status]) => (
-              <Status key={key} id={id} />
+            <div className="mt-1">
+              <Components.BigIcon id={id} />
+            </div>
+            <h1 className="text-3xl">{name}</h1>
+            <div className="flex items-center gap-4 flex-wrap">
+              {Object.entries(Components.Status).map(([key, Status]) => (
+                <Status key={key} id={id} />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">Description: </p>
+            <ResourceDescription type={type} id={id} disabled={!canWrite} />
+          </div>
+        </div>
+
+        <div className="flex gap-4 justify-between flex-wrap">
+          <div className="flex items-center gap-4 flex-wrap">
+            {infoEntries.map(([key, Info]) => (
+              <div
+                key={key}
+                className="pr-4 border-r last:pr-0 last:border-none"
+              >
+                <Info id={id} />
+              </div>
             ))}
           </div>
-        </div>
-        <div className="flex items-center gap-2 lg:justify-self-end">
-          <p className="text-sm text-muted-foreground">Description: </p>
-          <ResourceDescription type={type} id={id} disabled={!canWrite} />
-        </div>
-        <div className="flex items-center gap-4 row-start-2 lg:row-auto">
-          {infoEntries.map(([key, Info]) => (
-            <div key={key} className="pr-4 border-r last:pr-0 last:border-none">
-              <Info id={id} />
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 h-7 lg:justify-self-end">
-          <p className="text-sm text-muted-foreground">Tags:</p>
-          <ResourceTags
-            target={{ id, type }}
-            className="text-sm"
-            disabled={!canWrite}
-            click_to_delete
-          />
-          {canWrite && <AddTags target={{ id, type }} />}
+
+          <div className="flex items-center gap-2 h-7 lg:justify-self-end">
+            <p className="text-sm text-muted-foreground">Tags:</p>
+            <ResourceTags
+              target={{ id, type }}
+              className="text-sm"
+              disabled={!canWrite}
+              click_to_delete
+            />
+            {canWrite && <AddTags target={{ id, type }} />}
+          </div>
         </div>
       </div>
     </div>

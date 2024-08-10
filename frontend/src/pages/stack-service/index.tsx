@@ -69,55 +69,59 @@ export const StackServicePage = () => {
           <ExportButton targets={[{ type: "Stack", id: stack_id }]} />
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="mt-1">
-              <Layers2 className={cn("w-8 h-8", stroke_color)} />
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-4 justify-between flex-wrap">
+            <div className="flex items-center gap-4">
+              <div className="mt-1">
+                <Layers2 className={cn("w-8 h-8", stroke_color)} />
+              </div>
+              <h1 className="text-3xl">{service}</h1>
+              <div className="flex flex-wrap gap-4 items-center">
+                <StatusBadge text={state} intent={intention} />
+                {container?.status && <div>{container?.status}</div>}
+              </div>
             </div>
-            <h1 className="text-3xl">{service}</h1>
-            <div className="flex flex-wrap gap-4 items-center">
-              <StatusBadge text={state} intent={intention} />
-              {container?.status && <div>{container?.status}</div>}
+
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">Description: </p>
+              <ResourceDescription
+                type="Stack"
+                id={stack_id}
+                disabled={!canWrite}
+              />
             </div>
           </div>
 
-          <div className="flex items-center gap-2 lg:justify-self-end">
-            <p className="text-sm text-muted-foreground">Description: </p>
-            <ResourceDescription
-              type="Stack"
-              id={stack_id}
-              disabled={!canWrite}
-            />
-          </div>
+          <div className="flex gap-4 justify-between flex-wrap">
+            <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
+              <ResourceLink type="Stack" id={stack_id} />
+              {stack?.info.server_id && (
+                <>
+                  |
+                  <ResourceLink type="Server" id={stack.info.server_id} />
+                </>
+              )}
+              {container && container?.name !== service && (
+                <>
+                  |
+                  <div className="flex gap-2 items-center">
+                    <Box className="w-4 h-4" />
+                    {container.name}
+                  </div>
+                </>
+              )}
+            </div>
 
-          <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
-            <ResourceLink type="Stack" id={stack_id} />
-            {stack?.info.server_id && (
-              <>
-                |
-                <ResourceLink type="Server" id={stack.info.server_id} />
-              </>
-            )}
-            {container && container?.name !== service && (
-              <>
-                |
-                <div className="flex gap-2 items-center">
-                  <Box className="w-4 h-4" />
-                  {container.name}
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 h-7 lg:justify-self-end">
-            <p className="text-sm text-muted-foreground">Tags:</p>
-            <ResourceTags
-              target={{ id: stack_id, type: "Stack" }}
-              className="text-sm"
-              disabled={!canWrite}
-              click_to_delete
-            />
-            {canWrite && <AddTags target={{ id: stack_id, type: "Stack" }} />}
+            <div className="flex items-center gap-2 h-7 lg:justify-self-end">
+              <p className="text-sm text-muted-foreground">Tags:</p>
+              <ResourceTags
+                target={{ id: stack_id, type: "Stack" }}
+                className="text-sm"
+                disabled={!canWrite}
+                click_to_delete
+              />
+              {canWrite && <AddTags target={{ id: stack_id, type: "Stack" }} />}
+            </div>
           </div>
         </div>
       </div>
