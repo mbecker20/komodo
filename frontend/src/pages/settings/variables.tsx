@@ -203,11 +203,17 @@ export const CreateVariable = () => {
       setOpen(false);
     },
   });
+  const user = useUser().data;
+  const disabled = !user?.admin;
   const submit = () => mutate({ name });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="items-center gap-2">
+        <Button
+          variant="secondary"
+          className="items-center gap-2"
+          disabled={disabled}
+        >
           New Variable <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>
