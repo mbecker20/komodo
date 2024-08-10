@@ -1,3 +1,4 @@
+import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { ResourceName } from "@components/resources/common";
@@ -7,28 +8,47 @@ import {
   hex_color_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
-import { useRead, useUser } from "@lib/hooks";
+import { useNoResources, useRead, useUser } from "@lib/hooks";
 import { cn, usableResourcePath } from "@lib/utils";
 import { UsableResource } from "@types";
-import { Boxes, History } from "lucide-react";
+import { AlertTriangle, Boxes, History } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 
-export const Dashboard = () => (
-  <Page>
-    <Section title="Resources" icon={<Boxes className="w-4 h-4" />}>
-      <div className="flex flex-col gap-6 w-full">
-        <ResourceRow type="Server" />
-        <ResourceRow type="Deployment" />
-        <ResourceRow type="Stack" />
-        <ResourceRow type="Build" />
-        <ResourceRow type="Repo" />
-        <ResourceRow type="ResourceSync" />
-        <ResourceRow type="Procedure" />
-      </div>
-    </Section>
-  </Page>
-);
+export const Dashboard = () => {
+  const noResources = useNoResources();
+  const user = useUser().data!;
+  return (
+    <Page>
+      <Section
+        title="Dashboard"
+        icon={<Boxes className="w-4 h-4" />}
+        actions={<ExportButton />}
+      >
+        <div className="flex flex-col gap-6 w-full">
+          {noResources && (
+            <div className="flex items-center gap-4 px-2 text-muted-foreground">
+              <AlertTriangle className="w-4 h-4" />
+              <p className="text-lg">
+                No resources found.{" "}
+                {user.admin
+                  ? "To get started, create a server."
+                  : "Contact an admin for access to resources."}
+              </p>
+            </div>
+          )}
+          <ResourceRow type="Server" />
+          <ResourceRow type="Deployment" />
+          <ResourceRow type="Stack" />
+          <ResourceRow type="Build" />
+          <ResourceRow type="Repo" />
+          <ResourceRow type="ResourceSync" />
+          <ResourceRow type="Procedure" />
+        </div>
+      </Section>
+    </Page>
+  );
+};
 
 const ResourceRow = ({ type }: { type: UsableResource }) => {
   const recents = useUser().data?.recents?.[type]?.slice(0, 6);

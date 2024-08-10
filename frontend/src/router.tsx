@@ -40,7 +40,7 @@ const ROUTER = createBrowserRouter([
       },
       {
         path: "stacks/:id/:service",
-        element: <StackServicePage />
+        element: <StackServicePage />,
       },
       {
         path: ":type",
@@ -59,7 +59,7 @@ const ROUTER = createBrowserRouter([
 export const Router = () => {
   const { data: user, isLoading } = useUser();
 
-  if (isLoading) return null;
+  if (isLoading && !user) return null;
   if (!user) return <Login />;
   if (!user.enabled) return <UserDisabled />;
 
