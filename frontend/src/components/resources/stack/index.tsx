@@ -86,6 +86,8 @@ const ConfigInfoServices = ({ id }: { id: string }) => {
 export const StackComponents: RequiredResourceComponents = {
   list_item: (id) => useStack(id),
 
+  Description: () => <>Deploy docker compose files.</>,
+
   Dashboard: () => {
     const summary = useRead("GetStacksSummary", {}).data;
     return (

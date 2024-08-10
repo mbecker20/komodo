@@ -100,6 +100,8 @@ const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
 export const DeploymentComponents: RequiredResourceComponents = {
   list_item: (id) => useDeployment(id),
 
+  Description: () => <>Deploy containers on your servers.</>,
+
   Dashboard: () => {
     const summary = useRead("GetDeploymentsSummary", {}).data;
     return (

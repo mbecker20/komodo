@@ -131,6 +131,8 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
 export const ServerComponents: RequiredResourceComponents = {
   list_item: (id) => useServer(id),
 
+  Description: () => <>Connect servers for alerting, building, and deploying.</>,
+
   Dashboard: () => {
     const summary = useRead("GetServersSummary", {}).data;
     return (

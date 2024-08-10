@@ -43,6 +43,8 @@ const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
 export const RepoComponents: RequiredResourceComponents = {
   list_item: (id) => useRepo(id),
 
+  Description: () => <>Build using custom scripts. Or anything else.</>,
+
   Dashboard: () => {
     const summary = useRead("GetReposSummary", {}).data;
     return (

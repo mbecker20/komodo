@@ -82,6 +82,8 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
 export const BuildComponents: RequiredResourceComponents = {
   list_item: (id) => useBuild(id),
 
+  Description: () => <>Build docker images.</>,
+
   Dashboard: () => {
     const summary = useRead("GetBuildsSummary", {}).data;
     return (

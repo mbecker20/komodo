@@ -27,6 +27,8 @@ const ProcedureIcon = ({ id, size }: { id?: string; size: number }) => {
 export const ProcedureComponents: RequiredResourceComponents = {
   list_item: (id) => useProcedure(id),
 
+  Description: () => <>Compose monitor actions together.</>,
+
   Dashboard: () => {
     const summary = useRead("GetProceduresSummary", {}).data;
     return (
