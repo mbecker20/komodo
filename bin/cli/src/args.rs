@@ -32,8 +32,8 @@ pub struct CliArgs {
 }
 
 fn default_creds() -> String {
-  let home = std::env::var("HOME")
-    .expect("no HOME env var. cannot get default config path.");
+  let home =
+    std::env::var("HOME").unwrap_or_else(|_| String::from("/root"));
   format!("{home}/.config/monitor/creds.toml")
 }
 
