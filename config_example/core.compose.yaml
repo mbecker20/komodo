@@ -15,7 +15,7 @@ services:
     environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
       MONITOR_HOST: https://demo.monitor.dev
       ## MONGO
-      MONITOR_MONGO_ADDRESS: demo-mongo:27017
+      MONITOR_MONGO_ADDRESS: monitor-mongo:27017
       MONITOR_MONGO_USERNAME: admin # match ones below
       MONITOR_MONGO_PASSWORD: admin
       ## KEYS
