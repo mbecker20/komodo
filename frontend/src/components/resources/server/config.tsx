@@ -44,7 +44,7 @@ export const ServerConfig = ({
             label: "General",
             components: {
               address: {
-                placeholder: "http://localhost:8120",
+                placeholder: "http://12.34.56.78:8120",
                 description:
                   "The http/s address of periphery in your network, eg. http://12.34.56.78:8120",
               },
