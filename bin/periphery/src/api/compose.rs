@@ -22,7 +22,7 @@ impl Resolve<ListComposeProjects, ()> for State {
     let docker_compose = docker_compose();
     let res = run_monitor_command(
       "list projects",
-      format!("{docker_compose} ls --format json"),
+      format!("{docker_compose} ls --all --format json"),
     )
     .await;
 
