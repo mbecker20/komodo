@@ -194,6 +194,9 @@ async fn write_stack(
     .stack_dir
     .join(to_monitor_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
+  // This will remove any intermediate '/./' in the path, which is a problem for some OS.
+  // Cannot use canonicalize yet as directory may not exist.
+  let run_directory = run_directory.components().collect::<PathBuf>();
 
   if stack.config.file_contents.is_empty() {
     // Clone the repo
@@ -283,7 +286,7 @@ async fn write_stack(
   } else {
     // Ensure run directory exists
     fs::create_dir_all(&run_directory).await.with_context(|| {
-      format!("failed to create stack run directory at {root:?}")
+      format!("failed to create stack run directory at {run_directory:?}")
     })?;
     let env_file_path = match write_environment_file(
       &stack.config.environment,

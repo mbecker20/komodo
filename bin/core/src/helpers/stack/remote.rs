@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::{fs, path::{Path, PathBuf}};
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
@@ -38,6 +38,8 @@ pub async fn get_remote_compose_contents(
     .context("failed to clone stack repo")?;
 
   let run_directory = repo_path.join(&stack.config.run_directory);
+  // This will remove any intermediate '/./' which can be a problem for some OS.
+  let run_directory = run_directory.components().collect::<PathBuf>();
 
   let mut oks = Vec::new();
   let mut errs = Vec::new();
