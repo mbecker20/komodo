@@ -3,6 +3,7 @@ use std::time::Duration;
 use anyhow::Context;
 use formatting::format_serror;
 use monitor_client::entities::{
+  builder::Builder,
   permission::PermissionLevel,
   repo::{
     PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo,
@@ -203,18 +204,21 @@ async fn validate_config(
   config: &mut PartialRepoConfig,
   user: &User,
 ) -> anyhow::Result<()> {
-  match &config.server_id {
-    Some(server_id) if !server_id.is_empty() => {
-      let server = get_check_permissions::<Server>(
-          server_id,
-          user,
-          PermissionLevel::Write,
-        )
-        .await
-        .context("cannot create repo on this server. user must have update permissions on the server.")?;
-      config.server_id = Some(server.id);
-    }
-    _ => {}
+  if let Some(server_id) = &config.server_id {
+    let server = get_check_permissions::<Server>(
+      server_id,
+      user,
+      PermissionLevel::Write,
+    )
+    .await
+    .context("Cannot attach repo to this server. User must have write permissions on the server.")?;
+    config.server_id = Some(server.id);
+  }
+  if let Some(builder_id) = &config.builder_id {
+    let builder = super::get_check_permissions::<Builder>(builder_id, user, PermissionLevel::Read)
+      .await
+      .context("Cannot attach repo to this builder. User must have at least read permissions on the builder.")?;
+    config.builder_id = Some(builder.id)
   }
   Ok(())
 }

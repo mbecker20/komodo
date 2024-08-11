@@ -148,6 +148,13 @@ impl ResourceSync for Repo {
       .map(|s| s.name.clone())
       .unwrap_or_default();
 
+    // Need to replace builder id with name
+    original.builder_id = resources
+      .builders
+      .get(&original.builder_id)
+      .map(|s| s.name.clone())
+      .unwrap_or_default();
+
     Ok(original.partial_diff(update))
   }
 }
