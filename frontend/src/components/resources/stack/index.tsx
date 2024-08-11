@@ -1,7 +1,14 @@
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
-import { FolderGit, Layers, Loader2, RefreshCcw, Server } from "lucide-react";
+import {
+  FolderGit,
+  Layers,
+  Loader2,
+  NotepadText,
+  RefreshCcw,
+  Server,
+} from "lucide-react";
 import { StackConfig } from "./config";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { StackTable } from "./table";
@@ -132,6 +139,15 @@ export const StackComponents: RequiredResourceComponents = {
       }
       return <StatusBadge text={state} intent={stack_state_intention(state)} />;
     },
+    Status: ({ id }) => {
+      const info = useStack(id)?.info;
+      if (info?.state !== Types.StackState.Unhealthy) return null;
+      return (
+        info?.status && (
+          <p className="text-sm text-muted-foreground">{info.status}</p>
+        )
+      );
+    },
     NoConfig: ({ id }) => {
       const config = useFullStack(id)?.config;
       if (config?.file_contents || config?.repo) {
@@ -148,9 +164,9 @@ export const StackComponents: RequiredResourceComponents = {
           </HoverCardTrigger>
           <HoverCardContent align="start">
             <div className="grid gap-2">
-              No configuration provided for stack. Cannot get stack state. Either
-              paste the compose file contents into the UI, or configure a git repo
-              containing your files.
+              No configuration provided for stack. Cannot get stack state.
+              Either paste the compose file contents into the UI, or configure a
+              git repo containing your files.
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -286,21 +302,32 @@ export const StackComponents: RequiredResourceComponents = {
   },
 
   Info: {
-    Repo: ({ id }) => {
-      const repo = useStack(id)?.info.repo;
+    Contents: ({ id }) => {
+      const config = useFullStack(id)?.config;
+      const file_contents = config?.file_contents;
+      if (file_contents) {
+        return (
+          <div className="flex items-center gap-2">
+            <NotepadText className="w-4 h-4" />
+            Local
+          </div>
+        );
+      }
       return (
         <div className="flex items-center gap-2">
           <FolderGit className="w-4 h-4" />
-          {repo}
+          {config?.repo}
         </div>
       );
     },
     // Branch: ({ id }) => {
-    //   const branch = useStack(id)?.info.branch;
+    //   const config = useFullStack(id)?.config;
+    //   const file_contents = config?.file_contents;
+    //   if (file_contents || !config?.branch) return null
     //   return (
     //     <div className="flex items-center gap-2">
-    //       <FolderGit className="w-4 h-4" />
-    //       {branch}
+    //       <GitBranch className="w-4 h-4" />
+    //       {config.branch}
     //     </div>
     //   );
     // },
