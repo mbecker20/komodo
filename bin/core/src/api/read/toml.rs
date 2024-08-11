@@ -309,6 +309,13 @@ impl Resolve<ExportResourcesToToml, User> for State {
               .get(&repo.config.server_id)
               .unwrap_or(&String::new()),
           );
+          // replace repo builder with name
+          repo.config.builder_id.clone_from(
+            names
+              .builders
+              .get(&repo.config.builder_id)
+              .unwrap_or(&String::new()),
+          );
           res.repos.push(convert_resource::<Repo>(repo, &names.tags))
         }
         ResourceTarget::Stack(id) => {
