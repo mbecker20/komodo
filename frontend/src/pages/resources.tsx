@@ -36,7 +36,6 @@ export const Resources = () => {
 
   return (
     <Page
-      wrapSize="lg"
       title={`${name}s`}
       subtitle={
         <div className="text-muted-foreground">

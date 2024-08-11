@@ -35,7 +35,7 @@ export const Layout = () => {
       <div className="h-screen overflow-y-auto">
         <div className="container">
           <Sidebar />
-          <div className="md:ml-64 md:pl-8 py-24">
+          <div className="lg:ml-64 lg:pl-8 py-24">
             <Outlet />
           </div>
         </div>
@@ -53,7 +53,6 @@ interface PageProps {
   subtitle?: ReactNode;
   actions?: ReactNode;
   superHeader?: ReactNode;
-  wrapSize?: "md" | "lg" | "xl" | "2xl";
 }
 
 export const Page = ({
@@ -72,7 +71,7 @@ export const Page = ({
         {superHeader}
         {(title || icon || subtitle || actions) && (
           <div
-            className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
+            className={`flex flex-col gap-6 md:flex-row md:gap-0 md:justify-between`}
           >
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-4 items-center">
@@ -89,7 +88,7 @@ export const Page = ({
     ) : (
       (title || icon || subtitle || actions) && (
         <div
-          className={`flex flex-col gap-6 lg:flex-row lg:gap-0 lg:justify-between`}
+          className={`flex flex-col gap-6 md:flex-row md:gap-0 md:justify-between`}
         >
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap gap-4 items-center">

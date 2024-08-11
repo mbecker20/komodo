@@ -17,7 +17,7 @@ import { homeViewAtom } from "@main";
 export const Sidebar = () => {
   const [view, setView] = useAtom(homeViewAtom);
   return (
-    <div className="fixed top-24 w-64 border-r hidden md:block pr-8 pb-4 h-[85vh] overflow-y-auto">
+    <div className="fixed top-24 w-64 border-r hidden lg:block pr-8 pb-4 h-[85vh] overflow-y-auto">
       <div className="flex flex-col gap-1">
         <p className="pl-4 pb-1 text-xs text-muted-foreground">Overviews</p>
         <SidebarLink

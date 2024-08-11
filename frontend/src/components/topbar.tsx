@@ -47,14 +47,14 @@ export const Topbar = () => {
 
   return (
     <div className="fixed top-0 w-full bg-background z-50 border-b shadow-sm">
-      <div className="container h-16 flex items-center justify-between md:grid md:grid-cols-2 lg:grid-cols-3">
+      <div className="container h-16 flex items-center justify-between md:grid md:grid-cols-[auto_1fr] lg:grid-cols-3">
         {/* Logo */}
         <Link
           to="/"
           className="flex gap-3 items-center text-2xl tracking-widest md:mx-2"
         >
           <img src="/monitor-circle.png" className="w-[28px] dark:invert" />
-          <div className="hidden md:block">MONITOR</div>
+          <div className="hidden lg:block">MONITOR</div>
         </Link>
 
         {/* Searchbar */}
@@ -131,7 +131,7 @@ const MobileDropdown = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className="md:hidden justify-self-end">
+      <DropdownMenuTrigger asChild className="lg:hidden justify-self-end">
         <Button
           variant="ghost"
           className="flex justify-start items-center gap-2 w-36 px-3"

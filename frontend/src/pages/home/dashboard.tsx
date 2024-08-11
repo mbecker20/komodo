@@ -84,14 +84,18 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
           <History className="w-4" />
           Recently Viewed
         </p>
-        <div className="h-52 grid sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
+        <div className="h-52 grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
           {ids.map((id, i) => (
             <RecentCard
               key={type + id}
               type={type}
               id={id}
               className={
-                i > 3 ? "hidden lg:flex" : i > 1 ? "hidden md:flex" : undefined
+                i > 4
+                  ? "hidden 2xl:flex"
+                  : i > 1
+                  ? "hidden sm:flex lg:hidden xl:flex"
+                  : undefined
               }
             />
           ))}
