@@ -107,10 +107,14 @@ pub enum StackState {
   Paused,
   /// All contianers are stopped
   Stopped,
+  /// All containers are created
+  Created,
   /// All containers are restarting
   Restarting,
   /// All containers are dead
   Dead,
+  /// All containers are removing
+  Removing,
   /// The containers are in a mix of states
   Unhealthy,
   /// The stack is not deployed

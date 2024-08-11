@@ -214,6 +214,8 @@ impl Resolve<GetStacksSummary, User> for State {
         StackState::Paused => res.paused += 1,
         StackState::Stopped => res.stopped += 1,
         StackState::Restarting => res.restarting += 1,
+        StackState::Created => res.created += 1,
+        StackState::Removing => res.removing += 1,
         StackState::Dead => res.dead += 1,
         StackState::Unhealthy => res.unhealthy += 1,
         StackState::Down => res.down += 1,

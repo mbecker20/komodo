@@ -5,13 +5,13 @@ use monitor_client::entities::{
   alerter::Alerter,
   build::Build,
   builder::Builder,
-  deployment::{ContainerSummary, Deployment, DeploymentState},
+  deployment::{Deployment, DeploymentState},
   permission::PermissionLevel,
   procedure::Procedure,
   repo::Repo,
   server::{Server, ServerState},
   server_template::ServerTemplate,
-  stack::{Stack, StackServiceNames, StackState},
+  stack::{ComposeProject, Stack, StackState},
   sync::ResourceSync,
   tag::Tag,
   update::{ResourceTarget, ResourceTargetVariant, Update},
@@ -31,11 +31,6 @@ use mungos::{
 use crate::{
   resource::{self, get_user_permission_on_resource},
   state::db_client,
-};
-
-use super::stack::{
-  compose_container_match_regex,
-  services::extract_services_from_stack,
 };
 
 #[instrument(level = "debug")]
@@ -98,63 +93,51 @@ pub async fn get_deployment_state(
 }
 
 /// Can pass all the containers from the same server
-pub fn get_stack_state_from_containers(
-  services: &[StackServiceNames],
-  containers: &[ContainerSummary],
+pub fn get_stack_state_from_projects(
+  stack: &Stack,
+  projects: &[ComposeProject],
 ) -> StackState {
-  // first filter the containers to only ones which match the service
-  let containers = containers.iter().filter(|container| {
-    services.iter().any(|StackServiceNames { service_name, container_name }| {
-      match compose_container_match_regex(container_name)
-        .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
-      {
-        Ok(regex) => regex,
-        Err(e) => {
-          warn!("{e:#}");
-          return false
-        }
-      }.is_match(&container.name)
+  let project_name = stack.project_name(false);
+  let Some(status) = projects
+    .iter()
+    .find(|project| project.name == project_name)
+    .and_then(|project| project.status.as_deref())
+  else {
+    return StackState::Down;
+  };
+  let Ok(states) = status
+    .split(", ")
+    .filter_map(|state| state.split('(').next())
+    .map(|state| {
+      state.parse::<DeploymentState>().with_context(|| {
+        format!("failed to parse stack state entry: {state}")
+      })
     })
-  }).collect::<Vec<_>>();
-  if containers.is_empty() {
+    .collect::<anyhow::Result<Vec<_>>>()
+    .inspect_err(|e| warn!("{e:#}"))
+  else {
+    return StackState::Unknown;
+  };
+  if states.is_empty() {
     return StackState::Down;
   }
-  if services.len() != containers.len() {
+  if states.len() > 1 {
     return StackState::Unhealthy;
   }
-  let running = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Running);
-  if running {
-    return StackState::Running;
+  match states[0] {
+    DeploymentState::Unknown => StackState::Unknown,
+    DeploymentState::NotDeployed => StackState::Down,
+    DeploymentState::Created => StackState::Created,
+    DeploymentState::Restarting => StackState::Restarting,
+    DeploymentState::Running => StackState::Running,
+    DeploymentState::Removing => StackState::Removing,
+    DeploymentState::Paused => StackState::Paused,
+    DeploymentState::Exited => StackState::Stopped,
+    DeploymentState::Dead => StackState::Dead,
   }
-  let paused = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Paused);
-  if paused {
-    return StackState::Paused;
-  }
-  let stopped = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Exited);
-  if stopped {
-    return StackState::Stopped;
-  }
-  let restarting = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Restarting);
-  if restarting {
-    return StackState::Restarting;
-  }
-  let dead = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Dead);
-  if dead {
-    return StackState::Dead;
-  }
-  StackState::Unhealthy
 }
 
+/// Gets stack state fresh from periphery
 #[instrument(level = "debug")]
 pub async fn get_stack_state(
   stack: &Stack,
@@ -167,13 +150,11 @@ pub async fn get_stack_state(
   if status != ServerState::Ok {
     return Ok(StackState::Unknown);
   }
-  let containers = super::periphery_client(&server)?
-    .request(periphery_client::api::container::GetContainerList {})
+  let projects = super::periphery_client(&server)?
+    .request(periphery_client::api::compose::ListComposeProjects {})
     .await?;
 
-  let services = extract_services_from_stack(stack, false).await?;
-
-  Ok(get_stack_state_from_containers(&services, &containers))
+  Ok(get_stack_state_from_projects(stack, &projects))
 }
 
 #[instrument(level = "debug")]

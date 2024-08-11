@@ -214,7 +214,7 @@ pub async fn update_cache_for_server(server: &Server) {
     Ok((containers, networks, images, projects)) => {
       tokio::join!(
         resources::update_deployment_cache(deployments, &containers),
-        resources::update_stack_cache(stacks, &containers),
+        resources::update_stack_cache(stacks, &containers, &projects),
       );
       insert_server_status(
         server,

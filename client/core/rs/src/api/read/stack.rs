@@ -213,6 +213,10 @@ pub struct GetStacksSummaryResponse {
   pub restarting: u32,
   /// The number of stacks with Dead state.
   pub dead: u32,
+  /// The number of stacks with Created state.
+  pub created: u32,
+  /// The number of stacks with Removing state.
+  pub removing: u32,
   /// The number of stacks with Unhealthy state.
   pub unhealthy: u32,
   /// The number of stacks with Down state.
