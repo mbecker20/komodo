@@ -89,6 +89,9 @@ export const BuildRepo = ({ id }: { id: string }) => {
   const builder = useBuilder(repo?.info.builder_id);
   const canCancel = builder?.info.builder_type !== "Server";
 
+  // Don't show if builder not attached
+  if (!builder) return null;
+
   // make sure hidden without perms.
   // not usually necessary, but this button also used in deployment actions.
   if (
