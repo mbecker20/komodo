@@ -84,7 +84,7 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
           <History className="w-4" />
           Recently Viewed
         </p>
-        <div className="h-52 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="h-52 grid sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
           {ids.map((id, i) => (
             <RecentCard
               key={type + id}
@@ -126,7 +126,7 @@ const RecentCard = ({
       )}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm text-nowrap">
           <Components.Icon id={id} />
           <ResourceName type={type} id={id} />
         </div>

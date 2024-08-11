@@ -266,7 +266,7 @@ export const WsStatusIndicator = () => {
       variant="ghost"
       onClick={onclick}
       size="icon"
-      className="inline-flex"
+      className="hidden sm:inline-flex"
     >
       <Circle
         className={cn(
