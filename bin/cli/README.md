@@ -8,6 +8,8 @@ Monitor CLI is a tool to sync monitor resources and execute operations.
 cargo install monitor_cli
 ```
 
+Note: On Ubuntu, also requires `apt install build-essential pkg-config libssl-dev`.
+
 ## Usage
 
 ### Credentials
