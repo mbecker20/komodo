@@ -39,10 +39,6 @@ const ROUTER = createBrowserRouter([
         ],
       },
       {
-        path: "stacks/:id/:service",
-        element: <StackServicePage />,
-      },
-      {
         path: ":type",
         children: [
           { path: "", element: <Resources /> },
@@ -50,6 +46,10 @@ const ROUTER = createBrowserRouter([
           { path: ":id/stats", element: <ResourceStats /> },
           { path: ":id/updates", element: <Updates /> },
           { path: ":id/alerts", element: <Alerts /> },
+          {
+            path: ":id/service/:service",
+            element: <StackServicePage />,
+          },
         ],
       },
     ],

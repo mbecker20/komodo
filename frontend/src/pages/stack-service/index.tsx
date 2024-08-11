@@ -34,10 +34,24 @@ const Actions: { [action: string]: IdServiceComponent } = {
 };
 
 export const StackServicePage = () => {
-  const { id: stack_id, service } = useParams() as {
+  const { type, id, service } = useParams() as {
+    type: string;
     id: string;
     service: string;
   };
+  if (type !== "stacks") {
+    return <div>This resource type does not have any services.</div>;
+  }
+  return <StackServicePageInner stack_id={id} service={service} />;
+};
+
+const StackServicePageInner = ({
+  stack_id,
+  service,
+}: {
+  stack_id: string;
+  service: string;
+}) => {
   const stack = useStack(stack_id);
   useSetTitle(`${stack?.name} | ${service}`);
   const nav = useNavigate();

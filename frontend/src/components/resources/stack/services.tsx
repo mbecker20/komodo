@@ -50,7 +50,7 @@ export const StackServices = ({
                 );
                 return (
                   <Link
-                    to={`/stacks/${id}/${row.original.service}`}
+                    to={`/stacks/${id}/service/${row.original.service}`}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
