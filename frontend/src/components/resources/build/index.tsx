@@ -1,10 +1,10 @@
 import { Section } from "@components/layouts";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { FolderGit, Hammer, Loader2, RefreshCcw } from "lucide-react";
+import { Factory, FolderGit, Hammer, Loader2, RefreshCcw } from "lucide-react";
 import { BuildConfig } from "./config";
 import { BuildTable } from "./table";
-import { DeleteResource, NewResource } from "../common";
+import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { DeploymentTable } from "../deployment/table";
 import { RunBuild } from "./actions";
 import {
@@ -23,6 +23,7 @@ import { Card } from "@ui/card";
 import { Badge } from "@ui/badge";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
+import { useBuilder } from "../builder";
 
 export const useBuild = (id?: string) =>
   useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.find(
@@ -209,6 +210,18 @@ export const BuildComponents: RequiredResourceComponents = {
   },
 
   Info: {
+    Builder: ({ id }) => {
+      const info = useBuild(id)?.info;
+      const builder = useBuilder(info?.builder_id);
+      return builder?.id ? (
+        <ResourceLink type="Builder" id={builder?.id} />
+      ) : (
+        <div className="flex gap-2 items-center text-sm">
+          <Factory className="w-4 h-4" />
+          <div>Unknown Builder</div>
+        </div>
+      );
+    },
     Repo: ({ id }) => {
       const repo = useBuild(id)?.info.repo;
       return (
