@@ -22,8 +22,8 @@ export const StackInfo = ({
         <Card>
           <CardHeader>
             deployed contents:{" "}
-            {stack?.info?.deployed_contents?.map((content) => (
-              <pre className="flex flex-col gap-2">
+            {stack?.info?.deployed_contents?.map((content, i) => (
+              <pre key={i} className="flex flex-col gap-2">
                 path: {content.path}
                 <pre>{content.contents}</pre>
               </pre>
@@ -48,8 +48,8 @@ export const StackInfo = ({
           <Card>
             <CardHeader>
               latest contents:{" "}
-              {stack?.info?.remote_contents?.map((content) => (
-                <pre className="flex flex-col gap-2">
+              {stack?.info?.remote_contents?.map((content, i) => (
+                <pre key={i} className="flex flex-col gap-2">
                   path: {content.path}
                   <pre>{content.contents}</pre>
                 </pre>
@@ -62,8 +62,8 @@ export const StackInfo = ({
         <Card>
           <CardHeader>
             remote errors:{" "}
-            {stack?.info?.remote_errors?.map((content) => (
-              <pre className="flex flex-col gap-2">
+            {stack?.info?.remote_errors?.map((content, i) => (
+              <pre key={i} className="flex flex-col gap-2">
                 path: {content.path}
                 <pre>{content.contents}</pre>
               </pre>

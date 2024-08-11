@@ -70,6 +70,19 @@ impl Resolve<RunBuild, (User, Update)> for State {
       return Err(anyhow!("Must attach builder to RunBuild"));
     }
 
+    // get the action state for the build (or insert default).
+    let action_state =
+      action_states().build.get_or_insert_default(&build.id).await;
+
+    // This will set action state back to default when dropped.
+    // Will also check to ensure build not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.building = true)?;
+
+    build.config.version.increment();
+    update.version = build.config.version;
+    update_update(update.clone()).await?;
+
     let git_token = git_token(
       &build.config.git_provider,
       &build.config.git_account,
@@ -80,21 +93,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
       || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", build.config.git_provider, build.config.git_account),
     )?;
 
-    // get the action state for the build (or insert default).
-    let action_state =
-      action_states().build.get_or_insert_default(&build.id).await;
-
-    // This will set action state back to default when dropped.
-    // Will also check to ensure build not already busy before updating.
-    let _action_guard =
-      action_state.update(|state| state.building = true)?;
-
     let (registry_token, aws_ecr) =
       validate_account_extract_registry_token_aws_ecr(&build).await?;
-
-    build.config.version.increment();
-    update.version = build.config.version;
-    update_update(update.clone()).await?;
 
     let cancel = CancellationToken::new();
     let cancel_clone = cancel.clone();

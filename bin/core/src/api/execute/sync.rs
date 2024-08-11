@@ -58,6 +58,9 @@ impl Resolve<RunSync, (User, Update)> for State {
       return Err(anyhow!("resource sync repo not configured"));
     }
 
+    // Send update here for FE to recheck action state
+    update_update(update.clone()).await?;
+
     let (res, logs, hash, message) =
       crate::helpers::sync::remote::get_remote_resources(&sync)
         .await

@@ -6,8 +6,7 @@ use monitor_client::{
     build::{Build, ImageRegistry},
     config::core::AwsEcrConfig,
     deployment::{
-      extract_registry_domain, Deployment, DeploymentActionState,
-      DeploymentImage,
+      extract_registry_domain, Deployment, DeploymentImage,
     },
     get_image_name,
     permission::PermissionLevel,
@@ -36,7 +35,6 @@ use crate::{
 async fn setup_deployment_execution(
   deployment: &str,
   user: &User,
-  set_in_progress: impl Fn(&mut DeploymentActionState),
 ) -> anyhow::Result<(Deployment, Server)> {
   let deployment = resource::get_check_permissions::<Deployment>(
     deployment,
@@ -48,16 +46,6 @@ async fn setup_deployment_execution(
   if deployment.config.server_id.is_empty() {
     return Err(anyhow!("deployment has no server configured"));
   }
-
-  // get the action state for the deployment (or insert default).
-  let action_state = action_states()
-    .deployment
-    .get_or_insert_default(&deployment.id)
-    .await;
-
-  // Will check to ensure deployment not already busy before updating, and return Err if so.
-  // The returned guard will set the action state back to default when dropped.
-  let _action_guard = action_state.update(set_in_progress)?;
 
   let (server, status) =
     get_server_with_status(&deployment.config.server_id).await?;
@@ -82,10 +70,21 @@ impl Resolve<Deploy, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (mut deployment, server) =
-      setup_deployment_execution(&deployment, &user, |state| {
-        state.deploying = true
-      })
-      .await?;
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.deploying = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -234,10 +233,21 @@ impl Resolve<StartContainer, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
-      setup_deployment_execution(&deployment, &user, |state| {
-        state.starting = true
-      })
-      .await?;
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.starting = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -271,10 +281,21 @@ impl Resolve<RestartContainer, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
-      setup_deployment_execution(&deployment, &user, |state| {
-        state.restarting = true
-      })
-      .await?;
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.restarting = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -310,10 +331,21 @@ impl Resolve<PauseContainer, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
-      setup_deployment_execution(&deployment, &user, |state| {
-        state.pausing = true
-      })
-      .await?;
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.pausing = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -347,10 +379,21 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
-      setup_deployment_execution(&deployment, &user, |state| {
-        state.unpausing = true
-      })
-      .await?;
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.unpausing = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -390,10 +433,21 @@ impl Resolve<StopContainer, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
-      setup_deployment_execution(&deployment, &user, |state| {
-        state.stopping = true
-      })
-      .await?;
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.stopping = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -437,10 +491,21 @@ impl Resolve<RemoveContainer, (User, Update)> for State {
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
-      setup_deployment_execution(&deployment, &user, |state| {
-        state.removing = true
-      })
-      .await?;
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.removing = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 

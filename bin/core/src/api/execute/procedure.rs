@@ -69,6 +69,8 @@ fn resolve_inner(
     let _action_guard =
       action_state.update(|state| state.running = true)?;
 
+    update_update(update.clone()).await?;
+
     let update = Mutex::new(update);
 
     let res = execute_procedure(&procedure, &update).await;

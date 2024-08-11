@@ -48,6 +48,8 @@ impl Resolve<DeployStack, (User, Update)> for State {
     let _action_guard =
       action_state.update(|state| state.deploying = true)?;
 
+    update_update(update.clone()).await?;
+
     let git_token = crate::helpers::git_token(
       &stack.config.git_provider,
       &stack.config.git_account,

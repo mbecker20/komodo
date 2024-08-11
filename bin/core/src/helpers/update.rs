@@ -60,6 +60,23 @@ pub async fn add_update(
 }
 
 #[instrument(level = "debug")]
+pub async fn add_update_without_send(
+  update: &Update,
+) -> anyhow::Result<String> {
+  let id = db_client()
+    .await
+    .updates
+    .insert_one(update)
+    .await
+    .context("failed to insert update into db")?
+    .inserted_id
+    .as_object_id()
+    .context("inserted_id is not object id")?
+    .to_string();
+  Ok(id)
+}
+
+#[instrument(level = "debug")]
 pub async fn update_update(update: Update) -> anyhow::Result<()> {
   update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
     .await
@@ -312,6 +329,7 @@ pub async fn init_execution_update(
   };
   let mut update = make_update(target, operation, user);
   update.in_progress();
-  update.id = add_update(update.clone()).await?;
+  // Don't actually send it here, let the handlers send it after they can set action state.
+  update.id = add_update_without_send(&update).await?;
   Ok(update)
 }

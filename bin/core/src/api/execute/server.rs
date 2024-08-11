@@ -47,6 +47,8 @@ impl Resolve<StopAllContainers, (User, Update)> for State {
     let _action_guard = action_state
       .update(|state| state.stopping_containers = true)?;
 
+    update_update(update.clone()).await?;
+
     let logs = periphery_client(&server)?
       .request(api::container::StopAllContainers {})
       .await
@@ -89,6 +91,8 @@ impl Resolve<PruneContainers, (User, Update)> for State {
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
       action_state.update(|state| state.pruning_containers = true)?;
+
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -144,6 +148,8 @@ impl Resolve<PruneNetworks, (User, Update)> for State {
     let _action_guard =
       action_state.update(|state| state.pruning_networks = true)?;
 
+    update_update(update.clone()).await?;
+
     let periphery = periphery_client(&server)?;
 
     let log = match periphery
@@ -195,6 +201,8 @@ impl Resolve<PruneImages, (User, Update)> for State {
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
       action_state.update(|state| state.pruning_images = true)?;
+
+    update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
 

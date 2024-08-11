@@ -1,6 +1,14 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { Pause, Pen, Play, RefreshCcw, Rocket, Square, Trash2 } from "lucide-react";
+import {
+  Pause,
+  Pen,
+  Play,
+  RefreshCcw,
+  Rocket,
+  Square,
+  Trash2,
+} from "lucide-react";
 import { useStack } from ".";
 import { Types } from "@monitor/client";
 import { useToast } from "@ui/use-toast";
@@ -20,8 +28,6 @@ export const DeployStack = ({ id }: { id: string }) => {
   if (!stack || state === Types.StackState.Unknown) {
     return null;
   }
-
-  const pending = isPending || deploying;
   const deployed =
     state !== undefined &&
     [
@@ -39,8 +45,8 @@ export const DeployStack = ({ id }: { id: string }) => {
         title="Redeploy"
         icon={<Rocket className="h-4 w-4" />}
         onClick={() => deploy({ stack: id })}
-        disabled={pending}
-        loading={pending}
+        disabled={isPending}
+        loading={isPending || deploying}
       />
     );
   }
@@ -50,8 +56,8 @@ export const DeployStack = ({ id }: { id: string }) => {
       title="Deploy"
       icon={<Rocket className="w-4 h-4" />}
       onClick={() => deploy({ stack: id })}
-      disabled={pending}
-      loading={pending}
+      disabled={isPending}
+      loading={isPending || deploying}
     />
   );
 };
@@ -74,8 +80,6 @@ export const DestroyStack = ({ id }: { id: string }) => {
     return null;
   }
 
-  const pending = isPending || destroying;
-
   if (!stack) {
     return null;
   }
@@ -86,8 +90,8 @@ export const DestroyStack = ({ id }: { id: string }) => {
       title="Destroy"
       icon={<Trash2 className="h-4 w-4" />}
       onClick={() => destroy({ stack: id })}
-      disabled={pending}
-      loading={pending}
+      disabled={isPending}
+      loading={isPending || destroying}
     />
   );
 };
