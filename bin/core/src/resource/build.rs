@@ -174,10 +174,12 @@ async fn validate_config(
   user: &User,
 ) -> anyhow::Result<()> {
   if let Some(builder_id) = &config.builder_id {
-    let builder = super::get_check_permissions::<Builder>(builder_id, user, PermissionLevel::Read)
-      .await
-      .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
-    config.builder_id = Some(builder.id)
+    if !builder_id.is_empty() {
+      let builder = super::get_check_permissions::<Builder>(builder_id, user, PermissionLevel::Read)
+        .await
+        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+      config.builder_id = Some(builder.id)
+    }
   }
   if let Some(build_args) = &mut config.build_args {
     build_args.retain(|v| {

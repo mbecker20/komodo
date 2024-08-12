@@ -205,20 +205,24 @@ async fn validate_config(
   user: &User,
 ) -> anyhow::Result<()> {
   if let Some(server_id) = &config.server_id {
-    let server = get_check_permissions::<Server>(
-      server_id,
-      user,
-      PermissionLevel::Write,
-    )
-    .await
-    .context("Cannot attach repo to this server. User must have write permissions on the server.")?;
-    config.server_id = Some(server.id);
+    if !server_id.is_empty() {
+      let server = get_check_permissions::<Server>(
+        server_id,
+        user,
+        PermissionLevel::Write,
+      )
+      .await
+      .context("Cannot attach repo to this server. User must have write permissions on the server.")?;
+      config.server_id = Some(server.id);
+    }
   }
   if let Some(builder_id) = &config.builder_id {
-    let builder = super::get_check_permissions::<Builder>(builder_id, user, PermissionLevel::Read)
-      .await
-      .context("Cannot attach repo to this builder. User must have at least read permissions on the builder.")?;
-    config.builder_id = Some(builder.id)
+    if !builder_id.is_empty() {
+      let builder = super::get_check_permissions::<Builder>(builder_id, user, PermissionLevel::Read)
+        .await
+        .context("Cannot attach repo to this builder. User must have at least read permissions on the builder.")?;
+      config.builder_id = Some(builder.id);
+    }
   }
   Ok(())
 }
