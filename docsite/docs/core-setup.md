@@ -21,7 +21,7 @@ Copy the contents to a `compose.yaml`, and deploy it with `docker compose up -d`
 You can configure Monitor with environment variables, or using a config file.
 
 The example config file in the Monitor repo documents all the configuration options, along with the corresponding environment variables.
-It can be found here: [https://github.com/mbecker20/monitor/blob/main/config_example/core.compose.yaml](https://github.com/mbecker20/monitor/blob/main/config_example/core.compose.yaml).
+It can be found here: [https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml).
 
 Note that configuration passed in environment variables will take precedent over what is given in the file.
 
