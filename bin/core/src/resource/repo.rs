@@ -239,6 +239,8 @@ async fn get_repo_state(id: &String) -> RepoState {
             Some(RepoState::Cloning)
           } else if s.pulling {
             Some(RepoState::Pulling)
+          } else if s.building {
+            Some(RepoState::Building)
           } else {
             None
           }

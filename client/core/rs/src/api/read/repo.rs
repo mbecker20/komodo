@@ -105,6 +105,8 @@ pub struct GetReposSummaryResponse {
   pub cloning: u32,
   /// The number of repos currently pulling.
   pub pulling: u32,
+  /// The number of repos currently building.
+  pub building: u32,
   /// The number of repos with failed state.
   pub failed: u32,
   /// The number of repos with unknown state.

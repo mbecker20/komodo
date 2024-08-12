@@ -107,11 +107,16 @@ impl Resolve<GetReposSummary, User> for State {
         (_, action_states) if action_states.pulling => {
           res.pulling += 1;
         }
+        (_, action_states) if action_states.building => {
+          res.building += 1;
+        }
         (RepoState::Ok, _) => res.ok += 1,
         (RepoState::Failed, _) => res.failed += 1,
         (RepoState::Unknown, _) => res.unknown += 1,
         // will never come off the cache in the building state, since that comes from action states
-        (RepoState::Cloning, _) | (RepoState::Pulling, _) => {
+        (RepoState::Cloning, _)
+        | (RepoState::Pulling, _)
+        | (RepoState::Building, _) => {
           unreachable!()
         }
       }

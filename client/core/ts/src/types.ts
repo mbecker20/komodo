@@ -1060,8 +1060,10 @@ export enum RepoState {
 	Failed = "Failed",
 	/** Currently cloning */
 	Cloning = "Cloning",
-	/** Currently pullling */
+	/** Currently pulling */
 	Pulling = "Pulling",
+	/** Currently building */
+	Building = "Building",
 }
 
 export interface RepoListItemInfo {
@@ -1617,10 +1619,14 @@ export enum StackState {
 	Paused = "paused",
 	/** All contianers are stopped */
 	Stopped = "stopped",
+	/** All containers are created */
+	Created = "created",
 	/** All containers are restarting */
 	Restarting = "restarting",
 	/** All containers are dead */
 	Dead = "dead",
+	/** All containers are removing */
+	Removing = "removing",
 	/** The containers are in a mix of states */
 	Unhealthy = "unhealthy",
 	/** The stack is not deployed */
@@ -3231,6 +3237,8 @@ export interface GetReposSummaryResponse {
 	cloning: number;
 	/** The number of repos currently pulling. */
 	pulling: number;
+	/** The number of repos currently building. */
+	building: number;
 	/** The number of repos with failed state. */
 	failed: number;
 	/** The number of repos with unknown state. */
@@ -3586,6 +3594,10 @@ export interface GetStacksSummaryResponse {
 	restarting: number;
 	/** The number of stacks with Dead state. */
 	dead: number;
+	/** The number of stacks with Created state. */
+	created: number;
+	/** The number of stacks with Removing state. */
+	removing: number;
 	/** The number of stacks with Unhealthy state. */
 	unhealthy: number;
 	/** The number of stacks with Down state. */

@@ -156,6 +156,8 @@ export const repo_state_intention = (state?: Types.RepoState) => {
       return "Warning";
     case Types.RepoState.Pulling:
       return "Warning";
+    case Types.RepoState.Building:
+      return "Warning";
     case Types.RepoState.Failed:
       return "Critical";
     default:

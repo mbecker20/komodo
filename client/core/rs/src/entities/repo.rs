@@ -59,8 +59,10 @@ pub enum RepoState {
   Failed,
   /// Currently cloning
   Cloning,
-  /// Currently pullling
+  /// Currently pulling
   Pulling,
+  /// Currently building
+  Building,
 }
 
 #[typeshare]
