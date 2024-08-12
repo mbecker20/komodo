@@ -200,16 +200,11 @@ impl Resolve<StartStack, (User, Update)> for State {
     StartStack { stack, service }: StartStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let no_service = service.is_none();
     execute_compose::<StartStack>(
       &stack,
       service,
       &user,
-      |state| {
-        if no_service {
-          state.starting = true
-        }
-      },
+      |state| state.starting = true,
       update,
       (),
     )
@@ -224,15 +219,12 @@ impl Resolve<RestartStack, (User, Update)> for State {
     RestartStack { stack, service }: RestartStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let no_service = service.is_none();
     execute_compose::<RestartStack>(
       &stack,
       service,
       &user,
       |state| {
-        if no_service {
-          state.restarting = true;
-        }
+        state.restarting = true;
       },
       update,
       (),
@@ -248,16 +240,11 @@ impl Resolve<PauseStack, (User, Update)> for State {
     PauseStack { stack, service }: PauseStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let no_service = service.is_none();
     execute_compose::<PauseStack>(
       &stack,
       service,
       &user,
-      |state| {
-        if no_service {
-          state.pausing = true
-        }
-      },
+      |state| state.pausing = true,
       update,
       (),
     )
@@ -272,16 +259,11 @@ impl Resolve<UnpauseStack, (User, Update)> for State {
     UnpauseStack { stack, service }: UnpauseStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let no_service = service.is_none();
     execute_compose::<UnpauseStack>(
       &stack,
       service,
       &user,
-      |state| {
-        if no_service {
-          state.unpausing = true
-        }
-      },
+      |state| state.unpausing = true,
       update,
       (),
     )
@@ -300,16 +282,11 @@ impl Resolve<StopStack, (User, Update)> for State {
     }: StopStack,
     (user, update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let no_service = service.is_none();
     execute_compose::<StopStack>(
       &stack,
       service,
       &user,
-      |state| {
-        if no_service {
-          state.stopping = true
-        }
-      },
+      |state| state.stopping = true,
       update,
       stop_time,
     )

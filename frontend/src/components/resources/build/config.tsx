@@ -114,20 +114,6 @@ export const BuildConfig = ({
             },
           },
           {
-            label: "Custom Name / Tag",
-            components: {
-              image_name: {
-                description: "Optional. Push the image under a different name",
-                placeholder: "Custom image name",
-              },
-              image_tag: {
-                description:
-                  "Optional. Postfix the image version with a custom tag.",
-                placeholder: "Custom image tag",
-              },
-            },
-          },
-          {
             label: "Git",
             components: {
               git_provider: (provider, set) => {
@@ -192,6 +178,20 @@ export const BuildConfig = ({
                   disabled={disabled}
                 />
               ),
+            },
+          },
+          {
+            label: "Custom Name / Tag",
+            components: {
+              image_name: {
+                description: "Optional. Push the image under a different name",
+                placeholder: "Custom image name",
+              },
+              image_tag: {
+                description:
+                  "Optional. Postfix the image version with a custom tag.",
+                placeholder: "Custom image tag",
+              },
             },
           },
           {
