@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.4.0">
 <title data-rh="true">Resources | Monitor</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs.monitor.dev/img/monitor-lizard.png"><meta data-rh="true" name="twitter:image" content="https://docs.monitor.dev/img/monitor-lizard.png"><meta data-rh="true" property="og:url" content="https://docs.monitor.dev/docs/resources"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Resources | Monitor"><meta data-rh="true" name="description" content="Monitor is extendible through the Resource abstraction. Entities like Server, Deployment, and Stack are all Monitor Resources."><meta data-rh="true" property="og:description" content="Monitor is extendible through the Resource abstraction. Entities like Server, Deployment, and Stack are all Monitor Resources."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs.monitor.dev/docs/resources"><link data-rh="true" rel="alternate" href="https://docs.monitor.dev/docs/resources" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs.monitor.dev/docs/resources" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.e113b30e.css">
-<script src="/assets/js/runtime~main.1dbc2f05.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.d2cab029.js" defer="defer"></script>
 <script src="/assets/js/main.d19f608e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -24,12 +24,14 @@ All resources which depend on git repos / docker registries are able to use thes
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="stack">Stack<a class="hash-link" aria-label="Direct link to Stack" title="Direct link to Stack" href="/docs/resources#stack">​</a></h2>
 <p>-- Deploy with docker compose.<br>
 -- Provide the compose file in UI, or move the files to a git repo and use a webhook for auto redeploy on push.<br>
--- Supports composing multiple compose files using <code>docker compose -f ... -f ...</code>.
+-- Supports composing multiple compose files using <code>docker compose -f ... -f ...</code>.<br>
 -- Pass environment variables usable within the compose file. Interpolate in app-wide variables / secrets.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="repo">Repo<a class="hash-link" aria-label="Direct link to Repo" title="Direct link to Repo" href="/docs/resources#repo">​</a></h2>
-<p>-- Put scripts in git repos, and run them on a server every time they are pushed to.</p>
+<p>-- Put scripts in git repos, and run them on a Server, or using a Builder.<br>
+-- Can build binaries, perform automation, really whatever you can think of.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="build">Build<a class="hash-link" aria-label="Direct link to Build" title="Direct link to Build" href="/docs/resources#build">​</a></h2>
-<p>-- Build application source into docker images, and push them to</p>
+<p>-- Build application source into docker images, and push them to the configured registry.<br>
+-- The source can be any git repo containing a Dockerfile.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="builder">Builder<a class="hash-link" aria-label="Direct link to Builder" title="Direct link to Builder" href="/docs/resources#builder">​</a></h2>
 <p>-- Either points to a connected server, or holds configuration to launch a single-use AWS instance to build the image.<br>
 -- Can be attached to <strong>Builds</strong> and <strong>Repos</strong>.</p>
@@ -38,9 +40,10 @@ All resources which depend on git repos / docker registries are able to use thes
 -- Can run one or more actions in parallel &quot;stages&quot;, and compose a series of parallel stages to run sequentially.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="resourcesync">ResourceSync<a class="hash-link" aria-label="Direct link to ResourceSync" title="Direct link to ResourceSync" href="/docs/resources#resourcesync">​</a></h2>
 <p>-- Orchestrate all your configuration declaratively by defining it in <code>toml</code> files, which are checked into a git repo.<br>
--- Can deploy <strong>Deployments</strong> and <strong>Stacks</strong> if changes are suggested. Specify deploy ordering with <code>after</code> array. (like docker compose <code>depends_on</code> but can span across servers.).</p>
+-- Can deploy <strong>Deployments</strong> and <strong>Stacks</strong> if changes are suggested.<br>
+-- Specify deploy ordering with <code>after</code> array. (like docker compose <code>depends_on</code> but can span across servers.).</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="alerter">Alerter<a class="hash-link" aria-label="Direct link to Alerter" title="Direct link to Alerter" href="/docs/resources#alerter">​</a></h2>
-<p>-- Route alerts to various endpoints<br>
+<p>-- Route alerts to various endpoints.<br>
 -- Can configure rules on each Alerter, such as resource whitelist, blacklist, or alert type filter.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="servertemplate">ServerTemplate<a class="hash-link" aria-label="Direct link to ServerTemplate" title="Direct link to ServerTemplate" href="/docs/resources#servertemplate">​</a></h2>
 <p>-- Easily expand your cloud network by storing cloud server lauch templates on various providers.<br>
