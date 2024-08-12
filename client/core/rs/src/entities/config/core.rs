@@ -157,6 +157,10 @@ fn default_config_path() -> String {
 /// Refer to the [example file](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml) for a full example.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
+  // ===========
+  // = General =
+  // ===========
+
   /// The title of this monitor deployment. Will be used in the browser page title.
   /// Default: 'Monitor'
   #[serde(default = "default_title")]
@@ -177,6 +181,37 @@ pub struct CoreConfig {
   /// Should be some secure hash, maybe 20-40 chars.
   pub passkey: String,
 
+  /// Disable user ability to use the UI to update resource configuration.
+  #[serde(default)]
+  pub ui_write_disabled: bool,
+
+  // ============
+  // = Database =
+  // ============
+
+  /// Configure core mongo connection.
+  ///
+  /// An easy deployment method is to use Mongo Atlas to provide
+  /// a reliable database.
+  pub mongo: MongoConfig,
+
+  // ================
+  // = Auth / Login =
+  // ================
+
+  /// enable login with local auth
+  #[serde(default)]
+  pub local_auth: bool,
+
+  /// Enable transparent mode, which gives all (enabled) users read access to all resources.
+  #[serde(default)]
+  pub transparent_mode: bool,
+
+  /// New users will be automatically enabled.
+  /// Combined with transparent mode, this is suitable for a demo instance.
+  #[serde(default)]
+  pub enable_new_users: bool,
+
   /// Optionally provide a specific jwt secret.
   /// Passing nothing or an empty string will cause one to be generated.
   /// Default: "" (empty string)
@@ -188,12 +223,68 @@ pub struct CoreConfig {
   #[serde(default = "default_jwt_ttl")]
   pub jwt_ttl: Timelength,
 
-  /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
-  /// The default is fine when using a container.
-  /// This directory has no need for persistence, so no need to mount it.
-  /// Default: `/repos`
-  #[serde(default = "default_repo_directory")]
-  pub repo_directory: PathBuf,
+  // =========
+  // = Oauth =
+  // =========
+
+  /// Configure google oauth
+  #[serde(default)]
+  pub google_oauth: OauthCredentials,
+
+  /// Configure github oauth
+  #[serde(default)]
+  pub github_oauth: OauthCredentials,
+
+  // ============
+  // = Webhooks =
+  // ============
+
+  /// Used to verify validity from webhooks.
+  /// Should be some secure hash maybe 20-40 chars.
+  /// It is given to git provider when configuring the webhook.
+  #[serde(default)]
+  pub webhook_secret: String,
+
+  /// Override the webhook listener base url, if None will use the address defined as 'host'.
+  /// Example: `https://webhooks.mogh.tech`
+  ///
+  /// This can be used if core sits on an internal network which is
+  /// unreachable directly from the open internet.
+  /// A reverse proxy in a public network can forward webhooks to the internal monitor.
+  pub webhook_base_url: Option<String>,
+
+  /// Configure a Github Webhook app.
+  /// Allows users to manage repo webhooks from within the Monitor UI.
+  #[serde(default)]
+  pub github_webhook_app: GithubWebhookAppConfig,
+
+  // ===========
+  // = Logging =
+  // ===========
+
+  /// Configure logging
+  #[serde(default)]
+  pub logging: LogConfig,
+
+  // ===========
+  // = Pruning =
+  // ===========
+
+  /// Number of days to keep stats, or 0 to disable pruning.
+  /// Stats older than this number of days are deleted on a daily cycle
+  /// Default: 14
+  #[serde(default = "default_prune_days")]
+  pub keep_stats_for_days: u64,
+
+  /// Number of days to keep alerts, or 0 to disable pruning.
+  /// Alerts older than this number of days are deleted on a daily cycle
+  /// Default: 14
+  #[serde(default = "default_prune_days")]
+  pub keep_alerts_for_days: u64,
+
+  // ==================
+  // = Poll Intervals =
+  // ==================
 
   /// Interval at which to poll stacks for any updates / automated actions.
   /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
@@ -224,71 +315,9 @@ pub struct CoreConfig {
   #[serde(default = "default_monitoring_interval")]
   pub monitoring_interval: Timelength,
 
-  /// Number of days to keep stats, or 0 to disable pruning.
-  /// Stats older than this number of days are deleted on a daily cycle
-  /// Default: 14
-  #[serde(default = "default_prune_days")]
-  pub keep_stats_for_days: u64,
-
-  /// Number of days to keep alerts, or 0 to disable pruning.
-  /// Alerts older than this number of days are deleted on a daily cycle
-  /// Default: 14
-  #[serde(default = "default_prune_days")]
-  pub keep_alerts_for_days: u64,
-
-  /// Configure logging
-  #[serde(default)]
-  pub logging: LogConfig,
-
-  /// Enable transparent mode, which gives all (enabled) users read access to all resources.
-  #[serde(default)]
-  pub transparent_mode: bool,
-
-  /// Disable user ability to use the UI to update resource configuration.
-  #[serde(default)]
-  pub ui_write_disabled: bool,
-
-  /// enable login with local auth
-  #[serde(default)]
-  pub local_auth: bool,
-
-  /// Configure google oauth
-  #[serde(default)]
-  pub google_oauth: OauthCredentials,
-
-  /// Configure github oauth
-  #[serde(default)]
-  pub github_oauth: OauthCredentials,
-
-  /// New users will be automatically enabled.
-  /// Combined with transparent mode, this is suitable for a demo instance.
-  #[serde(default)]
-  pub enable_new_users: bool,
-
-  /// Used to verify validity from webhooks.
-  /// Should be some secure hash maybe 20-40 chars.
-  /// It is given to git provider when configuring the webhook.
-  #[serde(default)]
-  pub webhook_secret: String,
-
-  /// Override the webhook listener base url, if None will use the address defined as 'host'.
-  /// Example: `https://webhooks.mogh.tech`
-  ///
-  /// This can be used if core sits on an internal network which is
-  /// unreachable directly from the open internet.
-  /// A reverse proxy in a public network can forward webhooks to the internal monitor.
-  pub webhook_base_url: Option<String>,
-
-  /// Configure a Github Webhook app.
-  /// Allows users to manage repo webhooks from within the Monitor UI.
-  #[serde(default)]
-  pub github_webhook_app: GithubWebhookAppConfig,
-
-  /// Configure core mongo connection.
-  ///
-  /// An easy deployment method is to use Mongo Atlas to provide
-  /// a reliable database.
-  pub mongo: MongoConfig,
+  // ===================
+  // = Cloud Providers =
+  // ===================
 
   /// Configure AWS credentials to use with AWS builds / server launches.
   #[serde(default)]
@@ -298,16 +327,18 @@ pub struct CoreConfig {
   #[serde(default)]
   pub hetzner: HetznerCredentials,
 
-  /// Configure core-based secrets. These will be preferentially interpolated into
-  /// values if they contain a matching secret. Otherwise, the periphery will have to have the
-  /// secret configured.
-  #[serde(default)]
-  pub secrets: HashMap<String, String>,
+  // =================
+  // = Git Providers =
+  // =================
 
   /// Configure git credentials used to clone private repos.
   /// Supports any git provider.
   #[serde(default, alias = "git_provider")]
   pub git_providers: Vec<GitProvider>,
+
+  // ======================
+  // = Registry Providers =
+  // ======================
 
   /// Configure docker credentials used to push / pull images.
   /// Supports any docker image repository.
@@ -317,6 +348,27 @@ pub struct CoreConfig {
   /// Configure aws ecr registries, which are handled differently than other registries
   #[serde(default, alias = "aws_ecr_registry")]
   pub aws_ecr_registries: Vec<AwsEcrConfigWithCredentials>,
+
+  // ===========
+  // = Secrets =
+  // ===========
+
+  /// Configure core-based secrets. These will be preferentially interpolated into
+  /// values if they contain a matching secret. Otherwise, the periphery will have to have the
+  /// secret configured.
+  #[serde(default)]
+  pub secrets: HashMap<String, String>,
+
+  // =========
+  // = Other =
+  // =========
+
+  /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
+  /// The default is fine when using a container.
+  /// This directory has no need for persistence, so no need to mount it.
+  /// Default: `/repos`
+  #[serde(default = "default_repo_directory")]
+  pub repo_directory: PathBuf,
 }
 
 fn default_title() -> String {
