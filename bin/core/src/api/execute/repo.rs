@@ -140,6 +140,8 @@ impl Resolve<PullRepo, (User, Update)> for State {
     let _action_guard =
       action_state.update(|state| state.pulling = true)?;
 
+    update_update(update.clone()).await?;
+
     if repo.config.server_id.is_empty() {
       return Err(anyhow!("repo has no server attached"));
     }
@@ -243,6 +245,17 @@ impl Resolve<BuildRepo, (User, Update)> for State {
       return Err(anyhow!("Must attach builder to BuildRepo"));
     }
 
+    // get the action state for the repo (or insert default).
+    let action_state =
+      action_states().repo.get_or_insert_default(&repo.id).await;
+
+    // This will set action state back to default when dropped.
+    // Will also check to ensure repo not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.building = true)?;
+
+    update_update(update.clone()).await?;
+
     let git_token = git_token(
       &repo.config.git_provider,
       &repo.config.git_account,
@@ -252,15 +265,6 @@ impl Resolve<BuildRepo, (User, Update)> for State {
     .with_context(
       || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
     )?;
-
-    // get the action state for the repo (or insert default).
-    let action_state =
-      action_states().repo.get_or_insert_default(&repo.id).await;
-
-    // This will set action state back to default when dropped.
-    // Will also check to ensure repo not already busy before updating.
-    let _action_guard =
-      action_state.update(|state| state.building = true)?;
 
     let cancel = CancellationToken::new();
     let cancel_clone = cancel.clone();
