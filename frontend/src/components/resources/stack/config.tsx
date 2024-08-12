@@ -147,7 +147,7 @@ export const StackConfig = ({
             label: "Extra Args",
             description: "Add extra args inserted after 'docker compose up -d'",
             contentHidden:
-              (update.extra_args ?? config.extra_args)?.length === 0,
+              ((update.extra_args ?? config.extra_args)?.length ?? 0) === 0,
             actions: !disabled && (
               <AddExtraArgMenu
                 type="Stack"
@@ -216,6 +216,8 @@ export const StackConfig = ({
             label: "Ignore Services",
             description:
               "If your compose file has init containers that exit early, ignore them here so your stack will report the correct health.",
+            contentHidden:
+              ((update.extra_args ?? config.extra_args)?.length ?? 0) === 0,
             actions: !disabled && (
               <Button
                 variant="secondary"
