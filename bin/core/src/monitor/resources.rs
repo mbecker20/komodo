@@ -1,12 +1,12 @@
 use anyhow::Context;
 use monitor_client::entities::{
   deployment::{ContainerSummary, Deployment, DeploymentState},
-  stack::{ComposeProject, Stack, StackService, StackServiceNames},
+  stack::{Stack, StackService, StackServiceNames},
 };
 
 use crate::{
   helpers::{
-    query::get_stack_state_from_projects,
+    query::get_stack_state_from_containers,
     stack::{
       compose_container_match_regex,
       services::extract_services_from_stack,
@@ -55,7 +55,6 @@ pub async fn update_deployment_cache(
 pub async fn update_stack_cache(
   stacks: Vec<Stack>,
   containers: &[ContainerSummary],
-  projects: &[ComposeProject],
 ) {
   let stack_status_cache = stack_status_cache();
   for stack in stacks {
@@ -93,7 +92,11 @@ pub async fn update_stack_cache(
       .map(|s| s.curr.state);
     let status = CachedStackStatus {
       id: stack.id.clone(),
-      state: get_stack_state_from_projects(&stack, projects),
+      state: get_stack_state_from_containers(
+        &stack.config.ignore_services,
+        &services,
+        containers,
+      ),
       services: services_with_containers,
     };
     stack_status_cache

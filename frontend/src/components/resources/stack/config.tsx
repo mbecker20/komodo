@@ -212,6 +212,42 @@ export const StackConfig = ({
               },
             },
           },
+          {
+            label: "Ignore Services",
+            description:
+              "If your compose file has init containers that exit early, ignore them here so your stack will report the correct health.",
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    ignore_services: [
+                      ...(update.ignore_services ??
+                        config.ignore_services ??
+                        []),
+                      "",
+                    ],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Service
+              </Button>
+            ),
+            components: {
+              ignore_services: (values, set) => (
+                <InputList
+                  field="ignore_services"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Input service name"
+                />
+              ),
+            },
+          },
         ],
         "Git Repo": [
           {

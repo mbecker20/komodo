@@ -306,6 +306,13 @@ pub struct StackConfig {
   #[builder(default)]
   pub file_contents: String,
 
+  /// Ignore certain services declared in the compose file when checking
+  /// the stack status. For example, an init service might be exited, but the
+  /// stack should be healthy. This init service should be in `ignore_services`
+  #[serde(default)]
+  #[builder(default)]
+  pub ignore_services: Vec<String>,
+
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
   #[builder(default = "default_git_provider()")]
@@ -402,6 +409,7 @@ impl Default for StackConfig {
       registry_provider: Default::default(),
       registry_account: Default::default(),
       file_contents: Default::default(),
+      ignore_services: Default::default(),
       extra_args: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),

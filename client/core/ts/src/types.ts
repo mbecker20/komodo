@@ -1492,6 +1492,12 @@ export interface StackConfig {
 	 * repo based compose file.
 	 */
 	file_contents?: string;
+	/**
+	 * Ignore certain services declared in the compose file when checking
+	 * the stack status. For example, an init service might be exited, but the
+	 * stack should be healthy. This init service should be in `ignore_services`
+	 */
+	ignore_services?: string[];
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**
