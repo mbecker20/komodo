@@ -112,6 +112,16 @@ export const sanitizeOnlySpan = (log: string) => {
   });
 };
 
+/**
+ * Converts the ansi colors in an Update log to html.
+ * sanitizes incoming log first for any eg. script tags.
+ * @param log incoming log string
+ */
+export const updateLogToHtml = (log: string) => {
+  if (!log) return "No log.";
+  return convert.toHtml(sanitizeOnlySpan(log));
+};
+
 const convert = new Convert();
 /**
  * Converts the ansi colors in log to html.

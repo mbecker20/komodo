@@ -28,7 +28,7 @@ import { Link } from "react-router-dom";
 import { fmt_duration, fmt_operation, fmt_version } from "@lib/formatting";
 import {
   cn,
-  sanitizeOnlySpan,
+  updateLogToHtml,
   usableResourcePath,
   version_is_none,
 } from "@lib/utils";
@@ -275,7 +275,7 @@ const UpdateDetailsContent = ({
                   <CardDescription>stdout</CardDescription>
                   <pre
                     dangerouslySetInnerHTML={{
-                      __html: sanitizeOnlySpan(log.stdout),
+                      __html: updateLogToHtml(log.stdout),
                     }}
                     className="max-h-[500px] overflow-y-auto"
                   />
@@ -286,7 +286,7 @@ const UpdateDetailsContent = ({
                   <CardDescription>stderr</CardDescription>
                   <pre
                     dangerouslySetInnerHTML={{
-                      __html: sanitizeOnlySpan(log.stderr),
+                      __html: updateLogToHtml(log.stderr),
                     }}
                     className="max-h-[500px] overflow-y-auto"
                   />
