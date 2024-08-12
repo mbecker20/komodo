@@ -348,6 +348,12 @@ impl Resolve<CreateStackWebhook, User> for State {
       ..
     } = core_config();
 
+    let webhook_secret = if stack.config.webhook_secret.is_empty() {
+      webhook_secret
+    } else {
+      &stack.config.webhook_secret
+    };
+
     let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = match action {
       StackWebhookAction::Refresh => {

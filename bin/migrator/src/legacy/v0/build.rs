@@ -243,6 +243,7 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         use_buildx,
         labels: Default::default(),
         webhook_enabled: true,
+        webhook_secret: Default::default(),
         commit: Default::default(),
       },
     };

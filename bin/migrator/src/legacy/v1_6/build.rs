@@ -157,6 +157,7 @@ impl From<BuildConfig>
         })
       },
       webhook_enabled: value.webhook_enabled,
+      webhook_secret: Default::default(),
     }
   }
 }

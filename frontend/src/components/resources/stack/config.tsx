@@ -380,6 +380,11 @@ export const StackConfig = ({
                 !!(update.branch ?? config.branch) &&
                 webhooks !== undefined &&
                 !webhooks.managed,
+              webhook_secret: {
+                description:
+                  "Provide a custom webhook secret for this resource, or use the global default.",
+                placeholder: "Input custom secret",
+              },
               ["managed" as any]: () => {
                 const inv = useInvalidate();
                 const { toast } = useToast();

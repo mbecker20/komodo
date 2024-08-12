@@ -358,6 +358,12 @@ pub struct StackConfig {
   #[partial_default(default_webhook_enabled())]
   pub webhook_enabled: bool,
 
+  /// Optionally provide an alternate webhook secret for this stack.
+  /// If its an empty string, use the default secret from the config.
+  #[serde(default)]
+  #[builder(default)]
+  pub webhook_secret: String,
+
   /// Whether to send StackStateChange alerts for this stack.
   #[serde(default = "default_send_alerts")]
   #[builder(default = "default_send_alerts()")]
@@ -421,6 +427,7 @@ impl Default for StackConfig {
       commit: Default::default(),
       git_account: Default::default(),
       webhook_enabled: default_webhook_enabled(),
+      webhook_secret: Default::default(),
       send_alerts: default_send_alerts(),
     }
   }

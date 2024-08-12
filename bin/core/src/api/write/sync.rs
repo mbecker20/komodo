@@ -105,7 +105,11 @@ impl Resolve<UpdateResourceSync, User> for State {
 }
 
 impl Resolve<RefreshResourceSyncPending, User> for State {
-  #[instrument(name = "RefreshResourceSyncPending", level = "debug", skip(self, user))]
+  #[instrument(
+    name = "RefreshResourceSyncPending",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     RefreshResourceSyncPending { sync }: RefreshResourceSyncPending,
@@ -419,6 +423,12 @@ impl Resolve<CreateSyncWebhook, User> for State {
       webhook_secret,
       ..
     } = core_config();
+
+    let webhook_secret = if sync.config.webhook_secret.is_empty() {
+      webhook_secret
+    } else {
+      &sync.config.webhook_secret
+    };
 
     let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = match action {

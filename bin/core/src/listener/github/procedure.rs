@@ -33,15 +33,24 @@ pub async fn handle_procedure_webhook(
     procedure_locks().get_or_insert_default(&procedure_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
+  let procedure = resource::get::<Procedure>(&procedure_id).await?;
+
+  verify_gh_signature(
+    headers,
+    &body,
+    &procedure.config.webhook_secret,
+  )
+  .await?;
+
+  if !procedure.config.webhook_enabled {
+    return Err(anyhow!("procedure does not have webhook enabled"));
+  }
+
   let request_branch = extract_branch(&body)?;
   if request_branch != target_branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  let procedure = resource::get::<Procedure>(&procedure_id).await?;
-  if !procedure.config.webhook_enabled {
-    return Err(anyhow!("procedure does not have webhook enabled"));
-  }
+
   let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunProcedure(RunProcedure {
     procedure: procedure_id,

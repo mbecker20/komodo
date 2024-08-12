@@ -31,15 +31,20 @@ pub async fn handle_stack_refresh_webhook(
   let lock = stack_locks().get_or_insert_default(&stack_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let stack = resource::get::<Stack>(&stack_id).await?;
+
+  verify_gh_signature(headers, &body, &stack.config.webhook_secret)
+    .await?;
+
   if !stack.config.webhook_enabled {
     return Err(anyhow!("stack does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != stack.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+
   let user = git_webhook_user().to_owned();
   State
     .resolve(RefreshStackCache { stack: stack.id }, user)
@@ -58,15 +63,20 @@ pub async fn handle_stack_deploy_webhook(
   let lock = stack_locks().get_or_insert_default(&stack_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let stack = resource::get::<Stack>(&stack_id).await?;
+
+  verify_gh_signature(headers, &body, &stack.config.webhook_secret)
+    .await?;
+
   if !stack.config.webhook_enabled {
     return Err(anyhow!("stack does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != stack.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+
   let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::DeployStack(DeployStack {
     stack: stack_id,

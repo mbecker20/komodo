@@ -163,6 +163,7 @@ impl From<BuildConfig>
       extra_args: value.extra_args,
       use_buildx: value.use_buildx,
       webhook_enabled: value.webhook_enabled,
+      webhook_secret: Default::default(),
       image_registry: value.image_registry.into(),
     }
   }

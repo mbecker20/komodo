@@ -33,7 +33,7 @@ Users will have to manage their own versioning though.
 	- **Sync**: Sync resources declared in toml files in Github repos.
 		- Manage resources declaratively, with git history for configuration rollbacks.
 		- See the actions which will be performed in the UI, and execute them upon manual confirmation.
-		- Use a Github webhook to automatically execute syncs on git push.
+		- Use a Git webhook to automatically execute syncs on git push.
 
 - **Resource Tagging**
 	- Attach multiple *tags* to resources, which can be used to group related resources together. These can be used to filter resources in the UI.

@@ -217,6 +217,12 @@ impl Resolve<CreateRepoWebhook, User> for State {
       ..
     } = core_config();
 
+    let webhook_secret = if repo.config.webhook_secret.is_empty() {
+      webhook_secret
+    } else {
+      &repo.config.webhook_secret
+    };
+
     let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = match action {
       RepoWebhookAction::Clone => {

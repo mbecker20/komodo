@@ -240,6 +240,12 @@ pub struct ResourceSyncConfig {
   #[builder(default = "default_webhook_enabled()")]
   #[partial_default(default_webhook_enabled())]
   pub webhook_enabled: bool,
+
+  /// Optionally provide an alternate webhook secret for this sync.
+  /// If its an empty string, use the default secret from the config.
+  #[serde(default)]
+  #[builder(default)]
+  pub webhook_secret: String,
 }
 
 impl ResourceSyncConfig {
@@ -280,6 +286,7 @@ impl Default for ResourceSyncConfig {
       resource_path: default_resource_path(),
       delete: Default::default(),
       webhook_enabled: default_webhook_enabled(),
+      webhook_secret: Default::default(),
     }
   }
 }

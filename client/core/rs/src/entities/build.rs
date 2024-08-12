@@ -127,6 +127,15 @@ pub struct BuildConfig {
   #[partial_default(default_git_https())]
   pub git_https: bool,
 
+  /// The git account used to access private repos.
+  /// Passing empty string can only clone public repos.
+  ///
+  /// Note. A token for the account must be available in the core config or the builder server's periphery config
+  /// for the configured git provider.
+  #[serde(default)]
+  #[builder(default)]
+  pub git_account: String,
+
   /// The repo used as the source of the build.
   #[serde(default)]
   #[builder(default)]
@@ -143,14 +152,17 @@ pub struct BuildConfig {
   #[builder(default)]
   pub commit: String,
 
-  /// The git account used to access private repos.
-  /// Passing empty string can only clone public repos.
-  ///
-  /// Note. A token for the account must be available in the core config or the builder server's periphery config
-  /// for the configured git provider.
+  /// Whether incoming webhooks actually trigger action.
+  #[serde(default = "default_webhook_enabled")]
+  #[builder(default = "default_webhook_enabled()")]
+  #[partial_default(default_webhook_enabled())]
+  pub webhook_enabled: bool,
+
+  /// Optionally provide an alternate webhook secret for this build.
+  /// If its an empty string, use the default secret from the config.
   #[serde(default)]
   #[builder(default)]
-  pub git_account: String,
+  pub webhook_secret: String,
 
   /// The optional command run after repo clone and before docker build.
   #[serde(default)]
@@ -184,12 +196,6 @@ pub struct BuildConfig {
   #[serde(default)]
   #[builder(default)]
   pub use_buildx: bool,
-
-  /// Whether incoming webhooks actually trigger action.
-  #[serde(default = "default_webhook_enabled")]
-  #[builder(default = "default_webhook_enabled()")]
-  #[partial_default(default_webhook_enabled())]
-  pub webhook_enabled: bool,
 
   /// Any extra docker cli arguments to be included in the build command
   #[serde(default)]
@@ -298,6 +304,7 @@ impl Default for BuildConfig {
       use_buildx: Default::default(),
       image_registry: Default::default(),
       webhook_enabled: default_webhook_enabled(),
+      webhook_secret: Default::default(),
     }
   }
 }

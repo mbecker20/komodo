@@ -66,6 +66,12 @@ pub struct ProcedureConfig {
   #[builder(default = "default_webhook_enabled()")]
   #[partial_default(default_webhook_enabled())]
   pub webhook_enabled: bool,
+
+  /// Optionally provide an alternate webhook secret for this procedure.
+  /// If its an empty string, use the default secret from the config.
+  #[serde(default)]
+  #[builder(default)]
+  pub webhook_secret: String,
 }
 
 impl ProcedureConfig {
@@ -83,6 +89,7 @@ impl Default for ProcedureConfig {
     Self {
       stages: Default::default(),
       webhook_enabled: default_webhook_enabled(),
+      webhook_secret: Default::default()
     }
   }
 }

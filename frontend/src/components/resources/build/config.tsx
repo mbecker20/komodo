@@ -287,16 +287,31 @@ export const BuildConfig = ({
             },
           },
           {
-            label: "Github Webhook",
+            label: "Git Webhook",
             description:
               "Configure your repo provider to send webhooks to Monitor",
             components: {
+              ["Guard" as any]: () => {
+                if (update.branch ?? config.branch) {
+                  return null;
+                }
+                return (
+                  <ConfigItem label="Configure Branch">
+                    <div>Must configure Branch before webhooks will work.</div>
+                  </ConfigItem>
+                );
+              },
               ["build" as any]: () => (
                 <ConfigItem label="Webhook Url">
                   <CopyGithubWebhook path={`/build/${id}`} />
                 </ConfigItem>
               ),
               webhook_enabled: webhook !== undefined && !webhook.managed,
+              webhook_secret: {
+                description:
+                  "Provide a custom webhook secret for this resource, or use the global default.",
+                placeholder: "Input custom secret",
+              },
               ["managed" as any]: () => {
                 const inv = useInvalidate();
                 const { toast } = useToast();

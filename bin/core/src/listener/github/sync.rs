@@ -31,15 +31,20 @@ pub async fn handle_sync_refresh_webhook(
   let lock = sync_locks().get_or_insert_default(&sync_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let sync = resource::get::<ResourceSync>(&sync_id).await?;
+
+  verify_gh_signature(headers, &body, &sync.config.webhook_secret)
+    .await?;
+
   if !sync.config.webhook_enabled {
     return Err(anyhow!("sync does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != sync.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+
   let user = git_webhook_user().to_owned();
   State
     .resolve(RefreshResourceSyncPending { sync: sync_id }, user)
@@ -58,15 +63,20 @@ pub async fn handle_sync_execute_webhook(
   let lock = sync_locks().get_or_insert_default(&sync_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let sync = resource::get::<ResourceSync>(&sync_id).await?;
+
+  verify_gh_signature(headers, &body, &sync.config.webhook_secret)
+    .await?;
+
   if !sync.config.webhook_enabled {
     return Err(anyhow!("sync does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != sync.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+
   let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunSync(RunSync { sync: sync_id });
   let update = init_execution_update(&req, &user).await?;

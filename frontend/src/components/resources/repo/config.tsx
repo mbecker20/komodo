@@ -150,10 +150,20 @@ export const RepoConfig = ({ id }: { id: string }) => {
             },
           },
           {
-            label: "Github Webhooks",
+            label: "Git Webhooks",
             description:
               "Configure your repo provider to send webhooks to Monitor",
             components: {
+              ["Guard" as any]: () => {
+                if (update.branch ?? config.branch) {
+                  return null;
+                }
+                return (
+                  <ConfigItem label="Configure Branch">
+                    <div>Must configure Branch before webhooks will work.</div>
+                  </ConfigItem>
+                );
+              },
               ["pull" as any]: () => (
                 <ConfigItem label="Pull">
                   <CopyGithubWebhook path={`/repo/${id}/pull`} />
@@ -170,6 +180,11 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 </ConfigItem>
               ),
               webhook_enabled: webhooks !== undefined && !webhooks.managed,
+              webhook_secret: {
+                description:
+                  "Provide a custom webhook secret for this resource, or use the global default.",
+                placeholder: "Input custom secret",
+              },
               ["managed" as any]: () => {
                 const inv = useInvalidate();
                 const { toast } = useToast();

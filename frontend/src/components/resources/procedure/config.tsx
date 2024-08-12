@@ -192,7 +192,7 @@ const ProcedureConfigInner = ({
       <Section>
         <Card>
           <CardHeader className="p-4">
-            <ConfigItem label="Github Webhook" className="items-start">
+            <ConfigItem label="Git Webhook" className="items-start">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -221,6 +221,19 @@ const ProcedureConfigInner = ({
                       setConfig({ ...config, webhook_enabled })
                     }
                     disabled={disabled}
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-4 w-full">
+                  <div className="text-muted-foreground">Custom Secret:</div>
+                  <Input
+                    value={
+                      config.webhook_secret ?? procedure.config?.webhook_secret
+                    }
+                    onChange={(e) =>
+                      setConfig({ ...config, webhook_secret: e.target.value })
+                    }
+                    disabled={disabled}
+                    className="w-[400px] max-w-full"
                   />
                 </div>
               </div>

@@ -216,6 +216,7 @@ pub fn router() -> Router {
 async fn verify_gh_signature(
   headers: HeaderMap,
   body: &str,
+  custom_secret: &str,
 ) -> anyhow::Result<()> {
   // wait random amount of time
   tokio::time::sleep(random_duration(0, 500)).await;
@@ -229,10 +230,13 @@ async fn verify_gh_signature(
     return Err(anyhow!("failed to unwrap signature"));
   }
   let signature = signature.unwrap().replace("sha256=", "");
-  let mut mac = HmacSha256::new_from_slice(
-    core_config().webhook_secret.as_bytes(),
-  )
-  .expect("github webhook | failed to create hmac sha256");
+  let secret_bytes = if custom_secret.is_empty() {
+    core_config().webhook_secret.as_bytes()
+  } else {
+    custom_secret.as_bytes()
+  };
+  let mut mac = HmacSha256::new_from_slice(secret_bytes)
+    .expect("github webhook | failed to create hmac sha256");
   mac.update(body.as_bytes());
   let expected = mac.finalize().into_bytes().encode_hex::<String>();
   if signature == expected {

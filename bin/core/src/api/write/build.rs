@@ -216,6 +216,12 @@ impl Resolve<CreateBuildWebhook, User> for State {
       ..
     } = core_config();
 
+    let webhook_secret = if build.config.webhook_secret.is_empty() {
+      webhook_secret
+    } else {
+      &build.config.webhook_secret
+    };
+
     let host = webhook_base_url.as_ref().unwrap_or(host);
     let url = format!("{host}/listener/github/build/{}", build.id);
 

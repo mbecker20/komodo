@@ -31,15 +31,20 @@ pub async fn handle_build_webhook(
   let lock = build_locks().get_or_insert_default(&build_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let build = resource::get::<Build>(&build_id).await?;
+
+  verify_gh_signature(headers, &body, &build.config.webhook_secret)
+    .await?;
+
   if !build.config.webhook_enabled {
     return Err(anyhow!("build does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != build.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+  
   let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunBuild(RunBuild { build: build_id });
   let update = init_execution_update(&req, &user).await?;

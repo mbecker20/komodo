@@ -30,15 +30,20 @@ pub async fn handle_repo_clone_webhook(
   let lock = repo_locks().get_or_insert_default(&repo_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let repo = resource::get::<Repo>(&repo_id).await?;
+
+  verify_gh_signature(headers, &body, &repo.config.webhook_secret)
+    .await?;
+
   if !repo.config.webhook_enabled {
     return Err(anyhow!("repo does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+
   let user = git_webhook_user().to_owned();
   let req =
     crate::api::execute::ExecuteRequest::CloneRepo(CloneRepo {
@@ -64,15 +69,20 @@ pub async fn handle_repo_pull_webhook(
   let lock = repo_locks().get_or_insert_default(&repo_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let repo = resource::get::<Repo>(&repo_id).await?;
+
+  verify_gh_signature(headers, &body, &repo.config.webhook_secret)
+    .await?;
+
   if !repo.config.webhook_enabled {
     return Err(anyhow!("repo does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+
   let user = git_webhook_user().to_owned();
   let req = crate::api::execute::ExecuteRequest::PullRepo(PullRepo {
     repo: repo_id,
@@ -96,21 +106,28 @@ pub async fn handle_repo_build_webhook(
   let lock = repo_locks().get_or_insert_default(&repo_id).await;
   let _lock = lock.lock().await;
 
-  verify_gh_signature(headers, &body).await?;
-  let request_branch = extract_branch(&body)?;
   let repo = resource::get::<Repo>(&repo_id).await?;
+
+  verify_gh_signature(headers, &body, &repo.config.webhook_secret)
+    .await?;
+
   if !repo.config.webhook_enabled {
     return Err(anyhow!("repo does not have webhook enabled"));
   }
+
+  let request_branch = extract_branch(&body)?;
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
+
   let user = git_webhook_user().to_owned();
-  let req = crate::api::execute::ExecuteRequest::BuildRepo(BuildRepo {
-    repo: repo_id,
-  });
+  let req =
+    crate::api::execute::ExecuteRequest::BuildRepo(BuildRepo {
+      repo: repo_id,
+    });
   let update = init_execution_update(&req, &user).await?;
-  let crate::api::execute::ExecuteRequest::BuildRepo(req) = req else {
+  let crate::api::execute::ExecuteRequest::BuildRepo(req) = req
+  else {
     unreachable!()
   };
   State.resolve(req, (user, update)).await?;

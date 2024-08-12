@@ -111,6 +111,23 @@ pub struct RepoConfig {
   #[partial_default(default_git_provider())]
   pub git_provider: String,
 
+  /// Whether to use https to clone the repo (versus http). Default: true
+  ///
+  /// Note. Monitor does not currently support cloning repos via ssh.
+  #[serde(default = "default_git_https")]
+  #[builder(default = "default_git_https()")]
+  #[partial_default(default_git_https())]
+  pub git_https: bool,
+
+  /// The git account used to access private repos.
+  /// Passing empty string can only clone public repos.
+  ///
+  /// Note. A token for the account must be available in the core config or the builder server's periphery config
+  /// for the configured git provider.
+  #[serde(default)]
+  #[builder(default)]
+  pub git_account: String,
+
   /// The github repo to clone.
   #[serde(default)]
   #[builder(default)]
@@ -127,27 +144,22 @@ pub struct RepoConfig {
   #[builder(default)]
   pub commit: String,
 
-  /// The git account used to access private repos.
-  /// Passing empty string can only clone public repos.
-  ///
-  /// Note. A token for the account must be available in the core config or the builder server's periphery config
-  /// for the configured git provider.
-  #[serde(default)]
-  #[builder(default)]
-  pub git_account: String,
-
-  /// Whether to use https to clone the repo (versus http). Default: true
-  ///
-  /// Note. Monitor does not currently support cloning repos via ssh.
-  #[serde(default = "default_git_https")]
-  #[builder(default = "default_git_https()")]
-  #[partial_default(default_git_https())]
-  pub git_https: bool,
-
   /// Explicitly specify the folder to clone the repo in.
   #[serde(default)]
   #[builder(default)]
   pub path: String,
+
+  /// Whether incoming webhooks actually trigger action.
+  #[serde(default = "default_webhook_enabled")]
+  #[builder(default = "default_webhook_enabled()")]
+  #[partial_default(default_webhook_enabled())]
+  pub webhook_enabled: bool,
+
+  /// Optionally provide an alternate webhook secret for this repo.
+  /// If its an empty string, use the default secret from the config.
+  #[serde(default)]
+  #[builder(default)]
+  pub webhook_secret: String,
 
   /// Command to be run after the repo is cloned.
   /// The path is relative to the root of the repo.
@@ -189,12 +201,6 @@ pub struct RepoConfig {
   #[serde(default)]
   #[builder(default)]
   pub skip_secret_interp: bool,
-
-  /// Whether incoming webhooks actually trigger action.
-  #[serde(default = "default_webhook_enabled")]
-  #[builder(default = "default_webhook_enabled()")]
-  #[partial_default(default_webhook_enabled())]
-  pub webhook_enabled: bool,
 }
 
 impl RepoConfig {
@@ -241,6 +247,7 @@ impl Default for RepoConfig {
       env_file_path: default_env_file_path(),
       skip_secret_interp: Default::default(),
       webhook_enabled: default_webhook_enabled(),
+      webhook_secret: Default::default(),
     }
   }
 }

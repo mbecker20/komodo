@@ -401,12 +401,6 @@ export interface BuildConfig {
 	 * Note. Monitor does not currently support cloning repos via ssh.
 	 */
 	git_https: boolean;
-	/** The repo used as the source of the build. */
-	repo?: string;
-	/** The branch of the repo. */
-	branch: string;
-	/** Optionally set a specific commit hash. */
-	commit?: string;
 	/**
 	 * The git account used to access private repos.
 	 * Passing empty string can only clone public repos.
@@ -415,6 +409,19 @@ export interface BuildConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
+	/** The repo used as the source of the build. */
+	repo?: string;
+	/** The branch of the repo. */
+	branch: string;
+	/** Optionally set a specific commit hash. */
+	commit?: string;
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+	/**
+	 * Optionally provide an alternate webhook secret for this build.
+	 * If its an empty string, use the default secret from the config.
+	 */
+	webhook_secret?: string;
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
 	/** Configuration for the registry to push the built image to. */
@@ -430,8 +437,6 @@ export interface BuildConfig {
 	skip_secret_interp?: boolean;
 	/** Whether to use buildx to build (eg `docker buildx build ...`) */
 	use_buildx?: boolean;
-	/** Whether incoming webhooks actually trigger action. */
-	webhook_enabled: boolean;
 	/** Any extra docker cli arguments to be included in the build command */
 	extra_args?: string[];
 	/**
@@ -871,6 +876,11 @@ export interface ProcedureConfig {
 	stages?: ProcedureStage[];
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
+	/**
+	 * Optionally provide an alternate webhook secret for this procedure.
+	 * If its an empty string, use the default secret from the config.
+	 */
+	webhook_secret?: string;
 }
 
 /**
@@ -980,12 +990,12 @@ export interface RepoConfig {
 	builder_id?: string;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
-	/** The github repo to clone. */
-	repo?: string;
-	/** The repo branch. */
-	branch: string;
-	/** Optionally set a specific commit hash. */
-	commit?: string;
+	/**
+	 * Whether to use https to clone the repo (versus http). Default: true
+	 * 
+	 * Note. Monitor does not currently support cloning repos via ssh.
+	 */
+	git_https: boolean;
 	/**
 	 * The git account used to access private repos.
 	 * Passing empty string can only clone public repos.
@@ -994,14 +1004,21 @@ export interface RepoConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
-	/**
-	 * Whether to use https to clone the repo (versus http). Default: true
-	 * 
-	 * Note. Monitor does not currently support cloning repos via ssh.
-	 */
-	git_https: boolean;
+	/** The github repo to clone. */
+	repo?: string;
+	/** The repo branch. */
+	branch: string;
+	/** Optionally set a specific commit hash. */
+	commit?: string;
 	/** Explicitly specify the folder to clone the repo in. */
 	path?: string;
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+	/**
+	 * Optionally provide an alternate webhook secret for this repo.
+	 * If its an empty string, use the default secret from the config.
+	 */
+	webhook_secret?: string;
 	/**
 	 * Command to be run after the repo is cloned.
 	 * The path is relative to the root of the repo.
@@ -1028,8 +1045,6 @@ export interface RepoConfig {
 	env_file_path: string;
 	/** Whether to skip secret interpolation into the repo environment variable file. */
 	skip_secret_interp?: boolean;
-	/** Whether incoming webhooks actually trigger action. */
-	webhook_enabled: boolean;
 }
 
 export interface RepoInfo {
@@ -1522,6 +1537,11 @@ export interface StackConfig {
 	commit?: string;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
+	/**
+	 * Optionally provide an alternate webhook secret for this stack.
+	 * If its an empty string, use the default secret from the config.
+	 */
+	webhook_secret?: string;
 	/** Whether to send StackStateChange alerts for this stack. */
 	send_alerts: boolean;
 }
@@ -1732,6 +1752,11 @@ export interface ResourceSyncConfig {
 	delete?: boolean;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
+	/**
+	 * Optionally provide an alternate webhook secret for this sync.
+	 * If its an empty string, use the default secret from the config.
+	 */
+	webhook_secret?: string;
 }
 
 export type PendingSyncUpdatesData = 
