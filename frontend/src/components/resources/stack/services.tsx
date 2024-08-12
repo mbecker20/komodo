@@ -23,7 +23,11 @@ export const StackServices = ({
   titleOther: ReactNode;
 }) => {
   const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
-  const services = useRead("ListStackServices", { stack: id }).data;
+  const services = useRead(
+    "ListStackServices",
+    { stack: id },
+    { refetchInterval: 5000 }
+  ).data;
   if (
     !services ||
     services.length === 0 ||
