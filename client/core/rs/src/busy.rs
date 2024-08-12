@@ -48,7 +48,7 @@ impl Busy for BuildActionState {
 
 impl Busy for RepoActionState {
   fn busy(&self) -> bool {
-    self.cloning || self.pulling
+    self.cloning || self.pulling || self.building
   }
 }
 
