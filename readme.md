@@ -1,19 +1,24 @@
 # Monitor 🦎
 
-A tool to build and deploy software across many servers. [See the docs](https://docs.monitor.dev). [Try the Demo](https://demo.monitor.dev).
+A tool to build and deploy software across many servers. 
 
-Docs for periphery setup script can be found in [scripts/readme.md](https://github.com/mbecker20/monitor/blob/main/scripts/readme.md).
+🦎 [See the docs](https://docs.monitor.dev)
+
+🦎 [Try the Demo](https://demo.monitor.dev)
+
+🦎 [Join the Discord](https://discord.gg/DRqE8Fvg5c)
 
 ## Disclaimer
 
-Warning. This is open source software (GPL-V3), and while the Monitor team (mainly me) makes a best effort to ensure releases are stable and bug-free,
+Warning. This is open source software (GPL-V3), and while we make a best effort to ensure releases are stable and bug-free,
 there are no warranties. Use at your own risk.
 
 ## Links
 
-[roadmap](https://github.com/mbecker20/monitor/blob/main/roadmap.md)
-[changelog](https://github.com/mbecker20/monitor/blob/main/changelog.md)
-[migrator](https://github.com/mbecker20/monitor/blob/main/bin/migrator/README.md)
+- [periphery setup](https://github.com/mbecker20/monitor/blob/main/scripts/readme.md)
+- [roadmap](https://github.com/mbecker20/monitor/blob/main/roadmap.md)
+- [changelog](https://github.com/mbecker20/monitor/blob/main/changelog.md)
+- [migrator](https://github.com/mbecker20/monitor/blob/main/bin/migrator/README.md)
 
 ## Screenshots
 
