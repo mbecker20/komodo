@@ -173,7 +173,7 @@ pub async fn compose_up(
   res.logs.push(log);
 
   if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
-    format!("failed to clean up files after deploy | path: {root:?}")
+    format!("failed to clean up files after deploy | path: {root:?} | ensure all volumes are mounted outside the repo directory (preferably use absolute path for mounts)")
   }) {
     res
       .logs
@@ -286,7 +286,9 @@ async fn write_stack(
   } else {
     // Ensure run directory exists
     fs::create_dir_all(&run_directory).await.with_context(|| {
-      format!("failed to create stack run directory at {run_directory:?}")
+      format!(
+        "failed to create stack run directory at {run_directory:?}"
+      )
     })?;
     let env_file_path = match write_environment_file(
       &stack.config.environment,
