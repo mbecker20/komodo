@@ -139,4 +139,6 @@ pub struct GetRepoWebhooksEnabledResponse {
   pub clone_enabled: bool,
   /// Whether pushes to branch trigger pull. Will always be false if managed is false.
   pub pull_enabled: bool,
+  /// Whether pushes to branch trigger build. Will always be false if managed is false.
+  pub build_enabled: bool,
 }

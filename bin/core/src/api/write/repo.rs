@@ -225,6 +225,9 @@ impl Resolve<CreateRepoWebhook, User> for State {
       RepoWebhookAction::Pull => {
         format!("{host}/listener/github/repo/{}/pull", repo.id)
       }
+      RepoWebhookAction::Build => {
+        format!("{host}/listener/github/repo/{}/build", repo.id)
+      }
     };
 
     for webhook in webhooks {
@@ -338,6 +341,9 @@ impl Resolve<DeleteRepoWebhook, User> for State {
       }
       RepoWebhookAction::Pull => {
         format!("{host}/listener/github/repo/{}/pull", repo.id)
+      }
+      RepoWebhookAction::Build => {
+        format!("{host}/listener/github/repo/{}/build", repo.id)
       }
     };
 

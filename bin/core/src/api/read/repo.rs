@@ -137,6 +137,7 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
         managed: false,
         clone_enabled: false,
         pull_enabled: false,
+        build_enabled: false,
       });
     };
 
@@ -154,6 +155,7 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
         managed: false,
         clone_enabled: false,
         pull_enabled: false,
+        build_enabled: false,
       });
     }
 
@@ -165,6 +167,7 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
         managed: false,
         clone_enabled: false,
         pull_enabled: false,
+        build_enabled: false,
       });
     };
 
@@ -190,16 +193,25 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
       format!("{host}/listener/github/repo/{}/clone", repo.id);
     let pull_url =
       format!("{host}/listener/github/repo/{}/pull", repo.id);
+    let build_url =
+      format!("{host}/listener/github/repo/{}/build", repo.id);
 
     let mut clone_enabled = false;
     let mut pull_enabled = false;
+    let mut build_enabled = false;
 
     for webhook in webhooks {
-      if webhook.active && webhook.config.url == clone_url {
+      if !webhook.active {
+        continue;
+      }
+      if webhook.config.url == clone_url {
         clone_enabled = true
       }
-      if webhook.active && webhook.config.url == pull_url {
+      if webhook.config.url == pull_url {
         pull_enabled = true
+      }
+      if webhook.config.url == build_url {
+        build_enabled = true
       }
     }
 
@@ -207,6 +219,7 @@ impl Resolve<GetRepoWebhooksEnabled, User> for State {
       managed: true,
       clone_enabled,
       pull_enabled,
+      build_enabled,
     })
   }
 }

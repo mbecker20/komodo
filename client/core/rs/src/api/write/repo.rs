@@ -105,6 +105,7 @@ pub struct RefreshRepoCache {
 pub enum RepoWebhookAction {
   Clone,
   Pull,
+  Build,
 }
 
 /// Create a webhook on the github repo attached to the (monitor) repo

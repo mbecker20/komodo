@@ -89,6 +89,24 @@ pub fn router() -> Router {
 				},
 			)
 		)
+		.route(
+			"/repo/:id/build", 
+			post(
+				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+					tokio::spawn(async move {
+            let span = info_span!("repo_build_webhook", id);
+            async {
+              let res = repo::handle_repo_build_webhook(id.clone(), headers, body).await;
+              if let Err(e) = res {
+                warn!("failed to run repo build webook for repo {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
+					});
+				},
+			)
+		)
     .route(
 			"/stack/:id/refresh", 
 			post(

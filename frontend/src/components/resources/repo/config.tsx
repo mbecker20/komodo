@@ -164,6 +164,11 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   <CopyGithubWebhook path={`/repo/${id}/clone`} />
                 </ConfigItem>
               ),
+              ["build" as any]: () => (
+                <ConfigItem label="Build">
+                  <CopyGithubWebhook path={`/repo/${id}/build`} />
+                </ConfigItem>
+              ),
               webhook_enabled: webhooks !== undefined && !webhooks.managed,
               ["managed" as any]: () => {
                 const inv = useInvalidate();
@@ -247,44 +252,95 @@ export const RepoConfig = ({ id }: { id: string }) => {
                         />
                       </div>
                     )}
-                    {!webhooks.clone_enabled && !webhooks.pull_enabled && (
+                    {webhooks.build_enabled && (
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
                           Incoming webhook is{" "}
                           <div
-                            className={text_color_class_by_intention(
-                              "Critical"
-                            )}
+                            className={text_color_class_by_intention("Good")}
                           >
-                            DISABLED
+                            ENABLED
+                          </div>
+                          and will trigger
+                          <div
+                            className={text_color_class_by_intention("Neutral")}
+                          >
+                            BUILD
                           </div>
                         </div>
                         <ConfirmButton
-                          title="Enable Clone"
-                          icon={<CirclePlus className="w-4 h-4" />}
+                          title="Disable"
+                          icon={<Ban className="w-4 h-4" />}
+                          variant="destructive"
                           onClick={() =>
-                            createWebhook({
+                            deleteWebhook({
                               repo: id,
-                              action: Types.RepoWebhookAction.Clone,
+                              action: Types.RepoWebhookAction.Build,
                             })
                           }
-                          loading={createPending}
-                          disabled={disabled || createPending}
-                        />
-                        <ConfirmButton
-                          title="Enable Pull"
-                          icon={<CirclePlus className="w-4 h-4" />}
-                          onClick={() =>
-                            createWebhook({
-                              repo: id,
-                              action: Types.RepoWebhookAction.Pull,
-                            })
-                          }
-                          loading={createPending}
-                          disabled={disabled || createPending}
+                          loading={deletePending}
+                          disabled={disabled || deletePending}
                         />
                       </div>
                     )}
+                    {!webhooks.clone_enabled &&
+                      !webhooks.pull_enabled &&
+                      !webhooks.build_enabled && (
+                        <div className="flex items-center gap-4 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            Incoming webhook is{" "}
+                            <div
+                              className={text_color_class_by_intention(
+                                "Critical"
+                              )}
+                            >
+                              DISABLED
+                            </div>
+                          </div>
+                          {(update.server_id ?? config.server_id) && (
+                            <ConfirmButton
+                              title="Enable Clone"
+                              icon={<CirclePlus className="w-4 h-4" />}
+                              onClick={() =>
+                                createWebhook({
+                                  repo: id,
+                                  action: Types.RepoWebhookAction.Clone,
+                                })
+                              }
+                              loading={createPending}
+                              disabled={disabled || createPending}
+                            />
+                          )}
+                          {(update.server_id ?? config.server_id) && (
+                            <ConfirmButton
+                              title="Enable Pull"
+                              icon={<CirclePlus className="w-4 h-4" />}
+                              onClick={() =>
+                                createWebhook({
+                                  repo: id,
+                                  action: Types.RepoWebhookAction.Pull,
+                                })
+                              }
+                              loading={createPending}
+                              disabled={disabled || createPending}
+                            />
+                          )}
+                          {(update.builder_id ?? config.builder_id) && (
+                            <ConfirmButton
+                              title="Enable Build"
+                              icon={<CirclePlus className="w-4 h-4" />}
+                              onClick={() =>
+                                createWebhook({
+                                  repo: id,
+                                  action: Types.RepoWebhookAction.Build,
+                                })
+                              }
+                              loading={createPending}
+                              disabled={disabled || createPending}
+                            />
+                          )}
+                        </div>
+                      )}
                   </ConfigItem>
                 );
               },

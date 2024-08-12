@@ -3262,6 +3262,8 @@ export interface GetRepoWebhooksEnabledResponse {
 	clone_enabled: boolean;
 	/** Whether pushes to branch trigger pull. Will always be false if managed is false. */
 	pull_enabled: boolean;
+	/** Whether pushes to branch trigger build. Will always be false if managed is false. */
+	build_enabled: boolean;
 }
 
 /** Find resources matching a common query. Response: [FindResourcesResponse]. */
@@ -4389,6 +4391,7 @@ export interface RefreshRepoCache {
 export enum RepoWebhookAction {
 	Clone = "Clone",
 	Pull = "Pull",
+	Build = "Build",
 }
 
 /**
