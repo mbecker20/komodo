@@ -51,9 +51,13 @@ export const Dashboard = () => {
 };
 
 const ResourceRow = ({ type }: { type: UsableResource }) => {
-  const recents = useUser().data?.recents?.[type]?.slice(0, 6);
-  const resources = useRead(`List${type}s`, {})
-    .data?.filter((r) => !recents?.includes(r.id))
+  const _recents = useUser().data?.recents?.[type]?.slice(0, 6);
+  const _resources = useRead(`List${type}s`, {}).data;
+  const recents = _recents?.filter(
+    (recent) => !_resources?.every((resource) => resource.id !== recent)
+  );
+  const resources = _resources
+    ?.filter((r) => !recents?.includes(r.id))
     .map((r) => r.id);
   const ids = [
     ...(recents ?? []),

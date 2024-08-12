@@ -780,13 +780,17 @@ where
 {
   let resource: ResourceTarget = resource.into();
   let (recent_field, id) = match resource {
-    ResourceTarget::Server(id) => ("recent_servers", id),
-    ResourceTarget::Deployment(id) => ("recent_deployments", id),
-    ResourceTarget::Build(id) => ("recent_builds", id),
-    ResourceTarget::Repo(id) => ("recent_repos", id),
-    ResourceTarget::Procedure(id) => ("recent_procedures", id),
-    // Don't need to do anything for others
-    _ => return,
+    ResourceTarget::Server(id) => ("recents.Server", id),
+    ResourceTarget::Deployment(id) => ("recents.Deployment", id),
+    ResourceTarget::Build(id) => ("recents.Build", id),
+    ResourceTarget::Repo(id) => ("recents.Repo", id),
+    ResourceTarget::Procedure(id) => ("recents.Procedure", id),
+    ResourceTarget::Stack(id) => ("recents.Stack", id),
+    ResourceTarget::Builder(id) => ("recents.Builder", id),
+    ResourceTarget::Alerter(id) => ("recents.Alerter", id),
+    ResourceTarget::ServerTemplate(id) => ("recents.ServerTemplate", id),
+    ResourceTarget::ResourceSync(id) => ("recents.ResourceSync", id),
+    ResourceTarget::System(_) => return
   };
   if let Err(e) = db_client()
     .await
