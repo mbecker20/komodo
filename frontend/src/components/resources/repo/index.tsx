@@ -2,6 +2,7 @@ import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
 import {
+  Factory,
   FolderGit,
   GitBranch,
   Loader2,
@@ -25,6 +26,7 @@ import { StatusBadge } from "@components/util";
 import { Badge } from "@ui/badge";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
+import { useBuilder } from "../builder";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
@@ -195,6 +197,30 @@ export const RepoComponents: RequiredResourceComponents = {
   },
 
   Info: {
+    Server: ({ id }) => {
+      const info = useRepo(id)?.info;
+      const server = useServer(info?.server_id);
+      return server?.id ? (
+        <ResourceLink type="Server" id={server?.id} />
+      ) : (
+        <div className="flex gap-2 items-center">
+          <Server className="w-4 h-4" />
+          <div>No Server</div>
+        </div>
+      );
+    },
+    Builder: ({ id }) => {
+      const info = useRepo(id)?.info;
+      const builder = useBuilder(info?.builder_id);
+      return builder?.id ? (
+        <ResourceLink type="Builder" id={builder?.id} />
+      ) : (
+        <div className="flex gap-2 items-center">
+          <Factory className="w-4 h-4" />
+          <div>No Builder</div>
+        </div>
+      );
+    },
     Repo: ({ id }) => {
       const repo = useRepo(id)?.info.repo;
       return (
@@ -204,24 +230,12 @@ export const RepoComponents: RequiredResourceComponents = {
         </div>
       );
     },
-    // Branch: ({ id }) => {
-    //   const branch = useRepo(id)?.info.branch;
-    //   return (
-    //     <div className="flex items-center gap-2">
-    //       <FolderGit className="w-4 h-4" />
-    //       {branch}
-    //     </div>
-    //   );
-    // },
-    Server: ({ id }) => {
-      const info = useRepo(id)?.info;
-      const server = useServer(info?.server_id);
-      return server?.id ? (
-        <ResourceLink type="Server" id={server?.id} />
-      ) : (
-        <div className="flex gap-2 items-center">
-          <Server className="w-4 h-4" />
-          <div>Unknown Server</div>
+    Branch: ({ id }) => {
+      const branch = useRepo(id)?.info.branch;
+      return (
+        <div className="flex items-center gap-2">
+          <GitBranch className="w-4 h-4" />
+          {branch}
         </div>
       );
     },

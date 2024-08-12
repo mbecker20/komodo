@@ -139,7 +139,7 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
             {infoEntries.map(([key, Info]) => (
               <div
                 key={key}
-                className="pr-4 border-r last:pr-0 last:border-none"
+                className="pr-4 text-sm border-r last:pr-0 last:border-none"
               >
                 <Info id={id} />
               </div>

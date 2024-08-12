@@ -12,14 +12,16 @@ import { Types } from "@monitor/client";
 import { useBuilder } from "../builder";
 
 export const CloneRepo = ({ id }: { id: string }) => {
-  const hash = useRepo(id)?.info.latest_hash;
-  const isCloned = (hash?.length || 0) > 0;
   const { mutate, isPending } = useExecute("CloneRepo");
   const cloning = useRead(
     "GetRepoActionState",
     { repo: id },
     { refetchInterval: 5000 }
   ).data?.cloning;
+  const info = useRepo(id)?.info;
+  if (!info?.server_id) return null;
+  const hash = info?.latest_hash;
+  const isCloned = (hash?.length || 0) > 0;
   const pending = isPending || cloning;
   return (
     <ConfirmButton
@@ -45,7 +47,9 @@ export const PullRepo = ({ id }: { id: string }) => {
     { repo: id },
     { refetchInterval: 5000 }
   ).data?.pulling;
-  const hash = useRepo(id)?.info.latest_hash;
+  const info = useRepo(id)?.info;
+  if (!info?.server_id) return null;
+  const hash = info?.latest_hash;
   const isCloned = (hash?.length || 0) > 0;
   if (!isCloned) return null;
   const pending = isPending || pulling;
