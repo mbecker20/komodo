@@ -95,7 +95,7 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
               type={type}
               id={id}
               className={
-                i > 4
+                i > 3
                   ? "hidden 2xl:flex"
                   : i > 1
                   ? "hidden sm:flex lg:hidden xl:flex"
