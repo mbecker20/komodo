@@ -788,9 +788,11 @@ where
     ResourceTarget::Stack(id) => ("recents.Stack", id),
     ResourceTarget::Builder(id) => ("recents.Builder", id),
     ResourceTarget::Alerter(id) => ("recents.Alerter", id),
-    ResourceTarget::ServerTemplate(id) => ("recents.ServerTemplate", id),
+    ResourceTarget::ServerTemplate(id) => {
+      ("recents.ServerTemplate", id)
+    }
     ResourceTarget::ResourceSync(id) => ("recents.ResourceSync", id),
-    ResourceTarget::System(_) => return
+    ResourceTarget::System(_) => return,
   };
   if let Err(e) = db_client()
     .await

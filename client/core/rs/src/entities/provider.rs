@@ -10,9 +10,7 @@ pub type _PartialGitProviderAccount = PartialGitProviderAccount;
 /// Configuration to access private git repos from various git providers.
 /// Note. Cannot create two accounts with the same domain and username.
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, Partial,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[partial(skip_serializing_none, from, diff)]
 #[cfg_attr(
@@ -66,9 +64,7 @@ pub type _PartialDockerRegistryAccount = PartialDockerRegistryAccount;
 
 /// Configuration to access private image repositories on various registries.
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, Partial,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[partial(skip_serializing_none, from, diff)]
 #[cfg_attr(

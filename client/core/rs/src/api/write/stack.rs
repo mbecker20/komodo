@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  stack::{Stack, _PartialStackConfig}, update::Update, NoData
+  stack::{Stack, _PartialStackConfig},
+  update::Update,
+  NoData,
 };
 
 use super::MonitorWriteRequest;

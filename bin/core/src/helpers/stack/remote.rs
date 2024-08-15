@@ -1,4 +1,7 @@
-use std::{fs, path::{Path, PathBuf}};
+use std::{
+  fs,
+  path::{Path, PathBuf},
+};
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;

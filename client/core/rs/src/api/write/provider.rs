@@ -92,7 +92,7 @@ pub type CreateDockerRegistryAccountResponse = DockerRegistryAccount;
 pub struct UpdateDockerRegistryAccount {
   /// The id of the docker registry to update
   pub id: String,
-	/// The partial docker registry account.
+  /// The partial docker registry account.
   pub account: _PartialDockerRegistryAccount,
 }
 

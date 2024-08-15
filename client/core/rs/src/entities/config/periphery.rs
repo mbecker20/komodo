@@ -288,18 +288,18 @@ fn default_stats_polling_rate() -> Timelength {
 
 impl Default for PeripheryConfig {
   fn default() -> Self {
-      Self {
-        port: default_periphery_port(),
-        repo_dir: default_repo_dir(),
-        stack_dir: default_stack_dir(),
-        stats_polling_rate: default_stats_polling_rate(),
-        legacy_compose_cli: Default::default(),
-        logging: Default::default(),
-        allowed_ips: Default::default(),
-        passkeys: Default::default(),
-        secrets: Default::default(),
-        git_providers: Default::default(),
-        docker_registries: Default::default(),
+    Self {
+      port: default_periphery_port(),
+      repo_dir: default_repo_dir(),
+      stack_dir: default_stack_dir(),
+      stats_polling_rate: default_stats_polling_rate(),
+      legacy_compose_cli: Default::default(),
+      logging: Default::default(),
+      allowed_ips: Default::default(),
+      passkeys: Default::default(),
+      secrets: Default::default(),
+      git_providers: Default::default(),
+      docker_registries: Default::default(),
     }
   }
 }

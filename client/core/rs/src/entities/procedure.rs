@@ -89,7 +89,7 @@ impl Default for ProcedureConfig {
     Self {
       stages: Default::default(),
       webhook_enabled: default_webhook_enabled(),
-      webhook_secret: Default::default()
+      webhook_secret: Default::default(),
     }
   }
 }

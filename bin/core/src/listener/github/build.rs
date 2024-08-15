@@ -44,7 +44,7 @@ pub async fn handle_build_webhook(
   if request_branch != build.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
-  
+
   let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunBuild(RunBuild { build: build_id });
   let update = init_execution_update(&req, &user).await?;

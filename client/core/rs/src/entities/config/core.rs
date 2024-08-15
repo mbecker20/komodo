@@ -160,7 +160,6 @@ pub struct CoreConfig {
   // ===========
   // = General =
   // ===========
-
   /// The title of this monitor deployment. Will be used in the browser page title.
   /// Default: 'Monitor'
   #[serde(default = "default_title")]
@@ -188,7 +187,6 @@ pub struct CoreConfig {
   // ============
   // = Database =
   // ============
-
   /// Configure core mongo connection.
   ///
   /// An easy deployment method is to use Mongo Atlas to provide
@@ -198,7 +196,6 @@ pub struct CoreConfig {
   // ================
   // = Auth / Login =
   // ================
-
   /// enable login with local auth
   #[serde(default)]
   pub local_auth: bool,
@@ -226,7 +223,6 @@ pub struct CoreConfig {
   // =========
   // = Oauth =
   // =========
-
   /// Configure google oauth
   #[serde(default)]
   pub google_oauth: OauthCredentials,
@@ -238,7 +234,6 @@ pub struct CoreConfig {
   // ============
   // = Webhooks =
   // ============
-
   /// Used to verify validity from webhooks.
   /// Should be some secure hash maybe 20-40 chars.
   /// It is given to git provider when configuring the webhook.
@@ -261,7 +256,6 @@ pub struct CoreConfig {
   // ===========
   // = Logging =
   // ===========
-
   /// Configure logging
   #[serde(default)]
   pub logging: LogConfig,
@@ -269,7 +263,6 @@ pub struct CoreConfig {
   // ===========
   // = Pruning =
   // ===========
-
   /// Number of days to keep stats, or 0 to disable pruning.
   /// Stats older than this number of days are deleted on a daily cycle
   /// Default: 14
@@ -285,7 +278,6 @@ pub struct CoreConfig {
   // ==================
   // = Poll Intervals =
   // ==================
-
   /// Interval at which to poll stacks for any updates / automated actions.
   /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
   /// Default: `5-min`.  
@@ -318,7 +310,6 @@ pub struct CoreConfig {
   // ===================
   // = Cloud Providers =
   // ===================
-
   /// Configure AWS credentials to use with AWS builds / server launches.
   #[serde(default)]
   pub aws: AwsCredentials,
@@ -330,7 +321,6 @@ pub struct CoreConfig {
   // =================
   // = Git Providers =
   // =================
-
   /// Configure git credentials used to clone private repos.
   /// Supports any git provider.
   #[serde(default, alias = "git_provider")]
@@ -339,7 +329,6 @@ pub struct CoreConfig {
   // ======================
   // = Registry Providers =
   // ======================
-
   /// Configure docker credentials used to push / pull images.
   /// Supports any docker image repository.
   #[serde(default, alias = "docker_registry")]
@@ -352,7 +341,6 @@ pub struct CoreConfig {
   // ===========
   // = Secrets =
   // ===========
-
   /// Configure core-based secrets. These will be preferentially interpolated into
   /// values if they contain a matching secret. Otherwise, the periphery will have to have the
   /// secret configured.
@@ -362,7 +350,6 @@ pub struct CoreConfig {
   // =========
   // = Other =
   // =========
-
   /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
   /// The default is fine when using a container.
   /// This directory has no need for persistence, so no need to mount it.

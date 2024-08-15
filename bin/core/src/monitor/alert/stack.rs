@@ -36,11 +36,9 @@ pub async fn alert_stacks(
     if status.curr.state != prev {
       // send alert
       let Ok(stack) =
-        resource::get::<Stack>(&status.curr.id)
-          .await
-          .inspect_err(|e| {
-            error!("failed to get stack from db | {e:#?}")
-          })
+        resource::get::<Stack>(&status.curr.id).await.inspect_err(
+          |e| error!("failed to get stack from db | {e:#?}"),
+        )
       else {
         continue;
       };

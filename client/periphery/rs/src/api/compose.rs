@@ -1,5 +1,7 @@
 use monitor_client::entities::{
-  stack::{ComposeContents, ComposeProject, Stack}, update::Log, SearchCombinator,
+  stack::{ComposeContents, ComposeProject, Stack},
+  update::Log,
+  SearchCombinator,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
