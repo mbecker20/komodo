@@ -1,10 +1,8 @@
 import { Section } from "@components/layouts";
 import {
-  bg_color_class_by_intention,
   deployment_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
-import { snake_case_to_upper_space_case } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { DataTable, SortableHeader } from "@ui/data-table";
@@ -14,6 +12,7 @@ import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@ui/button";
 import { Layers2 } from "lucide-react";
+import { StatusBadge } from "@components/util";
 
 export const StackServices = ({
   id,
@@ -84,20 +83,11 @@ export const StackServices = ({
               ),
               cell: ({ row }) => {
                 const state = row.original.container?.state;
-                const color = bg_color_class_by_intention(
-                  deployment_state_intention(state)
-                );
                 return (
-                  <p
-                    className={cn(
-                      "p-1 w-fit text-[10px] text-white rounded-md",
-                      color
-                    )}
-                  >
-                    {snake_case_to_upper_space_case(
-                      state ?? "Unknown"
-                    ).toUpperCase()}
-                  </p>
+                  <StatusBadge
+                    text={state}
+                    intent={deployment_state_intention(state)}
+                  />
                 );
               },
               // size: 120,
