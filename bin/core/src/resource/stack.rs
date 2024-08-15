@@ -1,27 +1,31 @@
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::entities::{
-  permission::PermissionLevel,
-  resource::Resource,
-  server::Server,
-  stack::{
-    PartialStackConfig, Stack, StackConfig, StackConfigDiff,
-    StackInfo, StackListItem, StackListItemInfo, StackQuerySpecifics,
-    StackState,
+use monitor_client::{
+  api::write::RefreshStackCache,
+  entities::{
+    permission::PermissionLevel,
+    resource::Resource,
+    server::Server,
+    stack::{
+      PartialStackConfig, Stack, StackConfig, StackConfigDiff,
+      StackInfo, StackListItem, StackListItemInfo,
+      StackQuerySpecifics, StackState,
+    },
+    update::{ResourceTargetVariant, Update},
+    user::{stack_user, User},
+    Operation,
   },
-  update::{ResourceTargetVariant, Update},
-  user::User,
-  Operation,
 };
 use mungos::mongodb::Collection;
 use periphery_client::api::compose::ComposeExecution;
+use resolver_api::Resolve;
 
 use crate::{
   helpers::{periphery_client, query::get_stack_state},
   monitor::update_cache_for_server,
-  resource,
   state::{
-    action_states, db_client, server_status_cache, stack_status_cache,
+    action_states, db_client, server_status_cache,
+    stack_status_cache, State,
   },
 };
 
@@ -142,13 +146,37 @@ impl super::MonitorResource for Stack {
 
   async fn post_create(
     created: &Resource<Self::Config, Self::Info>,
-    _update: &mut Update,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    if !created.config.server_id.is_empty() {
-      let server =
-        resource::get::<Server>(&created.config.server_id).await?;
-      update_cache_for_server(&server).await;
+    if let Err(e) = State
+      .resolve(
+        RefreshStackCache {
+          stack: created.name.clone(),
+        },
+        stack_user().to_owned(),
+      )
+      .await
+    {
+      update.push_error_log(
+        "refresh stack cache",
+        format_serror(&e.context("The stack cache has failed to refresh. This is likely due to a misconfiguration of the Stack").into())
+      );
+    };
+    if created.config.server_id.is_empty() {
+      return Ok(());
     }
+    let Ok(server) = super::get::<Server>(&created.config.server_id)
+      .await
+      .inspect_err(|e| {
+        warn!(
+          "Failed to get server for stack {} | {e:#}",
+          created.name
+        )
+      })
+    else {
+      return Ok(());
+    };
+    update_cache_for_server(&server).await;
     Ok(())
   }
 
@@ -168,14 +196,9 @@ impl super::MonitorResource for Stack {
 
   async fn post_update(
     updated: &Resource<Self::Config, Self::Info>,
-    _update: &mut Update,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    if !updated.config.server_id.is_empty() {
-      let server =
-        resource::get::<Server>(&updated.config.server_id).await?;
-      update_cache_for_server(&server).await;
-    }
-    Ok(())
+    Self::post_create(updated, update).await
   }
 
   // DELETE

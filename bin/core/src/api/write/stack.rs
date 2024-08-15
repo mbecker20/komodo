@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use formatting::format_serror;
 use monitor_client::{
   api::write::*,
   entities::{
@@ -30,7 +29,6 @@ use crate::{
     },
     update::{add_update, make_update},
   },
-  monitor::update_cache_for_stack,
   resource,
   state::{db_client, github_client, State},
 };
@@ -42,23 +40,7 @@ impl Resolve<CreateStack, User> for State {
     CreateStack { name, config }: CreateStack,
     user: User,
   ) -> anyhow::Result<Stack> {
-    let res = resource::create::<Stack>(&name, config, &user).await;
-    if let Ok(stack) = &res {
-      if let Err(e) = self
-        .resolve(RefreshStackCache { stack: name }, user.clone())
-        .await
-      {
-        let mut update =
-          make_update(stack, Operation::RefreshStackCache, &user);
-        update.push_error_log(
-          "refresh stack cache",
-          format_serror(&e.context("The stack cache has failed to refresh. This is likely due to a misconfiguration of the Stack").into())
-        );
-        add_update(update).await.ok();
-      };
-      update_cache_for_stack(stack).await;
-    }
-    res
+    resource::create::<Stack>(&name, config, &user).await
   }
 }
 
@@ -76,24 +58,7 @@ impl Resolve<CopyStack, User> for State {
         PermissionLevel::Write,
       )
       .await?;
-    let res =
-      resource::create::<Stack>(&name, config.into(), &user).await;
-    if let Ok(stack) = &res {
-      if let Err(e) = self
-        .resolve(RefreshStackCache { stack: name }, user.clone())
-        .await
-      {
-        let mut update =
-          make_update(stack, Operation::RefreshStackCache, &user);
-        update.push_error_log(
-          "refresh stack cache",
-          format_serror(&e.context("The stack cache has failed to refresh. This is likely due to a misconfiguration of the Stack").into())
-        );
-        add_update(update).await.ok();
-      };
-      update_cache_for_stack(stack).await;
-    }
-    res
+    resource::create::<Stack>(&name, config.into(), &user).await
   }
 }
 
@@ -115,23 +80,7 @@ impl Resolve<UpdateStack, User> for State {
     UpdateStack { id, config }: UpdateStack,
     user: User,
   ) -> anyhow::Result<Stack> {
-    let res = resource::update::<Stack>(&id, config, &user).await;
-    if let Ok(stack) = &res {
-      if let Err(e) = self
-        .resolve(RefreshStackCache { stack: id }, user.clone())
-        .await
-      {
-        let mut update =
-          make_update(stack, Operation::RefreshStackCache, &user);
-        update.push_error_log(
-          "refresh stack cache",
-          format_serror(&e.context("The stack cache has failed to refresh. This is likely due to a misconfiguration of the Stack").into())
-        );
-        add_update(update).await.ok();
-      };
-      update_cache_for_stack(stack).await;
-    }
-    res
+    resource::update::<Stack>(&id, config, &user).await
   }
 }
 
