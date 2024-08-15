@@ -11,11 +11,11 @@ use crate::{
 };
 
 // pub mod deployment;
+pub mod deploy;
 pub mod remote;
 pub mod resource;
 pub mod user_groups;
 pub mod variables;
-pub mod deploy;
 
 mod file;
 mod resources;
@@ -47,6 +47,9 @@ async fn refresh_syncs() {
     return;
   };
   for sync in syncs {
+    if sync.config.repo.is_empty() {
+      continue;
+    }
     State
       .resolve(
         RefreshResourceSyncPending { sync: sync.id },

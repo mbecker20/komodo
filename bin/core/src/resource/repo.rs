@@ -195,7 +195,7 @@ pub async fn refresh_repo_state_cache() {
   }
   .await
   .inspect_err(|e| {
-    error!("failed to refresh repo state cache | {e:#}")
+    warn!("failed to refresh repo state cache | {e:#}")
   });
 }
 
