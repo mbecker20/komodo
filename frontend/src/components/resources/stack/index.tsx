@@ -226,7 +226,7 @@ export const StackComponents: RequiredResourceComponents = {
             </Card>
           </HoverCardTrigger>
           <HoverCardContent align="start">
-            <div className="grid">
+            <div className="grid gap-2">
               <Badge
                 variant="secondary"
                 className="w-fit text-muted-foreground"
@@ -260,7 +260,7 @@ export const StackComponents: RequiredResourceComponents = {
             </Card>
           </HoverCardTrigger>
           <HoverCardContent align="start">
-            <div className="grid">
+            <div className="grid gap-2">
               <Badge
                 variant="secondary"
                 className="w-fit text-muted-foreground"

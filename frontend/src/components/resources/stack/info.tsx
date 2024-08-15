@@ -20,7 +20,7 @@ export const StackInfo = ({
     <Section titleOther={titleOther}>
       {!is_down && stack?.info?.deployed_contents && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-col gap-2">
             deployed contents:{" "}
             {stack?.info?.deployed_contents?.map((content, i) => (
               <pre key={i} className="flex flex-col gap-2">
@@ -34,7 +34,7 @@ export const StackInfo = ({
 
       {stack?.config?.file_contents ? (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-col gap-2">
             latest contents:{" "}
             <pre className="flex flex-col gap-2">
               defined in UI:
@@ -46,7 +46,7 @@ export const StackInfo = ({
         stack?.info?.remote_contents &&
         stack?.info?.remote_contents.length > 0 && (
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-col gap-2">
               latest contents:{" "}
               {stack?.info?.remote_contents?.map((content, i) => (
                 <pre key={i} className="flex flex-col gap-2">
@@ -60,7 +60,7 @@ export const StackInfo = ({
       )}
       {stack?.info?.remote_errors && stack?.info?.remote_errors.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-col gap-2">
             remote errors:{" "}
             {stack?.info?.remote_errors?.map((content, i) => (
               <pre key={i} className="flex flex-col gap-2">
