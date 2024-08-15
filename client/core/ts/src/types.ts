@@ -1142,6 +1142,11 @@ export interface ServerConfig {
 	 */
 	enabled: boolean;
 	/**
+	 * Sometimes the system stats reports a mount path that is not desired.
+	 * Use this field to filter it out from the report.
+	 */
+	ignore_mounts?: string[];
+	/**
 	 * Whether to monitor any server stats beyond passing health check.
 	 * default: true
 	 */

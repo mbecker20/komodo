@@ -10,7 +10,7 @@ use monitor_client::entities::{
     stats::{ServerHealth, SystemStats},
     Server, ServerState,
   },
-  stack::{ComposeProject, Stack, StackService, StackState},
+  stack::{ComposeProject, StackService, StackState},
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api::{self, git::GetLatestCommit};
@@ -20,7 +20,6 @@ use crate::{
   config::core_config,
   helpers::periphery_client,
   monitor::{alert::check_alerts, record::record_server_stats},
-  resource,
   state::{db_client, deployment_status_cache, repo_status_cache},
 };
 
@@ -189,7 +188,7 @@ pub async fn update_cache_for_server(server: &Server) {
 
   let stats = if server.config.stats_monitoring {
     match periphery.request(api::stats::GetSystemStats {}).await {
-      Ok(stats) => Some(stats),
+      Ok(stats) => Some(filter_volumes(server, stats)),
       Err(e) => {
         insert_deployments_status_unknown(deployments).await;
         insert_repos_status_unknown(repos).await;
@@ -272,18 +271,19 @@ pub async fn update_cache_for_server(server: &Server) {
   }
 }
 
-#[instrument(level = "debug")]
-pub async fn update_cache_for_stack(stack: &Stack) {
-  if stack.config.server_id.is_empty() {
-    return;
-  }
-  let Ok(server) = resource::get::<Server>(&stack.config.server_id)
-    .await
-    .inspect_err(|e| {
-      warn!("Failed to get server for stack {} | {e:#}", stack.name)
-    })
-  else {
-    return;
-  };
-  update_cache_for_server(&server).await;
+fn filter_volumes(
+  server: &Server,
+  mut stats: SystemStats,
+) -> SystemStats {
+  stats.disks.retain(|disk| {
+    // Always filter out volume mounts
+    !disk.mount.starts_with("/var/lib/docker/volumes")
+    // Filter out any that were declared to ignore in server config
+      && !server
+        .config
+        .ignore_mounts
+        .iter()
+        .any(|mount| disk.mount.starts_with(mount))
+  });
+  stats
 }

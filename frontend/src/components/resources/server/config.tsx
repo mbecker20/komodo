@@ -1,6 +1,9 @@
 import { Config } from "@components/config";
+import { InputList } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
+import { Button } from "@ui/button";
+import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 export const ServerConfig = ({
@@ -61,10 +64,47 @@ export const ServerConfig = ({
                 description:
                   "Whether to store historical CPU, RAM, and disk usage.",
               },
+
               auto_prune: {
                 description:
                   "Whether to prune unused images every day at UTC 00:00",
               },
+            },
+          },
+          {
+            label: "Ignore mounts",
+            contentHidden:
+              (update.ignore_mounts ?? config.ignore_mounts)?.length === 0,
+            description:
+              "If undesired mount points are coming through in server stats, filter them out here.",
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    ignore_mounts: [
+                      ...(update.ignore_mounts ?? config.ignore_mounts ?? []),
+                      "",
+                    ],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Ignore
+              </Button>
+            ),
+            components: {
+              ignore_mounts: (values, set) => (
+                <InputList
+                  field="ignore_mounts"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Ignore Mounts"
+                />
+              ),
             },
           },
         ],

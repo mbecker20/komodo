@@ -300,6 +300,7 @@ impl TryFrom<Server> for monitor_client::entities::server::Server {
       config: monitor_client::entities::server::ServerConfig {
         address: value.address,
         enabled: value.enabled,
+        ignore_mounts: Default::default(),
         auto_prune: value.auto_prune,
         send_unreachable_alerts: true,
         stats_monitoring: true,

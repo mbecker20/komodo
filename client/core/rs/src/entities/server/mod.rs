@@ -64,6 +64,12 @@ pub struct ServerConfig {
   #[partial_default(default_enabled())]
   pub enabled: bool,
 
+  /// Sometimes the system stats reports a mount path that is not desired.
+  /// Use this field to filter it out from the report.
+  #[serde(default)]
+  #[builder(default)]
+  pub ignore_mounts: Vec<String>,
+
   /// Whether to monitor any server stats beyond passing health check.
   /// default: true
   #[serde(default = "default_stats_monitoring")]
@@ -194,6 +200,7 @@ impl Default for ServerConfig {
     Self {
       address: Default::default(),
       enabled: default_enabled(),
+      ignore_mounts: Default::default(),
       stats_monitoring: default_stats_monitoring(),
       auto_prune: default_auto_prune(),
       send_unreachable_alerts: default_send_alerts(),
