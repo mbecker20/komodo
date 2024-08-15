@@ -215,7 +215,7 @@ export const StackConfig = ({
           {
             label: "Ignore Services",
             description:
-              "If your compose file has init containers that exit early, ignore them here so your stack will report the correct health.",
+              "If your compose file has init services that exit early, ignore them here so your stack will report the correct health.",
             contentHidden:
               ((update.extra_args ?? config.extra_args)?.length ?? 0) === 0,
             actions: !disabled && (
