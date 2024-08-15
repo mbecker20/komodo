@@ -111,6 +111,7 @@ export const StackConfig = ({
                   <Textarea
                     ref={fileContentsRef}
                     value={file_contents}
+                    disabled={disabled}
                     onChange={(e) => set({ file_contents: e.target.value })}
                     className="min-h-[300px] h-fit"
                     placeholder="Paste compose file contents"
