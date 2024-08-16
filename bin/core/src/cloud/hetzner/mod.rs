@@ -129,14 +129,12 @@ pub async fn launch_hetzner_server(
     labels,
     networks: private_network_ids,
     placement_group: (placement_group > 0).then_some(placement_group),
-    public_net: (enable_public_ipv4 || enable_public_ipv6).then_some(
-      create_server::PublicNet {
-        enable_ipv4: enable_public_ipv4,
-        enable_ipv6: enable_public_ipv6,
-        ipv4: None,
-        ipv6: None,
-      },
-    ),
+    public_net: create_server::PublicNet {
+      enable_ipv4: enable_public_ipv4,
+      enable_ipv6: enable_public_ipv6,
+      ipv4: None,
+      ipv6: None,
+    },
     server_type: hetzner_server_type(server_type),
     ssh_keys,
     start_after_create: true,

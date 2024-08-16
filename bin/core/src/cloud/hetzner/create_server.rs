@@ -32,8 +32,7 @@ pub struct CreateServerBody {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub placement_group: Option<i64>,
   /// Public Network options
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub public_net: Option<PublicNet>,
+  pub public_net: PublicNet,
   /// ID or name of the Server type this Server should be created with
   pub server_type: HetznerServerType,
   /// SSH key IDs ( integer ) or names ( string ) which should be injected into the Server at creation time
