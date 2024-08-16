@@ -77,7 +77,11 @@ impl Resolve<UpdateBuild, User> for State {
 }
 
 impl Resolve<RefreshBuildCache, User> for State {
-  #[instrument(name = "RefreshBuildCache", skip(self, user))]
+  #[instrument(
+    name = "RefreshBuildCache",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     RefreshBuildCache { build }: RefreshBuildCache,

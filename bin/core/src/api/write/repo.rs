@@ -75,7 +75,11 @@ impl Resolve<UpdateRepo, User> for State {
 }
 
 impl Resolve<RefreshRepoCache, User> for State {
-  #[instrument(name = "RefreshRepoCache", skip(self, user))]
+  #[instrument(
+    name = "RefreshRepoCache",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     RefreshRepoCache { repo }: RefreshRepoCache,
