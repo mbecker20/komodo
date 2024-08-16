@@ -5,8 +5,6 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
-use helpers::startup_in_progress_update_cleanup;
-use state::jwt_client;
 use tower_http::{
   cors::{Any, CorsLayer},
   services::{ServeDir, ServeFile},
@@ -34,9 +32,9 @@ async fn app() -> anyhow::Result<()> {
   info!("config: {:?}", config.sanitized());
 
   // includes init db_client check to crash on db init failure
-  startup_in_progress_update_cleanup().await;
+  helpers::startup_cleanup().await;
   // init jwt client to crash on failure
-  jwt_client();
+  state::jwt_client();
 
   // Spawn tasks
   monitor::spawn_monitor_loop();

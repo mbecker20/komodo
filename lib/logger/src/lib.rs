@@ -52,7 +52,7 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
     (StdioLogMode::Json, None) => registry
       .with(tracing_subscriber::fmt::layer().json())
       .try_init(),
-      
+
     (StdioLogMode::None, None) => Ok(()),
   }
   .context("failed to init logger")

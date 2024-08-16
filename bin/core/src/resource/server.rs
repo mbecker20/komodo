@@ -167,7 +167,7 @@ impl super::MonitorResource for Server {
         } },
       )
       .await
-      .context("failed to detach server from repos")?;
+      .context("failed to close deleted server alerts")?;
 
     Ok(())
   }

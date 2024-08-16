@@ -3,6 +3,7 @@ use std::time::Duration;
 use anyhow::Context;
 use mongo_indexed::doc;
 use monitor_client::entities::{
+  monitor_timestamp,
   resource::Resource,
   sync::{
     PartialResourceSyncConfig, PendingSyncUpdatesData, ResourceSync,
@@ -126,9 +127,20 @@ impl super::MonitorResource for ResourceSync {
   }
 
   async fn pre_delete(
-    _resource: &Resource<Self::Config, Self::Info>,
+    resource: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    db_client().await.alerts
+      .update_many(
+        doc! { "target.type": "ResourceSync", "target.id": &resource.id },
+        doc! { "$set": {
+          "resolved": true,
+          "resolved_ts": monitor_timestamp()
+        } },
+      )
+      .await
+      .context("failed to close deleted sync alerts")?;
+
     Ok(())
   }
 

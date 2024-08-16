@@ -1,20 +1,26 @@
-use std::{collections::HashSet, time::Duration};
+use std::{collections::HashSet, str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
+use futures::future::join_all;
 use mongo_indexed::Document;
 use monitor_client::entities::{
+  monitor_timestamp,
   permission::{Permission, PermissionLevel, UserTarget},
   server::Server,
+  sync::ResourceSync,
   update::{Log, ResourceTarget, Update},
   user::User,
   EnvironmentVar,
 };
-use mungos::mongodb::bson::{doc, to_document, Bson};
+use mungos::{
+  find::find_collect,
+  mongodb::bson::{doc, oid::ObjectId, to_document, Bson},
+};
 use periphery_client::PeripheryClient;
 use query::get_global_variables;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
-use crate::{config::core_config, state::db_client};
+use crate::{config::core_config, resource, state::db_client};
 
 pub mod action_state;
 pub mod alert;
@@ -280,8 +286,15 @@ pub async fn interpolate_variables_secrets_into_environment(
   Ok(secret_replacers)
 }
 
+pub async fn startup_cleanup() {
+  tokio::join!(
+    startup_in_progress_update_cleanup(),
+    startup_open_alert_cleanup(),
+  );
+}
+
 /// Run on startup, as no updates should be in progress on startup
-pub async fn startup_in_progress_update_cleanup() {
+async fn startup_in_progress_update_cleanup() {
   let log = Log::error(
     "monitor shutdown",
     String::from("Monitor shutdown during execution. If this is a build, the builder may not have been terminated.")
@@ -306,5 +319,59 @@ pub async fn startup_in_progress_update_cleanup() {
     .await
   {
     error!("failed to cleanup in progress updates on startup | {e:#}")
+  }
+}
+
+/// Run on startup, ensure open alerts pointing to invalid resources are closed.
+async fn startup_open_alert_cleanup() {
+  let db = db_client().await;
+  let Ok(alerts) =
+    find_collect(&db.alerts, doc! { "resolved": false }, None)
+      .await
+      .inspect_err(|e| {
+        error!(
+          "failed to list all alerts for startup open alert cleanup | {e:?}"
+        )
+      })
+  else {
+    return;
+  };
+  let futures = alerts.into_iter().map(|alert| async move {
+    match alert.target {
+      ResourceTarget::Server(id) => {
+        resource::get::<Server>(&id)
+          .await
+          .is_err()
+          .then(|| ObjectId::from_str(&alert.id).inspect_err(|e| warn!("failed to clean up alert - id is invalid ObjectId | {e:?}")).ok()).flatten()
+      }
+      ResourceTarget::ResourceSync(id) => {
+        resource::get::<ResourceSync>(&id)
+          .await
+          .is_err()
+          .then(|| ObjectId::from_str(&alert.id).inspect_err(|e| warn!("failed to clean up alert - id is invalid ObjectId | {e:?}")).ok()).flatten()
+      }
+      // No other resources should have open alerts.
+      _ => ObjectId::from_str(&alert.id).inspect_err(|e| warn!("failed to clean up alert - id is invalid ObjectId | {e:?}")).ok(),
+    }
+  });
+  let to_update_ids = join_all(futures)
+    .await
+    .into_iter()
+    .flatten()
+    .collect::<Vec<_>>();
+  if let Err(e) = db
+    .alerts
+    .update_many(
+      doc! { "_id": { "$in": to_update_ids } },
+      doc! { "$set": {
+        "resolved": true,
+        "resolved_ts": monitor_timestamp()
+      } },
+    )
+    .await
+  {
+    error!(
+      "failed to clean up invalid open alerts on startup | {e:#}"
+    )
   }
 }
