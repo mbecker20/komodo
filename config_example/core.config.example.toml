@@ -205,12 +205,12 @@ webhook_secret = "a_random_webhook_secret"
 # logging.stdio = "standard"
 
 ## Optionally specify a opentelemetry otlp endpoint to send traces to.
-## Env: MONITOR_OTLP_ENDPOINT
+## Env: MONITOR_LOGGING_OTLP_ENDPOINT
 # logging.otlp_endpoint = "http://localhost:4317"
 
 ## Set the opentelemetry service name.
 ## This will be attached to the telemetry Monitor will send.
-## Env: MONITOR_OPENTELEMETRY_SERVICE_NAME
+## Env: MONITOR_LOGGING_OPENTELEMETRY_SERVICE_NAME
 ## Default: "Monitor"
 # logging.opentelemetry_service_name = "Monitor-02"
 

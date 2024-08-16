@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LogConfig {
   /// The logging level. default: info
   #[serde(default)]
@@ -19,6 +19,18 @@ pub struct LogConfig {
 
 fn default_opentelemetry_service_name() -> String {
   String::from("Monitor")
+}
+
+impl Default for LogConfig {
+  fn default() -> Self {
+    Self {
+      level: Default::default(),
+      stdio: Default::default(),
+      otlp_endpoint: None,
+      opentelemetry_service_name: default_opentelemetry_service_name(
+      ),
+    }
+  }
 }
 
 #[derive(
