@@ -45,6 +45,7 @@ const sidebars: SidebarsConfig = {
       ],
     },
     "sync-resources",
+    "webhooks",
     "permissioning",
     "version-upgrades",
     "api",
