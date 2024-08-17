@@ -2,19 +2,23 @@
 
 To run Monitor Core, you will need Docker. See [the docker install docs](https://docs.docker.com/engine/install/).
 
-:::info
-Monitor Core itself can really only run remote builds.
-You also have to [**install the Monitor Periphery agent**](/docs/connecting-servers) on your hosts and connect them as **Servers**
-in order to alert / deploy etc.
-
-You can currently and always will be able to **connect as many servers an you like** using the Periphery agent.
-:::
-
 ### Deploy Monitor Core with Docker Compose
 
 There is an example compose file here: [https://github.com/mbecker20/monitor/blob/main/config_example/core.compose.yaml](https://github.com/mbecker20/monitor/blob/main/config_example/core.compose.yaml).
 
 Copy the contents to a `compose.yaml`, and deploy it with `docker compose up -d`.
+
+:::info
+Monitor Core itself can really only run remote builds.
+You also have to [**install the Monitor Periphery agent**](/docs/connecting-servers) on your hosts and connect them as **Servers**
+in order to alert / deploy etc.
+
+If you only need to connect on one server (the one you are deploying Monitor Core on), you can do it all dockerized,
+and use the [all-in-one compose file](https://github.com/mbecker20/monitor/blob/main/config_example/aio.compose.yaml).
+This will deploy Monitor Core and Periphery, and automatically add the local periphery as a connected server.
+
+You can currently and always will be able to **connect as many servers an you like** using the Periphery agent.
+:::
 
 ### Configuration
 

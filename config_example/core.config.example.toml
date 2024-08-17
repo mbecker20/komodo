@@ -36,6 +36,12 @@ host = "https://monitor.dev"
 ## Required to start Monitor, no default
 passkey = "a_random_passkey"
 
+## Ensure a server with this address exists on Core
+## upon first startup. Used with AIO compose.
+## Optional, no default.
+## Env: MONITOR_ENSURE_SERVER
+# ensure_server = "http://monitor-periphery:8120"
+
 ## Disables write support on resources in the UI.
 ## This protects users that that would normally have write priviledges during their UI usage,
 ## when they intend to fully rely on ResourceSyncs to manage config.

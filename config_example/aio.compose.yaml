@@ -1,3 +1,10 @@
+######################
+# ALL IN ONE COMPOSE #
+######################
+
+## This compose file will bring up both Core and Periphery in containers.
+## A "default" server pointing to the local Periphery will be waiting in the UI on first startup.
+
 services:
   monitor-core:
     image: ghcr.io/mbecker20/monitor:latest ## use ghcr.io/mbecker20/monitor:latest-aarch64 for arm support
@@ -10,14 +17,13 @@ services:
       - monitor-network
     ports:
       - 9120:9120
-    extra_hosts: # allows for local periphery connection at "http://host.docker.internal:8120"
-      - host.docker.internal:host-gateway
     environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
-      MONITOR_HOST: https://demo.monitor.dev
+      MONITOR_HOST: https://demo.monitor.dev # CHANGEME
       MONITOR_TITLE: Monitor # Change the app title, displayed in the browser tab.
+      MONITOR_ENSURE_SERVER: http://monitor-periphery:8120 # Created the "default" server.
       ## MONGO
       MONITOR_MONGO_ADDRESS: monitor-mongo:27017
-      MONITOR_MONGO_USERNAME: admin # match ones below
+      MONITOR_MONGO_USERNAME: admin # match db credentials ones below
       MONITOR_MONGO_PASSWORD: admin
       ## KEYS
       MONITOR_PASSKEY: a_random_passkey # used to auth against periphery
@@ -33,6 +39,20 @@ services:
       # MONITOR_AWS_SECRET_ACCESS_KEY: your_secret_access_key
       ## HETZNER
       # MONITOR_HETZNER_TOKEN: your_hetzner_token
+
+  ## Deploy periphery container using this block,
+  ## or deploy it on the host directly using https://github.com/mbecker20/monitor/tree/main/scripts
+  monitor-periphery:
+    image: ghcr.io/mbecker20/periphery:latest
+    logging:
+      driver: local
+    networks:
+      - monitor-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
+    environment:
+      # PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos # If the disk size is overreporting, only specific mounts.
 
   monitor-mongo:
     image: mongo
@@ -52,6 +72,7 @@ services:
 
 volumes:
   db-data:
+  monitor-repos:
 
 networks:
   monitor-network: {}
