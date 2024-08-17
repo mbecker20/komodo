@@ -105,7 +105,10 @@ impl StatsClient {
       .disks
       .list()
       .iter()
-      .filter(|d| d.file_system() != "overlay")
+      .filter(|d| {
+        println!("FILE SYSTEM: {:?}", d.file_system());
+        d.file_system() != "overlay"
+      })
       .map(|disk| {
         let file_system =
           disk.file_system().to_string_lossy().to_string();
