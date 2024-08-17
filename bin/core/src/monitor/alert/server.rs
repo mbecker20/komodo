@@ -339,6 +339,18 @@ pub async fn alert_servers(
         _ => {}
       }
     }
+
+    // Need to close any open ones on disks no longer reported
+    if let Some(disk_alerts) = server_disk_alerts {
+      for (path, alert) in disk_alerts {
+        if !health.disks.contains_key(path) {
+          let mut alert = alert.clone();
+          alert.level = SeverityLevel::Ok;
+          alert_ids_to_close
+            .push((alert, server.info.send_disk_alerts));
+        }
+      }
+    }
   }
 
   tokio::join!(
