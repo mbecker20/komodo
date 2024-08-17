@@ -5153,14 +5153,9 @@ export interface HetznerServerTemplateConfig {
 	port: number;
 }
 
-export interface ComposeServiceDeploy {
-	replicas: number;
-}
-
 export interface ComposeService {
 	image?: string;
 	container_name?: string;
-	deploy?: ComposeServiceDeploy;
 }
 
 /** Keeping this minimal for now as its only needed to parse the service names / container names */

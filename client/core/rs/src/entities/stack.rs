@@ -480,11 +480,4 @@ pub struct ComposeFile {
 pub struct ComposeService {
   pub image: Option<String>,
   pub container_name: Option<String>,
-  pub deploy: Option<ComposeServiceDeploy>,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ComposeServiceDeploy {
-  pub replicas: u8,
 }
