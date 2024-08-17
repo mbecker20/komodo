@@ -9,11 +9,10 @@ FROM debian:bookworm-slim
 
 # Install Deps
 RUN apt update && apt install -y git curl ca-certificates && \
-	curl -fsSL https://get.docker.com | sh && \
-	chmod +x /usr/local/bin/docker
+	# Docker socket should be mounted to /var/run/docker.sock
+	curl -fsSL https://get.docker.com | sh
 
 # Copy
-COPY ./config_example/periphery.config.example.toml /config/config.toml
 COPY --from=builder /builder/target/release/periphery /
 
 # Hint at the port
@@ -24,4 +23,5 @@ LABEL org.opencontainers.image.source=https://github.com/mbecker20/monitor
 LABEL org.opencontainers.image.description="Monitor Periphery"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
+# Using ENTRYPOINT allows cli args to be passed, eg using "command" in docker compose.
 ENTRYPOINT [ "./periphery" ]
