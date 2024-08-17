@@ -1,6 +1,6 @@
 # Configuring Webhooks
 
-Multiple Monitor resources can take advantage of webhooks from your git provider. Monitor support incoming webhooks using the Github standard, which is also supported by other providers like Gitea.
+Multiple Monitor resources can take advantage of webhooks from your git provider. Monitor supports incoming webhooks using the Github standard, which is also supported by other providers like Gitea.
 
 :::note
 On Gitea, the default "Gitea" webhook type works with the Github standard 👍
