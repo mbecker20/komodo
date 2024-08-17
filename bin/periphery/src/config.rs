@@ -62,6 +62,9 @@ pub fn periphery_config() -> &'static PeripheryConfig {
         .periphery_allowed_ips
         .unwrap_or(config.allowed_ips),
       passkeys: env.periphery_passkeys.unwrap_or(config.passkeys),
+      include_disk_mounts: env
+        .periphery_include_disk_mounts
+        .unwrap_or(config.include_disk_mounts),
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,
