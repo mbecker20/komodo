@@ -52,7 +52,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
     # environment:
-      # PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos # If the disk size is overreporting, only specific mounts.
+    #   # If the disk size is overreporting, can use one of these to 
+    #   # whitelist / blacklist the disks to filter them, whichever is easier. 
+    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos 
+    #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
 
   monitor-mongo:
     image: mongo

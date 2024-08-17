@@ -28,9 +28,13 @@
 ## Env: PERIPHERY_LEGACY_COMPOSE_CLI
 # legacy_compose_cli = true
 
-## Optional. Only include mounts with start with a specific path in the disk report.
+## Optional. Only include mounts at specific paths in the disc report.
 ## Env: PERIPHERY_INCLUDE_DISK_MOUNTS
 # include_disk_mounts = ["/etc/monitor/repos"]
+
+## Optional. Don't include these mounts in the disk report.
+## Env: PERIPHERY_EXCLUDE_DISK_MOUNTS
+# exclude_disk_mounts = ["/etc/monitor/repos"]
 
 ########
 # AUTH #
