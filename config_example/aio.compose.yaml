@@ -51,7 +51,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
-    environment:
+    # environment:
       # PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos # If the disk size is overreporting, only specific mounts.
 
   monitor-mongo:
