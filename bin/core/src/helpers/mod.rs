@@ -408,6 +408,7 @@ pub async fn ensure_server() {
         name: String::from("default"),
         config: PartialServerConfig {
           address: Some(ensure_server.to_string()),
+          enabled: Some(true),
           ..Default::default()
         },
       },
