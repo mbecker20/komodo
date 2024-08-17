@@ -43,7 +43,7 @@ services:
   ## Deploy periphery container using this block,
   ## or deploy it on the host directly using https://github.com/mbecker20/monitor/tree/main/scripts
   monitor-periphery:
-    image: ghcr.io/mbecker20/periphery:latest
+    image: ghcr.io/mbecker20/periphery:latest # use ghcr.io/mbecker20/periphery:latest-aarch64 for arm support
     logging:
       driver: local
     networks:
