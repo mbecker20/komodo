@@ -3,25 +3,34 @@
 ############################
 
 ## Optional. The port the server runs on. 8120 is default
+## Env: PERIPHERY_PORT
 # port = 8120
 
 ## Optional. /etc/monitor/repos is default.
 ## The directory periphery will use to manage repos.
 ## The periphery user must have write access to this directory.
+## Env: PERIPHERY_REPO_DIR
 # repo_dir = "/home/ubuntu/monitor/repos"
 
 ## Optional. /etc/monitor/stacks is default.
 ## The directory periphery will use to manage stacks.
 ## The periphery user must have write access to this directory.
+## Env: PERIPHERY_STACK_DIR
 # stack_dir = "/home/ubuntu/monitor/stacks"
 
 ## Optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
+## Env: PERIPHERY_STATS_POLLING_RATE
 # stats_polling_rate = "1-sec"
 
 ## Whether stack actions should use `docker-compose ...`
 ## instead of `docker compose ...`.
 ## default: false
+## Env: PERIPHERY_LEGACY_COMPOSE_CLI
 # legacy_compose_cli = true
+
+## Optional. Only include mounts with start with a specific path in the disk report.
+## Env: PERIPHERY_INCLUDE_DISK_MOUNTS
+# include_disk_mounts = ["/etc/monitor/repos"]
 
 ########
 # AUTH #
@@ -29,11 +38,15 @@
 
 ## Optional. Limit the ip addresses which can call the periphery api.
 ## Default is empty, which will not block any request by ip.
+## Env: PERIPHERY_ALLOWED_IPS
 # allowed_ips = ["127.0.0.1"]
 
 ## Optional. Require callers to provide on of the provided passkeys to access the periphery api.
 ## Default is empty, which will not require any passkey to be passed by core.
+## Env: PERIPHERY_PASSKEYS
 # passkeys = ["abcdefghijk"]
+
+
 
 ###########
 # SECRETS #
@@ -95,17 +108,21 @@
 ## Specify the log level of the monitor core application
 ## Default: info
 ## Options: off, error, warn, info, debug, trace
+## Env: PERIPHERY_LOGGING_LEVEL
 # logging.level = "debug"
 
 ## Specify the logging format for stdout / stderr.
 ## Default: standard
 ## Options: standard, json, none
+## Env: PERIPHERY_LOGGING_STDIO
 # logging.stdio = "json"
 
 ## Specify a opentelemetry otlp endpoint to send traces to
 ## Optional, default unassigned
+## Env: PERIPHERY_LOGGING_OTLP_ENDPOINT
 # logging.otlp_endpoint = "http://localhost:4317"
 
 ## Set the opentelemetry service name attached to the telemetry this periphery will send.
 ## Default: "Monitor"
+## Env: PERIPHERY_LOGGING_OPENTELEMETRY_SERVICE_NAME
 # logging.opentelemetry_service_name = "Periphery-02"

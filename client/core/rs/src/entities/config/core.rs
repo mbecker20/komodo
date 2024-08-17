@@ -45,6 +45,8 @@ pub struct Env {
   pub monitor_port: Option<u16>,
   /// Override `passkey`
   pub monitor_passkey: Option<String>,
+  /// Override `ensure_server`
+  pub monitor_ensure_server: Option<String>,
   /// Override `jwt_secret`
   pub monitor_jwt_secret: Option<String>,
   /// Override `jwt_ttl`
@@ -183,6 +185,12 @@ pub struct CoreConfig {
   /// Disable user ability to use the UI to update resource configuration.
   #[serde(default)]
   pub ui_write_disabled: bool,
+
+  /// If defined, ensure an enabled server exists at this address.
+  /// Use with All In One compose.
+  /// Example: `http://monitor-periphery:8120`
+  #[serde(default)]
+  pub ensure_server: String,
 
   // ============
   // = Database =
@@ -395,6 +403,7 @@ impl CoreConfig {
       host: config.host,
       port: config.port,
       passkey: empty_or_redacted(&config.passkey),
+      ensure_server: config.ensure_server,
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_ttl: config.jwt_ttl,
       repo_directory: config.repo_directory,

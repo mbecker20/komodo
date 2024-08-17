@@ -27,12 +27,10 @@ merge_config_files.workspace = true
 async_timing_util.workspace = true
 resolver_api.workspace = true
 run_command.workspace = true
-parse_csl.workspace = true
 svi.workspace = true
 # external
 axum-extra.workspace = true
 serde_json.workspace = true
-serde_yaml.workspace = true
 futures.workspace = true
 tracing.workspace = true
 bollard.workspace = true

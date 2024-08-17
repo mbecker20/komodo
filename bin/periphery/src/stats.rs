@@ -101,11 +101,26 @@ impl StatsClient {
   }
 
   fn get_disks(&self) -> Vec<SingleDiskUsage> {
+    let config = periphery_config();
     self
       .disks
       .list()
       .iter()
-      .filter(|d| d.file_system() != "overlay")
+      .filter(|d| {
+        if d.file_system() != "overlay" {
+          return false;
+        }
+        if config.include_disk_mounts.is_empty() {
+          return true;
+        }
+        let path = d.mount_point();
+        for mount in &config.include_disk_mounts {
+          if path.starts_with(mount) {
+            return true;
+          }
+        }
+        false
+      })
       .map(|disk| {
         let file_system =
           disk.file_system().to_string_lossy().to_string();

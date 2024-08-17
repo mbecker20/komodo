@@ -35,7 +35,6 @@ derive_variants = "1.0.0"
 mongo_indexed = "2.0.0"
 resolver_api = "1.1.1"
 toml_pretty = "1.1.2"
-parse_csl = "0.1.0"
 mungos = "1.0.1"
 svi = "1.0.1"
 
@@ -49,7 +48,6 @@ futures-util = "0.3.30"
 # SERVER
 axum = { version = "0.7.5", features = ["ws", "json"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
-tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.5.2", features = ["fs", "cors"] }
 tokio-tungstenite = "0.23.1"
 

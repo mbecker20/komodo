@@ -33,7 +33,7 @@ EXPOSE 9000
 
 # Label for Ghcr
 LABEL org.opencontainers.image.source=https://github.com/mbecker20/monitor
-LABEL org.opencontainers.image.description="A tool to build and deploy software across many servers"
+LABEL org.opencontainers.image.description="Monitor Core"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
 CMD ["./core"]

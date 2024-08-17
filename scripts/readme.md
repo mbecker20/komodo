@@ -1,5 +1,7 @@
 # Periphery setup script
 
+These scripts will set up Monitor Periphery on your hosts, managed by systemd.
+
 *Note*. This script can be run multiple times without issue, and it won't change existing config after the first run. Just run it again after a Monitor version release, and it will update the periphery version.
 
 *Note*. The script can usually detect aarch64 system and use the periphery-aarch64 binary.

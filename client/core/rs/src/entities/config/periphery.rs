@@ -86,7 +86,7 @@ pub struct Env {
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_config_paths: Vec<String>,
+  pub periphery_config_paths: Vec<String>,
   /// If specifying folders, use this to narrow down which
   /// files will be matched to parse into the final [PeripheryConfig].
   /// Only files inside the folders which have names containing all keywords
@@ -94,120 +94,54 @@ pub struct Env {
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_config_keywords: Vec<String>,
+  pub periphery_config_keywords: Vec<String>,
 
   /// Will merge nested config object (eg. secrets, providers) across multiple
   /// config files. Default: `false`
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_merge_nested_config: bool,
+  pub periphery_merge_nested_config: bool,
 
   /// Will extend config arrays (eg. `allowed_ips`, `passkeys`) across multiple config files.
   /// Default: `false`
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_extend_config_arrays: bool,
+  pub periphery_extend_config_arrays: bool,
 
   /// Override `port`
-  pub monitor_port: Option<u16>,
+  pub periphery_port: Option<u16>,
   /// Override `repo_dir`
-  pub monitor_repo_dir: Option<PathBuf>,
+  pub periphery_repo_dir: Option<PathBuf>,
   /// Override `stack_dir`
-  pub monitor_stack_dir: Option<PathBuf>,
+  pub periphery_stack_dir: Option<PathBuf>,
   /// Override `stats_polling_rate`
-  pub monitor_stats_polling_rate: Option<Timelength>,
+  pub periphery_stats_polling_rate: Option<Timelength>,
   /// Override `legacy_compose_cli`
-  pub monitor_legacy_compose_cli: Option<bool>,
+  pub periphery_legacy_compose_cli: Option<bool>,
 
   // LOGGING
   /// Override `logging.level`
-  pub monitor_logging_level: Option<LogLevel>,
+  pub periphery_logging_level: Option<LogLevel>,
   /// Override `logging.stdio`
-  pub monitor_logging_stdio: Option<StdioLogMode>,
+  pub periphery_logging_stdio: Option<StdioLogMode>,
   /// Override `logging.otlp_endpoint`
-  pub monitor_logging_otlp_endpoint: Option<String>,
+  pub periphery_logging_otlp_endpoint: Option<String>,
   /// Override `logging.opentelemetry_service_name`
-  pub monitor_logging_opentelemetry_service_name: Option<String>,
+  pub periphery_logging_opentelemetry_service_name: Option<String>,
 
   /// Override `allowed_ips`
-  pub monitor_allowed_ips: Option<Vec<IpAddr>>,
+  pub periphery_allowed_ips: Option<Vec<IpAddr>>,
   /// Override `passkeys`
-  pub monitor_passkeys: Option<Vec<String>>,
+  pub periphery_passkeys: Option<Vec<String>>,
+  /// Override `include_disk_mounts`
+  pub periphery_include_disk_mounts: Option<Vec<String>>,
 }
 
 /// # Periphery Configuration File
 ///
-/// The periphery agent initializes it's configuration by reading the environment,
-/// parsing the [PeripheryConfig] schema from the files specified by cli args (and falling back to `env.config_paths`),
-/// and then applying any config field overrides specified in the environment.
-///
-/// ## Example TOML
-/// ```toml
-/// ## optional. 8120 is default
-/// port = 8120
-///
-/// ## optional. `/etc/monitor/repos` is default.
-/// repo_dir = "/etc/monitor/repos"
-///
-/// ## optional. `/etc/monitor/stacks` is default.
-/// stack_dir = "/etc/monitor/stacks"
-///
-/// ## optional. 5-sec is default.
-/// ## can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min.
-/// ## controls granularity of system stats recorded
-/// stats_polling_rate = "5-sec"
-///
-/// ## Whether stack actions should use `docker-compose ...`
-/// ## instead of `docker compose ...`.
-/// ## default: false
-/// legacy_compose_cli = false
-///
-/// ## optional. default is empty, which will not block any request by ip.
-/// allowed_ips = ["127.0.0.1"]
-///
-/// ## optional. default is empty, which will not require any passkey to be passed by core.
-/// passkeys = ["abcdefghijk"]
-///
-/// ## specify the log level of the monitor core application
-/// ## default: info
-/// ## options: off, error, warn, info, debug, trace
-/// logging.level = "info"
-///
-/// ## specify the logging format for stdout / stderr.
-/// ## default: standard
-/// ## options: standard, json, none
-/// logging.stdio = "standard"
-///
-/// ## specify an otlp endpoint to send traces to
-/// ## optional, default unassigned
-/// # logging.otlp_endpoint = "http://localhost:4317"
-///
-/// ## specify the service name to send with otlp traces.
-/// ## optional, default 'Monitor'.
-/// # logging.opentelemetry_service_name = "Monitor"
-///
-/// ## configure perihery-based secrets
-/// [secrets]
-/// # SECRET_1 = "value_1"
-/// # SECRET_2 = "value_2"
-///
-/// ## configure periphery-based git providers
-/// # [[git_provider]]
-/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
-/// # accounts = [
-/// #     { username = "mbecker20", token = "access_token_for_account" },
-/// # ]
-///
-/// ## configure periphery-based docker registries
-/// # [[docker_registry]]
-/// # domain = "docker.io"
-/// # accounts = [
-/// #     { username = "mbecker2020", token = "access_token_for_account" }
-/// # ]
-/// # organizations = ["DockerhubOrganization"]
-/// ```
+/// Refer to the [example file](https://github.com/mbecker20/monitor/blob/main/config_example/periphery.config.example.toml) for a full example.
 #[derive(Debug, Clone, Deserialize)]
 pub struct PeripheryConfig {
   /// The port periphery will run on.
@@ -254,6 +188,10 @@ pub struct PeripheryConfig {
   #[serde(default)]
   pub passkeys: Vec<String>,
 
+  /// If non-empty, only includes specific mount paths in the disk report.
+  #[serde(default)]
+  pub include_disk_mounts: Vec<String>,
+
   /// Mapping on local periphery secrets. These can be interpolated into eg. Deployment environment variables.
   /// Default: none
   #[serde(default)]
@@ -297,6 +235,7 @@ impl Default for PeripheryConfig {
       logging: Default::default(),
       allowed_ips: Default::default(),
       passkeys: Default::default(),
+      include_disk_mounts: Default::default(),
       secrets: Default::default(),
       git_providers: Default::default(),
       docker_registries: Default::default(),
