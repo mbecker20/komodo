@@ -2254,12 +2254,8 @@ dependencies = [
  "futures",
  "merge_config_files",
  "monitor_client",
- "partial_derive2",
  "serde",
- "serde_json",
- "strum 0.26.3",
  "tokio",
- "toml",
  "tracing",
  "tracing-subscriber",
 ]
@@ -2326,7 +2322,6 @@ dependencies = [
  "nom_pem",
  "octorust",
  "ordered_hash_map",
- "parse_csl",
  "partial_derive2",
  "periphery_client",
  "rand",
@@ -2340,13 +2335,11 @@ dependencies = [
  "serror",
  "sha2",
  "slack_client_rs",
- "strum 0.26.3",
  "svi",
  "tokio",
  "tokio-util",
  "toml",
  "toml_pretty",
- "tower",
  "tower-http",
  "tracing",
  "typeshare",
@@ -2373,13 +2366,11 @@ dependencies = [
  "logger",
  "merge_config_files",
  "monitor_client",
- "parse_csl",
  "periphery_client",
  "resolver_api",
  "run_command",
  "serde",
  "serde_json",
- "serde_yaml",
  "serror",
  "svi",
  "sysinfo",
@@ -2724,12 +2715,6 @@ dependencies = [
  "smallvec",
  "windows-targets 0.52.5",
 ]
-
-[[package]]
-name = "parse_csl"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffa94c2e5674923c67d7f3dfce1279507b191e10eb064881b46ed3e1256e5ca6"
 
 [[package]]
 name = "parse_link_header"
@@ -3936,24 +3921,6 @@ dependencies = [
  "fastrand",
  "rustix",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "tests"
-version = "1.13.1"
-dependencies = [
- "anyhow",
- "dotenvy",
- "envy",
- "logger",
- "monitor_client",
- "mungos",
- "partial_derive2",
- "rand",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
 ]
 
 [[package]]

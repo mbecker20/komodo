@@ -86,7 +86,7 @@ pub struct Env {
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_config_paths: Vec<String>,
+  pub periphery_config_paths: Vec<String>,
   /// If specifying folders, use this to narrow down which
   /// files will be matched to parse into the final [PeripheryConfig].
   /// Only files inside the folders which have names containing all keywords
@@ -94,47 +94,47 @@ pub struct Env {
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_config_keywords: Vec<String>,
+  pub periphery_config_keywords: Vec<String>,
 
   /// Will merge nested config object (eg. secrets, providers) across multiple
   /// config files. Default: `false`
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_merge_nested_config: bool,
+  pub periphery_merge_nested_config: bool,
 
   /// Will extend config arrays (eg. `allowed_ips`, `passkeys`) across multiple config files.
   /// Default: `false`
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub monitor_extend_config_arrays: bool,
+  pub periphery_extend_config_arrays: bool,
 
   /// Override `port`
-  pub monitor_port: Option<u16>,
+  pub periphery_port: Option<u16>,
   /// Override `repo_dir`
-  pub monitor_repo_dir: Option<PathBuf>,
+  pub periphery_repo_dir: Option<PathBuf>,
   /// Override `stack_dir`
-  pub monitor_stack_dir: Option<PathBuf>,
+  pub periphery_stack_dir: Option<PathBuf>,
   /// Override `stats_polling_rate`
-  pub monitor_stats_polling_rate: Option<Timelength>,
+  pub periphery_stats_polling_rate: Option<Timelength>,
   /// Override `legacy_compose_cli`
-  pub monitor_legacy_compose_cli: Option<bool>,
+  pub periphery_legacy_compose_cli: Option<bool>,
 
   // LOGGING
   /// Override `logging.level`
-  pub monitor_logging_level: Option<LogLevel>,
+  pub periphery_logging_level: Option<LogLevel>,
   /// Override `logging.stdio`
-  pub monitor_logging_stdio: Option<StdioLogMode>,
+  pub periphery_logging_stdio: Option<StdioLogMode>,
   /// Override `logging.otlp_endpoint`
-  pub monitor_logging_otlp_endpoint: Option<String>,
+  pub periphery_logging_otlp_endpoint: Option<String>,
   /// Override `logging.opentelemetry_service_name`
-  pub monitor_logging_opentelemetry_service_name: Option<String>,
+  pub periphery_logging_opentelemetry_service_name: Option<String>,
 
   /// Override `allowed_ips`
-  pub monitor_allowed_ips: Option<Vec<IpAddr>>,
+  pub periphery_allowed_ips: Option<Vec<IpAddr>>,
   /// Override `passkeys`
-  pub monitor_passkeys: Option<Vec<String>>,
+  pub periphery_passkeys: Option<Vec<String>>,
 }
 
 /// # Periphery Configuration File

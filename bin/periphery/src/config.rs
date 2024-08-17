@@ -15,53 +15,53 @@ pub fn periphery_config() -> &'static PeripheryConfig {
       .expect("failed to parse periphery environment");
     let args = CliArgs::parse();
     let config_paths =
-      args.config_path.unwrap_or(env.monitor_config_paths);
+      args.config_path.unwrap_or(env.periphery_config_paths);
     let config = if config_paths.is_empty() {
       PeripheryConfig::default()
     } else {
       parse_config_paths::<PeripheryConfig>(
         config_paths,
-        args.config_keyword.unwrap_or(env.monitor_config_keywords),
+        args.config_keyword.unwrap_or(env.periphery_config_keywords),
         args
           .merge_nested_config
-          .unwrap_or(env.monitor_merge_nested_config),
+          .unwrap_or(env.periphery_merge_nested_config),
         args
           .extend_config_arrays
-          .unwrap_or(env.monitor_extend_config_arrays),
+          .unwrap_or(env.periphery_extend_config_arrays),
       )
       .expect("failed at parsing config from paths")
     };
 
     PeripheryConfig {
-      port: env.monitor_port.unwrap_or(config.port),
-      repo_dir: env.monitor_repo_dir.unwrap_or(config.repo_dir),
-      stack_dir: env.monitor_stack_dir.unwrap_or(config.stack_dir),
+      port: env.periphery_port.unwrap_or(config.port),
+      repo_dir: env.periphery_repo_dir.unwrap_or(config.repo_dir),
+      stack_dir: env.periphery_stack_dir.unwrap_or(config.stack_dir),
       stats_polling_rate: env
-        .monitor_stats_polling_rate
+        .periphery_stats_polling_rate
         .unwrap_or(config.stats_polling_rate),
       legacy_compose_cli: env
-        .monitor_legacy_compose_cli
+        .periphery_legacy_compose_cli
         .unwrap_or(config.legacy_compose_cli),
       logging: LogConfig {
         level: args
           .log_level
           .map(LogLevel::from)
-          .or(env.monitor_logging_level)
+          .or(env.periphery_logging_level)
           .unwrap_or(config.logging.level),
         stdio: env
-          .monitor_logging_stdio
+          .periphery_logging_stdio
           .unwrap_or(config.logging.stdio),
         otlp_endpoint: env
-          .monitor_logging_otlp_endpoint
+          .periphery_logging_otlp_endpoint
           .or(config.logging.otlp_endpoint),
         opentelemetry_service_name: env
-          .monitor_logging_opentelemetry_service_name
+          .periphery_logging_opentelemetry_service_name
           .unwrap_or(config.logging.opentelemetry_service_name),
       },
       allowed_ips: env
-        .monitor_allowed_ips
+        .periphery_allowed_ips
         .unwrap_or(config.allowed_ips),
-      passkeys: env.monitor_passkeys.unwrap_or(config.passkeys),
+      passkeys: env.periphery_passkeys.unwrap_or(config.passkeys),
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,
