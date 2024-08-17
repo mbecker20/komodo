@@ -65,6 +65,9 @@ pub fn periphery_config() -> &'static PeripheryConfig {
       include_disk_mounts: env
         .periphery_include_disk_mounts
         .unwrap_or(config.include_disk_mounts),
+      exclude_disk_mounts: env
+        .periphery_exclude_disk_mounts
+        .unwrap_or(config.exclude_disk_mounts),
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,

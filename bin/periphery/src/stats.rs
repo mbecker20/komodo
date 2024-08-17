@@ -110,12 +110,17 @@ impl StatsClient {
         if d.file_system() != "overlay" {
           return false;
         }
+        let path = d.mount_point();
+        for mount in &config.exclude_disk_mounts {
+          if path == mount {
+            return false;
+          }
+        }
         if config.include_disk_mounts.is_empty() {
           return true;
         }
-        let path = d.mount_point();
         for mount in &config.include_disk_mounts {
-          if path.starts_with(mount) {
+          if path == mount {
             return true;
           }
         }

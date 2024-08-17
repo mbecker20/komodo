@@ -136,7 +136,9 @@ pub struct Env {
   /// Override `passkeys`
   pub periphery_passkeys: Option<Vec<String>>,
   /// Override `include_disk_mounts`
-  pub periphery_include_disk_mounts: Option<Vec<String>>,
+  pub periphery_include_disk_mounts: Option<Vec<PathBuf>>,
+  /// Override `exclude_disk_mounts`
+  pub periphery_exclude_disk_mounts: Option<Vec<PathBuf>>,
 }
 
 /// # Periphery Configuration File
@@ -190,7 +192,11 @@ pub struct PeripheryConfig {
 
   /// If non-empty, only includes specific mount paths in the disk report.
   #[serde(default)]
-  pub include_disk_mounts: Vec<String>,
+  pub include_disk_mounts: Vec<PathBuf>,
+
+  /// Exclude specific mount paths in the disk report.
+  #[serde(default)]
+  pub exclude_disk_mounts: Vec<PathBuf>,
 
   /// Mapping on local periphery secrets. These can be interpolated into eg. Deployment environment variables.
   /// Default: none
@@ -236,6 +242,7 @@ impl Default for PeripheryConfig {
       allowed_ips: Default::default(),
       passkeys: Default::default(),
       include_disk_mounts: Default::default(),
+      exclude_disk_mounts: Default::default(),
       secrets: Default::default(),
       git_providers: Default::default(),
       docker_registries: Default::default(),
