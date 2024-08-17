@@ -77,6 +77,7 @@ pub fn core_config() -> &'static CoreConfig {
       host: env.monitor_host.unwrap_or(config.host),
       port: env.monitor_port.unwrap_or(config.port),
       passkey: env.monitor_passkey.unwrap_or(config.passkey),
+      ensure_server: env.monitor_ensure_server.unwrap_or(config.ensure_server),
       jwt_secret: env.monitor_jwt_secret.unwrap_or(config.jwt_secret),
       jwt_ttl: env
         .monitor_jwt_ttl

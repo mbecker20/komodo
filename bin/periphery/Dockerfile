@@ -9,7 +9,6 @@ FROM debian:bookworm-slim
 
 # Install Deps
 RUN apt update && apt install -y git curl ca-certificates && \
-	# Docker socket should be mounted to /var/run/docker.sock
 	curl -fsSL https://get.docker.com | sh
 
 # Copy

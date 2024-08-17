@@ -3,14 +3,17 @@ use std::{collections::HashSet, str::FromStr, time::Duration};
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
 use mongo_indexed::Document;
-use monitor_client::entities::{
-  monitor_timestamp,
-  permission::{Permission, PermissionLevel, UserTarget},
-  server::Server,
-  sync::ResourceSync,
-  update::{Log, ResourceTarget, Update},
-  user::User,
-  EnvironmentVar,
+use monitor_client::{
+  api::write::CreateServer,
+  entities::{
+    monitor_timestamp,
+    permission::{Permission, PermissionLevel, UserTarget},
+    server::{PartialServerConfig, Server},
+    sync::ResourceSync,
+    update::{Log, ResourceTarget, Update},
+    user::{system_user, User},
+    EnvironmentVar,
+  },
 };
 use mungos::{
   find::find_collect,
@@ -19,8 +22,13 @@ use mungos::{
 use periphery_client::PeripheryClient;
 use query::get_global_variables;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use resolver_api::Resolve;
 
-use crate::{config::core_config, resource, state::db_client};
+use crate::{
+  config::core_config,
+  resource,
+  state::{db_client, State},
+};
 
 pub mod action_state;
 pub mod alert;
@@ -373,5 +381,40 @@ async fn startup_open_alert_cleanup() {
     error!(
       "failed to clean up invalid open alerts on startup | {e:#}"
     )
+  }
+}
+
+/// Ensures a default server exists with the defined address
+pub async fn ensure_server() {
+  let ensure_server = &core_config().ensure_server;
+  if ensure_server.is_empty() {
+    return;
+  }
+  let db = db_client().await;
+  let Ok(server) = db
+    .servers
+    .find_one(doc! { "config.address": ensure_server })
+    .await
+    .inspect_err(|e| error!("Failed to initialize 'ensure_server'. Failed to query db. {e:?}"))
+  else {
+    return;
+  };
+  if server.is_some() {
+    return;
+  }
+  if let Err(e) = State
+    .resolve(
+      CreateServer {
+        name: String::from("default"),
+        config: PartialServerConfig {
+          address: Some(ensure_server.to_string()),
+          ..Default::default()
+        },
+      },
+      system_user().to_owned(),
+    )
+    .await
+  {
+    error!("Failed to initialize 'ensure_server'. Failed to CreateServer. {e:?}");
   }
 }

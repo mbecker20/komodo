@@ -136,80 +136,12 @@ pub struct Env {
   /// Override `passkeys`
   pub periphery_passkeys: Option<Vec<String>>,
   /// Override `include_disk_mounts`
-  pub periphery_include_disk_mounts: Option<Vec<String>>
+  pub periphery_include_disk_mounts: Option<Vec<String>>,
 }
 
 /// # Periphery Configuration File
 ///
-/// The periphery agent initializes it's configuration by reading the environment,
-/// parsing the [PeripheryConfig] schema from the files specified by cli args (and falling back to `env.config_paths`),
-/// and then applying any config field overrides specified in the environment.
-///
-/// ## Example TOML
-/// ```toml
-/// ## optional. 8120 is default
-/// port = 8120
-///
-/// ## optional. `/etc/monitor/repos` is default.
-/// repo_dir = "/etc/monitor/repos"
-///
-/// ## optional. `/etc/monitor/stacks` is default.
-/// stack_dir = "/etc/monitor/stacks"
-///
-/// ## optional. 5-sec is default.
-/// ## can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min.
-/// ## controls granularity of system stats recorded
-/// stats_polling_rate = "5-sec"
-///
-/// ## Whether stack actions should use `docker-compose ...`
-/// ## instead of `docker compose ...`.
-/// ## default: false
-/// legacy_compose_cli = false
-///
-/// ## optional. default is empty, which will not block any request by ip.
-/// allowed_ips = ["127.0.0.1"]
-///
-/// ## optional. default is empty, which will not require any passkey to be passed by core.
-/// passkeys = ["abcdefghijk"]
-///
-/// ## specify the log level of the monitor core application
-/// ## default: info
-/// ## options: off, error, warn, info, debug, trace
-/// logging.level = "info"
-///
-/// ## specify the logging format for stdout / stderr.
-/// ## default: standard
-/// ## options: standard, json, none
-/// logging.stdio = "standard"
-///
-/// ## specify an otlp endpoint to send traces to
-/// ## optional, default unassigned
-/// # logging.otlp_endpoint = "http://localhost:4317"
-///
-/// ## specify the service name to send with otlp traces.
-/// ## optional, default 'Monitor'.
-/// # logging.opentelemetry_service_name = "Monitor"
-///
-/// ## configure perihery-based secrets
-/// [secrets]
-/// # SECRET_1 = "value_1"
-/// # SECRET_2 = "value_2"
-///
-/// ## configure periphery-based git providers
-/// # [[git_provider]]
-/// # domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
-/// # accounts = [
-/// #     { username = "mbecker20", token = "access_token_for_account" },
-/// # ]
-///
-/// ## configure periphery-based docker registries
-/// # [[docker_registry]]
-/// # domain = "docker.io"
-/// # accounts = [
-/// #     { username = "mbecker2020", token = "access_token_for_account" }
-/// # ]
-/// # organizations = ["DockerhubOrganization"]
-/// ```
+/// Refer to the [example file](https://github.com/mbecker20/monitor/blob/main/config_example/periphery.config.example.toml) for a full example.
 #[derive(Debug, Clone, Deserialize)]
 pub struct PeripheryConfig {
   /// The port periphery will run on.

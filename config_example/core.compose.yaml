@@ -33,6 +33,20 @@ services:
       ## HETZNER
       # MONITOR_HETZNER_TOKEN: your_hetzner_token
 
+  ## Deploy periphery container using this block,
+  ## or deploy it on the host directly using https://github.com/mbecker20/monitor/tree/main/scripts
+  # monitor-periphery:
+  #   image: ghcr.io/mbecker20/periphery:latest
+  #   logging:
+  #     driver: local
+  #   networks:
+  #     - monitor-network
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
+  #   environment:
+  #     # PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos # If the disk is overreporting, filter out ones you don't want.
+
   monitor-mongo:
     image: mongo
     command: --quiet # suppress mongo logs a bit

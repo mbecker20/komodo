@@ -81,7 +81,8 @@ impl User {
   pub fn is_service_user(user_id: &str) -> bool {
     matches!(
       user_id,
-      "Procedure"
+      "System"
+        | "Procedure"
         | "Github" // Github can be removed later, just keeping for backward compat.
         | "Git Webhook"
         | "Auto Redeploy"
@@ -95,6 +96,7 @@ impl User {
 
 pub fn admin_service_user(user_id: &str) -> Option<User> {
   match user_id {
+    "System" => system_user().to_owned().into(),
     "Procedure" => procedure_user().to_owned().into(),
     // Github should be removed later, replaced by Git Webhook, just keeping for backward compat.
     "Github" => git_webhook_user().to_owned().into(),
@@ -106,6 +108,19 @@ pub fn admin_service_user(user_id: &str) -> Option<User> {
     "Repo Manager" => repo_user().to_owned().into(),
     _ => None,
   }
+}
+
+pub fn system_user() -> &'static User {
+  static SYSTEM_USER: OnceLock<User> = OnceLock::new();
+  SYSTEM_USER.get_or_init(|| {
+    let id_name = String::from("System");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
 }
 
 pub fn procedure_user() -> &'static User {
