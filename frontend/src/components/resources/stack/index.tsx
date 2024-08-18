@@ -217,8 +217,9 @@ export const StackComponents: RequiredResourceComponents = {
             </Card>
           </HoverCardTrigger>
           <HoverCardContent align="start">
-            <div className="grid gap-2">
-              There are errors reading the remote file contents.
+            <div>
+              There are errors reading the remote file contents. See{" "}
+              <span className="font-bold">Info</span> tab for details.
             </div>
           </HoverCardContent>
         </HoverCard>
