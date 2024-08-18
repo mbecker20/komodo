@@ -20,6 +20,11 @@ With Monitor you can:
 
 Monitor is opinionated by design, and uses [docker](https://docs.docker.com/) as the container engine for building and deploying.
 
+:::info
+Monitor also supports [**podman**](https://podman.io/) instead of docker by utilizing the `podman` -> `docker` alias.
+For Stack / docker compose support with podman, check out [**podman-compose**](https://github.com/containers/podman-compose). Thanks to `u/pup_kit` for checking this.
+:::
+
 ## Architecture and Components
 
 Monitor is composed of a single core and any amount of connected servers running the periphery application. 
