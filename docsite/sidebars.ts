@@ -44,6 +44,7 @@ const sidebars: SidebarsConfig = {
         // "deploy-containers/versioning",
       ],
     },
+    "docker-compose",
     "sync-resources",
     "webhooks",
     "permissioning",
