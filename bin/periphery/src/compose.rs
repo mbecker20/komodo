@@ -100,7 +100,7 @@ pub async fn compose_up(
         }
       };
     res.file_contents.push(ComposeContents {
-      path: full_path.display().to_string(),
+      path: path.to_string(),
       contents: file_contents,
     });
   }

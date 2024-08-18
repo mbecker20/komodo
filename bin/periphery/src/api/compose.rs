@@ -116,7 +116,7 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
       }) {
         Ok(contents) => {
           res.contents.push(ComposeContents {
-            path: full_path.display().to_string(),
+            path: path.to_string(),
             contents,
           });
         }

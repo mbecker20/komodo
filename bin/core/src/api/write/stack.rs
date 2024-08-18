@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use monitor_client::{
   api::write::*,
   entities::{
@@ -6,7 +7,7 @@ use monitor_client::{
     monitor_timestamp,
     permission::PermissionLevel,
     server::ServerState,
-    stack::{PartialStackConfig, Stack, StackInfo},
+    stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
     update::Update,
     user::User,
     NoData, Operation,
@@ -152,7 +153,10 @@ impl Resolve<RefreshStackCache, User> for State {
 
     let file_contents_empty = stack.config.file_contents.is_empty();
 
-    if file_contents_empty && stack.config.repo.is_empty() {
+    if !stack.config.files_on_host
+      && file_contents_empty
+      && stack.config.repo.is_empty()
+    {
       // Nothing to do without one of these
       return Ok(NoData {});
     }
@@ -178,7 +182,7 @@ impl Resolve<RefreshStackCache, User> for State {
           (vec![], None, None, None, None)
         } else {
           let GetComposeContentsOnHostResponse { contents, errors } =
-            periphery_client(&server)?
+            match periphery_client(&server)?
               .request(GetComposeContentsOnHost {
                 file_paths: stack.file_paths().to_vec(),
                 name: stack.name.clone(),
@@ -187,7 +191,16 @@ impl Resolve<RefreshStackCache, User> for State {
               .await
               .context(
                 "failed to get compose file contents from host",
-              )?;
+              ) {
+              Ok(res) => res,
+              Err(e) => GetComposeContentsOnHostResponse {
+                contents: Default::default(),
+                errors: vec![ComposeContents {
+                  path: stack.config.run_directory.clone(),
+                  contents: format_serror(&e.into()),
+                }],
+              },
+            };
 
           let project_name = stack.project_name(true);
 
