@@ -15,6 +15,16 @@ cmd = "yarn dev"
 path = "frontend"
 cmd = "yarn build"
 
+[test-compose]
+description = "deploys test.compose.yaml"
+cmd = """
+docker compose -f test.compose.yaml down && \
+docker compose -f test.compose.yaml up --attach monitor-periphery"""
+
+[test-core]
+description = "runs core --release pointing to test.core.config.toml"
+cmd = "MONITOR_CONFIG_PATH=test.core.config.toml cargo run -p monitor_core --release"
+
 [update-periphery]
 path = "."
 cmd = """
@@ -24,13 +34,6 @@ cp ./target/release/periphery /usr/local/bin/periphery && \
 chmod +x /usr/local/bin/periphery && \
 systemctl start periphery"""
 
-[monitor-cli-test]
-path = "bin/cli"
-cmd = "cargo run -- execute --help"
-
-[rustdoc-server]
-cmd = "cargo watch -s 'cargo doc --no-deps -p monitor_client' & http --quiet target/doc"
-
 [docsite-start]
 path = "docsite"
 cmd = "yarn start"
@@ -38,3 +41,6 @@ cmd = "yarn start"
 [docsite-deploy]
 path = "docsite"
 cmd = "yarn deploy"
+
+[rustdoc-server]
+cmd = "cargo watch -s 'cargo doc --no-deps -p monitor_client' & http --quiet target/doc"

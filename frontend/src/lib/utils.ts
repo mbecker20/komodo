@@ -207,3 +207,17 @@ export const sync_no_changes = (sync: Types.ResourceSync) => {
     !pending.data.user_group_updates
   );
 };
+
+export const is_service_user = (user_id: string) => {
+  return (
+    user_id === "System" ||
+    user_id === "Procedure" ||
+    user_id === "Github" ||
+    user_id === "Git Webhook" ||
+    user_id === "Auto Redeploy" ||
+    user_id === "Resource Sync" ||
+    user_id === "Stack Wizard" ||
+    user_id === "Build Manager" ||
+    user_id === "Repo Manager"
+  );
+};

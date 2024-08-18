@@ -78,6 +78,9 @@ impl User {
     }
   }
 
+  /// Returns whether user is an inbuilt service user
+  /// 
+  /// NOTE: ALSO UPDATE `frontend/src/lib/utils/is_service_user` to match
   pub fn is_service_user(user_id: &str) -> bool {
     matches!(
       user_id,

@@ -129,7 +129,7 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <p className="text-sm text-muted-foreground">Description: </p>
+            {/* <p className="text-sm text-muted-foreground">Description: </p> */}
             <ResourceDescription type={type} id={id} disabled={!canWrite} />
           </div>
         </div>

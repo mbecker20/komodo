@@ -125,7 +125,7 @@ export const Config = <T,>({
   titleOther?: ReactNode;
   components: Record<
     string, // sidebar key
-    ConfigComponent<T>[]
+    ConfigComponent<T>[] | false | undefined
   >;
 }) => {
   const [show, setShow] = useState(keys(components)[0]);
@@ -163,80 +163,84 @@ export const Config = <T,>({
       <div className="flex gap-4">
         {/** The sidebar when large */}
         <div className="hidden xl:flex flex-col gap-4 w-[300px]">
-          {keys(components).map((tab) => (
-            <Button
-              key={tab}
-              variant={show === tab ? "secondary" : "outline"}
-              onClick={() => setShow(tab)}
-              className="capitalize"
-            >
-              {tab}
-            </Button>
-          ))}
+          {Object.entries(components)
+            .filter(([_, val]) => val)
+            .map(([tab, _]) => (
+              <Button
+                key={tab}
+                variant={show === tab ? "secondary" : "outline"}
+                onClick={() => setShow(tab)}
+                className="capitalize"
+              >
+                {tab}
+              </Button>
+            ))}
         </div>
 
-        <div className="flex flex-col gap-6 min-h-[500px] w-full">
-          {components[show].map(
-            ({
-              label,
-              labelHidden,
-              icon,
-              actions,
-              description,
-              hidden,
-              contentHidden,
-              components,
-            }) =>
-              !hidden && (
-                <Card className="w-full grid gap-2" key={label}>
-                  {!labelHidden && (
-                    <CardHeader
-                      className={cn(
-                        "flex-row items-center justify-between w-full py-0 h-[60px] space-y-0",
-                        !contentHidden && "border-b"
-                      )}
-                    >
-                      <div className="flex items-center gap-4">
-                        <CardTitle className="flex gap-4">
-                          {icon}
-                          {label}
-                        </CardTitle>
-                        {description && (
-                          <HoverCard openDelay={200}>
-                            <HoverCardTrigger asChild>
-                              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-                                <Info className="w-4 h-4" />
-                              </Card>
-                            </HoverCardTrigger>
-                            <HoverCardContent align="start" side="right">
-                              {description}
-                            </HoverCardContent>
-                          </HoverCard>
+        {components[show] && (
+          <div className="flex flex-col gap-6 min-h-[500px] w-full">
+            {components[show].map(
+              ({
+                label,
+                labelHidden,
+                icon,
+                actions,
+                description,
+                hidden,
+                contentHidden,
+                components,
+              }) =>
+                !hidden && (
+                  <Card className="w-full grid gap-2" key={label}>
+                    {!labelHidden && (
+                      <CardHeader
+                        className={cn(
+                          "flex-row items-center justify-between w-full py-0 h-[60px] space-y-0",
+                          !contentHidden && "border-b"
                         )}
-                      </div>
-                      {actions}
-                    </CardHeader>
-                  )}
-                  {!contentHidden && (
-                    <CardContent
-                      className={cn(
-                        "flex flex-col gap-1 pb-3",
-                        labelHidden && "pt-3"
-                      )}
-                    >
-                      <ConfigAgain
-                        config={config}
-                        update={update}
-                        set={(u) => set((p) => ({ ...p, ...u }))}
-                        components={components}
-                        disabled={disabled}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-              )
-          )}
-        </div>
+                      >
+                        <div className="flex items-center gap-4">
+                          <CardTitle className="flex gap-4">
+                            {icon}
+                            {label}
+                          </CardTitle>
+                          {description && (
+                            <HoverCard openDelay={200}>
+                              <HoverCardTrigger asChild>
+                                <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                                  <Info className="w-4 h-4" />
+                                </Card>
+                              </HoverCardTrigger>
+                              <HoverCardContent align="start" side="right">
+                                {description}
+                              </HoverCardContent>
+                            </HoverCard>
+                          )}
+                        </div>
+                        {actions}
+                      </CardHeader>
+                    )}
+                    {!contentHidden && (
+                      <CardContent
+                        className={cn(
+                          "flex flex-col gap-1 pb-3",
+                          labelHidden && "pt-3"
+                        )}
+                      >
+                        <ConfigAgain
+                          config={config}
+                          update={update}
+                          set={(u) => set((p) => ({ ...p, ...u }))}
+                          components={components}
+                          disabled={disabled}
+                        />
+                      </CardContent>
+                    )}
+                  </Card>
+                )
+            )}
+          </div>
+        )}
       </div>
     </ConfigLayout>
   );

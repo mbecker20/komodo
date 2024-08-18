@@ -1,13 +1,21 @@
+use std::path::PathBuf;
+
 use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use formatting::format_serror;
-use monitor_client::entities::{stack::ComposeProject, update::Log};
+use monitor_client::entities::{
+  stack::{ComposeContents, ComposeProject},
+  to_monitor_name,
+  update::Log,
+};
 use periphery_client::api::compose::*;
 use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
+use tokio::fs;
 
 use crate::{
   compose::{compose_up, docker_compose},
+  config::periphery_config,
   helpers::log_grep,
   State,
 };
@@ -66,6 +74,62 @@ pub struct DockerComposeLsItem {
   /// Comma seperated list of paths
   #[serde(default, alias = "ConfigFiles")]
   pub config_files: String,
+}
+
+//
+
+impl Resolve<GetComposeContentsOnHost, ()> for State {
+  async fn resolve(
+    &self,
+    GetComposeContentsOnHost {
+      name,
+      run_directory,
+      file_paths,
+    }: GetComposeContentsOnHost,
+    _: (),
+  ) -> anyhow::Result<GetComposeContentsOnHostResponse> {
+    let root =
+      periphery_config().stack_dir.join(to_monitor_name(&name));
+    let run_directory = root.join(&run_directory);
+    let run_directory = run_directory.canonicalize().context(
+      "failed to validate run directory on host (canonicalize error)",
+    )?;
+
+    let file_paths = file_paths
+      .iter()
+      .map(|path| {
+        (
+          path,
+          // This will remove any intermediate uneeded '/./' in the path
+          run_directory.join(path).components().collect::<PathBuf>(),
+        )
+      })
+      .collect::<Vec<_>>();
+
+    let mut res = GetComposeContentsOnHostResponse::default();
+
+    for (path, full_path) in &file_paths {
+      match fs::read_to_string(&full_path).await.with_context(|| {
+        format!(
+          "failed to read compose file contents at {full_path:?}"
+        )
+      }) {
+        Ok(contents) => {
+          res.contents.push(ComposeContents {
+            path: full_path.display().to_string(),
+            contents,
+          });
+        }
+        Err(e) => {
+          res.errors.push(ComposeContents {
+            path: path.to_string(),
+            contents: format_serror(&e.into()),
+          });
+        }
+      }
+    }
+    Ok(res)
+  }
 }
 
 //

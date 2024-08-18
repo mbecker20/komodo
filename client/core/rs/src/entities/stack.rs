@@ -153,7 +153,8 @@ pub struct StackInfo {
   #[serde(default)]
   pub latest_services: Vec<StackServiceNames>,
 
-  /// The remote compose file contents. This is updated whenever Monitor refreshes the stack cache.
+  /// The remote compose file contents, whether on host or in repo.
+  /// This is updated whenever Monitor refreshes the stack cache.
   /// It will be empty if the file is defined directly in the stack config.
   pub remote_contents: Option<Vec<ComposeContents>>,
   /// If there was an error in getting the remote contents, it will be here.
@@ -163,59 +164,6 @@ pub struct StackInfo {
   pub latest_hash: Option<String>,
   /// Latest commit message, or null
   pub latest_message: Option<String>,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ComposeProject {
-  /// The compose project name.
-  pub name: String,
-  /// The status of the project, as returned by docker.
-  pub status: Option<String>,
-  /// The compose files included in the project.
-  pub compose_files: Vec<String>,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ComposeContents {
-  /// The path of the file on the host
-  pub path: String,
-  /// The contents of the file
-  pub contents: String,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct StackServiceNames {
-  /// The name of the service
-  pub service_name: String,
-  /// Will either be the declared container_name in the compose file,
-  /// or a pattern to match auto named containers.
-  ///
-  /// Auto named containers are composed of three parts:
-  ///
-  /// 1. The name of the compose project (top level name field of compose file).
-  ///    This defaults to the name of the parent folder of the compose file.
-  ///    Monitor will always set it to be the name of the stack, but imported stacks
-  ///    will have a different name.
-  /// 2. The service name
-  /// 3. The replica number
-  ///
-  /// Example: stacko-mongo-1.
-  ///
-  /// This stores only 1. and 2., ie stacko-mongo.
-  /// Containers will be matched via regex like `^container_name-?[0-9]*$``
-  pub container_name: String,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct StackService {
-  /// The service name
-  pub service: String,
-  /// The container
-  pub container: Option<ContainerSummary>,
 }
 
 #[typeshare(serialized_as = "Partial<StackConfig>")]
@@ -253,6 +201,14 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub file_paths: Vec<String>,
+
+  /// If this is checked, the stack will source the files on the host.
+  /// Use `run_directory` and `file_paths` to specify the path on the host.
+  /// This is useful for those who wish to setup their files on the host using SSH or similar,
+  /// rather than defining the contents in UI or in a git repo.
+  #[serde(default)]
+  #[builder(default)]
+  pub files_on_host: bool,
 
   /// Used with `registry_account` to login to a registry before docker compose up.
   #[serde(default)]
@@ -412,6 +368,7 @@ impl Default for StackConfig {
       project_name: Default::default(),
       run_directory: default_run_directory(),
       file_paths: Default::default(),
+      files_on_host: Default::default(),
       registry_provider: Default::default(),
       registry_account: Default::default(),
       file_contents: Default::default(),
@@ -431,6 +388,59 @@ impl Default for StackConfig {
       send_alerts: default_send_alerts(),
     }
   }
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeProject {
+  /// The compose project name.
+  pub name: String,
+  /// The status of the project, as returned by docker.
+  pub status: Option<String>,
+  /// The compose files included in the project.
+  pub compose_files: Vec<String>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeContents {
+  /// The path of the file on the host
+  pub path: String,
+  /// The contents of the file
+  pub contents: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct StackServiceNames {
+  /// The name of the service
+  pub service_name: String,
+  /// Will either be the declared container_name in the compose file,
+  /// or a pattern to match auto named containers.
+  ///
+  /// Auto named containers are composed of three parts:
+  ///
+  /// 1. The name of the compose project (top level name field of compose file).
+  ///    This defaults to the name of the parent folder of the compose file.
+  ///    Monitor will always set it to be the name of the stack, but imported stacks
+  ///    will have a different name.
+  /// 2. The service name
+  /// 3. The replica number
+  ///
+  /// Example: stacko-mongo-1.
+  ///
+  /// This stores only 1. and 2., ie stacko-mongo.
+  /// Containers will be matched via regex like `^container_name-?[0-9]*$``
+  pub container_name: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct StackService {
+  /// The service name
+  pub service: String,
+  /// The container
+  pub container: Option<ContainerSummary>,
 }
 
 #[typeshare]

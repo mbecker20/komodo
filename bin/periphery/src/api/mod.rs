@@ -91,6 +91,7 @@ pub enum PeripheryRequest {
 
   // Compose
   ListComposeProjects(ListComposeProjects),
+  GetComposeContentsOnHost(GetComposeContentsOnHost),
   GetComposeServiceLog(GetComposeServiceLog),
   GetComposeServiceLogSearch(GetComposeServiceLogSearch),
   ComposeUp(ComposeUp),

@@ -5,6 +5,7 @@ use monitor_client::{
     config::core::CoreConfig,
     monitor_timestamp,
     permission::PermissionLevel,
+    server::ServerState,
     stack::{PartialStackConfig, Stack, StackInfo},
     update::Update,
     user::User,
@@ -18,11 +19,16 @@ use mungos::{
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
+use periphery_client::api::compose::{
+  GetComposeContentsOnHost, GetComposeContentsOnHostResponse,
+};
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
   helpers::{
+    periphery_client,
+    query::get_server_with_status,
     stack::{
       remote::get_remote_compose_contents,
       services::extract_services_into_res,
@@ -159,8 +165,54 @@ impl Resolve<RefreshStackCache, User> for State {
       remote_errors,
       latest_hash,
       latest_message,
-    ) = if file_contents_empty {
+    ) = if stack.config.files_on_host {
+      // =============
+      // FILES ON HOST
+      // =============
+      if stack.config.server_id.is_empty() {
+        (vec![], None, None, None, None)
+      } else {
+        let (server, status) =
+          get_server_with_status(&stack.config.server_id).await?;
+        if status != ServerState::Ok {
+          (vec![], None, None, None, None)
+        } else {
+          let GetComposeContentsOnHostResponse { contents, errors } =
+            periphery_client(&server)?
+              .request(GetComposeContentsOnHost {
+                file_paths: stack.file_paths().to_vec(),
+                name: stack.name.clone(),
+                run_directory: stack.config.run_directory.clone(),
+              })
+              .await
+              .context(
+                "failed to get compose file contents from host",
+              )?;
+
+          let project_name = stack.project_name(true);
+
+          let mut services = Vec::new();
+
+          for contents in &contents {
+            if let Err(e) = extract_services_into_res(
+              &project_name,
+              &contents.contents,
+              &mut services,
+            ) {
+              warn!(
+                "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
+                stack.name
+              );
+            }
+          }
+
+          (services, Some(contents), Some(errors), None, None)
+        }
+      }
+    } else if file_contents_empty {
+      // ================
       // REPO BASED STACK
+      // ================
       let (
         remote_contents,
         remote_errors,
@@ -196,6 +248,9 @@ impl Resolve<RefreshStackCache, User> for State {
         latest_message,
       )
     } else {
+      // =============
+      // UI BASED FILE
+      // =============
       let mut services = Vec::new();
       if let Err(e) = extract_services_into_res(
         // this should latest (not deployed), so make the project name fresh.

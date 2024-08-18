@@ -53,7 +53,8 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
 
 const ConfigInfoServices = ({ id }: { id: string }) => {
   const [view, setView] = useLocalStorage("stack-tabs-v1", "Config");
-  const state = useStack(id)?.info.state;
+  const info = useStack(id)?.info;
+  const state = info?.state;
   const stackDown =
     state === undefined ||
     state === Types.StackState.Unknown ||
@@ -150,7 +151,7 @@ export const StackComponents: RequiredResourceComponents = {
     },
     NoConfig: ({ id }) => {
       const config = useFullStack(id)?.config;
-      if (config?.file_contents || config?.repo) {
+      if (config?.files_on_host || config?.file_contents || config?.repo) {
         return null;
       }
       return (

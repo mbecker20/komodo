@@ -28,6 +28,7 @@ import { Link } from "react-router-dom";
 import { fmt_duration, fmt_operation, fmt_version } from "@lib/formatting";
 import {
   cn,
+  is_service_user,
   updateLogToHtml,
   usableResourcePath,
   version_is_none,
@@ -50,12 +51,7 @@ export const UpdateUser = ({
   defaultAvatar?: boolean;
   muted?: boolean;
 }) => {
-  if (
-    user_id === "Procedure" ||
-    user_id === "Github" ||
-    user_id === "Auto Redeploy" ||
-    user_id === "Resource Sync"
-  ) {
+  if (is_service_user(user_id)) {
     return (
       <div
         className={cn(

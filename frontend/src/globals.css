@@ -21,6 +21,7 @@
   body {
     @apply bg-background text-foreground;
     font-family: Inter;
+    overflow-y: hidden;
   }
   pre {
     @apply bg-card text-card-foreground border rounded-xl min-h-full text-xs p-4 whitespace-pre-wrap scroll-m-4 break-all;

@@ -1481,6 +1481,13 @@ export interface StackConfig {
 	 * If this is empty, will use file `compose.yaml`.
 	 */
 	file_paths?: string[];
+	/**
+	 * If this is checked, the stack will source the files on the host.
+	 * Use `run_directory` and `file_paths` to specify the path on the host.
+	 * This is useful for those who wish to setup their files on the host using SSH or similar,
+	 * rather than defining the contents in UI or in a git repo.
+	 */
+	files_on_host?: boolean;
 	/** Used with `registry_account` to login to a registry before docker compose up. */
 	registry_provider?: string;
 	/** Used with `registry_provider` to login to a registry before docker compose up. */
@@ -1612,7 +1619,8 @@ export interface StackInfo {
 	 */
 	latest_services?: StackServiceNames[];
 	/**
-	 * The remote compose file contents. This is updated whenever Monitor refreshes the stack cache.
+	 * The remote compose file contents, whether on host or in repo.
+	 * This is updated whenever Monitor refreshes the stack cache.
 	 * It will be empty if the file is defined directly in the stack config.
 	 */
 	remote_contents?: ComposeContents[];
