@@ -139,6 +139,7 @@ impl From<BuildConfig>
         minor: value.version.minor,
         patch: value.version.patch,
       },
+      auto_increment_version: true,
       image_name: Default::default(),
       image_tag: Default::default(),
       git_provider: String::from("github.com"),

@@ -92,6 +92,13 @@ pub struct BuildConfig {
   #[builder(default)]
   pub version: Version,
 
+  /// Whether to automatically increment the patch on every build.
+  /// Default is `true`
+  #[serde(default = "default_auto_increment_version")]
+  #[builder(default = "default_auto_increment_version()")]
+  #[partial_default(default_auto_increment_version())]
+  pub auto_increment_version: bool,
+
   /// An alternate name for the image pushed to the repository.
   /// If this is empty, it will use the build name.
   ///
@@ -256,6 +263,10 @@ impl BuildConfig {
   }
 }
 
+fn default_auto_increment_version() -> bool {
+  true
+}
+
 fn default_git_provider() -> String {
   String::from("github.com")
 }
@@ -286,6 +297,7 @@ impl Default for BuildConfig {
       builder_id: Default::default(),
       skip_secret_interp: Default::default(),
       version: Default::default(),
+      auto_increment_version: default_auto_increment_version(),
       image_name: Default::default(),
       image_tag: Default::default(),
       git_provider: default_git_provider(),

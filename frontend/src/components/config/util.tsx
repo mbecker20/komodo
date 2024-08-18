@@ -97,6 +97,9 @@ export const ConfigInput = ({
   placeholder,
   onChange,
   onBlur,
+  className,
+  inputLeft,
+  inputRight,
 }: {
   label: string;
   boldLabel?: boolean;
@@ -106,17 +109,36 @@ export const ConfigInput = ({
   placeholder?: string;
   onChange?: (value: string) => void;
   onBlur?: (value: string) => void;
+  className?: string;
+  inputLeft?: ReactNode;
+  inputRight?: ReactNode;
 }) => (
   <ConfigItem label={label} boldLabel={boldLabel} description={description}>
-    <Input
-      className="max-w-[75%] lg:max-w-[400px]"
-      type={typeof value === "number" ? "number" : undefined}
-      value={value}
-      onChange={(e) => onChange && onChange(e.target.value)}
-      onBlur={(e) => onBlur && onBlur(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-    />
+    {inputLeft || inputRight ? (
+      <div className="flex gap-2 items-center">
+        {inputLeft}
+        <Input
+          className={cn("max-w-[75%] lg:max-w-[400px]", className)}
+          type={typeof value === "number" ? "number" : undefined}
+          value={value}
+          onChange={(e) => onChange && onChange(e.target.value)}
+          onBlur={(e) => onBlur && onBlur(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+        {inputRight}
+      </div>
+    ) : (
+      <Input
+        className={cn("max-w-[75%] lg:max-w-[400px]", className)}
+        type={typeof value === "number" ? "number" : undefined}
+        value={value}
+        onChange={(e) => onChange && onChange(e.target.value)}
+        onBlur={(e) => onBlur && onBlur(e.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+      />
+    )}
   </ConfigItem>
 );
 
@@ -250,7 +272,7 @@ export const ProviderSelector = ({
         onBlur={() => setCustomMode(false)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
-            setCustomMode(false)
+            setCustomMode(false);
           }
         }}
         autoFocus

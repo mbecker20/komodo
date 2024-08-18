@@ -2,6 +2,7 @@ import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
   AddExtraArgMenu,
+  ConfigInput,
   ConfigItem,
   ImageRegistryConfig,
   InputList,
@@ -68,49 +69,24 @@ export const BuildConfig = ({
             label: "Version",
             labelHidden: true,
             components: {
-              version: (version, set) => {
-                const { major, minor, patch } = version ?? {
-                  major: 0,
-                  minor: 0,
-                  patch: 0,
-                };
+              version: (_version, set) => {
+                const version =
+                  typeof _version === "object"
+                    ? `${_version.major}.${_version.major}.${_version.patch}`
+                    : _version;
                 return (
-                  <ConfigItem
+                  <ConfigInput
+                    className="text-lg w-[200px]"
                     label="Version"
-                    description="Increment the build's major / minor version. The patch number will be incremented for every build."
-                  >
-                    <div className="flex gap-4 items-center">
-                      <div className="text-xl">
-                        v{major}.{minor}.{patch}
-                      </div>
-                      {!disabled && (
-                        <Button
-                          variant="secondary"
-                          onClick={() =>
-                            set({
-                              version: { major: major + 1, minor: 0, patch: 0 },
-                            })
-                          }
-                        >
-                          + Major
-                        </Button>
-                      )}
-                      {!disabled && (
-                        <Button
-                          variant="secondary"
-                          onClick={() =>
-                            set({
-                              version: { major, minor: minor + 1, patch: 0 },
-                            })
-                          }
-                        >
-                          + Minor
-                        </Button>
-                      )}
-                    </div>
-                  </ConfigItem>
+                    placeholder="0.0.0"
+                    value={version}
+                    onChange={(version) => set({ version: version as any })}
+                    disabled={disabled}
+                    boldLabel
+                  />
                 );
               },
+              auto_increment_version: true,
             },
           },
           {

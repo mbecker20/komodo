@@ -79,7 +79,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
     let _action_guard =
       action_state.update(|state| state.building = true)?;
 
-    build.config.version.increment();
+    if build.config.auto_increment_version {
+      build.config.version.increment();
+    }
     update.version = build.config.version;
     update_update(update.clone()).await?;
 

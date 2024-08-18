@@ -212,6 +212,7 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         builder_id: String::new(),
         skip_secret_interp: value.skip_secret_interp,
         version: value.version.into(),
+        auto_increment_version: true,
         image_name: Default::default(),
         image_tag: Default::default(),
         git_provider: String::from("github.com"),

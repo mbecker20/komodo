@@ -375,6 +375,11 @@ export interface BuildConfig {
 	/** The current version of the build. */
 	version?: Version;
 	/**
+	 * Whether to automatically increment the patch on every build.
+	 * Default is `true`
+	 */
+	auto_increment_version: boolean;
+	/**
 	 * An alternate name for the image pushed to the repository.
 	 * If this is empty, it will use the build name.
 	 * 

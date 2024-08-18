@@ -284,8 +284,8 @@ export const ConfigAgain = <
             case "string":
               return (
                 <ConfigInput
-                  key={args?.label ?? key.toString()}
-                  label={key.toString()}
+                  key={key.toString()}
+                  label={args?.label ?? key.toString()}
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
                   disabled={disabled}
