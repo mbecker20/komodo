@@ -136,6 +136,14 @@ export const BuildConfig = ({
           {
             label: "Image",
             components: {
+              image_registry: (registry, set) => (
+                <ImageRegistryConfig
+                  registry={registry}
+                  setRegistry={(image_registry) => set({ image_registry })}
+                  resource_id={update.builder_id ?? config.builder_id}
+                  disabled={disabled}
+                />
+              ),
               build_path: {
                 placeholder: ".",
                 description:
@@ -146,14 +154,6 @@ export const BuildConfig = ({
                 description:
                   "The path to the dockerfile, relative to the build path.",
               },
-              image_registry: (registry, set) => (
-                <ImageRegistryConfig
-                  registry={registry}
-                  setRegistry={(image_registry) => set({ image_registry })}
-                  resource_id={update.builder_id ?? config.builder_id}
-                  disabled={disabled}
-                />
-              ),
             },
           },
           {
