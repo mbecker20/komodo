@@ -48,6 +48,8 @@ export const StackConfig = ({
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
+  const files_on_host = update.files_on_host ?? config.files_on_host;
+
   return (
     <Config
       titleOther={titleOther}
@@ -86,7 +88,70 @@ export const StackConfig = ({
             },
           },
           {
+            label: "Files on Server",
+            labelHidden: true,
+            components: {
+              files_on_host: {
+                label: "Files on Server",
+                boldLabel: true,
+                description:
+                  "Manage the compose files on server yourself. Just configure the Run Directory and File Paths to your files.",
+              },
+            },
+          },
+          {
+            label: "Run Path",
+            labelHidden: true,
+            hidden: !files_on_host,
+            components: {
+              run_directory: {
+                placeholder: "/path/to/folder",
+                description:
+                  "Set the cwd when running compose up command. Should usually be the parent folder of the compose files.",
+                boldLabel: true,
+              },
+            },
+          },
+          {
+            label: "File Paths",
+            hidden: !files_on_host,
+            description:
+              "Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'. Relative to 'Run Directory'.",
+            contentHidden:
+              (update.file_paths ?? config.file_paths)?.length === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    file_paths: [
+                      ...(update.file_paths ?? config.file_paths ?? []),
+                      "",
+                    ],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add File
+              </Button>
+            ),
+            components: {
+              file_paths: (value, set) => (
+                <InputList
+                  field="file_paths"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="compose.yaml"
+                />
+              ),
+            },
+          },
+          {
             label: "Compose File",
+            hidden: files_on_host,
             description:
               "Paste the file contents here, or configure a git repo.",
             actions: (
@@ -252,7 +317,7 @@ export const StackConfig = ({
             },
           },
         ],
-        "Git Repo": [
+        "Git Repo": !files_on_host && [
           {
             label: "Git",
             description:
@@ -307,7 +372,7 @@ export const StackConfig = ({
             labelHidden: true,
             components: {
               run_directory: {
-                placeholder: "Eg. './'",
+                placeholder: "./",
                 description:
                   "Set the cwd when running compose up command. Relative to the repo root.",
                 boldLabel: true,
@@ -317,7 +382,7 @@ export const StackConfig = ({
           {
             label: "File Paths",
             description:
-              "Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'.",
+              "Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'. Relative to 'Run Directory'.",
             contentHidden:
               (update.file_paths ?? config.file_paths)?.length === 0,
             actions: !disabled && (

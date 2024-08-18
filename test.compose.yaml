@@ -1,0 +1,38 @@
+services:
+  monitor-periphery:
+    build:
+      context: .
+      dockerfile: bin/periphery/Dockerfile
+    logging:
+      driver: local
+    networks:
+      - monitor-network
+    ports:
+      - 8120:8120
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - monitor-repos:/etc/monitor/repos
+    # environment:
+    #   # If the disk size is overreporting, can use one of these to 
+    #   # whitelist / blacklist the disks to filter them, whichever is easier. 
+    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos 
+    #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
+
+  monitor-mongo:
+    image: mongo
+    restart: unless-stopped
+    logging:
+      driver: none
+    networks:
+      - monitor-network
+    ports:
+      - 27017:27017
+    volumes:
+      - db-data:/data/db
+
+volumes:
+  db-data:
+  monitor-repos:
+
+networks:
+  monitor-network: {}

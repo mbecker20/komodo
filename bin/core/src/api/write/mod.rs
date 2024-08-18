@@ -3,6 +3,7 @@ use std::time::Instant;
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
+use derive_variants::{EnumVariants, ExtractVariant};
 use monitor_client::{api::write::*, entities::user::User};
 use resolver_api::{derive::Resolver, Resolver};
 use serde::{Deserialize, Serialize};
@@ -31,7 +32,10 @@ mod user_group;
 mod variable;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
+)]
+#[variant_derive(Debug)]
 #[resolver_target(State)]
 #[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
@@ -178,7 +182,11 @@ async fn handler(
   Ok((TypedHeader(ContentType::json()), res??))
 }
 
-#[instrument(name = "WriteRequest", skip(user), fields(user_id = user.id))]
+#[instrument(
+  name = "WriteRequest",
+  skip(user, request),
+  fields(user_id = user.id, request = format!("{:?}", request.extract_variant()))
+)]
 async fn task(
   req_id: Uuid,
   request: WriteRequest,

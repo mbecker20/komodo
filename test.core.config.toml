@@ -1,0 +1,34 @@
+title = "Test"
+host = "http://localhost.9120"
+passkey = "a_random_passkey"
+ensure_server = "http://localhost:8120"
+
+############
+# DATABASE #
+############
+
+mongo.address = "localhost:27017"
+
+################
+# AUTH / LOGIN #
+################
+
+local_auth = true
+jwt_secret = "your_random_secret"
+jwt_ttl = "2-wk"
+
+############
+# WEBHOOKS #
+############
+
+webhook_secret = "a_random_webhook_secret"
+
+##################
+# POLL INTERVALS #
+##################
+
+stack_poll_interval = "1-min"
+sync_poll_interval = "1-min"
+build_poll_interval = "1-min"
+repo_poll_interval = "1-min"
+monitoring_interval = "5-sec"

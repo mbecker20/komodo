@@ -17,6 +17,25 @@ pub struct ListComposeProjects {}
 
 //
 
+/// Get the compose contents on the host, for stacks using
+/// `files_on_host`.
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(GetComposeContentsOnHostResponse)]
+pub struct GetComposeContentsOnHost {
+  /// The name of the stack
+  pub name: String,
+  pub run_directory: String,
+  pub file_paths: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct GetComposeContentsOnHostResponse {
+  pub contents: Vec<ComposeContents>,
+  pub errors: Vec<ComposeContents>,
+}
+
+//
+
 /// The stack folder must already exist for this to work
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(Log)]

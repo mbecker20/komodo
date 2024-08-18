@@ -1,11 +1,13 @@
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use monitor_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
     monitor_timestamp,
     permission::PermissionLevel,
-    stack::{PartialStackConfig, Stack, StackInfo},
+    server::ServerState,
+    stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
     update::Update,
     user::User,
     NoData, Operation,
@@ -18,11 +20,16 @@ use mungos::{
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
+use periphery_client::api::compose::{
+  GetComposeContentsOnHost, GetComposeContentsOnHostResponse,
+};
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
   helpers::{
+    periphery_client,
+    query::get_server_with_status,
     stack::{
       remote::get_remote_compose_contents,
       services::extract_services_into_res,
@@ -146,7 +153,10 @@ impl Resolve<RefreshStackCache, User> for State {
 
     let file_contents_empty = stack.config.file_contents.is_empty();
 
-    if file_contents_empty && stack.config.repo.is_empty() {
+    if !stack.config.files_on_host
+      && file_contents_empty
+      && stack.config.repo.is_empty()
+    {
       // Nothing to do without one of these
       return Ok(NoData {});
     }
@@ -159,8 +169,63 @@ impl Resolve<RefreshStackCache, User> for State {
       remote_errors,
       latest_hash,
       latest_message,
-    ) = if file_contents_empty {
+    ) = if stack.config.files_on_host {
+      // =============
+      // FILES ON HOST
+      // =============
+      if stack.config.server_id.is_empty() {
+        (vec![], None, None, None, None)
+      } else {
+        let (server, status) =
+          get_server_with_status(&stack.config.server_id).await?;
+        if status != ServerState::Ok {
+          (vec![], None, None, None, None)
+        } else {
+          let GetComposeContentsOnHostResponse { contents, errors } =
+            match periphery_client(&server)?
+              .request(GetComposeContentsOnHost {
+                file_paths: stack.file_paths().to_vec(),
+                name: stack.name.clone(),
+                run_directory: stack.config.run_directory.clone(),
+              })
+              .await
+              .context(
+                "failed to get compose file contents from host",
+              ) {
+              Ok(res) => res,
+              Err(e) => GetComposeContentsOnHostResponse {
+                contents: Default::default(),
+                errors: vec![ComposeContents {
+                  path: stack.config.run_directory.clone(),
+                  contents: format_serror(&e.into()),
+                }],
+              },
+            };
+
+          let project_name = stack.project_name(true);
+
+          let mut services = Vec::new();
+
+          for contents in &contents {
+            if let Err(e) = extract_services_into_res(
+              &project_name,
+              &contents.contents,
+              &mut services,
+            ) {
+              warn!(
+                "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
+                stack.name
+              );
+            }
+          }
+
+          (services, Some(contents), Some(errors), None, None)
+        }
+      }
+    } else if file_contents_empty {
+      // ================
       // REPO BASED STACK
+      // ================
       let (
         remote_contents,
         remote_errors,
@@ -196,6 +261,9 @@ impl Resolve<RefreshStackCache, User> for State {
         latest_message,
       )
     } else {
+      // =============
+      // UI BASED FILE
+      // =============
       let mut services = Vec::new();
       if let Err(e) = extract_services_into_res(
         // this should latest (not deployed), so make the project name fresh.

@@ -58,7 +58,13 @@ pub async fn compose_up(
   let file_paths = stack
     .file_paths()
     .iter()
-    .map(|path| (path, run_directory.join(path)))
+    .map(|path| {
+      (
+        path,
+        // This will remove any intermediate uneeded '/./' in the path
+        run_directory.join(path).components().collect::<PathBuf>(),
+      )
+    })
     .collect::<Vec<_>>();
 
   for (path, full_path) in &file_paths {
@@ -70,7 +76,7 @@ pub async fn compose_up(
     return Err(anyhow!("A compose file doesn't exist after writing stack. Ensure the run_directory and file_paths are correct."));
   }
 
-  for (path, full_path) in &file_paths {
+  for (_, full_path) in &file_paths {
     let file_contents =
       match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
@@ -85,7 +91,7 @@ pub async fn compose_up(
             .push(Log::error("read compose file", error.clone()));
           // This should only happen for repo stacks, ie remote error
           res.remote_errors.push(ComposeContents {
-            path: path.to_string(),
+            path: full_path.display().to_string(),
             contents: error,
           });
           return Err(anyhow!(
@@ -172,12 +178,17 @@ pub async fn compose_up(
   res.deployed = log.success;
   res.logs.push(log);
 
-  if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
-    format!("failed to clean up files after deploy | path: {root:?} | ensure all volumes are mounted outside the repo directory (preferably use absolute path for mounts)")
-  }) {
-    res
-      .logs
-      .push(Log::error("clean up files", format_serror(&e.into())))
+  // Unless the files are supposed to be managed on the host,
+  // clean up here, which will also let user know immediately if there will be a problem
+  // with any accidental volumes mounted inside repo directory (just use absolute volumes anyways)
+  if !stack.config.files_on_host {
+    if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
+      format!("failed to clean up files after deploy | path: {root:?} | ensure all volumes are mounted outside the repo directory (preferably use absolute path for mounts)")
+    }) {
+      res
+        .logs
+        .push(Log::error("clean up files", format_serror(&e.into())))
+    }
   }
 
   Ok(())
@@ -198,8 +209,33 @@ async fn write_stack(
   // Cannot use canonicalize yet as directory may not exist.
   let run_directory = run_directory.components().collect::<PathBuf>();
 
-  if stack.config.file_contents.is_empty() {
-    // Clone the repo
+  if stack.config.files_on_host {
+    // =============
+    // FILES ON HOST
+    // =============
+    // Only need to write environment file here (which does nothing if not using this feature)
+    let env_file_path = match write_environment_file(
+      &stack.config.environment,
+      &stack.config.env_file_path,
+      stack
+        .config
+        .skip_secret_interp
+        .then_some(&periphery_config().secrets),
+      &run_directory,
+      &mut res.logs,
+    )
+    .await
+    {
+      Ok(path) => path,
+      Err(_) => {
+        return Err(anyhow!("failed to write environment file"));
+      }
+    };
+    Ok(env_file_path)
+  } else if stack.config.file_contents.is_empty() {
+    // ================
+    // REPO BASED FILES
+    // ================
     if stack.config.repo.is_empty() {
       // Err response will be written to return, no need to add it to log here
       return Err(anyhow!("Must either input compose file contents directly or provide a repo. Got neither."));
@@ -284,6 +320,9 @@ async fn write_stack(
 
     Ok(env_file_path)
   } else {
+    // ==============
+    // UI BASED FILES
+    // ==============
     // Ensure run directory exists
     fs::create_dir_all(&run_directory).await.with_context(|| {
       format!(

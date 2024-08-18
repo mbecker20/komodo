@@ -53,7 +53,8 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
 
 const ConfigInfoServices = ({ id }: { id: string }) => {
   const [view, setView] = useLocalStorage("stack-tabs-v1", "Config");
-  const state = useStack(id)?.info.state;
+  const info = useStack(id)?.info;
+  const state = info?.state;
   const stackDown =
     state === undefined ||
     state === Types.StackState.Unknown ||
@@ -150,7 +151,7 @@ export const StackComponents: RequiredResourceComponents = {
     },
     NoConfig: ({ id }) => {
       const config = useFullStack(id)?.config;
-      if (config?.file_contents || config?.repo) {
+      if (config?.files_on_host || config?.file_contents || config?.repo) {
         return null;
       }
       return (
@@ -195,6 +196,30 @@ export const StackComponents: RequiredResourceComponents = {
               The compose project is not on the host. If the compose stack is
               running, the 'Project Name' needs to be set. This can be found
               with 'docker compose ls'.
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    RemoteErrors: ({ id }) => {
+      const info = useFullStack(id)?.info;
+      const errors = info?.remote_errors;
+      if (!errors || errors.length === 0) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 bg-destructive/75 hover:bg-destructive transition-colors cursor-pointer">
+              <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                Remote Error
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div>
+              There are errors reading the remote file contents. See{" "}
+              <span className="font-bold">Info</span> tab for details.
             </div>
           </HoverCardContent>
         </HoverCard>
