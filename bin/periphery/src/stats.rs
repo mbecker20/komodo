@@ -107,7 +107,7 @@ impl StatsClient {
       .list()
       .iter()
       .filter(|d| {
-        if d.file_system() != "overlay" {
+        if d.file_system() == "overlay" {
           return false;
         }
         let path = d.mount_point();
