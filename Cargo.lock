@@ -41,7 +41,7 @@ dependencies = [
 
 [[package]]
 name = "alerter"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "axum",
@@ -922,7 +922,7 @@ dependencies = [
 
 [[package]]
 name = "command"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "monitor_client",
  "run_command",
@@ -1306,7 +1306,7 @@ dependencies = [
 
 [[package]]
 name = "formatting"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "serror",
 ]
@@ -1437,7 +1437,7 @@ checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
 name = "git"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "command",
@@ -2041,7 +2041,7 @@ dependencies = [
 
 [[package]]
 name = "logger"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "monitor_client",
@@ -2111,7 +2111,7 @@ dependencies = [
 
 [[package]]
 name = "migrator"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2164,9 +2164,9 @@ dependencies = [
 
 [[package]]
 name = "mongo_indexed"
-version = "2.0.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2570cf8b41b536db37f64a27bafb814e3f1e58db5266dd295427364d957e974f"
+checksum = "556e2883109599e3cc28c7ad0d700c0b5c297e4d17ae810c669d18f79a02df26"
 dependencies = [
  "mongo_indexed_derive",
  "mongodb",
@@ -2246,7 +2246,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "clap",
@@ -2262,7 +2262,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_client"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2294,7 +2294,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_core"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2349,7 +2349,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_periphery"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2773,7 +2773,7 @@ checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "periphery_client"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "monitor_client",
@@ -4507,7 +4507,7 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "update_logger"
-version = "1.13.2"
+version = "1.13.3"
 dependencies = [
  "anyhow",
  "logger",
