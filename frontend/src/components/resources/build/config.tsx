@@ -72,7 +72,7 @@ export const BuildConfig = ({
               version: (_version, set) => {
                 const version =
                   typeof _version === "object"
-                    ? `${_version.major}.${_version.major}.${_version.patch}`
+                    ? `${_version.major}.${_version.minor}.${_version.patch}`
                     : _version;
                 return (
                   <ConfigInput
