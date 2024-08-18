@@ -7,10 +7,17 @@ Connecting a server to monitor has 2 steps:
 
 Once step 1. is complete, you can just connect the server to Monitor Core from the UI.
 
-## Install the Periphery agent
+## Install
 
-The easiest way to setup and update periphery is to use the setup script (as root user):
+You can install Periphery as a systemd managed process, run it as a [docker container](https://github.com/mbecker20/monitor/pkgs/container/periphery), or do whatever you want with the binary.
 
+Some Periphery actions interact with your hosts file system, like cloning repos, or accessing local compose files.
+For this reason, runnning periphery in a container can be a bit more complicated.
+Additionally, Periphery in a container tends to overreport the disks by default, but this can be fixed via some configuration.
+
+### Install the Periphery agent - systemd
+
+As root user:
 ```sh
 curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3
 ```
@@ -27,7 +34,28 @@ You can find more information (and view the script) in the [readme](https://gith
 This script can be run multiple times without issue, and it won't change existing config after the first run. Just run it again after a Monitor version release, and it will update the periphery version.
 :::
 
-## Manual install steps
+### Install the Periphery agent - container
+
+You can use a docker compose file like this:
+```yaml
+services:
+  monitor-periphery:
+    image: ghcr.io/mbecker20/periphery:latest # use ghcr.io/mbecker20/periphery:latest-aarch64 for arm support
+    logging:
+      driver: local
+		ports:
+			- 8120:8120
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
+    # environment:
+    #   # If the disk size is overreporting, can use one of these to 
+    #   # whitelist / blacklist the disks to filter them, whichever is easier. 
+    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos 
+    #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
+```
+
+### Manual install steps - binaries
 
 1.  Download the periphery binary from the latest [release](https://github.com/mbecker20/monitor/releases).
 
