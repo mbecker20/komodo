@@ -98,17 +98,13 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
     let file_paths = file_paths
       .iter()
       .map(|path| {
-        (
-          path,
-          // This will remove any intermediate uneeded '/./' in the path
-          run_directory.join(path).components().collect::<PathBuf>(),
-        )
+        run_directory.join(path).components().collect::<PathBuf>()
       })
       .collect::<Vec<_>>();
 
     let mut res = GetComposeContentsOnHostResponse::default();
 
-    for (path, full_path) in &file_paths {
+    for full_path in &file_paths {
       match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
           "failed to read compose file contents at {full_path:?}"
@@ -116,13 +112,13 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
       }) {
         Ok(contents) => {
           res.contents.push(ComposeContents {
-            path: path.to_string(),
+            path: full_path.display().to_string(),
             contents,
           });
         }
         Err(e) => {
           res.errors.push(ComposeContents {
-            path: path.to_string(),
+            path: full_path.display().to_string(),
             contents: format_serror(&e.into()),
           });
         }

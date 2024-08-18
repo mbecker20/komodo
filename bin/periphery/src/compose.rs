@@ -76,7 +76,7 @@ pub async fn compose_up(
     return Err(anyhow!("A compose file doesn't exist after writing stack. Ensure the run_directory and file_paths are correct."));
   }
 
-  for (path, full_path) in &file_paths {
+  for (_, full_path) in &file_paths {
     let file_contents =
       match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
@@ -91,7 +91,7 @@ pub async fn compose_up(
             .push(Log::error("read compose file", error.clone()));
           // This should only happen for repo stacks, ie remote error
           res.remote_errors.push(ComposeContents {
-            path: path.to_string(),
+            path: full_path.display().to_string(),
             contents: error,
           });
           return Err(anyhow!(
@@ -100,7 +100,7 @@ pub async fn compose_up(
         }
       };
     res.file_contents.push(ComposeContents {
-      path: path.to_string(),
+      path: full_path.display().to_string(),
       contents: file_contents,
     });
   }
