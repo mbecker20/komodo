@@ -201,6 +201,29 @@ export const StackComponents: RequiredResourceComponents = {
         </HoverCard>
       );
     },
+    RemoteErrors: ({ id }) => {
+      const info = useFullStack(id)?.info;
+      const errors = info?.remote_errors;
+      if (!errors || errors.length === 0) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 bg-destructive/75 hover:bg-destructive transition-colors cursor-pointer">
+              <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                Remote Error
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid gap-2">
+              There are errors reading the remote file contents.
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
     Deployed: ({ id }) => {
       const info = useStack(id)?.info;
       const fullInfo = useFullStack(id)?.info;

@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import { Card, CardHeader } from "@ui/card";
 import { useFullStack, useStack } from ".";
 import { Types } from "@monitor/client";
+import { updateLogToHtml } from "@lib/utils";
 
 export const StackInfo = ({
   id,
@@ -65,7 +66,12 @@ export const StackInfo = ({
             {stack?.info?.remote_errors?.map((content, i) => (
               <pre key={i} className="flex flex-col gap-2">
                 path: {content.path}
-                <pre>{content.contents}</pre>
+                <pre
+                  dangerouslySetInnerHTML={{
+                    __html: updateLogToHtml(content.contents),
+                  }}
+                  className="max-h-[500px] overflow-y-auto"
+                />
               </pre>
             ))}
           </CardHeader>
