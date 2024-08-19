@@ -31,6 +31,8 @@ pub mod builder;
 pub mod config;
 /// Subtypes of [Deployment][deployment::Deployment].
 pub mod deployment;
+/// Networks, Images, Containers.
+pub mod docker;
 /// Subtypes of [LogConfig][logger::LogConfig].
 pub mod logger;
 /// Subtypes of [Permission][permission::Permission].
@@ -49,6 +51,8 @@ pub mod server;
 pub mod server_template;
 /// Subtypes of [Stack][stack::Stack]
 pub mod stack;
+/// Subtypes for server stats reporting.
+pub mod stats;
 /// Subtypes of [ResourceSync][sync::ResourceSync]
 pub mod sync;
 /// Subtypes of [Tag][tag::Tag].
@@ -68,6 +72,8 @@ pub mod variable;
 pub type I64 = i64;
 #[typeshare(serialized_as = "number")]
 pub type U64 = u64;
+#[typeshare(serialized_as = "number")]
+pub type Usize = usize;
 #[typeshare(serialized_as = "any")]
 pub type MongoDocument = bson::Document;
 #[typeshare(serialized_as = "any")]

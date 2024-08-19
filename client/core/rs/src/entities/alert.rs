@@ -7,8 +7,8 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  _Serror, deployment::DeploymentState, server::stats::SeverityLevel,
-  stack::StackState, update::ResourceTarget, Version,
+  _Serror, deployment::DeploymentState, stack::StackState,
+  stats::SeverityLevel, update::ResourceTarget, Version,
 };
 
 /// Representation of an alert in the system.

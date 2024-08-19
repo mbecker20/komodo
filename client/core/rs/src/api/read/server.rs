@@ -6,16 +6,13 @@ use typeshare::typeshare;
 use crate::entities::{
   deployment::ContainerSummary,
   server::{
-    docker_image::ImageSummary,
-    docker_network::DockerNetwork,
-    stats::{
-      SystemInformation, SystemProcess, SystemStats,
-      SystemStatsRecord,
-    },
     Server, ServerActionState, ServerListItem, ServerQuery,
     ServerState,
   },
   stack::ComposeProject,
+  stats::{
+    SystemInformation, SystemProcess, SystemStats, SystemStatsRecord,
+  },
   Timelength, I64,
 };
 

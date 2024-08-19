@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
+# members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
+members = ["client/core/rs"]
 
 [workspace.package]
 version = "1.13.4"

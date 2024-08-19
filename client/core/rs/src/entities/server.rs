@@ -7,10 +7,6 @@ use super::resource::{
   AddFilters, Resource, ResourceListItem, ResourceQuery,
 };
 
-pub mod docker_image;
-pub mod docker_network;
-pub mod stats;
-
 #[typeshare]
 pub type Server = Resource<ServerConfig, ()>;
 

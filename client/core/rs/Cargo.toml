@@ -12,7 +12,6 @@ repository.workspace = true
 
 [features]
 mongo = ["dep:mongo_indexed"]
-docker = ["dep:bollard"]
 
 [dependencies]
 # mogh
@@ -25,7 +24,6 @@ derive_variants.workspace = true
 resolver_api.workspace = true
 serror.workspace = true
 # external
-bollard = { workspace = true, optional = true }
 tokio-tungstenite.workspace = true
 derive_builder.workspace = true
 serde_json.workspace = true
