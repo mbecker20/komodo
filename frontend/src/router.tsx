@@ -15,6 +15,7 @@ import { UserPage } from "@pages/user";
 import { UserGroupPage } from "@pages/user-group";
 import { Settings } from "@pages/settings";
 import { StackServicePage } from "@pages/stack-service";
+import { NetworkPage } from "@pages/server-info/network";
 
 const ROUTER = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ const ROUTER = createBrowserRouter([
           {
             path: ":id/service/:service",
             element: <StackServicePage />,
+          },
+          {
+            path: ":id/network/:network",
+            element: <NetworkPage />,
           },
         ],
       },

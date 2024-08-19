@@ -39,7 +39,7 @@ mungos = "1.0.1"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.39.2", features = ["full"] }
+tokio = { version = "1.39.3", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json"] }
 tokio-util = "0.7.11"
 futures = "0.3.30"
@@ -90,13 +90,13 @@ jwt = "0.16.0"
 hex = "0.4.3"
 
 # SYSTEM
-bollard = "0.17.0"
+bollard = "0.17.1"
 sysinfo = "0.31.2"
 
 # CLOUD
 aws-config = "1.5.5"
-aws-sdk-ec2 = "1.66.0"
-aws-sdk-ecr = "1.40.0"
+aws-sdk-ec2 = "1.67.0"
+aws-sdk-ecr = "1.41.0"
 
 # MISC
 derive_builder = "0.20.0"

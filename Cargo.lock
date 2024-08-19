@@ -261,9 +261,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ec2"
-version = "1.66.0"
+version = "1.67.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bf8f784ab315034c3abbd4bd4aeb23c43093d5beb534f34fbb54df9064e4e96"
+checksum = "80e9e023bd1b9aa490f9495dc26a96b340dae08388d9b41fee269ed64b2f57a9"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -285,9 +285,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ecr"
-version = "1.40.0"
+version = "1.41.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e6c64dafa2d1f523b2f24ab410d1c89f41d912c901e7599f9350ea1188fd42c"
+checksum = "2a4f6852287da0612bdacf2f1acbf3f73eb2fcbcc50ab0453ef2962e8a4ae5ae"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -733,9 +733,9 @@ dependencies = [
 
 [[package]]
 name = "bollard"
-version = "0.17.0"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a063d51a634c7137ecd9f6390ec78e1c512e84c9ded80198ec7df3339a16a33"
+checksum = "d41711ad46fda47cd701f6908e59d1bd6b9a2b7464c0d0aeab95c6d37096ff8a"
 dependencies = [
  "base64 0.22.1",
  "bollard-stubs",
@@ -4001,9 +4001,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.39.2"
+version = "1.39.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "daa4fb1bc778bd6f04cbfc4bb2d06a7396a8f299dc33ea1900cedaa316f467b1"
+checksum = "9babc99b9923bfa4804bd74722ff02c0381021eafa4db9949217e3be8e84fff5"
 dependencies = [
  "backtrace",
  "bytes",

@@ -28,9 +28,10 @@ import { ActionWithDialog, ConfirmButton, StatusBadge } from "@components/util";
 import { Button } from "@ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
-import { ResourceComponents } from "..";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StackTable } from "../stack/table";
+import { ResourceComponents } from "..";
+import { ServerInfo } from "./info";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -51,44 +52,43 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
 
 const ConfigOrChildResources = ({ id }: { id: string }) => {
   const [view, setView] = useLocalStorage("server-tabs-v1", "Config");
-  const deployments = useRead("ListDeployments", {}).data?.filter(
-    (deployment) => deployment.info.server_id === id
-  );
-  const deploymentsDisabled = (deployments?.length || 0) === 0;
-  const repos = useRead("ListRepos", {}).data?.filter(
-    (repo) => repo.info.server_id === id
-  );
-  const reposDisabled = (repos?.length || 0) === 0;
-  const stacks = useRead("ListStacks", {}).data?.filter(
-    (stack) => stack.info.server_id === id
-  );
-  const stacksDisabled = (stacks?.length || 0) === 0;
-  const currentView =
-    (view === "Deployments" && deploymentsDisabled) ||
-    (view === "Repos" && reposDisabled)
-      ? "Config"
-      : view;
+
+  const deployments =
+    useRead("ListDeployments", {}).data?.filter(
+      (deployment) => deployment.info.server_id === id
+    ) ?? [];
+  const noDeployments = deployments.length === 0;
+  const repos =
+    useRead("ListRepos", {}).data?.filter(
+      (repo) => repo.info.server_id === id
+    ) ?? [];
+  const noRepos = repos.length === 0;
+  const stacks =
+    useRead("ListStacks", {}).data?.filter(
+      (stack) => stack.info.server_id === id
+    ) ?? [];
+  const noStacks = stacks.length === 0;
+
+  const noResources = noDeployments && noRepos && noStacks;
+
+  const currentView = view === "Resources" && noResources ? "Config" : view;
+
   const tabsList = (
     <TabsList className="justify-start w-fit">
       <TabsTrigger value="Config" className="w-[110px]">
         Config
       </TabsTrigger>
-      <TabsTrigger
-        value="Deployments"
-        className="w-[110px]"
-        disabled={deploymentsDisabled}
-      >
-        Deployments
+
+      <TabsTrigger value="Info" className="w-[110px]">
+        Info
       </TabsTrigger>
+
       <TabsTrigger
-        value="Stacks"
+        value="Resources"
         className="w-[110px]"
-        disabled={stacksDisabled}
+        disabled={noResources}
       >
-        Stacks
-      </TabsTrigger>
-      <TabsTrigger value="Repos" className="w-[110px]" disabled={reposDisabled}>
-        Repos
+        Resources
       </TabsTrigger>
     </TabsList>
   );
@@ -98,30 +98,30 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         <ServerConfig id={id} titleOther={tabsList} />
       </TabsContent>
 
-      <TabsContent value="Deployments">
-        <Section
-          titleOther={tabsList}
-          actions={<ResourceComponents.Deployment.New server_id={id} />}
-        >
-          <DeploymentTable deployments={deployments ?? []} />
-        </Section>
+      <TabsContent value="Info">
+        <ServerInfo id={id} titleOther={tabsList} />
       </TabsContent>
 
-      <TabsContent value="Stacks">
-        <Section
-          titleOther={tabsList}
-          actions={<ResourceComponents.Stack.New server_id={id} />}
-        >
-          <StackTable stacks={stacks ?? []} />
-        </Section>
-      </TabsContent>
-
-      <TabsContent value="Repos">
-        <Section
-          titleOther={tabsList}
-          actions={<ResourceComponents.Repo.New server_id={id} />}
-        >
-          <RepoTable repos={repos ?? []} />
+      <TabsContent value="Resources">
+        <Section titleOther={tabsList}>
+          <Section
+            title="Deployments"
+            actions={<ResourceComponents.Deployment.New server_id={id} />}
+          >
+            <DeploymentTable deployments={deployments} />
+          </Section>
+          <Section
+            title="Stacks"
+            actions={<ResourceComponents.Stack.New server_id={id} />}
+          >
+            <StackTable stacks={stacks} />
+          </Section>
+          <Section
+            title="Repos"
+            actions={<ResourceComponents.Repo.New server_id={id} />}
+          >
+            <RepoTable repos={repos} />
+          </Section>
         </Section>
       </TabsContent>
     </Tabs>
