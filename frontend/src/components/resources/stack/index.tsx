@@ -135,7 +135,7 @@ export const StackComponents: RequiredResourceComponents = {
     State: ({ id }) => {
       const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
       const config = useFullStack(id)?.config;
-      if (!config?.file_contents && !config?.repo) {
+      if (!config?.files_on_host && !config?.file_contents && !config?.repo) {
         return null;
       }
       return <StatusBadge text={state} intent={stack_state_intention(state)} />;
