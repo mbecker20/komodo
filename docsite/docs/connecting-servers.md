@@ -43,8 +43,8 @@ services:
     image: ghcr.io/mbecker20/periphery:latest # use ghcr.io/mbecker20/periphery:latest-aarch64 for arm support
     logging:
       driver: local
-		ports:
-			- 8120:8120
+    ports:
+      - 8120:8120
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
