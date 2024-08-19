@@ -284,7 +284,7 @@ export const StackConfig = ({
             description:
               "If your compose file has init services that exit early, ignore them here so your stack will report the correct health.",
             contentHidden:
-              ((update.extra_args ?? config.extra_args)?.length ?? 0) === 0,
+              ((update.ignore_services ?? config.ignore_services)?.length ?? 0) === 0,
             actions: !disabled && (
               <Button
                 variant="secondary"
