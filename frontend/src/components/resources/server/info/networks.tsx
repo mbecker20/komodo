@@ -15,7 +15,7 @@ export const Networks = ({ id }: { id: string }) => {
         data={networks}
         columns={[
           {
-            accessorKey: "Name",
+            accessorKey: "name",
             header: ({ column }) => (
               <SortableHeader column={column} title="Name" />
             ),
@@ -29,21 +29,28 @@ export const Networks = ({ id }: { id: string }) => {
                 ) && <Badge variant="outline">System</Badge>}
               </div>
             ),
+            size: 200,
           },
           {
-            accessorKey: "Driver",
+            accessorKey: "driver",
             header: ({ column }) => (
               <SortableHeader column={column} title="Driver" />
             ),
           },
           {
-            accessorKey: "Attachable",
+            accessorKey: "scope",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Scope" />
+            ),
+          },
+          {
+            accessorKey: "attachable",
             header: ({ column }) => (
               <SortableHeader column={column} title="Attachable" />
             ),
           },
           {
-            accessorKey: "IPAM.Driver",
+            accessorKey: "ipam_driver",
             header: ({ column }) => (
               <SortableHeader column={column} title="IPAM Driver" />
             ),

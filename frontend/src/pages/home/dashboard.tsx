@@ -10,8 +10,9 @@ import {
 } from "@lib/color";
 import { useNoResources, useRead, useUser } from "@lib/hooks";
 import { cn, usableResourcePath } from "@lib/utils";
+import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
-import { AlertTriangle, Boxes, History } from "lucide-react";
+import { AlertTriangle, Boxes, Circle, History } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 
@@ -179,5 +180,35 @@ export const DashboardPieChart = ({
         }))}
       />
     </div>
+  );
+};
+
+const Active = () => {
+  const builds =
+    useRead("ListBuilds", {}).data?.filter(
+      (build) => build.info.state === Types.BuildState.Building
+    ) ?? [];
+  const repos =
+    useRead("ListRepos", {}).data?.filter((repo) =>
+      [
+        Types.RepoState.Building,
+        Types.RepoState.Cloning,
+        Types.RepoState.Pulling,
+      ].includes(repo.info.state)
+    ) ?? [];
+  const procedures =
+    useRead("ListProcedures", {}).data?.filter(
+      (procedure) => procedure.info.state === Types.ProcedureState.Running
+    ) ?? [];
+
+  
+
+  return (
+    <Section
+      title="Active"
+      icon={
+        <Circle className="w-4 h-4 stroke-none transition-colors fill-green-500" />
+      }
+    ></Section>
   );
 };

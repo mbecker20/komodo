@@ -4,7 +4,7 @@ import { useServer } from "@components/resources/server";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { ChevronLeft, Loader2, Network } from "lucide-react";
+import { Box, ChevronLeft, Loader2, Network, Waypoints } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const NetworkPage = () => {
@@ -66,6 +66,14 @@ const NetworkPageInner = ({
   // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
 
   const containers = Object.values(network.Containers ?? {});
+  const ipam_driver = network.IPAM?.Driver;
+  const ipam_config =
+    network.IPAM?.Config.map((config) => ({
+      ...config,
+      Driver: ipam_driver,
+    })) ?? [];
+
+  console.log(ipam_config)
 
   return (
     <div className="flex flex-col gap-16">
@@ -101,41 +109,107 @@ const NetworkPageInner = ({
           <div>Network</div>
           |
           <ResourceLink type="Server" id={id} />
+          {network.Id ? (
+            <>
+              |
+              <div className="flex gap-2">
+                Id:
+                <div className="max-w-[150px] overflow-hidden text-ellipsis">
+                  {network.Id}
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
 
-      <Section title="Containers">
-        <DataTable
-          tableKey="network-containers"
-          data={containers}
-          columns={[
-            {
-              accessorKey: "name",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="Name" />
-              ),
-            },
-            {
-              accessorKey: "IPv4Address",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="IPv4" />
-              ),
-            },
-            {
-              accessorKey: "IPv6Address",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="IPv6" />
-              ),
-            },
-            {
-              accessorKey: "MacAddress",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="Mac" />
-              ),
-            },
-          ]}
-        />
-      </Section>
+      <DataTable
+        tableKey="network-info"
+        data={[network]}
+        columns={[
+          {
+            accessorKey: "Driver",
+            header: "Driver",
+          },
+          {
+            accessorKey: "Scope",
+            header: "Scope",
+          },
+          {
+            accessorKey: "Attachable",
+            header: "Attachable",
+          },
+          {
+            accessorKey: "Internal",
+            header: "Internal",
+          },
+        ]}
+      />
+
+      {ipam_config.length > 0 && (
+        <Section title="IPAM" icon={<Waypoints className="w-4 h-4" />}>
+          <DataTable
+            tableKey="network-ipam"
+            data={ipam_config}
+            columns={[
+              {
+                accessorKey: "Driver",
+                header: "Driver",
+              },
+              {
+                accessorKey: "Subnet",
+                header: "Subnet",
+              },
+              {
+                accessorKey: "Gateway",
+                header: "Gateway",
+              },
+              {
+                accessorKey: "IPRange",
+                header: "IPRange",
+              },
+            ]}
+          />
+        </Section>
+      )}
+
+      {containers.length > 0 && (
+        <Section title="Containers" icon={<Box className="w-4 h-4" />}>
+          <DataTable
+            tableKey="network-containers"
+            data={containers}
+            columns={[
+              {
+                accessorKey: "Name",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Name" />
+                ),
+              },
+              {
+                accessorKey: "IPv4Address",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="IPv4" />
+                ),
+                cell: ({ row }) => row.original.IPv4Address || "None",
+              },
+              {
+                accessorKey: "IPv6Address",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="IPv6" />
+                ),
+                cell: ({ row }) => row.original.IPv6Address || "None",
+              },
+              {
+                accessorKey: "MacAddress",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Mac" />
+                ),
+                cell: ({ row }) => row.original.MacAddress || "None",
+              },
+            ]}
+          />
+        </Section>
+      )}
     </div>
   );
 };
