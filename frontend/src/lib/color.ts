@@ -127,6 +127,23 @@ export const deployment_state_intention: (
   }
 };
 
+export const container_state_intention: (
+  state?: Types.ContainerStateStatusEnum
+) => ColorIntention = (state) => {
+  switch (state) {
+    case undefined:
+      return "None";
+    case Types.ContainerStateStatusEnum.Running:
+      return "Good";
+    case Types.ContainerStateStatusEnum.Paused:
+      return "Warning";
+    case Types.ContainerStateStatusEnum.Empty:
+      return "Unknown";
+    default:
+      return "Critical";
+  }
+};
+
 export const build_state_intention = (status?: Types.BuildState) => {
   switch (status) {
     case undefined:

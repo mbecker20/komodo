@@ -10,7 +10,7 @@ import {
   StartStopStack,
 } from "@components/resources/stack/actions";
 import {
-  deployment_state_intention,
+  container_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { useRead, useSetTitle } from "@lib/hooks";
@@ -65,8 +65,8 @@ const StackServicePageInner = ({
   const canWrite = has_minimum_permissions(perms, Types.PermissionLevel.Write);
   const services = useRead("ListStackServices", { stack: stack_id }).data;
   const container = services?.find((s) => s.service === service)?.container;
-  const state = container?.state ?? Types.DeploymentState.Unknown;
-  const intention = deployment_state_intention(state);
+  const state = container?.state ?? Types.ContainerStateStatusEnum.Empty;
+  const intention = container_state_intention(state);
   const stroke_color = stroke_color_class_by_intention(intention);
 
   return (

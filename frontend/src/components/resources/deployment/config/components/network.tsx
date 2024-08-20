@@ -27,8 +27,8 @@ export const NetworkModeSelector = ({
       { server: server_id! },
       { enabled: !!server_id }
     )
-      .data?.filter((n) => n.Name)
-      .map((network) => network.Name) ?? [];
+      .data?.filter((n) => n.name)
+      .map((network) => network.name) ?? [];
   const [customMode, setCustomMode] = useState(false);
 
   const networks =

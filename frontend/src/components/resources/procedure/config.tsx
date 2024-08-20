@@ -524,8 +524,10 @@ const EXECUTION_TYPES: Types.Execution["type"][] = [
   "RunProcedure",
   "RunSync",
   "PruneContainers",
-  "PruneImages",
   "PruneNetworks",
+  "PruneImages",
+  "PruneVolumes",
+  "PruneSystem",
   "Sleep",
 ];
 
@@ -666,6 +668,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  PruneNetworks: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
   PruneImages: {
     params: { server: "" },
     Component: ({ params, setParams, disabled }) => (
@@ -677,7 +690,18 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  PruneNetworks: {
+  PruneVolumes: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PruneSystem: {
     params: { server: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector

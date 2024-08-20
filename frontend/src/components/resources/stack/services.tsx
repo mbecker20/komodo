@@ -1,6 +1,6 @@
 import { Section } from "@components/layouts";
 import {
-  deployment_state_intention,
+  container_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { useRead } from "@lib/hooks";
@@ -49,7 +49,7 @@ export const StackServices = ({
               cell: ({ row }) => {
                 const state = row.original.container?.state;
                 const color = stroke_color_class_by_intention(
-                  deployment_state_intention(state)
+                  container_state_intention(state)
                 );
                 return (
                   <Link
@@ -86,7 +86,7 @@ export const StackServices = ({
                 return (
                   <StatusBadge
                     text={state}
-                    intent={deployment_state_intention(state)}
+                    intent={container_state_intention(state)}
                   />
                 );
               },

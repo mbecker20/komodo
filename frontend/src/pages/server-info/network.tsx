@@ -2,8 +2,6 @@ import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
 import { useRead, useSetTitle } from "@lib/hooks";
-import { has_minimum_permissions } from "@lib/utils";
-import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ChevronLeft, Loader2, Network } from "lucide-react";
@@ -31,22 +29,17 @@ const NetworkPageInner = ({
   const server = useServer(id);
   useSetTitle(`${server?.name} | network | ${_network}`);
   const nav = useNavigate();
-  const perms = useRead("GetPermissionLevel", {
-    target: { type: "Server", id },
-  }).data;
-  const { data, isPending, isError } = useRead("ListDockerNetworks", {
+  // const perms = useRead("GetPermissionLevel", {
+  //   target: { type: "Server", id },
+  // }).data;
+  const {
+    data: network,
+    isPending,
+    isError,
+  } = useRead("InspectDockerNetwork", {
     server: id,
+    network: _network,
   });
-  // const isSystemNetwork = ["none", "host", "bridge"].includes(_network);
-  // const containers =
-  //   useRead("ListDockerContainers", {
-  //     server: id,
-  //   }).data?.filter((container) =>
-  //     isSystemNetwork
-  //       ? container.network_mode === _network
-  //       : container.networks && container.networks.includes(_network)
-  //   ) ?? [];
-  const network = data?.find((network) => network.Name === _network);
 
   if (isPending) {
     return (
@@ -70,9 +63,8 @@ const NetworkPageInner = ({
     );
   }
 
-  const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
+  // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
 
-  console.log(network)
   const containers = Object.values(network.Containers ?? {});
 
   return (

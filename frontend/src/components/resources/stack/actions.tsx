@@ -116,12 +116,12 @@ export const RestartStack = ({
   const container_state =
     (service &&
       services?.find((s) => s.service === service)?.container?.state) ??
-    Types.DeploymentState.Unknown;
+    Types.ContainerStateStatusEnum.Empty;
 
   if (
     !stack ||
     stack?.info.project_missing ||
-    (service && container_state !== Types.DeploymentState.Running) ||
+    (service && container_state !== Types.ContainerStateStatusEnum.Running) ||
     state !== Types.StackState.Running
   ) {
     return null;
@@ -166,7 +166,7 @@ export const StartStopStack = ({
   }
 
   if (
-    (service && container_state === Types.DeploymentState.Exited) ||
+    (service && container_state === Types.ContainerStateStatusEnum.Exited) ||
     state === Types.StackState.Stopped
   ) {
     return (
@@ -180,7 +180,7 @@ export const StartStopStack = ({
     );
   }
   if (
-    (service && container_state === Types.DeploymentState.Running) ||
+    (service && container_state === Types.ContainerStateStatusEnum.Running) ||
     state === Types.StackState.Running
   ) {
     return (
@@ -224,7 +224,7 @@ export const PauseUnpauseStack = ({
   }
 
   if (
-    (service && container_state === Types.DeploymentState.Paused) ||
+    (service && container_state === Types.ContainerStateStatusEnum.Paused) ||
     state === Types.StackState.Paused
   ) {
     return (
@@ -238,7 +238,7 @@ export const PauseUnpauseStack = ({
     );
   }
   if (
-    (service && container_state === Types.DeploymentState.Running) ||
+    (service && container_state === Types.ContainerStateStatusEnum.Running) ||
     state === Types.StackState.Running
   ) {
     return (

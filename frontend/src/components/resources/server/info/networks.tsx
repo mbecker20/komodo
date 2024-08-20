@@ -21,11 +21,11 @@ export const Networks = ({ id }: { id: string }) => {
             ),
             cell: ({ row }) => (
               <div>
-                <Link to={`/servers/${id}/network/${row.original.Name}`}>
-                  <Button variant="link">{row.original.Name}</Button>
+                <Link to={`/servers/${id}/network/${row.original.name}`}>
+                  <Button variant="link">{row.original.name}</Button>
                 </Link>
                 {["none", "host", "bridge"].includes(
-                  row.original.Name ?? ""
+                  row.original.name ?? ""
                 ) && <Badge variant="outline">System</Badge>}
               </div>
             ),
