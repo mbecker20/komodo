@@ -3,10 +3,10 @@ use command::run_monitor_command;
 use futures::TryFutureExt;
 use monitor_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
-  build::*, compose::*, container::*, git::*, network::*, stats::*,
-  GetDockerLists, GetDockerListsResponse, GetHealth, GetVersion,
-  GetVersionResponse, ListDockerRegistries, ListGitProviders,
-  ListSecrets, PruneSystem, RunCommand,
+  build::*, compose::*, container::*, git::*, image::*, network::*,
+  stats::*, volume::*, GetDockerLists, GetDockerListsResponse,
+  GetHealth, GetVersion, GetVersionResponse, ListDockerRegistries,
+  ListGitProviders, ListSecrets, PruneSystem, RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -25,8 +25,10 @@ mod compose;
 mod container;
 mod deploy;
 mod git;
+mod image;
 mod network;
 mod stats;
+mod volume;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[serde(tag = "type", content = "params")]
@@ -37,7 +39,7 @@ pub enum PeripheryRequest {
   #[to_string_resolver]
   GetHealth(GetHealth),
 
-  // Config
+  // Config (Read)
   #[to_string_resolver]
   ListGitProviders(ListGitProviders),
   #[to_string_resolver]
@@ -45,7 +47,7 @@ pub enum PeripheryRequest {
   #[to_string_resolver]
   ListSecrets(ListSecrets),
 
-  // Stats / Info
+  // Stats / Info (Read)
   #[to_string_resolver]
   GetSystemInformation(GetSystemInformation),
   #[to_string_resolver]
@@ -54,30 +56,36 @@ pub enum PeripheryRequest {
   GetSystemProcesses(GetSystemProcesses),
   GetLatestCommit(GetLatestCommit),
 
-  // All in one
-  GetDockerLists(GetDockerLists),
-
-  // Docker
-  GetContainerList(GetContainerList),
-  GetContainerLog(GetContainerLog),
-  GetContainerLogSearch(GetContainerLogSearch),
-  GetContainerStats(GetContainerStats),
-  GetContainerStatsList(GetContainerStatsList),
-  GetNetworkList(GetNetworkList),
-
-  // Actions
+  // Generic shell execution
   RunCommand(RunCommand),
 
-  // Repo
+  // Repo (Write)
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
   DeleteRepo(DeleteRepo),
 
   // Build
   Build(Build),
-  PruneImages(PruneImages),
 
-  // Container
+  // Compose (Read)
+  ListComposeProjects(ListComposeProjects),
+  GetComposeContentsOnHost(GetComposeContentsOnHost),
+  GetComposeServiceLog(GetComposeServiceLog),
+  GetComposeServiceLogSearch(GetComposeServiceLogSearch),
+
+  // Compose (Write)
+  ComposeUp(ComposeUp),
+  ComposeExecution(ComposeExecution),
+
+  // Container (Read)
+  GetContainerList(GetContainerList),
+  InspectContainer(InspectContainer),
+  GetContainerLog(GetContainerLog),
+  GetContainerLogSearch(GetContainerLogSearch),
+  GetContainerStats(GetContainerStats),
+  GetContainerStatsList(GetContainerStatsList),
+
+  // Container (Write)
   Deploy(Deploy),
   StartContainer(StartContainer),
   RestartContainer(RestartContainer),
@@ -89,19 +97,34 @@ pub enum PeripheryRequest {
   RenameContainer(RenameContainer),
   PruneContainers(PruneContainers),
 
-  // Compose
-  ListComposeProjects(ListComposeProjects),
-  GetComposeContentsOnHost(GetComposeContentsOnHost),
-  GetComposeServiceLog(GetComposeServiceLog),
-  GetComposeServiceLogSearch(GetComposeServiceLogSearch),
-  ComposeUp(ComposeUp),
-  ComposeExecution(ComposeExecution),
+  // Networks (Read)
+  GetNetworkList(GetNetworkList),
+  InspectNetwork(InspectNetwork),
 
-  // Networks
+  // Networks (Write)
   CreateNetwork(CreateNetwork),
   DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),
-  PruneAll(PruneSystem),
+
+  // Image (Read)
+  GetImageList(GetImageList),
+  InspectImage(InspectImage),
+
+  // Image (Write)
+  PruneImages(PruneImages),
+
+  // Volume (Read)
+  GetVolumeList(GetVolumeList),
+  InspectVolume(InspectVolume),
+
+  // Volume (Write)
+  PruneVolumes(PruneVolumes),
+
+  // All in one (Read)
+  GetDockerLists(GetDockerLists),
+
+  // All in one (Write)
+  PruneSystem(PruneSystem),
 }
 
 //
@@ -185,16 +208,18 @@ impl Resolve<GetDockerLists> for State {
     _: (),
   ) -> anyhow::Result<GetDockerListsResponse> {
     let docker = docker_client();
-    let (containers, networks, images, projects) = tokio::join!(
+    let (containers, networks, images, volumes, projects) = tokio::join!(
       docker.list_containers().map_err(Into::into),
       docker.list_networks().map_err(Into::into),
       docker.list_images().map_err(Into::into),
+      docker.list_volumes().map_err(Into::into),
       self.resolve(ListComposeProjects {}, ()).map_err(Into::into)
     );
     Ok(GetDockerListsResponse {
       containers,
       networks,
       images,
+      volumes,
       projects,
     })
   }
@@ -229,7 +254,7 @@ impl Resolve<PruneSystem> for State {
     PruneSystem {}: PruneSystem,
     _: (),
   ) -> anyhow::Result<Log> {
-    let command = String::from("docker system prune -a -f");
+    let command = String::from("docker system prune -a -f --volumes");
     Ok(run_monitor_command("prune system", command).await)
   }
 }

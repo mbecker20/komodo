@@ -41,8 +41,10 @@ pub enum ExecuteRequest {
   // ==== SERVER ====
   StopAllContainers(StopAllContainers),
   PruneContainers(PruneContainers),
-  PruneImages(PruneImages),
   PruneNetworks(PruneNetworks),
+  PruneImages(PruneImages),
+  PruneVolumes(PruneVolumes),
+  PruneSystem(PruneSystem),
 
   // ==== DEPLOYMENT ====
   Deploy(Deploy),

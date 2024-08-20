@@ -6,8 +6,9 @@ use monitor_client::{
   entities::{
     deployment::{
       Deployment, DeploymentActionState, DeploymentConfig,
-      DeploymentListItem, DeploymentState, DockerContainerStats,
+      DeploymentListItem, DeploymentState,
     },
+    docker::container::ContainerStats,
     permission::PermissionLevel,
     server::Server,
     update::Log,
@@ -156,7 +157,7 @@ impl Resolve<GetDeploymentStats, User> for State {
     &self,
     GetDeploymentStats { deployment }: GetDeploymentStats,
     user: User,
-  ) -> anyhow::Result<DockerContainerStats> {
+  ) -> anyhow::Result<ContainerStats> {
     let Deployment {
       name,
       config: DeploymentConfig { server_id, .. },

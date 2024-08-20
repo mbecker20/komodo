@@ -5,12 +5,12 @@ use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
-    alert::{Alert, AlertData},
+    alert::{Alert, AlertData, SeverityLevel},
     builder::{Builder, BuilderConfig},
     monitor_timestamp, optional_string,
     permission::PermissionLevel,
     repo::Repo,
-    server::{stats::SeverityLevel, Server},
+    server::Server,
     update::{Log, Update},
     user::User,
   },

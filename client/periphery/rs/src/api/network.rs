@@ -1,12 +1,23 @@
 use monitor_client::entities::{
-  server::docker_network::DockerNetwork, update::Log,
+  docker::network::{Network, NetworkListItem},
+  update::Log,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
+//
+
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DockerNetwork>)]
+#[response(Vec<NetworkListItem>)]
 pub struct GetNetworkList {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Network)]
+pub struct InspectNetwork {
+  pub name: String,
+}
 
 //
 

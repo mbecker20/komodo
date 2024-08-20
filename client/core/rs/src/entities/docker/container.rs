@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
+use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{Usize, I64};
+
+use super::{GraphDriverData, PortBinding};
 
 #[typeshare]
 #[derive(
@@ -17,49 +20,32 @@ pub struct ContainerListItem {
   /// The ID of this container
   pub id: Option<String>,
 
-  /// The names that this container has been given
-  #[serde(default)]
-  pub names: Vec<String>,
-
   /// The name of the image used when creating this container
   pub image: Option<String>,
 
   /// The ID of the image that this container was created from
   pub image_id: Option<String>,
 
-  /// Command to run when starting the container
-  pub command: Option<String>,
-
   /// When the container was created
-  pub created: Option<i64>,
-
-  /// The ports exposed by this container
-  #[serde(default)]
-  pub ports: Vec<Port>,
+  pub created: Option<I64>,
 
   /// The size of files that have been created or changed by this container
-  pub size_rw: Option<i64>,
+  pub size_rw: Option<I64>,
 
   /// The total size of all the files in this container
-  pub size_root_fs: Option<i64>,
+  pub size_root_fs: Option<I64>,
 
-  /// User-defined key/value metadata.
-  #[serde(default)]
-  pub labels: HashMap<String, String>,
-
-  /// The state of this container (e.g. `Exited`)
-  pub state: Option<String>,
+  /// The state of this container (e.g. `exited`)
+  pub state: ContainerStateStatusEnum,
 
   /// Additional human-readable status of this container (e.g. `Exit 0`)
   pub status: Option<String>,
 
+  /// The network mode
   pub network_mode: Option<String>,
 
-  #[serde(default)]
-  pub networks: HashMap<String, EndpointSettings>,
-
-  #[serde(default)]
-  pub mounts: Vec<MountPoint>,
+  /// The network names attached to container
+  pub networks: Option<Vec<String>>,
 }
 
 /// An open port on a container
@@ -247,7 +233,7 @@ pub struct ContainerState {
   pub finished_at: Option<String>,
 
   #[serde(rename = "Health")]
-  pub health: Option<Health>,
+  pub health: Option<ContainerHealth>,
 }
 
 #[typeshare]
@@ -283,12 +269,29 @@ pub enum ContainerStateStatusEnum {
   Dead,
 }
 
+impl ::std::str::FromStr for ContainerStateStatusEnum {
+  type Err = anyhow::Error;
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    match s {
+      "" => Ok(ContainerStateStatusEnum::Empty),
+      "created" => Ok(ContainerStateStatusEnum::Created),
+      "running" => Ok(ContainerStateStatusEnum::Running),
+      "paused" => Ok(ContainerStateStatusEnum::Paused),
+      "restarting" => Ok(ContainerStateStatusEnum::Restarting),
+      "removing" => Ok(ContainerStateStatusEnum::Removing),
+      "exited" => Ok(ContainerStateStatusEnum::Exited),
+      "dead" => Ok(ContainerStateStatusEnum::Dead),
+      x => Err(anyhow!("Invalid container state: {}", x)),
+    }
+  }
+}
+
 /// Health stores information about the container's healthcheck results.
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
-pub struct Health {
+pub struct ContainerHealth {
   /// Status is one of `none`, `starting`, `healthy` or `unhealthy`  - \"none\"      Indicates there is no healthcheck - \"starting\"  Starting indicates that the container is not yet ready - \"healthy\"   Healthy indicates that the container is running correctly - \"unhealthy\" Unhealthy indicates that the container has a problem
   #[serde(default, rename = "Status")]
   pub status: HealthStatusEnum,
@@ -498,7 +501,7 @@ pub struct HostConfig {
   pub network_mode: Option<String>,
 
   #[serde(default, rename = "PortBindings")]
-  pub port_bindings: HashMap<String, Option<Vec<PortBinding>>>,
+  pub port_bindings: HashMap<String, Vec<PortBinding>>,
 
   #[serde(rename = "RestartPolicy")]
   pub restart_policy: Option<RestartPolicy>,
@@ -517,7 +520,7 @@ pub struct HostConfig {
 
   /// Specification for mounts to be added to the container.
   #[serde(default, rename = "Mounts")]
-  pub mounts: Vec<Mount>,
+  pub mounts: Vec<ContainerMount>,
 
   /// Initial console size, as an `[height, width]` array.
   #[serde(default, rename = "ConsoleSize")]
@@ -758,21 +761,6 @@ pub struct HostConfigLogConfig {
   pub config: HashMap<String, String>,
 }
 
-/// PortBinding represents a binding between a host IP address and a host port.
-#[typeshare]
-#[derive(
-  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
-)]
-pub struct PortBinding {
-  /// Host IP address that the container's port is mapped to.
-  #[serde(rename = "HostIp")]
-  pub host_ip: Option<String>,
-
-  /// Host port number that the container's port is mapped to.
-  #[serde(rename = "HostPort")]
-  pub host_port: Option<String>,
-}
-
 /// The behavior to apply when the container exits. The default is not to restart.  An ever increasing delay (double the previous delay, starting at 100ms) is added before each restart to prevent flooding the server.
 #[typeshare]
 #[derive(
@@ -819,7 +807,7 @@ pub enum RestartPolicyNameEnum {
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
-pub struct Mount {
+pub struct ContainerMount {
   /// Container path.
   #[serde(rename = "Target")]
   pub target: Option<String>,
@@ -1012,21 +1000,6 @@ pub enum HostConfigCgroupnsModeEnum {
   Host,
 }
 
-/// Information about the storage driver used to store the container's and image's filesystem.
-#[typeshare]
-#[derive(
-  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
-)]
-pub struct GraphDriverData {
-  /// Name of the storage driver.
-  #[serde(default, rename = "Name")]
-  pub name: String,
-
-  /// Low-level storage metadata, provided as key/value pairs.  This information is driver-specific, and depends on the storage-driver in use, and should be used for informational purposes only.
-  #[serde(default, rename = "Data")]
-  pub data: HashMap<String, String>,
-}
-
 /// MountPoint represents a mount point configuration inside the container. This is used for reporting the mountpoints in use by a container.
 #[typeshare]
 #[derive(
@@ -1098,7 +1071,7 @@ pub struct ContainerConfig {
 
   /// An object mapping ports to an empty object in the form:  `{\"<port>/<tcp|udp|sctp>\": {}}`
   #[serde(default, rename = "ExposedPorts")]
-  pub exposed_ports: HashMap<String, HashMap<(), ()>>,
+  pub exposed_ports: HashMap<String, HashMap<String, ()>>,
 
   /// Attach standard streams to a TTY, including `stdin` if it is not closed.
   #[serde(rename = "Tty")]
@@ -1133,7 +1106,7 @@ pub struct ContainerConfig {
 
   /// An object mapping mount point paths inside the container to empty objects.
   #[serde(default, rename = "Volumes")]
-  pub volumes: HashMap<String, HashMap<(), ()>>,
+  pub volumes: HashMap<String, HashMap<String, ()>>,
 
   /// The working directory for commands to run in.
   #[serde(rename = "WorkingDir")]
@@ -1218,7 +1191,7 @@ pub struct NetworkSettings {
   pub sandbox_id: Option<String>,
 
   #[serde(default, rename = "Ports")]
-  pub ports: HashMap<String, Option<Vec<PortBinding>>>,
+  pub ports: HashMap<String, Vec<PortBinding>>,
 
   /// SandboxKey is the full path of the netns handle
   #[serde(rename = "SandboxKey")]
@@ -1303,4 +1276,23 @@ pub struct EndpointIpamConfig {
 
   #[serde(default, rename = "LinkLocalIPs")]
   pub link_local_ips: Vec<String>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContainerStats {
+  #[serde(alias = "Name")]
+  pub name: String,
+  #[serde(alias = "CPUPerc")]
+  pub cpu_perc: String,
+  #[serde(alias = "MemPerc")]
+  pub mem_perc: String,
+  #[serde(alias = "MemUsage")]
+  pub mem_usage: String,
+  #[serde(alias = "NetIO")]
+  pub net_io: String,
+  #[serde(alias = "BlockIO")]
+  pub block_io: String,
+  #[serde(alias = "PIDs")]
+  pub pids: String,
 }

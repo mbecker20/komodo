@@ -6,7 +6,7 @@ use monitor_client::{
   api::write::*,
   entities::{
     self,
-    alert::{Alert, AlertData},
+    alert::{Alert, AlertData, SeverityLevel},
     alerter::Alerter,
     build::Build,
     builder::Builder,
@@ -16,7 +16,7 @@ use monitor_client::{
     permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
-    server::{stats::SeverityLevel, Server},
+    server::Server,
     server_template::ServerTemplate,
     stack::Stack,
     sync::{

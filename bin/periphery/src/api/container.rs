@@ -2,8 +2,9 @@ use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use futures::future::join_all;
 use monitor_client::entities::{
-  deployment::{
-    ContainerSummary, DeploymentState, DockerContainerStats,
+  docker::container::{
+    Container, ContainerListItem, ContainerStateStatusEnum,
+    ContainerStats,
   },
   to_monitor_name,
   update::Log,
@@ -33,8 +34,25 @@ impl Resolve<GetContainerList> for State {
     &self,
     _: GetContainerList,
     _: (),
-  ) -> anyhow::Result<Vec<ContainerSummary>> {
+  ) -> anyhow::Result<Vec<ContainerListItem>> {
     docker_client().list_containers().await
+  }
+}
+
+//
+
+impl Resolve<InspectContainer> for State {
+  #[instrument(
+    name = "InspectContainer",
+    level = "debug",
+    skip(self)
+  )]
+  async fn resolve(
+    &self,
+    InspectContainer { name }: InspectContainer,
+    _: (),
+  ) -> anyhow::Result<Container> {
+    docker_client().inspect_container(&name).await
   }
 }
 
@@ -89,7 +107,7 @@ impl Resolve<GetContainerStats> for State {
     &self,
     req: GetContainerStats,
     _: (),
-  ) -> anyhow::Result<DockerContainerStats> {
+  ) -> anyhow::Result<ContainerStats> {
     let error = anyhow!("no stats matching {}", req.name);
     let mut stats = container_stats(Some(req.name)).await?;
     let stats = stats.pop().ok_or(error)?;
@@ -109,7 +127,7 @@ impl Resolve<GetContainerStatsList> for State {
     &self,
     _: GetContainerStatsList,
     _: (),
-  ) -> anyhow::Result<Vec<DockerContainerStats>> {
+  ) -> anyhow::Result<Vec<ContainerStats>> {
     container_stats(None).await
   }
 }
@@ -233,9 +251,9 @@ impl Resolve<StopAllContainers> for State {
       .await
       .context("failed to list all containers on host")?;
     let futures = containers.iter().filter_map(
-      |ContainerSummary { name, state, .. }| {
+      |ContainerListItem { name, state, .. }| {
         // only stop running containers. if not running, early exit.
-        if !matches!(state, DeploymentState::Running) {
+        if !matches!(state, ContainerStateStatusEnum::Running) {
           return None;
         }
         Some(async move {

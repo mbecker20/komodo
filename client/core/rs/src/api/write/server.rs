@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  _server::{Server, _PartialServerConfig},
+  server::{Server, _PartialServerConfig},
   update::Update,
 };
 

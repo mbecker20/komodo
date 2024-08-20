@@ -5,10 +5,10 @@ use typeshare::typeshare;
 
 use crate::entities::{
   deployment::{
-    ContainerSummary, Deployment, DeploymentActionState,
-    DeploymentListItem, DeploymentQuery, DeploymentState,
-    DockerContainerStats,
+    Deployment, DeploymentActionState, DeploymentListItem,
+    DeploymentQuery, DeploymentState,
   },
+  docker::container::{ContainerListItem, ContainerStats},
   update::Log,
   SearchCombinator, I64, U64,
 };
@@ -96,7 +96,7 @@ pub struct GetDeploymentContainer {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetDeploymentContainerResponse {
   pub state: DeploymentState,
-  pub container: Option<ContainerSummary>,
+  pub container: Option<ContainerListItem>,
 }
 
 //
@@ -180,7 +180,7 @@ pub struct GetDeploymentStats {
 }
 
 #[typeshare]
-pub type GetDeploymentStatsResponse = DockerContainerStats;
+pub type GetDeploymentStatsResponse = ContainerStats;
 
 //
 

@@ -105,12 +105,18 @@ enum ReadRequest {
   GetHistoricalServerStats(GetHistoricalServerStats),
   ListServers(ListServers),
   ListFullServers(ListFullServers),
+  InspectDockerContainer(InspectDockerContainer),
+  InspectDockerNetwork(InspectDockerNetwork),
+  InspectDockerImage(InspectDockerImage),
+  InspectDockerVolume(InspectDockerVolume),
   #[to_string_resolver]
   ListDockerContainers(ListDockerContainers),
   #[to_string_resolver]
   ListDockerNetworks(ListDockerNetworks),
   #[to_string_resolver]
   ListDockerImages(ListDockerImages),
+  #[to_string_resolver]
+  ListDockerVolumes(ListDockerVolumes),
   #[to_string_resolver]
   ListComposeProjects(ListComposeProjects),
 

@@ -2,15 +2,15 @@ use async_timing_util::wait_until_timelength;
 use futures::future::join_all;
 use helpers::insert_stacks_status_unknown;
 use monitor_client::entities::{
-  deployment::{ContainerSummary, DeploymentState},
-  monitor_timestamp,
-  server::{
-    docker_image::ImageSummary,
-    docker_network::DockerNetwork,
-    stats::{ServerHealth, SystemStats},
-    Server, ServerState,
+  deployment::DeploymentState,
+  docker::{
+    container::ContainerListItem, image::ImageListItem,
+    network::NetworkListItem, volume::VolumeListItem,
   },
+  monitor_timestamp,
+  server::{Server, ServerHealth, ServerState},
   stack::{ComposeProject, StackService, StackState},
+  stats::SystemStats,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::api::{self, git::GetLatestCommit};
@@ -47,9 +47,10 @@ pub struct CachedServerStatus {
   pub version: String,
   pub stats: Option<SystemStats>,
   pub health: Option<ServerHealth>,
-  pub containers: Option<Vec<ContainerSummary>>,
-  pub networks: Option<Vec<DockerNetwork>>,
-  pub images: Option<Vec<ImageSummary>>,
+  pub containers: Option<Vec<ContainerListItem>>,
+  pub networks: Option<Vec<NetworkListItem>>,
+  pub images: Option<Vec<ImageListItem>>,
+  pub volumes: Option<Vec<VolumeListItem>>,
   pub projects: Option<Vec<ComposeProject>>,
   /// Store the error in reaching periphery
   pub err: Option<serror::Serror>,
@@ -60,7 +61,7 @@ pub struct CachedDeploymentStatus {
   /// The deployment id
   pub id: String,
   pub state: DeploymentState,
-  pub container: Option<ContainerSummary>,
+  pub container: Option<ContainerListItem>,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -153,7 +154,7 @@ pub async fn update_cache_for_server(server: &Server) {
       ServerState::Disabled,
       String::from("unknown"),
       None,
-      (None, None, None, None),
+      (None, None, None, None, None),
       None,
     )
     .await;
@@ -178,7 +179,7 @@ pub async fn update_cache_for_server(server: &Server) {
         ServerState::NotOk,
         String::from("unknown"),
         None,
-        (None, None, None, None),
+        (None, None, None, None, None),
         Serror::from(&e),
       )
       .await;
@@ -198,7 +199,7 @@ pub async fn update_cache_for_server(server: &Server) {
           ServerState::NotOk,
           String::from("unknown"),
           None,
-          (None, None, None, None),
+          (None, None, None, None, None),
           Serror::from(&e),
         )
         .await;
@@ -210,7 +211,7 @@ pub async fn update_cache_for_server(server: &Server) {
   };
 
   match lists::get_docker_lists(&periphery).await {
-    Ok((containers, networks, images, projects)) => {
+    Ok((containers, networks, images, volumes, projects)) => {
       tokio::join!(
         resources::update_deployment_cache(deployments, &containers),
         resources::update_stack_cache(stacks, &containers),
@@ -224,6 +225,7 @@ pub async fn update_cache_for_server(server: &Server) {
           Some(containers.clone()),
           Some(networks),
           Some(images),
+          Some(volumes),
           Some(projects),
         ),
         None,
@@ -241,7 +243,7 @@ pub async fn update_cache_for_server(server: &Server) {
         ServerState::Ok,
         version,
         stats,
-        (None, None, None, None),
+        (None, None, None, None, None),
         Some(e.into()),
       )
       .await;

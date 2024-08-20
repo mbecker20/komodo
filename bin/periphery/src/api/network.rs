@@ -1,9 +1,11 @@
 use command::run_monitor_command;
 use monitor_client::entities::{
-  server::docker_network::DockerNetwork, update::Log,
+  docker::network::{Network, NetworkListItem},
+  update::Log,
 };
 use periphery_client::api::network::{
-  CreateNetwork, DeleteNetwork, GetNetworkList, PruneNetworks,
+  CreateNetwork, DeleteNetwork, GetNetworkList, InspectNetwork,
+  PruneNetworks,
 };
 use resolver_api::Resolve;
 
@@ -17,8 +19,21 @@ impl Resolve<GetNetworkList> for State {
     &self,
     _: GetNetworkList,
     _: (),
-  ) -> anyhow::Result<Vec<DockerNetwork>> {
+  ) -> anyhow::Result<Vec<NetworkListItem>> {
     docker_client().list_networks().await
+  }
+}
+
+//
+
+impl Resolve<InspectNetwork> for State {
+  #[instrument(name = "InspectNetwork", level = "debug", skip(self))]
+  async fn resolve(
+    &self,
+    InspectNetwork { name }: InspectNetwork,
+    _: (),
+  ) -> anyhow::Result<Network> {
+    docker_client().inspect_network(&name).await
   }
 }
 

@@ -1,18 +1,26 @@
 use monitor_client::entities::{
   config::core::AwsEcrConfig,
-  deployment::{
-    ContainerSummary, Deployment, DockerContainerStats,
-    TerminationSignal,
-  },
+  deployment::{Deployment, TerminationSignal},
+  docker::container::{Container, ContainerListItem, ContainerStats},
   update::Log,
   SearchCombinator,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
+//
+
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<ContainerSummary>)]
+#[response(Vec<ContainerListItem>)]
 pub struct GetContainerList {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Container)]
+pub struct InspectContainer {
+  pub name: String,
+}
 
 //
 
@@ -44,7 +52,7 @@ pub struct GetContainerLogSearch {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(DockerContainerStats)]
+#[response(ContainerStats)]
 pub struct GetContainerStats {
   pub name: String,
 }
@@ -52,10 +60,14 @@ pub struct GetContainerStats {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DockerContainerStats>)]
+#[response(Vec<ContainerStats>)]
 pub struct GetContainerStatsList {}
 
 //
+
+// =======
+// ACTIONS
+// =======
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]

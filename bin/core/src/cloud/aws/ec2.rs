@@ -13,9 +13,8 @@ use aws_sdk_ec2::{
 };
 use base64::Engine;
 use monitor_client::entities::{
-  alert::{Alert, AlertData},
+  alert::{Alert, AlertData, SeverityLevel},
   monitor_timestamp,
-  server::stats::SeverityLevel,
   server_template::aws::AwsServerTemplateConfig,
   update::ResourceTarget,
 };

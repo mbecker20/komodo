@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
 use monitor_client::entities::{
-  alert::{Alert, AlertData},
+  alert::{Alert, AlertData, SeverityLevel},
   deployment::{Deployment, DeploymentState},
-  server::stats::SeverityLevel,
   update::ResourceTarget,
 };
 

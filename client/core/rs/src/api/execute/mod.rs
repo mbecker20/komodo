@@ -76,9 +76,11 @@ pub enum Execution {
 
   // SERVER
   StopAllContainers(StopAllContainers),
+  PruneContainers(PruneContainers),
   PruneNetworks(PruneNetworks),
   PruneImages(PruneImages),
-  PruneContainers(PruneContainers),
+  PruneVolumes(PruneVolumes),
+  PruneSystem(PruneSystem),
 
   // SYNC
   RunSync(RunSync),

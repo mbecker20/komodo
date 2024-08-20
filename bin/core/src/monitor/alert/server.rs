@@ -4,9 +4,9 @@ use anyhow::Context;
 use derive_variants::ExtractVariant;
 use mongo_indexed::Indexed;
 use monitor_client::entities::{
-  alert::{Alert, AlertData, AlertDataVariant},
+  alert::{Alert, AlertData, AlertDataVariant, SeverityLevel},
   monitor_timestamp, optional_string,
-  server::{stats::SeverityLevel, ServerListItem, ServerState},
+  server::{ServerListItem, ServerState},
   update::ResourceTarget,
 };
 use mungos::{

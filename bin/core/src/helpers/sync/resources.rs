@@ -343,6 +343,13 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::PruneContainers(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::PruneNetworks(config) => {
             config.server = resources
               .servers
@@ -357,7 +364,14 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::PruneContainers(config) => {
+          Execution::PruneVolumes(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneSystem(config) => {
             config.server = resources
               .servers
               .get(&config.server)

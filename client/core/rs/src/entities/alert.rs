@@ -2,13 +2,14 @@ use std::path::PathBuf;
 
 use derive_variants::EnumVariants;
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
 use super::{
   _Serror, deployment::DeploymentState, stack::StackState,
-  stats::SeverityLevel, update::ResourceTarget, Version,
+  update::ResourceTarget, Version,
 };
 
 /// Representation of an alert in the system.
@@ -205,4 +206,31 @@ impl Default for AlertDataVariant {
   fn default() -> Self {
     AlertDataVariant::None
   }
+}
+
+/// Severity level of problem.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  Copy,
+  PartialEq,
+  Eq,
+  PartialOrd,
+  Default,
+  Display,
+  EnumString,
+)]
+#[serde(rename_all = "UPPERCASE")]
+#[strum(serialize_all = "UPPERCASE")]
+pub enum SeverityLevel {
+  /// No problem.
+  #[default]
+  Ok,
+  /// Problem is imminent.
+  Warning,
+  /// Problem fully realized.
+  Critical,
 }

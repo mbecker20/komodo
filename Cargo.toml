@@ -1,10 +1,9 @@
 [workspace]
 resolver = "2"
-# members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
-members = ["client/core/rs"]
+members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
-version = "1.13.4"
+version = "1.14.0-dev1"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
@@ -12,11 +11,12 @@ repository = "https://github.com/mbecker20/monitor"
 homepage = "https://docs.monitor.dev"
 
 [patch.crates-io]
-monitor_client = { path = "client/core/rs" }
+# monitor_client = { path = "client/core/rs" }
 
 [workspace.dependencies]
 # LOCAL
-monitor_client = "1.13.3"
+# monitor_client = "1.13.3"
+monitor_client = { path = "client/core/rs" }
 periphery_client = { path = "client/periphery/rs" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }

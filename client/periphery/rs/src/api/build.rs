@@ -1,6 +1,5 @@
 use monitor_client::entities::{
-  config::core::AwsEcrConfig, server::docker_image::ImageSummary,
-  update::Log,
+  config::core::AwsEcrConfig, update::Log,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -22,21 +21,3 @@ pub struct Build {
 }
 
 pub type BuildResponse = Vec<Log>;
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetImageListResponse)]
-pub struct GetImageList {}
-
-pub type GetImageListResponse = Vec<ImageSummary>;
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(PruneImagesResponse)]
-pub struct PruneImages {}
-
-pub type PruneImagesResponse = Log;
-
-//

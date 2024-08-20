@@ -738,7 +738,7 @@ export type GetLogResponse = Log;
 
 export type SearchLogResponse = Log;
 
-export interface DockerContainerStats {
+export interface ContainerStats {
 	name: string;
 	cpu_perc: string;
 	mem_perc: string;
@@ -748,7 +748,7 @@ export interface DockerContainerStats {
 	pids: string;
 }
 
-export type GetDeploymentStatsResponse = DockerContainerStats;
+export type GetDeploymentStatsResponse = ContainerStats;
 
 export interface DeploymentActionState {
 	deploying: boolean;
@@ -844,9 +844,11 @@ export type Execution =
 	| { type: "BuildRepo", params: BuildRepo }
 	| { type: "CancelRepoBuild", params: CancelRepoBuild }
 	| { type: "StopAllContainers", params: StopAllContainers }
+	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "PruneNetworks", params: PruneNetworks }
 	| { type: "PruneImages", params: PruneImages }
-	| { type: "PruneContainers", params: PruneContainers }
+	| { type: "PruneVolumes", params: PruneVolumes }
+	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
 	| { type: "StartStack", params: StartStack }
@@ -1225,32 +1227,52 @@ export interface ServerActionState {
 	pruning_containers: boolean;
 	/** Server currently pruning images */
 	pruning_images: boolean;
+	/** Server currently pruning images */
+	pruning_volumes: boolean;
+	/** Server currently pruning system */
+	pruning_system: boolean;
 	/** Server currently stopping all containers. */
 	stopping_containers: boolean;
 }
 
 export type GetServerActionStateResponse = ServerActionState;
 
-/** Ipam Configuration. */
+export interface NetworkListItem {
+	name?: string;
+	id?: string;
+	created?: string;
+	scope?: string;
+	driver?: string;
+	enable_ipv6?: boolean;
+	ipam_driver?: string;
+	ipam_subnet?: string;
+	ipam_gateway?: string;
+	internal?: boolean;
+	attachable?: boolean;
+	ingress?: boolean;
+}
+
+export type ListDockerNetworksResponse = NetworkListItem[];
+
 export interface IpamConfig {
 	Subnet?: string;
 	IPRange?: string;
 	Gateway?: string;
-	AuxiliaryAddresses?: Record<string, string>;
+	AuxiliaryAddresses: Record<string, string>;
 }
 
-/** Ipam related information */
 export interface Ipam {
 	/** Name of the IPAM driver to use. */
 	Driver?: string;
 	/** List of IPAM configuration options, specified as a map:  ``` {\"Subnet\": <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\": <device_name:IP address>} ``` */
-	Config?: IpamConfig[];
+	Config: IpamConfig[];
 	/** Driver-specific options, specified as a map. */
-	Options?: Record<string, string>;
+	Options: Record<string, string>;
 }
 
-/** A container on a network. */
 export interface NetworkContainer {
+	/** This is the key on the incoming map of NetworkContainer */
+	ContainerID?: string;
 	Name?: string;
 	EndpointID?: string;
 	MacAddress?: string;
@@ -1258,13 +1280,9 @@ export interface NetworkContainer {
 	IPv6Address?: string;
 }
 
-/** Summary of a docker network on a server. */
-export interface DockerNetwork {
-	/** The name of the docker network */
+export interface Network {
 	Name?: string;
-	/** The Id of the docker network */
 	Id?: string;
-	/** Timestamp network created */
 	Created?: string;
 	Scope?: string;
 	Driver?: string;
@@ -1273,60 +1291,823 @@ export interface DockerNetwork {
 	Internal?: boolean;
 	Attachable?: boolean;
 	Ingress?: boolean;
-	Containers?: Record<string, NetworkContainer>;
+	/** This field is turned from map into array for easier usability. */
+	Containers: NetworkContainer[];
 	Options?: Record<string, string>;
 	Labels?: Record<string, string>;
 }
 
-export type ListDockerNetworksResponse = DockerNetwork[];
+export type InspectDockerNetworkResponse = Network;
 
-/** Summary of a docker image cached on a server */
-export interface ImageSummary {
+export interface ImageListItem {
+	/** The first tag in `repo_tags`, or Id if no tags. */
+	name?: string;
 	/** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
-	Id: string;
+	id?: string;
 	/** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
-	ParentId: string;
-	/** List of image names/tags in the local image cache that reference this image.  Multiple image tags can refer to the same image, and this list may be empty if no tags reference the image, in which case the image is \"untagged\", in which case it can still be referenced by its ID. */
-	RepoTags: string[];
-	/** List of content-addressable digests of locally available image manifests that the image is referenced from. Multiple manifests can refer to the same image.  These digests are usually only available if the image was either pulled from a registry, or if the image was pushed to a registry, which is when the manifest is generated and its digest calculated. */
-	RepoDigests: string[];
+	parent_id?: string;
 	/** Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH). */
-	Created: I64;
+	created?: I64;
 	/** Total size of the image including all layers it is composed of. */
-	Size: I64;
-	/** Total size of image layers that are shared between this image and other images.  This size is not calculated by default. `-1` indicates that the value has not been set / calculated. */
-	SharedSize: I64;
-	/** Total size of the image including all layers it is composed of.  In versions of Docker before v1.10, this field was calculated from the image itself and all of its parent images. Docker v1.10 and up store images self-contained, and no longer use a parent-chain, making this field an equivalent of the Size field.  This field is kept for backward compatibility, but may be removed in a future version of the API. */
-	VirtualSize?: I64;
-	/** User-defined key/value metadata. */
-	Labels: Record<string, string>;
+	size?: I64;
 	/** Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated. */
-	Containers: I64;
+	containers?: I64;
 }
 
-export type ListDockerImagesResponse = ImageSummary[];
+export type ListDockerImagesResponse = ImageListItem[];
 
-/** A summary of a docker container on a server. */
-export interface ContainerSummary {
-	/** Name of the container. */
-	name: string;
-	/** Id of the container. */
-	id: string;
-	/** The image the container is based on. */
-	image: string;
-	/** The docker labels on the container. */
-	labels: Record<string, string>;
-	/** The state of the container, like `running` or `not_deployed` */
-	state: DeploymentState;
-	/** The status string of the docker container. */
+/** Information about the storage driver used to store the container's and image's filesystem. */
+export interface GraphDriverData {
+	/** Name of the storage driver. */
+	Name?: string;
+	/** Low-level storage metadata, provided as key/value pairs.  This information is driver-specific, and depends on the storage-driver in use, and should be used for informational purposes only. */
+	Data?: Record<string, string>;
+}
+
+/** Information about the image's RootFS, including the layer IDs. */
+export interface ImageInspectRootFs {
+	Type?: string;
+	Layers?: string[];
+}
+
+/** Additional metadata of the image in the local cache. This information is local to the daemon, and not part of the image itself. */
+export interface ImageInspectMetadata {
+	/** Date and time at which the image was last tagged in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.  This information is only available if the image was tagged locally, and omitted otherwise. */
+	LastTagTime?: string;
+}
+
+/** Information about an image in the local image cache. */
+export interface Image {
+	/** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
+	Id?: string;
+	/** List of image names/tags in the local image cache that reference this image.  Multiple image tags can refer to the same image, and this list may be empty if no tags reference the image, in which case the image is \"untagged\", in which case it can still be referenced by its ID. */
+	RepoTags?: string[];
+	/** List of content-addressable digests of locally available image manifests that the image is referenced from. Multiple manifests can refer to the same image.  These digests are usually only available if the image was either pulled from a registry, or if the image was pushed to a registry, which is when the manifest is generated and its digest calculated. */
+	RepoDigests?: string[];
+	/** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
+	Parent?: string;
+	/** Optional message that was set when committing or importing the image. */
+	Comment?: string;
+	/** Date and time at which the image was created, formatted in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.  This information is only available if present in the image, and omitted otherwise. */
+	Created?: string;
+	/** The version of Docker that was used to build the image.  Depending on how the image was created, this field may be empty. */
+	DockerVersion?: string;
+	/** Name of the author that was specified when committing the image, or as specified through MAINTAINER (deprecated) in the Dockerfile. */
+	Author?: string;
+	/** Hardware CPU architecture that the image runs on. */
+	Architecture?: string;
+	/** CPU architecture variant (presently ARM-only). */
+	Variant?: string;
+	/** Operating System the image is built to run on. */
+	Os?: string;
+	/** Operating System version the image is built to run on (especially for Windows). */
+	OsVersion?: string;
+	/** Total size of the image including all layers it is composed of. */
+	Size?: I64;
+	GraphDriver?: GraphDriverData;
+	RootFS?: ImageInspectRootFs;
+	Metadata?: ImageInspectMetadata;
+}
+
+export type InspectDockerImageResponse = Image;
+
+export enum ContainerStateStatusEnum {
+	Empty = "",
+	Created = "created",
+	Running = "running",
+	Paused = "paused",
+	Restarting = "restarting",
+	Removing = "removing",
+	Exited = "exited",
+	Dead = "dead",
+}
+
+export interface ContainerListItem {
+	/** The first name in Names, not including the initial '/' */
+	name?: string;
+	/** The ID of this container */
+	id?: string;
+	/** The name of the image used when creating this container */
+	image?: string;
+	/** The ID of the image that this container was created from */
+	image_id?: string;
+	/** When the container was created */
+	created?: I64;
+	/** The size of files that have been created or changed by this container */
+	size_rw?: I64;
+	/** The total size of all the files in this container */
+	size_root_fs?: I64;
+	/** The state of this container (e.g. `exited`) */
+	state: ContainerStateStatusEnum;
+	/** Additional human-readable status of this container (e.g. `Exit 0`) */
 	status?: string;
-	/** The network mode of the container. */
+	/** The network mode */
 	network_mode?: string;
-	/** Network names attached to the container */
+	/** The network names attached to container */
 	networks?: string[];
 }
 
-export type ListDockerContainersResponse = ContainerSummary[];
+export type ListDockerContainersResponse = ContainerListItem[];
+
+export enum HealthStatusEnum {
+	Empty = "",
+	None = "none",
+	Starting = "starting",
+	Healthy = "healthy",
+	Unhealthy = "unhealthy",
+}
+
+/** HealthcheckResult stores information about a single run of a healthcheck probe */
+export interface HealthcheckResult {
+	/** Date and time at which this check started in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds. */
+	Start?: string;
+	/** Date and time at which this check ended in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds. */
+	End?: string;
+	/** ExitCode meanings:  - `0` healthy - `1` unhealthy - `2` reserved (considered unhealthy) - other values: error running probe */
+	ExitCode?: I64;
+	/** Output from last check */
+	Output?: string;
+}
+
+/** Health stores information about the container's healthcheck results. */
+export interface ContainerHealth {
+	/** Status is one of `none`, `starting`, `healthy` or `unhealthy`  - \"none\"      Indicates there is no healthcheck - \"starting\"  Starting indicates that the container is not yet ready - \"healthy\"   Healthy indicates that the container is running correctly - \"unhealthy\" Unhealthy indicates that the container has a problem */
+	Status?: HealthStatusEnum;
+	/** FailingStreak is the number of consecutive failures */
+	FailingStreak?: I64;
+	/** Log contains the last few results (oldest first) */
+	Log?: HealthcheckResult[];
+}
+
+/** ContainerState stores container's running state. It's part of ContainerJSONBase and will be returned by the \"inspect\" command. */
+export interface ContainerState {
+	/** String representation of the container state. Can be one of \"created\", \"running\", \"paused\", \"restarting\", \"removing\", \"exited\", or \"dead\". */
+	Status?: ContainerStateStatusEnum;
+	/** Whether this container is running.  Note that a running container can be _paused_. The `Running` and `Paused` booleans are not mutually exclusive:  When pausing a container (on Linux), the freezer cgroup is used to suspend all processes in the container. Freezing the process requires the process to be running. As a result, paused containers are both `Running` _and_ `Paused`.  Use the `Status` field instead to determine if a container's state is \"running\". */
+	Running?: boolean;
+	/** Whether this container is paused. */
+	Paused?: boolean;
+	/** Whether this container is restarting. */
+	Restarting?: boolean;
+	/** Whether a process within this container has been killed because it ran out of memory since the container was last started. */
+	OOMKilled?: boolean;
+	Dead?: boolean;
+	/** The process ID of this container */
+	Pid?: I64;
+	/** The last exit code of this container */
+	ExitCode?: I64;
+	Error?: string;
+	/** The time when this container was last started. */
+	StartedAt?: string;
+	/** The time when this container last exited. */
+	FinishedAt?: string;
+	Health?: ContainerHealth;
+}
+
+export type Usize = number;
+
+export interface ResourcesBlkioWeightDevice {
+	Path?: string;
+	Weight?: Usize;
+}
+
+export interface ThrottleDevice {
+	/** Device path */
+	Path?: string;
+	/** Rate */
+	Rate?: I64;
+}
+
+/** A device mapping between the host and container */
+export interface DeviceMapping {
+	PathOnHost?: string;
+	PathInContainer?: string;
+	CgroupPermissions?: string;
+}
+
+/** A request for devices to be sent to device drivers */
+export interface DeviceRequest {
+	Driver?: string;
+	Count?: I64;
+	DeviceIDs?: string[];
+	/** A list of capabilities; an OR list of AND lists of capabilities. */
+	Capabilities?: string[][];
+	/** Driver-specific options, specified as a key/value pairs. These options are passed directly to the driver. */
+	Options?: Record<string, string>;
+}
+
+export interface ResourcesUlimits {
+	/** Name of ulimit */
+	Name?: string;
+	/** Soft limit */
+	Soft?: I64;
+	/** Hard limit */
+	Hard?: I64;
+}
+
+/** The logging configuration for this container */
+export interface HostConfigLogConfig {
+	Type?: string;
+	Config?: Record<string, string>;
+}
+
+/** PortBinding represents a binding between a host IP address and a host port. */
+export interface PortBinding {
+	/** Host IP address that the container's port is mapped to. */
+	HostIp?: string;
+	/** Host port number that the container's port is mapped to. */
+	HostPort?: string;
+}
+
+export enum RestartPolicyNameEnum {
+	Empty = "",
+	No = "no",
+	Always = "always",
+	UnlessStopped = "unless-stopped",
+	OnFailure = "on-failure",
+}
+
+/** The behavior to apply when the container exits. The default is not to restart.  An ever increasing delay (double the previous delay, starting at 100ms) is added before each restart to prevent flooding the server. */
+export interface RestartPolicy {
+	/** - Empty string means not to restart - `no` Do not automatically restart - `always` Always restart - `unless-stopped` Restart always except when the user has manually stopped the container - `on-failure` Restart only when the container exit code is non-zero */
+	Name?: RestartPolicyNameEnum;
+	/** If `on-failure` is used, the number of times to retry before giving up. */
+	MaximumRetryCount?: I64;
+}
+
+export enum MountTypeEnum {
+	Empty = "",
+	Bind = "bind",
+	Volume = "volume",
+	Tmpfs = "tmpfs",
+	Npipe = "npipe",
+	Cluster = "cluster",
+}
+
+export enum MountBindOptionsPropagationEnum {
+	Empty = "",
+	Private = "private",
+	Rprivate = "rprivate",
+	Shared = "shared",
+	Rshared = "rshared",
+	Slave = "slave",
+	Rslave = "rslave",
+}
+
+/** Optional configuration for the `bind` type. */
+export interface MountBindOptions {
+	/** A propagation mode with the value `[r]private`, `[r]shared`, or `[r]slave`. */
+	Propagation?: MountBindOptionsPropagationEnum;
+	/** Disable recursive bind mount. */
+	NonRecursive?: boolean;
+	/** Create mount point on host if missing */
+	CreateMountpoint?: boolean;
+	/** Make the mount non-recursively read-only, but still leave the mount recursive (unless NonRecursive is set to `true` in conjunction).  Addded in v1.44, before that version all read-only mounts were non-recursive by default. To match the previous behaviour this will default to `true` for clients on versions prior to v1.44. */
+	ReadOnlyNonRecursive?: boolean;
+	/** Raise an error if the mount cannot be made recursively read-only. */
+	ReadOnlyForceRecursive?: boolean;
+}
+
+/** Map of driver specific options */
+export interface MountVolumeOptionsDriverConfig {
+	/** Name of the driver to use to create the volume. */
+	Name?: string;
+	/** key/value map of driver specific options. */
+	Options?: Record<string, string>;
+}
+
+/** Optional configuration for the `volume` type. */
+export interface MountVolumeOptions {
+	/** Populate volume with data from the target. */
+	NoCopy?: boolean;
+	/** User-defined key/value metadata. */
+	Labels?: Record<string, string>;
+	DriverConfig?: MountVolumeOptionsDriverConfig;
+	/** Source path inside the volume. Must be relative without any back traversals. */
+	Subpath?: string;
+}
+
+/** Optional configuration for the `tmpfs` type. */
+export interface MountTmpfsOptions {
+	/** The size for the tmpfs mount in bytes. */
+	SizeBytes?: I64;
+	/** The permission mode for the tmpfs mount in an integer. */
+	Mode?: I64;
+}
+
+export interface ContainerMount {
+	/** Container path. */
+	Target?: string;
+	/** Mount source (e.g. a volume name, a host path). */
+	Source?: string;
+	/** The mount type. Available types:  - `bind` Mounts a file or directory from the host into the container. Must exist prior to creating the container. - `volume` Creates a volume with the given name and options (or uses a pre-existing volume with the same name and options). These are **not** removed when the container is removed. - `tmpfs` Create a tmpfs with the given options. The mount source cannot be specified for tmpfs. - `npipe` Mounts a named pipe from the host into the container. Must exist prior to creating the container. - `cluster` a Swarm cluster volume */
+	Type?: MountTypeEnum;
+	/** Whether the mount should be read-only. */
+	ReadOnly?: boolean;
+	/** The consistency requirement for the mount: `default`, `consistent`, `cached`, or `delegated`. */
+	Consistency?: string;
+	BindOptions?: MountBindOptions;
+	VolumeOptions?: MountVolumeOptions;
+	TmpfsOptions?: MountTmpfsOptions;
+}
+
+export enum HostConfigCgroupnsModeEnum {
+	Empty = "",
+	Private = "private",
+	Host = "host",
+}
+
+export enum HostConfigIsolationEnum {
+	Empty = "",
+	Default = "default",
+	Process = "process",
+	Hyperv = "hyperv",
+}
+
+/** Container configuration that depends on the host we are running on */
+export interface HostConfig {
+	/** An integer value representing this container's relative CPU weight versus other containers. */
+	CpuShares?: I64;
+	/** Memory limit in bytes. */
+	Memory?: I64;
+	/** Path to `cgroups` under which the container's `cgroup` is created. If the path is not absolute, the path is considered to be relative to the `cgroups` path of the init process. Cgroups are created if they do not already exist. */
+	CgroupParent?: string;
+	/** Block IO weight (relative weight). */
+	BlkioWeight?: number;
+	/** Block IO weight (relative device weight) in the form:  ``` [{\"Path\": \"device_path\", \"Weight\": weight}] ``` */
+	BlkioWeightDevice?: ResourcesBlkioWeightDevice[];
+	/** Limit read rate (bytes per second) from a device, in the form:  ``` [{\"Path\": \"device_path\", \"Rate\": rate}] ``` */
+	BlkioDeviceReadBps?: ThrottleDevice[];
+	/** Limit write rate (bytes per second) to a device, in the form:  ``` [{\"Path\": \"device_path\", \"Rate\": rate}] ``` */
+	BlkioDeviceWriteBps?: ThrottleDevice[];
+	/** Limit read rate (IO per second) from a device, in the form:  ``` [{\"Path\": \"device_path\", \"Rate\": rate}] ``` */
+	BlkioDeviceReadIOps?: ThrottleDevice[];
+	/** Limit write rate (IO per second) to a device, in the form:  ``` [{\"Path\": \"device_path\", \"Rate\": rate}] ``` */
+	BlkioDeviceWriteIOps?: ThrottleDevice[];
+	/** The length of a CPU period in microseconds. */
+	CpuPeriod?: I64;
+	/** Microseconds of CPU time that the container can get in a CPU period. */
+	CpuQuota?: I64;
+	/** The length of a CPU real-time period in microseconds. Set to 0 to allocate no time allocated to real-time tasks. */
+	CpuRealtimePeriod?: I64;
+	/** The length of a CPU real-time runtime in microseconds. Set to 0 to allocate no time allocated to real-time tasks. */
+	CpuRealtimeRuntime?: I64;
+	/** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
+	CpusetCpus?: string;
+	/** Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only effective on NUMA systems. */
+	CpusetMems?: string;
+	/** A list of devices to add to the container. */
+	Devices?: DeviceMapping[];
+	/** a list of cgroup rules to apply to the container */
+	DeviceCgroupRules?: string[];
+	/** A list of requests for devices to be sent to device drivers. */
+	DeviceRequests?: DeviceRequest[];
+	/** Hard limit for kernel TCP buffer memory (in bytes). Depending on the OCI runtime in use, this option may be ignored. It is no longer supported by the default (runc) runtime.  This field is omitted when empty. */
+	KernelMemoryTCP?: I64;
+	/** Memory soft limit in bytes. */
+	MemoryReservation?: I64;
+	/** Total memory limit (memory + swap). Set as `-1` to enable unlimited swap. */
+	MemorySwap?: I64;
+	/** Tune a container's memory swappiness behavior. Accepts an integer between 0 and 100. */
+	MemorySwappiness?: I64;
+	/** CPU quota in units of 10<sup>-9</sup> CPUs. */
+	NanoCpus?: I64;
+	/** Disable OOM Killer for the container. */
+	OomKillDisable?: boolean;
+	/** Run an init inside the container that forwards signals and reaps processes. This field is omitted if empty, and the default (as configured on the daemon) is used. */
+	Init?: boolean;
+	/** Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null` to not change. */
+	PidsLimit?: I64;
+	/** A list of resource limits to set in the container. For example:  ``` {\"Name\": \"nofile\", \"Soft\": 1024, \"Hard\": 2048} ``` */
+	Ulimits?: ResourcesUlimits[];
+	/** The number of usable CPUs (Windows only).  On Windows Server containers, the processor resource controls are mutually exclusive. The order of precedence is `CPUCount` first, then `CPUShares`, and `CPUPercent` last. */
+	CpuCount?: I64;
+	/** The usable percentage of the available CPUs (Windows only).  On Windows Server containers, the processor resource controls are mutually exclusive. The order of precedence is `CPUCount` first, then `CPUShares`, and `CPUPercent` last. */
+	CpuPercent?: I64;
+	/** Maximum IOps for the container system drive (Windows only) */
+	IOMaximumIOps?: I64;
+	/** Maximum IO in bytes per second for the container system drive (Windows only). */
+	IOMaximumBandwidth?: I64;
+	/** A list of volume bindings for this container. Each volume binding is a string in one of these forms:  - `host-src:container-dest[:options]` to bind-mount a host path   into the container. Both `host-src`, and `container-dest` must   be an _absolute_ path. - `volume-name:container-dest[:options]` to bind-mount a volume   managed by a volume driver into the container. `container-dest`   must be an _absolute_ path.  `options` is an optional, comma-delimited list of:  - `nocopy` disables automatic copying of data from the container   path to the volume. The `nocopy` flag only applies to named volumes. - `[ro|rw]` mounts a volume read-only or read-write, respectively.   If omitted or set to `rw`, volumes are mounted read-write. - `[z|Z]` applies SELinux labels to allow or deny multiple containers   to read and write to the same volume.     - `z`: a _shared_ content label is applied to the content. This       label indicates that multiple containers can share the volume       content, for both reading and writing.     - `Z`: a _private unshared_ label is applied to the content.       This label indicates that only the current container can use       a private volume. Labeling systems such as SELinux require       proper labels to be placed on volume content that is mounted       into a container. Without a label, the security system can       prevent a container's processes from using the content. By       default, the labels set by the host operating system are not       modified. - `[[r]shared|[r]slave|[r]private]` specifies mount   [propagation behavior](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt).   This only applies to bind-mounted volumes, not internal volumes   or named volumes. Mount propagation requires the source mount   point (the location where the source directory is mounted in the   host operating system) to have the correct propagation properties.   For shared volumes, the source mount point must be set to `shared`.   For slave volumes, the mount must be set to either `shared` or   `slave`. */
+	Binds?: string[];
+	/** Path to a file where the container ID is written */
+	ContainerIDFile?: string;
+	LogConfig?: HostConfigLogConfig;
+	/** Network mode to use for this container. Supported standard values are: `bridge`, `host`, `none`, and `container:<name|id>`. Any other value is taken as a custom network's name to which this container should connect to. */
+	NetworkMode?: string;
+	PortBindings?: Record<string, PortBinding[]>;
+	RestartPolicy?: RestartPolicy;
+	/** Automatically remove the container when the container's process exits. This has no effect if `RestartPolicy` is set. */
+	AutoRemove?: boolean;
+	/** Driver that this container uses to mount volumes. */
+	VolumeDriver?: string;
+	/** A list of volumes to inherit from another container, specified in the form `<container name>[:<ro|rw>]`. */
+	VolumesFrom?: string[];
+	/** Specification for mounts to be added to the container. */
+	Mounts?: ContainerMount[];
+	/** Initial console size, as an `[height, width]` array. */
+	ConsoleSize?: number[];
+	/** Arbitrary non-identifying metadata attached to container and provided to the runtime when the container is started. */
+	Annotations?: Record<string, string>;
+	/** A list of kernel capabilities to add to the container. Conflicts with option 'Capabilities'. */
+	CapAdd?: string[];
+	/** A list of kernel capabilities to drop from the container. Conflicts with option 'Capabilities'. */
+	CapDrop?: string[];
+	/** cgroup namespace mode for the container. Possible values are:  - `\"private\"`: the container runs in its own private cgroup namespace - `\"host\"`: use the host system's cgroup namespace  If not specified, the daemon default is used, which can either be `\"private\"` or `\"host\"`, depending on daemon version, kernel support and configuration. */
+	CgroupnsMode?: HostConfigCgroupnsModeEnum;
+	/** A list of DNS servers for the container to use. */
+	Dns?: string[];
+	/** A list of DNS options. */
+	DnsOptions?: string[];
+	/** A list of DNS search domains. */
+	DnsSearch?: string[];
+	/** A list of hostnames/IP mappings to add to the container's `/etc/hosts` file. Specified in the form `[\"hostname:IP\"]`. */
+	ExtraHosts?: string[];
+	/** A list of additional groups that the container process will run as. */
+	GroupAdd?: string[];
+	/** IPC sharing mode for the container. Possible values are:  - `\"none\"`: own private IPC namespace, with /dev/shm not mounted - `\"private\"`: own private IPC namespace - `\"shareable\"`: own private IPC namespace, with a possibility to share it with other containers - `\"container:<name|id>\"`: join another (shareable) container's IPC namespace - `\"host\"`: use the host system's IPC namespace  If not specified, daemon default is used, which can either be `\"private\"` or `\"shareable\"`, depending on daemon version and configuration. */
+	IpcMode?: string;
+	/** Cgroup to use for the container. */
+	Cgroup?: string;
+	/** A list of links for the container in the form `container_name:alias`. */
+	Links?: string[];
+	/** An integer value containing the score given to the container in order to tune OOM killer preferences. */
+	OomScoreAdj?: I64;
+	/** Set the PID (Process) Namespace mode for the container. It can be either:  - `\"container:<name|id>\"`: joins another container's PID namespace - `\"host\"`: use the host's PID namespace inside the container */
+	PidMode?: string;
+	/** Gives the container full access to the host. */
+	Privileged?: boolean;
+	/** Allocates an ephemeral host port for all of a container's exposed ports.  Ports are de-allocated when the container stops and allocated when the container starts. The allocated port might be changed when restarting the container.  The port is selected from the ephemeral port range that depends on the kernel. For example, on Linux the range is defined by `/proc/sys/net/ipv4/ip_local_port_range`. */
+	PublishAllPorts?: boolean;
+	/** Mount the container's root filesystem as read only. */
+	ReadonlyRootfs?: boolean;
+	/** A list of string values to customize labels for MLS systems, such as SELinux. */
+	SecurityOpt?: string[];
+	/** Storage driver options for this container, in the form `{\"size\": \"120G\"}`. */
+	StorageOpt?: Record<string, string>;
+	/** A map of container directories which should be replaced by tmpfs mounts, and their corresponding mount options. For example:  ``` { \"/run\": \"rw,noexec,nosuid,size=65536k\" } ``` */
+	Tmpfs?: Record<string, string>;
+	/** UTS namespace to use for the container. */
+	UTSMode?: string;
+	/** Sets the usernamespace mode for the container when usernamespace remapping option is enabled. */
+	UsernsMode?: string;
+	/** Size of `/dev/shm` in bytes. If omitted, the system uses 64MB. */
+	ShmSize?: I64;
+	/** A list of kernel parameters (sysctls) to set in the container. For example:  ``` {\"net.ipv4.ip_forward\": \"1\"} ``` */
+	Sysctls?: Record<string, string>;
+	/** Runtime to use with this container. */
+	Runtime?: string;
+	/** Isolation technology of the container. (Windows only) */
+	Isolation?: HostConfigIsolationEnum;
+	/** The list of paths to be masked inside the container (this overrides the default set of paths). */
+	MaskedPaths?: string[];
+	/** The list of paths to be set as read-only inside the container (this overrides the default set of paths). */
+	ReadonlyPaths?: string[];
+}
+
+/** MountPoint represents a mount point configuration inside the container. This is used for reporting the mountpoints in use by a container. */
+export interface MountPoint {
+	/** The mount type:  - `bind` a mount of a file or directory from the host into the container. - `volume` a docker volume with the given `Name`. - `tmpfs` a `tmpfs`. - `npipe` a named pipe from the host into the container. - `cluster` a Swarm cluster volume */
+	Type?: MountTypeEnum;
+	/** Name is the name reference to the underlying data defined by `Source` e.g., the volume name. */
+	Name?: string;
+	/** Source location of the mount.  For volumes, this contains the storage location of the volume (within `/var/lib/docker/volumes/`). For bind-mounts, and `npipe`, this contains the source (host) part of the bind-mount. For `tmpfs` mount points, this field is empty. */
+	Source?: string;
+	/** Destination is the path relative to the container root (`/`) where the `Source` is mounted inside the container. */
+	Destination?: string;
+	/** Driver is the volume driver used to create the volume (if it is a volume). */
+	Driver?: string;
+	/** Mode is a comma separated list of options supplied by the user when creating the bind/volume mount.  The default is platform-specific (`\"z\"` on Linux, empty on Windows). */
+	Mode?: string;
+	/** Whether the mount is mounted writable (read-write). */
+	RW?: boolean;
+	/** Propagation describes how mounts are propagated from the host into the mount point, and vice-versa. Refer to the [Linux kernel documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) for details. This field is not used on Windows. */
+	Propagation?: string;
+}
+
+/** A test to perform to check that the container is healthy. */
+export interface HealthConfig {
+	/** The test to perform. Possible values are:  - `[]` inherit healthcheck from image or parent image - `[\"NONE\"]` disable healthcheck - `[\"CMD\", args...]` exec arguments directly - `[\"CMD-SHELL\", command]` run command with system's default shell */
+	Test?: string[];
+	/** The time to wait between checks in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	Interval?: I64;
+	/** The time to wait before considering the check to have hung. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	Timeout?: I64;
+	/** The number of consecutive failures needed to consider a container as unhealthy. 0 means inherit. */
+	Retries?: I64;
+	/** Start period for the container to initialize before starting health-retries countdown in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	StartPeriod?: I64;
+	/** The time to wait between checks in nanoseconds during the start period. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	StartInterval?: I64;
+}
+
+/** Configuration for a container that is portable between hosts.  When used as `ContainerConfig` field in an image, `ContainerConfig` is an optional field containing the configuration of the container that was last committed when creating the image.  Previous versions of Docker builder used this field to store build cache, and it is not in active use anymore. */
+export interface ContainerConfig {
+	/** The hostname to use for the container, as a valid RFC 1123 hostname. */
+	Hostname?: string;
+	/** The domain name to use for the container. */
+	Domainname?: string;
+	/** The user that commands are run as inside the container. */
+	User?: string;
+	/** Whether to attach to `stdin`. */
+	AttachStdin?: boolean;
+	/** Whether to attach to `stdout`. */
+	AttachStdout?: boolean;
+	/** Whether to attach to `stderr`. */
+	AttachStderr?: boolean;
+	/** An object mapping ports to an empty object in the form:  `{\"<port>/<tcp|udp|sctp>\": {}}` */
+	ExposedPorts?: Record<string, Record<string, undefined>>;
+	/** Attach standard streams to a TTY, including `stdin` if it is not closed. */
+	Tty?: boolean;
+	/** Open `stdin` */
+	OpenStdin?: boolean;
+	/** Close `stdin` after one attached client disconnects */
+	StdinOnce?: boolean;
+	/** A list of environment variables to set inside the container in the form `[\"VAR=value\", ...]`. A variable without `=` is removed from the environment, rather than to have an empty value. */
+	Env?: string[];
+	/** Command to run specified as a string or an array of strings. */
+	Cmd?: string[];
+	Healthcheck?: HealthConfig;
+	/** Command is already escaped (Windows only) */
+	ArgsEscaped?: boolean;
+	/** The name (or reference) of the image to use when creating the container, or which was used when the container was created. */
+	Image?: string;
+	/** An object mapping mount point paths inside the container to empty objects. */
+	Volumes?: Record<string, Record<string, undefined>>;
+	/** The working directory for commands to run in. */
+	WorkingDir?: string;
+	/** The entry point for the container as a string or an array of strings.  If the array consists of exactly one empty string (`[\"\"]`) then the entry point is reset to system default (i.e., the entry point used by docker when there is no `ENTRYPOINT` instruction in the `Dockerfile`). */
+	Entrypoint?: string[];
+	/** Disable networking for the container. */
+	NetworkDisabled?: boolean;
+	/** MAC address of the container.  Deprecated: this field is deprecated in API v1.44 and up. Use EndpointSettings.MacAddress instead. */
+	MacAddress?: string;
+	/** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
+	OnBuild?: string[];
+	/** User-defined key/value metadata. */
+	Labels?: Record<string, string>;
+	/** Signal to stop a container as a string or unsigned integer. */
+	StopSignal?: string;
+	/** Timeout to stop a container in seconds. */
+	StopTimeout?: I64;
+	/** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
+	Shell?: string[];
+}
+
+/** EndpointIPAMConfig represents an endpoint's IPAM configuration. */
+export interface EndpointIpamConfig {
+	IPv4Address?: string;
+	IPv6Address?: string;
+	LinkLocalIPs?: string[];
+}
+
+/** Configuration for a network endpoint. */
+export interface EndpointSettings {
+	IPAMConfig?: EndpointIpamConfig;
+	Links?: string[];
+	/** MAC address for the endpoint on this network. The network driver might ignore this parameter. */
+	MacAddress?: string;
+	Aliases?: string[];
+	/** Unique ID of the network. */
+	NetworkID?: string;
+	/** Unique ID for the service endpoint in a Sandbox. */
+	EndpointID?: string;
+	/** Gateway address for this network. */
+	Gateway?: string;
+	/** IPv4 address. */
+	IPAddress?: string;
+	/** Mask length of the IPv4 address. */
+	IPPrefixLen?: I64;
+	/** IPv6 gateway address. */
+	IPv6Gateway?: string;
+	/** Global IPv6 address. */
+	GlobalIPv6Address?: string;
+	/** Mask length of the global IPv6 address. */
+	GlobalIPv6PrefixLen?: I64;
+	/** DriverOpts is a mapping of driver options and values. These options are passed directly to the driver and are driver specific. */
+	DriverOpts?: Record<string, string>;
+	/** List of all DNS names an endpoint has on a specific network. This list is based on the container name, network aliases, container short ID, and hostname.  These DNS names are non-fully qualified but can contain several dots. You can get fully qualified DNS names by appending `.<network-name>`. For instance, if container name is `my.ctr` and the network is named `testnet`, `DNSNames` will contain `my.ctr` and the FQDN will be `my.ctr.testnet`. */
+	DNSNames?: string[];
+}
+
+/** NetworkSettings exposes the network settings in the API */
+export interface NetworkSettings {
+	/** Name of the default bridge interface when dockerd's --bridge flag is set. */
+	Bridge?: string;
+	/** SandboxID uniquely represents a container's network stack. */
+	SandboxID?: string;
+	Ports?: Record<string, PortBinding[]>;
+	/** SandboxKey is the full path of the netns handle */
+	SandboxKey?: string;
+	/** Information about all networks that the container is connected to. */
+	Networks?: Record<string, EndpointSettings>;
+}
+
+export interface Container {
+	/** The ID of the container */
+	Id?: string;
+	/** The time the container was created */
+	Created?: string;
+	/** The path to the command being run */
+	Path?: string;
+	/** The arguments to the command being run */
+	Args?: string[];
+	State?: ContainerState;
+	/** The container's image ID */
+	Image?: string;
+	ResolvConfPath?: string;
+	HostnamePath?: string;
+	HostsPath?: string;
+	LogPath?: string;
+	Name?: string;
+	RestartCount?: I64;
+	Driver?: string;
+	Platform?: string;
+	MountLabel?: string;
+	ProcessLabel?: string;
+	AppArmorProfile?: string;
+	/** IDs of exec instances that are running in the container. */
+	ExecIDs?: string[];
+	HostConfig?: HostConfig;
+	GraphDriver?: GraphDriverData;
+	/** The size of files that have been created or changed by this container. */
+	SizeRw?: I64;
+	/** The total size of all the files in this container. */
+	SizeRootFs?: I64;
+	Mounts?: MountPoint[];
+	Config?: ContainerConfig;
+	NetworkSettings?: NetworkSettings;
+}
+
+export type InspectDockerContainerResponse = Container;
+
+export enum VolumeScopeEnum {
+	Empty = "",
+	Local = "local",
+	Global = "global",
+}
+
+export interface VolumeListItem {
+	name: string;
+	driver: string;
+	mountpoint: string;
+	created?: string;
+	scope: VolumeScopeEnum;
+	/** Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the `\"local\"` volume driver. For volumes created with other volume drivers, this field is set to `-1` (\"not available\") */
+	size?: I64;
+	/** The number of containers referencing this volume. This field is set to `-1` if the reference-count is not available. */
+	ref_count?: I64;
+}
+
+export type ListDockerVolumesResponse = VolumeListItem[];
+
+export type U64 = number;
+
+/** The version number of the object such as node, service, etc. This is needed to avoid conflicting writes. The client must send the version number along with the modified specification when updating these objects.  This approach ensures safe concurrency and determinism in that the change on the object may not be applied if the version number has changed from the last read. In other words, if two update requests specify the same base version, only one of the requests can succeed. As a result, two separate update requests that happen at the same time will not unintentionally overwrite each other. */
+export interface ObjectVersion {
+	Index?: U64;
+}
+
+export enum ClusterVolumeSpecAccessModeScopeEnum {
+	Empty = "",
+	Single = "single",
+	Multi = "multi",
+}
+
+export enum ClusterVolumeSpecAccessModeSharingEnum {
+	Empty = "",
+	None = "none",
+	Readonly = "readonly",
+	Onewriter = "onewriter",
+	All = "all",
+}
+
+/** One cluster volume secret entry. Defines a key-value pair that is passed to the plugin. */
+export interface ClusterVolumeSpecAccessModeSecrets {
+	/** Key is the name of the key of the key-value pair passed to the plugin. */
+	Key?: string;
+	/** Secret is the swarm Secret object from which to read data. This can be a Secret name or ID. The Secret data is retrieved by swarm and used as the value of the key-value pair passed to the plugin. */
+	Secret?: string;
+}
+
+export type Topology = Record<string, PortBinding[]>;
+
+/** Requirements for the accessible topology of the volume. These fields are optional. For an in-depth description of what these fields mean, see the CSI specification. */
+export interface ClusterVolumeSpecAccessModeAccessibilityRequirements {
+	/** A list of required topologies, at least one of which the volume must be accessible from. */
+	Requisite?: Topology[];
+	/** A list of topologies that the volume should attempt to be provisioned in. */
+	Preferred?: Topology[];
+}
+
+/** The desired capacity that the volume should be created with. If empty, the plugin will decide the capacity. */
+export interface ClusterVolumeSpecAccessModeCapacityRange {
+	/** The volume must be at least this big. The value of 0 indicates an unspecified minimum */
+	RequiredBytes?: I64;
+	/** The volume must not be bigger than this. The value of 0 indicates an unspecified maximum. */
+	LimitBytes?: I64;
+}
+
+export enum ClusterVolumeSpecAccessModeAvailabilityEnum {
+	Empty = "",
+	Active = "active",
+	Pause = "pause",
+	Drain = "drain",
+}
+
+/** Defines how the volume is used by tasks. */
+export interface ClusterVolumeSpecAccessMode {
+	/** The set of nodes this volume can be used on at one time. - `single` The volume may only be scheduled to one node at a time. - `multi` the volume may be scheduled to any supported number of nodes at a time. */
+	Scope?: ClusterVolumeSpecAccessModeScopeEnum;
+	/** The number and way that different tasks can use this volume at one time. - `none` The volume may only be used by one task at a time. - `readonly` The volume may be used by any number of tasks, but they all must mount the volume as readonly - `onewriter` The volume may be used by any number of tasks, but only one may mount it as read/write. - `all` The volume may have any number of readers and writers. */
+	Sharing?: ClusterVolumeSpecAccessModeSharingEnum;
+	/** Swarm Secrets that are passed to the CSI storage plugin when operating on this volume. */
+	Secrets?: ClusterVolumeSpecAccessModeSecrets[];
+	AccessibilityRequirements?: ClusterVolumeSpecAccessModeAccessibilityRequirements;
+	CapacityRange?: ClusterVolumeSpecAccessModeCapacityRange;
+	/** The availability of the volume for use in tasks. - `active` The volume is fully available for scheduling on the cluster - `pause` No new workloads should use the volume, but existing workloads are not stopped. - `drain` All workloads using this volume should be stopped and rescheduled, and no new ones should be started. */
+	Availability?: ClusterVolumeSpecAccessModeAvailabilityEnum;
+}
+
+/** Cluster-specific options used to create the volume. */
+export interface ClusterVolumeSpec {
+	/** Group defines the volume group of this volume. Volumes belonging to the same group can be referred to by group name when creating Services.  Referring to a volume by group instructs Swarm to treat volumes in that group interchangeably for the purpose of scheduling. Volumes with an empty string for a group technically all belong to the same, emptystring group. */
+	Group?: string;
+	AccessMode?: ClusterVolumeSpecAccessMode;
+}
+
+/** Information about the global status of the volume. */
+export interface ClusterVolumeInfo {
+	/** The capacity of the volume in bytes. A value of 0 indicates that the capacity is unknown. */
+	CapacityBytes?: I64;
+	/** A map of strings to strings returned from the storage plugin when the volume is created. */
+	VolumeContext?: Record<string, string>;
+	/** The ID of the volume as returned by the CSI storage plugin. This is distinct from the volume's ID as provided by Docker. This ID is never used by the user when communicating with Docker to refer to this volume. If the ID is blank, then the Volume has not been successfully created in the plugin yet. */
+	VolumeID?: string;
+	/** The topology this volume is actually accessible from. */
+	AccessibleTopology?: Topology[];
+}
+
+export enum ClusterVolumePublishStatusStateEnum {
+	Empty = "",
+	PendingPublish = "pending-publish",
+	Published = "published",
+	PendingNodeUnpublish = "pending-node-unpublish",
+	PendingControllerUnpublish = "pending-controller-unpublish",
+}
+
+export interface ClusterVolumePublishStatus {
+	/** The ID of the Swarm node the volume is published on. */
+	NodeID?: string;
+	/** The published state of the volume. * `pending-publish` The volume should be published to this node, but the call to the controller plugin to do so has not yet been successfully completed. * `published` The volume is published successfully to the node. * `pending-node-unpublish` The volume should be unpublished from the node, and the manager is awaiting confirmation from the worker that it has done so. * `pending-controller-unpublish` The volume is successfully unpublished from the node, but has not yet been successfully unpublished on the controller. */
+	State?: ClusterVolumePublishStatusStateEnum;
+	/** A map of strings to strings returned by the CSI controller plugin when a volume is published. */
+	PublishContext?: Record<string, string>;
+}
+
+/** Options and information specific to, and only present on, Swarm CSI cluster volumes. */
+export interface ClusterVolume {
+	/** The Swarm ID of this volume. Because cluster volumes are Swarm objects, they have an ID, unlike non-cluster volumes. This ID can be used to refer to the Volume instead of the name. */
+	ID?: string;
+	Version?: ObjectVersion;
+	CreatedAt?: string;
+	UpdatedAt?: string;
+	Spec?: ClusterVolumeSpec;
+	Info?: ClusterVolumeInfo;
+	/** The status of the volume as it pertains to its publishing and use on specific nodes */
+	PublishStatus?: ClusterVolumePublishStatus[];
+}
+
+/** Usage details about the volume. This information is used by the `GET /system/df` endpoint, and omitted in other endpoints. */
+export interface VolumeUsageData {
+	/** Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the `\"local\"` volume driver. For volumes created with other volume drivers, this field is set to `-1` (\"not available\") */
+	Size: I64;
+	/** The number of containers referencing this volume. This field is set to `-1` if the reference-count is not available. */
+	RefCount: I64;
+}
+
+export interface Volume {
+	/** Name of the volume. */
+	Name: string;
+	/** Name of the volume driver used by the volume. */
+	Driver: string;
+	/** Mount path of the volume on the host. */
+	Mountpoint: string;
+	/** Date/Time the volume was created. */
+	CreatedAt?: string;
+	/** Low-level details about the volume, provided by the volume driver. Details are returned as a map with key/value pairs: `{\"key\":\"value\",\"key2\":\"value2\"}`.  The `Status` field is optional, and is omitted if the volume driver does not support this feature. */
+	Status?: Record<string, Record<string, undefined>>;
+	/** User-defined key/value metadata. */
+	Labels?: Record<string, string>;
+	/** The level at which the volume exists. Either `global` for cluster-wide, or `local` for machine level. */
+	Scope?: VolumeScopeEnum;
+	ClusterVolume?: ClusterVolume;
+	/** The driver specific options used when creating the volume. */
+	Options?: Record<string, string>;
+	UsageData?: VolumeUsageData;
+}
+
+export type InspectDockerVolumeResponse = Volume;
 
 export interface ComposeProject {
 	/** The compose project name. */
@@ -1645,7 +2426,7 @@ export interface StackService {
 	/** The service name */
 	service: string;
 	/** The container */
-	container?: ContainerSummary;
+	container?: ContainerListItem;
 }
 
 export type ListStackServicesResponse = StackService[];
@@ -1881,12 +2662,14 @@ export enum Operation {
 	UpdateServer = "UpdateServer",
 	DeleteServer = "DeleteServer",
 	RenameServer = "RenameServer",
-	PruneImages = "PruneImages",
+	StopAllContainers = "StopAllContainers",
 	PruneContainers = "PruneContainers",
 	PruneNetworks = "PruneNetworks",
+	PruneImages = "PruneImages",
+	PruneVolumes = "PruneVolumes",
+	PruneSystem = "PruneSystem",
 	CreateNetwork = "CreateNetwork",
 	DeleteNetwork = "DeleteNetwork",
-	StopAllContainers = "StopAllContainers",
 	CreateBuild = "CreateBuild",
 	UpdateBuild = "UpdateBuild",
 	DeleteBuild = "DeleteBuild",
@@ -2239,8 +3022,6 @@ export interface DeploymentQuerySpecifics {
 
 export type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
 
-export type U64 = number;
-
 export type MongoDocument = any;
 
 export type JsonValue = any;
@@ -2566,6 +3347,16 @@ export interface StopAllContainers {
 }
 
 /**
+ * Prunes the docker containers on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker container prune -f`.
+ */
+export interface PruneContainers {
+	/** Id or name */
+	server: string;
+}
+
+/**
  * Prunes the docker networks on the target server. Response: [Update].
  * 
  * 1. Runs `docker network prune -f`.
@@ -2586,11 +3377,21 @@ export interface PruneImages {
 }
 
 /**
- * Prunes the docker containers on the target server. Response: [Update].
+ * Prunes the docker volumes on the target server. Response: [Update].
  * 
- * 1. Runs `docker container prune -f`.
+ * 1. Runs `docker volume prune -a -f`.
  */
-export interface PruneContainers {
+export interface PruneVolumes {
+	/** Id or name */
+	server: string;
+}
+
+/**
+ * Prunes the docker system on the target server, including volumes. Response: [Update].
+ * 
+ * 1. Runs `docker system prune -a -f --volumes`.
+ */
+export interface PruneSystem {
 	/** Id or name */
 	server: string;
 }
@@ -2954,7 +3755,7 @@ export interface GetDeploymentContainer {
 /** Response for [GetDeploymentContainer]. */
 export interface GetDeploymentContainerResponse {
 	state: DeploymentState;
-	container?: ContainerSummary;
+	container?: ContainerListItem;
 }
 
 /**
@@ -3394,6 +4195,14 @@ export interface ListDockerNetworks {
 	server: string;
 }
 
+/** Inspect a docker network on the server. Response: [InspectDockerNetworkResponse]. */
+export interface InspectDockerNetwork {
+	/** Id or name */
+	server: string;
+	/** The network name */
+	network: string;
+}
+
 /**
  * List the docker images locally cached on the target server.
  * Response: [ListDockerImagesResponse].
@@ -3401,6 +4210,14 @@ export interface ListDockerNetworks {
 export interface ListDockerImages {
 	/** Id or name */
 	server: string;
+}
+
+/** Inspect a docker image on the server. Response: [Image]. */
+export interface InspectDockerImage {
+	/** Id or name */
+	server: string;
+	/** The image name */
+	image: string;
 }
 
 /**
@@ -3412,8 +4229,33 @@ export interface ListDockerContainers {
 	server: string;
 }
 
+/** Inspect a docker container on the server. Response: [Container]. */
+export interface InspectDockerContainer {
+	/** Id or name */
+	server: string;
+	/** The container name */
+	container: string;
+}
+
 /**
- * List all compose projects on the target server.
+ * List all docker volumes on the target server.
+ * Response: [ListDockerVolumesResponse].
+ */
+export interface ListDockerVolumes {
+	/** Id or name */
+	server: string;
+}
+
+/** Inspect a docker volume on the server. Response: [Volume]. */
+export interface InspectDockerVolume {
+	/** Id or name */
+	server: string;
+	/** The volume name */
+	volume: string;
+}
+
+/**
+ * List all docker compose projects on the target server.
  * Response: [ListComposeProjectsResponse].
  */
 export interface ListComposeProjects {
@@ -4961,6 +5803,24 @@ export interface AwsBuilderConfig {
 	secrets?: string[];
 }
 
+export enum PortTypeEnum {
+	EMPTY = "",
+	TCP = "tcp",
+	UDP = "udp",
+	SCTP = "sctp",
+}
+
+/** An open port on a container */
+export interface Port {
+	/** Host IP address that the container's port is mapped to */
+	IP?: string;
+	/** Port on the container */
+	PrivatePort?: number;
+	/** Port exposed on the host */
+	PublicPort?: number;
+	Type?: PortTypeEnum;
+}
+
 export interface LatestCommit {
 	hash: string;
 	message: string;
@@ -4987,14 +5847,6 @@ export interface CloneArgs {
 	on_pull?: SystemCommand;
 	/** Configure the account used to access repo (if private) */
 	account?: string;
-}
-
-/** Info for the all system disks combined. */
-export interface TotalDiskUsage {
-	/** Used portion in GB */
-	used_gb: number;
-	/** Total size in GB */
-	total_gb: number;
 }
 
 /** Summary of the health of the server. */
@@ -5178,6 +6030,14 @@ export interface ComposeFile {
 	services?: Record<string, ComposeService>;
 }
 
+/** Info for the all system disks combined. */
+export interface TotalDiskUsage {
+	/** Used portion in GB */
+	used_gb: number;
+	/** Total size in GB */
+	total_gb: number;
+}
+
 export interface SyncDeployUpdate {
 	/** Resources to deploy */
 	to_deploy: number;
@@ -5239,8 +6099,10 @@ export type AuthRequest =
 export type ExecuteRequest = 
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
-	| { type: "PruneImages", params: PruneImages }
 	| { type: "PruneNetworks", params: PruneNetworks }
+	| { type: "PruneImages", params: PruneImages }
+	| { type: "PruneVolumes", params: PruneVolumes }
+	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartContainer", params: StartContainer }
 	| { type: "RestartContainer", params: RestartContainer }
@@ -5300,9 +6162,14 @@ export type ReadRequest =
 	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
 	| { type: "ListServers", params: ListServers }
 	| { type: "ListFullServers", params: ListFullServers }
+	| { type: "InspectDockerContainer", params: InspectDockerContainer }
+	| { type: "InspectDockerNetwork", params: InspectDockerNetwork }
+	| { type: "InspectDockerImage", params: InspectDockerImage }
+	| { type: "InspectDockerVolume", params: InspectDockerVolume }
 	| { type: "ListDockerContainers", params: ListDockerContainers }
 	| { type: "ListDockerNetworks", params: ListDockerNetworks }
 	| { type: "ListDockerImages", params: ListDockerImages }
+	| { type: "ListDockerVolumes", params: ListDockerVolumes }
 	| { type: "ListComposeProjects", params: ListComposeProjects }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }

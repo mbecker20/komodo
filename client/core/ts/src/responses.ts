@@ -59,8 +59,13 @@ export type ReadResponses = {
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   ListDockerContainers: Types.ListDockerContainersResponse;
-  ListDockerImages: Types.ListDockerImagesResponse;
+  InspectDockerContainer: Types.InspectDockerContainerResponse;
   ListDockerNetworks: Types.ListDockerNetworksResponse;
+  InspectDockerNetwork: Types.InspectDockerNetworkResponse;
+  ListDockerImages: Types.ListDockerImagesResponse;
+  InspectDockerImage: Types.InspectDockerImageResponse;
+  ListDockerVolumes: Types.ListDockerVolumesResponse;
+  InspectDockerVolume: Types.InspectDockerVolumeResponse;
   ListComposeProjects: Types.ListComposeProjectsResponse;
   GetServerActionState: Types.GetServerActionStateResponse;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
@@ -287,8 +292,10 @@ export type ExecuteResponses = {
   // ==== SERVER ====
   StopAllContainers: Types.Update;
   PruneContainers: Types.Update;
-  PruneImages: Types.Update;
   PruneNetworks: Types.Update;
+  PruneImages: Types.Update;
+  PruneVolumes: Types.Update;
+  PruneSystem: Types.Update;
 
   // ==== DEPLOYMENT ====
   Deploy: Types.Update;

@@ -5,7 +5,8 @@ use monitor_client::entities::{
   alerter::Alerter,
   build::Build,
   builder::Builder,
-  deployment::{ContainerSummary, Deployment, DeploymentState},
+  deployment::{Deployment, DeploymentState},
+  docker::container::{ContainerListItem, ContainerStateStatusEnum},
   permission::PermissionLevel,
   procedure::Procedure,
   repo::Repo,
@@ -90,7 +91,7 @@ pub async fn get_deployment_state(
     .find(|container| container.name == deployment.name);
 
   let state = match container {
-    Some(container) => container.state,
+    Some(container) => container.state.into(),
     None => DeploymentState::NotDeployed,
   };
 
@@ -101,7 +102,7 @@ pub async fn get_deployment_state(
 pub fn get_stack_state_from_containers(
   ignore_services: &[String],
   services: &[StackServiceNames],
-  containers: &[ContainerSummary],
+  containers: &[ContainerListItem],
 ) -> StackState {
   // first filter the containers to only ones which match the service
   let services = services
@@ -129,39 +130,39 @@ pub fn get_stack_state_from_containers(
   if services.len() != containers.len() {
     return StackState::Unhealthy;
   }
-  let running = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Running);
+  let running = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Running
+  });
   if running {
     return StackState::Running;
   }
-  let paused = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Paused);
+  let paused = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Paused
+  });
   if paused {
     return StackState::Paused;
   }
-  let stopped = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Exited);
+  let stopped = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Exited
+  });
   if stopped {
     return StackState::Stopped;
   }
-  let restarting = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Restarting);
+  let restarting = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Restarting
+  });
   if restarting {
     return StackState::Restarting;
   }
-  let dead = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Dead);
+  let dead = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Dead
+  });
   if dead {
     return StackState::Dead;
   }
-  let removing = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Removing);
+  let removing = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Removing
+  });
   if removing {
     return StackState::Removing;
   }

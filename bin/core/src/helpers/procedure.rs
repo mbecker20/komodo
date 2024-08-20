@@ -369,6 +369,22 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::PruneContainers(req) => {
+      let req = ExecuteRequest::PruneContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PruneContainers(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PruneContainers"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::PruneNetworks(req) => {
       let req = ExecuteRequest::PruneNetworks(req);
       let update = init_execution_update(&req, &user).await?;
@@ -401,10 +417,10 @@ async fn execute_execution(
       )
       .await?
     }
-    Execution::PruneContainers(req) => {
-      let req = ExecuteRequest::PruneContainers(req);
+    Execution::PruneVolumes(req) => {
+      let req = ExecuteRequest::PruneVolumes(req);
       let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::PruneContainers(req) = req else {
+      let ExecuteRequest::PruneVolumes(req) = req else {
         unreachable!()
       };
       let update_id = update.id.clone();
@@ -412,7 +428,23 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneContainers"),
+          .context("failed at PruneVolumes"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::PruneSystem(req) => {
+      let req = ExecuteRequest::PruneSystem(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PruneSystem(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PruneSystem"),
         &update_id,
       )
       .await?

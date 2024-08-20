@@ -460,13 +460,19 @@ async fn add_procedure(
         Execution::StopAllContainers(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
+        Execution::PruneContainers(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
         Execution::PruneNetworks(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
         Execution::PruneImages(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
-        Execution::PruneContainers(exec) => exec.server.clone_from(
+        Execution::PruneVolumes(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PruneSystem(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
         Execution::RunSync(exec) => exec.sync.clone_from(

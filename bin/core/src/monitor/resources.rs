@@ -1,6 +1,7 @@
 use anyhow::Context;
 use monitor_client::entities::{
-  deployment::{ContainerSummary, Deployment, DeploymentState},
+  deployment::{Deployment, DeploymentState},
+  docker::container::ContainerListItem,
   stack::{Stack, StackService, StackServiceNames},
 };
 
@@ -19,7 +20,7 @@ use super::{CachedDeploymentStatus, CachedStackStatus, History};
 
 pub async fn update_deployment_cache(
   deployments: Vec<Deployment>,
-  containers: &[ContainerSummary],
+  containers: &[ContainerListItem],
 ) {
   let deployment_status_cache = deployment_status_cache();
   for deployment in deployments {
@@ -33,7 +34,7 @@ pub async fn update_deployment_cache(
       .map(|s| s.curr.state);
     let state = container
       .as_ref()
-      .map(|c| c.state)
+      .map(|c| c.state.into())
       .unwrap_or(DeploymentState::NotDeployed);
     deployment_status_cache
       .insert(
@@ -54,7 +55,7 @@ pub async fn update_deployment_cache(
 
 pub async fn update_stack_cache(
   stacks: Vec<Stack>,
-  containers: &[ContainerSummary],
+  containers: &[ContainerListItem],
 ) {
   let stack_status_cache = stack_status_cache();
   for stack in stacks {

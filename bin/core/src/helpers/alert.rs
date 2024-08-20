@@ -2,10 +2,9 @@ use anyhow::{anyhow, Context};
 use derive_variants::ExtractVariant;
 use futures::future::join_all;
 use monitor_client::entities::{
-  alert::{Alert, AlertData},
+  alert::{Alert, AlertData, SeverityLevel},
   alerter::*,
   deployment::DeploymentState,
-  server::stats::SeverityLevel,
   stack::StackState,
   update::ResourceTargetVariant,
 };

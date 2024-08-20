@@ -4,7 +4,12 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  deployment::ContainerSummary,
+  docker::{
+    container::{Container, ContainerListItem},
+    image::{Image, ImageListItem},
+    network::{Network, NetworkListItem},
+    volume::{Volume, VolumeListItem},
+  },
   server::{
     Server, ServerActionState, ServerListItem, ServerQuery,
     ServerState,
@@ -153,7 +158,27 @@ pub struct ListDockerNetworks {
 }
 
 #[typeshare]
-pub type ListDockerNetworksResponse = Vec<DockerNetwork>;
+pub type ListDockerNetworksResponse = Vec<NetworkListItem>;
+
+//
+
+/// Inspect a docker network on the server. Response: [InspectDockerNetworkResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(InspectDockerNetworkResponse)]
+pub struct InspectDockerNetwork {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The network name
+  pub network: String,
+}
+
+#[typeshare]
+pub type InspectDockerNetworkResponse = Network;
 
 //
 
@@ -172,7 +197,27 @@ pub struct ListDockerImages {
 }
 
 #[typeshare]
-pub type ListDockerImagesResponse = Vec<ImageSummary>;
+pub type ListDockerImagesResponse = Vec<ImageListItem>;
+
+//
+
+/// Inspect a docker image on the server. Response: [Image].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(InspectDockerImageResponse)]
+pub struct InspectDockerImage {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The image name
+  pub image: String,
+}
+
+#[typeshare]
+pub type InspectDockerImageResponse = Image;
 
 //
 
@@ -191,11 +236,70 @@ pub struct ListDockerContainers {
 }
 
 #[typeshare]
-pub type ListDockerContainersResponse = Vec<ContainerSummary>;
+pub type ListDockerContainersResponse = Vec<ContainerListItem>;
 
 //
 
-/// List all compose projects on the target server.
+/// Inspect a docker container on the server. Response: [Container].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(InspectDockerContainerResponse)]
+pub struct InspectDockerContainer {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+#[typeshare]
+pub type InspectDockerContainerResponse = Container;
+
+//
+
+/// List all docker volumes on the target server.
+/// Response: [ListDockerVolumesResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListDockerVolumesResponse)]
+pub struct ListDockerVolumes {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+}
+
+#[typeshare]
+pub type ListDockerVolumesResponse = Vec<VolumeListItem>;
+
+//
+
+/// Inspect a docker volume on the server. Response: [Volume].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(InspectDockerVolumeResponse)]
+pub struct InspectDockerVolume {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The volume name
+  pub volume: String,
+}
+
+#[typeshare]
+pub type InspectDockerVolumeResponse = Volume;
+
+//
+
+/// List all docker compose projects on the target server.
 /// Response: [ListComposeProjectsResponse].
 #[typeshare]
 #[derive(

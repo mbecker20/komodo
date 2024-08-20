@@ -302,6 +302,15 @@ async fn validate_config(
           .await?;
           params.repo = repo.id;
         }
+        Execution::PruneContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
         Execution::PruneNetworks(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,
@@ -320,7 +329,16 @@ async fn validate_config(
           .await?;
           params.server = server.id;
         }
-        Execution::PruneContainers(params) => {
+        Execution::PruneVolumes(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PruneSystem(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,
             user,

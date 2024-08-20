@@ -66,13 +66,19 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::CancelRepoBuild(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::PruneContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::PruneNetworks(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::PruneImages(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::PruneContainers(data) => {
+    Execution::PruneVolumes(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PruneSystem(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::RunSync(data) => {
@@ -156,13 +162,19 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::CancelRepoBuild(request) => {
       monitor_client().execute(request).await
     }
+    Execution::PruneContainers(request) => {
+      monitor_client().execute(request).await
+    }
     Execution::PruneNetworks(request) => {
       monitor_client().execute(request).await
     }
     Execution::PruneImages(request) => {
       monitor_client().execute(request).await
     }
-    Execution::PruneContainers(request) => {
+    Execution::PruneVolumes(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::PruneSystem(request) => {
       monitor_client().execute(request).await
     }
     Execution::RunSync(request) => {

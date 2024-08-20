@@ -716,12 +716,14 @@ pub enum Operation {
   UpdateServer,
   DeleteServer,
   RenameServer,
-  PruneImages,
+  StopAllContainers,
   PruneContainers,
   PruneNetworks,
+  PruneImages,
+  PruneVolumes,
+  PruneSystem,
   CreateNetwork,
   DeleteNetwork,
-  StopAllContainers,
 
   // build
   CreateBuild,

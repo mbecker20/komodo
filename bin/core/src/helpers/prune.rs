@@ -4,7 +4,7 @@ use async_timing_util::{
 };
 use futures::future::join_all;
 use mungos::{find::find_collect, mongodb::bson::doc};
-use periphery_client::api::build::PruneImages;
+use periphery_client::api::image::PruneImages;
 
 use crate::{config::core_config, state::db_client};
 

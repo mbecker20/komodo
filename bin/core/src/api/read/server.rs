@@ -10,6 +10,10 @@ use async_timing_util::{
 use monitor_client::{
   api::read::*,
   entities::{
+    docker::{
+      container::Container, image::Image, network::Network,
+      volume::Volume,
+    },
     permission::PermissionLevel,
     server::{
       Server, ServerActionState, ServerListItem, ServerState,
@@ -21,7 +25,11 @@ use mungos::{
   find::find_collect,
   mongodb::{bson::doc, options::FindOptions},
 };
-use periphery_client::api as periphery;
+use periphery_client::api::{
+  self as periphery, container::InspectContainer,
+  image::InspectImage, network::InspectNetwork,
+  volume::InspectVolume,
+};
 use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
@@ -326,10 +334,10 @@ impl Resolve<GetHistoricalServerStats, User> for State {
   }
 }
 
-impl ResolveToString<ListDockerImages, User> for State {
+impl ResolveToString<ListDockerContainers, User> for State {
   async fn resolve_to_string(
     &self,
-    ListDockerImages { server }: ListDockerImages,
+    ListDockerContainers { server }: ListDockerContainers,
     user: User,
   ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
@@ -341,12 +349,39 @@ impl ResolveToString<ListDockerImages, User> for State {
     let cache = server_status_cache()
       .get_or_insert_default(&server.id)
       .await;
-    if let Some(images) = &cache.images {
-      serde_json::to_string(images)
+    if let Some(containers) = &cache.containers {
+      serde_json::to_string(containers)
         .context("failed to serialize response")
     } else {
       Ok(String::from("[]"))
     }
+  }
+}
+
+impl Resolve<InspectDockerContainer, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerContainer { server, container }: InspectDockerContainer,
+    user: User,
+  ) -> anyhow::Result<Container> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect container: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectContainer { name: container })
+      .await
   }
 }
 
@@ -374,10 +409,37 @@ impl ResolveToString<ListDockerNetworks, User> for State {
   }
 }
 
-impl ResolveToString<ListDockerContainers, User> for State {
+impl Resolve<InspectDockerNetwork, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerNetwork { server, network }: InspectDockerNetwork,
+    user: User,
+  ) -> anyhow::Result<Network> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect network: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectNetwork { name: network })
+      .await
+  }
+}
+
+impl ResolveToString<ListDockerImages, User> for State {
   async fn resolve_to_string(
     &self,
-    ListDockerContainers { server }: ListDockerContainers,
+    ListDockerImages { server }: ListDockerImages,
     user: User,
   ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
@@ -389,12 +451,90 @@ impl ResolveToString<ListDockerContainers, User> for State {
     let cache = server_status_cache()
       .get_or_insert_default(&server.id)
       .await;
-    if let Some(containers) = &cache.containers {
-      serde_json::to_string(containers)
+    if let Some(images) = &cache.images {
+      serde_json::to_string(images)
         .context("failed to serialize response")
     } else {
       Ok(String::from("[]"))
     }
+  }
+}
+
+impl Resolve<InspectDockerImage, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerImage { server, image }: InspectDockerImage,
+    user: User,
+  ) -> anyhow::Result<Image> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect image: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectImage { name: image })
+      .await
+  }
+}
+
+impl ResolveToString<ListDockerVolumes, User> for State {
+  async fn resolve_to_string(
+    &self,
+    ListDockerVolumes { server }: ListDockerVolumes,
+    user: User,
+  ) -> anyhow::Result<String> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if let Some(volumes) = &cache.volumes {
+      serde_json::to_string(volumes)
+        .context("failed to serialize response")
+    } else {
+      Ok(String::from("[]"))
+    }
+  }
+}
+
+impl Resolve<InspectDockerVolume, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerVolume { server, volume }: InspectDockerVolume,
+    user: User,
+  ) -> anyhow::Result<Volume> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect volume: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectVolume { name: volume })
+      .await
   }
 }
 

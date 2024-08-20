@@ -6,7 +6,7 @@ use typeshare::typeshare;
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NetworkListItem {
-  pub name: String,
+  pub name: Option<String>,
   pub id: Option<String>,
   pub created: Option<String>,
   pub scope: Option<String>,
@@ -25,8 +25,8 @@ pub struct NetworkListItem {
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
 pub struct Network {
-  #[serde(default, rename = "Name")]
-  pub name: String,
+  #[serde(rename = "Name")]
+  pub name: Option<String>,
 
   #[serde(rename = "Id")]
   pub id: Option<String>,
@@ -55,7 +55,7 @@ pub struct Network {
   #[serde(rename = "Ingress")]
   pub ingress: Option<bool>,
 
-	/// This field is turned from map into array for easier usability.
+  /// This field is turned from map into array for easier usability.
   #[serde(rename = "Containers")]
   pub containers: Vec<NetworkContainer>,
 

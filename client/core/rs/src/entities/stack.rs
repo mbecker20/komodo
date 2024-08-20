@@ -9,7 +9,7 @@ use strum::Display;
 use typeshare::typeshare;
 
 use super::{
-  deployment::ContainerSummary,
+  docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
   to_monitor_name, EnvironmentVar,
 };
@@ -440,7 +440,7 @@ pub struct StackService {
   /// The service name
   pub service: String,
   /// The container
-  pub container: Option<ContainerSummary>,
+  pub container: Option<ContainerListItem>,
 }
 
 #[typeshare]

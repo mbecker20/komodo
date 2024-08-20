@@ -6,7 +6,7 @@ use futures::future::join_all;
 use monitor_client::{
   api::execute::{CancelBuild, Deploy, RunBuild},
   entities::{
-    alert::{Alert, AlertData},
+    alert::{Alert, AlertData, SeverityLevel},
     all_logs_success,
     build::{Build, ImageRegistry, StandardRegistryConfig},
     builder::{Builder, BuilderConfig},
@@ -14,7 +14,6 @@ use monitor_client::{
     deployment::DeploymentState,
     monitor_timestamp,
     permission::PermissionLevel,
-    server::stats::SeverityLevel,
     to_monitor_name,
     update::{Log, Update},
     user::{auto_redeploy_user, User},

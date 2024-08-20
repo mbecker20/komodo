@@ -1,10 +1,13 @@
+use std::{collections::HashMap, path::PathBuf};
+
 use derive_builder::Builder;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use super::resource::{
-  AddFilters, Resource, ResourceListItem, ResourceQuery,
+use super::{
+  alert::SeverityLevel,
+  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
 };
 
 #[typeshare]
@@ -214,6 +217,15 @@ impl Default for ServerConfig {
   }
 }
 
+/// Summary of the health of the server.
+#[typeshare]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct ServerHealth {
+  pub cpu: SeverityLevel,
+  pub mem: SeverityLevel,
+  pub disks: HashMap<PathBuf, SeverityLevel>,
+}
+
 /// Current pending actions on the server.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
@@ -224,6 +236,10 @@ pub struct ServerActionState {
   pub pruning_containers: bool,
   /// Server currently pruning images
   pub pruning_images: bool,
+  /// Server currently pruning images
+  pub pruning_volumes: bool,
+  /// Server currently pruning system
+  pub pruning_system: bool,
   /// Server currently stopping all containers.
   pub stopping_containers: bool,
 }

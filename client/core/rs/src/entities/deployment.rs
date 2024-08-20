@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use anyhow::Context;
 use bson::{doc, Document};
 use derive_builder::Builder;
@@ -14,6 +12,7 @@ use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
+  docker::container::ContainerStateStatusEnum,
   resource::{Resource, ResourceListItem, ResourceQuery},
   EnvironmentVar, Version,
 };
@@ -431,47 +430,6 @@ impl<'de> Visitor<'de> for OptionConversionVisitor {
   }
 }
 
-/// A summary of a docker container on a server.
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ContainerSummary {
-  /// Name of the container.
-  pub name: String,
-  /// Id of the container.
-  pub id: String,
-  /// The image the container is based on.
-  pub image: String,
-  /// The docker labels on the container.
-  pub labels: HashMap<String, String>,
-  /// The state of the container, like `running` or `not_deployed`
-  pub state: DeploymentState,
-  /// The status string of the docker container.
-  pub status: Option<String>,
-  /// The network mode of the container.
-  pub network_mode: Option<String>,
-  /// Network names attached to the container
-  pub networks: Option<Vec<String>>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DockerContainerStats {
-  #[serde(alias = "Name")]
-  pub name: String,
-  #[serde(alias = "CPUPerc")]
-  pub cpu_perc: String,
-  #[serde(alias = "MemPerc")]
-  pub mem_perc: String,
-  #[serde(alias = "MemUsage")]
-  pub mem_usage: String,
-  #[serde(alias = "NetIO")]
-  pub net_io: String,
-  #[serde(alias = "BlockIO")]
-  pub block_io: String,
-  #[serde(alias = "PIDs")]
-  pub pids: String,
-}
-
 /// Variants de/serialized from/to snake_case.
 ///
 /// Eg.
@@ -505,6 +463,23 @@ pub enum DeploymentState {
   Paused,
   Exited,
   Dead,
+}
+
+impl From<ContainerStateStatusEnum> for DeploymentState {
+  fn from(value: ContainerStateStatusEnum) -> Self {
+    match value {
+      ContainerStateStatusEnum::Empty => DeploymentState::Unknown,
+      ContainerStateStatusEnum::Created => DeploymentState::Created,
+      ContainerStateStatusEnum::Running => DeploymentState::Running,
+      ContainerStateStatusEnum::Paused => DeploymentState::Paused,
+      ContainerStateStatusEnum::Restarting => {
+        DeploymentState::Restarting
+      }
+      ContainerStateStatusEnum::Removing => DeploymentState::Removing,
+      ContainerStateStatusEnum::Exited => DeploymentState::Exited,
+      ContainerStateStatusEnum::Dead => DeploymentState::Dead,
+    }
+  }
 }
 
 #[typeshare]

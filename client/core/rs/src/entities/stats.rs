@@ -1,7 +1,6 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::entities::{Timelength, I64};
@@ -136,40 +135,4 @@ pub struct SystemProcess {
   pub disk_read_kb: f64,
   /// Process disk write in KB/s
   pub disk_write_kb: f64,
-}
-
-/// Summary of the health of the server.
-#[typeshare]
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-pub struct ServerHealth {
-  pub cpu: SeverityLevel,
-  pub mem: SeverityLevel,
-  pub disks: HashMap<PathBuf, SeverityLevel>,
-}
-
-/// Severity level of problem.
-#[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Copy,
-  PartialEq,
-  Eq,
-  PartialOrd,
-  Default,
-  Display,
-  EnumString,
-)]
-#[serde(rename_all = "UPPERCASE")]
-#[strum(serialize_all = "UPPERCASE")]
-pub enum SeverityLevel {
-  /// No problem.
-  #[default]
-  Ok,
-  /// Problem is imminent.
-  Warning,
-  /// Problem fully realized.
-  Critical,
 }
