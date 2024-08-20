@@ -122,22 +122,6 @@ pub async fn compose_up(
   let last_project_name = stack.project_name(false);
   let project_name = stack.project_name(true);
 
-  // Pull images before destroying to minimize downtime.
-  // If this fails, do not continue.
-  let log = run_monitor_command(
-    "compose pull",
-    format!(
-      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
-    ),
-  )
-  .await;
-  if !log.success {
-    res.logs.push(log);
-    return Err(anyhow!(
-      "Failed to pull required images, stopping the run."
-    ));
-  }
-
   // Login to the registry to pull private images, if account is set
   if !stack.config.registry_account.is_empty() {
     let registry = ImageRegistry::Standard(StandardRegistryConfig {
@@ -155,6 +139,22 @@ pub async fn compose_up(
         )
       })
       .context("failed to login to image registry")?;
+  }
+
+  // Pull images before destroying to minimize downtime.
+  // If this fails, do not continue.
+  let log = run_monitor_command(
+    "compose pull",
+    format!(
+      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
+    ),
+  )
+  .await;
+  if !log.success {
+    res.logs.push(log);
+    return Err(anyhow!(
+      "Failed to pull required images, stopping the run."
+    ));
   }
 
   // Take down the existing containers.
