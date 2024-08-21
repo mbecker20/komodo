@@ -78,6 +78,21 @@ const on_message = (
     invalidate(["GetResourceSyncActionState", { sync: update.target.id }]);
   }
 
+  // Invalidate lists for execution updates - update status
+  if (update.operation === Types.Operation.RunBuild) {
+    invalidate(["ListBuilds"]);
+  } else if (
+    [
+      Types.Operation.CloneRepo,
+      Types.Operation.PullRepo,
+      Types.Operation.BuildRepo,
+    ].includes(update.operation)
+  ) {
+    invalidate(["ListRepos"]);
+  } else if (update.operation === Types.Operation.RunProcedure) {
+    invalidate(["ListProcedures"]);
+  }
+
   // Do invalidations of these only if update is completed
   if (update.status === Types.UpdateStatus.Complete) {
     invalidate(["ListAlerts"]);

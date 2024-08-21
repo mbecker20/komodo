@@ -26,6 +26,7 @@ export const Dashboard = () => {
   const user = useUser().data!;
   return (
     <Page>
+      <ActiveResources />
       <Section
         title="Dashboard"
         icon={<Boxes className="w-4 h-4" />}
@@ -43,7 +44,6 @@ export const Dashboard = () => {
               </p>
             </div>
           )}
-          <ActiveResources />
           <ResourceRow type="Server" />
           <ResourceRow type="Deployment" />
           <ResourceRow type="Stack" />
@@ -261,7 +261,6 @@ const ActiveResources = () => {
             cell: ({ row }) => (
               <ResourceLink type={row.original.type} id={row.original.id} />
             ),
-            size: 200,
           },
           {
             accessorKey: "type",
@@ -272,7 +271,6 @@ const ActiveResources = () => {
           {
             header: "State",
             cell: ({ row }) => row.original.state,
-            size: 120,
           },
         ]}
       />
