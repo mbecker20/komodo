@@ -104,7 +104,7 @@ const VolumePageInner = ({
       {/* TOP LEVEL VOLUME INFO */}
       <Section title="Details" icon={<Info className="w-4 h-4" />}>
         <DataTable
-          tableKey="image-info"
+          tableKey="volume-info"
           data={[volume]}
           columns={[
             {
