@@ -16,6 +16,8 @@ import { UserGroupPage } from "@pages/user-group";
 import { Settings } from "@pages/settings";
 import { StackServicePage } from "@pages/stack-service";
 import { NetworkPage } from "@pages/server-info/network";
+import { ImagePage } from "@pages/server-info/image";
+import { VolumePage } from "@pages/server-info/volume";
 
 const ROUTER = createBrowserRouter([
   {
@@ -54,6 +56,14 @@ const ROUTER = createBrowserRouter([
           {
             path: ":id/network/:network",
             element: <NetworkPage />,
+          },
+          {
+            path: ":id/image/:image",
+            element: <ImagePage />,
+          },
+          {
+            path: ":id/volume/:volume",
+            element: <VolumePage />,
           },
         ],
       },

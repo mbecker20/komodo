@@ -1,10 +1,10 @@
 use command::run_monitor_command;
 use monitor_client::entities::{
-  docker::image::{Image, ImageListItem},
+  docker::image::{Image, ImageHistoryResponseItem, ImageListItem},
   update::Log,
 };
 use periphery_client::api::image::{
-  GetImageList, InspectImage, PruneImages,
+  GetImageList, ImageHistory, InspectImage, PruneImages,
 };
 use resolver_api::Resolve;
 
@@ -33,6 +33,19 @@ impl Resolve<InspectImage> for State {
     _: (),
   ) -> anyhow::Result<Image> {
     docker_client().inspect_image(&name).await
+  }
+}
+
+//
+
+impl Resolve<ImageHistory> for State {
+  #[instrument(name = "ImageHistory", level = "debug", skip(self))]
+  async fn resolve(
+    &self,
+    ImageHistory { name }: ImageHistory,
+    _: (),
+  ) -> anyhow::Result<Vec<ImageHistoryResponseItem>> {
+    docker_client().image_history(&name).await
   }
 }
 

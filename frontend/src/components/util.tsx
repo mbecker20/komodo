@@ -10,10 +10,13 @@ import { Button } from "../ui/button";
 import {
   Check,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
   Copy,
   Loader2,
   LogOut,
   Settings,
+  Tags,
   User,
 } from "lucide-react";
 import { Input } from "../ui/input";
@@ -38,6 +41,8 @@ import {
   text_color_class_by_intention,
 } from "@lib/color";
 import { Types } from "@monitor/client";
+import { Badge } from "@ui/badge";
+import { Section } from "./layouts";
 
 export const WithLoading = ({
   children,
@@ -449,5 +454,67 @@ export const StatusBadge = ({
     >
       {snake_case_to_upper_space_case(_text).toUpperCase()}
     </p>
+  );
+};
+
+export const DockerOptions = ({
+  options,
+}: {
+  options: Record<string, string> | undefined;
+}) => {
+  if (!options) return null;
+  const entries = Object.entries(options);
+  if (entries.length === 0) return null;
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {entries.map(([key, value]) => (
+        <Badge key={key} variant="secondary">
+          {key} = {value}
+        </Badge>
+      ))}
+    </div>
+  );
+};
+
+export const DockerLabelsSection = ({
+  labels,
+}: {
+  labels: Record<string, string> | undefined;
+}) => {
+  if (!labels) return null;
+  const entries = Object.entries(labels);
+  if (entries.length === 0) return null;
+  return (
+    <Section title="Labels" icon={<Tags className="w-4 h-4" />}>
+      <div className="flex gap-2 flex-wrap">
+        {entries.map(([key, value]) => (
+          <Badge key={key} variant="secondary" className="flex gap-1">
+            <span className="text-muted-foreground">{key}</span>
+            <span className="text-muted-foreground">=</span>
+            <span className="font-extrabold">{value}</span>
+          </Badge>
+        ))}
+      </div>
+    </Section>
+  );
+};
+
+export const ShowHideButton = ({
+  show,
+  setShow,
+}: {
+  show: boolean;
+  setShow: (show: boolean) => void;
+}) => {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="gap-4"
+      onClick={() => setShow(!show)}
+    >
+      {show ? "Hide" : "Show"}
+      {show ? <ChevronUp className="w-4" /> : <ChevronDown className="w-4" />}
+    </Button>
   );
 };

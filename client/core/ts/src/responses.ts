@@ -64,6 +64,7 @@ export type ReadResponses = {
   InspectDockerNetwork: Types.InspectDockerNetworkResponse;
   ListDockerImages: Types.ListDockerImagesResponse;
   InspectDockerImage: Types.InspectDockerImageResponse;
+  ListDockerImageHistory: Types.ListDockerImageHistoryResponse;
   ListDockerVolumes: Types.ListDockerVolumesResponse;
   InspectDockerVolume: Types.InspectDockerVolumeResponse;
   ListComposeProjects: Types.ListComposeProjectsResponse;

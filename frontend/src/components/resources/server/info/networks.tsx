@@ -1,16 +1,30 @@
 import { Section } from "@components/layouts";
+import { ShowHideButton } from "@components/util";
 import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
+import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export const Networks = ({ id }: { id: string }) => {
+export const Networks = ({
+  id,
+  show,
+  setShow,
+}: {
+  id: string;
+  show: boolean;
+  setShow: (show: boolean) => void;
+}) => {
   const networks = useRead("ListDockerNetworks", { server: id }).data ?? [];
 
   return (
-    <Section title="Networks">
-      <DataTable
+    <Section
+      title="Networks"
+      icon={<Network className="w-4 h-4" />}
+      actions={<ShowHideButton show={show} setShow={setShow} />}
+    >
+      {show && <DataTable
         tableKey="server-networks"
         data={networks}
         columns={[
@@ -56,7 +70,7 @@ export const Networks = ({ id }: { id: string }) => {
             ),
           },
         ]}
-      />
+      />}
     </Section>
   );
 };

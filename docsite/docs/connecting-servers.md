@@ -15,6 +15,10 @@ Some Periphery actions interact with your hosts file system, like cloning repos,
 For this reason, runnning periphery in a container can be a bit more complicated.
 Additionally, Periphery in a container tends to overreport the disks by default, but this can be fixed via some configuration.
 
+:::warning
+Allowing unintended access to the Periphery agent API is a security risk. Ensure to take appropriate measures to block access to the Periphery API, such as firewall rules on port `8120`. Additionally, you can whitelist your Monitor Core IP address in the [Periphery config](https://github.com/mbecker20/monitor/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L46), and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/monitor/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L51).
+:::
+
 ### Install the Periphery agent - systemd
 
 As root user:

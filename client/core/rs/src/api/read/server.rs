@@ -6,7 +6,7 @@ use typeshare::typeshare;
 use crate::entities::{
   docker::{
     container::{Container, ContainerListItem},
-    image::{Image, ImageListItem},
+    image::{Image, ImageHistoryResponseItem, ImageListItem},
     network::{Network, NetworkListItem},
     volume::{Volume, VolumeListItem},
   },
@@ -218,6 +218,27 @@ pub struct InspectDockerImage {
 
 #[typeshare]
 pub type InspectDockerImageResponse = Image;
+
+//
+
+/// Get image history from the server. Response: [ListDockerImageHistoryResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListDockerImageHistoryResponse)]
+pub struct ListDockerImageHistory {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The image name
+  pub image: String,
+}
+
+#[typeshare]
+pub type ListDockerImageHistoryResponse =
+  Vec<ImageHistoryResponseItem>;
 
 //
 

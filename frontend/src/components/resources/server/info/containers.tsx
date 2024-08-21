@@ -1,13 +1,13 @@
 import { Section } from "@components/layouts";
-import { ShowHideButton } from "@components/util";
-import { format_size_bytes } from "@lib/formatting";
+import { ShowHideButton, StatusBadge } from "@components/util";
+import { container_state_intention } from "@lib/color";
 import { useRead } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { HardDrive } from "lucide-react";
+import { Box } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export const Images = ({
+export const Containers = ({
   id,
   show,
   setShow,
@@ -16,18 +16,18 @@ export const Images = ({
   show: boolean;
   setShow: (show: boolean) => void;
 }) => {
-  const images = useRead("ListDockerImages", { server: id }).data ?? [];
+  const containers = useRead("ListDockerContainers", { server: id }).data ?? [];
 
   return (
     <Section
-      title="Images"
-      icon={<HardDrive className="w-4 h-4" />}
+      title="Containers"
+      icon={<Box className="w-4 h-4" />}
       actions={<ShowHideButton show={show} setShow={setShow} />}
     >
       {show && (
         <DataTable
-          tableKey="server-images"
-          data={images}
+          tableKey="server-containers"
+          data={containers}
           columns={[
             {
               accessorKey: "name",
@@ -37,7 +37,7 @@ export const Images = ({
               cell: ({ row }) =>
                 row.original.name ? (
                   <Link
-                    to={`/servers/${id}/image/${encodeURIComponent(
+                    to={`/servers/${id}/container/${encodeURIComponent(
                       row.original.name
                     )}`}
                     className="px-0"
@@ -52,20 +52,31 @@ export const Images = ({
               size: 200,
             },
             {
-              accessorKey: "id",
+              accessorKey: "image",
               header: ({ column }) => (
-                <SortableHeader column={column} title="Id" />
+                <SortableHeader column={column} title="Image" />
               ),
             },
             {
-              accessorKey: "size",
+              accessorKey: "network_mode",
               header: ({ column }) => (
-                <SortableHeader column={column} title="Size" />
+                <SortableHeader column={column} title="Network" />
               ),
-              cell: ({ row }) =>
-                row.original.size
-                  ? format_size_bytes(row.original.size)
-                  : "Unknown",
+            },
+            {
+              accessorKey: "state",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="State" />
+              ),
+              cell: ({ row }) => {
+                const state = row.original?.state;
+                return (
+                  <StatusBadge
+                    text={state}
+                    intent={container_state_intention(state)}
+                  />
+                );
+              },
             },
           ]}
         />

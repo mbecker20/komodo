@@ -1,5 +1,5 @@
 use monitor_client::entities::{
-  docker::image::{Image, ImageListItem},
+  docker::image::{Image, ImageHistoryResponseItem, ImageListItem},
   update::Log,
 };
 use resolver_api::derive::Request;
@@ -16,6 +16,14 @@ pub struct GetImageList {}
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(Image)]
 pub struct InspectImage {
+  pub name: String,
+}
+
+//
+
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(Vec<ImageHistoryResponseItem>)]
+pub struct ImageHistory {
   pub name: String,
 }
 

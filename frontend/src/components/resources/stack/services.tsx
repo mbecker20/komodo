@@ -77,9 +77,9 @@ export const StackServices = ({
               // size: 200,
             },
             {
-              accessorKey: "container.status",
+              accessorKey: "container.state",
               header: ({ column }) => (
-                <SortableHeader column={column} title="Service" />
+                <SortableHeader column={column} title="State" />
               ),
               cell: ({ row }) => {
                 const state = row.original.container?.state;

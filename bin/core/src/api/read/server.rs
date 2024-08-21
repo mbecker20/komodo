@@ -11,7 +11,9 @@ use monitor_client::{
   api::read::*,
   entities::{
     docker::{
-      container::Container, image::Image, network::Network,
+      container::Container,
+      image::{Image, ImageHistoryResponseItem},
+      network::Network,
       volume::Volume,
     },
     permission::PermissionLevel,
@@ -26,8 +28,10 @@ use mungos::{
   mongodb::{bson::doc, options::FindOptions},
 };
 use periphery_client::api::{
-  self as periphery, container::InspectContainer,
-  image::InspectImage, network::InspectNetwork,
+  self as periphery,
+  container::InspectContainer,
+  image::{ImageHistory, InspectImage},
+  network::InspectNetwork,
   volume::InspectVolume,
 };
 use resolver_api::{Resolve, ResolveToString};
@@ -483,6 +487,33 @@ impl Resolve<InspectDockerImage, User> for State {
     }
     periphery_client(&server)?
       .request(InspectImage { name: image })
+      .await
+  }
+}
+
+impl Resolve<ListDockerImageHistory, User> for State {
+  async fn resolve(
+    &self,
+    ListDockerImageHistory { server, image }: ListDockerImageHistory,
+    user: User,
+  ) -> anyhow::Result<Vec<ImageHistoryResponseItem>> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot get image history: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(ImageHistory { name: image })
       .await
   }
 }

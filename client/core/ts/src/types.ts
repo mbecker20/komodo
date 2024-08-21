@@ -1310,6 +1310,12 @@ export interface ImageListItem {
 	created?: I64;
 	/** Total size of the image including all layers it is composed of. */
 	size?: I64;
+	/**
+	 * User-defined key/value metadata.
+	 * Usually labels aren't included on ListItem,
+	 * but Inpsect Container result doesn't include them.
+	 */
+	labels?: Record<string, string>;
 	/** Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated. */
 	containers?: I64;
 }
@@ -1370,6 +1376,18 @@ export interface Image {
 }
 
 export type InspectDockerImageResponse = Image;
+
+/** individual image layer information in response to ImageHistory operation */
+export interface ImageHistoryResponseItem {
+	Id: string;
+	Created: I64;
+	CreatedBy: string;
+	Tags?: string[];
+	Size: I64;
+	Comment: string;
+}
+
+export type ListDockerImageHistoryResponse = ImageHistoryResponseItem[];
 
 export enum ContainerStateStatusEnum {
 	Empty = "",
@@ -4220,6 +4238,14 @@ export interface InspectDockerImage {
 	image: string;
 }
 
+/** Get image history from the server. Response: [ListDockerImageHistoryResponse]. */
+export interface ListDockerImageHistory {
+	/** Id or name */
+	server: string;
+	/** The image name */
+	image: string;
+}
+
 /**
  * List all docker containers on the target server.
  * Response: [ListDockerContainersResponse].
@@ -6165,6 +6191,7 @@ export type ReadRequest =
 	| { type: "InspectDockerContainer", params: InspectDockerContainer }
 	| { type: "InspectDockerNetwork", params: InspectDockerNetwork }
 	| { type: "InspectDockerImage", params: InspectDockerImage }
+	| { type: "ListDockerImageHistory", params: ListDockerImageHistory }
 	| { type: "InspectDockerVolume", params: InspectDockerVolume }
 	| { type: "ListDockerContainers", params: ListDockerContainers }
 	| { type: "ListDockerNetworks", params: ListDockerNetworks }

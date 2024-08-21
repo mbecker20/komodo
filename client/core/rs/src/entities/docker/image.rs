@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -22,13 +24,6 @@ pub struct ImageListItem {
   #[serde(default)]
   pub parent_id: String,
 
-  // /// List of image names/tags in the local image cache that reference this image.  Multiple image tags can refer to the same image, and this list may be empty if no tags reference the image, in which case the image is \"untagged\", in which case it can still be referenced by its ID.
-  // #[serde(default)]
-  // pub repo_tags: Vec<String>,
-
-  // /// List of content-addressable digests of locally available image manifests that the image is referenced from. Multiple manifests can refer to the same image.  These digests are usually only available if the image was either pulled from a registry, or if the image was pushed to a registry, which is when the manifest is generated and its digest calculated.
-  // #[serde(default)]
-  // pub repo_digests: Vec<String>,
   /// Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH).
   #[serde(default)]
   pub created: I64,
@@ -37,13 +32,12 @@ pub struct ImageListItem {
   #[serde(default)]
   pub size: I64,
 
-  // /// Total size of image layers that are shared between this image and other images.  This size is not calculated by default. `-1` indicates that the value has not been set / calculated.
-  // #[serde(default)]
-  // pub shared_size: I64,
+  /// User-defined key/value metadata.
+  /// Usually labels aren't included on ListItem, 
+  /// but Inpsect Container result doesn't include them.
+  #[serde(default)]
+  pub labels: HashMap<String, String>,
 
-  // /// User-defined key/value metadata.
-  // #[serde(default)]
-  // pub labels: HashMap<String, String>,
   /// Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated.
   #[serde(default)]
   pub containers: I64,
@@ -139,4 +133,29 @@ pub struct ImageInspectMetadata {
   /// Date and time at which the image was last tagged in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.  This information is only available if the image was tagged locally, and omitted otherwise.
   #[serde(rename = "LastTagTime")]
   pub last_tag_time: Option<String>,
+}
+
+/// individual image layer information in response to ImageHistory operation
+#[typeshare]
+#[derive(
+  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
+pub struct ImageHistoryResponseItem {
+  #[serde(rename = "Id")]
+  pub id: String,
+
+  #[serde(rename = "Created")]
+  pub created: I64,
+
+  #[serde(rename = "CreatedBy")]
+  pub created_by: String,
+
+  #[serde(default, rename = "Tags")]
+  pub tags: Vec<String>,
+
+  #[serde(rename = "Size")]
+  pub size: I64,
+
+  #[serde(rename = "Comment")]
+  pub comment: String,
 }

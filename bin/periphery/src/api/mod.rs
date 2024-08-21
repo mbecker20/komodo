@@ -109,6 +109,7 @@ pub enum PeripheryRequest {
   // Image (Read)
   GetImageList(GetImageList),
   InspectImage(InspectImage),
+  ImageHistory(ImageHistory),
 
   // Image (Write)
   PruneImages(PruneImages),

@@ -1,10 +1,18 @@
 import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
+import { DockerLabelsSection, DockerOptions } from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { Box, ChevronLeft, Loader2, Network, Waypoints } from "lucide-react";
+import {
+  Box,
+  ChevronLeft,
+  Info,
+  Loader2,
+  Network,
+  Waypoints,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const NetworkPage = () => {
@@ -16,7 +24,7 @@ export const NetworkPage = () => {
   if (type !== "servers") {
     return <div>This resource type does not have any networks.</div>;
   }
-  return <NetworkPageInner id={id} network={network} />;
+  return <NetworkPageInner id={id} network={decodeURIComponent(network)} />;
 };
 
 const NetworkPageInner = ({
@@ -66,14 +74,13 @@ const NetworkPageInner = ({
   // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
 
   const containers = Object.values(network.Containers ?? {});
+
   const ipam_driver = network.IPAM?.Driver;
   const ipam_config =
     network.IPAM?.Config.map((config) => ({
       ...config,
       Driver: ipam_driver,
     })) ?? [];
-
-  console.log(ipam_config)
 
   return (
     <div className="flex flex-col gap-16">
@@ -94,7 +101,7 @@ const NetworkPageInner = ({
           </Button> */}
         </div>
 
-        {/* HEADER */}
+        {/* TITLE */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <div className="mt-1">
@@ -106,9 +113,11 @@ const NetworkPageInner = ({
 
         {/* INFO */}
         <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
-          <div>Network</div>
-          |
-          <ResourceLink type="Server" id={id} />
+          <ResourceLink type="Server" id={id} />|
+          <div className="flex gap-2">
+            <span>IPV6:</span>
+            <span>{network.EnableIPv6 ? "Enabled" : "Disabled"}</span>
+          </div>
           {network.Id ? (
             <>
               |
@@ -123,28 +132,32 @@ const NetworkPageInner = ({
         </div>
       </div>
 
-      <DataTable
-        tableKey="network-info"
-        data={[network]}
-        columns={[
-          {
-            accessorKey: "Driver",
-            header: "Driver",
-          },
-          {
-            accessorKey: "Scope",
-            header: "Scope",
-          },
-          {
-            accessorKey: "Attachable",
-            header: "Attachable",
-          },
-          {
-            accessorKey: "Internal",
-            header: "Internal",
-          },
-        ]}
-      />
+      {/* TOP LEVEL NETWORK INFO */}
+      <Section title="Details" icon={<Info className="w-4 h-4" />}>
+        <DataTable
+          tableKey="network-info"
+          data={[network]}
+          columns={[
+            {
+              accessorKey: "Driver",
+              header: "Driver",
+            },
+            {
+              accessorKey: "Scope",
+              header: "Scope",
+            },
+            {
+              accessorKey: "Attachable",
+              header: "Attachable",
+            },
+            {
+              accessorKey: "Internal",
+              header: "Internal",
+            },
+          ]}
+        />
+        <DockerOptions options={network.Options} />
+      </Section>
 
       {ipam_config.length > 0 && (
         <Section title="IPAM" icon={<Waypoints className="w-4 h-4" />}>
@@ -170,6 +183,7 @@ const NetworkPageInner = ({
               },
             ]}
           />
+          <DockerOptions options={network.IPAM?.Options} />
         </Section>
       )}
 
@@ -210,6 +224,8 @@ const NetworkPageInner = ({
           />
         </Section>
       )}
+
+      <DockerLabelsSection labels={network.Labels} />
     </div>
   );
 };

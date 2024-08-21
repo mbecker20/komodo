@@ -624,6 +624,7 @@ impl DockerClient {
           created: image.created,
           size: image.size,
           containers: image.containers,
+          labels: image.labels,
         })
       })
       .collect()
@@ -662,6 +663,27 @@ impl DockerClient {
         last_tag_time: metadata.last_tag_time,
       }),
     })
+  }
+
+  pub async fn image_history(
+    &self,
+    image_name: &str,
+  ) -> anyhow::Result<Vec<ImageHistoryResponseItem>> {
+    let res = self
+      .docker
+      .image_history(image_name)
+      .await?
+      .into_iter()
+      .map(|image| ImageHistoryResponseItem {
+        id: image.id,
+        created: image.created,
+        created_by: image.created_by,
+        tags: image.tags,
+        size: image.size,
+        comment: image.comment,
+      })
+      .collect();
+    Ok(res)
   }
 
   pub async fn list_volumes(

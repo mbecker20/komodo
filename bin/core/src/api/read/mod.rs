@@ -108,6 +108,7 @@ enum ReadRequest {
   InspectDockerContainer(InspectDockerContainer),
   InspectDockerNetwork(InspectDockerNetwork),
   InspectDockerImage(InspectDockerImage),
+  ListDockerImageHistory(ListDockerImageHistory),
   InspectDockerVolume(InspectDockerVolume),
   #[to_string_resolver]
   ListDockerContainers(ListDockerContainers),
