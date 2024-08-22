@@ -106,20 +106,12 @@ const ContainerPageInner = ({
           data={[container]}
           columns={[
             {
+              accessorKey: "Image",
+              header: "Image",
+            },
+            {
               accessorKey: "Driver",
               header: "Driver",
-            },
-            {
-              accessorKey: "Image",
-              header: "Scope",
-            },
-            {
-              accessorKey: "Attachable",
-              header: "Attachable",
-            },
-            {
-              accessorKey: "Internal",
-              header: "Internal",
             },
           ]}
         />

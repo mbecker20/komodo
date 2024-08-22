@@ -18,6 +18,7 @@ import { StackServicePage } from "@pages/stack-service";
 import { NetworkPage } from "@pages/server-info/network";
 import { ImagePage } from "@pages/server-info/image";
 import { VolumePage } from "@pages/server-info/volume";
+import { ContainerPage } from "@pages/server-info/container";
 
 const ROUTER = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const ROUTER = createBrowserRouter([
           {
             path: ":id/service/:service",
             element: <StackServicePage />,
+          },
+          {
+            path: ":id/container/:container",
+            element: <ContainerPage />,
           },
           {
             path: ":id/network/:network",
