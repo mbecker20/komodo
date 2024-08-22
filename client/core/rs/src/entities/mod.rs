@@ -742,12 +742,12 @@ pub enum Operation {
   UpdateDeployment,
   DeleteDeployment,
   Deploy,
-  StartContainer,
-  RestartContainer,
-  PauseContainer,
-  UnpauseContainer,
-  StopContainer,
-  RemoveContainer,
+  StartDeployment,
+  RestartDeployment,
+  PauseDeployment,
+  UnpauseDeployment,
+  StopDeployment,
+  DestroyDeployment,
   RenameDeployment,
 
   // repo

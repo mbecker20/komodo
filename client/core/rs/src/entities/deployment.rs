@@ -724,7 +724,7 @@ pub struct DeploymentActionState {
   pub pausing: bool,
   pub unpausing: bool,
   pub stopping: bool,
-  pub removing: bool,
+  pub destroying: bool,
   pub renaming: bool,
 }
 

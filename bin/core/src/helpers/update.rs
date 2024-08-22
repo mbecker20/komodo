@@ -172,38 +172,38 @@ pub async fn init_execution_update(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::StartContainer(data) => (
-      Operation::StartContainer,
+    ExecuteRequest::StartDeployment(data) => (
+      Operation::StartDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::RestartContainer(data) => (
-      Operation::RestartContainer,
+    ExecuteRequest::RestartDeployment(data) => (
+      Operation::RestartDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::PauseContainer(data) => (
-      Operation::PauseContainer,
+    ExecuteRequest::PauseDeployment(data) => (
+      Operation::PauseDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::UnpauseContainer(data) => (
-      Operation::UnpauseContainer,
+    ExecuteRequest::UnpauseDeployment(data) => (
+      Operation::UnpauseDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::StopContainer(data) => (
-      Operation::StopContainer,
+    ExecuteRequest::StopDeployment(data) => (
+      Operation::StopDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::RemoveContainer(data) => (
-      Operation::RemoveContainer,
+    ExecuteRequest::DestroyDeployment(data) => (
+      Operation::DestroyDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),

@@ -5,12 +5,12 @@ import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useServer } from "../server";
 import {
-  DeployContainer,
-  StartStopContainer,
-  RemoveContainer,
+  DeployDeployment,
+  StartStopDeployment,
+  DestroyDeployment,
   RenameDeployment,
-  RestartContainer,
-  PauseUnpauseContainer,
+  RestartDeployment,
+  PauseUnpauseDeployment,
 } from "./actions";
 import { DeploymentLogs } from "./log";
 import {
@@ -35,7 +35,7 @@ export const useDeployment = (id?: string) =>
 
 const ConfigOrLog = ({ id }: { id: string }) => {
   // const [view, setView] = useAtom(configOrLog);
-  const [view, setView] = useLocalStorage("deployment-tabs-v1","Config");
+  const [view, setView] = useLocalStorage("deployment-tabs-v1", "Config");
   const state = useDeployment(id)?.info.state;
   const logsDisabled =
     state === undefined ||
@@ -200,11 +200,11 @@ export const DeploymentComponents: RequiredResourceComponents = {
       if (!build_id) return null;
       return <RunBuild id={build_id} />;
     },
-    DeployContainer,
-    RestartContainer,
-    PauseUnpauseContainer,
-    StartStopContainer,
-    RemoveContainer,
+    DeployDeployment,
+    RestartDeployment,
+    PauseUnpauseDeployment,
+    StartStopDeployment,
+    DestroyDeployment,
   },
 
   Page: {},

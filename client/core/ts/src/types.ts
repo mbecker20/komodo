@@ -757,7 +757,7 @@ export interface DeploymentActionState {
 	pausing: boolean;
 	unpausing: boolean;
 	stopping: boolean;
-	removing: boolean;
+	destroying: boolean;
 	renaming: boolean;
 }
 
@@ -833,12 +833,12 @@ export type Execution =
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "Deploy", params: Deploy }
-	| { type: "StartContainer", params: StartContainer }
-	| { type: "RestartContainer", params: RestartContainer }
-	| { type: "PauseContainer", params: PauseContainer }
-	| { type: "UnpauseContainer", params: UnpauseContainer }
-	| { type: "StopContainer", params: StopContainer }
-	| { type: "RemoveContainer", params: RemoveContainer }
+	| { type: "StartDeployment", params: StartDeployment }
+	| { type: "RestartDeployment", params: RestartDeployment }
+	| { type: "PauseDeployment", params: PauseDeployment }
+	| { type: "UnpauseDeployment", params: UnpauseDeployment }
+	| { type: "StopDeployment", params: StopDeployment }
+	| { type: "DestroyDeployment", params: DestroyDeployment }
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
 	| { type: "BuildRepo", params: BuildRepo }
@@ -2700,12 +2700,12 @@ export enum Operation {
 	UpdateDeployment = "UpdateDeployment",
 	DeleteDeployment = "DeleteDeployment",
 	Deploy = "Deploy",
-	StartContainer = "StartContainer",
-	RestartContainer = "RestartContainer",
-	PauseContainer = "PauseContainer",
-	UnpauseContainer = "UnpauseContainer",
-	StopContainer = "StopContainer",
-	RemoveContainer = "RemoveContainer",
+	StartDeployment = "StartDeployment",
+	RestartDeployment = "RestartDeployment",
+	PauseDeployment = "PauseDeployment",
+	UnpauseDeployment = "UnpauseDeployment",
+	StopDeployment = "StopDeployment",
+	DestroyDeployment = "DestroyDeployment",
 	RenameDeployment = "RenameDeployment",
 	CreateRepo = "CreateRepo",
 	UpdateRepo = "UpdateRepo",
@@ -3226,7 +3226,7 @@ export interface Deploy {
  * 
  * 1. Runs `docker start ${container_name}`.
  */
-export interface StartContainer {
+export interface StartDeployment {
 	/** Name or id */
 	deployment: string;
 }
@@ -3236,7 +3236,7 @@ export interface StartContainer {
  * 
  * 1. Runs `docker restart ${container_name}`.
  */
-export interface RestartContainer {
+export interface RestartDeployment {
 	/** Name or id */
 	deployment: string;
 }
@@ -3246,7 +3246,7 @@ export interface RestartContainer {
  * 
  * 1. Runs `docker pause ${container_name}`.
  */
-export interface PauseContainer {
+export interface PauseDeployment {
 	/** Name or id */
 	deployment: string;
 }
@@ -3258,7 +3258,7 @@ export interface PauseContainer {
  * 
  * Note. This is the only way to restart a paused container.
  */
-export interface UnpauseContainer {
+export interface UnpauseDeployment {
 	/** Name or id */
 	deployment: string;
 }
@@ -3268,7 +3268,7 @@ export interface UnpauseContainer {
  * 
  * 1. Runs `docker stop ${container_name}`.
  */
-export interface StopContainer {
+export interface StopDeployment {
 	/** Name or id */
 	deployment: string;
 	/** Override the default termination signal specified in the deployment. */
@@ -3278,12 +3278,12 @@ export interface StopContainer {
 }
 
 /**
- * Stops and removes the container for the target deployment.
+ * Stops and destroys the container for the target deployment.
  * Reponse: [Update].
  * 
  * 1. The container is stopped and removed using `docker container rm ${container_name}`.
  */
-export interface RemoveContainer {
+export interface DestroyDeployment {
 	/** Name or id. */
 	deployment: string;
 	/** Override the default termination signal specified in the deployment. */
@@ -6130,12 +6130,12 @@ export type ExecuteRequest =
 	| { type: "PruneVolumes", params: PruneVolumes }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "Deploy", params: Deploy }
-	| { type: "StartContainer", params: StartContainer }
-	| { type: "RestartContainer", params: RestartContainer }
-	| { type: "PauseContainer", params: PauseContainer }
-	| { type: "UnpauseContainer", params: UnpauseContainer }
-	| { type: "StopContainer", params: StopContainer }
-	| { type: "RemoveContainer", params: RemoveContainer }
+	| { type: "StartDeployment", params: StartDeployment }
+	| { type: "RestartDeployment", params: RestartDeployment }
+	| { type: "PauseDeployment", params: PauseDeployment }
+	| { type: "UnpauseDeployment", params: UnpauseDeployment }
+	| { type: "StopDeployment", params: StopDeployment }
+	| { type: "DestroyDeployment", params: DestroyDeployment }
 	| { type: "DeployStack", params: DeployStack }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }

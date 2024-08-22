@@ -197,7 +197,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::StartContainer(params) => {
+        Execution::StartDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -207,7 +207,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::RestartContainer(params) => {
+        Execution::RestartDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -217,7 +217,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::PauseContainer(params) => {
+        Execution::PauseDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -227,7 +227,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::UnpauseContainer(params) => {
+        Execution::UnpauseDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -237,7 +237,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::StopContainer(params) => {
+        Execution::StopDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -247,16 +247,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::StopAllContainers(params) => {
-          let server = super::get_check_permissions::<Server>(
-            &params.server,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.server = server.id;
-        }
-        Execution::RemoveContainer(params) => {
+        Execution::DestroyDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -301,6 +292,15 @@ async fn validate_config(
           )
           .await?;
           params.repo = repo.id;
+        }
+        Execution::StopAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
         }
         Execution::PruneContainers(params) => {
           let server = super::get_check_permissions::<Server>(

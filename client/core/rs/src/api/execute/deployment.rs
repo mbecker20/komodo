@@ -59,7 +59,7 @@ pub struct Deploy {
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct StartContainer {
+pub struct StartDeployment {
   /// Name or id
   pub deployment: String,
 }
@@ -82,7 +82,7 @@ pub struct StartContainer {
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct RestartContainer {
+pub struct RestartDeployment {
   /// Name or id
   pub deployment: String,
 }
@@ -105,7 +105,7 @@ pub struct RestartContainer {
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct PauseContainer {
+pub struct PauseDeployment {
   /// Name or id
   pub deployment: String,
 }
@@ -130,7 +130,7 @@ pub struct PauseContainer {
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct UnpauseContainer {
+pub struct UnpauseDeployment {
   /// Name or id
   pub deployment: String,
 }
@@ -153,7 +153,7 @@ pub struct UnpauseContainer {
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct StopContainer {
+pub struct StopDeployment {
   /// Name or id
   pub deployment: String,
   /// Override the default termination signal specified in the deployment.
@@ -164,7 +164,7 @@ pub struct StopContainer {
 
 //
 
-/// Stops and removes the container for the target deployment.
+/// Stops and destroys the container for the target deployment.
 /// Reponse: [Update].
 ///
 /// 1. The container is stopped and removed using `docker container rm ${container_name}`.
@@ -181,7 +181,7 @@ pub struct StopContainer {
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
-pub struct RemoveContainer {
+pub struct DestroyDeployment {
   /// Name or id.
   pub deployment: String,
   /// Override the default termination signal specified in the deployment.

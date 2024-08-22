@@ -266,42 +266,42 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::StartContainer(config) => {
+          Execution::StartDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::RestartContainer(config) => {
+          Execution::RestartDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::PauseContainer(config) => {
+          Execution::PauseDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::UnpauseContainer(config) => {
+          Execution::UnpauseDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::StopContainer(config) => {
+          Execution::StopDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::RemoveContainer(config) => {
+          Execution::DestroyDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)

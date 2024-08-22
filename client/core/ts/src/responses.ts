@@ -300,12 +300,12 @@ export type ExecuteResponses = {
 
   // ==== DEPLOYMENT ====
   Deploy: Types.Update;
-  StartContainer: Types.Update;
-  RestartContainer: Types.Update;
-  PauseContainer: Types.Update;
-  UnpauseContainer: Types.Update;
-  StopContainer: Types.Update;
-  RemoveContainer: Types.Update;
+  StartDeployment: Types.Update;
+  RestartDeployment: Types.Update;
+  PauseDeployment: Types.Update;
+  UnpauseDeployment: Types.Update;
+  StopDeployment: Types.Update;
+  DestroyDeployment: Types.Update;
 
   // ==== BUILD ====
   RunBuild: Types.Update;

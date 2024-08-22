@@ -193,10 +193,10 @@ async fn execute_execution(
       )
       .await?
     }
-    Execution::StartContainer(req) => {
-      let req = ExecuteRequest::StartContainer(req);
+    Execution::StartDeployment(req) => {
+      let req = ExecuteRequest::StartDeployment(req);
       let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::StartContainer(req) = req else {
+      let ExecuteRequest::StartDeployment(req) = req else {
         unreachable!()
       };
       let update_id = update.id.clone();
@@ -204,15 +204,15 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StartContainer"),
+          .context("failed at StartDeployment"),
         &update_id,
       )
       .await?
     }
-    Execution::RestartContainer(req) => {
-      let req = ExecuteRequest::RestartContainer(req);
+    Execution::RestartDeployment(req) => {
+      let req = ExecuteRequest::RestartDeployment(req);
       let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::RestartContainer(req) = req else {
+      let ExecuteRequest::RestartDeployment(req) = req else {
         unreachable!()
       };
       let update_id = update.id.clone();
@@ -220,15 +220,15 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RestartContainer"),
+          .context("failed at RestartDeployment"),
         &update_id,
       )
       .await?
     }
-    Execution::PauseContainer(req) => {
-      let req = ExecuteRequest::PauseContainer(req);
+    Execution::PauseDeployment(req) => {
+      let req = ExecuteRequest::PauseDeployment(req);
       let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::PauseContainer(req) = req else {
+      let ExecuteRequest::PauseDeployment(req) = req else {
         unreachable!()
       };
       let update_id = update.id.clone();
@@ -236,15 +236,15 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PauseContainer"),
+          .context("failed at PauseDeployment"),
         &update_id,
       )
       .await?
     }
-    Execution::UnpauseContainer(req) => {
-      let req = ExecuteRequest::UnpauseContainer(req);
+    Execution::UnpauseDeployment(req) => {
+      let req = ExecuteRequest::UnpauseDeployment(req);
       let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::UnpauseContainer(req) = req else {
+      let ExecuteRequest::UnpauseDeployment(req) = req else {
         unreachable!()
       };
       let update_id = update.id.clone();
@@ -252,15 +252,15 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at UnpauseContainer"),
+          .context("failed at UnpauseDeployment"),
         &update_id,
       )
       .await?
     }
-    Execution::StopContainer(req) => {
-      let req = ExecuteRequest::StopContainer(req);
+    Execution::StopDeployment(req) => {
+      let req = ExecuteRequest::StopDeployment(req);
       let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::StopContainer(req) = req else {
+      let ExecuteRequest::StopDeployment(req) = req else {
         unreachable!()
       };
       let update_id = update.id.clone();
@@ -268,15 +268,15 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StopContainer"),
+          .context("failed at StopDeployment"),
         &update_id,
       )
       .await?
     }
-    Execution::StopAllContainers(req) => {
-      let req = ExecuteRequest::StopAllContainers(req);
+    Execution::DestroyDeployment(req) => {
+      let req = ExecuteRequest::DestroyDeployment(req);
       let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::StopAllContainers(req) = req else {
+      let ExecuteRequest::DestroyDeployment(req) = req else {
         unreachable!()
       };
       let update_id = update.id.clone();
@@ -284,23 +284,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StopAllContainers"),
-        &update_id,
-      )
-      .await?
-    }
-    Execution::RemoveContainer(req) => {
-      let req = ExecuteRequest::RemoveContainer(req);
-      let update = init_execution_update(&req, &user).await?;
-      let ExecuteRequest::RemoveContainer(req) = req else {
-        unreachable!()
-      };
-      let update_id = update.id.clone();
-      handle_resolve_result(
-        State
-          .resolve(req, (user, update))
-          .await
-          .context("failed at RemoveContainer"),
+          .context("failed at RemoveDeployment"),
         &update_id,
       )
       .await?
@@ -365,6 +349,22 @@ async fn execute_execution(
           .resolve(req, (user, update))
           .await
           .context("failed at CancelRepoBuild"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::StopAllContainers(req) => {
+      let req = ExecuteRequest::StopAllContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StopAllContainers(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at StopAllContainers"),
         &update_id,
       )
       .await?

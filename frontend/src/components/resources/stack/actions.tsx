@@ -7,7 +7,7 @@ import {
   RefreshCcw,
   Rocket,
   Square,
-  Trash2,
+  Trash,
 } from "lucide-react";
 import { useStack } from ".";
 import { Types } from "@monitor/client";
@@ -88,7 +88,7 @@ export const DestroyStack = ({ id }: { id: string }) => {
     <ActionWithDialog
       name={stack.name}
       title="Destroy"
-      icon={<Trash2 className="h-4 w-4" />}
+      icon={<Trash className="h-4 w-4" />}
       onClick={() => destroy({ stack: id })}
       disabled={isPending}
       loading={isPending || destroying}

@@ -399,7 +399,7 @@ async fn add_procedure(
             .get(&exec.deployment)
             .unwrap_or(&String::new()),
         ),
-        Execution::StartContainer(exec) => {
+        Execution::StartDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -407,7 +407,7 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::RestartContainer(exec) => {
+        Execution::RestartDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -415,7 +415,7 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::PauseContainer(exec) => {
+        Execution::PauseDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -423,7 +423,7 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::UnpauseContainer(exec) => {
+        Execution::UnpauseDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -431,13 +431,15 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::StopContainer(exec) => exec.deployment.clone_from(
-          names
-            .deployments
-            .get(&exec.deployment)
-            .unwrap_or(&String::new()),
-        ),
-        Execution::RemoveContainer(exec) => {
+        Execution::StopDeployment(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::DestroyDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments

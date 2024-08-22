@@ -23,8 +23,9 @@ impl Busy for DeploymentActionState {
       || self.starting
       || self.restarting
       || self.pausing
+      || self.unpausing
       || self.stopping
-      || self.removing
+      || self.destroying
       || self.renaming
   }
 }
@@ -35,6 +36,7 @@ impl Busy for StackActionState {
       || self.starting
       || self.restarting
       || self.pausing
+      || self.unpausing
       || self.stopping
       || self.destroying
   }

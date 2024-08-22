@@ -225,11 +225,11 @@ impl Resolve<Deploy, (User, Update)> for State {
   }
 }
 
-impl Resolve<StartContainer, (User, Update)> for State {
-  #[instrument(name = "StartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<StartDeployment, (User, Update)> for State {
+  #[instrument(name = "StartDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    StartContainer { deployment }: StartContainer,
+    StartDeployment { deployment }: StartDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -273,11 +273,11 @@ impl Resolve<StartContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<RestartContainer, (User, Update)> for State {
-  #[instrument(name = "RestartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<RestartDeployment, (User, Update)> for State {
+  #[instrument(name = "RestartDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    RestartContainer { deployment }: RestartContainer,
+    RestartDeployment { deployment }: RestartDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -323,11 +323,11 @@ impl Resolve<RestartContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<PauseContainer, (User, Update)> for State {
-  #[instrument(name = "PauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<PauseDeployment, (User, Update)> for State {
+  #[instrument(name = "PauseDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    PauseContainer { deployment }: PauseContainer,
+    PauseDeployment { deployment }: PauseDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -371,11 +371,11 @@ impl Resolve<PauseContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<UnpauseContainer, (User, Update)> for State {
-  #[instrument(name = "UnpauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<UnpauseDeployment, (User, Update)> for State {
+  #[instrument(name = "UnpauseDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    UnpauseContainer { deployment }: UnpauseContainer,
+    UnpauseDeployment { deployment }: UnpauseDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -421,15 +421,15 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<StopContainer, (User, Update)> for State {
-  #[instrument(name = "StopContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<StopDeployment, (User, Update)> for State {
+  #[instrument(name = "StopDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    StopContainer {
+    StopDeployment {
       deployment,
       signal,
       time,
-    }: StopContainer,
+    }: StopDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -479,15 +479,15 @@ impl Resolve<StopContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<RemoveContainer, (User, Update)> for State {
-  #[instrument(name = "RemoveContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<DestroyDeployment, (User, Update)> for State {
+  #[instrument(name = "DestroyDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    RemoveContainer {
+    DestroyDeployment {
       deployment,
       signal,
       time,
-    }: RemoveContainer,
+    }: DestroyDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -502,7 +502,7 @@ impl Resolve<RemoveContainer, (User, Update)> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.removing = true)?;
+      action_state.update(|state| state.destroying = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;

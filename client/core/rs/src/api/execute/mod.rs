@@ -61,12 +61,12 @@ pub enum Execution {
 
   // DEPLOYMENT
   Deploy(Deploy),
-  StartContainer(StartContainer),
-  RestartContainer(RestartContainer),
-  PauseContainer(PauseContainer),
-  UnpauseContainer(UnpauseContainer),
-  StopContainer(StopContainer),
-  RemoveContainer(RemoveContainer),
+  StartDeployment(StartDeployment),
+  RestartDeployment(RestartDeployment),
+  PauseDeployment(PauseDeployment),
+  UnpauseDeployment(UnpauseDeployment),
+  StopDeployment(StopDeployment),
+  DestroyDeployment(DestroyDeployment),
 
   // REPO
   CloneRepo(CloneRepo),

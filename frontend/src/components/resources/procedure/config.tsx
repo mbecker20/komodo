@@ -504,13 +504,12 @@ const default_enabled_execution: () => Types.EnabledExecution = () => ({
 const EXECUTION_TYPES: Types.Execution["type"][] = [
   "RunBuild",
   "Deploy",
-  "RestartContainer",
-  "StartContainer",
-  "PauseContainer",
-  "UnpauseContainer",
-  "StopContainer",
-  "StopAllContainers",
-  "RemoveContainer",
+  "RestartDeployment",
+  "StartDeployment",
+  "PauseDeployment",
+  "UnpauseDeployment",
+  "StopDeployment",
+  "DestroyDeployment",
   "DeployStack",
   "StartStack",
   "RestartStack",
@@ -523,6 +522,7 @@ const EXECUTION_TYPES: Types.Execution["type"][] = [
   "BuildRepo",
   "RunProcedure",
   "RunSync",
+  "StopAllContainers",
   "PruneContainers",
   "PruneNetworks",
   "PruneImages",
@@ -723,7 +723,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  RemoveContainer: {
+  DestroyDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -767,7 +767,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  StartContainer: {
+  StartDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -778,7 +778,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  RestartContainer: {
+  RestartDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -789,7 +789,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  PauseContainer: {
+  PauseDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -800,7 +800,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  UnpauseContainer: {
+  UnpauseDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -811,7 +811,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  StopContainer: {
+  StopDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector

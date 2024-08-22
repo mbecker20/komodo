@@ -33,25 +33,22 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::Deploy(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::StartContainer(data) => {
+    Execution::StartDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::RestartContainer(data) => {
+    Execution::RestartDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::PauseContainer(data) => {
+    Execution::PauseDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::UnpauseContainer(data) => {
+    Execution::UnpauseDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::StopContainer(data) => {
+    Execution::StopDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::StopAllContainers(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::RemoveContainer(data) => {
+    Execution::DestroyDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::CloneRepo(data) => {
@@ -64,6 +61,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::CancelRepoBuild(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StopAllContainers(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::PruneContainers(data) => {
@@ -129,25 +129,22 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::Deploy(request) => {
       monitor_client().execute(request).await
     }
-    Execution::StartContainer(request) => {
+    Execution::StartDeployment(request) => {
       monitor_client().execute(request).await
     }
-    Execution::RestartContainer(request) => {
+    Execution::RestartDeployment(request) => {
       monitor_client().execute(request).await
     }
-    Execution::PauseContainer(request) => {
+    Execution::PauseDeployment(request) => {
       monitor_client().execute(request).await
     }
-    Execution::UnpauseContainer(request) => {
+    Execution::UnpauseDeployment(request) => {
       monitor_client().execute(request).await
     }
-    Execution::StopContainer(request) => {
+    Execution::StopDeployment(request) => {
       monitor_client().execute(request).await
     }
-    Execution::StopAllContainers(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::RemoveContainer(request) => {
+    Execution::DestroyDeployment(request) => {
       monitor_client().execute(request).await
     }
     Execution::CloneRepo(request) => {
@@ -160,6 +157,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::CancelRepoBuild(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::StopAllContainers(request) => {
       monitor_client().execute(request).await
     }
     Execution::PruneContainers(request) => {
