@@ -3,7 +3,7 @@ resolver = "2"
 members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
-version = "1.14.0-dev1"
+version = "1.14.0-dev2"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
