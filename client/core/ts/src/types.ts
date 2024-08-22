@@ -1316,12 +1316,6 @@ export interface ImageListItem {
 	created?: I64;
 	/** Total size of the image including all layers it is composed of. */
 	size?: I64;
-	/**
-	 * User-defined key/value metadata.
-	 * Usually labels aren't included on ListItem,
-	 * but Inpsect Container result doesn't include them.
-	 */
-	labels?: Record<string, string>;
 	/** Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated. */
 	containers?: I64;
 }

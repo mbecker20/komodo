@@ -34,9 +34,9 @@ const ImagePageInner = ({
   // const perms = useRead("GetPermissionLevel", {
   //   target: { type: "Server", id },
   // }).data;
-  const list_image = useRead("ListDockerImages", { server: id }).data?.find(
-    (image) => image.name === _image
-  );
+  // const list_image = useRead("ListDockerImages", { server: id }).data?.find(
+  //   (image) => image.name === _image
+  // );
   const {
     data: image,
     isPending,
@@ -58,11 +58,7 @@ const ImagePageInner = ({
     );
   }
   if (isError) {
-    return (
-      <div className="flex w-full py-4">
-        Failed to inspect image.
-      </div>
-    );
+    return <div className="flex w-full py-4">Failed to inspect image.</div>;
   }
   if (!image) {
     return (
@@ -99,7 +95,7 @@ const ImagePageInner = ({
             <div className="mt-1">
               <HardDrive className="w-8 h-8" />
             </div>
-            <h1 className="text-3xl">{list_image?.name}</h1>
+            <h1 className="text-3xl">{_image}</h1>
           </div>
         </div>
 
@@ -148,7 +144,7 @@ const ImagePageInner = ({
 
       {/* {history && history.length > 0 && <Section title="History"></Section>} */}
 
-      <DockerLabelsSection labels={list_image?.labels} />
+      <DockerLabelsSection labels={image?.Config?.Labels} />
     </div>
   );
 };

@@ -624,7 +624,6 @@ impl DockerClient {
           created: image.created,
           size: image.size,
           containers: image.containers,
-          labels: image.labels,
         })
       })
       .collect()
