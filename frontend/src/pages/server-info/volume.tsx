@@ -52,7 +52,7 @@ const VolumePageInner = ({
   if (isError) {
     return (
       <div className="flex w-full py-4">
-        Failed to get volume list for server.
+        Failed to inspect volume.
       </div>
     );
   }

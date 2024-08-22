@@ -59,7 +59,7 @@ const NetworkPageInner = ({
   if (isError) {
     return (
       <div className="flex w-full py-4">
-        Failed to get network list for server.
+        Failed to inspect network.
       </div>
     );
   }

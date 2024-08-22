@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::I64;
 
-use super::GraphDriverData;
+use super::{ContainerConfig, GraphDriverData};
 
 #[typeshare]
 #[derive(
@@ -33,7 +33,7 @@ pub struct ImageListItem {
   pub size: I64,
 
   /// User-defined key/value metadata.
-  /// Usually labels aren't included on ListItem, 
+  /// Usually labels aren't included on ListItem,
   /// but Inpsect Container result doesn't include them.
   #[serde(default)]
   pub labels: HashMap<String, String>,
@@ -80,6 +80,11 @@ pub struct Image {
   /// Name of the author that was specified when committing the image, or as specified through MAINTAINER (deprecated) in the Dockerfile.
   #[serde(rename = "Author")]
   pub author: Option<String>,
+
+  /// Configuration for a container that is portable between hosts.
+  #[serde(rename = "Config")]
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub config: Option<ContainerConfig>,
 
   /// Hardware CPU architecture that the image runs on.
   #[serde(rename = "Architecture")]

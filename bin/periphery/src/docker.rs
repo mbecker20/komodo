@@ -11,8 +11,8 @@ use monitor_client::entities::{
   build::{ImageRegistry, StandardRegistryConfig},
   config::core::AwsEcrConfig,
   docker::{
-    container::*, image::*, network::*, volume::*, GraphDriverData,
-    PortBinding,
+    container::*, image::*, network::*, volume::*, ContainerConfig,
+    GraphDriverData, HealthConfig, PortBinding,
   },
   to_monitor_name,
   update::Log,
@@ -467,7 +467,7 @@ impl DockerClient {
         stop_signal: config.stop_signal,
         stop_timeout: config.stop_timeout,
         shell: config.shell.unwrap_or_default(),
-    }),
+      }),
       network_settings: container.network_settings.map(|settings| NetworkSettings {
         bridge: settings.bridge,
         sandbox_id: settings.sandbox_id,
@@ -661,6 +661,50 @@ impl DockerClient {
       }),
       metadata: image.metadata.map(|metadata| ImageInspectMetadata {
         last_tag_time: metadata.last_tag_time,
+      }),
+      config: image.config.map(|config| ContainerConfig {
+        hostname: config.hostname,
+        domainname: config.domainname,
+        user: config.user,
+        attach_stdin: config.attach_stdin,
+        attach_stdout: config.attach_stdout,
+        attach_stderr: config.attach_stderr,
+        exposed_ports: config
+          .exposed_ports
+          .unwrap_or_default()
+          .into_keys()
+          .map(|k| (k, Default::default()))
+          .collect(),
+        tty: config.tty,
+        open_stdin: config.open_stdin,
+        stdin_once: config.stdin_once,
+        env: config.env.unwrap_or_default(),
+        cmd: config.cmd.unwrap_or_default(),
+        healthcheck: config.healthcheck.map(|health| HealthConfig {
+          test: health.test.unwrap_or_default(),
+          interval: health.interval,
+          timeout: health.timeout,
+          retries: health.retries,
+          start_period: health.start_period,
+          start_interval: health.start_interval,
+        }),
+        args_escaped: config.args_escaped,
+        image: config.image,
+        volumes: config
+          .volumes
+          .unwrap_or_default()
+          .into_keys()
+          .map(|k| (k, Default::default()))
+          .collect(),
+        working_dir: config.working_dir,
+        entrypoint: config.entrypoint.unwrap_or_default(),
+        network_disabled: config.network_disabled,
+        mac_address: config.mac_address,
+        on_build: config.on_build.unwrap_or_default(),
+        labels: config.labels.unwrap_or_default(),
+        stop_signal: config.stop_signal,
+        stop_timeout: config.stop_timeout,
+        shell: config.shell.unwrap_or_default(),
       }),
     })
   }

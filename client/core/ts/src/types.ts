@@ -1328,6 +1328,75 @@ export interface ImageListItem {
 
 export type ListDockerImagesResponse = ImageListItem[];
 
+/** A test to perform to check that the container is healthy. */
+export interface HealthConfig {
+	/** The test to perform. Possible values are:  - `[]` inherit healthcheck from image or parent image - `[\"NONE\"]` disable healthcheck - `[\"CMD\", args...]` exec arguments directly - `[\"CMD-SHELL\", command]` run command with system's default shell */
+	Test?: string[];
+	/** The time to wait between checks in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	Interval?: I64;
+	/** The time to wait before considering the check to have hung. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	Timeout?: I64;
+	/** The number of consecutive failures needed to consider a container as unhealthy. 0 means inherit. */
+	Retries?: I64;
+	/** Start period for the container to initialize before starting health-retries countdown in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	StartPeriod?: I64;
+	/** The time to wait between checks in nanoseconds during the start period. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+	StartInterval?: I64;
+}
+
+/** Configuration for a container that is portable between hosts.  When used as `ContainerConfig` field in an image, `ContainerConfig` is an optional field containing the configuration of the container that was last committed when creating the image.  Previous versions of Docker builder used this field to store build cache, and it is not in active use anymore. */
+export interface ContainerConfig {
+	/** The hostname to use for the container, as a valid RFC 1123 hostname. */
+	Hostname?: string;
+	/** The domain name to use for the container. */
+	Domainname?: string;
+	/** The user that commands are run as inside the container. */
+	User?: string;
+	/** Whether to attach to `stdin`. */
+	AttachStdin?: boolean;
+	/** Whether to attach to `stdout`. */
+	AttachStdout?: boolean;
+	/** Whether to attach to `stderr`. */
+	AttachStderr?: boolean;
+	/** An object mapping ports to an empty object in the form:  `{\"<port>/<tcp|udp|sctp>\": {}}` */
+	ExposedPorts?: Record<string, Record<string, undefined>>;
+	/** Attach standard streams to a TTY, including `stdin` if it is not closed. */
+	Tty?: boolean;
+	/** Open `stdin` */
+	OpenStdin?: boolean;
+	/** Close `stdin` after one attached client disconnects */
+	StdinOnce?: boolean;
+	/** A list of environment variables to set inside the container in the form `[\"VAR=value\", ...]`. A variable without `=` is removed from the environment, rather than to have an empty value. */
+	Env?: string[];
+	/** Command to run specified as a string or an array of strings. */
+	Cmd?: string[];
+	Healthcheck?: HealthConfig;
+	/** Command is already escaped (Windows only) */
+	ArgsEscaped?: boolean;
+	/** The name (or reference) of the image to use when creating the container, or which was used when the container was created. */
+	Image?: string;
+	/** An object mapping mount point paths inside the container to empty objects. */
+	Volumes?: Record<string, Record<string, undefined>>;
+	/** The working directory for commands to run in. */
+	WorkingDir?: string;
+	/** The entry point for the container as a string or an array of strings.  If the array consists of exactly one empty string (`[\"\"]`) then the entry point is reset to system default (i.e., the entry point used by docker when there is no `ENTRYPOINT` instruction in the `Dockerfile`). */
+	Entrypoint?: string[];
+	/** Disable networking for the container. */
+	NetworkDisabled?: boolean;
+	/** MAC address of the container.  Deprecated: this field is deprecated in API v1.44 and up. Use EndpointSettings.MacAddress instead. */
+	MacAddress?: string;
+	/** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
+	OnBuild?: string[];
+	/** User-defined key/value metadata. */
+	Labels?: Record<string, string>;
+	/** Signal to stop a container as a string or unsigned integer. */
+	StopSignal?: string;
+	/** Timeout to stop a container in seconds. */
+	StopTimeout?: I64;
+	/** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
+	Shell?: string[];
+}
+
 /** Information about the storage driver used to store the container's and image's filesystem. */
 export interface GraphDriverData {
 	/** Name of the storage driver. */
@@ -1366,6 +1435,8 @@ export interface Image {
 	DockerVersion?: string;
 	/** Name of the author that was specified when committing the image, or as specified through MAINTAINER (deprecated) in the Dockerfile. */
 	Author?: string;
+	/** Configuration for a container that is portable between hosts. */
+	Config?: ContainerConfig;
 	/** Hardware CPU architecture that the image runs on. */
 	Architecture?: string;
 	/** CPU architecture variant (presently ARM-only). */
@@ -1807,75 +1878,6 @@ export interface MountPoint {
 	RW?: boolean;
 	/** Propagation describes how mounts are propagated from the host into the mount point, and vice-versa. Refer to the [Linux kernel documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) for details. This field is not used on Windows. */
 	Propagation?: string;
-}
-
-/** A test to perform to check that the container is healthy. */
-export interface HealthConfig {
-	/** The test to perform. Possible values are:  - `[]` inherit healthcheck from image or parent image - `[\"NONE\"]` disable healthcheck - `[\"CMD\", args...]` exec arguments directly - `[\"CMD-SHELL\", command]` run command with system's default shell */
-	Test?: string[];
-	/** The time to wait between checks in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-	Interval?: I64;
-	/** The time to wait before considering the check to have hung. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-	Timeout?: I64;
-	/** The number of consecutive failures needed to consider a container as unhealthy. 0 means inherit. */
-	Retries?: I64;
-	/** Start period for the container to initialize before starting health-retries countdown in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-	StartPeriod?: I64;
-	/** The time to wait between checks in nanoseconds during the start period. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-	StartInterval?: I64;
-}
-
-/** Configuration for a container that is portable between hosts.  When used as `ContainerConfig` field in an image, `ContainerConfig` is an optional field containing the configuration of the container that was last committed when creating the image.  Previous versions of Docker builder used this field to store build cache, and it is not in active use anymore. */
-export interface ContainerConfig {
-	/** The hostname to use for the container, as a valid RFC 1123 hostname. */
-	Hostname?: string;
-	/** The domain name to use for the container. */
-	Domainname?: string;
-	/** The user that commands are run as inside the container. */
-	User?: string;
-	/** Whether to attach to `stdin`. */
-	AttachStdin?: boolean;
-	/** Whether to attach to `stdout`. */
-	AttachStdout?: boolean;
-	/** Whether to attach to `stderr`. */
-	AttachStderr?: boolean;
-	/** An object mapping ports to an empty object in the form:  `{\"<port>/<tcp|udp|sctp>\": {}}` */
-	ExposedPorts?: Record<string, Record<string, undefined>>;
-	/** Attach standard streams to a TTY, including `stdin` if it is not closed. */
-	Tty?: boolean;
-	/** Open `stdin` */
-	OpenStdin?: boolean;
-	/** Close `stdin` after one attached client disconnects */
-	StdinOnce?: boolean;
-	/** A list of environment variables to set inside the container in the form `[\"VAR=value\", ...]`. A variable without `=` is removed from the environment, rather than to have an empty value. */
-	Env?: string[];
-	/** Command to run specified as a string or an array of strings. */
-	Cmd?: string[];
-	Healthcheck?: HealthConfig;
-	/** Command is already escaped (Windows only) */
-	ArgsEscaped?: boolean;
-	/** The name (or reference) of the image to use when creating the container, or which was used when the container was created. */
-	Image?: string;
-	/** An object mapping mount point paths inside the container to empty objects. */
-	Volumes?: Record<string, Record<string, undefined>>;
-	/** The working directory for commands to run in. */
-	WorkingDir?: string;
-	/** The entry point for the container as a string or an array of strings.  If the array consists of exactly one empty string (`[\"\"]`) then the entry point is reset to system default (i.e., the entry point used by docker when there is no `ENTRYPOINT` instruction in the `Dockerfile`). */
-	Entrypoint?: string[];
-	/** Disable networking for the container. */
-	NetworkDisabled?: boolean;
-	/** MAC address of the container.  Deprecated: this field is deprecated in API v1.44 and up. Use EndpointSettings.MacAddress instead. */
-	MacAddress?: string;
-	/** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
-	OnBuild?: string[];
-	/** User-defined key/value metadata. */
-	Labels?: Record<string, string>;
-	/** Signal to stop a container as a string or unsigned integer. */
-	StopSignal?: string;
-	/** Timeout to stop a container in seconds. */
-	StopTimeout?: I64;
-	/** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
-	Shell?: string[];
 }
 
 /** EndpointIPAMConfig represents an endpoint's IPAM configuration. */
