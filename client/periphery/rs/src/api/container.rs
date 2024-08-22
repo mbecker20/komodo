@@ -1,9 +1,9 @@
 use monitor_client::entities::{
   config::core::AwsEcrConfig,
-  deployment::{Deployment, TerminationSignal},
+  deployment::Deployment,
   docker::container::{Container, ContainerListItem, ContainerStats},
   update::Log,
-  SearchCombinator,
+  SearchCombinator, TerminationSignal,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};

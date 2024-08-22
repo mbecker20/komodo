@@ -293,6 +293,66 @@ async fn validate_config(
           .await?;
           params.repo = repo.id;
         }
+        Execution::StartContainer(params) => {
+          let server =
+            super::get_check_permissions::<Server>(
+              &params.server,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.server = server.id;
+        }
+        Execution::RestartContainer(params) => {
+          let server =
+            super::get_check_permissions::<Server>(
+              &params.server,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.server = server.id;
+        }
+        Execution::PauseContainer(params) => {
+          let server =
+            super::get_check_permissions::<Server>(
+              &params.server,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.server = server.id;
+        }
+        Execution::UnpauseContainer(params) => {
+          let server =
+            super::get_check_permissions::<Server>(
+              &params.server,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.server = server.id;
+        }
+        Execution::StopContainer(params) => {
+          let server =
+            super::get_check_permissions::<Server>(
+              &params.server,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.server = server.id;
+        }
+        Execution::DestroyContainer(params) => {
+          let server =
+            super::get_check_permissions::<Server>(
+              &params.server,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.server = server.id;
+        }
         Execution::StopAllContainers(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,

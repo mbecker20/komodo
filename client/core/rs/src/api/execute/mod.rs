@@ -75,6 +75,12 @@ pub enum Execution {
   CancelRepoBuild(CancelRepoBuild),
 
   // SERVER
+  StartContainer(StartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
+  StopContainer(StopContainer),
+  DestroyContainer(DestroyContainer),
   StopAllContainers(StopAllContainers),
   PruneContainers(PruneContainers),
   PruneNetworks(PruneNetworks),

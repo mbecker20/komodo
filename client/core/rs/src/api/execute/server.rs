@@ -4,9 +4,172 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::update::Update;
+use crate::entities::{update::Update, TerminationSignal};
 
 use super::MonitorExecuteRequest;
+
+// =============
+// = CONTAINER =
+// =============
+
+/// Starts the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker start ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct StartContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Restarts the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker restart ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct RestartContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Pauses the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker pause ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct PauseContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Unpauses the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker unpause ${container_name}`.
+///
+/// Note. This is the only way to restart a paused container.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct UnpauseContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Stops the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker stop ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct StopContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+  /// Override the default termination signal.
+  pub signal: Option<TerminationSignal>,
+  /// Override the default termination max time.
+  pub time: Option<i32>,
+}
+
+//
+
+/// Stops and destroys the container on the target server.
+/// Reponse: [Update].
+///
+/// 1. The container is stopped and removed using `docker container rm ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct DestroyContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+  /// Override the default termination signal.
+  pub signal: Option<TerminationSignal>,
+  /// Override the default termination max time.
+  pub time: Option<i32>,
+}
 
 //
 
@@ -52,7 +215,9 @@ pub struct PruneContainers {
   pub server: String,
 }
 
-//
+// ===========
+// = NETWORK =
+// ===========
 
 /// Prunes the docker networks on the target server. Response: [Update].
 ///

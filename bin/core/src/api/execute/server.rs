@@ -15,12 +15,335 @@ use resolver_api::Resolve;
 
 use crate::{
   helpers::{
-    periphery_client, query::get_server_with_status,
+    periphery_client, query::get_server_with_state,
     update::update_update,
   },
+  monitor::update_cache_for_server,
   resource,
   state::{action_states, State},
 };
+
+impl Resolve<StartContainer, (User, Update)> for State {
+  #[instrument(name = "StartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    StartContainer { server, container }: StartContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // // get the action state for the server (or insert default).
+    // let action_state = action_states()
+    //   .server
+    //   .get_or_insert_default(&server.id)
+    //   .await;
+
+    // // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // // The returned guard will set the action state back to default when dropped.
+    // let _action_guard =
+    //   action_state.update(|state| state.starting = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::StartContainer { name: container })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "start container",
+        format_serror(&e.context("failed to start container").into()),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<RestartContainer, (User, Update)> for State {
+  #[instrument(name = "RestartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    RestartContainer { server, container }: RestartContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // // get the action state for the deployment (or insert default).
+    // let action_state = action_states()
+    //   .deployment
+    //   .get_or_insert_default(&deployment.id)
+    //   .await;
+
+    // // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // // The returned guard will set the action state back to default when dropped.
+    // let _action_guard =
+    //   action_state.update(|state| state.restarting = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::RestartContainer { name: container })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "restart container",
+        format_serror(
+          &e.context("failed to restart container").into(),
+        ),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<PauseContainer, (User, Update)> for State {
+  #[instrument(name = "PauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    PauseContainer { server, container }: PauseContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // // get the action state for the deployment (or insert default).
+    // let action_state = action_states()
+    //   .deployment
+    //   .get_or_insert_default(&deployment.id)
+    //   .await;
+
+    // // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // // The returned guard will set the action state back to default when dropped.
+    // let _action_guard =
+    //   action_state.update(|state| state.pausing = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::PauseContainer { name: container })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "pause container",
+        format_serror(&e.context("failed to pause container").into()),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<UnpauseContainer, (User, Update)> for State {
+  #[instrument(name = "UnpauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    UnpauseContainer { server, container }: UnpauseContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // // get the action state for the deployment (or insert default).
+    // let action_state = action_states()
+    //   .deployment
+    //   .get_or_insert_default(&deployment.id)
+    //   .await;
+
+    // // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // // The returned guard will set the action state back to default when dropped.
+    // let _action_guard =
+    //   action_state.update(|state| state.unpausing = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::UnpauseContainer { name: container })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "unpause container",
+        format_serror(
+          &e.context("failed to unpause container").into(),
+        ),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<StopContainer, (User, Update)> for State {
+  #[instrument(name = "StopContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    StopContainer {
+      server,
+      container,
+      signal,
+      time,
+    }: StopContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // // get the action state for the deployment (or insert default).
+    // let action_state = action_states()
+    //   .deployment
+    //   .get_or_insert_default(&deployment.id)
+    //   .await;
+
+    // // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // // The returned guard will set the action state back to default when dropped.
+    // let _action_guard =
+    //   action_state.update(|state| state.stopping = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::StopContainer {
+        name: container,
+        signal,
+        time,
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "stop container",
+        format_serror(&e.context("failed to stop container").into()),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<DestroyContainer, (User, Update)> for State {
+  #[instrument(name = "DestroyContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    DestroyContainer {
+      server,
+      container,
+      signal,
+      time,
+    }: DestroyContainer,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // // get the action state for the deployment (or insert default).
+    // let action_state = action_states()
+    //   .deployment
+    //   .get_or_insert_default(&deployment.id)
+    //   .await;
+
+    // // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // // The returned guard will set the action state back to default when dropped.
+    // let _action_guard =
+    //   action_state.update(|state| state.destroying = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::container::RemoveContainer {
+        name: container,
+        signal,
+        time,
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "stop container",
+        format_serror(&e.context("failed to stop container").into()),
+      ),
+    };
+
+    update.logs.push(log);
+    update.finalize();
+    update_cache_for_server(&server).await;
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
 
 impl Resolve<StopAllContainers, (User, Update)> for State {
   #[instrument(name = "StopAllContainers", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
@@ -29,7 +352,7 @@ impl Resolve<StopAllContainers, (User, Update)> for State {
     StopAllContainers { server }: StopAllContainers,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (server, status) = get_server_with_status(&server).await?;
+    let (server, status) = get_server_with_state(&server).await?;
     if status != ServerState::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"

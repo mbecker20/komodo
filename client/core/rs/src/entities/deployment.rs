@@ -14,7 +14,7 @@ use typeshare::typeshare;
 use super::{
   docker::container::ContainerStateStatusEnum,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  EnvironmentVar, Version,
+  EnvironmentVar, TerminationSignal, Version,
 };
 
 #[typeshare]
@@ -510,34 +510,6 @@ pub enum RestartMode {
   #[serde(rename = "unless-stopped")]
   #[strum(serialize = "unless-stopped")]
   UnlessStopped,
-}
-
-#[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  PartialEq,
-  Hash,
-  Eq,
-  Clone,
-  Copy,
-  Default,
-  Display,
-  EnumString,
-)]
-#[serde(rename_all = "UPPERCASE")]
-#[strum(serialize_all = "UPPERCASE")]
-pub enum TerminationSignal {
-  #[serde(alias = "1")]
-  SigHup,
-  #[serde(alias = "2")]
-  SigInt,
-  #[serde(alias = "3")]
-  SigQuit,
-  #[default]
-  #[serde(alias = "15")]
-  SigTerm,
 }
 
 #[typeshare]

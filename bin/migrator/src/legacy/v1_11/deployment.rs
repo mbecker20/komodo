@@ -1,10 +1,9 @@
 use monitor_client::entities::{
   deployment::{
     conversions_deserializer, term_labels_deserializer, Conversion,
-    DeploymentImage, RestartMode, TerminationSignal,
-    TerminationSignalLabel,
+    DeploymentImage, RestartMode, TerminationSignalLabel,
   },
-  env_vars_deserializer, EnvironmentVar,
+  env_vars_deserializer, EnvironmentVar, TerminationSignal,
 };
 use serde::{Deserialize, Serialize};
 

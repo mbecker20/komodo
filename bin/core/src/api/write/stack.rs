@@ -29,7 +29,7 @@ use crate::{
   config::core_config,
   helpers::{
     periphery_client,
-    query::get_server_with_status,
+    query::get_server_with_state,
     stack::{
       remote::get_remote_compose_contents,
       services::extract_services_into_res,
@@ -177,7 +177,7 @@ impl Resolve<RefreshStackCache, User> for State {
         (vec![], None, None, None, None)
       } else {
         let (server, status) =
-          get_server_with_status(&stack.config.server_id).await?;
+          get_server_with_state(&stack.config.server_id).await?;
         if status != ServerState::Ok {
           (vec![], None, None, None, None)
         } else {

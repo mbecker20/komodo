@@ -299,10 +299,10 @@ pub enum TerminationSignal {
 }
 
 impl From<TerminationSignal>
-  for monitor_client::entities::deployment::TerminationSignal
+  for monitor_client::entities::TerminationSignal
 {
   fn from(value: TerminationSignal) -> Self {
-    use monitor_client::entities::deployment::TerminationSignal::*;
+    use monitor_client::entities::TerminationSignal::*;
     match value {
       TerminationSignal::SigHup => SigHup,
       TerminationSignal::SigInt => SigInt,

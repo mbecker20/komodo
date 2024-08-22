@@ -10,7 +10,7 @@ use monitor_client::{
     },
     get_image_name,
     permission::PermissionLevel,
-    server::{Server, ServerState},
+    server::Server,
     update::{Log, Update},
     user::User,
     Version,
@@ -24,8 +24,7 @@ use crate::{
   config::core_config,
   helpers::{
     interpolate_variables_secrets_into_environment, periphery_client,
-    query::get_server_with_status, registry_token,
-    update::update_update,
+    registry_token, update::update_update,
   },
   monitor::update_cache_for_server,
   resource,
@@ -47,13 +46,8 @@ async fn setup_deployment_execution(
     return Err(anyhow!("deployment has no server configured"));
   }
 
-  let (server, status) =
-    get_server_with_status(&deployment.config.server_id).await?;
-  if status != ServerState::Ok {
-    return Err(anyhow!(
-      "cannot send action when server is unreachable or disabled"
-    ));
-  }
+  let server =
+    resource::get::<Server>(&deployment.config.server_id).await?;
 
   Ok((deployment, server))
 }
@@ -87,6 +81,11 @@ impl Resolve<Deploy, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     let periphery = periphery_client(&server)?;
+
+    periphery
+      .health_check()
+      .await
+      .context("Failed server health check, stopping run.")?;
 
     let (version, registry_token, aws_ecr) = match &deployment
       .config
@@ -253,7 +252,7 @@ impl Resolve<StartDeployment, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::StartContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -301,7 +300,7 @@ impl Resolve<RestartDeployment, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::RestartContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -351,7 +350,7 @@ impl Resolve<PauseDeployment, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::PauseContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -399,7 +398,7 @@ impl Resolve<UnpauseDeployment, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::UnpauseContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -453,7 +452,7 @@ impl Resolve<StopDeployment, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::StopContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
         signal: signal
           .unwrap_or(deployment.config.termination_signal)
           .into(),
@@ -511,7 +510,7 @@ impl Resolve<DestroyDeployment, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::RemoveContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
         signal: signal
           .unwrap_or(deployment.config.termination_signal)
           .into(),

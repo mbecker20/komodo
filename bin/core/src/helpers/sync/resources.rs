@@ -336,6 +336,48 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::StartContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RestartContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PauseContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::UnpauseContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StopContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DestroyContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::StopAllContainers(config) => {
             config.server = resources
               .servers

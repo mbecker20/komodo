@@ -128,6 +128,42 @@ pub async fn init_execution_update(
 ) -> anyhow::Result<Update> {
   let (operation, target) = match &request {
     // Server
+    ExecuteRequest::StartContainer(data) => (
+      Operation::StartContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::RestartContainer(data) => (
+      Operation::RestartContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PauseContainer(data) => (
+      Operation::PauseContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::UnpauseContainer(data) => (
+      Operation::UnpauseContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::StopContainer(data) => (
+      Operation::StopContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::DestroyContainer(data) => (
+      Operation::DestroyContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::StopAllContainers(data) => (
       Operation::StopAllContainers,
       ResourceTarget::Server(

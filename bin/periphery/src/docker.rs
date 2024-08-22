@@ -10,13 +10,13 @@ use command::run_monitor_command;
 use monitor_client::entities::{
   build::{ImageRegistry, StandardRegistryConfig},
   config::core::AwsEcrConfig,
-  deployment::TerminationSignal,
   docker::{
     container::*, image::*, network::*, volume::*, GraphDriverData,
     PortBinding,
   },
   to_monitor_name,
   update::Log,
+  TerminationSignal,
 };
 use run_command::async_run_command;
 

@@ -843,6 +843,12 @@ export type Execution =
 	| { type: "PullRepo", params: PullRepo }
 	| { type: "BuildRepo", params: BuildRepo }
 	| { type: "CancelRepoBuild", params: CancelRepoBuild }
+	| { type: "StartContainer", params: StartContainer }
+	| { type: "RestartContainer", params: RestartContainer }
+	| { type: "PauseContainer", params: PauseContainer }
+	| { type: "UnpauseContainer", params: UnpauseContainer }
+	| { type: "StopContainer", params: StopContainer }
+	| { type: "DestroyContainer", params: DestroyContainer }
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "PruneNetworks", params: PruneNetworks }
@@ -2680,6 +2686,12 @@ export enum Operation {
 	UpdateServer = "UpdateServer",
 	DeleteServer = "DeleteServer",
 	RenameServer = "RenameServer",
+	StartContainer = "StartContainer",
+	RestartContainer = "RestartContainer",
+	PauseContainer = "PauseContainer",
+	UnpauseContainer = "UnpauseContainer",
+	StopContainer = "StopContainer",
+	DestroyContainer = "DestroyContainer",
 	StopAllContainers = "StopAllContainers",
 	PruneContainers = "PruneContainers",
 	PruneNetworks = "PruneNetworks",
@@ -3356,6 +3368,89 @@ export interface BuildRepo {
 export interface CancelRepoBuild {
 	/** Can be id or name */
 	repo: string;
+}
+
+/**
+ * Starts the container on the target server. Response: [Update]
+ * 
+ * 1. Runs `docker start ${container_name}`.
+ */
+export interface StartContainer {
+	/** Name or id */
+	server: string;
+	/** The container name */
+	container: string;
+}
+
+/**
+ * Restarts the container on the target server. Response: [Update]
+ * 
+ * 1. Runs `docker restart ${container_name}`.
+ */
+export interface RestartContainer {
+	/** Name or id */
+	server: string;
+	/** The container name */
+	container: string;
+}
+
+/**
+ * Pauses the container on the target server. Response: [Update]
+ * 
+ * 1. Runs `docker pause ${container_name}`.
+ */
+export interface PauseContainer {
+	/** Name or id */
+	server: string;
+	/** The container name */
+	container: string;
+}
+
+/**
+ * Unpauses the container on the target server. Response: [Update]
+ * 
+ * 1. Runs `docker unpause ${container_name}`.
+ * 
+ * Note. This is the only way to restart a paused container.
+ */
+export interface UnpauseContainer {
+	/** Name or id */
+	server: string;
+	/** The container name */
+	container: string;
+}
+
+/**
+ * Stops the container on the target server. Response: [Update]
+ * 
+ * 1. Runs `docker stop ${container_name}`.
+ */
+export interface StopContainer {
+	/** Name or id */
+	server: string;
+	/** The container name */
+	container: string;
+	/** Override the default termination signal. */
+	signal?: TerminationSignal;
+	/** Override the default termination max time. */
+	time?: number;
+}
+
+/**
+ * Stops and destroys the container on the target server.
+ * Reponse: [Update].
+ * 
+ * 1. The container is stopped and removed using `docker container rm ${container_name}`.
+ */
+export interface DestroyContainer {
+	/** Name or id */
+	server: string;
+	/** The container name */
+	container: string;
+	/** Override the default termination signal. */
+	signal?: TerminationSignal;
+	/** Override the default termination max time. */
+	time?: number;
 }
 
 /** Stops all containers on the target server. Response: [Update] */
@@ -6123,6 +6218,12 @@ export type AuthRequest =
 	| { type: "GetUser", params: GetUser };
 
 export type ExecuteRequest = 
+	| { type: "StartContainer", params: StartContainer }
+	| { type: "RestartContainer", params: RestartContainer }
+	| { type: "PauseContainer", params: PauseContainer }
+	| { type: "UnpauseContainer", params: UnpauseContainer }
+	| { type: "StopContainer", params: StopContainer }
+	| { type: "DestroyContainer", params: DestroyContainer }
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "PruneNetworks", params: PruneNetworks }

@@ -55,21 +55,28 @@ pub async fn get_user(user: &str) -> anyhow::Result<User> {
 }
 
 #[instrument(level = "debug")]
-pub async fn get_server_with_status(
+pub async fn get_server_with_state(
   server_id_or_name: &str,
 ) -> anyhow::Result<(Server, ServerState)> {
   let server = resource::get::<Server>(server_id_or_name).await?;
+  let state = get_server_state(&server).await;
+  Ok((server, state))
+}
+
+#[instrument(level = "debug")]
+pub async fn get_server_state(server: &Server) -> ServerState {
   if !server.config.enabled {
-    return Ok((server, ServerState::Disabled));
+    return ServerState::Disabled;
   }
-  let status = match super::periphery_client(&server)?
+  // Unwrap ok: Server disabled check above
+  match super::periphery_client(server)
+    .unwrap()
     .request(periphery_client::api::GetHealth {})
     .await
   {
     Ok(_) => ServerState::Ok,
     Err(_) => ServerState::NotOk,
-  };
-  Ok((server, status))
+  }
 }
 
 #[instrument(level = "debug")]
@@ -80,7 +87,7 @@ pub async fn get_deployment_state(
     return Ok(DeploymentState::NotDeployed);
   }
   let (server, status) =
-    get_server_with_status(&deployment.config.server_id).await?;
+    get_server_with_state(&deployment.config.server_id).await?;
   if status != ServerState::Ok {
     return Ok(DeploymentState::Unknown);
   }
@@ -177,7 +184,7 @@ pub async fn get_stack_state(
     return Ok(StackState::Down);
   }
   let (server, status) =
-    get_server_with_status(&stack.config.server_id).await?;
+    get_server_with_state(&stack.config.server_id).await?;
   if status != ServerState::Ok {
     return Ok(StackState::Unknown);
   }

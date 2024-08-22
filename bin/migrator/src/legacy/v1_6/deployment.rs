@@ -1,6 +1,8 @@
-use monitor_client::entities::deployment::{
-  Conversion, DeploymentImage, RestartMode, TerminationSignal,
-  TerminationSignalLabel,
+use monitor_client::entities::{
+  deployment::{
+    Conversion, DeploymentImage, RestartMode, TerminationSignalLabel,
+  },
+  TerminationSignal,
 };
 use serde::{Deserialize, Serialize};
 

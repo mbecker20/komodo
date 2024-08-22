@@ -459,6 +459,24 @@ async fn add_procedure(
         Execution::CancelRepoBuild(exec) => exec.repo.clone_from(
           names.repos.get(&exec.repo).unwrap_or(&String::new()),
         ),
+        Execution::StartContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::RestartContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PauseContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::UnpauseContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::StopContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::DestroyContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
         Execution::StopAllContainers(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
