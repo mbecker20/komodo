@@ -258,15 +258,17 @@ export const NewResource = ({
   readable_type,
   server_id,
   build_id,
+  name: _name = "",
 }: {
   type: UsableResource;
   readable_type?: string;
   server_id?: string;
   build_id?: string;
+  name?: string;
 }) => {
   const nav = useNavigate();
   const { mutateAsync } = useWrite(`Create${type}`);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(_name);
   const type_display =
     type === "ServerTemplate"
       ? "server-template"

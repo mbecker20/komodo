@@ -1,5 +1,5 @@
 import { Section } from "@components/layouts";
-import { ResourceLink } from "@components/resources/common";
+import { NewResource, ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
 import { DockerLabelsSection, StatusBadge } from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
@@ -13,6 +13,7 @@ import { has_minimum_permissions } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { ResourceUpdates } from "@components/updates/resource";
 import { container_state_intention } from "@lib/color";
+import { UsableResource } from "@types";
 
 export const ContainerPage = () => {
   const { type, id, container } = useParams() as {
@@ -49,11 +50,13 @@ const ContainerPageInner = ({
     server: id,
     container: container_name,
   });
-  const list_container = useRead("ListDockerContainers", {
-    server: id,
-  }).data?.find((container) => container.name === container_name);
-  const state = list_container?.state ?? Types.ContainerStateStatusEnum.Empty;
-  const status = list_container?.status;
+  const list_container = useRead(
+    "ListDockerContainers",
+    {
+      server: id,
+    },
+    { refetchInterval: 30_000 }
+  ).data?.find((container) => container.name === container_name);
 
   if (isPending) {
     return (
@@ -78,6 +81,9 @@ const ContainerPageInner = ({
     Types.PermissionLevel.Execute
   );
 
+  const state = list_container?.state ?? Types.ContainerStateStatusEnum.Empty;
+  const status = list_container?.status;
+
   return (
     <div className="flex flex-col gap-16">
       {/* HEADER */}
@@ -92,9 +98,7 @@ const ContainerPageInner = ({
             <ChevronLeft className="w-4" /> Back
           </Button>
 
-          {/* <Button className="gap-2" variant="destructive">
-            <Trash className="w-4" /> Delete
-          </Button> */}
+          <NewDeployment id={id} container={container_name} />
         </div>
 
         {/* TITLE */}
@@ -117,6 +121,7 @@ const ContainerPageInner = ({
         {/* INFO */}
         <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
           <ResourceLink type="Server" id={id} />
+          <AttachedResource id={id} container={container_name} />
         </div>
       </div>
 
@@ -157,4 +162,64 @@ const ContainerPageInner = ({
       <DockerLabelsSection labels={container.Config?.Labels} />
     </div>
   );
+};
+
+const AttachedResource = ({
+  id,
+  container,
+}: {
+  id: string;
+  container: string;
+}) => {
+  const { data: attached, isPending } = useRead(
+    "GetResourceMatchingContainer",
+    { server: id, container },
+    { refetchInterval: 30_000 }
+  );
+
+  if (isPending) {
+    return <Loader2 className="w-4 h-4 animate-spin" />;
+  }
+
+  if (!attached || !attached.resource) {
+    return null;
+  }
+
+  return (
+    <>
+      |
+      <div className="flex gap-2">
+        <div>{attached.resource.type}:</div>
+        <ResourceLink
+          type={attached.resource.type as UsableResource}
+          id={attached.resource.id}
+        />
+      </div>
+    </>
+  );
+};
+
+const NewDeployment = ({
+  id,
+  container,
+}: {
+  id: string;
+  container: string;
+}) => {
+  const { data: attached, isPending } = useRead(
+    "GetResourceMatchingContainer",
+    { server: id, container }
+  );
+
+  if (isPending) {
+    return <Loader2 className="w-4 h-4 animate-spin" />;
+  }
+
+  if (!attached) {
+    return null;
+  }
+
+  if (!attached?.resource) {
+    return <NewResource type="Deployment" server_id={id} name={container} />;
+  }
 };

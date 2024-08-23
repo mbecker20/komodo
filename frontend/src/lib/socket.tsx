@@ -107,7 +107,8 @@ const on_message = (
         ["GetDeployment", { deployment: update.target.id }],
         ["GetDeploymentLog", { deployment: update.target.id }],
         ["SearchDeploymentLog", { deployment: update.target.id }],
-        ["GetDeploymentContainer", { deployment: update.target.id }]
+        ["GetDeploymentContainer", { deployment: update.target.id }],
+        ["GetResourceMatchingContainer"],
       );
     }
 
@@ -124,7 +125,8 @@ const on_message = (
         ["GetStackServiceLog", { stack: update.target.id }],
         ["SearchStackServiceLog", { stack: update.target.id }],
         ["GetStack", { stack: update.target.id }],
-        ["ListStackServices", { stack: update.target.id }]
+        ["ListStackServices", { stack: update.target.id }],
+        ["GetResourceMatchingContainer"],
       );
     }
 
@@ -143,7 +145,8 @@ const on_message = (
         ["ListDockerImages", { server: update.target.id }],
         ["InspectDockerImage"],
         ["ListDockerVolumes", { server: update.target.id }],
-        ["InspectDockerVolume"]
+        ["InspectDockerVolume"],
+        ["GetResourceMatchingContainer", { server: update.target.id }]
       );
     }
 

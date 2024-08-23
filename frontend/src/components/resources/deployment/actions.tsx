@@ -1,5 +1,5 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { Play, Trash, Pause, Rocket, Pen, RefreshCcw } from "lucide-react";
+import { Play, Trash, Pause, Rocket, Pen, RefreshCcw, Square } from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
@@ -216,7 +216,7 @@ const StopDeployment = ({ id }: DeploymentId) => {
     <ActionWithDialog
       name={deployment.name}
       title="Stop"
-      icon={<Pause className="h-4 w-4" />}
+      icon={<Square className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id, signal })}
       disabled={pending}
       loading={pending}

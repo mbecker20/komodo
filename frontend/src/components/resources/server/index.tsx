@@ -8,10 +8,13 @@ import {
   MemoryStick,
   Database,
   Scissors,
-  XOctagon,
   AreaChart,
   Milestone,
   AlertTriangle,
+  Play,
+  RefreshCcw,
+  Pause,
+  Square,
 } from "lucide-react";
 import { Section } from "@components/layouts";
 import { RenameServer } from "./actions";
@@ -265,22 +268,116 @@ export const ServerComponents: RequiredResourceComponents = {
   },
 
   Actions: {
-    Prune: ({ id }) => {
-      const { mutate, isPending } = useExecute(`PruneImages`);
-      const pruning = useRead(
+    StartAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute(`StartAllContainers`);
+      const starting = useRead(
         "GetServerActionState",
         { server: id },
         { refetchInterval: 5000 }
-      ).data?.pruning_images;
-      const pending = isPending || pruning;
+      ).data?.starting_containers;
+      const dontShow = useRead("ListDockerContainers", {
+        server: id,
+      }).data?.every(
+        (container) =>
+          container.state === Types.ContainerStateStatusEnum.Running
+      );
+      if (dontShow) {
+        return null;
+      }
+      const pending = isPending || starting;
       return (
-        <ConfirmButton
-          title="Prune Images"
-          icon={<Scissors className="w-4 h-4" />}
-          onClick={() => mutate({ server: id })}
-          loading={pending}
-          disabled={pending}
-        />
+        server && (
+          <ConfirmButton
+            title="Start Containers"
+            icon={<Play className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            loading={pending}
+            disabled={pending}
+          />
+        )
+      );
+    },
+    RestartAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute(`RestartAllContainers`);
+      const restarting = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.restarting_containers;
+      const pending = isPending || restarting;
+      return (
+        server && (
+          <ActionWithDialog
+            name={server?.name}
+            title="Restart Containers"
+            icon={<RefreshCcw className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            disabled={pending}
+            loading={pending}
+          />
+        )
+      );
+    },
+    PauseAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute(`PauseAllContainers`);
+      const pausing = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pausing_containers;
+      const dontShow = useRead("ListDockerContainers", {
+        server: id,
+      }).data?.every(
+        (container) =>
+          container.state !== Types.ContainerStateStatusEnum.Running
+      );
+      if (dontShow) {
+        return null;
+      }
+      const pending = isPending || pausing;
+      return (
+        server && (
+          <ActionWithDialog
+            name={server?.name}
+            title="Pause Containers"
+            icon={<Pause className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            disabled={pending}
+            loading={pending}
+          />
+        )
+      );
+    },
+    UnpauseAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute(`UnpauseAllContainers`);
+      const unpausing = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.unpausing_containers;
+      const dontShow = useRead("ListDockerContainers", {
+        server: id,
+      }).data?.every(
+        (container) => container.state !== Types.ContainerStateStatusEnum.Paused
+      );
+      if (dontShow) {
+        return null;
+      }
+      const pending = isPending || unpausing;
+      return (
+        server && (
+          <ConfirmButton
+            title="Unpause Containers"
+            icon={<Play className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            loading={pending}
+            disabled={pending}
+          />
+        )
       );
     },
     StopAll: ({ id }) => {
@@ -297,12 +394,30 @@ export const ServerComponents: RequiredResourceComponents = {
           <ActionWithDialog
             name={server?.name}
             title="Stop Containers"
-            icon={<XOctagon className="w-4 h-4" />}
+            icon={<Square className="w-4 h-4" />}
             onClick={() => mutate({ server: id })}
             disabled={pending}
             loading={pending}
           />
         )
+      );
+    },
+    Prune: ({ id }) => {
+      const { mutate, isPending } = useExecute(`PruneImages`);
+      const pruning = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pruning_images;
+      const pending = isPending || pruning;
+      return (
+        <ConfirmButton
+          title="Prune Images"
+          icon={<Scissors className="w-4 h-4" />}
+          onClick={() => mutate({ server: id })}
+          loading={pending}
+          disabled={pending}
+        />
       );
     },
   },
