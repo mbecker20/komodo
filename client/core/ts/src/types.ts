@@ -734,9 +734,9 @@ export interface Log {
 	end_ts: I64;
 }
 
-export type GetLogResponse = Log;
+export type GetDeploymentLogResponse = Log;
 
-export type SearchLogResponse = Log;
+export type SearchDeploymentLogResponse = Log;
 
 export interface ContainerStats {
 	name: string;
@@ -1960,6 +1960,10 @@ export interface Container {
 }
 
 export type InspectDockerContainerResponse = Container;
+
+export type GetContainerLogResponse = Log;
+
+export type SearchContainerLogResponse = Log;
 
 export enum VolumeScopeEnum {
 	Empty = "",
@@ -3873,7 +3877,7 @@ export interface GetDeploymentContainerResponse {
  * 
  * Note. This call will hit the underlying server directly for most up to date log.
  */
-export interface GetLog {
+export interface GetDeploymentLog {
 	/** Id or name */
 	deployment: string;
 	/**
@@ -3895,7 +3899,7 @@ export enum SearchCombinator {
  * 
  * Note. This call will hit the underlying server directly for most up to date log.
  */
-export interface SearchLog {
+export interface SearchDeploymentLog {
 	/** Id or name */
 	deployment: string;
 	/** The terms to search for. */
@@ -4352,6 +4356,49 @@ export interface InspectDockerContainer {
 	server: string;
 	/** The container name */
 	container: string;
+}
+
+/**
+ * Get the container log's tail, split by stdout/stderr.
+ * Response: [Log].
+ * 
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface GetContainerLog {
+	/** Id or name */
+	server: string;
+	/** The container name */
+	container: string;
+	/**
+	 * The number of lines of the log tail to include.
+	 * Default: 100.
+	 * Max: 5000.
+	 */
+	tail: U64;
+}
+
+/**
+ * Search the container log's tail using `grep`. All lines go to stdout.
+ * Response: [Log].
+ * 
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface SearchContainerLog {
+	/** Id or name */
+	server: string;
+	/** The container name */
+	container: string;
+	/** The terms to search for. */
+	terms: string[];
+	/**
+	 * When searching for multiple terms, can use `AND` or `OR` combinator.
+	 * 
+	 * - `AND`: Only include lines with **all** terms present in that line.
+	 * - `OR`: Include lines that have one or more matches in the terms.
+	 */
+	combinator?: SearchCombinator;
+	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
+	invert?: boolean;
 }
 
 /**
@@ -6286,6 +6333,8 @@ export type ReadRequest =
 	| { type: "ListServers", params: ListServers }
 	| { type: "ListFullServers", params: ListFullServers }
 	| { type: "InspectDockerContainer", params: InspectDockerContainer }
+	| { type: "GetContainerLog", params: GetContainerLog }
+	| { type: "SearchContainerLog", params: SearchContainerLog }
 	| { type: "InspectDockerNetwork", params: InspectDockerNetwork }
 	| { type: "InspectDockerImage", params: InspectDockerImage }
 	| { type: "ListDockerImageHistory", params: ListDockerImageHistory }
@@ -6300,8 +6349,8 @@ export type ReadRequest =
 	| { type: "GetDeploymentContainer", params: GetDeploymentContainer }
 	| { type: "GetDeploymentActionState", params: GetDeploymentActionState }
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
-	| { type: "GetLog", params: GetLog }
-	| { type: "SearchLog", params: SearchLog }
+	| { type: "GetDeploymentLog", params: GetDeploymentLog }
+	| { type: "SearchDeploymentLog", params: SearchDeploymentLog }
 	| { type: "ListDeployments", params: ListDeployments }
 	| { type: "ListFullDeployments", params: ListFullDeployments }
 	| { type: "ListCommonDeploymentExtraArgs", params: ListCommonDeploymentExtraArgs }

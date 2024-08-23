@@ -18,7 +18,8 @@ use crate::entities::{
   stats::{
     SystemInformation, SystemProcess, SystemStats, SystemStatsRecord,
   },
-  Timelength, I64,
+  update::Log,
+  SearchCombinator, Timelength, I64, U64,
 };
 
 use super::MonitorReadRequest;
@@ -278,6 +279,72 @@ pub struct InspectDockerContainer {
 
 #[typeshare]
 pub type InspectDockerContainerResponse = Container;
+
+//
+
+/// Get the container log's tail, split by stdout/stderr.
+/// Response: [Log].
+///
+/// Note. This call will hit the underlying server directly for most up to date log.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetContainerLogResponse)]
+pub struct GetContainerLog {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The container name
+  pub container: String,
+  /// The number of lines of the log tail to include.
+  /// Default: 100.
+  /// Max: 5000.
+  #[serde(default = "default_tail")]
+  pub tail: U64,
+}
+
+fn default_tail() -> u64 {
+  50
+}
+
+#[typeshare]
+pub type GetContainerLogResponse = Log;
+
+//
+
+/// Search the container log's tail using `grep`. All lines go to stdout.
+/// Response: [Log].
+///
+/// Note. This call will hit the underlying server directly for most up to date log.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(SearchContainerLogResponse)]
+pub struct SearchContainerLog {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The container name
+  pub container: String,
+  /// The terms to search for.
+  pub terms: Vec<String>,
+  /// When searching for multiple terms, can use `AND` or `OR` combinator.
+  ///
+  /// - `AND`: Only include lines with **all** terms present in that line.
+  /// - `OR`: Include lines that have one or more matches in the terms.
+  #[serde(default)]
+  pub combinator: SearchCombinator,
+  /// Invert the results, ie return all lines that DON'T match the terms / combinator.
+  #[serde(default)]
+  pub invert: bool,
+}
+
+#[typeshare]
+pub type SearchContainerLogResponse = Log;
 
 //
 

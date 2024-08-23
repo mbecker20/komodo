@@ -60,6 +60,8 @@ export type ReadResponses = {
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   ListDockerContainers: Types.ListDockerContainersResponse;
   InspectDockerContainer: Types.InspectDockerContainerResponse;
+  GetContainerLog: Types.GetContainerLogResponse;
+  SearchContainerLog: Types.SearchContainerLogResponse;
   ListDockerNetworks: Types.ListDockerNetworksResponse;
   InspectDockerNetwork: Types.InspectDockerNetworkResponse;
   ListDockerImages: Types.ListDockerImagesResponse;
@@ -79,8 +81,8 @@ export type ReadResponses = {
   GetDeploymentContainer: Types.GetDeploymentContainerResponse;
   GetDeploymentActionState: Types.GetDeploymentActionStateResponse;
   GetDeploymentStats: Types.GetDeploymentStatsResponse;
-  GetLog: Types.GetLogResponse;
-  SearchLog: Types.SearchLogResponse;
+  GetDeploymentLog: Types.GetDeploymentLogResponse;
+  SearchDeploymentLog: Types.SearchDeploymentLogResponse;
   ListDeployments: Types.ListDeploymentsResponse;
   ListFullDeployments: Types.ListFullDeploymentsResponse;
   ListCommonDeploymentExtraArgs: Types.ListCommonDeploymentExtraArgsResponse;

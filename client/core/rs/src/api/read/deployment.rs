@@ -110,8 +110,8 @@ pub struct GetDeploymentContainerResponse {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetLogResponse)]
-pub struct GetLog {
+#[response(GetDeploymentLogResponse)]
+pub struct GetDeploymentLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
@@ -127,7 +127,7 @@ fn default_tail() -> u64 {
 }
 
 #[typeshare]
-pub type GetLogResponse = Log;
+pub type GetDeploymentLogResponse = Log;
 
 //
 
@@ -140,8 +140,8 @@ pub type GetLogResponse = Log;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(SearchLogResponse)]
-pub struct SearchLog {
+#[response(SearchDeploymentLogResponse)]
+pub struct SearchDeploymentLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
@@ -159,7 +159,7 @@ pub struct SearchLog {
 }
 
 #[typeshare]
-pub type SearchLogResponse = Log;
+pub type SearchDeploymentLogResponse = Log;
 
 //
 

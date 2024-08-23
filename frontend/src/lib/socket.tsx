@@ -105,7 +105,8 @@ const on_message = (
         ["ListDockerNetworks"],
         ["ListDockerImages"],
         ["GetDeployment", { deployment: update.target.id }],
-        ["GetLog", { deployment: update.target.id }],
+        ["GetDeploymentLog", { deployment: update.target.id }],
+        ["SearchDeploymentLog", { deployment: update.target.id }],
         ["GetDeploymentContainer", { deployment: update.target.id }]
       );
     }
@@ -115,13 +116,13 @@ const on_message = (
         ["ListStacks"],
         ["ListFullStacks"],
         ["GetStacksSummary"],
-        ["GetStackServiceLog"],
-        ["SearchStackServiceLog"],
         ["ListCommonStackExtraArgs"],
         ["ListComposeProjects"],
         ["ListDockerContainers"],
         ["ListDockerNetworks"],
         ["ListDockerImages"],
+        ["GetStackServiceLog", { stack: update.target.id }],
+        ["SearchStackServiceLog", { stack: update.target.id }],
         ["GetStack", { stack: update.target.id }],
         ["ListStackServices", { stack: update.target.id }]
       );

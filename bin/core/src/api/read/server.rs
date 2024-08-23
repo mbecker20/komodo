@@ -1,4 +1,5 @@
 use std::{
+  cmp,
   collections::HashMap,
   sync::{Arc, OnceLock},
 };
@@ -20,6 +21,7 @@ use monitor_client::{
     server::{
       Server, ServerActionState, ServerListItem, ServerState,
     },
+    update::Log,
     user::User,
   },
 };
@@ -386,6 +388,64 @@ impl Resolve<InspectDockerContainer, User> for State {
     periphery_client(&server)?
       .request(InspectContainer { name: container })
       .await
+  }
+}
+
+const MAX_LOG_LENGTH: u64 = 5000;
+
+impl Resolve<GetContainerLog, User> for State {
+  async fn resolve(
+    &self,
+    GetContainerLog {
+      server,
+      container,
+      tail,
+    }: GetContainerLog,
+    user: User,
+  ) -> anyhow::Result<Log> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    periphery_client(&server)?
+      .request(periphery::container::GetContainerLog {
+        name: container,
+        tail: cmp::min(tail, MAX_LOG_LENGTH),
+      })
+      .await
+      .context("failed at call to periphery")
+  }
+}
+
+impl Resolve<SearchContainerLog, User> for State {
+  async fn resolve(
+    &self,
+    SearchContainerLog {
+      server,
+      container,
+      terms,
+      combinator,
+      invert,
+    }: SearchContainerLog,
+    user: User,
+  ) -> anyhow::Result<Log> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    periphery_client(&server)?
+      .request(periphery::container::GetContainerLogSearch {
+        name: container,
+        terms,
+        combinator,
+        invert,
+      })
+      .await
+      .context("failed at call to periphery")
   }
 }
 

@@ -85,10 +85,10 @@ impl Resolve<GetDeploymentContainer, User> for State {
 
 const MAX_LOG_LENGTH: u64 = 5000;
 
-impl Resolve<GetLog, User> for State {
+impl Resolve<GetDeploymentLog, User> for State {
   async fn resolve(
     &self,
-    GetLog { deployment, tail }: GetLog,
+    GetDeploymentLog { deployment, tail }: GetDeploymentLog,
     user: User,
   ) -> anyhow::Result<Log> {
     let Deployment {
@@ -115,15 +115,15 @@ impl Resolve<GetLog, User> for State {
   }
 }
 
-impl Resolve<SearchLog, User> for State {
+impl Resolve<SearchDeploymentLog, User> for State {
   async fn resolve(
     &self,
-    SearchLog {
+    SearchDeploymentLog {
       deployment,
       terms,
       combinator,
       invert,
-    }: SearchLog,
+    }: SearchDeploymentLog,
     user: User,
   ) -> anyhow::Result<Log> {
     let Deployment {
