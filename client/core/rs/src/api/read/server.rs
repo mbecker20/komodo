@@ -366,7 +366,7 @@ pub struct GetResourceMatchingContainer {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetResourceMatchingContainerResponse {
-  pub resource: ResourceTarget,
+  pub resource: Option<ResourceTarget>,
 }
 
 //

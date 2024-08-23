@@ -60,6 +60,7 @@ export type ReadResponses = {
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   ListDockerContainers: Types.ListDockerContainersResponse;
   InspectDockerContainer: Types.InspectDockerContainerResponse;
+  GetResourceMatchingContainer: Types.GetResourceMatchingContainerResponse;
   GetContainerLog: Types.GetContainerLogResponse;
   SearchContainerLog: Types.SearchContainerLogResponse;
   ListDockerNetworks: Types.ListDockerNetworksResponse;

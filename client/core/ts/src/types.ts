@@ -4441,6 +4441,18 @@ export interface SearchContainerLog {
 	invert?: boolean;
 }
 
+/** Inspect a docker container on the server. Response: [Container]. */
+export interface GetResourceMatchingContainer {
+	/** Id or name */
+	server: string;
+	/** The container name */
+	container: string;
+}
+
+export interface GetResourceMatchingContainerResponse {
+	resource?: ResourceTarget;
+}
+
 /**
  * List all docker volumes on the target server.
  * Response: [ListDockerVolumesResponse].
@@ -6377,6 +6389,7 @@ export type ReadRequest =
 	| { type: "ListServers", params: ListServers }
 	| { type: "ListFullServers", params: ListFullServers }
 	| { type: "InspectDockerContainer", params: InspectDockerContainer }
+	| { type: "GetResourceMatchingContainer", params: GetResourceMatchingContainer }
 	| { type: "GetContainerLog", params: GetContainerLog }
 	| { type: "SearchContainerLog", params: SearchContainerLog }
 	| { type: "InspectDockerNetwork", params: InspectDockerNetwork }

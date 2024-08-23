@@ -407,7 +407,7 @@ pub async fn list_full_for_user<T: MonitorResource>(
 }
 
 #[instrument(level = "debug")]
-async fn list_full_for_user_using_document<T: MonitorResource>(
+pub async fn list_full_for_user_using_document<T: MonitorResource>(
   mut filters: Document,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {

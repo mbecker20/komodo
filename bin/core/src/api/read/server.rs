@@ -11,6 +11,7 @@ use async_timing_util::{
 use monitor_client::{
   api::read::*,
   entities::{
+    deployment::Deployment,
     docker::{
       container::Container,
       image::{Image, ImageHistoryResponseItem},
@@ -21,8 +22,10 @@ use monitor_client::{
     server::{
       Server, ServerActionState, ServerListItem, ServerState,
     },
+    stack::{Stack, StackServiceNames},
     update::Log,
     user::User,
+    ResourceTarget,
   },
 };
 use mungos::{
@@ -40,7 +43,7 @@ use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  helpers::periphery_client,
+  helpers::{periphery_client, stack::compose_container_match_regex},
   resource,
   state::{action_states, db_client, server_status_cache, State},
 };
@@ -446,6 +449,67 @@ impl Resolve<SearchContainerLog, User> for State {
       })
       .await
       .context("failed at call to periphery")
+  }
+}
+
+impl Resolve<GetResourceMatchingContainer, User> for State {
+  async fn resolve(
+    &self,
+    GetResourceMatchingContainer { server, container }: GetResourceMatchingContainer,
+    user: User,
+  ) -> anyhow::Result<GetResourceMatchingContainerResponse> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    // first check deployments
+    if let Ok(deployment) =
+      resource::get::<Deployment>(&container).await
+    {
+      return Ok(GetResourceMatchingContainerResponse {
+        resource: ResourceTarget::Deployment(deployment.id).into(),
+      });
+    }
+
+    // then check stacks
+    let stacks =
+      resource::list_full_for_user_using_document::<Stack>(
+        doc! { "config.server_id": &server.id },
+        &user,
+      )
+      .await?;
+
+    // check matching stack
+    for stack in stacks {
+      for StackServiceNames {
+        service_name,
+        container_name,
+      } in stack
+        .info
+        .deployed_services
+        .unwrap_or(stack.info.latest_services)
+      {
+        let is_match = match compose_container_match_regex(&container_name)
+					.with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+				{
+					Ok(regex) => regex,
+					Err(e) => {
+						warn!("{e:#}");
+						continue;
+					}
+				}.is_match(&container);
+
+        if is_match {
+          return Ok(GetResourceMatchingContainerResponse {
+            resource: ResourceTarget::Stack(stack.id).into(),
+          });
+        }
+      }
+    }
+
+    Ok(GetResourceMatchingContainerResponse { resource: None })
   }
 }
 

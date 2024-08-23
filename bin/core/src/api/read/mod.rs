@@ -106,6 +106,7 @@ enum ReadRequest {
   ListServers(ListServers),
   ListFullServers(ListFullServers),
   InspectDockerContainer(InspectDockerContainer),
+  GetResourceMatchingContainer(GetResourceMatchingContainer),
   GetContainerLog(GetContainerLog),
   SearchContainerLog(SearchContainerLog),
   InspectDockerNetwork(InspectDockerNetwork),
