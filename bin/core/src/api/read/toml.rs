@@ -477,6 +477,26 @@ async fn add_procedure(
         Execution::DestroyContainer(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
+        Execution::StartAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
+        Execution::RestartAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
+        Execution::PauseAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
+        Execution::UnpauseAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
         Execution::StopAllContainers(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),

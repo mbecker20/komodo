@@ -849,6 +849,10 @@ export type Execution =
 	| { type: "UnpauseContainer", params: UnpauseContainer }
 	| { type: "StopContainer", params: StopContainer }
 	| { type: "DestroyContainer", params: DestroyContainer }
+	| { type: "StartAllContainers", params: StartAllContainers }
+	| { type: "RestartAllContainers", params: RestartAllContainers }
+	| { type: "PauseAllContainers", params: PauseAllContainers }
+	| { type: "UnpauseAllContainers", params: UnpauseAllContainers }
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "PruneNetworks", params: PruneNetworks }
@@ -1237,7 +1241,15 @@ export interface ServerActionState {
 	pruning_volumes: boolean;
 	/** Server currently pruning system */
 	pruning_system: boolean;
-	/** Server currently stopping all containers. */
+	/** Server currently starting containers. */
+	starting_containers: boolean;
+	/** Server currently restarting containers. */
+	restarting_containers: boolean;
+	/** Server currently pausing containers. */
+	pausing_containers: boolean;
+	/** Server currently unpausing containers. */
+	unpausing_containers: boolean;
+	/** Server currently stopping containers. */
 	stopping_containers: boolean;
 }
 
@@ -2692,6 +2704,10 @@ export enum Operation {
 	UnpauseContainer = "UnpauseContainer",
 	StopContainer = "StopContainer",
 	DestroyContainer = "DestroyContainer",
+	StartAllContainers = "StartAllContainers",
+	RestartAllContainers = "RestartAllContainers",
+	PauseAllContainers = "PauseAllContainers",
+	UnpauseAllContainers = "UnpauseAllContainers",
 	StopAllContainers = "StopAllContainers",
 	PruneContainers = "PruneContainers",
 	PruneNetworks = "PruneNetworks",
@@ -3451,6 +3467,30 @@ export interface DestroyContainer {
 	signal?: TerminationSignal;
 	/** Override the default termination max time. */
 	time?: number;
+}
+
+/** Starts all containers on the target server. Response: [Update] */
+export interface StartAllContainers {
+	/** Name or id */
+	server: string;
+}
+
+/** Restarts all containers on the target server. Response: [Update] */
+export interface RestartAllContainers {
+	/** Name or id */
+	server: string;
+}
+
+/** Pauses all containers on the target server. Response: [Update] */
+export interface PauseAllContainers {
+	/** Name or id */
+	server: string;
+}
+
+/** Unpauses all containers on the target server. Response: [Update] */
+export interface UnpauseAllContainers {
+	/** Name or id */
+	server: string;
 }
 
 /** Stops all containers on the target server. Response: [Update] */
@@ -6267,6 +6307,10 @@ export type ExecuteRequest =
 	| { type: "UnpauseContainer", params: UnpauseContainer }
 	| { type: "StopContainer", params: StopContainer }
 	| { type: "DestroyContainer", params: DestroyContainer }
+	| { type: "StartAllContainers", params: StartAllContainers }
+	| { type: "RestartAllContainers", params: RestartAllContainers }
+	| { type: "PauseAllContainers", params: PauseAllContainers }
+	| { type: "UnpauseAllContainers", params: UnpauseAllContainers }
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
 	| { type: "PruneNetworks", params: PruneNetworks }

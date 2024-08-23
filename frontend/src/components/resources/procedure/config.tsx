@@ -926,6 +926,50 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
   //     />
   //   ),
   // },
+  StartAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  RestartAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PauseAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  UnpauseAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
   StopAllContainers: {
     params: { server: "" },
     Component: ({ params, setParams, disabled }) => (

@@ -353,6 +353,42 @@ async fn validate_config(
             .await?;
           params.server = server.id;
         }
+        Execution::StartAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::RestartAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PauseAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::UnpauseAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
         Execution::StopAllContainers(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,

@@ -164,6 +164,30 @@ pub async fn init_execution_update(
         resource::get::<Server>(&data.server).await?.id,
       ),
     ),
+    ExecuteRequest::StartAllContainers(data) => (
+      Operation::StartAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::RestartAllContainers(data) => (
+      Operation::RestartAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PauseAllContainers(data) => (
+      Operation::PauseAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::UnpauseAllContainers(data) => (
+      Operation::UnpauseAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::StopAllContainers(data) => (
       Operation::StopAllContainers,
       ResourceTarget::Server(

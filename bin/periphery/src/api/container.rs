@@ -2,10 +2,7 @@ use anyhow::{anyhow, Context};
 use command::run_monitor_command;
 use futures::future::join_all;
 use monitor_client::entities::{
-  docker::container::{
-    Container, ContainerListItem, ContainerStateStatusEnum,
-    ContainerStats,
-  },
+  docker::container::{Container, ContainerListItem, ContainerStats},
   to_monitor_name,
   update::Log,
 };
@@ -239,38 +236,6 @@ impl Resolve<StopContainer> for State {
 
 //
 
-impl Resolve<StopAllContainers> for State {
-  #[instrument(name = "StopAllContainers", skip(self))]
-  async fn resolve(
-    &self,
-    StopAllContainers {}: StopAllContainers,
-    _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    let containers = docker_client()
-      .list_containers()
-      .await
-      .context("failed to list all containers on host")?;
-    let futures = containers.iter().filter_map(
-      |ContainerListItem { name, state, .. }| {
-        // only stop running containers. if not running, early exit.
-        if !matches!(state, ContainerStateStatusEnum::Running) {
-          return None;
-        }
-        Some(async move {
-          run_monitor_command(
-            &format!("docker stop {name}"),
-            stop_container_command(name, None, None),
-          )
-          .await
-        })
-      },
-    );
-    Ok(join_all(futures).await)
-  }
-}
-
-//
-
 impl Resolve<RemoveContainer> for State {
   #[instrument(name = "RemoveContainer", skip(self))]
   async fn resolve(
@@ -332,5 +297,132 @@ impl Resolve<PruneContainers> for State {
   ) -> anyhow::Result<Log> {
     let command = String::from("docker container prune -f");
     Ok(run_monitor_command("prune containers", command).await)
+  }
+}
+
+//
+
+impl Resolve<StartAllContainers> for State {
+  #[instrument(name = "StartAllContainers", skip(self))]
+  async fn resolve(
+    &self,
+    StartAllContainers {}: StartAllContainers,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let containers = docker_client()
+      .list_containers()
+      .await
+      .context("failed to list all containers on host")?;
+    let futures =
+      containers.iter().map(
+        |ContainerListItem { name, .. }| {
+          let command = format!("docker start {name}");
+          async move {
+            run_monitor_command(&command.clone(), command).await
+          }
+        },
+      );
+    Ok(join_all(futures).await)
+  }
+}
+
+//
+
+impl Resolve<RestartAllContainers> for State {
+  #[instrument(name = "RestartAllContainers", skip(self))]
+  async fn resolve(
+    &self,
+    RestartAllContainers {}: RestartAllContainers,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let containers = docker_client()
+      .list_containers()
+      .await
+      .context("failed to list all containers on host")?;
+    let futures = containers.iter().map(
+      |ContainerListItem { name, .. }| {
+        let command = format!("docker restart {name}");
+        async move {
+          run_monitor_command(&command.clone(), command).await
+        }
+      },
+    );
+    Ok(join_all(futures).await)
+  }
+}
+
+//
+
+impl Resolve<PauseAllContainers> for State {
+  #[instrument(name = "PauseAllContainers", skip(self))]
+  async fn resolve(
+    &self,
+    PauseAllContainers {}: PauseAllContainers,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let containers = docker_client()
+      .list_containers()
+      .await
+      .context("failed to list all containers on host")?;
+    let futures = containers.iter().map(
+      |ContainerListItem { name, .. }| {
+        let command = format!("docker pause {name}");
+        async move {
+          run_monitor_command(&command.clone(), command).await
+        }
+      },
+    );
+    Ok(join_all(futures).await)
+  }
+}
+
+//
+
+impl Resolve<UnpauseAllContainers> for State {
+  #[instrument(name = "UnpauseAllContainers", skip(self))]
+  async fn resolve(
+    &self,
+    UnpauseAllContainers {}: UnpauseAllContainers,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let containers = docker_client()
+      .list_containers()
+      .await
+      .context("failed to list all containers on host")?;
+    let futures = containers.iter().map(
+      |ContainerListItem { name, .. }| {
+        let command = format!("docker unpause {name}");
+        async move {
+          run_monitor_command(&command.clone(), command).await
+        }
+      },
+    );
+    Ok(join_all(futures).await)
+  }
+}
+
+//
+
+impl Resolve<StopAllContainers> for State {
+  #[instrument(name = "StopAllContainers", skip(self))]
+  async fn resolve(
+    &self,
+    StopAllContainers {}: StopAllContainers,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    let containers = docker_client()
+      .list_containers()
+      .await
+      .context("failed to list all containers on host")?;
+    let futures = containers.iter().map(
+      |ContainerListItem { name, .. }| async move {
+        run_monitor_command(
+          &format!("docker stop {name}"),
+          stop_container_command(name, None, None),
+        )
+        .await
+      },
+    );
+    Ok(join_all(futures).await)
   }
 }

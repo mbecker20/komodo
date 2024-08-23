@@ -81,6 +81,18 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::DestroyContainer(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::StartAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::RestartAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::StopAllContainers(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -193,6 +205,18 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       monitor_client().execute(request).await
     }
     Execution::DestroyContainer(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::StartAllContainers(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::RestartAllContainers(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::PauseAllContainers(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::UnpauseAllContainers(request) => {
       monitor_client().execute(request).await
     }
     Execution::StopAllContainers(request) => {

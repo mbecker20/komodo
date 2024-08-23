@@ -240,7 +240,15 @@ pub struct ServerActionState {
   pub pruning_volumes: bool,
   /// Server currently pruning system
   pub pruning_system: bool,
-  /// Server currently stopping all containers.
+  /// Server currently starting containers.
+  pub starting_containers: bool,
+  /// Server currently restarting containers.
+  pub restarting_containers: bool,
+  /// Server currently pausing containers.
+  pub pausing_containers: bool,
+  /// Server currently unpausing containers.
+  pub unpausing_containers: bool,
+  /// Server currently stopping containers.
   pub stopping_containers: bool,
 }
 

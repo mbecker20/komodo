@@ -449,6 +449,70 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::StartAllContainers(req) => {
+      let req = ExecuteRequest::StartAllContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::StartAllContainers(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at StartAllContainers"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::RestartAllContainers(req) => {
+      let req = ExecuteRequest::RestartAllContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RestartAllContainers(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at RestartAllContainers"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::PauseAllContainers(req) => {
+      let req = ExecuteRequest::PauseAllContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PauseAllContainers(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PauseAllContainers"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::UnpauseAllContainers(req) => {
+      let req = ExecuteRequest::UnpauseAllContainers(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::UnpauseAllContainers(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at UnpauseAllContainers"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::StopAllContainers(req) => {
       let req = ExecuteRequest::StopAllContainers(req);
       let update = init_execution_update(&req, &user).await?;

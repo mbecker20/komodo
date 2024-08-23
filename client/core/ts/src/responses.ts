@@ -299,6 +299,10 @@ export type ExecuteResponses = {
   UnpauseContainer: Types.Update;
   StopContainer: Types.Update;
   DestroyContainer: Types.Update;
+  StartAllContainers: Types.Update;
+  RestartAllContainers: Types.Update;
+  PauseAllContainers: Types.Update;
+  UnpauseAllContainers: Types.Update;
   StopAllContainers: Types.Update;
   PruneContainers: Types.Update;
   PruneNetworks: Types.Update;

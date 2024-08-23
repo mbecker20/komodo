@@ -129,12 +129,6 @@ pub struct StopContainer {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
-pub struct StopAllContainers {}
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct RemoveContainer {
   pub name: String,
@@ -158,3 +152,31 @@ pub struct RenameContainer {
 pub struct PruneContainers {}
 
 //
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct StartAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct RestartAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct PauseAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct UnpauseAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct StopAllContainers {}

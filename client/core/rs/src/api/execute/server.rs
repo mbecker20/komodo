@@ -173,6 +173,90 @@ pub struct DestroyContainer {
 
 //
 
+/// Starts all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct StartAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
+/// Restarts all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct RestartAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
+/// Pauses all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct PauseAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
+/// Unpauses all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct UnpauseAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
 /// Stops all containers on the target server. Response: [Update]
 #[typeshare]
 #[derive(

@@ -14,6 +14,12 @@ impl Busy for ServerActionState {
     self.pruning_containers
       || self.pruning_images
       || self.pruning_networks
+      || self.pruning_volumes
+      || self.starting_containers
+      || self.restarting_containers
+      || self.pausing_containers
+      || self.unpausing_containers
+      || self.stopping_containers
   }
 }
 
