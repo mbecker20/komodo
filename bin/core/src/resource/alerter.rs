@@ -5,9 +5,9 @@ use monitor_client::entities::{
     AlerterListItemInfo, AlerterQuerySpecifics, PartialAlerterConfig,
   },
   resource::Resource,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::Collection;
 

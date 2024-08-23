@@ -11,7 +11,7 @@ use monitor_client::{
     deployment::Deployment, permission::PermissionLevel,
     procedure::Procedure, repo::Repo, server::Server,
     server_template::ServerTemplate, stack::Stack,
-    sync::ResourceSync, tag::Tag, update::ResourceTarget, user::User,
+    sync::ResourceSync, tag::Tag, user::User, ResourceTarget,
   },
 };
 use mungos::{

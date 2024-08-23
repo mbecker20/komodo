@@ -5,7 +5,7 @@ use monitor_client::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
     server::Server, server_template::ServerTemplate, stack::Stack,
-    sync::ResourceSync, update::ResourceTarget, user::User,
+    sync::ResourceSync, user::User, ResourceTarget,
   },
 };
 use resolver_api::Resolve;

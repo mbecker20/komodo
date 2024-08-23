@@ -10,9 +10,9 @@ use monitor_client::{
     permission::{Permission, PermissionLevel, UserTarget},
     server::{PartialServerConfig, Server},
     sync::ResourceSync,
-    update::{Log, ResourceTarget, Update},
+    update::{Log, Update},
     user::{system_user, User},
-    EnvironmentVar,
+    EnvironmentVar, ResourceTarget,
   },
 };
 use mungos::{

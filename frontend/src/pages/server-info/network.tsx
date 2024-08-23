@@ -29,13 +29,13 @@ export const NetworkPage = () => {
 
 const NetworkPageInner = ({
   id,
-  network: _network,
+  network: network_name,
 }: {
   id: string;
   network: string;
 }) => {
   const server = useServer(id);
-  useSetTitle(`${server?.name} | network | ${_network}`);
+  useSetTitle(`${server?.name} | network | ${network_name}`);
   const nav = useNavigate();
   // const perms = useRead("GetPermissionLevel", {
   //   target: { type: "Server", id },
@@ -46,7 +46,7 @@ const NetworkPageInner = ({
     isError,
   } = useRead("InspectDockerNetwork", {
     server: id,
-    network: _network,
+    network: network_name,
   });
 
   if (isPending) {
@@ -57,16 +57,12 @@ const NetworkPageInner = ({
     );
   }
   if (isError) {
-    return (
-      <div className="flex w-full py-4">
-        Failed to inspect network.
-      </div>
-    );
+    return <div className="flex w-full py-4">Failed to inspect network.</div>;
   }
   if (!network) {
     return (
       <div className="flex w-full py-4">
-        No network found with given name: {_network}
+        No network found with given name: {network_name}
       </div>
     );
   }
@@ -102,13 +98,11 @@ const NetworkPageInner = ({
         </div>
 
         {/* TITLE */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="mt-1">
-              <Network className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl">{network.Name}</h1>
+        <div className="flex items-center gap-4">
+          <div className="mt-1">
+            <Network className="w-8 h-8" />
           </div>
+          <h1 className="text-3xl">{network.Name}</h1>
         </div>
 
         {/* INFO */}
@@ -123,7 +117,10 @@ const NetworkPageInner = ({
               |
               <div className="flex gap-2">
                 Id:
-                <div className="max-w-[150px] overflow-hidden text-ellipsis">
+                <div
+                  title={network.Id}
+                  className="max-w-[150px] overflow-hidden text-ellipsis"
+                >
                   {network.Id}
                 </div>
               </div>

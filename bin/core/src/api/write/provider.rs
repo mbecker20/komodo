@@ -3,9 +3,8 @@ use monitor_client::{
   api::write::*,
   entities::{
     provider::{DockerRegistryAccount, GitProviderAccount},
-    update::ResourceTarget,
     user::User,
-    Operation,
+    Operation, ResourceTarget,
   },
 };
 use mungos::{

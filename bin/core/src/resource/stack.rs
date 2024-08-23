@@ -11,9 +11,9 @@ use monitor_client::{
       StackInfo, StackListItem, StackListItemInfo,
       StackQuerySpecifics, StackState,
     },
-    update::{ResourceTargetVariant, Update},
+    update::Update,
     user::{stack_user, User},
-    Operation,
+    Operation, ResourceTargetVariant,
   },
 };
 use mungos::mongodb::Collection;

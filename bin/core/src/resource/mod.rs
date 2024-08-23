@@ -13,9 +13,9 @@ use monitor_client::{
     permission::PermissionLevel,
     resource::{AddFilters, Resource, ResourceQuery},
     to_monitor_name,
-    update::{ResourceTarget, ResourceTargetVariant, Update},
+    update::Update,
     user::User,
-    Operation,
+    Operation, ResourceTarget, ResourceTargetVariant,
   },
 };
 use mungos::{

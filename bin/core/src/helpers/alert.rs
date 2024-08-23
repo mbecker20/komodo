@@ -6,7 +6,7 @@ use monitor_client::entities::{
   alerter::*,
   deployment::DeploymentState,
   stack::StackState,
-  update::ResourceTargetVariant,
+  ResourceTargetVariant,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use slack::types::Block;

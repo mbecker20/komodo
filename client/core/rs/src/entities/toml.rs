@@ -3,19 +3,13 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::{
-  alerter::PartialAlerterConfig,
-  build::PartialBuildConfig,
-  builder::PartialBuilderConfig,
-  deployment::PartialDeploymentConfig,
-  permission::PermissionLevel,
-  procedure::PartialProcedureConfig,
-  repo::PartialRepoConfig,
-  server::PartialServerConfig,
+  alerter::PartialAlerterConfig, build::PartialBuildConfig,
+  builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
+  permission::PermissionLevel, procedure::PartialProcedureConfig,
+  repo::PartialRepoConfig, server::PartialServerConfig,
   server_template::PartialServerTemplateConfig,
-  stack::PartialStackConfig,
-  sync::PartialResourceSyncConfig,
-  update::{ResourceTarget, ResourceTargetVariant},
-  variable::Variable,
+  stack::PartialStackConfig, sync::PartialResourceSyncConfig,
+  variable::Variable, ResourceTarget, ResourceTargetVariant,
 };
 
 /// Specifies resources to sync on monitor

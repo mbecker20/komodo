@@ -9,9 +9,9 @@ use monitor_client::entities::{
   server_template::ServerTemplate,
   stack::Stack,
   sync::ResourceSync,
-  update::{ResourceTarget, Update, UpdateListItem},
+  update::{Update, UpdateListItem},
   user::User,
-  Operation,
+  Operation, ResourceTarget,
 };
 use mungos::{
   by_id::{find_one_by_id, update_one_by_id},

@@ -22,13 +22,13 @@ export const VolumePage = () => {
 
 const VolumePageInner = ({
   id,
-  volume: _volume,
+  volume: volume_name,
 }: {
   id: string;
   volume: string;
 }) => {
   const server = useServer(id);
-  useSetTitle(`${server?.name} | volume | ${_volume}`);
+  useSetTitle(`${server?.name} | volume | ${volume_name}`);
   const nav = useNavigate();
   // const perms = useRead("GetPermissionLevel", {
   //   target: { type: "Server", id },
@@ -39,7 +39,7 @@ const VolumePageInner = ({
     isError,
   } = useRead("InspectDockerVolume", {
     server: id,
-    volume: _volume,
+    volume: volume_name,
   });
 
   if (isPending) {
@@ -59,7 +59,7 @@ const VolumePageInner = ({
   if (!volume) {
     return (
       <div className="flex w-full py-4">
-        No volume found with given name: {_volume}
+        No volume found with given name: {volume_name}
       </div>
     );
   }
@@ -86,13 +86,11 @@ const VolumePageInner = ({
         </div>
 
         {/* TITLE */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="mt-1">
-              <Database className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl">{volume.Name}</h1>
+        <div className="flex items-center gap-4">
+          <div className="mt-1">
+            <Database className="w-8 h-8" />
           </div>
+          <h1 className="text-3xl">{volume.Name}</h1>
         </div>
 
         {/* INFO */}

@@ -16,7 +16,7 @@ use monitor_client::entities::{
   alert::{Alert, AlertData, SeverityLevel},
   monitor_timestamp,
   server_template::aws::AwsServerTemplateConfig,
-  update::ResourceTarget,
+  ResourceTarget,
 };
 
 use crate::{config::core_config, helpers::alert::send_alerts};

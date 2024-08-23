@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use monitor_client::entities::{
   alert::{Alert, AlertData, SeverityLevel},
   deployment::{Deployment, DeploymentState},
-  update::ResourceTarget,
+  ResourceTarget,
 };
 
 use crate::{

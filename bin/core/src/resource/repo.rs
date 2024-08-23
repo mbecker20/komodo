@@ -11,9 +11,9 @@ use monitor_client::entities::{
   },
   resource::Resource,
   server::Server,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::{
   find::find_collect,

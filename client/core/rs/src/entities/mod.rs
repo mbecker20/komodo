@@ -6,6 +6,7 @@ use build::StandardRegistryConfig;
 use clap::Parser;
 use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
+use derive_variants::{EnumVariants, ExtractVariant};
 use serde::{
   de::{
     value::{MapAccessDeserializer, SeqAccessDeserializer},
@@ -875,4 +876,137 @@ pub enum TerminationSignal {
   #[default]
   #[serde(alias = "15")]
   SigTerm,
+}
+
+/// Used to reference a specific resource across all resource types
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Eq,
+  Hash,
+  Serialize,
+  Deserialize,
+  EnumVariants,
+)]
+#[variant_derive(
+  Debug,
+  Clone,
+  Copy,
+  PartialEq,
+  Eq,
+  PartialOrd,
+  Ord,
+  Hash,
+  Serialize,
+  Deserialize,
+  Display,
+  EnumString,
+  AsRefStr
+)]
+#[serde(tag = "type", content = "id")]
+pub enum ResourceTarget {
+  System(String),
+  Build(String),
+  Builder(String),
+  Deployment(String),
+  Server(String),
+  Repo(String),
+  Alerter(String),
+  Procedure(String),
+  ServerTemplate(String),
+  ResourceSync(String),
+  Stack(String),
+}
+
+impl ResourceTarget {
+  pub fn extract_variant_id(
+    &self,
+  ) -> (ResourceTargetVariant, &String) {
+    let id = match &self {
+      ResourceTarget::System(id) => id,
+      ResourceTarget::Build(id) => id,
+      ResourceTarget::Builder(id) => id,
+      ResourceTarget::Deployment(id) => id,
+      ResourceTarget::Server(id) => id,
+      ResourceTarget::Repo(id) => id,
+      ResourceTarget::Alerter(id) => id,
+      ResourceTarget::Procedure(id) => id,
+      ResourceTarget::ServerTemplate(id) => id,
+      ResourceTarget::ResourceSync(id) => id,
+      ResourceTarget::Stack(id) => id,
+    };
+    (self.extract_variant(), id)
+  }
+
+  pub fn system() -> ResourceTarget {
+    Self::System("system".to_string())
+  }
+}
+
+impl Default for ResourceTarget {
+  fn default() -> Self {
+    ResourceTarget::system()
+  }
+}
+
+impl From<&build::Build> for ResourceTarget {
+  fn from(build: &build::Build) -> Self {
+    Self::Build(build.id.clone())
+  }
+}
+
+impl From<&deployment::Deployment> for ResourceTarget {
+  fn from(deployment: &deployment::Deployment) -> Self {
+    Self::Deployment(deployment.id.clone())
+  }
+}
+
+impl From<&server::Server> for ResourceTarget {
+  fn from(server: &server::Server) -> Self {
+    Self::Server(server.id.clone())
+  }
+}
+
+impl From<&repo::Repo> for ResourceTarget {
+  fn from(repo: &repo::Repo) -> Self {
+    Self::Repo(repo.id.clone())
+  }
+}
+
+impl From<&builder::Builder> for ResourceTarget {
+  fn from(builder: &builder::Builder) -> Self {
+    Self::Builder(builder.id.clone())
+  }
+}
+
+impl From<&alerter::Alerter> for ResourceTarget {
+  fn from(alerter: &alerter::Alerter) -> Self {
+    Self::Alerter(alerter.id.clone())
+  }
+}
+
+impl From<&procedure::Procedure> for ResourceTarget {
+  fn from(procedure: &procedure::Procedure) -> Self {
+    Self::Procedure(procedure.id.clone())
+  }
+}
+
+impl From<&server_template::ServerTemplate> for ResourceTarget {
+  fn from(server_template: &server_template::ServerTemplate) -> Self {
+    Self::ServerTemplate(server_template.id.clone())
+  }
+}
+
+impl From<&sync::ResourceSync> for ResourceTarget {
+  fn from(resource_sync: &sync::ResourceSync) -> Self {
+    Self::ResourceSync(resource_sync.id.clone())
+  }
+}
+
+impl From<&stack::Stack> for ResourceTarget {
+  fn from(resource_sync: &stack::Stack) -> Self {
+    Self::Stack(resource_sync.id.clone())
+  }
 }

@@ -47,8 +47,7 @@ pub use variable::*;
 
 use crate::entities::{
   config::{DockerRegistry, GitProvider},
-  update::ResourceTarget,
-  Timelength,
+  ResourceTarget, Timelength,
 };
 
 pub trait MonitorReadRequest: HasResponse {}

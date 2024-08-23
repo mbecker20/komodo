@@ -15,8 +15,9 @@ use monitor_client::{
     server_template::ServerTemplate,
     stack::Stack,
     sync::ResourceSync,
-    update::{ResourceTarget, Update, UpdateListItem},
+    update::{Update, UpdateListItem},
     user::User,
+    ResourceTarget,
   },
 };
 use mungos::{

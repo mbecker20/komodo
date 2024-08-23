@@ -3,7 +3,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{tag::Tag, update::ResourceTarget, NoData};
+use crate::entities::{tag::Tag, NoData, ResourceTarget};
 
 use super::MonitorWriteRequest;
 

@@ -11,9 +11,9 @@ use monitor_client::entities::{
   permission::PermissionLevel,
   resource::Resource,
   server::Server,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;

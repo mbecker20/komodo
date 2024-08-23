@@ -1,12 +1,18 @@
 import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
-import { DockerLabelsSection } from "@components/util";
+import { DockerLabelsSection, StatusBadge } from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { Box, ChevronLeft, Info, Loader2 } from "lucide-react";
+import { Box, ChevronLeft, Clapperboard, Info, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ContainerLogs } from "./log";
+import { Actions } from "./actions";
+import { has_minimum_permissions } from "@lib/utils";
+import { Types } from "@monitor/client";
+import { ResourceUpdates } from "@components/updates/resource";
+import { container_state_intention } from "@lib/color";
 
 export const ContainerPage = () => {
   const { type, id, container } = useParams() as {
@@ -24,25 +30,30 @@ export const ContainerPage = () => {
 
 const ContainerPageInner = ({
   id,
-  container: _container,
+  container: container_name,
 }: {
   id: string;
   container: string;
 }) => {
   const server = useServer(id);
-  useSetTitle(`${server?.name} | container | ${_container}`);
+  useSetTitle(`${server?.name} | container | ${container_name}`);
   const nav = useNavigate();
-  // const perms = useRead("GetPermissionLevel", {
-  //   target: { type: "Server", id },
-  // }).data;
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Server", id },
+  }).data;
   const {
     data: container,
     isPending,
     isError,
   } = useRead("InspectDockerContainer", {
     server: id,
-    container: _container,
+    container: container_name,
   });
+  const list_container = useRead("ListDockerContainers", {
+    server: id,
+  }).data?.find((container) => container.name === container_name);
+  const state = list_container?.state ?? Types.ContainerStateStatusEnum.Empty;
+  const status = list_container?.status;
 
   if (isPending) {
     return (
@@ -57,12 +68,15 @@ const ContainerPageInner = ({
   if (!container) {
     return (
       <div className="flex w-full py-4">
-        No container found with given name: {_container}
+        No container found with given name: {container_name}
       </div>
     );
   }
 
-  // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
+  const canExecute = has_minimum_permissions(
+    perms,
+    Types.PermissionLevel.Execute
+  );
 
   return (
     <div className="flex flex-col gap-16">
@@ -84,12 +98,19 @@ const ContainerPageInner = ({
         </div>
 
         {/* TITLE */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="mt-1">
-              <Box className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl">{container.Name}</h1>
+        <div className="flex items-center gap-4">
+          <div className="mt-1">
+            <Box className="w-8 h-8" />
+          </div>
+          <h1 className="text-3xl">{container_name}</h1>
+          <div className="flex items-center gap-4 flex-wrap">
+            <StatusBadge
+              text={state}
+              intent={container_state_intention(state)}
+            />
+            {status && (
+              <p className="text-sm text-muted-foreground">{status}</p>
+            )}
           </div>
         </div>
 
@@ -98,6 +119,22 @@ const ContainerPageInner = ({
           <ResourceLink type="Server" id={id} />
         </div>
       </div>
+
+      {/* Actions */}
+      {canExecute && (
+        <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
+          <div className="flex gap-4 items-center flex-wrap">
+            {Object.entries(Actions).map(([key, Action]) => (
+              <Action key={key} id={id} container={container_name} />
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* Updates */}
+      <ResourceUpdates type="Server" id={id} />
+
+      <ContainerLogs id={id} container_name={container_name} />
 
       {/* TOP LEVEL CONTAINER INFO */}
       <Section title="Details" icon={<Info className="w-4 h-4" />}>

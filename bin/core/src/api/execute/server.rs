@@ -34,16 +34,16 @@ impl Resolve<StartContainer, (User, Update)> for State {
     )
     .await?;
 
-    // // get the action state for the server (or insert default).
-    // let action_state = action_states()
-    //   .server
-    //   .get_or_insert_default(&server.id)
-    //   .await;
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
 
-    // // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // // The returned guard will set the action state back to default when dropped.
-    // let _action_guard =
-    //   action_state.update(|state| state.starting = true)?;
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.starting_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -84,16 +84,16 @@ impl Resolve<RestartContainer, (User, Update)> for State {
     )
     .await?;
 
-    // // get the action state for the deployment (or insert default).
-    // let action_state = action_states()
-    //   .deployment
-    //   .get_or_insert_default(&deployment.id)
-    //   .await;
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
 
-    // // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // // The returned guard will set the action state back to default when dropped.
-    // let _action_guard =
-    //   action_state.update(|state| state.restarting = true)?;
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.restarting_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -136,16 +136,16 @@ impl Resolve<PauseContainer, (User, Update)> for State {
     )
     .await?;
 
-    // // get the action state for the deployment (or insert default).
-    // let action_state = action_states()
-    //   .deployment
-    //   .get_or_insert_default(&deployment.id)
-    //   .await;
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
 
-    // // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // // The returned guard will set the action state back to default when dropped.
-    // let _action_guard =
-    //   action_state.update(|state| state.pausing = true)?;
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.pausing_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -186,16 +186,16 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
     )
     .await?;
 
-    // // get the action state for the deployment (or insert default).
-    // let action_state = action_states()
-    //   .deployment
-    //   .get_or_insert_default(&deployment.id)
-    //   .await;
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
 
-    // // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // // The returned guard will set the action state back to default when dropped.
-    // let _action_guard =
-    //   action_state.update(|state| state.unpausing = true)?;
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.unpausing_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -243,16 +243,16 @@ impl Resolve<StopContainer, (User, Update)> for State {
     )
     .await?;
 
-    // // get the action state for the deployment (or insert default).
-    // let action_state = action_states()
-    //   .deployment
-    //   .get_or_insert_default(&deployment.id)
-    //   .await;
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
 
-    // // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // // The returned guard will set the action state back to default when dropped.
-    // let _action_guard =
-    //   action_state.update(|state| state.stopping = true)?;
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.stopping_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -302,16 +302,16 @@ impl Resolve<DestroyContainer, (User, Update)> for State {
     )
     .await?;
 
-    // // get the action state for the deployment (or insert default).
-    // let action_state = action_states()
-    //   .deployment
-    //   .get_or_insert_default(&deployment.id)
-    //   .await;
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
 
-    // // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // // The returned guard will set the action state back to default when dropped.
-    // let _action_guard =
-    //   action_state.update(|state| state.destroying = true)?;
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.pruning_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;

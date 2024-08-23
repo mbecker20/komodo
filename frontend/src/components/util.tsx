@@ -491,7 +491,12 @@ export const DockerLabelsSection = ({
           <Badge key={key} variant="secondary" className="flex gap-1">
             <span className="text-muted-foreground">{key}</span>
             <span className="text-muted-foreground">=</span>
-            <span className="font-extrabold">{value}</span>
+            <span
+              title={value}
+              className="font-extrabold text-nowrap max-w-[200px] overflow-hidden text-ellipsis"
+            >
+              {value}
+            </span>
           </Badge>
         ))}
       </div>

@@ -12,8 +12,9 @@ use monitor_client::{
     server::Server,
     server_template::ServerTemplate,
     stack::Stack,
-    update::{Log, ResourceTarget},
+    update::Log,
     user::sync_user,
+    ResourceTarget,
   },
 };
 use partial_derive2::{MaybeNone, PartialDiff};

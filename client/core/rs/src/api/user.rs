@@ -3,7 +3,7 @@ use resolver_api::{derive::Request, HasResponse};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{update::ResourceTarget, NoData, I64};
+use crate::entities::{NoData, ResourceTarget, I64};
 
 pub trait MonitorUserRequest: HasResponse {}
 

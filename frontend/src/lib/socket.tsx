@@ -135,7 +135,15 @@ const on_message = (
         ["GetServersSummary"],
         ["GetServer", { server: update.target.id }],
         ["GetServerState", { server: update.target.id }],
-        ["GetHistoricalServerStats", { server: update.target.id }]
+        ["GetHistoricalServerStats", { server: update.target.id }],
+        ["ListDockerContainers", { server: update.target.id }],
+        ["InspectDockerContainer"],
+        ["ListDockerNetworks", { server: update.target.id }],
+        ["InspectDockerNetwork"],
+        ["ListDockerImages", { server: update.target.id }],
+        ["InspectDockerImage"],
+        ["ListDockerVolumes", { server: update.target.id }],
+        ["InspectDockerVolume"]
       );
     }
 

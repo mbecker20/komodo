@@ -6,9 +6,9 @@ use monitor_client::entities::{
     ServerTemplateConfigVariant, ServerTemplateListItem,
     ServerTemplateListItemInfo, ServerTemplateQuerySpecifics,
   },
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  MergePartial, Operation,
+  MergePartial, Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::{
   bson::{to_document, Document},

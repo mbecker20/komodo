@@ -15,11 +15,11 @@ use monitor_client::entities::{
   stack::{Stack, StackServiceNames, StackState},
   sync::ResourceSync,
   tag::Tag,
-  update::{ResourceTarget, ResourceTargetVariant, Update},
+  update::Update,
   user::{admin_service_user, User},
   user_group::UserGroup,
   variable::Variable,
-  Operation,
+  Operation, ResourceTarget, ResourceTargetVariant,
 };
 use mungos::{
   find::find_collect,

@@ -23,20 +23,3 @@ docker run --rm --name monitor-migrator \
 	--env TARGET_DB_NAME="<DB_NAME>" \
 	ghcr.io/mbecker20/monitor_migrator
 ```
-
-## v0.X migration
-Run this before upgrading to latest from version 0.X.
-
-Note. As this is a major upgrade, this migration is not "in place". 
-It will create another database (TARGET) and migrate resources over, leaving the original database (LEGACY) unchanged.
-
-```sh
-docker run --rm --name monitor-migrator \
-	--network "host" \
-	--env MIGRATION="v0" \
-	--env TARGET_URI="mongodb://<USERNAME>:<PASSWORD>@<ADDRESS>" \
-	--env TARGET_DB_NAME="<TARGET_DB_NAME>" \
-	--env LEGACY_URI="mongodb://<USERNAME>:<PASSWORD>@<ADDRESS>" \
-	--env LEGACY_DB_NAME="<LEGACY_DB_NAME>" \
-	ghcr.io/mbecker20/monitor_migrator
-```

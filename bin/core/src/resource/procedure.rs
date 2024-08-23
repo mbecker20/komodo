@@ -17,9 +17,9 @@ use monitor_client::{
     server::Server,
     stack::Stack,
     sync::ResourceSync,
-    update::{ResourceTargetVariant, Update},
+    update::Update,
     user::User,
-    Operation,
+    Operation, ResourceTargetVariant,
   },
 };
 use mungos::{
@@ -294,63 +294,57 @@ async fn validate_config(
           params.repo = repo.id;
         }
         Execution::StartContainer(params) => {
-          let server =
-            super::get_check_permissions::<Server>(
-              &params.server,
-              user,
-              PermissionLevel::Execute,
-            )
-            .await?;
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
           params.server = server.id;
         }
         Execution::RestartContainer(params) => {
-          let server =
-            super::get_check_permissions::<Server>(
-              &params.server,
-              user,
-              PermissionLevel::Execute,
-            )
-            .await?;
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
           params.server = server.id;
         }
         Execution::PauseContainer(params) => {
-          let server =
-            super::get_check_permissions::<Server>(
-              &params.server,
-              user,
-              PermissionLevel::Execute,
-            )
-            .await?;
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
           params.server = server.id;
         }
         Execution::UnpauseContainer(params) => {
-          let server =
-            super::get_check_permissions::<Server>(
-              &params.server,
-              user,
-              PermissionLevel::Execute,
-            )
-            .await?;
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
           params.server = server.id;
         }
         Execution::StopContainer(params) => {
-          let server =
-            super::get_check_permissions::<Server>(
-              &params.server,
-              user,
-              PermissionLevel::Execute,
-            )
-            .await?;
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
           params.server = server.id;
         }
         Execution::DestroyContainer(params) => {
-          let server =
-            super::get_check_permissions::<Server>(
-              &params.server,
-              user,
-              PermissionLevel::Execute,
-            )
-            .await?;
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
           params.server = server.id;
         }
         Execution::StartAllContainers(params) => {

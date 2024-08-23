@@ -10,8 +10,8 @@ use monitor_client::{
   },
   entities::{
     permission::{UserTarget, UserTargetVariant},
-    update::{ResourceTarget, ResourceTargetVariant},
     user::User,
+    ResourceTarget, ResourceTargetVariant,
   },
 };
 use mungos::{

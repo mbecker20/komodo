@@ -6,7 +6,7 @@ use typeshare::typeshare;
 use crate::entities::{
   build::BuildListItem, deployment::DeploymentListItem,
   procedure::ProcedureListItem, repo::RepoListItem,
-  server::ServerListItem, update::ResourceTargetVariant,
+  server::ServerListItem, ResourceTargetVariant,
   MongoDocument,
 };
 

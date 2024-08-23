@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{
   permission::{Permission, PermissionLevel, UserTarget},
-  update::ResourceTarget,
+  ResourceTarget,
 };
 
 use super::MonitorReadRequest;

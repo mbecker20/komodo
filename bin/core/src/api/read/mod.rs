@@ -12,8 +12,8 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     sync::ResourceSync,
-    update::ResourceTarget,
     user::User,
+    ResourceTarget,
   },
 };
 use resolver_api::{

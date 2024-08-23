@@ -9,7 +9,7 @@ use crate::entities::{MongoId, I64};
 
 use super::{
   _Serror, deployment::DeploymentState, stack::StackState,
-  update::ResourceTarget, Version,
+  ResourceTarget, Version,
 };
 
 /// Representation of an alert in the system.

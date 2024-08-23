@@ -7,7 +7,7 @@ use monitor_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant, SeverityLevel},
   monitor_timestamp, optional_string,
   server::{ServerListItem, ServerState},
-  update::ResourceTarget,
+  ResourceTarget,
 };
 use mungos::{
   bulk_update::{self, BulkUpdate},

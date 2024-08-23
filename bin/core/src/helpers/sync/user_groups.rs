@@ -14,8 +14,9 @@ use monitor_client::{
     permission::{PermissionLevel, UserTarget},
     sync::SyncUpdate,
     toml::{PermissionToml, UserGroupToml},
-    update::{Log, ResourceTarget, ResourceTargetVariant},
+    update::Log,
     user::sync_user,
+    ResourceTarget, ResourceTargetVariant,
   },
 };
 use mungos::find::find_collect;

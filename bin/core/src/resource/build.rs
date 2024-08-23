@@ -10,9 +10,9 @@ use monitor_client::entities::{
   builder::Builder,
   permission::PermissionLevel,
   resource::Resource,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::{
   find::find_collect,

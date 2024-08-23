@@ -6,9 +6,9 @@ use monitor_client::entities::{
     PartialServerConfig, Server, ServerConfig, ServerConfigDiff,
     ServerListItem, ServerListItemInfo, ServerQuerySpecifics,
   },
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::{bson::doc, Collection};
 

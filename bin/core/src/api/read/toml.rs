@@ -30,7 +30,7 @@ use monitor_client::{
     toml::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
     },
-    update::ResourceTarget,
+    ResourceTarget,
     user::User,
   },
 };

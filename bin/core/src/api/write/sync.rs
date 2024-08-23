@@ -24,7 +24,7 @@ use monitor_client::{
       PendingSyncUpdatesData, PendingSyncUpdatesDataErr,
       PendingSyncUpdatesDataOk, ResourceSync,
     },
-    update::ResourceTarget,
+    ResourceTarget,
     user::User,
     NoData,
   },

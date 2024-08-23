@@ -2111,7 +2111,6 @@ name = "migrator"
 version = "1.14.0-dev3"
 dependencies = [
  "anyhow",
- "chrono",
  "dotenvy",
  "envy",
  "logger",

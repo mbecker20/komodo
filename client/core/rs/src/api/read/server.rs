@@ -19,7 +19,7 @@ use crate::entities::{
     SystemInformation, SystemProcess, SystemStats, SystemStatsRecord,
   },
   update::Log,
-  SearchCombinator, Timelength, I64, U64,
+  ResourceTarget, SearchCombinator, Timelength, I64, U64,
 };
 
 use super::MonitorReadRequest;
@@ -345,6 +345,29 @@ pub struct SearchContainerLog {
 
 #[typeshare]
 pub type SearchContainerLogResponse = Log;
+
+//
+
+/// Inspect a docker container on the server. Response: [Container].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetResourceMatchingContainerResponse)]
+pub struct GetResourceMatchingContainer {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetResourceMatchingContainerResponse {
+  pub resource: ResourceTarget,
+}
 
 //
 

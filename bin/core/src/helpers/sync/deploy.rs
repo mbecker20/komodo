@@ -16,8 +16,9 @@ use monitor_client::{
     stack::{PartialStackConfig, Stack, StackConfig, StackState},
     sync::SyncDeployUpdate,
     toml::ResourceToml,
-    update::{Log, ResourceTarget},
+    update::Log,
     user::sync_user,
+    ResourceTarget,
   },
 };
 use resolver_api::Resolve;

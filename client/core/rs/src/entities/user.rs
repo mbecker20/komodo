@@ -6,7 +6,7 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  permission::PermissionLevel, update::ResourceTargetVariant,
+  permission::PermissionLevel, ResourceTargetVariant,
 };
 
 #[typeshare]

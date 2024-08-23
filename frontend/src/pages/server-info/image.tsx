@@ -23,13 +23,13 @@ export const ImagePage = () => {
 
 const ImagePageInner = ({
   id,
-  image: _image,
+  image: image_name,
 }: {
   id: string;
   image: string;
 }) => {
   const server = useServer(id);
-  useSetTitle(`${server?.name} | image | ${_image}`);
+  useSetTitle(`${server?.name} | image | ${image_name}`);
   const nav = useNavigate();
   // const perms = useRead("GetPermissionLevel", {
   //   target: { type: "Server", id },
@@ -43,7 +43,7 @@ const ImagePageInner = ({
     isError,
   } = useRead("InspectDockerImage", {
     server: id,
-    image: _image,
+    image: image_name,
   });
   // const history = useRead("ListDockerImageHistory", {
   //   server: id,
@@ -63,7 +63,7 @@ const ImagePageInner = ({
   if (!image) {
     return (
       <div className="flex w-full py-4">
-        No image found with given name: {_image}
+        No image found with given name: {image_name}
       </div>
     );
   }
@@ -90,13 +90,16 @@ const ImagePageInner = ({
         </div>
 
         {/* TITLE */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="mt-1">
-              <HardDrive className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl">{_image}</h1>
+        <div className="flex items-center gap-4">
+          <div className="mt-1">
+            <HardDrive className="w-8 h-8" />
           </div>
+          <h1
+            title={image_name}
+            className="text-3xl max-w-[60vw] overflow-hidden text-ellipsis"
+          >
+            {image_name}
+          </h1>
         </div>
 
         {/* INFO */}
@@ -107,7 +110,10 @@ const ImagePageInner = ({
               |
               <div className="flex gap-2">
                 Id:
-                <div className="max-w-[150px] overflow-hidden text-ellipsis">
+                <div
+                  title={image.Id}
+                  className="max-w-[150px] overflow-hidden text-ellipsis"
+                >
                   {image.Id}
                 </div>
               </div>

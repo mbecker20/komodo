@@ -5,8 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{
   permission::{PermissionLevel, UserTarget},
-  update::{ResourceTarget, ResourceTargetVariant},
-  NoData,
+  NoData, ResourceTarget, ResourceTargetVariant,
 };
 
 use super::MonitorWriteRequest;

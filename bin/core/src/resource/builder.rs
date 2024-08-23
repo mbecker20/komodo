@@ -8,9 +8,9 @@ use monitor_client::entities::{
   permission::PermissionLevel,
   resource::Resource,
   server::Server,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  MergePartial, Operation,
+  MergePartial, Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::{
   bson::{doc, to_document, Document},

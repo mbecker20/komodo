@@ -11,7 +11,7 @@ use axum::{
 use futures::{SinkExt, StreamExt};
 use monitor_client::{
   entities::{
-    permission::PermissionLevel, update::ResourceTarget, user::User,
+    permission::PermissionLevel, user::User, ResourceTarget,
   },
   ws::WsLoginMessage,
 };

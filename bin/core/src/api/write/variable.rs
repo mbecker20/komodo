@@ -7,7 +7,7 @@ use monitor_client::{
     UpdateVariableValueResponse,
   },
   entities::{
-    update::ResourceTarget, user::User, variable::Variable, Operation,
+    user::User, variable::Variable, Operation, ResourceTarget,
   },
 };
 use mungos::mongodb::bson::doc;

@@ -11,9 +11,9 @@ use monitor_client::entities::{
     ResourceSyncListItem, ResourceSyncListItemInfo,
     ResourceSyncQuerySpecifics, ResourceSyncState,
   },
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::{
   find::find_collect,

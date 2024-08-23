@@ -5,21 +5,11 @@ use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
-    self,
-    alerter::Alerter,
-    build::Build,
-    builder::Builder,
-    deployment::Deployment,
-    procedure::Procedure,
-    repo::Repo,
-    server::Server,
-    server_template::ServerTemplate,
-    stack::Stack,
-    sync::SyncUpdate,
-    tag::Tag,
-    toml::ResourceToml,
-    update::{Log, ResourceTarget},
-    user::sync_user,
+    self, alerter::Alerter, build::Build, builder::Builder,
+    deployment::Deployment, procedure::Procedure, repo::Repo,
+    server::Server, server_template::ServerTemplate, stack::Stack,
+    sync::SyncUpdate, tag::Tag, toml::ResourceToml, update::Log,
+    user::sync_user, ResourceTarget,
   },
 };
 use mungos::find::find_collect;
