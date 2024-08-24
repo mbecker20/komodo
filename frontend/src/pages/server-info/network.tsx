@@ -1,7 +1,11 @@
 import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
-import { DockerLabelsSection, DockerOptions } from "@components/util";
+import {
+  DockerLabelsSection,
+  DockerOptions,
+  DockerResourcePageName,
+} from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
@@ -13,7 +17,7 @@ import {
   Network,
   Waypoints,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export const NetworkPage = () => {
   const { type, id, network } = useParams() as {
@@ -79,7 +83,7 @@ const NetworkPageInner = ({
     })) ?? [];
 
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-16 mb-24">
       {/* HEADER */}
       <div className="flex flex-col gap-4">
         {/* BACK */}
@@ -102,7 +106,7 @@ const NetworkPageInner = ({
           <div className="mt-1">
             <Network className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl">{network.Name}</h1>
+          <DockerResourcePageName name={network_name} />
         </div>
 
         {/* INFO */}
@@ -195,6 +199,27 @@ const NetworkPageInner = ({
                 header: ({ column }) => (
                   <SortableHeader column={column} title="Name" />
                 ),
+                cell: ({ row }) =>
+                  row.original.Name ? (
+                    <Link
+                      to={`/servers/${id}/container/${encodeURIComponent(
+                        row.original.Name
+                      )}`}
+                      className="px-0"
+                    >
+                      <Button variant="link" className="px-0">
+                        <div
+                          title={row.original.Name}
+                          className="max-w-[200px] lg:max-w-[300px] overflow-hidden overflow-ellipsis"
+                        >
+                          {row.original.Name}
+                        </div>
+                      </Button>
+                    </Link>
+                  ) : (
+                    "Unknown"
+                  ),
+                size: 200,
               },
               {
                 accessorKey: "IPv4Address",

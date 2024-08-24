@@ -270,7 +270,7 @@ export const ServerComponents: RequiredResourceComponents = {
   Actions: {
     StartAll: ({ id }) => {
       const server = useServer(id);
-      const { mutate, isPending } = useExecute(`StartAllContainers`);
+      const { mutate, isPending } = useExecute("StartAllContainers");
       const starting = useRead(
         "GetServerActionState",
         { server: id },
@@ -300,7 +300,7 @@ export const ServerComponents: RequiredResourceComponents = {
     },
     RestartAll: ({ id }) => {
       const server = useServer(id);
-      const { mutate, isPending } = useExecute(`RestartAllContainers`);
+      const { mutate, isPending } = useExecute("RestartAllContainers");
       const restarting = useRead(
         "GetServerActionState",
         { server: id },
@@ -322,7 +322,7 @@ export const ServerComponents: RequiredResourceComponents = {
     },
     PauseAll: ({ id }) => {
       const server = useServer(id);
-      const { mutate, isPending } = useExecute(`PauseAllContainers`);
+      const { mutate, isPending } = useExecute("PauseAllContainers");
       const pausing = useRead(
         "GetServerActionState",
         { server: id },
@@ -353,7 +353,7 @@ export const ServerComponents: RequiredResourceComponents = {
     },
     UnpauseAll: ({ id }) => {
       const server = useServer(id);
-      const { mutate, isPending } = useExecute(`UnpauseAllContainers`);
+      const { mutate, isPending } = useExecute("UnpauseAllContainers");
       const unpausing = useRead(
         "GetServerActionState",
         { server: id },
@@ -382,7 +382,7 @@ export const ServerComponents: RequiredResourceComponents = {
     },
     StopAll: ({ id }) => {
       const server = useServer(id);
-      const { mutate, isPending } = useExecute(`StopAllContainers`);
+      const { mutate, isPending } = useExecute("StopAllContainers");
       const stopping = useRead(
         "GetServerActionState",
         { server: id },
@@ -392,7 +392,7 @@ export const ServerComponents: RequiredResourceComponents = {
       return (
         server && (
           <ActionWithDialog
-            name={server?.name}
+            name={server.name}
             title="Stop Containers"
             icon={<Square className="w-4 h-4" />}
             onClick={() => mutate({ server: id })}
@@ -402,8 +402,66 @@ export const ServerComponents: RequiredResourceComponents = {
         )
       );
     },
-    Prune: ({ id }) => {
-      const { mutate, isPending } = useExecute(`PruneImages`);
+    PruneContainers: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute("PruneContainers");
+      const pruning = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pruning_containers;
+      const pending = isPending || pruning;
+      return (
+        server && (
+          <ActionWithDialog
+            name={server?.name}
+            title="Prune Containers"
+            icon={<Scissors className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            loading={pending}
+            disabled={pending}
+          />
+        )
+      );
+    },
+    PruneNetworks: ({ id }) => {
+      const { mutate, isPending } = useExecute("PruneNetworks");
+      const pruning = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pruning_networks;
+      const pending = isPending || pruning;
+      return (
+        <ConfirmButton
+          title="Prune Networks"
+          icon={<Scissors className="w-4 h-4" />}
+          onClick={() => mutate({ server: id })}
+          loading={pending}
+          disabled={pending}
+        />
+      );
+    },
+    PruneVolumes: ({ id }) => {
+      const { mutate, isPending } = useExecute("PruneVolumes");
+      const pruning = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pruning_volumes;
+      const pending = isPending || pruning;
+      return (
+        <ConfirmButton
+          title="Prune Volumes"
+          icon={<Scissors className="w-4 h-4" />}
+          onClick={() => mutate({ server: id })}
+          loading={pending}
+          disabled={pending}
+        />
+      );
+    },
+    PruneImages: ({ id }) => {
+      const { mutate, isPending } = useExecute("PruneImages");
       const pruning = useRead(
         "GetServerActionState",
         { server: id },
@@ -418,6 +476,28 @@ export const ServerComponents: RequiredResourceComponents = {
           loading={pending}
           disabled={pending}
         />
+      );
+    },
+    PruneSystem: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute("PruneSystem");
+      const pruning = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pruning_system;
+      const pending = isPending || pruning;
+      return (
+        server && (
+          <ActionWithDialog
+            name={server.name}
+            title="Prune System"
+            icon={<Scissors className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            loading={pending}
+            disabled={pending}
+          />
+        )
       );
     },
   },

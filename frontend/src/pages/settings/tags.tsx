@@ -99,15 +99,6 @@ export const CreateTag = () => {
       toast({ title: "Tag Created" });
       setOpen(false);
     },
-    onError: (e) => {
-      console.log("create tag error:" + e);
-      toast({
-        title: "Failed to create tag",
-        description: "See console for details",
-        variant: "destructive",
-      });
-      setOpen(false);
-    },
   });
   const submit = () => mutate({ name });
   return (
@@ -153,14 +144,6 @@ const DeleteTag = ({ tag_id }: { tag_id: string }) => {
     onSuccess: () => {
       invalidate(["ListTags"]);
       toast({ title: "Tag Deleted" });
-    },
-    onError: (e) => {
-      console.log("delete tag error:" + e);
-      toast({
-        title: "Failed to delete tag",
-        description: "See console for details",
-        variant: "destructive",
-      });
     },
   });
   return (

@@ -44,10 +44,6 @@ const useExchangeToken = () => {
       localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, jwt);
       sanitize_query(search);
     },
-    onError: (e) => {
-      console.log("exchange token for jwt error:", e);
-      sanitize_query(search);
-    },
   });
 
   // In this case, failed to get user (jwt unset / invalid)

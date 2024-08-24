@@ -1,7 +1,11 @@
 import { Section } from "@components/layouts";
 import { NewResource, ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
-import { DockerLabelsSection, StatusBadge } from "@components/util";
+import {
+  DockerLabelsSection,
+  DockerResourcePageName,
+  StatusBadge,
+} from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
@@ -85,7 +89,7 @@ const ContainerPageInner = ({
   const status = list_container?.status;
 
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-16 mb-24">
       {/* HEADER */}
       <div className="flex flex-col gap-4">
         {/* BACK */}
@@ -106,7 +110,7 @@ const ContainerPageInner = ({
           <div className="mt-1">
             <Box className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl">{container_name}</h1>
+          <DockerResourcePageName name={container_name} />
           <div className="flex items-center gap-4 flex-wrap">
             <StatusBadge
               text={state}

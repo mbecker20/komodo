@@ -1,11 +1,9 @@
 import { Section } from "@components/layouts";
-import { ShowHideButton } from "@components/util";
+import { DockerResourceLink, ShowHideButton } from "@components/util";
 import { format_size_bytes } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
-import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { HardDrive } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export const Images = ({
   id,
@@ -34,21 +32,13 @@ export const Images = ({
               header: ({ column }) => (
                 <SortableHeader column={column} title="Name" />
               ),
-              cell: ({ row }) =>
-                row.original.name ? (
-                  <Link
-                    to={`/servers/${id}/image/${encodeURIComponent(
-                      row.original.name
-                    )}`}
-                    className="px-0"
-                  >
-                    <Button variant="link" className="px-0">
-                      {row.original.name}
-                    </Button>
-                  </Link>
-                ) : (
-                  "Unknown"
-                ),
+              cell: ({ row }) => (
+                <DockerResourceLink
+                  type="image"
+                  server_id={id}
+                  name={row.original.name}
+                />
+              ),
               size: 200,
             },
             {

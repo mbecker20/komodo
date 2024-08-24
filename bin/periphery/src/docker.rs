@@ -78,6 +78,12 @@ impl DockerClient {
               .networks
               .map(|networks| networks.into_keys().collect())
           }),
+          volumes: container.mounts.map(|settings| {
+            settings
+              .into_iter()
+              .filter_map(|mount| mount.name)
+              .collect()
+          }),
         })
       })
       .collect()

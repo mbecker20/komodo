@@ -316,7 +316,6 @@ const make_websocket = ({
   on_message: (e: MessageEvent) => void;
   on_close: () => void;
 }) => {
-  console.log("init websocket");
   const ws = new WebSocket(url);
 
   const _on_open = () => {

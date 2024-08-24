@@ -1,7 +1,7 @@
 import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
-import { DockerLabelsSection } from "@components/util";
+import { DockerLabelsSection, DockerResourcePageName } from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
@@ -50,11 +50,7 @@ const VolumePageInner = ({
     );
   }
   if (isError) {
-    return (
-      <div className="flex w-full py-4">
-        Failed to inspect volume.
-      </div>
-    );
+    return <div className="flex w-full py-4">Failed to inspect volume.</div>;
   }
   if (!volume) {
     return (
@@ -66,8 +62,10 @@ const VolumePageInner = ({
 
   // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
 
+  console.log(volume);
+
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-16 mb-24">
       {/* HEADER */}
       <div className="flex flex-col gap-4">
         {/* BACK */}
@@ -90,7 +88,7 @@ const VolumePageInner = ({
           <div className="mt-1">
             <Database className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl">{volume.Name}</h1>
+          <DockerResourcePageName name={volume_name} />
         </div>
 
         {/* INFO */}
@@ -106,7 +104,7 @@ const VolumePageInner = ({
           data={[volume]}
           columns={[
             {
-              accessorKey: "",
+              accessorKey: "Driver",
               header: "Driver",
             },
             {
@@ -114,12 +112,8 @@ const VolumePageInner = ({
               header: "Scope",
             },
             {
-              accessorKey: "Attachable",
-              header: "Attachable",
-            },
-            {
-              accessorKey: "Internal",
-              header: "Internal",
+              accessorKey: "CreatedAt",
+              header: "Created At",
             },
           ]}
         />

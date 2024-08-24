@@ -71,15 +71,15 @@ export const ServerInfo = ({
         show={show.networks}
         setShow={(networks) => setShow({ ...show, networks })}
       />
-      <Images
-        id={id}
-        show={show.images}
-        setShow={(images) => setShow({ ...show, images })}
-      />
       <Volumes
         id={id}
         show={show.volumes}
         setShow={(volumes) => setShow({ ...show, volumes })}
+      />
+      <Images
+        id={id}
+        show={show.images}
+        setShow={(images) => setShow({ ...show, images })}
       />
     </Section>
   );

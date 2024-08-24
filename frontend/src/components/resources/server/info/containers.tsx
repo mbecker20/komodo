@@ -1,11 +1,13 @@
 import { Section } from "@components/layouts";
-import { ShowHideButton, StatusBadge } from "@components/util";
+import {
+  DockerResourceLink,
+  ShowHideButton,
+  StatusBadge,
+} from "@components/util";
 import { container_state_intention } from "@lib/color";
 import { useRead } from "@lib/hooks";
-import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { Box } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export const Containers = ({
   id,
@@ -34,21 +36,13 @@ export const Containers = ({
               header: ({ column }) => (
                 <SortableHeader column={column} title="Name" />
               ),
-              cell: ({ row }) =>
-                row.original.name ? (
-                  <Link
-                    to={`/servers/${id}/container/${encodeURIComponent(
-                      row.original.name
-                    )}`}
-                    className="px-0"
-                  >
-                    <Button variant="link" className="px-0">
-                      {row.original.name}
-                    </Button>
-                  </Link>
-                ) : (
-                  "Unknown"
-                ),
+              cell: ({ row }) => (
+                <DockerResourceLink
+                  type="container"
+                  server_id={id}
+                  name={row.original.name}
+                />
+              ),
               size: 200,
             },
             {

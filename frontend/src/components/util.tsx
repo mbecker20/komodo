@@ -8,13 +8,17 @@ import {
 } from "react";
 import { Button } from "../ui/button";
 import {
+  Box,
   Check,
   CheckCircle,
   ChevronDown,
   ChevronUp,
   Copy,
+  Database,
+  HardDrive,
   Loader2,
   LogOut,
+  Network,
   Settings,
   Tags,
   User,
@@ -521,5 +525,62 @@ export const ShowHideButton = ({
       {show ? "Hide" : "Show"}
       {show ? <ChevronUp className="w-4" /> : <ChevronDown className="w-4" />}
     </Button>
+  );
+};
+
+type DockerResourceType = "container" | "network" | "image" | "volume";
+
+const DOCKER_LINK_ICONS: {
+  [type in DockerResourceType]: React.FC;
+} = {
+  container: () => <Box className="w-4 h-4" />,
+  network: () => <Network className="w-4 h-4" />,
+  image: () => <HardDrive className="w-4 h-4" />,
+  volume: () => <Database className="w-4 h-4" />,
+};
+
+export const DockerResourceLink = ({
+  server_id,
+  name,
+  type,
+  extra,
+}: {
+  server_id: string;
+  name?: string;
+  type: "container" | "network" | "image" | "volume";
+  extra?: ReactNode;
+}) => {
+  if (!name) return "Unknown";
+
+  const Icon = DOCKER_LINK_ICONS[type];
+
+  return (
+    <Link
+      to={`/servers/${server_id}/${type}/${encodeURIComponent(name)}`}
+      className="px-0"
+    >
+      <Button variant="link" className="px-0 gap-2">
+        <Icon />
+        <div
+          title={name}
+          className="max-w-[200px] lg:max-w-[300px] overflow-hidden overflow-ellipsis"
+        >
+          {name}
+        </div>
+        {extra && <div className="no-underline">{extra}</div>}
+      </Button>
+    </Link>
+  );
+};
+
+export const DockerResourcePageName = ({ name: _name }: { name?: string }) => {
+  const name = _name ?? "Unknown";
+  return (
+    <h1
+      title={name}
+      className="text-3xl max-w-[300px] md:max-w-[500px] xl:max-w-[700px] overflow-hidden overflow-ellipsis"
+    >
+      {name}
+    </h1>
   );
 };

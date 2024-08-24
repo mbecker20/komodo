@@ -1,7 +1,7 @@
 import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
-import { DockerLabelsSection } from "@components/util";
+import { DockerLabelsSection, DockerResourcePageName } from "@components/util";
 import { format_size_bytes } from "@lib/formatting";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
@@ -71,7 +71,7 @@ const ImagePageInner = ({
   // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
 
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-16 mb-24">
       {/* HEADER */}
       <div className="flex flex-col gap-4">
         {/* BACK */}
@@ -94,12 +94,7 @@ const ImagePageInner = ({
           <div className="mt-1">
             <HardDrive className="w-8 h-8" />
           </div>
-          <h1
-            title={image_name}
-            className="text-3xl max-w-[60vw] overflow-hidden text-ellipsis"
-          >
-            {image_name}
-          </h1>
+          <DockerResourcePageName name={image_name} />
         </div>
 
         {/* INFO */}

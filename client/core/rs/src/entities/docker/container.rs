@@ -46,6 +46,9 @@ pub struct ContainerListItem {
 
   /// The network names attached to container
   pub networks: Option<Vec<String>>,
+
+  /// The volume names attached to container
+  pub volumes: Option<Vec<String>>,
 }
 
 /// An open port on a container
