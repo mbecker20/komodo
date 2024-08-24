@@ -1,12 +1,18 @@
 import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
-import { DockerLabelsSection, DockerResourcePageName } from "@components/util";
+import {
+  DOCKER_LINK_ICONS,
+  DockerContainersSection,
+  DockerLabelsSection,
+  DockerResourcePageName,
+} from "@components/util";
 import { format_size_bytes } from "@lib/formatting";
 import { useRead, useSetTitle } from "@lib/hooks";
+import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { ChevronLeft, HardDrive, Info, Loader2 } from "lucide-react";
+import { ChevronLeft, Info, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const ImagePage = () => {
@@ -45,9 +51,19 @@ const ImagePageInner = ({
     server: id,
     image: image_name,
   });
+  const containers =
+    useRead(
+      "ListDockerContainers",
+      {
+        server: id,
+      },
+      { refetchInterval: 5000 }
+    ).data?.filter((container) =>
+      !image?.Id ? false : container.image_id === image?.Id
+    );
   // const history = useRead("ListDockerImageHistory", {
   //   server: id,
-  //   image: _image,
+  //   image: image_name,
   // }).data;
 
   if (isPending) {
@@ -92,9 +108,12 @@ const ImagePageInner = ({
         {/* TITLE */}
         <div className="flex items-center gap-4">
           <div className="mt-1">
-            <HardDrive className="w-8 h-8" />
+            <DOCKER_LINK_ICONS.image server_id={id} name={image.Id} size={8} />
           </div>
           <DockerResourcePageName name={image_name} />
+          {containers && containers.length === 0 && (
+            <Badge variant="destructive">Unused</Badge>
+          )}
         </div>
 
         {/* INFO */}
@@ -142,6 +161,10 @@ const ImagePageInner = ({
           ]}
         />
       </Section>
+
+      {containers && containers.length > 0 && (
+        <DockerContainersSection server_id={id} containers={containers} />
+      )}
 
       {/* {history && history.length > 0 && <Section title="History"></Section>} */}
 

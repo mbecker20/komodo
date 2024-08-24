@@ -4,6 +4,7 @@ import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { Network } from "lucide-react";
+import { useCallback } from "react";
 
 export const Networks = ({
   id,
@@ -14,7 +15,19 @@ export const Networks = ({
   show: boolean;
   setShow: (show: boolean) => void;
 }) => {
-  const networks = useRead("ListDockerNetworks", { server: id }).data ?? [];
+  const networks =
+    useRead("ListDockerNetworks", { server: id }, { refetchInterval: 5000 })
+      .data ?? [];
+  const containers = useRead("ListDockerContainers", { server: id }).data ?? [];
+
+  const no_containers = useCallback(
+    (network_name: string) => {
+      return containers.every(
+        (container) => !container.networks?.includes(network_name)
+      );
+    },
+    [containers]
+  );
 
   return (
     <Section
@@ -41,7 +54,14 @@ export const Networks = ({
                     extra={
                       ["none", "host", "bridge"].includes(
                         row.original.name ?? ""
-                      ) && <Badge variant="outline">System</Badge>
+                      ) ? (
+                        <Badge variant="outline">System</Badge>
+                      ) : (
+                        row.original.name &&
+                        no_containers(row.original.name) && (
+                          <Badge variant="destructive">Unused</Badge>
+                        )
+                      )
                     }
                   />
                 </div>

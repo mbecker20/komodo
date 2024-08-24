@@ -23,10 +23,10 @@ export const ServerInfo = ({
     images: boolean;
     volumes: boolean;
   }>("server-info-show-config", {
-    containers: false,
-    networks: false,
-    images: false,
-    volumes: false,
+    containers: true,
+    networks: true,
+    images: true,
+    volumes: true,
   });
 
   if ([Types.ServerState.NotOk, Types.ServerState.Disabled].includes(state)) {

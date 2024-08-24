@@ -41,12 +41,16 @@ import { Card } from "@ui/card";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
   ColorIntention,
+  container_state_intention,
   hex_color_by_intention,
+  stroke_color_class_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
 import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
 import { Section } from "./layouts";
+import { DataTable, SortableHeader } from "@ui/data-table";
+import { useRead } from "@lib/hooks";
 
 export const WithLoading = ({
   children,
@@ -530,25 +534,100 @@ export const ShowHideButton = ({
 
 type DockerResourceType = "container" | "network" | "image" | "volume";
 
-const DOCKER_LINK_ICONS: {
-  [type in DockerResourceType]: React.FC;
+export const DOCKER_LINK_ICONS: {
+  [type in DockerResourceType]: React.FC<{
+    server_id: string;
+    name: string | undefined;
+    size?: number;
+  }>;
 } = {
-  container: () => <Box className="w-4 h-4" />,
-  network: () => <Network className="w-4 h-4" />,
-  image: () => <HardDrive className="w-4 h-4" />,
-  volume: () => <Database className="w-4 h-4" />,
+  container: ({ server_id, name, size = 4 }) => {
+    const state =
+      useRead("ListDockerContainers", { server: server_id }).data?.find(
+        (container) => container.name === name
+      )?.state ?? Types.ContainerStateStatusEnum.Empty;
+    return (
+      <Box
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(container_state_intention(state))
+        )}
+      />
+    );
+  },
+  network: ({ server_id, name, size = 4 }) => {
+    const containers =
+      useRead("ListDockerContainers", { server: server_id }).data ?? [];
+    const no_containers = !name
+      ? false
+      : containers.every((container) => !container.networks?.includes(name));
+    return (
+      <Network
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(
+            !name
+              ? "Warning"
+              : no_containers
+              ? ["none", "host", "bridge"].includes(name)
+                ? "None"
+                : "Critical"
+              : "Good"
+          )
+        )}
+      />
+    );
+  },
+  image: ({ server_id, name, size = 4 }) => {
+    const containers =
+      useRead("ListDockerContainers", { server: server_id }).data ?? [];
+    const no_containers = !name
+      ? false
+      : containers.every((container) => container.image_id !== name);
+    return (
+      <HardDrive
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(
+            !name ? "Warning" : no_containers ? "Critical" : "Good"
+          )
+        )}
+      />
+    );
+  },
+  volume: ({ server_id, name, size = 4 }) => {
+    const containers =
+      useRead("ListDockerContainers", { server: server_id }).data ?? [];
+    const no_containers = !name
+      ? false
+      : containers.every((container) => !container.volumes?.includes(name));
+    return (
+      <Database
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(
+            !name ? "Warning" : no_containers ? "Critical" : "Good"
+          )
+        )}
+      />
+    );
+  },
 };
 
 export const DockerResourceLink = ({
   server_id,
   name,
+  id,
   type,
   extra,
+  muted,
 }: {
   server_id: string;
-  name?: string;
+  name: string | undefined;
+  id?: string;
   type: "container" | "network" | "image" | "volume";
   extra?: ReactNode;
+  muted?: boolean;
 }) => {
   if (!name) return "Unknown";
 
@@ -559,8 +638,11 @@ export const DockerResourceLink = ({
       to={`/servers/${server_id}/${type}/${encodeURIComponent(name)}`}
       className="px-0"
     >
-      <Button variant="link" className="px-0 gap-2">
-        <Icon />
+      <Button
+        variant="link"
+        className={cn("px-0 gap-2", muted && "text-muted-foreground")}
+      >
+        <Icon server_id={server_id} name={type === "image" ? id : name} />
         <div
           title={name}
           className="max-w-[200px] lg:max-w-[300px] overflow-hidden overflow-ellipsis"
@@ -582,5 +664,75 @@ export const DockerResourcePageName = ({ name: _name }: { name?: string }) => {
     >
       {name}
     </h1>
+  );
+};
+
+export const DockerContainersSection = ({
+  server_id,
+  containers,
+  show = true,
+  setShow,
+}: {
+  server_id: string;
+  containers: Types.ListDockerContainersResponse;
+  show?: boolean;
+  setShow?: (show: boolean) => void;
+}) => {
+  return (
+    <Section
+      title="Containers"
+      icon={<Box className="w-4 h-4" />}
+      actions={setShow && <ShowHideButton show={show} setShow={setShow} />}
+    >
+      {show && (
+        <DataTable
+          tableKey="server-containers"
+          data={containers}
+          columns={[
+            {
+              accessorKey: "name",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Name" />
+              ),
+              cell: ({ row }) => (
+                <DockerResourceLink
+                  type="container"
+                  server_id={server_id}
+                  name={row.original.name}
+                />
+              ),
+              size: 200,
+            },
+            {
+              accessorKey: "image",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Image" />
+              ),
+            },
+            {
+              accessorKey: "network_mode",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Network" />
+              ),
+            },
+            {
+              accessorKey: "state",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="State" />
+              ),
+              cell: ({ row }) => {
+                const state = row.original?.state;
+                return (
+                  <StatusBadge
+                    text={state}
+                    intent={container_state_intention(state)}
+                  />
+                );
+              },
+            },
+          ]}
+        />
+      )}
+    </Section>
   );
 };

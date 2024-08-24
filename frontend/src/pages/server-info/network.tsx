@@ -2,21 +2,16 @@ import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
 import {
+  DOCKER_LINK_ICONS,
   DockerLabelsSection,
   DockerOptions,
   DockerResourcePageName,
 } from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
+import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import {
-  Box,
-  ChevronLeft,
-  Info,
-  Loader2,
-  Network,
-  Waypoints,
-} from "lucide-react";
+import { Box, ChevronLeft, Info, Loader2, Waypoints } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 export const NetworkPage = () => {
@@ -104,9 +99,16 @@ const NetworkPageInner = ({
         {/* TITLE */}
         <div className="flex items-center gap-4">
           <div className="mt-1">
-            <Network className="w-8 h-8" />
+            <DOCKER_LINK_ICONS.network
+              server_id={id}
+              name={network_name}
+              size={8}
+            />
           </div>
           <DockerResourcePageName name={network_name} />
+          {containers.length === 0 && (
+            <Badge variant="destructive">Unused</Badge>
+          )}
         </div>
 
         {/* INFO */}

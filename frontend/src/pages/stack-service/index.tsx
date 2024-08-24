@@ -16,14 +16,14 @@ import {
 import { useRead, useSetTitle } from "@lib/hooks";
 import { cn, has_minimum_permissions } from "@lib/utils";
 import { Types } from "@monitor/client";
-import { Box, ChevronLeft, Clapperboard, Layers2 } from "lucide-react";
+import { ChevronLeft, Clapperboard, Layers2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { StackServiceLogs } from "./log";
 import { ResourceUpdates } from "@components/updates/resource";
 import { Button } from "@ui/button";
 import { ExportButton } from "@components/export";
 import { AddTags, ResourceTags } from "@components/tags";
-import { StatusBadge } from "@components/util";
+import { DockerResourceLink, StatusBadge } from "@components/util";
 
 type IdServiceComponent = React.FC<{ id: string; service?: string }>;
 
@@ -115,13 +115,15 @@ const StackServicePageInner = ({
                   <ResourceLink type="Server" id={stack.info.server_id} />
                 </>
               )}
-              {container && container?.name !== service && (
+              {stack?.info.server_id && container && container.name && (
                 <>
                   |
-                  <div className="flex gap-2 items-center">
-                    <Box className="w-4 h-4" />
-                    {container.name}
-                  </div>
+                  <DockerResourceLink
+                    type="container"
+                    server_id={stack?.info.server_id}
+                    name={container.name}
+                    muted
+                  />
                 </>
               )}
             </div>

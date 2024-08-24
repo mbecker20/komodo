@@ -2,6 +2,7 @@ import { Section } from "@components/layouts";
 import { NewResource, ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
 import {
+  DOCKER_LINK_ICONS,
   DockerLabelsSection,
   DockerResourcePageName,
   StatusBadge,
@@ -9,7 +10,7 @@ import {
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { Box, ChevronLeft, Clapperboard, Info, Loader2 } from "lucide-react";
+import { ChevronLeft, Clapperboard, Info, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ContainerLogs } from "./log";
 import { Actions } from "./actions";
@@ -108,7 +109,11 @@ const ContainerPageInner = ({
         {/* TITLE */}
         <div className="flex items-center gap-4">
           <div className="mt-1">
-            <Box className="w-8 h-8" />
+            <DOCKER_LINK_ICONS.container
+              server_id={id}
+              name={container_name}
+              size={8}
+            />
           </div>
           <DockerResourcePageName name={container_name} />
           <div className="flex items-center gap-4 flex-wrap">

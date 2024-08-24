@@ -1,11 +1,18 @@
 import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
-import { DockerLabelsSection, DockerResourcePageName } from "@components/util";
+import {
+  DOCKER_LINK_ICONS,
+  DockerContainersSection,
+  DockerLabelsSection,
+  DockerOptions,
+  DockerResourcePageName,
+} from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
+import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { ChevronLeft, Database, Info, Loader2 } from "lucide-react";
+import { ChevronLeft, Info, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const VolumePage = () => {
@@ -41,6 +48,13 @@ const VolumePageInner = ({
     server: id,
     volume: volume_name,
   });
+  const containers = useRead(
+    "ListDockerContainers",
+    {
+      server: id,
+    },
+    { refetchInterval: 5000 }
+  ).data?.filter((container) => container.volumes?.includes(volume_name));
 
   if (isPending) {
     return (
@@ -61,8 +75,6 @@ const VolumePageInner = ({
   }
 
   // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
-
-  console.log(volume);
 
   return (
     <div className="flex flex-col gap-16 mb-24">
@@ -86,9 +98,16 @@ const VolumePageInner = ({
         {/* TITLE */}
         <div className="flex items-center gap-4">
           <div className="mt-1">
-            <Database className="w-8 h-8" />
+            <DOCKER_LINK_ICONS.container
+              server_id={id}
+              name={volume_name}
+              size={8}
+            />
           </div>
           <DockerResourcePageName name={volume_name} />
+          {containers && containers.length === 0 && (
+            <Badge variant="destructive">Unused</Badge>
+          )}
         </div>
 
         {/* INFO */}
@@ -115,9 +134,18 @@ const VolumePageInner = ({
               accessorKey: "CreatedAt",
               header: "Created At",
             },
+            {
+              accessorKey: "UsageData.Size",
+              header: "Used Size",
+            },
           ]}
         />
+        <DockerOptions options={volume.Options} />
       </Section>
+
+      {containers && containers.length > 0 && (
+        <DockerContainersSection server_id={id} containers={containers} />
+      )}
 
       <DockerLabelsSection labels={volume.Labels} />
     </div>
