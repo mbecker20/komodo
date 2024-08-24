@@ -1506,6 +1506,8 @@ export interface ContainerListItem {
 	network_mode?: string;
 	/** The network names attached to container */
 	networks?: string[];
+	/** The volume names attached to container */
+	volumes?: string[];
 }
 
 export type ListDockerContainersResponse = ContainerListItem[];
