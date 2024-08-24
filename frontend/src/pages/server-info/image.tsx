@@ -7,12 +7,12 @@ import {
   DockerLabelsSection,
   DockerResourcePageName,
 } from "@components/util";
-import { format_size_bytes } from "@lib/formatting";
+import { fmt_date_with_minutes, format_size_bytes } from "@lib/formatting";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { ChevronLeft, Info, Loader2 } from "lucide-react";
+import { ChevronLeft, HistoryIcon, Info, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const ImagePage = () => {
@@ -40,9 +40,6 @@ const ImagePageInner = ({
   // const perms = useRead("GetPermissionLevel", {
   //   target: { type: "Server", id },
   // }).data;
-  // const list_image = useRead("ListDockerImages", { server: id }).data?.find(
-  //   (image) => image.name === _image
-  // );
   const {
     data: image,
     isPending,
@@ -51,20 +48,19 @@ const ImagePageInner = ({
     server: id,
     image: image_name,
   });
-  const containers =
-    useRead(
-      "ListDockerContainers",
-      {
-        server: id,
-      },
-      { refetchInterval: 5000 }
-    ).data?.filter((container) =>
-      !image?.Id ? false : container.image_id === image?.Id
-    );
-  // const history = useRead("ListDockerImageHistory", {
-  //   server: id,
-  //   image: image_name,
-  // }).data;
+  const containers = useRead(
+    "ListDockerContainers",
+    {
+      server: id,
+    },
+    { refetchInterval: 5000 }
+  ).data?.filter((container) =>
+    !image?.Id ? false : container.image_id === image?.Id
+  );
+  const history = useRead("ListDockerImageHistory", {
+    server: id,
+    image: image_name,
+  }).data;
 
   if (isPending) {
     return (
@@ -166,7 +162,28 @@ const ImagePageInner = ({
         <DockerContainersSection server_id={id} containers={containers} />
       )}
 
-      {/* {history && history.length > 0 && <Section title="History"></Section>} */}
+      {history && history.length > 0 && (
+        <Section title="History" icon={<HistoryIcon className="w-4 h-4" />}>
+          <DataTable
+            tableKey="image-history"
+            data={history.toReversed()}
+            columns={[
+              {
+                accessorKey: "CreatedBy",
+                header: "Created By",
+                size: 400,
+              },
+              {
+                accessorKey: "Created",
+                header: "Timestamp",
+                cell: ({ row }) =>
+                  fmt_date_with_minutes(new Date(row.original.Created * 1000)),
+                size: 200,
+              },
+            ]}
+          />
+        </Section>
+      )}
 
       <DockerLabelsSection labels={image?.Config?.Labels} />
     </div>
