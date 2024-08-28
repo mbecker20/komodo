@@ -7,7 +7,6 @@ import {
   Cpu,
   MemoryStick,
   Database,
-  Scissors,
   AreaChart,
   Milestone,
   AlertTriangle,
@@ -398,104 +397,6 @@ export const ServerComponents: RequiredResourceComponents = {
             onClick={() => mutate({ server: id })}
             disabled={pending}
             loading={pending}
-          />
-        )
-      );
-    },
-    PruneContainers: ({ id }) => {
-      const server = useServer(id);
-      const { mutate, isPending } = useExecute("PruneContainers");
-      const pruning = useRead(
-        "GetServerActionState",
-        { server: id },
-        { refetchInterval: 5000 }
-      ).data?.pruning_containers;
-      const pending = isPending || pruning;
-      return (
-        server && (
-          <ActionWithDialog
-            name={server?.name}
-            title="Prune Containers"
-            icon={<Scissors className="w-4 h-4" />}
-            onClick={() => mutate({ server: id })}
-            loading={pending}
-            disabled={pending}
-          />
-        )
-      );
-    },
-    PruneNetworks: ({ id }) => {
-      const { mutate, isPending } = useExecute("PruneNetworks");
-      const pruning = useRead(
-        "GetServerActionState",
-        { server: id },
-        { refetchInterval: 5000 }
-      ).data?.pruning_networks;
-      const pending = isPending || pruning;
-      return (
-        <ConfirmButton
-          title="Prune Networks"
-          icon={<Scissors className="w-4 h-4" />}
-          onClick={() => mutate({ server: id })}
-          loading={pending}
-          disabled={pending}
-        />
-      );
-    },
-    PruneVolumes: ({ id }) => {
-      const { mutate, isPending } = useExecute("PruneVolumes");
-      const pruning = useRead(
-        "GetServerActionState",
-        { server: id },
-        { refetchInterval: 5000 }
-      ).data?.pruning_volumes;
-      const pending = isPending || pruning;
-      return (
-        <ConfirmButton
-          title="Prune Volumes"
-          icon={<Scissors className="w-4 h-4" />}
-          onClick={() => mutate({ server: id })}
-          loading={pending}
-          disabled={pending}
-        />
-      );
-    },
-    PruneImages: ({ id }) => {
-      const { mutate, isPending } = useExecute("PruneImages");
-      const pruning = useRead(
-        "GetServerActionState",
-        { server: id },
-        { refetchInterval: 5000 }
-      ).data?.pruning_images;
-      const pending = isPending || pruning;
-      return (
-        <ConfirmButton
-          title="Prune Images"
-          icon={<Scissors className="w-4 h-4" />}
-          onClick={() => mutate({ server: id })}
-          loading={pending}
-          disabled={pending}
-        />
-      );
-    },
-    PruneSystem: ({ id }) => {
-      const server = useServer(id);
-      const { mutate, isPending } = useExecute("PruneSystem");
-      const pruning = useRead(
-        "GetServerActionState",
-        { server: id },
-        { refetchInterval: 5000 }
-      ).data?.pruning_system;
-      const pending = isPending || pruning;
-      return (
-        server && (
-          <ActionWithDialog
-            name={server.name}
-            title="Prune System"
-            icon={<Scissors className="w-4 h-4" />}
-            onClick={() => mutate({ server: id })}
-            loading={pending}
-            disabled={pending}
           />
         )
       );

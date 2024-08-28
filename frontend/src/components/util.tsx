@@ -51,6 +51,7 @@ import { Badge } from "@ui/badge";
 import { Section } from "./layouts";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useRead } from "@lib/hooks";
+import { Prune } from "./resources/server/actions";
 
 export const WithLoading = ({
   children,
@@ -672,67 +673,98 @@ export const DockerContainersSection = ({
   containers,
   show = true,
   setShow,
+  pruneButton,
 }: {
   server_id: string;
   containers: Types.ListDockerContainersResponse;
   show?: boolean;
   setShow?: (show: boolean) => void;
+  pruneButton?: boolean;
 }) => {
+  const allRunning = useRead("ListDockerContainers", {
+    server: server_id,
+  }).data?.every(
+    (container) => container.state === Types.ContainerStateStatusEnum.Running
+  );
   return (
-    <Section
-      title="Containers"
-      icon={<Box className="w-4 h-4" />}
-      actions={setShow && <ShowHideButton show={show} setShow={setShow} />}
-    >
-      {show && (
-        <DataTable
-          tableKey="server-containers"
-          data={containers}
-          columns={[
-            {
-              accessorKey: "name",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="Name" />
-              ),
-              cell: ({ row }) => (
-                <DockerResourceLink
-                  type="container"
-                  server_id={server_id}
-                  name={row.original.name}
-                />
-              ),
-              size: 200,
-            },
-            {
-              accessorKey: "image",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="Image" />
-              ),
-            },
-            {
-              accessorKey: "network_mode",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="Network" />
-              ),
-            },
-            {
-              accessorKey: "state",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="State" />
-              ),
-              cell: ({ row }) => {
-                const state = row.original?.state;
-                return (
-                  <StatusBadge
-                    text={state}
-                    intent={container_state_intention(state)}
+    <div className={cn(setShow && show && "mb-8")}>
+      <Section
+        title="Containers"
+        icon={<Box className="w-4 h-4" />}
+        actions={
+          <div className="flex items-center gap-2">
+            {pruneButton && !allRunning && (
+              <Prune server_id={server_id} type="Containers" />
+            )}
+            {setShow && <ShowHideButton show={show} setShow={setShow} />}
+          </div>
+        }
+      >
+        {show && (
+          <DataTable
+            tableKey="server-containers"
+            data={containers}
+            columns={[
+              {
+                accessorKey: "name",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Name" />
+                ),
+                cell: ({ row }) => (
+                  <DockerResourceLink
+                    type="container"
+                    server_id={server_id}
+                    name={row.original.name}
                   />
-                );
+                ),
+                size: 200,
               },
-            },
-          ]}
-        />
-      )}
-    </Section>
+              {
+                accessorKey: "image",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Image" />
+                ),
+                cell: ({ row }) => (
+                  <DockerResourceLink
+                    type="image"
+                    server_id={server_id}
+                    name={row.original.image}
+                    id={row.original.image_id}
+                  />
+                ),
+              },
+              {
+                accessorKey: "network_mode",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Network" />
+                ),
+                cell: ({ row }) => (
+                  <DockerResourceLink
+                    type="network"
+                    server_id={server_id}
+                    name={row.original.network_mode}
+                  />
+                ),
+              },
+              {
+                accessorKey: "state",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="State" />
+                ),
+                cell: ({ row }) => {
+                  const state = row.original?.state;
+                  return (
+                    <StatusBadge
+                      text={state}
+                      intent={container_state_intention(state)}
+                    />
+                  );
+                },
+              },
+            ]}
+          />
+        )}
+      </Section>
+    </div>
   );
 };

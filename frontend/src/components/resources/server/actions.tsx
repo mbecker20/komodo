@@ -1,9 +1,10 @@
-import { ConfirmButton } from "@components/util";
-import { useInvalidate, useWrite } from "@lib/hooks";
+import { ActionWithDialog, ConfirmButton } from "@components/util";
+import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
-import { Pen } from "lucide-react";
+import { Pen, Scissors } from "lucide-react";
 import { useState } from "react";
+import { useServer } from ".";
 
 export const RenameServer = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();
@@ -39,4 +40,56 @@ export const RenameServer = ({ id }: { id: string }) => {
       </div>
     </div>
   );
+};
+
+export const Prune = ({
+  server_id,
+  type,
+}: {
+  server_id: string;
+  type: "Containers" | "Networks" | "Images" | "Volumes" | "System";
+}) => {
+  const server = useServer(server_id);
+  const { mutate, isPending } = useExecute(`Prune${type}`);
+  const action_state = useRead(
+    "GetServerActionState",
+    { server: server_id },
+    { refetchInterval: 5000 }
+  ).data;
+  const pruningKey =
+    type === "Containers"
+      ? "pruning_containers"
+      : type === "Images"
+      ? "pruning_images"
+      : type === "Networks"
+      ? "pruning_networks"
+      : type === "Volumes"
+      ? "pruning_volumes"
+      : type === "System"
+      ? "pruning_system"
+      : "";
+  if (!server) return;
+  const pending = isPending || action_state?.[pruningKey];
+  if (type === "Images" || type === "Networks") {
+    return (
+      <ConfirmButton
+        title={`Prune ${type}`}
+        icon={<Scissors className="w-4 h-4" />}
+        onClick={() => mutate({ server: server_id })}
+        loading={pending}
+        disabled={pending}
+      />
+    );
+  } else {
+    return (
+      <ActionWithDialog
+        name={server?.name}
+        title={`Prune ${type}`}
+        icon={<Scissors className="w-4 h-4" />}
+        onClick={() => mutate({ server: server_id })}
+        loading={pending}
+        disabled={pending}
+      />
+    );
+  }
 };

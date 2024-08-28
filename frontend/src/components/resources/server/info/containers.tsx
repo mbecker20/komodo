@@ -19,6 +19,7 @@ export const Containers = ({
       containers={containers}
       show={show}
       setShow={setShow}
+      pruneButton
     />
   );
 };

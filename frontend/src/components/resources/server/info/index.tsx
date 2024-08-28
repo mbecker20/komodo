@@ -61,26 +61,28 @@ export const ServerInfo = ({
         </Button>
       }
     >
-      <Containers
-        id={id}
-        show={show.containers}
-        setShow={(containers) => setShow({ ...show, containers })}
-      />
-      <Networks
-        id={id}
-        show={show.networks}
-        setShow={(networks) => setShow({ ...show, networks })}
-      />
-      <Volumes
-        id={id}
-        show={show.volumes}
-        setShow={(volumes) => setShow({ ...show, volumes })}
-      />
-      <Images
-        id={id}
-        show={show.images}
-        setShow={(images) => setShow({ ...show, images })}
-      />
+      <div className="flex flex-col gap-4">
+        <Containers
+          id={id}
+          show={show.containers}
+          setShow={(containers) => setShow({ ...show, containers })}
+        />
+        <Networks
+          id={id}
+          show={show.networks}
+          setShow={(networks) => setShow({ ...show, networks })}
+        />
+        <Volumes
+          id={id}
+          show={show.volumes}
+          setShow={(volumes) => setShow({ ...show, volumes })}
+        />
+        <Images
+          id={id}
+          show={show.images}
+          setShow={(images) => setShow({ ...show, images })}
+        />
+      </div>
     </Section>
   );
 };
