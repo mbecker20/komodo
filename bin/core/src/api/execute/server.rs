@@ -3,10 +3,10 @@ use formatting::format_serror;
 use monitor_client::{
   api::execute::*,
   entities::{
-    all_logs_success, monitor_timestamp,
+    all_logs_success,
     permission::PermissionLevel,
     server::Server,
-    update::{Log, Update, UpdateStatus},
+    update::{Log, Update},
     user::User,
   },
 };
@@ -42,8 +42,8 @@ impl Resolve<StartContainer, (User, Update)> for State {
 
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.starting_containers = true)?;
+    let _action_guard = action_state
+      .update(|state| state.starting_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -63,6 +63,7 @@ impl Resolve<StartContainer, (User, Update)> for State {
 
     update.logs.push(log);
     update_cache_for_server(&server).await;
+
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -92,8 +93,8 @@ impl Resolve<RestartContainer, (User, Update)> for State {
 
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.restarting_containers = true)?;
+    let _action_guard = action_state
+      .update(|state| state.restarting_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -115,6 +116,7 @@ impl Resolve<RestartContainer, (User, Update)> for State {
 
     update.logs.push(log);
     update_cache_for_server(&server).await;
+
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -165,6 +167,7 @@ impl Resolve<PauseContainer, (User, Update)> for State {
 
     update.logs.push(log);
     update_cache_for_server(&server).await;
+
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -194,8 +197,8 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
 
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.unpausing_containers = true)?;
+    let _action_guard = action_state
+      .update(|state| state.unpausing_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -217,6 +220,7 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
 
     update.logs.push(log);
     update_cache_for_server(&server).await;
+
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -251,8 +255,8 @@ impl Resolve<StopContainer, (User, Update)> for State {
 
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.stopping_containers = true)?;
+    let _action_guard = action_state
+      .update(|state| state.stopping_containers = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -276,6 +280,7 @@ impl Resolve<StopContainer, (User, Update)> for State {
 
     update.logs.push(log);
     update_cache_for_server(&server).await;
+
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -334,8 +339,9 @@ impl Resolve<DestroyContainer, (User, Update)> for State {
     };
 
     update.logs.push(log);
-    update.finalize();
     update_cache_for_server(&server).await;
+
+    update.finalize();
     update_update(update.clone()).await?;
 
     Ok(update)
@@ -383,6 +389,7 @@ impl Resolve<StartAllContainers, (User, Update)> for State {
       );
     }
 
+    update_cache_for_server(&server).await;
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -433,6 +440,7 @@ impl Resolve<RestartAllContainers, (User, Update)> for State {
       );
     }
 
+    update_cache_for_server(&server).await;
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -481,6 +489,7 @@ impl Resolve<PauseAllContainers, (User, Update)> for State {
       );
     }
 
+    update_cache_for_server(&server).await;
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -531,6 +540,7 @@ impl Resolve<UnpauseAllContainers, (User, Update)> for State {
       );
     }
 
+    update_cache_for_server(&server).await;
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -579,6 +589,7 @@ impl Resolve<StopAllContainers, (User, Update)> for State {
       );
     }
 
+    update_cache_for_server(&server).await;
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -631,11 +642,10 @@ impl Resolve<PruneContainers, (User, Update)> for State {
       ),
     };
 
-    update.success = log.success;
-    update.status = UpdateStatus::Complete;
-    update.end_ts = Some(monitor_timestamp());
     update.logs.push(log);
+    update_cache_for_server(&server).await;
 
+    update.finalize();
     update_update(update.clone()).await?;
 
     Ok(update)
@@ -685,11 +695,10 @@ impl Resolve<PruneNetworks, (User, Update)> for State {
       ),
     };
 
-    update.success = log.success;
-    update.status = UpdateStatus::Complete;
-    update.end_ts = Some(monitor_timestamp());
     update.logs.push(log);
+    update_cache_for_server(&server).await;
 
+    update.finalize();
     update_update(update.clone()).await?;
 
     Ok(update)
@@ -738,9 +747,9 @@ impl Resolve<PruneImages, (User, Update)> for State {
       };
 
     update.logs.push(log);
+    update_cache_for_server(&server).await;
 
     update.finalize();
-
     update_update(update.clone()).await?;
 
     Ok(update)
@@ -789,9 +798,9 @@ impl Resolve<PruneVolumes, (User, Update)> for State {
       };
 
     update.logs.push(log);
+    update_cache_for_server(&server).await;
 
     update.finalize();
-
     update_update(update.clone()).await?;
 
     Ok(update)
@@ -839,9 +848,9 @@ impl Resolve<PruneSystem, (User, Update)> for State {
     };
 
     update.logs.push(log);
+    update_cache_for_server(&server).await;
 
     update.finalize();
-
     update_update(update.clone()).await?;
 
     Ok(update)
