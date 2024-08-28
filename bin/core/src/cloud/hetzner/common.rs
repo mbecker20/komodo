@@ -162,6 +162,8 @@ pub enum HetznerLocation {
   Ashburn,
   #[serde(rename = "hil")]
   Hillsboro,
+  #[serde(rename = "sin")]
+  Singapore,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -176,6 +178,8 @@ pub enum HetznerDatacenter {
   AshburnDc1,
   #[serde(rename = "hil-dc1")]
   HillsboroDc1,
+  #[serde(rename = "sin-dc1")]
+  SingaporeDc1,
 }
 
 impl From<HetznerDatacenter> for HetznerLocation {
@@ -188,6 +192,7 @@ impl From<HetznerDatacenter> for HetznerLocation {
       }
       HetznerDatacenter::AshburnDc1 => HetznerLocation::Ashburn,
       HetznerDatacenter::HillsboroDc1 => HetznerLocation::Hillsboro,
+      HetznerDatacenter::SingaporeDc1 => HetznerLocation::Singapore,
     }
   }
 }

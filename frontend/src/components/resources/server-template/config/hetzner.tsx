@@ -316,7 +316,8 @@ const ServerTypeSelector = ({
   // The US based datacenters only have Amd servers
   const filter =
     datacenter === Types.HetznerDatacenter.HillsboroDc1 ||
-    datacenter === Types.HetznerDatacenter.AshburnDc1
+    datacenter === Types.HetznerDatacenter.AshburnDc1 ||
+    datacenter === Types.HetznerDatacenter.SingaporeDc1
       ? (st: string) => st.includes("Amd")
       : () => true;
   const server_types = Object.values(Types.HetznerServerType).filter(filter);

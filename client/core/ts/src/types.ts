@@ -6139,6 +6139,7 @@ export enum HetznerDatacenter {
 	Falkenstein1Dc14 = "Falkenstein1Dc14",
 	AshburnDc1 = "AshburnDc1",
 	HillsboroDc1 = "HillsboroDc1",
+	SingaporeDc1 = "SingaporeDc1",
 }
 
 export enum HetznerServerType {

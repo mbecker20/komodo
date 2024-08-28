@@ -209,6 +209,9 @@ fn hetzner_datacenter(
     HetznerDatacenter::HillsboroDc1 => {
       common::HetznerDatacenter::HillsboroDc1
     }
+    HetznerDatacenter::SingaporeDc1 => {
+      common::HetznerDatacenter::SingaporeDc1
+    }
   }
 }
 
