@@ -195,7 +195,7 @@ pub async fn init_execution_update(
       ),
     ),
     ExecuteRequest::PruneContainers(data) => (
-      Operation::PruneImages,
+      Operation::PruneContainers,
       ResourceTarget::Server(
         resource::get::<Server>(&data.server).await?.id,
       ),
