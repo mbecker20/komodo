@@ -602,6 +602,9 @@ type MinExecutionType = Exclude<
   | "UnpauseContainer"
   | "StopContainer"
   | "DestroyContainer"
+  | "DeleteNetwork"
+  | "DeleteImage"
+  | "DeleteVolume"
 >;
 
 type ExecutionConfigParams<T extends MinExecutionType> = Extract<

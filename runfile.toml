@@ -19,7 +19,7 @@ cmd = "yarn build"
 description = "deploys test.compose.yaml"
 cmd = """
 docker compose -f test.compose.yaml down && \
-docker compose -f test.compose.yaml up -d"""
+docker compose -f test.compose.yaml up -d --build"""
 
 [test-core]
 description = "runs core --release pointing to test.core.config.toml"
