@@ -3,10 +3,7 @@ use monitor_client::entities::{
   docker::network::{Network, NetworkListItem},
   update::Log,
 };
-use periphery_client::api::network::{
-  CreateNetwork, DeleteNetwork, GetNetworkList, InspectNetwork,
-  PruneNetworks,
-};
+use periphery_client::api::network::*;
 use resolver_api::Resolve;
 
 use crate::{docker::docker_client, State};

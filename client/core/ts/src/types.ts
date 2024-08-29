@@ -855,8 +855,11 @@ export type Execution =
 	| { type: "UnpauseAllContainers", params: UnpauseAllContainers }
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
+	| { type: "DeleteNetwork", params: DeleteNetwork }
 	| { type: "PruneNetworks", params: PruneNetworks }
+	| { type: "DeleteImage", params: DeleteImage }
 	| { type: "PruneImages", params: PruneImages }
+	| { type: "DeleteVolume", params: DeleteVolume }
 	| { type: "PruneVolumes", params: PruneVolumes }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "RunSync", params: RunSync }
@@ -2712,12 +2715,14 @@ export enum Operation {
 	UnpauseAllContainers = "UnpauseAllContainers",
 	StopAllContainers = "StopAllContainers",
 	PruneContainers = "PruneContainers",
-	PruneNetworks = "PruneNetworks",
-	PruneImages = "PruneImages",
-	PruneVolumes = "PruneVolumes",
-	PruneSystem = "PruneSystem",
 	CreateNetwork = "CreateNetwork",
 	DeleteNetwork = "DeleteNetwork",
+	PruneNetworks = "PruneNetworks",
+	DeleteImage = "DeleteImage",
+	PruneImages = "PruneImages",
+	DeleteVolume = "DeleteVolume",
+	PruneVolumes = "PruneVolumes",
+	PruneSystem = "PruneSystem",
 	CreateBuild = "CreateBuild",
 	UpdateBuild = "UpdateBuild",
 	DeleteBuild = "DeleteBuild",
@@ -3512,6 +3517,17 @@ export interface PruneContainers {
 }
 
 /**
+ * Delete a docker network.
+ * Response: [Update]
+ */
+export interface DeleteNetwork {
+	/** Id or name. */
+	server: string;
+	/** The name of the network to delete. */
+	name: string;
+}
+
+/**
  * Prunes the docker networks on the target server. Response: [Update].
  * 
  * 1. Runs `docker network prune -f`.
@@ -3522,6 +3538,17 @@ export interface PruneNetworks {
 }
 
 /**
+ * Delete a docker image.
+ * Response: [Update]
+ */
+export interface DeleteImage {
+	/** Id or name. */
+	server: string;
+	/** The name of the image to delete. */
+	name: string;
+}
+
+/**
  * Prunes the docker images on the target server. Response: [Update].
  * 
  * 1. Runs `docker image prune -a -f`.
@@ -3529,6 +3556,17 @@ export interface PruneNetworks {
 export interface PruneImages {
 	/** Id or name */
 	server: string;
+}
+
+/**
+ * Delete a docker volume.
+ * Response: [Update]
+ */
+export interface DeleteVolume {
+	/** Id or name. */
+	server: string;
+	/** The name of the volume to delete. */
+	name: string;
 }
 
 /**
@@ -5578,17 +5616,6 @@ export interface CreateNetwork {
 	name: string;
 }
 
-/**
- * Delete a docker network.
- * Response: [Update]
- */
-export interface DeleteNetwork {
-	/** Id or name. */
-	server: string;
-	/** The name of the network to delete. */
-	name: string;
-}
-
 export type PartialServerTemplateConfig = 
 	| { type: "Aws", params: _PartialAwsServerTemplateConfig }
 	| { type: "Hetzner", params: _PartialHetznerServerTemplateConfig };
@@ -6328,8 +6355,11 @@ export type ExecuteRequest =
 	| { type: "UnpauseAllContainers", params: UnpauseAllContainers }
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "PruneContainers", params: PruneContainers }
+	| { type: "DeleteNetwork", params: DeleteNetwork }
 	| { type: "PruneNetworks", params: PruneNetworks }
+	| { type: "DeleteImage", params: DeleteImage }
 	| { type: "PruneImages", params: PruneImages }
+	| { type: "DeleteVolume", params: DeleteVolume }
 	| { type: "PruneVolumes", params: PruneVolumes }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "Deploy", params: Deploy }
@@ -6497,7 +6527,6 @@ export type WriteRequest =
 	| { type: "UpdateServer", params: UpdateServer }
 	| { type: "RenameServer", params: RenameServer }
 	| { type: "CreateNetwork", params: CreateNetwork }
-	| { type: "DeleteNetwork", params: DeleteNetwork }
 	| { type: "CreateDeployment", params: CreateDeployment }
 	| { type: "CopyDeployment", params: CopyDeployment }
 	| { type: "DeleteDeployment", params: DeleteDeployment }

@@ -421,6 +421,13 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::DeleteNetwork(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::PruneNetworks(config) => {
             config.server = resources
               .servers
@@ -428,7 +435,21 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::DeleteImage(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::PruneImages(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DeleteVolume(config) => {
             config.server = resources
               .servers
               .get(&config.server)

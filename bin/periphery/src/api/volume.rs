@@ -3,9 +3,7 @@ use monitor_client::entities::{
   docker::volume::{Volume, VolumeListItem},
   update::Log,
 };
-use periphery_client::api::volume::{
-  GetVolumeList, InspectVolume, PruneVolumes,
-};
+use periphery_client::api::volume::*;
 use resolver_api::Resolve;
 
 use crate::{docker::docker_client, State};
@@ -33,6 +31,20 @@ impl Resolve<InspectVolume> for State {
     _: (),
   ) -> anyhow::Result<Volume> {
     docker_client().inspect_volume(&name).await
+  }
+}
+
+//
+
+impl Resolve<DeleteVolume> for State {
+  #[instrument(name = "DeleteVolume", skip(self))]
+  async fn resolve(
+    &self,
+    DeleteVolume { name }: DeleteVolume,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let command = format!("docker volume rm {name}");
+    Ok(run_monitor_command("delete volume", command).await)
   }
 }
 

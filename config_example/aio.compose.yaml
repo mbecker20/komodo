@@ -20,7 +20,7 @@ services:
     environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
       MONITOR_HOST: https://demo.monitor.dev # CHANGEME
       MONITOR_TITLE: Monitor # Change the app title, displayed in the browser tab.
-      MONITOR_ENSURE_SERVER: http://monitor-periphery:8120 # Created the "default" server.
+      MONITOR_ENSURE_SERVER: http://monitor-periphery:8120 # Creates the "default" server.
       ## MONGO
       MONITOR_MONGO_ADDRESS: monitor-mongo:27017
       MONITOR_MONGO_USERNAME: admin # match db credentials ones below
@@ -51,6 +51,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - monitor-stacks:/etc/monitor/stacks # manage stack files in a docker volume, or change it to an accessible host directory.
     # environment:
     #   # If the disk size is overreporting, can use one of these to 
     #   # whitelist / blacklist the disks to filter them, whichever is easier. 
@@ -76,6 +77,7 @@ services:
 volumes:
   db-data:
   monitor-repos:
+  monitor-stacks:
 
 networks:
   monitor-network: {}

@@ -729,12 +729,14 @@ pub enum Operation {
   UnpauseAllContainers,
   StopAllContainers,
   PruneContainers,
-  PruneNetworks,
-  PruneImages,
-  PruneVolumes,
-  PruneSystem,
   CreateNetwork,
   DeleteNetwork,
+  PruneNetworks,
+  DeleteImage,
+  PruneImages,
+  DeleteVolume,
+  PruneVolumes,
+  PruneSystem,
 
   // build
   CreateBuild,

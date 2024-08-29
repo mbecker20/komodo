@@ -3,9 +3,7 @@ use monitor_client::entities::{
   docker::image::{Image, ImageHistoryResponseItem, ImageListItem},
   update::Log,
 };
-use periphery_client::api::image::{
-  GetImageList, ImageHistory, InspectImage, PruneImages,
-};
+use periphery_client::api::image::*;
 use resolver_api::Resolve;
 
 use crate::{docker::docker_client, State};
@@ -46,6 +44,20 @@ impl Resolve<ImageHistory> for State {
     _: (),
   ) -> anyhow::Result<Vec<ImageHistoryResponseItem>> {
     docker_client().image_history(&name).await
+  }
+}
+
+//
+
+impl Resolve<DeleteImage> for State {
+  #[instrument(name = "DeleteImage", skip(self))]
+  async fn resolve(
+    &self,
+    DeleteImage { name }: DeleteImage,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let command = format!("docker image rm {name}");
+    Ok(run_monitor_command("delete image", command).await)
   }
 }
 

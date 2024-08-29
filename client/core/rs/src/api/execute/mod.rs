@@ -74,7 +74,7 @@ pub enum Execution {
   BuildRepo(BuildRepo),
   CancelRepoBuild(CancelRepoBuild),
 
-  // SERVER
+  // SERVER (Container)
   StartContainer(StartContainer),
   RestartContainer(RestartContainer),
   PauseContainer(PauseContainer),
@@ -87,8 +87,13 @@ pub enum Execution {
   UnpauseAllContainers(UnpauseAllContainers),
   StopAllContainers(StopAllContainers),
   PruneContainers(PruneContainers),
+
+  // SERVER (Prune)
+  DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),
+  DeleteImage(DeleteImage),
   PruneImages(PruneImages),
+  DeleteVolume(DeleteVolume),
   PruneVolumes(PruneVolumes),
   PruneSystem(PruneSystem),
 

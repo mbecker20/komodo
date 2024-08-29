@@ -99,10 +99,19 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::PruneContainers(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::DeleteNetwork(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::PruneNetworks(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::DeleteImage(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::PruneImages(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::DeleteVolume(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::PruneVolumes(data) => {
@@ -225,10 +234,19 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::PruneContainers(request) => {
       monitor_client().execute(request).await
     }
+    Execution::DeleteNetwork(request) => {
+      monitor_client().execute(request).await
+    }
     Execution::PruneNetworks(request) => {
       monitor_client().execute(request).await
     }
+    Execution::DeleteImage(request) => {
+      monitor_client().execute(request).await
+    }
     Execution::PruneImages(request) => {
+      monitor_client().execute(request).await
+    }
+    Execution::DeleteVolume(request) => {
       monitor_client().execute(request).await
     }
     Execution::PruneVolumes(request) => {

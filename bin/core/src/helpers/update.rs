@@ -200,14 +200,32 @@ pub async fn init_execution_update(
         resource::get::<Server>(&data.server).await?.id,
       ),
     ),
+    ExecuteRequest::DeleteNetwork(data) => (
+      Operation::DeleteNetwork,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::PruneNetworks(data) => (
       Operation::PruneNetworks,
       ResourceTarget::Server(
         resource::get::<Server>(&data.server).await?.id,
       ),
     ),
+    ExecuteRequest::DeleteImage(data) => (
+      Operation::DeleteImage,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::PruneImages(data) => (
       Operation::PruneImages,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::DeleteVolume(data) => (
+      Operation::DeleteVolume,
       ResourceTarget::Server(
         resource::get::<Server>(&data.server).await?.id,
       ),

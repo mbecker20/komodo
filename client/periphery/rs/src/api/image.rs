@@ -31,4 +31,13 @@ pub struct ImageHistory {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
+pub struct DeleteImage {
+  /// Id or name
+  pub name: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
 pub struct PruneImages {}

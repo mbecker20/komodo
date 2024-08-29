@@ -23,4 +23,13 @@ pub struct InspectVolume {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
+pub struct DeleteVolume {
+  /// Id or name
+  pub name: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
 pub struct PruneVolumes {}

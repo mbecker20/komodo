@@ -1,4 +1,37 @@
 services:
+  monitor-core:
+    build:
+      context: .
+      dockerfile: bin/core/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - monitor-mongo
+    logging:
+      driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
+    networks:
+      - monitor-network
+    ports:
+      - 9120:9120
+    environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
+      MONITOR_HOST: http://localhost:9120
+      MONITOR_TITLE: Monitor Test
+      MONITOR_ENSURE_SERVER: http://monitor-periphery:8120 # Creates the "default" server.
+      ## MONGO
+      MONITOR_MONGO_ADDRESS: monitor-mongo:27017
+      ## KEYS
+      MONITOR_PASSKEY: a_random_passkey # used to auth against periphery
+      MONITOR_WEBHOOK_SECRET: a_random_secret # used to authenticate incoming webhooks
+      MONITOR_JWT_SECRET: a_random_jwt_secret # Optional. If empty, will have to log in again on restart.
+      ## AUTH
+      MONITOR_LOCAL_AUTH: true
+      MONITOR_JWT_TTL: 2-wk
+      ## POLLING
+      MONITOR_MONITORING_INTERVAL: 5-sec
+      MONITOR_STACK_POLL_INTERVAL: 1-min
+      MONITOR_SYNC_POLL_INTERVAL: 1-min
+      MONITOR_BUILD_POLL_INTERVAL: 1-min
+      MONITOR_REPO_POLL_INTERVAL: 1-min
+
   monitor-periphery:
     build:
       context: .
@@ -7,11 +40,10 @@ services:
       driver: local
     networks:
       - monitor-network
-    ports:
-      - 8120:8120
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - monitor-repos:/etc/monitor/repos
+      - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - monitor-stacks:/etc/monitor/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
     # environment:
     #   # If the disk size is overreporting, can use one of these to 
     #   # whitelist / blacklist the disks to filter them, whichever is easier. 
@@ -20,19 +52,23 @@ services:
 
   monitor-mongo:
     image: mongo
+    command: --quiet # suppress mongo logs a bit
     restart: unless-stopped
     logging:
-      driver: none
+      driver: local
     networks:
       - monitor-network
     ports:
       - 27017:27017
     volumes:
       - db-data:/data/db
+      - db-config:/data/configdb
 
 volumes:
   db-data:
+  db-config:
   monitor-repos:
+  monitor-stacks:
 
 networks:
   monitor-network: {}

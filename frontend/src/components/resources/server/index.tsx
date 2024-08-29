@@ -16,7 +16,7 @@ import {
   Square,
 } from "lucide-react";
 import { Section } from "@components/layouts";
-import { RenameServer } from "./actions";
+import { Prune, RenameServer } from "./actions";
 import {
   server_state_intention,
   stroke_color_class_by_intention,
@@ -280,7 +280,7 @@ export const ServerComponents: RequiredResourceComponents = {
       }).data?.every(
         (container) =>
           container.state === Types.ContainerStateStatusEnum.Running
-      );
+      ) ?? true;
       if (dontShow) {
         return null;
       }
@@ -327,12 +327,13 @@ export const ServerComponents: RequiredResourceComponents = {
         { server: id },
         { refetchInterval: 5000 }
       ).data?.pausing_containers;
-      const dontShow = useRead("ListDockerContainers", {
-        server: id,
-      }).data?.every(
-        (container) =>
-          container.state !== Types.ContainerStateStatusEnum.Running
-      );
+      const dontShow =
+        useRead("ListDockerContainers", {
+          server: id,
+        }).data?.every(
+          (container) =>
+            container.state !== Types.ContainerStateStatusEnum.Running
+        ) ?? true;
       if (dontShow) {
         return null;
       }
@@ -358,11 +359,13 @@ export const ServerComponents: RequiredResourceComponents = {
         { server: id },
         { refetchInterval: 5000 }
       ).data?.unpausing_containers;
-      const dontShow = useRead("ListDockerContainers", {
-        server: id,
-      }).data?.every(
-        (container) => container.state !== Types.ContainerStateStatusEnum.Paused
-      );
+      const dontShow =
+        useRead("ListDockerContainers", {
+          server: id,
+        }).data?.every(
+          (container) =>
+            container.state !== Types.ContainerStateStatusEnum.Paused
+        ) ?? true;
       if (dontShow) {
         return null;
       }
@@ -401,6 +404,7 @@ export const ServerComponents: RequiredResourceComponents = {
         )
       );
     },
+    PruneSystem: ({ id }) => <Prune server_id={id} type="System" />,
   },
 
   Page: {},

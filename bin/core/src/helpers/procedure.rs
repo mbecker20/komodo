@@ -545,6 +545,22 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::DeleteNetwork(req) => {
+      let req = ExecuteRequest::DeleteNetwork(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::DeleteNetwork(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at DeleteNetwork"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::PruneNetworks(req) => {
       let req = ExecuteRequest::PruneNetworks(req);
       let update = init_execution_update(&req, &user).await?;
@@ -561,6 +577,22 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::DeleteImage(req) => {
+      let req = ExecuteRequest::DeleteImage(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::DeleteImage(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at DeleteImage"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::PruneImages(req) => {
       let req = ExecuteRequest::PruneImages(req);
       let update = init_execution_update(&req, &user).await?;
@@ -573,6 +605,22 @@ async fn execute_execution(
           .resolve(req, (user, update))
           .await
           .context("failed at PruneImages"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::DeleteVolume(req) => {
+      let req = ExecuteRequest::DeleteVolume(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::DeleteVolume(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at DeleteVolume"),
         &update_id,
       )
       .await?

@@ -652,6 +652,51 @@ impl Resolve<PruneContainers, (User, Update)> for State {
   }
 }
 
+impl Resolve<DeleteNetwork, (User, Update)> for State {
+  #[instrument(name = "DeleteNetwork", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    DeleteNetwork { server, name }: DeleteNetwork,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::network::DeleteNetwork { name: name.clone() })
+      .await
+      .context(format!(
+        "failed to delete network {name} on server {}",
+        server.name
+      )) {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "delete network",
+        format_serror(
+          &e.context(format!("failed to delete network {name}"))
+            .into(),
+        ),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
 impl Resolve<PruneNetworks, (User, Update)> for State {
   #[instrument(name = "PruneNetworks", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -705,6 +750,50 @@ impl Resolve<PruneNetworks, (User, Update)> for State {
   }
 }
 
+impl Resolve<DeleteImage, (User, Update)> for State {
+  #[instrument(name = "DeleteImage", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    DeleteImage { server, name }: DeleteImage,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::image::DeleteImage { name: name.clone() })
+      .await
+      .context(format!(
+        "failed to delete image {name} on server {}",
+        server.name
+      )) {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "delete image",
+        format_serror(
+          &e.context(format!("failed to delete image {name}")).into(),
+        ),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
 impl Resolve<PruneImages, (User, Update)> for State {
   #[instrument(name = "PruneImages", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -745,6 +834,51 @@ impl Resolve<PruneImages, (User, Update)> for State {
           ),
         ),
       };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<DeleteVolume, (User, Update)> for State {
+  #[instrument(name = "DeleteVolume", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    DeleteVolume { server, name }: DeleteVolume,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery
+      .request(api::volume::DeleteVolume { name: name.clone() })
+      .await
+      .context(format!(
+        "failed to delete volume {name} on server {}",
+        server.name
+      )) {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "delete volume",
+        format_serror(
+          &e.context(format!("failed to delete volume {name}"))
+            .into(),
+        ),
+      ),
+    };
 
     update.logs.push(log);
     update_cache_for_server(&server).await;

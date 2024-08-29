@@ -299,9 +299,33 @@ pub struct PruneContainers {
   pub server: String,
 }
 
-// ===========
-// = NETWORK =
-// ===========
+// ============================
+// = NETWORK / IMAGE / VOLUME =
+// ============================
+
+/// Delete a docker network.
+/// Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct DeleteNetwork {
+  /// Id or name.
+  pub server: String,
+  /// The name of the network to delete.
+  pub name: String,
+}
+
+//
 
 /// Prunes the docker networks on the target server. Response: [Update].
 ///
@@ -326,6 +350,30 @@ pub struct PruneNetworks {
 
 //
 
+/// Delete a docker image.
+/// Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct DeleteImage {
+  /// Id or name.
+  pub server: String,
+  /// The name of the image to delete.
+  pub name: String,
+}
+
+//
+
 /// Prunes the docker images on the target server. Response: [Update].
 ///
 /// 1. Runs `docker image prune -a -f`.
@@ -345,6 +393,30 @@ pub struct PruneNetworks {
 pub struct PruneImages {
   /// Id or name
   pub server: String,
+}
+
+//
+
+/// Delete a docker volume.
+/// Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct DeleteVolume {
+  /// Id or name.
+  pub server: String,
+  /// The name of the volume to delete.
+  pub name: String,
 }
 
 /// Prunes the docker volumes on the target server. Response: [Update].

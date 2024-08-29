@@ -33,6 +33,7 @@ pub struct CreateNetwork {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct DeleteNetwork {
+  /// Id or name
   pub name: String,
 }
 

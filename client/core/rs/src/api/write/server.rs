@@ -96,20 +96,3 @@ pub struct CreateNetwork {
   /// The name of the network to create.
   pub name: String,
 }
-
-//
-
-/// Delete a docker network.
-/// Response: [Update]
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorWriteRequest)]
-#[response(Update)]
-pub struct DeleteNetwork {
-  /// Id or name.
-  pub server: String,
-  /// The name of the network to delete.
-  pub name: String,
-}

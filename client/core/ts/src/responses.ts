@@ -201,7 +201,6 @@ export type WriteResponses = {
   UpdateServer: Types.Server;
   RenameServer: Types.Update;
   CreateNetwork: Types.Update;
-  DeleteNetwork: Types.Update;
 
   // ==== DEPLOYMENT ====
   CreateDeployment: Types.Deployment;
@@ -306,8 +305,11 @@ export type ExecuteResponses = {
   UnpauseAllContainers: Types.Update;
   StopAllContainers: Types.Update;
   PruneContainers: Types.Update;
+  DeleteNetwork: Types.Update;
   PruneNetworks: Types.Update;
+  DeleteImage: Types.Update;
   PruneImages: Types.Update;
+  DeleteVolume: Types.Update;
   PruneVolumes: Types.Update;
   PruneSystem: Types.Update;
 

@@ -30,8 +30,8 @@ use monitor_client::{
     toml::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
     },
-    ResourceTarget,
     user::User,
+    ResourceTarget,
   },
 };
 use mungos::find::find_collect;
@@ -503,10 +503,19 @@ async fn add_procedure(
         Execution::PruneContainers(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
+        Execution::DeleteNetwork(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
         Execution::PruneNetworks(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
+        Execution::DeleteImage(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
         Execution::PruneImages(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::DeleteVolume(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
         Execution::PruneVolumes(exec) => exec.server.clone_from(

@@ -116,6 +116,7 @@ pub enum PeripheryRequest {
   ImageHistory(ImageHistory),
 
   // Image (Write)
+  DeleteImage(DeleteImage),
   PruneImages(PruneImages),
 
   // Volume (Read)
@@ -123,6 +124,7 @@ pub enum PeripheryRequest {
   InspectVolume(InspectVolume),
 
   // Volume (Write)
+  DeleteVolume(DeleteVolume),
   PruneVolumes(PruneVolumes),
 
   // All in one (Read)

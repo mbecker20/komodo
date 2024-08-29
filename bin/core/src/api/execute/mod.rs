@@ -51,8 +51,11 @@ pub enum ExecuteRequest {
   UnpauseAllContainers(UnpauseAllContainers),
   StopAllContainers(StopAllContainers),
   PruneContainers(PruneContainers),
+  DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),
+  DeleteImage(DeleteImage),
   PruneImages(PruneImages),
+  DeleteVolume(DeleteVolume),
   PruneVolumes(PruneVolumes),
   PruneSystem(PruneSystem),
 

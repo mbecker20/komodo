@@ -401,6 +401,15 @@ async fn validate_config(
           .await?;
           params.server = server.id;
         }
+        Execution::DeleteNetwork(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
         Execution::PruneNetworks(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,
@@ -410,7 +419,25 @@ async fn validate_config(
           .await?;
           params.server = server.id;
         }
+        Execution::DeleteImage(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
         Execution::PruneImages(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::DeleteVolume(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,
             user,

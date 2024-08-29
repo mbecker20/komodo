@@ -97,6 +97,21 @@ const on_message = (
   if (update.status === Types.UpdateStatus.Complete) {
     invalidate(["ListAlerts"]);
 
+    // Invalidate docker infos
+    if (["Server", "Deployment", "Stack"].includes(update.target.type)) {
+      invalidate(
+        ["ListDockerContainers"],
+        ["InspectDockerContainer"],
+        ["ListDockerNetworks"],
+        ["InspectDockerNetwork"],
+        ["ListDockerImages"],
+        ["InspectDockerImage"],
+        ["ListDockerVolumes"],
+        ["InspectDockerVolume"],
+        ["GetResourceMatchingContainer"]
+      );
+    }
+
     if (update.target.type === "Deployment") {
       invalidate(
         ["ListDeployments"],
@@ -108,7 +123,7 @@ const on_message = (
         ["GetDeploymentLog", { deployment: update.target.id }],
         ["SearchDeploymentLog", { deployment: update.target.id }],
         ["GetDeploymentContainer", { deployment: update.target.id }],
-        ["GetResourceMatchingContainer"],
+        ["GetResourceMatchingContainer"]
       );
     }
 
@@ -126,7 +141,7 @@ const on_message = (
         ["SearchStackServiceLog", { stack: update.target.id }],
         ["GetStack", { stack: update.target.id }],
         ["ListStackServices", { stack: update.target.id }],
-        ["GetResourceMatchingContainer"],
+        ["GetResourceMatchingContainer"]
       );
     }
 
@@ -137,16 +152,7 @@ const on_message = (
         ["GetServersSummary"],
         ["GetServer", { server: update.target.id }],
         ["GetServerState", { server: update.target.id }],
-        ["GetHistoricalServerStats", { server: update.target.id }],
-        ["ListDockerContainers", { server: update.target.id }],
-        ["InspectDockerContainer"],
-        ["ListDockerNetworks", { server: update.target.id }],
-        ["InspectDockerNetwork"],
-        ["ListDockerImages", { server: update.target.id }],
-        ["InspectDockerImage"],
-        ["ListDockerVolumes", { server: update.target.id }],
-        ["InspectDockerVolume"],
-        ["GetResourceMatchingContainer", { server: update.target.id }]
+        ["GetHistoricalServerStats", { server: update.target.id }]
       );
     }
 
