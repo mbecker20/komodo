@@ -21,23 +21,6 @@ use crate::{
 
 //
 
-impl Resolve<GetContainerList> for State {
-  #[instrument(
-    name = "GetContainerList",
-    level = "debug",
-    skip(self)
-  )]
-  async fn resolve(
-    &self,
-    _: GetContainerList,
-    _: (),
-  ) -> anyhow::Result<Vec<ContainerListItem>> {
-    docker_client().list_containers().await
-  }
-}
-
-//
-
 impl Resolve<InspectContainer> for State {
   #[instrument(
     name = "InspectContainer",

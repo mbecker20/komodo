@@ -1,25 +1,12 @@
 use command::run_monitor_command;
 use monitor_client::entities::{
-  docker::image::{Image, ImageHistoryResponseItem, ImageListItem},
+  docker::image::{Image, ImageHistoryResponseItem},
   update::Log,
 };
 use periphery_client::api::image::*;
 use resolver_api::Resolve;
 
 use crate::{docker::docker_client, State};
-
-//
-
-impl Resolve<GetImageList> for State {
-  #[instrument(name = "GetImageList", level = "debug", skip(self))]
-  async fn resolve(
-    &self,
-    _: GetImageList,
-    _: (),
-  ) -> anyhow::Result<Vec<ImageListItem>> {
-    docker_client().list_images().await
-  }
-}
 
 //
 

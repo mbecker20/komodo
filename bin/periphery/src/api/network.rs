@@ -1,25 +1,11 @@
 use command::run_monitor_command;
 use monitor_client::entities::{
-  docker::network::{Network, NetworkListItem},
-  update::Log,
+  docker::network::Network, update::Log,
 };
 use periphery_client::api::network::*;
 use resolver_api::Resolve;
 
 use crate::{docker::docker_client, State};
-
-//
-
-impl Resolve<GetNetworkList> for State {
-  #[instrument(name = "GetNetworkList", level = "debug", skip(self))]
-  async fn resolve(
-    &self,
-    _: GetNetworkList,
-    _: (),
-  ) -> anyhow::Result<Vec<NetworkListItem>> {
-    docker_client().list_networks().await
-  }
-}
 
 //
 

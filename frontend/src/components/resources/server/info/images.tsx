@@ -29,6 +29,8 @@ export const Images = ({
     [containers]
   );
 
+  console.log(images);
+
   const allInUse = useMemo(() => {
     return images.every((image) =>
       // this ignores images that come in with no id, but they should all come in with id

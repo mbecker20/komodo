@@ -1271,6 +1271,8 @@ export interface NetworkListItem {
 	internal?: boolean;
 	attachable?: boolean;
 	ingress?: boolean;
+	/** Whether the network is attached to one or more containers */
+	in_use: boolean;
 }
 
 export type ListDockerNetworksResponse = NetworkListItem[];
@@ -1322,17 +1324,17 @@ export type InspectDockerNetworkResponse = Network;
 
 export interface ImageListItem {
 	/** The first tag in `repo_tags`, or Id if no tags. */
-	name?: string;
+	name: string;
 	/** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
-	id?: string;
+	id: string;
 	/** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
-	parent_id?: string;
+	parent_id: string;
 	/** Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH). */
-	created?: I64;
+	created: I64;
 	/** Total size of the image including all layers it is composed of. */
-	size?: I64;
-	/** Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated. */
-	containers?: I64;
+	size: I64;
+	/** Whether the image is in use by any container */
+	in_use: boolean;
 }
 
 export type ListDockerImagesResponse = ImageListItem[];
@@ -1488,7 +1490,7 @@ export enum ContainerStateStatusEnum {
 
 export interface ContainerListItem {
 	/** The first name in Names, not including the initial '/' */
-	name?: string;
+	name: string;
 	/** The ID of this container */
 	id?: string;
 	/** The name of the image used when creating this container */
@@ -1508,9 +1510,9 @@ export interface ContainerListItem {
 	/** The network mode */
 	network_mode?: string;
 	/** The network names attached to container */
-	networks?: string[];
+	networks: string[];
 	/** The volume names attached to container */
-	volumes?: string[];
+	volumes: string[];
 }
 
 export type ListDockerContainersResponse = ContainerListItem[];
@@ -1989,6 +1991,7 @@ export enum VolumeScopeEnum {
 }
 
 export interface VolumeListItem {
+	/** The name of the volume */
 	name: string;
 	driver: string;
 	mountpoint: string;
@@ -1996,8 +1999,8 @@ export interface VolumeListItem {
 	scope: VolumeScopeEnum;
 	/** Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the `\"local\"` volume driver. For volumes created with other volume drivers, this field is set to `-1` (\"not available\") */
 	size?: I64;
-	/** The number of containers referencing this volume. This field is set to `-1` if the reference-count is not available. */
-	ref_count?: I64;
+	/** Whether the volume is currently attached to any container */
+	in_use: boolean;
 }
 
 export type ListDockerVolumesResponse = VolumeListItem[];
@@ -6046,6 +6049,11 @@ export interface AwsBuilderConfig {
 	docker_registries?: DockerRegistry[];
 	/** Which secrets are available on the AMI. */
 	secrets?: string[];
+}
+
+export interface NameAndId {
+	name: string;
+	id: string;
 }
 
 export enum PortTypeEnum {

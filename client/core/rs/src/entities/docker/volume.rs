@@ -12,6 +12,7 @@ use super::PortBinding;
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
 pub struct VolumeListItem {
+  /// The name of the volume
   pub name: String,
   pub driver: String,
   pub mountpoint: String,
@@ -19,8 +20,8 @@ pub struct VolumeListItem {
   pub scope: VolumeScopeEnum,
   /// Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the `\"local\"` volume driver. For volumes created with other volume drivers, this field is set to `-1` (\"not available\")
   pub size: Option<I64>,
-  /// The number of containers referencing this volume. This field is set to `-1` if the reference-count is not available.
-  pub ref_count: Option<I64>,
+  /// Whether the volume is currently attached to any container
+  pub in_use: bool,
 }
 
 #[typeshare]

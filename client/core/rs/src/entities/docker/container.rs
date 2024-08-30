@@ -14,41 +14,38 @@ use super::{ContainerConfig, GraphDriverData, PortBinding};
 )]
 pub struct ContainerListItem {
   /// The first name in Names, not including the initial '/'
-  #[serde(default)]
   pub name: String,
-
   /// The ID of this container
   pub id: Option<String>,
-
   /// The name of the image used when creating this container
   pub image: Option<String>,
-
   /// The ID of the image that this container was created from
   pub image_id: Option<String>,
-
   /// When the container was created
   pub created: Option<I64>,
-
   /// The size of files that have been created or changed by this container
   pub size_rw: Option<I64>,
-
   /// The total size of all the files in this container
   pub size_root_fs: Option<I64>,
-
   /// The state of this container (e.g. `exited`)
   pub state: ContainerStateStatusEnum,
-
   /// Additional human-readable status of this container (e.g. `Exit 0`)
   pub status: Option<String>,
-
   /// The network mode
   pub network_mode: Option<String>,
-
   /// The network names attached to container
-  pub networks: Option<Vec<String>>,
-
+  pub networks: Vec<String>,
   /// The volume names attached to container
-  pub volumes: Option<Vec<String>>,
+  pub volumes: Vec<String>,
+}
+
+#[typeshare]
+#[derive(
+  Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
+pub struct NameAndId {
+  pub name: String,
+  pub id: String,
 }
 
 /// An open port on a container

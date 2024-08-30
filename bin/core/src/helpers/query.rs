@@ -31,16 +31,13 @@ use mungos::{
 
 use crate::{
   resource::{self, get_user_permission_on_resource},
-  state::db_client,
+  state::{db_client, deployment_status_cache, stack_status_cache},
 };
 
-use super::stack::{
-  compose_container_match_regex,
-  services::extract_services_from_stack,
-};
+use super::stack::compose_container_match_regex;
 
-#[instrument(level = "debug")]
 // user: Id or username
+#[instrument(level = "debug")]
 pub async fn get_user(user: &str) -> anyhow::Result<User> {
   if let Some(user) = admin_service_user(user) {
     return Ok(user);
@@ -83,25 +80,12 @@ pub async fn get_server_state(server: &Server) -> ServerState {
 pub async fn get_deployment_state(
   deployment: &Deployment,
 ) -> anyhow::Result<DeploymentState> {
-  if deployment.config.server_id.is_empty() {
-    return Ok(DeploymentState::NotDeployed);
-  }
-  let (server, status) =
-    get_server_with_state(&deployment.config.server_id).await?;
-  if status != ServerState::Ok {
-    return Ok(DeploymentState::Unknown);
-  }
-  let container = super::periphery_client(&server)?
-    .request(periphery_client::api::container::GetContainerList {})
-    .await?
-    .into_iter()
-    .find(|container| container.name == deployment.name);
-
-  let state = match container {
-    Some(container) => container.state.into(),
-    None => DeploymentState::NotDeployed,
-  };
-
+  let state = deployment_status_cache()
+    .get(&deployment.id)
+    .await
+    .unwrap_or_default()
+    .curr
+    .state;
   Ok(state)
 }
 
@@ -183,22 +167,13 @@ pub async fn get_stack_state(
   if stack.config.server_id.is_empty() {
     return Ok(StackState::Down);
   }
-  let (server, status) =
-    get_server_with_state(&stack.config.server_id).await?;
-  if status != ServerState::Ok {
-    return Ok(StackState::Unknown);
-  }
-  let containers = super::periphery_client(&server)?
-    .request(periphery_client::api::container::GetContainerList {})
-    .await?;
-
-  let services = extract_services_from_stack(stack, false).await?;
-
-  Ok(get_stack_state_from_containers(
-    &stack.config.ignore_services,
-    &services,
-    &containers,
-  ))
+  let state = stack_status_cache()
+    .get(&stack.id)
+    .await
+    .unwrap_or_default()
+    .curr
+    .state;
+  Ok(state)
 }
 
 #[instrument(level = "debug")]

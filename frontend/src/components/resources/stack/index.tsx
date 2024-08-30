@@ -151,7 +151,12 @@ export const StackComponents: RequiredResourceComponents = {
     },
     NoConfig: ({ id }) => {
       const config = useFullStack(id)?.config;
-      if (!config || config?.files_on_host || config?.file_contents || config?.repo) {
+      if (
+        !config ||
+        config?.files_on_host ||
+        config?.file_contents ||
+        config?.repo
+      ) {
         return null;
       }
       return (

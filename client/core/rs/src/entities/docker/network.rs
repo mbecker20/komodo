@@ -18,6 +18,8 @@ pub struct NetworkListItem {
   pub internal: Option<bool>,
   pub attachable: Option<bool>,
   pub ingress: Option<bool>,
+  /// Whether the network is attached to one or more containers
+  pub in_use: bool,
 }
 
 #[typeshare]

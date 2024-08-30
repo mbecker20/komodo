@@ -1,15 +1,9 @@
 use monitor_client::entities::{
-  docker::image::{Image, ImageHistoryResponseItem, ImageListItem},
+  docker::image::{Image, ImageHistoryResponseItem},
   update::Log,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
-
-//
-
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<ImageListItem>)]
-pub struct GetImageList {}
 
 //
 

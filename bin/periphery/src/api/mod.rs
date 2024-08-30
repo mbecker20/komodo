@@ -68,7 +68,6 @@ pub enum PeripheryRequest {
   Build(Build),
 
   // Compose (Read)
-  ListComposeProjects(ListComposeProjects),
   GetComposeContentsOnHost(GetComposeContentsOnHost),
   GetComposeServiceLog(GetComposeServiceLog),
   GetComposeServiceLogSearch(GetComposeServiceLogSearch),
@@ -78,7 +77,6 @@ pub enum PeripheryRequest {
   ComposeExecution(ComposeExecution),
 
   // Container (Read)
-  GetContainerList(GetContainerList),
   InspectContainer(InspectContainer),
   GetContainerLog(GetContainerLog),
   GetContainerLogSearch(GetContainerLogSearch),
@@ -102,7 +100,6 @@ pub enum PeripheryRequest {
   PruneContainers(PruneContainers),
 
   // Networks (Read)
-  GetNetworkList(GetNetworkList),
   InspectNetwork(InspectNetwork),
 
   // Networks (Write)
@@ -111,7 +108,6 @@ pub enum PeripheryRequest {
   PruneNetworks(PruneNetworks),
 
   // Image (Read)
-  GetImageList(GetImageList),
   InspectImage(InspectImage),
   ImageHistory(ImageHistory),
 
@@ -120,7 +116,6 @@ pub enum PeripheryRequest {
   PruneImages(PruneImages),
 
   // Volume (Read)
-  GetVolumeList(GetVolumeList),
   InspectVolume(InspectVolume),
 
   // Volume (Write)
@@ -215,11 +210,17 @@ impl Resolve<GetDockerLists> for State {
     _: (),
   ) -> anyhow::Result<GetDockerListsResponse> {
     let docker = docker_client();
-    let (containers, networks, images, volumes, projects) = tokio::join!(
-      docker.list_containers().map_err(Into::into),
-      docker.list_networks().map_err(Into::into),
-      docker.list_images().map_err(Into::into),
-      docker.list_volumes().map_err(Into::into),
+    let containers =
+      docker.list_containers().await.map_err(Into::into);
+    // Should still try to retrieve other docker lists, but "in_use" will be false for images, networks, volumes
+    let _containers = match &containers {
+      Ok(containers) => containers.as_slice(),
+      Err(_) => &[],
+    };
+    let (networks, images, volumes, projects) = tokio::join!(
+      docker.list_networks(_containers).map_err(Into::into),
+      docker.list_images(_containers).map_err(Into::into),
+      docker.list_volumes(_containers).map_err(Into::into),
       self.resolve(ListComposeProjects {}, ()).map_err(Into::into)
     );
     Ok(GetDockerListsResponse {

@@ -1,15 +1,6 @@
-use monitor_client::entities::{
-  docker::volume::{Volume, VolumeListItem},
-  update::Log,
-};
+use monitor_client::entities::{docker::volume::Volume, update::Log};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
-
-//
-
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(Vec<VolumeListItem>)]
-pub struct GetVolumeList {}
 
 //
 

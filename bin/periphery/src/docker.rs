@@ -73,17 +73,23 @@ impl DockerClient {
           network_mode: container
             .host_config
             .and_then(|config| config.network_mode),
-          networks: container.network_settings.and_then(|settings| {
-            settings
-              .networks
-              .map(|networks| networks.into_keys().collect())
-          }),
-          volumes: container.mounts.map(|settings| {
-            settings
-              .into_iter()
-              .filter_map(|mount| mount.name)
-              .collect()
-          }),
+          networks: container
+            .network_settings
+            .and_then(|settings| {
+              settings
+                .networks
+                .map(|networks| networks.into_keys().collect())
+            })
+            .unwrap_or_default(),
+          volumes: container
+            .mounts
+            .map(|settings| {
+              settings
+                .into_iter()
+                .filter_map(|mount| mount.name)
+                .collect()
+            })
+            .unwrap_or_default(),
         })
       })
       .collect()
@@ -511,6 +517,7 @@ impl DockerClient {
 
   pub async fn list_networks(
     &self,
+    containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<NetworkListItem>> {
     self
       .docker
@@ -532,6 +539,12 @@ impl DockerClient {
           } else {
             (None, None, None)
           };
+        let in_use = match &network.name {
+          Some(name) => containers.iter().any(|container| {
+            container.networks.iter().any(|_name| name == _name)
+          }),
+          None => false,
+        };
         Ok(NetworkListItem {
           name: network.name,
           id: network.id,
@@ -545,6 +558,7 @@ impl DockerClient {
           internal: network.internal,
           attachable: network.attachable,
           ingress: network.ingress,
+          in_use,
         })
       })
       .collect()
@@ -612,6 +626,7 @@ impl DockerClient {
 
   pub async fn list_images(
     &self,
+    containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<ImageListItem>> {
     self
       .docker
@@ -619,6 +634,13 @@ impl DockerClient {
       .await?
       .into_iter()
       .map(|image| {
+        let in_use = containers.iter().any(|container| {
+          container
+            .image_id
+            .as_ref()
+            .map(|id| id == &image.id)
+            .unwrap_or_default()
+        });
         Ok(ImageListItem {
           name: image
             .repo_tags
@@ -629,7 +651,7 @@ impl DockerClient {
           parent_id: image.parent_id,
           created: image.created,
           size: image.size,
-          containers: image.containers,
+          in_use,
         })
       })
       .collect()
@@ -737,6 +759,7 @@ impl DockerClient {
 
   pub async fn list_volumes(
     &self,
+    containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<VolumeListItem>> {
     self
       .docker
@@ -746,10 +769,6 @@ impl DockerClient {
       .unwrap_or_default()
       .into_iter()
       .map(|volume| {
-        let (size, ref_count) = volume
-          .usage_data
-          .map(|data| (Some(data.size), Some(data.ref_count)))
-          .unwrap_or_default();
         let scope = volume
           .scope
           .map(|scope| match scope {
@@ -764,14 +783,17 @@ impl DockerClient {
             }
           })
           .unwrap_or(VolumeScopeEnum::Empty);
+        let in_use = containers.iter().any(|container| {
+          container.volumes.iter().any(|name| &volume.name == name)
+        });
         Ok(VolumeListItem {
           name: volume.name,
           driver: volume.driver,
           mountpoint: volume.mountpoint,
           created: volume.created_at,
+          size: volume.usage_data.map(|data| data.size),
           scope,
-          size,
-          ref_count,
+          in_use,
         })
       })
       .collect()

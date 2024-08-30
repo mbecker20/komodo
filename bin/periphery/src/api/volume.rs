@@ -1,25 +1,9 @@
 use command::run_monitor_command;
-use monitor_client::entities::{
-  docker::volume::{Volume, VolumeListItem},
-  update::Log,
-};
+use monitor_client::entities::{docker::volume::Volume, update::Log};
 use periphery_client::api::volume::*;
 use resolver_api::Resolve;
 
 use crate::{docker::docker_client, State};
-
-//
-
-impl Resolve<GetVolumeList> for State {
-  #[instrument(name = "GetVolumeList", level = "debug", skip(self))]
-  async fn resolve(
-    &self,
-    _: GetVolumeList,
-    _: (),
-  ) -> anyhow::Result<Vec<VolumeListItem>> {
-    docker_client().list_volumes().await
-  }
-}
 
 //
 
