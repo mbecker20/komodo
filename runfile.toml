@@ -19,20 +19,17 @@ cmd = "yarn build"
 description = "deploys test.compose.yaml"
 cmd = """
 docker compose -f test.compose.yaml down && \
+docker compose -f test.compose.yaml up -d"""
+
+[test-compose-build]
+description = "builds and deploys test.compose.yaml"
+cmd = """
+docker compose -f test.compose.yaml down && \
 docker compose -f test.compose.yaml up -d --build"""
 
 [test-core]
 description = "runs core --release pointing to test.core.config.toml"
 cmd = "MONITOR_CONFIG_PATH=test.core.config.toml cargo run -p monitor_core --release"
-
-[update-periphery]
-path = "."
-cmd = """
-cargo build -p monitor_periphery --release && \
-systemctl stop periphery && \
-cp ./target/release/periphery /usr/local/bin/periphery && \
-chmod +x /usr/local/bin/periphery && \
-systemctl start periphery"""
 
 [docsite-start]
 path = "docsite"

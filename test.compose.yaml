@@ -8,14 +8,11 @@ services:
   #     - monitor-mongo
   #   logging:
   #     driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
-  #   networks:
-  #     - monitor-network
-  #   ports:
-  #     - 9120:9120
+  #   network_mode: host
   #   environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
   #     MONITOR_HOST: http://localhost:9120
   #     MONITOR_TITLE: Monitor Test
-  #     MONITOR_ENSURE_SERVER: http://monitor-periphery:8120 # Creates the "default" server.
+  #     MONITOR_ENSURE_SERVER: http://localhost:8120 # Creates the "default" server.
   #     ## MONGO
   #     MONITOR_MONGO_ADDRESS: monitor-mongo:27017
   #     ## KEYS
@@ -36,12 +33,10 @@ services:
     build:
       context: .
       dockerfile: bin/periphery/Dockerfile
+    restart: unless-stopped
     logging:
       driver: local
-    networks:
-      - monitor-network
-    ports:
-      - 8120:8120
+    network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
@@ -58,10 +53,7 @@ services:
     restart: unless-stopped
     logging:
       driver: local
-    networks:
-      - monitor-network
-    ports:
-      - 27017:27017
+    network_mode: host
     volumes:
       - db-data:/data/db
       - db-config:/data/configdb
