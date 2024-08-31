@@ -66,6 +66,7 @@ pub async fn get_remote_resources(
     &[],
     "",
     None,
+    &[],
   )
   .await
   .context("failed to clone resource repo")?;

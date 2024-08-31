@@ -1,4 +1,4 @@
-use std::{future::IntoFuture, time::Duration};
+use std::{collections::HashSet, future::IntoFuture, time::Duration};
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
@@ -22,7 +22,7 @@ use mungos::{
     options::FindOneOptions,
   },
 };
-use periphery_client::api::{self, git::RepoActionResponseV1_13};
+use periphery_client::api;
 use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
@@ -31,8 +31,14 @@ use crate::{
     alert::send_alerts,
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::repo_cancel_channel,
-    git_token, interpolate_variables_secrets_into_environment,
+    git_token,
+    interpolate::{
+      add_interp_update_log,
+      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_system_command,
+    },
     periphery_client,
+    query::get_variables_and_secrets,
     update::update_update,
   },
   resource::{self, refresh_repo_state_cache},
@@ -85,13 +91,10 @@ impl Resolve<CloneRepo, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
-    if !repo.config.skip_secret_interp {
-      interpolate_variables_secrets_into_environment(
-        &mut repo.config.environment,
-        &mut update,
-      )
-      .await?;
-    }
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
+    let secret_replacers =
+      interpolate(&mut repo, &mut update).await?;
 
     let logs = match periphery
       .request(api::git::CloneRepo {
@@ -100,13 +103,11 @@ impl Resolve<CloneRepo, (User, Update)> for State {
         environment: repo.config.environment,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
+        replacers: secret_replacers.into_iter().collect(),
       })
       .await
     {
-      Ok(res) => {
-        let res: RepoActionResponseV1_13 = res.into();
-        res.logs
-      }
+      Ok(res) => res.logs,
       Err(e) => {
         vec![Log::error(
           "clone repo",
@@ -160,13 +161,10 @@ impl Resolve<PullRepo, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
-    if !repo.config.skip_secret_interp {
-      interpolate_variables_secrets_into_environment(
-        &mut repo.config.environment,
-        &mut update,
-      )
-      .await?;
-    }
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
+    let secret_replacers =
+      interpolate(&mut repo, &mut update).await?;
 
     let logs = match periphery
       .request(api::git::PullRepo {
@@ -177,11 +175,11 @@ impl Resolve<PullRepo, (User, Update)> for State {
         environment: repo.config.environment,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
+        replacers: secret_replacers.into_iter().collect(),
       })
       .await
     {
       Ok(res) => {
-        let res: RepoActionResponseV1_13 = res.into();
         update.commit_hash = res.commit_hash.unwrap_or_default();
         res.logs
       }
@@ -354,13 +352,10 @@ impl Resolve<BuildRepo, (User, Update)> for State {
 
     // CLONE REPO
 
-    if !repo.config.skip_secret_interp {
-      interpolate_variables_secrets_into_environment(
-        &mut repo.config.environment,
-        &mut update,
-      )
-      .await?;
-    }
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
+    let secret_replacers =
+      interpolate(&mut repo, &mut update).await?;
 
     let res = tokio::select! {
       res = periphery
@@ -370,6 +365,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
           environment: repo.config.environment,
           env_file_path: repo.config.env_file_path,
           skip_secret_interp: repo.config.skip_secret_interp,
+          replacers: secret_replacers.into_iter().collect()
         }) => res,
       _ = cancel.cancelled() => {
         debug!("build cancelled during clone, cleaning up builder");
@@ -384,7 +380,6 @@ impl Resolve<BuildRepo, (User, Update)> for State {
     let commit_message = match res {
       Ok(res) => {
         debug!("finished repo clone");
-        let res: RepoActionResponseV1_13 = res.into();
         update.logs.extend(res.logs);
         update.commit_hash = res.commit_hash.unwrap_or_default();
         res.commit_message.unwrap_or_default()
@@ -612,5 +607,48 @@ impl Resolve<CancelRepoBuild, (User, Update)> for State {
     });
 
     Ok(update)
+  }
+}
+
+async fn interpolate(
+  repo: &mut Repo,
+  update: &mut Update,
+) -> anyhow::Result<HashSet<(String, String)>> {
+  if !repo.config.skip_secret_interp {
+    let vars_and_secrets = get_variables_and_secrets().await?;
+
+    let mut global_replacers = HashSet::new();
+    let mut secret_replacers = HashSet::new();
+
+    interpolate_variables_secrets_into_environment(
+      &vars_and_secrets,
+      &mut repo.config.environment,
+      &mut global_replacers,
+      &mut secret_replacers,
+    )?;
+
+    interpolate_variables_secrets_into_system_command(
+      &vars_and_secrets,
+      &mut repo.config.on_clone,
+      &mut global_replacers,
+      &mut secret_replacers,
+    )?;
+
+    interpolate_variables_secrets_into_system_command(
+      &vars_and_secrets,
+      &mut repo.config.on_pull,
+      &mut global_replacers,
+      &mut secret_replacers,
+    )?;
+
+    add_interp_update_log(
+      update,
+      &global_replacers,
+      &secret_replacers,
+    );
+
+    Ok(secret_replacers)
+  } else {
+    Ok(Default::default())
   }
 }

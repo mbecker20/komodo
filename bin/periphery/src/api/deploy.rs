@@ -111,17 +111,20 @@ impl Resolve<Deploy> for State {
       .context(
         "failed to interpolate secrets into docker run command",
       );
+
       let (command, mut replacers) = match command {
         Ok(res) => res,
         Err(e) => {
           return Ok(Log::error("docker run", format!("{e:?}")));
         }
       };
-      replacers.extend(core_replacers);
+
+      replacers.extend(core_replacers);      
       let mut log = run_monitor_command("docker run", command).await;
       log.command = svi::replace_in_string(&log.command, &replacers);
       log.stdout = svi::replace_in_string(&log.stdout, &replacers);
       log.stderr = svi::replace_in_string(&log.stderr, &replacers);
+
       Ok(log)
     }
   }

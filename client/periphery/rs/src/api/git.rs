@@ -24,6 +24,9 @@ pub struct CloneRepo {
   pub skip_secret_interp: bool,
   /// Override git token with one sent from core.
   pub git_token: Option<String>,
+  /// Propogate any secret replacers from core interpolation.
+  #[serde(default)]
+  pub replacers: Vec<(String, String)>,
 }
 
 fn default_env_file_path() -> String {
@@ -45,42 +48,15 @@ pub struct PullRepo {
   pub env_file_path: String,
   #[serde(default)]
   pub skip_secret_interp: bool,
-}
-
-//
-
-/// Backward compat adapter for v1.13 upgrade.
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(untagged)]
-pub enum RepoActionResponse {
-  V1_13(RepoActionResponseV1_13),
-  V1_12(Vec<Log>),
-}
-
-impl From<RepoActionResponse> for RepoActionResponseV1_13 {
-  fn from(value: RepoActionResponse) -> Self {
-    match value {
-      RepoActionResponse::V1_13(response) => response,
-      RepoActionResponse::V1_12(logs) => RepoActionResponseV1_13 {
-        logs,
-        commit_hash: None,
-        commit_message: None,
-        env_file_path: None,
-      },
-    }
-  }
-}
-
-impl From<RepoActionResponseV1_13> for RepoActionResponse {
-  fn from(value: RepoActionResponseV1_13) -> Self {
-    RepoActionResponse::V1_13(value)
-  }
+  /// Propogate any secret replacers from core interpolation.
+  #[serde(default)]
+  pub replacers: Vec<(String, String)>,
 }
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RepoActionResponseV1_13 {
+pub struct RepoActionResponse {
   pub logs: Vec<Log>,
   pub commit_hash: Option<String>,
   pub commit_message: Option<String>,

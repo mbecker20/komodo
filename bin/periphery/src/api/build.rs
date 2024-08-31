@@ -108,7 +108,6 @@ impl Resolve<build::Build> for State {
     if *skip_secret_interp {
       let build_log =
         run_monitor_command("docker build", command).await;
-      info!("finished building docker image");
       logs.push(build_log);
     } else {
       // Interpolate any missing secrets

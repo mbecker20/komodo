@@ -134,6 +134,7 @@ impl Resolve<RefreshRepoCache, User> for State {
       &[],
       "",
       None,
+      &[],
     )
     .await
     .context("failed to clone repo (the resource) repo")?;

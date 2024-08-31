@@ -191,13 +191,20 @@ impl Resolve<ComposeUp> for State {
       service,
       git_token,
       registry_token,
+      replacers,
     }: ComposeUp,
     _: (),
   ) -> anyhow::Result<ComposeUpResponse> {
     let mut res = ComposeUpResponse::default();
-    if let Err(e) =
-      compose_up(stack, service, git_token, registry_token, &mut res)
-        .await
+    if let Err(e) = compose_up(
+      stack,
+      service,
+      git_token,
+      registry_token,
+      &mut res,
+      replacers,
+    )
+    .await
     {
       res.logs.push(Log::error(
         "compose up failed",

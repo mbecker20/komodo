@@ -89,6 +89,9 @@ pub struct ComposeUp {
   pub git_token: Option<String>,
   /// If provided, use it to login in. Otherwise check periphery local registries.
   pub registry_token: Option<String>,
+  /// Propogate any secret replacers from core interpolation.
+  #[serde(default)]
+  pub replacers: Vec<(String, String)>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

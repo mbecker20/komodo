@@ -4,7 +4,7 @@ use monitor_client::entities::{
 };
 use periphery_client::api::git::{
   CloneRepo, DeleteRepo, GetLatestCommit, PullRepo,
-  RepoActionResponse, RepoActionResponseV1_13,
+  RepoActionResponse,
 };
 use resolver_api::Resolve;
 
@@ -36,6 +36,7 @@ impl Resolve<CloneRepo> for State {
       environment,
       env_file_path,
       skip_secret_interp,
+      replacers,
     }: CloneRepo,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
@@ -64,16 +65,16 @@ impl Resolve<CloneRepo> for State {
       &environment,
       &env_file_path,
       (!skip_secret_interp).then_some(&periphery_config().secrets),
+      &replacers,
     )
     .await
     .map(|(logs, commit_hash, commit_message, env_file_path)| {
-      RepoActionResponseV1_13 {
+      RepoActionResponse {
         logs,
         commit_hash,
         commit_message,
         env_file_path,
       }
-      .into()
     })
   }
 }
@@ -92,6 +93,7 @@ impl Resolve<PullRepo> for State {
       environment,
       env_file_path,
       skip_secret_interp,
+      replacers,
     }: PullRepo,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
@@ -105,17 +107,15 @@ impl Resolve<PullRepo> for State {
         &environment,
         &env_file_path,
         (!skip_secret_interp).then_some(&periphery_config().secrets),
+        &replacers,
       )
       .await;
-    Ok(
-      RepoActionResponseV1_13 {
-        logs,
-        commit_hash,
-        commit_message,
-        env_file_path,
-      }
-      .into(),
-    )
+    Ok(RepoActionResponse {
+      logs,
+      commit_hash,
+      commit_message,
+      env_file_path,
+    })
   }
 }
 

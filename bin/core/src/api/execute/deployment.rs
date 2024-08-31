@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use monitor_client::{
@@ -23,8 +25,16 @@ use crate::{
   cloud::aws::ecr,
   config::core_config,
   helpers::{
-    interpolate_variables_secrets_into_environment, periphery_client,
-    registry_token, update::update_update,
+    interpolate::{
+      add_interp_update_log,
+      interpolate_variables_secrets_into_container_command,
+      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_extra_args,
+    },
+    periphery_client,
+    query::get_variables_and_secrets,
+    registry_token,
+    update::update_update,
   },
   monitor::update_cache_for_server,
   resource,
@@ -87,6 +97,7 @@ impl Resolve<Deploy, (User, Update)> for State {
       .await
       .context("Failed server health check, stopping run.")?;
 
+    // This block resolves the attached Build to an actual versioned image
     let (version, registry_token, aws_ecr) = match &deployment
       .config
       .image
@@ -180,12 +191,42 @@ impl Resolve<Deploy, (User, Update)> for State {
       }
     };
 
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
     let secret_replacers = if !deployment.config.skip_secret_interp {
+      let vars_and_secrets = get_variables_and_secrets().await?;
+
+      let mut global_replacers = HashSet::new();
+      let mut secret_replacers = HashSet::new();
+
       interpolate_variables_secrets_into_environment(
+        &vars_and_secrets,
         &mut deployment.config.environment,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_extra_args(
+        &vars_and_secrets,
+        &mut deployment.config.extra_args,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_container_command(
+        &vars_and_secrets,
+        &mut deployment.config.command,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      add_interp_update_log(
         &mut update,
-      )
-      .await?
+        &global_replacers,
+        &secret_replacers,
+      );
+
+      secret_replacers
     } else {
       Default::default()
     };

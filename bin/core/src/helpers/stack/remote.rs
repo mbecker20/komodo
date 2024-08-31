@@ -118,6 +118,7 @@ pub async fn clone_remote_repo(
     &[],
     "",
     None,
+    &[],
   )
   .await
   .context("failed to clone stack repo")
