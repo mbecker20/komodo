@@ -122,7 +122,7 @@ export const ResourceSelector = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="secondary" className="flex gap-2" disabled={disabled}>
-          {name ?? `Select ${type}`}
+          {name || `Select ${type}`}
           {!disabled && <ChevronsUpDown className="w-3 h-3" />}
         </Button>
       </PopoverTrigger>

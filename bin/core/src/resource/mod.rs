@@ -458,15 +458,19 @@ pub async fn create<T: MonitorResource>(
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {
   if !T::user_can_create(user) {
     return Err(anyhow!(
-      "User does not have permissions to create {}",
+      "User does not have permissions to create {}.",
       T::resource_type()
     ));
+  }
+
+  if name.is_empty() {
+    return Err(anyhow!("Must provide non-empty name for resource."));
   }
 
   let name = to_monitor_name(name);
 
   if ObjectId::from_str(&name).is_ok() {
-    return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    return Err(anyhow!("valid ObjectIds cannot be used as names."));
   }
 
   let start_ts = monitor_timestamp();

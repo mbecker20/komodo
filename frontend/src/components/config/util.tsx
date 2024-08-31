@@ -310,11 +310,13 @@ export const ProviderSelector = ({
         <SelectValue placeholder="Select Provider" />
       </SelectTrigger>
       <SelectContent>
-        {providers?.map((provider) => (
-          <SelectItem key={provider} value={provider}>
-            {provider}
-          </SelectItem>
-        ))}
+        {providers
+          ?.filter((provider) => provider)
+          .map((provider) => (
+            <SelectItem key={provider} value={provider}>
+              {provider}
+            </SelectItem>
+          ))}
         {providers !== undefined &&
           selected &&
           !providers.includes(selected) && (
@@ -420,11 +422,13 @@ export const AccountSelector = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
-        {accounts?.map((account) => (
-          <SelectItem key={account} value={account}>
-            {account}
-          </SelectItem>
-        ))}
+        {accounts
+          ?.filter((account) => account)
+          .map((account) => (
+            <SelectItem key={account} value={account}>
+              {account}
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
   );
@@ -476,11 +480,13 @@ export const AwsEcrLabelSelector = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
-        {labels?.map((label: string) => (
-          <SelectItem key={label} value={label}>
-            {label}
-          </SelectItem>
-        ))}
+        {labels
+          ?.filter((label) => label)
+          .map((label: string) => (
+            <SelectItem key={label} value={label}>
+              {label}
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
   );
@@ -934,11 +940,13 @@ const OrganizationSelector = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
-        {orgs?.map((org) => (
-          <SelectItem key={org} value={org}>
-            {org}
-          </SelectItem>
-        ))}
+        {orgs
+          ?.filter((org) => org)
+          .map((org) => (
+            <SelectItem key={org} value={org}>
+              {org}
+            </SelectItem>
+          ))}
         <SelectItem value={"Custom"}>Custom</SelectItem>
       </SelectContent>
     </Select>
