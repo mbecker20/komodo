@@ -19,7 +19,7 @@ export const Volumes = ({
     useRead("ListDockerVolumes", { server: id }, { refetchInterval: 5000 })
       .data ?? [];
 
-  const allInUse = volumes.every((volume) => !volume.in_use);
+  const allInUse = volumes.every((volume) => volume.in_use);
 
   return (
     <div className={show ? "mb-8" : undefined}>
