@@ -402,10 +402,11 @@ pub async fn ensure_server() {
   if server.is_some() {
     return;
   }
+
   if let Err(e) = State
     .resolve(
       CreateServer {
-        name: String::from("default"),
+        name: format!("server-{}", random_string(5)),
         config: PartialServerConfig {
           address: Some(ensure_server.to_string()),
           enabled: Some(true),

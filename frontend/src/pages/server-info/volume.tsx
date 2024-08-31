@@ -2,17 +2,20 @@ import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
 import {
+  ConfirmButton,
   DOCKER_LINK_ICONS,
   DockerContainersSection,
   DockerLabelsSection,
   DockerOptions,
   DockerResourcePageName,
 } from "@components/util";
-import { useRead, useSetTitle } from "@lib/hooks";
+import { useExecute, useRead, useSetTitle } from "@lib/hooks";
+import { has_minimum_permissions } from "@lib/utils";
+import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { ChevronLeft, Info, Loader2 } from "lucide-react";
+import { ChevronLeft, Info, Loader2, Trash } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const VolumePage = () => {
@@ -37,9 +40,11 @@ const VolumePageInner = ({
   const server = useServer(id);
   useSetTitle(`${server?.name} | volume | ${volume_name}`);
   const nav = useNavigate();
-  // const perms = useRead("GetPermissionLevel", {
-  //   target: { type: "Server", id },
-  // }).data;
+
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Server", id },
+  }).data;
+
   const {
     data: volume,
     isPending,
@@ -48,6 +53,7 @@ const VolumePageInner = ({
     server: id,
     volume: volume_name,
   });
+
   const containers = useRead(
     "ListDockerContainers",
     {
@@ -56,6 +62,13 @@ const VolumePageInner = ({
     { refetchInterval: 5000 }
   ).data?.filter((container) => container.volumes?.includes(volume_name));
 
+  const { mutate: deleteVolume, isPending: deletePending } = useExecute(
+    "DeleteVolume",
+    {
+      onSuccess: () => nav("/servers/" + id),
+    }
+  );
+
   if (isPending) {
     return (
       <div className="flex justify-center w-full py-4">
@@ -63,9 +76,11 @@ const VolumePageInner = ({
       </div>
     );
   }
+
   if (isError) {
     return <div className="flex w-full py-4">Failed to inspect volume.</div>;
   }
+
   if (!volume) {
     return (
       <div className="flex w-full py-4">
@@ -74,7 +89,12 @@ const VolumePageInner = ({
     );
   }
 
-  // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
+  const canExecute = has_minimum_permissions(
+    perms,
+    Types.PermissionLevel.Execute
+  );
+
+  const unused = containers && containers.length === 0 ? true : false;
 
   return (
     <div className="flex flex-col gap-16 mb-24">
@@ -89,10 +109,6 @@ const VolumePageInner = ({
           >
             <ChevronLeft className="w-4" /> Back
           </Button>
-
-          {/* <Button className="gap-2" variant="destructive">
-            <Trash className="w-4" /> Delete
-          </Button> */}
         </div>
 
         {/* TITLE */}
@@ -115,6 +131,17 @@ const VolumePageInner = ({
           <ResourceLink type="Server" id={id} />
         </div>
       </div>
+
+      {/* MAYBE DELETE */}
+      {canExecute && unused && (
+        <ConfirmButton
+          variant="destructive"
+          title="Delete Volume"
+          icon={<Trash className="w-4 h-4" />}
+          loading={deletePending}
+          onClick={() => deleteVolume({ server: id, name: volume_name })}
+        />
+      )}
 
       {/* TOP LEVEL VOLUME INFO */}
       <Section title="Details" icon={<Info className="w-4 h-4" />}>

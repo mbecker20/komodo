@@ -113,7 +113,7 @@ export const ActionButton = forwardRef<
       className={cn("flex items-center justify-between w-[190px]", className)}
       onClick={onClick}
       onBlur={onBlur}
-      disabled={disabled}
+      disabled={disabled || loading}
       ref={ref}
     >
       {title} {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}

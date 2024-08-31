@@ -4,7 +4,6 @@ import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { Database } from "lucide-react";
-import { useCallback, useMemo } from "react";
 import { Prune } from "../actions";
 
 export const Volumes = ({
@@ -19,20 +18,8 @@ export const Volumes = ({
   const volumes =
     useRead("ListDockerVolumes", { server: id }, { refetchInterval: 5000 })
       .data ?? [];
-  const containers = useRead("ListDockerContainers", { server: id }).data ?? [];
 
-  const no_containers = useCallback(
-    (volume_name: string) => {
-      return containers.every(
-        (container) => !container.volumes?.includes(volume_name)
-      );
-    },
-    [containers]
-  );
-
-  const allInUse = useMemo(() => {
-    return volumes.every((volume) => !no_containers(volume.name));
-  }, [no_containers]);
+  const allInUse = volumes.every((volume) => !volume.in_use);
 
   return (
     <div className={show ? "mb-8" : undefined}>
@@ -62,7 +49,7 @@ export const Volumes = ({
                     server_id={id}
                     name={row.original.name}
                     extra={
-                      no_containers(row.original.name) && (
+                      !row.original.in_use && (
                         <Badge variant="destructive">Unused</Badge>
                       )
                     }

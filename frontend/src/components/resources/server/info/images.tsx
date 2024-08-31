@@ -5,7 +5,6 @@ import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { HardDrive } from "lucide-react";
-import { useCallback, useMemo } from "react";
 import { Prune } from "../actions";
 
 export const Images = ({
@@ -20,23 +19,8 @@ export const Images = ({
   const images =
     useRead("ListDockerImages", { server: id }, { refetchInterval: 5000 })
       .data ?? [];
-  const containers = useRead("ListDockerContainers", { server: id }).data ?? [];
 
-  const no_containers = useCallback(
-    (image_id: string) => {
-      return containers.every((container) => container.image_id !== image_id);
-    },
-    [containers]
-  );
-
-  console.log(images);
-
-  const allInUse = useMemo(() => {
-    return images.every((image) =>
-      // this ignores images that come in with no id, but they should all come in with id
-      !image.id ? true : !no_containers(image.id)
-    );
-  }, [no_containers]);
+  const allInUse = images.every((image) => image.in_use);
 
   return (
     <div className={show ? "mb-8" : undefined}>
@@ -67,8 +51,7 @@ export const Images = ({
                     name={row.original.name}
                     id={row.original.id}
                     extra={
-                      row.original.id &&
-                      no_containers(row.original.id) && (
+                      !row.original.in_use && (
                         <Badge variant="destructive">Unused</Badge>
                       )
                     }

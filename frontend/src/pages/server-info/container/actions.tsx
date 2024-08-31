@@ -2,6 +2,7 @@ import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Pause, Play, RefreshCcw, Square, Trash } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const useContainer = (id: string, container_name: string) => {
   return useRead("ListDockerContainers", { server: id }).data?.find(
@@ -17,7 +18,10 @@ const DestroyContainer = ({
   container: string;
 }) => {
   const container = useContainer(id, container_name);
-  const { mutate: destroy, isPending } = useExecute("DestroyContainer");
+  const nav = useNavigate();
+  const { mutate: destroy, isPending } = useExecute("DestroyContainer", {
+    onSuccess: () => nav("/servers/" + id),
+  });
   const destroying = useRead(
     "GetServerActionState",
     { server: id },

@@ -1,5 +1,5 @@
-title = "Test"
-host = "http://localhost.9120"
+title = "Monitor Test"
+host = "http://localhost:9120"
 passkey = "a_random_passkey"
 ensure_server = "http://localhost:8120"
 

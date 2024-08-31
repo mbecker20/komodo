@@ -4,7 +4,6 @@ import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { Network } from "lucide-react";
-import { useCallback, useMemo } from "react";
 import { Prune } from "../actions";
 
 export const Networks = ({
@@ -19,27 +18,15 @@ export const Networks = ({
   const networks =
     useRead("ListDockerNetworks", { server: id }, { refetchInterval: 5000 })
       .data ?? [];
-  const containers = useRead("ListDockerContainers", { server: id }).data ?? [];
 
-  const no_containers = useCallback(
-    (network_name: string) => {
-      return containers.every(
-        (container) => !container.networks?.includes(network_name)
-      );
-    },
-    [containers]
+  const allInUse = networks.every((network) =>
+    // this ignores networks that come in with no name, but they should all come in with name
+    !network.name
+      ? true
+      : ["none", "host", "bridge"].includes(network.name)
+      ? true
+      : network.in_use
   );
-
-  const allInUse = useMemo(() => {
-    return networks.every((network) =>
-      // this ignores networks that come in with no name, but they should all come in with name
-      !network.name
-        ? true
-        : ["none", "host", "bridge"].includes(network.name)
-        ? true
-        : !no_containers(network.name)
-    );
-  }, [no_containers]);
 
   return (
     <div className={show ? "mb-8" : undefined}>
@@ -75,8 +62,7 @@ export const Networks = ({
                         ) ? (
                           <Badge variant="outline">System</Badge>
                         ) : (
-                          row.original.name &&
-                          no_containers(row.original.name) && (
+                          !row.original.in_use && (
                             <Badge variant="destructive">Unused</Badge>
                           )
                         )

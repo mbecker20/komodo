@@ -5,6 +5,8 @@ import { useToast } from "@ui/use-toast";
 import { Pen, Scissors } from "lucide-react";
 import { useState } from "react";
 import { useServer } from ".";
+import { has_minimum_permissions } from "@lib/utils";
+import { Types } from "@monitor/client";
 
 export const RenameServer = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();
@@ -56,6 +58,17 @@ export const Prune = ({
     { server: server_id },
     { refetchInterval: 5000 }
   ).data;
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Server", id: server_id },
+  }).data;
+
+  if (!server) return;
+
+  const canExecute = has_minimum_permissions(
+    perms,
+    Types.PermissionLevel.Execute
+  );
+
   const pruningKey =
     type === "Containers"
       ? "pruning_containers"
@@ -68,8 +81,9 @@ export const Prune = ({
       : type === "System"
       ? "pruning_system"
       : "";
-  if (!server) return;
+
   const pending = isPending || action_state?.[pruningKey];
+
   if (type === "Images" || type === "Networks") {
     return (
       <ConfirmButton
@@ -77,7 +91,7 @@ export const Prune = ({
         icon={<Scissors className="w-4 h-4" />}
         onClick={() => mutate({ server: server_id })}
         loading={pending}
-        disabled={pending}
+        disabled={!canExecute || pending}
       />
     );
   } else {
@@ -88,7 +102,7 @@ export const Prune = ({
         icon={<Scissors className="w-4 h-4" />}
         onClick={() => mutate({ server: server_id })}
         loading={pending}
-        disabled={pending}
+        disabled={!canExecute || pending}
       />
     );
   }

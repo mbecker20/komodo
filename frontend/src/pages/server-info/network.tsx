@@ -2,16 +2,26 @@ import { Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
 import {
+  ConfirmButton,
   DOCKER_LINK_ICONS,
   DockerLabelsSection,
   DockerOptions,
   DockerResourcePageName,
 } from "@components/util";
-import { useRead, useSetTitle } from "@lib/hooks";
+import { useExecute, useRead, useSetTitle } from "@lib/hooks";
+import { has_minimum_permissions } from "@lib/utils";
+import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { Box, ChevronLeft, Info, Loader2, Waypoints } from "lucide-react";
+import {
+  Box,
+  ChevronLeft,
+  Info,
+  Loader2,
+  Trash,
+  Waypoints,
+} from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 export const NetworkPage = () => {
@@ -36,9 +46,11 @@ const NetworkPageInner = ({
   const server = useServer(id);
   useSetTitle(`${server?.name} | network | ${network_name}`);
   const nav = useNavigate();
-  // const perms = useRead("GetPermissionLevel", {
-  //   target: { type: "Server", id },
-  // }).data;
+
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Server", id },
+  }).data;
+
   const {
     data: network,
     isPending,
@@ -48,6 +60,13 @@ const NetworkPageInner = ({
     network: network_name,
   });
 
+  const { mutate: deleteNetwork, isPending: deletePending } = useExecute(
+    "DeleteNetwork",
+    {
+      onSuccess: () => nav("/servers/" + id),
+    }
+  );
+
   if (isPending) {
     return (
       <div className="flex justify-center w-full py-4">
@@ -55,9 +74,11 @@ const NetworkPageInner = ({
       </div>
     );
   }
+
   if (isError) {
     return <div className="flex w-full py-4">Failed to inspect network.</div>;
   }
+
   if (!network) {
     return (
       <div className="flex w-full py-4">
@@ -66,7 +87,10 @@ const NetworkPageInner = ({
     );
   }
 
-  // const disabled = !has_minimum_permissions(perms, Types.PermissionLevel.Write);
+  const canExecute = has_minimum_permissions(
+    perms,
+    Types.PermissionLevel.Execute
+  );
 
   const containers = Object.values(network.Containers ?? {});
 
@@ -90,10 +114,6 @@ const NetworkPageInner = ({
           >
             <ChevronLeft className="w-4" /> Back
           </Button>
-
-          {/* <Button className="gap-2" variant="destructive">
-            <Trash className="w-4" /> Delete
-          </Button> */}
         </div>
 
         {/* TITLE */}
@@ -134,6 +154,17 @@ const NetworkPageInner = ({
           ) : null}
         </div>
       </div>
+
+      {/* MAYBE DELETE */}
+      {canExecute && containers.length === 0 && (
+        <ConfirmButton
+          variant="destructive"
+          title="Delete Network"
+          icon={<Trash className="w-4 h-4" />}
+          loading={deletePending}
+          onClick={() => deleteNetwork({ server: id, name: network_name })}
+        />
+      )}
 
       {/* TOP LEVEL NETWORK INFO */}
       <Section title="Details" icon={<Info className="w-4 h-4" />}>
