@@ -143,6 +143,10 @@ const VolumePageInner = ({
         />
       )}
 
+      {containers && containers.length > 0 && (
+        <DockerContainersSection server_id={id} containers={containers} />
+      )}
+
       {/* TOP LEVEL VOLUME INFO */}
       <Section title="Details" icon={<Info className="w-4 h-4" />}>
         <DataTable
@@ -169,10 +173,6 @@ const VolumePageInner = ({
         />
         <DockerOptions options={volume.Options} />
       </Section>
-
-      {containers && containers.length > 0 && (
-        <DockerContainersSection server_id={id} containers={containers} />
-      )}
 
       <DockerLabelsSection labels={volume.Labels} />
     </div>

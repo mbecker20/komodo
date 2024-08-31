@@ -158,6 +158,10 @@ const ImagePageInner = ({
         />
       )}
 
+      {containers && containers.length > 0 && (
+        <DockerContainersSection server_id={id} containers={containers} />
+      )}
+
       {/* TOP LEVEL IMAGE INFO */}
       <Section title="Details" icon={<Info className="w-4 h-4" />}>
         <DataTable
@@ -183,10 +187,6 @@ const ImagePageInner = ({
           ]}
         />
       </Section>
-
-      {containers && containers.length > 0 && (
-        <DockerContainersSection server_id={id} containers={containers} />
-      )}
 
       {history && history.length > 0 && (
         <Section title="History" icon={<HistoryIcon className="w-4 h-4" />}>

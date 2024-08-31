@@ -6,6 +6,7 @@ import {
   DOCKER_LINK_ICONS,
   DockerLabelsSection,
   DockerOptions,
+  DockerResourceLink,
   DockerResourcePageName,
 } from "@components/util";
 import { useExecute, useRead, useSetTitle } from "@lib/hooks";
@@ -22,7 +23,7 @@ import {
   Trash,
   Waypoints,
 } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const NetworkPage = () => {
   const { type, id, network } = useParams() as {
@@ -101,6 +102,13 @@ const NetworkPageInner = ({
       Driver: ipam_driver,
     })) ?? [];
 
+  const unused =
+    !["none", "host", "bridge"].includes(network_name) &&
+    containers &&
+    containers.length === 0
+      ? true
+      : false;
+
   return (
     <div className="flex flex-col gap-16 mb-24">
       {/* HEADER */}
@@ -126,9 +134,7 @@ const NetworkPageInner = ({
             />
           </div>
           <DockerResourcePageName name={network_name} />
-          {containers.length === 0 && (
-            <Badge variant="destructive">Unused</Badge>
-          )}
+          {unused && <Badge variant="destructive">Unused</Badge>}
         </div>
 
         {/* INFO */}
@@ -156,7 +162,7 @@ const NetworkPageInner = ({
       </div>
 
       {/* MAYBE DELETE */}
-      {canExecute && containers.length === 0 && (
+      {canExecute && unused && (
         <ConfirmButton
           variant="destructive"
           title="Delete Network"
@@ -164,6 +170,55 @@ const NetworkPageInner = ({
           loading={deletePending}
           onClick={() => deleteNetwork({ server: id, name: network_name })}
         />
+      )}
+
+      {containers.length > 0 && (
+        <Section title="Containers" icon={<Box className="w-4 h-4" />}>
+          <DataTable
+            tableKey="network-containers"
+            data={containers}
+            columns={[
+              {
+                accessorKey: "Name",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Name" />
+                ),
+                cell: ({ row }) =>
+                  row.original.Name ? (
+                    <DockerResourceLink
+                      type="container"
+                      server_id={id}
+                      name={row.original.Name}
+                    />
+                  ) : (
+                    "Unknown"
+                  ),
+                size: 200,
+              },
+              {
+                accessorKey: "IPv4Address",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="IPv4" />
+                ),
+                cell: ({ row }) => row.original.IPv4Address || "None",
+              },
+              {
+                accessorKey: "IPv6Address",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="IPv6" />
+                ),
+                cell: ({ row }) => row.original.IPv6Address || "None",
+              },
+              {
+                accessorKey: "MacAddress",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Mac" />
+                ),
+                cell: ({ row }) => row.original.MacAddress || "None",
+              },
+            ]}
+          />
+        </Section>
       )}
 
       {/* TOP LEVEL NETWORK INFO */}
@@ -218,65 +273,6 @@ const NetworkPageInner = ({
             ]}
           />
           <DockerOptions options={network.IPAM?.Options} />
-        </Section>
-      )}
-
-      {containers.length > 0 && (
-        <Section title="Containers" icon={<Box className="w-4 h-4" />}>
-          <DataTable
-            tableKey="network-containers"
-            data={containers}
-            columns={[
-              {
-                accessorKey: "Name",
-                header: ({ column }) => (
-                  <SortableHeader column={column} title="Name" />
-                ),
-                cell: ({ row }) =>
-                  row.original.Name ? (
-                    <Link
-                      to={`/servers/${id}/container/${encodeURIComponent(
-                        row.original.Name
-                      )}`}
-                      className="px-0"
-                    >
-                      <Button variant="link" className="px-0">
-                        <div
-                          title={row.original.Name}
-                          className="max-w-[200px] lg:max-w-[300px] overflow-hidden overflow-ellipsis"
-                        >
-                          {row.original.Name}
-                        </div>
-                      </Button>
-                    </Link>
-                  ) : (
-                    "Unknown"
-                  ),
-                size: 200,
-              },
-              {
-                accessorKey: "IPv4Address",
-                header: ({ column }) => (
-                  <SortableHeader column={column} title="IPv4" />
-                ),
-                cell: ({ row }) => row.original.IPv4Address || "None",
-              },
-              {
-                accessorKey: "IPv6Address",
-                header: ({ column }) => (
-                  <SortableHeader column={column} title="IPv6" />
-                ),
-                cell: ({ row }) => row.original.IPv6Address || "None",
-              },
-              {
-                accessorKey: "MacAddress",
-                header: ({ column }) => (
-                  <SortableHeader column={column} title="Mac" />
-                ),
-                cell: ({ row }) => row.original.MacAddress || "None",
-              },
-            ]}
-          />
         </Section>
       )}
 
