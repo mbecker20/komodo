@@ -79,12 +79,12 @@ pub async fn get_updates_for_view(
               "{}:  {}\n{}:    {}",
               muted("from"),
               colored(
-                &original.value.replace(|_| true, "#"),
+                original.value.replace(|_| true, "#"),
                 Color::Red
               ),
               muted("to"),
               colored(
-                &item.variable.value.replace(|_| true, "#"),
+                item.variable.value.replace(|_| true, "#"),
                 Color::Green
               )
             ));
@@ -116,9 +116,9 @@ pub async fn get_updates_for_view(
             "{}: 'is_secret'\n{}:  {}\n{}:    {}",
             muted("field"),
             muted("from"),
-            colored(&original.is_secret, Color::Red),
+            colored(original.is_secret, Color::Red),
             muted("to"),
-            colored(&item.variable.is_secret, Color::Green)
+            colored(item.variable.is_secret, Color::Green)
           ))
         }
 
