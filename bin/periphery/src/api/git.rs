@@ -27,7 +27,7 @@ impl Resolve<GetLatestCommit, ()> for State {
 }
 
 impl Resolve<CloneRepo> for State {
-  #[instrument(name = "CloneRepo", skip(self))]
+  #[instrument(name = "CloneRepo", skip(self, environment))]
   async fn resolve(
     &self,
     CloneRepo {
@@ -81,7 +81,7 @@ impl Resolve<CloneRepo> for State {
 //
 
 impl Resolve<PullRepo> for State {
-  #[instrument(name = "PullRepo", skip(self))]
+  #[instrument(name = "PullRepo", skip(self, on_pull, environment))]
   async fn resolve(
     &self,
     PullRepo {

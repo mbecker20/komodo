@@ -20,7 +20,7 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, to_document, Bson},
 };
 use periphery_client::PeripheryClient;
-use query::get_global_variables;
+use query::{get_variables_and_secrets, VariablesAndSecrets};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use resolver_api::Resolve;
 
@@ -232,9 +232,10 @@ pub async fn interpolate_variables_secrets_into_environment(
   environment: &mut Vec<EnvironmentVar>,
   update: &mut Update,
 ) -> anyhow::Result<HashSet<(String, String)>> {
-  // Interpolate variables into environment
-  let variables = get_global_variables().await?;
-  let core_config = core_config();
+  // This method already splits variables / secrets by "is_secret".
+  // Also includes secrets defined in core config
+  let VariablesAndSecrets { variables, secrets } =
+    get_variables_and_secrets().await?;
 
   let mut global_replacers = HashSet::new();
   let mut secret_replacers = HashSet::new();
@@ -257,7 +258,7 @@ pub async fn interpolate_variables_secrets_into_environment(
     // second pass - core secrets
     let (res, more_replacers) = svi::interpolate_variables(
       &res,
-      &core_config.secrets,
+      &secrets,
       svi::Interpolator::DoubleBrackets,
       false,
     )
@@ -280,6 +281,7 @@ pub async fn interpolate_variables_secrets_into_environment(
     );
   }
 
+  // Only show names of interpolated secrets
   if !secret_replacers.is_empty() {
     update.push_simple_log(
       "interpolate core secrets",

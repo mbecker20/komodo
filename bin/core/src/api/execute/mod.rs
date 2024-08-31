@@ -159,10 +159,7 @@ async fn task(
   user: User,
   update: Update,
 ) -> anyhow::Result<String> {
-  info!(
-    "/execute request {req_id} | user: {} ({})",
-    user.username, user.id
-  );
+  info!("/execute request {req_id} | user: {}", user.username);
   let timer = Instant::now();
 
   let res = State

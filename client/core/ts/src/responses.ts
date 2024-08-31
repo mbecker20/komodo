@@ -280,6 +280,7 @@ export type WriteResponses = {
   CreateVariable: Types.CreateVariableResponse;
   UpdateVariableValue: Types.UpdateVariableValueResponse;
   UpdateVariableDescription: Types.UpdateVariableDescriptionResponse;
+  UpdateVariableIsSecret: Types.UpdateVariableIsSecretResponse;
   DeleteVariable: Types.DeleteVariableResponse;
 
   // ==== PROVIDERS ====

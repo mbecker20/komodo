@@ -147,6 +147,7 @@ pub enum WriteRequest {
   CreateVariable(CreateVariable),
   UpdateVariableValue(UpdateVariableValue),
   UpdateVariableDescription(UpdateVariableDescription),
+  UpdateVariableIsSecret(UpdateVariableIsSecret),
   DeleteVariable(DeleteVariable),
 
   // ==== PROVIDERS ====

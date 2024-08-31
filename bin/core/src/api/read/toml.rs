@@ -355,7 +355,15 @@ impl Resolve<ExportResourcesToToml, User> for State {
       res.variables =
         find_collect(&db_client().await.variables, None, None)
           .await
-          .context("failed to get variables from db")?;
+          .context("failed to get variables from db")?
+          .into_iter()
+          .map(|mut variable| {
+            if !user.admin && variable.is_secret {
+              variable.value = "#".repeat(variable.value.len())
+            }
+            variable
+          })
+          .collect();
     }
 
     let toml = serialize_resources_toml(&res)

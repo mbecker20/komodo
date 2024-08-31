@@ -39,15 +39,16 @@ use crate::{
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::build_cancel_channel,
     git_token,
-    query::{get_deployment_state, get_global_variables},
+    query::{
+      get_deployment_state, get_variables_and_secrets,
+      VariablesAndSecrets,
+    },
     registry_token,
-    update::update_update,
+    update::{init_execution_update, update_update},
   },
   resource::{self, refresh_build_state_cache},
   state::{action_states, db_client, State},
 };
-
-use crate::helpers::update::init_execution_update;
 
 use super::ExecuteRequest;
 
@@ -213,8 +214,9 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     if all_logs_success(&update.logs) {
       let secret_replacers = if !build.config.skip_secret_interp {
-        let core_config = core_config();
-        let variables = get_global_variables().await?;
+        let VariablesAndSecrets { variables, secrets } =
+          get_variables_and_secrets().await?;
+
         // Interpolate variables / secrets into build args
         let mut global_replacers = HashSet::new();
         let mut secret_replacers = HashSet::new();
@@ -234,7 +236,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           // second pass - core secrets
           let (res, more_replacers) = svi::interpolate_variables(
             &res,
-            &core_config.secrets,
+            &secrets,
             svi::Interpolator::DoubleBrackets,
             false,
           )
@@ -262,7 +264,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           // second pass - core secrets
           let (res, more_replacers) = svi::interpolate_variables(
             &res,
-            &core_config.secrets,
+            &secrets,
             svi::Interpolator::DoubleBrackets,
             false,
           )

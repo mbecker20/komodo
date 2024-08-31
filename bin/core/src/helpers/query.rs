@@ -30,6 +30,7 @@ use mungos::{
 };
 
 use crate::{
+  config::core_config,
   resource::{self, get_user_permission_on_resource},
   state::{db_client, deployment_status_cache, stack_status_cache},
 };
@@ -312,18 +313,6 @@ pub fn id_or_username_filter(id_or_username: &str) -> Document {
   }
 }
 
-pub async fn get_global_variables(
-) -> anyhow::Result<HashMap<String, String>> {
-  Ok(
-    find_collect(&db_client().await.variables, None, None)
-      .await
-      .context("failed to get all variables from db")?
-      .into_iter()
-      .map(|variable| (variable.name, variable.value))
-      .collect(),
-  )
-}
-
 pub async fn get_variable(name: &str) -> anyhow::Result<Variable> {
   db_client()
     .await
@@ -356,4 +345,34 @@ pub async fn get_latest_update(
     )
     .await
     .context("failed to query db for latest update")
+}
+
+pub struct VariablesAndSecrets {
+  pub variables: HashMap<String, String>,
+  pub secrets: HashMap<String, String>,
+}
+
+pub async fn get_variables_and_secrets(
+) -> anyhow::Result<VariablesAndSecrets> {
+  let variables =
+    find_collect(&db_client().await.variables, None, None)
+      .await
+      .context("failed to get all variables from db")?;
+  let mut secrets = core_config().secrets.clone();
+
+  // extend secrets with secret variables
+  secrets.extend(
+    variables.iter().filter(|variable| variable.is_secret).map(
+      |variable| (variable.name.clone(), variable.value.clone()),
+    ),
+  );
+
+  // collect non secret variables
+  let variables = variables
+    .into_iter()
+    .filter(|variable| !variable.is_secret)
+    .map(|variable| (variable.name, variable.value))
+    .collect();
+
+  Ok(VariablesAndSecrets { variables, secrets })
 }

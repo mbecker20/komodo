@@ -4,8 +4,7 @@ use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
 use monitor_client::{
   api::write::{
-    CreateVariable, DeleteVariable, UpdateVariableDescription,
-    UpdateVariableValue,
+    CreateVariable, DeleteVariable, UpdateVariableDescription, UpdateVariableIsSecret, UpdateVariableValue
   },
   entities::{
     sync::SyncUpdate, update::Log, user::sync_user,
@@ -21,6 +20,7 @@ pub struct ToUpdateItem {
   pub variable: Variable,
   pub update_value: bool,
   pub update_description: bool,
+  pub update_is_secret: bool,
 }
 
 pub async fn get_updates_for_view(
@@ -57,6 +57,7 @@ pub async fn get_updates_for_view(
           update_value: original.value != variable.value,
           update_description: original.description
             != variable.description,
+          update_is_secret: original.is_secret != variable.is_secret,
           variable,
         };
         if !item.update_value && !item.update_description {
@@ -72,14 +73,31 @@ pub async fn get_updates_for_view(
         let mut lines = Vec::<String>::new();
 
         if item.update_value {
-          lines.push(format!(
-            "{}: 'value'\n{}:  {}\n{}:    {}",
-            muted("field"),
-            muted("from"),
-            colored(&original.value, Color::Red),
-            muted("to"),
-            colored(&item.variable.value, Color::Green)
-          ))
+          let mut log = format!("{}: 'value'\n", muted("field"),);
+          if item.variable.is_secret {
+            log.push_str(&format!(
+              "{}:  {}\n{}:    {}",
+              muted("from"),
+              colored(
+                &original.value.replace(|_| true, "#"),
+                Color::Red
+              ),
+              muted("to"),
+              colored(
+                &item.variable.value.replace(|_| true, "#"),
+                Color::Green
+              )
+            ));
+          } else {
+            log.push_str(&format!(
+              "{}:  {}\n{}:    {}",
+              muted("from"),
+              colored(&original.value, Color::Red),
+              muted("to"),
+              colored(&item.variable.value, Color::Green)
+            ));
+          }
+          lines.push(log);
         }
 
         if item.update_description {
@@ -93,6 +111,17 @@ pub async fn get_updates_for_view(
           ))
         }
 
+        if item.update_is_secret {
+          lines.push(format!(
+            "{}: 'is_secret'\n{}:  {}\n{}:    {}",
+            muted("field"),
+            muted("from"),
+            colored(&original.is_secret, Color::Red),
+            muted("to"),
+            colored(&item.variable.is_secret, Color::Green)
+          ))
+        }
+
         update.log.push('\n');
         update.log.push_str(&lines.join("\n-------------------\n"));
       }
@@ -100,22 +129,40 @@ pub async fn get_updates_for_view(
         update.to_create += 1;
         if variable.description.is_empty() {
           update.log.push_str(&format!(
-            "\n\n{}: variable: {}\n{}: {}",
+            "\n\n{}: variable: {}",
             colored("CREATE", Color::Green),
             colored(&variable.name, Color::Green),
-            muted("value"),
-            variable.value,
           ));
+          if variable.is_secret {
+            update
+              .log
+              .push_str(&format!("\n{}: true", muted("is secret"),));
+          } else {
+            update.log.push_str(&format!(
+              "\n{}: {}",
+              muted("value"),
+              variable.value,
+            ));
+          }
         } else {
           update.log.push_str(&format!(
-            "\n\n{}: variable: {}\n{}: {}\n{}: {}",
+            "\n\n{}: variable: {}\n{}: {}",
             colored("CREATE", Color::Green),
             colored(&variable.name, Color::Green),
             muted("description"),
             variable.description,
-            muted("value"),
-            variable.value,
           ));
+          if variable.is_secret {
+            update
+              .log
+              .push_str(&format!("\n{}: true", muted("is secret"),));
+          } else {
+            update.log.push_str(&format!(
+              "\n{}: {}",
+              muted("value"),
+              variable.value,
+            ));
+          }
         }
       }
     }
@@ -166,9 +213,13 @@ pub async fn get_updates_for_execution(
           update_value: original.value != variable.value,
           update_description: original.description
             != variable.description,
+          update_is_secret: original.is_secret != variable.is_secret,
           variable,
         };
-        if !item.update_value && !item.update_description {
+        if !item.update_value
+          && !item.update_description
+          && !item.update_is_secret
+        {
           continue;
         }
 
@@ -203,6 +254,7 @@ pub async fn run_updates(
           name: variable.name.clone(),
           value: variable.value,
           description: variable.description,
+          is_secret: variable.is_secret,
         },
         sync_user().to_owned(),
       )
@@ -228,6 +280,7 @@ pub async fn run_updates(
     variable,
     update_value,
     update_description,
+    update_is_secret,
   } in to_update
   {
     if update_value {
@@ -276,6 +329,32 @@ pub async fn run_updates(
       } else {
         log.push_str(&format!(
           "\n{}: {} variable '{}' description",
+          muted("INFO"),
+          colored("updated", Color::Blue),
+          bold(&variable.name)
+        ))
+      };
+    }
+    if update_is_secret {
+      if let Err(e) = State
+        .resolve(
+          UpdateVariableIsSecret {
+            name: variable.name.clone(),
+            is_secret: variable.is_secret,
+          },
+          sync_user().to_owned(),
+        )
+        .await
+      {
+        has_error = true;
+        log.push_str(&format!(
+          "\n{}: failed to update variable is secret for '{}' | {e:#}",
+          colored("ERROR", Color::Red),
+          bold(&variable.name)
+        ))
+      } else {
+        log.push_str(&format!(
+          "\n{}: {} variable '{}' is secret",
           muted("INFO"),
           colored("updated", Color::Blue),
           bold(&variable.name)

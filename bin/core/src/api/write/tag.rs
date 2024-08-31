@@ -59,6 +59,7 @@ impl Resolve<CreateTag, User> for State {
 }
 
 impl Resolve<RenameTag, User> for State {
+  #[instrument(name = "RenameTag", skip(self, user))]
   async fn resolve(
     &self,
     RenameTag { id, name }: RenameTag,

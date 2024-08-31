@@ -31,7 +31,8 @@ use crate::{
     alert::send_alerts,
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::repo_cancel_channel,
-    git_token, periphery_client,
+    git_token, interpolate_variables_secrets_into_environment,
+    periphery_client,
     update::update_update,
   },
   resource::{self, refresh_repo_state_cache},
@@ -84,6 +85,14 @@ impl Resolve<CloneRepo, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
+    if !repo.config.skip_secret_interp {
+      interpolate_variables_secrets_into_environment(
+        &mut repo.config.environment,
+        &mut update,
+      )
+      .await?;
+    }
+
     let logs = match periphery
       .request(api::git::CloneRepo {
         args: (&repo).into(),
@@ -124,7 +133,7 @@ impl Resolve<PullRepo, (User, Update)> for State {
     PullRepo { repo }: PullRepo,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let repo = resource::get_check_permissions::<Repo>(
+    let mut repo = resource::get_check_permissions::<Repo>(
       &repo,
       &user,
       PermissionLevel::Execute,
@@ -150,6 +159,14 @@ impl Resolve<PullRepo, (User, Update)> for State {
       resource::get::<Server>(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
+
+    if !repo.config.skip_secret_interp {
+      interpolate_variables_secrets_into_environment(
+        &mut repo.config.environment,
+        &mut update,
+      )
+      .await?;
+    }
 
     let logs = match periphery
       .request(api::git::PullRepo {
@@ -337,14 +354,22 @@ impl Resolve<BuildRepo, (User, Update)> for State {
 
     // CLONE REPO
 
+    if !repo.config.skip_secret_interp {
+      interpolate_variables_secrets_into_environment(
+        &mut repo.config.environment,
+        &mut update,
+      )
+      .await?;
+    }
+
     let res = tokio::select! {
       res = periphery
         .request(api::git::CloneRepo {
           args: (&repo).into(),
           git_token,
-          environment: Default::default(),
-          env_file_path: Default::default(),
-          skip_secret_interp: Default::default(),
+          environment: repo.config.environment,
+          env_file_path: repo.config.env_file_path,
+          skip_secret_interp: repo.config.skip_secret_interp,
         }) => res,
       _ = cancel.cancelled() => {
         debug!("build cancelled during clone, cleaning up builder");

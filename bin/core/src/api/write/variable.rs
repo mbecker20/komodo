@@ -3,7 +3,8 @@ use monitor_client::{
   api::write::{
     CreateVariable, CreateVariableResponse, DeleteVariable,
     DeleteVariableResponse, UpdateVariableDescription,
-    UpdateVariableDescriptionResponse, UpdateVariableValue,
+    UpdateVariableDescriptionResponse, UpdateVariableIsSecret,
+    UpdateVariableIsSecretResponse, UpdateVariableValue,
     UpdateVariableValueResponse,
   },
   entities::{
@@ -22,12 +23,14 @@ use crate::{
 };
 
 impl Resolve<CreateVariable, User> for State {
+  #[instrument(name = "CreateVariable", skip(self, user, value))]
   async fn resolve(
     &self,
     CreateVariable {
       name,
       value,
       description,
+      is_secret,
     }: CreateVariable,
     user: User,
   ) -> anyhow::Result<CreateVariableResponse> {
@@ -39,6 +42,7 @@ impl Resolve<CreateVariable, User> for State {
       name,
       value,
       description,
+      is_secret,
     };
 
     db_client()
@@ -65,6 +69,7 @@ impl Resolve<CreateVariable, User> for State {
 }
 
 impl Resolve<UpdateVariableValue, User> for State {
+  #[instrument(name = "UpdateVariableValue", skip(self, user, value))]
   async fn resolve(
     &self,
     UpdateVariableValue { name, value }: UpdateVariableValue,
@@ -96,13 +101,19 @@ impl Resolve<UpdateVariableValue, User> for State {
       &user,
     );
 
-    update.push_simple_log(
-      "update variable value",
+    let log = if variable.is_secret {
+      format!(
+        "<span class=\"text-muted-foreground\">variable</span>: '{name}'\n<span class=\"text-muted-foreground\">from</span>: <span class=\"text-red-500\">{}</span>\n<span class=\"text-muted-foreground\">to</span>:   <span class=\"text-green-500\">{value}</span>",
+        variable.value.replace(|_| true, "#")
+      )
+    } else {
       format!(
         "<span class=\"text-muted-foreground\">variable</span>: '{name}'\n<span class=\"text-muted-foreground\">from</span>: <span class=\"text-red-500\">{}</span>\n<span class=\"text-muted-foreground\">to</span>:   <span class=\"text-green-500\">{value}</span>",
         variable.value
-      ),
-    );
+      )
+    };
+
+    update.push_simple_log("update variable value", log);
     update.finalize();
 
     add_update(update).await?;
@@ -112,6 +123,7 @@ impl Resolve<UpdateVariableValue, User> for State {
 }
 
 impl Resolve<UpdateVariableDescription, User> for State {
+  #[instrument(name = "UpdateVariableDescription", skip(self, user))]
   async fn resolve(
     &self,
     UpdateVariableDescription { name, description }: UpdateVariableDescription,
@@ -129,6 +141,29 @@ impl Resolve<UpdateVariableDescription, User> for State {
       )
       .await
       .context("failed to update variable description on db")?;
+    get_variable(&name).await
+  }
+}
+
+impl Resolve<UpdateVariableIsSecret, User> for State {
+  #[instrument(name = "UpdateVariableIsSecret", skip(self, user))]
+  async fn resolve(
+    &self,
+    UpdateVariableIsSecret { name, is_secret }: UpdateVariableIsSecret,
+    user: User,
+  ) -> anyhow::Result<UpdateVariableIsSecretResponse> {
+    if !user.admin {
+      return Err(anyhow!("only admins can update variables"));
+    }
+    db_client()
+      .await
+      .variables
+      .update_one(
+        doc! { "name": &name },
+        doc! { "$set": { "is_secret": is_secret } },
+      )
+      .await
+      .context("failed to update variable is secret on db")?;
     get_variable(&name).await
   }
 }

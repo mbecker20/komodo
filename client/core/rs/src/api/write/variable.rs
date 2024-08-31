@@ -23,6 +23,9 @@ pub struct CreateVariable {
   /// The initial value of the description. default: "".
   #[serde(default)]
   pub description: String,
+  /// Whether to make this a secret variable.
+  #[serde(default)]
+  pub is_secret: bool,
 }
 
 #[typeshare]
@@ -30,7 +33,7 @@ pub type CreateVariableResponse = Variable;
 
 //
 
-/// **Admin only.** Update variable. Response: [Variable].
+/// **Admin only.** Update variable value. Response: [Variable].
 #[typeshare]
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
@@ -49,7 +52,7 @@ pub type UpdateVariableValueResponse = Variable;
 
 //
 
-/// **Admin only.** Update variable. Response: [Variable].
+/// **Admin only.** Update variable description. Response: [Variable].
 #[typeshare]
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
@@ -65,6 +68,25 @@ pub struct UpdateVariableDescription {
 
 #[typeshare]
 pub type UpdateVariableDescriptionResponse = Variable;
+
+//
+
+/// **Admin only.** Update whether variable is secret. Response: [Variable].
+#[typeshare]
+#[derive(
+  Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(UpdateVariableIsSecretResponse)]
+pub struct UpdateVariableIsSecret {
+  /// The name of the variable to update.
+  pub name: String,
+  /// Whether variable is secret.
+  pub is_secret: bool,
+}
+
+#[typeshare]
+pub type UpdateVariableIsSecretResponse = Variable;
 
 //
 

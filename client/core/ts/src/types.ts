@@ -2918,6 +2918,15 @@ export interface Variable {
 	description?: string;
 	/** The value associated with the variable. */
 	value?: string;
+	/**
+	 * If marked as secret, the variable value will be hidden in updates / logs.
+	 * Additionally the value will not be served in read requests by non admin users.
+	 * 
+	 * Note that the value is NOT encrypted in the database, and will likely show up in database logs.
+	 * The security of these variables comes down to the security
+	 * of the database (system level encryption, network isolation, etc.)
+	 */
+	is_secret?: boolean;
 }
 
 export type GetVariableResponse = Variable;
@@ -3006,6 +3015,8 @@ export type CreateVariableResponse = Variable;
 export type UpdateVariableValueResponse = Variable;
 
 export type UpdateVariableDescriptionResponse = Variable;
+
+export type UpdateVariableIsSecretResponse = Variable;
 
 export type DeleteVariableResponse = Variable;
 
@@ -5021,6 +5032,9 @@ export interface ListUserGroups {
 /**
  * List all available global variables.
  * Response: [Variable]
+ * 
+ * Note. For non admin users making this call,
+ * secret variables will have their values obscured.
  */
 export interface GetVariable {
 	/** The name of the variable to get. */
@@ -5030,6 +5044,9 @@ export interface GetVariable {
 /**
  * List all available global variables.
  * Response: [ListVariablesResponse]
+ * 
+ * Note. For non admin users making this call,
+ * secret variables will have their values obscured.
  */
 export interface ListVariables {
 }
@@ -5951,9 +5968,11 @@ export interface CreateVariable {
 	value?: string;
 	/** The initial value of the description. default: "". */
 	description?: string;
+	/** Whether to make this a secret variable. */
+	is_secret?: boolean;
 }
 
-/** **Admin only.** Update variable. Response: [Variable]. */
+/** **Admin only.** Update variable value. Response: [Variable]. */
 export interface UpdateVariableValue {
 	/** The name of the variable to update. */
 	name: string;
@@ -5961,12 +5980,20 @@ export interface UpdateVariableValue {
 	value: string;
 }
 
-/** **Admin only.** Update variable. Response: [Variable]. */
+/** **Admin only.** Update variable description. Response: [Variable]. */
 export interface UpdateVariableDescription {
 	/** The name of the variable to update. */
 	name: string;
 	/** The description to set. */
 	description: string;
+}
+
+/** **Admin only.** Update whether variable is secret. Response: [Variable]. */
+export interface UpdateVariableIsSecret {
+	/** The name of the variable to update. */
+	name: string;
+	/** Whether variable is secret. */
+	is_secret: boolean;
 }
 
 /** **Admin only.** Delete a variable. Response: [Variable]. */
@@ -6592,6 +6619,7 @@ export type WriteRequest =
 	| { type: "CreateVariable", params: CreateVariable }
 	| { type: "UpdateVariableValue", params: UpdateVariableValue }
 	| { type: "UpdateVariableDescription", params: UpdateVariableDescription }
+	| { type: "UpdateVariableIsSecret", params: UpdateVariableIsSecret }
 	| { type: "DeleteVariable", params: DeleteVariable }
 	| { type: "CreateGitProviderAccount", params: CreateGitProviderAccount }
 	| { type: "UpdateGitProviderAccount", params: UpdateGitProviderAccount }
