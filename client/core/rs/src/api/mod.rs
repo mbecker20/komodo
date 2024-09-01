@@ -1,6 +1,6 @@
-//! # Monitor core API
+//! # Komodo core API
 //!
-//! Monitor core exposes an HTTP api using standard JSON serialization.
+//! Komodo core exposes an HTTP api using standard JSON serialization.
 //!
 //! All calls share some common HTTP params:
 //! - Method: `POST`
@@ -33,8 +33,8 @@
 //!
 //! - [auth]: Requests relating to logging in / obtaining authentication tokens.
 //! - [user]: User self-management actions (manage api keys, etc.)
-//! - [read]: Read only requests which retrieve data from Monitor.
-//! - [execute]: Run actions on monitor resources, eg [execute::RunBuild].
+//! - [read]: Read only requests which retrieve data from Komodo.
+//! - [execute]: Run actions on Komodo resources, eg [execute::RunBuild].
 //! - [mod@write]: Requests which alter data, like create / update / delete resources.
 //!
 //! ## Errors

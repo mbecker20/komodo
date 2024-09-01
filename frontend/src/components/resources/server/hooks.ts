@@ -1,5 +1,5 @@
 import { atomWithStorage } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useAtom } from "jotai";
 
 const statsGranularityAtom = atomWithStorage(

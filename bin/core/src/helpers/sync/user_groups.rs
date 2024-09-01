@@ -2,7 +2,7 @@ use std::{cmp::Ordering, collections::HashMap};
 
 use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
-use monitor_client::{
+use komodo_client::{
   api::{
     read::ListUserTargetPermissions,
     write::{
@@ -14,8 +14,9 @@ use monitor_client::{
     permission::{PermissionLevel, UserTarget},
     sync::SyncUpdate,
     toml::{PermissionToml, UserGroupToml},
-    update::{Log, ResourceTarget, ResourceTargetVariant},
+    update::Log,
     user::sync_user,
+    ResourceTarget, ResourceTargetVariant,
   },
 };
 use mungos::find::find_collect;

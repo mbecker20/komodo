@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
-use monitor_client::entities::server_template::hetzner::{
+use komodo_client::entities::server_template::hetzner::{
   HetznerDatacenter, HetznerServerTemplateConfig, HetznerServerType,
   HetznerVolumeFormat,
 };
@@ -208,6 +208,9 @@ fn hetzner_datacenter(
     }
     HetznerDatacenter::HillsboroDc1 => {
       common::HetznerDatacenter::HillsboroDc1
+    }
+    HetznerDatacenter::SingaporeDc1 => {
+      common::HetznerDatacenter::SingaporeDc1
     }
   }
 }

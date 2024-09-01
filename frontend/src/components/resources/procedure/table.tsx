@@ -2,7 +2,7 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { TableTags } from "@components/tags";
 import { ResourceLink } from "../common";
 import { ProcedureComponents } from ".";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export const ProcedureTable = ({
   procedures,

@@ -1,6 +1,6 @@
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::write::RefreshStackCache,
   entities::{
     permission::PermissionLevel,
@@ -11,9 +11,9 @@ use monitor_client::{
       StackInfo, StackListItem, StackListItemInfo,
       StackQuerySpecifics, StackState,
     },
-    update::{ResourceTargetVariant, Update},
+    update::Update,
     user::{stack_user, User},
-    Operation,
+    Operation, ResourceTargetVariant,
   },
 };
 use mungos::mongodb::Collection;
@@ -31,7 +31,7 @@ use crate::{
 
 use super::get_check_permissions;
 
-impl super::MonitorResource for Stack {
+impl super::KomodoResource for Stack {
   type Config = StackConfig;
   type PartialConfig = PartialStackConfig;
   type ConfigDiff = StackConfigDiff;

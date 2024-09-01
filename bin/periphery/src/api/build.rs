@@ -1,20 +1,18 @@
 use anyhow::{anyhow, Context};
-use command::run_monitor_command;
+use command::run_komodo_command;
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::{Build, BuildConfig},
-  get_image_name, optional_string,
-  server::docker_image::ImageSummary,
-  to_monitor_name,
+  get_image_name, optional_string, to_komodo_name,
   update::Log,
   EnvironmentVar, Version,
 };
-use periphery_client::api::build::{self, GetImageList, PruneImages};
+use periphery_client::api::build;
 use resolver_api::Resolve;
 
 use crate::{
   config::periphery_config,
-  docker::{docker_client, docker_login},
+  docker::docker_login,
   helpers::{parse_extra_args, parse_labels},
   State,
 };
@@ -74,7 +72,7 @@ impl Resolve<build::Build> for State {
       }
     };
 
-    let name = to_monitor_name(name);
+    let name = to_komodo_name(name);
 
     // Get paths
     let build_dir =
@@ -109,8 +107,7 @@ impl Resolve<build::Build> for State {
 
     if *skip_secret_interp {
       let build_log =
-        run_monitor_command("docker build", command).await;
-      info!("finished building docker image");
+        run_komodo_command("docker build", command).await;
       logs.push(build_log);
     } else {
       // Interpolate any missing secrets
@@ -126,7 +123,7 @@ impl Resolve<build::Build> for State {
       replacers.extend(core_replacers);
 
       let mut build_log =
-        run_monitor_command("docker build", command).await;
+        run_komodo_command("docker build", command).await;
       build_log.command =
         svi::replace_in_string(&build_log.command, &replacers);
       build_log.stdout =
@@ -211,31 +208,4 @@ fn cleanup_secret_env_vars(secret_args: &[EnvironmentVar]) {
   secret_args.iter().for_each(
     |EnvironmentVar { variable, .. }| std::env::remove_var(variable),
   )
-}
-
-//
-
-impl Resolve<GetImageList> for State {
-  #[instrument(name = "GetImageList", level = "debug", skip(self))]
-  async fn resolve(
-    &self,
-    _: GetImageList,
-    _: (),
-  ) -> anyhow::Result<Vec<ImageSummary>> {
-    docker_client().list_images().await
-  }
-}
-
-//
-
-impl Resolve<PruneImages> for State {
-  #[instrument(name = "PruneImages", skip(self))]
-  async fn resolve(
-    &self,
-    _: PruneImages,
-    _: (),
-  ) -> anyhow::Result<Log> {
-    let command = String::from("docker image prune -a -f");
-    Ok(run_monitor_command("prune images", command).await)
-  }
 }

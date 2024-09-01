@@ -32,7 +32,7 @@ async fn app() -> anyhow::Result<()> {
     .await
     .context("failed to bind tcp listener")?;
 
-  info!("monitor core started on {}", socket_addr);
+  info!("Komodo Periphery started on {}", socket_addr);
 
   axum::serve(
     listener,

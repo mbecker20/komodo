@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::{wait_until_timelength, Timelength};
-use monitor_client::{
+use komodo_client::{
   api::write::RefreshStackCache,
   entities::{
     permission::PermissionLevel,
@@ -19,7 +19,7 @@ use crate::{
   state::{db_client, State},
 };
 
-use super::query::get_server_with_status;
+use super::query::get_server_with_state;
 
 pub mod execute;
 pub mod remote;
@@ -81,7 +81,7 @@ pub async fn get_stack_and_server(
   }
 
   let (server, status) =
-    get_server_with_status(&stack.config.server_id).await?;
+    get_server_with_state(&stack.config.server_id).await?;
   if block_if_server_unreachable && status != ServerState::Ok {
     return Err(anyhow!(
       "cannot send action when server is unreachable or disabled"

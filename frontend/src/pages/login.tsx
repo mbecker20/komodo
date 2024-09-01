@@ -12,7 +12,7 @@ import { Label } from "@ui/label";
 import { useAuth, useLoginOptions, useUserInvalidate } from "@lib/hooks";
 import { useState } from "react";
 import { ThemeToggle } from "@ui/theme";
-import { AUTH_TOKEN_STORAGE_KEY, MONITOR_BASE_URL } from "@main";
+import { AUTH_TOKEN_STORAGE_KEY, KOMODO_BASE_URL } from "@main";
 import { Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
 
@@ -21,7 +21,7 @@ type OauthProvider = "Github" | "Google";
 const login_with_oauth = (provider: OauthProvider) => {
   const redirect = encodeURIComponent(location.href);
   location.replace(
-    `${MONITOR_BASE_URL}/auth/${provider.toLowerCase()}/login?redirect=${redirect}`
+    `${KOMODO_BASE_URL}/auth/${provider.toLowerCase()}/login?redirect=${redirect}`
   );
 };
 
@@ -42,10 +42,6 @@ const useExchangeToken = () => {
   const { mutate } = useAuth("ExchangeForJwt", {
     onSuccess: ({ jwt }) => {
       localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, jwt);
-      sanitize_query(search);
-    },
-    onError: (e) => {
-      console.log("exchange token for jwt error:", e);
       sanitize_query(search);
     },
   });
@@ -101,7 +97,8 @@ export const Login = () => {
   // Otherwise just standard login
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="container flex justify-end items-center h-16">
+      <div className="container flex justify-between items-center h-16">
+        <img src="/monitor-circle.png" className="w-[28px] dark:invert" />
         <ThemeToggle />
       </div>
       <div
@@ -113,7 +110,7 @@ export const Login = () => {
         <Card className="w-full max-w-[500px] place-self-center">
           <CardHeader className="flex-row justify-between">
             <div>
-              <CardTitle className="text-xl">Monitor</CardTitle>
+              <CardTitle className="text-xl">Komodo</CardTitle>
               <CardDescription>Log In</CardDescription>
             </div>
             <div className="flex gap-2">
@@ -197,7 +194,7 @@ export const Login = () => {
               No login methods have been configured. See the
               <Button variant="link" className="text-sm py-0 px-1">
                 <a
-                  href="https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml#L73"
+                  href="https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml#L86"
                   target="_blank"
                   className="flex text-sm"
                 >

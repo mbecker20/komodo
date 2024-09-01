@@ -1,6 +1,8 @@
+use std::collections::HashSet;
+
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::execute::*,
   entities::{
     build::{Build, ImageRegistry},
@@ -10,7 +12,7 @@ use monitor_client::{
     },
     get_image_name,
     permission::PermissionLevel,
-    server::{Server, ServerState},
+    server::Server,
     update::{Log, Update},
     user::User,
     Version,
@@ -23,8 +25,15 @@ use crate::{
   cloud::aws::ecr,
   config::core_config,
   helpers::{
-    interpolate_variables_secrets_into_environment, periphery_client,
-    query::get_server_with_status, registry_token,
+    interpolate::{
+      add_interp_update_log,
+      interpolate_variables_secrets_into_container_command,
+      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_extra_args,
+    },
+    periphery_client,
+    query::get_variables_and_secrets,
+    registry_token,
     update::update_update,
   },
   monitor::update_cache_for_server,
@@ -47,13 +56,8 @@ async fn setup_deployment_execution(
     return Err(anyhow!("deployment has no server configured"));
   }
 
-  let (server, status) =
-    get_server_with_status(&deployment.config.server_id).await?;
-  if status != ServerState::Ok {
-    return Err(anyhow!(
-      "cannot send action when server is unreachable or disabled"
-    ));
-  }
+  let server =
+    resource::get::<Server>(&deployment.config.server_id).await?;
 
   Ok((deployment, server))
 }
@@ -88,6 +92,12 @@ impl Resolve<Deploy, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
+    periphery
+      .health_check()
+      .await
+      .context("Failed server health check, stopping run.")?;
+
+    // This block resolves the attached Build to an actual versioned image
     let (version, registry_token, aws_ecr) = match &deployment
       .config
       .image
@@ -181,12 +191,42 @@ impl Resolve<Deploy, (User, Update)> for State {
       }
     };
 
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
     let secret_replacers = if !deployment.config.skip_secret_interp {
+      let vars_and_secrets = get_variables_and_secrets().await?;
+
+      let mut global_replacers = HashSet::new();
+      let mut secret_replacers = HashSet::new();
+
       interpolate_variables_secrets_into_environment(
+        &vars_and_secrets,
         &mut deployment.config.environment,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_extra_args(
+        &vars_and_secrets,
+        &mut deployment.config.extra_args,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_container_command(
+        &vars_and_secrets,
+        &mut deployment.config.command,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      add_interp_update_log(
         &mut update,
-      )
-      .await?
+        &global_replacers,
+        &secret_replacers,
+      );
+
+      secret_replacers
     } else {
       Default::default()
     };
@@ -225,11 +265,11 @@ impl Resolve<Deploy, (User, Update)> for State {
   }
 }
 
-impl Resolve<StartContainer, (User, Update)> for State {
-  #[instrument(name = "StartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<StartDeployment, (User, Update)> for State {
+  #[instrument(name = "StartDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    StartContainer { deployment }: StartContainer,
+    StartDeployment { deployment }: StartDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -253,7 +293,7 @@ impl Resolve<StartContainer, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::StartContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -273,11 +313,11 @@ impl Resolve<StartContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<RestartContainer, (User, Update)> for State {
-  #[instrument(name = "RestartContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<RestartDeployment, (User, Update)> for State {
+  #[instrument(name = "RestartDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    RestartContainer { deployment }: RestartContainer,
+    RestartDeployment { deployment }: RestartDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -301,7 +341,7 @@ impl Resolve<RestartContainer, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::RestartContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -323,11 +363,11 @@ impl Resolve<RestartContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<PauseContainer, (User, Update)> for State {
-  #[instrument(name = "PauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<PauseDeployment, (User, Update)> for State {
+  #[instrument(name = "PauseDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    PauseContainer { deployment }: PauseContainer,
+    PauseDeployment { deployment }: PauseDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -351,7 +391,7 @@ impl Resolve<PauseContainer, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::PauseContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -371,11 +411,11 @@ impl Resolve<PauseContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<UnpauseContainer, (User, Update)> for State {
-  #[instrument(name = "UnpauseContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<UnpauseDeployment, (User, Update)> for State {
+  #[instrument(name = "UnpauseDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    UnpauseContainer { deployment }: UnpauseContainer,
+    UnpauseDeployment { deployment }: UnpauseDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -399,7 +439,7 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::UnpauseContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
       })
       .await
     {
@@ -421,15 +461,15 @@ impl Resolve<UnpauseContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<StopContainer, (User, Update)> for State {
-  #[instrument(name = "StopContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<StopDeployment, (User, Update)> for State {
+  #[instrument(name = "StopDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    StopContainer {
+    StopDeployment {
       deployment,
       signal,
       time,
-    }: StopContainer,
+    }: StopDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -453,7 +493,7 @@ impl Resolve<StopContainer, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::StopContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
         signal: signal
           .unwrap_or(deployment.config.termination_signal)
           .into(),
@@ -479,15 +519,15 @@ impl Resolve<StopContainer, (User, Update)> for State {
   }
 }
 
-impl Resolve<RemoveContainer, (User, Update)> for State {
-  #[instrument(name = "RemoveContainer", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<DestroyDeployment, (User, Update)> for State {
+  #[instrument(name = "DestroyDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    RemoveContainer {
+    DestroyDeployment {
       deployment,
       signal,
       time,
-    }: RemoveContainer,
+    }: DestroyDeployment,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (deployment, server) =
@@ -502,7 +542,7 @@ impl Resolve<RemoveContainer, (User, Update)> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.removing = true)?;
+      action_state.update(|state| state.destroying = true)?;
 
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
@@ -511,7 +551,7 @@ impl Resolve<RemoveContainer, (User, Update)> for State {
 
     let log = match periphery
       .request(api::container::RemoveContainer {
-        name: deployment.name.clone(),
+        name: deployment.name,
         signal: signal
           .unwrap_or(deployment.config.termination_signal)
           .into(),

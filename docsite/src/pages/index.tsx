@@ -5,7 +5,7 @@ import Layout from "@theme/Layout";
 import HomepageFeatures from "@site/src/components/HomepageFeatures";
 
 import styles from "./index.module.css";
-import MonitorLogo from "../components/MonitorLogo";
+import KomodoLogo from "../components/KomodoLogo";
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -14,7 +14,7 @@ function HomepageHeader() {
       <div className="container">
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
           <div style={{ position: "relative" }}>
-            <MonitorLogo width="600px" />
+            <KomodoLogo width="600px" />
             <h1
               className="hero__title"
               style={{
@@ -25,7 +25,7 @@ function HomepageHeader() {
                 transform: "translate(-50%, -50%)",
               }}
             >
-              Monitor
+              Komodo
             </h1>
           </div>
         </div>
@@ -40,13 +40,13 @@ function HomepageHeader() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              to="https://github.com/mbecker20/monitor"
+              to="https://github.com/mbecker20/komodo"
             >
               Github
             </Link>
             <Link
               className="button button--secondary button--lg"
-              to="https://github.com/mbecker20/monitor#screenshots"
+              to="https://github.com/mbecker20/komodo#screenshots"
               style={{
                 width: "100%",
                 boxSizing: "border-box",
@@ -57,7 +57,7 @@ function HomepageHeader() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              to="https://demo.monitor.dev"
+              to="https://demo.komo.do"
               style={{
                 width: "100%",
                 boxSizing: "border-box",
@@ -76,7 +76,7 @@ function HomepageHeader() {
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout title="Monitor Docs" description={siteConfig.tagline}>
+    <Layout title="Home" description={siteConfig.tagline}>
       <HomepageHeader />
       <main>
         <HomepageFeatures />

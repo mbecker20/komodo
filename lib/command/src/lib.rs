@@ -1,11 +1,8 @@
-use monitor_client::entities::{monitor_timestamp, update::Log};
+use komodo_client::entities::{komodo_timestamp, update::Log};
 use run_command::{async_run_command, CommandOutput};
 
-pub async fn run_monitor_command(
-  stage: &str,
-  command: String,
-) -> Log {
-  let start_ts = monitor_timestamp();
+pub async fn run_komodo_command(stage: &str, command: String) -> Log {
+  let start_ts = komodo_timestamp();
   let output = async_run_command(&command).await;
   output_into_log(stage, command, start_ts, output)
 }
@@ -24,6 +21,6 @@ pub fn output_into_log(
     command,
     success,
     start_ts,
-    end_ts: monitor_timestamp(),
+    end_ts: komodo_timestamp(),
   }
 }

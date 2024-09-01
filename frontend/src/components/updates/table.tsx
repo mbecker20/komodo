@@ -1,5 +1,5 @@
 import { fmt_date_with_minutes, fmt_operation } from "@lib/formatting";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { DataTable } from "@ui/data-table";
 import { useState } from "react";
 import { UpdateDetailsInner, UpdateUser } from "./details";

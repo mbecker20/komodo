@@ -1,15 +1,14 @@
+use std::{collections::HashMap, path::PathBuf};
+
 use derive_builder::Builder;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use super::resource::{
-  AddFilters, Resource, ResourceListItem, ResourceQuery,
+use super::{
+  alert::SeverityLevel,
+  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
 };
-
-pub mod docker_image;
-pub mod docker_network;
-pub mod stats;
 
 #[typeshare]
 pub type Server = Resource<ServerConfig, ()>;
@@ -218,6 +217,15 @@ impl Default for ServerConfig {
   }
 }
 
+/// Summary of the health of the server.
+#[typeshare]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct ServerHealth {
+  pub cpu: SeverityLevel,
+  pub mem: SeverityLevel,
+  pub disks: HashMap<PathBuf, SeverityLevel>,
+}
+
 /// Current pending actions on the server.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
@@ -228,7 +236,19 @@ pub struct ServerActionState {
   pub pruning_containers: bool,
   /// Server currently pruning images
   pub pruning_images: bool,
-  /// Server currently stopping all containers.
+  /// Server currently pruning images
+  pub pruning_volumes: bool,
+  /// Server currently pruning system
+  pub pruning_system: bool,
+  /// Server currently starting containers.
+  pub starting_containers: bool,
+  /// Server currently restarting containers.
+  pub restarting_containers: bool,
+  /// Server currently pausing containers.
+  pub pausing_containers: bool,
+  /// Server currently unpausing containers.
+  pub unpausing_containers: bool,
+  /// Server currently stopping containers.
   pub stopping_containers: bool,
 }
 

@@ -4,9 +4,256 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::update::Update;
+use crate::entities::{update::Update, TerminationSignal};
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
+
+// =============
+// = CONTAINER =
+// =============
+
+/// Starts the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker start ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct StartContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Restarts the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker restart ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct RestartContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Pauses the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker pause ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PauseContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Unpauses the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker unpause ${container_name}`.
+///
+/// Note. This is the only way to restart a paused container.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct UnpauseContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+}
+
+//
+
+/// Stops the container on the target server. Response: [Update]
+///
+/// 1. Runs `docker stop ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct StopContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+  /// Override the default termination signal.
+  pub signal: Option<TerminationSignal>,
+  /// Override the default termination max time.
+  pub time: Option<i32>,
+}
+
+//
+
+/// Stops and destroys the container on the target server.
+/// Reponse: [Update].
+///
+/// 1. The container is stopped and removed using `docker container rm ${container_name}`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct DestroyContainer {
+  /// Name or id
+  pub server: String,
+  /// The container name
+  pub container: String,
+  /// Override the default termination signal.
+  pub signal: Option<TerminationSignal>,
+  /// Override the default termination max time.
+  pub time: Option<i32>,
+}
+
+//
+
+/// Starts all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct StartAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
+/// Restarts all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct RestartAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
+/// Pauses all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PauseAllContainers {
+  /// Name or id
+  pub server: String,
+}
+
+//
+
+/// Unpauses all containers on the target server. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct UnpauseAllContainers {
+  /// Name or id
+  pub server: String,
+}
 
 //
 
@@ -22,56 +269,10 @@ use super::MonitorExecuteRequest;
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StopAllContainers {
   /// Name or id
-  pub server: String,
-}
-
-//
-
-/// Prunes the docker networks on the target server. Response: [Update].
-///
-/// 1. Runs `docker network prune -f`.
-#[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  PartialEq,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct PruneNetworks {
-  /// Id or name
-  pub server: String,
-}
-
-//
-
-/// Prunes the docker images on the target server. Response: [Update].
-///
-/// 1. Runs `docker image prune -a -f`.
-#[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  PartialEq,
-  Request,
-  EmptyTraits,
-  Parser,
-)]
-#[empty_traits(MonitorExecuteRequest)]
-#[response(Update)]
-pub struct PruneImages {
-  /// Id or name
   pub server: String,
 }
 
@@ -91,9 +292,171 @@ pub struct PruneImages {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PruneContainers {
+  /// Id or name
+  pub server: String,
+}
+
+// ============================
+// = NETWORK / IMAGE / VOLUME =
+// ============================
+
+/// Delete a docker network.
+/// Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct DeleteNetwork {
+  /// Id or name.
+  pub server: String,
+  /// The name of the network to delete.
+  pub name: String,
+}
+
+//
+
+/// Prunes the docker networks on the target server. Response: [Update].
+///
+/// 1. Runs `docker network prune -f`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PruneNetworks {
+  /// Id or name
+  pub server: String,
+}
+
+//
+
+/// Delete a docker image.
+/// Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct DeleteImage {
+  /// Id or name.
+  pub server: String,
+  /// The name of the image to delete.
+  pub name: String,
+}
+
+//
+
+/// Prunes the docker images on the target server. Response: [Update].
+///
+/// 1. Runs `docker image prune -a -f`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PruneImages {
+  /// Id or name
+  pub server: String,
+}
+
+//
+
+/// Delete a docker volume.
+/// Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct DeleteVolume {
+  /// Id or name.
+  pub server: String,
+  /// The name of the volume to delete.
+  pub name: String,
+}
+
+/// Prunes the docker volumes on the target server. Response: [Update].
+///
+/// 1. Runs `docker volume prune -a -f`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PruneVolumes {
+  /// Id or name
+  pub server: String,
+}
+
+/// Prunes the docker system on the target server, including volumes. Response: [Update].
+///
+/// 1. Runs `docker system prune -a -f --volumes`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PruneSystem {
   /// Id or name
   pub server: String,
 }

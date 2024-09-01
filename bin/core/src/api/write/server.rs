@@ -1,9 +1,9 @@
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     server::Server,
     update::{Update, UpdateStatus},
@@ -73,7 +73,7 @@ impl Resolve<RenameServer, User> for State {
     let mut update =
       make_update(&server, Operation::RenameServer, &user);
 
-    update_one_by_id(&db_client().await.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }), None)
+    update_one_by_id(&db_client().await.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": komodo_timestamp() }), None)
       .await
       .context("failed to update server on db. this name may already be taken.")?;
     update.push_simple_log(
@@ -115,45 +115,6 @@ impl Resolve<CreateNetwork, User> for State {
       Err(e) => update.push_error_log(
         "create network",
         format_serror(&e.context("failed to create network").into()),
-      ),
-    };
-
-    update.finalize();
-    update_update(update.clone()).await?;
-
-    Ok(update)
-  }
-}
-
-impl Resolve<DeleteNetwork, User> for State {
-  #[instrument(name = "DeleteNetwork", skip(self, user))]
-  async fn resolve(
-    &self,
-    DeleteNetwork { server, name }: DeleteNetwork,
-    user: User,
-  ) -> anyhow::Result<Update> {
-    let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-
-    let periphery = periphery_client(&server)?;
-
-    let mut update =
-      make_update(&server, Operation::DeleteNetwork, &user);
-    update.status = UpdateStatus::InProgress;
-    update.id = add_update(update.clone()).await?;
-
-    match periphery
-      .request(api::network::DeleteNetwork { name })
-      .await
-    {
-      Ok(log) => update.logs.push(log),
-      Err(e) => update.push_error_log(
-        "delete network",
-        format_serror(&e.context("failed to delete network").into()),
       ),
     };
 

@@ -9,9 +9,9 @@ use strum::Display;
 use typeshare::typeshare;
 
 use super::{
-  deployment::ContainerSummary,
+  docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  to_monitor_name, EnvironmentVar,
+  to_komodo_name, EnvironmentVar,
 };
 
 #[typeshare]
@@ -30,8 +30,8 @@ impl Stack {
       .config
       .project_name
       .is_empty()
-      .then(|| to_monitor_name(&self.name))
-      .unwrap_or_else(|| to_monitor_name(&self.config.project_name))
+      .then(|| to_komodo_name(&self.name))
+      .unwrap_or_else(|| to_komodo_name(&self.config.project_name))
   }
 
   pub fn file_paths(&self) -> &[String] {
@@ -133,8 +133,8 @@ pub struct StackInfo {
   pub missing_files: Vec<String>,
 
   /// The deployed project name.
-  /// This is updated whenever Monitor successfully deploys the stack.
-  /// If it is present, Monitor will use it for actions over other options,
+  /// This is updated whenever Komodo successfully deploys the stack.
+  /// If it is present, Komodo will use it for actions over other options,
   /// to ensure control is maintained after changing the project name (there is no rename compose project api).
   pub deployed_project_name: Option<String>,
 
@@ -142,7 +142,7 @@ pub struct StackInfo {
   pub deployed_hash: Option<String>,
   /// Deployed commit message, or null. Only for repo based stacks
   pub deployed_message: Option<String>,
-  /// The deployed compose file contents. This is updated whenever Monitor successfully deploys the stack.
+  /// The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack.
   pub deployed_contents: Option<Vec<ComposeContents>>,
   /// The deployed service names.
   /// This is updated whenever it is empty, or deployed contents is updated.
@@ -154,7 +154,7 @@ pub struct StackInfo {
   pub latest_services: Vec<StackServiceNames>,
 
   /// The remote compose file contents, whether on host or in repo.
-  /// This is updated whenever Monitor refreshes the stack cache.
+  /// This is updated whenever Komodo refreshes the stack cache.
   /// It will be empty if the file is defined directly in the stack config.
   pub remote_contents: Option<Vec<ComposeContents>>,
   /// If there was an error in getting the remote contents, it will be here.
@@ -277,7 +277,7 @@ pub struct StackConfig {
 
   /// Whether to use https to clone the repo (versus http). Default: true
   ///
-  /// Note. Monitor does not currently support cloning repos via ssh.
+  /// Note. Komodo does not currently support cloning repos via ssh.
   #[serde(default = "default_git_https")]
   #[builder(default = "default_git_https()")]
   #[partial_default(default_git_https())]
@@ -422,7 +422,7 @@ pub struct StackServiceNames {
   ///
   /// 1. The name of the compose project (top level name field of compose file).
   ///    This defaults to the name of the parent folder of the compose file.
-  ///    Monitor will always set it to be the name of the stack, but imported stacks
+  ///    Komodo will always set it to be the name of the stack, but imported stacks
   ///    will have a different name.
   /// 2. The service name
   /// 3. The replica number
@@ -440,7 +440,7 @@ pub struct StackService {
   /// The service name
   pub service: String,
   /// The container
-  pub container: Option<ContainerSummary>,
+  pub container: Option<ContainerListItem>,
 }
 
 #[typeshare]

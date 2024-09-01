@@ -1,17 +1,17 @@
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::Build,
   deployment::Deployment,
-  monitor_timestamp,
+  komodo_timestamp,
   procedure::Procedure,
   repo::Repo,
   server::Server,
   server_template::ServerTemplate,
   stack::Stack,
   sync::ResourceSync,
-  update::{ResourceTarget, Update, UpdateListItem},
+  update::{Update, UpdateListItem},
   user::User,
-  Operation,
+  Operation, ResourceTarget,
 };
 use mungos::{
   by_id::{find_one_by_id, update_one_by_id},
@@ -30,7 +30,7 @@ pub fn make_update(
   user: &User,
 ) -> Update {
   Update {
-    start_ts: monitor_timestamp(),
+    start_ts: komodo_timestamp(),
     target: target.into(),
     operation,
     operator: user.id.clone(),
@@ -128,6 +128,66 @@ pub async fn init_execution_update(
 ) -> anyhow::Result<Update> {
   let (operation, target) = match &request {
     // Server
+    ExecuteRequest::StartContainer(data) => (
+      Operation::StartContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::RestartContainer(data) => (
+      Operation::RestartContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PauseContainer(data) => (
+      Operation::PauseContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::UnpauseContainer(data) => (
+      Operation::UnpauseContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::StopContainer(data) => (
+      Operation::StopContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::DestroyContainer(data) => (
+      Operation::DestroyContainer,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::StartAllContainers(data) => (
+      Operation::StartAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::RestartAllContainers(data) => (
+      Operation::RestartAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PauseAllContainers(data) => (
+      Operation::PauseAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::UnpauseAllContainers(data) => (
+      Operation::UnpauseAllContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::StopAllContainers(data) => (
       Operation::StopAllContainers,
       ResourceTarget::Server(
@@ -135,7 +195,25 @@ pub async fn init_execution_update(
       ),
     ),
     ExecuteRequest::PruneContainers(data) => (
-      Operation::PruneImages,
+      Operation::PruneContainers,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::DeleteNetwork(data) => (
+      Operation::DeleteNetwork,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PruneNetworks(data) => (
+      Operation::PruneNetworks,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::DeleteImage(data) => (
+      Operation::DeleteImage,
       ResourceTarget::Server(
         resource::get::<Server>(&data.server).await?.id,
       ),
@@ -146,8 +224,20 @@ pub async fn init_execution_update(
         resource::get::<Server>(&data.server).await?.id,
       ),
     ),
-    ExecuteRequest::PruneNetworks(data) => (
-      Operation::PruneNetworks,
+    ExecuteRequest::DeleteVolume(data) => (
+      Operation::DeleteVolume,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PruneVolumes(data) => (
+      Operation::PruneVolumes,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PruneSystem(data) => (
+      Operation::PruneSystem,
       ResourceTarget::Server(
         resource::get::<Server>(&data.server).await?.id,
       ),
@@ -160,38 +250,38 @@ pub async fn init_execution_update(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::StartContainer(data) => (
-      Operation::StartContainer,
+    ExecuteRequest::StartDeployment(data) => (
+      Operation::StartDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::RestartContainer(data) => (
-      Operation::RestartContainer,
+    ExecuteRequest::RestartDeployment(data) => (
+      Operation::RestartDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::PauseContainer(data) => (
-      Operation::PauseContainer,
+    ExecuteRequest::PauseDeployment(data) => (
+      Operation::PauseDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::UnpauseContainer(data) => (
-      Operation::UnpauseContainer,
+    ExecuteRequest::UnpauseDeployment(data) => (
+      Operation::UnpauseDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::StopContainer(data) => (
-      Operation::StopContainer,
+    ExecuteRequest::StopDeployment(data) => (
+      Operation::StopDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
-    ExecuteRequest::RemoveContainer(data) => (
-      Operation::RemoveContainer,
+    ExecuteRequest::DestroyDeployment(data) => (
+      Operation::DestroyDeployment,
       ResourceTarget::Deployment(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),

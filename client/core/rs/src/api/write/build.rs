@@ -8,7 +8,7 @@ use crate::entities::{
   NoData,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -17,7 +17,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
 pub struct CreateBuild {
   /// The name given to newly created build.
@@ -34,7 +34,7 @@ pub struct CreateBuild {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
 pub struct CopyBuild {
   /// The name of the new build.
@@ -51,7 +51,7 @@ pub struct CopyBuild {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
 pub struct DeleteBuild {
   /// The id or name of the build to delete.
@@ -72,7 +72,7 @@ pub struct DeleteBuild {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
 pub struct UpdateBuild {
   /// The id of the build to update.
@@ -88,7 +88,7 @@ pub struct UpdateBuild {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(NoData)]
 pub struct RefreshBuildCache {
   /// Id or name
@@ -103,7 +103,7 @@ pub struct RefreshBuildCache {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateBuildWebhookResponse)]
 pub struct CreateBuildWebhook {
   /// Id or name
@@ -122,7 +122,7 @@ pub type CreateBuildWebhookResponse = NoData;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteBuildWebhookResponse)]
 pub struct DeleteBuildWebhook {
   /// Id or name

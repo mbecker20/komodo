@@ -1,10 +1,10 @@
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     server::ServerState,
     stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
@@ -29,7 +29,7 @@ use crate::{
   config::core_config,
   helpers::{
     periphery_client,
-    query::get_server_with_status,
+    query::get_server_with_state,
     stack::{
       remote::get_remote_compose_contents,
       services::extract_services_into_res,
@@ -112,7 +112,7 @@ impl Resolve<RenameStack, User> for State {
       &db_client().await.stacks,
       &stack.id,
       mungos::update::Update::Set(
-        doc! { "name": &name, "updated_at": monitor_timestamp() },
+        doc! { "name": &name, "updated_at": komodo_timestamp() },
       ),
       None,
     )
@@ -177,7 +177,7 @@ impl Resolve<RefreshStackCache, User> for State {
         (vec![], None, None, None, None)
       } else {
         let (server, status) =
-          get_server_with_status(&stack.config.server_id).await?;
+          get_server_with_state(&stack.config.server_id).await?;
         if status != ServerState::Ok {
           (vec![], None, None, None, None)
         } else {

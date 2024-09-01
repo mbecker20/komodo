@@ -1,6 +1,6 @@
 import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { RefreshCw, X, AlertOctagon } from "lucide-react";
 import { ReactNode, useState } from "react";
@@ -133,7 +133,7 @@ const DeploymentLogsInner = ({
 
 const NoSearchLogs = (id: string, tail: string, stream: string) => {
   const { data: log, refetch } = useRead(
-    "GetLog",
+    "GetDeploymentLog",
     { deployment: id, tail: Number(tail) },
     { refetchInterval: 30000 }
   );
@@ -149,7 +149,7 @@ const NoSearchLogs = (id: string, tail: string, stream: string) => {
 };
 
 const SearchLogs = (id: string, terms: string[], invert: boolean) => {
-  const { data: log, refetch } = useRead("SearchLog", {
+  const { data: log, refetch } = useRead("SearchDeploymentLog", {
     deployment: id,
     terms,
     combinator: Types.SearchCombinator.And,

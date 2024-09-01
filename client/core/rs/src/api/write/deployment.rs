@@ -8,7 +8,7 @@ use crate::entities::{
   update::Update,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -17,7 +17,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Deployment)]
 pub struct CreateDeployment {
   /// The name given to newly created deployment.
@@ -34,7 +34,7 @@ pub struct CreateDeployment {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Deployment)]
 pub struct CopyDeployment {
   /// The name of the new deployment.
@@ -54,7 +54,7 @@ pub struct CopyDeployment {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Deployment)]
 pub struct DeleteDeployment {
   /// The id or name of the deployment to delete.
@@ -78,7 +78,7 @@ pub struct DeleteDeployment {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Deployment)]
 pub struct UpdateDeployment {
   /// The deployment id to update.
@@ -97,7 +97,7 @@ pub struct UpdateDeployment {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
 pub struct RenameDeployment {
   /// The id of the deployment to rename.

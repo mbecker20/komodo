@@ -1,5 +1,5 @@
 use mongo_indexed::{create_index, create_unique_index};
-use monitor_client::entities::{
+use komodo_client::entities::{
   alert::Alert,
   alerter::Alerter,
   api_key::ApiKey,
@@ -11,9 +11,10 @@ use monitor_client::entities::{
   procedure::Procedure,
   provider::{DockerRegistryAccount, GitProviderAccount},
   repo::Repo,
-  server::{stats::SystemStatsRecord, Server},
+  server::Server,
   server_template::ServerTemplate,
   stack::Stack,
+  stats::SystemStatsRecord,
   sync::ResourceSync,
   tag::Tag,
   update::Update,

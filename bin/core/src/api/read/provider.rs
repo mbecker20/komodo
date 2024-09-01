@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use mongo_indexed::{doc, Document};
-use monitor_client::{
+use komodo_client::{
   api::read::{
     GetDockerRegistryAccount, GetDockerRegistryAccountResponse,
     GetGitProviderAccount, GetGitProviderAccountResponse,

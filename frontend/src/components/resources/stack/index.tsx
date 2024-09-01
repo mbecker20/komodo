@@ -19,7 +19,7 @@ import {
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { useServer } from "../server";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import {
   DeployStack,
   DestroyStack,
@@ -151,7 +151,12 @@ export const StackComponents: RequiredResourceComponents = {
     },
     NoConfig: ({ id }) => {
       const config = useFullStack(id)?.config;
-      if (config?.files_on_host || config?.file_contents || config?.repo) {
+      if (
+        !config ||
+        config?.files_on_host ||
+        config?.file_contents ||
+        config?.repo
+      ) {
         return null;
       }
       return (
@@ -177,6 +182,7 @@ export const StackComponents: RequiredResourceComponents = {
       const info = useStack(id)?.info;
       const state = info?.state ?? Types.StackState.Unknown;
       if (
+        !info ||
         !info?.project_missing ||
         ![Types.StackState.Down, Types.StackState.Unknown].includes(state)
       ) {
@@ -204,7 +210,7 @@ export const StackComponents: RequiredResourceComponents = {
     RemoteErrors: ({ id }) => {
       const info = useFullStack(id)?.info;
       const errors = info?.remote_errors;
-      if (!errors || errors.length === 0) {
+      if (!info || !errors || errors.length === 0) {
         return null;
       }
       return (

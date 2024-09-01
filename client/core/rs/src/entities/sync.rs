@@ -190,7 +190,7 @@ pub struct ResourceSyncConfig {
 
   /// Whether to use https to clone the repo (versus http). Default: true
   ///
-  /// Note. Monitor does not currently support cloning repos via ssh.
+  /// Note. Komodo does not currently support cloning repos via ssh.
   #[serde(default = "default_git_https")]
   #[builder(default = "default_git_https()")]
   #[partial_default(default_git_https())]
@@ -223,7 +223,7 @@ pub struct ResourceSyncConfig {
 
   /// The path of the resource file(s) to sync, relative to the repo root.
   /// Can be a specific file, or a directory containing multiple files / folders.
-  /// See `https://docs.monitor.dev/docs/sync-resources` for more information.
+  /// See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
   #[serde(default = "default_resource_path")]
   #[builder(default = "default_resource_path()")]
   #[partial_default(default_resource_path())]

@@ -2,7 +2,7 @@ import { Section } from "@components/layouts";
 import { ReactNode } from "react";
 import { Card, CardHeader } from "@ui/card";
 import { useFullStack, useStack } from ".";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { updateLogToHtml } from "@lib/utils";
 
 export const StackInfo = ({

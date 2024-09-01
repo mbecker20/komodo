@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
-use monitor_client::{
+use komodo_client::{
   api::{
     execute::Execution,
     read::{
@@ -30,8 +30,8 @@ use monitor_client::{
     toml::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
     },
-    update::ResourceTarget,
     user::User,
+    ResourceTarget,
   },
 };
 use mungos::find::find_collect;
@@ -42,7 +42,7 @@ use serde_json::Value;
 
 use crate::{
   helpers::query::get_user_user_group_ids,
-  resource::{self, MonitorResource},
+  resource::{self, KomodoResource},
   state::{db_client, State},
 };
 
@@ -355,7 +355,15 @@ impl Resolve<ExportResourcesToToml, User> for State {
       res.variables =
         find_collect(&db_client().await.variables, None, None)
           .await
-          .context("failed to get variables from db")?;
+          .context("failed to get variables from db")?
+          .into_iter()
+          .map(|mut variable| {
+            if !user.admin && variable.is_secret {
+              variable.value = "#".repeat(variable.value.len())
+            }
+            variable
+          })
+          .collect();
     }
 
     let toml = serialize_resources_toml(&res)
@@ -399,7 +407,7 @@ async fn add_procedure(
             .get(&exec.deployment)
             .unwrap_or(&String::new()),
         ),
-        Execution::StartContainer(exec) => {
+        Execution::StartDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -407,7 +415,7 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::RestartContainer(exec) => {
+        Execution::RestartDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -415,7 +423,7 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::PauseContainer(exec) => {
+        Execution::PauseDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -423,7 +431,7 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::UnpauseContainer(exec) => {
+        Execution::UnpauseDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -431,13 +439,15 @@ async fn add_procedure(
               .unwrap_or(&String::new()),
           )
         }
-        Execution::StopContainer(exec) => exec.deployment.clone_from(
-          names
-            .deployments
-            .get(&exec.deployment)
-            .unwrap_or(&String::new()),
-        ),
-        Execution::RemoveContainer(exec) => {
+        Execution::StopDeployment(exec) => {
+          exec.deployment.clone_from(
+            names
+              .deployments
+              .get(&exec.deployment)
+              .unwrap_or(&String::new()),
+          )
+        }
+        Execution::DestroyDeployment(exec) => {
           exec.deployment.clone_from(
             names
               .deployments
@@ -457,16 +467,69 @@ async fn add_procedure(
         Execution::CancelRepoBuild(exec) => exec.repo.clone_from(
           names.repos.get(&exec.repo).unwrap_or(&String::new()),
         ),
+        Execution::StartContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::RestartContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PauseContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::UnpauseContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::StopContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::DestroyContainer(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::StartAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
+        Execution::RestartAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
+        Execution::PauseAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
+        Execution::UnpauseAllContainers(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
         Execution::StopAllContainers(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PruneContainers(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::DeleteNetwork(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
         Execution::PruneNetworks(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
+        Execution::DeleteImage(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
         Execution::PruneImages(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
-        Execution::PruneContainers(exec) => exec.server.clone_from(
+        Execution::DeleteVolume(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PruneVolumes(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
+        Execution::PruneSystem(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
         Execution::RunSync(exec) => exec.sync.clone_from(
@@ -679,7 +742,7 @@ async fn add_user_groups(
   Ok(())
 }
 
-fn convert_resource<R: MonitorResource>(
+fn convert_resource<R: KomodoResource>(
   resource: Resource<R::Config, R::Info>,
   tag_names: &HashMap<String, String>,
 ) -> ResourceToml<R::PartialConfig> {

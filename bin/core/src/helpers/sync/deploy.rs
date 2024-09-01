@@ -3,7 +3,7 @@ use std::{collections::HashMap, time::Duration};
 use anyhow::{anyhow, Context};
 use formatting::{bold, colored, format_serror, muted, Color};
 use futures::future::join_all;
-use monitor_client::{
+use komodo_client::{
   api::{
     execute::{Deploy, DeployStack},
     read::ListBuildVersions,
@@ -16,8 +16,9 @@ use monitor_client::{
     stack::{PartialStackConfig, Stack, StackConfig, StackState},
     sync::SyncDeployUpdate,
     toml::ResourceToml,
-    update::{Log, ResourceTarget},
+    update::Log,
     user::sync_user,
+    ResourceTarget,
   },
 };
 use resolver_api::Resolve;
@@ -55,6 +56,9 @@ pub async fn deploy_from_cache(
   mut to_deploy: ToDeployCache,
   logs: &mut Vec<Log>,
 ) {
+  if to_deploy.is_empty() {
+    return;
+  }
   let mut log = format!(
     "{}: running executions to sync deployment / stack state",
     muted("INFO")
@@ -409,7 +413,7 @@ fn build_cache_for_deployment<'a>(
         let deployed_version = status
           .container
           .as_ref()
-          .and_then(|c| c.image.split(':').last())
+          .and_then(|c| c.image.as_ref()?.split(':').last())
           .unwrap_or("0.0.0");
         match build_version_cache.get(build_id) {
           Some(version) if deployed_version != version => {

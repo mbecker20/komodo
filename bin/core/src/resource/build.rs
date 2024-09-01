@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::{
     Build, BuildConfig, BuildConfigDiff, BuildInfo, BuildListItem,
     BuildListItemInfo, BuildQuerySpecifics, BuildState,
@@ -10,9 +10,9 @@ use monitor_client::entities::{
   builder::Builder,
   permission::PermissionLevel,
   resource::Resource,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::{
   find::find_collect,
@@ -24,7 +24,7 @@ use crate::{
   state::{action_states, build_state_cache, db_client},
 };
 
-impl super::MonitorResource for Build {
+impl super::KomodoResource for Build {
   type Config = BuildConfig;
   type PartialConfig = PartialBuildConfig;
   type ConfigDiff = BuildConfigDiff;

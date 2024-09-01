@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::write::{
     CreateTag, DeleteTag, RenameTag, UpdateTagsOnResource,
     UpdateTagsOnResourceResponse,
@@ -11,7 +11,7 @@ use monitor_client::{
     deployment::Deployment, permission::PermissionLevel,
     procedure::Procedure, repo::Repo, server::Server,
     server_template::ServerTemplate, stack::Stack,
-    sync::ResourceSync, tag::Tag, update::ResourceTarget, user::User,
+    sync::ResourceSync, tag::Tag, user::User, ResourceTarget,
   },
 };
 use mungos::{
@@ -59,6 +59,7 @@ impl Resolve<CreateTag, User> for State {
 }
 
 impl Resolve<RenameTag, User> for State {
+  #[instrument(name = "RenameTag", skip(self, user))]
   async fn resolve(
     &self,
     RenameTag { id, name }: RenameTag,

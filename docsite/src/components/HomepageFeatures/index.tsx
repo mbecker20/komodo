@@ -9,7 +9,7 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: "automated builds 🛠️",
+    title: "Automated builds 🛠️",
     description: (
       <>
         Build auto versioned docker images from github repos, trigger builds on
@@ -18,7 +18,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: "deploy docker containers 🚀",
+    title: "Deploy docker containers 🚀",
     description: (
       <>
         Deploy containers, deploy docker compose, see uptime and logs across all
@@ -27,7 +27,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: "powered by Rust 🦀",
+    title: "Powered by Rust 🦀",
     description: <>The core API and periphery agent are written in Rust</>,
   },
 ];

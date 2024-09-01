@@ -3,7 +3,7 @@ import { ResourceComponents } from "@components/resources";
 import { UpdatesTable } from "@components/updates/table";
 import { useRead, useResourceParamType, useSetTitle } from "@lib/hooks";
 import { filterBySplit } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
@@ -141,9 +141,24 @@ const OPERATIONS_BY_RESOURCE: { [key: string]: Types.Operation[] } = {
     Types.Operation.UpdateDeployment,
     Types.Operation.RenameDeployment,
     Types.Operation.Deploy,
-    Types.Operation.StopContainer,
-    Types.Operation.StartContainer,
-    Types.Operation.RemoveContainer,
+    Types.Operation.StartDeployment,
+    Types.Operation.RestartDeployment,
+    Types.Operation.PauseDeployment,
+    Types.Operation.UnpauseDeployment,
+    Types.Operation.StopDeployment,
+    Types.Operation.DestroyDeployment,
+  ],
+  Stack: [
+    Types.Operation.CreateStack,
+    Types.Operation.UpdateStack,
+    Types.Operation.RenameStack,
+    Types.Operation.DeployStack,
+    Types.Operation.StartStack,
+    Types.Operation.RestartStack,
+    Types.Operation.PauseStack,
+    Types.Operation.UnpauseStack,
+    Types.Operation.StopStack,
+    Types.Operation.DestroyStack,
   ],
   Build: [
     Types.Operation.CreateBuild,
@@ -156,6 +171,7 @@ const OPERATIONS_BY_RESOURCE: { [key: string]: Types.Operation[] } = {
     Types.Operation.UpdateRepo,
     Types.Operation.CloneRepo,
     Types.Operation.PullRepo,
+    Types.Operation.BuildRepo,
   ],
   Procedure: [
     Types.Operation.CreateProcedure,

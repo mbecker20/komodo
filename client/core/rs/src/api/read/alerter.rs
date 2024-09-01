@@ -7,7 +7,7 @@ use crate::entities::alerter::{
   Alerter, AlerterListItem, AlerterQuery,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -16,7 +16,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetAlerterResponse)]
 pub struct GetAlerter {
   /// Id or name
@@ -34,7 +34,7 @@ pub type GetAlerterResponse = Alerter;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListAlertersResponse)]
 pub struct ListAlerters {
   /// Structured query to filter alerters.
@@ -50,7 +50,7 @@ pub type ListAlertersResponse = Vec<AlerterListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullAlertersResponse)]
 pub struct ListFullAlerters {
   /// Structured query to filter alerters.
@@ -69,7 +69,7 @@ pub type ListFullAlertersResponse = Vec<Alerter>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetAlertersSummaryResponse)]
 pub struct GetAlertersSummary {}
 

@@ -1,21 +1,15 @@
 use async_timing_util::unix_timestamp_ms;
-use derive_variants::{EnumVariants, ExtractVariant};
 use serde::{Deserialize, Serialize};
-use strum::{AsRefStr, Display, EnumString};
+use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::entities::{
-  all_logs_success, monitor_timestamp, MongoId, Operation, I64,
+  all_logs_success, komodo_timestamp, MongoId, Operation, I64,
 };
 
-use super::{
-  alerter::Alerter, build::Build, builder::Builder,
-  deployment::Deployment, procedure::Procedure, repo::Repo,
-  server::Server, server_template::ServerTemplate, stack::Stack,
-  sync::ResourceSync, Version,
-};
+use super::{ResourceTarget, Version};
 
-/// Represents an action performed by Monitor.
+/// Represents an action performed by Komodo.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[cfg_attr(
@@ -103,12 +97,12 @@ impl Update {
 
   pub fn finalize(&mut self) {
     self.success = all_logs_success(&self.logs);
-    self.end_ts = Some(monitor_timestamp());
+    self.end_ts = Some(komodo_timestamp());
     self.status = UpdateStatus::Complete;
   }
 }
 
-/// Minimal representation of an action performed by Monitor.
+/// Minimal representation of an action performed by Komodo.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateListItem {
@@ -199,139 +193,6 @@ impl Log {
       (false, true) => self.stderr.to_string(),
       (false, false) => String::from("No log"),
     }
-  }
-}
-
-/// Used to reference a specific resource across all resource types
-#[typeshare]
-#[derive(
-  Debug,
-  Clone,
-  PartialEq,
-  Eq,
-  Hash,
-  Serialize,
-  Deserialize,
-  EnumVariants,
-)]
-#[variant_derive(
-  Debug,
-  Clone,
-  Copy,
-  PartialEq,
-  Eq,
-  PartialOrd,
-  Ord,
-  Hash,
-  Serialize,
-  Deserialize,
-  Display,
-  EnumString,
-  AsRefStr
-)]
-#[serde(tag = "type", content = "id")]
-pub enum ResourceTarget {
-  System(String),
-  Build(String),
-  Builder(String),
-  Deployment(String),
-  Server(String),
-  Repo(String),
-  Alerter(String),
-  Procedure(String),
-  ServerTemplate(String),
-  ResourceSync(String),
-  Stack(String),
-}
-
-impl ResourceTarget {
-  pub fn extract_variant_id(
-    &self,
-  ) -> (ResourceTargetVariant, &String) {
-    let id = match &self {
-      ResourceTarget::System(id) => id,
-      ResourceTarget::Build(id) => id,
-      ResourceTarget::Builder(id) => id,
-      ResourceTarget::Deployment(id) => id,
-      ResourceTarget::Server(id) => id,
-      ResourceTarget::Repo(id) => id,
-      ResourceTarget::Alerter(id) => id,
-      ResourceTarget::Procedure(id) => id,
-      ResourceTarget::ServerTemplate(id) => id,
-      ResourceTarget::ResourceSync(id) => id,
-      ResourceTarget::Stack(id) => id,
-    };
-    (self.extract_variant(), id)
-  }
-
-  pub fn system() -> ResourceTarget {
-    Self::System("system".to_string())
-  }
-}
-
-impl Default for ResourceTarget {
-  fn default() -> Self {
-    ResourceTarget::system()
-  }
-}
-
-impl From<&Build> for ResourceTarget {
-  fn from(build: &Build) -> Self {
-    Self::Build(build.id.clone())
-  }
-}
-
-impl From<&Deployment> for ResourceTarget {
-  fn from(deployment: &Deployment) -> Self {
-    Self::Deployment(deployment.id.clone())
-  }
-}
-
-impl From<&Server> for ResourceTarget {
-  fn from(server: &Server) -> Self {
-    Self::Server(server.id.clone())
-  }
-}
-
-impl From<&Repo> for ResourceTarget {
-  fn from(repo: &Repo) -> Self {
-    Self::Repo(repo.id.clone())
-  }
-}
-
-impl From<&Builder> for ResourceTarget {
-  fn from(builder: &Builder) -> Self {
-    Self::Builder(builder.id.clone())
-  }
-}
-
-impl From<&Alerter> for ResourceTarget {
-  fn from(alerter: &Alerter) -> Self {
-    Self::Alerter(alerter.id.clone())
-  }
-}
-
-impl From<&Procedure> for ResourceTarget {
-  fn from(procedure: &Procedure) -> Self {
-    Self::Procedure(procedure.id.clone())
-  }
-}
-
-impl From<&ServerTemplate> for ResourceTarget {
-  fn from(server_template: &ServerTemplate) -> Self {
-    Self::ServerTemplate(server_template.id.clone())
-  }
-}
-
-impl From<&ResourceSync> for ResourceTarget {
-  fn from(resource_sync: &ResourceSync) -> Self {
-    Self::ResourceSync(resource_sync.id.clone())
-  }
-}
-
-impl From<&Stack> for ResourceTarget {
-  fn from(resource_sync: &Stack) -> Self {
-    Self::Stack(resource_sync.id.clone())
   }
 }
 

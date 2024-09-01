@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@ui/dialog";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useState } from "react";
 
 export const TopbarAlerts = () => {

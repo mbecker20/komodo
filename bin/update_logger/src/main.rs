@@ -1,16 +1,16 @@
 #[macro_use]
 extern crate tracing;
 
-use monitor_client::MonitorClient;
+use komodo_client::KomodoClient;
 
 async fn app() -> anyhow::Result<()> {
   logger::init(&Default::default())?;
 
   info!("v {}", env!("CARGO_PKG_VERSION"));
 
-  let monitor = MonitorClient::new_from_env().await?;
+  let komodo = KomodoClient::new_from_env().await?;
 
-  let (mut rx, _) = monitor.subscribe_to_updates(1000, 5)?;
+  let (mut rx, _) = komodo.subscribe_to_updates(1000, 5)?;
 
   loop {
     let msg = rx.recv().await;

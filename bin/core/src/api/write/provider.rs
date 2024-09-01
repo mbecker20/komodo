@@ -1,11 +1,10 @@
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
     provider::{DockerRegistryAccount, GitProviderAccount},
-    update::ResourceTarget,
     user::User,
-    Operation,
+    Operation, ResourceTarget,
   },
 };
 use mungos::{

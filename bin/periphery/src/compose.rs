@@ -1,20 +1,20 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
-use command::run_monitor_command;
+use command::run_komodo_command;
 use formatting::format_serror;
 use git::write_environment_file;
-use monitor_client::entities::{
+use komodo_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
   stack::{ComposeContents, Stack},
-  to_monitor_name,
+  to_komodo_name,
   update::Log,
   CloneArgs,
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
-  git::{CloneRepo, RepoActionResponseV1_13},
+  git::{CloneRepo, RepoActionResponse},
 };
 use resolver_api::Resolve;
 use tokio::fs;
@@ -39,6 +39,7 @@ pub async fn compose_up(
   git_token: Option<String>,
   registry_token: Option<String>,
   res: &mut ComposeUpResponse,
+  core_replacers: Vec<(String, String)>,
 ) -> anyhow::Result<()> {
   // Write the stack to local disk. For repos, will first delete any existing folder to ensure fresh deploy.
   // Will also set additional fields on the reponse.
@@ -49,7 +50,7 @@ pub async fn compose_up(
 
   let root = periphery_config()
     .stack_dir
-    .join(to_monitor_name(&stack.name));
+    .join(to_komodo_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
   let run_directory = run_directory.canonicalize().context(
     "failed to validate run directory on host after stack write (canonicalize error)",
@@ -143,7 +144,7 @@ pub async fn compose_up(
 
   // Pull images before destroying to minimize downtime.
   // If this fails, do not continue.
-  let log = run_monitor_command(
+  let log = run_komodo_command(
     "compose pull",
     format!(
       "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
@@ -168,15 +169,30 @@ pub async fn compose_up(
   let env_file = env_file_path
     .map(|path| format!(" --env-file {}", path.display()))
     .unwrap_or_default();
-  let log = run_monitor_command(
-    "compose up",
-    format!(
+  let command = format!(
       "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
-    ),
-  )
-  .await;
-  res.deployed = log.success;
-  res.logs.push(log);
+    );
+  if stack.config.skip_secret_interp {
+    let log = run_komodo_command("compose up", command).await;
+    res.deployed = log.success;
+    res.logs.push(log);
+  } else {
+    let (command, mut replacers) = svi::interpolate_variables(
+      &command,
+      &periphery_config().secrets,
+      svi::Interpolator::DoubleBrackets,
+      true,
+    ).context("failed to interpolate periphery secrets into stack run command")?;
+    replacers.extend(core_replacers);
+
+    let mut log = run_komodo_command("compose up", command).await;
+
+    log.command = svi::replace_in_string(&log.command, &replacers);
+    log.stdout = svi::replace_in_string(&log.stdout, &replacers);
+    log.stderr = svi::replace_in_string(&log.stderr, &replacers);
+
+    res.logs.push(log);
+  }
 
   // Unless the files are supposed to be managed on the host,
   // clean up here, which will also let user know immediately if there will be a problem
@@ -203,7 +219,7 @@ async fn write_stack(
 ) -> anyhow::Result<Option<PathBuf>> {
   let root = periphery_config()
     .stack_dir
-    .join(to_monitor_name(&stack.name));
+    .join(to_komodo_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
   // This will remove any intermediate '/./' in the path, which is a problem for some OS.
   // Cannot use canonicalize yet as directory may not exist.
@@ -276,7 +292,7 @@ async fn write_stack(
     // Ensure directory is clear going in.
     fs::remove_dir_all(&root).await.ok();
 
-    let RepoActionResponseV1_13 {
+    let RepoActionResponse {
       logs,
       commit_hash,
       commit_message,
@@ -289,12 +305,15 @@ async fn write_stack(
           environment: stack.config.environment.clone(),
           env_file_path: stack.config.env_file_path.clone(),
           skip_secret_interp: stack.config.skip_secret_interp,
+          // repo replacer only needed for on_clone / on_pull,
+          // which aren't available for stacks
+          replacers: Default::default(),
         },
         (),
       )
       .await
     {
-      Ok(res) => res.into(),
+      Ok(res) => res,
       Err(e) => {
         let error = format_serror(
           &e.context("failed to clone stack repo").into(),
@@ -375,7 +394,7 @@ async fn destroy_existing_containers(
     .as_ref()
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
-  let log = run_monitor_command(
+  let log = run_komodo_command(
     "destroy container",
     format!("{docker_compose} -p {project} down{service_arg}"),
   )

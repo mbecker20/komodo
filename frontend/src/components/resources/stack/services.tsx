@@ -1,13 +1,13 @@
 import { Section } from "@components/layouts";
 import {
-  deployment_state_intention,
+  container_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useStack } from ".";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@ui/button";
@@ -49,7 +49,7 @@ export const StackServices = ({
               cell: ({ row }) => {
                 const state = row.original.container?.state;
                 const color = stroke_color_class_by_intention(
-                  deployment_state_intention(state)
+                  container_state_intention(state)
                 );
                 return (
                   <Link
@@ -77,16 +77,16 @@ export const StackServices = ({
               // size: 200,
             },
             {
-              accessorKey: "container.status",
+              accessorKey: "container.state",
               header: ({ column }) => (
-                <SortableHeader column={column} title="Service" />
+                <SortableHeader column={column} title="State" />
               ),
               cell: ({ row }) => {
                 const state = row.original.container?.state;
                 return (
                   <StatusBadge
                     text={state}
-                    intent={deployment_state_intention(state)}
+                    intent={container_state_intention(state)}
                   />
                 );
               },

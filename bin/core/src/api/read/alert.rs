@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_client::{
+use komodo_client::{
   api::read::{
     GetAlert, GetAlertResponse, ListAlerts, ListAlertsResponse,
   },

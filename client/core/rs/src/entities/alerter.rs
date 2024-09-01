@@ -10,7 +10,7 @@ use typeshare::typeshare;
 use super::{
   alert::AlertDataVariant,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  update::ResourceTarget,
+  ResourceTarget,
 };
 
 #[typeshare]

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::execute::Execution,
   entities::{
     build::Build,
@@ -17,9 +17,9 @@ use monitor_client::{
     server::Server,
     stack::Stack,
     sync::ResourceSync,
-    update::{ResourceTargetVariant, Update},
+    update::Update,
     user::User,
-    Operation,
+    Operation, ResourceTargetVariant,
   },
 };
 use mungos::{
@@ -29,7 +29,7 @@ use mungos::{
 
 use crate::state::{action_states, db_client, procedure_state_cache};
 
-impl super::MonitorResource for Procedure {
+impl super::KomodoResource for Procedure {
   type Config = ProcedureConfig;
   type PartialConfig = PartialProcedureConfig;
   type ConfigDiff = ProcedureConfigDiff;
@@ -197,7 +197,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::StartContainer(params) => {
+        Execution::StartDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -207,7 +207,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::RestartContainer(params) => {
+        Execution::RestartDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -217,7 +217,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::PauseContainer(params) => {
+        Execution::PauseDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -227,7 +227,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::UnpauseContainer(params) => {
+        Execution::UnpauseDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -237,7 +237,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::StopContainer(params) => {
+        Execution::StopDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -247,16 +247,7 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
-        Execution::StopAllContainers(params) => {
-          let server = super::get_check_permissions::<Server>(
-            &params.server,
-            user,
-            PermissionLevel::Execute,
-          )
-          .await?;
-          params.server = server.id;
-        }
-        Execution::RemoveContainer(params) => {
+        Execution::DestroyDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
               &params.deployment,
@@ -302,7 +293,133 @@ async fn validate_config(
           .await?;
           params.repo = repo.id;
         }
+        Execution::StartContainer(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::RestartContainer(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PauseContainer(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::UnpauseContainer(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::StopContainer(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::DestroyContainer(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::StartAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::RestartAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PauseAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::UnpauseAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::StopAllContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PruneContainers(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::DeleteNetwork(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
         Execution::PruneNetworks(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::DeleteImage(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,
             user,
@@ -320,7 +437,25 @@ async fn validate_config(
           .await?;
           params.server = server.id;
         }
-        Execution::PruneContainers(params) => {
+        Execution::DeleteVolume(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PruneVolumes(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PruneSystem(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,
             user,

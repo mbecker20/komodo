@@ -5,7 +5,7 @@ use axum::{
   extract::Request, http::HeaderMap, middleware::Next,
   response::Response,
 };
-use monitor_client::entities::{monitor_timestamp, user::User};
+use komodo_client::entities::{komodo_timestamp, user::User};
 use mungos::mongodb::bson::doc;
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -122,7 +122,7 @@ pub async fn auth_api_key_get_user_id(
     .await
     .context("failed to query db")?
     .context("no api key matching key")?;
-  if key.expires != 0 && key.expires < monitor_timestamp() {
+  if key.expires != 0 && key.expires < komodo_timestamp() {
     return Err(anyhow!("api key expired"));
   }
   if bcrypt::verify(secret, &key.secret)

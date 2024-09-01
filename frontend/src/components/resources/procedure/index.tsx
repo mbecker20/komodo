@@ -10,7 +10,7 @@ import {
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 
 const useProcedure = (id?: string) =>
@@ -27,7 +27,7 @@ const ProcedureIcon = ({ id, size }: { id?: string; size: number }) => {
 export const ProcedureComponents: RequiredResourceComponents = {
   list_item: (id) => useProcedure(id),
 
-  Description: () => <>Compose monitor actions together.</>,
+  Description: () => <>Compose Komodo actions together.</>,
 
   Dashboard: () => {
     const summary = useRead("GetProceduresSummary", {}).data;

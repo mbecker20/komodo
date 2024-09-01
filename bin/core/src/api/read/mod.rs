@@ -3,7 +3,7 @@ use std::{collections::HashSet, sync::OnceLock, time::Instant};
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::{
+use komodo_client::{
   api::read::*,
   entities::{
     build::Build,
@@ -12,8 +12,8 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     sync::ResourceSync,
-    update::ResourceTarget,
     user::User,
+    ResourceTarget,
   },
 };
 use resolver_api::{
@@ -105,12 +105,22 @@ enum ReadRequest {
   GetHistoricalServerStats(GetHistoricalServerStats),
   ListServers(ListServers),
   ListFullServers(ListFullServers),
+  InspectDockerContainer(InspectDockerContainer),
+  GetResourceMatchingContainer(GetResourceMatchingContainer),
+  GetContainerLog(GetContainerLog),
+  SearchContainerLog(SearchContainerLog),
+  InspectDockerNetwork(InspectDockerNetwork),
+  InspectDockerImage(InspectDockerImage),
+  ListDockerImageHistory(ListDockerImageHistory),
+  InspectDockerVolume(InspectDockerVolume),
   #[to_string_resolver]
   ListDockerContainers(ListDockerContainers),
   #[to_string_resolver]
   ListDockerNetworks(ListDockerNetworks),
   #[to_string_resolver]
   ListDockerImages(ListDockerImages),
+  #[to_string_resolver]
+  ListDockerVolumes(ListDockerVolumes),
   #[to_string_resolver]
   ListComposeProjects(ListComposeProjects),
 
@@ -120,8 +130,8 @@ enum ReadRequest {
   GetDeploymentContainer(GetDeploymentContainer),
   GetDeploymentActionState(GetDeploymentActionState),
   GetDeploymentStats(GetDeploymentStats),
-  GetLog(GetLog),
-  SearchLog(SearchLog),
+  GetDeploymentLog(GetDeploymentLog),
+  SearchDeploymentLog(SearchDeploymentLog),
   ListDeployments(ListDeployments),
   ListFullDeployments(ListFullDeployments),
   ListCommonDeploymentExtraArgs(ListCommonDeploymentExtraArgs),

@@ -1,20 +1,22 @@
 import { useExecute, useLocalStorage, useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { RequiredResourceComponents } from "@types";
 import {
   Server,
   Cpu,
   MemoryStick,
   Database,
-  Scissors,
-  XOctagon,
   AreaChart,
   Milestone,
   AlertTriangle,
+  Play,
+  RefreshCcw,
+  Pause,
+  Square,
 } from "lucide-react";
 import { Section } from "@components/layouts";
-import { RenameServer } from "./actions";
+import { Prune, RenameServer } from "./actions";
 import {
   server_state_intention,
   stroke_color_class_by_intention,
@@ -28,9 +30,10 @@ import { ActionWithDialog, ConfirmButton, StatusBadge } from "@components/util";
 import { Button } from "@ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
-import { ResourceComponents } from "..";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StackTable } from "../stack/table";
+import { ResourceComponents } from "..";
+import { ServerInfo } from "./info";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -51,44 +54,43 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
 
 const ConfigOrChildResources = ({ id }: { id: string }) => {
   const [view, setView] = useLocalStorage("server-tabs-v1", "Config");
-  const deployments = useRead("ListDeployments", {}).data?.filter(
-    (deployment) => deployment.info.server_id === id
-  );
-  const deploymentsDisabled = (deployments?.length || 0) === 0;
-  const repos = useRead("ListRepos", {}).data?.filter(
-    (repo) => repo.info.server_id === id
-  );
-  const reposDisabled = (repos?.length || 0) === 0;
-  const stacks = useRead("ListStacks", {}).data?.filter(
-    (stack) => stack.info.server_id === id
-  );
-  const stacksDisabled = (stacks?.length || 0) === 0;
-  const currentView =
-    (view === "Deployments" && deploymentsDisabled) ||
-    (view === "Repos" && reposDisabled)
-      ? "Config"
-      : view;
+
+  const deployments =
+    useRead("ListDeployments", {}).data?.filter(
+      (deployment) => deployment.info.server_id === id
+    ) ?? [];
+  const noDeployments = deployments.length === 0;
+  const repos =
+    useRead("ListRepos", {}).data?.filter(
+      (repo) => repo.info.server_id === id
+    ) ?? [];
+  const noRepos = repos.length === 0;
+  const stacks =
+    useRead("ListStacks", {}).data?.filter(
+      (stack) => stack.info.server_id === id
+    ) ?? [];
+  const noStacks = stacks.length === 0;
+
+  const noResources = noDeployments && noRepos && noStacks;
+
+  const currentView = view === "Resources" && noResources ? "Config" : view;
+
   const tabsList = (
     <TabsList className="justify-start w-fit">
       <TabsTrigger value="Config" className="w-[110px]">
         Config
       </TabsTrigger>
-      <TabsTrigger
-        value="Deployments"
-        className="w-[110px]"
-        disabled={deploymentsDisabled}
-      >
-        Deployments
+
+      <TabsTrigger value="Info" className="w-[110px]">
+        Info
       </TabsTrigger>
+
       <TabsTrigger
-        value="Stacks"
+        value="Resources"
         className="w-[110px]"
-        disabled={stacksDisabled}
+        disabled={noResources}
       >
-        Stacks
-      </TabsTrigger>
-      <TabsTrigger value="Repos" className="w-[110px]" disabled={reposDisabled}>
-        Repos
+        Resources
       </TabsTrigger>
     </TabsList>
   );
@@ -98,30 +100,30 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         <ServerConfig id={id} titleOther={tabsList} />
       </TabsContent>
 
-      <TabsContent value="Deployments">
-        <Section
-          titleOther={tabsList}
-          actions={<ResourceComponents.Deployment.New server_id={id} />}
-        >
-          <DeploymentTable deployments={deployments ?? []} />
-        </Section>
+      <TabsContent value="Info">
+        <ServerInfo id={id} titleOther={tabsList} />
       </TabsContent>
 
-      <TabsContent value="Stacks">
-        <Section
-          titleOther={tabsList}
-          actions={<ResourceComponents.Stack.New server_id={id} />}
-        >
-          <StackTable stacks={stacks ?? []} />
-        </Section>
-      </TabsContent>
-
-      <TabsContent value="Repos">
-        <Section
-          titleOther={tabsList}
-          actions={<ResourceComponents.Repo.New server_id={id} />}
-        >
-          <RepoTable repos={repos ?? []} />
+      <TabsContent value="Resources">
+        <Section titleOther={tabsList}>
+          <Section
+            title="Deployments"
+            actions={<ResourceComponents.Deployment.New server_id={id} />}
+          >
+            <DeploymentTable deployments={deployments} />
+          </Section>
+          <Section
+            title="Stacks"
+            actions={<ResourceComponents.Stack.New server_id={id} />}
+          >
+            <StackTable stacks={stacks} />
+          </Section>
+          <Section
+            title="Repos"
+            actions={<ResourceComponents.Repo.New server_id={id} />}
+          >
+            <RepoTable repos={repos} />
+          </Section>
         </Section>
       </TabsContent>
     </Tabs>
@@ -265,27 +267,124 @@ export const ServerComponents: RequiredResourceComponents = {
   },
 
   Actions: {
-    Prune: ({ id }) => {
-      const { mutate, isPending } = useExecute(`PruneImages`);
-      const pruning = useRead(
+    StartAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute("StartAllContainers");
+      const starting = useRead(
         "GetServerActionState",
         { server: id },
         { refetchInterval: 5000 }
-      ).data?.pruning_images;
-      const pending = isPending || pruning;
+      ).data?.starting_containers;
+      const dontShow = useRead("ListDockerContainers", {
+        server: id,
+      }).data?.every(
+        (container) =>
+          container.state === Types.ContainerStateStatusEnum.Running
+      ) ?? true;
+      if (dontShow) {
+        return null;
+      }
+      const pending = isPending || starting;
       return (
-        <ConfirmButton
-          title="Prune Images"
-          icon={<Scissors className="w-4 h-4" />}
-          onClick={() => mutate({ server: id })}
-          loading={pending}
-          disabled={pending}
-        />
+        server && (
+          <ConfirmButton
+            title="Start Containers"
+            icon={<Play className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            loading={pending}
+            disabled={pending}
+          />
+        )
+      );
+    },
+    RestartAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute("RestartAllContainers");
+      const restarting = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.restarting_containers;
+      const pending = isPending || restarting;
+      return (
+        server && (
+          <ActionWithDialog
+            name={server?.name}
+            title="Restart Containers"
+            icon={<RefreshCcw className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            disabled={pending}
+            loading={pending}
+          />
+        )
+      );
+    },
+    PauseAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute("PauseAllContainers");
+      const pausing = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.pausing_containers;
+      const dontShow =
+        useRead("ListDockerContainers", {
+          server: id,
+        }).data?.every(
+          (container) =>
+            container.state !== Types.ContainerStateStatusEnum.Running
+        ) ?? true;
+      if (dontShow) {
+        return null;
+      }
+      const pending = isPending || pausing;
+      return (
+        server && (
+          <ActionWithDialog
+            name={server?.name}
+            title="Pause Containers"
+            icon={<Pause className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            disabled={pending}
+            loading={pending}
+          />
+        )
+      );
+    },
+    UnpauseAll: ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute("UnpauseAllContainers");
+      const unpausing = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.unpausing_containers;
+      const dontShow =
+        useRead("ListDockerContainers", {
+          server: id,
+        }).data?.every(
+          (container) =>
+            container.state !== Types.ContainerStateStatusEnum.Paused
+        ) ?? true;
+      if (dontShow) {
+        return null;
+      }
+      const pending = isPending || unpausing;
+      return (
+        server && (
+          <ConfirmButton
+            title="Unpause Containers"
+            icon={<Play className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            loading={pending}
+            disabled={pending}
+          />
+        )
       );
     },
     StopAll: ({ id }) => {
       const server = useServer(id);
-      const { mutate, isPending } = useExecute(`StopAllContainers`);
+      const { mutate, isPending } = useExecute("StopAllContainers");
       const stopping = useRead(
         "GetServerActionState",
         { server: id },
@@ -295,9 +394,9 @@ export const ServerComponents: RequiredResourceComponents = {
       return (
         server && (
           <ActionWithDialog
-            name={server?.name}
+            name={server.name}
             title="Stop Containers"
-            icon={<XOctagon className="w-4 h-4" />}
+            icon={<Square className="w-4 h-4" />}
             onClick={() => mutate({ server: id })}
             disabled={pending}
             loading={pending}
@@ -305,6 +404,7 @@ export const ServerComponents: RequiredResourceComponents = {
         )
       );
     },
+    PruneSystem: ({ id }) => <Prune server_id={id} type="System" />,
   },
 
   Page: {},

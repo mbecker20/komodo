@@ -3,7 +3,7 @@ import { ConfigItem, InputList } from "@components/config/util";
 import { TextUpdateMenu } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { cn, filterBySplit } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Card } from "@ui/card";
 import {
@@ -316,7 +316,8 @@ const ServerTypeSelector = ({
   // The US based datacenters only have Amd servers
   const filter =
     datacenter === Types.HetznerDatacenter.HillsboroDc1 ||
-    datacenter === Types.HetznerDatacenter.AshburnDc1
+    datacenter === Types.HetznerDatacenter.AshburnDc1 ||
+    datacenter === Types.HetznerDatacenter.SingaporeDc1
       ? (st: string) => st.includes("Amd")
       : () => true;
   const server_types = Object.values(Types.HetznerServerType).filter(filter);

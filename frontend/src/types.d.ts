@@ -1,4 +1,4 @@
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export type UsableResource = Exclude<Types.ResourceTarget["type"], "System">;
 

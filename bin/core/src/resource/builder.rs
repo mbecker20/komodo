@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   builder::{
     Builder, BuilderConfig, BuilderConfigDiff, BuilderConfigVariant,
     BuilderListItem, BuilderListItemInfo, BuilderQuerySpecifics,
@@ -8,9 +8,9 @@ use monitor_client::entities::{
   permission::PermissionLevel,
   resource::Resource,
   server::Server,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  MergePartial, Operation,
+  MergePartial, Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::{
   bson::{doc, to_document, Document},
@@ -19,7 +19,7 @@ use mungos::mongodb::{
 
 use crate::state::db_client;
 
-impl super::MonitorResource for Builder {
+impl super::KomodoResource for Builder {
   type Config = BuilderConfig;
   type PartialConfig = PartialBuilderConfig;
   type ConfigDiff = BuilderConfigDiff;

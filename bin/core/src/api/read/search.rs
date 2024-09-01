@@ -1,9 +1,8 @@
-use monitor_client::{
+use komodo_client::{
   api::read::{FindResources, FindResourcesResponse},
   entities::{
     build::Build, deployment::Deployment, procedure::Procedure,
-    repo::Repo, server::Server, update::ResourceTargetVariant,
-    user::User,
+    repo::Repo, server::Server, user::User, ResourceTargetVariant,
   },
 };
 use resolver_api::Resolve;

@@ -1,4 +1,4 @@
-//! # Configuring the periphery agent
+//! # Configuring the Komodo Periphery Agent
 //!
 //! The periphery configuration is passed in three ways:
 //! 1. Command line args ([CliArgs])
@@ -143,7 +143,7 @@ pub struct Env {
 
 /// # Periphery Configuration File
 ///
-/// Refer to the [example file](https://github.com/mbecker20/monitor/blob/main/config_example/periphery.config.example.toml) for a full example.
+/// Refer to the [example file](https://github.com/mbecker20/komodo/blob/main/config_example/periphery.config.example.toml) for a full example.
 #[derive(Debug, Clone, Deserialize)]
 pub struct PeripheryConfig {
   /// The port periphery will run on.
@@ -151,13 +151,13 @@ pub struct PeripheryConfig {
   #[serde(default = "default_periphery_port")]
   pub port: u16,
 
-  /// The system directory where monitor managed repos will be cloned.
-  /// Default: `/etc/monitor/repos`
+  /// The system directory where Komodo managed repos will be cloned.
+  /// Default: `/etc/komodo/repos`
   #[serde(default = "default_repo_dir")]
   pub repo_dir: PathBuf,
 
   /// The system directory where stacks will managed.
-  /// Default: `/etc/monitor/stacks`
+  /// Default: `/etc/komodo/stacks`
   #[serde(default = "default_stack_dir")]
   pub stack_dir: PathBuf,
 
@@ -219,11 +219,11 @@ fn default_periphery_port() -> u16 {
 }
 
 fn default_repo_dir() -> PathBuf {
-  "/etc/monitor/repos".parse().unwrap()
+  "/etc/komodo/repos".parse().unwrap()
 }
 
 fn default_stack_dir() -> PathBuf {
-  "/etc/monitor/stacks".parse().unwrap()
+  "/etc/komodo/stacks".parse().unwrap()
 }
 
 fn default_stats_polling_rate() -> Timelength {

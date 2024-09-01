@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   builder::Builder,
   permission::PermissionLevel,
   repo::{
@@ -11,9 +11,9 @@ use monitor_client::entities::{
   },
   resource::Resource,
   server::Server,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::{
   find::find_collect,
@@ -30,7 +30,7 @@ use crate::{
 
 use super::get_check_permissions;
 
-impl super::MonitorResource for Repo {
+impl super::KomodoResource for Repo {
   type Config = RepoConfig;
   type PartialConfig = PartialRepoConfig;
   type ConfigDiff = RepoConfigDiff;

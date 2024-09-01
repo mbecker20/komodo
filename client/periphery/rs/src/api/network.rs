@@ -1,12 +1,16 @@
-use monitor_client::entities::{
-  server::docker_network::DockerNetwork, update::Log,
+use komodo_client::entities::{
+  docker::network::Network, update::Log,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
+//
+
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DockerNetwork>)]
-pub struct GetNetworkList {}
+#[response(Network)]
+pub struct InspectNetwork {
+  pub name: String,
+}
 
 //
 
@@ -22,6 +26,7 @@ pub struct CreateNetwork {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct DeleteNetwork {
+  /// Id or name
   pub name: String,
 }
 

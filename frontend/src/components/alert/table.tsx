@@ -1,4 +1,4 @@
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { DataTable } from "@ui/data-table";
 import { AlertLevel } from ".";
 import { AlertDetailsDialog } from "./details";

@@ -1,5 +1,5 @@
 import { text_color_class_by_intention } from "@lib/color";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { DataTable } from "@ui/data-table";
 import { useNavigate } from "react-router-dom";
 import { ColumnDef } from "@tanstack/react-table";

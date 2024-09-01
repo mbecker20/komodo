@@ -5,14 +5,14 @@ use typeshare::typeshare;
 
 use crate::entities::user_group::UserGroup;
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 /// **Admin only.** Create a user group. Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
 pub struct CreateUserGroup {
   /// The name to assign to the new UserGroup
@@ -26,7 +26,7 @@ pub struct CreateUserGroup {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
 pub struct RenameUserGroup {
   /// The id of the UserGroup
@@ -42,7 +42,7 @@ pub struct RenameUserGroup {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
 pub struct DeleteUserGroup {
   /// The id of the UserGroup
@@ -56,7 +56,7 @@ pub struct DeleteUserGroup {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
 pub struct AddUserToUserGroup {
   /// The name or id of UserGroup that user should be added to.
@@ -72,7 +72,7 @@ pub struct AddUserToUserGroup {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
 pub struct RemoveUserFromUserGroup {
   /// The name or id of UserGroup that user should be removed from.
@@ -89,7 +89,7 @@ pub struct RemoveUserFromUserGroup {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
 pub struct SetUsersInUserGroup {
   /// Id or name.

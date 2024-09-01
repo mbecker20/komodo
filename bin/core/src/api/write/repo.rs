@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use mongo_indexed::doc;
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
@@ -134,6 +134,7 @@ impl Resolve<RefreshRepoCache, User> for State {
       &[],
       "",
       None,
+      &[],
     )
     .await
     .context("failed to clone repo (the resource) repo")?;

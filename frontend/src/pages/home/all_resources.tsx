@@ -2,6 +2,7 @@ import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsFilter } from "@components/tags";
+import { ShowHideButton } from "@components/util";
 import {
   useFilterResources,
   useNoResources,
@@ -10,11 +11,10 @@ import {
   useUser,
 } from "@lib/hooks";
 import { cn } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { RequiredResourceComponents, UsableResource } from "@types";
-import { Button } from "@ui/button";
 import { Input } from "@ui/input";
-import { AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 
 export const AllResources = () => {
@@ -32,7 +32,7 @@ export const AllResources = () => {
             placeholder="search..."
             className="w-[200px] lg:w-[300px]"
           />
-          
+
           <div className="flex items-center gap-2">
             <TagsFilter />
             <ExportButton tags={tags} />
@@ -90,21 +90,7 @@ const TableSection = ({
       key={type}
       title={type + "s"}
       icon={<Components.Icon />}
-      actions={
-        <Button
-          size="sm"
-          variant="outline"
-          className="gap-4"
-          onClick={() => setShow(!show)}
-        >
-          {show ? "Hide" : "Show"}
-          {show ? (
-            <ChevronUp className="w-4" />
-          ) : (
-            <ChevronDown className="w-4" />
-          )}
-        </Button>
-      }
+      actions={<ShowHideButton show={show} setShow={setShow} />}
     >
       <div className={cn("border-b", show && "pb-16")}>
         {show && <Components.Table resources={filtered ?? []} />}

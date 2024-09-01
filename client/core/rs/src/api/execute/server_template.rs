@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
 
 /// Launch an EC2 instance with the specified config.
 /// Response: [Update].
@@ -13,7 +13,7 @@ use super::MonitorExecuteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct LaunchServer {
   /// The name of the created server.

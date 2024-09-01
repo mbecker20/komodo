@@ -1,15 +1,15 @@
 # Configuration
 
-Monitor just needs a bit of information in order to build your image.
+Komodo just needs a bit of information in order to build your image.
 
 ### Provider configuration
-Monitor supports cloning repos over http/s, from any provider that supports cloning private repos using `git clone https://<Token>@git-provider.net/<Owner>/<Repo>`.
+Komodo supports cloning repos over http/s, from any provider that supports cloning private repos using `git clone https://<Token>@git-provider.net/<Owner>/<Repo>`.
 
 Accounts / access tokens can be configured in either the [core config](../core-setup.md#configuration)
 or in the [periphery config](../connecting-servers.md#manual-install-steps).
 
 ### Repo configuration
-To specify the git repo to build, just give it the name of the repo and the branch under *repo config*. The name is given like ```mbecker20/monitor```, it includes the username / organization that owns the repo.
+To specify the git repo to build, just give it the name of the repo and the branch under *repo config*. The name is given like `mbecker20/komodo`, it includes the username / organization that owns the repo.
 
 Many repos are private, in this case an access token is needed by the building server.
 It can either come from a provider defined in the core configuration,
@@ -17,7 +17,7 @@ or in the periphery configuration of the building server.
 
 ### Docker build configuration
 
-In order to docker build, monitor just needs to know the build directory and the path of the Dockerfile relative to the repo, you can configure these in the *build config* section.
+In order to docker build, Komodo just needs to know the build directory and the path of the Dockerfile relative to the repo, you can configure these in the *build config* section.
 
 If the build directory is the root of the repository, you pass the build path as `.`. If the build directory is some folder of the repo, just pass the name of the the folder. Do not pass the preceding "/". for example `build/directory`
 
@@ -25,7 +25,7 @@ The dockerfile's path is given relative to the build directory. So if your build
 
 ### Image registry
 
-Monitor supports pushing to any docker registry. 
+Komodo supports pushing to any docker registry. 
 Any of the accounts that are specified in config for the specific registry, between the core config and builder, will be available to use for authentication against the registry.
 Additionally, allowed organizations on the docker registry can be specified on the core config and attached to builds.
 Doing so will cause the images to be published under the organization's namespace rather than the account's.

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::read::{GetUpdate, ListUpdates, ListUpdatesResponse},
   entities::{
     alerter::Alerter,
@@ -15,8 +15,9 @@ use monitor_client::{
     server_template::ServerTemplate,
     stack::Stack,
     sync::ResourceSync,
-    update::{ResourceTarget, Update, UpdateListItem},
+    update::{Update, UpdateListItem},
     user::User,
+    ResourceTarget,
   },
 };
 use mungos::{

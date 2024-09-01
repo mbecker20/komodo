@@ -1,11 +1,12 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
-use monitor_client::entities::{
+use komodo_client::entities::{
   alerter::Alerter,
   build::Build,
   builder::Builder,
-  deployment::{ContainerSummary, Deployment, DeploymentState},
+  deployment::{Deployment, DeploymentState},
+  docker::container::{ContainerListItem, ContainerStateStatusEnum},
   permission::PermissionLevel,
   procedure::Procedure,
   repo::Repo,
@@ -14,11 +15,11 @@ use monitor_client::entities::{
   stack::{Stack, StackServiceNames, StackState},
   sync::ResourceSync,
   tag::Tag,
-  update::{ResourceTarget, ResourceTargetVariant, Update},
+  update::Update,
   user::{admin_service_user, User},
   user_group::UserGroup,
   variable::Variable,
-  Operation,
+  Operation, ResourceTarget, ResourceTargetVariant,
 };
 use mungos::{
   find::find_collect,
@@ -29,17 +30,15 @@ use mungos::{
 };
 
 use crate::{
+  config::core_config,
   resource::{self, get_user_permission_on_resource},
-  state::db_client,
+  state::{db_client, deployment_status_cache, stack_status_cache},
 };
 
-use super::stack::{
-  compose_container_match_regex,
-  services::extract_services_from_stack,
-};
+use super::stack::compose_container_match_regex;
 
-#[instrument(level = "debug")]
 // user: Id or username
+#[instrument(level = "debug")]
 pub async fn get_user(user: &str) -> anyhow::Result<User> {
   if let Some(user) = admin_service_user(user) {
     return Ok(user);
@@ -54,46 +53,40 @@ pub async fn get_user(user: &str) -> anyhow::Result<User> {
 }
 
 #[instrument(level = "debug")]
-pub async fn get_server_with_status(
+pub async fn get_server_with_state(
   server_id_or_name: &str,
 ) -> anyhow::Result<(Server, ServerState)> {
   let server = resource::get::<Server>(server_id_or_name).await?;
+  let state = get_server_state(&server).await;
+  Ok((server, state))
+}
+
+#[instrument(level = "debug")]
+pub async fn get_server_state(server: &Server) -> ServerState {
   if !server.config.enabled {
-    return Ok((server, ServerState::Disabled));
+    return ServerState::Disabled;
   }
-  let status = match super::periphery_client(&server)?
+  // Unwrap ok: Server disabled check above
+  match super::periphery_client(server)
+    .unwrap()
     .request(periphery_client::api::GetHealth {})
     .await
   {
     Ok(_) => ServerState::Ok,
     Err(_) => ServerState::NotOk,
-  };
-  Ok((server, status))
+  }
 }
 
 #[instrument(level = "debug")]
 pub async fn get_deployment_state(
   deployment: &Deployment,
 ) -> anyhow::Result<DeploymentState> {
-  if deployment.config.server_id.is_empty() {
-    return Ok(DeploymentState::NotDeployed);
-  }
-  let (server, status) =
-    get_server_with_status(&deployment.config.server_id).await?;
-  if status != ServerState::Ok {
-    return Ok(DeploymentState::Unknown);
-  }
-  let container = super::periphery_client(&server)?
-    .request(periphery_client::api::container::GetContainerList {})
-    .await?
-    .into_iter()
-    .find(|container| container.name == deployment.name);
-
-  let state = match container {
-    Some(container) => container.state,
-    None => DeploymentState::NotDeployed,
-  };
-
+  let state = deployment_status_cache()
+    .get(&deployment.id)
+    .await
+    .unwrap_or_default()
+    .curr
+    .state;
   Ok(state)
 }
 
@@ -101,7 +94,7 @@ pub async fn get_deployment_state(
 pub fn get_stack_state_from_containers(
   ignore_services: &[String],
   services: &[StackServiceNames],
-  containers: &[ContainerSummary],
+  containers: &[ContainerListItem],
 ) -> StackState {
   // first filter the containers to only ones which match the service
   let services = services
@@ -129,39 +122,39 @@ pub fn get_stack_state_from_containers(
   if services.len() != containers.len() {
     return StackState::Unhealthy;
   }
-  let running = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Running);
+  let running = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Running
+  });
   if running {
     return StackState::Running;
   }
-  let paused = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Paused);
+  let paused = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Paused
+  });
   if paused {
     return StackState::Paused;
   }
-  let stopped = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Exited);
+  let stopped = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Exited
+  });
   if stopped {
     return StackState::Stopped;
   }
-  let restarting = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Restarting);
+  let restarting = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Restarting
+  });
   if restarting {
     return StackState::Restarting;
   }
-  let dead = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Dead);
+  let dead = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Dead
+  });
   if dead {
     return StackState::Dead;
   }
-  let removing = containers
-    .iter()
-    .all(|container| container.state == DeploymentState::Removing);
+  let removing = containers.iter().all(|container| {
+    container.state == ContainerStateStatusEnum::Removing
+  });
   if removing {
     return StackState::Removing;
   }
@@ -175,22 +168,13 @@ pub async fn get_stack_state(
   if stack.config.server_id.is_empty() {
     return Ok(StackState::Down);
   }
-  let (server, status) =
-    get_server_with_status(&stack.config.server_id).await?;
-  if status != ServerState::Ok {
-    return Ok(StackState::Unknown);
-  }
-  let containers = super::periphery_client(&server)?
-    .request(periphery_client::api::container::GetContainerList {})
-    .await?;
-
-  let services = extract_services_from_stack(stack, false).await?;
-
-  Ok(get_stack_state_from_containers(
-    &stack.config.ignore_services,
-    &services,
-    &containers,
-  ))
+  let state = stack_status_cache()
+    .get(&stack.id)
+    .await
+    .unwrap_or_default()
+    .curr
+    .state;
+  Ok(state)
 }
 
 #[instrument(level = "debug")]
@@ -329,18 +313,6 @@ pub fn id_or_username_filter(id_or_username: &str) -> Document {
   }
 }
 
-pub async fn get_global_variables(
-) -> anyhow::Result<HashMap<String, String>> {
-  Ok(
-    find_collect(&db_client().await.variables, None, None)
-      .await
-      .context("failed to get all variables from db")?
-      .into_iter()
-      .map(|variable| (variable.name, variable.value))
-      .collect(),
-  )
-}
-
 pub async fn get_variable(name: &str) -> anyhow::Result<Variable> {
   db_client()
     .await
@@ -373,4 +345,34 @@ pub async fn get_latest_update(
     )
     .await
     .context("failed to query db for latest update")
+}
+
+pub struct VariablesAndSecrets {
+  pub variables: HashMap<String, String>,
+  pub secrets: HashMap<String, String>,
+}
+
+pub async fn get_variables_and_secrets(
+) -> anyhow::Result<VariablesAndSecrets> {
+  let variables =
+    find_collect(&db_client().await.variables, None, None)
+      .await
+      .context("failed to get all variables from db")?;
+  let mut secrets = core_config().secrets.clone();
+
+  // extend secrets with secret variables
+  secrets.extend(
+    variables.iter().filter(|variable| variable.is_secret).map(
+      |variable| (variable.name.clone(), variable.value.clone()),
+    ),
+  );
+
+  // collect non secret variables
+  let variables = variables
+    .into_iter()
+    .filter(|variable| !variable.is_secret)
+    .map(|variable| (variable.name, variable.value))
+    .collect();
+
+  Ok(VariablesAndSecrets { variables, secrets })
 }

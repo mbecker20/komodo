@@ -1,6 +1,8 @@
+use std::collections::HashSet;
+
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::execute::*,
   entities::{
     permission::PermissionLevel, stack::StackInfo, update::Update,
@@ -13,7 +15,13 @@ use resolver_api::Resolve;
 
 use crate::{
   helpers::{
-    interpolate_variables_secrets_into_environment, periphery_client,
+    interpolate::{
+      add_interp_update_log,
+      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_extra_args,
+    },
+    periphery_client,
+    query::get_variables_and_secrets,
     stack::{
       execute::execute_compose, get_stack_and_server,
       services::extract_services_into_res,
@@ -65,13 +73,38 @@ impl Resolve<DeployStack, (User, Update)> for State {
       || format!("Failed to get registry token in call to db. Stopping run. | {} | {}", stack.config.registry_provider, stack.config.registry_account),
     )?;
 
-    if !stack.config.skip_secret_interp {
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
+    let secret_replacers = if !stack.config.skip_secret_interp {
+      let vars_and_secrets = get_variables_and_secrets().await?;
+
+      let mut global_replacers = HashSet::new();
+      let mut secret_replacers = HashSet::new();
+
       interpolate_variables_secrets_into_environment(
+        &vars_and_secrets,
         &mut stack.config.environment,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_extra_args(
+        &vars_and_secrets,
+        &mut stack.config.extra_args,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      add_interp_update_log(
         &mut update,
-      )
-      .await?;
-    }
+        &global_replacers,
+        &secret_replacers,
+      );
+
+      secret_replacers
+    } else {
+      Default::default()
+    };
 
     let ComposeUpResponse {
       logs,
@@ -87,6 +120,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
         service: None,
         git_token,
         registry_token,
+        replacers: secret_replacers.into_iter().collect(),
       })
       .await?;
 

@@ -3,7 +3,7 @@ import { ResourceComponents } from "@components/resources";
 import { ResourceLink } from "@components/resources/common";
 import { useRead } from "@lib/hooks";
 import { resource_name } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
 import { DataTable, SortableHeader } from "@ui/data-table";

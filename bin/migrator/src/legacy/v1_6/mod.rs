@@ -56,10 +56,10 @@ pub struct EnvironmentVar {
 }
 
 impl From<EnvironmentVar>
-  for monitor_client::entities::EnvironmentVar
+  for komodo_client::entities::EnvironmentVar
 {
   fn from(value: EnvironmentVar) -> Self {
-    monitor_client::entities::EnvironmentVar {
+    komodo_client::entities::EnvironmentVar {
       variable: value.variable,
       value: value.value,
     }

@@ -1,10 +1,10 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { Play, Trash, Pause, Rocket, Pen, RefreshCcw } from "lucide-react";
+import { Play, Trash, Pause, Rocket, Pen, RefreshCcw, Square } from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { useEffect, useState } from "react";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import {
   Select,
   SelectContent,
@@ -18,7 +18,7 @@ interface DeploymentId {
   id: string;
 }
 
-export const DeployContainer = ({ id }: DeploymentId) => {
+export const DeployDeployment = ({ id }: DeploymentId) => {
   const deployment = useRead("GetDeployment", { deployment: id }).data;
   const [signal, setSignal] = useState<Types.TerminationSignal>();
 
@@ -83,7 +83,7 @@ export const DeployContainer = ({ id }: DeploymentId) => {
   }
 };
 
-export const RemoveContainer = ({ id }: DeploymentId) => {
+export const DestroyDeployment = ({ id }: DeploymentId) => {
   const deployment = useRead("GetDeployment", { deployment: id }).data;
   const [signal, setSignal] = useState<Types.TerminationSignal>();
 
@@ -92,20 +92,20 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
     [deployment?.config?.termination_signal]
   );
 
-  const { mutate, isPending } = useExecute("RemoveContainer");
+  const { mutate, isPending } = useExecute("DestroyDeployment");
 
   const deployments = useRead("ListDeployments", {}).data;
   const state = deployments?.find((d) => d.id === id)?.info.state;
 
-  const removing = useRead(
+  const destroying = useRead(
     "GetDeploymentActionState",
     {
       deployment: id,
     },
     { refetchInterval: 5000 }
-  ).data?.removing;
+  ).data?.destroying;
 
-  const pending = isPending || removing;
+  const pending = isPending || destroying;
 
   if (!deployment) return null;
   if (state === Types.DeploymentState.NotDeployed) return null;
@@ -113,7 +113,7 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
   return (
     <ActionWithDialog
       name={deployment.name}
-      title="Remove"
+      title="Destroy"
       icon={<Trash className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id, signal })}
       disabled={pending}
@@ -131,11 +131,11 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
   );
 };
 
-export const RestartContainer = ({ id }: DeploymentId) => {
+export const RestartDeployment = ({ id }: DeploymentId) => {
   const deployment = useDeployment(id);
   const state = deployment?.info.state;
   const { mutate: restart, isPending: restartPending } =
-    useExecute("RestartContainer");
+    useExecute("RestartDeployment");
   const action_state = useRead(
     "GetDeploymentActionState",
     {
@@ -161,11 +161,11 @@ export const RestartContainer = ({ id }: DeploymentId) => {
   );
 };
 
-export const StartStopContainer = ({ id }: DeploymentId) => {
+export const StartStopDeployment = ({ id }: DeploymentId) => {
   const deployment = useDeployment(id);
   const state = deployment?.info.state;
   const { mutate: start, isPending: startPending } =
-    useExecute("StartContainer");
+    useExecute("StartDeployment");
   const action_state = useRead(
     "GetDeploymentActionState",
     {
@@ -187,11 +187,11 @@ export const StartStopContainer = ({ id }: DeploymentId) => {
     );
   }
   if (state === Types.DeploymentState.Running) {
-    return <StopContainer id={id} />;
+    return <StopDeployment id={id} />;
   }
 };
 
-const StopContainer = ({ id }: DeploymentId) => {
+const StopDeployment = ({ id }: DeploymentId) => {
   const deployment = useRead("GetDeployment", { deployment: id }).data;
   const [signal, setSignal] = useState<Types.TerminationSignal>();
 
@@ -200,7 +200,7 @@ const StopContainer = ({ id }: DeploymentId) => {
     [deployment?.config?.termination_signal]
   );
 
-  const { mutate, isPending } = useExecute("StopContainer");
+  const { mutate, isPending } = useExecute("StopDeployment");
   const stopping = useRead(
     "GetDeploymentActionState",
     {
@@ -216,7 +216,7 @@ const StopContainer = ({ id }: DeploymentId) => {
     <ActionWithDialog
       name={deployment.name}
       title="Stop"
-      icon={<Pause className="h-4 w-4" />}
+      icon={<Square className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id, signal })}
       disabled={pending}
       loading={pending}
@@ -272,13 +272,13 @@ const TermSignalSelector = ({
   );
 };
 
-export const PauseUnpauseContainer = ({ id }: DeploymentId) => {
+export const PauseUnpauseDeployment = ({ id }: DeploymentId) => {
   const deployment = useDeployment(id);
   const state = deployment?.info.state;
   const { mutate: unpause, isPending: unpausePending } =
-    useExecute("UnpauseContainer");
+    useExecute("UnpauseDeployment");
   const { mutate: pause, isPending: pausePending } =
-    useExecute("PauseContainer");
+    useExecute("PauseDeployment");
   const action_state = useRead(
     "GetDeploymentActionState",
     {

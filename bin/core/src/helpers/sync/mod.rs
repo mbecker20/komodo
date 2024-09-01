@@ -1,5 +1,5 @@
 use async_timing_util::{wait_until_timelength, Timelength};
-use monitor_client::{
+use komodo_client::{
   api::write::RefreshResourceSyncPending, entities::user::sync_user,
 };
 use mungos::find::find_collect;

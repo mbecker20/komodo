@@ -1,18 +1,20 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   config::core::AwsEcrConfig,
-  deployment::{
-    ContainerSummary, Deployment, DockerContainerStats,
-    TerminationSignal,
-  },
+  deployment::Deployment,
+  docker::container::{Container, ContainerStats},
   update::Log,
-  SearchCombinator,
+  SearchCombinator, TerminationSignal,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
+//
+
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<ContainerSummary>)]
-pub struct GetContainerList {}
+#[response(Container)]
+pub struct InspectContainer {
+  pub name: String,
+}
 
 //
 
@@ -44,7 +46,7 @@ pub struct GetContainerLogSearch {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(DockerContainerStats)]
+#[response(ContainerStats)]
 pub struct GetContainerStats {
   pub name: String,
 }
@@ -52,10 +54,14 @@ pub struct GetContainerStats {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DockerContainerStats>)]
+#[response(Vec<ContainerStats>)]
 pub struct GetContainerStatsList {}
 
 //
+
+// =======
+// ACTIONS
+// =======
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
@@ -117,12 +123,6 @@ pub struct StopContainer {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
-pub struct StopAllContainers {}
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct RemoveContainer {
   pub name: String,
@@ -146,3 +146,31 @@ pub struct RenameContainer {
 pub struct PruneContainers {}
 
 //
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct StartAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct RestartAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct PauseAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct UnpauseAllContainers {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct StopAllContainers {}

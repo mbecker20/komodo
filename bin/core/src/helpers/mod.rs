@@ -1,18 +1,18 @@
-use std::{collections::HashSet, str::FromStr, time::Duration};
+use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
 use mongo_indexed::Document;
-use monitor_client::{
+use komodo_client::{
   api::write::CreateServer,
   entities::{
-    monitor_timestamp,
+    komodo_timestamp,
     permission::{Permission, PermissionLevel, UserTarget},
     server::{PartialServerConfig, Server},
     sync::ResourceSync,
-    update::{Log, ResourceTarget, Update},
+    update::Log,
     user::{system_user, User},
-    EnvironmentVar,
+    ResourceTarget,
   },
 };
 use mungos::{
@@ -20,7 +20,6 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, to_document, Bson},
 };
 use periphery_client::PeripheryClient;
-use query::get_global_variables;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use resolver_api::Resolve;
 
@@ -36,6 +35,7 @@ pub mod build;
 pub mod builder;
 pub mod cache;
 pub mod channel;
+pub mod interpolate;
 pub mod procedure;
 pub mod prune;
 pub mod query;
@@ -227,73 +227,6 @@ pub fn flatten_document(doc: Document) -> Document {
   target
 }
 
-/// Returns the secret replacers
-pub async fn interpolate_variables_secrets_into_environment(
-  environment: &mut Vec<EnvironmentVar>,
-  update: &mut Update,
-) -> anyhow::Result<HashSet<(String, String)>> {
-  // Interpolate variables into environment
-  let variables = get_global_variables().await?;
-  let core_config = core_config();
-
-  let mut global_replacers = HashSet::new();
-  let mut secret_replacers = HashSet::new();
-
-  for env in environment {
-    // first pass - global variables
-    let (res, more_replacers) = svi::interpolate_variables(
-      &env.value,
-      &variables,
-      svi::Interpolator::DoubleBrackets,
-      false,
-    )
-    .with_context(|| {
-      format!(
-        "failed to interpolate global variables - {}",
-        env.variable
-      )
-    })?;
-    global_replacers.extend(more_replacers);
-    // second pass - core secrets
-    let (res, more_replacers) = svi::interpolate_variables(
-      &res,
-      &core_config.secrets,
-      svi::Interpolator::DoubleBrackets,
-      false,
-    )
-    .context("failed to interpolate core secrets")?;
-    secret_replacers.extend(more_replacers);
-
-    // set env value with the result
-    env.value = res;
-  }
-
-  // Show which variables were interpolated
-  if !global_replacers.is_empty() {
-    update.push_simple_log(
-      "interpolate global variables",
-      global_replacers
-        .into_iter()
-        .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
-        .collect::<Vec<_>>()
-        .join("\n"),
-    );
-  }
-
-  if !secret_replacers.is_empty() {
-    update.push_simple_log(
-      "interpolate core secrets",
-      secret_replacers
-        .iter()
-        .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
-        .collect::<Vec<_>>()
-        .join("\n"),
-    );
-  }
-
-  Ok(secret_replacers)
-}
-
 pub async fn startup_cleanup() {
   tokio::join!(
     startup_in_progress_update_cleanup(),
@@ -304,8 +237,8 @@ pub async fn startup_cleanup() {
 /// Run on startup, as no updates should be in progress on startup
 async fn startup_in_progress_update_cleanup() {
   let log = Log::error(
-    "monitor shutdown",
-    String::from("Monitor shutdown during execution. If this is a build, the builder may not have been terminated.")
+    "Komodo shutdown",
+    String::from("Komodo shutdown during execution. If this is a build, the builder may not have been terminated.")
   );
   // This static log won't fail to serialize, unwrap ok.
   let log = to_document(&log).unwrap();
@@ -373,7 +306,7 @@ async fn startup_open_alert_cleanup() {
       doc! { "_id": { "$in": to_update_ids } },
       doc! { "$set": {
         "resolved": true,
-        "resolved_ts": monitor_timestamp()
+        "resolved_ts": komodo_timestamp()
       } },
     )
     .await
@@ -402,10 +335,11 @@ pub async fn ensure_server() {
   if server.is_some() {
     return;
   }
+
   if let Err(e) = State
     .resolve(
       CreateServer {
-        name: String::from("default"),
+        name: format!("server-{}", random_string(5)),
         config: PartialServerConfig {
           address: Some(ensure_server.to_string()),
           enabled: Some(true),

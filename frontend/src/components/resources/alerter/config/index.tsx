@@ -1,6 +1,6 @@
 import { Config } from "@components/config";
 import { useRead, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useState } from "react";
 import { EndpointConfig } from "./endpoint";
 import { AlertTypeConfig } from "./alert_types";

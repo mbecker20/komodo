@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { Input } from "@ui/input";
+import { Switch } from "@ui/switch";
 import { useToast } from "@ui/use-toast";
 import { Check, Loader2, PlusCircle, Trash } from "lucide-react";
 import { useState } from "react";
@@ -62,6 +63,12 @@ export const Variables = () => {
       toast({ title: "Updated variable description" });
     },
   });
+  const { mutate: updateIsSecret } = useWrite("UpdateVariableIsSecret", {
+    onSuccess: () => {
+      inv(["ListVariables"], ["GetVariable"]);
+      toast({ title: "Updated variable 'is secret'" });
+    },
+  });
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4">
@@ -93,90 +100,105 @@ export const Variables = () => {
       )}
 
       {/** VARIABLES */}
-      <DataTable
-        tableKey="variables"
-        data={filtered}
-        columns={[
-          {
-            accessorKey: "name",
-            size: 200,
-            header: ({ column }) => (
-              <SortableHeader column={column} title="Name" />
-            ),
-          },
-          {
-            accessorKey: "value",
-            size: 300,
-            header: ({ column }) => (
-              <SortableHeader column={column} title="Value" />
-            ),
-            cell: ({ row }) => {
-              return (
-                <div className="flex items-center gap-2">
+      <div className="max-w-full overflow-auto">
+        <DataTable
+          tableKey="variables"
+          data={filtered}
+          columns={[
+            {
+              accessorKey: "name",
+              size: 200,
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Name" />
+              ),
+            },
+            {
+              accessorKey: "value",
+              size: 300,
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Value" />
+              ),
+              cell: ({ row }) => {
+                return (
+                  <div className="flex items-center gap-2">
+                    <Card
+                      className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-full"
+                      onClick={() => {
+                        setUpdateMenuData({
+                          title: `${row.original.name} - Value`,
+                          value: row.original.value ?? "",
+                          placeholder: "Set value",
+                          onUpdate: (value) => {
+                            if (row.original.value === value) {
+                              return;
+                            }
+                            updateValue({ name: row.original.name, value });
+                          },
+                        });
+                      }}
+                    >
+                      <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis text-muted-foreground w-[200px] xl:w-[240px] 2xl:w-[340px]">
+                        {row.original.value || "Set value"}
+                      </div>
+                    </Card>
+                    <CopyButton content={row.original.value} />
+                  </div>
+                );
+              },
+            },
+            {
+              accessorKey: "description",
+              size: 200,
+              header: "Description",
+              cell: ({ row }) => {
+                return (
                   <Card
                     className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-full"
                     onClick={() => {
                       setUpdateMenuData({
-                        title: `${row.original.name} - Value`,
-                        value: row.original.value ?? "",
-                        placeholder: "Set value",
-                        onUpdate: (value) => {
-                          if (row.original.value === value) {
+                        title: `${row.original.name} - Description`,
+                        value: row.original.description ?? "",
+                        placeholder: "Set description",
+                        onUpdate: (description) => {
+                          if (row.original.description === description) {
                             return;
                           }
-                          updateValue({ name: row.original.name, value });
+                          updateDescription({
+                            name: row.original.name,
+                            description,
+                          });
                         },
                       });
                     }}
                   >
-                    <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis text-muted-foreground w-[200px] xl:w-[240px] 2xl:w-[340px]">
-                      {row.original.value || "Set value"}
+                    <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
+                      {row.original.description || "Set description"}
                     </div>
                   </Card>
-                  <CopyButton content={row.original.value} />
-                </div>
-              );
+                );
+              },
             },
-          },
-          {
-            accessorKey: "description",
-            size: 200,
-            header: "Description",
-            cell: ({ row }) => {
-              return (
-                <Card
-                  className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer w-full"
-                  onClick={() => {
-                    setUpdateMenuData({
-                      title: `${row.original.name} - Description`,
-                      value: row.original.description ?? "",
-                      placeholder: "Set description",
-                      onUpdate: (description) => {
-                        if (row.original.description === description) {
-                          return;
-                        }
-                        updateDescription({
-                          name: row.original.name,
-                          description,
-                        });
-                      },
-                    });
-                  }}
-                >
-                  <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis w-full text-muted-foreground">
-                    {row.original.description || "Set description"}
-                  </div>
-                </Card>
-              );
+            {
+              header: "Secret",
+              size: 100,
+              cell: ({ row }) => (
+                <Switch
+                  checked={row.original.is_secret}
+                  onCheckedChange={(is_secret) =>
+                    updateIsSecret({ name: row.original.name, is_secret })
+                  }
+                  disabled={disabled}
+                />
+              ),
             },
-          },
-          {
-            header: "Delete",
-            maxSize: 200,
-            cell: ({ row }) => <DeleteVariable name={row.original.name} />,
-          },
-        ]}
-      />
+            {
+              header: "Delete",
+              cell: ({ row }) => <DeleteVariable name={row.original.name} />,
+              minSize: 200,
+            },
+          ]}
+        />
+      </div>
 
       {/** SECRETS */}
       {secrets.length ? (

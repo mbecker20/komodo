@@ -1,14 +1,14 @@
 use anyhow::Context;
-use monitor_client::entities::{
-  monitor_timestamp,
+use komodo_client::entities::{
+  komodo_timestamp,
   resource::Resource,
   server::{
     PartialServerConfig, Server, ServerConfig, ServerConfigDiff,
     ServerListItem, ServerListItemInfo, ServerQuerySpecifics,
   },
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::{bson::doc, Collection};
 
@@ -17,7 +17,7 @@ use crate::{
   state::{action_states, db_client, server_status_cache},
 };
 
-impl super::MonitorResource for Server {
+impl super::KomodoResource for Server {
   type Config = ServerConfig;
   type PartialConfig = PartialServerConfig;
   type ConfigDiff = ServerConfigDiff;
@@ -163,7 +163,7 @@ impl super::MonitorResource for Server {
         doc! { "target.type": "Server", "target.id": &id },
         doc! { "$set": {
           "resolved": true,
-          "resolved_ts": monitor_timestamp()
+          "resolved_ts": komodo_timestamp()
         } },
       )
       .await

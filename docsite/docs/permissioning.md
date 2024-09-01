@@ -1,6 +1,6 @@
 # Permissioning Resources
 
-All monitor resources (servers, builds, deployment) have independant permission tables to allow for users to have granular access to these resources. By default, users do not see any resources until they are given at least read permissions.
+All Komodo resources (servers, builds, deployment) have independant permission tables to allow for users to have granular access to these resources. By default, users do not see any resources until they are given at least read permissions.
 
 ## Permission Levels
 
@@ -21,13 +21,13 @@ Users can then be **added to multiple User Groups** and they **inherit the group
 
 ## Administration
 
-Users can be given admin priviledges by accessing the monitor MongoDB and setting ```admin: true``` on the intended user document. These users have unrestricted access to all monitor resources, like servers, builds, and deployments. Additionally, only these users can update other (non-admin) user's permissions on resources, an action not available to regular users even with **Update** level permissions.
+Users can be given admin priviledges by accessing the Komodo MongoDB and setting ```admin: true``` on the intended user document. These users have unrestricted access to all Komodo resources, like servers, builds, and deployments. Additionally, only these users can update other (non-admin) user's permissions on resources, an action not available to regular users even with **Update** level permissions.
 
-Monitor admins are responsible for managing user accounts as well. When a user logs into monitor for the first time, they will not immediately be granted access. An admin must first **enable** the user, which can be done from the 'manage users' page (found in the user dropdown menu in the topbar). Users can also be **disabled** by an admin at any time, which blocks all their access to the GUI and API. 
+Komodo admins are responsible for managing user accounts as well. When a user logs into Komodo for the first time, they will not immediately be granted access. An admin must first **enable** the user, which can be done from the 'manage users' page (found in the user dropdown menu in the topbar). Users can also be **disabled** by an admin at any time, which blocks all their access to the GUI and API. 
 
 Users also have some configurable global permissions, these are:
 
  - create server permission
  - create build permission
 
-Only users with these permissions (as well as admins) can add additional servers to monitor, and can create additional builds, respectively.
+Only users with these permissions (as well as admins) can add additional servers to Komodo, and can create additional builds, respectively.

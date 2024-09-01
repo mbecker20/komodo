@@ -1,16 +1,16 @@
-use std::{future::IntoFuture, time::Duration};
+use std::{collections::HashSet, future::IntoFuture, time::Duration};
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::execute::*,
   entities::{
-    alert::{Alert, AlertData},
+    alert::{Alert, AlertData, SeverityLevel},
     builder::{Builder, BuilderConfig},
-    monitor_timestamp, optional_string,
+    komodo_timestamp, optional_string,
     permission::PermissionLevel,
     repo::Repo,
-    server::{stats::SeverityLevel, Server},
+    server::Server,
     update::{Log, Update},
     user::User,
   },
@@ -22,7 +22,7 @@ use mungos::{
     options::FindOneOptions,
   },
 };
-use periphery_client::api::{self, git::RepoActionResponseV1_13};
+use periphery_client::api;
 use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
@@ -31,7 +31,14 @@ use crate::{
     alert::send_alerts,
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::repo_cancel_channel,
-    git_token, periphery_client,
+    git_token,
+    interpolate::{
+      add_interp_update_log,
+      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_system_command,
+    },
+    periphery_client,
+    query::get_variables_and_secrets,
     update::update_update,
   },
   resource::{self, refresh_repo_state_cache},
@@ -84,6 +91,11 @@ impl Resolve<CloneRepo, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
+    let secret_replacers =
+      interpolate(&mut repo, &mut update).await?;
+
     let logs = match periphery
       .request(api::git::CloneRepo {
         args: (&repo).into(),
@@ -91,13 +103,11 @@ impl Resolve<CloneRepo, (User, Update)> for State {
         environment: repo.config.environment,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
+        replacers: secret_replacers.into_iter().collect(),
       })
       .await
     {
-      Ok(res) => {
-        let res: RepoActionResponseV1_13 = res.into();
-        res.logs
-      }
+      Ok(res) => res.logs,
       Err(e) => {
         vec![Log::error(
           "clone repo",
@@ -124,7 +134,7 @@ impl Resolve<PullRepo, (User, Update)> for State {
     PullRepo { repo }: PullRepo,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let repo = resource::get_check_permissions::<Repo>(
+    let mut repo = resource::get_check_permissions::<Repo>(
       &repo,
       &user,
       PermissionLevel::Execute,
@@ -151,6 +161,11 @@ impl Resolve<PullRepo, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
+    let secret_replacers =
+      interpolate(&mut repo, &mut update).await?;
+
     let logs = match periphery
       .request(api::git::PullRepo {
         name: repo.name.clone(),
@@ -160,11 +175,11 @@ impl Resolve<PullRepo, (User, Update)> for State {
         environment: repo.config.environment,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
+        replacers: secret_replacers.into_iter().collect(),
       })
       .await
     {
       Ok(res) => {
-        let res: RepoActionResponseV1_13 = res.into();
         update.commit_hash = res.commit_hash.unwrap_or_default();
         res.logs
       }
@@ -217,7 +232,7 @@ async fn update_last_pulled_time(repo_name: &str) {
     .repos
     .update_one(
       doc! { "name": repo_name },
-      doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
+      doc! { "$set": { "info.last_pulled_at": komodo_timestamp() } },
     )
     .await;
   if let Err(e) = res {
@@ -337,14 +352,20 @@ impl Resolve<BuildRepo, (User, Update)> for State {
 
     // CLONE REPO
 
+    // interpolate variables / secrets, returning the sanitizing replacers to send to
+    // periphery so it may sanitize the final command for safe logging (avoids exposing secret values)
+    let secret_replacers =
+      interpolate(&mut repo, &mut update).await?;
+
     let res = tokio::select! {
       res = periphery
         .request(api::git::CloneRepo {
           args: (&repo).into(),
           git_token,
-          environment: Default::default(),
-          env_file_path: Default::default(),
-          skip_secret_interp: Default::default(),
+          environment: repo.config.environment,
+          env_file_path: repo.config.env_file_path,
+          skip_secret_interp: repo.config.skip_secret_interp,
+          replacers: secret_replacers.into_iter().collect()
         }) => res,
       _ = cancel.cancelled() => {
         debug!("build cancelled during clone, cleaning up builder");
@@ -359,7 +380,6 @@ impl Resolve<BuildRepo, (User, Update)> for State {
     let commit_message = match res {
       Ok(res) => {
         debug!("finished repo clone");
-        let res: RepoActionResponseV1_13 = res.into();
         update.logs.extend(res.logs);
         update.commit_hash = res.commit_hash.unwrap_or_default();
         res.commit_message.unwrap_or_default()
@@ -383,7 +403,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
         .update_one(
           doc! { "name": &repo.name },
           doc! { "$set": {
-            "info.last_built_at": monitor_timestamp(),
+            "info.last_built_at": komodo_timestamp(),
             "info.built_hash": &update.commit_hash,
             "info.built_message": commit_message
           }},
@@ -421,8 +441,8 @@ impl Resolve<BuildRepo, (User, Update)> for State {
         let alert = Alert {
           id: Default::default(),
           target,
-          ts: monitor_timestamp(),
-          resolved_ts: Some(monitor_timestamp()),
+          ts: komodo_timestamp(),
+          resolved_ts: Some(komodo_timestamp()),
           resolved: true,
           level: SeverityLevel::Warning,
           data: AlertData::RepoBuildFailed {
@@ -468,8 +488,8 @@ async fn handle_builder_early_return(
       let alert = Alert {
         id: Default::default(),
         target,
-        ts: monitor_timestamp(),
-        resolved_ts: Some(monitor_timestamp()),
+        ts: komodo_timestamp(),
+        resolved_ts: Some(komodo_timestamp()),
         resolved: true,
         level: SeverityLevel::Warning,
         data: AlertData::RepoBuildFailed {
@@ -587,5 +607,48 @@ impl Resolve<CancelRepoBuild, (User, Update)> for State {
     });
 
     Ok(update)
+  }
+}
+
+async fn interpolate(
+  repo: &mut Repo,
+  update: &mut Update,
+) -> anyhow::Result<HashSet<(String, String)>> {
+  if !repo.config.skip_secret_interp {
+    let vars_and_secrets = get_variables_and_secrets().await?;
+
+    let mut global_replacers = HashSet::new();
+    let mut secret_replacers = HashSet::new();
+
+    interpolate_variables_secrets_into_environment(
+      &vars_and_secrets,
+      &mut repo.config.environment,
+      &mut global_replacers,
+      &mut secret_replacers,
+    )?;
+
+    interpolate_variables_secrets_into_system_command(
+      &vars_and_secrets,
+      &mut repo.config.on_clone,
+      &mut global_replacers,
+      &mut secret_replacers,
+    )?;
+
+    interpolate_variables_secrets_into_system_command(
+      &vars_and_secrets,
+      &mut repo.config.on_pull,
+      &mut global_replacers,
+      &mut secret_replacers,
+    )?;
+
+    add_interp_update_log(
+      update,
+      &global_replacers,
+      &secret_replacers,
+    );
+
+    Ok(secret_replacers)
+  } else {
+    Ok(Default::default())
   }
 }

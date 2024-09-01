@@ -1,5 +1,20 @@
 # Changelog
 
+## <ins>Komodo v1.13 (Sep 2024)</ins>
+- Renamed the project to **Komodo**.
+- Manage docker networks, volumes, and images.
+- Manage Containers at the server level, without creating any Deployment.
+- Add bulk Start / Restart / Pause actions for all containers on a server.
+- Add **Secret** mode to Variables to hide the value in updates / logs
+	- Secret mode also prevents any non-admin users from retrieving the value from the API. Non admin users will still see the variable name.
+- Interpolate Variables / Secrets into everything I could think of 
+	- Deployment / Stack / Repo / Build **extra args**.
+	- Deployment **command**.
+	- Build **pre build**.
+	- Repo **on_clone / on_pull**.
+- Added **Hetzner Singapore** datacenter for Hetzner ServerTemplates
+- **Removed Google Font** - now just use system local font to avoid any third party calls.
+
 ## <ins>Monitor v1.13 - Komodo (Aug 2024)</ins>
 - This is the first named release, as I think it is really big. The Komodo Dragon is the largest species of Monitor lizard.
 - **Deploy docker compose** with the new **Stack** resource.

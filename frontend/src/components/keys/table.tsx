@@ -1,5 +1,5 @@
 import { CopyButton } from "@components/util";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import { ReactNode } from "react";

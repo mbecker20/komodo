@@ -1,5 +1,5 @@
 import { DoubleInput } from "@components/config/util";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export const PortsConfig = ({
   ports,

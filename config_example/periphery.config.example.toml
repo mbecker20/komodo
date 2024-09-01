@@ -1,22 +1,22 @@
-############################
-# MONITOR PERIPHERY CONFIG #
-############################
+###########################
+# KOMODO PERIPHERY CONFIG #
+###########################
 
 ## Optional. The port the server runs on. 8120 is default
 ## Env: PERIPHERY_PORT
 # port = 8120
 
-## Optional. /etc/monitor/repos is default.
+## Optional. /etc/komodo/repos is default.
 ## The directory periphery will use to manage repos.
 ## The periphery user must have write access to this directory.
 ## Env: PERIPHERY_REPO_DIR
-# repo_dir = "/home/ubuntu/monitor/repos"
+# repo_dir = "/home/ubuntu/komodo/repos"
 
-## Optional. /etc/monitor/stacks is default.
+## Optional. /etc/komodo/stacks is default.
 ## The directory periphery will use to manage stacks.
 ## The periphery user must have write access to this directory.
 ## Env: PERIPHERY_STACK_DIR
-# stack_dir = "/home/ubuntu/monitor/stacks"
+# stack_dir = "/home/ubuntu/komodo/stacks"
 
 ## Optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
 ## Env: PERIPHERY_STATS_POLLING_RATE
@@ -30,11 +30,11 @@
 
 ## Optional. Only include mounts at specific paths in the disc report.
 ## Env: PERIPHERY_INCLUDE_DISK_MOUNTS
-# include_disk_mounts = ["/etc/monitor/repos"]
+# include_disk_mounts = ["/etc/komodo/repos"]
 
 ## Optional. Don't include these mounts in the disk report.
 ## Env: PERIPHERY_EXCLUDE_DISK_MOUNTS
-# exclude_disk_mounts = ["/etc/monitor/repos"]
+# exclude_disk_mounts = ["/etc/komodo/repos"]
 
 ########
 # AUTH #
@@ -109,7 +109,7 @@
 # LOGGING #
 ###########
 
-## Specify the log level of the monitor core application
+## Specify the logging verbosity
 ## Default: info
 ## Options: off, error, warn, info, debug, trace
 ## Env: PERIPHERY_LOGGING_LEVEL
@@ -127,6 +127,6 @@
 # logging.otlp_endpoint = "http://localhost:4317"
 
 ## Set the opentelemetry service name attached to the telemetry this periphery will send.
-## Default: "Monitor"
+## Default: "Komodo"
 ## Env: PERIPHERY_LOGGING_OPENTELEMETRY_SERVICE_NAME
 # logging.opentelemetry_service_name = "Periphery-02"

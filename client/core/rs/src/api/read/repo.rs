@@ -7,7 +7,7 @@ use crate::entities::repo::{
   Repo, RepoActionState, RepoListItem, RepoQuery,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -16,7 +16,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(Repo)]
 pub struct GetRepo {
   /// Id or name
@@ -34,7 +34,7 @@ pub type GetRepoResponse = Repo;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListReposResponse)]
 pub struct ListRepos {
   /// optional structured query to filter repos.
@@ -52,7 +52,7 @@ pub type ListReposResponse = Vec<RepoListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullReposResponse)]
 pub struct ListFullRepos {
   /// optional structured query to filter repos.
@@ -70,7 +70,7 @@ pub type ListFullReposResponse = Vec<Repo>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetRepoActionStateResponse)]
 pub struct GetRepoActionState {
   /// Id or name
@@ -89,7 +89,7 @@ pub type GetRepoActionStateResponse = RepoActionState;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetReposSummaryResponse)]
 pub struct GetReposSummary {}
 
@@ -120,7 +120,7 @@ pub struct GetReposSummaryResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetRepoWebhooksEnabledResponse)]
 pub struct GetRepoWebhooksEnabled {
   /// Id or name

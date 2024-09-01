@@ -5,15 +5,15 @@ use typeshare::typeshare;
 
 use crate::entities::{
   deployment::{
-    ContainerSummary, Deployment, DeploymentActionState,
-    DeploymentListItem, DeploymentQuery, DeploymentState,
-    DockerContainerStats,
+    Deployment, DeploymentActionState, DeploymentListItem,
+    DeploymentQuery, DeploymentState,
   },
+  docker::container::{ContainerListItem, ContainerStats},
   update::Log,
   SearchCombinator, I64, U64,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -22,7 +22,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentResponse)]
 pub struct GetDeployment {
   /// Id or name
@@ -41,7 +41,7 @@ pub type GetDeploymentResponse = Deployment;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDeploymentsResponse)]
 pub struct ListDeployments {
   /// optional structured query to filter deployments.
@@ -60,7 +60,7 @@ pub type ListDeploymentsResponse = Vec<DeploymentListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullDeploymentsResponse)]
 pub struct ListFullDeployments {
   /// optional structured query to filter deployments.
@@ -83,7 +83,7 @@ pub type ListFullDeploymentsResponse = Vec<Deployment>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentContainerResponse)]
 pub struct GetDeploymentContainer {
   /// Id or name
@@ -96,7 +96,7 @@ pub struct GetDeploymentContainer {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetDeploymentContainerResponse {
   pub state: DeploymentState,
-  pub container: Option<ContainerSummary>,
+  pub container: Option<ContainerListItem>,
 }
 
 //
@@ -109,9 +109,9 @@ pub struct GetDeploymentContainerResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetLogResponse)]
-pub struct GetLog {
+#[empty_traits(KomodoReadRequest)]
+#[response(GetDeploymentLogResponse)]
+pub struct GetDeploymentLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
@@ -127,7 +127,7 @@ fn default_tail() -> u64 {
 }
 
 #[typeshare]
-pub type GetLogResponse = Log;
+pub type GetDeploymentLogResponse = Log;
 
 //
 
@@ -139,9 +139,9 @@ pub type GetLogResponse = Log;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
-#[response(SearchLogResponse)]
-pub struct SearchLog {
+#[empty_traits(KomodoReadRequest)]
+#[response(SearchDeploymentLogResponse)]
+pub struct SearchDeploymentLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
@@ -159,7 +159,7 @@ pub struct SearchLog {
 }
 
 #[typeshare]
-pub type SearchLogResponse = Log;
+pub type SearchDeploymentLogResponse = Log;
 
 //
 
@@ -171,7 +171,7 @@ pub type SearchLogResponse = Log;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentStatsResponse)]
 pub struct GetDeploymentStats {
   /// Id or name
@@ -180,7 +180,7 @@ pub struct GetDeploymentStats {
 }
 
 #[typeshare]
-pub type GetDeploymentStatsResponse = DockerContainerStats;
+pub type GetDeploymentStatsResponse = ContainerStats;
 
 //
 
@@ -190,7 +190,7 @@ pub type GetDeploymentStatsResponse = DockerContainerStats;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(DeploymentActionState)]
 pub struct GetDeploymentActionState {
   /// Id or name
@@ -209,7 +209,7 @@ pub type GetDeploymentActionStateResponse = DeploymentActionState;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentsSummaryResponse)]
 pub struct GetDeploymentsSummary {}
 
@@ -232,7 +232,7 @@ pub struct GetDeploymentsSummaryResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListCommonDeploymentExtraArgsResponse)]
 pub struct ListCommonDeploymentExtraArgs {
   /// optional structured query to filter deployments.

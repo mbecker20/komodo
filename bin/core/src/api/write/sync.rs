@@ -2,21 +2,21 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
     self,
-    alert::{Alert, AlertData},
+    alert::{Alert, AlertData, SeverityLevel},
     alerter::Alerter,
     build::Build,
     builder::Builder,
     config::core::CoreConfig,
     deployment::Deployment,
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
-    server::{stats::SeverityLevel, Server},
+    server::Server,
     server_template::ServerTemplate,
     stack::Stack,
     sync::{
@@ -24,7 +24,7 @@ use monitor_client::{
       PendingSyncUpdatesData, PendingSyncUpdatesDataErr,
       PendingSyncUpdatesDataOk, ResourceSync,
     },
-    update::ResourceTarget,
+    ResourceTarget,
     user::User,
     NoData,
   },
@@ -328,7 +328,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         (None, true) => {
           let alert = Alert {
             id: Default::default(),
-            ts: monitor_timestamp(),
+            ts: komodo_timestamp(),
             resolved: false,
             level: SeverityLevel::Ok,
             target: ResourceTarget::ResourceSync(id.clone()),
@@ -351,7 +351,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
             doc! {
               "$set": {
                 "resolved": true,
-                "resolved_ts": monitor_timestamp()
+                "resolved_ts": komodo_timestamp()
               }
             },
             None,

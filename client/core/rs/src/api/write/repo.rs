@@ -8,7 +8,7 @@ use crate::entities::{
   NoData,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -17,7 +17,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
 pub struct CreateRepo {
   /// The name given to newly created repo.
@@ -34,7 +34,7 @@ pub struct CreateRepo {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
 pub struct CopyRepo {
   /// The name of the new repo.
@@ -51,7 +51,7 @@ pub struct CopyRepo {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
 pub struct DeleteRepo {
   /// The id or name of the repo to delete.
@@ -75,7 +75,7 @@ pub struct DeleteRepo {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
 pub struct UpdateRepo {
   /// The id of the repo to update.
@@ -91,7 +91,7 @@ pub struct UpdateRepo {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(NoData)]
 pub struct RefreshRepoCache {
   /// Id or name
@@ -108,13 +108,13 @@ pub enum RepoWebhookAction {
   Build,
 }
 
-/// Create a webhook on the github repo attached to the (monitor) repo
+/// Create a webhook on the github repo attached to the (Komodo) Repo resource.
 /// passed in request. Response: [CreateRepoWebhookResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateRepoWebhookResponse)]
 pub struct CreateRepoWebhook {
   /// Id or name
@@ -129,13 +129,13 @@ pub type CreateRepoWebhookResponse = NoData;
 
 //
 
-/// Delete the webhook on the github repo attached to the (monitor) repo
+/// Delete the webhook on the github repo attached to the (Komodo) Repo resource.
 /// passed in request. Response: [DeleteRepoWebhookResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteRepoWebhookResponse)]
 pub struct DeleteRepoWebhook {
   /// Id or name

@@ -3,19 +3,18 @@ use std::{collections::HashSet, future::IntoFuture, time::Duration};
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use futures::future::join_all;
-use monitor_client::{
+use komodo_client::{
   api::execute::{CancelBuild, Deploy, RunBuild},
   entities::{
-    alert::{Alert, AlertData},
+    alert::{Alert, AlertData, SeverityLevel},
     all_logs_success,
     build::{Build, ImageRegistry, StandardRegistryConfig},
     builder::{Builder, BuilderConfig},
     config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
-    server::stats::SeverityLevel,
-    to_monitor_name,
+    to_komodo_name,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
   },
@@ -28,7 +27,7 @@ use mungos::{
     options::FindOneOptions,
   },
 };
-use periphery_client::api::{self, git::RepoActionResponseV1_13};
+use periphery_client::api;
 use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
@@ -40,15 +39,19 @@ use crate::{
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::build_cancel_channel,
     git_token,
-    query::{get_deployment_state, get_global_variables},
+    interpolate::{
+      add_interp_update_log,
+      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_extra_args,
+      interpolate_variables_secrets_into_system_command,
+    },
+    query::{get_deployment_state, get_variables_and_secrets},
     registry_token,
-    update::update_update,
+    update::{init_execution_update, update_update},
   },
   resource::{self, refresh_build_state_cache},
   state::{action_states, db_client, State},
 };
-
-use crate::helpers::update::init_execution_update;
 
 use super::ExecuteRequest;
 
@@ -65,6 +68,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
       PermissionLevel::Execute,
     )
     .await?;
+    let vars_and_secrets = get_variables_and_secrets().await?;
 
     if build.config.builder_id.is_empty() {
       return Err(anyhow!("Must attach builder to RunBuild"));
@@ -172,6 +176,29 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     // CLONE REPO
 
+    let secret_replacers = if !build.config.skip_secret_interp {
+      // Interpolate variables / secrets into pre build command
+      let mut global_replacers = HashSet::new();
+      let mut secret_replacers = HashSet::new();
+
+      interpolate_variables_secrets_into_system_command(
+        &vars_and_secrets,
+        &mut build.config.pre_build,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      add_interp_update_log(
+        &mut update,
+        &global_replacers,
+        &secret_replacers,
+      );
+
+      secret_replacers
+    } else {
+      Default::default()
+    };
+
     let res = tokio::select! {
       res = periphery
         .request(api::git::CloneRepo {
@@ -180,6 +207,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           environment: Default::default(),
           env_file_path: Default::default(),
           skip_secret_interp: Default::default(),
+          replacers: secret_replacers.into_iter().collect(),
         }) => res,
       _ = cancel.cancelled() => {
         debug!("build cancelled during clone, cleaning up builder");
@@ -194,7 +222,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
     let commit_message = match res {
       Ok(res) => {
         debug!("finished repo clone");
-        let res: RepoActionResponseV1_13 = res.into();
         update.logs.extend(res.logs);
         update.commit_hash =
           res.commit_hash.unwrap_or_default().to_string();
@@ -214,90 +241,36 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     if all_logs_success(&update.logs) {
       let secret_replacers = if !build.config.skip_secret_interp {
-        let core_config = core_config();
-        let variables = get_global_variables().await?;
         // Interpolate variables / secrets into build args
         let mut global_replacers = HashSet::new();
         let mut secret_replacers = HashSet::new();
-        let mut secret_replacers_for_log = HashSet::new();
 
-        // Interpolate into build args
-        for arg in &mut build.config.build_args {
-          // first pass - global variables
-          let (res, more_replacers) = svi::interpolate_variables(
-            &arg.value,
-            &variables,
-            svi::Interpolator::DoubleBrackets,
-            false,
-          )
-          .context("failed to interpolate global variables")?;
-          global_replacers.extend(more_replacers);
-          // second pass - core secrets
-          let (res, more_replacers) = svi::interpolate_variables(
-            &res,
-            &core_config.secrets,
-            svi::Interpolator::DoubleBrackets,
-            false,
-          )
-          .context("failed to interpolate core secrets")?;
-          secret_replacers_for_log.extend(
-            more_replacers
-              .iter()
-              .map(|(_, variable)| variable.clone()),
-          );
-          secret_replacers.extend(more_replacers);
-          arg.value = res;
-        }
+        interpolate_variables_secrets_into_environment(
+          &vars_and_secrets,
+          &mut build.config.build_args,
+          &mut global_replacers,
+          &mut secret_replacers,
+        )?;
 
-        // Interpolate into secret args
-        for arg in &mut build.config.secret_args {
-          // first pass - global variables
-          let (res, more_replacers) = svi::interpolate_variables(
-            &arg.value,
-            &variables,
-            svi::Interpolator::DoubleBrackets,
-            false,
-          )
-          .context("failed to interpolate global variables")?;
-          global_replacers.extend(more_replacers);
-          // second pass - core secrets
-          let (res, more_replacers) = svi::interpolate_variables(
-            &res,
-            &core_config.secrets,
-            svi::Interpolator::DoubleBrackets,
-            false,
-          )
-          .context("failed to interpolate core secrets")?;
-          secret_replacers_for_log.extend(
-            more_replacers.into_iter().map(|(_, variable)| variable),
-          );
-          // Secret args don't need to be in replacers sent to periphery.
-          // The secret args don't end up in the command like build args do.
-          arg.value = res;
-        }
+        interpolate_variables_secrets_into_environment(
+          &vars_and_secrets,
+          &mut build.config.secret_args,
+          &mut global_replacers,
+          &mut secret_replacers,
+        )?;
 
-        // Show which variables were interpolated
-        if !global_replacers.is_empty() {
-          update.push_simple_log(
-            "interpolate global variables",
-            global_replacers
-              .into_iter()
-              .map(|(value, variable)| format!("<span class=\"text-muted-foreground\">{variable} =></span> {value}"))
-              .collect::<Vec<_>>()
-              .join("\n"),
-          );
-        }
+        interpolate_variables_secrets_into_extra_args(
+          &vars_and_secrets,
+          &mut build.config.extra_args,
+          &mut global_replacers,
+          &mut secret_replacers,
+        )?;
 
-        if !secret_replacers_for_log.is_empty() {
-          update.push_simple_log(
-            "interpolate core secrets",
-            secret_replacers_for_log
-              .into_iter()
-              .map(|variable| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
-              .collect::<Vec<_>>()
-              .join("\n"),
-          );
-        }
+        add_interp_update_log(
+          &mut update,
+          &global_replacers,
+          &secret_replacers,
+        );
 
         secret_replacers
       } else {
@@ -354,7 +327,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           doc! { "$set": {
             "config.version": to_bson(&build.config.version)
               .context("failed at converting version to bson")?,
-            "info.last_built_at": monitor_timestamp(),
+            "info.last_built_at": komodo_timestamp(),
             "info.built_hash": &update.commit_hash,
             "info.built_message": commit_message
           }},
@@ -398,8 +371,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
         let alert = Alert {
           id: Default::default(),
           target,
-          ts: monitor_timestamp(),
-          resolved_ts: Some(monitor_timestamp()),
+          ts: komodo_timestamp(),
+          resolved_ts: Some(komodo_timestamp()),
           resolved: true,
           level: SeverityLevel::Warning,
           data: AlertData::BuildFailed {
@@ -447,8 +420,8 @@ async fn handle_early_return(
       let alert = Alert {
         id: Default::default(),
         target,
-        ts: monitor_timestamp(),
-        resolved_ts: Some(monitor_timestamp()),
+        ts: komodo_timestamp(),
+        resolved_ts: Some(komodo_timestamp()),
         resolved: true,
         level: SeverityLevel::Warning,
         data: AlertData::BuildFailed {
@@ -657,7 +630,7 @@ async fn validate_account_extract_registry_token_aws_ecr(
           .await
           .context("failed to get aws ecr token")?;
           ecr::maybe_create_repo(
-            &to_monitor_name(&build.name),
+            &to_komodo_name(&build.name),
             region.to_string(),
             access_key_id,
             secret_access_key,

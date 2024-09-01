@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::provider::*;
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 /// **Admin only.** Create a git provider account.
 /// Response: [GitProviderAccount].
@@ -13,7 +13,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateGitProviderAccountResponse)]
 pub struct CreateGitProviderAccount {
   /// The initial account config. Anything in the _id field will be ignored,
@@ -32,7 +32,7 @@ pub type CreateGitProviderAccountResponse = GitProviderAccount;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateGitProviderAccountResponse)]
 pub struct UpdateGitProviderAccount {
   /// The id of the git provider account to update.
@@ -52,7 +52,7 @@ pub type UpdateGitProviderAccountResponse = GitProviderAccount;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteGitProviderAccountResponse)]
 pub struct DeleteGitProviderAccount {
   /// The id of the git provider to delete
@@ -70,7 +70,7 @@ pub type DeleteGitProviderAccountResponse = GitProviderAccount;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateDockerRegistryAccountResponse)]
 pub struct CreateDockerRegistryAccount {
   pub account: _PartialDockerRegistryAccount,
@@ -87,7 +87,7 @@ pub type CreateDockerRegistryAccountResponse = DockerRegistryAccount;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateDockerRegistryAccountResponse)]
 pub struct UpdateDockerRegistryAccount {
   /// The id of the docker registry to update
@@ -107,7 +107,7 @@ pub type UpdateDockerRegistryAccountResponse = DockerRegistryAccount;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteDockerRegistryAccountResponse)]
 pub struct DeleteDockerRegistryAccount {
   /// The id of the docker registry account to delete

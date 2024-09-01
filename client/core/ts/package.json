@@ -1,5 +1,5 @@
 {
-  "name": "@monitor/client",
+  "name": "@komodo/client",
   "version": "1.0.0",
   "main": "dist/lib.js",
   "license": "MIT",

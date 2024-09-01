@@ -1,5 +1,5 @@
 use formatting::{bold, colored, muted, Color};
-use monitor_client::{
+use komodo_client::{
   api::execute::Execution,
   entities::{
     self,
@@ -12,8 +12,9 @@ use monitor_client::{
     server::Server,
     server_template::ServerTemplate,
     stack::Stack,
-    update::{Log, ResourceTarget},
+    update::Log,
     user::sync_user,
+    ResourceTarget,
   },
 };
 use partial_derive2::{MaybeNone, PartialDiff};
@@ -23,7 +24,7 @@ use crate::{
     run_update_description, run_update_tags, ResourceSync,
     ToUpdateItem,
   },
-  resource::MonitorResource,
+  resource::KomodoResource,
 };
 
 use super::resource::{
@@ -266,42 +267,42 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::StartContainer(config) => {
+          Execution::StartDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::RestartContainer(config) => {
+          Execution::RestartDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::PauseContainer(config) => {
+          Execution::PauseDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::UnpauseContainer(config) => {
+          Execution::UnpauseDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::StopContainer(config) => {
+          Execution::StopDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::RemoveContainer(config) => {
+          Execution::DestroyDeployment(config) => {
             config.deployment = resources
               .deployments
               .get(&config.deployment)
@@ -336,7 +337,91 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::StartContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RestartContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PauseContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::UnpauseContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StopContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DestroyContainer(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::StartAllContainers(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RestartAllContainers(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PauseAllContainers(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::UnpauseAllContainers(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::StopAllContainers(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneContainers(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DeleteNetwork(config) => {
             config.server = resources
               .servers
               .get(&config.server)
@@ -350,6 +435,13 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::DeleteImage(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::PruneImages(config) => {
             config.server = resources
               .servers
@@ -357,7 +449,21 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
-          Execution::PruneContainers(config) => {
+          Execution::DeleteVolume(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneVolumes(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneSystem(config) => {
             config.server = resources
               .servers
               .get(&config.server)

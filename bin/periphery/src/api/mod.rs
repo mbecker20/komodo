@@ -1,12 +1,12 @@
 use anyhow::Context;
-use command::run_monitor_command;
+use command::run_komodo_command;
 use futures::TryFutureExt;
-use monitor_client::entities::{update::Log, SystemCommand};
+use komodo_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
-  build::*, compose::*, container::*, git::*, network::*, stats::*,
-  GetDockerLists, GetDockerListsResponse, GetHealth, GetVersion,
-  GetVersionResponse, ListDockerRegistries, ListGitProviders,
-  ListSecrets, PruneSystem, RunCommand,
+  build::*, compose::*, container::*, git::*, image::*, network::*,
+  stats::*, volume::*, GetDockerLists, GetDockerListsResponse,
+  GetHealth, GetVersion, GetVersionResponse, ListDockerRegistries,
+  ListGitProviders, ListSecrets, PruneSystem, RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -25,8 +25,10 @@ mod compose;
 mod container;
 mod deploy;
 mod git;
+mod image;
 mod network;
 mod stats;
+mod volume;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[serde(tag = "type", content = "params")]
@@ -37,7 +39,7 @@ pub enum PeripheryRequest {
   #[to_string_resolver]
   GetHealth(GetHealth),
 
-  // Config
+  // Config (Read)
   #[to_string_resolver]
   ListGitProviders(ListGitProviders),
   #[to_string_resolver]
@@ -45,7 +47,7 @@ pub enum PeripheryRequest {
   #[to_string_resolver]
   ListSecrets(ListSecrets),
 
-  // Stats / Info
+  // Stats / Info (Read)
   #[to_string_resolver]
   GetSystemInformation(GetSystemInformation),
   #[to_string_resolver]
@@ -54,54 +56,77 @@ pub enum PeripheryRequest {
   GetSystemProcesses(GetSystemProcesses),
   GetLatestCommit(GetLatestCommit),
 
-  // All in one
-  GetDockerLists(GetDockerLists),
-
-  // Docker
-  GetContainerList(GetContainerList),
-  GetContainerLog(GetContainerLog),
-  GetContainerLogSearch(GetContainerLogSearch),
-  GetContainerStats(GetContainerStats),
-  GetContainerStatsList(GetContainerStatsList),
-  GetNetworkList(GetNetworkList),
-
-  // Actions
+  // Generic shell execution
   RunCommand(RunCommand),
 
-  // Repo
+  // Repo (Write)
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
   DeleteRepo(DeleteRepo),
 
   // Build
   Build(Build),
-  PruneImages(PruneImages),
 
-  // Container
+  // Compose (Read)
+  GetComposeContentsOnHost(GetComposeContentsOnHost),
+  GetComposeServiceLog(GetComposeServiceLog),
+  GetComposeServiceLogSearch(GetComposeServiceLogSearch),
+
+  // Compose (Write)
+  ComposeUp(ComposeUp),
+  ComposeExecution(ComposeExecution),
+
+  // Container (Read)
+  InspectContainer(InspectContainer),
+  GetContainerLog(GetContainerLog),
+  GetContainerLogSearch(GetContainerLogSearch),
+  GetContainerStats(GetContainerStats),
+  GetContainerStatsList(GetContainerStatsList),
+
+  // Container (Write)
   Deploy(Deploy),
   StartContainer(StartContainer),
   RestartContainer(RestartContainer),
   PauseContainer(PauseContainer),
   UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
+  StartAllContainers(StartAllContainers),
+  RestartAllContainers(RestartAllContainers),
+  PauseAllContainers(PauseAllContainers),
+  UnpauseAllContainers(UnpauseAllContainers),
   StopAllContainers(StopAllContainers),
   RemoveContainer(RemoveContainer),
   RenameContainer(RenameContainer),
   PruneContainers(PruneContainers),
 
-  // Compose
-  ListComposeProjects(ListComposeProjects),
-  GetComposeContentsOnHost(GetComposeContentsOnHost),
-  GetComposeServiceLog(GetComposeServiceLog),
-  GetComposeServiceLogSearch(GetComposeServiceLogSearch),
-  ComposeUp(ComposeUp),
-  ComposeExecution(ComposeExecution),
+  // Networks (Read)
+  InspectNetwork(InspectNetwork),
 
-  // Networks
+  // Networks (Write)
   CreateNetwork(CreateNetwork),
   DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),
-  PruneAll(PruneSystem),
+
+  // Image (Read)
+  InspectImage(InspectImage),
+  ImageHistory(ImageHistory),
+
+  // Image (Write)
+  DeleteImage(DeleteImage),
+  PruneImages(PruneImages),
+
+  // Volume (Read)
+  InspectVolume(InspectVolume),
+
+  // Volume (Write)
+  DeleteVolume(DeleteVolume),
+  PruneVolumes(PruneVolumes),
+
+  // All in one (Read)
+  GetDockerLists(GetDockerLists),
+
+  // All in one (Write)
+  PruneSystem(PruneSystem),
 }
 
 //
@@ -185,16 +210,24 @@ impl Resolve<GetDockerLists> for State {
     _: (),
   ) -> anyhow::Result<GetDockerListsResponse> {
     let docker = docker_client();
-    let (containers, networks, images, projects) = tokio::join!(
-      docker.list_containers().map_err(Into::into),
-      docker.list_networks().map_err(Into::into),
-      docker.list_images().map_err(Into::into),
+    let containers =
+      docker.list_containers().await.map_err(Into::into);
+    // Should still try to retrieve other docker lists, but "in_use" will be false for images, networks, volumes
+    let _containers = match &containers {
+      Ok(containers) => containers.as_slice(),
+      Err(_) => &[],
+    };
+    let (networks, images, volumes, projects) = tokio::join!(
+      docker.list_networks(_containers).map_err(Into::into),
+      docker.list_images(_containers).map_err(Into::into),
+      docker.list_volumes(_containers).map_err(Into::into),
       self.resolve(ListComposeProjects {}, ()).map_err(Into::into)
     );
     Ok(GetDockerListsResponse {
       containers,
       networks,
       images,
+      volumes,
       projects,
     })
   }
@@ -215,7 +248,7 @@ impl Resolve<RunCommand> for State {
       } else {
         format!("cd {path} && {command}")
       };
-      run_monitor_command("run command", command).await
+      run_komodo_command("run command", command).await
     })
     .await
     .context("failure in spawned task")
@@ -229,7 +262,7 @@ impl Resolve<PruneSystem> for State {
     PruneSystem {}: PruneSystem,
     _: (),
   ) -> anyhow::Result<Log> {
-    let command = String::from("docker system prune -a -f");
-    Ok(run_monitor_command("prune system", command).await)
+    let command = String::from("docker system prune -a -f --volumes");
+    Ok(run_komodo_command("prune system", command).await)
   }
 }

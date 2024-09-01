@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_client::entities::{EnvironmentVar, SearchCombinator};
+use komodo_client::entities::{EnvironmentVar, SearchCombinator};
 
 use crate::config::periphery_config;
 

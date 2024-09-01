@@ -1,17 +1,23 @@
 import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
-import { ResourceName } from "@components/resources/common";
+import { ResourceLink, ResourceName } from "@components/resources/common";
 import { TagsWithBadge } from "@components/tags";
+import { StatusBadge } from "@components/util";
 import {
+  build_state_intention,
   ColorIntention,
   hex_color_by_intention,
+  procedure_state_intention,
+  repo_state_intention,
   text_color_class_by_intention,
 } from "@lib/color";
 import { useNoResources, useRead, useUser } from "@lib/hooks";
 import { cn, usableResourcePath } from "@lib/utils";
+import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
-import { AlertTriangle, Boxes, History } from "lucide-react";
+import { DataTable, SortableHeader } from "@ui/data-table";
+import { AlertTriangle, Boxes, Circle, History } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 
@@ -20,6 +26,7 @@ export const Dashboard = () => {
   const user = useUser().data!;
   return (
     <Page>
+      <ActiveResources />
       <Section
         title="Dashboard"
         icon={<Boxes className="w-4 h-4" />}
@@ -179,5 +186,94 @@ export const DashboardPieChart = ({
         }))}
       />
     </div>
+  );
+};
+
+const ActiveResources = () => {
+  const builds =
+    useRead("ListBuilds", {}).data?.filter(
+      (build) => build.info.state === Types.BuildState.Building
+    ) ?? [];
+  const repos =
+    useRead("ListRepos", {}).data?.filter((repo) =>
+      [
+        Types.RepoState.Building,
+        Types.RepoState.Cloning,
+        Types.RepoState.Pulling,
+      ].includes(repo.info.state)
+    ) ?? [];
+  const procedures =
+    useRead("ListProcedures", {}).data?.filter(
+      (procedure) => procedure.info.state === Types.ProcedureState.Running
+    ) ?? [];
+
+  const resources = [
+    ...(builds ?? []).map((build) => ({
+      type: "Build" as UsableResource,
+      id: build.id,
+      state: (
+        <StatusBadge
+          text={build.info.state}
+          intent={build_state_intention(build.info.state)}
+        />
+      ),
+    })),
+    ...(repos ?? []).map((repo) => ({
+      type: "Repo" as UsableResource,
+      id: repo.id,
+      state: (
+        <StatusBadge
+          text={repo.info.state}
+          intent={repo_state_intention(repo.info.state)}
+        />
+      ),
+    })),
+    ...(procedures ?? []).map((procedure) => ({
+      type: "Procedure" as UsableResource,
+      id: procedure.id,
+      state: (
+        <StatusBadge
+          text={procedure.info.state}
+          intent={procedure_state_intention(procedure.info.state)}
+        />
+      ),
+    })),
+  ];
+
+  if (resources.length === 0) return null;
+
+  return (
+    <Section
+      title="Active"
+      icon={
+        <Circle className="w-4 h-4 stroke-none transition-colors fill-green-500" />
+      }
+    >
+      <DataTable
+        tableKey="active-resources"
+        data={resources}
+        columns={[
+          {
+            accessorKey: "name",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Name" />
+            ),
+            cell: ({ row }) => (
+              <ResourceLink type={row.original.type} id={row.original.id} />
+            ),
+          },
+          {
+            accessorKey: "type",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Resource" />
+            ),
+          },
+          {
+            header: "State",
+            cell: ({ row }) => row.original.state,
+          },
+        ]}
+      />
+    </Section>
   );
 };

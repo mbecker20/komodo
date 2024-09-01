@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 
-use monitor_client::entities::{
-  alert::{Alert, AlertData},
-  server::stats::SeverityLevel,
+use komodo_client::entities::{
+  alert::{Alert, AlertData, SeverityLevel},
   stack::{Stack, StackState},
-  update::ResourceTarget,
+  ResourceTarget,
 };
 
 use crate::{

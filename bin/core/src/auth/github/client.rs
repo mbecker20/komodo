@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 
 use anyhow::{anyhow, Context};
-use monitor_client::entities::config::core::{
+use komodo_client::entities::config::core::{
   CoreConfig, OauthCredentials,
 };
 use reqwest::StatusCode;

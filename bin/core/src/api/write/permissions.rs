@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::write::{
     UpdatePermissionOnResourceType,
     UpdatePermissionOnResourceTypeResponse, UpdatePermissionOnTarget,
@@ -10,8 +10,8 @@ use monitor_client::{
   },
   entities::{
     permission::{UserTarget, UserTargetVariant},
-    update::{ResourceTarget, ResourceTargetVariant},
     user::User,
+    ResourceTarget, ResourceTargetVariant,
   },
 };
 use mungos::{

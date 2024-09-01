@@ -1,4 +1,4 @@
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
     permission::PermissionLevel, procedure::Procedure, user::User,

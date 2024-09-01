@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::{anyhow, Context};
-use monitor_client::entities::{
+use komodo_client::entities::{
   sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
 };
 
@@ -66,6 +66,7 @@ pub async fn get_remote_resources(
     &[],
     "",
     None,
+    &[],
   )
   .await
   .context("failed to clone resource repo")?;

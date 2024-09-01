@@ -1,5 +1,5 @@
 import { useInvalidate, useUser } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { toast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
@@ -78,9 +78,39 @@ const on_message = (
     invalidate(["GetResourceSyncActionState", { sync: update.target.id }]);
   }
 
+  // Invalidate lists for execution updates - update status
+  if (update.operation === Types.Operation.RunBuild) {
+    invalidate(["ListBuilds"]);
+  } else if (
+    [
+      Types.Operation.CloneRepo,
+      Types.Operation.PullRepo,
+      Types.Operation.BuildRepo,
+    ].includes(update.operation)
+  ) {
+    invalidate(["ListRepos"]);
+  } else if (update.operation === Types.Operation.RunProcedure) {
+    invalidate(["ListProcedures"]);
+  }
+
   // Do invalidations of these only if update is completed
   if (update.status === Types.UpdateStatus.Complete) {
     invalidate(["ListAlerts"]);
+
+    // Invalidate docker infos
+    if (["Server", "Deployment", "Stack"].includes(update.target.type)) {
+      invalidate(
+        ["ListDockerContainers"],
+        ["InspectDockerContainer"],
+        ["ListDockerNetworks"],
+        ["InspectDockerNetwork"],
+        ["ListDockerImages"],
+        ["InspectDockerImage"],
+        ["ListDockerVolumes"],
+        ["InspectDockerVolume"],
+        ["GetResourceMatchingContainer"]
+      );
+    }
 
     if (update.target.type === "Deployment") {
       invalidate(
@@ -90,8 +120,10 @@ const on_message = (
         ["ListDockerNetworks"],
         ["ListDockerImages"],
         ["GetDeployment", { deployment: update.target.id }],
-        ["GetLog", { deployment: update.target.id }],
-        ["GetDeploymentContainer", { deployment: update.target.id }]
+        ["GetDeploymentLog", { deployment: update.target.id }],
+        ["SearchDeploymentLog", { deployment: update.target.id }],
+        ["GetDeploymentContainer", { deployment: update.target.id }],
+        ["GetResourceMatchingContainer"]
       );
     }
 
@@ -100,15 +132,16 @@ const on_message = (
         ["ListStacks"],
         ["ListFullStacks"],
         ["GetStacksSummary"],
-        ["GetStackServiceLog"],
-        ["SearchStackServiceLog"],
         ["ListCommonStackExtraArgs"],
         ["ListComposeProjects"],
         ["ListDockerContainers"],
         ["ListDockerNetworks"],
         ["ListDockerImages"],
+        ["GetStackServiceLog", { stack: update.target.id }],
+        ["SearchStackServiceLog", { stack: update.target.id }],
         ["GetStack", { stack: update.target.id }],
-        ["ListStackServices", { stack: update.target.id }]
+        ["ListStackServices", { stack: update.target.id }],
+        ["GetResourceMatchingContainer"]
       );
     }
 
@@ -289,7 +322,6 @@ const make_websocket = ({
   on_message: (e: MessageEvent) => void;
   on_close: () => void;
 }) => {
-  console.log("init websocket");
   const ws = new WebSocket(url);
 
   const _on_open = () => {

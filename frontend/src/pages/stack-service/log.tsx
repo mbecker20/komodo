@@ -1,6 +1,6 @@
 import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { RefreshCw, X, AlertOctagon, ScrollText } from "lucide-react";
 import { useState } from "react";
@@ -21,13 +21,9 @@ export const StackServiceLogs = ({
   // const stack = useStack(id);
   const services = useRead("ListStackServices", { stack: id }).data;
   const container = services?.find((s) => s.service === service)?.container;
-  const state = container?.state ?? Types.DeploymentState.Unknown;
+  const state = container?.state ?? Types.ContainerStateStatusEnum.Empty;
 
-  if (
-    state === undefined ||
-    state === Types.DeploymentState.Unknown ||
-    state === Types.DeploymentState.NotDeployed
-  ) {
+  if (state === undefined || state === Types.ContainerStateStatusEnum.Empty) {
     return null;
   }
 
@@ -73,7 +69,7 @@ const StackLogsInner = ({
     <Section
       title="Log"
       icon={<ScrollText className="w-4 h-4" />}
-			itemsCenterTitleRow
+      itemsCenterTitleRow
       actions={
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">

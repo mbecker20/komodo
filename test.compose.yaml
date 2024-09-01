@@ -1,38 +1,65 @@
 services:
-  monitor-periphery:
+  # komodo-core:
+  #   build:
+  #     context: .
+  #     dockerfile: bin/core/Dockerfile
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - komodo-mongo
+  #   logging:
+  #     driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
+  #   network_mode: host
+  #   environment: # https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml
+  #     KOMODO_HOST: http://localhost:9120
+  #     KOMODO_TITLE: Komodo Test
+  #     KOMODO_ENSURE_SERVER: http://localhost:8120 # Creates the "default" server.
+  #     ## MONGO
+  #     KOMODO_MONGO_ADDRESS: localhost:27017
+  #     ## KEYS
+  #     KOMODO_PASSKEY: a_random_passkey # used to auth against periphery
+  #     KOMODO_WEBHOOK_SECRET: a_random_secret # used to authenticate incoming webhooks
+  #     KOMODO_JWT_SECRET: a_random_jwt_secret # Optional. If empty, will have to log in again on restart.
+  #     ## AUTH
+  #     KOMODO_LOCAL_AUTH: true
+  #     KOMODO_JWT_TTL: 2-wk
+  #     ## POLLING
+  #     KOMODO_MONITORING_INTERVAL: 5-sec
+  #     KOMODO_STACK_POLL_INTERVAL: 1-min
+  #     KOMODO_SYNC_POLL_INTERVAL: 1-min
+  #     KOMODO_BUILD_POLL_INTERVAL: 1-min
+  #     KOMODO_REPO_POLL_INTERVAL: 1-min
+
+  komodo-periphery:
     build:
       context: .
       dockerfile: bin/periphery/Dockerfile
+    restart: unless-stopped
     logging:
       driver: local
-    networks:
-      - monitor-network
-    ports:
-      - 8120:8120
+    network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - monitor-repos:/etc/monitor/repos
+      - komodo-repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - komodo-stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
     # environment:
     #   # If the disk size is overreporting, can use one of these to 
     #   # whitelist / blacklist the disks to filter them, whichever is easier. 
-    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos 
+    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/komodo/repos 
     #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
 
-  monitor-mongo:
+  komodo-mongo:
     image: mongo
+    command: --quiet # suppress mongo logs a bit
     restart: unless-stopped
     logging:
-      driver: none
-    networks:
-      - monitor-network
-    ports:
-      - 27017:27017
+      driver: local
+    network_mode: host
     volumes:
       - db-data:/data/db
+      - db-config:/data/configdb
 
 volumes:
   db-data:
-  monitor-repos:
-
-networks:
-  monitor-network: {}
+  db-config:
+  komodo-repos:
+  komodo-stacks:

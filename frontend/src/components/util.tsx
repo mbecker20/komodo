@@ -8,12 +8,19 @@ import {
 } from "react";
 import { Button } from "../ui/button";
 import {
+  Box,
   Check,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
   Copy,
+  Database,
+  HardDrive,
   Loader2,
   LogOut,
+  Network,
   Settings,
+  Tags,
   User,
 } from "lucide-react";
 import { Input } from "../ui/input";
@@ -34,10 +41,17 @@ import { Card } from "@ui/card";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
   ColorIntention,
+  container_state_intention,
   hex_color_by_intention,
+  stroke_color_class_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
+import { Badge } from "@ui/badge";
+import { Section } from "./layouts";
+import { DataTable, SortableHeader } from "@ui/data-table";
+import { useRead } from "@lib/hooks";
+import { Prune } from "./resources/server/actions";
 
 export const WithLoading = ({
   children,
@@ -96,10 +110,10 @@ export const ActionButton = forwardRef<
     <Button
       size={size}
       variant={variant || "secondary"}
-      className={cn("flex items-center justify-between w-[170px]", className)}
+      className={cn("flex items-center justify-between w-[190px]", className)}
       onClick={onClick}
       onBlur={onBlur}
-      disabled={disabled}
+      disabled={disabled || loading}
       ref={ref}
     >
       {title} {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
@@ -449,5 +463,308 @@ export const StatusBadge = ({
     >
       {snake_case_to_upper_space_case(_text).toUpperCase()}
     </p>
+  );
+};
+
+export const DockerOptions = ({
+  options,
+}: {
+  options: Record<string, string> | undefined;
+}) => {
+  if (!options) return null;
+  const entries = Object.entries(options);
+  if (entries.length === 0) return null;
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {entries.map(([key, value]) => (
+        <Badge key={key} variant="secondary">
+          {key} = {value}
+        </Badge>
+      ))}
+    </div>
+  );
+};
+
+export const DockerLabelsSection = ({
+  labels,
+}: {
+  labels: Record<string, string> | undefined;
+}) => {
+  if (!labels) return null;
+  const entries = Object.entries(labels);
+  if (entries.length === 0) return null;
+  return (
+    <Section title="Labels" icon={<Tags className="w-4 h-4" />}>
+      <div className="flex gap-2 flex-wrap">
+        {entries.map(([key, value]) => (
+          <Badge key={key} variant="secondary" className="flex gap-1">
+            <span className="text-muted-foreground">{key}</span>
+            <span className="text-muted-foreground">=</span>
+            <span
+              title={value}
+              className="font-extrabold text-nowrap max-w-[200px] overflow-hidden text-ellipsis"
+            >
+              {value}
+            </span>
+          </Badge>
+        ))}
+      </div>
+    </Section>
+  );
+};
+
+export const ShowHideButton = ({
+  show,
+  setShow,
+}: {
+  show: boolean;
+  setShow: (show: boolean) => void;
+}) => {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="gap-4"
+      onClick={() => setShow(!show)}
+    >
+      {show ? "Hide" : "Show"}
+      {show ? <ChevronUp className="w-4" /> : <ChevronDown className="w-4" />}
+    </Button>
+  );
+};
+
+type DockerResourceType = "container" | "network" | "image" | "volume";
+
+export const DOCKER_LINK_ICONS: {
+  [type in DockerResourceType]: React.FC<{
+    server_id: string;
+    name: string | undefined;
+    size?: number;
+  }>;
+} = {
+  container: ({ server_id, name, size = 4 }) => {
+    const state =
+      useRead("ListDockerContainers", { server: server_id }).data?.find(
+        (container) => container.name === name
+      )?.state ?? Types.ContainerStateStatusEnum.Empty;
+    return (
+      <Box
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(container_state_intention(state))
+        )}
+      />
+    );
+  },
+  network: ({ server_id, name, size = 4 }) => {
+    const containers =
+      useRead("ListDockerContainers", { server: server_id }).data ?? [];
+    const no_containers = !name
+      ? false
+      : containers.every((container) => !container.networks?.includes(name));
+    return (
+      <Network
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(
+            !name
+              ? "Warning"
+              : no_containers
+              ? ["none", "host", "bridge"].includes(name)
+                ? "None"
+                : "Critical"
+              : "Good"
+          )
+        )}
+      />
+    );
+  },
+  image: ({ server_id, name, size = 4 }) => {
+    const containers =
+      useRead("ListDockerContainers", { server: server_id }).data ?? [];
+    const no_containers = !name
+      ? false
+      : containers.every((container) => container.image_id !== name);
+    return (
+      <HardDrive
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(
+            !name ? "Warning" : no_containers ? "Critical" : "Good"
+          )
+        )}
+      />
+    );
+  },
+  volume: ({ server_id, name, size = 4 }) => {
+    const containers =
+      useRead("ListDockerContainers", { server: server_id }).data ?? [];
+    const no_containers = !name
+      ? false
+      : containers.every((container) => !container.volumes?.includes(name));
+    return (
+      <Database
+        className={cn(
+          `w-${size} h-${size}`,
+          stroke_color_class_by_intention(
+            !name ? "Warning" : no_containers ? "Critical" : "Good"
+          )
+        )}
+      />
+    );
+  },
+};
+
+export const DockerResourceLink = ({
+  server_id,
+  name,
+  id,
+  type,
+  extra,
+  muted,
+}: {
+  server_id: string;
+  name: string | undefined;
+  id?: string;
+  type: "container" | "network" | "image" | "volume";
+  extra?: ReactNode;
+  muted?: boolean;
+}) => {
+  if (!name) return "Unknown";
+
+  const Icon = DOCKER_LINK_ICONS[type];
+
+  return (
+    <Link
+      to={`/servers/${server_id}/${type}/${encodeURIComponent(name)}`}
+      className="px-0"
+    >
+      <Button
+        variant="link"
+        className={cn("px-0 gap-2", muted && "text-muted-foreground")}
+      >
+        <Icon server_id={server_id} name={type === "image" ? id : name} />
+        <div
+          title={name}
+          className="max-w-[200px] lg:max-w-[300px] overflow-hidden overflow-ellipsis"
+        >
+          {name}
+        </div>
+        {extra && <div className="no-underline">{extra}</div>}
+      </Button>
+    </Link>
+  );
+};
+
+export const DockerResourcePageName = ({ name: _name }: { name?: string }) => {
+  const name = _name ?? "Unknown";
+  return (
+    <h1
+      title={name}
+      className="text-3xl max-w-[300px] md:max-w-[500px] xl:max-w-[700px] overflow-hidden overflow-ellipsis"
+    >
+      {name}
+    </h1>
+  );
+};
+
+export const DockerContainersSection = ({
+  server_id,
+  containers,
+  show = true,
+  setShow,
+  pruneButton,
+}: {
+  server_id: string;
+  containers: Types.ListDockerContainersResponse;
+  show?: boolean;
+  setShow?: (show: boolean) => void;
+  pruneButton?: boolean;
+}) => {
+  const allRunning = useRead("ListDockerContainers", {
+    server: server_id,
+  }).data?.every(
+    (container) => container.state === Types.ContainerStateStatusEnum.Running
+  );
+  return (
+    <div className={cn(setShow && show && "mb-8")}>
+      <Section
+        title="Containers"
+        icon={<Box className="w-4 h-4" />}
+        actions={
+          <div className="flex items-center gap-2">
+            {pruneButton && !allRunning && (
+              <Prune server_id={server_id} type="Containers" />
+            )}
+            {setShow && <ShowHideButton show={show} setShow={setShow} />}
+          </div>
+        }
+      >
+        {show && (
+          <DataTable
+            tableKey="server-containers"
+            data={containers}
+            columns={[
+              {
+                accessorKey: "name",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Name" />
+                ),
+                cell: ({ row }) => (
+                  <DockerResourceLink
+                    type="container"
+                    server_id={server_id}
+                    name={row.original.name}
+                  />
+                ),
+                size: 200,
+              },
+              {
+                accessorKey: "image",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Image" />
+                ),
+                cell: ({ row }) => (
+                  <DockerResourceLink
+                    type="image"
+                    server_id={server_id}
+                    name={row.original.image}
+                    id={row.original.image_id}
+                  />
+                ),
+              },
+              {
+                accessorKey: "network_mode",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="Network" />
+                ),
+                cell: ({ row }) => (
+                  <DockerResourceLink
+                    type="network"
+                    server_id={server_id}
+                    name={row.original.network_mode}
+                  />
+                ),
+              },
+              {
+                accessorKey: "state",
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="State" />
+                ),
+                cell: ({ row }) => {
+                  const state = row.original?.state;
+                  return (
+                    <StatusBadge
+                      text={state}
+                      intent={container_state_intention(state)}
+                    />
+                  );
+                },
+              },
+            ]}
+          />
+        )}
+      </Section>
+    </div>
   );
 };

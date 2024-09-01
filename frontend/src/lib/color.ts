@@ -1,4 +1,4 @@
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export type ColorIntention =
   | "Good"
@@ -121,6 +121,23 @@ export const deployment_state_intention: (
     case Types.DeploymentState.Paused:
       return "Warning";
     case Types.DeploymentState.Unknown:
+      return "Unknown";
+    default:
+      return "Critical";
+  }
+};
+
+export const container_state_intention: (
+  state?: Types.ContainerStateStatusEnum
+) => ColorIntention = (state) => {
+  switch (state) {
+    case undefined:
+      return "None";
+    case Types.ContainerStateStatusEnum.Running:
+      return "Good";
+    case Types.ContainerStateStatusEnum.Paused:
+      return "Warning";
+    case Types.ContainerStateStatusEnum.Empty:
       return "Unknown";
     default:
       return "Critical";

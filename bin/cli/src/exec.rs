@@ -1,11 +1,11 @@
 use std::time::Duration;
 
 use colored::Colorize;
-use monitor_client::api::execute::Execution;
+use komodo_client::api::execute::Execution;
 
 use crate::{
   helpers::wait_for_enter,
-  state::{cli_args, monitor_client},
+  state::{cli_args, komodo_client},
 };
 
 pub async fn run(execution: Execution) -> anyhow::Result<()> {
@@ -33,6 +33,36 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::Deploy(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::StartDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::RestartDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StopDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::DestroyDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::CloneRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PullRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BuildRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::CancelRepoBuild(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::StartContainer(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -48,31 +78,46 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::StopContainer(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::DestroyContainer(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::StartAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::RestartAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PauseAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::UnpauseAllContainers(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::StopAllContainers(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::RemoveContainer(data) => {
+    Execution::PruneContainers(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::CloneRepo(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::PullRepo(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::BuildRepo(data) => {
-      println!("{}: {data:?}", "Data".dimmed())
-    }
-    Execution::CancelRepoBuild(data) => {
+    Execution::DeleteNetwork(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::PruneNetworks(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::DeleteImage(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::PruneImages(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
-    Execution::PruneContainers(data) => {
+    Execution::DeleteVolume(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PruneVolumes(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PruneSystem(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::RunSync(data) => {
@@ -112,82 +157,127 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
 
   let res = match execution {
     Execution::RunProcedure(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RunBuild(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::CancelBuild(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::Deploy(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
-    Execution::StartContainer(request) => {
-      monitor_client().execute(request).await
+    Execution::StartDeployment(request) => {
+      komodo_client().execute(request).await
     }
-    Execution::RestartContainer(request) => {
-      monitor_client().execute(request).await
+    Execution::RestartDeployment(request) => {
+      komodo_client().execute(request).await
     }
-    Execution::PauseContainer(request) => {
-      monitor_client().execute(request).await
+    Execution::PauseDeployment(request) => {
+      komodo_client().execute(request).await
     }
-    Execution::UnpauseContainer(request) => {
-      monitor_client().execute(request).await
+    Execution::UnpauseDeployment(request) => {
+      komodo_client().execute(request).await
     }
-    Execution::StopContainer(request) => {
-      monitor_client().execute(request).await
+    Execution::StopDeployment(request) => {
+      komodo_client().execute(request).await
     }
-    Execution::StopAllContainers(request) => {
-      monitor_client().execute(request).await
-    }
-    Execution::RemoveContainer(request) => {
-      monitor_client().execute(request).await
+    Execution::DestroyDeployment(request) => {
+      komodo_client().execute(request).await
     }
     Execution::CloneRepo(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PullRepo(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::BuildRepo(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::CancelRepoBuild(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
-    Execution::PruneNetworks(request) => {
-      monitor_client().execute(request).await
+    Execution::StartContainer(request) => {
+      komodo_client().execute(request).await
     }
-    Execution::PruneImages(request) => {
-      monitor_client().execute(request).await
+    Execution::RestartContainer(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PauseContainer(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::UnpauseContainer(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::StopContainer(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::DestroyContainer(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::StartAllContainers(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::RestartAllContainers(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PauseAllContainers(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::UnpauseAllContainers(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::StopAllContainers(request) => {
+      komodo_client().execute(request).await
     }
     Execution::PruneContainers(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
+    }
+    Execution::DeleteNetwork(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PruneNetworks(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::DeleteImage(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PruneImages(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::DeleteVolume(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PruneVolumes(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PruneSystem(request) => {
+      komodo_client().execute(request).await
     }
     Execution::RunSync(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DeployStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StartStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RestartStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PauseStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::UnpauseStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StopStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DestroyStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::Sleep(request) => {
       let duration =

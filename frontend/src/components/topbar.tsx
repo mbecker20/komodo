@@ -54,7 +54,7 @@ export const Topbar = () => {
           className="flex gap-3 items-center text-2xl tracking-widest md:mx-2"
         >
           <img src="/monitor-circle.png" className="w-[28px] dark:invert" />
-          <div className="hidden lg:block">MONITOR</div>
+          <div className="hidden lg:block">KOMODO</div>
         </Link>
 
         {/* Searchbar */}
@@ -86,7 +86,7 @@ const Version = () => {
   if (!version) return null;
   return (
     <a
-      href="https://docs.monitor.dev"
+      href="https://komo.do"
       target="_blank"
       className="hidden lg:block"
     >

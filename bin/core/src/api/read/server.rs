@@ -1,4 +1,5 @@
 use std::{
+  cmp,
   collections::HashMap,
   sync::{Arc, OnceLock},
 };
@@ -7,26 +8,42 @@ use anyhow::{anyhow, Context};
 use async_timing_util::{
   get_timelength_in_ms, unix_timestamp_ms, FIFTEEN_SECONDS_MS,
 };
-use monitor_client::{
+use komodo_client::{
   api::read::*,
   entities::{
+    deployment::Deployment,
+    docker::{
+      container::Container,
+      image::{Image, ImageHistoryResponseItem},
+      network::Network,
+      volume::Volume,
+    },
     permission::PermissionLevel,
     server::{
       Server, ServerActionState, ServerListItem, ServerState,
     },
+    stack::{Stack, StackServiceNames},
+    update::Log,
     user::User,
+    ResourceTarget,
   },
 };
 use mungos::{
   find::find_collect,
   mongodb::{bson::doc, options::FindOptions},
 };
-use periphery_client::api as periphery;
+use periphery_client::api::{
+  self as periphery,
+  container::InspectContainer,
+  image::{ImageHistory, InspectImage},
+  network::InspectNetwork,
+  volume::InspectVolume,
+};
 use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  helpers::periphery_client,
+  helpers::{periphery_client, stack::compose_container_match_regex},
   resource,
   state::{action_states, db_client, server_status_cache, State},
 };
@@ -326,10 +343,10 @@ impl Resolve<GetHistoricalServerStats, User> for State {
   }
 }
 
-impl ResolveToString<ListDockerImages, User> for State {
+impl ResolveToString<ListDockerContainers, User> for State {
   async fn resolve_to_string(
     &self,
-    ListDockerImages { server }: ListDockerImages,
+    ListDockerContainers { server }: ListDockerContainers,
     user: User,
   ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
@@ -341,12 +358,158 @@ impl ResolveToString<ListDockerImages, User> for State {
     let cache = server_status_cache()
       .get_or_insert_default(&server.id)
       .await;
-    if let Some(images) = &cache.images {
-      serde_json::to_string(images)
+    if let Some(containers) = &cache.containers {
+      serde_json::to_string(containers)
         .context("failed to serialize response")
     } else {
       Ok(String::from("[]"))
     }
+  }
+}
+
+impl Resolve<InspectDockerContainer, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerContainer { server, container }: InspectDockerContainer,
+    user: User,
+  ) -> anyhow::Result<Container> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect container: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectContainer { name: container })
+      .await
+  }
+}
+
+const MAX_LOG_LENGTH: u64 = 5000;
+
+impl Resolve<GetContainerLog, User> for State {
+  async fn resolve(
+    &self,
+    GetContainerLog {
+      server,
+      container,
+      tail,
+    }: GetContainerLog,
+    user: User,
+  ) -> anyhow::Result<Log> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    periphery_client(&server)?
+      .request(periphery::container::GetContainerLog {
+        name: container,
+        tail: cmp::min(tail, MAX_LOG_LENGTH),
+      })
+      .await
+      .context("failed at call to periphery")
+  }
+}
+
+impl Resolve<SearchContainerLog, User> for State {
+  async fn resolve(
+    &self,
+    SearchContainerLog {
+      server,
+      container,
+      terms,
+      combinator,
+      invert,
+    }: SearchContainerLog,
+    user: User,
+  ) -> anyhow::Result<Log> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    periphery_client(&server)?
+      .request(periphery::container::GetContainerLogSearch {
+        name: container,
+        terms,
+        combinator,
+        invert,
+      })
+      .await
+      .context("failed at call to periphery")
+  }
+}
+
+impl Resolve<GetResourceMatchingContainer, User> for State {
+  async fn resolve(
+    &self,
+    GetResourceMatchingContainer { server, container }: GetResourceMatchingContainer,
+    user: User,
+  ) -> anyhow::Result<GetResourceMatchingContainerResponse> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    // first check deployments
+    if let Ok(deployment) =
+      resource::get::<Deployment>(&container).await
+    {
+      return Ok(GetResourceMatchingContainerResponse {
+        resource: ResourceTarget::Deployment(deployment.id).into(),
+      });
+    }
+
+    // then check stacks
+    let stacks =
+      resource::list_full_for_user_using_document::<Stack>(
+        doc! { "config.server_id": &server.id },
+        &user,
+      )
+      .await?;
+
+    // check matching stack
+    for stack in stacks {
+      for StackServiceNames {
+        service_name,
+        container_name,
+      } in stack
+        .info
+        .deployed_services
+        .unwrap_or(stack.info.latest_services)
+      {
+        let is_match = match compose_container_match_regex(&container_name)
+					.with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+				{
+					Ok(regex) => regex,
+					Err(e) => {
+						warn!("{e:#}");
+						continue;
+					}
+				}.is_match(&container);
+
+        if is_match {
+          return Ok(GetResourceMatchingContainerResponse {
+            resource: ResourceTarget::Stack(stack.id).into(),
+          });
+        }
+      }
+    }
+
+    Ok(GetResourceMatchingContainerResponse { resource: None })
   }
 }
 
@@ -374,10 +537,37 @@ impl ResolveToString<ListDockerNetworks, User> for State {
   }
 }
 
-impl ResolveToString<ListDockerContainers, User> for State {
+impl Resolve<InspectDockerNetwork, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerNetwork { server, network }: InspectDockerNetwork,
+    user: User,
+  ) -> anyhow::Result<Network> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect network: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectNetwork { name: network })
+      .await
+  }
+}
+
+impl ResolveToString<ListDockerImages, User> for State {
   async fn resolve_to_string(
     &self,
-    ListDockerContainers { server }: ListDockerContainers,
+    ListDockerImages { server }: ListDockerImages,
     user: User,
   ) -> anyhow::Result<String> {
     let server = resource::get_check_permissions::<Server>(
@@ -389,12 +579,117 @@ impl ResolveToString<ListDockerContainers, User> for State {
     let cache = server_status_cache()
       .get_or_insert_default(&server.id)
       .await;
-    if let Some(containers) = &cache.containers {
-      serde_json::to_string(containers)
+    if let Some(images) = &cache.images {
+      serde_json::to_string(images)
         .context("failed to serialize response")
     } else {
       Ok(String::from("[]"))
     }
+  }
+}
+
+impl Resolve<InspectDockerImage, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerImage { server, image }: InspectDockerImage,
+    user: User,
+  ) -> anyhow::Result<Image> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect image: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectImage { name: image })
+      .await
+  }
+}
+
+impl Resolve<ListDockerImageHistory, User> for State {
+  async fn resolve(
+    &self,
+    ListDockerImageHistory { server, image }: ListDockerImageHistory,
+    user: User,
+  ) -> anyhow::Result<Vec<ImageHistoryResponseItem>> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot get image history: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(ImageHistory { name: image })
+      .await
+  }
+}
+
+impl ResolveToString<ListDockerVolumes, User> for State {
+  async fn resolve_to_string(
+    &self,
+    ListDockerVolumes { server }: ListDockerVolumes,
+    user: User,
+  ) -> anyhow::Result<String> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if let Some(volumes) = &cache.volumes {
+      serde_json::to_string(volumes)
+        .context("failed to serialize response")
+    } else {
+      Ok(String::from("[]"))
+    }
+  }
+}
+
+impl Resolve<InspectDockerVolume, User> for State {
+  async fn resolve(
+    &self,
+    InspectDockerVolume { server, volume }: InspectDockerVolume,
+    user: User,
+  ) -> anyhow::Result<Volume> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect volume: server is {:?}",
+        cache.state
+      ));
+    }
+    periphery_client(&server)?
+      .request(InspectVolume { name: volume })
+      .await
   }
 }
 

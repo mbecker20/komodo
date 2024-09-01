@@ -3,9 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{tag::Tag, update::ResourceTarget, NoData};
+use crate::entities::{tag::Tag, NoData, ResourceTarget};
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -14,7 +14,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Tag)]
 pub struct CreateTag {
   /// The name of the tag.
@@ -30,7 +30,7 @@ pub struct CreateTag {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Tag)]
 pub struct DeleteTag {
   /// The id of the tag to delete.
@@ -44,7 +44,7 @@ pub struct DeleteTag {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Tag)]
 pub struct RenameTag {
   /// The id of the tag to rename.
@@ -61,7 +61,7 @@ pub struct RenameTag {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateTagsOnResourceResponse)]
 pub struct UpdateTagsOnResource {
   pub target: ResourceTarget,

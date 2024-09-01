@@ -1,6 +1,6 @@
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::Build,
   deployment::{
     Deployment, DeploymentConfig, DeploymentConfigDiff,
@@ -11,9 +11,9 @@ use monitor_client::entities::{
   permission::PermissionLevel,
   resource::Resource,
   server::Server,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;
@@ -30,7 +30,7 @@ use crate::{
 
 use super::get_check_permissions;
 
-impl super::MonitorResource for Deployment {
+impl super::KomodoResource for Deployment {
   type Config = DeploymentConfig;
   type PartialConfig = PartialDeploymentConfig;
   type ConfigDiff = DeploymentConfigDiff;
@@ -86,8 +86,12 @@ impl super::MonitorResource for Deployment {
         }),
         image: status
           .as_ref()
-          .and_then(|s| {
-            s.curr.container.as_ref().map(|c| c.image.clone())
+          .map(|s| {
+            s.curr
+              .container
+              .as_ref()
+              .and_then(|c| c.image.clone())
+              .unwrap_or_else(|| String::from("Unknown"))
           })
           .unwrap_or(build_image),
         server_id: deployment.config.server_id,

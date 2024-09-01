@@ -3,7 +3,7 @@ use std::time::Instant;
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::execute::*,
   entities::{
     update::{Log, Update},
@@ -39,19 +39,34 @@ mod sync;
 #[serde(tag = "type", content = "params")]
 pub enum ExecuteRequest {
   // ==== SERVER ====
-  StopAllContainers(StopAllContainers),
-  PruneContainers(PruneContainers),
-  PruneImages(PruneImages),
-  PruneNetworks(PruneNetworks),
-
-  // ==== DEPLOYMENT ====
-  Deploy(Deploy),
   StartContainer(StartContainer),
   RestartContainer(RestartContainer),
   PauseContainer(PauseContainer),
   UnpauseContainer(UnpauseContainer),
   StopContainer(StopContainer),
-  RemoveContainer(RemoveContainer),
+  DestroyContainer(DestroyContainer),
+  StartAllContainers(StartAllContainers),
+  RestartAllContainers(RestartAllContainers),
+  PauseAllContainers(PauseAllContainers),
+  UnpauseAllContainers(UnpauseAllContainers),
+  StopAllContainers(StopAllContainers),
+  PruneContainers(PruneContainers),
+  DeleteNetwork(DeleteNetwork),
+  PruneNetworks(PruneNetworks),
+  DeleteImage(DeleteImage),
+  PruneImages(PruneImages),
+  DeleteVolume(DeleteVolume),
+  PruneVolumes(PruneVolumes),
+  PruneSystem(PruneSystem),
+
+  // ==== DEPLOYMENT ====
+  Deploy(Deploy),
+  StartDeployment(StartDeployment),
+  RestartDeployment(RestartDeployment),
+  PauseDeployment(PauseDeployment),
+  UnpauseDeployment(UnpauseDeployment),
+  StopDeployment(StopDeployment),
+  DestroyDeployment(DestroyDeployment),
 
   // ==== STACK ====
   DeployStack(DeployStack),
@@ -144,10 +159,7 @@ async fn task(
   user: User,
   update: Update,
 ) -> anyhow::Result<String> {
-  info!(
-    "/execute request {req_id} | user: {} ({})",
-    user.username, user.id
-  );
+  info!("/execute request {req_id} | user: {}", user.username);
   let timer = Instant::now();
 
   let res = State

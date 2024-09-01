@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::StandardRegistryConfig, EnvironmentVar, NoData,
   SystemCommand, Version, I64,
 };
@@ -8,15 +8,15 @@ use super::resource::Resource;
 
 pub type Build = Resource<BuildConfig, BuildInfo>;
 
-impl From<Build> for monitor_client::entities::build::Build {
+impl From<Build> for komodo_client::entities::build::Build {
   fn from(value: Build) -> Self {
-    monitor_client::entities::build::Build {
+    komodo_client::entities::build::Build {
       id: value.id,
       name: value.name,
       description: value.description,
       updated_at: value.updated_at,
       tags: value.tags,
-      info: monitor_client::entities::build::BuildInfo {
+      info: komodo_client::entities::build::BuildInfo {
         last_built_at: value.info.last_built_at,
         built_hash: None,
         built_message: None,
@@ -99,7 +99,7 @@ pub struct BuildConfig {
   /// These values are visible in the final image by running `docker inspect`.
   #[serde(
     default,
-    deserialize_with = "monitor_client::entities::env_vars_deserializer"
+    deserialize_with = "komodo_client::entities::env_vars_deserializer"
   )]
   pub build_args: Vec<EnvironmentVar>,
 
@@ -115,26 +115,26 @@ pub struct BuildConfig {
   /// ```
   #[serde(
     default,
-    deserialize_with = "monitor_client::entities::env_vars_deserializer"
+    deserialize_with = "komodo_client::entities::env_vars_deserializer"
   )]
   pub secret_args: Vec<EnvironmentVar>,
 
   /// Docker labels
   #[serde(
     default,
-    deserialize_with = "monitor_client::entities::env_vars_deserializer"
+    deserialize_with = "komodo_client::entities::env_vars_deserializer"
   )]
   pub labels: Vec<EnvironmentVar>,
 }
 
 impl From<BuildConfig>
-  for monitor_client::entities::build::BuildConfig
+  for komodo_client::entities::build::BuildConfig
 {
   fn from(value: BuildConfig) -> Self {
-    monitor_client::entities::build::BuildConfig {
+    komodo_client::entities::build::BuildConfig {
       builder_id: value.builder_id,
       skip_secret_interp: value.skip_secret_interp,
-      version: monitor_client::entities::Version {
+      version: komodo_client::entities::Version {
         major: value.version.major,
         minor: value.version.minor,
         patch: value.version.patch,
@@ -148,7 +148,7 @@ impl From<BuildConfig>
       branch: value.branch,
       commit: value.commit,
       git_account: value.github_account,
-      pre_build: monitor_client::entities::SystemCommand {
+      pre_build: komodo_client::entities::SystemCommand {
         path: value.pre_build.path,
         command: value.pre_build.command,
       },
@@ -213,17 +213,15 @@ impl Default for ImageRegistry {
 }
 
 impl From<ImageRegistry>
-  for monitor_client::entities::build::ImageRegistry
+  for komodo_client::entities::build::ImageRegistry
 {
   fn from(value: ImageRegistry) -> Self {
     match value {
       ImageRegistry::None(_) | ImageRegistry::Custom(_) => {
-        monitor_client::entities::build::ImageRegistry::None(
-          NoData {},
-        )
+        komodo_client::entities::build::ImageRegistry::None(NoData {})
       }
       ImageRegistry::DockerHub(params) => {
-        monitor_client::entities::build::ImageRegistry::Standard(
+        komodo_client::entities::build::ImageRegistry::Standard(
           StandardRegistryConfig {
             domain: String::from("docker.io"),
             account: params.account,
@@ -232,7 +230,7 @@ impl From<ImageRegistry>
         )
       }
       ImageRegistry::Ghcr(params) => {
-        monitor_client::entities::build::ImageRegistry::Standard(
+        komodo_client::entities::build::ImageRegistry::Standard(
           StandardRegistryConfig {
             domain: String::from("ghcr.io"),
             account: params.account,
@@ -241,7 +239,7 @@ impl From<ImageRegistry>
         )
       }
       ImageRegistry::AwsEcr(label) => {
-        monitor_client::entities::build::ImageRegistry::AwsEcr(label)
+        komodo_client::entities::build::ImageRegistry::AwsEcr(label)
       }
     }
   }

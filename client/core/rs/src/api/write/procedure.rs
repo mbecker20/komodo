@@ -7,7 +7,7 @@ use crate::entities::procedure::{
   Procedure, _PartialProcedureConfig,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -16,7 +16,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateProcedureResponse)]
 pub struct CreateProcedure {
   /// The name given to newly created build.
@@ -36,7 +36,7 @@ pub type CreateProcedureResponse = Procedure;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CopyProcedureResponse)]
 pub struct CopyProcedure {
   /// The name of the new procedure.
@@ -56,7 +56,7 @@ pub type CopyProcedureResponse = Procedure;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteProcedureResponse)]
 pub struct DeleteProcedure {
   /// The id or name of the procedure to delete.
@@ -80,7 +80,7 @@ pub type DeleteProcedureResponse = Procedure;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateProcedureResponse)]
 pub struct UpdateProcedure {
   /// The id of the procedure to update.

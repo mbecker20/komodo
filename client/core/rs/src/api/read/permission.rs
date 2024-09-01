@@ -5,10 +5,10 @@ use typeshare::typeshare;
 
 use crate::entities::{
   permission::{Permission, PermissionLevel, UserTarget},
-  update::ResourceTarget,
+  ResourceTarget,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// List permissions for the calling user.
 /// Does not include any permissions on UserGroups they may be a part of.
@@ -17,7 +17,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListPermissionsResponse)]
 pub struct ListPermissions {}
 
@@ -33,7 +33,7 @@ pub type ListPermissionsResponse = Vec<Permission>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetPermissionLevelResponse)]
 pub struct GetPermissionLevel {
   /// The target to get user permission on.
@@ -51,7 +51,7 @@ pub type GetPermissionLevelResponse = PermissionLevel;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListUserTargetPermissionsResponse)]
 pub struct ListUserTargetPermissions {
   /// Specify either a user or a user group.

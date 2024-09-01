@@ -4,12 +4,12 @@
 
 There are two options to configure the docker image to deploy. 
 
-### Attaching a Monitor build
-If the software you want to deploy is built by Monitor, you can attach the build directly to the deployment.
+### Attaching a Komodo build
+If the software you want to deploy is built by Komodo, you can attach the build directly to the deployment.
 
-By default, Monitor will deploy the latest available version of the build, or you can specify a specific version using the version dropdown.
+By default, Komodo will deploy the latest available version of the build, or you can specify a specific version using the version dropdown.
 
-Also by default, Monitor will use the same docker account that is attached to the build in order to pull the image on the periphery server. If that account is not available on the server, you can specify another available account to use instead, this account just needs to have read access to the docker repository.
+Also by default, Komodo will use the same docker account that is attached to the build in order to pull the image on the periphery server. If that account is not available on the server, you can specify another available account to use instead, this account just needs to have read access to the docker repository.
 
 ### Using a custom image
 You can also manually specify an image name, like `mongo` or `ghcr.io/mbecker20/random_image:0.1.1`.
@@ -18,7 +18,7 @@ If the image repository is private, you can still select an available docker acc
 
 ## Configuring the network
 
-One feature of docker is that it allows for the creation of [virtual networks between containers](https://docs.docker.com/network/). Monitor allows you to specify a docker virtual network to connect the container to, or to use the host system networking to bypass the docker virtual network.
+One feature of docker is that it allows for the creation of [virtual networks between containers](https://docs.docker.com/network/). Komodo allows you to specify a docker virtual network to connect the container to, or to use the host system networking to bypass the docker virtual network.
 
 The default selection is `host`, which bypasses the docker virtual network layer.
 
@@ -34,11 +34,11 @@ Note that this is not the only affect of using a network other than `host`. For 
 
 ## Configuring restart behavior
 
-Docker, like systemd, has a couple options for handling when a container exits. See [docker restart policies](https://docs.docker.com/config/containers/start-containers-automatically/). Monitor allows you to select the appropriate restart behavior from these options.
+Docker, like systemd, has a couple options for handling when a container exits. See [docker restart policies](https://docs.docker.com/config/containers/start-containers-automatically/). Komodo allows you to select the appropriate restart behavior from these options.
 
 ## Configuring environment variables
 
-Monitor enables you to easily manage environment variables passed to the container. 
+Komodo enables you to easily manage environment variables passed to the container. 
 In the GUI, navigate to the environment tab of the configuration on the deployment page.
 
 You pass environment variables just as you would with a ```.env``` file:
@@ -64,7 +64,7 @@ These can be configured easily with the GUI in the 'volumes' card. You can confi
 
 ## Extra args
 
-Not all features of docker are mapped directly by monitor, only the most common. You can still specify any custom flags for monitor to include in the ```docker run``` command by utilizing 'extra args'. For example, you can enable log rotation using these two extra args:
+Not all features of docker are mapped directly by Komodo, only the most common. You can still specify any custom flags for Komodo to include in the `docker run` command by utilizing 'extra args'. For example, you can enable log rotation using these two extra args:
 
 ```
 --log-opt max-size=10M
@@ -81,4 +81,4 @@ Sometimes you need to override the default command in the image, or specify some
 docker run -d --name mongo-db mongo:6.0.3 --quiet
 ```
 
-In order to achieve this with monitor, just pass `--quiet` to 'command'.
+In order to achieve this with Komodo, just pass `--quiet` to 'command'.

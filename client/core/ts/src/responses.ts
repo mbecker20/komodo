@@ -59,8 +59,17 @@ export type ReadResponses = {
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   ListDockerContainers: Types.ListDockerContainersResponse;
-  ListDockerImages: Types.ListDockerImagesResponse;
+  InspectDockerContainer: Types.InspectDockerContainerResponse;
+  GetResourceMatchingContainer: Types.GetResourceMatchingContainerResponse;
+  GetContainerLog: Types.GetContainerLogResponse;
+  SearchContainerLog: Types.SearchContainerLogResponse;
   ListDockerNetworks: Types.ListDockerNetworksResponse;
+  InspectDockerNetwork: Types.InspectDockerNetworkResponse;
+  ListDockerImages: Types.ListDockerImagesResponse;
+  InspectDockerImage: Types.InspectDockerImageResponse;
+  ListDockerImageHistory: Types.ListDockerImageHistoryResponse;
+  ListDockerVolumes: Types.ListDockerVolumesResponse;
+  InspectDockerVolume: Types.InspectDockerVolumeResponse;
   ListComposeProjects: Types.ListComposeProjectsResponse;
   GetServerActionState: Types.GetServerActionStateResponse;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
@@ -73,8 +82,8 @@ export type ReadResponses = {
   GetDeploymentContainer: Types.GetDeploymentContainerResponse;
   GetDeploymentActionState: Types.GetDeploymentActionStateResponse;
   GetDeploymentStats: Types.GetDeploymentStatsResponse;
-  GetLog: Types.GetLogResponse;
-  SearchLog: Types.SearchLogResponse;
+  GetDeploymentLog: Types.GetDeploymentLogResponse;
+  SearchDeploymentLog: Types.SearchDeploymentLogResponse;
   ListDeployments: Types.ListDeploymentsResponse;
   ListFullDeployments: Types.ListFullDeploymentsResponse;
   ListCommonDeploymentExtraArgs: Types.ListCommonDeploymentExtraArgsResponse;
@@ -192,7 +201,6 @@ export type WriteResponses = {
   UpdateServer: Types.Server;
   RenameServer: Types.Update;
   CreateNetwork: Types.Update;
-  DeleteNetwork: Types.Update;
 
   // ==== DEPLOYMENT ====
   CreateDeployment: Types.Deployment;
@@ -272,6 +280,7 @@ export type WriteResponses = {
   CreateVariable: Types.CreateVariableResponse;
   UpdateVariableValue: Types.UpdateVariableValueResponse;
   UpdateVariableDescription: Types.UpdateVariableDescriptionResponse;
+  UpdateVariableIsSecret: Types.UpdateVariableIsSecretResponse;
   DeleteVariable: Types.DeleteVariableResponse;
 
   // ==== PROVIDERS ====
@@ -285,19 +294,34 @@ export type WriteResponses = {
 
 export type ExecuteResponses = {
   // ==== SERVER ====
-  StopAllContainers: Types.Update;
-  PruneContainers: Types.Update;
-  PruneImages: Types.Update;
-  PruneNetworks: Types.Update;
-
-  // ==== DEPLOYMENT ====
-  Deploy: Types.Update;
   StartContainer: Types.Update;
   RestartContainer: Types.Update;
   PauseContainer: Types.Update;
   UnpauseContainer: Types.Update;
   StopContainer: Types.Update;
-  RemoveContainer: Types.Update;
+  DestroyContainer: Types.Update;
+  StartAllContainers: Types.Update;
+  RestartAllContainers: Types.Update;
+  PauseAllContainers: Types.Update;
+  UnpauseAllContainers: Types.Update;
+  StopAllContainers: Types.Update;
+  PruneContainers: Types.Update;
+  DeleteNetwork: Types.Update;
+  PruneNetworks: Types.Update;
+  DeleteImage: Types.Update;
+  PruneImages: Types.Update;
+  DeleteVolume: Types.Update;
+  PruneVolumes: Types.Update;
+  PruneSystem: Types.Update;
+
+  // ==== DEPLOYMENT ====
+  Deploy: Types.Update;
+  StartDeployment: Types.Update;
+  RestartDeployment: Types.Update;
+  PauseDeployment: Types.Update;
+  UnpauseDeployment: Types.Update;
+  StopDeployment: Types.Update;
+  DestroyDeployment: Types.Update;
 
   // ==== BUILD ====
   RunBuild: Types.Update;

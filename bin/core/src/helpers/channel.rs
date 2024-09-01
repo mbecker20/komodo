@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-use monitor_client::entities::update::{Update, UpdateListItem};
+use komodo_client::entities::update::{Update, UpdateListItem};
 use tokio::sync::{broadcast, Mutex};
 
 /// A channel sending (build_id, update_id)

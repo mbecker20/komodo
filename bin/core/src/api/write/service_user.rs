@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::{
     user::CreateApiKey,
     write::{
@@ -13,7 +13,7 @@ use monitor_client::{
     },
   },
   entities::{
-    monitor_timestamp,
+    komodo_timestamp,
     user::{User, UserConfig},
   },
 };
@@ -53,7 +53,7 @@ impl Resolve<CreateServiceUser, User> for State {
       last_update_view: 0,
       recents: Default::default(),
       all: Default::default(),
-      updated_at: monitor_timestamp(),
+      updated_at: komodo_timestamp(),
     };
     user.id = db_client()
       .await

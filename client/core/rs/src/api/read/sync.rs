@@ -8,7 +8,7 @@ use crate::entities::sync::{
   ResourceSyncQuery,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -17,7 +17,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ResourceSync)]
 pub struct GetResourceSync {
   /// Id or name
@@ -35,7 +35,7 @@ pub type GetResourceSyncResponse = ResourceSync;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListResourceSyncsResponse)]
 pub struct ListResourceSyncs {
   /// optional structured query to filter syncs.
@@ -53,7 +53,7 @@ pub type ListResourceSyncsResponse = Vec<ResourceSyncListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullResourceSyncsResponse)]
 pub struct ListFullResourceSyncs {
   /// optional structured query to filter syncs.
@@ -71,7 +71,7 @@ pub type ListFullResourceSyncsResponse = Vec<ResourceSync>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetResourceSyncActionStateResponse)]
 pub struct GetResourceSyncActionState {
   /// Id or name
@@ -90,7 +90,7 @@ pub type GetResourceSyncActionStateResponse = ResourceSyncActionState;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetResourceSyncsSummaryResponse)]
 pub struct GetResourceSyncsSummary {}
 
@@ -119,7 +119,7 @@ pub struct GetResourceSyncsSummaryResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetSyncWebhooksEnabledResponse)]
 pub struct GetSyncWebhooksEnabled {
   /// Id or name

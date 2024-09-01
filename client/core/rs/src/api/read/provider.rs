@@ -7,7 +7,7 @@ use crate::entities::provider::{
   DockerRegistryAccount, GitProviderAccount,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// Get a specific git provider account.
 /// Response: [GetGitProviderAccountResponse].
@@ -15,7 +15,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetGitProviderAccountResponse)]
 pub struct GetGitProviderAccount {
   pub id: String,
@@ -32,7 +32,7 @@ pub type GetGitProviderAccountResponse = GitProviderAccount;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListGitProviderAccountsResponse)]
 pub struct ListGitProviderAccounts {
   /// Optionally filter by accounts with a specific domain.
@@ -52,7 +52,7 @@ pub type ListGitProviderAccountsResponse = Vec<GitProviderAccount>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetDockerRegistryAccountResponse)]
 pub struct GetDockerRegistryAccount {
   pub id: String,
@@ -69,7 +69,7 @@ pub type GetDockerRegistryAccountResponse = DockerRegistryAccount;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDockerRegistryAccountsResponse)]
 pub struct ListDockerRegistryAccounts {
   /// Optionally filter by accounts with a specific domain.

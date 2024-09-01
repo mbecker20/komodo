@@ -25,9 +25,9 @@ pub use sync::*;
 
 use crate::entities::{NoData, I64};
 
-pub trait MonitorExecuteRequest: HasResponse {}
+pub trait KomodoExecuteRequest: HasResponse {}
 
-/// A wrapper for all monitor exections.
+/// A wrapper for all Komodo exections.
 #[typeshare]
 #[derive(
   Debug,
@@ -61,12 +61,12 @@ pub enum Execution {
 
   // DEPLOYMENT
   Deploy(Deploy),
-  StartContainer(StartContainer),
-  RestartContainer(RestartContainer),
-  PauseContainer(PauseContainer),
-  UnpauseContainer(UnpauseContainer),
-  StopContainer(StopContainer),
-  RemoveContainer(RemoveContainer),
+  StartDeployment(StartDeployment),
+  RestartDeployment(RestartDeployment),
+  PauseDeployment(PauseDeployment),
+  UnpauseDeployment(UnpauseDeployment),
+  StopDeployment(StopDeployment),
+  DestroyDeployment(DestroyDeployment),
 
   // REPO
   CloneRepo(CloneRepo),
@@ -74,11 +74,28 @@ pub enum Execution {
   BuildRepo(BuildRepo),
   CancelRepoBuild(CancelRepoBuild),
 
-  // SERVER
+  // SERVER (Container)
+  StartContainer(StartContainer),
+  RestartContainer(RestartContainer),
+  PauseContainer(PauseContainer),
+  UnpauseContainer(UnpauseContainer),
+  StopContainer(StopContainer),
+  DestroyContainer(DestroyContainer),
+  StartAllContainers(StartAllContainers),
+  RestartAllContainers(RestartAllContainers),
+  PauseAllContainers(PauseAllContainers),
+  UnpauseAllContainers(UnpauseAllContainers),
   StopAllContainers(StopAllContainers),
-  PruneNetworks(PruneNetworks),
-  PruneImages(PruneImages),
   PruneContainers(PruneContainers),
+
+  // SERVER (Prune)
+  DeleteNetwork(DeleteNetwork),
+  PruneNetworks(PruneNetworks),
+  DeleteImage(DeleteImage),
+  PruneImages(PruneImages),
+  DeleteVolume(DeleteVolume),
+  PruneVolumes(PruneVolumes),
+  PruneSystem(PruneSystem),
 
   // SYNC
   RunSync(RunSync),

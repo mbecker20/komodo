@@ -3,9 +3,9 @@ use resolver_api::{derive::Request, HasResponse};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{update::ResourceTarget, NoData, I64};
+use crate::entities::{NoData, ResourceTarget, I64};
 
-pub trait MonitorUserRequest: HasResponse {}
+pub trait KomodoUserRequest: HasResponse {}
 
 //
 
@@ -15,7 +15,7 @@ pub trait MonitorUserRequest: HasResponse {}
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorUserRequest)]
+#[empty_traits(KomodoUserRequest)]
 #[response(PushRecentlyViewedResponse)]
 pub struct PushRecentlyViewed {
   /// The target to push.
@@ -34,7 +34,7 @@ pub type PushRecentlyViewedResponse = NoData;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorUserRequest)]
+#[empty_traits(KomodoUserRequest)]
 #[response(SetLastSeenUpdateResponse)]
 pub struct SetLastSeenUpdate {}
 
@@ -52,7 +52,7 @@ pub type SetLastSeenUpdateResponse = NoData;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorUserRequest)]
+#[empty_traits(KomodoUserRequest)]
 #[response(CreateApiKeyResponse)]
 pub struct CreateApiKey {
   /// The name for the api key.
@@ -86,7 +86,7 @@ pub struct CreateApiKeyResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorUserRequest)]
+#[empty_traits(KomodoUserRequest)]
 #[response(DeleteApiKeyResponse)]
 pub struct DeleteApiKey {
   /// The key which the user intends to delete.

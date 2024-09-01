@@ -11,7 +11,7 @@ use crate::entities::{
   SearchCombinator, U64,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -20,7 +20,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetStackResponse)]
 pub struct GetStack {
   /// Id or name
@@ -38,7 +38,7 @@ pub type GetStackResponse = Stack;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListStackServicesResponse)]
 pub struct ListStackServices {
   /// Id or name
@@ -56,7 +56,7 @@ pub type ListStackServicesResponse = Vec<StackService>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetStackServiceLogResponse)]
 pub struct GetStackServiceLog {
   /// Id or name
@@ -88,7 +88,7 @@ pub type GetStackServiceLogResponse = Log;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(SearchStackServiceLogResponse)]
 pub struct SearchStackServiceLog {
   /// Id or name
@@ -120,7 +120,7 @@ pub type SearchStackServiceLogResponse = Log;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListCommonStackExtraArgsResponse)]
 pub struct ListCommonStackExtraArgs {
   /// optional structured query to filter stacks.
@@ -138,7 +138,7 @@ pub type ListCommonStackExtraArgsResponse = Vec<String>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListStacksResponse)]
 pub struct ListStacks {
   /// optional structured query to filter syncs.
@@ -156,7 +156,7 @@ pub type ListStacksResponse = Vec<StackListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullStacksResponse)]
 pub struct ListFullStacks {
   /// optional structured query to filter stacks.
@@ -174,7 +174,7 @@ pub type ListFullStacksResponse = Vec<Stack>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetStackActionStateResponse)]
 pub struct GetStackActionState {
   /// Id or name
@@ -193,7 +193,7 @@ pub type GetStackActionStateResponse = StackActionState;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetStacksSummaryResponse)]
 pub struct GetStacksSummary {}
 
@@ -232,7 +232,7 @@ pub struct GetStacksSummaryResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetStackWebhooksEnabledResponse)]
 pub struct GetStackWebhooksEnabled {
   /// Id or name

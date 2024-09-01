@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::user::User;
 
-pub trait MonitorAuthRequest: HasResponse {}
+pub trait KomodoAuthRequest: HasResponse {}
 
 /// JSON containing an authentication token.
 #[typeshare]
@@ -18,13 +18,13 @@ pub struct JwtResponse {
 //
 
 /// Non authenticated route to see the available options
-/// users have to login to monitor, eg. local auth, github, google.
+/// users have to login to Komodo, eg. local auth, github, google.
 /// Response: [GetLoginOptionsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorAuthRequest)]
+#[empty_traits(KomodoAuthRequest)]
 #[response(GetLoginOptionsResponse)]
 pub struct GetLoginOptions {}
 
@@ -51,7 +51,7 @@ pub struct GetLoginOptionsResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorAuthRequest)]
+#[empty_traits(KomodoAuthRequest)]
 #[response(CreateLocalUserResponse)]
 pub struct CreateLocalUser {
   /// The username for the new user.
@@ -75,7 +75,7 @@ pub type CreateLocalUserResponse = JwtResponse;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorAuthRequest)]
+#[empty_traits(KomodoAuthRequest)]
 #[response(LoginLocalUserResponse)]
 pub struct LoginLocalUser {
   /// The user's username
@@ -97,7 +97,7 @@ pub type LoginLocalUserResponse = JwtResponse;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorAuthRequest)]
+#[empty_traits(KomodoAuthRequest)]
 #[response(ExchangeForJwtResponse)]
 pub struct ExchangeForJwt {
   /// The 'exchange token'
@@ -116,7 +116,7 @@ pub type ExchangeForJwtResponse = JwtResponse;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorAuthRequest)]
+#[empty_traits(KomodoAuthRequest)]
 #[response(GetUserResponse)]
 pub struct GetUser {}
 

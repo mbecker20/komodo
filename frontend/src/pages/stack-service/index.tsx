@@ -10,20 +10,20 @@ import {
   StartStopStack,
 } from "@components/resources/stack/actions";
 import {
-  deployment_state_intention,
+  container_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { cn, has_minimum_permissions } from "@lib/utils";
-import { Types } from "@monitor/client";
-import { Box, ChevronLeft, Clapperboard, Layers2 } from "lucide-react";
+import { Types } from "@komodo/client";
+import { ChevronLeft, Clapperboard, Layers2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { StackServiceLogs } from "./log";
 import { ResourceUpdates } from "@components/updates/resource";
 import { Button } from "@ui/button";
 import { ExportButton } from "@components/export";
 import { AddTags, ResourceTags } from "@components/tags";
-import { StatusBadge } from "@components/util";
+import { DockerResourceLink, StatusBadge } from "@components/util";
 
 type IdServiceComponent = React.FC<{ id: string; service?: string }>;
 
@@ -65,8 +65,8 @@ const StackServicePageInner = ({
   const canWrite = has_minimum_permissions(perms, Types.PermissionLevel.Write);
   const services = useRead("ListStackServices", { stack: stack_id }).data;
   const container = services?.find((s) => s.service === service)?.container;
-  const state = container?.state ?? Types.DeploymentState.Unknown;
-  const intention = deployment_state_intention(state);
+  const state = container?.state ?? Types.ContainerStateStatusEnum.Empty;
+  const intention = container_state_intention(state);
   const stroke_color = stroke_color_class_by_intention(intention);
 
   return (
@@ -115,13 +115,15 @@ const StackServicePageInner = ({
                   <ResourceLink type="Server" id={stack.info.server_id} />
                 </>
               )}
-              {container && container?.name !== service && (
+              {stack?.info.server_id && container && container.name && (
                 <>
                   |
-                  <div className="flex gap-2 items-center">
-                    <Box className="w-4 h-4" />
-                    {container.name}
-                  </div>
+                  <DockerResourceLink
+                    type="container"
+                    server_id={stack?.info.server_id}
+                    name={container.name}
+                    muted
+                  />
                 </>
               )}
             </div>

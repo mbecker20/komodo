@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use anyhow::Context;
 use bson::{doc, Document};
 use derive_builder::Builder;
@@ -14,8 +12,9 @@ use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
+  docker::container::ContainerStateStatusEnum,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  EnvironmentVar, Version,
+  EnvironmentVar, TerminationSignal, Version,
 };
 
 #[typeshare]
@@ -36,7 +35,7 @@ pub struct DeploymentListItemInfo {
   pub image: String,
   /// The server that deployment sits on.
   pub server_id: String,
-  /// An attached monitor build, if it exists.
+  /// An attached Komodo Build, if it exists.
   pub build_id: Option<String>,
 }
 
@@ -55,7 +54,7 @@ pub struct DeploymentConfig {
   pub server_id: String,
 
   /// The image which the deployment deploys.
-  /// Can either be a user inputted image, or a Monitor build.
+  /// Can either be a user inputted image, or a Komodo Build.
   #[serde(default)]
   #[builder(default)]
   pub image: DeploymentImage,
@@ -253,9 +252,9 @@ pub enum DeploymentImage {
     image: String,
   },
 
-  /// Deploy a monitor build.
+  /// Deploy a Komodo Build.
   Build {
-    /// The id of the build
+    /// The id of the Build
     #[serde(default, alias = "build")]
     build_id: String,
     /// Use a custom / older version of the image produced by the build.
@@ -431,47 +430,6 @@ impl<'de> Visitor<'de> for OptionConversionVisitor {
   }
 }
 
-/// A summary of a docker container on a server.
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ContainerSummary {
-  /// Name of the container.
-  pub name: String,
-  /// Id of the container.
-  pub id: String,
-  /// The image the container is based on.
-  pub image: String,
-  /// The docker labels on the container.
-  pub labels: HashMap<String, String>,
-  /// The state of the container, like `running` or `not_deployed`
-  pub state: DeploymentState,
-  /// The status string of the docker container.
-  pub status: Option<String>,
-  /// The network mode of the container.
-  pub network_mode: Option<String>,
-  /// Network names attached to the container
-  pub networks: Option<Vec<String>>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DockerContainerStats {
-  #[serde(alias = "Name")]
-  pub name: String,
-  #[serde(alias = "CPUPerc")]
-  pub cpu_perc: String,
-  #[serde(alias = "MemPerc")]
-  pub mem_perc: String,
-  #[serde(alias = "MemUsage")]
-  pub mem_usage: String,
-  #[serde(alias = "NetIO")]
-  pub net_io: String,
-  #[serde(alias = "BlockIO")]
-  pub block_io: String,
-  #[serde(alias = "PIDs")]
-  pub pids: String,
-}
-
 /// Variants de/serialized from/to snake_case.
 ///
 /// Eg.
@@ -507,6 +465,23 @@ pub enum DeploymentState {
   Dead,
 }
 
+impl From<ContainerStateStatusEnum> for DeploymentState {
+  fn from(value: ContainerStateStatusEnum) -> Self {
+    match value {
+      ContainerStateStatusEnum::Empty => DeploymentState::Unknown,
+      ContainerStateStatusEnum::Created => DeploymentState::Created,
+      ContainerStateStatusEnum::Running => DeploymentState::Running,
+      ContainerStateStatusEnum::Paused => DeploymentState::Paused,
+      ContainerStateStatusEnum::Restarting => {
+        DeploymentState::Restarting
+      }
+      ContainerStateStatusEnum::Removing => DeploymentState::Removing,
+      ContainerStateStatusEnum::Exited => DeploymentState::Exited,
+      ContainerStateStatusEnum::Dead => DeploymentState::Dead,
+    }
+  }
+}
+
 #[typeshare]
 #[derive(
   Serialize,
@@ -535,34 +510,6 @@ pub enum RestartMode {
   #[serde(rename = "unless-stopped")]
   #[strum(serialize = "unless-stopped")]
   UnlessStopped,
-}
-
-#[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  PartialEq,
-  Hash,
-  Eq,
-  Clone,
-  Copy,
-  Default,
-  Display,
-  EnumString,
-)]
-#[serde(rename_all = "UPPERCASE")]
-#[strum(serialize_all = "UPPERCASE")]
-pub enum TerminationSignal {
-  #[serde(alias = "1")]
-  SigHup,
-  #[serde(alias = "2")]
-  SigInt,
-  #[serde(alias = "3")]
-  SigQuit,
-  #[default]
-  #[serde(alias = "15")]
-  SigTerm,
 }
 
 #[typeshare]
@@ -749,7 +696,7 @@ pub struct DeploymentActionState {
   pub pausing: bool,
   pub unpausing: bool,
   pub stopping: bool,
-  pub removing: bool,
+  pub destroying: bool,
   pub renaming: bool,
 }
 

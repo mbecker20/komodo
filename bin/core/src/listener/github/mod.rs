@@ -30,7 +30,7 @@ struct Id {
 #[derive(Deserialize)]
 struct IdBranch {
   id: String,
-  branch: String,
+  branch: Option<String>,
 }
 
 pub fn router() -> Router {
@@ -152,7 +152,7 @@ pub fn router() -> Router {
             async {
               let res = procedure::handle_procedure_webhook(
                 id.clone(),
-                branch,
+                branch.unwrap_or_else(|| String::from("main")),
                 headers,
                 body
               ).await;

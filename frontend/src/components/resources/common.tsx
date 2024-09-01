@@ -32,7 +32,7 @@ import { ResourceComponents } from ".";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { ConfigItem, DoubleInput } from "@components/config/util";
 import { filterBySplit, usableResourcePath } from "@lib/utils";
 
@@ -122,7 +122,7 @@ export const ResourceSelector = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="secondary" className="flex gap-2" disabled={disabled}>
-          {name ?? `Select ${type}`}
+          {name || `Select ${type}`}
           {!disabled && <ChevronsUpDown className="w-3 h-3" />}
         </Button>
       </PopoverTrigger>
@@ -258,15 +258,17 @@ export const NewResource = ({
   readable_type,
   server_id,
   build_id,
+  name: _name = "",
 }: {
   type: UsableResource;
   readable_type?: string;
   server_id?: string;
   build_id?: string;
+  name?: string;
 }) => {
   const nav = useNavigate();
   const { mutateAsync } = useWrite(`Create${type}`);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(_name);
   const type_display =
     type === "ServerTemplate"
       ? "server-template"

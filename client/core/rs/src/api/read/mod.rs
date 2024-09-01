@@ -47,21 +47,20 @@ pub use variable::*;
 
 use crate::entities::{
   config::{DockerRegistry, GitProvider},
-  update::ResourceTarget,
-  Timelength,
+  ResourceTarget, Timelength,
 };
 
-pub trait MonitorReadRequest: HasResponse {}
+pub trait KomodoReadRequest: HasResponse {}
 
 //
 
-/// Get the version of the core api.
+/// Get the version of the Komodo Core api.
 /// Response: [GetVersionResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetVersionResponse)]
 pub struct GetVersion {}
 
@@ -81,7 +80,7 @@ pub struct GetVersionResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetCoreInfoResponse)]
 pub struct GetCoreInfo {}
 
@@ -116,7 +115,7 @@ pub struct GetCoreInfoResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListGitProvidersFromConfigResponse)]
 pub struct ListGitProvidersFromConfig {
   /// Accepts an optional Server or Builder target to expand the core list with
@@ -140,7 +139,7 @@ pub type ListGitProvidersFromConfigResponse = Vec<GitProvider>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDockerRegistriesFromConfigResponse)]
 pub struct ListDockerRegistriesFromConfig {
   /// Accepts an optional Server or Builder target to expand the core list with
@@ -159,7 +158,7 @@ pub type ListDockerRegistriesFromConfigResponse = Vec<DockerRegistry>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListAwsEcrLabelsResponse)]
 pub struct ListAwsEcrLabels {}
 
@@ -174,7 +173,7 @@ pub type ListAwsEcrLabelsResponse = Vec<String>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListSecretsResponse)]
 pub struct ListSecrets {
   /// Accepts an optional Server or Builder target to expand the core list with

@@ -8,7 +8,7 @@ import {
   useResourceParamType,
   useSetTitle,
 } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Input } from "@ui/input";
 import { useState } from "react";
 

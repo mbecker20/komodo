@@ -1,6 +1,6 @@
 use anyhow::Context;
 use mongo_indexed::doc;
-use monitor_client::{
+use komodo_client::{
   api::read::{
     GetVariable, GetVariableResponse, ListVariables,
     ListVariablesResponse,
@@ -19,9 +19,14 @@ impl Resolve<GetVariable, User> for State {
   async fn resolve(
     &self,
     GetVariable { name }: GetVariable,
-    _: User,
+    user: User,
   ) -> anyhow::Result<GetVariableResponse> {
-    get_variable(&name).await
+    let mut variable = get_variable(&name).await?;
+    if !variable.is_secret || user.admin {
+      return Ok(variable);
+    }
+    variable.value = "#".repeat(variable.value.len());
+    Ok(variable)
   }
 }
 
@@ -29,14 +34,27 @@ impl Resolve<ListVariables, User> for State {
   async fn resolve(
     &self,
     ListVariables {}: ListVariables,
-    _: User,
+    user: User,
   ) -> anyhow::Result<ListVariablesResponse> {
-    find_collect(
+    let variables = find_collect(
       &db_client().await.variables,
       None,
       FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )
     .await
-    .context("failed to query db for variables")
+    .context("failed to query db for variables")?;
+    if user.admin {
+      return Ok(variables);
+    }
+    let variables = variables
+      .into_iter()
+      .map(|mut variable| {
+        if variable.is_secret {
+          variable.value = "#".repeat(variable.value.len());
+        }
+        variable
+      })
+      .collect();
+    Ok(variables)
   }
 }

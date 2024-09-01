@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{tag::Tag, MongoDocument};
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -14,7 +14,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetTagResponse)]
 pub struct GetTag {
   /// Id or name
@@ -33,7 +33,7 @@ pub type GetTagResponse = Tag;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListTagsResponse)]
 pub struct ListTags {
   pub query: Option<MongoDocument>,

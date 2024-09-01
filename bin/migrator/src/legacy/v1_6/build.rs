@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::{ImageRegistry, StandardRegistryConfig},
   NoData,
 };
@@ -10,15 +10,15 @@ use super::{
 
 pub type Build = Resource<BuildConfig, BuildInfo>;
 
-impl From<Build> for monitor_client::entities::build::Build {
+impl From<Build> for komodo_client::entities::build::Build {
   fn from(value: Build) -> Self {
-    monitor_client::entities::build::Build {
+    komodo_client::entities::build::Build {
       id: value.id,
       name: value.name,
       description: value.description,
       updated_at: value.updated_at,
       tags: value.tags,
-      info: monitor_client::entities::build::BuildInfo {
+      info: komodo_client::entities::build::BuildInfo {
         last_built_at: value.info.last_built_at,
         built_hash: None,
         built_message: None,
@@ -113,13 +113,13 @@ pub struct BuildConfig {
 }
 
 impl From<BuildConfig>
-  for monitor_client::entities::build::BuildConfig
+  for komodo_client::entities::build::BuildConfig
 {
   fn from(value: BuildConfig) -> Self {
-    monitor_client::entities::build::BuildConfig {
+    komodo_client::entities::build::BuildConfig {
       builder_id: value.builder_id,
       skip_secret_interp: value.skip_secret_interp,
-      version: monitor_client::entities::Version {
+      version: komodo_client::entities::Version {
         major: value.version.major,
         minor: value.version.minor,
         patch: value.version.patch,
@@ -133,7 +133,7 @@ impl From<BuildConfig>
       branch: value.branch,
       commit: value.commit,
       git_account: value.github_account,
-      pre_build: monitor_client::entities::SystemCommand {
+      pre_build: komodo_client::entities::SystemCommand {
         path: value.pre_build.path,
         command: value.pre_build.command,
       },

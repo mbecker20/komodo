@@ -1,12 +1,6 @@
 #[macro_use]
 extern crate tracing;
 
-use anyhow::Context;
-use monitor_client::entities::{
-  build::Build, deployment::Deployment, permission::Permission,
-  server::Server, update::Update, user::User,
-};
-use mungos::{init::MongoBuilder, mongodb::Collection};
 use serde::Deserialize;
 
 mod legacy;
@@ -14,8 +8,6 @@ mod migrate;
 
 #[derive(Deserialize)]
 enum Migration {
-  #[serde(alias = "v0")]
-  V0,
   #[serde(alias = "v1.6")]
   V1_6,
   #[serde(alias = "v1.11")]
@@ -27,10 +19,6 @@ struct Env {
   migration: Migration,
   target_uri: String,
   target_db_name: String,
-  /// Only needed for v0 migration
-  legacy_uri: Option<String>,
-  /// Only needed for v0 migration
-  legacy_db_name: Option<String>,
 }
 
 #[tokio::main]
@@ -43,20 +31,6 @@ async fn main() -> anyhow::Result<()> {
   let env: Env = envy::from_env()?;
 
   match env.migration {
-    Migration::V0 => {
-      let legacy_db = legacy::v0::DbClient::new(
-        &env.legacy_uri.context(
-          "must provide LEGACY_URI in env for v0 migration",
-        )?,
-        &env.legacy_db_name.context(
-          "must provide LEGACY_DB_NAME in env for v0 migration",
-        )?,
-      )
-      .await;
-      let target_db =
-        DbClient::new(&env.target_uri, &env.target_db_name).await?;
-      migrate::v0::migrate_all(&legacy_db, &target_db).await?
-    }
     Migration::V1_6 => {
       let db = legacy::v1_6::DbClient::new(
         &env.target_uri,
@@ -78,31 +52,4 @@ async fn main() -> anyhow::Result<()> {
   info!("finished!");
 
   Ok(())
-}
-
-struct DbClient {
-  pub users: Collection<User>,
-  pub updates: Collection<Update>,
-  pub servers: Collection<Server>,
-  pub deployments: Collection<Deployment>,
-  pub builds: Collection<Build>,
-  pub permissions: Collection<Permission>,
-}
-
-impl DbClient {
-  pub async fn new(
-    uri: &str,
-    db_name: &str,
-  ) -> anyhow::Result<DbClient> {
-    let client = MongoBuilder::default().uri(uri).build().await?;
-    let db = client.database(db_name);
-    Ok(DbClient {
-      users: db.collection("User"),
-      updates: db.collection("Update"),
-      servers: db.collection("Server"),
-      deployments: db.collection("Deployment"),
-      builds: db.collection("Build"),
-      permissions: db.collection("Permission"),
-    })
-  }
 }

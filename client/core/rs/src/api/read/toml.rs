@@ -3,9 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::update::ResourceTarget;
+use crate::entities::ResourceTarget;
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// Response containing pretty formatted toml contents.
 #[typeshare]
@@ -23,7 +23,7 @@ pub struct TomlResponse {
 #[derive(
   Debug, Clone, Default, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ExportAllResourcesToTomlResponse)]
 pub struct ExportAllResourcesToToml {
   /// Tag name or id. Empty array will not filter by tag.
@@ -42,7 +42,7 @@ pub type ExportAllResourcesToTomlResponse = TomlResponse;
 #[derive(
   Debug, Clone, Default, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ExportResourcesToTomlResponse)]
 pub struct ExportResourcesToToml {
   /// The targets to include in the export.

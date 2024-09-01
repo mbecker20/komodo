@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use anyhow::Context;
-use monitor_client::{
+use komodo_client::{
   api::read::*,
   entities::{
     config::core::CoreConfig,

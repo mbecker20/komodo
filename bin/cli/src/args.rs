@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use monitor_client::api::execute::Execution;
+use komodo_client::api::execute::Execution;
 use serde::Deserialize;
 
 #[derive(Parser, Debug)]
@@ -34,7 +34,7 @@ pub struct CliArgs {
 fn default_creds() -> String {
   let home =
     std::env::var("HOME").unwrap_or_else(|_| String::from("/root"));
-  format!("{home}/.config/monitor/creds.toml")
+  format!("{home}/.config/komodo/creds.toml")
 }
 
 #[derive(Debug, Clone, Subcommand)]

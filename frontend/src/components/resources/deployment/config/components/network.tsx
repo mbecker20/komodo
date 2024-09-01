@@ -27,8 +27,8 @@ export const NetworkModeSelector = ({
       { server: server_id! },
       { enabled: !!server_id }
     )
-      .data?.filter((n) => n.Name)
-      .map((network) => network.Name) ?? [];
+      .data?.filter((n) => n.name)
+      .map((network) => network.name) ?? [];
   const [customMode, setCustomMode] = useState(false);
 
   const networks =
@@ -72,15 +72,17 @@ export const NetworkModeSelector = ({
             <SelectValue placeholder="Select Type" />
           </SelectTrigger>
           <SelectContent>
-            {networks?.map((network) => (
-              <SelectItem
-                key={network}
-                value={network!}
-                className="cursor-pointer"
-              >
-                {network!}
-              </SelectItem>
-            ))}
+            {networks
+              ?.filter((network) => network)
+              .map((network) => (
+                <SelectItem
+                  key={network}
+                  value={network!}
+                  className="cursor-pointer"
+                >
+                  {network!}
+                </SelectItem>
+              ))}
             <SelectItem value="Custom" className="cursor-pointer">
               Custom
             </SelectItem>

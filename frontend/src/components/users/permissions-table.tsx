@@ -1,5 +1,5 @@
 import { useInvalidate, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 import { useToast } from "@ui/use-toast";
 import { useState } from "react";

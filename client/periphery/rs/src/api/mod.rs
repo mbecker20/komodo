@@ -1,8 +1,8 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   config::{DockerRegistry, GitProvider},
-  deployment::ContainerSummary,
-  server::{
-    docker_image::ImageSummary, docker_network::DockerNetwork,
+  docker::{
+    container::ContainerListItem, image::ImageListItem,
+    network::NetworkListItem, volume::VolumeListItem,
   },
   stack::ComposeProject,
   update::Log,
@@ -16,8 +16,10 @@ pub mod build;
 pub mod compose;
 pub mod container;
 pub mod git;
+pub mod image;
 pub mod network;
 pub mod stats;
+pub mod volume;
 
 //
 
@@ -46,9 +48,10 @@ pub struct GetDockerLists {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetDockerListsResponse {
-  pub containers: Result<Vec<ContainerSummary>, Serror>,
-  pub networks: Result<Vec<DockerNetwork>, Serror>,
-  pub images: Result<Vec<ImageSummary>, Serror>,
+  pub containers: Result<Vec<ContainerListItem>, Serror>,
+  pub networks: Result<Vec<NetworkListItem>, Serror>,
+  pub images: Result<Vec<ImageListItem>, Serror>,
+  pub volumes: Result<Vec<VolumeListItem>, Serror>,
   pub projects: Result<Vec<ComposeProject>, Serror>,
 }
 

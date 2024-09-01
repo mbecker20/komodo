@@ -7,7 +7,7 @@ use crate::entities::builder::{
   Builder, BuilderListItem, BuilderQuery,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -16,7 +16,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetBuilderResponse)]
 pub struct GetBuilder {
   /// Id or name
@@ -34,7 +34,7 @@ pub type GetBuilderResponse = Builder;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListBuildersResponse)]
 pub struct ListBuilders {
   #[serde(default)]
@@ -51,7 +51,7 @@ pub type ListBuildersResponse = Vec<BuilderListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullBuildersResponse)]
 pub struct ListFullBuilders {
   #[serde(default)]
@@ -69,7 +69,7 @@ pub type ListFullBuildersResponse = Vec<Builder>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetBuildersSummaryResponse)]
 pub struct GetBuildersSummary {}
 

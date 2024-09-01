@@ -1,7 +1,7 @@
 import { ConfigItem } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { useRead, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Card, CardHeader } from "@ui/card";
 import { Input } from "@ui/input";
 import { useEffect, useState } from "react";
@@ -504,13 +504,12 @@ const default_enabled_execution: () => Types.EnabledExecution = () => ({
 const EXECUTION_TYPES: Types.Execution["type"][] = [
   "RunBuild",
   "Deploy",
-  "RestartContainer",
-  "StartContainer",
-  "PauseContainer",
-  "UnpauseContainer",
-  "StopContainer",
-  "StopAllContainers",
-  "RemoveContainer",
+  "RestartDeployment",
+  "StartDeployment",
+  "PauseDeployment",
+  "UnpauseDeployment",
+  "StopDeployment",
+  "DestroyDeployment",
   "DeployStack",
   "StartStack",
   "RestartStack",
@@ -523,9 +522,12 @@ const EXECUTION_TYPES: Types.Execution["type"][] = [
   "BuildRepo",
   "RunProcedure",
   "RunSync",
+  "StopAllContainers",
   "PruneContainers",
-  "PruneImages",
   "PruneNetworks",
+  "PruneImages",
+  "PruneVolumes",
+  "PruneSystem",
   "Sleep",
 ];
 
@@ -592,13 +594,26 @@ type ExecutionConfigComponent<
   disabled: boolean;
 }>;
 
-type ExecutionConfigParams<T extends ExecutionType> = Extract<
+type MinExecutionType = Exclude<
+  ExecutionType,
+  | "StartContainer"
+  | "RestartContainer"
+  | "PauseContainer"
+  | "UnpauseContainer"
+  | "StopContainer"
+  | "DestroyContainer"
+  | "DeleteNetwork"
+  | "DeleteImage"
+  | "DeleteVolume"
+>;
+
+type ExecutionConfigParams<T extends MinExecutionType> = Extract<
   Types.Execution,
   { type: T }
 >["params"];
 
 type ExecutionConfigs = {
-  [ExType in ExecutionType]: {
+  [ExType in MinExecutionType]: {
     Component: ExecutionConfigComponent<ExType>;
     params: ExecutionConfigParams<ExType>;
   };
@@ -609,107 +624,19 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
     params: {},
     Component: () => <></>,
   },
-  CloneRepo: {
-    params: { repo: "" },
+  // Procedure
+  RunProcedure: {
+    params: { procedure: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
-        type="Repo"
-        selected={params.repo}
-        onSelect={(repo) => setParams({ repo })}
+        type="Procedure"
+        selected={params.procedure}
+        onSelect={(procedure) => setParams({ procedure })}
         disabled={disabled}
       />
     ),
   },
-  BuildRepo: {
-    params: { repo: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Repo"
-        selected={params.repo}
-        onSelect={(repo) => setParams({ repo })}
-        disabled={disabled}
-      />
-    ),
-  },
-  CancelRepoBuild: {
-    params: { repo: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Repo"
-        selected={params.repo}
-        onSelect={(repo) => setParams({ repo })}
-        disabled={disabled}
-      />
-    ),
-  },
-  Deploy: {
-    params: { deployment: "" },
-    Component: ({ params, setParams, disabled }) => {
-      return (
-        <ResourceSelector
-          type="Deployment"
-          selected={params.deployment}
-          onSelect={(deployment) => setParams({ deployment })}
-          disabled={disabled}
-        />
-      );
-    },
-  },
-  PruneContainers: {
-    params: { server: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Server"
-        selected={params.server}
-        onSelect={(server) => setParams({ server })}
-        disabled={disabled}
-      />
-    ),
-  },
-  PruneImages: {
-    params: { server: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Server"
-        selected={params.server}
-        onSelect={(server) => setParams({ server })}
-        disabled={disabled}
-      />
-    ),
-  },
-  PruneNetworks: {
-    params: { server: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Server"
-        selected={params.server}
-        onSelect={(server) => setParams({ server })}
-        disabled={disabled}
-      />
-    ),
-  },
-  PullRepo: {
-    params: { repo: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Repo"
-        selected={params.repo}
-        onSelect={(repo) => setParams({ repo })}
-        disabled={disabled}
-      />
-    ),
-  },
-  RemoveContainer: {
-    params: { deployment: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Deployment"
-        selected={params.deployment}
-        onSelect={(deployment) => setParams({ deployment })}
-        disabled={disabled}
-      />
-    ),
-  },
+  // Build
   RunBuild: {
     params: { build: "" },
     Component: ({ params, setParams, disabled }) => (
@@ -732,18 +659,21 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  RunProcedure: {
-    params: { procedure: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="Procedure"
-        selected={params.procedure}
-        onSelect={(procedure) => setParams({ procedure })}
-        disabled={disabled}
-      />
-    ),
+  // Deployment
+  Deploy: {
+    params: { deployment: "" },
+    Component: ({ params, setParams, disabled }) => {
+      return (
+        <ResourceSelector
+          type="Deployment"
+          selected={params.deployment}
+          onSelect={(deployment) => setParams({ deployment })}
+          disabled={disabled}
+        />
+      );
+    },
   },
-  StartContainer: {
+  StartDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -754,7 +684,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  RestartContainer: {
+  RestartDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -765,7 +695,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  PauseContainer: {
+  PauseDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -776,7 +706,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  UnpauseContainer: {
+  UnpauseDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -787,7 +717,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  StopContainer: {
+  StopDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
@@ -798,28 +728,18 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
-  StopAllContainers: {
-    params: { server: "" },
+  DestroyDeployment: {
+    params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
-        type="Server"
-        selected={params.server}
-        onSelect={(id) => setParams({ server: id })}
+        type="Deployment"
+        selected={params.deployment}
+        onSelect={(deployment) => setParams({ deployment })}
         disabled={disabled}
       />
     ),
   },
-  RunSync: {
-    params: { sync: "" },
-    Component: ({ params, setParams, disabled }) => (
-      <ResourceSelector
-        type="ResourceSync"
-        selected={params.sync}
-        onSelect={(id) => setParams({ sync: id })}
-        disabled={disabled}
-      />
-    ),
-  },
+  // Stack
   DeployStack: {
     params: { stack: "" },
     Component: ({ params, setParams, disabled }) => (
@@ -897,6 +817,240 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  // Repo
+  CloneRepo: {
+    params: { repo: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Repo"
+        selected={params.repo}
+        onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PullRepo: {
+    params: { repo: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Repo"
+        selected={params.repo}
+        onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
+      />
+    ),
+  },
+  BuildRepo: {
+    params: { repo: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Repo"
+        selected={params.repo}
+        onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
+      />
+    ),
+  },
+  CancelRepoBuild: {
+    params: { repo: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Repo"
+        selected={params.repo}
+        onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
+      />
+    ),
+  },
+  // Server
+  // StartContainer: {
+  //   params: { server: "" },
+  //   Component: ({ params, setParams, disabled }) => (
+  //     <ResourceSelector
+  //       type="Server"
+  //       selected={params.server}
+  //       onSelect={(server) => setParams({ server })}
+  //       disabled={disabled}
+  //     />
+  //   ),
+  // },
+  // RestartContainer: {
+  //   params: { server: "" },
+  //   Component: ({ params, setParams, disabled }) => (
+  //     <ResourceSelector
+  //       type="Server"
+  //       selected={params.server}
+  //       onSelect={(server) => setParams({ server })}
+  //       disabled={disabled}
+  //     />
+  //   ),
+  // },
+  // PauseContainer: {
+  //   params: { server: "" },
+  //   Component: ({ params, setParams, disabled }) => (
+  //     <ResourceSelector
+  //       type="Server"
+  //       selected={params.server}
+  //       onSelect={(server) => setParams({ server })}
+  //       disabled={disabled}
+  //     />
+  //   ),
+  // },
+  // UnpauseContainer: {
+  //   params: { server: "" },
+  //   Component: ({ params, setParams, disabled }) => (
+  //     <ResourceSelector
+  //       type="Server"
+  //       selected={params.server}
+  //       onSelect={(server) => setParams({ server })}
+  //       disabled={disabled}
+  //     />
+  //   ),
+  // },
+  // StopContainer: {
+  //   params: { server: "" },
+  //   Component: ({ params, setParams, disabled }) => (
+  //     <ResourceSelector
+  //       type="Server"
+  //       selected={params.server}
+  //       onSelect={(server) => setParams({ server })}
+  //       disabled={disabled}
+  //     />
+  //   ),
+  // },
+  // DestroyContainer: {
+  //   params: { server: "", container: "" },
+  //   Component: ({ params, setParams, disabled }) => (
+  //     <ResourceSelector
+  //       type="Server"
+  //       selected={params.server}
+  //       onSelect={(server) => setParams({ server })}
+  //       disabled={disabled}
+  //     />
+  //   ),
+  // },
+  StartAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  RestartAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PauseAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  UnpauseAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  StopAllContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PruneContainers: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PruneNetworks: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PruneImages: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PruneVolumes: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PruneSystem: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
+  RunSync: {
+    params: { sync: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="ResourceSync"
+        selected={params.sync}
+        onSelect={(id) => setParams({ sync: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+
   Sleep: {
     params: { duration_ms: 0 },
     Component: ({ params, setParams, disabled }) => {

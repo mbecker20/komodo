@@ -6,16 +6,16 @@ use serror::deserialize_error;
 
 use crate::{
   api::{
-    auth::MonitorAuthRequest, execute::MonitorExecuteRequest,
-    read::MonitorReadRequest, user::MonitorUserRequest,
-    write::MonitorWriteRequest,
+    auth::KomodoAuthRequest, execute::KomodoExecuteRequest,
+    read::KomodoReadRequest, user::KomodoUserRequest,
+    write::KomodoWriteRequest,
   },
-  MonitorClient,
+  KomodoClient,
 };
 
-impl MonitorClient {
+impl KomodoClient {
   #[tracing::instrument(skip(self))]
-  pub async fn auth<T: MonitorAuthRequest>(
+  pub async fn auth<T: KomodoAuthRequest>(
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
@@ -31,7 +31,7 @@ impl MonitorClient {
   }
 
   #[tracing::instrument(skip(self))]
-  pub async fn user<T: MonitorUserRequest>(
+  pub async fn user<T: KomodoUserRequest>(
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
@@ -47,7 +47,7 @@ impl MonitorClient {
   }
 
   #[tracing::instrument(skip(self))]
-  pub async fn read<T: MonitorReadRequest>(
+  pub async fn read<T: KomodoReadRequest>(
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
@@ -63,7 +63,7 @@ impl MonitorClient {
   }
 
   #[tracing::instrument(skip(self))]
-  pub async fn write<T: MonitorWriteRequest>(
+  pub async fn write<T: KomodoWriteRequest>(
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
@@ -79,7 +79,7 @@ impl MonitorClient {
   }
 
   #[tracing::instrument(skip(self))]
-  pub async fn execute<T: MonitorExecuteRequest>(
+  pub async fn execute<T: KomodoExecuteRequest>(
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
@@ -111,7 +111,7 @@ impl MonitorClient {
       .header("Content-Type", "application/json")
       .json(&body);
     let res =
-      req.send().await.context("failed to reach monitor api")?;
+      req.send().await.context("failed to reach Komodo API")?;
     tracing::debug!("got response");
     let status = res.status();
     if status == StatusCode::OK {

@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{api_key::ApiKey, user::User};
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// Gets list of api keys for the calling user.
 /// Response: [ListApiKeysResponse]
@@ -13,7 +13,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListApiKeysResponse)]
 pub struct ListApiKeys {}
 
@@ -30,7 +30,7 @@ pub type ListApiKeysResponse = Vec<ApiKey>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListApiKeysForServiceUserResponse)]
 pub struct ListApiKeysForServiceUser {
   /// Id or username
@@ -50,7 +50,7 @@ pub type ListApiKeysForServiceUserResponse = Vec<ApiKey>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(FindUserResponse)]
 pub struct FindUser {
   /// Id or username
@@ -64,13 +64,13 @@ pub type FindUserResponse = User;
 //
 
 /// **Admin only.**
-/// Gets list of monitor users.
+/// Gets list of Komodo users.
 /// Response: [ListUsersResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListUsersResponse)]
 pub struct ListUsers {}
 
@@ -85,7 +85,7 @@ pub type ListUsersResponse = Vec<User>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetUsernameResponse)]
 pub struct GetUsername {
   /// The id of the user.

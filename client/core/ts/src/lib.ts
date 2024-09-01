@@ -20,7 +20,7 @@ type InitOptions =
   | { type: "jwt"; params: { jwt: string } }
   | { type: "api-key"; params: { api_key: string; secret: string } };
 
-export function MonitorClient(url: string, options: InitOptions) {
+export function KomodoClient(url: string, options: InitOptions) {
   const state = {
     jwt: options.type === "jwt" ? options.params.jwt : undefined,
     api_key: options.type === "api-key" ? options.params.api_key : undefined,

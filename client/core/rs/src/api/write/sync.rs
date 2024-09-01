@@ -8,7 +8,7 @@ use crate::entities::{
   NoData,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -17,7 +17,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
 pub struct CreateResourceSync {
   /// The name given to newly created sync.
@@ -34,7 +34,7 @@ pub struct CreateResourceSync {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
 pub struct CopyResourceSync {
   /// The name of the new sync.
@@ -51,7 +51,7 @@ pub struct CopyResourceSync {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
 pub struct DeleteResourceSync {
   /// The id or name of the sync to delete.
@@ -72,7 +72,7 @@ pub struct DeleteResourceSync {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
 pub struct UpdateResourceSync {
   /// The id of the sync to update.
@@ -88,7 +88,7 @@ pub struct UpdateResourceSync {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
 pub struct RefreshResourceSyncPending {
   /// Id or name
@@ -110,7 +110,7 @@ pub enum SyncWebhookAction {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateSyncWebhookResponse)]
 pub struct CreateSyncWebhook {
   /// Id or name
@@ -131,7 +131,7 @@ pub type CreateSyncWebhookResponse = NoData;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteSyncWebhookResponse)]
 pub struct DeleteSyncWebhook {
   /// Id or name

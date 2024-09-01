@@ -1,4 +1,4 @@
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export const fmt_date = (d: Date) => {
   const hours = d.getHours();
@@ -72,4 +72,15 @@ export function snake_case_to_upper_space_case(snake: string) {
     .split("_")
     .map((item) => item[0].toUpperCase() + item.slice(1))
     .join(" ");
+}
+
+const BYTES_PER_MB = 1e6;
+const BYTES_PER_GB = BYTES_PER_MB * 1000;
+
+export function format_size_bytes(size_bytes: number) {
+  if (size_bytes > BYTES_PER_GB) {
+    return `${(size_bytes / BYTES_PER_GB).toFixed(1)} GB`;
+  } else {
+    return `${(size_bytes / BYTES_PER_MB).toFixed(1)} MB`;
+  }
 }

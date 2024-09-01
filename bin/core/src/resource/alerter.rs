@@ -1,19 +1,19 @@
 use derive_variants::ExtractVariant;
-use monitor_client::entities::{
+use komodo_client::entities::{
   alerter::{
     Alerter, AlerterConfig, AlerterConfigDiff, AlerterListItem,
     AlerterListItemInfo, AlerterQuerySpecifics, PartialAlerterConfig,
   },
   resource::Resource,
-  update::{ResourceTargetVariant, Update},
+  update::Update,
   user::User,
-  Operation,
+  Operation, ResourceTargetVariant,
 };
 use mungos::mongodb::Collection;
 
 use crate::state::db_client;
 
-impl super::MonitorResource for Alerter {
+impl super::KomodoResource for Alerter {
   type Config = AlerterConfig;
   type PartialConfig = PartialAlerterConfig;
   type ConfigDiff = AlerterConfigDiff;

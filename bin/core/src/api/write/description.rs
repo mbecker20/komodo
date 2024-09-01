@@ -1,11 +1,11 @@
 use anyhow::anyhow;
-use monitor_client::{
+use komodo_client::{
   api::write::{UpdateDescription, UpdateDescriptionResponse},
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
     server::Server, server_template::ServerTemplate, stack::Stack,
-    sync::ResourceSync, update::ResourceTarget, user::User,
+    sync::ResourceSync, user::User, ResourceTarget,
   },
 };
 use resolver_api::Resolve;

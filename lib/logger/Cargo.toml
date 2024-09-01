@@ -11,7 +11,7 @@ repository.workspace = true
 
 [dependencies]
 # local client
-monitor_client.workspace = true
+komodo_client.workspace = true
 # external
 anyhow.workspace = true
 tracing.workspace = true

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, hash::Hash};
 
-use monitor_client::busy::Busy;
+use komodo_client::busy::Busy;
 use tokio::sync::RwLock;
 
 #[derive(Default)]

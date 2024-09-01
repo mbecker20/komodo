@@ -6,6 +6,7 @@ use build::StandardRegistryConfig;
 use clap::Parser;
 use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
+use derive_variants::{EnumVariants, ExtractVariant};
 use serde::{
   de::{
     value::{MapAccessDeserializer, SeqAccessDeserializer},
@@ -31,6 +32,8 @@ pub mod builder;
 pub mod config;
 /// Subtypes of [Deployment][deployment::Deployment].
 pub mod deployment;
+/// Networks, Images, Containers.
+pub mod docker;
 /// Subtypes of [LogConfig][logger::LogConfig].
 pub mod logger;
 /// Subtypes of [Permission][permission::Permission].
@@ -49,6 +52,8 @@ pub mod server;
 pub mod server_template;
 /// Subtypes of [Stack][stack::Stack]
 pub mod stack;
+/// Subtypes for server stats reporting.
+pub mod stats;
 /// Subtypes of [ResourceSync][sync::ResourceSync]
 pub mod sync;
 /// Subtypes of [Tag][tag::Tag].
@@ -68,6 +73,8 @@ pub mod variable;
 pub type I64 = i64;
 #[typeshare(serialized_as = "number")]
 pub type U64 = u64;
+#[typeshare(serialized_as = "number")]
+pub type Usize = usize;
 #[typeshare(serialized_as = "any")]
 pub type MongoDocument = bson::Document;
 #[typeshare(serialized_as = "any")]
@@ -127,9 +134,9 @@ pub fn get_image_name(
   aws_ecr: impl FnOnce(&String) -> Option<AwsEcrConfig>,
 ) -> anyhow::Result<String> {
   let name = if image_name.is_empty() {
-    to_monitor_name(name)
+    to_komodo_name(name)
   } else {
-    to_monitor_name(image_name)
+    to_komodo_name(image_name)
   };
   let name = match image_registry {
     build::ImageRegistry::None(_) => name,
@@ -159,11 +166,11 @@ pub fn get_image_name(
   Ok(name)
 }
 
-pub fn to_monitor_name(name: &str) -> String {
+pub fn to_komodo_name(name: &str) -> String {
   name.to_lowercase().replace([' ', '.'], "_")
 }
 
-pub fn monitor_timestamp() -> i64 {
+pub fn komodo_timestamp() -> i64 {
   unix_timestamp_ms() as i64
 }
 
@@ -710,12 +717,26 @@ pub enum Operation {
   UpdateServer,
   DeleteServer,
   RenameServer,
-  PruneImages,
+  StartContainer,
+  RestartContainer,
+  PauseContainer,
+  UnpauseContainer,
+  StopContainer,
+  DestroyContainer,
+  StartAllContainers,
+  RestartAllContainers,
+  PauseAllContainers,
+  UnpauseAllContainers,
+  StopAllContainers,
   PruneContainers,
-  PruneNetworks,
   CreateNetwork,
   DeleteNetwork,
-  StopAllContainers,
+  PruneNetworks,
+  DeleteImage,
+  PruneImages,
+  DeleteVolume,
+  PruneVolumes,
+  PruneSystem,
 
   // build
   CreateBuild,
@@ -734,12 +755,12 @@ pub enum Operation {
   UpdateDeployment,
   DeleteDeployment,
   Deploy,
-  StartContainer,
-  RestartContainer,
-  PauseContainer,
-  UnpauseContainer,
-  StopContainer,
-  RemoveContainer,
+  StartDeployment,
+  RestartDeployment,
+  PauseDeployment,
+  UnpauseDeployment,
+  StopDeployment,
+  DestroyDeployment,
   RenameDeployment,
 
   // repo
@@ -829,4 +850,165 @@ pub enum SearchCombinator {
   #[default]
   Or,
   And,
+}
+
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  PartialEq,
+  Hash,
+  Eq,
+  Clone,
+  Copy,
+  Default,
+  Display,
+  EnumString,
+)]
+#[serde(rename_all = "UPPERCASE")]
+#[strum(serialize_all = "UPPERCASE")]
+pub enum TerminationSignal {
+  #[serde(alias = "1")]
+  SigHup,
+  #[serde(alias = "2")]
+  SigInt,
+  #[serde(alias = "3")]
+  SigQuit,
+  #[default]
+  #[serde(alias = "15")]
+  SigTerm,
+}
+
+/// Used to reference a specific resource across all resource types
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Eq,
+  Hash,
+  Serialize,
+  Deserialize,
+  EnumVariants,
+)]
+#[variant_derive(
+  Debug,
+  Clone,
+  Copy,
+  PartialEq,
+  Eq,
+  PartialOrd,
+  Ord,
+  Hash,
+  Serialize,
+  Deserialize,
+  Display,
+  EnumString,
+  AsRefStr
+)]
+#[serde(tag = "type", content = "id")]
+pub enum ResourceTarget {
+  System(String),
+  Build(String),
+  Builder(String),
+  Deployment(String),
+  Server(String),
+  Repo(String),
+  Alerter(String),
+  Procedure(String),
+  ServerTemplate(String),
+  ResourceSync(String),
+  Stack(String),
+}
+
+impl ResourceTarget {
+  pub fn extract_variant_id(
+    &self,
+  ) -> (ResourceTargetVariant, &String) {
+    let id = match &self {
+      ResourceTarget::System(id) => id,
+      ResourceTarget::Build(id) => id,
+      ResourceTarget::Builder(id) => id,
+      ResourceTarget::Deployment(id) => id,
+      ResourceTarget::Server(id) => id,
+      ResourceTarget::Repo(id) => id,
+      ResourceTarget::Alerter(id) => id,
+      ResourceTarget::Procedure(id) => id,
+      ResourceTarget::ServerTemplate(id) => id,
+      ResourceTarget::ResourceSync(id) => id,
+      ResourceTarget::Stack(id) => id,
+    };
+    (self.extract_variant(), id)
+  }
+
+  pub fn system() -> ResourceTarget {
+    Self::System("system".to_string())
+  }
+}
+
+impl Default for ResourceTarget {
+  fn default() -> Self {
+    ResourceTarget::system()
+  }
+}
+
+impl From<&build::Build> for ResourceTarget {
+  fn from(build: &build::Build) -> Self {
+    Self::Build(build.id.clone())
+  }
+}
+
+impl From<&deployment::Deployment> for ResourceTarget {
+  fn from(deployment: &deployment::Deployment) -> Self {
+    Self::Deployment(deployment.id.clone())
+  }
+}
+
+impl From<&server::Server> for ResourceTarget {
+  fn from(server: &server::Server) -> Self {
+    Self::Server(server.id.clone())
+  }
+}
+
+impl From<&repo::Repo> for ResourceTarget {
+  fn from(repo: &repo::Repo) -> Self {
+    Self::Repo(repo.id.clone())
+  }
+}
+
+impl From<&builder::Builder> for ResourceTarget {
+  fn from(builder: &builder::Builder) -> Self {
+    Self::Builder(builder.id.clone())
+  }
+}
+
+impl From<&alerter::Alerter> for ResourceTarget {
+  fn from(alerter: &alerter::Alerter) -> Self {
+    Self::Alerter(alerter.id.clone())
+  }
+}
+
+impl From<&procedure::Procedure> for ResourceTarget {
+  fn from(procedure: &procedure::Procedure) -> Self {
+    Self::Procedure(procedure.id.clone())
+  }
+}
+
+impl From<&server_template::ServerTemplate> for ResourceTarget {
+  fn from(server_template: &server_template::ServerTemplate) -> Self {
+    Self::ServerTemplate(server_template.id.clone())
+  }
+}
+
+impl From<&sync::ResourceSync> for ResourceTarget {
+  fn from(resource_sync: &sync::ResourceSync) -> Self {
+    Self::ResourceSync(resource_sync.id.clone())
+  }
+}
+
+impl From<&stack::Stack> for ResourceTarget {
+  fn from(resource_sync: &stack::Stack) -> Self {
+    Self::Stack(resource_sync.id.clone())
+  }
 }

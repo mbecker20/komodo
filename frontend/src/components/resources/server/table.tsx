@@ -3,7 +3,7 @@ import { useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceLink } from "../common";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useCallback } from "react";
 
 export const ServerTable = ({
@@ -12,11 +12,17 @@ export const ServerTable = ({
   servers: Types.ServerListItem[];
 }) => {
   const deployments = useRead("ListDeployments", {}).data;
-  const deploymentCount = useCallback(
+  const stacks = useRead("ListStacks", {}).data;
+  const repos = useRead("ListRepos", {}).data;
+  const resourcesCount = useCallback(
     (id: string) => {
-      return deployments?.filter((d) => d.info.server_id === id).length || 0;
+      return (
+        (deployments?.filter((d) => d.info.server_id === id).length || 0) +
+        (stacks?.filter((d) => d.info.server_id === id).length || 0) +
+        (repos?.filter((d) => d.info.server_id === id).length || 0)
+      );
     },
-    [deployments]
+    [deployments, stacks, repos]
   );
   return (
     <DataTable
@@ -36,8 +42,8 @@ export const ServerTable = ({
         {
           accessorKey: "id",
           sortingFn: (a, b) => {
-            const sa = deploymentCount(a.original.id);
-            const sb = deploymentCount(b.original.id);
+            const sa = resourcesCount(a.original.id);
+            const sb = resourcesCount(b.original.id);
 
             if (!sa && !sb) return 0;
             if (!sa) return -1;
@@ -48,13 +54,10 @@ export const ServerTable = ({
             else return 0;
           },
           header: ({ column }) => (
-            <SortableHeader column={column} title="Deployments" />
+            <SortableHeader column={column} title="Resources" />
           ),
           cell: ({ row }) => {
-            const count =
-              deployments?.filter((d) => d.info.server_id === row.original.id)
-                .length ?? 0;
-            return <>{count}</>;
+            return <>{resourcesCount(row.original.id)}</>;
           },
         },
         {

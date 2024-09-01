@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
 
 //
 
@@ -30,7 +30,7 @@ use super::MonitorExecuteRequest;
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct CloneRepo {
   /// Id or name
@@ -56,7 +56,7 @@ pub struct CloneRepo {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PullRepo {
   /// Id or name
@@ -86,7 +86,7 @@ pub struct PullRepo {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct BuildRepo {
   /// Id or name
@@ -109,7 +109,7 @@ pub struct BuildRepo {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct CancelRepoBuild {
   /// Can be id or name

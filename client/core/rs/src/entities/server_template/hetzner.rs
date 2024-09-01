@@ -214,4 +214,5 @@ pub enum HetznerDatacenter {
   Falkenstein1Dc14,
   AshburnDc1,
   HillsboroDc1,
+  SingaporeDc1,
 }

@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use super::{
-  permission::PermissionLevel, update::ResourceTargetVariant,
-  MongoId, I64,
+  permission::PermissionLevel, MongoId, ResourceTargetVariant, I64,
 };
 
 /// Permission users at the group level.

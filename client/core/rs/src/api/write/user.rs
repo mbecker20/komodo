@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::user::User;
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -15,7 +15,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateServiceUserResponse)]
 pub struct CreateServiceUser {
   /// The username for the service user.
@@ -35,7 +35,7 @@ pub type CreateServiceUserResponse = User;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateServiceUserDescriptionResponse)]
 pub struct UpdateServiceUserDescription {
   /// The service user's username

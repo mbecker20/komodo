@@ -8,7 +8,7 @@ import {
   SecretsForEnvironment,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { createRef, ReactNode, useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
@@ -420,7 +420,7 @@ export const StackConfig = ({
             {
               label: "Git Webhooks",
               description:
-                "Configure your repo provider to send webhooks to Monitor",
+                "Configure your repo provider to send webhooks to Komodo",
               components: {
                 ["Guard" as any]: () => {
                   if (update.branch ?? config.branch) {

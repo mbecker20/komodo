@@ -113,7 +113,7 @@ pub struct RepoConfig {
 
   /// Whether to use https to clone the repo (versus http). Default: true
   ///
-  /// Note. Monitor does not currently support cloning repos via ssh.
+  /// Note. Komodo does not currently support cloning repos via ssh.
   #[serde(default = "default_git_https")]
   #[builder(default = "default_git_https()")]
   #[partial_default(default_git_https())]

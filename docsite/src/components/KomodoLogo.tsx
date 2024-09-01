@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function MonitorLogo({ width = "4rem" }) {
+export default function KomodoLogo({ width = "4rem" }) {
   return (
     <img
       style={{ width, height: "auto", opacity: 0.7 }}

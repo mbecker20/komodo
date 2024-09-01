@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
 use futures::TryStreamExt;
-use monitor_client::{
+use komodo_client::{
   api::read::*,
   entities::{
     build::{Build, BuildActionState, BuildListItem, BuildState},

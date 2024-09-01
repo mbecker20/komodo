@@ -1,10 +1,9 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   deployment::{
     conversions_deserializer, term_labels_deserializer, Conversion,
-    DeploymentImage, RestartMode, TerminationSignal,
-    TerminationSignalLabel,
+    DeploymentImage, RestartMode, TerminationSignalLabel,
   },
-  env_vars_deserializer, EnvironmentVar,
+  env_vars_deserializer, EnvironmentVar, TerminationSignal,
 };
 use serde::{Deserialize, Serialize};
 
@@ -13,10 +12,10 @@ use super::{build::ImageRegistry, resource::Resource};
 pub type Deployment = Resource<DeploymentConfig, ()>;
 
 impl From<Deployment>
-  for monitor_client::entities::deployment::Deployment
+  for komodo_client::entities::deployment::Deployment
 {
   fn from(value: Deployment) -> Self {
-    monitor_client::entities::deployment::Deployment {
+    komodo_client::entities::deployment::Deployment {
       id: value.id,
       name: value.name,
       description: value.description,
@@ -36,7 +35,7 @@ pub struct DeploymentConfig {
   pub server_id: String,
 
   /// The image which the deployment deploys.
-  /// Can either be a user inputted image, or a Monitor build.
+  /// Can either be a user inputted image, or a Komodo build.
   #[serde(default)]
   pub image: DeploymentImage,
 
@@ -136,10 +135,10 @@ fn default_network() -> String {
 }
 
 impl From<DeploymentConfig>
-  for monitor_client::entities::deployment::DeploymentConfig
+  for komodo_client::entities::deployment::DeploymentConfig
 {
   fn from(value: DeploymentConfig) -> Self {
-    monitor_client::entities::deployment::DeploymentConfig {
+    komodo_client::entities::deployment::DeploymentConfig {
       server_id: value.server_id,
       image: value.image,
       image_registry_account: match value.image_registry {

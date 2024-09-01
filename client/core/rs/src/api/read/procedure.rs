@@ -7,7 +7,7 @@ use crate::entities::procedure::{
   Procedure, ProcedureActionState, ProcedureListItem, ProcedureQuery,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -16,7 +16,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetProcedureResponse)]
 pub struct GetProcedure {
   /// Id or name
@@ -34,7 +34,7 @@ pub type GetProcedureResponse = Procedure;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListProceduresResponse)]
 pub struct ListProcedures {
   /// optional structured query to filter procedures.
@@ -52,7 +52,7 @@ pub type ListProceduresResponse = Vec<ProcedureListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullProceduresResponse)]
 pub struct ListFullProcedures {
   /// optional structured query to filter procedures.
@@ -70,7 +70,7 @@ pub type ListFullProceduresResponse = Vec<Procedure>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetProcedureActionStateResponse)]
 pub struct GetProcedureActionState {
   /// Id or name
@@ -89,7 +89,7 @@ pub type GetProcedureActionStateResponse = ProcedureActionState;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetProceduresSummaryResponse)]
 pub struct GetProceduresSummary {}
 

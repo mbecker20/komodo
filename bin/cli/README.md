@@ -1,11 +1,11 @@
-# Monitor CLI
+# Komodo CLI
 
-Monitor CLI is a tool to sync monitor resources and execute operations.
+Komodo CLI is a tool to execute actions on your Komodo instance from shell scripts.
 
 ## Install
 
 ```sh
-cargo install monitor_cli
+cargo install komodo_cli
 ```
 
 Note: On Ubuntu, also requires `apt install build-essential pkg-config libssl-dev`.
@@ -14,9 +14,9 @@ Note: On Ubuntu, also requires `apt install build-essential pkg-config libssl-de
 
 ### Credentials
 
-Configure a file `~/.config/monitor/creds.toml` file with contents:
+Configure a file `~/.config/komodo/creds.toml` file with contents:
 ```toml
-url = "https://your.monitor.address"
+url = "https://your.komodo.address"
 key = "YOUR-API-KEY"
 secret = "YOUR-API-SECRET"
 ```
@@ -25,21 +25,21 @@ Note. You can specify a different creds file by using `--creds ./other/path.toml
 You can also bypass using any file and pass the information using `--url`, `--key`, `--secret`:
 
 ```sh
-monitor --url "https://your.monitor.address" --key "YOUR-API-KEY" --secret "YOUR-API-SECRET" ...
+komodo --url "https://your.komodo.address" --key "YOUR-API-KEY" --secret "YOUR-API-SECRET" ...
 ```
 
 ### Run Executions
 
 ```sh
 # Triggers an example build
-monitor execute run-build test_build
+komodo execute run-build test_build
 ```
 
 #### Manual
 ```md
 Runs an execution
 
-Usage: monitor execute <COMMAND>
+Usage: komodo execute <COMMAND>
 
 Commands:
   none                 The "null" execution. Does nothing

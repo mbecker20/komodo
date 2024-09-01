@@ -1,6 +1,5 @@
-use monitor_client::entities::{
-  config::core::AwsEcrConfig, server::docker_image::ImageSummary,
-  update::Log,
+use komodo_client::entities::{
+  config::core::AwsEcrConfig, update::Log,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -8,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(BuildResponse)]
 pub struct Build {
-  pub build: monitor_client::entities::build::Build,
+  pub build: komodo_client::entities::build::Build,
   /// Override registry token with one sent from core.
   pub registry_token: Option<String>,
   /// Propogate AwsEcrConfig from core
@@ -22,21 +21,3 @@ pub struct Build {
 }
 
 pub type BuildResponse = Vec<Log>;
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetImageListResponse)]
-pub struct GetImageList {}
-
-pub type GetImageListResponse = Vec<ImageSummary>;
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(PruneImagesResponse)]
-pub struct PruneImages {}
-
-pub type PruneImagesResponse = Log;
-
-//

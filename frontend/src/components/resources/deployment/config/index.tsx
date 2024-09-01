@@ -1,5 +1,5 @@
 import { useRead, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { ReactNode, useState } from "react";
 import {
   AddExtraArgMenu,

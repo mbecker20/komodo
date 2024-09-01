@@ -20,7 +20,7 @@ import {
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { useServer } from "../server";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StatusBadge } from "@components/util";
 import { Badge } from "@ui/badge";

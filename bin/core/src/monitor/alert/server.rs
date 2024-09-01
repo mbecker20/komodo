@@ -3,11 +3,11 @@ use std::{collections::HashMap, path::PathBuf, str::FromStr};
 use anyhow::Context;
 use derive_variants::ExtractVariant;
 use mongo_indexed::Indexed;
-use monitor_client::entities::{
-  alert::{Alert, AlertData, AlertDataVariant},
-  monitor_timestamp, optional_string,
-  server::{stats::SeverityLevel, ServerListItem, ServerState},
-  update::ResourceTarget,
+use komodo_client::entities::{
+  alert::{Alert, AlertData, AlertDataVariant, SeverityLevel},
+  komodo_timestamp, optional_string,
+  server::{ServerListItem, ServerState},
+  ResourceTarget,
 };
 use mungos::{
   bulk_update::{self, BulkUpdate},
@@ -479,7 +479,7 @@ async fn resolve_alerts(alerts: &[(Alert, SendAlerts)]) {
         doc! {
           "$set": {
             "resolved": true,
-            "resolved_ts": monitor_timestamp()
+            "resolved_ts": komodo_timestamp()
           }
         },
       )
@@ -488,7 +488,7 @@ async fn resolve_alerts(alerts: &[(Alert, SendAlerts)]) {
       .inspect_err(|e| warn!("{e:#}"))
       .ok();
 
-    let ts = monitor_timestamp();
+    let ts = komodo_timestamp();
 
     let closed = alerts
       .iter()

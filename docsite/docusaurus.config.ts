@@ -6,21 +6,21 @@ import dotenv from "dotenv"
 dotenv.config();
 
 const config: Config = {
-  title: "Monitor",
+  title: "Komodo",
   tagline: "Build and deployment system",
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://docs.monitor.dev",
+  url: "https://komo.do",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  // baseUrl: "/monitor/",
+  // baseUrl: "/komodo/",
   baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "mbecker20", // Usually your GitHub org/user name.
-  projectName: "monitor", // Usually your repo name.
+  projectName: "komodo", // Usually your repo name.
   trailingSlash: false,
   deploymentBranch: "gh-pages-docs",
 
@@ -69,7 +69,7 @@ const config: Config = {
       },
     },
     navbar: {
-      title: "Monitor",
+      title: "Komodo",
       logo: {
         alt: "monitor lizard",
         src: "img/logo512.png",
@@ -83,13 +83,13 @@ const config: Config = {
           label: "docs",
         },
         {
-          href: "https://docs.rs/monitor_client/latest/monitor_client/",
-          label: "docs.rs",
+          href: "https://docs.rs/komodo_client/latest/komodo_client/",
+          label: "Docs.rs",
           position: "right",
         },
         {
-          href: "https://github.com/mbecker20/monitor",
-          label: "github",
+          href: "https://github.com/mbecker20/komodo",
+          label: "Github",
           position: "right",
         },
       ],

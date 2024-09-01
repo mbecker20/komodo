@@ -1,37 +1,41 @@
 # Connecting Servers
 
-Connecting a server to monitor has 2 steps:
+Connecting a server to Komodo has 2 steps:
 
 1.  Install the Periphery agent on the server
-2.  Adding the server to monitor via the core API
+2.  Adding the server to Komodo via the core API
 
-Once step 1. is complete, you can just connect the server to Monitor Core from the UI.
+Once step 1. is complete, you can just connect the server to Komodo Core from the UI.
 
 ## Install
 
-You can install Periphery as a systemd managed process, run it as a [docker container](https://github.com/mbecker20/monitor/pkgs/container/periphery), or do whatever you want with the binary.
+You can install Periphery as a systemd managed process, run it as a [docker container](https://github.com/mbecker20/komodo/pkgs/container/periphery), or do whatever you want with the binary.
 
 Some Periphery actions interact with your hosts file system, like cloning repos, or accessing local compose files.
 For this reason, runnning periphery in a container can be a bit more complicated.
 Additionally, Periphery in a container tends to overreport the disks by default, but this can be fixed via some configuration.
 
+:::warning
+Allowing unintended access to the Periphery agent API is a security risk. Ensure to take appropriate measures to block access to the Periphery API, such as firewall rules on port `8120`. Additionally, you can whitelist your Komodo Core IP address in the [Periphery config](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L46), and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L51).
+:::
+
 ### Install the Periphery agent - systemd
 
 As root user:
 ```sh
-curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3
+curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3
 ```
 
 Periphery can also be installed to run as the calling user, just note this comes with some additional configuration.
 
 ```sh
-curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3 - --user
+curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3 - --user
 ```
 
-You can find more information (and view the script) in the [readme](https://github.com/mbecker20/monitor/tree/main/scripts).
+You can find more information (and view the script) in the [readme](https://github.com/mbecker20/komodo/tree/main/scripts).
 
 :::info
-This script can be run multiple times without issue, and it won't change existing config after the first run. Just run it again after a Monitor version release, and it will update the periphery version.
+This script can be run multiple times without issue, and it won't change existing config after the first run. Just run it again after a Komodo version release, and it will update the periphery version.
 :::
 
 ### Install the Periphery agent - container
@@ -39,7 +43,7 @@ This script can be run multiple times without issue, and it won't change existin
 You can use a docker compose file like this:
 ```yaml
 services:
-  monitor-periphery:
+  komodo-periphery:
     image: ghcr.io/mbecker20/periphery:latest # use ghcr.io/mbecker20/periphery:latest-aarch64 for arm support
     logging:
       driver: local
@@ -47,22 +51,27 @@ services:
       - 8120:8120
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - monitor-repos:/etc/monitor/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - komodo-repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - komodo-stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
     # environment:
     #   # If the disk size is overreporting, can use one of these to 
     #   # whitelist / blacklist the disks to filter them, whichever is easier. 
-    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/monitor/repos 
+    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/komodo/repos 
     #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
+
+volumes:
+  komodo-repos:
+  komodo-stacks:
 ```
 
 ### Manual install steps - binaries
 
-1.  Download the periphery binary from the latest [release](https://github.com/mbecker20/monitor/releases).
+1.  Download the periphery binary from the latest [release](https://github.com/mbecker20/komodo/releases).
 
-2.  Create and edit your config files, following the [config example](https://github.com/mbecker20/monitor/blob/main/config_example/periphery.config.example.toml).
+2.  Create and edit your config files, following the [config example](https://github.com/mbecker20/komodo/blob/main/config_example/periphery.config.example.toml).
 
 :::note
-See the [periphery config docs](https://docs.rs/monitor_client/latest/monitor_client/entities/config/periphery/index.html)
+See the [periphery config docs](https://docs.rs/komodo_client/latest/komodo_client/entities/config/periphery/index.html)
 for more information on configuring periphery.
 :::
 

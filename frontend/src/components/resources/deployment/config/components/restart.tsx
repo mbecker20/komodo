@@ -1,5 +1,5 @@
 import { ConfigItem } from "@components/config/util";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import {
   Select,
   SelectContent,
