@@ -249,7 +249,7 @@ impl MergePartial for BuilderConfig {
 #[typeshare(serialized_as = "Partial<ServerBuilderConfig>")]
 pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 
-/// Configuration for a monitor server builder.
+/// Configuration for a Komodo Server Builder.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Builder, Partial,

@@ -9,7 +9,7 @@ use axum::{
   Router,
 };
 use futures::{SinkExt, StreamExt};
-use monitor_client::{
+use komodo_client::{
   entities::{
     permission::PermissionLevel, user::User, ResourceTarget,
   },

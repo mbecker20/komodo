@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::user_group::UserGroup;
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// Get a specific user group by name or id.
 /// Response: [UserGroup].
@@ -13,7 +13,7 @@ use super::MonitorReadRequest;
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetUserGroupResponse)]
 pub struct GetUserGroup {
   /// Name or Id
@@ -33,7 +33,7 @@ pub type GetUserGroupResponse = UserGroup;
 #[derive(
   Debug, Clone, Default, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListUserGroupsResponse)]
 pub struct ListUserGroups {}
 

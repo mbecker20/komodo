@@ -25,9 +25,9 @@ pub use sync::*;
 
 use crate::entities::{NoData, I64};
 
-pub trait MonitorExecuteRequest: HasResponse {}
+pub trait KomodoExecuteRequest: HasResponse {}
 
-/// A wrapper for all monitor exections.
+/// A wrapper for all Komodo exections.
 #[typeshare]
 #[derive(
   Debug,

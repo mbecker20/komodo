@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   deployment::{Deployment, DeploymentState},
   docker::container::ContainerListItem,
   stack::{Stack, StackService, StackServiceNames},

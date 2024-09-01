@@ -1,5 +1,5 @@
 import { useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 
 export const useUserTargetPermissions = (user_target: Types.UserTarget) => {

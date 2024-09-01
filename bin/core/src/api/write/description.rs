@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use monitor_client::{
+use komodo_client::{
   api::write::{UpdateDescription, UpdateDescriptionResponse},
   entities::{
     alerter::Alerter, build::Build, builder::Builder,

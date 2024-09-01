@@ -1,6 +1,6 @@
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::Build,
   deployment::{
     Deployment, DeploymentConfig, DeploymentConfigDiff,
@@ -30,7 +30,7 @@ use crate::{
 
 use super::get_check_permissions;
 
-impl super::MonitorResource for Deployment {
+impl super::KomodoResource for Deployment {
   type Config = DeploymentConfig;
   type PartialConfig = PartialDeploymentConfig;
   type ConfigDiff = DeploymentConfigDiff;

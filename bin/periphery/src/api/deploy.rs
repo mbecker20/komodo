@@ -1,13 +1,13 @@
 use anyhow::Context;
-use command::run_monitor_command;
+use command::run_komodo_command;
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::{ImageRegistry, StandardRegistryConfig},
   deployment::{
     extract_registry_domain, Conversion, Deployment,
     DeploymentConfig, DeploymentImage, RestartMode,
   },
-  to_monitor_name,
+  to_komodo_name,
   update::Log,
   EnvironmentVar, NoData,
 };
@@ -100,7 +100,7 @@ impl Resolve<Deploy> for State {
     debug!("docker run command: {command}");
 
     if deployment.config.skip_secret_interp {
-      Ok(run_monitor_command("docker run", command).await)
+      Ok(run_komodo_command("docker run", command).await)
     } else {
       let command = svi::interpolate_variables(
         &command,
@@ -119,8 +119,8 @@ impl Resolve<Deploy> for State {
         }
       };
 
-      replacers.extend(core_replacers);      
-      let mut log = run_monitor_command("docker run", command).await;
+      replacers.extend(core_replacers);
+      let mut log = run_komodo_command("docker run", command).await;
       log.command = svi::replace_in_string(&log.command, &replacers);
       log.stdout = svi::replace_in_string(&log.stdout, &replacers);
       log.stderr = svi::replace_in_string(&log.stderr, &replacers);
@@ -149,7 +149,7 @@ fn docker_run_command(
   }: &Deployment,
   image: &str,
 ) -> String {
-  let name = to_monitor_name(name);
+  let name = to_komodo_name(name);
   let ports = parse_conversions(ports, "-p");
   let volumes = volumes.to_owned();
   let volumes = parse_conversions(&volumes, "-v");

@@ -134,9 +134,9 @@ pub fn get_image_name(
   aws_ecr: impl FnOnce(&String) -> Option<AwsEcrConfig>,
 ) -> anyhow::Result<String> {
   let name = if image_name.is_empty() {
-    to_monitor_name(name)
+    to_komodo_name(name)
   } else {
-    to_monitor_name(image_name)
+    to_komodo_name(image_name)
   };
   let name = match image_registry {
     build::ImageRegistry::None(_) => name,
@@ -166,11 +166,11 @@ pub fn get_image_name(
   Ok(name)
 }
 
-pub fn to_monitor_name(name: &str) -> String {
+pub fn to_komodo_name(name: &str) -> String {
   name.to_lowercase().replace([' ', '.'], "_")
 }
 
-pub fn monitor_timestamp() -> i64 {
+pub fn komodo_timestamp() -> i64 {
   unix_timestamp_ms() as i64
 }
 

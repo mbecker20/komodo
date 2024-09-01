@@ -1,9 +1,9 @@
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     server::Server,
     update::{Update, UpdateStatus},
@@ -73,7 +73,7 @@ impl Resolve<RenameServer, User> for State {
     let mut update =
       make_update(&server, Operation::RenameServer, &user);
 
-    update_one_by_id(&db_client().await.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }), None)
+    update_one_by_id(&db_client().await.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": komodo_timestamp() }), None)
       .await
       .context("failed to update server on db. this name may already be taken.")?;
     update.push_simple_log(

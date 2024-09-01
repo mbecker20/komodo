@@ -6,13 +6,13 @@ use std::{
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use futures::{future::join_all, FutureExt};
-use monitor_client::{
+use komodo_client::{
   api::write::CreateTag,
   entities::{
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     resource::{AddFilters, Resource, ResourceQuery},
-    to_monitor_name,
+    to_komodo_name,
     update::Update,
     user::User,
     Operation, ResourceTarget, ResourceTargetVariant,
@@ -69,8 +69,8 @@ pub use sync::{
   spawn_resource_sync_state_refresh_loop,
 };
 
-/// Implement on each monitor resource for common methods
-pub trait MonitorResource {
+/// Implement on each Komodo resource for common methods
+pub trait KomodoResource {
   type ListItem: Serialize + Send;
   type Config: Clone
     + Default
@@ -186,7 +186,7 @@ pub trait MonitorResource {
 // GET
 // ======
 
-pub async fn get<T: MonitorResource>(
+pub async fn get<T: KomodoResource>(
   id_or_name: &str,
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {
   T::coll()
@@ -202,7 +202,7 @@ pub async fn get<T: MonitorResource>(
     })
 }
 
-pub async fn get_check_permissions<T: MonitorResource>(
+pub async fn get_check_permissions<T: KomodoResource>(
   id_or_name: &str,
   user: &User,
   permission_level: PermissionLevel,
@@ -235,7 +235,7 @@ pub async fn get_check_permissions<T: MonitorResource>(
 
 /// Returns None if still no need to filter by resource id (eg transparent mode, group membership with all access).
 #[instrument(level = "debug")]
-pub async fn get_resource_ids_for_user<T: MonitorResource>(
+pub async fn get_resource_ids_for_user<T: KomodoResource>(
   user: &User,
 ) -> anyhow::Result<Option<Vec<ObjectId>>> {
   // Check admin or transparent mode
@@ -301,7 +301,7 @@ pub async fn get_resource_ids_for_user<T: MonitorResource>(
 }
 
 #[instrument(level = "debug")]
-pub async fn get_user_permission_on_resource<T: MonitorResource>(
+pub async fn get_user_permission_on_resource<T: KomodoResource>(
   user: &User,
   resource_id: &str,
 ) -> anyhow::Result<PermissionLevel> {
@@ -374,7 +374,7 @@ pub async fn get_user_permission_on_resource<T: MonitorResource>(
 }
 
 #[instrument(level = "debug")]
-pub async fn list_for_user<T: MonitorResource>(
+pub async fn list_for_user<T: KomodoResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
 ) -> anyhow::Result<Vec<T::ListItem>> {
@@ -384,7 +384,7 @@ pub async fn list_for_user<T: MonitorResource>(
   list_for_user_using_document::<T>(filters, user).await
 }
 
-pub async fn list_for_user_using_document<T: MonitorResource>(
+pub async fn list_for_user_using_document<T: KomodoResource>(
   filters: Document,
   user: &User,
 ) -> anyhow::Result<Vec<T::ListItem>> {
@@ -396,7 +396,7 @@ pub async fn list_for_user_using_document<T: MonitorResource>(
 }
 
 #[instrument(level = "debug")]
-pub async fn list_full_for_user<T: MonitorResource>(
+pub async fn list_full_for_user<T: KomodoResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
@@ -407,7 +407,7 @@ pub async fn list_full_for_user<T: MonitorResource>(
 }
 
 #[instrument(level = "debug")]
-pub async fn list_full_for_user_using_document<T: MonitorResource>(
+pub async fn list_full_for_user_using_document<T: KomodoResource>(
   mut filters: Document,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
@@ -428,13 +428,13 @@ pub async fn list_full_for_user_using_document<T: MonitorResource>(
 pub type IdResourceMap<T> = HashMap<
   String,
   Resource<
-    <T as MonitorResource>::Config,
-    <T as MonitorResource>::Info,
+    <T as KomodoResource>::Config,
+    <T as KomodoResource>::Info,
   >,
 >;
 
 #[instrument(level = "debug")]
-pub async fn get_id_to_resource_map<T: MonitorResource>(
+pub async fn get_id_to_resource_map<T: KomodoResource>(
 ) -> anyhow::Result<IdResourceMap<T>> {
   let res = find_collect(T::coll().await, None, None)
     .await
@@ -451,7 +451,7 @@ pub async fn get_id_to_resource_map<T: MonitorResource>(
 // CREATE
 // =======
 
-pub async fn create<T: MonitorResource>(
+pub async fn create<T: KomodoResource>(
   name: &str,
   mut config: T::PartialConfig,
   user: &User,
@@ -467,13 +467,13 @@ pub async fn create<T: MonitorResource>(
     return Err(anyhow!("Must provide non-empty name for resource."));
   }
 
-  let name = to_monitor_name(name);
+  let name = to_komodo_name(name);
 
   if ObjectId::from_str(&name).is_ok() {
     return Err(anyhow!("valid ObjectIds cannot be used as names."));
   }
 
-  let start_ts = monitor_timestamp();
+  let start_ts = komodo_timestamp();
 
   T::validate_create_config(&mut config, user).await?;
 
@@ -535,7 +535,7 @@ pub async fn create<T: MonitorResource>(
 // UPDATE
 // =======
 
-pub async fn update<T: MonitorResource>(
+pub async fn update<T: KomodoResource>(
   id_or_name: &str,
   mut config: T::PartialConfig,
   user: &User,
@@ -606,7 +606,7 @@ pub async fn update<T: MonitorResource>(
   Ok(updated)
 }
 
-fn resource_target<T: MonitorResource>(id: String) -> ResourceTarget {
+fn resource_target<T: KomodoResource>(id: String) -> ResourceTarget {
   match T::resource_type() {
     ResourceTargetVariant::System => ResourceTarget::System(id),
     ResourceTargetVariant::Build => ResourceTarget::Build(id),
@@ -628,7 +628,7 @@ fn resource_target<T: MonitorResource>(id: String) -> ResourceTarget {
   }
 }
 
-pub async fn update_description<T: MonitorResource>(
+pub async fn update_description<T: KomodoResource>(
   id_or_name: &str,
   description: &str,
   user: &User,
@@ -649,7 +649,7 @@ pub async fn update_description<T: MonitorResource>(
   Ok(())
 }
 
-pub async fn update_tags<T: MonitorResource>(
+pub async fn update_tags<T: KomodoResource>(
   id_or_name: &str,
   tags: Vec<String>,
   user: User,
@@ -683,7 +683,7 @@ pub async fn update_tags<T: MonitorResource>(
   Ok(())
 }
 
-pub async fn remove_tag_from_all<T: MonitorResource>(
+pub async fn remove_tag_from_all<T: KomodoResource>(
   tag_id: &str,
 ) -> anyhow::Result<()> {
   T::coll()
@@ -698,7 +698,7 @@ pub async fn remove_tag_from_all<T: MonitorResource>(
 // DELETE
 // =======
 
-pub async fn delete<T: MonitorResource>(
+pub async fn delete<T: KomodoResource>(
   id_or_name: &str,
   user: &User,
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {

@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::variable::Variable;
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// List all available global variables.
 /// Response: [Variable]
@@ -16,7 +16,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetVariableResponse)]
 pub struct GetVariable {
   /// The name of the variable to get.
@@ -37,7 +37,7 @@ pub type GetVariableResponse = Variable;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListVariablesResponse)]
 pub struct ListVariables {}
 

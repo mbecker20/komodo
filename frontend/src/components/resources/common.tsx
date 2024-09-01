@@ -32,7 +32,7 @@ import { ResourceComponents } from ".";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { ConfigItem, DoubleInput } from "@components/config/util";
 import { filterBySplit, usableResourcePath } from "@lib/utils";
 

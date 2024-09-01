@@ -3,10 +3,10 @@ use std::{str::FromStr, time::Duration};
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
 use mongo_indexed::Document;
-use monitor_client::{
+use komodo_client::{
   api::write::CreateServer,
   entities::{
-    monitor_timestamp,
+    komodo_timestamp,
     permission::{Permission, PermissionLevel, UserTarget},
     server::{PartialServerConfig, Server},
     sync::ResourceSync,
@@ -237,8 +237,8 @@ pub async fn startup_cleanup() {
 /// Run on startup, as no updates should be in progress on startup
 async fn startup_in_progress_update_cleanup() {
   let log = Log::error(
-    "monitor shutdown",
-    String::from("Monitor shutdown during execution. If this is a build, the builder may not have been terminated.")
+    "Komodo shutdown",
+    String::from("Komodo shutdown during execution. If this is a build, the builder may not have been terminated.")
   );
   // This static log won't fail to serialize, unwrap ok.
   let log = to_document(&log).unwrap();
@@ -306,7 +306,7 @@ async fn startup_open_alert_cleanup() {
       doc! { "_id": { "$in": to_update_ids } },
       doc! { "$set": {
         "resolved": true,
-        "resolved_ts": monitor_timestamp()
+        "resolved_ts": komodo_timestamp()
       } },
     )
     .await

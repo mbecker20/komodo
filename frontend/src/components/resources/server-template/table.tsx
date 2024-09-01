@@ -1,7 +1,7 @@
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export const ServerTemplateTable = ({
   serverTemplates,

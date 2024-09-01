@@ -3,7 +3,7 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { StackComponents } from ".";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useCallback } from "react";
 
 export const StackTable = ({ stacks }: { stacks: Types.StackListItem[] }) => {

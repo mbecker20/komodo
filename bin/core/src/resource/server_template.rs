@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   resource::Resource,
   server_template::{
     PartialServerTemplateConfig, ServerTemplate,
@@ -17,7 +17,7 @@ use mungos::mongodb::{
 
 use crate::state::db_client;
 
-impl super::MonitorResource for ServerTemplate {
+impl super::KomodoResource for ServerTemplate {
   type Config = ServerTemplateConfig;
   type PartialConfig = PartialServerTemplateConfig;
   type ConfigDiff = ServerTemplateConfigDiff;

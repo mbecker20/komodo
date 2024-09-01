@@ -5,14 +5,14 @@ use typeshare::typeshare;
 
 use crate::entities::variable::Variable;
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 /// **Admin only.** Create variable. Response: [Variable].
 #[typeshare]
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateVariableResponse)]
 pub struct CreateVariable {
   /// The name of the variable to create.
@@ -38,7 +38,7 @@ pub type CreateVariableResponse = Variable;
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateVariableValueResponse)]
 pub struct UpdateVariableValue {
   /// The name of the variable to update.
@@ -57,7 +57,7 @@ pub type UpdateVariableValueResponse = Variable;
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateVariableDescriptionResponse)]
 pub struct UpdateVariableDescription {
   /// The name of the variable to update.
@@ -76,7 +76,7 @@ pub type UpdateVariableDescriptionResponse = Variable;
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateVariableIsSecretResponse)]
 pub struct UpdateVariableIsSecret {
   /// The name of the variable to update.
@@ -95,7 +95,7 @@ pub type UpdateVariableIsSecretResponse = Variable;
 #[derive(
   Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteVariableResponse)]
 pub struct DeleteVariable {
   pub name: String,

@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Context};
-use command::run_monitor_command;
+use command::run_komodo_command;
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::{Build, BuildConfig},
-  get_image_name, optional_string, to_monitor_name,
+  get_image_name, optional_string, to_komodo_name,
   update::Log,
   EnvironmentVar, Version,
 };
@@ -72,7 +72,7 @@ impl Resolve<build::Build> for State {
       }
     };
 
-    let name = to_monitor_name(name);
+    let name = to_komodo_name(name);
 
     // Get paths
     let build_dir =
@@ -107,7 +107,7 @@ impl Resolve<build::Build> for State {
 
     if *skip_secret_interp {
       let build_log =
-        run_monitor_command("docker build", command).await;
+        run_komodo_command("docker build", command).await;
       logs.push(build_log);
     } else {
       // Interpolate any missing secrets
@@ -123,7 +123,7 @@ impl Resolve<build::Build> for State {
       replacers.extend(core_replacers);
 
       let mut build_log =
-        run_monitor_command("docker build", command).await;
+        run_komodo_command("docker build", command).await;
       build_log.command =
         svi::replace_in_string(&build_log.command, &replacers);
       build_log.stdout =

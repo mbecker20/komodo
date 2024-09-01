@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::Context;
-use monitor_client::{
+use komodo_client::{
   api::read::{
     GetUserGroup, GetUserGroupResponse, ListUserGroups,
     ListUserGroupsResponse,

@@ -8,7 +8,7 @@ use crate::entities::{
   NoData, ResourceTarget, ResourceTargetVariant,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 /// **Admin only.** Update a user or user groups permission on a resource.
 /// Response: [NoData].
@@ -16,7 +16,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdatePermissionOnTargetResponse)]
 pub struct UpdatePermissionOnTarget {
   /// Specify the user or user group.
@@ -38,7 +38,7 @@ pub type UpdatePermissionOnTargetResponse = NoData;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdatePermissionOnResourceTypeResponse)]
 pub struct UpdatePermissionOnResourceType {
   /// Specify the user or user group.
@@ -60,7 +60,7 @@ pub type UpdatePermissionOnResourceTypeResponse = NoData;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateUserBasePermissionsResponse)]
 pub struct UpdateUserBasePermissions {
   /// The target user.

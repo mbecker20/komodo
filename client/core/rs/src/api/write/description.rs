@@ -3,9 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{ResourceTarget, NoData};
+use crate::entities::{NoData, ResourceTarget};
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 /// Update a resources description.
 /// Response: [NoData].
@@ -13,7 +13,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(UpdateDescriptionResponse)]
 pub struct UpdateDescription {
   /// The target resource to set description for.

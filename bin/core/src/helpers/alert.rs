@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use derive_variants::ExtractVariant;
 use futures::future::join_all;
-use monitor_client::entities::{
+use komodo_client::entities::{
   alert::{Alert, AlertData, SeverityLevel},
   alerter::*,
   deployment::DeploymentState,

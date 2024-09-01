@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 use anyhow::{anyhow, Context};
 use formatting::{bold, colored, format_serror, muted, Color};
 use futures::future::join_all;
-use monitor_client::{
+use komodo_client::{
   api::execute::Execution,
   entities::{
     procedure::Procedure,

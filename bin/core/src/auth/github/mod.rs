@@ -3,8 +3,8 @@ use axum::{
   extract::Query, response::Redirect, routing::get, Router,
 };
 use mongo_indexed::Document;
-use monitor_client::entities::{
-  monitor_timestamp,
+use komodo_client::entities::{
+  komodo_timestamp,
   user::{User, UserConfig},
 };
 use mungos::mongodb::bson::doc;
@@ -75,7 +75,7 @@ async fn callback(
       .generate(user.id)
       .context("failed to generate jwt")?,
     None => {
-      let ts = monitor_timestamp();
+      let ts = komodo_timestamp();
       let no_users_exist =
         db_client.users.find_one(Document::new()).await?.is_none();
       let user = User {

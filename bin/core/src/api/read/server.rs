@@ -8,7 +8,7 @@ use anyhow::{anyhow, Context};
 use async_timing_util::{
   get_timelength_in_ms, unix_timestamp_ms, FIFTEEN_SECONDS_MS,
 };
-use monitor_client::{
+use komodo_client::{
   api::read::*,
   entities::{
     deployment::Deployment,

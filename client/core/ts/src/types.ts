@@ -390,7 +390,7 @@ export interface BuildConfig {
 	image_name?: string;
 	/**
 	 * An extra tag put before the build version, for the image pushed to the repository.
-	 * Eg. in image tag of `aarch64` would push to mbecker20/monitor_core:aarch64-1.13.2.
+	 * Eg. in image tag of `aarch64` would push to mbecker20/komodo:1.13.2-aarch64.
 	 * If this is empty, the image tag will just be the build version.
 	 * 
 	 * Can be used in conjunction with `image_name` to direct multiple builds
@@ -403,7 +403,7 @@ export interface BuildConfig {
 	/**
 	 * Whether to use https to clone the repo (versus http). Default: true
 	 * 
-	 * Note. Monitor does not currently support cloning repos via ssh.
+	 * Note. Komodo does not currently support cloning repos via ssh.
 	 */
 	git_https: boolean;
 	/**
@@ -568,9 +568,9 @@ export type DeploymentImage =
 	/** The docker image, can be from any registry that works with docker and that the host server can reach. */
 	image?: string;
 }}
-	/** Deploy a monitor build. */
+	/** Deploy a Komodo Build. */
 	| { type: "Build", params: {
-	/** The id of the build */
+	/** The id of the Build */
 	build_id?: string;
 	/**
 	 * Use a custom / older version of the image produced by the build.
@@ -610,7 +610,7 @@ export interface DeploymentConfig {
 	server_id?: string;
 	/**
 	 * The image which the deployment deploys.
-	 * Can either be a user inputted image, or a Monitor build.
+	 * Can either be a user inputted image, or a Komodo Build.
 	 */
 	image?: DeploymentImage;
 	/**
@@ -706,7 +706,7 @@ export interface DeploymentListItemInfo {
 	image: string;
 	/** The server that deployment sits on. */
 	server_id: string;
-	/** An attached monitor build, if it exists. */
+	/** An attached Komodo Build, if it exists. */
 	build_id?: string;
 }
 
@@ -825,7 +825,7 @@ export type GetPermissionLevelResponse = PermissionLevel;
 
 export type ListUserTargetPermissionsResponse = Permission[];
 
-/** A wrapper for all monitor exections. */
+/** A wrapper for all Komodo exections. */
 export type Execution = 
 	/** The "null" execution. Does nothing. */
 	| { type: "None", params: NoData }
@@ -1013,7 +1013,7 @@ export interface RepoConfig {
 	/**
 	 * Whether to use https to clone the repo (versus http). Default: true
 	 * 
-	 * Note. Monitor does not currently support cloning repos via ssh.
+	 * Note. Komodo does not currently support cloning repos via ssh.
 	 */
 	git_https: boolean;
 	/**
@@ -2360,7 +2360,7 @@ export interface StackConfig {
 	/**
 	 * Whether to use https to clone the repo (versus http). Default: true
 	 * 
-	 * Note. Monitor does not currently support cloning repos via ssh.
+	 * Note. Komodo does not currently support cloning repos via ssh.
 	 */
 	git_https: boolean;
 	/**
@@ -2406,7 +2406,7 @@ export interface StackServiceNames {
 	 * 
 	 * 1. The name of the compose project (top level name field of compose file).
 	 * This defaults to the name of the parent folder of the compose file.
-	 * Monitor will always set it to be the name of the stack, but imported stacks
+	 * Komodo will always set it to be the name of the stack, but imported stacks
 	 * will have a different name.
 	 * 2. The service name
 	 * 3. The replica number
@@ -2427,8 +2427,8 @@ export interface StackInfo {
 	missing_files?: string[];
 	/**
 	 * The deployed project name.
-	 * This is updated whenever Monitor successfully deploys the stack.
-	 * If it is present, Monitor will use it for actions over other options,
+	 * This is updated whenever Komodo successfully deploys the stack.
+	 * If it is present, Komodo will use it for actions over other options,
 	 * to ensure control is maintained after changing the project name (there is no rename compose project api).
 	 */
 	deployed_project_name?: string;
@@ -2436,7 +2436,7 @@ export interface StackInfo {
 	deployed_hash?: string;
 	/** Deployed commit message, or null. Only for repo based stacks */
 	deployed_message?: string;
-	/** The deployed compose file contents. This is updated whenever Monitor successfully deploys the stack. */
+	/** The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack. */
 	deployed_contents?: ComposeContents[];
 	/**
 	 * The deployed service names.
@@ -2450,7 +2450,7 @@ export interface StackInfo {
 	latest_services?: StackServiceNames[];
 	/**
 	 * The remote compose file contents, whether on host or in repo.
-	 * This is updated whenever Monitor refreshes the stack cache.
+	 * This is updated whenever Komodo refreshes the stack cache.
 	 * It will be empty if the file is defined directly in the stack config.
 	 */
 	remote_contents?: ComposeContents[];
@@ -2565,7 +2565,7 @@ export interface ResourceSyncConfig {
 	/**
 	 * Whether to use https to clone the repo (versus http). Default: true
 	 * 
-	 * Note. Monitor does not currently support cloning repos via ssh.
+	 * Note. Komodo does not currently support cloning repos via ssh.
 	 */
 	git_https: boolean;
 	/** The Github repo used as the source of the build. */
@@ -2585,7 +2585,7 @@ export interface ResourceSyncConfig {
 	/**
 	 * The path of the resource file(s) to sync, relative to the repo root.
 	 * Can be a specific file, or a directory containing multiple files / folders.
-	 * See `https://docs.monitor.dev/docs/sync-resources` for more information.
+	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
 	 */
 	resource_path: string;
 	/**
@@ -2805,7 +2805,7 @@ export enum UpdateStatus {
 	Complete = "Complete",
 }
 
-/** Represents an action performed by Monitor. */
+/** Represents an action performed by Komodo. */
 export interface Update {
 	/**
 	 * The Mongo ID of the update.
@@ -3160,7 +3160,7 @@ export type _PartialTag = Partial<Tag>;
 
 /**
  * Non authenticated route to see the available options
- * users have to login to monitor, eg. local auth, github, google.
+ * users have to login to Komodo, eg. local auth, github, google.
  * Response: [GetLoginOptionsResponse].
  */
 export interface GetLoginOptions {
@@ -3808,7 +3808,7 @@ export interface GetBuildsSummary {
 
 /** Response for [GetBuildsSummary]. */
 export interface GetBuildsSummaryResponse {
-	/** The total number of builds in monitor. */
+	/** The total number of builds in Komodo. */
 	total: number;
 	/** The number of builds with Ok state. */
 	ok: number;
@@ -4055,7 +4055,7 @@ export interface ListCommonDeploymentExtraArgs {
 }
 
 /**
- * Get the version of the core api.
+ * Get the version of the Komodo Core api.
  * Response: [GetVersionResponse].
  */
 export interface GetVersion {
@@ -4382,7 +4382,7 @@ export interface GetServerActionState {
 }
 
 /**
- * Get the version of the monitor periphery agent on the target server.
+ * Get the version of the Komodo Periphery agent on the target server.
  * Response: [GetPeripheryVersionResponse].
  */
 export interface GetPeripheryVersion {
@@ -4914,7 +4914,7 @@ export interface ListUpdates {
 	page?: number;
 }
 
-/** Minimal representation of an action performed by Monitor. */
+/** Minimal representation of an action performed by Komodo. */
 export interface UpdateListItem {
 	/** The id of the update */
 	id: string;
@@ -4988,7 +4988,7 @@ export interface FindUser {
 
 /**
  * **Admin only.**
- * Gets list of monitor users.
+ * Gets list of Komodo users.
  * Response: [ListUsersResponse]
  */
 export interface ListUsers {
@@ -5562,7 +5562,7 @@ export enum RepoWebhookAction {
 }
 
 /**
- * Create a webhook on the github repo attached to the (monitor) repo
+ * Create a webhook on the github repo attached to the (Komodo) Repo resource.
  * passed in request. Response: [CreateRepoWebhookResponse]
  */
 export interface CreateRepoWebhook {
@@ -5573,7 +5573,7 @@ export interface CreateRepoWebhook {
 }
 
 /**
- * Delete the webhook on the github repo attached to the (monitor) repo
+ * Delete the webhook on the github repo attached to the (Komodo) Repo resource.
  * passed in request. Response: [DeleteRepoWebhookResponse]
  */
 export interface DeleteRepoWebhook {
@@ -6026,7 +6026,7 @@ export interface StandardRegistryConfig {
 	organization?: string;
 }
 
-/** Configuration for a monitor server builder. */
+/** Configuration for a Komodo Server Builder. */
 export interface ServerBuilderConfig {
 	/** The server id of the builder */
 	server_id: string;

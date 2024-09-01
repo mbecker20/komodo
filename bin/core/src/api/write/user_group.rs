@@ -1,12 +1,12 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::write::{
     AddUserToUserGroup, CreateUserGroup, DeleteUserGroup,
     RemoveUserFromUserGroup, RenameUserGroup, SetUsersInUserGroup,
   },
-  entities::{monitor_timestamp, user::User, user_group::UserGroup},
+  entities::{komodo_timestamp, user::User, user_group::UserGroup},
 };
 use mungos::{
   by_id::{delete_one_by_id, find_one_by_id, update_one_by_id},
@@ -30,7 +30,7 @@ impl Resolve<CreateUserGroup, User> for State {
       id: Default::default(),
       users: Default::default(),
       all: Default::default(),
-      updated_at: monitor_timestamp(),
+      updated_at: komodo_timestamp(),
       name,
     };
     let db = db_client().await;

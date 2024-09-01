@@ -1,6 +1,6 @@
 [package]
-name = "monitor_cli"
-description = "Command line tool to sync monitor resources and execute file defined procedures"
+name = "komodo_cli"
+description = "Command line tool to execute Komodo actions"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,14 +9,14 @@ homepage.workspace = true
 repository.workspace = true
 
 [[bin]]
-name = "monitor"
+name = "komodo"
 path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 # local
-monitor_client.workspace = true
+komodo_client.workspace = true
 # external
 tracing-subscriber.workspace = true
 merge_config_files.workspace = true

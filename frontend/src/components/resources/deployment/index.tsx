@@ -1,5 +1,5 @@
 import { useLocalStorage, useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
 import { cn } from "@lib/utils";

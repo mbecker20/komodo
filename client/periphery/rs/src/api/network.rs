@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   docker::network::Network, update::Log,
 };
 use resolver_api::derive::Request;

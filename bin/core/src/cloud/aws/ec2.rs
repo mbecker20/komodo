@@ -12,9 +12,9 @@ use aws_sdk_ec2::{
   Client,
 };
 use base64::Engine;
-use monitor_client::entities::{
+use komodo_client::entities::{
   alert::{Alert, AlertData, SeverityLevel},
-  monitor_timestamp,
+  komodo_timestamp,
   server_template::aws::AwsServerTemplateConfig,
   ResourceTarget,
 };
@@ -170,7 +170,7 @@ pub async fn terminate_ec2_instance_with_retry(
           error!("failed to terminate aws instance {instance_id}.");
           let alert = Alert {
             id: Default::default(),
-            ts: monitor_timestamp(),
+            ts: komodo_timestamp(),
             resolved: false,
             level: SeverityLevel::Critical,
             target: ResourceTarget::system(),

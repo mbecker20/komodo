@@ -3,7 +3,7 @@ use std::{collections::HashSet, sync::OnceLock, time::Instant};
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::{
+use komodo_client::{
   api::read::*,
   entities::{
     build::Build,

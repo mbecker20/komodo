@@ -1,6 +1,6 @@
 # Container Management
 
-The lifetime of a docker container is more like a virtual machine. They can be created, started, stopped, and destroyed. Monitor will display the state of the container and provides an API to manage all your container's lifetimes.
+The lifetime of a docker container is more like a virtual machine. They can be created, started, stopped, and destroyed. Komodo will display the state of the container and provides an API to manage all your container's lifetimes.
 
 This is achieved internally by running the appropriate docker command for the requested action (docker stop, docker start, etc).
 

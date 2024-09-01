@@ -1,5 +1,5 @@
 use mongo_indexed::{create_index, create_unique_index};
-use monitor_client::entities::{
+use komodo_client::entities::{
   alert::Alert,
   alerter::Alerter,
   api_key::ApiKey,

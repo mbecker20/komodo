@@ -1,7 +1,7 @@
 use anyhow::Context;
-use command::run_monitor_command;
+use command::run_komodo_command;
 use futures::TryFutureExt;
-use monitor_client::entities::{update::Log, SystemCommand};
+use komodo_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
   build::*, compose::*, container::*, git::*, image::*, network::*,
   stats::*, volume::*, GetDockerLists, GetDockerListsResponse,
@@ -248,7 +248,7 @@ impl Resolve<RunCommand> for State {
       } else {
         format!("cd {path} && {command}")
       };
-      run_monitor_command("run command", command).await
+      run_komodo_command("run command", command).await
     })
     .await
     .context("failure in spawned task")
@@ -263,6 +263,6 @@ impl Resolve<PruneSystem> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker system prune -a -f --volumes");
-    Ok(run_monitor_command("prune system", command).await)
+    Ok(run_komodo_command("prune system", command).await)
   }
 }

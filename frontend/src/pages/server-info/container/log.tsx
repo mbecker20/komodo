@@ -1,7 +1,7 @@
 import { Section } from "@components/layouts";
 import { Log, TailLengthSelector } from "@components/log";
 import { useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";

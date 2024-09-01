@@ -7,7 +7,7 @@ use crate::entities::server_template::{
   PartialServerTemplateConfig, ServerTemplate,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -16,7 +16,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
 pub struct CreateServerTemplate {
   /// The name given to newly created server template.
@@ -33,7 +33,7 @@ pub struct CreateServerTemplate {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
 pub struct CopyServerTemplate {
   /// The name of the new server template.
@@ -50,7 +50,7 @@ pub struct CopyServerTemplate {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
 pub struct DeleteServerTemplate {
   /// The id or name of the server template to delete.
@@ -71,7 +71,7 @@ pub struct DeleteServerTemplate {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
 pub struct UpdateServerTemplate {
   /// The id of the server template to update.

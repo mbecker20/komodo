@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   deployment::{
     Conversion, DeploymentImage, RestartMode, TerminationSignalLabel,
   },
@@ -11,7 +11,7 @@ use super::{resource::Resource, EnvironmentVar};
 pub type Deployment = Resource<DeploymentConfig, ()>;
 
 impl From<Deployment>
-  for monitor_client::entities::deployment::Deployment
+  for komodo_client::entities::deployment::Deployment
 {
   fn from(value: Deployment) -> Self {
     Self {
@@ -38,7 +38,7 @@ pub struct DeploymentConfig {
   pub send_alerts: bool,
 
   /// The image which the deployment deploys.
-  /// Can either be a user inputted image, or a Monitor build.
+  /// Can either be a user inputted image, or a Komodo build.
   #[serde(default)]
   pub image: DeploymentImage,
 
@@ -110,7 +110,7 @@ pub struct DeploymentConfig {
 }
 
 impl From<DeploymentConfig>
-  for monitor_client::entities::deployment::DeploymentConfig
+  for komodo_client::entities::deployment::DeploymentConfig
 {
   fn from(value: DeploymentConfig) -> Self {
     Self {

@@ -1,6 +1,6 @@
 import { ConfigItem } from "@components/config/util";
 import { TextUpdateMenu } from "@components/util";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/select";
 
 const ENDPOINT_TYPES: Types.AlerterEndpoint["type"][] = ["Custom", "Slack"];

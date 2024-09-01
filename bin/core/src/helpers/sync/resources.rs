@@ -1,5 +1,5 @@
 use formatting::{bold, colored, muted, Color};
-use monitor_client::{
+use komodo_client::{
   api::execute::Execution,
   entities::{
     self,
@@ -24,7 +24,7 @@ use crate::{
     run_update_description, run_update_tags, ResourceSync,
     ToUpdateItem,
   },
-  resource::MonitorResource,
+  resource::KomodoResource,
 };
 
 use super::resource::{

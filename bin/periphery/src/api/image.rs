@@ -1,5 +1,5 @@
-use command::run_monitor_command;
-use monitor_client::entities::{
+use command::run_komodo_command;
+use komodo_client::entities::{
   docker::image::{Image, ImageHistoryResponseItem},
   update::Log,
 };
@@ -44,7 +44,7 @@ impl Resolve<DeleteImage> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = format!("docker image rm {name}");
-    Ok(run_monitor_command("delete image", command).await)
+    Ok(run_komodo_command("delete image", command).await)
   }
 }
 
@@ -58,6 +58,6 @@ impl Resolve<PruneImages> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker image prune -a -f");
-    Ok(run_monitor_command("prune images", command).await)
+    Ok(run_komodo_command("prune images", command).await)
   }
 }

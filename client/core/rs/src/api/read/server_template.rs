@@ -7,7 +7,7 @@ use crate::entities::server_template::{
   ServerTemplate, ServerTemplateListItem, ServerTemplateQuery,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -16,7 +16,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetServerTemplateResponse)]
 pub struct GetServerTemplate {
   /// Id or name
@@ -34,7 +34,7 @@ pub type GetServerTemplateResponse = ServerTemplate;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListServerTemplatesResponse)]
 pub struct ListServerTemplates {
   #[serde(default)]
@@ -51,7 +51,7 @@ pub type ListServerTemplatesResponse = Vec<ServerTemplateListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullServerTemplatesResponse)]
 pub struct ListFullServerTemplates {
   #[serde(default)]
@@ -69,7 +69,7 @@ pub type ListFullServerTemplatesResponse = Vec<ServerTemplate>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetServerTemplatesSummaryResponse)]
 pub struct GetServerTemplatesSummary {}
 

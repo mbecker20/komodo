@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
-use monitor_client::entities::server_template::hetzner::{
+use komodo_client::entities::server_template::hetzner::{
   HetznerDatacenter, HetznerServerTemplateConfig, HetznerServerType,
   HetznerVolumeFormat,
 };

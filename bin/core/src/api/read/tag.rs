@@ -1,6 +1,6 @@
 use anyhow::Context;
 use mongo_indexed::doc;
-use monitor_client::{
+use komodo_client::{
   api::read::{GetTag, ListTags},
   entities::{tag::Tag, user::User},
 };

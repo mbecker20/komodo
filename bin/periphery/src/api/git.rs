@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
-use monitor_client::entities::{
-  to_monitor_name, update::Log, CloneArgs, LatestCommit,
+use komodo_client::entities::{
+  to_komodo_name, update::Log, CloneArgs, LatestCommit,
 };
 use periphery_client::api::git::{
   CloneRepo, DeleteRepo, GetLatestCommit, PullRepo,
@@ -97,7 +97,7 @@ impl Resolve<PullRepo> for State {
     }: PullRepo,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
-    let name = to_monitor_name(&name);
+    let name = to_komodo_name(&name);
     let (logs, commit_hash, commit_message, env_file_path) =
       git::pull(
         &periphery_config().repo_dir.join(name),
@@ -128,7 +128,7 @@ impl Resolve<DeleteRepo> for State {
     DeleteRepo { name }: DeleteRepo,
     _: (),
   ) -> anyhow::Result<Log> {
-    let name = to_monitor_name(&name);
+    let name = to_komodo_name(&name);
     let deleted = std::fs::remove_dir_all(
       periphery_config().repo_dir.join(&name),
     );

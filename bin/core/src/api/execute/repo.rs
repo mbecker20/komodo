@@ -2,12 +2,12 @@ use std::{collections::HashSet, future::IntoFuture, time::Duration};
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::execute::*,
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
     builder::{Builder, BuilderConfig},
-    monitor_timestamp, optional_string,
+    komodo_timestamp, optional_string,
     permission::PermissionLevel,
     repo::Repo,
     server::Server,
@@ -232,7 +232,7 @@ async fn update_last_pulled_time(repo_name: &str) {
     .repos
     .update_one(
       doc! { "name": repo_name },
-      doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
+      doc! { "$set": { "info.last_pulled_at": komodo_timestamp() } },
     )
     .await;
   if let Err(e) = res {
@@ -403,7 +403,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
         .update_one(
           doc! { "name": &repo.name },
           doc! { "$set": {
-            "info.last_built_at": monitor_timestamp(),
+            "info.last_built_at": komodo_timestamp(),
             "info.built_hash": &update.commit_hash,
             "info.built_message": commit_message
           }},
@@ -441,8 +441,8 @@ impl Resolve<BuildRepo, (User, Update)> for State {
         let alert = Alert {
           id: Default::default(),
           target,
-          ts: monitor_timestamp(),
-          resolved_ts: Some(monitor_timestamp()),
+          ts: komodo_timestamp(),
+          resolved_ts: Some(komodo_timestamp()),
           resolved: true,
           level: SeverityLevel::Warning,
           data: AlertData::RepoBuildFailed {
@@ -488,8 +488,8 @@ async fn handle_builder_early_return(
       let alert = Alert {
         id: Default::default(),
         target,
-        ts: monitor_timestamp(),
-        resolved_ts: Some(monitor_timestamp()),
+        ts: komodo_timestamp(),
+        resolved_ts: Some(komodo_timestamp()),
         resolved: true,
         level: SeverityLevel::Warning,
         data: AlertData::RepoBuildFailed {

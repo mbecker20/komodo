@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::{anyhow, Context};
 use formatting::{colored, format_serror, Color};
 use mongo_indexed::doc;
-use monitor_client::{
+use komodo_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
   entities::{
     self,
@@ -11,7 +11,7 @@ use monitor_client::{
     build::Build,
     builder::Builder,
     deployment::Deployment,
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
@@ -387,7 +387,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       &sync.id,
       doc! {
         "$set": {
-          "info.last_sync_ts": monitor_timestamp(),
+          "info.last_sync_ts": komodo_timestamp(),
           "info.last_sync_hash": hash,
           "info.last_sync_message": message,
         }

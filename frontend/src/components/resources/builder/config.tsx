@@ -1,7 +1,7 @@
 import { Config } from "@components/config";
 import { InputList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useState } from "react";
 import { ResourceSelector } from "../common";
 import { Button } from "@ui/button";

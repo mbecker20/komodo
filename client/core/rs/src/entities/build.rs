@@ -110,7 +110,7 @@ pub struct BuildConfig {
   pub image_name: String,
 
   /// An extra tag put before the build version, for the image pushed to the repository.
-  /// Eg. in image tag of `aarch64` would push to mbecker20/monitor_core:aarch64-1.13.2.
+  /// Eg. in image tag of `aarch64` would push to mbecker20/komodo:1.13.2-aarch64.
   /// If this is empty, the image tag will just be the build version.
   ///
   /// Can be used in conjunction with `image_name` to direct multiple builds
@@ -128,7 +128,7 @@ pub struct BuildConfig {
 
   /// Whether to use https to clone the repo (versus http). Default: true
   ///
-  /// Note. Monitor does not currently support cloning repos via ssh.
+  /// Note. Komodo does not currently support cloning repos via ssh.
   #[serde(default = "default_git_https")]
   #[builder(default = "default_git_https()")]
   #[partial_default(default_git_https())]

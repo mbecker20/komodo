@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   docker::{
     container::ContainerListItem, image::ImageListItem,
     network::NetworkListItem, volume::VolumeListItem,

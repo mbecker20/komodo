@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   stack::{ComposeContents, ComposeProject, Stack},
   update::Log,
   SearchCombinator,

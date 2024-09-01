@@ -10,7 +10,7 @@ import {
   Trash,
 } from "lucide-react";
 import { useStack } from ".";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useToast } from "@ui/use-toast";
 import { useState } from "react";
 import { Input } from "@ui/input";

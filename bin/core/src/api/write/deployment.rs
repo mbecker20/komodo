@@ -1,12 +1,12 @@
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
     deployment::{Deployment, DeploymentState},
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     server::Server,
-    to_monitor_name,
+    to_komodo_name,
     update::Update,
     user::User,
     Operation,
@@ -102,7 +102,7 @@ impl Resolve<RenameDeployment, User> for State {
     let _action_guard =
       action_state.update(|state| state.renaming = true)?;
 
-    let name = to_monitor_name(&name);
+    let name = to_komodo_name(&name);
 
     let container_state = get_deployment_state(&deployment).await?;
 
@@ -119,7 +119,7 @@ impl Resolve<RenameDeployment, User> for State {
       &db_client().await.deployments,
       &deployment.id,
       mungos::update::Update::Set(
-        doc! { "name": &name, "updated_at": monitor_timestamp() },
+        doc! { "name": &name, "updated_at": komodo_timestamp() },
       ),
       None,
     )

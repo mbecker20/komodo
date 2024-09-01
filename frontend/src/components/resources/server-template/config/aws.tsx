@@ -3,7 +3,7 @@ import { InputList } from "@components/config/util";
 import { TextUpdateMenu } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { cn } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Card } from "@ui/card";
 import {

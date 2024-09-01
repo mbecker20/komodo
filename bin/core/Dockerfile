@@ -2,7 +2,7 @@
 FROM rust:1.80.1-bookworm AS core-builder
 WORKDIR /builder
 COPY . .
-RUN cargo build -p monitor_core --release
+RUN cargo build -p komodo_core --release
 
 # Build Frontend
 FROM node:20.12-alpine AS frontend-builder
@@ -10,7 +10,7 @@ WORKDIR /builder
 COPY ./frontend ./frontend
 COPY ./client/core/ts ./client
 RUN cd client && yarn && yarn build && yarn link
-RUN cd frontend && yarn link @monitor/client && yarn && yarn build
+RUN cd frontend && yarn link @komodo/client && yarn && yarn build
 
 # Final Image
 FROM debian:bookworm-slim
@@ -32,8 +32,8 @@ COPY --from=frontend-builder /builder/frontend/dist /frontend
 EXPOSE 9000
 
 # Label for Ghcr
-LABEL org.opencontainers.image.source=https://github.com/mbecker20/monitor
-LABEL org.opencontainers.image.description="Monitor Core"
+LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
+LABEL org.opencontainers.image.description="Komodo Core"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
 CMD ["./core"]

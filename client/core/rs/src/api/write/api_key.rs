@@ -8,7 +8,7 @@ use crate::{
   entities::{NoData, I64},
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -18,7 +18,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateApiKeyForServiceUserResponse)]
 pub struct CreateApiKeyForServiceUser {
   /// Must be service user
@@ -42,7 +42,7 @@ pub type CreateApiKeyForServiceUserResponse = CreateApiKeyResponse;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteApiKeyForServiceUserResponse)]
 pub struct DeleteApiKeyForServiceUser {
   pub key: String,

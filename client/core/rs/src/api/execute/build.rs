@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
 
 //
 
@@ -27,7 +27,7 @@ use super::MonitorExecuteRequest;
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct RunBuild {
   /// Can be build id or name
@@ -50,7 +50,7 @@ pub struct RunBuild {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct CancelBuild {
   /// Can be id or name

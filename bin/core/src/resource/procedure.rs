@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::execute::Execution,
   entities::{
     build::Build,
@@ -29,7 +29,7 @@ use mungos::{
 
 use crate::state::{action_states, db_client, procedure_state_cache};
 
-impl super::MonitorResource for Procedure {
+impl super::KomodoResource for Procedure {
   type Config = ProcedureConfig;
   type PartialConfig = PartialProcedureConfig;
   type ConfigDiff = ProcedureConfigDiff;

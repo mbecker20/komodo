@@ -9,7 +9,7 @@ use crate::entities::{
   NoData,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -18,7 +18,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
 pub struct CreateStack {
   /// The name given to newly created stack.
@@ -35,7 +35,7 @@ pub struct CreateStack {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
 pub struct CopyStack {
   /// The name of the new stack.
@@ -52,7 +52,7 @@ pub struct CopyStack {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
 pub struct DeleteStack {
   /// The id or name of the stack to delete.
@@ -76,7 +76,7 @@ pub struct DeleteStack {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
 pub struct UpdateStack {
   /// The id of the Stack to update.
@@ -92,7 +92,7 @@ pub struct UpdateStack {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
 pub struct RenameStack {
   /// The id of the stack to rename.
@@ -111,7 +111,7 @@ pub struct RenameStack {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(NoData)]
 pub struct RefreshStackCache {
   /// Id or name
@@ -133,7 +133,7 @@ pub enum StackWebhookAction {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(CreateStackWebhookResponse)]
 pub struct CreateStackWebhook {
   /// Id or name
@@ -154,7 +154,7 @@ pub type CreateStackWebhookResponse = NoData;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(DeleteStackWebhookResponse)]
 pub struct DeleteStackWebhook {
   /// Id or name

@@ -19,7 +19,7 @@ import {
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { useServer } from "../server";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import {
   DeployStack,
   DestroyStack,

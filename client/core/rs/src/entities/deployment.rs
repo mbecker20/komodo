@@ -35,7 +35,7 @@ pub struct DeploymentListItemInfo {
   pub image: String,
   /// The server that deployment sits on.
   pub server_id: String,
-  /// An attached monitor build, if it exists.
+  /// An attached Komodo Build, if it exists.
   pub build_id: Option<String>,
 }
 
@@ -54,7 +54,7 @@ pub struct DeploymentConfig {
   pub server_id: String,
 
   /// The image which the deployment deploys.
-  /// Can either be a user inputted image, or a Monitor build.
+  /// Can either be a user inputted image, or a Komodo Build.
   #[serde(default)]
   #[builder(default)]
   pub image: DeploymentImage,
@@ -252,9 +252,9 @@ pub enum DeploymentImage {
     image: String,
   },
 
-  /// Deploy a monitor build.
+  /// Deploy a Komodo Build.
   Build {
-    /// The id of the build
+    /// The id of the Build
     #[serde(default, alias = "build")]
     build_id: String,
     /// Use a custom / older version of the image produced by the build.

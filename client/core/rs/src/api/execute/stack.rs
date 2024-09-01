@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
 
 /// Deploys the target stack. `docker compose up`. Response: [Update]
 ///
@@ -22,7 +22,7 @@ use super::MonitorExecuteRequest;
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DeployStack {
   /// Id or name
@@ -46,7 +46,7 @@ pub struct DeployStack {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StartStack {
   /// Id or name
@@ -69,7 +69,7 @@ pub struct StartStack {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct RestartStack {
   /// Id or name
@@ -92,7 +92,7 @@ pub struct RestartStack {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PauseStack {
   /// Id or name
@@ -117,7 +117,7 @@ pub struct PauseStack {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct UnpauseStack {
   /// Id or name
@@ -140,7 +140,7 @@ pub struct UnpauseStack {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StopStack {
   /// Id or name
@@ -165,7 +165,7 @@ pub struct StopStack {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DestroyStack {
   /// Id or name

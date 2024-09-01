@@ -1,5 +1,5 @@
-use command::run_monitor_command;
-use monitor_client::entities::{docker::volume::Volume, update::Log};
+use command::run_komodo_command;
+use komodo_client::entities::{docker::volume::Volume, update::Log};
 use periphery_client::api::volume::*;
 use resolver_api::Resolve;
 
@@ -28,7 +28,7 @@ impl Resolve<DeleteVolume> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = format!("docker volume rm {name}");
-    Ok(run_monitor_command("delete volume", command).await)
+    Ok(run_komodo_command("delete volume", command).await)
   }
 }
 
@@ -42,6 +42,6 @@ impl Resolve<PruneVolumes> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker volume prune -a -f");
-    Ok(run_monitor_command("prune volumes", command).await)
+    Ok(run_komodo_command("prune volumes", command).await)
   }
 }

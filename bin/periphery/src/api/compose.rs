@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
-use command::run_monitor_command;
+use command::run_komodo_command;
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   stack::{ComposeContents, ComposeProject},
-  to_monitor_name,
+  to_komodo_name,
   update::Log,
 };
 use periphery_client::api::compose::*;
@@ -28,7 +28,7 @@ impl Resolve<ListComposeProjects, ()> for State {
     _: (),
   ) -> anyhow::Result<Vec<ComposeProject>> {
     let docker_compose = docker_compose();
-    let res = run_monitor_command(
+    let res = run_komodo_command(
       "list projects",
       format!("{docker_compose} ls --all --format json"),
     )
@@ -89,7 +89,7 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
     _: (),
   ) -> anyhow::Result<GetComposeContentsOnHostResponse> {
     let root =
-      periphery_config().stack_dir.join(to_monitor_name(&name));
+      periphery_config().stack_dir.join(to_komodo_name(&name));
     let run_directory = root.join(&run_directory);
     let run_directory = run_directory.canonicalize().context(
       "failed to validate run directory on host (canonicalize error)",
@@ -149,7 +149,7 @@ impl Resolve<GetComposeServiceLog> for State {
     let command = format!(
       "{docker_compose} -p {project} logs {service} --tail {tail}"
     );
-    Ok(run_monitor_command("get stack log", command).await)
+    Ok(run_komodo_command("get stack log", command).await)
   }
 }
 
@@ -173,7 +173,7 @@ impl Resolve<GetComposeServiceLogSearch> for State {
     let docker_compose = docker_compose();
     let grep = log_grep(&terms, combinator, invert);
     let command = format!("{docker_compose} -p {project} logs {service} --tail 5000 2>&1 | {grep}");
-    Ok(run_monitor_command("get stack log grep", command).await)
+    Ok(run_komodo_command("get stack log grep", command).await)
   }
 }
 
@@ -225,7 +225,7 @@ impl Resolve<ComposeExecution> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let docker_compose = docker_compose();
-    let log = run_monitor_command(
+    let log = run_komodo_command(
       "compose command",
       format!("{docker_compose} -p {project} {command}"),
     )

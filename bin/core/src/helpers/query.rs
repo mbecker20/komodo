@@ -1,7 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
-use monitor_client::entities::{
+use komodo_client::entities::{
   alerter::Alerter,
   build::Build,
   builder::Builder,

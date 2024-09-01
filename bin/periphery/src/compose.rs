@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
-use command::run_monitor_command;
+use command::run_komodo_command;
 use formatting::format_serror;
 use git::write_environment_file;
-use monitor_client::entities::{
+use komodo_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
   stack::{ComposeContents, Stack},
-  to_monitor_name,
+  to_komodo_name,
   update::Log,
   CloneArgs,
 };
@@ -50,7 +50,7 @@ pub async fn compose_up(
 
   let root = periphery_config()
     .stack_dir
-    .join(to_monitor_name(&stack.name));
+    .join(to_komodo_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
   let run_directory = run_directory.canonicalize().context(
     "failed to validate run directory on host after stack write (canonicalize error)",
@@ -144,7 +144,7 @@ pub async fn compose_up(
 
   // Pull images before destroying to minimize downtime.
   // If this fails, do not continue.
-  let log = run_monitor_command(
+  let log = run_komodo_command(
     "compose pull",
     format!(
       "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
@@ -173,7 +173,7 @@ pub async fn compose_up(
       "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
     );
   if stack.config.skip_secret_interp {
-    let log = run_monitor_command("compose up", command).await;
+    let log = run_komodo_command("compose up", command).await;
     res.deployed = log.success;
     res.logs.push(log);
   } else {
@@ -185,7 +185,7 @@ pub async fn compose_up(
     ).context("failed to interpolate periphery secrets into stack run command")?;
     replacers.extend(core_replacers);
 
-    let mut log = run_monitor_command("compose up", command).await;
+    let mut log = run_komodo_command("compose up", command).await;
 
     log.command = svi::replace_in_string(&log.command, &replacers);
     log.stdout = svi::replace_in_string(&log.stdout, &replacers);
@@ -219,7 +219,7 @@ async fn write_stack(
 ) -> anyhow::Result<Option<PathBuf>> {
   let root = periphery_config()
     .stack_dir
-    .join(to_monitor_name(&stack.name));
+    .join(to_komodo_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
   // This will remove any intermediate '/./' in the path, which is a problem for some OS.
   // Cannot use canonicalize yet as directory may not exist.
@@ -394,7 +394,7 @@ async fn destroy_existing_containers(
     .as_ref()
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
-  let log = run_monitor_command(
+  let log = run_komodo_command(
     "destroy container",
     format!("{docker_compose} -p {project} down{service_arg}"),
   )

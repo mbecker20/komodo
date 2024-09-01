@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::{execute::LaunchServer, write::CreateServer},
   entities::{
     permission::PermissionLevel,

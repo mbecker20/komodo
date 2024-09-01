@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   alert::SeverityLevel, deployment::{Deployment, DeploymentState}, docker::{
     container::ContainerListItem, image::ImageListItem,
     network::NetworkListItem, volume::VolumeListItem,

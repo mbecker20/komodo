@@ -14,7 +14,7 @@ def load_version():
 	return version
 
 def load_latest_version():
-	return json.load(urllib.request.urlopen("https://api.github.com/repos/mbecker20/monitor/releases/latest"))["tag_name"]
+	return json.load(urllib.request.urlopen("https://api.github.com/repos/mbecker20/komodo/releases/latest"))["tag_name"]
 
 def load_paths():
 	# Checks if setup.py is passed --user arg
@@ -22,21 +22,21 @@ def load_paths():
 	if user_install:
 		home_dir = os.environ['HOME']
 		return [
-			user_install,
+			True,
 			# binary location
 			f'{home_dir}/.local/bin',
 			# config location
-	 		f'{home_dir}/.config/monitor',
+	 		f'{home_dir}/.config/komodo',
 			# service file location
 	 		f'{home_dir}/.config/systemd/user',
 		]
 	else:
 		return [
-			user_install,
+			False,
 			# binary location
 			"/usr/local/bin",
 			# config location
-	 		"/etc/monitor",
+	 		"/etc/komodo",
 			# service file location
 	 		"/etc/systemd/system",
 		]
@@ -64,7 +64,7 @@ def copy_binary(user_install, bin_dir, version):
 		periphery_bin = "periphery-aarch64"
 
 	# download the binary to bin path
-	print(os.popen(f'curl -sSL https://github.com/mbecker20/monitor/releases/download/{version}/{periphery_bin} > {bin_path}').read())
+	print(os.popen(f'curl -sSL https://github.com/mbecker20/komodo/releases/download/{version}/{periphery_bin} > {bin_path}').read())
 
 	# add executable permissions
 	os.popen(f'chmod +x {bin_path}')
@@ -83,13 +83,15 @@ def copy_config(config_dir):
 	if not os.path.isdir(config_dir):
 		os.makedirs(config_dir)
 
-	print(os.popen(f'curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/config_example/periphery.config.example.toml > {config_dir}/periphery.config.toml').read())
+	print(os.popen(f'curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/config_example/periphery.config.example.toml > {config_dir}/periphery.config.toml').read())
 
-def copy_service_file(bin_dir, config_dir, service_dir):
+def copy_service_file(bin_dir, config_dir, service_dir, user_install):
 	service_file = f'{service_dir}/periphery.service'
 
+	force_service_recopy = sys.argv.count("--force-service-file") > 0
+
 	# early return is service file already exists
-	if os.path.isfile(service_file):
+	if not force_service_recopy and os.path.isfile(service_file):
 		print("service file already exists, skipping...")
 		return
 	
@@ -102,7 +104,7 @@ def copy_service_file(bin_dir, config_dir, service_dir):
 	f = open(service_file, "x")
 	f.write((
 		"[Unit]\n"
-		"Description=agent to connect with monitor core\n"
+		"Description=agent to connect with Komodo Core\n"
 		"\n"
 		"[Service]\n"
 		f'ExecStart={bin_dir}/periphery --config-path {config_dir}/periphery.config.toml\n'
@@ -112,6 +114,11 @@ def copy_service_file(bin_dir, config_dir, service_dir):
 		"[Install]\n"
 		"WantedBy=default.target"
 	))
+
+	user = ""
+	if user_install:
+		user = " --user"
+	os.popen(f'systemctl{user} daemon-reload')
 	
 def main():
 	print("=====================")
@@ -127,9 +134,13 @@ def main():
 	print(f'config dir: {config_dir}')
 	print(f'service file dir: {service_dir}')
 
+	force_service_recopy = sys.argv.count("--force-service-file") > 0
+	if force_service_recopy:
+		print('forcing service file rewrite')
+
 	copy_binary(user_install, bin_dir, version)
 	copy_config(config_dir)
-	copy_service_file(bin_dir, config_dir, service_dir)
+	copy_service_file(bin_dir, config_dir, service_dir, user_install)
 
 	user = ""
 	if user_install:

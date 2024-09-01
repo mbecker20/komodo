@@ -2,9 +2,9 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use formatting::muted;
-use monitor_client::entities::{
+use komodo_client::entities::{
   builder::{AwsBuilderConfig, Builder, BuilderConfig},
-  monitor_timestamp,
+  komodo_timestamp,
   server::Server,
   server_template::aws::AwsServerTemplateConfig,
   update::{Log, Update},
@@ -68,7 +68,7 @@ async fn get_aws_builder(
   config: AwsBuilderConfig,
   update: &mut Update,
 ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
-  let start_create_ts = monitor_timestamp();
+  let start_create_ts = komodo_timestamp();
 
   let version = version.map(|v| format!("-v{v}")).unwrap_or_default();
   let instance_name = format!("BUILDER-{resource_name}{version}");
@@ -85,7 +85,7 @@ async fn get_aws_builder(
     success: true,
     stdout: start_aws_builder_log(&instance_id, &ip, &config),
     start_ts: start_create_ts,
-    end_ts: monitor_timestamp(),
+    end_ts: komodo_timestamp(),
     ..Default::default()
   };
 
@@ -97,7 +97,7 @@ async fn get_aws_builder(
   let periphery =
     PeripheryClient::new(&periphery_address, &core_config().passkey);
 
-  let start_connect_ts = monitor_timestamp();
+  let start_connect_ts = komodo_timestamp();
   let mut res = Ok(GetVersionResponse {
     version: String::new(),
   });
@@ -115,7 +115,7 @@ async fn get_aws_builder(
           version
         ),
         start_ts: start_connect_ts,
-        end_ts: monitor_timestamp(),
+        end_ts: komodo_timestamp(),
         ..Default::default()
       };
       update.logs.push(connect_log);

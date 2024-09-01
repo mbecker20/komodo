@@ -3,16 +3,16 @@ use std::{collections::VecDeque, time::Instant};
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use mongo_indexed::doc;
-use monitor_client::{
+use komodo_client::{
   api::user::{
     CreateApiKey, CreateApiKeyResponse, DeleteApiKey,
     DeleteApiKeyResponse, PushRecentlyViewed,
     PushRecentlyViewedResponse, SetLastSeenUpdate,
     SetLastSeenUpdateResponse,
   },
-  entities::{api_key::ApiKey, monitor_timestamp, user::User},
+  entities::{api_key::ApiKey, komodo_timestamp, user::User},
 };
+use mongo_indexed::doc;
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_bson};
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
@@ -132,7 +132,7 @@ impl Resolve<SetLastSeenUpdate, User> for State {
       &db_client().await.users,
       &user.id,
       mungos::update::Update::Set(doc! {
-        "last_update_view": monitor_timestamp()
+        "last_update_view": komodo_timestamp()
       }),
       None,
     )
@@ -168,7 +168,7 @@ impl Resolve<CreateApiKey, User> for State {
       key: key.clone(),
       secret: secret_hash,
       user_id: user.id.clone(),
-      created_at: monitor_timestamp(),
+      created_at: komodo_timestamp(),
       expires,
     };
     db_client()

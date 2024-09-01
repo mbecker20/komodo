@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_client::entities::stack::{
+use komodo_client::entities::stack::{
   ComposeContents, ComposeFile, ComposeService, Stack,
   StackServiceNames,
 };

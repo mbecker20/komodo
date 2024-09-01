@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   config::{DockerRegistry, GitProvider},
   docker::{
     container::ContainerListItem, image::ImageListItem,

@@ -5,7 +5,7 @@ import {
 } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { cn } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";

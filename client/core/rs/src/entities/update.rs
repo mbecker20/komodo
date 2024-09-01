@@ -4,12 +4,12 @@ use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::entities::{
-  all_logs_success, monitor_timestamp, MongoId, Operation, I64,
+  all_logs_success, komodo_timestamp, MongoId, Operation, I64,
 };
 
 use super::{ResourceTarget, Version};
 
-/// Represents an action performed by Monitor.
+/// Represents an action performed by Komodo.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[cfg_attr(
@@ -97,12 +97,12 @@ impl Update {
 
   pub fn finalize(&mut self) {
     self.success = all_logs_success(&self.logs);
-    self.end_ts = Some(monitor_timestamp());
+    self.end_ts = Some(komodo_timestamp());
     self.status = UpdateStatus::Complete;
   }
 }
 
-/// Minimal representation of an action performed by Monitor.
+/// Minimal representation of an action performed by Komodo.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateListItem {

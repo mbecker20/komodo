@@ -1,8 +1,8 @@
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::Build,
   deployment::Deployment,
-  monitor_timestamp,
+  komodo_timestamp,
   procedure::Procedure,
   repo::Repo,
   server::Server,
@@ -30,7 +30,7 @@ pub fn make_update(
   user: &User,
 ) -> Update {
   Update {
-    start_ts: monitor_timestamp(),
+    start_ts: komodo_timestamp(),
     target: target.into(),
     operation,
     operator: user.id.clone(),

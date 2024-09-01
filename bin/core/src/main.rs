@@ -28,7 +28,7 @@ async fn app() -> anyhow::Result<()> {
   dotenvy::dotenv().ok();
   let config = core_config();
   logger::init(&config.logging)?;
-  info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
+  info!("Komodo Core version: v{}", env!("CARGO_PKG_VERSION"));
   info!("config: {:?}", config.sanitized());
 
   // includes init db_client check to crash on db init failure
@@ -77,7 +77,7 @@ async fn app() -> anyhow::Result<()> {
     .await
     .context("failed to bind to tcp listener")?;
 
-  info!("monitor core listening on {socket_addr}");
+  info!("Komodo Core listening on {socket_addr}");
 
   axum::serve(listener, app).await.context("server crashed")?;
 

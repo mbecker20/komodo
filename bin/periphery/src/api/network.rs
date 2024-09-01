@@ -1,5 +1,5 @@
-use command::run_monitor_command;
-use monitor_client::entities::{
+use command::run_komodo_command;
+use komodo_client::entities::{
   docker::network::Network, update::Log,
 };
 use periphery_client::api::network::*;
@@ -34,7 +34,7 @@ impl Resolve<CreateNetwork> for State {
       None => String::new(),
     };
     let command = format!("docker network create{driver} {name}");
-    Ok(run_monitor_command("create network", command).await)
+    Ok(run_komodo_command("create network", command).await)
   }
 }
 
@@ -48,7 +48,7 @@ impl Resolve<DeleteNetwork> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = format!("docker network rm {name}");
-    Ok(run_monitor_command("delete network", command).await)
+    Ok(run_komodo_command("delete network", command).await)
   }
 }
 
@@ -62,6 +62,6 @@ impl Resolve<PruneNetworks> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker network prune -f");
-    Ok(run_monitor_command("prune networks", command).await)
+    Ok(run_komodo_command("prune networks", command).await)
   }
 }

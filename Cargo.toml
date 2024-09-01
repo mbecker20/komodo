@@ -3,20 +3,20 @@ resolver = "2"
 members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
-version = "1.14.0-dev6"
+version = "1.14.0"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
-repository = "https://github.com/mbecker20/monitor"
-homepage = "https://docs.monitor.dev"
+repository = "https://github.com/mbecker20/komodo"
+homepage = "https://komo.do"
 
 [patch.crates-io]
-# monitor_client = { path = "client/core/rs" }
+# komodo_client = { path = "client/core/rs" }
 
 [workspace.dependencies]
 # LOCAL
-# monitor_client = "1.13.3"
-monitor_client = { path = "client/core/rs" }
+# komodo_client = "1.14.0"
+komodo_client = { path = "client/core/rs" }
 periphery_client = { path = "client/periphery/rs" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }
@@ -36,12 +36,12 @@ derive_variants = "1.0.0"
 mongo_indexed = "2.0.1"
 resolver_api = "1.1.1"
 toml_pretty = "1.1.2"
-mungos = "1.0.1"
+mungos = "1.1.0"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.39.3", features = ["full"] }
-reqwest = { version = "0.12.5", features = ["json"] }
+tokio = { version = "1.40.0", features = ["full"] }
+reqwest = { version = "0.12.7", features = ["json"] }
 tokio-util = "0.7.11"
 futures = "0.3.30"
 futures-util = "0.3.30"
@@ -54,9 +54,9 @@ tokio-tungstenite = "0.23.1"
 
 # SER/DE
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
-serde = { version = "1.0.208", features = ["derive"] }
+serde = { version = "1.0.209", features = ["derive"] }
 strum = { version = "0.26.3", features = ["derive"] }
-serde_json = "1.0.125"
+serde_json = "1.0.127"
 serde_yaml = "0.9.34"
 toml = "0.8.19"
 
@@ -92,15 +92,15 @@ hex = "0.4.3"
 
 # SYSTEM
 bollard = "0.17.1"
-sysinfo = "0.31.2"
+sysinfo = "0.31.4"
 
 # CLOUD
 aws-config = "1.5.5"
-aws-sdk-ec2 = "1.67.0"
-aws-sdk-ecr = "1.41.0"
+aws-sdk-ec2 = "1.70.0"
+aws-sdk-ecr = "1.42.0"
 
 # MISC
-derive_builder = "0.20.0"
+derive_builder = "0.20.1"
 typeshare = "1.0.3"
 octorust = "0.7.0"
 colored = "2.1.0"

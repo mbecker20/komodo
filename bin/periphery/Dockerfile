@@ -2,7 +2,7 @@
 FROM rust:1.80.1-bookworm AS builder
 WORKDIR /builder
 COPY . .
-RUN cargo build -p monitor_periphery --release
+RUN cargo build -p komodo_periphery --release
 
 # Final Image
 FROM debian:bookworm-slim
@@ -18,8 +18,8 @@ COPY --from=builder /builder/target/release/periphery /
 EXPOSE 8120
 
 # Label for Ghcr
-LABEL org.opencontainers.image.source=https://github.com/mbecker20/monitor
-LABEL org.opencontainers.image.description="Monitor Periphery"
+LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
+LABEL org.opencontainers.image.description="Komodo Periphery"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
 # Using ENTRYPOINT allows cli args to be passed, eg using "command" in docker compose.

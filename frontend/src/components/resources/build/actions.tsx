@@ -1,6 +1,6 @@
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Ban, Hammer, Loader2 } from "lucide-react";
 import { useBuilder } from "../builder";
 

@@ -29,7 +29,7 @@ docker compose -f test.compose.yaml up -d --build"""
 
 [test-core]
 description = "runs core --release pointing to test.core.config.toml"
-cmd = "MONITOR_CONFIG_PATH=test.core.config.toml cargo run -p monitor_core --release"
+cmd = "KOMODO_CONFIG_PATH=test.core.config.toml cargo run -p komodo_core --release"
 
 [docsite-start]
 path = "docsite"
@@ -40,4 +40,4 @@ path = "docsite"
 cmd = "yarn deploy"
 
 [rustdoc-server]
-cmd = "cargo watch -s 'cargo doc --no-deps -p monitor_client' & http --quiet target/doc"
+cmd = "cargo watch -s 'cargo doc --no-deps -p komodo_client' & http --quiet target/doc"

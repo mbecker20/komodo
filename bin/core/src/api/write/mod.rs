@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use derive_variants::{EnumVariants, ExtractVariant};
-use monitor_client::{api::write::*, entities::user::User};
+use komodo_client::{api::write::*, entities::user::User};
 use resolver_api::{derive::Resolver, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::Json;

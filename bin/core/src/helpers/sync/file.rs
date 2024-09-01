@@ -2,7 +2,7 @@ use std::{fs, path::Path};
 
 use anyhow::{anyhow, Context};
 use formatting::{colored, muted, Color};
-use monitor_client::entities::{toml::ResourcesToml, update::Log};
+use komodo_client::entities::{toml::ResourcesToml, update::Log};
 use serde::de::DeserializeOwned;
 
 pub fn read_resources(

@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::{anyhow, Context};
-use monitor_client::entities::{
+use komodo_client::entities::{
   sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
 };
 

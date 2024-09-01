@@ -4,7 +4,7 @@ import { Card } from "@ui/card";
 import { Clock, FolderSync } from "lucide-react";
 import { DeleteResource, NewResource } from "../common";
 import { ResourceSyncTable } from "./table";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { ExecuteSync, RefreshSync } from "./actions";
 import { PendingOrConfig } from "./pending-or-config";
 import {

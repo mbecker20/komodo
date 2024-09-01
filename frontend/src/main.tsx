@@ -7,13 +7,13 @@ import { WebsocketProvider } from "@lib/socket";
 import { Toaster } from "@ui/toaster";
 import { atomWithStorage } from "@lib/hooks";
 
-export const AUTH_TOKEN_STORAGE_KEY = "monitor-auth-token";
+export const AUTH_TOKEN_STORAGE_KEY = "komodo-auth-token";
 
-export const MONITOR_BASE_URL =
-  import.meta.env.VITE_MONITOR_HOST ?? location.origin;
+export const KOMODO_BASE_URL =
+  import.meta.env.VITE_KOMODO_HOST ?? location.origin;
 
 export const UPDATE_WS_URL =
-  MONITOR_BASE_URL.replace("http", "ws") + "/ws/update";
+  KOMODO_BASE_URL.replace("http", "ws") + "/ws/update";
 
 const query_client = new QueryClient({
   defaultOptions: { queries: { retry: false } },

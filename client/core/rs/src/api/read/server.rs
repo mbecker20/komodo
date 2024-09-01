@@ -22,7 +22,7 @@ use crate::entities::{
   ResourceTarget, SearchCombinator, Timelength, I64, U64,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -31,7 +31,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(Server)]
 pub struct GetServer {
   /// Id or name
@@ -49,7 +49,7 @@ pub type GetServerResponse = Server;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListServersResponse)]
 pub struct ListServers {
   /// optional structured query to filter servers.
@@ -67,7 +67,7 @@ pub type ListServersResponse = Vec<ServerListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullServersResponse)]
 pub struct ListFullServers {
   /// optional structured query to filter servers.
@@ -85,7 +85,7 @@ pub type ListFullServersResponse = Vec<Server>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetServerStateResponse)]
 pub struct GetServerState {
   /// Id or name
@@ -108,7 +108,7 @@ pub struct GetServerStateResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ServerActionState)]
 pub struct GetServerActionState {
   /// Id or name
@@ -121,13 +121,13 @@ pub type GetServerActionStateResponse = ServerActionState;
 
 //
 
-/// Get the version of the monitor periphery agent on the target server.
+/// Get the version of the Komodo Periphery agent on the target server.
 /// Response: [GetPeripheryVersionResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetPeripheryVersionResponse)]
 pub struct GetPeripheryVersion {
   /// Id or name
@@ -150,7 +150,7 @@ pub struct GetPeripheryVersionResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDockerNetworksResponse)]
 pub struct ListDockerNetworks {
   /// Id or name
@@ -168,7 +168,7 @@ pub type ListDockerNetworksResponse = Vec<NetworkListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerNetworkResponse)]
 pub struct InspectDockerNetwork {
   /// Id or name
@@ -189,7 +189,7 @@ pub type InspectDockerNetworkResponse = Network;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDockerImagesResponse)]
 pub struct ListDockerImages {
   /// Id or name
@@ -207,7 +207,7 @@ pub type ListDockerImagesResponse = Vec<ImageListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerImageResponse)]
 pub struct InspectDockerImage {
   /// Id or name
@@ -227,7 +227,7 @@ pub type InspectDockerImageResponse = Image;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDockerImageHistoryResponse)]
 pub struct ListDockerImageHistory {
   /// Id or name
@@ -249,7 +249,7 @@ pub type ListDockerImageHistoryResponse =
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDockerContainersResponse)]
 pub struct ListDockerContainers {
   /// Id or name
@@ -267,7 +267,7 @@ pub type ListDockerContainersResponse = Vec<ContainerListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerContainerResponse)]
 pub struct InspectDockerContainer {
   /// Id or name
@@ -290,7 +290,7 @@ pub type InspectDockerContainerResponse = Container;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetContainerLogResponse)]
 pub struct GetContainerLog {
   /// Id or name
@@ -322,7 +322,7 @@ pub type GetContainerLogResponse = Log;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(SearchContainerLogResponse)]
 pub struct SearchContainerLog {
   /// Id or name
@@ -353,7 +353,7 @@ pub type SearchContainerLogResponse = Log;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetResourceMatchingContainerResponse)]
 pub struct GetResourceMatchingContainer {
   /// Id or name
@@ -377,7 +377,7 @@ pub struct GetResourceMatchingContainerResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListDockerVolumesResponse)]
 pub struct ListDockerVolumes {
   /// Id or name
@@ -395,7 +395,7 @@ pub type ListDockerVolumesResponse = Vec<VolumeListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerVolumeResponse)]
 pub struct InspectDockerVolume {
   /// Id or name
@@ -416,7 +416,7 @@ pub type InspectDockerVolumeResponse = Volume;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListComposeProjectsResponse)]
 pub struct ListComposeProjects {
   /// Id or name
@@ -435,7 +435,7 @@ pub type ListComposeProjectsResponse = Vec<ComposeProject>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetSystemInformationResponse)]
 pub struct GetSystemInformation {
   /// Id or name
@@ -457,7 +457,7 @@ pub type GetSystemInformationResponse = SystemInformation;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetSystemStatsResponse)]
 pub struct GetSystemStats {
   /// Id or name
@@ -480,7 +480,7 @@ pub type GetSystemStatsResponse = SystemStats;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListSystemProcessesResponse)]
 pub struct ListSystemProcesses {
   /// Id or name
@@ -499,7 +499,7 @@ pub type ListSystemProcessesResponse = Vec<SystemProcess>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetHistoricalServerStatsResponse)]
 pub struct GetHistoricalServerStats {
   /// Id or name
@@ -531,7 +531,7 @@ pub struct GetHistoricalServerStatsResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetServersSummaryResponse)]
 pub struct GetServersSummary {}
 

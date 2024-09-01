@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use monitor_client::entities::{
+use komodo_client::entities::{
   alert::{Alert, AlertData, SeverityLevel},
   stack::{Stack, StackState},
   ResourceTarget,

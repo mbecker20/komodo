@@ -1,5 +1,5 @@
 [package]
-name = "monitor_periphery"
+name = "komodo_periphery"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -16,7 +16,7 @@ path = "src/main.rs"
 [dependencies]
 # local
 periphery_client.workspace = true
-monitor_client.workspace = true
+komodo_client.workspace = true
 formatting.workspace = true
 command.workspace = true
 logger.workspace = true

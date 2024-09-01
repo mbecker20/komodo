@@ -6,11 +6,10 @@ use typeshare::typeshare;
 use crate::entities::{
   build::BuildListItem, deployment::DeploymentListItem,
   procedure::ProcedureListItem, repo::RepoListItem,
-  server::ServerListItem, ResourceTargetVariant,
-  MongoDocument,
+  server::ServerListItem, MongoDocument, ResourceTargetVariant,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -19,7 +18,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(FindResourcesResponse)]
 pub struct FindResources {
   /// The mongo query as JSON

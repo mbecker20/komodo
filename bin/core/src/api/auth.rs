@@ -3,7 +3,7 @@ use std::{sync::OnceLock, time::Instant};
 use anyhow::anyhow;
 use axum::{http::HeaderMap, routing::post, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::{api::auth::*, entities::user::User};
+use komodo_client::{api::auth::*, entities::user::User};
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::Json;

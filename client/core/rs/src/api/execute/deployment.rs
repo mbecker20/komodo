@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::{update::Update, TerminationSignal};
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
 
 /// Deploys the container for the target deployment. Response: [Update].
 ///
@@ -26,7 +26,7 @@ use super::MonitorExecuteRequest;
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct Deploy {
   /// Name or id
@@ -55,7 +55,7 @@ pub struct Deploy {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StartDeployment {
   /// Name or id
@@ -78,7 +78,7 @@ pub struct StartDeployment {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct RestartDeployment {
   /// Name or id
@@ -101,7 +101,7 @@ pub struct RestartDeployment {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PauseDeployment {
   /// Name or id
@@ -126,7 +126,7 @@ pub struct PauseDeployment {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct UnpauseDeployment {
   /// Name or id
@@ -149,7 +149,7 @@ pub struct UnpauseDeployment {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StopDeployment {
   /// Name or id
@@ -177,7 +177,7 @@ pub struct StopDeployment {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DestroyDeployment {
   /// Name or id.

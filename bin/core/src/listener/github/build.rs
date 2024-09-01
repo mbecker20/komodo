@@ -2,7 +2,7 @@ use std::sync::OnceLock;
 
 use anyhow::anyhow;
 use axum::http::HeaderMap;
-use monitor_client::{
+use komodo_client::{
   api::execute::RunBuild,
   entities::{build::Build, user::git_webhook_user},
 };

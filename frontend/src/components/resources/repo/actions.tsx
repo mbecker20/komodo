@@ -8,7 +8,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useRepo } from ".";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useBuilder } from "../builder";
 
 export const CloneRepo = ({ id }: { id: string }) => {

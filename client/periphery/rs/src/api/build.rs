@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   config::core::AwsEcrConfig, update::Log,
 };
 use resolver_api::derive::Request;
@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(BuildResponse)]
 pub struct Build {
-  pub build: monitor_client::entities::build::Build,
+  pub build: komodo_client::entities::build::Build,
   /// Override registry token with one sent from core.
   pub registry_token: Option<String>,
   /// Propogate AwsEcrConfig from core

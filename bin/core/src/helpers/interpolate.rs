@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   update::Update, EnvironmentVar, SystemCommand,
 };
 

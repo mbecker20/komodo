@@ -2,7 +2,7 @@ import { PermissionLevelSelector } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RESOURCE_TARGETS } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { useToast } from "@ui/use-toast";
 
 export const UserTargetPermissionsOnResourceTypes = ({

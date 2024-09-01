@@ -1,7 +1,7 @@
 import { Config } from "@components/config";
 import { InputList } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";

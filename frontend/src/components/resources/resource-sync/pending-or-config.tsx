@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { useState } from "react";
 import { ResourceSyncConfig } from "./config";
 import { Section } from "@components/layouts";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 
 const PENDING_TYPE_KEYS: Array<[string, string]> = [

@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::entities::{
+use komodo_client::entities::{
   stack::{ComposeContents, Stack},
   update::Log,
   CloneArgs,

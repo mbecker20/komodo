@@ -5,11 +5,11 @@ use std::{
 };
 
 use anyhow::Context;
-use command::run_monitor_command;
+use command::run_komodo_command;
 use formatting::{bold, format_serror, muted};
-use monitor_client::entities::{
-  all_logs_success, environment_vars_to_string, monitor_timestamp,
-  to_monitor_name, update::Log, CloneArgs, EnvironmentVar,
+use komodo_client::entities::{
+  all_logs_success, environment_vars_to_string, komodo_timestamp,
+  to_komodo_name, update::Log, CloneArgs, EnvironmentVar,
   LatestCommit, SystemCommand,
 };
 use run_command::async_run_command;
@@ -41,7 +41,7 @@ pub async fn pull(
   let command =
     format!("cd {} && git pull -f origin {branch}", path.display());
 
-  let pull_log = run_monitor_command("git pull", command).await;
+  let pull_log = run_komodo_command("git pull", command).await;
 
   let mut logs = vec![pull_log];
 
@@ -50,7 +50,7 @@ pub async fn pull(
   }
 
   if let Some(commit) = commit {
-    let reset_log = run_monitor_command(
+    let reset_log = run_komodo_command(
       "set commit",
       format!("cd {} && git reset --hard {commit}", path.display()),
     )
@@ -110,7 +110,7 @@ pub async fn pull(
             }
           };
         replacers.extend(core_replacers.to_owned());
-        let mut on_pull_log = run_monitor_command(
+        let mut on_pull_log = run_komodo_command(
           "on pull",
           format!("cd {} && {full_command}", on_pull_path.display()),
         )
@@ -131,7 +131,7 @@ pub async fn pull(
 
         logs.push(on_pull_log);
       } else {
-        let on_pull_log = run_monitor_command(
+        let on_pull_log = run_komodo_command(
           "on pull",
           format!(
             "cd {} && {}",
@@ -199,7 +199,7 @@ where
     .context("resource has no provider attached")?;
   let repo =
     repo.as_ref().context("resource has no repo attached")?;
-  let name = to_monitor_name(&name);
+  let name = to_komodo_name(&name);
 
   let repo_dir = match destination {
     Some(destination) => PathBuf::from_str(&destination)
@@ -268,7 +268,7 @@ where
             "failed to interpolate secrets into on_clone command",
           )?;
         replacers.extend(core_replacers.to_owned());
-        let mut on_clone_log = run_monitor_command(
+        let mut on_clone_log = run_komodo_command(
           "on clone",
           format!("cd {} && {full_command}", on_clone_path.display()),
         )
@@ -289,7 +289,7 @@ where
 
         logs.push(on_clone_log);
       } else {
-        let on_clone_log = run_monitor_command(
+        let on_clone_log = run_komodo_command(
           "on clone",
           format!(
             "cd {} && {}",
@@ -322,7 +322,7 @@ where
             "failed to interpolate secrets into on_pull command",
           )?;
         replacers.extend(core_replacers.to_owned());
-        let mut on_pull_log = run_monitor_command(
+        let mut on_pull_log = run_komodo_command(
           "on pull",
           format!("cd {} && {full_command}", on_pull_path.display()),
         )
@@ -343,7 +343,7 @@ where
 
         logs.push(on_pull_log);
       } else {
-        let on_pull_log = run_monitor_command(
+        let on_pull_log = run_komodo_command(
           "on pull",
           format!(
             "cd {} && {}",
@@ -392,7 +392,7 @@ async fn clone_inner(
     format!("{protocol}://{access_token_at}{provider}/{repo}.git");
   let command =
     format!("git clone {repo_url} {}{branch}", destination.display());
-  let start_ts = monitor_timestamp();
+  let start_ts = komodo_timestamp();
   let output = async_run_command(&command).await;
   let success = output.success();
   let (command, stderr) = if !access_token_at.is_empty() {
@@ -412,7 +412,7 @@ async fn clone_inner(
     stdout: output.stdout,
     stderr,
     start_ts,
-    end_ts: monitor_timestamp(),
+    end_ts: komodo_timestamp(),
   }];
 
   if !logs[0].success {
@@ -420,7 +420,7 @@ async fn clone_inner(
   }
 
   if let Some(commit) = commit {
-    let reset_log = run_monitor_command(
+    let reset_log = run_komodo_command(
       "set commit",
       format!(
         "cd {} && git reset --hard {commit}",
@@ -460,7 +460,7 @@ pub async fn get_commit_hash_info(
 pub async fn get_commit_hash_log(
   repo_dir: &Path,
 ) -> anyhow::Result<(Log, String, String)> {
-  let start_ts = monitor_timestamp();
+  let start_ts = komodo_timestamp();
   let command = format!("cd {} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B", repo_dir.display());
   let output = async_run_command(&command).await;
   let mut split = output.stdout.split('\n');
@@ -488,7 +488,7 @@ pub async fn get_commit_hash_log(
     stderr: String::new(),
     success: true,
     start_ts,
-    end_ts: monitor_timestamp(),
+    end_ts: komodo_timestamp(),
   };
   Ok((log, short_hash, msg))
 }

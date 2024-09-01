@@ -1,7 +1,7 @@
 import { AlertsTable } from "@components/alert/table";
 import { Page } from "@components/layouts";
 import { useRead, useResourceParamType } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Label } from "@ui/label";
 import {

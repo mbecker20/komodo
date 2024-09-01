@@ -1,4 +1,4 @@
-use monitor_client::entities::{
+use komodo_client::entities::{
   config::core::AwsEcrConfig,
   deployment::Deployment,
   docker::container::{Container, ContainerStats},

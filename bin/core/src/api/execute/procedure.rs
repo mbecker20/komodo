@@ -1,7 +1,7 @@
 use std::pin::Pin;
 
 use formatting::{bold, colored, format_serror, muted, Color};
-use monitor_client::{
+use komodo_client::{
   api::execute::RunProcedure,
   entities::{
     permission::PermissionLevel, procedure::Procedure,

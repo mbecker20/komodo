@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use anyhow::Context;
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::execute::*,
   entities::{
     permission::PermissionLevel, stack::StackInfo, update::Update,

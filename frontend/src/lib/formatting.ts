@@ -1,4 +1,4 @@
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export const fmt_date = (d: Date) => {
   const hours = d.getHours();

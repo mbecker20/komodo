@@ -1,12 +1,12 @@
-import { AUTH_TOKEN_STORAGE_KEY, MONITOR_BASE_URL } from "@main";
-import { MonitorClient as Client, Types } from "@monitor/client";
+import { AUTH_TOKEN_STORAGE_KEY, KOMODO_BASE_URL } from "@main";
+import { KomodoClient as Client, Types } from "@komodo/client";
 import {
   AuthResponses,
   ExecuteResponses,
   ReadResponses,
   UserResponses,
   WriteResponses,
-} from "@monitor/client/dist/responses";
+} from "@komodo/client/dist/responses";
 import {
   UseMutationOptions,
   UseQueryOptions,
@@ -25,7 +25,7 @@ import { useParams } from "react-router-dom";
 const token = () => ({
   jwt: localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ?? "",
 });
-const client = () => Client(MONITOR_BASE_URL, { type: "jwt", params: token() });
+const client = () => Client(KOMODO_BASE_URL, { type: "jwt", params: token() });
 
 export const useLoginOptions = () =>
   useQuery({
@@ -339,7 +339,7 @@ export const useShiftKeyListener = (listenKey: string, onPress: () => void) => {
   });
 };
 
-// Returns true if monitor has no resources.
+// Returns true if Komodo has no resources.
 export const useNoResources = () => {
   const servers =
     useRead("ListServers", {}, { refetchInterval: 5000 }).data?.length ?? 0;

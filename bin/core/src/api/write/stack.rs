@@ -1,10 +1,10 @@
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
-use monitor_client::{
+use komodo_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
     server::ServerState,
     stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
@@ -112,7 +112,7 @@ impl Resolve<RenameStack, User> for State {
       &db_client().await.stacks,
       &stack.id,
       mungos::update::Update::Set(
-        doc! { "name": &name, "updated_at": monitor_timestamp() },
+        doc! { "name": &name, "updated_at": komodo_timestamp() },
       ),
       None,
     )

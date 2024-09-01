@@ -2,7 +2,7 @@ use std::sync::OnceLock;
 
 use anyhow::{anyhow, Context};
 use jwt::Token;
-use monitor_client::entities::config::core::{
+use komodo_client::entities::config::core::{
   CoreConfig, OauthCredentials,
 };
 use reqwest::StatusCode;
@@ -73,7 +73,7 @@ impl GoogleOauthClient {
       client_id: id.clone(),
       client_secret: secret.clone(),
       redirect_uri: format!("{host}/auth/google/callback"),
-      user_agent: String::from("monitor"),
+      user_agent: String::from("komodo"),
       states: Default::default(),
       scopes,
     }

@@ -1,6 +1,6 @@
 # File Paths
 
-When working with monitor, you might have to configure file or directory paths.
+When working with Komodo, you might have to configure file or directory paths.
 
 ## Relative Paths
 

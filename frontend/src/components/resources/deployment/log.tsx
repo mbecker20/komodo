@@ -1,6 +1,6 @@
 import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { RefreshCw, X, AlertOctagon } from "lucide-react";
 import { ReactNode, useState } from "react";

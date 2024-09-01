@@ -6,15 +6,15 @@ use bollard::{
   network::InspectNetworkOptions,
   Docker,
 };
-use command::run_monitor_command;
-use monitor_client::entities::{
+use command::run_komodo_command;
+use komodo_client::entities::{
   build::{ImageRegistry, StandardRegistryConfig},
   config::core::AwsEcrConfig,
   docker::{
     container::*, image::*, network::*, volume::*, ContainerConfig,
     GraphDriverData, HealthConfig, PortBinding,
   },
-  to_monitor_name,
+  to_komodo_name,
   update::Log,
   TerminationSignal,
 };
@@ -971,7 +971,7 @@ pub async fn docker_login(
 #[instrument]
 pub async fn pull_image(image: &str) -> Log {
   let command = format!("docker pull {image}");
-  run_monitor_command("docker pull", command).await
+  run_komodo_command("docker pull", command).await
 }
 
 pub fn stop_container_command(
@@ -979,7 +979,7 @@ pub fn stop_container_command(
   signal: Option<TerminationSignal>,
   time: Option<i32>,
 ) -> String {
-  let container_name = to_monitor_name(container_name);
+  let container_name = to_komodo_name(container_name);
   let signal = signal
     .map(|signal| format!(" --signal {signal}"))
     .unwrap_or_default();

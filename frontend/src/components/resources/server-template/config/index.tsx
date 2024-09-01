@@ -1,7 +1,7 @@
 import { useRead } from "@lib/hooks";
 import { AwsServerTemplateConfig } from "./aws";
 import { HetznerServerTemplateConfig } from "./hetzner";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export const ServerTemplateConfig = ({ id }: { id: string }) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data

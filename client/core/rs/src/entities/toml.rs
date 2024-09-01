@@ -12,7 +12,7 @@ use super::{
   variable::Variable, ResourceTarget, ResourceTargetVariant,
 };
 
-/// Specifies resources to sync on monitor
+/// Specifies resources to sync on Komodo
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ResourcesToml {
   #[serde(

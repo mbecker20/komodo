@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
 
 /// Runs the target procedure. Response: [Update]
 #[typeshare]
@@ -20,7 +20,7 @@ use super::MonitorExecuteRequest;
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct RunProcedure {
   /// Id or name

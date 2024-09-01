@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
-use monitor_client::{
+use komodo_client::{
   api::{
     execute::Execution,
     read::{
@@ -42,7 +42,7 @@ use serde_json::Value;
 
 use crate::{
   helpers::query::get_user_user_group_ids,
-  resource::{self, MonitorResource},
+  resource::{self, KomodoResource},
   state::{db_client, State},
 };
 
@@ -742,7 +742,7 @@ async fn add_user_groups(
   Ok(())
 }
 
-fn convert_resource<R: MonitorResource>(
+fn convert_resource<R: KomodoResource>(
   resource: Resource<R::Config, R::Info>,
   tag_names: &HashMap<String, String>,
 ) -> ResourceToml<R::PartialConfig> {

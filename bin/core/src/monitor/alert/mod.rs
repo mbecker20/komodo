@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   resource::ResourceQuery,
   server::{Server, ServerListItem},
   user::User,

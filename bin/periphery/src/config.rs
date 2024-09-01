@@ -1,11 +1,11 @@
 use std::sync::OnceLock;
 
 use clap::Parser;
-use merge_config_files::parse_config_paths;
-use monitor_client::entities::{
+use komodo_client::entities::{
   config::periphery::{CliArgs, Env, PeripheryConfig},
   logger::{LogConfig, LogLevel},
 };
+use merge_config_files::parse_config_paths;
 
 pub fn periphery_config() -> &'static PeripheryConfig {
   static PERIPHERY_CONFIG: OnceLock<PeripheryConfig> =

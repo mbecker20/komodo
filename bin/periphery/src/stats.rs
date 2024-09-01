@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, sync::OnceLock};
 
 use async_timing_util::wait_until_timelength;
-use monitor_client::entities::stats::{
+use komodo_client::entities::stats::{
   SingleDiskUsage, SystemInformation, SystemProcess, SystemStats,
 };
 use sysinfo::System;

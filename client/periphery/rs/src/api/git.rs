@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use monitor_client::entities::{
+use komodo_client::entities::{
   update::Log, CloneArgs, EnvironmentVar, LatestCommit, SystemCommand,
 };
 use resolver_api::derive::Request;

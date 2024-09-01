@@ -1,9 +1,8 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use mongo_indexed::doc;
-use monitor_client::entities::{
-  monitor_timestamp,
+use komodo_client::entities::{
+  komodo_timestamp,
   resource::Resource,
   sync::{
     PartialResourceSyncConfig, PendingSyncUpdatesData, ResourceSync,
@@ -15,6 +14,7 @@ use monitor_client::entities::{
   user::User,
   Operation, ResourceTargetVariant,
 };
+use mongo_indexed::doc;
 use mungos::{
   find::find_collect,
   mongodb::{options::FindOneOptions, Collection},
@@ -24,7 +24,7 @@ use crate::state::{
   action_states, db_client, resource_sync_state_cache,
 };
 
-impl super::MonitorResource for ResourceSync {
+impl super::KomodoResource for ResourceSync {
   type Config = ResourceSyncConfig;
   type PartialConfig = PartialResourceSyncConfig;
   type ConfigDiff = ResourceSyncConfigDiff;
@@ -135,7 +135,7 @@ impl super::MonitorResource for ResourceSync {
         doc! { "target.type": "ResourceSync", "target.id": &resource.id },
         doc! { "$set": {
           "resolved": true,
-          "resolved_ts": monitor_timestamp()
+          "resolved_ts": komodo_timestamp()
         } },
       )
       .await

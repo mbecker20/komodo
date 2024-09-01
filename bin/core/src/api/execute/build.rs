@@ -3,7 +3,7 @@ use std::{collections::HashSet, future::IntoFuture, time::Duration};
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use futures::future::join_all;
-use monitor_client::{
+use komodo_client::{
   api::execute::{CancelBuild, Deploy, RunBuild},
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
@@ -12,9 +12,9 @@ use monitor_client::{
     builder::{Builder, BuilderConfig},
     config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
-    monitor_timestamp,
+    komodo_timestamp,
     permission::PermissionLevel,
-    to_monitor_name,
+    to_komodo_name,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
   },
@@ -327,7 +327,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
           doc! { "$set": {
             "config.version": to_bson(&build.config.version)
               .context("failed at converting version to bson")?,
-            "info.last_built_at": monitor_timestamp(),
+            "info.last_built_at": komodo_timestamp(),
             "info.built_hash": &update.commit_hash,
             "info.built_message": commit_message
           }},
@@ -371,8 +371,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
         let alert = Alert {
           id: Default::default(),
           target,
-          ts: monitor_timestamp(),
-          resolved_ts: Some(monitor_timestamp()),
+          ts: komodo_timestamp(),
+          resolved_ts: Some(komodo_timestamp()),
           resolved: true,
           level: SeverityLevel::Warning,
           data: AlertData::BuildFailed {
@@ -420,8 +420,8 @@ async fn handle_early_return(
       let alert = Alert {
         id: Default::default(),
         target,
-        ts: monitor_timestamp(),
-        resolved_ts: Some(monitor_timestamp()),
+        ts: komodo_timestamp(),
+        resolved_ts: Some(komodo_timestamp()),
         resolved: true,
         level: SeverityLevel::Warning,
         data: AlertData::BuildFailed {
@@ -630,7 +630,7 @@ async fn validate_account_extract_registry_token_aws_ecr(
           .await
           .context("failed to get aws ecr token")?;
           ecr::maybe_create_repo(
-            &to_monitor_name(&build.name),
+            &to_komodo_name(&build.name),
             region.to_string(),
             access_key_id,
             secret_access_key,

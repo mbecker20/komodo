@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::builder::{Builder, PartialBuilderConfig};
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -14,7 +14,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
 pub struct CreateBuilder {
   /// The name given to newly created builder.
@@ -31,7 +31,7 @@ pub struct CreateBuilder {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
 pub struct CopyBuilder {
   /// The name of the new builder.
@@ -48,7 +48,7 @@ pub struct CopyBuilder {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
 pub struct DeleteBuilder {
   /// The id or name of the builder to delete.
@@ -69,7 +69,7 @@ pub struct DeleteBuilder {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
 pub struct UpdateBuilder {
   /// The id of the builder to update.

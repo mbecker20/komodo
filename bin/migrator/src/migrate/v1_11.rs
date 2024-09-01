@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::Build, deployment::Deployment,
 };
 use mungos::{

@@ -12,7 +12,7 @@ use tracing::{info, info_span, warn, Instrument};
 use typeshare::typeshare;
 use uuid::Uuid;
 
-use crate::{entities::update::UpdateListItem, MonitorClient};
+use crate::{entities::update::UpdateListItem, KomodoClient};
 
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -56,7 +56,7 @@ pub enum UpdateWsError {
 
 const MAX_SHORT_RETRY_COUNT: usize = 5;
 
-impl MonitorClient {
+impl KomodoClient {
   pub fn subscribe_to_updates(
     &self,
     capacity: usize,
@@ -117,7 +117,7 @@ impl MonitorClient {
               let mut ws =
                 match connect_async(&address).await.with_context(|| {
                   format!(
-                    "failed to connect to monitor websocket at {address}"
+                    "failed to connect to Komodo update websocket at {address}"
                   )
                 }) {
                   Ok((ws, _)) => ws,

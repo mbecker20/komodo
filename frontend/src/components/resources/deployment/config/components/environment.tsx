@@ -1,6 +1,6 @@
 import { ConfigItem, SecretSelector } from "@components/config/util";
 import { useRead } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Textarea } from "@ui/textarea";
 import { RefObject, createRef } from "react";
 

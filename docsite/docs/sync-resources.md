@@ -1,6 +1,6 @@
 # Sync Resources
 
-Monitor is able to create, update, delete, and deploy resources declared in TOML files by diffing them against the existing resources, 
+Komodo is able to create, update, delete, and deploy resources declared in TOML files by diffing them against the existing resources, 
 and apply updates based on the diffs. Push the files to a remote git repo and create a `ResourceSync` pointing to the repo,
 and the core backend will poll for any updates (you can also manually trigger an update poll / execution in the UI).
 
@@ -16,13 +16,13 @@ automatically execute syncs upon pushes to the configured branch.
 
 ### Server
 
-- [Server config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/server/struct.ServerConfig.html)
+- [Server config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/server/struct.ServerConfig.html)
 
 ```toml
 [[server]] # Declare a new server
-name = "server-01"
-description = "the main mogh server"
-tags = ["monitor"]
+name = "server-prod"
+description = "the prod server"
+tags = ["prod"]
 config.address = "http://localhost:8120"
 config.region = "AshburnDc1"
 config.enabled = true # default: false
@@ -30,8 +30,8 @@ config.enabled = true # default: false
 
 ### Builder and build
 
-- [Builder config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/builder/struct.BuilderConfig.html)
-- [Build config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/build/struct.BuildConfig.html)
+- [Builder config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/builder/struct.BuilderConfig.html)
+- [Build config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html)
 
 ```toml
 [[builder]] # Declare a builder
@@ -73,7 +73,7 @@ org.opencontainers.image.licenses = GPL-3.0"""
 
 ### Deployments
 
-- [Deployment config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/deployment/struct.DeploymentConfig.html)
+- [Deployment config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/deployment/struct.DeploymentConfig.html)
 
 ```toml
 [[variable]] # Declare variables
@@ -131,7 +131,7 @@ config.labels = "deployment.type = logger"
 
 ### Stack
 
-- [Stack config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/stack/struct.StackConfig.html)
+- [Stack config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/stack/struct.StackConfig.html)
 
 ```toml
 [[stack]]
@@ -140,7 +140,7 @@ description = "stack test"
 deploy = true
 after = ["test-logger-01"] # Stacks can depend on deployments, and vice versa.
 tags = ["test"]
-config.server_id = "monitor-01"
+config.server_id = "server-prod"
 config.file_paths = ["mongo.yaml", "redis.yaml"]
 config.git_provider = "git.mogh.tech"
 config.git_account = "mbecker20" # clone private repo by specifying account
@@ -149,7 +149,7 @@ config.repo = "mbecker20/stack_test"
 
 ### Procedure
 
-- [Procedure config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/procedure/struct.ProcedureConfig.html)
+- [Procedure config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/procedure/struct.ProcedureConfig.html)
 
 ```toml
 [[procedure]]
@@ -164,7 +164,7 @@ enabled = true
 # The executions within a stage will be run in parallel. The stage completes when all executions finish.
 executions = [
   { execution.type = "RunBuild", execution.params.build = "test_logger", enabled = true },
-  { execution.type = "PullRepo", execution.params.repo = "monitor-periphery", enabled = true },
+  { execution.type = "PullRepo", execution.params.repo = "komodo-periphery", enabled = true },
 ]
 
 [[procedure.config.stage]]
@@ -184,25 +184,27 @@ executions = [
 
 ### Repo
 
-- [Repo config schema](https://docs.rs/monitor_client/latest/monitor_client/entities/repo/struct.RepoConfig.html)
+- [Repo config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/repo/struct.RepoConfig.html)
 
 ```toml
 [[repo]]
-name = "monitor-periphery"
+name = "komodo-periphery"
 description = "Builds new versions of the periphery binary. Requires Rust installed on the host."
-tags = ["monitor"]
+tags = ["komodo"]
 config.server_id = "server-01"
 config.git_provider = "git.mogh.tech" # use an alternate git provider (default is github.com)
 config.git_account = "mbecker20"
-config.repo = "mbecker20/monitor"
+config.repo = "mbecker20/komodo"
 # Run an action after the repo is pulled
 config.on_pull.path = "."
-config.on_pull.command = "/root/.cargo/bin/cargo build -p monitor_periphery --release && cp ./target/release/periphery /root/periphery"
+config.on_pull.command = """
+/root/.cargo/bin/cargo build -p komodo_periphery --release && \
+cp ./target/release/periphery /root/periphery"""
 ```
 
 ### User Group:
 
-- [UserGroup schema](https://docs.rs/monitor_client/latest/monitor_client/entities/toml/struct.UserGroupToml.html)
+- [UserGroup schema](https://docs.rs/komodo_client/latest/komodo_client/entities/toml/struct.UserGroupToml.html)
 
 ```toml
 [[user_group]]
@@ -213,7 +215,7 @@ all.Build = "Execute"
 all.Alerter = "Write"
 permissions = [
   # Attach permissions to specific resources by name
-  { target.type = "Repo", target.id = "monitor-periphery", level = "Execute" },
+  { target.type = "Repo", target.id = "komodo-periphery", level = "Execute" },
   # Attach permissions to many resources with name matching regex (this uses '^(.+)-(.+)$' as regex expression)
   { target.type = "Server", target.id = "\\^(.+)-(.+)$\\", level = "Read" },
   { target.type = "Deployment", target.id = "\\^immich\\", level = "Execute" },

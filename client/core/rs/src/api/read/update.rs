@@ -8,7 +8,7 @@ use crate::entities::{
   MongoDocument,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// Get all data for the target update.
 /// Response: [Update].
@@ -16,7 +16,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetUpdateResponse)]
 pub struct GetUpdate {
   /// The update id.
@@ -34,7 +34,7 @@ pub type GetUpdateResponse = Update;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListUpdatesResponse)]
 pub struct ListUpdates {
   /// An optional mongo query to filter the updates.

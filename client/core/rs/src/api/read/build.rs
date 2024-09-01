@@ -10,7 +10,7 @@ use crate::entities::{
   Version, I64,
 };
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 //
 
@@ -19,7 +19,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetBuildResponse)]
 pub struct GetBuild {
   /// Id or name
@@ -37,7 +37,7 @@ pub type GetBuildResponse = Build;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListBuildsResponse)]
 pub struct ListBuilds {
   /// optional structured query to filter builds.
@@ -55,7 +55,7 @@ pub type ListBuildsResponse = Vec<BuildListItem>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListFullBuildsResponse)]
 pub struct ListFullBuilds {
   /// optional structured query to filter builds.
@@ -73,7 +73,7 @@ pub type ListFullBuildsResponse = Vec<Build>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetBuildActionStateResponse)]
 pub struct GetBuildActionState {
   /// Id or name
@@ -92,7 +92,7 @@ pub type GetBuildActionStateResponse = BuildActionState;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetBuildsSummaryResponse)]
 pub struct GetBuildsSummary {}
 
@@ -100,7 +100,7 @@ pub struct GetBuildsSummary {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct GetBuildsSummaryResponse {
-  /// The total number of builds in monitor.
+  /// The total number of builds in Komodo.
   pub total: u32,
   /// The number of builds with Ok state.
   pub ok: u32,
@@ -123,7 +123,7 @@ pub struct GetBuildsSummaryResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetBuildMonthlyStatsResponse)]
 pub struct GetBuildMonthlyStats {
   /// Query for older data by incrementing the page.
@@ -184,7 +184,7 @@ impl GetBuildMonthlyStatsResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListBuildVersionsResponse)]
 pub struct ListBuildVersions {
   /// Id or name
@@ -218,7 +218,7 @@ pub struct BuildVersionResponseItem {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListCommonBuildExtraArgsResponse)]
 pub struct ListCommonBuildExtraArgs {
   /// optional structured query to filter builds.
@@ -236,7 +236,7 @@ pub type ListCommonBuildExtraArgsResponse = Vec<String>;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetBuildWebhookEnabledResponse)]
 pub struct GetBuildWebhookEnabled {
   /// Id or name

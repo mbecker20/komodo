@@ -1,13 +1,13 @@
 use async_timing_util::wait_until_timelength;
 use futures::future::join_all;
 use helpers::insert_stacks_status_unknown;
-use monitor_client::entities::{
+use komodo_client::entities::{
   deployment::DeploymentState,
   docker::{
     container::ContainerListItem, image::ImageListItem,
     network::NetworkListItem, volume::VolumeListItem,
   },
-  monitor_timestamp,
+  komodo_timestamp,
   server::{Server, ServerHealth, ServerState},
   stack::{ComposeProject, StackService, StackState},
   stats::SystemStats,
@@ -88,7 +88,7 @@ pub fn spawn_monitor_loop() {
     .try_into()
     .expect("Invalid monitoring interval");
   tokio::spawn(async move {
-    refresh_server_cache(monitor_timestamp()).await;
+    refresh_server_cache(komodo_timestamp()).await;
     loop {
       let ts = (wait_until_timelength(interval, ADDITIONAL_MS).await
         - ADDITIONAL_MS) as i64;

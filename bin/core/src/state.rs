@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::Context;
-use monitor_client::entities::{
+use komodo_client::entities::{
   build::BuildState,
   config::core::{CoreConfig, GithubWebhookAppConfig},
   deployment::DeploymentState,

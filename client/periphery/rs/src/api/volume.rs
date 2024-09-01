@@ -1,4 +1,4 @@
-use monitor_client::entities::{docker::volume::Volume, update::Log};
+use komodo_client::entities::{docker::volume::Volume, update::Log};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 

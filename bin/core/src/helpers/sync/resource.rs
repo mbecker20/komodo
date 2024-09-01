@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
-use monitor_client::{
+use komodo_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
     self, alerter::Alerter, build::Build, builder::Builder,
@@ -16,7 +16,7 @@ use mungos::find::find_collect;
 use partial_derive2::{Diff, FieldDiff, MaybeNone};
 use resolver_api::Resolve;
 
-use crate::{resource::MonitorResource, state::State};
+use crate::{resource::KomodoResource, state::State};
 
 pub type ToUpdate<T> = Vec<ToUpdateItem<T>>;
 pub type ToCreate<T> = Vec<ResourceToml<T>>;
@@ -32,7 +32,7 @@ pub struct ToUpdateItem<T: Default> {
   pub update_tags: bool,
 }
 
-pub trait ResourceSync: MonitorResource + Sized {
+pub trait ResourceSync: KomodoResource + Sized {
   fn resource_target(id: String) -> ResourceTarget;
 
   /// Apply any changes to incoming toml partial config

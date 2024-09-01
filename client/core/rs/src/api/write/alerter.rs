@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::alerter::{Alerter, _PartialAlerterConfig};
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -14,7 +14,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
 pub struct CreateAlerter {
   /// The name given to newly created alerter.
@@ -31,7 +31,7 @@ pub struct CreateAlerter {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
 pub struct CopyAlerter {
   /// The name of the new alerter.
@@ -48,7 +48,7 @@ pub struct CopyAlerter {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
 pub struct DeleteAlerter {
   /// The id or name of the alerter to delete.
@@ -67,7 +67,7 @@ pub struct DeleteAlerter {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
 pub struct UpdateAlerter {
   /// The id of the alerter to update.

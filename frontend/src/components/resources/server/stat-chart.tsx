@@ -1,7 +1,7 @@
 import { hex_color_by_intention } from "@lib/color";
 import { useRead } from "@lib/hooks";
 import { convertTsMsToLocalUnixTsInSecs } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import {
   ColorType,
   IChartApi,

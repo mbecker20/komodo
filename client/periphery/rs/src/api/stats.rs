@@ -1,4 +1,4 @@
-use monitor_client::entities::stats::{
+use komodo_client::entities::stats::{
   SystemInformation, SystemProcess, SystemStats,
 };
 use resolver_api::derive::Request;

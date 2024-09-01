@@ -2,7 +2,7 @@
 extern crate tracing;
 
 use colored::Colorize;
-use monitor_client::api::read::GetVersion;
+use komodo_client::api::read::GetVersion;
 
 mod args;
 mod exec;
@@ -13,9 +13,14 @@ mod state;
 async fn main() -> anyhow::Result<()> {
   tracing_subscriber::fmt().with_target(false).init();
 
+  info!(
+    "Komodo CLI version: {}",
+    env!("CARGO_PKG_VERSION").blue().bold()
+  );
+
   let version =
-    state::monitor_client().read(GetVersion {}).await?.version;
-  info!("monitor version: {}", version.to_string().blue().bold());
+    state::komodo_client().read(GetVersion {}).await?.version;
+  info!("Komodo Core version: {}", version.blue().bold());
 
   match &state::cli_args().command {
     args::Command::Execute { execution } => {

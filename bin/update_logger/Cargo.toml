@@ -11,7 +11,7 @@ repository.workspace = true
 
 [dependencies]
 # local
-monitor_client.workspace = true
+komodo_client.workspace = true
 logger.workspace = true
 # external
 tokio.workspace = true

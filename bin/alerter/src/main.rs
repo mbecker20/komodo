@@ -5,7 +5,7 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::{routing::post, Json, Router};
-use monitor_client::entities::alert::{Alert, SeverityLevel};
+use komodo_client::entities::alert::{Alert, SeverityLevel};
 use serde::Deserialize;
 
 #[derive(Deserialize)]

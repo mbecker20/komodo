@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{alert::Alert, MongoDocument, I64, U64};
 
-use super::MonitorReadRequest;
+use super::KomodoReadRequest;
 
 /// Get a paginated list of alerts sorted by timestamp descending.
 /// Response: [ListAlertsResponse].
@@ -13,7 +13,7 @@ use super::MonitorReadRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(ListAlertsResponse)]
 pub struct ListAlerts {
   /// Pass a custom mongo query to filter the alerts.
@@ -64,7 +64,7 @@ pub struct ListAlertsResponse {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorReadRequest)]
+#[empty_traits(KomodoReadRequest)]
 #[response(GetAlertResponse)]
 pub struct GetAlert {
   pub id: String,

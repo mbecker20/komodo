@@ -1,4 +1,4 @@
-use monitor_client::{
+use komodo_client::{
   api::write::{
     CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter,
   },

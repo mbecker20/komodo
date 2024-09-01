@@ -1,7 +1,7 @@
 import { ConfigItem } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { useRead, useWrite } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Card, CardHeader } from "@ui/card";
 import { Input } from "@ui/input";
 import { useEffect, useState } from "react";

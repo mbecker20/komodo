@@ -1,11 +1,11 @@
 use std::time::Duration;
 
 use colored::Colorize;
-use monitor_client::api::execute::Execution;
+use komodo_client::api::execute::Execution;
 
 use crate::{
   helpers::wait_for_enter,
-  state::{cli_args, monitor_client},
+  state::{cli_args, komodo_client},
 };
 
 pub async fn run(execution: Execution) -> anyhow::Result<()> {
@@ -157,127 +157,127 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
 
   let res = match execution {
     Execution::RunProcedure(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RunBuild(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::CancelBuild(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::Deploy(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StartDeployment(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RestartDeployment(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PauseDeployment(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::UnpauseDeployment(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StopDeployment(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DestroyDeployment(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::CloneRepo(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PullRepo(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::BuildRepo(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::CancelRepoBuild(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StartContainer(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RestartContainer(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PauseContainer(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::UnpauseContainer(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StopContainer(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DestroyContainer(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StartAllContainers(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RestartAllContainers(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PauseAllContainers(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::UnpauseAllContainers(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StopAllContainers(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PruneContainers(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DeleteNetwork(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PruneNetworks(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DeleteImage(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PruneImages(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DeleteVolume(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PruneVolumes(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PruneSystem(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RunSync(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DeployStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StartStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::RestartStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::PauseStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::UnpauseStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::StopStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::DestroyStack(request) => {
-      monitor_client().execute(request).await
+      komodo_client().execute(request).await
     }
     Execution::Sleep(request) => {
       let duration =

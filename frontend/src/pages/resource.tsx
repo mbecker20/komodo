@@ -14,7 +14,7 @@ import {
   useSetTitle,
 } from "@lib/hooks";
 import { has_minimum_permissions, usableResourcePath } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
 import { AlertTriangle, ChevronLeft, Clapperboard } from "lucide-react";

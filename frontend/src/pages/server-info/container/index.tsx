@@ -15,7 +15,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContainerLogs } from "./log";
 import { Actions } from "./actions";
 import { has_minimum_permissions } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { ResourceUpdates } from "@components/updates/resource";
 import { container_state_intention } from "@lib/color";
 import { UsableResource } from "@types";

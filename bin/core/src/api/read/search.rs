@@ -1,4 +1,4 @@
-use monitor_client::{
+use komodo_client::{
   api::read::{FindResources, FindResourcesResponse},
   entities::{
     build::Build, deployment::Deployment, procedure::Procedure,

@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context};
-use monitor_client::{
+use komodo_client::{
   api::write::{
     CreateVariable, CreateVariableResponse, DeleteVariable,
     DeleteVariableResponse, UpdateVariableDescription,

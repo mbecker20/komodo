@@ -18,7 +18,7 @@ pub struct LogConfig {
 }
 
 fn default_opentelemetry_service_name() -> String {
-  String::from("Monitor")
+  String::from("Komodo")
 }
 
 impl Default for LogConfig {

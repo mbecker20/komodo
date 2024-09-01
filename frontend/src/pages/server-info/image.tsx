@@ -11,7 +11,7 @@ import {
 import { fmt_date_with_minutes, format_size_bytes } from "@lib/formatting";
 import { useExecute, useRead, useSetTitle } from "@lib/hooks";
 import { has_minimum_permissions } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";

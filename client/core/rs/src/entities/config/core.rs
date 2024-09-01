@@ -1,9 +1,9 @@
-//! # Configuring the Core API
+//! # Configuring the Komodo Core API
 //!
-//! Monitor core is configured by parsing base configuration file ([CoreConfig]), and overriding
+//! Komodo Core is configured by parsing base configuration file ([CoreConfig]), and overriding
 //! any fields given in the file with ones provided on the environment ([Env]).
 //!
-//! The recommended method for running monitor core is via the docker image. This image has a default
+//! The recommended method for running Komodo Core is via the docker image. This image has a default
 //! configuration file provided in the image, meaning any custom configuration can be provided
 //! on the environment alone. However, if a custom configuration file is prefered, it can be mounted
 //! into the image at `/config/config.toml`.
@@ -20,125 +20,126 @@ use crate::entities::{
 
 use super::{DockerRegistry, GitProvider};
 
-/// # Monitor Core Environment Variables
+/// # Komodo Core Environment Variables
 ///
 /// You can override any fields of the [CoreConfig] by passing the associated
 /// environment variable. The variables should be passed in the traditional `UPPER_SNAKE_CASE` format,
 /// although the lower case format can still be parsed.
 ///
-/// *Note.* The monitor core docker image includes the default core configuration found in
-/// the `mbecker20/monitor/config_example` folder of the repo. To configure the core api,
-/// you can either mount your own custom configuration file to `/config/config.toml` inside the container,
+/// *Note.* The Komodo Core docker image includes the default core configuration found at
+/// [https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml](https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml).
+/// To configure the core api, you can either mount your own custom configuration file to
+/// `/config/config.toml` inside the container,
 /// or simply override whichever fields you need using the environment.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Env {
   /// Specify a custom config path for the core config toml.
   /// Default: `/config/config.toml`
   #[serde(default = "default_config_path")]
-  pub monitor_config_path: String,
+  pub komodo_config_path: String,
 
   /// Override `title`
-  pub monitor_title: Option<String>,
+  pub komodo_title: Option<String>,
   /// Override `host`
-  pub monitor_host: Option<String>,
+  pub komodo_host: Option<String>,
   /// Override `port`
-  pub monitor_port: Option<u16>,
+  pub komodo_port: Option<u16>,
   /// Override `passkey`
-  pub monitor_passkey: Option<String>,
+  pub komodo_passkey: Option<String>,
   /// Override `ensure_server`
-  pub monitor_ensure_server: Option<String>,
+  pub komodo_ensure_server: Option<String>,
   /// Override `jwt_secret`
-  pub monitor_jwt_secret: Option<String>,
+  pub komodo_jwt_secret: Option<String>,
   /// Override `jwt_ttl`
-  pub monitor_jwt_ttl: Option<Timelength>,
+  pub komodo_jwt_ttl: Option<Timelength>,
   /// Override `repo_directory`
-  pub monitor_repo_directory: Option<String>,
+  pub komodo_repo_directory: Option<String>,
   /// Override `sync_poll_interval`
-  pub monitor_sync_poll_interval: Option<Timelength>,
+  pub komodo_sync_poll_interval: Option<Timelength>,
   /// Override `stack_poll_interval`
-  pub monitor_stack_poll_interval: Option<Timelength>,
+  pub komodo_stack_poll_interval: Option<Timelength>,
   /// Override `build_poll_interval`
-  pub monitor_build_poll_interval: Option<Timelength>,
+  pub komodo_build_poll_interval: Option<Timelength>,
   /// Override `repo_poll_interval`
-  pub monitor_repo_poll_interval: Option<Timelength>,
+  pub komodo_repo_poll_interval: Option<Timelength>,
   /// Override `monitoring_interval`
-  pub monitor_monitoring_interval: Option<Timelength>,
+  pub komodo_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
-  pub monitor_keep_stats_for_days: Option<u64>,
+  pub komodo_keep_stats_for_days: Option<u64>,
   /// Override `keep_alerts_for_days`
-  pub monitor_keep_alerts_for_days: Option<u64>,
+  pub komodo_keep_alerts_for_days: Option<u64>,
   /// Override `webhook_secret`
-  pub monitor_webhook_secret: Option<String>,
+  pub komodo_webhook_secret: Option<String>,
   /// Override `webhook_base_url`
-  pub monitor_webhook_base_url: Option<String>,
+  pub komodo_webhook_base_url: Option<String>,
 
   /// Override `logging.level`
-  pub monitor_logging_level: Option<LogLevel>,
+  pub komodo_logging_level: Option<LogLevel>,
   /// Override `logging.stdio`
-  pub monitor_logging_stdio: Option<StdioLogMode>,
+  pub komodo_logging_stdio: Option<StdioLogMode>,
   /// Override `logging.otlp_endpoint`
-  pub monitor_logging_otlp_endpoint: Option<String>,
+  pub komodo_logging_otlp_endpoint: Option<String>,
   /// Override `logging.opentelemetry_service_name`
-  pub monitor_logging_opentelemetry_service_name: Option<String>,
+  pub komodo_logging_opentelemetry_service_name: Option<String>,
 
   /// Override `transparent_mode`
-  pub monitor_transparent_mode: Option<bool>,
+  pub komodo_transparent_mode: Option<bool>,
   /// Override `ui_write_disabled`
-  pub monitor_ui_write_disabled: Option<bool>,
+  pub komodo_ui_write_disabled: Option<bool>,
   /// Override `enable_new_users`
-  pub monitor_enable_new_users: Option<bool>,
+  pub komodo_enable_new_users: Option<bool>,
 
   /// Override `local_auth`
-  pub monitor_local_auth: Option<bool>,
+  pub komodo_local_auth: Option<bool>,
 
   /// Override `google_oauth.enabled`
-  pub monitor_google_oauth_enabled: Option<bool>,
+  pub komodo_google_oauth_enabled: Option<bool>,
   /// Override `google_oauth.id`
-  pub monitor_google_oauth_id: Option<String>,
+  pub komodo_google_oauth_id: Option<String>,
   /// Override `google_oauth.secret`
-  pub monitor_google_oauth_secret: Option<String>,
+  pub komodo_google_oauth_secret: Option<String>,
 
   /// Override `github_oauth.enabled`
-  pub monitor_github_oauth_enabled: Option<bool>,
+  pub komodo_github_oauth_enabled: Option<bool>,
   /// Override `github_oauth.id`
-  pub monitor_github_oauth_id: Option<String>,
+  pub komodo_github_oauth_id: Option<String>,
   /// Override `github_oauth.secret`
-  pub monitor_github_oauth_secret: Option<String>,
+  pub komodo_github_oauth_secret: Option<String>,
 
   /// Override `github_webhook_app.app_id`
-  pub monitor_github_webhook_app_app_id: Option<i64>,
+  pub komodo_github_webhook_app_app_id: Option<i64>,
   /// Override `github_webhook_app.installations[i].id`. Accepts comma seperated list.
   ///
-  /// Note. Paired by index with values in `monitor_github_webhook_app_installations_namespaces`
-  pub monitor_github_webhook_app_installations_ids: Option<Vec<i64>>,
+  /// Note. Paired by index with values in `komodo_github_webhook_app_installations_namespaces`
+  pub komodo_github_webhook_app_installations_ids: Option<Vec<i64>>,
   /// Override `github_webhook_app.installations[i].namespace`. Accepts comma seperated list.
   ///
-  /// Note. Paired by index with values in `monitor_github_webhook_app_installations_ids`
-  pub monitor_github_webhook_app_installations_namespaces:
+  /// Note. Paired by index with values in `komodo_github_webhook_app_installations_ids`
+  pub komodo_github_webhook_app_installations_namespaces:
     Option<Vec<String>>,
   /// Override `github_webhook_app.pk_path`
-  pub monitor_github_webhook_app_pk_path: Option<String>,
+  pub komodo_github_webhook_app_pk_path: Option<String>,
 
   /// Override `mongo.uri`
-  pub monitor_mongo_uri: Option<String>,
+  pub komodo_mongo_uri: Option<String>,
   /// Override `mongo.address`
-  pub monitor_mongo_address: Option<String>,
+  pub komodo_mongo_address: Option<String>,
   /// Override `mongo.username`
-  pub monitor_mongo_username: Option<String>,
+  pub komodo_mongo_username: Option<String>,
   /// Override `mongo.password`
-  pub monitor_mongo_password: Option<String>,
+  pub komodo_mongo_password: Option<String>,
   /// Override `mongo.app_name`
-  pub monitor_mongo_app_name: Option<String>,
+  pub komodo_mongo_app_name: Option<String>,
   /// Override `mongo.db_name`
-  pub monitor_mongo_db_name: Option<String>,
+  pub komodo_mongo_db_name: Option<String>,
 
   /// Override `aws.access_key_id`
-  pub monitor_aws_access_key_id: Option<String>,
+  pub komodo_aws_access_key_id: Option<String>,
   /// Override `aws.secret_access_key`
-  pub monitor_aws_secret_access_key: Option<String>,
+  pub komodo_aws_secret_access_key: Option<String>,
 
   /// Override `hetzner.token`
-  pub monitor_hetzner_token: Option<String>,
+  pub komodo_hetzner_token: Option<String>,
 }
 
 fn default_config_path() -> String {
@@ -148,27 +149,28 @@ fn default_config_path() -> String {
 /// # Core Configuration File
 ///
 /// The Core API initializes it's configuration by reading the environment,
-/// parsing the [CoreConfig] schema from the file path specified by `env.monitor_config_path`,
+/// parsing the [CoreConfig] schema from the file path specified by `env.komodo_config_path`,
 /// and then applying any config field overrides specified in the environment.
 ///
-/// *Note.* The monitor core docker image includes the default core configuration found below.
-/// To configure the core api, you can either mount your own custom configuration file
-/// to `/config/config.toml` inside the container, or simply override whichever fields
-/// you need using the environment.
+/// *Note.* The Komodo Core docker image includes the default core configuration found at
+/// [https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml](https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml).
+/// To configure the core api, you can either mount your own custom configuration file to
+/// `/config/config.toml` inside the container,
+/// or simply override whichever fields you need using the environment.
 ///
-/// Refer to the [example file](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml) for a full example.
+/// Refer to the [example file](https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml) for a full example.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
   // ===========
   // = General =
   // ===========
-  /// The title of this monitor deployment. Will be used in the browser page title.
-  /// Default: 'Monitor'
+  /// The title of this Komodo Core deployment. Will be used in the browser page title.
+  /// Default: 'Komodo'
   #[serde(default = "default_title")]
   pub title: String,
 
   /// The host to use with oauth redirect url, whatever host
-  /// the user hits to access monitor. eg `https://monitor.mogh.tech`.
+  /// the user hits to access Komodo. eg `https://komodo.domain.com`.
   /// Only used if oauth used without user specifying redirect url themselves.
   #[serde(default)]
   pub host: String,
@@ -188,7 +190,7 @@ pub struct CoreConfig {
 
   /// If defined, ensure an enabled server exists at this address.
   /// Use with All In One compose.
-  /// Example: `http://monitor-periphery:8120`
+  /// Example: `http://komodo-periphery:8120`
   #[serde(default)]
   pub ensure_server: String,
 
@@ -249,15 +251,15 @@ pub struct CoreConfig {
   pub webhook_secret: String,
 
   /// Override the webhook listener base url, if None will use the address defined as 'host'.
-  /// Example: `https://webhooks.mogh.tech`
+  /// Example: `https://webhooks.komo.do`
   ///
-  /// This can be used if core sits on an internal network which is
+  /// This can be used if Komodo Core sits on an internal network which is
   /// unreachable directly from the open internet.
-  /// A reverse proxy in a public network can forward webhooks to the internal monitor.
+  /// A reverse proxy in a public network can forward webhooks to Komodo.
   pub webhook_base_url: Option<String>,
 
   /// Configure a Github Webhook app.
-  /// Allows users to manage repo webhooks from within the Monitor UI.
+  /// Allows users to manage repo webhooks from within the Komodo UI.
   #[serde(default)]
   pub github_webhook_app: GithubWebhookAppConfig,
 
@@ -367,7 +369,7 @@ pub struct CoreConfig {
 }
 
 fn default_title() -> String {
-  String::from("Monitor")
+  String::from("Komodo")
 }
 
 fn default_core_port() -> u16 {
@@ -530,21 +532,21 @@ pub struct MongoConfig {
   pub username: Option<String>,
   /// Mongo user password
   pub password: Option<String>,
-  /// Mongo app name. default: `monitor_core`
+  /// Mongo app name. default: `komodo_core`
   #[serde(default = "default_core_mongo_app_name")]
   pub app_name: String,
   /// Mongo db name. Which mongo database to create the collections in.
-  /// Default: `monitor`.
+  /// Default: `komodo`.
   #[serde(default = "default_core_mongo_db_name")]
   pub db_name: String,
 }
 
 fn default_core_mongo_app_name() -> String {
-  "monitor_core".to_string()
+  "komodo_core".to_string()
 }
 
 fn default_core_mongo_db_name() -> String {
-  "monitor".to_string()
+  "komodo".to_string()
 }
 
 impl Default for MongoConfig {
@@ -560,7 +562,7 @@ impl Default for MongoConfig {
   }
 }
 
-/// Provide AWS credentials for monitor to use.
+/// Provide AWS credentials for Komodo to use.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AwsCredentials {
   /// The aws ACCESS_KEY_ID
@@ -569,7 +571,7 @@ pub struct AwsCredentials {
   pub secret_access_key: String,
 }
 
-/// Provide Hetzner credentials for monitor to use.
+/// Provide Hetzner credentials for Komodo to use.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct HetznerCredentials {
   pub token: String,

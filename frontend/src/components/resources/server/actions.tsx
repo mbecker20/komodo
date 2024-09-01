@@ -6,7 +6,7 @@ import { Pen, Scissors } from "lucide-react";
 import { useState } from "react";
 import { useServer } from ".";
 import { has_minimum_permissions } from "@lib/utils";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 
 export const RenameServer = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();

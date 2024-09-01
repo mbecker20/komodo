@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Context};
-use command::run_monitor_command;
+use command::run_komodo_command;
 use futures::future::join_all;
-use monitor_client::entities::{
+use komodo_client::entities::{
   docker::container::{Container, ContainerListItem, ContainerStats},
-  to_monitor_name,
+  to_komodo_name,
   update::Log,
 };
 use periphery_client::api::container::*;
@@ -46,7 +46,7 @@ impl Resolve<GetContainerLog> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = format!("docker logs {name} --tail {tail}");
-    Ok(run_monitor_command("get container log", command).await)
+    Ok(run_komodo_command("get container log", command).await)
   }
 }
 
@@ -71,7 +71,7 @@ impl Resolve<GetContainerLogSearch> for State {
     let grep = log_grep(&terms, combinator, invert);
     let command =
       format!("docker logs {name} --tail 5000 2>&1 | {grep}");
-    Ok(run_monitor_command("get container log grep", command).await)
+    Ok(run_komodo_command("get container log grep", command).await)
   }
 }
 
@@ -124,7 +124,7 @@ impl Resolve<StartContainer> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(
-      run_monitor_command(
+      run_komodo_command(
         "docker start",
         format!("docker start {name}"),
       )
@@ -143,7 +143,7 @@ impl Resolve<RestartContainer> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(
-      run_monitor_command(
+      run_komodo_command(
         "docker restart",
         format!("docker restart {name}"),
       )
@@ -162,7 +162,7 @@ impl Resolve<PauseContainer> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(
-      run_monitor_command(
+      run_komodo_command(
         "docker pause",
         format!("docker pause {name}"),
       )
@@ -179,7 +179,7 @@ impl Resolve<UnpauseContainer> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(
-      run_monitor_command(
+      run_komodo_command(
         "docker unpause",
         format!("docker unpause {name}"),
       )
@@ -198,10 +198,10 @@ impl Resolve<StopContainer> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = stop_container_command(&name, signal, time);
-    let log = run_monitor_command("docker stop", command).await;
+    let log = run_komodo_command("docker stop", command).await;
     if log.stderr.contains("unknown flag: --signal") {
       let command = stop_container_command(&name, None, time);
-      let mut log = run_monitor_command("docker stop", command).await;
+      let mut log = run_komodo_command("docker stop", command).await;
       log.stderr = format!(
         "old docker version: unable to use --signal flag{}",
         if !log.stderr.is_empty() {
@@ -230,12 +230,12 @@ impl Resolve<RemoveContainer> for State {
     let command =
       format!("{stop_command} && docker container rm {name}");
     let log =
-      run_monitor_command("docker stop and remove", command).await;
+      run_komodo_command("docker stop and remove", command).await;
     if log.stderr.contains("unknown flag: --signal") {
       let stop_command = stop_container_command(&name, None, time);
       let command =
         format!("{stop_command} && docker container rm {name}");
-      let mut log = run_monitor_command("docker stop", command).await;
+      let mut log = run_komodo_command("docker stop", command).await;
       log.stderr = format!(
         "old docker version: unable to use --signal flag{}",
         if !log.stderr.is_empty() {
@@ -263,9 +263,9 @@ impl Resolve<RenameContainer> for State {
     }: RenameContainer,
     _: (),
   ) -> anyhow::Result<Log> {
-    let new = to_monitor_name(&new_name);
+    let new = to_komodo_name(&new_name);
     let command = format!("docker rename {curr_name} {new}");
-    Ok(run_monitor_command("docker rename", command).await)
+    Ok(run_komodo_command("docker rename", command).await)
   }
 }
 
@@ -279,7 +279,7 @@ impl Resolve<PruneContainers> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker container prune -f");
-    Ok(run_monitor_command("prune containers", command).await)
+    Ok(run_komodo_command("prune containers", command).await)
   }
 }
 
@@ -301,7 +301,7 @@ impl Resolve<StartAllContainers> for State {
         |ContainerListItem { name, .. }| {
           let command = format!("docker start {name}");
           async move {
-            run_monitor_command(&command.clone(), command).await
+            run_komodo_command(&command.clone(), command).await
           }
         },
       );
@@ -326,7 +326,7 @@ impl Resolve<RestartAllContainers> for State {
       |ContainerListItem { name, .. }| {
         let command = format!("docker restart {name}");
         async move {
-          run_monitor_command(&command.clone(), command).await
+          run_komodo_command(&command.clone(), command).await
         }
       },
     );
@@ -351,7 +351,7 @@ impl Resolve<PauseAllContainers> for State {
       |ContainerListItem { name, .. }| {
         let command = format!("docker pause {name}");
         async move {
-          run_monitor_command(&command.clone(), command).await
+          run_komodo_command(&command.clone(), command).await
         }
       },
     );
@@ -376,7 +376,7 @@ impl Resolve<UnpauseAllContainers> for State {
       |ContainerListItem { name, .. }| {
         let command = format!("docker unpause {name}");
         async move {
-          run_monitor_command(&command.clone(), command).await
+          run_komodo_command(&command.clone(), command).await
         }
       },
     );
@@ -399,7 +399,7 @@ impl Resolve<StopAllContainers> for State {
       .context("failed to list all containers on host")?;
     let futures = containers.iter().map(
       |ContainerListItem { name, .. }| async move {
-        run_monitor_command(
+        run_komodo_command(
           &format!("docker stop {name}"),
           stop_container_command(name, None, None),
         )

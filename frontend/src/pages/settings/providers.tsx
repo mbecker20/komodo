@@ -6,7 +6,7 @@ import {
   useUser,
   useWrite,
 } from "@lib/hooks";
-import { Types } from "@monitor/client";
+import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Card } from "@ui/card";
 import { DataTable, SortableHeader } from "@ui/data-table";
@@ -125,7 +125,7 @@ const Providers = ({ type }: { type: "GitProvider" | "DockerRegistry" }) => {
                       setUpdateMenuData({
                         title: "Set Domain",
                         value: row.original.domain ?? "",
-                        placeholder: "Input domain, eg. git.monitor.dev",
+                        placeholder: "Input domain, eg. git.komo.do",
                         titleRight:
                           type === "GitProvider" ? (
                             <UpdateHttps id={row.original._id?.$oid!} />

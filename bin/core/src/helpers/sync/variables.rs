@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
-use monitor_client::{
+use komodo_client::{
   api::write::{
     CreateVariable, DeleteVariable, UpdateVariableDescription, UpdateVariableIsSecret, UpdateVariableValue
   },

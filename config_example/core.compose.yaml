@@ -1,57 +1,59 @@
 services:
-  monitor-core:
-    image: ghcr.io/mbecker20/monitor:latest ## use ghcr.io/mbecker20/monitor:latest-aarch64 for arm support
+  komodo-core:
+    image: ghcr.io/mbecker20/komodo:latest ## use ghcr.io/mbecker20/komodo:latest-aarch64 for arm support
     restart: unless-stopped
     depends_on:
-      - monitor-mongo
+      - komodo-mongo
     logging:
       driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
     networks:
-      - monitor-network
+      - komodo-network
     ports:
       - 9120:9120
     extra_hosts: # allows for local periphery connection at "http://host.docker.internal:8120"
       - host.docker.internal:host-gateway
-    environment: # https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml
-      MONITOR_HOST: https://demo.monitor.dev
-      MONITOR_TITLE: Monitor # Change the app title, displayed in the browser tab.
+    environment: # https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml
+      KOMODO_HOST: https://demo.komo.do
+      KOMODO_TITLE: Komodo # Change the app title, displayed in the browser tab.
       ## MONGO
-      MONITOR_MONGO_ADDRESS: monitor-mongo:27017
-      MONITOR_MONGO_USERNAME: admin # match ones below
-      MONITOR_MONGO_PASSWORD: admin
+      KOMODO_MONGO_ADDRESS: komodo-mongo:27017
+      KOMODO_MONGO_USERNAME: admin # match ones below
+      KOMODO_MONGO_PASSWORD: admin
       ## KEYS
-      MONITOR_PASSKEY: a_random_passkey # used to auth against periphery
-      MONITOR_WEBHOOK_SECRET: a_random_secret # used to authenticate incoming webhooks
-      MONITOR_JWT_SECRET: a_random_jwt_secret # Optional. If empty, will have to log in again on restart.
+      KOMODO_PASSKEY: a_random_passkey # used to auth against periphery
+      KOMODO_WEBHOOK_SECRET: a_random_secret # used to authenticate incoming webhooks
+      KOMODO_JWT_SECRET: a_random_jwt_secret # Optional. If empty, will have to log in again on restart.
       ## AUTH
-      MONITOR_LOCAL_AUTH: true # the default is false.
-      # MONITOR_GITHUB_OAUTH_ENABLED: true # also support google oauth
-      # MONITOR_GITHUB_OAUTH_ID: your_oauth_id
-      # MONITOR_GITHUB_OAUTH_SECRET: your_oauth_secret
+      KOMODO_LOCAL_AUTH: true # the default is false.
+      # KOMODO_GITHUB_OAUTH_ENABLED: true # also support google oauth
+      # KOMODO_GITHUB_OAUTH_ID: your_oauth_id
+      # KOMODO_GITHUB_OAUTH_SECRET: your_oauth_secret
       ## AWS
-      # MONITOR_AWS_ACCESS_KEY_ID: your_aws_key_id
-      # MONITOR_AWS_SECRET_ACCESS_KEY: your_secret_access_key
+      # KOMODO_AWS_ACCESS_KEY_ID: your_aws_key_id
+      # KOMODO_AWS_SECRET_ACCESS_KEY: your_secret_access_key
       ## HETZNER
-      # MONITOR_HETZNER_TOKEN: your_hetzner_token
+      # KOMODO_HETZNER_TOKEN: your_hetzner_token
 
-  monitor-mongo:
+  komodo-mongo:
     image: mongo
     command: --quiet # suppress mongo logs a bit
     restart: unless-stopped
     logging:
       driver: local
     networks:
-      - monitor-network
+      - komodo-network
     ports:
       - 27017:27017
     volumes:
       - db-data:/data/db
+      - db-config:/data/configdb
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin # change these
       MONGO_INITDB_ROOT_PASSWORD: admin
 
 volumes:
   db-data:
+  db-config:
 
 networks:
-  monitor-network: {}
+  komodo-network: {}

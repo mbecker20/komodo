@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use anyhow::anyhow;
-use monitor_client::{
+use komodo_client::{
   busy::Busy,
   entities::{
     build::BuildActionState, deployment::DeploymentActionState,

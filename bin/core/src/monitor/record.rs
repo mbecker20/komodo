@@ -1,4 +1,4 @@
-use monitor_client::entities::stats::{
+use komodo_client::entities::stats::{
   sum_disk_usage, SystemStatsRecord, TotalDiskUsage,
 };
 

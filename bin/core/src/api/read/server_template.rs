@@ -1,6 +1,6 @@
 use anyhow::Context;
 use mongo_indexed::Document;
-use monitor_client::{
+use komodo_client::{
   api::read::*,
   entities::{
     permission::PermissionLevel, server_template::ServerTemplate,

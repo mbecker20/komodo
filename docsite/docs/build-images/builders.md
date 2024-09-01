@@ -1,13 +1,13 @@
 # Builders
 
-A builder is a machine running monitor periphery and docker, which is able to handle a RunBuild command from monitor core. Any server connected to monitor can be chosen as the builder for a build.
+A builder is a machine running the Komodo Periphery agent (and usually docker), which is able to handle a RunBuild / BuildRepo command from Komodo core. Any server connected to Komodo can be chosen as the builder for a build.
 
-Building on a machine running production software is usually not a great idea, as this process can use a lot of system resources. It is better to start up a temporary cloud machine dedicated for the build, then shut it down when the build is finished. Monitor supports AWS EC2 for this task.
+Building on a machine running production software is usually not a great idea, as this process can use a lot of system resources. It is better to start up a temporary cloud machine dedicated for the build, then shut it down when the build is finished. Komodo supports AWS EC2 for this task.
 
 ## AWS builder
 
-Builders are now monitor resources, and are managed via the core API / can be updated using the UI.
-To use this feature, you need an AWS EC2 AMI with docker and monitor periphery configured to run on system start.
+Builders are now Komodo resources, and are managed via the core API / can be updated using the UI.
+To use this feature, you need an AWS EC2 AMI with docker and Komodo Periphery configured to run on system start.
 Once you create your builder and add the necessary configuration, it will be available to attach to builds.
 
 ### Setup the instance
@@ -22,7 +22,7 @@ apt upgrade -y
 curl -fsSL https://get.docker.com | sh
 systemctl enable docker.service
 systemctl enable containerd.service
-curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3
+curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3
 systemctl enable periphery.service
 ```
 
@@ -46,4 +46,4 @@ Once Periphery is running, you can navigate to the instance in the AWS UI and ch
 The AMI will provide a unique id starting with `ami-`, use this with the builder configuration.
 
 ### Configure security groups / firewall
-The builders will need inbound access on port 8120 from monitor core, be sure to add a security group with this rule to the Builder configuration.
+The builders will need inbound access on port 8120 from Komodo Core, be sure to add a security group with this rule to the Builder configuration.

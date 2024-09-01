@@ -8,7 +8,7 @@ use crate::entities::{
   update::Update,
 };
 
-use super::MonitorWriteRequest;
+use super::KomodoWriteRequest;
 
 //
 
@@ -17,7 +17,7 @@ use super::MonitorWriteRequest;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Server)]
 pub struct CreateServer {
   /// The name given to newly created server.
@@ -34,7 +34,7 @@ pub struct CreateServer {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Server)]
 pub struct DeleteServer {
   /// The id or name of the server to delete.
@@ -55,7 +55,7 @@ pub struct DeleteServer {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Server)]
 pub struct UpdateServer {
   /// The id of the server to update.
@@ -71,7 +71,7 @@ pub struct UpdateServer {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
 pub struct RenameServer {
   /// The id of the server to rename.
@@ -88,7 +88,7 @@ pub struct RenameServer {
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
-#[empty_traits(MonitorWriteRequest)]
+#[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
 pub struct CreateNetwork {
   /// Id or name

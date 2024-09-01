@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::{update::Update, TerminationSignal};
 
-use super::MonitorExecuteRequest;
+use super::KomodoExecuteRequest;
 
 // =============
 // = CONTAINER =
@@ -26,7 +26,7 @@ use super::MonitorExecuteRequest;
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StartContainer {
   /// Name or id
@@ -51,7 +51,7 @@ pub struct StartContainer {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct RestartContainer {
   /// Name or id
@@ -76,7 +76,7 @@ pub struct RestartContainer {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PauseContainer {
   /// Name or id
@@ -103,7 +103,7 @@ pub struct PauseContainer {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct UnpauseContainer {
   /// Name or id
@@ -128,7 +128,7 @@ pub struct UnpauseContainer {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StopContainer {
   /// Name or id
@@ -158,7 +158,7 @@ pub struct StopContainer {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DestroyContainer {
   /// Name or id
@@ -185,7 +185,7 @@ pub struct DestroyContainer {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StartAllContainers {
   /// Name or id
@@ -206,7 +206,7 @@ pub struct StartAllContainers {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct RestartAllContainers {
   /// Name or id
@@ -227,7 +227,7 @@ pub struct RestartAllContainers {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PauseAllContainers {
   /// Name or id
@@ -248,7 +248,7 @@ pub struct PauseAllContainers {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct UnpauseAllContainers {
   /// Name or id
@@ -269,7 +269,7 @@ pub struct UnpauseAllContainers {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct StopAllContainers {
   /// Name or id
@@ -292,7 +292,7 @@ pub struct StopAllContainers {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PruneContainers {
   /// Id or name
@@ -316,7 +316,7 @@ pub struct PruneContainers {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DeleteNetwork {
   /// Id or name.
@@ -341,7 +341,7 @@ pub struct DeleteNetwork {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PruneNetworks {
   /// Id or name
@@ -363,7 +363,7 @@ pub struct PruneNetworks {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DeleteImage {
   /// Id or name.
@@ -388,7 +388,7 @@ pub struct DeleteImage {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PruneImages {
   /// Id or name
@@ -410,7 +410,7 @@ pub struct PruneImages {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DeleteVolume {
   /// Id or name.
@@ -433,7 +433,7 @@ pub struct DeleteVolume {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PruneVolumes {
   /// Id or name
@@ -454,7 +454,7 @@ pub struct PruneVolumes {
   EmptyTraits,
   Parser,
 )]
-#[empty_traits(MonitorExecuteRequest)]
+#[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct PruneSystem {
   /// Id or name
