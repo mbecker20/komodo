@@ -90,6 +90,9 @@ def copy_service_file(bin_dir, config_dir, service_dir, user_install):
 
 	force_service_recopy = sys.argv.count("--force-service-file") > 0
 
+	if force_service_recopy:
+		print("forcing service file recreation")
+
 	# early return is service file already exists
 	if os.path.isfile(service_file):
 		if force_service_recopy:
