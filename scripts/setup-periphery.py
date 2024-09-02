@@ -93,6 +93,7 @@ def copy_service_file(bin_dir, config_dir, service_dir, user_install):
 	# early return is service file already exists
 	if os.path.isfile(service_file):
 		if force_service_recopy:
+			print("deleting existing service file")
 			os.remove(service_file)
 		else:
 			print("service file already exists, skipping...")
