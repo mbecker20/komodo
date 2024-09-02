@@ -1,6 +1,6 @@
 # Changelog
 
-## <ins>Komodo v1.13 (Sep 2024)</ins>
+## <ins>Komodo v1.14 (Sep 2024)</ins>
 - Renamed the project to **Komodo**.
 - Manage docker networks, volumes, and images.
 - Manage Containers at the server level, without creating any Deployment.
