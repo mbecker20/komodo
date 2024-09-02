@@ -91,9 +91,12 @@ def copy_service_file(bin_dir, config_dir, service_dir, user_install):
 	force_service_recopy = sys.argv.count("--force-service-file") > 0
 
 	# early return is service file already exists
-	if not force_service_recopy and os.path.isfile(service_file):
-		print("service file already exists, skipping...")
-		return
+	if os.path.isfile(service_file):
+		if force_service_recopy:
+			os.remove(service_file)
+		else:
+			print("service file already exists, skipping...")
+			return
 	
 	print(f'creating service file at {service_file}')
 	
