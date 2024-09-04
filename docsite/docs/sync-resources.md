@@ -30,7 +30,7 @@ config.enabled = true # default: false
 
 ### Builder and build
 
-- [Builder config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/builder/struct.BuilderConfig.html)
+- [Builder config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/builder/enum.BuilderConfig.html)
 - [Build config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html)
 
 ```toml
