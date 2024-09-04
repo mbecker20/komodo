@@ -119,6 +119,9 @@ export const Variables = () => {
                 <SortableHeader column={column} title="Value" />
               ),
               cell: ({ row }) => {
+                const valueDisplay = row.original.is_secret
+                  ? "*".repeat(row.original.value?.length || 0)
+                  : row.original.value;
                 return (
                   <div className="flex items-center gap-2">
                     <Card
@@ -138,7 +141,7 @@ export const Variables = () => {
                       }}
                     >
                       <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis text-muted-foreground w-[200px] xl:w-[240px] 2xl:w-[340px]">
-                        {row.original.value || "Set value"}
+                        {valueDisplay || "Set value"}
                       </div>
                     </Card>
                     <CopyButton content={row.original.value} />
