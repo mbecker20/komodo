@@ -15,6 +15,7 @@ import { ThemeToggle } from "@ui/theme";
 import { AUTH_TOKEN_STORAGE_KEY, KOMODO_BASE_URL } from "@main";
 import { Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
+import { useToast } from "@ui/use-toast";
 
 type OauthProvider = "Github" | "Google";
 
@@ -62,10 +63,10 @@ const useExchangeToken = () => {
 };
 
 export const Login = () => {
-  // const exchange_token =
   const options = useLoginOptions().data;
   const [creds, set] = useState({ username: "", password: "" });
   const userInvalidate = useUserInvalidate();
+  const { toast } = useToast();
   const onSuccess = ({ jwt }: { jwt: string }) => {
     localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, jwt);
     userInvalidate();
@@ -74,10 +75,42 @@ export const Login = () => {
     "CreateLocalUser",
     {
       onSuccess,
+      onError: (e: any) => {
+        const message = e?.response?.data?.error as string | undefined;
+        if (message) {
+          toast({
+            title: `Failed to login user. '${message}'`,
+            variant: "destructive",
+          });
+          console.error(e);
+        } else {
+          toast({
+            title: "Failed to login user. See console log for details.",
+            variant: "destructive",
+          });
+          console.error(e);
+        }
+      },
     }
   );
   const { mutate: login, isPending: loginPending } = useAuth("LoginLocalUser", {
     onSuccess,
+    onError: (e: any) => {
+      const message = e?.response?.data?.error as string | undefined;
+      if (message) {
+        toast({
+          title: `Failed to login user. '${message}'`,
+          variant: "destructive",
+        });
+        console.error(e);
+      } else {
+        toast({
+          title: "Failed to login user. See console log for details.",
+          variant: "destructive",
+        });
+        console.error(e);
+      }
+    },
   });
 
   // Handle exchange token loop to avoid showing login flash

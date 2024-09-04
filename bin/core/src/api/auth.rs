@@ -4,9 +4,10 @@ use anyhow::anyhow;
 use axum::{http::HeaderMap, routing::post, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use komodo_client::{api::auth::*, entities::user::User};
+use reqwest::StatusCode;
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
-use serror::Json;
+use serror::{AddStatusCode, Json};
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -70,7 +71,10 @@ async fn handler(
   }
   let elapsed = timer.elapsed();
   debug!("/auth request {req_id} | resolve time: {elapsed:?}");
-  Ok((TypedHeader(ContentType::json()), res?))
+  Ok((
+    TypedHeader(ContentType::json()),
+    res.status_code(StatusCode::UNAUTHORIZED)?,
+  ))
 }
 
 fn login_options_reponse() -> &'static GetLoginOptionsResponse {
