@@ -16,6 +16,8 @@ With Komodo you can:
  - Manage all your configuration / environment variables, with shared global variable and secret interpolation.
  - Keep a record of all the actions that are performed and by whom.
 
+There is no limit to the number of servers you can connect, and there will never be. There is no limit to what API you can use for automation, and there never will be. No "business edition" here.
+
 ## Docker
 
 Komodo is opinionated by design, and uses [docker](https://docs.docker.com/) as the container engine for building and deploying.
