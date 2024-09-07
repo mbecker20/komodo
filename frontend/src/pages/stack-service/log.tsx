@@ -1,9 +1,9 @@
 import { Section } from "@components/layouts";
-import { useRead } from "@lib/hooks";
+import { useLocalStorage, useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { RefreshCw, X, AlertOctagon, ScrollText } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
@@ -44,6 +44,7 @@ const StackLogsInner = ({
   const [terms, setTerms] = useState<string[]>([]);
   const [invert, setInvert] = useState(false);
   const [search, setSearch] = useState("");
+  const [poll, setPoll] = useLocalStorage("log-poll-v1", false);
 
   const addTerm = () => {
     if (!search.length) return;
@@ -64,6 +65,13 @@ const StackLogsInner = ({
   const { Log, refetch, stderr } = terms.length
     ? SearchLogs(id, service, terms, invert)
     : NoSearchLogs(id, service, tail, stream);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (poll) refetch();
+    }, 5_000);
+    return () => clearInterval(interval);
+  }, [poll, refetch]);
 
   return (
     <Section
@@ -122,6 +130,10 @@ const StackLogsInner = ({
           <Button variant="secondary" size="icon" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
           </Button>
+          <div className="flex items-center gap-2">
+            <div className="text-muted-foreground">Poll</div>
+            <Switch checked={poll} onCheckedChange={setPoll} />
+          </div>
           <TailLengthSelector
             selected={tail}
             onSelect={set}

@@ -1,6 +1,6 @@
 import { Section } from "@components/layouts";
 import { Log, TailLengthSelector } from "@components/log";
-import { useRead } from "@lib/hooks";
+import { useLocalStorage, useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
@@ -8,7 +8,7 @@ import { Switch } from "@ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
 import { useToast } from "@ui/use-toast";
 import { AlertOctagon, RefreshCw, ScrollText, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const ContainerLogs = ({
   id,
@@ -24,6 +24,7 @@ export const ContainerLogs = ({
   const [terms, setTerms] = useState<string[]>([]);
   const [invert, setInvert] = useState(false);
   const [search, setSearch] = useState("");
+  const [poll, setPoll] = useLocalStorage("log-poll-v1", false);
 
   const addTerm = () => {
     if (!search.length) return;
@@ -44,6 +45,13 @@ export const ContainerLogs = ({
   const { Log, refetch, stderr } = terms.length
     ? SearchLogs(id, container_name, terms, invert)
     : NoSearchLogs(id, container_name, tail, stream);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (poll) refetch();
+    }, 5_000);
+    return () => clearInterval(interval);
+  }, [poll, refetch]);
 
   return (
     <Section
@@ -102,6 +110,10 @@ export const ContainerLogs = ({
           <Button variant="secondary" size="icon" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
           </Button>
+          <div className="flex items-center gap-2">
+            <div className="text-muted-foreground">Poll</div>
+            <Switch checked={poll} onCheckedChange={setPoll} />
+          </div>
           <TailLengthSelector
             selected={tail}
             onSelect={set}
