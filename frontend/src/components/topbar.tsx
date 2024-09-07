@@ -86,7 +86,7 @@ const Version = () => {
   if (!version) return null;
   return (
     <a
-      href="https://komo.do"
+      href="https://github.com/mbecker20/komodo/releases"
       target="_blank"
       className="hidden lg:block"
     >
