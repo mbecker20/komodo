@@ -262,6 +262,14 @@ pub struct StackConfig {
   #[builder(default)]
   pub file_contents: String,
 
+  /// Whether to automatically `compose pull` before redeploying stack.
+  /// Ensured latest images are deployed.
+  /// Will fail if the compose file specifies a locally build image.
+  #[serde(default = "default_auto_pull")]
+  #[builder(default = "default_auto_pull()")]
+  #[partial_default(default_auto_pull())]
+  pub auto_pull: bool,
+
   /// Ignore certain services declared in the compose file when checking
   /// the stack status. For example, an init service might be exited, but the
   /// stack should be healthy. This init service should be in `ignore_services`
@@ -337,6 +345,10 @@ fn default_env_file_path() -> String {
   String::from(".env")
 }
 
+fn default_auto_pull() -> bool {
+  true
+}
+
 fn default_git_provider() -> String {
   String::from("github.com")
 }
@@ -372,6 +384,7 @@ impl Default for StackConfig {
       registry_provider: Default::default(),
       registry_account: Default::default(),
       file_contents: Default::default(),
+      auto_pull: default_auto_pull(),
       ignore_services: Default::default(),
       extra_args: Default::default(),
       environment: Default::default(),

@@ -32,7 +32,7 @@ pub fn docker_compose() -> &'static str {
   }
 }
 
-/// If Err, remember to write result to the log before return.
+/// If this fn returns Err, the caller of `compose_up` has to write result to the log before return.
 pub async fn compose_up(
   stack: Stack,
   service: Option<String>,
@@ -142,25 +142,29 @@ pub async fn compose_up(
       .context("failed to login to image registry")?;
   }
 
-  // Pull images before destroying to minimize downtime.
-  // If this fails, do not continue.
-  let log = run_komodo_command(
-    "compose pull",
-    format!(
-      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
-    ),
-  )
-  .await;
-  if !log.success {
+  if stack.config.auto_pull {
+    // Pull images before destroying to minimize downtime.
+    // If this fails, do not continue.
+    let log = run_komodo_command(
+      "compose pull",
+      format!(
+        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
+      ),
+    )
+    .await;
+
     res.logs.push(log);
-    return Err(anyhow!(
-      "Failed to pull required images, stopping the run."
-    ));
+
+    if !all_logs_success(&res.logs) {
+      return Err(anyhow!(
+        "Failed to pull required images, stopping the run."
+      ));
+    }
   }
 
   // Take down the existing containers.
   // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
-  destroy_existing_containers(&last_project_name, service, res)
+  compose_down(&last_project_name, service, res)
     .await
     .context("failed to destroy existing containers")?;
 
@@ -194,12 +198,15 @@ pub async fn compose_up(
     res.logs.push(log);
   }
 
-  // Unless the files are supposed to be managed on the host,
-  // clean up here, which will also let user know immediately if there will be a problem
-  // with any accidental volumes mounted inside repo directory (just use absolute volumes anyways)
-  if !stack.config.files_on_host {
+  // If using a repo based stack, clean up the file at this point.
+  // This will also let user know immediately if there will be a problem
+  // with any volume mounted inside repo directory.
+  // Just use absolute mount points or docker volumes with repo based stack anyways.
+  if !stack.config.files_on_host
+    && stack.config.file_contents.is_empty()
+  {
     if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
-      format!("failed to clean up files after deploy | path: {root:?} | ensure all volumes are mounted outside the repo directory (preferably use absolute path for mounts)")
+      format!("failed to clean up files after deploy | path: {root:?} | ensure all volumes are mounted outside the repo directory (preferably use absolute path for mount point)")
     }) {
       res
         .logs
@@ -222,7 +229,7 @@ async fn write_stack(
     .join(to_komodo_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
   // This will remove any intermediate '/./' in the path, which is a problem for some OS.
-  // Cannot use canonicalize yet as directory may not exist.
+  // Cannot use 'canonicalize' yet as directory may not exist.
   let run_directory = run_directory.components().collect::<PathBuf>();
 
   if stack.config.files_on_host {
@@ -289,9 +296,8 @@ async fn write_stack(
       }
     };
 
-    // Ensure directory is clear going in.
-    fs::remove_dir_all(&root).await.ok();
-
+    // 🚨 This has to delete the existing folder before clone.
+    // 🚨 If any volumes were mounted inside the repo folder, the data will be deleted.
     let RepoActionResponse {
       logs,
       commit_hash,
@@ -384,7 +390,7 @@ async fn write_stack(
   }
 }
 
-async fn destroy_existing_containers(
+async fn compose_down(
   project: &str,
   service: Option<String>,
   res: &mut ComposeUpResponse,
