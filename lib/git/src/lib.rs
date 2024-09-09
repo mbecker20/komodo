@@ -38,6 +38,9 @@ pub async fn pull(
     None => "main".to_string(),
   };
 
+  // This will remove any intermediate '/./' which can be a problem for some OS.
+  let path = path.components().collect::<PathBuf>();
+
   let command =
     format!("cd {} && git pull -f origin {branch}", path.display());
 
@@ -58,7 +61,7 @@ pub async fn pull(
     logs.push(reset_log);
   }
 
-  let (hash, message) = match get_commit_hash_log(path).await {
+  let (hash, message) = match get_commit_hash_log(&path).await {
     Ok((log, hash, message)) => {
       logs.push(log);
       (Some(hash), Some(message))
@@ -78,7 +81,7 @@ pub async fn pull(
     environment,
     env_file_path,
     secrets,
-    path,
+    &path,
     &mut logs,
   )
   .await
@@ -206,6 +209,8 @@ where
       .context("destination is not valid path")?,
     None => repo_dir.join(name),
   };
+  // This will remove any intermediate '/./' which can be a problem for some OS.
+  let repo_dir = repo_dir.components().collect::<PathBuf>();
 
   let mut logs = clone_inner(
     provider,

@@ -89,6 +89,7 @@ impl Resolve<PullRepo> for State {
       name,
       branch,
       commit,
+      path,
       on_pull,
       environment,
       env_file_path,
@@ -97,10 +98,17 @@ impl Resolve<PullRepo> for State {
     }: PullRepo,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
-    let name = to_komodo_name(&name);
+    let default_path =
+      periphery_config().repo_dir.join(to_komodo_name(&name));
+    let path = match path {
+      // If path is absolute, this will resolve to exactly the given absolute path.
+      // If path is relative, it will be relative to the default repo directory.
+      Some(path) => default_path.join(path),
+      None => default_path,
+    };
     let (logs, commit_hash, commit_message, env_file_path) =
       git::pull(
-        &periphery_config().repo_dir.join(name),
+        &path,
         &branch,
         &commit,
         &on_pull,
