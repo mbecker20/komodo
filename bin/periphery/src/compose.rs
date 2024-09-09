@@ -142,6 +142,29 @@ pub async fn compose_up(
       .context("failed to login to image registry")?;
   }
 
+  if stack.config.run_build {
+    let build_extra_args =
+      parse_extra_args(&stack.config.build_extra_args);
+
+    // Build images before destroying to minimize downtime.
+    // If this fails, do not continue.
+    let log = run_komodo_command(
+      "compose build",
+      format!(
+        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} build{build_extra_args}{service_arg}",
+      ),
+    )
+    .await;
+
+    res.logs.push(log);
+
+    if !all_logs_success(&res.logs) {
+      return Err(anyhow!(
+        "Failed to build required images, stopping the run."
+      ));
+    }
+  }
+
   if stack.config.auto_pull {
     // Pull images before destroying to minimize downtime.
     // If this fails, do not continue.

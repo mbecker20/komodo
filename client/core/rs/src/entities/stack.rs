@@ -270,6 +270,19 @@ pub struct StackConfig {
   #[partial_default(default_auto_pull())]
   pub auto_pull: bool,
 
+  /// Whether to `docker compose build` before `compose down` / `compose up`.
+  /// Combine with build_extra_args for custom behaviors.
+  #[serde(default)]
+  #[builder(default)]
+  pub run_build: bool,
+
+  /// The extra arguments to pass after `docker compose build`.
+  /// If empty, no extra build arguments will be passed.
+  /// Only used if `run_build: true`
+  #[serde(default)]
+  #[builder(default)]
+  pub build_extra_args: Vec<String>,
+
   /// Ignore certain services declared in the compose file when checking
   /// the stack status. For example, an init service might be exited, but the
   /// stack should be healthy. This init service should be in `ignore_services`
@@ -389,6 +402,8 @@ impl Default for StackConfig {
       extra_args: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),
+      run_build: Default::default(),
+      build_extra_args: Default::default(),
       skip_secret_interp: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
