@@ -33,7 +33,7 @@ export const StackInfo = ({
         </Card>
       )}
 
-      {stack?.config?.file_contents ? (
+      {(!stack?.config?.files_on_host && stack?.config?.file_contents) ? (
         <Card>
           <CardHeader className="flex flex-col gap-2">
             latest contents:{" "}
