@@ -630,7 +630,7 @@ export const AddExtraArgMenu = ({
   disabled,
 }: {
   onSelect: (suggestion: string) => void;
-  type: "Deployment" | "Build" | "Stack";
+  type: "Deployment" | "Build" | "Stack" | "StackBuild";
   disabled?: boolean;
 }) => {
   const [open, setOpen] = useState(false);

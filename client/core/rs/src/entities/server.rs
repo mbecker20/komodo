@@ -83,6 +83,11 @@ pub struct ServerConfig {
   #[partial_default(default_auto_prune())]
   pub auto_prune: bool,
 
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
+
   /// Whether to send alerts about the servers reachability
   #[serde(default = "default_send_alerts")]
   #[builder(default = "default_send_alerts()")]
@@ -202,6 +207,7 @@ impl Default for ServerConfig {
       ignore_mounts: Default::default(),
       stats_monitoring: default_stats_monitoring(),
       auto_prune: default_auto_prune(),
+      links: Default::default(),
       send_unreachable_alerts: default_send_alerts(),
       send_cpu_alerts: default_send_alerts(),
       send_mem_alerts: default_send_alerts(),

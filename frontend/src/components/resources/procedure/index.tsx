@@ -26,6 +26,7 @@ const ProcedureIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const ProcedureComponents: RequiredResourceComponents = {
   list_item: (id) => useProcedure(id),
+  use_links: () => undefined,
 
   Description: () => <>Compose Komodo actions together.</>,
 

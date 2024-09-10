@@ -147,6 +147,31 @@ impl Resolve<ListCommonStackExtraArgs, User> for State {
   }
 }
 
+impl Resolve<ListCommonStackBuildExtraArgs, User> for State {
+  async fn resolve(
+    &self,
+    ListCommonStackBuildExtraArgs { query }: ListCommonStackBuildExtraArgs,
+    user: User,
+  ) -> anyhow::Result<ListCommonStackBuildExtraArgsResponse> {
+    let stacks = resource::list_full_for_user::<Stack>(query, &user)
+      .await
+      .context("failed to get resources matching query")?;
+
+    // first collect with guaranteed uniqueness
+    let mut res = HashSet::<String>::new();
+
+    for stack in stacks {
+      for extra_arg in stack.config.build_extra_args {
+        res.insert(extra_arg);
+      }
+    }
+
+    let mut res = res.into_iter().collect::<Vec<_>>();
+    res.sort();
+    Ok(res)
+  }
+}
+
 impl Resolve<ListStacks, User> for State {
   async fn resolve(
     &self,

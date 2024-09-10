@@ -226,41 +226,31 @@ pub struct StackConfig {
   #[builder(default)]
   pub extra_args: Vec<String>,
 
-  /// The environment variables passed to the compose file.
-  /// They will be written to path defined in env_file_path,
-  /// which is given relative to the run directory.
-  ///
-  /// If it is empty, no file will be written.
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
-  #[partial_attr(serde(
-    default,
-    deserialize_with = "super::option_env_vars_deserializer"
-  ))]
-  #[builder(default)]
-  pub environment: Vec<EnvironmentVar>,
-
-  /// The name of the written environment file before `docker compose up`.
-  /// Relative to the repo root.
-  /// Default: .env
-  #[serde(default = "default_env_file_path")]
-  #[builder(default = "default_env_file_path()")]
-  #[partial_default(default_env_file_path())]
-  pub env_file_path: String,
-
   /// Whether to skip secret interpolation into the stack environment variables.
   #[serde(default)]
   #[builder(default)]
   pub skip_secret_interp: bool,
 
-  /// The contents of the file directly, for management in the UI.
-  /// If this is empty, it will fall back to checking git config for
-  /// repo based compose file.
+  /// Whether to automatically `compose pull` before redeploying stack.
+  /// Ensured latest images are deployed.
+  /// Will fail if the compose file specifies a locally build image.
+  #[serde(default = "default_auto_pull")]
+  #[builder(default = "default_auto_pull()")]
+  #[partial_default(default_auto_pull())]
+  pub auto_pull: bool,
+
+  /// Whether to `docker compose build` before `compose down` / `compose up`.
+  /// Combine with build_extra_args for custom behaviors.
   #[serde(default)]
   #[builder(default)]
-  pub file_contents: String,
+  pub run_build: bool,
+
+  /// The extra arguments to pass after `docker compose build`.
+  /// If empty, no extra build arguments will be passed.
+  /// Only used if `run_build: true`
+  #[serde(default)]
+  #[builder(default)]
+  pub build_extra_args: Vec<String>,
 
   /// Ignore certain services declared in the compose file when checking
   /// the stack status. For example, an init service might be exited, but the
@@ -325,6 +315,42 @@ pub struct StackConfig {
   #[builder(default = "default_send_alerts()")]
   #[partial_default(default_send_alerts())]
   pub send_alerts: bool,
+
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
+
+  /// The contents of the file directly, for management in the UI.
+  /// If this is empty, it will fall back to checking git config for
+  /// repo based compose file.
+  #[serde(default)]
+  #[builder(default)]
+  pub file_contents: String,
+
+  /// The environment variables passed to the compose file.
+  /// They will be written to path defined in env_file_path,
+  /// which is given relative to the run directory.
+  ///
+  /// If it is empty, no file will be written.
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
+  #[builder(default)]
+  pub environment: Vec<EnvironmentVar>,
+
+  /// The name of the written environment file before `docker compose up`.
+  /// Relative to the repo root.
+  /// Default: .env
+  #[serde(default = "default_env_file_path")]
+  #[builder(default = "default_env_file_path()")]
+  #[partial_default(default_env_file_path())]
+  pub env_file_path: String,
 }
 
 impl StackConfig {
@@ -335,6 +361,10 @@ impl StackConfig {
 
 fn default_env_file_path() -> String {
   String::from(".env")
+}
+
+fn default_auto_pull() -> bool {
+  true
 }
 
 fn default_git_provider() -> String {
@@ -372,10 +402,13 @@ impl Default for StackConfig {
       registry_provider: Default::default(),
       registry_account: Default::default(),
       file_contents: Default::default(),
+      auto_pull: default_auto_pull(),
       ignore_services: Default::default(),
       extra_args: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),
+      run_build: Default::default(),
+      build_extra_args: Default::default(),
       skip_secret_interp: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
@@ -386,6 +419,7 @@ impl Default for StackConfig {
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),
       send_alerts: default_send_alerts(),
+      links: Default::default(),
     }
   }
 }

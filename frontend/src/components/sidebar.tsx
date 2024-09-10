@@ -1,12 +1,6 @@
 import { RESOURCE_TARGETS, cn, usableResourcePath } from "@lib/utils";
 import { Button } from "@ui/button";
-import {
-  AlertTriangle,
-  Bell,
-  Box,
-  Boxes,
-  Settings,
-} from "lucide-react";
+import { AlertTriangle, Bell, Box, Boxes, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { ResourceComponents } from "./resources";
 import { Separator } from "@ui/separator";
@@ -104,14 +98,14 @@ const SidebarLink = ({
   const hl =
     "/" + location.pathname.split("/")[1] === to && (highlighted ?? true);
   return (
-    <Link to={to} className="w-full">
+    <Link to={to} className="w-full ml-[2px]" onClick={onClick}>
       <Button
         variant="link"
         className={cn(
           "flex justify-start items-center gap-2 w-full hover:bg-accent",
           hl && "bg-accent"
         )}
-        onClick={onClick}
+        tabIndex={-1}
       >
         {icon}
         {label}

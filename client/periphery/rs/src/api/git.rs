@@ -41,6 +41,7 @@ pub struct PullRepo {
   pub name: String,
   pub branch: Option<String>,
   pub commit: Option<String>,
+  pub path: Option<String>,
   pub on_pull: Option<SystemCommand>,
   #[serde(default)]
   pub environment: Vec<EnvironmentVar>,

@@ -85,6 +85,11 @@ pub struct DeploymentConfig {
   #[partial_default(default_send_alerts())]
   pub send_alerts: bool,
 
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
+
   /// The network attached to the container.
   /// Default is `host`.
   #[serde(default = "default_network")]
@@ -209,6 +214,7 @@ impl Default for DeploymentConfig {
     Self {
       server_id: Default::default(),
       send_alerts: default_send_alerts(),
+      links: Default::default(),
       image: Default::default(),
       image_registry_account: Default::default(),
       skip_secret_interp: Default::default(),

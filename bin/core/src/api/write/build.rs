@@ -96,6 +96,11 @@ impl Resolve<RefreshBuildCache, User> for State {
     )
     .await?;
 
+    if build.config.repo.is_empty() {
+      // Nothing to do here
+      return Ok(NoData {})
+    }
+
     let config = core_config();
 
     let repo_dir = config.repo_directory.join(random_string(10));

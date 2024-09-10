@@ -173,6 +173,11 @@ pub struct RepoConfig {
   #[builder(default)]
   pub on_pull: SystemCommand,
 
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
+
   /// The environment variables passed to the compose file.
   /// They will be written to path defined in env_file_path,
   /// which is given relative to the run directory.
@@ -243,6 +248,7 @@ impl Default for RepoConfig {
       path: Default::default(),
       on_clone: Default::default(),
       on_pull: Default::default(),
+      links: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),
       skip_secret_interp: Default::default(),

@@ -95,6 +95,13 @@ impl Resolve<DeployStack, (User, Update)> for State {
         &mut secret_replacers,
       )?;
 
+      interpolate_variables_secrets_into_extra_args(
+        &vars_and_secrets,
+        &mut stack.config.build_extra_args,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
       add_interp_update_log(
         &mut update,
         &global_replacers,

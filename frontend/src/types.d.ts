@@ -7,6 +7,7 @@ type OptionalIdComponent = React.FC<{ id?: string }>;
 
 export interface RequiredResourceComponents {
   list_item: (id: string) => Types.ResourceListItem<unknown> | undefined;
+  use_links: (id: string) => Array<string> | undefined;
 
   Description: React.FC;
 

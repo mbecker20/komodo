@@ -398,6 +398,8 @@ export interface BuildConfig {
 	 * independantly versioned tags.
 	 */
 	image_tag?: string;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**
@@ -628,6 +630,8 @@ export interface DeploymentConfig {
 	redeploy_on_build?: boolean;
 	/** Whether to send ContainerStateChange alerts for this deployment. */
 	send_alerts: boolean;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
 	/**
 	 * The network attached to the container.
 	 * Default is `host`.
@@ -1049,6 +1053,8 @@ export interface RepoConfig {
 	 * The path is relative to the root of the repo.
 	 */
 	on_pull?: SystemCommand;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
 	/**
 	 * The environment variables passed to the compose file.
 	 * They will be written to path defined in env_file_path,
@@ -1176,6 +1182,8 @@ export interface ServerConfig {
 	 * default: true
 	 */
 	auto_prune: boolean;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
 	/** Whether to send alerts about the servers reachability */
 	send_unreachable_alerts: boolean;
 	/** Whether to send alerts about the servers CPU status */
@@ -2327,28 +2335,25 @@ export interface StackConfig {
 	 * If empty, no extra arguments will be passed.
 	 */
 	extra_args?: string[];
-	/**
-	 * The environment variables passed to the compose file.
-	 * They will be written to path defined in env_file_path,
-	 * which is given relative to the run directory.
-	 * 
-	 * If it is empty, no file will be written.
-	 */
-	environment?: EnvironmentVar[] | string;
-	/**
-	 * The name of the written environment file before `docker compose up`.
-	 * Relative to the repo root.
-	 * Default: .env
-	 */
-	env_file_path: string;
 	/** Whether to skip secret interpolation into the stack environment variables. */
 	skip_secret_interp?: boolean;
 	/**
-	 * The contents of the file directly, for management in the UI.
-	 * If this is empty, it will fall back to checking git config for
-	 * repo based compose file.
+	 * Whether to automatically `compose pull` before redeploying stack.
+	 * Ensured latest images are deployed.
+	 * Will fail if the compose file specifies a locally build image.
 	 */
-	file_contents?: string;
+	auto_pull: boolean;
+	/**
+	 * Whether to `docker compose build` before `compose down` / `compose up`.
+	 * Combine with build_extra_args for custom behaviors.
+	 */
+	run_build?: boolean;
+	/**
+	 * The extra arguments to pass after `docker compose build`.
+	 * If empty, no extra build arguments will be passed.
+	 * Only used if `run_build: true`
+	 */
+	build_extra_args?: string[];
 	/**
 	 * Ignore certain services declared in the compose file when checking
 	 * the stack status. For example, an init service might be exited, but the
@@ -2386,6 +2391,28 @@ export interface StackConfig {
 	webhook_secret?: string;
 	/** Whether to send StackStateChange alerts for this stack. */
 	send_alerts: boolean;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
+	/**
+	 * The contents of the file directly, for management in the UI.
+	 * If this is empty, it will fall back to checking git config for
+	 * repo based compose file.
+	 */
+	file_contents?: string;
+	/**
+	 * The environment variables passed to the compose file.
+	 * They will be written to path defined in env_file_path,
+	 * which is given relative to the run directory.
+	 * 
+	 * If it is empty, no file will be written.
+	 */
+	environment?: EnvironmentVar[] | string;
+	/**
+	 * The name of the written environment file before `docker compose up`.
+	 * Relative to the repo root.
+	 * Default: .env
+	 */
+	env_file_path: string;
 }
 
 export interface ComposeContents {
@@ -2480,6 +2507,8 @@ export type GetStackServiceLogResponse = Log;
 export type SearchStackServiceLogResponse = Log;
 
 export type ListCommonStackExtraArgsResponse = string[];
+
+export type ListCommonStackBuildExtraArgsResponse = string[];
 
 export enum StackState {
 	/** All containers are running. */
@@ -4718,6 +4747,15 @@ export interface ListCommonStackExtraArgs {
 	query?: StackQuery;
 }
 
+/**
+ * Gets a list of existing values used as build extra args across other stacks.
+ * Useful to offer suggestions. Response: [ListCommonStackBuildExtraArgsResponse]
+ */
+export interface ListCommonStackBuildExtraArgs {
+	/** optional structured query to filter stacks. */
+	query?: StackQuery;
+}
+
 /** List stacks matching optional query. Response: [ListStacksResponse]. */
 export interface ListStacks {
 	/** optional structured query to filter syncs. */
@@ -6510,6 +6548,7 @@ export type ReadRequest =
 	| { type: "ListFullStacks", params: ListFullStacks }
 	| { type: "ListStackServices", params: ListStackServices }
 	| { type: "ListCommonStackExtraArgs", params: ListCommonStackExtraArgs }
+	| { type: "ListCommonStackBuildExtraArgs", params: ListCommonStackBuildExtraArgs }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }

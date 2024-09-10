@@ -33,6 +33,9 @@ export const useDeployment = (id?: string) =>
     (d) => d.id === id
   );
 
+export const useFullDeployment = (id: string) =>
+  useRead("GetDeployment", { deployment: id }, { refetchInterval: 5000 }).data;
+
 const ConfigOrLog = ({ id }: { id: string }) => {
   // const [view, setView] = useAtom(configOrLog);
   const [view, setView] = useLocalStorage("deployment-tabs-v1", "Config");
@@ -99,6 +102,7 @@ const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const DeploymentComponents: RequiredResourceComponents = {
   list_item: (id) => useDeployment(id),
+  use_links: (id) => useFullDeployment(id)?.config?.links,
 
   Description: () => <>Deploy containers on your servers.</>,
 

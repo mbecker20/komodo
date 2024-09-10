@@ -133,6 +133,25 @@ pub type ListCommonStackExtraArgsResponse = Vec<String>;
 
 //
 
+/// Gets a list of existing values used as build extra args across other stacks.
+/// Useful to offer suggestions. Response: [ListCommonStackBuildExtraArgsResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoReadRequest)]
+#[response(ListCommonStackBuildExtraArgsResponse)]
+pub struct ListCommonStackBuildExtraArgs {
+  /// optional structured query to filter stacks.
+  #[serde(default)]
+  pub query: StackQuery,
+}
+
+#[typeshare]
+pub type ListCommonStackBuildExtraArgsResponse = Vec<String>;
+
+//
+
 /// List stacks matching optional query. Response: [ListStacksResponse].
 #[typeshare]
 #[derive(

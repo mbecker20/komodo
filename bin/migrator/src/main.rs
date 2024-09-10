@@ -8,8 +8,6 @@ mod migrate;
 
 #[derive(Deserialize)]
 enum Migration {
-  #[serde(alias = "v1.6")]
-  V1_6,
   #[serde(alias = "v1.11")]
   V1_11,
 }
@@ -31,14 +29,6 @@ async fn main() -> anyhow::Result<()> {
   let env: Env = envy::from_env()?;
 
   match env.migration {
-    Migration::V1_6 => {
-      let db = legacy::v1_6::DbClient::new(
-        &env.target_uri,
-        &env.target_db_name,
-      )
-      .await;
-      migrate::v1_6::migrate_all_in_place(&db).await?
-    }
     Migration::V1_11 => {
       let db = legacy::v1_11::DbClient::new(
         &env.target_uri,
