@@ -313,6 +313,8 @@ export type ExecuteResponses = {
   PruneImages: Types.Update;
   DeleteVolume: Types.Update;
   PruneVolumes: Types.Update;
+  PruneDockerBuilders: Types.Update;
+  PruneBuildx: Types.Update;
   PruneSystem: Types.Update;
 
   // ==== DEPLOYMENT ====

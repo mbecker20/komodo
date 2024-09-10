@@ -736,6 +736,8 @@ pub enum Operation {
   PruneImages,
   DeleteVolume,
   PruneVolumes,
+  PruneDockerBuilders,
+  PruneBuildx,
   PruneSystem,
 
   // build

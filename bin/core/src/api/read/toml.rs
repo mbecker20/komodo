@@ -529,6 +529,14 @@ async fn add_procedure(
         Execution::PruneVolumes(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),
+        Execution::PruneDockerBuilders(exec) => {
+          exec.server.clone_from(
+            names.servers.get(&exec.server).unwrap_or(&String::new()),
+          )
+        }
+        Execution::PruneBuildx(exec) => exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        ),
         Execution::PruneSystem(exec) => exec.server.clone_from(
           names.servers.get(&exec.server).unwrap_or(&String::new()),
         ),

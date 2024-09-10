@@ -7,7 +7,7 @@ use komodo_client::entities::{
   update::Log,
   EnvironmentVar, Version,
 };
-use periphery_client::api::build;
+use periphery_client::api::build::{self, PruneBuilders, PruneBuildx};
 use resolver_api::Resolve;
 
 use crate::{
@@ -208,4 +208,32 @@ fn cleanup_secret_env_vars(secret_args: &[EnvironmentVar]) {
   secret_args.iter().for_each(
     |EnvironmentVar { variable, .. }| std::env::remove_var(variable),
   )
+}
+
+//
+
+impl Resolve<PruneBuilders> for State {
+  #[instrument(name = "PruneBuilders", skip(self))]
+  async fn resolve(
+    &self,
+    _: PruneBuilders,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let command = String::from("docker builder prune -a -f");
+    Ok(run_komodo_command("prune builders", command).await)
+  }
+}
+
+//
+
+impl Resolve<PruneBuildx> for State {
+  #[instrument(name = "PruneBuildx", skip(self))]
+  async fn resolve(
+    &self,
+    _: PruneBuildx,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let command = String::from("docker buildx prune -a -f");
+    Ok(run_komodo_command("prune buildx", command).await)
+  }
 }

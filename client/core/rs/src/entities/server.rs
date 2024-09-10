@@ -242,8 +242,12 @@ pub struct ServerActionState {
   pub pruning_containers: bool,
   /// Server currently pruning images
   pub pruning_images: bool,
-  /// Server currently pruning images
+  /// Server currently pruning volumes
   pub pruning_volumes: bool,
+  /// Server currently pruning docker builders
+  pub pruning_builders: bool,
+  /// Server currently pruning builx cache
+  pub pruning_buildx: bool,
   /// Server currently pruning system
   pub pruning_system: bool,
   /// Server currently starting containers.

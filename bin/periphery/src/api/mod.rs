@@ -66,6 +66,8 @@ pub enum PeripheryRequest {
 
   // Build
   Build(Build),
+  PruneBuilders(PruneBuilders),
+  PruneBuildx(PruneBuildx),
 
   // Compose (Read)
   GetComposeContentsOnHost(GetComposeContentsOnHost),

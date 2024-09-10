@@ -455,6 +455,24 @@ async fn validate_config(
           .await?;
           params.server = server.id;
         }
+        Execution::PruneDockerBuilders(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
+        Execution::PruneBuildx(params) => {
+          let server = super::get_check_permissions::<Server>(
+            &params.server,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.server = server.id;
+        }
         Execution::PruneSystem(params) => {
           let server = super::get_check_permissions::<Server>(
             &params.server,

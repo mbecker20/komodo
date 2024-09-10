@@ -865,6 +865,8 @@ export type Execution =
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "DeleteVolume", params: DeleteVolume }
 	| { type: "PruneVolumes", params: PruneVolumes }
+	| { type: "PruneDockerBuilders", params: PruneDockerBuilders }
+	| { type: "PruneBuildx", params: PruneBuildx }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
@@ -1248,8 +1250,12 @@ export interface ServerActionState {
 	pruning_containers: boolean;
 	/** Server currently pruning images */
 	pruning_images: boolean;
-	/** Server currently pruning images */
+	/** Server currently pruning volumes */
 	pruning_volumes: boolean;
+	/** Server currently pruning docker builders */
+	pruning_builders: boolean;
+	/** Server currently pruning builx cache */
+	pruning_buildx: boolean;
 	/** Server currently pruning system */
 	pruning_system: boolean;
 	/** Server currently starting containers. */
@@ -2754,6 +2760,8 @@ export enum Operation {
 	PruneImages = "PruneImages",
 	DeleteVolume = "DeleteVolume",
 	PruneVolumes = "PruneVolumes",
+	PruneDockerBuilders = "PruneDockerBuilders",
+	PruneBuildx = "PruneBuildx",
 	PruneSystem = "PruneSystem",
 	CreateBuild = "CreateBuild",
 	UpdateBuild = "UpdateBuild",
@@ -3618,6 +3626,26 @@ export interface DeleteVolume {
  * 1. Runs `docker volume prune -a -f`.
  */
 export interface PruneVolumes {
+	/** Id or name */
+	server: string;
+}
+
+/**
+ * Prunes the docker builders (build cache) on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker builder prune -a -f`.
+ */
+export interface PruneDockerBuilders {
+	/** Id or name */
+	server: string;
+}
+
+/**
+ * Prunes the docker buildx cache on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker buildx prune -a -f`.
+ */
+export interface PruneBuildx {
 	/** Id or name */
 	server: string;
 }
@@ -6434,6 +6462,8 @@ export type ExecuteRequest =
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "DeleteVolume", params: DeleteVolume }
 	| { type: "PruneVolumes", params: PruneVolumes }
+	| { type: "PruneDockerBuilders", params: PruneDockerBuilders }
+	| { type: "PruneBuildx", params: PruneBuildx }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartDeployment", params: StartDeployment }
