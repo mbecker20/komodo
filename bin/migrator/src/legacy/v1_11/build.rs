@@ -139,6 +139,7 @@ impl From<BuildConfig>
         minor: value.version.minor,
         patch: value.version.patch,
       },
+      links: Default::default(),
       auto_increment_version: true,
       image_name: Default::default(),
       image_tag: Default::default(),

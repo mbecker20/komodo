@@ -229,7 +229,7 @@ pub async fn compose_up(
     && stack.config.file_contents.is_empty()
   {
     if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
-      format!("failed to clean up files after deploy | path: {root:?} | ensure all volumes are mounted outside the repo directory (preferably use absolute path for mount point)")
+      format!("failed to clean up files after deploy | path: {root:?} | Bring the stack down, and ensure all volumes are mounted outside the repo directory for the next deploy. (preferably use absolute path for mount point)")
     }) {
       res
         .logs

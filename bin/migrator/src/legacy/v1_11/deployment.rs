@@ -162,6 +162,7 @@ impl From<DeploymentConfig>
       volumes: value.volumes,
       environment: value.environment,
       labels: value.labels,
+      links: Default::default(),
     }
   }
 }

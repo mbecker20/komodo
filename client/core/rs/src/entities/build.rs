@@ -120,6 +120,11 @@ pub struct BuildConfig {
   #[builder(default)]
   pub image_tag: String,
 
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
+
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
   #[builder(default = "default_git_provider()")]
@@ -300,6 +305,7 @@ impl Default for BuildConfig {
       auto_increment_version: default_auto_increment_version(),
       image_name: Default::default(),
       image_tag: Default::default(),
+      links: Default::default(),
       git_provider: default_git_provider(),
       git_https: default_git_https(),
       repo: Default::default(),

@@ -42,7 +42,7 @@ pub async fn pull(
   let path = path.components().collect::<PathBuf>();
 
   let command =
-    format!("cd {} && git pull -f origin {branch}", path.display());
+    format!("cd {} && git pull --force origin {branch}", path.display());
 
   let pull_log = run_komodo_command("git pull", command).await;
 

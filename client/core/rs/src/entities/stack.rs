@@ -226,41 +226,10 @@ pub struct StackConfig {
   #[builder(default)]
   pub extra_args: Vec<String>,
 
-  /// The environment variables passed to the compose file.
-  /// They will be written to path defined in env_file_path,
-  /// which is given relative to the run directory.
-  ///
-  /// If it is empty, no file will be written.
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
-  #[partial_attr(serde(
-    default,
-    deserialize_with = "super::option_env_vars_deserializer"
-  ))]
-  #[builder(default)]
-  pub environment: Vec<EnvironmentVar>,
-
-  /// The name of the written environment file before `docker compose up`.
-  /// Relative to the repo root.
-  /// Default: .env
-  #[serde(default = "default_env_file_path")]
-  #[builder(default = "default_env_file_path()")]
-  #[partial_default(default_env_file_path())]
-  pub env_file_path: String,
-
   /// Whether to skip secret interpolation into the stack environment variables.
   #[serde(default)]
   #[builder(default)]
   pub skip_secret_interp: bool,
-
-  /// The contents of the file directly, for management in the UI.
-  /// If this is empty, it will fall back to checking git config for
-  /// repo based compose file.
-  #[serde(default)]
-  #[builder(default)]
-  pub file_contents: String,
 
   /// Whether to automatically `compose pull` before redeploying stack.
   /// Ensured latest images are deployed.
@@ -346,6 +315,42 @@ pub struct StackConfig {
   #[builder(default = "default_send_alerts()")]
   #[partial_default(default_send_alerts())]
   pub send_alerts: bool,
+
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
+
+  /// The contents of the file directly, for management in the UI.
+  /// If this is empty, it will fall back to checking git config for
+  /// repo based compose file.
+  #[serde(default)]
+  #[builder(default)]
+  pub file_contents: String,
+
+  /// The environment variables passed to the compose file.
+  /// They will be written to path defined in env_file_path,
+  /// which is given relative to the run directory.
+  ///
+  /// If it is empty, no file will be written.
+  #[serde(
+    default,
+    deserialize_with = "super::env_vars_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_env_vars_deserializer"
+  ))]
+  #[builder(default)]
+  pub environment: Vec<EnvironmentVar>,
+
+  /// The name of the written environment file before `docker compose up`.
+  /// Relative to the repo root.
+  /// Default: .env
+  #[serde(default = "default_env_file_path")]
+  #[builder(default = "default_env_file_path()")]
+  #[partial_default(default_env_file_path())]
+  pub env_file_path: String,
 }
 
 impl StackConfig {
@@ -414,6 +419,7 @@ impl Default for StackConfig {
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),
       send_alerts: default_send_alerts(),
+      links: Default::default(),
     }
   }
 }
