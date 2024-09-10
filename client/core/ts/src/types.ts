@@ -1182,6 +1182,8 @@ export interface ServerConfig {
 	 * default: true
 	 */
 	auto_prune: boolean;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
 	/** Whether to send alerts about the servers reachability */
 	send_unreachable_alerts: boolean;
 	/** Whether to send alerts about the servers CPU status */

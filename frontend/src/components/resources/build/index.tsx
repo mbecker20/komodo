@@ -82,6 +82,7 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
 
 export const BuildComponents: RequiredResourceComponents = {
   list_item: (id) => useBuild(id),
+  use_links: (id) => useFullBuild(id)?.config?.links,
 
   Description: () => <>Build docker images.</>,
 

@@ -40,6 +40,9 @@ export const useServer = (id?: string) =>
     (d) => d.id === id
   );
 
+export const useFullServer = (id: string) =>
+  useRead("GetServer", { server: id }, { refetchInterval: 5000 }).data;
+
 const Icon = ({ id, size }: { id?: string; size: number }) => {
   const state = useServer(id)?.info.state;
   return (
@@ -132,6 +135,7 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
 
 export const ServerComponents: RequiredResourceComponents = {
   list_item: (id) => useServer(id),
+  use_links: (id) => useFullServer(id)?.config?.links,
 
   Description: () => (
     <>Connect servers for alerting, building, and deploying.</>
@@ -275,12 +279,13 @@ export const ServerComponents: RequiredResourceComponents = {
         { server: id },
         { refetchInterval: 5000 }
       ).data?.starting_containers;
-      const dontShow = useRead("ListDockerContainers", {
-        server: id,
-      }).data?.every(
-        (container) =>
-          container.state === Types.ContainerStateStatusEnum.Running
-      ) ?? true;
+      const dontShow =
+        useRead("ListDockerContainers", {
+          server: id,
+        }).data?.every(
+          (container) =>
+            container.state === Types.ContainerStateStatusEnum.Running
+        ) ?? true;
       if (dontShow) {
         return null;
       }

@@ -2,6 +2,7 @@ import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
   ConfigItem,
+  InputList,
   ProviderSelectorConfig,
   SecretsForEnvironment,
   SystemCommand,
@@ -13,9 +14,10 @@ import { BuilderSelector, CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
-import { Ban, CirclePlus } from "lucide-react";
+import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { env_to_text } from "@lib/utils";
 import { Textarea } from "@ui/textarea";
+import { Button } from "@ui/button";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -359,6 +361,37 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   </ConfigItem>
                 );
               },
+            },
+          },
+          {
+            label: "Links",
+            description: "Add quick links in the resource header",
+            contentHidden: ((update.links ?? config.links)?.length ?? 0) === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    links: [...(update.links ?? config.links ?? []), ""],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Link
+              </Button>
+            ),
+            components: {
+              links: (values, set) => (
+                <InputList
+                  field="links"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Input link"
+                />
+              ),
             },
           },
         ],

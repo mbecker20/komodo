@@ -32,6 +32,7 @@ const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const ResourceSyncComponents: RequiredResourceComponents = {
   list_item: (id) => useResourceSync(id),
+  use_links: () => undefined,
 
   Description: () => <>Define resources in git-checked files.</>,
 

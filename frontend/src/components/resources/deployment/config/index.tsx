@@ -266,6 +266,37 @@ export const DeploymentConfig = ({
             },
           },
           {
+            label: "Links",
+            description: "Add quick links in the resource header",
+            contentHidden: ((update.links ?? config.links)?.length ?? 0) === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    links: [...(update.links ?? config.links ?? []), ""],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Link
+              </Button>
+            ),
+            components: {
+              links: (values, set) => (
+                <InputList
+                  field="links"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Input link"
+                />
+              ),
+            },
+          },
+          {
             label: "Settings",
             components: {
               send_alerts: true,
@@ -298,8 +329,7 @@ export const DeploymentConfig = ({
         termination: [
           {
             label: "Termination",
-            description:
-              "Configure the ways to 'docker stop' the container.",
+            description: "Configure the ways to 'docker stop' the container.",
             components: {
               termination_signal: (value, set) => (
                 <DefaultTerminationSignal

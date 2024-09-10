@@ -13,10 +13,9 @@ const useAlerter = (id?: string) =>
 
 export const AlerterComponents: RequiredResourceComponents = {
   list_item: (id) => useAlerter(id),
+  use_links: () => undefined,
 
-  Description: () => (
-    <>Route alerts to various endpoints.</>
-  ),
+  Description: () => <>Route alerts to various endpoints.</>,
 
   Dashboard: () => {
     const alerters_count = useRead("ListAlerters", {}).data?.length;

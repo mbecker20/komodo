@@ -17,7 +17,7 @@ import { has_minimum_permissions, usableResourcePath } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
-import { AlertTriangle, ChevronLeft, Clapperboard } from "lucide-react";
+import { AlertTriangle, ChevronLeft, Clapperboard, Link } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
@@ -97,6 +97,7 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
 
   const Components = ResourceComponents[type];
   const infoEntries = Object.entries(Components.Info);
+  const links = Components.use_links(id);
 
   const { canWrite } = useEditPermissions({ type, id });
   const nav = useNavigate();
@@ -143,6 +144,19 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
               >
                 <Info id={id} />
               </div>
+            ))}
+            {links?.map((link) => (
+              <a
+                key={link}
+                target="__blank"
+                href={link}
+                className="flex gap-2 items-center pr-4 text-sm border-r cursor-pointer hover:underline last:pr-0 last:border-none"
+              >
+                <Link className="w-4 h-4" />
+                <div className="max-w-[150px] lg:max-w-[250px] overflow-hidden overflow-ellipsis">
+                  {link}
+                </div>
+              </a>
             ))}
           </div>
 
