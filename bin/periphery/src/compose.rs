@@ -142,21 +142,35 @@ pub async fn compose_up(
       .context("failed to login to image registry")?;
   }
 
+  // Build images before destroying to minimize downtime.
+  // If this fails, do not continue.
   if stack.config.run_build {
     let build_extra_args =
       parse_extra_args(&stack.config.build_extra_args);
+    let command = format!(
+      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} build{build_extra_args}{service_arg}",
+    );
+    if stack.config.skip_secret_interp {
+      let log = run_komodo_command("compose build", command).await;
+      res.logs.push(log);
+    } else {
+      let (command, mut replacers) = svi::interpolate_variables(
+        &command,
+        &periphery_config().secrets,
+        svi::Interpolator::DoubleBrackets,
+        true,
+      ).context("failed to interpolate periphery secrets into stack build command")?;
+      replacers.extend(core_replacers.clone());
 
-    // Build images before destroying to minimize downtime.
-    // If this fails, do not continue.
-    let log = run_komodo_command(
-      "compose build",
-      format!(
-        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} build{build_extra_args}{service_arg}",
-      ),
-    )
-    .await;
+      let mut log =
+        run_komodo_command("compose build", command).await;
 
-    res.logs.push(log);
+      log.command = svi::replace_in_string(&log.command, &replacers);
+      log.stdout = svi::replace_in_string(&log.stdout, &replacers);
+      log.stderr = svi::replace_in_string(&log.stderr, &replacers);
+
+      res.logs.push(log);
+    }
 
     if !all_logs_success(&res.logs) {
       return Err(anyhow!(
@@ -197,8 +211,8 @@ pub async fn compose_up(
     .map(|path| format!(" --env-file {}", path.display()))
     .unwrap_or_default();
   let command = format!(
-      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
-    );
+    "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
+  );
   if stack.config.skip_secret_interp {
     let log = run_komodo_command("compose up", command).await;
     res.deployed = log.success;
