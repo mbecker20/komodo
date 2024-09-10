@@ -2506,6 +2506,8 @@ export type SearchStackServiceLogResponse = Log;
 
 export type ListCommonStackExtraArgsResponse = string[];
 
+export type ListCommonStackBuildExtraArgsResponse = string[];
+
 export enum StackState {
 	/** All containers are running. */
 	Running = "running",
@@ -4743,6 +4745,15 @@ export interface ListCommonStackExtraArgs {
 	query?: StackQuery;
 }
 
+/**
+ * Gets a list of existing values used as build extra args across other stacks.
+ * Useful to offer suggestions. Response: [ListCommonStackBuildExtraArgsResponse]
+ */
+export interface ListCommonStackBuildExtraArgs {
+	/** optional structured query to filter stacks. */
+	query?: StackQuery;
+}
+
 /** List stacks matching optional query. Response: [ListStacksResponse]. */
 export interface ListStacks {
 	/** optional structured query to filter syncs. */
@@ -6535,6 +6546,7 @@ export type ReadRequest =
 	| { type: "ListFullStacks", params: ListFullStacks }
 	| { type: "ListStackServices", params: ListStackServices }
 	| { type: "ListCommonStackExtraArgs", params: ListCommonStackExtraArgs }
+	| { type: "ListCommonStackBuildExtraArgs", params: ListCommonStackBuildExtraArgs }
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }

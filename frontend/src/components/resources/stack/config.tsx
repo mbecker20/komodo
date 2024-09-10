@@ -50,6 +50,7 @@ export const StackConfig = ({
   const files_on_host = update.files_on_host ?? config.files_on_host;
   const ui_file_contents =
     (update.file_contents ?? config.file_contents ?? "").length > 0;
+  const run_build = update.run_build ?? config.run_build;
 
   return (
     <Config
@@ -77,26 +78,26 @@ export const StackConfig = ({
             },
           },
           {
-            label: "Project Name",
+            label: "Configs",
             labelHidden: true,
             components: {
               project_name: {
-                boldLabel: true,
                 placeholder: "Compose project name",
+                boldLabel: true,
                 description:
                   "Optionally override the compose project name. Can import stacks by matching the existing project name on your host.",
               },
-            },
-          },
-          {
-            label: "Files on Server",
-            labelHidden: true,
-            components: {
               files_on_host: {
                 label: "Files on Server",
                 boldLabel: true,
                 description:
                   "Manage the compose files on server yourself. Just configure the Run Directory and File Paths to your files.",
+              },
+              auto_pull: {
+                label: "Auto Pull Images",
+                boldLabel: true,
+                description:
+                  "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
               },
             },
           },
@@ -154,7 +155,7 @@ export const StackConfig = ({
             label: "Compose File",
             hidden: files_on_host,
             description:
-              "Paste the file contents here, or configure a git repo.",
+              "Paste the file contents here, or use a git repo / files on host option.",
             actions: (
               <Button
                 size="sm"
@@ -284,7 +285,8 @@ export const StackConfig = ({
             description:
               "If your compose file has init services that exit early, ignore them here so your stack will report the correct health.",
             contentHidden:
-              ((update.ignore_services ?? config.ignore_services)?.length ?? 0) === 0,
+              ((update.ignore_services ?? config.ignore_services)?.length ??
+                0) === 0,
             actions: !disabled && (
               <Button
                 variant="secondary"
@@ -594,6 +596,56 @@ export const StackConfig = ({
               },
             },
           ],
+        build: [
+          {
+            label: "Build",
+            labelHidden: true,
+            components: {
+              run_build: {
+                label: "Auto Build Images",
+                boldLabel: true,
+                description:
+                  "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, use '--build' as an Extra Arg",
+              },
+            },
+          },
+          {
+            label: "Build Extra Args",
+            hidden: !run_build,
+            description: "Add extra args inserted after 'docker compose build'",
+            contentHidden:
+              ((update.build_extra_args ?? config.build_extra_args)?.length ??
+                0) === 0,
+            actions: !disabled && (
+              <AddExtraArgMenu
+                type="StackBuild"
+                onSelect={(suggestion) =>
+                  set((update) => ({
+                    ...update,
+                    build_extra_args: [
+                      ...(update.build_extra_args ??
+                        config.build_extra_args ??
+                        []),
+                      suggestion,
+                    ],
+                  }))
+                }
+                disabled={disabled}
+              />
+            ),
+            components: {
+              build_extra_args: (value, set) => (
+                <InputList
+                  field="build_extra_args"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="--extra-arg=value"
+                />
+              ),
+            },
+          },
+        ],
         environment: [
           {
             label: "Environment",
