@@ -1,6 +1,6 @@
 # Docker Compose
 
-Komodo supports docker compose through the `Stack` resource.
+Komodo can deploy docker compose projects through the `Stack` resource.
 
 ## Define the compose file/s
 
