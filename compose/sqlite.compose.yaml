@@ -15,8 +15,8 @@ services:
       driver: local
     networks:
       - default
-    ports:
-      - 27017:27017
+    # ports: # Port closed due to lack of auth.
+    #   - 27017:27017
     volumes:
       - sqlite-data:/state
     environment:
