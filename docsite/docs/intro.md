@@ -32,7 +32,7 @@ For Stack / docker compose support with podman, check out [**podman-compose**](h
 Komodo is composed of a single core and any amount of connected servers running the periphery application. 
 
 ### Core
-Komodo Core is a web server hosting the Core API and browser UI. All user interaction with the connected servers flow through the Core. It is the stateful part of the system, with the application state stored on an instance of MongoDB.
+Komodo Core is a web server hosting the Core API and browser UI. All user interaction with the connected servers flow through the Core.
 
 ### Periphery
 Komodo Periphery is a small stateless web server that runs on all connected servers. It exposes an API called by Komodo Core to perform actions on the server, get system usage, and container status / logs. It is only intended to be reached from the core, and has an address whitelist to limit the IPs allowed to call this API.
