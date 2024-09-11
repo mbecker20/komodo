@@ -1028,6 +1028,28 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  PruneDockerBuilders: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
+  PruneBuildx: {
+    params: { server: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Server"
+        selected={params.server}
+        onSelect={(server) => setParams({ server })}
+        disabled={disabled}
+      />
+    ),
+  },
   PruneSystem: {
     params: { server: "" },
     Component: ({ params, setParams, disabled }) => (

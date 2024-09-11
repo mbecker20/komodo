@@ -49,7 +49,7 @@ export const Prune = ({
   type,
 }: {
   server_id: string;
-  type: "Containers" | "Networks" | "Images" | "Volumes" | "System";
+  type: "Containers" | "Networks" | "Images" | "Volumes" | "Buildx" | "System";
 }) => {
   const server = useServer(server_id);
   const { mutate, isPending } = useExecute(`Prune${type}`);
@@ -78,13 +78,15 @@ export const Prune = ({
       ? "pruning_networks"
       : type === "Volumes"
       ? "pruning_volumes"
+      : type === "Buildx"
+      ? "pruning_buildx"
       : type === "System"
       ? "pruning_system"
       : "";
 
   const pending = isPending || action_state?.[pruningKey];
 
-  if (type === "Images" || type === "Networks") {
+  if (type === "Images" || type === "Networks" || type === "Buildx") {
     return (
       <ConfirmButton
         title={`Prune ${type}`}

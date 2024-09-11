@@ -409,6 +409,7 @@ export const ServerComponents: RequiredResourceComponents = {
         )
       );
     },
+    PruneBuildx: ({ id }) => <Prune server_id={id} type="Buildx" />,
     PruneSystem: ({ id }) => <Prune server_id={id} type="System" />,
   },
 
