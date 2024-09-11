@@ -1,15 +1,15 @@
 services:
-  # komodo-core:
+  # core:
   #   build:
   #     context: .
   #     dockerfile: bin/core/Dockerfile
   #   restart: unless-stopped
   #   depends_on:
-  #     - komodo-mongo
+  #     - mongo
   #   logging:
   #     driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
   #   network_mode: host
-  #   environment: # https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml
+  #   environment: # https://github.com/mbecker20/komodo/blob/main/config/core.config.toml
   #     KOMODO_HOST: http://localhost:9120
   #     KOMODO_TITLE: Komodo Test
   #     KOMODO_ENSURE_SERVER: http://localhost:8120 # Creates the "default" server.
@@ -29,7 +29,7 @@ services:
   #     KOMODO_BUILD_POLL_INTERVAL: 1-min
   #     KOMODO_REPO_POLL_INTERVAL: 1-min
 
-  komodo-periphery:
+  periphery:
     build:
       context: .
       dockerfile: bin/periphery/Dockerfile
@@ -39,15 +39,15 @@ services:
     network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - komodo-repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
-      - komodo-stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
+      - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
     environment:
       # If the disk size is overreporting, can use one of these to 
       # whitelist / blacklist the disks, whichever is easier. 
       PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
       # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
 
-  # komodo-mongo:
+  # mongo:
   #   image: mongo
   #   command: --quiet # suppress mongo logs a bit
   #   restart: unless-stopped
@@ -55,10 +55,13 @@ services:
   #     driver: local
   #   network_mode: host
   #   volumes:
-  #     - db-data:/data/db
-  #     - db-config:/data/configdb
+  #     - mongo-data:/data/db
+  #     - mongo-config:/data/configdb
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin # change these
+  #     MONGO_INITDB_ROOT_PASSWORD: admin
 
-  ferretdb:
+  ferretdb-sqlite:
     image: ghcr.io/ferretdb/ferretdb
     restart: unless-stopped
     logging:
@@ -67,11 +70,34 @@ services:
     environment:
       - FERRETDB_HANDLER=sqlite
     volumes:
-      - ferret-state:/state
+      - sqlite-data:/state
+
+  # ferretdb-pg:
+  #   image: ghcr.io/ferretdb/ferretdb
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: local
+  #   network_mode: host
+  #   environment:
+  #     - FERRETDB_POSTGRESQL_URL=postgres://localhost:5432/komodo
+
+  # postgres:
+  #   image: postgres
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: local
+  #   network_mode: host
+  #   environment:
+  #     - POSTGRES_USER=admin
+  #     - POSTGRES_PASSWORD=admin
+  #     - POSTGRES_DB=komodo
+  #   volumes:
+  #     - pg-data:/var/lib/postgresql/data
 
 volumes:
-  # db-data:
-  # db-config:
-  ferret-state:
-  komodo-repos:
-  komodo-stacks:
+  repos:
+  stacks:
+  mongo-data:
+  mongo-config:
+  sqlite-data:
+  pg-data:

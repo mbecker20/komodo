@@ -83,7 +83,7 @@ def copy_config(config_dir):
 	if not os.path.isdir(config_dir):
 		os.makedirs(config_dir)
 
-	print(os.popen(f'curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/config_example/periphery.config.example.toml > {config_dir}/periphery.config.toml').read())
+	print(os.popen(f'curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/config/periphery.config.toml > {config_dir}/periphery.config.toml').read())
 
 def copy_service_file(bin_dir, config_dir, service_dir, user_install):
 	service_file = f'{service_dir}/periphery.service'

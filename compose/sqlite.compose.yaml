@@ -34,16 +34,18 @@ services:
       - default
     ports:
       - 9120:9120
+    # volumes: # Optionally mount a custom core.config.toml
+    #   - /path/to/core.config.toml:/config/config.toml
     # extra_hosts: # allows for systemd Periphery connection at "http://host.docker.internal:8120"
     #   - host.docker.internal:host-gateway
-    environment: # https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml
-      KOMODO_HOST: ${KOMODO_HOST} # CHANGEME
-      KOMODO_TITLE: ${KOMODO_TITLE} # Change the app title, displayed in the browser tab.
+    environment: # https://github.com/mbecker20/komodo/blob/main/config/core.config.toml
+      KOMODO_HOST: ${KOMODO_HOST}
+      KOMODO_TITLE: ${KOMODO_TITLE}
       KOMODO_ENSURE_SERVER: http://periphery:8120 # Creates the "default" server.
       ## Mongo
       KOMODO_MONGO_ADDRESS: ferretdb:27017
       ## Secrets
-      KOMODO_PASSKEY: ${KOMODO_PASSKEY} # used to auth against periphery
+      KOMODO_PASSKEY: ${KOMODO_PASSKEY}
       KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET} # used to authenticate incoming webhooks
       KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET} # Optional. If empty, will have to log in again on restart.
       ## Auth

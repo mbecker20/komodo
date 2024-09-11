@@ -24,7 +24,7 @@ RUN apt update && apt install -y git curl unzip ca-certificates && \
 	./aws/install
 	
 # Copy
-COPY ./config_example/core.config.example.toml /config/config.toml
+COPY ./config/core.config.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /
 COPY --from=frontend-builder /builder/frontend/dist /frontend
 

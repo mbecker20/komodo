@@ -5,7 +5,7 @@ Komodo just needs a bit of information in order to build your image.
 ### Provider configuration
 Komodo supports cloning repos over http/s, from any provider that supports cloning private repos using `git clone https://<Token>@git-provider.net/<Owner>/<Repo>`.
 
-Accounts / access tokens can be configured in either the [core config](../core-setup.md#configuration)
+Accounts / access tokens can be configured in either the [core config](../core-setup.mdx#configuration)
 or in the [periphery config](../connecting-servers.md#manual-install-steps---binaries).
 
 ### Repo configuration

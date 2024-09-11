@@ -14,8 +14,21 @@ const sidebars: SidebarsConfig = {
   docs: [
     "intro",
     "resources",
-    "core-setup",
-    "connecting-servers",
+    {
+      type: "category",
+      label: "Setup Komodo",
+      link: {
+        type: "doc",
+        id: "setup/index",
+      },
+      items: [
+        "setup/mongo",
+        "setup/postgres",
+        "setup/sqlite",
+        "setup/advanced",
+        "setup/connect-servers",
+      ],
+    },
     {
       type: "category",
       label: "Build Images",
