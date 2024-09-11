@@ -320,7 +320,13 @@ pub fn conversions_from_str(
         .split_once('=')
         .with_context(|| format!("line {i} missing assignment (=)"))
         .map(|(local, container)| {
-          (local.trim().to_string(), container.trim().to_string())
+          let container = container
+            .split(" #")
+            .next()
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+          (local.trim().to_string(), container)
         })?;
       anyhow::Ok(Conversion { local, container })
     })
@@ -569,11 +575,17 @@ pub fn term_signal_labels_from_str(
         .split_once('=')
         .with_context(|| format!("line {i} missing assignment (=)"))
         .map(|(signal, label)| {
+          let label = label
+            .split(" #")
+            .next()
+            .unwrap_or_default()
+            .trim()
+            .to_string();
           (
             signal.trim().parse::<TerminationSignal>().with_context(
               || format!("line {i} does not have valid signal"),
             ),
-            label.trim().to_string(),
+            label,
           )
         })?;
       anyhow::Ok(TerminationSignalLabel {
