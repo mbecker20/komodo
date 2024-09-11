@@ -41,15 +41,15 @@ services:
     environment: # https://github.com/mbecker20/komodo/blob/main/config/core.config.toml
       KOMODO_HOST: ${KOMODO_HOST}
       KOMODO_TITLE: ${KOMODO_TITLE}
-      KOMODO_ENSURE_SERVER: http://periphery:8120 # Creates the "default" server.
+      KOMODO_ENSURE_SERVER: http://periphery:8120
       ## Mongo
       KOMODO_MONGO_ADDRESS: ferretdb:27017
       ## Secrets
       KOMODO_PASSKEY: ${KOMODO_PASSKEY}
-      KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET} # used to authenticate incoming webhooks
-      KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET} # Optional. If empty, will have to log in again on restart.
+      KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
+      KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
       ## Auth
-      KOMODO_LOCAL_AUTH: ${KOMODO_LOCAL_AUTH} # the default is false.
+      KOMODO_LOCAL_AUTH: ${KOMODO_LOCAL_AUTH}
       ## Github Oauth
       # KOMODO_GITHUB_OAUTH_ENABLED: ${KOMODO_GITHUB_OAUTH_ENABLED}
       # KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
