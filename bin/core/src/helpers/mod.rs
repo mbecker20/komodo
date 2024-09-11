@@ -134,34 +134,6 @@ pub async fn registry_token(
   )
 }
 
-#[instrument]
-pub async fn remove_from_recently_viewed<T>(resource: T)
-where
-  T: Into<ResourceTarget> + std::fmt::Debug,
-{
-  let resource: ResourceTarget = resource.into();
-  let (ty, id) = resource.extract_variant_id();
-  if let Err(e) = db_client()
-    .await
-    .users
-    .update_many(
-      doc! {},
-      doc! {
-        "$pull": {
-          "recently_viewed": {
-            "type": ty.to_string(),
-            "id": id,
-          }
-        }
-      },
-    )
-    .await
-    .context("failed to remove resource from users recently viewed")
-  {
-    warn!("{e:#}");
-  }
-}
-
 //
 
 pub fn periphery_client(

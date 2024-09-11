@@ -52,11 +52,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - komodo-repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
       - komodo-stacks:/etc/komodo/stacks # manage stack files in a docker volume, or change it to an accessible host directory.
-    # environment:
-    #   # If the disk size is overreporting, can use one of these to 
-    #   # whitelist / blacklist the disks to filter them, whichever is easier. 
-    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/komodo/repos 
-    #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
+    environment:
+      # If the disk size is overreporting, can use one of these to 
+      # whitelist / blacklist the disks to filter them, whichever is easier.
+      # Accepts comma separated list of paths.
+      # Usually whitelisting just /etc/hostname gives correct size.
+      PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
+      # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap,/etc/repos
 
   komodo-mongo:
     image: mongo

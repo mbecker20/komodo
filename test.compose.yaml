@@ -41,25 +41,37 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - komodo-repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
       - komodo-stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
-    # environment:
-    #   # If the disk size is overreporting, can use one of these to 
-    #   # whitelist / blacklist the disks, whichever is easier. 
-    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/komodo/repos 
-    #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
+    environment:
+      # If the disk size is overreporting, can use one of these to 
+      # whitelist / blacklist the disks, whichever is easier. 
+      PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
+      # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
 
-  komodo-mongo:
-    image: mongo
-    command: --quiet # suppress mongo logs a bit
+  # komodo-mongo:
+  #   image: mongo
+  #   command: --quiet # suppress mongo logs a bit
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: local
+  #   network_mode: host
+  #   volumes:
+  #     - db-data:/data/db
+  #     - db-config:/data/configdb
+
+  ferretdb:
+    image: ghcr.io/ferretdb/ferretdb
     restart: unless-stopped
     logging:
       driver: local
     network_mode: host
+    environment:
+      - FERRETDB_HANDLER=sqlite
     volumes:
-      - db-data:/data/db
-      - db-config:/data/configdb
+      - ferret-state:/state
 
 volumes:
-  db-data:
-  db-config:
+  # db-data:
+  # db-config:
+  ferret-state:
   komodo-repos:
   komodo-stacks:
