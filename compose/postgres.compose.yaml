@@ -2,8 +2,10 @@
 # KOMODO COMPOSE - POSTGRES #
 #############################
 
-## This compose file will bring up Postgres + FerretDB Mongo adapter, Komodo Core, and Komodo Periphery in containers.
-## A server pointing to the local Periphery will be waiting in the UI on first startup.
+## This compose file will deploy:
+##   1. Postgres + FerretDB Mongo adapter
+##   2. Komodo Core
+##   3. Komodo Periphery
 
 services:
   postgres:

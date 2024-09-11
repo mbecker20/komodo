@@ -2,9 +2,10 @@
 # KOMODO COMPOSE - MONGO #
 ##########################
 
-## This compose file will bring up MongoDB, Komodo Core, and Komodo Periphery in containers.
-## Mongo is the recommended database for Komodo.
-## A "default" server pointing to the local Periphery will be waiting in the UI on first startup.
+## This compose file will deploy:
+##   1. MongoDB
+##   2. Komodo Core
+##   3. Komodo Periphery
 
 services:
   mongo:
