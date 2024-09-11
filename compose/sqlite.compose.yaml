@@ -1,0 +1,95 @@
+###########################
+# KOMODO COMPOSE - SQLITE #
+###########################
+
+## This compose file will deploy:
+##   1. Sqlite + FerretDB Mongo adapter
+##   2. Komodo Core
+##   3. Komodo Periphery
+
+services:
+  ferretdb:
+    image: ghcr.io/ferretdb/ferretdb
+    restart: unless-stopped
+    logging:
+      driver: local
+    networks:
+      - default
+    # ports: # Port closed due to lack of auth.
+    #   - 27017:27017
+    volumes:
+      - sqlite-data:/state
+    environment:
+      - FERRETDB_HANDLER=sqlite
+  
+  core:
+    image: ghcr.io/mbecker20/komodo:latest
+    # image: ghcr.io/mbecker20/komodo:latest-aarch64 ## Use for arm support
+    restart: unless-stopped
+    depends_on:
+      - ferretdb
+    logging:
+      driver: local
+    networks:
+      - default
+    ports:
+      - 9120:9120
+    # volumes: # Optionally mount a custom core.config.toml
+    #   - /path/to/core.config.toml:/config/config.toml
+    # extra_hosts: # allows for systemd Periphery connection at "http://host.docker.internal:8120"
+    #   - host.docker.internal:host-gateway
+    environment: # https://github.com/mbecker20/komodo/blob/main/config/core.config.toml
+      KOMODO_HOST: ${KOMODO_HOST}
+      KOMODO_TITLE: ${KOMODO_TITLE}
+      KOMODO_ENSURE_SERVER: http://periphery:8120
+      ## Mongo
+      KOMODO_MONGO_ADDRESS: ferretdb:27017
+      ## Secrets
+      KOMODO_PASSKEY: ${KOMODO_PASSKEY}
+      KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
+      KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
+      ## Auth
+      KOMODO_LOCAL_AUTH: ${KOMODO_LOCAL_AUTH}
+      KOMODO_DISABLE_USER_REGISTRATION: ${KOMODO_DISABLE_USER_REGISTRATION}
+      ## Github Oauth
+      # KOMODO_GITHUB_OAUTH_ENABLED: ${KOMODO_GITHUB_OAUTH_ENABLED}
+      # KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
+      # KOMODO_GITHUB_OAUTH_SECRET: ${KOMODO_GITHUB_OAUTH_SECRET}
+      ## Google Oauth
+      # KOMODO_GOOGLE_OAUTH_ENABLED: ${KOMODO_GOOGLE_OAUTH_ENABLED}
+      # KOMODO_GOOGLE_OAUTH_ID: ${KOMODO_GOOGLE_OAUTH_ID}
+      # KOMODO_GOOGLE_OAUTH_SECRET: ${KOMODO_GOOGLE_OAUTH_SECRET}
+      ## Aws
+      # KOMODO_AWS_ACCESS_KEY_ID: ${KOMODO_AWS_ACCESS_KEY_ID}
+      # KOMODO_AWS_SECRET_ACCESS_KEY: ${KOMODO_AWS_SECRET_ACCESS_KEY}
+      ## Hetzner
+      # KOMODO_HETZNER_TOKEN: ${KOMODO_HETZNER_TOKEN}
+
+  ## Deploy Periphery container using this block,
+  ## or deploy the Periphery binary with systemd using https://github.com/mbecker20/komodo/tree/main/scripts
+  periphery:
+    image: ghcr.io/mbecker20/periphery:latest
+    # image: ghcr.io/mbecker20/periphery:latest-aarch64 # Use for arm support
+    logging:
+      driver: local
+    networks:
+      - default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - stacks:/etc/komodo/stacks # manage stack files in a docker volume, or change it to an accessible host directory.
+    environment:
+      # If the disk size is overreporting, can use one of these to 
+      # whitelist / blacklist the disks to filter them, whichever is easier.
+      # Accepts comma separated list of paths.
+      # Usually whitelisting just /etc/hostname gives correct size.
+      PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
+      # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap,/etc/repos
+
+volumes:
+  sqlite-data:
+  repos:
+  stacks:
+
+networks:
+  default: {}

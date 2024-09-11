@@ -117,6 +117,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::PruneVolumes(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::PruneDockerBuilders(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::PruneBuildx(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::PruneSystem(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -250,6 +256,12 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       komodo_client().execute(request).await
     }
     Execution::PruneVolumes(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PruneDockerBuilders(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::PruneBuildx(request) => {
       komodo_client().execute(request).await
     }
     Execution::PruneSystem(request) => {

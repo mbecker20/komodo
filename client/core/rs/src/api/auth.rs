@@ -38,6 +38,8 @@ pub struct GetLoginOptionsResponse {
   pub github: bool,
   /// Whether google login is enabled.
   pub google: bool,
+  /// Whether user registration (Sign Up) has been disabled
+  pub registration_disabled: bool,
 }
 
 //

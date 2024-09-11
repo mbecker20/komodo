@@ -51,8 +51,9 @@ pub struct AwsServerTemplateConfig {
   #[partial_default(default_port())]
   pub port: i32,
   /// The user data to deploy the instance with.
-  #[serde(default)]
-  #[builder(default)]
+  #[serde(default = "default_user_data")]
+  #[builder(default = "default_user_data()")]
+  #[partial_default(default_user_data())]
   pub user_data: String,
   /// The security groups to give to the instance.
   #[serde(default)]
@@ -101,6 +102,17 @@ fn default_port() -> i32 {
   8120
 }
 
+fn default_user_data() -> String {
+  String::from("#!/bin/bash
+apt update
+apt upgrade -y
+curl -fsSL https://get.docker.com | sh
+systemctl enable docker.service
+systemctl enable containerd.service
+curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3
+systemctl enable periphery.service")
+}
+
 impl Default for AwsServerTemplateConfig {
   fn default() -> Self {
     Self {
@@ -113,7 +125,7 @@ impl Default for AwsServerTemplateConfig {
       ami_id: Default::default(),
       subnet_id: Default::default(),
       key_pair_name: Default::default(),
-      user_data: Default::default(),
+      user_data: default_user_data(),
       security_group_ids: Default::default(),
     }
   }

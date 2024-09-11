@@ -1,4 +1,4 @@
-# Connecting Servers
+# Connect More Servers
 
 Connecting a server to Komodo has 2 steps:
 
@@ -11,24 +11,23 @@ Once step 1. is complete, you can just connect the server to Komodo Core from th
 
 You can install Periphery as a systemd managed process, run it as a [docker container](https://github.com/mbecker20/komodo/pkgs/container/periphery), or do whatever you want with the binary.
 
-Some Periphery actions interact with your hosts file system, like cloning repos, or accessing local compose files.
-For this reason, runnning periphery in a container can be a bit more complicated.
-Additionally, Periphery in a container tends to overreport the disks by default, but this can be fixed via some configuration.
-
 :::warning
-Allowing unintended access to the Periphery agent API is a security risk. Ensure to take appropriate measures to block access to the Periphery API, such as firewall rules on port `8120`. Additionally, you can whitelist your Komodo Core IP address in the [Periphery config](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L46), and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L51).
+Allowing unintended access to the Periphery agent API is a security risk.
+Ensure to take appropriate measures to block access to the Periphery API, such as firewall rules on port `8120`.
+Additionally, you can whitelist your Komodo Core IP address in the [Periphery config](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L46),
+and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L51).
 :::
 
 ### Install the Periphery agent - systemd
 
 As root user:
-```sh
+```bash
 curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3
 ```
 
 Periphery can also be installed to run as the calling user, just note this comes with some additional configuration.
 
-```sh
+```bash
 curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3 - --user
 ```
 
@@ -43,25 +42,28 @@ This script can be run multiple times without issue, and it won't change existin
 You can use a docker compose file like this:
 ```yaml
 services:
-  komodo-periphery:
-    image: ghcr.io/mbecker20/periphery:latest # use ghcr.io/mbecker20/periphery:latest-aarch64 for arm support
+  periphery:
+    image: ghcr.io/mbecker20/periphery:latest
+    # image: ghcr.io/mbecker20/periphery:latest-aarch64 # use for arm support
     logging:
       driver: local
     ports:
       - 8120:8120
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - komodo-repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
-      - komodo-stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
-    # environment:
-    #   # If the disk size is overreporting, can use one of these to 
-    #   # whitelist / blacklist the disks to filter them, whichever is easier. 
-    #   PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/komodo/repos 
-    #   PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
+      - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
+      - stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
+    environment:
+      # If the disk size is overreporting, can use one of these to 
+      # whitelist / blacklist the disks to filter them, whichever is easier.
+      # Accepts comma separated list of paths.
+      # Usually whitelisting just /etc/hostname gives correct size.
+      PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
+      # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap,/etc/repos
 
 volumes:
-  komodo-repos:
-  komodo-stacks:
+  repos:
+  stacks:
 ```
 
 ### Manual install steps - binaries

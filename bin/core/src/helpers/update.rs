@@ -236,6 +236,18 @@ pub async fn init_execution_update(
         resource::get::<Server>(&data.server).await?.id,
       ),
     ),
+    ExecuteRequest::PruneDockerBuilders(data) => (
+      Operation::PruneDockerBuilders,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
+    ExecuteRequest::PruneBuildx(data) => (
+      Operation::PruneBuildx,
+      ResourceTarget::Server(
+        resource::get::<Server>(&data.server).await?.id,
+      ),
+    ),
     ExecuteRequest::PruneSystem(data) => (
       Operation::PruneSystem,
       ResourceTarget::Server(

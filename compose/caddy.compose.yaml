@@ -1,0 +1,20 @@
+services:
+  caddy:
+    image: caddy
+    restart: unless-stopped
+    command: caddy reverse-proxy --from ${KOMODO_HOST} --to localhost:9120
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - default
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  caddy-data:
+  caddy-config:

@@ -6,6 +6,5 @@ dist
 .env
 .env.development
 creds.toml
-core.config.toml
 .syncs
 .stacks

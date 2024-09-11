@@ -641,6 +641,38 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::PruneDockerBuilders(req) => {
+      let req = ExecuteRequest::PruneDockerBuilders(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PruneDockerBuilders(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PruneDockerBuilders"),
+        &update_id,
+      )
+      .await?
+    }
+    Execution::PruneBuildx(req) => {
+      let req = ExecuteRequest::PruneBuildx(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PruneBuildx(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("failed at PruneBuildx"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::PruneSystem(req) => {
       let req = ExecuteRequest::PruneSystem(req);
       let update = init_execution_update(&req, &user).await?;

@@ -57,6 +57,8 @@ pub enum ExecuteRequest {
   PruneImages(PruneImages),
   DeleteVolume(DeleteVolume),
   PruneVolumes(PruneVolumes),
+  PruneDockerBuilders(PruneDockerBuilders),
+  PruneBuildx(PruneBuildx),
   PruneSystem(PruneSystem),
 
   // ==== DEPLOYMENT ====

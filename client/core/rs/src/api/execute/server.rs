@@ -419,6 +419,8 @@ pub struct DeleteVolume {
   pub name: String,
 }
 
+//
+
 /// Prunes the docker volumes on the target server. Response: [Update].
 ///
 /// 1. Runs `docker volume prune -a -f`.
@@ -439,6 +441,54 @@ pub struct PruneVolumes {
   /// Id or name
   pub server: String,
 }
+
+//
+
+/// Prunes the docker builders (build cache) on the target server. Response: [Update].
+///
+/// 1. Runs `docker builder prune -a -f`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PruneDockerBuilders {
+  /// Id or name
+  pub server: String,
+}
+
+//
+
+/// Prunes the docker buildx cache on the target server. Response: [Update].
+///
+/// 1. Runs `docker buildx prune -a -f`.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PruneBuildx {
+  /// Id or name
+  pub server: String,
+}
+
+//
 
 /// Prunes the docker system on the target server, including volumes. Response: [Update].
 ///

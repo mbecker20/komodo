@@ -383,7 +383,13 @@ pub fn environment_vars_from_str(
         .split_once('=')
         .with_context(|| format!("line {i} missing assignment (=)"))
         .map(|(variable, value)| {
-          (variable.trim().to_string(), value.trim().to_string())
+          let value = value
+            .split(" #")
+            .next()
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+          (variable.trim().to_string(), value)
         })?;
       anyhow::Ok(EnvironmentVar { variable, value })
     })
@@ -736,6 +742,8 @@ pub enum Operation {
   PruneImages,
   DeleteVolume,
   PruneVolumes,
+  PruneDockerBuilders,
+  PruneBuildx,
   PruneSystem,
 
   // build

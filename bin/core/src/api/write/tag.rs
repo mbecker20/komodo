@@ -96,6 +96,7 @@ impl Resolve<DeleteTag, User> for State {
     tokio::try_join!(
       resource::remove_tag_from_all::<Server>(&id),
       resource::remove_tag_from_all::<Deployment>(&id),
+      resource::remove_tag_from_all::<Stack>(&id),
       resource::remove_tag_from_all::<Build>(&id),
       resource::remove_tag_from_all::<Repo>(&id),
       resource::remove_tag_from_all::<Builder>(&id),

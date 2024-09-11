@@ -941,6 +941,106 @@ impl Resolve<PruneVolumes, (User, Update)> for State {
   }
 }
 
+impl Resolve<PruneDockerBuilders, (User, Update)> for State {
+  #[instrument(name = "PruneDockerBuilders", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    PruneDockerBuilders { server }: PruneDockerBuilders,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
+
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.pruning_builders = true)?;
+
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery.request(api::build::PruneBuilders {}).await {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "prune builders",
+        format!(
+          "failed to docker builder prune on server {} | {e:#?}",
+          server.name
+        ),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<PruneBuildx, (User, Update)> for State {
+  #[instrument(name = "PruneBuildx", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    PruneBuildx { server }: PruneBuildx,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
+
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.pruning_buildx = true)?;
+
+    update_update(update.clone()).await?;
+
+    let periphery = periphery_client(&server)?;
+
+    let log = match periphery.request(api::build::PruneBuildx {}).await {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "prune buildx",
+        format!(
+          "failed to docker buildx prune on server {} | {e:#?}",
+          server.name
+        ),
+      ),
+    };
+
+    update.logs.push(log);
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
 impl Resolve<PruneSystem, (User, Update)> for State {
   #[instrument(name = "PruneSystem", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -975,7 +1075,7 @@ impl Resolve<PruneSystem, (User, Update)> for State {
       Err(e) => Log::error(
         "prune system",
         format!(
-          "failed to docket system prune on server {} | {e:#?}",
+          "failed to docker system prune on server {} | {e:#?}",
           server.name
         ),
       ),

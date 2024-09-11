@@ -127,6 +127,8 @@ export const Login = () => {
     options !== undefined &&
     Object.values(options).every((value) => value === false);
 
+  const show_sign_up = options !== undefined && !options.registration_disabled;
+
   // Otherwise just standard login
   return (
     <div className="flex flex-col min-h-screen">
@@ -205,13 +207,15 @@ export const Login = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex gap-4 w-full justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => signup(creds)}
-                  disabled={signupPending}
-                >
-                  Sign Up
-                </Button>
+                {show_sign_up && (
+                  <Button
+                    variant="outline"
+                    onClick={() => signup(creds)}
+                    disabled={signupPending}
+                  >
+                    Sign Up
+                  </Button>
+                )}
                 <Button
                   variant="default"
                   onClick={() => login(creds)}
@@ -227,7 +231,7 @@ export const Login = () => {
               No login methods have been configured. See the
               <Button variant="link" className="text-sm py-0 px-1">
                 <a
-                  href="https://github.com/mbecker20/komodo/blob/main/config_example/core.config.example.toml#L86"
+                  href="https://github.com/mbecker20/komodo/blob/main/config/core.config.toml"
                   target="_blank"
                   className="flex text-sm"
                 >

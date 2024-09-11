@@ -21,3 +21,15 @@ pub struct Build {
 }
 
 pub type BuildResponse = Vec<Log>;
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
+pub struct PruneBuilders {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
+pub struct PruneBuildx {}

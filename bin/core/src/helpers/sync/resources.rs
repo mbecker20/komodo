@@ -463,6 +463,20 @@ impl ResourceSync for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::PruneDockerBuilders(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::PruneBuildx(config) => {
+            config.server = resources
+              .servers
+              .get(&config.server)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::PruneSystem(config) => {
             config.server = resources
               .servers

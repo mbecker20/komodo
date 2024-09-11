@@ -1,0 +1,36 @@
+# Advanced Configuration
+
+### Oauth2
+
+To enable OAuth2 login, you must create a client on the respective OAuth provider,
+for example [Github](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app)
+or [Google](https://developers.google.com/identity/protocols/oauth2).
+
+- Komodo uses the `web application` login flow.
+- The redirect uri is:
+	- `<KOMODO_HOST>/auth/github/callback` for Github.
+	- `<KOMODO_HOST>/auth/google/callback` for Google.
+
+### Optional. Mount a config file.
+
+If you prefer to keep sensitive information out of environment variables, you can
+write a config file on your host, and mount it to `/config/config.toml` in the Komodo core container.
+
+:::info
+Configuration can still be passed in environment variables, and will take precedent over what is passed in the file.
+:::
+
+Quick download to `./komodo/core.config.toml`:
+```bash
+wget -P komodo https://raw.githubusercontent.com/mbecker20/komodo/main/config/core.config.toml
+```
+
+```mdx-code-block
+import RemoteCodeFile from "@site/src/components/RemoteCodeFile";
+
+<RemoteCodeFile
+	title="https://github.com/mbecker20/komodo/blob/main/config/core.config.toml"
+	url="https://raw.githubusercontent.com/mbecker20/komodo/main/config/core.config.toml"
+	language="toml"
+/>
+```

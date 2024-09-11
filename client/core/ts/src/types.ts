@@ -865,6 +865,8 @@ export type Execution =
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "DeleteVolume", params: DeleteVolume }
 	| { type: "PruneVolumes", params: PruneVolumes }
+	| { type: "PruneDockerBuilders", params: PruneDockerBuilders }
+	| { type: "PruneBuildx", params: PruneBuildx }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
@@ -1248,8 +1250,12 @@ export interface ServerActionState {
 	pruning_containers: boolean;
 	/** Server currently pruning images */
 	pruning_images: boolean;
-	/** Server currently pruning images */
+	/** Server currently pruning volumes */
 	pruning_volumes: boolean;
+	/** Server currently pruning docker builders */
+	pruning_builders: boolean;
+	/** Server currently pruning builx cache */
+	pruning_buildx: boolean;
 	/** Server currently pruning system */
 	pruning_system: boolean;
 	/** Server currently starting containers. */
@@ -2754,6 +2760,8 @@ export enum Operation {
 	PruneImages = "PruneImages",
 	DeleteVolume = "DeleteVolume",
 	PruneVolumes = "PruneVolumes",
+	PruneDockerBuilders = "PruneDockerBuilders",
+	PruneBuildx = "PruneBuildx",
 	PruneSystem = "PruneSystem",
 	CreateBuild = "CreateBuild",
 	UpdateBuild = "UpdateBuild",
@@ -3203,6 +3211,8 @@ export interface GetLoginOptionsResponse {
 	github: boolean;
 	/** Whether google login is enabled. */
 	google: boolean;
+	/** Whether user registration (Sign Up) has been disabled */
+	registration_disabled: boolean;
 }
 
 /**
@@ -3618,6 +3628,26 @@ export interface DeleteVolume {
  * 1. Runs `docker volume prune -a -f`.
  */
 export interface PruneVolumes {
+	/** Id or name */
+	server: string;
+}
+
+/**
+ * Prunes the docker builders (build cache) on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker builder prune -a -f`.
+ */
+export interface PruneDockerBuilders {
+	/** Id or name */
+	server: string;
+}
+
+/**
+ * Prunes the docker buildx cache on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker buildx prune -a -f`.
+ */
+export interface PruneBuildx {
 	/** Id or name */
 	server: string;
 }
@@ -6226,7 +6256,7 @@ export interface AwsServerTemplateConfig {
 	 */
 	port: number;
 	/** The user data to deploy the instance with. */
-	user_data?: string;
+	user_data: string;
 	/** The security groups to give to the instance. */
 	security_group_ids?: string[];
 	/** Specify the EBS volumes to attach. */
@@ -6323,7 +6353,7 @@ export interface HetznerServerTemplateConfig {
 	/** SSH key IDs ( integer ) or names ( string ) which should be injected into the Server at creation time */
 	ssh_keys?: string[];
 	/** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
-	user_data?: string;
+	user_data: string;
 	/** Connect to the instance using it's public ip. */
 	use_public_ip?: boolean;
 	/** Labels for the server */
@@ -6434,6 +6464,8 @@ export type ExecuteRequest =
 	| { type: "PruneImages", params: PruneImages }
 	| { type: "DeleteVolume", params: DeleteVolume }
 	| { type: "PruneVolumes", params: PruneVolumes }
+	| { type: "PruneDockerBuilders", params: PruneDockerBuilders }
+	| { type: "PruneBuildx", params: PruneBuildx }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartDeployment", params: StartDeployment }
