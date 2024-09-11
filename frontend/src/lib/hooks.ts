@@ -99,9 +99,14 @@ export const useManageUser = <
     mutationFn: (params: P) => client().user({ type, params } as R),
     onError: (e: { response: { data: any } }, v, c) => {
       console.log("Auth error:", e.response.data);
+      const msg = e.response.data?.error as string;
+      let msg_log = msg ? msg + " | " : "";
+      if (msg_log) {
+        msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
+      }
       toast({
         title: `Request ${type} Failed`,
-        description: "See console for details",
+        description: `${msg_log}See console for details`,
         variant: "destructive",
       });
       config?.onError && config.onError(e, v, c);
@@ -128,9 +133,14 @@ export const useWrite = <
     mutationFn: (params: P) => client().write({ type, params } as R),
     onError: (e: { response: { data: any } }, v, c) => {
       console.log("Write error:", e.response.data);
+      const msg = e.response.data?.error;
+      let msg_log = msg ? msg + " - " : "";
+      if (msg_log) {
+        msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
+      }
       toast({
         title: `Write request ${type} failed`,
-        description: "See console for details",
+        description: `${msg_log}See console for details`,
         variant: "destructive",
       });
       config?.onError && config.onError(e, v, c);
@@ -157,9 +167,14 @@ export const useExecute = <
     mutationFn: (params: P) => client().execute({ type, params } as R),
     onError: (e: { response: { data: any } }, v, c) => {
       console.log("Execute error:", e.response.data);
+      const msg = e.response.data?.error;
+      let msg_log = msg ? msg + " | " : "";
+      if (msg_log) {
+        msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
+      }
       toast({
         title: `Execute request ${type} failed`,
-        description: "See console for details",
+        description: `${msg_log}See console for details`,
         variant: "destructive",
       });
       config?.onError && config.onError(e, v, c);
