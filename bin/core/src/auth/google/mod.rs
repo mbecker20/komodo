@@ -3,8 +3,8 @@ use async_timing_util::unix_timestamp_ms;
 use axum::{
   extract::Query, response::Redirect, routing::get, Router,
 };
-use mongo_indexed::Document;
 use komodo_client::entities::user::{User, UserConfig};
+use mongo_indexed::Document;
 use mungos::mongodb::bson::doc;
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -87,6 +87,10 @@ async fn callback(
       let ts = unix_timestamp_ms() as i64;
       let no_users_exist =
         db_client.users.find_one(Document::new()).await?.is_none();
+      let core_config = core_config();
+      if !no_users_exist && core_config.disable_user_registration {
+        return Err(anyhow!("User registration is disabled"));
+      }
       let user = User {
         id: Default::default(),
         username: google_user
@@ -96,7 +100,7 @@ async fn callback(
           .first()
           .unwrap()
           .to_string(),
-        enabled: no_users_exist || core_config().enable_new_users,
+        enabled: no_users_exist || core_config.enable_new_users,
         admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,

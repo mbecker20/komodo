@@ -127,6 +127,8 @@ export const Login = () => {
     options !== undefined &&
     Object.values(options).every((value) => value === false);
 
+  const show_sign_up = options !== undefined && !options.registration_disabled;
+
   // Otherwise just standard login
   return (
     <div className="flex flex-col min-h-screen">
@@ -205,13 +207,15 @@ export const Login = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex gap-4 w-full justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => signup(creds)}
-                  disabled={signupPending}
-                >
-                  Sign Up
-                </Button>
+                {show_sign_up && (
+                  <Button
+                    variant="outline"
+                    onClick={() => signup(creds)}
+                    disabled={signupPending}
+                  >
+                    Sign Up
+                  </Button>
+                )}
                 <Button
                   variant="default"
                   onClick={() => login(creds)}

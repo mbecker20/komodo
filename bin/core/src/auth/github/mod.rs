@@ -2,11 +2,11 @@ use anyhow::{anyhow, Context};
 use axum::{
   extract::Query, response::Redirect, routing::get, Router,
 };
-use mongo_indexed::Document;
 use komodo_client::entities::{
   komodo_timestamp,
   user::{User, UserConfig},
 };
+use mongo_indexed::Document;
 use mungos::mongodb::bson::doc;
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -78,10 +78,14 @@ async fn callback(
       let ts = komodo_timestamp();
       let no_users_exist =
         db_client.users.find_one(Document::new()).await?.is_none();
+      let core_config = core_config();
+      if !no_users_exist && core_config.disable_user_registration {
+        return Err(anyhow!("User registration is disabled"));
+      }
       let user = User {
         id: Default::default(),
         username: github_user.login,
-        enabled: no_users_exist || core_config().enable_new_users,
+        enabled: no_users_exist || core_config.enable_new_users,
         admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,

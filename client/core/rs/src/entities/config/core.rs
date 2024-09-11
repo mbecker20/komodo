@@ -88,6 +88,8 @@ pub struct Env {
   pub komodo_ui_write_disabled: Option<bool>,
   /// Override `enable_new_users`
   pub komodo_enable_new_users: Option<bool>,
+  /// Override `disable_user_registration`
+  pub komodo_disable_user_registration: Option<bool>,
 
   /// Override `local_auth`
   pub komodo_local_auth: Option<bool>,
@@ -218,6 +220,11 @@ pub struct CoreConfig {
   /// Combined with transparent mode, this is suitable for a demo instance.
   #[serde(default)]
   pub enable_new_users: bool,
+
+  /// Normally new users will be registered, but not enabled until an Admin enables them.
+  /// With `disable_user_registration = true`, only the first user to log in will registered as a user.
+  #[serde(default)]
+  pub disable_user_registration: bool,
 
   /// Optionally provide a specific jwt secret.
   /// Passing nothing or an empty string will cause one to be generated.
@@ -420,6 +427,7 @@ impl CoreConfig {
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
       enable_new_users: config.enable_new_users,
+      disable_user_registration: config.disable_user_registration,
       local_auth: config.local_auth,
       google_oauth: OauthCredentials {
         enabled: config.google_oauth.enabled,

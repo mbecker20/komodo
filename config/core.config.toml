@@ -112,6 +112,12 @@ mongo.address = "localhost:27017"
 ## Default: false
 # enable_new_users = true
 
+## Normally new users will be registered, but not enabled until an Admin enables them.
+## With `disable_user_registration = true`, only the first user to log in will registered as a user.
+## Env: KOMODO_DISABLE_USER_REGISTRATION
+## Default: false
+# disable_user_registration = true
+
 ## Optionally provide a specific jwt secret.
 ## Passing nothing or an empty string will cause one to be generated on every startup.
 ## This means users will have to log in again if Komodo restarts.

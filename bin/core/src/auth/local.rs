@@ -32,19 +32,19 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
     let core_config = core_config();
 
     if !core_config.local_auth {
-      return Err(anyhow!("local auth is not enabled"));
+      return Err(anyhow!("Local auth is not enabled"));
     }
 
     if username.is_empty() {
-      return Err(anyhow!("username cannot be empty string"));
+      return Err(anyhow!("Username cannot be empty string"));
     }
 
     if ObjectId::from_str(&username).is_ok() {
-      return Err(anyhow!("username cannot be valid ObjectId"));
+      return Err(anyhow!("Username cannot be valid ObjectId"));
     }
 
     if password.is_empty() {
-      return Err(anyhow!("password cannot be empty string"));
+      return Err(anyhow!("Password cannot be empty string"));
     }
 
     let password = bcrypt::hash(password, BCRYPT_COST)
@@ -56,6 +56,10 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
       .find_one(Document::new())
       .await?
       .is_none();
+
+    if !no_users_exist && core_config.disable_user_registration {
+      return Err(anyhow!("User registration is disabled"));
+    }
 
     let ts = unix_timestamp_ms() as i64;
 

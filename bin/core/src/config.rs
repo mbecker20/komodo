@@ -123,6 +123,8 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or(config.ui_write_disabled),
       enable_new_users: env.komodo_enable_new_users
         .unwrap_or(config.enable_new_users),
+      disable_user_registration: env.komodo_disable_user_registration
+        .unwrap_or(config.disable_user_registration),
       local_auth: env.komodo_local_auth.unwrap_or(config.local_auth),
       google_oauth: OauthCredentials {
         enabled: env

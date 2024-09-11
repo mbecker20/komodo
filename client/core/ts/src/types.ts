@@ -3211,6 +3211,8 @@ export interface GetLoginOptionsResponse {
 	github: boolean;
 	/** Whether google login is enabled. */
 	google: boolean;
+	/** Whether user registration (Sign Up) has been disabled */
+	registration_disabled: boolean;
 }
 
 /**
@@ -6254,7 +6256,7 @@ export interface AwsServerTemplateConfig {
 	 */
 	port: number;
 	/** The user data to deploy the instance with. */
-	user_data?: string;
+	user_data: string;
 	/** The security groups to give to the instance. */
 	security_group_ids?: string[];
 	/** Specify the EBS volumes to attach. */
@@ -6351,7 +6353,7 @@ export interface HetznerServerTemplateConfig {
 	/** SSH key IDs ( integer ) or names ( string ) which should be injected into the Server at creation time */
 	ssh_keys?: string[];
 	/** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
-	user_data?: string;
+	user_data: string;
 	/** Connect to the instance using it's public ip. */
 	use_public_ip?: boolean;
 	/** Labels for the server */

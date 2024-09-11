@@ -91,6 +91,7 @@ fn login_options_reponse() -> &'static GetLoginOptionsResponse {
       google: config.google_oauth.enabled
         && !config.google_oauth.id.is_empty()
         && !config.google_oauth.secret.is_empty(),
+      registration_disabled: config.disable_user_registration,
     }
   })
 }
