@@ -1,0 +1,377 @@
+######################
+# KOMODO CORE CONFIG #
+######################
+
+## This is the offical "Default" config file for Komodo Core.
+## It serves as documentation for the meaning of the fields.
+## It is located at `https://github.com/mbecker20/komodo/blob/main/config/core.config.toml`.
+
+## This file is bundled into the official image, `ghcr.io/mbecker20/komodo`,
+## as the default config at `/config/config.toml`.
+## Komodo can start with no external config file mounted.
+
+## There is usually no need to create this file on your host.
+## Most fields can instead be configured using environment variables.
+
+## This will be the document title on the web page (shows up as text in the browser tab).
+## Env: KOMODO_TITLE
+## Default: 'Komodo'
+# title = "Komodo-02"
+
+## This should be the url used to access Komodo in browser, potentially behind DNS.
+## Eg https://komodo.example.com or http://12.34.56.78:9120. This should match the address configured in your Oauth app.
+## Env: KOMODO_HOST
+## Required to start Komodo, no default.
+host = "https://komodo.example.com"
+
+## The port the core system will run on.
+## Env: KOMODO_PORT
+## Default: 9120
+# port = 9121
+
+## This is the token used to authenticate core requests to periphery.
+## Ensure this matches a passkey in the connected periphery configs.
+## If the periphery servers don't have passkeys configured, this doesn't need to be changed.
+## Env: KOMODO_PASSKEY
+## Required to start Komodo, no default
+passkey = "a_random_passkey"
+
+## Ensure a server with this address exists on Core
+## upon first startup. Used with AIO compose.
+## Optional, no default.
+## Env: KOMODO_ENSURE_SERVER
+# ensure_server = "http://komodo-periphery:8120"
+
+## Disables write support on resources in the UI.
+## This protects users that that would normally have write priviledges during their UI usage,
+## when they intend to fully rely on ResourceSyncs to manage config.
+## Env: KOMODO_UI_WRITE_DISABLED
+## Default: false
+# ui_write_disabled = true
+
+############
+# DATABASE #
+############
+
+## Configure the database connection in one of the following ways:
+
+## Pass a full Mongo URI. Suitable for Mongo Atlas.
+## Env: KOMODO_MONGO_URI
+# mongo.uri = "mongodb://username:password@localhost:27017"
+
+## ==== * OR * ==== ##
+
+# Construct the address as mongodb://{username}:{password}@{address}
+## Env: KOMODO_MONGO_ADDRESS
+mongo.address = "localhost:27017"
+## Env: KOMODO_MONGO_USERNAME
+# mongo.username = "admin"
+## Env: KOMODO_MONGO_PASSWORD
+# mongo.password = "admin"
+
+## ==== other ====
+
+## Komodo will create its collections under this database name.
+## The only reason to change this is if multiple Komodo Cores share the same db.
+## Env: KOMODO_MONGO_DB_NAME
+## Default: komodo.
+# mongo.db_name = "komodo"
+
+## This is the assigned app_name of the mongo client.
+## The only reason to change this is if multiple Komodo Cores share the same db.
+## Env: KOMODO_MONGO_APP_NAME
+## Default: komodo_core.
+# mongo.app_name = "komodo_core_01"
+
+################
+# AUTH / LOGIN #
+################
+
+## Allow user login with a username / password.
+## The password will be hashed and stored in the db for login comparison.
+##
+## NOTE:
+## Komodo has no API to recover account logins, but if this happens you can doctor the db using Mongo Compass.
+## Create a new user, login to the database with Compass, note down your old users username and _id.
+## Then delete the old user, and update the new user to have the same username and _id. 
+## Make sure to set `enabled: true` and maybe `admin: true` on the new user as well, while using Compass.
+##
+## Env: KOMODO_LOCAL_AUTH
+## Default: false
+# local_auth = true
+
+## Allows all users to have Read level access to all resources.
+## Env: KOMODO_TRANSPARENT_MODE
+## Default: false
+# transparent_mode = true
+
+## New users will be automatically enabled when they sign up.
+## Otherwise, new users will be disabled on first login.
+## The first user to login will always be enabled on creation.
+## Env: KOMODO_ENABLE_NEW_USERS
+## Default: false
+# enable_new_users = true
+
+## Optionally provide a specific jwt secret.
+## Passing nothing or an empty string will cause one to be generated on every startup.
+## This means users will have to log in again if Komodo restarts.
+## Env: KOMODO_JWT_SECRET
+# jwt_secret = "your_random_secret"
+
+## Specify how long a user can stay logged in before they have to log in again.
+## All jwts are invalidated on application restart unless `jwt_secret` is set.
+## Env: KOMODO_JWT_TTL
+## Default: 1-day. 
+## Options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
+# jwt_ttl = "3-day"
+
+#########
+# OAUTH #
+#########
+
+## Google
+
+## Env: KOMODO_GOOGLE_OAUTH_ENABLED
+## Default: false
+# google_oauth.enabled = true
+
+## Env: KOMODO_GOOGLE_OAUTH_ID
+## Required if google_oauth is enabled.
+# google_oauth.id = "your_google_client_id"
+
+## Env: KOMODO_GOOGLE_OAUTH_SECRET
+## Required if google_oauth is enabled.
+# google_oauth.secret = "your_google_client_secret"
+
+## Github
+
+## Env: KOMODO_GITHUB_OAUTH_ENABLED
+## Default: false
+# github_oauth.enabled = true
+
+## Env: KOMODO_GITHUB_OAUTH_ID
+## Required if github_oauth is enabled.
+# github_oauth.id = "your_github_client_id"
+
+## Env: KOMODO_GITHUB_OAUTH_SECRET
+## Required if github_oauth is enabled.
+# github_oauth.secret = "your_github_client_secret"
+
+############
+# WEBHOOKS #
+############
+
+## This token must be given to git provider during repo webhook config.
+## The secret configured on the git provider side must match the secret configured here.
+## Env: KOMODO_WEBHOOK_SECRET
+## Default: empty (none)
+webhook_secret = "a_random_webhook_secret"
+
+## An alternate base url that is used to recieve git webhook requests.
+## If empty or not specified, will use 'host' address as base.
+## This is useful if Komodo is on an internal network, but can have a
+## proxy just allowing through the webhook api using NGINX.
+## Env: KOMODO_WEBHOOK_BASE_URL
+## Default: empty (none)
+# webhook_base_url = "https://git-webhook.komo.do"
+
+## Configure Github webhook app. Enables webhook management apis.
+## <INSERT LINK TO GUIDE>
+## Env: KOMODO_GITHUB_WEBHOOK_APP_APP_ID
+# github_webhook_app.app_id = 1234455 # Find on the app page.
+## Env: 
+##   - KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_IDS
+##   - KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_NAMESPACES
+# github_webhook_app.installations = [
+#   ## Find the id after installing the app to user / organization. "namespace" is the username / organization name.
+#   { id = 1234, namespace = "mbecker20" }
+# ]
+
+## The path to Github webhook app private key. <INSERT LINK TO GUIDE>
+## This is defaulted to `/github/private-key.pem`, and doesn't need to be changed if running core in Docker.
+## Just mount the private key pem file on the host to `/github/private-key.pem` in the container.
+## Eg. `/your/path/to/key.pem : /github/private-key.pem`
+## Env: KOMODO_GITHUB_WEBHOOK_APP_PK_PATH
+# github_webhook_app.pk_path = "/path/to/pk.pem"
+
+###########
+# LOGGING #
+###########
+
+## Specify the logging verbosity
+## Env: KOMODO_LOGGING_LEVEL
+## Options: off, error, warn, info, debug, trace
+## Default: info
+# logging.level = "info"
+
+## Specify the logging format for stdout / stderr.
+## Env: KOMODO_LOGGING_STDIO
+## Options: standard, json, none
+## Default: standard
+# logging.stdio = "standard"
+
+## Optionally specify a opentelemetry otlp endpoint to send traces to.
+## Env: KOMODO_LOGGING_OTLP_ENDPOINT
+# logging.otlp_endpoint = "http://localhost:4317"
+
+## Set the opentelemetry service name.
+## This will be attached to the telemetry Komodo will send.
+## Env: KOMODO_LOGGING_OPENTELEMETRY_SERVICE_NAME
+## Default: "Komodo"
+# logging.opentelemetry_service_name = "Komodo-01"
+
+###########
+# PRUNING #
+###########
+
+## The number of days to keep historical system stats around, or 0 to disable pruning. 
+## Stats older that are than this number of days are deleted on a daily cycle.
+## Env: KOMODO_KEEP_STATS_FOR_DAYS
+## Default: 14
+# keep_stats_for_days = 14
+
+## The number of days to keep alerts around, or 0 to disable pruning. 
+## Alerts older that are than this number of days are deleted on a daily cycle.
+## Env: KOMODO_KEEP_ALERTS_FOR_DAYS
+## Default: 14
+# keep_alerts_for_days = 14
+
+##################
+# POLL INTERVALS #
+##################
+
+## Interval at which to poll Stacks for any updates / automated actions.
+## Env: KOMODO_STACK_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# stack_poll_interval = "1-min"
+
+## Interval at which to poll Syncs for any updates / automated actions.
+## Env: KOMODO_SYNC_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# sync_poll_interval = "1-min"
+
+## Interval at which to poll Builds (latest commit hash) for any updates / automated actions.
+## Env: KOMODO_STACK_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# build_poll_interval = "1-min"
+
+## Interval at which to poll Repos (latest commit hash) for any updates / automated actions.
+## Env: KOMODO_REPO_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# repo_poll_interval = "1-min"
+
+## Controls the rate at which servers are polled for health, system stats, and container status.
+## This affects network usage, and the size of the stats stored in mongo.
+## Default: 15-sec
+## Options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
+# monitoring_interval = "5-sec"
+
+###################
+# CLOUD PROVIDERS #
+###################
+
+## Komodo can build images on purpose deployed AWS EC2 instances,
+## and afterwards destroying the instance.
+
+## Additionally, Komodo can deploy cloud VPS on AWS EC2 and Hetzner.
+## Use the Template resource to configure launch preferences.
+## Hetzner is not supported for builds as their pricing model is by the hour,
+## while AWS is by the minute. This is very important for builds.
+
+## Provide aws api keys for ephemeral builders / server launch
+## Env: KOMODO_AWS_ACCESS_KEY_ID
+# aws.access_key_id = "your_aws_key_id"
+## Env: KOMODO_AWS_SECRET_ACCESS_KEY
+# aws.secret_access_key = "your_aws_secret_key"
+
+## Provide hetzner api token for server launch
+## Env: KOMODO_HETZNER_TOKEN
+# hetzner.token = "your_hetzner_token"
+
+#################
+# GIT PROVIDERS #
+#################
+
+## These will be available to attach to Builds, Repos, Stacks, and Syncs.
+## They allow these Resources to clone private repositories.
+## They cannot be configured on the environment.
+
+## configure git providers
+# [[git_provider]]
+# domain = "github.com"
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# 	{ username = "moghtech", token = "access_token_for_other_account" },
+# ]
+
+# [[git_provider]]
+# domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# ]
+
+# [[git_provider]]
+# domain = "localhost:8000" # use a custom provider, like self-hosted gitea
+# https = false # use http://localhost:8000 as base-url for clone
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# ]
+
+######################
+# REGISTRY PROVIDERS #
+######################
+
+## These will be available to attach to Builds and Stacks.
+## They allow these Resources to pull private images.
+## They cannot be configured on the environment.
+
+## configure docker registries
+# [[docker_registry]]
+# domain = "docker.io"
+# accounts = [
+# 	{ username = "mbecker2020", token = "access_token_for_account" }
+# ]
+# organizations = ["DockerhubOrganization"]
+
+# [[docker_registry]]
+# domain = "git.mogh.tech" # use a custom provider, like self-hosted gitea
+# accounts = [
+# 	{ username = "mbecker20", token = "access_token_for_account" },
+# ]
+# organizations = ["Mogh"] # These become available in the UI
+
+## Configure AWS ECR registries.
+## Ecr is a special case of registry, as using it is pretty different than others.
+## You can configure multiple of these with different "labels", and select
+## then by label in the UI.
+
+# [aws_ecr_registry.label_1]
+# region = "us-east-1"
+# account_id = "1234455"
+# access_key_id = "your_aws_key_id_1"
+# secret_access_key = "your_aws_secret_key_1"
+
+# [aws_ecr_registry.label_2]
+# region = "us-west-1"
+# account_id = "1234455"
+# access_key_id = "your_aws_key_id_2"
+# secret_access_key = "your_aws_secret_key_2"
+
+###########
+# SECRETS #
+###########
+
+## Provide core-based secrets.
+## These will be available to interpolate into your Deployment / Stack environments,
+## and will be hidden in the UI and logs.
+## These are available to use on any periphery (Server),
+## but you can also limit access more by placing them in a single peripheries config instead.
+## These cannot be configured on the environment.
+
+# [secrets]
+# SECRET_1 = "value_1"
+# SECRET_2 = "value_2"
