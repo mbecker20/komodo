@@ -56,8 +56,9 @@ pub struct HetznerServerTemplateConfig {
   #[builder(default)]
   pub ssh_keys: Vec<String>,
   /// Cloud-Init user data to use during Server creation. This field is limited to 32KiB.
-  #[serde(default)]
-  #[builder(default)]
+  #[serde(default = "default_user_data")]
+  #[builder(default = "default_user_data()")]
+  #[partial_default(default_user_data())]
   pub user_data: String,
   /// Connect to the instance using it's public ip.
   #[serde(default)]
@@ -89,6 +90,18 @@ fn default_port() -> i32 {
   8120
 }
 
+fn default_user_data() -> String {
+  String::from("#cloud-config
+runcmd:
+  - apt update
+  - apt upgrade -y
+  - curl -fsSL https://get.docker.com | sh
+  - systemctl enable docker.service
+  - systemctl enable containerd.service
+  - curl -sSL 'https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py' | python3
+  - systemctl enable periphery.service")
+}
+
 impl Default for HetznerServerTemplateConfig {
   fn default() -> Self {
     Self {
@@ -102,7 +115,7 @@ impl Default for HetznerServerTemplateConfig {
       firewall_ids: Default::default(),
       server_type: Default::default(),
       ssh_keys: Default::default(),
-      user_data: Default::default(),
+      user_data: default_user_data(),
       use_public_ip: Default::default(),
       labels: Default::default(),
       volumes: Default::default(),
