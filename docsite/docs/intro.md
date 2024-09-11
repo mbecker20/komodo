@@ -45,4 +45,4 @@ Komodo exposes powerful functionality over the Core's REST and Websocket API, en
 
 Komodo is a system designed to be used by many users, whether they are developers, operations personnel, or administrators. The ability to affect an applications state is very powerful, so Komodo has a granular permissioning system to only provide this functionality to the intended users. The permissioning system is explained in detail in the [permissioning](/docs/permissioning) section. 
 
-User sign-on is possible using username / password, or with Oauth (Github and Google). See [Core Setup](/docs/core-setup).
+User sign-on is possible using username / password, or with Oauth (Github and Google). See [Core Setup](./setup/index.mdx).

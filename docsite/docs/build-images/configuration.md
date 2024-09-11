@@ -6,7 +6,7 @@ Komodo just needs a bit of information in order to build your image.
 Komodo supports cloning repos over http/s, from any provider that supports cloning private repos using `git clone https://<Token>@git-provider.net/<Owner>/<Repo>`.
 
 Accounts / access tokens can be configured in either the [core config](../setup/advanced.mdx#mount-a-config-file)
-or in the [periphery config](../setup/connect-servers.md#manual-install-steps---binaries).
+or in the [periphery config](../setup/connect-servers.mdx#manual-install-steps---binaries).
 
 ### Repo configuration
 To specify the git repo to build, just give it the name of the repo and the branch under *repo config*. The name is given like `mbecker20/komodo`, it includes the username / organization that owns the repo.
