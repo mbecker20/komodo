@@ -2,7 +2,7 @@ services:
   caddy:
     image: caddy
     restart: unless-stopped
-    command: caddy reverse-proxy --from ${KOMODO_HOST} --to localhost:9120
+    command: caddy reverse-proxy --from ${KOMODO_HOST} --to core:9120
     cap_add:
       - NET_ADMIN
     networks:
