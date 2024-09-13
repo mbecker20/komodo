@@ -26,7 +26,7 @@ git = { path = "lib/git" }
 # MOGH
 run_command = { version = "0.0.6", features = ["async_tokio"] }
 serror = { version = "0.4.6", default-features = false }
-slack = { version = "0.1.0", package = "slack_client_rs" }
+slack = { version = "0.2.0", package = "slack_client_rs" }
 derive_default_builder = "0.1.8"
 derive_empty_traits = "0.1.0"
 merge_config_files = "0.1.5"
@@ -40,9 +40,9 @@ mungos = "1.1.0"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.40.0", features = ["full"] }
+tokio = { version = "1.38.1", features = ["full"] }
 reqwest = { version = "0.12.7", features = ["json"] }
-tokio-util = "0.7.11"
+tokio-util = "0.7.12"
 futures = "0.3.30"
 futures-util = "0.3.30"
 
@@ -54,27 +54,27 @@ tokio-tungstenite = "0.23.1"
 
 # SER/DE
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
-serde = { version = "1.0.209", features = ["derive"] }
+serde = { version = "1.0.210", features = ["derive"] }
 strum = { version = "0.26.3", features = ["derive"] }
-serde_json = "1.0.127"
+serde_json = "1.0.128"
 serde_yaml = "0.9.34"
 toml = "0.8.19"
 
 # ERROR
-anyhow = "1.0.86"
+anyhow = "1.0.88"
 thiserror = "1.0.63"
 
 # LOGGING
-opentelemetry_sdk = { version = "0.24.1", features = ["rt-tokio"] }
+opentelemetry_sdk = { version = "0.25.0", features = ["rt-tokio"] }
 tracing-subscriber = { version = "0.3.18", features = ["json"] }
-opentelemetry-semantic-conventions = "0.16.0"
-tracing-opentelemetry = "0.25.0"
-opentelemetry-otlp = "0.17.0"
-opentelemetry = "0.24.0"
+opentelemetry-semantic-conventions = "0.25.0"
+tracing-opentelemetry = "0.26.0"
+opentelemetry-otlp = "0.25.0"
+opentelemetry = "0.25.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.16", features = ["derive"] }
+clap = { version = "4.5.17", features = ["derive"] }
 dotenvy = "0.15.7"
 envy = "0.4.2"
 
@@ -95,9 +95,9 @@ bollard = "0.17.1"
 sysinfo = "0.31.4"
 
 # CLOUD
-aws-config = "1.5.5"
-aws-sdk-ec2 = "1.70.0"
-aws-sdk-ecr = "1.42.0"
+aws-config = "1.5.6"
+aws-sdk-ec2 = "1.72.0"
+aws-sdk-ecr = "1.45.0"
 
 # MISC
 derive_builder = "0.20.1"
@@ -105,5 +105,5 @@ typeshare = "1.0.3"
 octorust = "0.7.0"
 colored = "2.1.0"
 regex = "1.10.6"
-bson = "2.11.0"
+bson = "2.12.0"
 

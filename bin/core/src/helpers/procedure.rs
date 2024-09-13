@@ -76,6 +76,7 @@ pub async fn execute_procedure(
   Ok(())
 }
 
+#[allow(dependency_on_unit_never_type_fallback)]
 #[instrument(skip(update))]
 async fn execute_stage(
   executions: Vec<Execution>,

@@ -291,9 +291,9 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
         }
         if resource.tags != original_tags {
           let from =
-            colored(&format!("{:?}", original_tags), Color::Red);
+            colored(format!("{:?}", original_tags), Color::Red);
           let to =
-            colored(&format!("{:?}", resource.tags), Color::Green);
+            colored(format!("{:?}", resource.tags), Color::Green);
           lines.push(format!(
             "{}: 'tags'\n{}:  {from}\n{}:    {to}",
             muted("field"),
