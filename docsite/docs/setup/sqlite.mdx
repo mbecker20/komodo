@@ -15,7 +15,7 @@ wget -P komodo https://raw.githubusercontent.com/mbecker20/komodo/main/compose/s
 3. Deploy:
 
 ```bash
-docker compose -p komodo -f komodo/sqlite.compose.yaml up -d --env-file komodo/compose.env
+docker compose -p komodo -f komodo/sqlite.compose.yaml --env-file komodo/compose.env up -d
 ```
 
 ```mdx-code-block
