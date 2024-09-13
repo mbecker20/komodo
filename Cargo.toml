@@ -3,7 +3,7 @@ resolver = "2"
 members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
-version = "1.14.2"
+version = "1.14.3"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
@@ -15,7 +15,7 @@ homepage = "https://komo.do"
 
 [workspace.dependencies]
 # LOCAL
-# komodo_client = "1.14.2"
+# komodo_client = "1.14.3"
 komodo_client = { path = "client/core/rs" }
 periphery_client = { path = "client/periphery/rs" }
 formatting = { path = "lib/formatting" }

@@ -46,14 +46,14 @@ pub async fn compose_up(
   // Use the env_file_path in the compose command.
   let env_file_path = write_stack(&stack, git_token, res)
     .await
-    .context("failed to write / clone compose file")?;
+    .context("Failed to write / clone compose file")?;
 
   let root = periphery_config()
     .stack_dir
     .join(to_komodo_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
   let run_directory = run_directory.canonicalize().context(
-    "failed to validate run directory on host after stack write (canonicalize error)",
+    "Failed to validate run directory on host after stack write (canonicalize error)",
   )?;
 
   let file_paths = stack
@@ -107,10 +107,7 @@ pub async fn compose_up(
   }
 
   let docker_compose = docker_compose();
-  let run_dir = run_directory
-    .canonicalize()
-    .context("failed to canonicalize run directory on host")?;
-  let run_dir = run_dir.display();
+  let run_dir = run_directory.display();
   let service_arg = service
     .as_ref()
     .map(|service| format!(" {service}"))
@@ -142,13 +139,17 @@ pub async fn compose_up(
       .context("failed to login to image registry")?;
   }
 
+  let env_file = env_file_path
+    .map(|path| format!(" --env-file {}", path.display()))
+    .unwrap_or_default();
+
   // Build images before destroying to minimize downtime.
   // If this fails, do not continue.
   if stack.config.run_build {
     let build_extra_args =
       parse_extra_args(&stack.config.build_extra_args);
     let command = format!(
-      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} build{build_extra_args}{service_arg}",
+      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} build{build_extra_args}{service_arg}",
     );
     if stack.config.skip_secret_interp {
       let log = run_komodo_command("compose build", command).await;
@@ -185,7 +186,7 @@ pub async fn compose_up(
     let log = run_komodo_command(
       "compose pull",
       format!(
-        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
+        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} pull{service_arg}",
       ),
     )
     .await;
@@ -207,9 +208,6 @@ pub async fn compose_up(
 
   // Run compose up
   let extra_args = parse_extra_args(&stack.config.extra_args);
-  let env_file = env_file_path
-    .map(|path| format!(" --env-file {}", path.display()))
-    .unwrap_or_default();
   let command = format!(
     "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
   );
