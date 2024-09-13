@@ -41,8 +41,10 @@ pub async fn pull(
   // This will remove any intermediate '/./' which can be a problem for some OS.
   let path = path.components().collect::<PathBuf>();
 
-  let command =
-    format!("cd {} && git pull --force origin {branch}", path.display());
+  let command = format!(
+    "cd {} && git pull --force origin {branch}",
+    path.display()
+  );
 
   let pull_log = run_komodo_command("git pull", command).await;
 
@@ -507,7 +509,15 @@ pub async fn write_environment_file(
   folder: &Path,
   logs: &mut Vec<Log>,
 ) -> Result<Option<PathBuf>, ()> {
+  let env_file_path = folder.join(env_file_path);
+
   if environment.is_empty() {
+    // Still want to return Some(env_file_path) if the path
+    // already exists on the host and is a file.
+    // This is for "Files on Server" mode when user writes the env file themself.
+    if env_file_path.is_file() {
+      return Ok(Some(env_file_path));
+    }
     return Ok(None);
   }
 
@@ -549,11 +559,9 @@ pub async fn write_environment_file(
     contents
   };
 
-  let file = folder.join(env_file_path);
-
   if let Err(e) =
-    fs::write(&file, contents).await.with_context(|| {
-      format!("failed to write environment file to {file:?}")
+    fs::write(&env_file_path, contents).await.with_context(|| {
+      format!("failed to write environment file to {env_file_path:?}")
     })
   {
     logs.push(Log::error(
@@ -565,8 +573,8 @@ pub async fn write_environment_file(
 
   logs.push(Log::simple(
     "write environment file",
-    format!("environment written to {file:?}"),
+    format!("environment written to {env_file_path:?}"),
   ));
 
-  Ok(Some(file))
+  Ok(Some(env_file_path))
 }

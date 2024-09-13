@@ -24,9 +24,8 @@ use komodo_client::{
       PendingSyncUpdatesData, PendingSyncUpdatesDataErr,
       PendingSyncUpdatesDataOk, ResourceSync,
     },
-    ResourceTarget,
     user::User,
-    NoData,
+    NoData, ResourceTarget,
   },
 };
 use mungos::{

@@ -1,5 +1,4 @@
 use anyhow::Context;
-use mongo_indexed::Document;
 use komodo_client::{
   api::read::*,
   entities::{
@@ -8,6 +7,7 @@ use komodo_client::{
     user::User,
   },
 };
+use mongo_indexed::Document;
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 

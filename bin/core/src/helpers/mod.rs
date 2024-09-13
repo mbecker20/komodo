@@ -2,7 +2,6 @@ use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
-use mongo_indexed::Document;
 use komodo_client::{
   api::write::CreateServer,
   entities::{
@@ -15,6 +14,7 @@ use komodo_client::{
     ResourceTarget,
   },
 };
+use mongo_indexed::Document;
 use mungos::{
   find::find_collect,
   mongodb::bson::{doc, oid::ObjectId, to_document, Bson},

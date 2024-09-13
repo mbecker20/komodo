@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use mongo_indexed::{doc, Document};
 use komodo_client::{
   api::read::{
     GetDockerRegistryAccount, GetDockerRegistryAccountResponse,
@@ -9,6 +8,7 @@ use komodo_client::{
   },
   entities::user::User,
 };
+use mongo_indexed::{doc, Document};
 use mungos::{
   by_id::find_one_by_id, find::find_collect,
   mongodb::options::FindOptions,

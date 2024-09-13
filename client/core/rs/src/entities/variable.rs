@@ -22,7 +22,7 @@ pub struct Variable {
   pub value: String,
   /// If marked as secret, the variable value will be hidden in updates / logs.
   /// Additionally the value will not be served in read requests by non admin users.
-  /// 
+  ///
   /// Note that the value is NOT encrypted in the database, and will likely show up in database logs.
   /// The security of these variables comes down to the security
   /// of the database (system level encryption, network isolation, etc.)

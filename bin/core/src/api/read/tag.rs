@@ -1,9 +1,9 @@
 use anyhow::Context;
-use mongo_indexed::doc;
 use komodo_client::{
   api::read::{GetTag, ListTags},
   entities::{tag::Tag, user::User},
 };
+use mongo_indexed::doc;
 use mungos::{find::find_collect, mongodb::options::FindOptions};
 use resolver_api::Resolve;
 

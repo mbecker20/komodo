@@ -5,9 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
-use super::{
-  permission::PermissionLevel, ResourceTargetVariant,
-};
+use super::{permission::PermissionLevel, ResourceTargetVariant};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

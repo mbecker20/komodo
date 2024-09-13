@@ -4,7 +4,8 @@ use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
 use komodo_client::{
   api::write::{
-    CreateVariable, DeleteVariable, UpdateVariableDescription, UpdateVariableIsSecret, UpdateVariableValue
+    CreateVariable, DeleteVariable, UpdateVariableDescription,
+    UpdateVariableIsSecret, UpdateVariableValue,
   },
   entities::{
     sync::SyncUpdate, update::Log, user::sync_user,

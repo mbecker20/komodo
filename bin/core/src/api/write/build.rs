@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use mongo_indexed::doc;
 use komodo_client::{
   api::write::*,
   entities::{
@@ -10,6 +9,7 @@ use komodo_client::{
     CloneArgs, NoData,
   },
 };
+use mongo_indexed::doc;
 use mungos::mongodb::bson::to_document;
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
@@ -98,7 +98,7 @@ impl Resolve<RefreshBuildCache, User> for State {
 
     if build.config.repo.is_empty() {
       // Nothing to do here
-      return Ok(NoData {})
+      return Ok(NoData {});
     }
 
     let config = core_config();

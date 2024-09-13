@@ -3,7 +3,6 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::http::HeaderMap;
-use mongo_indexed::Document;
 use komodo_client::{
   api::auth::{
     CreateLocalUser, CreateLocalUserResponse, LoginLocalUser,
@@ -11,6 +10,7 @@ use komodo_client::{
   },
   entities::user::{User, UserConfig},
 };
+use mongo_indexed::Document;
 use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 

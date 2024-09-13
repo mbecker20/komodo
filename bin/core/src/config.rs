@@ -1,7 +1,6 @@
 use std::sync::OnceLock;
 
 use anyhow::Context;
-use merge_config_files::parse_config_file;
 use komodo_client::entities::{
   config::core::{
     AwsCredentials, CoreConfig, Env, GithubWebhookAppConfig,
@@ -10,6 +9,7 @@ use komodo_client::entities::{
   },
   logger::LogConfig,
 };
+use merge_config_files::parse_config_file;
 use serde::Deserialize;
 
 pub fn frontend_path() -> &'static String {

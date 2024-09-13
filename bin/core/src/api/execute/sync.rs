@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 use formatting::{colored, format_serror, Color};
-use mongo_indexed::doc;
 use komodo_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
   entities::{
@@ -22,6 +21,7 @@ use komodo_client::{
     user::{sync_user, User},
   },
 };
+use mongo_indexed::doc;
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
 

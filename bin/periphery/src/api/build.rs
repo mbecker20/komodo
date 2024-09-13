@@ -7,7 +7,9 @@ use komodo_client::entities::{
   update::Log,
   EnvironmentVar, Version,
 };
-use periphery_client::api::build::{self, PruneBuilders, PruneBuildx};
+use periphery_client::api::build::{
+  self, PruneBuilders, PruneBuildx,
+};
 use resolver_api::Resolve;
 
 use crate::{

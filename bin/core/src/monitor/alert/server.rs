@@ -2,13 +2,13 @@ use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::Context;
 use derive_variants::ExtractVariant;
-use mongo_indexed::Indexed;
 use komodo_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant, SeverityLevel},
   komodo_timestamp, optional_string,
   server::{ServerListItem, ServerState},
   ResourceTarget,
 };
+use mongo_indexed::Indexed;
 use mungos::{
   bulk_update::{self, BulkUpdate},
   find::find_collect,

@@ -1,7 +1,5 @@
 use anyhow::Context;
-use komodo_client::entities::{
-  build::Build, deployment::Deployment,
-};
+use komodo_client::entities::{build::Build, deployment::Deployment};
 use mungos::{
   find::find_collect,
   mongodb::bson::{doc, to_document},

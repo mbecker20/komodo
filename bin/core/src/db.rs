@@ -1,4 +1,3 @@
-use mongo_indexed::{create_index, create_unique_index};
 use komodo_client::entities::{
   alert::Alert,
   alerter::Alerter,
@@ -22,6 +21,7 @@ use komodo_client::entities::{
   user_group::UserGroup,
   variable::Variable,
 };
+use mongo_indexed::{create_index, create_unique_index};
 use mungos::{
   init::MongoBuilder,
   mongodb::{Collection, Database},

@@ -1,8 +1,14 @@
 use komodo_client::entities::{
-  alert::SeverityLevel, deployment::{Deployment, DeploymentState}, docker::{
+  alert::SeverityLevel,
+  deployment::{Deployment, DeploymentState},
+  docker::{
     container::ContainerListItem, image::ImageListItem,
     network::NetworkListItem, volume::VolumeListItem,
-  }, repo::Repo, server::{Server, ServerConfig, ServerHealth, ServerState}, stack::{ComposeProject, Stack, StackState}, stats::{SingleDiskUsage, SystemStats}
+  },
+  repo::Repo,
+  server::{Server, ServerConfig, ServerHealth, ServerState},
+  stack::{ComposeProject, Stack, StackState},
+  stats::{SingleDiskUsage, SystemStats},
 };
 use serror::Serror;
 
