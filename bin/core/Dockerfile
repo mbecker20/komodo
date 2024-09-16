@@ -1,5 +1,5 @@
 # Build Core
-FROM rust:1.81.0-slim-bookworm AS core-builder
+FROM rust:1.81.0-bookworm AS core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p komodo_core --release
