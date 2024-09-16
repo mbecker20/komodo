@@ -411,8 +411,22 @@ export const BuildConfig = ({
         "Secret Args": [
           {
             label: "Secret Args",
-            description:
-              "Pass secret args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
+            description: (
+              <div className="flex flex-row flex-wrap">
+                <div>
+                  Pass secrets to 'docker build'. These values remain hidden in
+                  the final image by using docker secret mounts.
+                </div>
+                <Link
+                  to="https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html#structfield.secret_args"
+                  target="_blank"
+                >
+                  <Button variant="link" className="p-0">
+                    See the docs.
+                  </Button>
+                </Link>
+              </div>
+            ),
             components: {
               secret_args: (vars, set) => {
                 const args =
