@@ -272,8 +272,9 @@ webhook_secret = "a_random_webhook_secret"
 
 ## Controls the rate at which servers are polled for health, system stats, and container status.
 ## This affects network usage, and the size of the stats stored in mongo.
+## Env: KOMODO_MONITORING_INTERVAL
+## Options: 1-sec, 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
 ## Default: 15-sec
-## Options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
 # monitoring_interval = "5-sec"
 
 ###################

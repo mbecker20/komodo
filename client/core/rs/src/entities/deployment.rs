@@ -293,7 +293,7 @@ pub fn conversions_to_string(conversions: &[Conversion]) -> String {
   conversions
     .iter()
     .map(|Conversion { local, container }| {
-      format!("{local}={container}")
+      format!("{local}:{container}")
     })
     .collect::<Vec<_>>()
     .join("\n")
@@ -317,8 +317,14 @@ pub fn conversions_from_str(
     })
     .map(|(i, line)| {
       let (local, container) = line
-        .split_once('=')
-        .with_context(|| format!("line {i} missing assignment (=)"))
+        // remove any preceding '-' (from yaml list)
+        .trim_start_matches('-')
+        .split_once(['=', ':'])
+        .with_context(|| {
+          format!(
+            "line {i} missing assignment character ('=' or ':')"
+          )
+        })
         .map(|(local, container)| {
           let container = container
             .split(" #")
@@ -572,8 +578,14 @@ pub fn term_signal_labels_from_str(
     })
     .map(|(i, line)| {
       let (signal, label) = line
-        .split_once('=')
-        .with_context(|| format!("line {i} missing assignment (=)"))
+        // remove any preceding '-' (from yaml list)
+        .trim_start_matches('-')
+        .split_once(['=', ':'])
+        .with_context(|| {
+          format!(
+            "line {i} missing assignment character ('=' or ':')"
+          )
+        })
         .map(|(signal, label)| {
           let label = label
             .split(" #")

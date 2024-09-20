@@ -380,8 +380,14 @@ pub fn environment_vars_from_str(
     })
     .map(|(i, line)| {
       let (variable, value) = line
-        .split_once('=')
-        .with_context(|| format!("line {i} missing assignment (=)"))
+        // remove any preceding '-' (from yaml list)
+        .trim_start_matches('-')
+        .split_once(['=', ':'])
+        .with_context(|| {
+          format!(
+            "line {i} missing assignment character ('=' or ':')"
+          )
+        })
         .map(|(variable, value)| {
           let value = value
             .split(" #")

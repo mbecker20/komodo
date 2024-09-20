@@ -87,6 +87,7 @@ services:
   periphery:
     image: ghcr.io/mbecker20/periphery:latest
     # image: ghcr.io/mbecker20/periphery:latest-aarch64 # Use for arm support
+    restart: unless-stopped
     logging:
       driver: local
     networks:

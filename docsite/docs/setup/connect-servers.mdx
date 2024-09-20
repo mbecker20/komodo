@@ -14,8 +14,8 @@ You can install Periphery as a systemd managed process, run it as a [docker cont
 :::warning
 Allowing unintended access to the Periphery agent API is a security risk.
 Ensure to take appropriate measures to block access to the Periphery API, such as firewall rules on port `8120`.
-Additionally, you can whitelist your Komodo Core IP address in the [Periphery config](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L46),
-and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L51).
+Additionally, you can whitelist your Komodo Core IP address in the [Periphery config](https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml#L46),
+and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml#L51).
 :::
 
 ### Install the Periphery agent - systemd
@@ -70,7 +70,7 @@ volumes:
 
 1.  Download the periphery binary from the latest [release](https://github.com/mbecker20/komodo/releases).
 
-2.  Create and edit your config files, following the [config example](https://github.com/mbecker20/komodo/blob/main/config_example/periphery.config.example.toml).
+2.  Create and edit your config files, following the [config example](https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml).
 
 :::note
 See the [periphery config docs](https://docs.rs/komodo_client/latest/komodo_client/entities/config/periphery/index.html)

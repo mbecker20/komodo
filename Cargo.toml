@@ -50,7 +50,7 @@ futures-util = "0.3.30"
 axum = { version = "0.7.5", features = ["ws", "json"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 tower-http = { version = "0.5.2", features = ["fs", "cors"] }
-tokio-tungstenite = "0.23.1"
+tokio-tungstenite = "0.24.0"
 
 # SER/DE
 ordered_hash_map = { version = "0.4.0", features = ["serde"] }
@@ -61,7 +61,7 @@ serde_yaml = "0.9.34"
 toml = "0.8.19"
 
 # ERROR
-anyhow = "1.0.88"
+anyhow = "1.0.89"
 thiserror = "1.0.63"
 
 # LOGGING
