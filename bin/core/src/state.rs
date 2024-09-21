@@ -35,9 +35,9 @@ pub async fn db_client() -> &'static DbClient {
   static DB_CLIENT: OnceCell<DbClient> = OnceCell::const_new();
   DB_CLIENT
     .get_or_init(|| async {
-      match DbClient::new(&core_config().mongo)
+      match DbClient::new(&core_config().database)
         .await
-        .context("failed to initialize mongo client")
+        .context("failed to initialize database client")
       {
         Ok(client) => client,
         Err(e) => {

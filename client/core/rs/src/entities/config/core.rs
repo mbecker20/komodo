@@ -122,18 +122,24 @@ pub struct Env {
   /// Override `github_webhook_app.pk_path`
   pub komodo_github_webhook_app_pk_path: Option<String>,
 
-  /// Override `mongo.uri`
-  pub komodo_mongo_uri: Option<String>,
-  /// Override `mongo.address`
-  pub komodo_mongo_address: Option<String>,
-  /// Override `mongo.username`
-  pub komodo_mongo_username: Option<String>,
-  /// Override `mongo.password`
-  pub komodo_mongo_password: Option<String>,
-  /// Override `mongo.app_name`
-  pub komodo_mongo_app_name: Option<String>,
-  /// Override `mongo.db_name`
-  pub komodo_mongo_db_name: Option<String>,
+  /// Override `database.uri`
+  #[serde(alias = "KOMODO_MONGO_URI")]
+  pub komodo_database_uri: Option<String>,
+  /// Override `database.address`
+  #[serde(alias = "KOMODO_MONGO_ADDRESS")]
+  pub komodo_database_address: Option<String>,
+  /// Override `database.username`
+  #[serde(alias = "KOMODO_MONGO_USERNAME")]
+  pub komodo_database_username: Option<String>,
+  /// Override `database.password`
+  #[serde(alias = "KOMODO_MONGO_PASSWORD")]
+  pub komodo_database_password: Option<String>,
+  /// Override `database.app_name`
+  #[serde(alias = "KOMODO_MONGO_APP_NAME")]
+  pub komodo_database_app_name: Option<String>,
+  /// Override `database.db_name`
+  #[serde(alias = "KOMODO_MONGO_DB_NAME")]
+  pub komodo_database_db_name: Option<String>,
 
   /// Override `aws.access_key_id`
   pub komodo_aws_access_key_id: Option<String>,
@@ -196,14 +202,9 @@ pub struct CoreConfig {
   #[serde(default)]
   pub ensure_server: String,
 
-  // ============
-  // = Database =
-  // ============
-  /// Configure core mongo connection.
-  ///
-  /// An easy deployment method is to use Mongo Atlas to provide
-  /// a reliable database.
-  pub mongo: MongoConfig,
+  /// Configure database connection
+  #[serde(alias = "mongo")]
+  pub database: DatabaseConfig,
 
   // ================
   // = Auth / Login =
@@ -442,19 +443,19 @@ impl CoreConfig {
       webhook_secret: empty_or_redacted(&config.webhook_secret),
       webhook_base_url: config.webhook_base_url,
       github_webhook_app: config.github_webhook_app,
-      mongo: MongoConfig {
-        uri: config.mongo.uri.map(|cur| empty_or_redacted(&cur)),
-        address: config.mongo.address,
+      database: DatabaseConfig {
+        uri: config.database.uri.map(|cur| empty_or_redacted(&cur)),
+        address: config.database.address,
         username: config
-          .mongo
+          .database
           .username
           .map(|cur| empty_or_redacted(&cur)),
         password: config
-          .mongo
+          .database
           .password
           .map(|cur| empty_or_redacted(&cur)),
-        app_name: config.mongo.app_name,
-        db_name: config.mongo.db_name,
+        app_name: config.database.app_name,
+        db_name: config.database.db_name,
       },
       aws: AwsCredentials {
         access_key_id: empty_or_redacted(&config.aws.access_key_id),
@@ -526,46 +527,49 @@ pub struct OauthCredentials {
   pub secret: String,
 }
 
-/// Provide mongo connection information.
+/// Provide database connection information.
+/// Komodo uses the MongoDB api driver for database communication,
+/// and FerretDB to support Postgres and Sqlite storage options.
+///
 /// Must provide ONE of:
 /// 1. `uri`
 /// 2. `address` + `username` + `password`
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MongoConfig {
+pub struct DatabaseConfig {
   /// Full mongo uri string, eg. `mongodb://username:password@your.mongo.int:27017`
   pub uri: Option<String>,
-  /// Just the address part of the uri, eg `your.mongo.int:27017`
+  /// Just the address part of the mongo uri, eg `your.mongo.int:27017`
   pub address: Option<String>,
   /// Mongo user username
   pub username: Option<String>,
   /// Mongo user password
   pub password: Option<String>,
   /// Mongo app name. default: `komodo_core`
-  #[serde(default = "default_core_mongo_app_name")]
+  #[serde(default = "default_core_database_app_name")]
   pub app_name: String,
   /// Mongo db name. Which mongo database to create the collections in.
   /// Default: `komodo`.
-  #[serde(default = "default_core_mongo_db_name")]
+  #[serde(default = "default_core_database_db_name")]
   pub db_name: String,
 }
 
-fn default_core_mongo_app_name() -> String {
+fn default_core_database_app_name() -> String {
   "komodo_core".to_string()
 }
 
-fn default_core_mongo_db_name() -> String {
+fn default_core_database_db_name() -> String {
   "komodo".to_string()
 }
 
-impl Default for MongoConfig {
+impl Default for DatabaseConfig {
   fn default() -> Self {
     Self {
       uri: None,
       address: Some("localhost:27017".to_string()),
       username: None,
       password: None,
-      app_name: default_core_mongo_app_name(),
-      db_name: default_core_mongo_db_name(),
+      app_name: default_core_database_app_name(),
+      db_name: default_core_database_db_name(),
     }
   }
 }

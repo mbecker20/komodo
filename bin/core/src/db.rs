@@ -4,7 +4,7 @@ use komodo_client::entities::{
   api_key::ApiKey,
   build::Build,
   builder::Builder,
-  config::core::MongoConfig,
+  config::core::DatabaseConfig,
   deployment::Deployment,
   permission::Permission,
   procedure::Procedure,
@@ -56,14 +56,14 @@ pub struct DbClient {
 
 impl DbClient {
   pub async fn new(
-    MongoConfig {
+    DatabaseConfig {
       uri,
       address,
       username,
       password,
       app_name,
       db_name,
-    }: &MongoConfig,
+    }: &DatabaseConfig,
   ) -> anyhow::Result<DbClient> {
     let mut client = MongoBuilder::default().app_name(app_name);
 

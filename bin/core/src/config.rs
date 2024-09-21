@@ -3,9 +3,9 @@ use std::sync::OnceLock;
 use anyhow::Context;
 use komodo_client::entities::{
   config::core::{
-    AwsCredentials, CoreConfig, Env, GithubWebhookAppConfig,
-    GithubWebhookAppInstallationConfig, HetznerCredentials,
-    MongoConfig, OauthCredentials,
+    AwsCredentials, CoreConfig, DatabaseConfig, Env,
+    GithubWebhookAppConfig, GithubWebhookAppInstallationConfig,
+    HetznerCredentials, OauthCredentials,
   },
   logger::LogConfig,
 };
@@ -170,21 +170,21 @@ pub fn core_config() -> &'static CoreConfig {
           .komodo_hetzner_token
           .unwrap_or(config.hetzner.token),
       },
-      mongo: MongoConfig {
-        uri: env.komodo_mongo_uri.or(config.mongo.uri),
-        address: env.komodo_mongo_address.or(config.mongo.address),
+      database: DatabaseConfig {
+        uri: env.komodo_database_uri.or(config.database.uri),
+        address: env.komodo_database_address.or(config.database.address),
         username: env
-          .komodo_mongo_username
-          .or(config.mongo.username),
+          .komodo_database_username
+          .or(config.database.username),
         password: env
-          .komodo_mongo_password
-          .or(config.mongo.password),
+          .komodo_database_password
+          .or(config.database.password),
         app_name: env
-          .komodo_mongo_app_name
-          .unwrap_or(config.mongo.app_name),
+          .komodo_database_app_name
+          .unwrap_or(config.database.app_name),
         db_name: env
-          .komodo_mongo_db_name
-          .unwrap_or(config.mongo.db_name),
+          .komodo_database_db_name
+          .unwrap_or(config.database.db_name),
       },
       logging: LogConfig {
         level: env
