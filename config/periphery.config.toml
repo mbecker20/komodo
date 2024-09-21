@@ -47,7 +47,7 @@
 
 ## Optional. Require callers to provide on of the provided passkeys to access the periphery api.
 ## Default is empty, which will not require any passkey to be passed by core.
-## Env: PERIPHERY_PASSKEYS
+## Env: PERIPHERY_PASSKEYS or PERIPHERY_PASSKEYS_FILE
 # passkeys = ["abcdefghijk"]
 
 ###########

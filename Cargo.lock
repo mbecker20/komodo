@@ -2111,6 +2111,7 @@ dependencies = [
  "clap",
  "command",
  "dotenvy",
+ "environment_file",
  "envy",
  "formatting",
  "futures",

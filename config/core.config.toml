@@ -141,11 +141,11 @@ database.address = "localhost:27017"
 ## Default: false
 # google_oauth.enabled = true
 
-## Env: KOMODO_GOOGLE_OAUTH_ID
+## Env: KOMODO_GOOGLE_OAUTH_ID or KOMODO_GOOGLE_OAUTH_ID_FILE
 ## Required if google_oauth is enabled.
 # google_oauth.id = "your_google_client_id"
 
-## Env: KOMODO_GOOGLE_OAUTH_SECRET
+## Env: KOMODO_GOOGLE_OAUTH_SECRET or KOMODO_GOOGLE_OAUTH_SECRET_FILE
 ## Required if google_oauth is enabled.
 # google_oauth.secret = "your_google_client_secret"
 
@@ -155,11 +155,11 @@ database.address = "localhost:27017"
 ## Default: false
 # github_oauth.enabled = true
 
-## Env: KOMODO_GITHUB_OAUTH_ID
+## Env: KOMODO_GITHUB_OAUTH_ID or KOMODO_GITHUB_OAUTH_ID_FILE
 ## Required if github_oauth is enabled.
 # github_oauth.id = "your_github_client_id"
 
-## Env: KOMODO_GITHUB_OAUTH_SECRET
+## Env: KOMODO_GITHUB_OAUTH_SECRET or KOMODO_GITHUB_OAUTH_SECRET_FILE
 ## Required if github_oauth is enabled.
 # github_oauth.secret = "your_github_client_secret"
 
@@ -169,7 +169,7 @@ database.address = "localhost:27017"
 
 ## This token must be given to git provider during repo webhook config.
 ## The secret configured on the git provider side must match the secret configured here.
-## Env: KOMODO_WEBHOOK_SECRET
+## Env: KOMODO_WEBHOOK_SECRET or KOMODO_WEBHOOK_SECRET_FILE
 ## Default: empty (none)
 webhook_secret = "a_random_webhook_secret"
 
@@ -183,10 +183,10 @@ webhook_secret = "a_random_webhook_secret"
 
 ## Configure Github webhook app. Enables webhook management apis.
 ## <INSERT LINK TO GUIDE>
-## Env: KOMODO_GITHUB_WEBHOOK_APP_APP_ID
+## Env: KOMODO_GITHUB_WEBHOOK_APP_APP_ID or KOMODO_GITHUB_WEBHOOK_APP_APP_ID_FILE
 # github_webhook_app.app_id = 1234455 # Find on the app page.
 ## Env: 
-##   - KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_IDS
+##   - KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_IDS or KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_IDS_FILE
 ##   - KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_NAMESPACES
 # github_webhook_app.installations = [
 #   ## Find the id after installing the app to user / organization. "namespace" is the username / organization name.
@@ -290,13 +290,13 @@ webhook_secret = "a_random_webhook_secret"
 ## while AWS is by the minute. This is very important for builds.
 
 ## Provide aws api keys for ephemeral builders / server launch
-## Env: KOMODO_AWS_ACCESS_KEY_ID
+## Env: KOMODO_AWS_ACCESS_KEY_ID or KOMODO_AWS_ACCESS_KEY_ID_FILE
 # aws.access_key_id = "your_aws_key_id"
-## Env: KOMODO_AWS_SECRET_ACCESS_KEY
+## Env: KOMODO_AWS_SECRET_ACCESS_KEY or KOMODO_AWS_SECRET_ACCESS_KEY_FILE
 # aws.secret_access_key = "your_aws_secret_key"
 
 ## Provide hetzner api token for server launch
-## Env: KOMODO_HETZNER_TOKEN
+## Env: KOMODO_HETZNER_TOKEN or KOMODO_HETZNER_TOKEN_FILE
 # hetzner.token = "your_hetzner_token"
 
 #################

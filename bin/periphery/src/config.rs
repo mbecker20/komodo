@@ -1,6 +1,7 @@
 use std::sync::OnceLock;
 
 use clap::Parser;
+use environment_file::maybe_read_list_from_file;
 use komodo_client::entities::{
   config::periphery::{CliArgs, Env, PeripheryConfig},
   logger::{LogConfig, LogLevel},
@@ -61,7 +62,11 @@ pub fn periphery_config() -> &'static PeripheryConfig {
       allowed_ips: env
         .periphery_allowed_ips
         .unwrap_or(config.allowed_ips),
-      passkeys: env.periphery_passkeys.unwrap_or(config.passkeys),
+      passkeys: maybe_read_list_from_file(
+        env.periphery_passkeys_file,
+        env.periphery_passkeys,
+      )
+      .unwrap_or(config.passkeys),
       include_disk_mounts: env
         .periphery_include_disk_mounts
         .unwrap_or(config.include_disk_mounts),
