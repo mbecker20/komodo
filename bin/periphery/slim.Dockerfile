@@ -1,5 +1,5 @@
 # Build Periphery
-FROM rust:1.80.1-alpine AS builder
+FROM rust:1.81.0-alpine AS builder
 WORKDIR /builder
 COPY . .
 RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
