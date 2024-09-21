@@ -22,7 +22,9 @@ use crate::entities::{
   Timelength,
 };
 
-use super::{DockerRegistry, GitProvider};
+use super::{
+  empty_or_redacted, DockerRegistry, GitProvider, ProviderAccount,
+};
 
 /// # Periphery Command Line Arguments.
 ///
@@ -248,6 +250,66 @@ impl Default for PeripheryConfig {
       secrets: Default::default(),
       git_providers: Default::default(),
       docker_registries: Default::default(),
+    }
+  }
+}
+
+impl PeripheryConfig {
+  pub fn sanitized(&self) -> PeripheryConfig {
+    PeripheryConfig {
+      port: self.port,
+      repo_dir: self.repo_dir.clone(),
+      stack_dir: self.stack_dir.clone(),
+      stats_polling_rate: self.stats_polling_rate,
+      legacy_compose_cli: self.legacy_compose_cli,
+      logging: self.logging.clone(),
+      allowed_ips: self.allowed_ips.clone(),
+      passkeys: self
+        .passkeys
+        .iter()
+        .map(|passkey| empty_or_redacted(passkey))
+        .collect(),
+      include_disk_mounts: self.include_disk_mounts.clone(),
+      exclude_disk_mounts: self.exclude_disk_mounts.clone(),
+      secrets: self
+        .secrets
+        .iter()
+        .map(|(var, secret)| {
+          (var.to_string(), empty_or_redacted(secret))
+        })
+        .collect(),
+      git_providers: self
+        .git_providers
+        .iter()
+        .map(|provider| GitProvider {
+          domain: provider.domain.clone(),
+          https: provider.https,
+          accounts: provider
+            .accounts
+            .iter()
+            .map(|account| ProviderAccount {
+              username: account.username.clone(),
+              token: empty_or_redacted(&account.token),
+            })
+            .collect(),
+        })
+        .collect(),
+      docker_registries: self
+        .docker_registries
+        .iter()
+        .map(|provider| DockerRegistry {
+          domain: provider.domain.clone(),
+          organizations: provider.organizations.clone(),
+          accounts: provider
+            .accounts
+            .iter()
+            .map(|account| ProviderAccount {
+              username: account.username.clone(),
+              token: empty_or_redacted(&account.token),
+            })
+            .collect(),
+        })
+        .collect(),
     }
   }
 }

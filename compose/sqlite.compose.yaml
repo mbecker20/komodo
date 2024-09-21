@@ -33,7 +33,7 @@ services:
       - default
     ports:
       - 9120:9120
-    env_file: ./komodo/compose.env
+    env_file: ./compose.env
     environment:
       KOMODO_DATABASE_ADDRESS: ferretdb:27017
     # volumes: # Optionally mount a custom core.config.toml
@@ -50,7 +50,7 @@ services:
       driver: ${COMPOSE_LOGGING_DRIVER:-local}
     networks:
       - default
-    env_file: ./komodo/compose.env
+    env_file: ./compose.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.

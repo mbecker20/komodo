@@ -28,6 +28,7 @@ async fn app() -> anyhow::Result<()> {
   dotenvy::dotenv().ok();
   let config = core_config();
   logger::init(&config.logging)?;
+
   info!("Komodo Core version: v{}", env!("CARGO_PKG_VERSION"));
   info!("config: {:?}", config.sanitized());
 

@@ -20,7 +20,8 @@ async fn app() -> anyhow::Result<()> {
   let config = config::periphery_config();
   logger::init(&config.logging)?;
 
-  info!("version: v{}", env!("CARGO_PKG_VERSION"));
+  info!("Komodo Periphery version: v{}", env!("CARGO_PKG_VERSION"));
+  info!("config: {:?}", config.sanitized());
 
   stats::spawn_system_stats_polling_threads();
 

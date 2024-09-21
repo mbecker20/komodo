@@ -18,7 +18,7 @@ use crate::entities::{
   Timelength,
 };
 
-use super::{DockerRegistry, GitProvider};
+use super::{empty_or_redacted, DockerRegistry, GitProvider};
 
 /// # Komodo Core Environment Variables
 ///
@@ -533,14 +533,6 @@ impl CoreConfig {
         })
         .collect(),
     }
-  }
-}
-
-fn empty_or_redacted(src: &str) -> String {
-  if src.is_empty() {
-    String::new()
-  } else {
-    String::from("##############")
   }
 }
 
