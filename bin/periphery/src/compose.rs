@@ -127,7 +127,7 @@ pub async fn compose_up(
       account: stack.config.registry_account.clone(),
       ..Default::default()
     });
-    docker_login(&registry, registry_token.as_deref(), None)
+    docker_login(&registry, registry_token.as_deref())
       .await
       .with_context(|| {
         format!(

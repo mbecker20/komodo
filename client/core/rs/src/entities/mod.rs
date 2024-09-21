@@ -4,7 +4,6 @@ use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
 use build::StandardRegistryConfig;
 use clap::Parser;
-use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
 use derive_variants::{EnumVariants, ExtractVariant};
 use serde::{
@@ -131,7 +130,6 @@ pub fn get_image_name(
       },
     ..
   }: &build::Build,
-  aws_ecr: impl FnOnce(&String) -> Option<AwsEcrConfig>,
 ) -> anyhow::Result<String> {
   let name = if image_name.is_empty() {
     to_komodo_name(name)
@@ -140,14 +138,6 @@ pub fn get_image_name(
   };
   let name = match image_registry {
     build::ImageRegistry::None(_) => name,
-    build::ImageRegistry::AwsEcr(label) => {
-      let AwsEcrConfig {
-        region, account_id, ..
-      } = aws_ecr(label).with_context(|| {
-        format!("didn't find aws ecr config for registry {label}")
-      })?;
-      format!("{account_id}.dkr.ecr.{region}.amazonaws.com/{name}")
-    }
     build::ImageRegistry::Standard(StandardRegistryConfig {
       domain,
       account,

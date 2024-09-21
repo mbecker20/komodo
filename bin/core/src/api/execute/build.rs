@@ -10,11 +10,9 @@ use komodo_client::{
     all_logs_success,
     build::{Build, ImageRegistry, StandardRegistryConfig},
     builder::{Builder, BuilderConfig},
-    config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
     komodo_timestamp,
     permission::PermissionLevel,
-    to_komodo_name,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
   },
@@ -32,8 +30,6 @@ use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-  cloud::aws::ecr,
-  config::core_config,
   helpers::{
     alert::send_alerts,
     builder::{cleanup_builder_instance, get_builder_periphery},
@@ -99,8 +95,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
       || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", build.config.git_provider, build.config.git_account),
     )?;
 
-    let (registry_token, aws_ecr) =
-      validate_account_extract_registry_token_aws_ecr(&build).await?;
+    let registry_token =
+      validate_account_extract_registry_token(&build).await?;
 
     let cancel = CancellationToken::new();
     let cancel_clone = cancel.clone();
@@ -282,7 +278,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
           .request(api::build::Build {
             build: build.clone(),
             registry_token,
-            aws_ecr,
             replacers: secret_replacers.into_iter().collect(),
             // Push a commit hash tagged image
             additional_tags: if update.commit_hash.is_empty() {
@@ -600,49 +595,14 @@ async fn handle_post_build_redeploy(build_id: &str) {
 }
 
 /// This will make sure that a build with non-none image registry has an account attached,
-/// and will check the core config for a token / aws ecr config matching requirements.
+/// and will check the core config for a token matching requirements.
 /// Otherwise it is left to periphery.
-async fn validate_account_extract_registry_token_aws_ecr(
+async fn validate_account_extract_registry_token(
   build: &Build,
-) -> anyhow::Result<(Option<String>, Option<AwsEcrConfig>)> {
+) -> anyhow::Result<Option<String>> {
   let (domain, account) = match &build.config.image_registry {
     // Early return for None
-    ImageRegistry::None(_) => return Ok((None, None)),
-    // Early return for AwsEcr
-    ImageRegistry::AwsEcr(label) => {
-      // Note that aws ecr config still only lives in config file
-      let config = core_config()
-        .aws_ecr_registries
-        .iter()
-        .find(|reg| &reg.label == label);
-      let token = match config {
-        Some(AwsEcrConfigWithCredentials {
-          region,
-          access_key_id,
-          secret_access_key,
-          ..
-        }) => {
-          let token = ecr::get_ecr_token(
-            region,
-            access_key_id,
-            secret_access_key,
-          )
-          .await
-          .context("failed to get aws ecr token")?;
-          ecr::maybe_create_repo(
-            &to_komodo_name(&build.name),
-            region.to_string(),
-            access_key_id,
-            secret_access_key,
-          )
-          .await
-          .context("failed to create aws ecr repo")?;
-          Some(token)
-        }
-        None => None,
-      };
-      return Ok((token, config.map(AwsEcrConfig::from)));
-    }
+    ImageRegistry::None(_) => return Ok(None),
     ImageRegistry::Standard(StandardRegistryConfig {
       domain,
       account,
@@ -660,5 +620,5 @@ async fn validate_account_extract_registry_token_aws_ecr(
     || format!("Failed to get registry token in call to db. Stopping run. | {domain} | {account}"),
   )?;
 
-  Ok((registry_token, None))
+  Ok(registry_token)
 }

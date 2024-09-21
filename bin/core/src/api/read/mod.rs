@@ -60,8 +60,6 @@ enum ReadRequest {
   GetVersion(GetVersion),
   #[to_string_resolver]
   GetCoreInfo(GetCoreInfo),
-  #[to_string_resolver]
-  ListAwsEcrLabels(ListAwsEcrLabels),
   ListSecrets(ListSecrets),
   ListGitProvidersFromConfig(ListGitProvidersFromConfig),
   ListDockerRegistriesFromConfig(ListDockerRegistriesFromConfig),
@@ -309,31 +307,6 @@ impl ResolveToString<GetCoreInfo, User> for State {
     _: User,
   ) -> anyhow::Result<String> {
     Ok(core_info().to_string())
-  }
-}
-
-fn ecr_labels() -> &'static String {
-  static ECR_LABELS: OnceLock<String> = OnceLock::new();
-  ECR_LABELS.get_or_init(|| {
-    serde_json::to_string(
-      &core_config()
-        .aws_ecr_registries
-        .iter()
-        .map(|reg| reg.label.clone())
-        .collect::<Vec<_>>(),
-    )
-    .context("failed to serialize ecr registries")
-    .unwrap()
-  })
-}
-
-impl ResolveToString<ListAwsEcrLabels, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListAwsEcrLabels {}: ListAwsEcrLabels,
-    _: User,
-  ) -> anyhow::Result<String> {
-    Ok(ecr_labels().to_string())
   }
 }
 

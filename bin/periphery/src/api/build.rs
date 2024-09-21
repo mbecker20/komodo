@@ -25,7 +25,6 @@ impl Resolve<build::Build> for State {
     &self,
     build::Build {
       build,
-      aws_ecr,
       registry_token,
       additional_tags,
       replacers: core_replacers,
@@ -55,24 +54,21 @@ impl Resolve<build::Build> for State {
     let mut logs = Vec::new();
 
     // Maybe docker login
-    let should_push = match docker_login(
-      image_registry,
-      registry_token.as_deref(),
-      aws_ecr.as_ref(),
-    )
-    .await
-    {
-      Ok(should_push) => should_push,
-      Err(e) => {
-        logs.push(Log::error(
-          "docker login",
-          format_serror(
-            &e.context("failed to login to docker registry").into(),
-          ),
-        ));
-        return Ok(logs);
-      }
-    };
+    let should_push =
+      match docker_login(image_registry, registry_token.as_deref())
+        .await
+      {
+        Ok(should_push) => should_push,
+        Err(e) => {
+          logs.push(Log::error(
+            "docker login",
+            format_serror(
+              &e.context("failed to login to docker registry").into(),
+            ),
+          ));
+          return Ok(logs);
+        }
+      };
 
     let name = to_komodo_name(name);
 
@@ -85,8 +81,8 @@ impl Resolve<build::Build> for State {
     };
 
     // Get command parts
-    let image_name = get_image_name(&build, |_| aws_ecr)
-      .context("failed to make image name")?;
+    let image_name =
+      get_image_name(&build).context("failed to make image name")?;
     let build_args = parse_build_args(build_args);
     let _secret_args =
       parse_secret_args(secret_args, *skip_secret_interp)?;

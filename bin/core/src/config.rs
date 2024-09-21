@@ -13,29 +13,6 @@ use komodo_client::entities::{
   logger::LogConfig,
 };
 use merge_config_files::parse_config_file;
-use serde::Deserialize;
-
-pub fn frontend_path() -> &'static String {
-  #[derive(Deserialize)]
-  struct FrontendEnv {
-    #[serde(default = "default_frontend_path")]
-    komodo_frontend_path: String,
-  }
-
-  fn default_frontend_path() -> String {
-    "/frontend".to_string()
-  }
-
-  static FRONTEND_PATH: OnceLock<String> = OnceLock::new();
-  FRONTEND_PATH.get_or_init(|| {
-    let FrontendEnv {
-      komodo_frontend_path,
-    } = envy::from_env()
-      .context("failed to parse FrontendEnv")
-      .unwrap();
-    komodo_frontend_path
-  })
-}
 
 pub fn core_config() -> &'static CoreConfig {
   static CORE_CONFIG: OnceLock<CoreConfig> = OnceLock::new();
@@ -149,6 +126,7 @@ pub fn core_config() -> &'static CoreConfig {
       host: env.komodo_host.unwrap_or(config.host),
       port: env.komodo_port.unwrap_or(config.port),
       ensure_server: env.komodo_ensure_server.unwrap_or(config.ensure_server),
+      frontend_path: env.komodo_frontend_path.unwrap_or(config.frontend_path),
       jwt_ttl: env
         .komodo_jwt_ttl
         .unwrap_or(config.jwt_ttl),
@@ -209,7 +187,6 @@ pub fn core_config() -> &'static CoreConfig {
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,
-      aws_ecr_registries: config.aws_ecr_registries,
     }
   })
 }

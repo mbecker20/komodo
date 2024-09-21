@@ -24,7 +24,7 @@ use crate::{
 impl Resolve<Deploy> for State {
   #[instrument(
     name = "Deploy",
-    skip(self, core_replacers, aws_ecr, registry_token)
+    skip(self, core_replacers, registry_token)
   )]
   async fn resolve(
     &self,
@@ -34,7 +34,6 @@ impl Resolve<Deploy> for State {
       stop_time,
       registry_token,
       replacers: core_replacers,
-      aws_ecr,
     }: Deploy,
     _: (),
   ) -> anyhow::Result<Log> {
@@ -55,24 +54,19 @@ impl Resolve<Deploy> for State {
       ));
     };
 
-    let image_registry = if aws_ecr.is_some() {
-      ImageRegistry::AwsEcr(String::new())
-    } else if deployment.config.image_registry_account.is_empty() {
-      ImageRegistry::None(NoData {})
-    } else {
-      ImageRegistry::Standard(StandardRegistryConfig {
-        account: deployment.config.image_registry_account.clone(),
-        domain: extract_registry_domain(image)?,
-        ..Default::default()
-      })
-    };
+    let image_registry =
+      if deployment.config.image_registry_account.is_empty() {
+        ImageRegistry::None(NoData {})
+      } else {
+        ImageRegistry::Standard(StandardRegistryConfig {
+          account: deployment.config.image_registry_account.clone(),
+          domain: extract_registry_domain(image)?,
+          ..Default::default()
+        })
+      };
 
-    if let Err(e) = docker_login(
-      &image_registry,
-      registry_token.as_deref(),
-      aws_ecr.as_ref(),
-    )
-    .await
+    if let Err(e) =
+      docker_login(&image_registry, registry_token.as_deref()).await
     {
       return Ok(Log::error(
         "docker login",

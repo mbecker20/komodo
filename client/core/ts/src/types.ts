@@ -355,13 +355,7 @@ export type ImageRegistry =
 	/** Don't push the image to any registry */
 	| { type: "None", params: NoData }
 	/** Push the image to a standard image registry (any domain) */
-	| { type: "Standard", params: StandardRegistryConfig }
-	/**
-	 * Push the image to Aws Elastic Container Registry
-	 * 
-	 * The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
-	 */
-	| { type: "AwsEcr", params: string };
+	| { type: "Standard", params: StandardRegistryConfig };
 
 export interface EnvironmentVar {
 	variable: string;
@@ -456,7 +450,7 @@ export interface BuildConfig {
 	 * Secret arguments.
 	 * 
 	 * These values remain hidden in the final image by using
-	 * docker secret mounts. See `<https://docs.docker.com/build/building/secrets>`.
+	 * docker secret mounts. See [https://docs.docker.com/build/building/secrets].
 	 * 
 	 * The values can be used in RUN commands:
 	 * ```
@@ -800,8 +794,6 @@ export interface DockerRegistry {
 }
 
 export type ListDockerRegistriesFromConfigResponse = DockerRegistry[];
-
-export type ListAwsEcrLabelsResponse = string[];
 
 export type ListSecretsResponse = string[];
 
@@ -4184,13 +4176,6 @@ export interface ListDockerRegistriesFromConfig {
 }
 
 /**
- * List the available aws ecr config labels from the core config.
- * Response: [ListAwsEcrLabelsResponse].
- */
-export interface ListAwsEcrLabels {
-}
-
-/**
  * List the available secrets from the core config.
  * Response: [ListSecretsResponse].
  */
@@ -6494,7 +6479,6 @@ export type ExecuteRequest =
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
-	| { type: "ListAwsEcrLabels", params: ListAwsEcrLabels }
 	| { type: "ListSecrets", params: ListSecrets }
 	| { type: "ListGitProvidersFromConfig", params: ListGitProvidersFromConfig }
 	| { type: "ListDockerRegistriesFromConfig", params: ListDockerRegistriesFromConfig }

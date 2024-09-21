@@ -152,21 +152,6 @@ pub type ListDockerRegistriesFromConfigResponse = Vec<DockerRegistry>;
 
 //
 
-/// List the available aws ecr config labels from the core config.
-/// Response: [ListAwsEcrLabelsResponse].
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(KomodoReadRequest)]
-#[response(ListAwsEcrLabelsResponse)]
-pub struct ListAwsEcrLabels {}
-
-#[typeshare]
-pub type ListAwsEcrLabelsResponse = Vec<String>;
-
-//
-
 /// List the available secrets from the core config.
 /// Response: [ListSecretsResponse].
 #[typeshare]

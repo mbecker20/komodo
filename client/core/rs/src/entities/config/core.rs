@@ -50,6 +50,8 @@ pub struct Env {
   pub komodo_passkey_file: Option<PathBuf>,
   /// Override `ensure_server`
   pub komodo_ensure_server: Option<String>,
+  /// Override `frontend_path`
+  pub komodo_frontend_path: Option<String>,
   /// Override `jwt_secret`
   pub komodo_jwt_secret: Option<String>,
   /// Override `jwt_secret` from file
@@ -236,6 +238,10 @@ pub struct CoreConfig {
   #[serde(default)]
   pub ensure_server: String,
 
+  /// The path to the built frontend folder.
+  #[serde(default = "default_frontend_path")]
+  pub frontend_path: String,
+
   /// Configure database connection
   #[serde(alias = "mongo")]
   pub database: DatabaseConfig,
@@ -386,10 +392,6 @@ pub struct CoreConfig {
   #[serde(default, alias = "docker_registry")]
   pub docker_registries: Vec<DockerRegistry>,
 
-  /// Configure aws ecr registries, which are handled differently than other registries
-  #[serde(default, alias = "aws_ecr_registry")]
-  pub aws_ecr_registries: Vec<AwsEcrConfigWithCredentials>,
-
   // ===========
   // = Secrets =
   // ===========
@@ -416,6 +418,10 @@ fn default_title() -> String {
 
 fn default_core_port() -> u16 {
   9120
+}
+
+fn default_frontend_path() -> String {
+  "/app/frontend".to_string()
 }
 
 fn default_jwt_ttl() -> Timelength {
@@ -448,6 +454,7 @@ impl CoreConfig {
       port: config.port,
       passkey: empty_or_redacted(&config.passkey),
       ensure_server: config.ensure_server,
+      frontend_path: config.frontend_path,
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_ttl: config.jwt_ttl,
       repo_directory: config.repo_directory,
@@ -523,16 +530,6 @@ impl CoreConfig {
             account.token = empty_or_redacted(&account.token);
           });
           provider
-        })
-        .collect(),
-      aws_ecr_registries: config
-        .aws_ecr_registries
-        .into_iter()
-        .map(|mut ecr| {
-          ecr.access_key_id = empty_or_redacted(&ecr.access_key_id);
-          ecr.secret_access_key =
-            empty_or_redacted(&ecr.secret_access_key);
-          ecr
         })
         .collect(),
     }
@@ -621,39 +618,6 @@ pub struct AwsCredentials {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct HetznerCredentials {
   pub token: String,
-}
-
-/// Provide configuration for an Aws Ecr registry.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AwsEcrConfigWithCredentials {
-  /// A label for the registry
-  pub label: String,
-  /// The Aws region
-  pub region: String,
-  /// The Aws account id
-  pub account_id: String,
-  /// The Aws ACCESS_KEY_ID
-  pub access_key_id: String,
-  /// The Aws SECRET_ACCESS_KEY
-  pub secret_access_key: String,
-}
-
-/// Provide configuration for an Aws Ecr registry.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AwsEcrConfig {
-  /// The Aws region
-  pub region: String,
-  /// The Aws account id
-  pub account_id: String,
-}
-
-impl AwsEcrConfig {
-  pub fn from(config: &AwsEcrConfigWithCredentials) -> AwsEcrConfig {
-    AwsEcrConfig {
-      region: config.region.to_string(),
-      account_id: config.account_id.to_string(),
-    }
-  }
 }
 
 /// Provide configuration for a Github Webhook app.

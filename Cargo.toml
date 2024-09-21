@@ -98,7 +98,6 @@ sysinfo = "0.31.4"
 # CLOUD
 aws-config = "1.5.6"
 aws-sdk-ec2 = "1.73.0"
-aws-sdk-ecr = "1.46.0"
 
 # MISC
 derive_builder = "0.20.1"

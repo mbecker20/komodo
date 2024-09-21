@@ -1,5 +1,4 @@
 use komodo_client::entities::{
-  config::core::AwsEcrConfig,
   deployment::Deployment,
   docker::container::{Container, ContainerStats},
   update::Log,
@@ -71,8 +70,6 @@ pub struct Deploy {
   pub stop_time: Option<i32>,
   /// Override registry token with one sent from core.
   pub registry_token: Option<String>,
-  /// Propogate AwsEcrConfig from core
-  pub aws_ecr: Option<AwsEcrConfig>,
   /// Propogate any secret replacers from core interpolation.
   #[serde(default)]
   pub replacers: Vec<(String, String)>,

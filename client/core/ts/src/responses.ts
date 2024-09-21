@@ -18,7 +18,6 @@ export type UserResponses = {
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
-  ListAwsEcrLabels: Types.ListAwsEcrLabelsResponse;
   ListSecrets: Types.ListSecretsResponse;
   ListGitProvidersFromConfig: Types.ListGitProvidersFromConfigResponse;
   ListDockerRegistriesFromConfig: Types.ListDockerRegistriesFromConfigResponse;

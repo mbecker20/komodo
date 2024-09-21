@@ -9,7 +9,6 @@ use bollard::{
 use command::run_komodo_command;
 use komodo_client::entities::{
   build::{ImageRegistry, StandardRegistryConfig},
-  config::core::AwsEcrConfig,
   docker::{
     container::*, image::*, network::*, volume::*, ContainerConfig,
     GraphDriverData, HealthConfig, PortBinding,
@@ -910,36 +909,10 @@ pub async fn docker_login(
   registry: &ImageRegistry,
   // For local token override from core.
   registry_token: Option<&str>,
-  // For local config override from core.
-  aws_ecr: Option<&AwsEcrConfig>,
 ) -> anyhow::Result<bool> {
   let (domain, account) = match registry {
     // Early return for no login
     ImageRegistry::None(_) => return Ok(false),
-    // Early return because Ecr is different
-    ImageRegistry::AwsEcr(label) => {
-      let AwsEcrConfig { region, account_id } = aws_ecr
-        .with_context(|| {
-          if label.is_empty() {
-            String::from("Could not find aws ecr config")
-          } else {
-            format!("Could not find aws ecr config for label {label}")
-          }
-        })?;
-      let registry_token = registry_token
-        .context("aws ecr build missing registry token from core")?;
-      let command = format!("docker login {account_id}.dkr.ecr.{region}.amazonaws.com -u AWS -p {registry_token}");
-      let log = async_run_command(&command).await;
-      if log.success() {
-        return Ok(true);
-      } else {
-        return Err(anyhow!(
-          "aws ecr login error: stdout: {} | stderr: {}",
-          log.stdout,
-          log.stderr
-        ));
-      }
-    }
     ImageRegistry::Standard(StandardRegistryConfig {
       domain,
       account,

@@ -285,28 +285,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aws-sdk-ecr"
-version = "1.46.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b5b9204e75067b37bd4403869d0b7a43ae64282eef11fab54db36d2ac70418c"
-dependencies = [
- "aws-credential-types",
- "aws-runtime",
- "aws-smithy-async",
- "aws-smithy-http",
- "aws-smithy-json",
- "aws-smithy-runtime",
- "aws-smithy-runtime-api",
- "aws-smithy-types",
- "aws-types",
- "bytes",
- "http 0.2.12",
- "once_cell",
- "regex-lite",
- "tracing",
-]
-
-[[package]]
 name = "aws-sdk-sso"
 version = "1.42.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2051,7 +2029,6 @@ dependencies = [
  "async_timing_util",
  "aws-config",
  "aws-sdk-ec2",
- "aws-sdk-ecr",
  "axum",
  "axum-extra",
  "base64 0.22.1",
@@ -2080,7 +2057,6 @@ dependencies = [
  "regex",
  "reqwest 0.12.7",
  "resolver_api",
- "run_command",
  "serde",
  "serde_json",
  "serde_yaml",

@@ -240,7 +240,7 @@ impl From<ImageRegistry>
         )
       }
       ImageRegistry::AwsEcr(label) => {
-        komodo_client::entities::build::ImageRegistry::AwsEcr(label)
+        komodo_client::entities::build::ImageRegistry::None(NoData {})
       }
     }
   }

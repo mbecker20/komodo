@@ -336,10 +336,6 @@ pub enum ImageRegistry {
   None(NoData),
   /// Push the image to a standard image registry (any domain)
   Standard(StandardRegistryConfig),
-  /// Push the image to Aws Elastic Container Registry
-  ///
-  /// The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
-  AwsEcr(String),
 }
 
 impl Default for ImageRegistry {

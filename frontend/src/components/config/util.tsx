@@ -454,44 +454,6 @@ export const AccountSelectorConfig = (params: {
   );
 };
 
-export const AwsEcrLabelSelector = ({
-  disabled,
-  selected,
-  onSelect,
-}: {
-  disabled: boolean;
-  selected: string | undefined;
-  onSelect: (id: string) => void;
-}) => {
-  const labels = useRead("ListAwsEcrLabels", {}).data;
-  return (
-    <Select
-      value={selected}
-      onValueChange={(value) => {
-        onSelect(value === "Empty" ? "" : value);
-      }}
-      disabled={disabled}
-    >
-      <SelectTrigger
-        className="w-full lg:w-[200px] max-w-[50%]"
-        disabled={disabled}
-      >
-        <SelectValue placeholder="Select Ecr Config" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={"Empty"}>None</SelectItem>
-        {labels
-          ?.filter((label) => label)
-          .map((label: string) => (
-            <SelectItem key={label} value={label}>
-              {label}
-            </SelectItem>
-          ))}
-      </SelectContent>
-    </Select>
-  );
-};
-
 export const InputList = <T extends { [key: string]: unknown }>({
   field,
   values,
@@ -739,33 +701,6 @@ export const ImageRegistryConfig = ({
       </ConfigItem>
     );
   }
-  if (registry.type === "AwsEcr") {
-    return (
-      <ConfigItem
-        label="Image Registry"
-        description={IMAGE_REGISTRY_DESCRIPTION}
-      >
-        <div className="flex items-center justify-stretch gap-4">
-          <AwsEcrLabelSelector
-            selected={registry.params}
-            onSelect={(label) =>
-              setRegistry({
-                type: "AwsEcr",
-                params: label,
-              })
-            }
-            disabled={disabled}
-          />
-          <RegistryTypeSelector
-            registry={registry}
-            setRegistry={setRegistry}
-            disabled={disabled}
-            registry_types={registry_types}
-          />
-        </div>
-      </ConfigItem>
-    );
-  }
 
   const organizations = config_provider?.organizations ?? [];
 
@@ -840,7 +775,6 @@ export const ImageRegistryConfig = ({
 const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
   "None",
   "Standard",
-  "AwsEcr",
 ];
 
 const RegistryTypeSelector = ({
@@ -959,8 +893,6 @@ const default_registry_config = (
   switch (type) {
     case "None":
       return { type, params: {} };
-    case "AwsEcr":
-      return { type, params: "" };
     case "Standard":
       return {
         type,
