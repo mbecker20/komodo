@@ -46,14 +46,18 @@ pub struct Env {
   pub komodo_port: Option<u16>,
   /// Override `passkey`
   pub komodo_passkey: Option<String>,
+  /// Override `passkey` with file
+  pub komodo_passkey_file: Option<PathBuf>,
   /// Override `ensure_server`
   pub komodo_ensure_server: Option<String>,
   /// Override `jwt_secret`
   pub komodo_jwt_secret: Option<String>,
+  /// Override `jwt_secret` from file
+  pub komodo_jwt_secret_file: Option<PathBuf>,
   /// Override `jwt_ttl`
   pub komodo_jwt_ttl: Option<Timelength>,
   /// Override `repo_directory`
-  pub komodo_repo_directory: Option<String>,
+  pub komodo_repo_directory: Option<PathBuf>,
   /// Override `sync_poll_interval`
   pub komodo_sync_poll_interval: Option<Timelength>,
   /// Override `stack_poll_interval`
@@ -70,6 +74,8 @@ pub struct Env {
   pub komodo_keep_alerts_for_days: Option<u64>,
   /// Override `webhook_secret`
   pub komodo_webhook_secret: Option<String>,
+  /// Override `webhook_secret` with file
+  pub komodo_webhook_secret_file: Option<PathBuf>,
   /// Override `webhook_base_url`
   pub komodo_webhook_base_url: Option<String>,
 
@@ -98,22 +104,35 @@ pub struct Env {
   pub komodo_google_oauth_enabled: Option<bool>,
   /// Override `google_oauth.id`
   pub komodo_google_oauth_id: Option<String>,
+  /// Override `google_oauth.id` from file
+  pub komodo_google_oauth_id_file: Option<PathBuf>,
   /// Override `google_oauth.secret`
   pub komodo_google_oauth_secret: Option<String>,
+  /// Override `google_oauth.secret` from file
+  pub komodo_google_oauth_secret_file: Option<PathBuf>,
 
   /// Override `github_oauth.enabled`
   pub komodo_github_oauth_enabled: Option<bool>,
   /// Override `github_oauth.id`
   pub komodo_github_oauth_id: Option<String>,
+  /// Override `github_oauth.id` from file
+  pub komodo_github_oauth_id_file: Option<PathBuf>,
   /// Override `github_oauth.secret`
   pub komodo_github_oauth_secret: Option<String>,
+  /// Override `github_oauth.secret` from file
+  pub komodo_github_oauth_secret_file: Option<PathBuf>,
 
   /// Override `github_webhook_app.app_id`
   pub komodo_github_webhook_app_app_id: Option<i64>,
+  /// Override `github_webhook_app.app_id` from file
+  pub komodo_github_webhook_app_app_id_file: Option<PathBuf>,
   /// Override `github_webhook_app.installations[i].id`. Accepts comma seperated list.
   ///
   /// Note. Paired by index with values in `komodo_github_webhook_app_installations_namespaces`
   pub komodo_github_webhook_app_installations_ids: Option<Vec<i64>>,
+  /// Override `github_webhook_app.installations[i].id` from file
+  pub komodo_github_webhook_app_installations_ids_file:
+    Option<PathBuf>,
   /// Override `github_webhook_app.installations[i].namespace`. Accepts comma seperated list.
   ///
   /// Note. Paired by index with values in `komodo_github_webhook_app_installations_ids`
@@ -125,15 +144,24 @@ pub struct Env {
   /// Override `database.uri`
   #[serde(alias = "KOMODO_MONGO_URI")]
   pub komodo_database_uri: Option<String>,
+  /// Override `database.uri` from file
+  #[serde(alias = "KOMODO_MONGO_URI_FILE")]
+  pub komodo_database_uri_file: Option<PathBuf>,
   /// Override `database.address`
   #[serde(alias = "KOMODO_MONGO_ADDRESS")]
   pub komodo_database_address: Option<String>,
   /// Override `database.username`
   #[serde(alias = "KOMODO_MONGO_USERNAME")]
   pub komodo_database_username: Option<String>,
+  /// Override `database.username` with file
+  #[serde(alias = "KOMODO_MONGO_USERNAME_FILE")]
+  pub komodo_database_username_file: Option<PathBuf>,
   /// Override `database.password`
   #[serde(alias = "KOMODO_MONGO_PASSWORD")]
   pub komodo_database_password: Option<String>,
+  /// Override `database.password` with file
+  #[serde(alias = "KOMODO_MONGO_PASSWORD_FILE")]
+  pub komodo_database_password_file: Option<PathBuf>,
   /// Override `database.app_name`
   #[serde(alias = "KOMODO_MONGO_APP_NAME")]
   pub komodo_database_app_name: Option<String>,
@@ -143,11 +171,17 @@ pub struct Env {
 
   /// Override `aws.access_key_id`
   pub komodo_aws_access_key_id: Option<String>,
+  /// Override `aws.access_key_id` with file
+  pub komodo_aws_access_key_id_file: Option<PathBuf>,
   /// Override `aws.secret_access_key`
   pub komodo_aws_secret_access_key: Option<String>,
+  /// Override `aws.secret_access_key` with file
+  pub komodo_aws_secret_access_key_file: Option<PathBuf>,
 
   /// Override `hetzner.token`
   pub komodo_hetzner_token: Option<String>,
+  /// Override `hetzner.token` with file
+  pub komodo_hetzner_token_file: Option<PathBuf>,
 }
 
 fn default_config_path() -> String {

@@ -1,6 +1,9 @@
 use std::sync::OnceLock;
 
 use anyhow::Context;
+use environment_file::{
+  maybe_read_item_from_file, maybe_read_list_from_file,
+};
 use komodo_client::entities::{
   config::core::{
     AwsCredentials, CoreConfig, DatabaseConfig, Env,
@@ -50,7 +53,7 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or_else(|e| {
           panic!("failed at parsing config at {config_path} | {e:#}")
         });
-    let installations = match (env.komodo_github_webhook_app_installations_ids, env.komodo_github_webhook_app_installations_namespaces) {
+    let installations = match (maybe_read_list_from_file(env.komodo_github_webhook_app_installations_ids_file,env.komodo_github_webhook_app_installations_ids), env.komodo_github_webhook_app_installations_namespaces) {
       (Some(ids), Some(namespaces)) => {
         if ids.len() != namespaces.len() {
           panic!("KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_IDS length and KOMODO_GITHUB_WEBHOOK_APP_INSTALLATIONS_NAMESPACES length mismatch. Got {ids:?} and {namespaces:?}")
@@ -71,22 +74,86 @@ pub fn core_config() -> &'static CoreConfig {
         config.github_webhook_app.installations
       }
     };
-    // recreating CoreConfig here makes sure we apply all env overrides.
+
+    // recreating CoreConfig here makes sure apply all env overrides applied.
     CoreConfig {
+      // Secret things overridden with file
+      jwt_secret: maybe_read_item_from_file(env.komodo_jwt_secret_file, env.komodo_jwt_secret).unwrap_or(config.jwt_secret),
+      passkey: maybe_read_item_from_file(env.komodo_passkey_file, env.komodo_passkey)
+        .unwrap_or(config.passkey),
+      webhook_secret: maybe_read_item_from_file(env.komodo_webhook_secret_file, env.komodo_webhook_secret)
+        .unwrap_or(config.webhook_secret),
+      database: DatabaseConfig {
+        uri: maybe_read_item_from_file(env.komodo_database_uri_file,env.komodo_database_uri).or(config.database.uri),
+        address: env.komodo_database_address.or(config.database.address),
+        username: maybe_read_item_from_file(env.komodo_database_username_file,env
+          .komodo_database_username)
+          .or(config.database.username),
+        password: maybe_read_item_from_file(env.komodo_database_password_file,env
+          .komodo_database_password)
+          .or(config.database.password),
+        app_name: env
+          .komodo_database_app_name
+          .unwrap_or(config.database.app_name),
+        db_name: env
+          .komodo_database_db_name
+          .unwrap_or(config.database.db_name),
+      },
+      google_oauth: OauthCredentials {
+        enabled: env
+          .komodo_google_oauth_enabled
+          .unwrap_or(config.google_oauth.enabled),
+        id: maybe_read_item_from_file(env.komodo_google_oauth_id_file,env
+          .komodo_google_oauth_id)
+          .unwrap_or(config.google_oauth.id),
+        secret: maybe_read_item_from_file(env.komodo_google_oauth_secret_file,env
+          .komodo_google_oauth_secret)
+          .unwrap_or(config.google_oauth.secret),
+      },
+      github_oauth: OauthCredentials {
+        enabled: env
+          .komodo_github_oauth_enabled
+          .unwrap_or(config.github_oauth.enabled),
+        id: maybe_read_item_from_file(env.komodo_github_oauth_id_file,env
+          .komodo_github_oauth_id)
+          .unwrap_or(config.github_oauth.id),
+        secret: maybe_read_item_from_file(env.komodo_github_oauth_secret_file,env
+          .komodo_github_oauth_secret)
+          .unwrap_or(config.github_oauth.secret),
+      },
+      aws: AwsCredentials {
+        access_key_id: maybe_read_item_from_file(env.komodo_aws_access_key_id_file, env
+          .komodo_aws_access_key_id)
+          .unwrap_or(config.aws.access_key_id),
+        secret_access_key: maybe_read_item_from_file(env.komodo_aws_secret_access_key_file, env
+          .komodo_aws_secret_access_key)
+          .unwrap_or(config.aws.secret_access_key),
+      },
+      hetzner: HetznerCredentials {
+        token: maybe_read_item_from_file(env.komodo_hetzner_token_file, env
+          .komodo_hetzner_token)
+          .unwrap_or(config.hetzner.token),
+      },
+      github_webhook_app: GithubWebhookAppConfig {
+        app_id: maybe_read_item_from_file(env.komodo_github_webhook_app_app_id_file, env
+          .komodo_github_webhook_app_app_id)
+          .unwrap_or(config.github_webhook_app.app_id),
+        pk_path: env
+          .komodo_github_webhook_app_pk_path
+          .unwrap_or(config.github_webhook_app.pk_path),
+        installations,
+      },
+
+      // Non secrets
       title: env.komodo_title.unwrap_or(config.title),
       host: env.komodo_host.unwrap_or(config.host),
       port: env.komodo_port.unwrap_or(config.port),
-      passkey: env.komodo_passkey.unwrap_or(config.passkey),
       ensure_server: env.komodo_ensure_server.unwrap_or(config.ensure_server),
-      jwt_secret: env.komodo_jwt_secret.unwrap_or(config.jwt_secret),
       jwt_ttl: env
         .komodo_jwt_ttl
         .unwrap_or(config.jwt_ttl),
       repo_directory: env
         .komodo_repo_directory
-        .map(|dir|
-          dir.parse()
-            .context("failed to parse env komodo_REPO_DIRECTORY as valid path").unwrap())
         .unwrap_or(config.repo_directory),
       stack_poll_interval: env
         .komodo_stack_poll_interval
@@ -109,9 +176,6 @@ pub fn core_config() -> &'static CoreConfig {
       keep_alerts_for_days: env
         .komodo_keep_alerts_for_days
         .unwrap_or(config.keep_alerts_for_days),
-      webhook_secret: env
-        .komodo_webhook_secret
-        .unwrap_or(config.webhook_secret),
       webhook_base_url: env
         .komodo_webhook_base_url
         .or(config.webhook_base_url),
@@ -126,66 +190,6 @@ pub fn core_config() -> &'static CoreConfig {
       disable_user_registration: env.komodo_disable_user_registration
         .unwrap_or(config.disable_user_registration),
       local_auth: env.komodo_local_auth.unwrap_or(config.local_auth),
-      google_oauth: OauthCredentials {
-        enabled: env
-          .komodo_google_oauth_enabled
-          .unwrap_or(config.google_oauth.enabled),
-        id: env
-          .komodo_google_oauth_id
-          .unwrap_or(config.google_oauth.id),
-        secret: env
-          .komodo_google_oauth_secret
-          .unwrap_or(config.google_oauth.secret),
-      },
-      github_oauth: OauthCredentials {
-        enabled: env
-          .komodo_github_oauth_enabled
-          .unwrap_or(config.github_oauth.enabled),
-        id: env
-          .komodo_github_oauth_id
-          .unwrap_or(config.github_oauth.id),
-        secret: env
-          .komodo_github_oauth_secret
-          .unwrap_or(config.github_oauth.secret),
-      },
-      github_webhook_app: GithubWebhookAppConfig {
-        app_id: env
-          .komodo_github_webhook_app_app_id
-          .unwrap_or(config.github_webhook_app.app_id),
-        pk_path: env
-          .komodo_github_webhook_app_pk_path
-          .unwrap_or(config.github_webhook_app.pk_path),
-        installations,
-      },
-      aws: AwsCredentials {
-        access_key_id: env
-          .komodo_aws_access_key_id
-          .unwrap_or(config.aws.access_key_id),
-        secret_access_key: env
-          .komodo_aws_secret_access_key
-          .unwrap_or(config.aws.secret_access_key),
-      },
-      hetzner: HetznerCredentials {
-        token: env
-          .komodo_hetzner_token
-          .unwrap_or(config.hetzner.token),
-      },
-      database: DatabaseConfig {
-        uri: env.komodo_database_uri.or(config.database.uri),
-        address: env.komodo_database_address.or(config.database.address),
-        username: env
-          .komodo_database_username
-          .or(config.database.username),
-        password: env
-          .komodo_database_password
-          .or(config.database.password),
-        app_name: env
-          .komodo_database_app_name
-          .unwrap_or(config.database.app_name),
-        db_name: env
-          .komodo_database_db_name
-          .unwrap_or(config.database.db_name),
-      },
       logging: LogConfig {
         level: env
           .komodo_logging_level

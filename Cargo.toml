@@ -18,6 +18,7 @@ homepage = "https://komo.do"
 # komodo_client = "1.14.3"
 komodo_client = { path = "client/core/rs" }
 periphery_client = { path = "client/periphery/rs" }
+environment_file = { path = "lib/environment_file" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }
 logger = { path = "lib/logger" }
@@ -47,9 +48,9 @@ futures = "0.3.30"
 futures-util = "0.3.30"
 
 # SERVER
-axum = { version = "0.7.5", features = ["ws", "json"] }
-axum-extra = { version = "0.9.3", features = ["typed-header"] }
-tower-http = { version = "0.5.2", features = ["fs", "cors"] }
+axum = { version = "0.7.6", features = ["ws", "json"] }
+axum-extra = { version = "0.9.4", features = ["typed-header"] }
+tower-http = { version = "0.6.0", features = ["fs", "cors"] }
 tokio-tungstenite = "0.24.0"
 
 # SER/DE
@@ -74,7 +75,7 @@ opentelemetry = "0.25.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.17", features = ["derive"] }
+clap = { version = "4.5.18", features = ["derive"] }
 dotenvy = "0.15.7"
 envy = "0.4.2"
 
@@ -96,8 +97,8 @@ sysinfo = "0.31.4"
 
 # CLOUD
 aws-config = "1.5.6"
-aws-sdk-ec2 = "1.72.0"
-aws-sdk-ecr = "1.45.0"
+aws-sdk-ec2 = "1.73.0"
+aws-sdk-ecr = "1.46.0"
 
 # MISC
 derive_builder = "0.20.1"
@@ -105,5 +106,5 @@ typeshare = "1.0.3"
 octorust = "0.7.0"
 colored = "2.1.0"
 regex = "1.10.6"
-bson = "2.12.0"
+bson = "2.13.0"
 

@@ -135,6 +135,8 @@ pub struct Env {
   pub periphery_allowed_ips: Option<Vec<IpAddr>>,
   /// Override `passkeys`
   pub periphery_passkeys: Option<Vec<String>>,
+  /// Override `passkeys` from file
+  pub periphery_passkeys_file: Option<PathBuf>,
   /// Override `include_disk_mounts`
   pub periphery_include_disk_mounts: Option<Vec<PathBuf>>,
   /// Override `exclude_disk_mounts`

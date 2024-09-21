@@ -1,6 +1,6 @@
-######################
-# KOMODO CORE CONFIG #
-#####################
+###########################
+# 🦎 KOMODO CORE CONFIG 🦎 #
+###########################
 
 ## This is the offical "Default" config file for Komodo Core.
 ## It serves as documentation for the meaning of the fields.
@@ -16,7 +16,7 @@
 ## This will be the document title on the web page (shows up as text in the browser tab).
 ## Env: KOMODO_TITLE
 ## Default: 'Komodo'
-# title = "Komodo-02"
+# title = "Komodo Demo"
 
 ## This should be the url used to access Komodo in browser, potentially behind DNS.
 ## Eg https://komodo.example.com or http://12.34.56.78:9120. This should match the address configured in your Oauth app.
@@ -32,7 +32,7 @@ host = "https://komodo.example.com"
 ## This is the token used to authenticate core requests to periphery.
 ## Ensure this matches a passkey in the connected periphery configs.
 ## If the periphery servers don't have passkeys configured, this doesn't need to be changed.
-## Env: KOMODO_PASSKEY
+## Env: KOMODO_PASSKEY or KOMODO_PASSKEY_FILE
 ## Required to start Komodo, no default
 passkey = "a_random_passkey"
 
@@ -55,33 +55,33 @@ passkey = "a_random_passkey"
 
 ## Configure the database connection in one of the following ways:
 
-## Pass a full Mongo URI. Suitable for Mongo Atlas.
-## Env: KOMODO_MONGO_URI
-# mongo.uri = "mongodb://username:password@localhost:27017"
+## Pass a full Mongo URI to the database. Suitable for Mongo Atlas, or with FerretDB adapter to SQL databases.
+## Env: KOMODO_DATABASE_URI or KOMODO_DATABASE_URI_FILE
+# database.uri = "mongodb://username:password@localhost:27017"
 
 ## ==== * OR * ==== ##
 
 # Construct the address as mongodb://{username}:{password}@{address}
-## Env: KOMODO_MONGO_ADDRESS
-mongo.address = "localhost:27017"
-## Env: KOMODO_MONGO_USERNAME
-# mongo.username = "admin"
-## Env: KOMODO_MONGO_PASSWORD
-# mongo.password = "admin"
+## Env: KOMODO_DATABASE_ADDRESS
+database.address = "localhost:27017"
+## Env: KOMODO_DATABASE_USERNAME or KOMODO_DATABASE_USERNAME_FILE
+# database.username = "admin"
+## Env: KOMODO_DATABASE_PASSWORD or KOMODO_DATABASE_PASSWORD_FILE
+# database.password = "admin"
 
 ## ==== other ====
 
 ## Komodo will create its collections under this database name.
 ## The only reason to change this is if multiple Komodo Cores share the same db.
-## Env: KOMODO_MONGO_DB_NAME
+## Env: KOMODO_DATABASE_DB_NAME
 ## Default: komodo.
-# mongo.db_name = "komodo"
+# database.db_name = "komodo"
 
 ## This is the assigned app_name of the mongo client.
 ## The only reason to change this is if multiple Komodo Cores share the same db.
-## Env: KOMODO_MONGO_APP_NAME
+## Env: KOMODO_DATABASE_APP_NAME
 ## Default: komodo_core.
-# mongo.app_name = "komodo_core_01"
+# database.app_name = "komodo_core_01"
 
 ################
 # AUTH / LOGIN #
@@ -121,7 +121,7 @@ mongo.address = "localhost:27017"
 ## Optionally provide a specific jwt secret.
 ## Passing nothing or an empty string will cause one to be generated on every startup.
 ## This means users will have to log in again if Komodo restarts.
-## Env: KOMODO_JWT_SECRET
+## Env: KOMODO_JWT_SECRET or KOMODO_JWT_SECRET_FILE
 # jwt_secret = "your_random_secret"
 
 ## Specify how long a user can stay logged in before they have to log in again.

@@ -1,6 +1,6 @@
-###########################
-# KOMODO PERIPHERY CONFIG #
-###########################
+################################
+# 🦎 KOMODO PERIPHERY CONFIG 🦎 #
+################################
 
 ## Optional. The port the server runs on. 8120 is default
 ## Env: PERIPHERY_PORT
