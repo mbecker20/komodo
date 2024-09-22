@@ -53,11 +53,14 @@ services:
     env_file: ./compose.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /proc:/proc
+      - ssl:/etc/komodo/ssl # use self signed certs in docker volume, or mount your own signed certs.
       - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
       - stacks:/etc/komodo/stacks # manage stack files in a docker volume, or change it to an accessible host directory.
 
 volumes:
   sqlite-data:
+  ssl:
   repos:
   stacks:
 
