@@ -409,6 +409,12 @@ impl Resolve<CommitSync, User> for State {
         .resource_path
         .parse::<PathBuf>()
         .context("Resource path is not valid file path")?;
+      let extension = path
+        .extension()
+        .context("Resource path missing '.toml' extension")?;
+      if extension != "toml" {
+        return Err(anyhow!("Wrong file extension. Expected '.toml', got '.{extension:?}'"));
+      }
       if let Some(parent) = path.parent() {
         let _ = tokio::fs::create_dir_all(&parent).await;
       };
