@@ -35,29 +35,34 @@ pub async fn get_remote_resources(
       .context("Resource path is not valid path")?;
     let (mut logs, mut files, mut file_errors) =
       (Vec::new(), Vec::new(), Vec::new());
-    let res = super::file::read_resources(
+    let resources = super::file::read_resources(
       &path,
       &mut logs,
       &mut files,
       &mut file_errors,
     );
     return Ok(RemoteResources {
-      resources: res,
+      resources,
       files,
       file_errors,
       logs,
       hash: None,
       message: None,
     });
-  } else if !sync.config.file_contents.is_empty() {
+  } else if sync.config.managed
+    || !sync.config.file_contents.is_empty()
+  {
     // ==========
     // UI DEFINED
     // ==========
-    let res =
+    let resources = if sync.config.file_contents.is_empty() {
+      Ok(ResourcesToml::default())
+    } else {
       toml::from_str::<ResourcesToml>(&sync.config.file_contents)
-        .context("Failed to parse UI defined resources");
+        .context("Failed to parse UI defined resources")
+    };
     return Ok(RemoteResources {
-      resources: res,
+      resources,
       files: vec![FileContents {
         path: "database file".to_string(),
         contents: sync.config.file_contents.clone(),
@@ -137,7 +142,7 @@ pub async fn get_remote_resources(
   let resource_path = repo_path.join(&sync.config.resource_path);
 
   let (mut files, mut file_errors) = (Vec::new(), Vec::new());
-  let res = super::file::read_resources(
+  let resources = super::file::read_resources(
     &resource_path,
     &mut logs,
     &mut files,
@@ -151,7 +156,7 @@ pub async fn get_remote_resources(
   }
 
   Ok(RemoteResources {
-    resources: res,
+    resources,
     files,
     file_errors,
     logs,

@@ -29,6 +29,9 @@ pub struct ExportAllResourcesToToml {
   /// Tag name or id. Empty array will not filter by tag.
   #[serde(default)]
   pub tags: Vec<String>,
+  /// Exclude a sync by name or id.
+  /// For internal use (syncs can't manage themselves, or problems).
+  pub exclude_sync: Option<String>,
 }
 
 #[typeshare]

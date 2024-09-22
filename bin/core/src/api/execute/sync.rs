@@ -71,10 +71,19 @@ impl Resolve<RunSync, (User, Update)> for State {
     update.logs.extend(logs);
     update_update(update.clone()).await?;
 
-    let resources = res?;
+    let mut resources = res?;
+
+    if sync.config.managed {
+      // remove this sync from resources if managed
+      resources.resource_syncs.retain(|s| s.name != sync.name);
+    }
 
     let id_to_tags = get_id_to_tags(None).await?;
-    let all_resources = AllResourcesById::load().await?;
+    let all_resources = AllResourcesById::load(
+      // remove this sync from resources if managed
+      sync.config.managed.then(|| sync.name.clone()),
+    )
+    .await?;
 
     let deployments_by_name = all_resources
       .deployments

@@ -124,7 +124,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
 
-    if !sync.config.files_on_host
+    if !sync.config.managed
+      && !sync.config.files_on_host
       && sync.config.file_contents.is_empty()
       && sync.config.repo.is_empty()
     {
@@ -150,7 +151,11 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       let resources = resources?;
 
       let id_to_tags = get_id_to_tags(None).await?;
-      let all_resources = AllResourcesById::load().await?;
+      let all_resources = AllResourcesById::load(
+        // ignore this sync if it is `managed`
+        sync.config.managed.then(|| sync.name.clone()),
+      )
+      .await?;
 
       let deployments_by_name = all_resources
         .deployments
@@ -254,7 +259,12 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         resource_sync_updates: get_updates_for_view::<
           entities::sync::ResourceSync,
         >(
-          resources.resource_syncs,
+          // Need to filter out this sync to prevent syncs from managing itself, which causes issues with managed sync.
+          resources
+            .resource_syncs
+            .into_iter()
+            .filter(|s| !sync.config.managed || s.name != sync.name)
+            .collect(),
           sync.config.delete,
           &all_resources,
           &id_to_tags,
@@ -407,6 +417,8 @@ impl Resolve<CommitSync, User> for State {
       .resolve(
         ExportAllResourcesToToml {
           tags: sync.config.match_tags,
+          // managed syncs cannot commit themselves
+          exclude_sync: Some(sync.name.clone()),
         },
         sync_user().to_owned(),
       )

@@ -515,7 +515,10 @@ pub struct AllResourcesById {
 }
 
 impl AllResourcesById {
-  pub async fn load() -> anyhow::Result<Self> {
+  /// ignore_sync can be id or name
+  pub async fn load(
+    ignore_sync: Option<String>,
+  ) -> anyhow::Result<Self> {
     Ok(Self {
       servers: crate::resource::get_id_to_resource_map::<Server>()
         .await?,
@@ -540,7 +543,15 @@ impl AllResourcesById {
       syncs: crate::resource::get_id_to_resource_map::<
         entities::sync::ResourceSync,
       >()
-      .await?,
+      .await?
+      .into_iter()
+      .filter(|(id, resource)| {
+        let Some(ignore) = &ignore_sync else {
+          return true;
+        };
+        ignore != id && ignore != &resource.name
+      })
+      .collect(),
       stacks: crate::resource::get_id_to_resource_map::<
         entities::stack::Stack,
       >()

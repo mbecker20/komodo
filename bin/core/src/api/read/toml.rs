@@ -49,7 +49,7 @@ use crate::{
 impl Resolve<ExportAllResourcesToToml, User> for State {
   async fn resolve(
     &self,
-    ExportAllResourcesToToml { tags }: ExportAllResourcesToToml,
+    ExportAllResourcesToToml { tags, exclude_sync }: ExportAllResourcesToToml,
     user: User,
   ) -> anyhow::Result<ExportAllResourcesToTomlResponse> {
     let mut targets = Vec::<ResourceTarget>::new();
@@ -142,6 +142,12 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       )
       .await?
       .into_iter()
+      .filter(|sync| {
+        let Some(ignore) = &exclude_sync else {
+          return true;
+        };
+        &sync.name != ignore && &sync.id != ignore
+      })
       .map(|resource| ResourceTarget::ResourceSync(resource.id)),
     );
 
