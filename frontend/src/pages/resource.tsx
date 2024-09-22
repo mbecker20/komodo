@@ -37,36 +37,47 @@ const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
 export const Resource = () => {
   const type = useResourceParamType()!;
   const id = useParams().id as string;
+
+  if (!type || !id) return null;
+
+  return <ResourceInner type={type} id={id} />;
+};
+
+const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
+  const resources = useRead(`List${type}s`, {}).data;
+  const resource = resources?.find((resource) => resource.id === id);
+  const full_resource = useRead(`Get${type}`, { id } as any).data;
+
   usePushRecentlyViewed({ type, id });
 
   const { canWrite, canExecute } = useEditPermissions({ type, id });
 
-  const resources = useRead(`List${type}s`, {}).data;
-  const resource = resources?.find((resource) => resource.id === id);
-
   if (!type || !id) return null;
 
-  if (resources && !resource) {
-    return <NotFound type={type} />;
+  if (!resource) {
+    if (resources) return <NotFound type={type} />;
+    else return null;
   }
 
   const Components = ResourceComponents[type];
+  const links = full_resource ? Components.resource_links(full_resource) : [];
 
   return (
     <div className="flex flex-col gap-16">
       {/* Header */}
-      <ResourceHeader type={type} id={id} />
+      <ResourceHeader type={type} id={id} links={links} />
 
       {/* Actions */}
-      {canExecute && Object.keys(Components.Actions).length > 0 && (
-        <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
-          <div className="flex gap-4 items-center flex-wrap">
-            {Object.entries(Components.Actions).map(([key, Action]) => (
-              <Action key={key} id={id} />
-            ))}
-          </div>
-        </Section>
-      )}
+      {canExecute &&
+        (Object.keys(Components?.Actions ?? {})?.length ?? 0) > 0 && (
+          <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
+            <div className="flex gap-4 items-center flex-wrap">
+              {Object.entries(Components.Actions).map(([key, Action]) => (
+                <Action key={key} id={id} />
+              ))}
+            </div>
+          </Section>
+        )}
 
       {/* Updates */}
       <ResourceUpdates type={type} id={id} />
@@ -91,13 +102,20 @@ export const Resource = () => {
   );
 };
 
-const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
+const ResourceHeader = ({
+  type,
+  id,
+  links,
+}: {
+  type: UsableResource;
+  id: string;
+  links: string[] | undefined;
+}) => {
   const name = useRead(`List${type}s`, {}).data?.find((r) => r.id === id)?.name;
   useSetTitle(name);
 
   const Components = ResourceComponents[type];
   const infoEntries = Object.entries(Components.Info);
-  const links = Components.use_links(id);
 
   const { canWrite } = useEditPermissions({ type, id });
   const nav = useNavigate();
@@ -176,26 +194,26 @@ const ResourceHeader = ({ type, id }: { type: UsableResource; id: string }) => {
   );
 };
 
-const NotFound = ({ type }: { type: UsableResource }) => {
+const NotFound = ({ type }: { type: UsableResource | undefined }) => {
   const nav = useNavigate();
-  const Components = ResourceComponents[type];
+  const Components = type && ResourceComponents[type];
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between mb-4">
-        <Button
-          className="gap-2"
-          variant="secondary"
-          onClick={() => nav("/" + usableResourcePath(type))}
-        >
-          <ChevronLeft className="w-4" /> Back
-        </Button>
-      </div>
+      {type && (
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            className="gap-2"
+            variant="secondary"
+            onClick={() => nav("/" + usableResourcePath(type))}
+          >
+            <ChevronLeft className="w-4" /> Back
+          </Button>
+        </div>
+      )}
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="flex items-center gap-4">
-          <div className="mt-1">
-            <Components.BigIcon />
-          </div>
-          <h1 className="text-3xl">{type} not found</h1>
+          <div className="mt-1">{Components && <Components.BigIcon />}</div>
+          <h1 className="text-3xl">{type ?? "??"} not found</h1>
         </div>
       </div>
     </div>

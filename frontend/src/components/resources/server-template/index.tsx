@@ -25,7 +25,7 @@ export const useServerTemplate = (id?: string) =>
 
 export const ServerTemplateComponents: RequiredResourceComponents = {
   list_item: (id) => useServerTemplate(id),
-  use_links: () => undefined,
+  resource_links: () => undefined,
 
   Description: () => <>Deploy more cloud-based servers on a button click.</>,
 

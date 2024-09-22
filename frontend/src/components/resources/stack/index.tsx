@@ -93,7 +93,7 @@ const ConfigInfoServices = ({ id }: { id: string }) => {
 
 export const StackComponents: RequiredResourceComponents = {
   list_item: (id) => useStack(id),
-  use_links: (id) => useFullStack(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.StackConfig).links,
 
   Description: () => <>Deploy docker compose files.</>,
 

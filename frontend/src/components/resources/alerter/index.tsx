@@ -13,7 +13,7 @@ const useAlerter = (id?: string) =>
 
 export const AlerterComponents: RequiredResourceComponents = {
   list_item: (id) => useAlerter(id),
-  use_links: () => undefined,
+  resource_links: () => undefined,
 
   Description: () => <>Route alerts to various endpoints.</>,
 

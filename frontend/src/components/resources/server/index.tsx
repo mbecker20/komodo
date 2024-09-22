@@ -135,7 +135,7 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
 
 export const ServerComponents: RequiredResourceComponents = {
   list_item: (id) => useServer(id),
-  use_links: (id) => useFullServer(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.ServerConfig).links,
 
   Description: () => (
     <>Connect servers for alerting, building, and deploying.</>

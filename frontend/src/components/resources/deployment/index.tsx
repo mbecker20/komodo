@@ -102,7 +102,7 @@ const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const DeploymentComponents: RequiredResourceComponents = {
   list_item: (id) => useDeployment(id),
-  use_links: (id) => useFullDeployment(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.DeploymentConfig).links,
 
   Description: () => <>Deploy containers on your servers.</>,
 

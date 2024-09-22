@@ -44,7 +44,7 @@ const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const RepoComponents: RequiredResourceComponents = {
   list_item: (id) => useRepo(id),
-  use_links: (id) => useFullRepo(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.RepoConfig).links,
 
   Description: () => <>Build using custom scripts. Or anything else.</>,
 

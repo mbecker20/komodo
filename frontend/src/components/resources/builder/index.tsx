@@ -39,7 +39,7 @@ export const BuilderInstanceType = ({ id }: { id: string }) => {
 
 export const BuilderComponents: RequiredResourceComponents = {
   list_item: (id) => useBuilder(id),
-  use_links: () => undefined,
+  resource_links: () => undefined,
 
   Description: () => <>Build on your servers, or single-use AWS instances.</>,
 
