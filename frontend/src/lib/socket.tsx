@@ -119,10 +119,10 @@ const on_message = (
         ["ListDockerContainers"],
         ["ListDockerNetworks"],
         ["ListDockerImages"],
-        ["GetDeployment", { deployment: update.target.id }],
+        ["GetDeployment"],
         ["GetDeploymentLog", { deployment: update.target.id }],
         ["SearchDeploymentLog", { deployment: update.target.id }],
-        ["GetDeploymentContainer", { deployment: update.target.id }],
+        ["GetDeploymentContainer"],
         ["GetResourceMatchingContainer"]
       );
     }
@@ -139,8 +139,8 @@ const on_message = (
         ["ListDockerImages"],
         ["GetStackServiceLog", { stack: update.target.id }],
         ["SearchStackServiceLog", { stack: update.target.id }],
-        ["GetStack", { stack: update.target.id }],
-        ["ListStackServices", { stack: update.target.id }],
+        ["GetStack"],
+        ["ListStackServices"],
         ["GetResourceMatchingContainer"]
       );
     }
@@ -150,9 +150,9 @@ const on_message = (
         ["ListServers"],
         ["ListFullServers"],
         ["GetServersSummary"],
-        ["GetServer", { server: update.target.id }],
-        ["GetServerState", { server: update.target.id }],
-        ["GetHistoricalServerStats", { server: update.target.id }]
+        ["GetServer"],
+        ["GetServerState"],
+        ["GetHistoricalServerStats"]
       );
     }
 
@@ -162,8 +162,8 @@ const on_message = (
         ["ListFullBuilds"],
         ["GetBuildsSummary"],
         ["GetBuildMonthlyStats"],
-        ["GetBuild", { build: update.target.id }],
-        ["ListBuildVersions", { build: update.target.id }]
+        ["GetBuild"],
+        ["ListBuildVersions"]
       );
     }
 
@@ -172,7 +172,7 @@ const on_message = (
         ["ListRepos"],
         ["ListFullRepos"],
         ["GetReposSummary"],
-        ["GetRepo", { repo: update.target.id }]
+        ["GetRepo"]
       );
     }
 
@@ -181,7 +181,7 @@ const on_message = (
         ["ListProcedures"],
         ["ListFullProcedures"],
         ["GetProceduresSummary"],
-        ["GetProcedure", { procedure: update.target.id }]
+        ["GetProcedure"]
       );
     }
 
@@ -190,7 +190,7 @@ const on_message = (
         ["ListBuilders"],
         ["ListFullBuilders"],
         ["GetBuildersSummary"],
-        ["GetBuilder", { builder: update.target.id }]
+        ["GetBuilder"]
       );
     }
 
@@ -199,7 +199,7 @@ const on_message = (
         ["ListAlerters"],
         ["ListFullAlerters"],
         ["GetAlertersSummary"],
-        ["GetAlerter", { alerter: update.target.id }]
+        ["GetAlerter"]
       );
     }
 
@@ -208,7 +208,7 @@ const on_message = (
         ["ListServerTemplates"],
         ["ListFullServerTemplates"],
         ["GetServerTemplatesSummary"],
-        ["GetServerTemplate", { server_template: update.target.id }]
+        ["GetServerTemplate"]
       );
     }
 
@@ -217,7 +217,7 @@ const on_message = (
         ["ListResourceSyncs"],
         ["ListFullResourceSyncs"],
         ["GetResourceSyncsSummary"],
-        ["GetResourceSync", { sync: update.target.id }]
+        ["GetResourceSync"]
       );
     }
 
