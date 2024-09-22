@@ -21,9 +21,9 @@ pub struct ResourceSyncListItemInfo {
   /// Unix timestamp of last sync, or 0
   pub last_sync_ts: I64,
   /// Short commit hash of last sync, or empty string
-  pub last_sync_hash: String,
+  pub last_sync_hash: Option<String>,
   /// Commit message of last sync, or empty string
-  pub last_sync_message: String,
+  pub last_sync_message: Option<String>,
   /// The git provider domain
   pub git_provider: String,
   /// The Github repo used as the source of the sync resources
@@ -62,9 +62,9 @@ pub struct ResourceSyncInfo {
   /// Unix timestamp of last applied sync
   pub last_sync_ts: I64,
   /// Short commit hash of last applied sync
-  pub last_sync_hash: String,
+  pub last_sync_hash: Option<String>,
   /// Commit message of last applied sync
-  pub last_sync_message: String,
+  pub last_sync_message: Option<String>,
   /// Readable logs of pending updates
   pub pending: PendingSyncUpdates,
 }

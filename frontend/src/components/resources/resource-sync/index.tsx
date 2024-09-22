@@ -106,7 +106,7 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
             </HoverCardContent>
           </HoverCard>
         );
-      } else {
+      } else if (!info?.last_sync_ts) {
         return <div className="text-muted-foreground">{"Never synced"}</div>;
       }
     },

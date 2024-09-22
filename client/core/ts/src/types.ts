@@ -2669,9 +2669,9 @@ export interface ResourceSyncInfo {
 	/** Unix timestamp of last applied sync */
 	last_sync_ts: I64;
 	/** Short commit hash of last applied sync */
-	last_sync_hash: string;
+	last_sync_hash?: string;
 	/** Commit message of last applied sync */
-	last_sync_message: string;
+	last_sync_message?: string;
 	/** Readable logs of pending updates */
 	pending: PendingSyncUpdates;
 }
@@ -2697,9 +2697,9 @@ export interface ResourceSyncListItemInfo {
 	/** Unix timestamp of last sync, or 0 */
 	last_sync_ts: I64;
 	/** Short commit hash of last sync, or empty string */
-	last_sync_hash: string;
+	last_sync_hash?: string;
 	/** Commit message of last sync, or empty string */
-	last_sync_message: string;
+	last_sync_message?: string;
 	/** The git provider domain */
 	git_provider: string;
 	/** The Github repo used as the source of the sync resources */
