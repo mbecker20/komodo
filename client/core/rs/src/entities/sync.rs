@@ -221,6 +221,28 @@ pub struct ResourceSyncConfig {
   #[builder(default)]
   pub git_account: String,
 
+  /// Files are available on the Komodo Core host.
+  /// Specify the file / folder with [ResourceSyncConfig::resource_path].
+  #[serde(default)]
+  pub files_on_host: bool,
+
+  /// Manage the file contents in the UI.
+  #[serde(default)]
+  pub file_contents: String,
+
+  /// Enable "pushes" to the file,
+  /// which exports resources matching tags to single file.
+  ///  - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
+  ///  - If using `file_contents`, it is stored in the database.
+  ///  - If using Git Repo, it will commit the resource file
+  #[serde(default)]
+  pub managed: bool,
+
+  /// When using `managed` resource sync, will only export resources
+  /// matching all of the given tags. If none, will match all resources.
+  #[serde(default)]
+  pub match_tags: Vec<String>,
+
   /// The path of the resource file(s) to sync, relative to the repo root.
   /// Can be a specific file, or a directory containing multiple files / folders.
   /// See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
@@ -267,7 +289,7 @@ fn default_branch() -> String {
 }
 
 fn default_resource_path() -> String {
-  String::from("resources")
+  String::from("./resources.toml")
 }
 
 fn default_webhook_enabled() -> bool {
@@ -284,6 +306,10 @@ impl Default for ResourceSyncConfig {
       commit: Default::default(),
       git_account: Default::default(),
       resource_path: default_resource_path(),
+      files_on_host: Default::default(),
+      file_contents: Default::default(),
+      managed: Default::default(),
+      match_tags: Default::default(),
       delete: Default::default(),
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),

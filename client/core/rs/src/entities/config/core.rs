@@ -184,6 +184,13 @@ pub struct Env {
   pub komodo_hetzner_token: Option<String>,
   /// Override `hetzner.token` with file
   pub komodo_hetzner_token_file: Option<PathBuf>,
+
+  /// Override `ssl_enabled`.
+  pub komodo_ssl_enabled: Option<bool>,
+  /// Override `ssl_key`
+  pub komodo_ssl_key: Option<PathBuf>,
+  /// Override `ssl_cert`
+  pub komodo_ssl_cert: Option<PathBuf>,
 }
 
 fn default_config_path() -> String {
@@ -410,6 +417,20 @@ pub struct CoreConfig {
   /// Default: `/repos`
   #[serde(default = "default_repo_directory")]
   pub repo_directory: PathBuf,
+
+  /// Whether to enable ssl.
+  #[serde(default)]
+  pub ssl_enabled: bool,
+
+  /// Path to the ssl key.
+  /// Default: `/etc/komodo/ssl/key.pem`.
+  #[serde(default = "default_ssl_key")]
+  pub ssl_key: PathBuf,
+
+  /// Path to the ssl cert.
+  /// Default: `/etc/komodo/ssl/cert.pem`.
+  #[serde(default = "default_ssl_cert")]
+  pub ssl_cert: PathBuf,
 }
 
 fn default_title() -> String {
@@ -443,6 +464,14 @@ fn default_poll_interval() -> Timelength {
 
 fn default_monitoring_interval() -> Timelength {
   Timelength::FifteenSeconds
+}
+
+fn default_ssl_key() -> PathBuf {
+  "/etc/komodo/ssl/key.pem".parse().unwrap()
+}
+
+fn default_ssl_cert() -> PathBuf {
+  "/etc/komodo/ssl/cert.pem".parse().unwrap()
 }
 
 impl CoreConfig {
@@ -532,6 +561,9 @@ impl CoreConfig {
           provider
         })
         .collect(),
+      ssl_enabled: config.ssl_enabled,
+      ssl_key: config.ssl_key,
+      ssl_cert: config.ssl_cert,
     }
   }
 }

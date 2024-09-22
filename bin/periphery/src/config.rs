@@ -73,6 +73,11 @@ pub fn periphery_config() -> &'static PeripheryConfig {
       exclude_disk_mounts: env
         .periphery_exclude_disk_mounts
         .unwrap_or(config.exclude_disk_mounts),
+      ssl_enabled: env
+        .periphery_ssl_enabled
+        .unwrap_or(config.ssl_enabled),
+      ssl_key: env.periphery_ssl_key.unwrap_or(config.ssl_key),
+      ssl_cert: env.periphery_ssl_cert.unwrap_or(config.ssl_cert),
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,

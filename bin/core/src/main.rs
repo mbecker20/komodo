@@ -5,6 +5,7 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
+use axum_server::tls_openssl::OpenSSLConfig;
 use tower_http::{
   cors::{Any, CorsLayer},
   services::{ServeDir, ServeFile},
@@ -30,7 +31,7 @@ async fn app() -> anyhow::Result<()> {
   logger::init(&config.logging)?;
 
   info!("Komodo Core version: v{}", env!("CARGO_PKG_VERSION"));
-  info!("config: {:?}", config.sanitized());
+  info!("{:?}", config.sanitized());
 
   // includes init db_client check to crash on db init failure
   helpers::startup_cleanup().await;
@@ -68,19 +69,25 @@ async fn app() -> anyhow::Result<()> {
     .nest("/ws", ws::router())
     .nest_service("/", serve_dir)
     .fallback_service(frontend_index)
-    .layer(cors()?);
+    .layer(cors()?)
+    .into_make_service();
 
   let socket_addr =
     SocketAddr::from_str(&format!("0.0.0.0:{}", core_config().port))
       .context("failed to parse socket addr")?;
 
-  let listener = tokio::net::TcpListener::bind(&socket_addr)
-    .await
-    .context("failed to bind to tcp listener")?;
+  info!("Komodo Core starting on {socket_addr}");
 
-  info!("Komodo Core listening on {socket_addr}");
-
-  axum::serve(listener, app).await.context("server crashed")?;
+  if config.ssl_enabled {
+    let ssl_config =
+      OpenSSLConfig::from_pem_file(&config.ssl_cert, &config.ssl_key)
+        .context("Failed to parse ssl ")?;
+    axum_server::bind_openssl(socket_addr, ssl_config)
+      .serve(app)
+      .await?
+  } else {
+    axum_server::bind(socket_addr).serve(app).await?
+  }
 
   Ok(())
 }

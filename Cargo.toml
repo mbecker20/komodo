@@ -49,6 +49,7 @@ futures-util = "0.3.30"
 
 # SERVER
 axum = { version = "0.7.6", features = ["ws", "json"] }
+axum-server = { version = "0.7.1", features = ["tls-openssl"] }
 axum-extra = { version = "0.9.4", features = ["typed-header"] }
 tower-http = { version = "0.6.0", features = ["fs", "cors"] }
 tokio-tungstenite = "0.24.0"

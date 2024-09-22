@@ -143,6 +143,13 @@ pub struct Env {
   pub periphery_include_disk_mounts: Option<Vec<PathBuf>>,
   /// Override `exclude_disk_mounts`
   pub periphery_exclude_disk_mounts: Option<Vec<PathBuf>>,
+
+  /// Override `ssl_enabled`
+  pub periphery_ssl_enabled: Option<bool>,
+  /// Override `ssl_key`
+  pub periphery_ssl_key: Option<PathBuf>,
+  /// Override `ssl_cert`
+  pub periphery_ssl_cert: Option<PathBuf>,
 }
 
 /// # Periphery Configuration File
@@ -216,6 +223,20 @@ pub struct PeripheryConfig {
   /// Supports any docker image repository.
   #[serde(default, alias = "docker_registry")]
   pub docker_registries: Vec<DockerRegistry>,
+
+  /// Whether to enable ssl.
+  #[serde(default)]
+  pub ssl_enabled: bool,
+
+  /// Path to the ssl key.
+  /// Default: `/etc/komodo/ssl/key.pem`.
+  #[serde(default = "default_ssl_key")]
+  pub ssl_key: PathBuf,
+
+  /// Path to the ssl cert.
+  /// Default: `/etc/komodo/ssl/cert.pem`.
+  #[serde(default = "default_ssl_cert")]
+  pub ssl_cert: PathBuf,
 }
 
 fn default_periphery_port() -> u16 {
@@ -234,6 +255,14 @@ fn default_stats_polling_rate() -> Timelength {
   Timelength::FiveSeconds
 }
 
+fn default_ssl_key() -> PathBuf {
+  "/etc/komodo/ssl/key.pem".parse().unwrap()
+}
+
+fn default_ssl_cert() -> PathBuf {
+  "/etc/komodo/ssl/cert.pem".parse().unwrap()
+}
+
 impl Default for PeripheryConfig {
   fn default() -> Self {
     Self {
@@ -250,6 +279,9 @@ impl Default for PeripheryConfig {
       secrets: Default::default(),
       git_providers: Default::default(),
       docker_registries: Default::default(),
+      ssl_enabled: Default::default(),
+      ssl_key: default_ssl_key(),
+      ssl_cert: default_ssl_cert(),
     }
   }
 }
@@ -310,6 +342,9 @@ impl PeripheryConfig {
             .collect(),
         })
         .collect(),
+      ssl_enabled: self.ssl_enabled,
+      ssl_key: self.ssl_key.clone(),
+      ssl_cert: self.ssl_cert.clone(),
     }
   }
 }
