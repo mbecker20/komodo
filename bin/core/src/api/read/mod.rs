@@ -287,6 +287,7 @@ fn core_info() -> &'static String {
         .unwrap_or_else(|| config.host.clone()),
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
+      disable_confirm_dialog: config.disable_confirm_dialog,
       github_webhook_owners: config
         .github_webhook_app
         .installations

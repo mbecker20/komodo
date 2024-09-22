@@ -98,6 +98,8 @@ pub struct Env {
   pub komodo_enable_new_users: Option<bool>,
   /// Override `disable_user_registration`
   pub komodo_disable_user_registration: Option<bool>,
+  /// Override `disable_confirm_dialog`
+  pub komodo_disable_confirm_dialog: Option<bool>,
 
   /// Override `local_auth`
   pub komodo_local_auth: Option<bool>,
@@ -243,6 +245,10 @@ pub struct CoreConfig {
   /// Disable user ability to use the UI to update resource configuration.
   #[serde(default)]
   pub ui_write_disabled: bool,
+
+  /// Disable the popup confirm dialogs. All buttons will just be double click.
+  #[serde(default)]
+  pub disable_confirm_dialog: bool,
 
   /// If defined, ensure an enabled first server exists at this address.
   /// Example: `http://periphery:8120`
@@ -519,6 +525,7 @@ impl CoreConfig {
       logging: config.logging,
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
+      disable_confirm_dialog: config.disable_confirm_dialog,
       enable_new_users: config.enable_new_users,
       disable_user_registration: config.disable_user_registration,
       local_auth: config.local_auth,

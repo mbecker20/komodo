@@ -163,6 +163,7 @@ pub fn core_config() -> &'static CoreConfig {
       ui_write_disabled: env
         .komodo_ui_write_disabled
         .unwrap_or(config.ui_write_disabled),
+      disable_confirm_dialog: env.komodo_disable_confirm_dialog.unwrap_or(config.disable_confirm_dialog),
       enable_new_users: env.komodo_enable_new_users
         .unwrap_or(config.enable_new_users),
       disable_user_registration: env.komodo_disable_user_registration

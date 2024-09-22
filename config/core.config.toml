@@ -49,6 +49,12 @@ passkey = "a_random_passkey"
 ## Default: false
 # ui_write_disabled = true
 
+## Disables the confirm dialogs on all actions. All buttons will now be double-click.
+## Useful when only having http connection to core, as UI quick-copy button won't work.
+## Env: KOMODO_DISABLE_CONFIRM_DIALOG
+## Default: false
+# disable_confirm_dialog = true
+
 ############
 # DATABASE #
 ############

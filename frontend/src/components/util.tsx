@@ -150,8 +150,24 @@ export const ActionWithDialog = ({
     | null
     | undefined;
 }) => {
+  const disable_confirm_dialog =
+    useRead("GetCoreInfo", {}).data?.disable_confirm_dialog ?? false;
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+
+  if (disable_confirm_dialog) {
+    return (
+      <ConfirmButton
+        variant={variant}
+        title={title}
+        icon={icon}
+        disabled={disabled}
+        loading={loading}
+        className={targetClassName}
+        onClick={onClick}
+      />
+    );
+  }
 
   return (
     <Dialog
