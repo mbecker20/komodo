@@ -158,7 +158,7 @@ impl super::KomodoResource for Stack {
       .await
     {
       update.push_error_log(
-        "refresh stack cache",
+        "Refresh stack cache",
         format_serror(&e.context("The stack cache has failed to refresh. This is likely due to a misconfiguration of the Stack").into())
       );
     };

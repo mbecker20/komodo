@@ -1,27 +1,33 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use komodo_client::entities::{
-  komodo_timestamp,
-  resource::Resource,
-  sync::{
-    PartialResourceSyncConfig, PendingSyncUpdatesData, ResourceSync,
-    ResourceSyncConfig, ResourceSyncConfigDiff, ResourceSyncInfo,
-    ResourceSyncListItem, ResourceSyncListItemInfo,
-    ResourceSyncQuerySpecifics, ResourceSyncState,
+use formatting::format_serror;
+use komodo_client::{
+  api::write::RefreshResourceSyncPending,
+  entities::{
+    komodo_timestamp,
+    resource::Resource,
+    sync::{
+      PartialResourceSyncConfig, PendingSyncUpdatesData,
+      ResourceSync, ResourceSyncConfig, ResourceSyncConfigDiff,
+      ResourceSyncInfo, ResourceSyncListItem,
+      ResourceSyncListItemInfo, ResourceSyncQuerySpecifics,
+      ResourceSyncState,
+    },
+    update::Update,
+    user::{sync_user, User},
+    Operation, ResourceTargetVariant,
   },
-  update::Update,
-  user::User,
-  Operation, ResourceTargetVariant,
 };
 use mongo_indexed::doc;
 use mungos::{
   find::find_collect,
   mongodb::{options::FindOneOptions, Collection},
 };
+use resolver_api::Resolve;
 
 use crate::state::{
-  action_states, db_client, resource_sync_state_cache,
+  action_states, db_client, resource_sync_state_cache, State,
 };
 
 impl super::KomodoResource for ResourceSync {
@@ -95,9 +101,23 @@ impl super::KomodoResource for ResourceSync {
   }
 
   async fn post_create(
-    _created: &Resource<Self::Config, Self::Info>,
-    _update: &mut Update,
+    created: &Resource<Self::Config, Self::Info>,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
+    if let Err(e) = State
+      .resolve(
+        RefreshResourceSyncPending {
+          sync: created.id.clone(),
+        },
+        sync_user().to_owned(),
+      )
+      .await
+    {
+      update.push_error_log(
+        "Refresh sync pending",
+        format_serror(&e.context("The sync pending cache has failed to refresh. This is likely due to a misconfiguration of the sync").into())
+      );
+    };
     Ok(())
   }
 
@@ -116,10 +136,10 @@ impl super::KomodoResource for ResourceSync {
   }
 
   async fn post_update(
-    _updated: &Resource<Self::Config, Self::Info>,
-    _update: &mut Update,
+    updated: &Resource<Self::Config, Self::Info>,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    Ok(())
+    Self::post_create(updated, update).await
   }
 
   // DELETE

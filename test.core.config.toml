@@ -6,7 +6,8 @@ repo_directory = "/Users/max/komodo-repos"
 disable_confirm_dialog = true
 
 # database.address = "localhost:27017"
-database.address = "ferretdb.komodo.orb.local"
+# database.address = "ferretdb.komodo.orb.local"
+database.address = "test-ferretdb.orb.local"
 # database.username = "admin"
 # database.password = "admin"
 # database.uri = "mongodb://admin:admin@localhost:27017/komodo" # For ferretdb-postgres

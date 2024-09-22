@@ -124,6 +124,14 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
 
+    if !sync.config.files_on_host
+      && sync.config.file_contents.is_empty()
+      && sync.config.repo.is_empty()
+    {
+      // Sync not configured, nothing to refresh
+      return Ok(sync);
+    }
+
     let res = async {
       let RemoteResources {
         resources,
