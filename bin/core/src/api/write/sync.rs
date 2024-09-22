@@ -454,10 +454,26 @@ impl Resolve<CommitSync, User> for State {
     update
       .logs
       .push(Log::simple("Committed resources", res.toml));
-    update.finalize();
-    add_update(update).await?;
 
-    resource::get::<ResourceSync>(&sync.name).await
+    match State
+      .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
+      .await
+    {
+      Ok(sync) => {
+        update.finalize();
+        add_update(update).await?;
+        Ok(sync)
+      }
+      Err(e) => {
+        update.push_error_log(
+          "Refresh sync pending",
+          format_serror(&(&e).into()),
+        );
+        update.finalize();
+        add_update(update).await?;
+        Err(e)
+      }
+    }
   }
 }
 
