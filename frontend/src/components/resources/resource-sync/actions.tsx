@@ -58,7 +58,7 @@ export const CommitSync = ({ id }: { id: string }) => {
   return (
     <ActionWithDialog
       name={sync.name}
-      title="Commit Sync"
+      title="Commit Changes"
       icon={<NotebookPen className="w-4 h-4" />}
       onClick={() => mutate({ sync: id })}
       disabled={isPending}
