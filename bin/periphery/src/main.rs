@@ -33,9 +33,8 @@ async fn app() -> anyhow::Result<()> {
   let app = router::router()
     .into_make_service_with_connect_info::<SocketAddr>();
 
-  info!("Komodo Periphery starting on {}", socket_addr);
-
   if config.ssl_enabled {
+    info!("Komodo Periphery starting on https://{}", socket_addr);
     let ssl_config =
       OpenSSLConfig::from_pem_file(&config.ssl_cert, &config.ssl_key)
         .context("Failed to parse ssl ")?;
@@ -43,6 +42,7 @@ async fn app() -> anyhow::Result<()> {
       .serve(app)
       .await?
   } else {
+    info!("Komodo Periphery starting on http://{}", socket_addr);
     axum_server::bind(socket_addr).serve(app).await?
   }
 
