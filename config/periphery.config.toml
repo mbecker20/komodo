@@ -50,6 +50,25 @@
 ## Env: PERIPHERY_PASSKEYS or PERIPHERY_PASSKEYS_FILE
 # passkeys = ["abcdefghijk"]
 
+############
+# Security #
+############
+
+## Enable HTTPS server using the given key and cert.
+## If a key / cert at the given paths are not found, self signed keys will be generated using openssl.
+## Env: PERIPHERY_SSL_ENABLED
+ssl_enabled = true
+
+## Path to the ssl key.
+## Env: PERIPHERY_SSL_KEY
+## Default: /etc/komodo/ssl/key.pem
+# ssl_key = "/etc/komodo/ssl/key.pem"
+
+## Path to the ssl cert.
+## Env: PERIPHERY_SSL_CERT
+## Default: /etc/komodo/ssl/cert.pem
+# ssl_cert = "/etc/komodo/ssl/cert.pem"
+
 ###########
 # SECRETS #
 ###########

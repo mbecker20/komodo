@@ -1,4 +1,4 @@
-use std::{sync::OnceLock, time::Duration};
+use std::{path::Path, sync::OnceLock, time::Duration};
 
 use anyhow::Context;
 use reqwest::StatusCode;
@@ -8,15 +8,65 @@ use serror::deserialize_error;
 
 pub mod api;
 
-fn reqwest() -> &'static reqwest::Client {
-  static PERIPHERY_HTTP_CLIENT: OnceLock<reqwest::Client> =
-    OnceLock::new();
-  PERIPHERY_HTTP_CLIENT.get_or_init(|| {
-    reqwest::Client::builder()
-      .danger_accept_invalid_certs(true)
-      .build()
-      .unwrap()
-  })
+static PERIPHERY_HTTP_CLIENT: OnceLock<reqwest::Client> =
+  OnceLock::new();
+
+/// Must call in Core Main to init the client with given ssl options.
+pub fn init_periphery_http_client(
+  accept_self_signed_certs: bool,
+  ca_pem_path: &Path,
+) {
+  let mut client = reqwest::Client::builder()
+    .danger_accept_invalid_certs(accept_self_signed_certs);
+
+  let client = if ca_pem_path.is_file() {
+    let cert = std::fs::read(ca_pem_path)
+      .expect("failed to read ca pem contents");
+    client.add_root_certificate(
+      reqwest::Certificate::from_pem(&cert)
+        .expect("invalid ca pem contents"),
+    )
+  } else if ca_pem_path.is_dir() {
+    for entry in ca_pem_path.read_dir().unwrap() {
+      let Ok(entry) = entry else {
+        continue;
+      };
+      if entry.file_type().is_err()
+        || !entry.file_type().unwrap().is_file()
+      {
+        continue;
+      }
+      let path = entry.path();
+      let Some(extension) = path.extension() else {
+        continue;
+      };
+      if extension != "pem" {
+        continue;
+      }
+      let contents = std::fs::read(path).unwrap();
+      client = client.add_root_certificate(
+        reqwest::Certificate::from_pem(&contents).unwrap(),
+      );
+    }
+    client
+  } else {
+    client
+  };
+
+  let client = client
+    .build()
+    .context("Invalid Periphery http client ssl configuration")
+    .unwrap();
+
+  PERIPHERY_HTTP_CLIENT
+    .set(client)
+    .expect("Client has already been set")
+}
+
+fn periphery_http_client() -> &'static reqwest::Client {
+  PERIPHERY_HTTP_CLIENT
+    .get()
+    .expect("Called for periphery http client before `init_reqwest`")
 }
 
 pub struct PeripheryClient {
@@ -69,7 +119,7 @@ impl PeripheryClient {
     tracing::trace!(
       "sending request | type: {req_type} | body: {request:?}"
     );
-    let mut req = reqwest()
+    let mut req = periphery_http_client()
       .post(&self.address)
       .json(&json!({
         "type": req_type,

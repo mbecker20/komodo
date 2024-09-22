@@ -34,6 +34,8 @@ async fn app() -> anyhow::Result<()> {
     .into_make_service_with_connect_info::<SocketAddr>();
 
   if config.ssl_enabled {
+    info!("🔒 SSL Enabled");
+    helpers::ensure_certs().await;
     info!("Komodo Periphery starting on https://{}", socket_addr);
     let ssl_config =
       OpenSSLConfig::from_pem_file(&config.ssl_cert, &config.ssl_key)
@@ -42,6 +44,7 @@ async fn app() -> anyhow::Result<()> {
       .serve(app)
       .await?
   } else {
+    info!("🔓 SSL Disabled");
     info!("Komodo Periphery starting on http://{}", socket_addr);
     axum_server::bind(socket_addr).serve(app).await?
   }

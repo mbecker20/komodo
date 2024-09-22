@@ -164,6 +164,25 @@ database.address = "localhost:27017"
 # github_oauth.secret = "your_github_client_secret"
 
 ############
+# Security #
+############
+
+## Enable HTTPS server using the given key and cert.
+## Env: KOMODO_SSL_ENABLED, KOMODO_SSL_KEY, KOMODO_SSL_CERT.
+# ssl_enabled = true
+# ssl_key = "/etc/komodo/ssl/key.pem"
+# ssl_cert = "/etc/komodo/ssl/cert.pem"
+
+## Path to root CA certificate, or folder containing multiple root CA certs.
+## Env: KOMODO_PERIPHERY_CA_PEM_PATH
+# periphery_ca_pem_path = "/etc/komodo/ssl/ca.pem"
+
+## If providing CA signed certs to periphery,
+## can disable accepting self signed SSL certificates.
+## Env: KOMODO_PERIPHERY_ACCEPT_SELF_SIGNED_CERTS
+# periphery_accept_self_signed_certs = false
+
+############
 # WEBHOOKS #
 ############
 

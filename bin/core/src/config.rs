@@ -185,11 +185,14 @@ pub fn core_config() -> &'static CoreConfig {
       ssl_enabled: env.komodo_ssl_enabled.unwrap_or(config.ssl_enabled),
       ssl_key: env.komodo_ssl_key.unwrap_or(config.ssl_key),
       ssl_cert: env.komodo_ssl_cert.unwrap_or(config.ssl_cert),
+      periphery_accept_self_signed_certs: env.komodo_periphery_accept_self_signed_certs.unwrap_or(config.periphery_accept_self_signed_certs),
+      periphery_ca_pem_path: env.komodo_periphery_ca_pem_path.unwrap_or(config.periphery_ca_pem_path),
 
       // These can't be overridden on env
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,
+      
     }
   })
 }
