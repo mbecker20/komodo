@@ -174,9 +174,17 @@ database.address = "localhost:27017"
 ############
 
 ## Enable HTTPS server using the given key and cert.
-## Env: KOMODO_SSL_ENABLED, KOMODO_SSL_KEY, KOMODO_SSL_CERT.
+## Env: KOMODO_SSL_ENABLED
 # ssl_enabled = true
+
+## Path to the ssl key.
+## Env: KOMODO_SSL_KEY
+## Default: /etc/komodo/ssl/key.pem
 # ssl_key = "/etc/komodo/ssl/key.pem"
+
+## Path to the ssl cert.
+## Env: KOMODO_SSL_CERT
+## Default: /etc/komodo/ssl/cert.pem
 # ssl_cert = "/etc/komodo/ssl/cert.pem"
 
 ## Path to root CA certificate, or folder containing multiple root CA certs.

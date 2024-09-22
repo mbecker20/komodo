@@ -91,7 +91,7 @@ async fn generate_self_signed_ssl_certs() {
   let key_path = &config.ssl_key.display();
   let cert_path = &config.ssl_cert.display();
 
-  let command = format!("openssl req -x509 -newkey rsa:4096 -keyout {key_path} -out {cert_path} -sha256 -days 3650 -nodes -subj \"/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname\"");
+  let command = format!("openssl req -x509 -newkey rsa:4096 -keyout {key_path} -out {cert_path} -sha256 -days 3650 -nodes -subj \"/C=XX/CN=periphery\"");
   let log = run_command::async_run_command(&command).await;
 
   if log.success() {

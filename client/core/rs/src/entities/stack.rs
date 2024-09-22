@@ -11,7 +11,7 @@ use typeshare::typeshare;
 use super::{
   docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  to_komodo_name, EnvironmentVar,
+  to_komodo_name, EnvironmentVar, FileContents,
 };
 
 #[typeshare]
@@ -143,7 +143,7 @@ pub struct StackInfo {
   /// Deployed commit message, or null. Only for repo based stacks
   pub deployed_message: Option<String>,
   /// The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack.
-  pub deployed_contents: Option<Vec<ComposeContents>>,
+  pub deployed_contents: Option<Vec<FileContents>>,
   /// The deployed service names.
   /// This is updated whenever it is empty, or deployed contents is updated.
   pub deployed_services: Option<Vec<StackServiceNames>>,
@@ -156,9 +156,9 @@ pub struct StackInfo {
   /// The remote compose file contents, whether on host or in repo.
   /// This is updated whenever Komodo refreshes the stack cache.
   /// It will be empty if the file is defined directly in the stack config.
-  pub remote_contents: Option<Vec<ComposeContents>>,
+  pub remote_contents: Option<Vec<FileContents>>,
   /// If there was an error in getting the remote contents, it will be here.
-  pub remote_errors: Option<Vec<ComposeContents>>,
+  pub remote_errors: Option<Vec<FileContents>>,
 
   /// Latest commit hash, or null
   pub latest_hash: Option<String>,
@@ -433,15 +433,6 @@ pub struct ComposeProject {
   pub status: Option<String>,
   /// The compose files included in the project.
   pub compose_files: Vec<String>,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ComposeContents {
-  /// The path of the file on the host
-  pub path: String,
-  /// The contents of the file
-  pub contents: String,
 }
 
 #[typeshare]

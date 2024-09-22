@@ -61,6 +61,8 @@ impl super::KomodoResource for ResourceSync {
         last_sync_ts: resource_sync.info.last_sync_ts,
         last_sync_hash: resource_sync.info.last_sync_hash,
         last_sync_message: resource_sync.info.last_sync_message,
+        files_on_host: resource_sync.config.files_on_host,
+        resource_path: resource_sync.config.resource_path,
         state,
       },
     }

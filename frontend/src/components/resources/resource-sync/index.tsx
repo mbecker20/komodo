@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useLocalStorage, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
 import { Clock, FolderSync } from "lucide-react";
@@ -6,21 +6,27 @@ import { DeleteResource, NewResource } from "../common";
 import { ResourceSyncTable } from "./table";
 import { Types } from "@komodo/client";
 import { CommitSync, ExecuteSync, RefreshSync } from "./actions";
-import { PendingOrConfig } from "./pending-or-config";
+import { ResourceSyncPending } from "./pending";
 import {
   resource_sync_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
-import { cn } from "@lib/utils";
+import { cn, sync_no_changes } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { fmt_date } from "@lib/formatting";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StatusBadge } from "@components/util";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
+import { ResourceSyncConfig } from "./config";
+import { ResourceSyncInfo } from "./info";
 
-const useResourceSync = (id?: string) =>
+export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
+
+export const useFullResourceSync = (id: string) =>
+  useRead("GetResourceSync", { sync: id }, { refetchInterval: 5000 }).data;
 
 const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useResourceSync(id)?.info.state;
@@ -28,6 +34,45 @@ const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
     resource_sync_state_intention(state)
   );
   return <FolderSync className={cn(`w-${size} h-${size}`, state && color)} />;
+};
+
+const ConfigInfoPending = ({ id }: { id: string }) => {
+  const [view, setView] = useLocalStorage("sync-tabs-v1", "Config");
+  const sync = useFullResourceSync(id);
+
+  const pendingDisabled = !sync || sync_no_changes(sync);
+  const currentView = view === "Pending" && pendingDisabled ? "Config" : view;
+
+  const title = (
+    <TabsList className="justify-start w-fit">
+      <TabsTrigger value="Config" className="w-[110px]">
+        Config
+      </TabsTrigger>
+      <TabsTrigger value="Info" className="w-[110px]">
+        Info
+      </TabsTrigger>
+      <TabsTrigger
+        value="Services"
+        className="w-[110px]"
+        disabled={pendingDisabled}
+      >
+        Pending
+      </TabsTrigger>
+    </TabsList>
+  );
+  return (
+    <Tabs value={currentView} onValueChange={setView} className="grid gap-4">
+      <TabsContent value="Config">
+        <ResourceSyncConfig id={id} titleOther={title} />
+      </TabsContent>
+      <TabsContent value="Info">
+        <ResourceSyncInfo id={id} titleOther={title} />
+      </TabsContent>
+      <TabsContent value="Services">
+        <ResourceSyncPending id={id} titleOther={title} />
+      </TabsContent>
+    </Tabs>
+  );
 };
 
 export const ResourceSyncComponents: RequiredResourceComponents = {
@@ -128,7 +173,7 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: PendingOrConfig,
+  Config: ConfigInfoPending,
 
   DangerZone: ({ id }) => <DeleteResource type="ResourceSync" id={id} />,
 };

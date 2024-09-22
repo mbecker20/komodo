@@ -32,6 +32,7 @@ use crate::{
       deploy::{
         build_deploy_cache, deploy_from_cache, SyncDeployParams,
       },
+      remote::RemoteResources,
       resource::{
         get_updates_for_execution, AllResourcesById, ResourceSync,
       },
@@ -57,10 +58,15 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Send update here for FE to recheck action state
     update_update(update.clone()).await?;
 
-    let (res, logs, hash, message) =
-      crate::helpers::sync::remote::get_remote_resources(&sync)
-        .await
-        .context("failed to get remote resources")?;
+    let RemoteResources {
+      resources: res,
+      logs,
+      hash,
+      message,
+      ..
+    } = crate::helpers::sync::remote::get_remote_resources(&sync)
+      .await
+      .context("failed to get remote resources")?;
 
     update.logs.extend(logs);
     update_update(update.clone()).await?;

@@ -1,8 +1,6 @@
 import { useRead } from "@lib/hooks";
-import { sanitizeOnlySpan, sync_no_changes } from "@lib/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
-import { useState } from "react";
-import { ResourceSyncConfig } from "./config";
+import { sanitizeOnlySpan } from "@lib/utils";
+import { ReactNode } from "react";
 import { Section } from "@components/layouts";
 import { Types } from "@komodo/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
@@ -23,77 +21,55 @@ const PENDING_TYPE_KEYS: Array<[string, string]> = [
   ["User Group", "user_group_updates"],
 ];
 
-export const PendingOrConfig = ({ id }: { id: string }) => {
-  const [view, setView] = useState("Pending");
-
+export const ResourceSyncPending = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
   const sync = useRead(
     "GetResourceSync",
     { sync: id },
     { refetchInterval: 5000 }
   ).data;
-
-  const pendingDisabled = !sync || sync_no_changes(sync);
-  const currentView = view === "Pending" && pendingDisabled ? "Config" : view;
-
   const pending = sync?.info?.pending;
-
-  const tabsList = (
-    <TabsList className="justify-start w-fit">
-      <TabsTrigger
-        value="Pending"
-        className="w-[110px]"
-        disabled={pendingDisabled}
-      >
-        Pending
-      </TabsTrigger>
-      <TabsTrigger value="Config" className="w-[110px]">
-        Config
-      </TabsTrigger>
-    </TabsList>
-  );
   return (
-    <Tabs value={currentView} onValueChange={setView} className="grid gap-4">
-      <TabsContent value="Config">
-        <ResourceSyncConfig id={id} titleOther={tabsList} />
-      </TabsContent>
-      <TabsContent value="Pending">
-        <Section titleOther={tabsList}>
-          {pending?.hash && pending.message && (
-            <Card>
-              <div className="flex items-center gap-4 px-8 py-4">
-                <div className="text-muted-foreground">Latest Commit</div>
-                <div className="text-muted-foreground">|</div>
-                <div>{pending.hash}</div>
-                <div className="text-muted-foreground">|</div>
-                <div>{pending.message}</div>
-              </div>
-            </Card>
-          )}
-          {pending?.data.type === "Ok" &&
-            PENDING_TYPE_KEYS.map(([type, key]) => (
-              <PendingView
-                key={type}
-                type={type}
-                pending={pending.data.data[key]}
-              />
-            ))}
-          {pending?.data.type === "Err" && (
-            <Card>
-              <CardHeader className="flex items-center justify-between gap-4">
-                <CardTitle>Pending Error</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre
-                  dangerouslySetInnerHTML={{
-                    __html: sanitizeOnlySpan(pending.data.data.message),
-                  }}
-                />
-              </CardContent>
-            </Card>
-          )}
-        </Section>
-      </TabsContent>
-    </Tabs>
+    <Section titleOther={titleOther}>
+      {pending?.hash && pending.message && (
+        <Card>
+          <div className="flex items-center gap-4 px-8 py-4">
+            <div className="text-muted-foreground">Latest Commit</div>
+            <div className="text-muted-foreground">|</div>
+            <div>{pending.hash}</div>
+            <div className="text-muted-foreground">|</div>
+            <div>{pending.message}</div>
+          </div>
+        </Card>
+      )}
+      {pending?.data.type === "Ok" &&
+        PENDING_TYPE_KEYS.map(([type, key]) => (
+          <PendingView
+            key={type}
+            type={type}
+            pending={pending.data.data[key]}
+          />
+        ))}
+      {pending?.data.type === "Err" && (
+        <Card>
+          <CardHeader className="flex items-center justify-between gap-4">
+            <CardTitle>Pending Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre
+              dangerouslySetInnerHTML={{
+                __html: sanitizeOnlySpan(pending.data.data.message),
+              }}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </Section>
   );
 };
 

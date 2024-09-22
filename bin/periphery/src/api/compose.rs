@@ -4,9 +4,7 @@ use anyhow::{anyhow, Context};
 use command::run_komodo_command;
 use formatting::format_serror;
 use komodo_client::entities::{
-  stack::{ComposeContents, ComposeProject},
-  to_komodo_name,
-  update::Log,
+  stack::ComposeProject, to_komodo_name, update::Log, FileContents,
 };
 use periphery_client::api::compose::*;
 use resolver_api::Resolve;
@@ -111,13 +109,13 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
         )
       }) {
         Ok(contents) => {
-          res.contents.push(ComposeContents {
+          res.contents.push(FileContents {
             path: full_path.display().to_string(),
             contents,
           });
         }
         Err(e) => {
-          res.errors.push(ComposeContents {
+          res.errors.push(FileContents {
             path: full_path.display().to_string(),
             contents: format_serror(&e.into()),
           });

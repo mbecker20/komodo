@@ -7,10 +7,10 @@ use komodo_client::{
     komodo_timestamp,
     permission::PermissionLevel,
     server::ServerState,
-    stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
+    stack::{PartialStackConfig, Stack, StackInfo},
     update::Update,
     user::User,
-    NoData, Operation,
+    FileContents, NoData, Operation,
   },
 };
 use mungos::{
@@ -31,7 +31,7 @@ use crate::{
     periphery_client,
     query::get_server_with_state,
     stack::{
-      remote::get_remote_compose_contents,
+      remote::{get_remote_compose_contents, RemoteComposeContents},
       services::extract_services_into_res,
     },
     update::{add_update, make_update},
@@ -195,7 +195,7 @@ impl Resolve<RefreshStackCache, User> for State {
               Ok(res) => res,
               Err(e) => GetComposeContentsOnHostResponse {
                 contents: Default::default(),
-                errors: vec![ComposeContents {
+                errors: vec![FileContents {
                   path: stack.config.run_directory.clone(),
                   contents: format_serror(&e.into()),
                 }],
@@ -226,16 +226,17 @@ impl Resolve<RefreshStackCache, User> for State {
       // ================
       // REPO BASED STACK
       // ================
-      let (
-        remote_contents,
-        remote_errors,
-        _,
-        latest_hash,
-        latest_message,
-      ) =
+      let RemoteComposeContents {
+        successful: remote_contents,
+        errored: remote_errors,
+        hash: latest_hash,
+        message: latest_message,
+        ..
+      } =
         get_remote_compose_contents(&stack, Some(&mut missing_files))
           .await
           .context("failed to clone remote compose file")?;
+
       let project_name = stack.project_name(true);
 
       let mut services = Vec::new();

@@ -2413,7 +2413,7 @@ export interface StackConfig {
 	env_file_path: string;
 }
 
-export interface ComposeContents {
+export interface FileContents {
 	/** The path of the file on the host */
 	path: string;
 	/** The contents of the file */
@@ -2462,7 +2462,7 @@ export interface StackInfo {
 	/** Deployed commit message, or null. Only for repo based stacks */
 	deployed_message?: string;
 	/** The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack. */
-	deployed_contents?: ComposeContents[];
+	deployed_contents?: FileContents[];
 	/**
 	 * The deployed service names.
 	 * This is updated whenever it is empty, or deployed contents is updated.
@@ -2478,9 +2478,9 @@ export interface StackInfo {
 	 * This is updated whenever Komodo refreshes the stack cache.
 	 * It will be empty if the file is defined directly in the stack config.
 	 */
-	remote_contents?: ComposeContents[];
+	remote_contents?: FileContents[];
 	/** If there was an error in getting the remote contents, it will be here. */
-	remote_errors?: ComposeContents[];
+	remote_errors?: FileContents[];
 	/** Latest commit hash, or null */
 	latest_hash?: string;
 	/** Latest commit message, or null */
@@ -2674,6 +2674,10 @@ export interface ResourceSyncInfo {
 	last_sync_message?: string;
 	/** Readable logs of pending updates */
 	pending: PendingSyncUpdates;
+	/** The current sync files */
+	remote_contents: FileContents[];
+	/** Any read errors in files by path */
+	remote_errors: FileContents[];
 }
 
 export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
@@ -2700,7 +2704,11 @@ export interface ResourceSyncListItemInfo {
 	last_sync_hash?: string;
 	/** Commit message of last sync, or empty string */
 	last_sync_message?: string;
-	/** The git provider domain */
+	/** Whether sync is `files_on_host` mode. */
+	files_on_host: boolean;
+	/** Resource path to the files. */
+	resource_path: string;
+	/** The git provider domain. */
 	git_provider: string;
 	/** The Github repo used as the source of the sync resources */
 	repo: string;

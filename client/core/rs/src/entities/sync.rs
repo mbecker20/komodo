@@ -8,7 +8,7 @@ use typeshare::typeshare;
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
-  I64,
+  FileContents, I64,
 };
 
 #[typeshare]
@@ -24,7 +24,11 @@ pub struct ResourceSyncListItemInfo {
   pub last_sync_hash: Option<String>,
   /// Commit message of last sync, or empty string
   pub last_sync_message: Option<String>,
-  /// The git provider domain
+  /// Whether sync is `files_on_host` mode.
+  pub files_on_host: bool,
+  /// Resource path to the files.
+  pub resource_path: String,
+  /// The git provider domain.
   pub git_provider: String,
   /// The Github repo used as the source of the sync resources
   pub repo: String,
@@ -67,6 +71,10 @@ pub struct ResourceSyncInfo {
   pub last_sync_message: Option<String>,
   /// Readable logs of pending updates
   pub pending: PendingSyncUpdates,
+  /// The current sync files
+  pub remote_contents: Vec<FileContents>,
+  /// Any read errors in files by path
+  pub remote_errors: Vec<FileContents>,
 }
 
 #[typeshare]

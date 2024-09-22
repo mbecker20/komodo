@@ -45,6 +45,7 @@ use crate::{
     query::get_id_to_tags,
     sync::{
       deploy::SyncDeployParams,
+      remote::RemoteResources,
       resource::{get_updates_for_view, AllResourcesById},
     },
     update::{add_update, make_update},
@@ -118,17 +119,27 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
   ) -> anyhow::Result<ResourceSync> {
     // Even though this is a write request, this doesn't change any config. Anyone that can execute the
     // sync should be able to do this.
-    let sync = resource::get_check_permissions::<
+    let mut sync = resource::get_check_permissions::<
       entities::sync::ResourceSync,
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
 
     let res = async {
-      let (res, _, hash, message) =
-        crate::helpers::sync::remote::get_remote_resources(&sync)
-          .await
-          .context("failed to get remote resources")?;
-      let resources = res?;
+      let RemoteResources {
+        resources,
+        files,
+        file_errors,
+        hash,
+        message,
+        ..
+      } = crate::helpers::sync::remote::get_remote_resources(&sync)
+        .await
+        .context("failed to get remote resources")?;
+
+      sync.info.remote_contents = files;
+      sync.info.remote_errors = file_errors;
+
+      let resources = resources?;
 
       let id_to_tags = get_id_to_tags(None).await?;
       let all_resources = AllResourcesById::load().await?;
@@ -259,22 +270,20 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           .context("failed to get user group updates")?,
         deploy_updates,
       };
-      anyhow::Ok((hash, message, data))
+      let has_updates = !data.no_updates();
+      anyhow::Ok((
+        PendingSyncUpdates {
+          hash,
+          message,
+          data: PendingSyncUpdatesData::Ok(data),
+        },
+        has_updates,
+      ))
     }
     .await;
 
     let (pending, has_updates) = match res {
-      Ok((hash, message, data)) => {
-        let has_updates = !data.no_updates();
-        (
-          PendingSyncUpdates {
-            hash,
-            message,
-            data: PendingSyncUpdatesData::Ok(data),
-          },
-          has_updates,
-        )
-      }
+      Ok((pending, has_updates)) => (pending, has_updates),
       Err(e) => (
         PendingSyncUpdates {
           hash: None,
@@ -289,13 +298,15 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       ),
     };
 
-    let pending = to_document(&pending)
+    sync.info.pending = pending;
+
+    let info = to_document(&sync.info)
       .context("failed to serialize pending to document")?;
 
     update_one_by_id(
       &db_client().await.resource_syncs,
       &sync.id,
-      doc! { "$set": { "info.pending": pending } },
+      doc! { "$set": { "info": info } },
       None,
     )
     .await?;

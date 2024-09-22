@@ -6,9 +6,7 @@ use std::{
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use komodo_client::entities::{
-  stack::{ComposeContents, Stack},
-  update::Log,
-  CloneArgs,
+  stack::Stack, update::Log, CloneArgs, FileContents,
 };
 
 use crate::{
@@ -16,27 +14,24 @@ use crate::{
   helpers::{git_token, random_string},
 };
 
+pub struct RemoteComposeContents {
+  pub successful: Vec<FileContents>,
+  pub errored: Vec<FileContents>,
+  pub hash: Option<String>,
+  pub message: Option<String>,
+  pub _logs: Vec<Log>,
+}
+
 /// Returns Result<(read paths, error paths, logs, short hash, commit message)>
 pub async fn get_remote_compose_contents(
   stack: &Stack,
   // Collect any files which are missing in the repo.
   mut missing_files: Option<&mut Vec<String>>,
-) -> anyhow::Result<(
-  // Successful contents
-  Vec<ComposeContents>,
-  // error contents
-  Vec<ComposeContents>,
-  // logs
-  Vec<Log>,
-  // commit short hash
-  Option<String>,
-  // commit message
-  Option<String>,
-)> {
+) -> anyhow::Result<RemoteComposeContents> {
   let repo_path =
     core_config().repo_directory.join(random_string(10));
 
-  let (logs, hash, message) = clone_remote_repo(&repo_path, stack)
+  let (_logs, hash, message) = clone_remote_repo(&repo_path, stack)
     .await
     .context("failed to clone stack repo")?;
 
@@ -44,8 +39,8 @@ pub async fn get_remote_compose_contents(
   // This will remove any intermediate '/./' which can be a problem for some OS.
   let run_directory = run_directory.components().collect::<PathBuf>();
 
-  let mut oks = Vec::new();
-  let mut errs = Vec::new();
+  let mut successful = Vec::new();
+  let mut errored = Vec::new();
 
   for path in stack.file_paths() {
     let file_path = run_directory.join(path);
@@ -58,11 +53,11 @@ pub async fn get_remote_compose_contents(
     match fs::read_to_string(&file_path).with_context(|| {
       format!("failed to read file contents from {file_path:?}")
     }) {
-      Ok(contents) => oks.push(ComposeContents {
+      Ok(contents) => successful.push(FileContents {
         path: path.to_string(),
         contents,
       }),
-      Err(e) => errs.push(ComposeContents {
+      Err(e) => errored.push(FileContents {
         path: path.to_string(),
         contents: format_serror(&e.into()),
       }),
@@ -75,7 +70,13 @@ pub async fn get_remote_compose_contents(
     }
   }
 
-  Ok((oks, errs, logs, hash, message))
+  Ok(RemoteComposeContents {
+    successful,
+    errored,
+    hash,
+    message,
+    _logs,
+  })
 }
 
 /// Returns (logs, hash, message)

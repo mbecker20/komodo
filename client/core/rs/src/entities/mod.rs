@@ -509,6 +509,15 @@ pub struct LatestCommit {
 }
 
 #[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct FileContents {
+  /// The path of the file on the host
+  pub path: String,
+  /// The contents of the file
+  pub contents: String,
+}
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CloneArgs {
   /// Resource name (eg Build name, Repo name)

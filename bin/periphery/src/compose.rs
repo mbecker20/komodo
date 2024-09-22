@@ -7,10 +7,10 @@ use git::write_environment_file;
 use komodo_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
-  stack::{ComposeContents, Stack},
+  stack::Stack,
   to_komodo_name,
   update::Log,
-  CloneArgs,
+  CloneArgs, FileContents,
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
@@ -91,7 +91,7 @@ pub async fn compose_up(
             .logs
             .push(Log::error("read compose file", error.clone()));
           // This should only happen for repo stacks, ie remote error
-          res.remote_errors.push(ComposeContents {
+          res.remote_errors.push(FileContents {
             path: full_path.display().to_string(),
             contents: error,
           });
@@ -100,7 +100,7 @@ pub async fn compose_up(
         ));
         }
       };
-    res.file_contents.push(ComposeContents {
+    res.file_contents.push(FileContents {
       path: full_path.display().to_string(),
       contents: file_contents,
     });
@@ -316,7 +316,7 @@ async fn write_stack(
               res
                 .logs
                 .push(Log::error("no git token", error.clone()));
-              res.remote_errors.push(ComposeContents {
+              res.remote_errors.push(FileContents {
                 path: Default::default(),
                 contents: error,
               });
@@ -360,7 +360,7 @@ async fn write_stack(
           &e.context("failed to clone stack repo").into(),
         );
         res.logs.push(Log::error("clone stack repo", error.clone()));
-        res.remote_errors.push(ComposeContents {
+        res.remote_errors.push(FileContents {
           path: Default::default(),
           contents: error,
         });

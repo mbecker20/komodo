@@ -3,6 +3,7 @@ use std::{fs, path::PathBuf};
 use anyhow::{anyhow, Context};
 use komodo_client::entities::{
   sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
+  FileContents,
 };
 
 use crate::{
@@ -11,16 +12,18 @@ use crate::{
   state::resource_sync_lock_cache,
 };
 
+pub struct RemoteResources {
+  pub resources: anyhow::Result<ResourcesToml>,
+  pub files: Vec<FileContents>,
+  pub file_errors: Vec<FileContents>,
+  pub logs: Vec<Log>,
+  pub hash: Option<String>,
+  pub message: Option<String>,
+}
+
 pub async fn get_remote_resources(
   sync: &ResourceSync,
-) -> anyhow::Result<(
-  anyhow::Result<ResourcesToml>,
-  Vec<Log>,
-  // commit short hash
-  Option<String>,
-  // commit message
-  Option<String>,
-)> {
+) -> anyhow::Result<RemoteResources> {
   if sync.config.files_on_host {
     // =============
     // FILES ON HOST
@@ -30,13 +33,22 @@ pub async fn get_remote_resources(
       .resource_path
       .parse::<PathBuf>()
       .context("Resource path is not valid path")?;
-    let mut logs = Vec::new();
-    let res =
-      super::file::read_resources(&path).map(|(resources, log)| {
-        logs.push(log);
-        resources
-      });
-    return Ok((res, logs, None, None));
+    let (mut logs, mut files, mut file_errors) =
+      (Vec::new(), Vec::new(), Vec::new());
+    let res = super::file::read_resources(
+      &path,
+      &mut logs,
+      &mut files,
+      &mut file_errors,
+    );
+    return Ok(RemoteResources {
+      resources: res,
+      files,
+      file_errors,
+      logs,
+      hash: None,
+      message: None,
+    });
   } else if !sync.config.file_contents.is_empty() {
     // ==========
     // UI DEFINED
@@ -44,15 +56,20 @@ pub async fn get_remote_resources(
     let res =
       toml::from_str::<ResourcesToml>(&sync.config.file_contents)
         .context("Failed to parse UI defined resources");
-    return Ok((
-      res,
-      vec![Log::simple(
+    return Ok(RemoteResources {
+      resources: res,
+      files: vec![FileContents {
+        path: "database file".to_string(),
+        contents: sync.config.file_contents.clone(),
+      }],
+      file_errors: vec![],
+      logs: vec![Log::simple(
         "Read from database",
         "Resources added from database file".to_string(),
       )],
-      None,
-      None,
-    ));
+      hash: None,
+      message: None,
+    });
   }
 
   // ===============
@@ -119,11 +136,12 @@ pub async fn get_remote_resources(
 
   let resource_path = repo_path.join(&sync.config.resource_path);
 
-  let res = super::file::read_resources(&resource_path).map(
-    |(resources, log)| {
-      logs.push(log);
-      resources
-    },
+  let (mut files, mut file_errors) = (Vec::new(), Vec::new());
+  let res = super::file::read_resources(
+    &resource_path,
+    &mut logs,
+    &mut files,
+    &mut file_errors,
   );
 
   if repo_path.exists() {
@@ -132,5 +150,12 @@ pub async fn get_remote_resources(
     }
   }
 
-  Ok((res, logs, Some(hash), Some(message)))
+  Ok(RemoteResources {
+    resources: res,
+    files,
+    file_errors,
+    logs,
+    hash: Some(hash),
+    message: Some(message),
+  })
 }

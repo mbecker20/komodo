@@ -1,10 +1,12 @@
 use anyhow::Context;
-use komodo_client::entities::stack::{
-  ComposeContents, ComposeFile, ComposeService, Stack,
-  StackServiceNames,
+use komodo_client::entities::{
+  stack::{ComposeFile, ComposeService, Stack, StackServiceNames},
+  FileContents,
 };
 
 use crate::helpers::stack::remote::get_remote_compose_contents;
+
+use super::remote::RemoteComposeContents;
 
 /// Passing fresh will re-extract services from compose file, whether local or remote (repo)
 pub async fn extract_services_from_stack(
@@ -20,29 +22,32 @@ pub async fn extract_services_from_stack(
   }
 
   let compose_contents = if stack.config.file_contents.is_empty() {
-    let (contents, errors, _, _, _) =
-      get_remote_compose_contents(stack, None).await.context(
-        "failed to get remote compose files to extract services",
-      )?;
-    if !errors.is_empty() {
+    let RemoteComposeContents {
+      successful,
+      errored,
+      ..
+    } = get_remote_compose_contents(stack, None).await.context(
+      "failed to get remote compose files to extract services",
+    )?;
+    if !errored.is_empty() {
       let mut e = anyhow::Error::msg("Trace root");
-      for err in errors {
+      for err in errored {
         e = e.context(format!("{}: {}", err.path, err.contents));
       }
       return Err(
         e.context("Failed to read one or more remote compose files"),
       );
     }
-    contents
+    successful
   } else {
-    vec![ComposeContents {
+    vec![FileContents {
       path: String::from("compose.yaml"),
       contents: stack.config.file_contents.clone(),
     }]
   };
 
   let mut res = Vec::new();
-  for ComposeContents { path, contents } in &compose_contents {
+  for FileContents { path, contents } in &compose_contents {
     extract_services_into_res(
       &stack.project_name(true),
       contents,
