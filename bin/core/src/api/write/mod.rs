@@ -124,6 +124,7 @@ pub enum WriteRequest {
   DeleteResourceSync(DeleteResourceSync),
   UpdateResourceSync(UpdateResourceSync),
   RefreshResourceSyncPending(RefreshResourceSyncPending),
+  CommitSync(CommitSync),
   CreateSyncWebhook(CreateSyncWebhook),
   DeleteSyncWebhook(DeleteSyncWebhook),
 

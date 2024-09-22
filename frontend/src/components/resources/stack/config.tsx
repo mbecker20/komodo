@@ -180,7 +180,7 @@ export const StackConfig = ({
                     value={file_contents}
                     disabled={disabled}
                     onChange={(e) => set({ file_contents: e.target.value })}
-                    className="min-h-[300px] h-fit"
+                    className="min-h-[400px] h-fit"
                     placeholder="Paste compose file contents"
                     spellCheck={false}
                     onKeyDown={(e) => {

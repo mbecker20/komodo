@@ -2610,6 +2610,26 @@ export interface ResourceSyncConfig {
 	 */
 	git_account?: string;
 	/**
+	 * Files are available on the Komodo Core host.
+	 * Specify the file / folder with [ResourceSyncConfig::resource_path].
+	 */
+	files_on_host?: boolean;
+	/** Manage the file contents in the UI. */
+	file_contents?: string;
+	/**
+	 * Enable "pushes" to the file,
+	 * which exports resources matching tags to single file.
+	 * - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
+	 * - If using `file_contents`, it is stored in the database.
+	 * - If using Git Repo, it will commit the resource file
+	 */
+	managed?: boolean;
+	/**
+	 * When using `managed` resource sync, will only export resources
+	 * matching all of the given tags. If none, will match all resources.
+	 */
+	match_tags?: string[];
+	/**
 	 * The path of the resource file(s) to sync, relative to the repo root.
 	 * Can be a specific file, or a directory containing multiple files / folders.
 	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
@@ -2795,6 +2815,7 @@ export enum Operation {
 	CreateResourceSync = "CreateResourceSync",
 	UpdateResourceSync = "UpdateResourceSync",
 	DeleteResourceSync = "DeleteResourceSync",
+	CommitSync = "CommitSync",
 	RunSync = "RunSync",
 	CreateStack = "CreateStack",
 	UpdateStack = "UpdateStack",
@@ -5877,8 +5898,18 @@ export interface UpdateResourceSync {
 	config: _PartialResourceSyncConfig;
 }
 
-/** Trigger a refresh of the computed diff logs for view. */
+/** Trigger a refresh of the computed diff logs for view. Response: [ResourceSync] */
 export interface RefreshResourceSyncPending {
+	/** Id or name */
+	sync: string;
+}
+
+/**
+ * Commits matching resources updated configuration to the target resource sync. Response: [Update]
+ * 
+ * Note. Will fail if the Sync is not `managed`.
+ */
+export interface CommitSync {
 	/** Id or name */
 	sync: string;
 }
@@ -6657,6 +6688,7 @@ export type WriteRequest =
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }
 	| { type: "UpdateResourceSync", params: UpdateResourceSync }
 	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
+	| { type: "CommitSync", params: CommitSync }
 	| { type: "CreateSyncWebhook", params: CreateSyncWebhook }
 	| { type: "DeleteSyncWebhook", params: DeleteSyncWebhook }
 	| { type: "CreateStack", params: CreateStack }

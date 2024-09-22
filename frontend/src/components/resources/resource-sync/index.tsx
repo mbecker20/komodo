@@ -5,7 +5,7 @@ import { Clock, FolderSync } from "lucide-react";
 import { DeleteResource, NewResource } from "../common";
 import { ResourceSyncTable } from "./table";
 import { Types } from "@komodo/client";
-import { ExecuteSync, RefreshSync } from "./actions";
+import { CommitSync, ExecuteSync, RefreshSync } from "./actions";
 import { PendingOrConfig } from "./pending-or-config";
 import {
   resource_sync_state_intention,
@@ -124,7 +124,7 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
     },
   },
 
-  Actions: { RefreshSync, ExecuteSync },
+  Actions: { RefreshSync, ExecuteSync, CommitSync },
 
   Page: {},
 

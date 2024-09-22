@@ -6,12 +6,14 @@ import {
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
-import { ReactNode, useState } from "react";
+import { createRef, ReactNode, useState } from "react";
 import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
-import { Ban, CirclePlus } from "lucide-react";
+import { Ban, ChevronDown, ChevronUp, CirclePlus } from "lucide-react";
+import { Button } from "@ui/button";
+import { Textarea } from "@ui/textarea";
 
 export const ResourceSyncConfig = ({
   id,
@@ -29,9 +31,20 @@ export const ResourceSyncConfig = ({
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.ResourceSyncConfig>>({});
   const { mutateAsync } = useWrite("UpdateResourceSync");
+  const [fileContentsOpen, setFileContentsOpen] = useState(false);
+  const fileContentsRef = createRef<HTMLTextAreaElement>();
+
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
+  const files_on_host = update.files_on_host ?? config.files_on_host;
+  const ui_defined =
+    !files_on_host && (update.file_contents ?? config.file_contents)
+      ? true
+      : false;
+  const repo_selected = update.repo ?? config.repo ? true : false;
+
+  const show_git = !files_on_host && !ui_defined;
 
   return (
     <Config
@@ -46,49 +59,119 @@ export const ResourceSyncConfig = ({
       components={{
         general: [
           {
+            label: "Resource File",
+            hidden: files_on_host,
+            description:
+              "Paste the resource file contents here, or use the git repo / files on host options.",
+            actions: (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-4"
+                onClick={() => setFileContentsOpen(!fileContentsOpen)}
+              >
+                {fileContentsOpen ? "Hide" : "Show"}
+                {fileContentsOpen ? (
+                  <ChevronUp className="w-4" />
+                ) : (
+                  <ChevronDown className="w-4" />
+                )}
+              </Button>
+            ),
+            contentHidden: !fileContentsOpen,
+            components: {
+              file_contents: (file_contents, set) => {
+                return (
+                  <Textarea
+                    ref={fileContentsRef}
+                    value={file_contents}
+                    disabled={disabled}
+                    onChange={(e) => set({ file_contents: e.target.value })}
+                    className="min-h-[400px] h-fit"
+                    placeholder="Paste resource file contents"
+                    spellCheck={false}
+                    onKeyDown={(e) => {
+                      if (e.key === "Tab") {
+                        e.preventDefault();
+                        if (!fileContentsRef.current) return;
+
+                        const start = fileContentsRef.current.selectionStart;
+                        const end = fileContentsRef.current.selectionEnd;
+
+                        const SPACE_COUNT = 4;
+
+                        // set textarea value to: text before caret + tab + text after caret
+                        fileContentsRef.current.value =
+                          fileContentsRef.current.value.substring(0, start) +
+                          // Use four spaces for indent
+                          " ".repeat(SPACE_COUNT) +
+                          fileContentsRef.current.value.substring(end);
+
+                        // put caret at right position again
+                        fileContentsRef.current.selectionStart =
+                          fileContentsRef.current.selectionEnd =
+                            start + SPACE_COUNT;
+                      }
+                    }}
+                  />
+                );
+              },
+            },
+          },
+          {
             label: "General",
             components: {
-              git_provider: (provider, set) => {
-                const https = update.git_https ?? config.git_https;
-                return (
-                  <ProviderSelectorConfig
-                    account_type="git"
-                    selected={provider}
-                    disabled={disabled}
-                    onSelect={(git_provider) => set({ git_provider })}
-                    https={https}
-                    onHttpsSwitch={() => set({ git_https: !https })}
-                  />
-                );
+              files_on_host: {
+                label: "Files on Server",
+                boldLabel: true,
+                description:
+                  "Manage the sync files on server yourself. Just configure the path to your folder / file.",
               },
-              git_account: (value, set) => {
-                return (
-                  <AccountSelectorConfig
-                    account_type="git"
-                    type="None"
-                    provider={update.git_provider ?? config.git_provider}
-                    selected={value}
-                    onSelect={(git_account) => set({ git_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                );
-              },
-              repo: {
+              git_provider:
+                show_git &&
+                ((provider: string | undefined, set) => {
+                  const https = update.git_https ?? config.git_https;
+                  return (
+                    <ProviderSelectorConfig
+                      account_type="git"
+                      selected={provider}
+                      disabled={disabled}
+                      onSelect={(git_provider) => set({ git_provider })}
+                      https={https}
+                      onHttpsSwitch={() => set({ git_https: !https })}
+                    />
+                  );
+                }),
+              git_account:
+                show_git &&
+                ((value: string | undefined, set) => {
+                  return (
+                    <AccountSelectorConfig
+                      account_type="git"
+                      type="None"
+                      provider={update.git_provider ?? config.git_provider}
+                      selected={value}
+                      onSelect={(git_account) => set({ git_account })}
+                      disabled={disabled}
+                      placeholder="None"
+                    />
+                  );
+                }),
+              repo: show_git && {
                 placeholder: "Enter repo",
                 description:
                   "The repo path on the provider. {namespace}/{repo_name}",
               },
-              branch: {
+              branch: show_git && {
                 placeholder: "Enter branch",
                 description: "Select a custom branch, or default to 'main'.",
               },
-              commit: {
+              commit: show_git && {
                 placeholder: "Enter a specific commit hash. Optional.",
                 description:
                   "Switch to a specific hash after cloning the branch.",
               },
-              resource_path: {
+              resource_path: !ui_defined && {
                 placeholder: "./resources",
                 description:
                   "Provide the path to resource file / folder, relative to the root of the repo",
@@ -98,10 +181,16 @@ export const ResourceSyncConfig = ({
                 description:
                   "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
               },
+              managed: (files_on_host || ui_defined || !repo_selected) && {
+                label: "Managed",
+                description:
+                  "Enabled Managed mode / the 'Commit' button",
+              },
             },
           },
           {
             label: "Git Webhooks",
+            hidden: files_on_host || ui_defined,
             description:
               "Configure your repo provider to send webhooks to Komodo",
             components: {

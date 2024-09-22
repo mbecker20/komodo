@@ -797,6 +797,7 @@ pub enum Operation {
   CreateResourceSync,
   UpdateResourceSync,
   DeleteResourceSync,
+  CommitSync,
   RunSync,
 
   // stack

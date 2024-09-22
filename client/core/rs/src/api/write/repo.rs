@@ -95,6 +95,7 @@ pub struct UpdateRepo {
 #[response(NoData)]
 pub struct RefreshRepoCache {
   /// Id or name
+  #[serde(alias = "id", alias = "name")]
   pub repo: String,
 }
 

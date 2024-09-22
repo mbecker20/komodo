@@ -92,6 +92,7 @@ pub struct UpdateBuild {
 #[response(NoData)]
 pub struct RefreshBuildCache {
   /// Id or name
+  #[serde(alias = "id", alias = "name")]
   pub build: String,
 }
 

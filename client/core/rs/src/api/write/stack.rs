@@ -115,6 +115,7 @@ pub struct RenameStack {
 #[response(NoData)]
 pub struct RefreshStackCache {
   /// Id or name
+  #[serde(alias = "id", alias = "name")]
   pub stack: String,
 }
 

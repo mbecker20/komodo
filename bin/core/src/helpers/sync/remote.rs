@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::PathBuf};
 
 use anyhow::{anyhow, Context};
 use komodo_client::entities::{
@@ -17,10 +17,48 @@ pub async fn get_remote_resources(
   anyhow::Result<ResourcesToml>,
   Vec<Log>,
   // commit short hash
-  String,
+  Option<String>,
   // commit message
-  String,
+  Option<String>,
 )> {
+  if sync.config.files_on_host {
+    // =============
+    // FILES ON HOST
+    // =============
+    let path = sync
+      .config
+      .resource_path
+      .parse::<PathBuf>()
+      .context("Resource path is not valid path")?;
+    let mut logs = Vec::new();
+    let res =
+      super::file::read_resources(&path).map(|(resources, log)| {
+        logs.push(log);
+        resources
+      });
+    return Ok((res, logs, None, None));
+  } else if !sync.config.file_contents.is_empty() {
+    // ==========
+    // UI DEFINED
+    // ==========
+    let res =
+      toml::from_str::<ResourcesToml>(&sync.config.file_contents)
+        .context("Failed to parse UI defined resources");
+    return Ok((
+      res,
+      vec![Log::simple(
+        "Read from database",
+        "Resources added from database file".to_string(),
+      )],
+      None,
+      None,
+    ));
+  }
+
+  // ===============
+  // REPO BASED SYNC
+  // ===============
+
   let mut clone_args: CloneArgs = sync.into();
 
   let config = core_config();
@@ -90,5 +128,5 @@ pub async fn get_remote_resources(
     }
   }
 
-  Ok((res, logs, hash, message))
+  Ok((res, logs, Some(hash), Some(message)))
 }

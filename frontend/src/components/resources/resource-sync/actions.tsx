@@ -1,7 +1,8 @@
 import { ActionButton, ActionWithDialog } from "@components/util";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { sync_no_changes } from "@lib/utils";
-import { RefreshCcw, SquarePlay } from "lucide-react";
+import { useEditPermissions } from "@pages/resource";
+import { NotebookPen, RefreshCcw, SquarePlay } from "lucide-react";
 
 export const RefreshSync = ({ id }: { id: string }) => {
   const inv = useInvalidate();
@@ -41,6 +42,27 @@ export const ExecuteSync = ({ id }: { id: string }) => {
       onClick={() => mutate({ sync: id })}
       disabled={pending}
       loading={pending}
+    />
+  );
+};
+
+export const CommitSync = ({ id }: { id: string }) => {
+  const { mutate, isPending } = useWrite("CommitSync");
+  const sync = useRead("GetResourceSync", { sync: id }).data;
+  const { canWrite } = useEditPermissions({ type: "ResourceSync", id });
+
+  if (!canWrite) return null;
+
+  if (!sync || !sync.config?.managed || sync_no_changes(sync)) return null;
+
+  return (
+    <ActionWithDialog
+      name={sync.name}
+      title="Commit Sync"
+      icon={<NotebookPen className="w-4 h-4" />}
+      onClick={() => mutate({ sync: id })}
+      disabled={isPending}
+      loading={isPending}
     />
   );
 };

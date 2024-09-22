@@ -20,7 +20,7 @@ import { Button } from "@ui/button";
 import { AlertTriangle, ChevronLeft, Clapperboard, Link } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
-const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
+export const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
   const perms = useRead("GetPermissionLevel", { target: { type, id } }).data;
   const ui_write_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;

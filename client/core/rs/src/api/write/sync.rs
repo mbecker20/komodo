@@ -83,7 +83,7 @@ pub struct UpdateResourceSync {
 
 //
 
-/// Trigger a refresh of the computed diff logs for view.
+/// Trigger a refresh of the computed diff logs for view. Response: [ResourceSync]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -92,6 +92,24 @@ pub struct UpdateResourceSync {
 #[response(ResourceSync)]
 pub struct RefreshResourceSyncPending {
   /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub sync: String,
+}
+
+//
+
+/// Commits matching resources updated configuration to the target resource sync. Response: [Update]
+///
+/// Note. Will fail if the Sync is not `managed`.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(ResourceSync)]
+pub struct CommitSync {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
   pub sync: String,
 }
 

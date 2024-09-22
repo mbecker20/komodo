@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use komodo_client::{
-  api::write::*,
+  api::{read::ExportAllResourcesToToml, write::*},
   entities::{
     self,
     alert::{Alert, AlertData, SeverityLevel},
@@ -24,8 +24,9 @@ use komodo_client::{
       PendingSyncUpdatesData, PendingSyncUpdatesDataErr,
       PendingSyncUpdatesDataOk, ResourceSync,
     },
-    user::User,
-    NoData, ResourceTarget,
+    update::Log,
+    user::{sync_user, User},
+    NoData, Operation, ResourceTarget,
   },
 };
 use mungos::{
@@ -46,6 +47,7 @@ use crate::{
       deploy::SyncDeployParams,
       resource::{get_updates_for_view, AllResourcesById},
     },
+    update::{add_update, make_update},
   },
   resource,
   state::{db_client, github_client, State},
@@ -270,8 +272,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         let has_updates = !data.no_updates();
         (
           PendingSyncUpdates {
-            hash: Some(hash),
-            message: Some(message),
+            hash,
+            message,
             data: PendingSyncUpdatesData::Ok(data),
           },
           has_updates,
@@ -366,6 +368,94 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     });
 
     crate::resource::get::<ResourceSync>(&sync.id).await
+  }
+}
+
+impl Resolve<CommitSync, User> for State {
+  async fn resolve(
+    &self,
+    CommitSync { sync }: CommitSync,
+    user: User,
+  ) -> anyhow::Result<ResourceSync> {
+    let sync = resource::get_check_permissions::<
+      entities::sync::ResourceSync,
+    >(&sync, &user, PermissionLevel::Write)
+    .await?;
+
+    if !sync.config.managed {
+      return Err(anyhow!(
+        "Cannot commit to sync. Enabled 'managed' mode."
+      ));
+    }
+
+    let res = State
+      .resolve(
+        ExportAllResourcesToToml {
+          tags: sync.config.match_tags,
+        },
+        sync_user().to_owned(),
+      )
+      .await?;
+
+    let mut update = make_update(
+      ResourceTarget::ResourceSync(sync.id),
+      Operation::CommitSync,
+      &user,
+    );
+
+    if sync.config.files_on_host {
+      let path = sync
+        .config
+        .resource_path
+        .parse::<PathBuf>()
+        .context("Resource path is not valid file path")?;
+      if let Some(parent) = path.parent() {
+        let _ = tokio::fs::create_dir_all(&parent).await;
+      };
+      if let Err(e) =
+        tokio::fs::write(&sync.config.resource_path, &res.toml)
+          .await
+          .with_context(|| {
+            format!(
+              "Failed to write resource file to {}",
+              sync.config.resource_path
+            )
+          })
+      {
+        update.push_error_log(
+          "Write resource file",
+          format_serror(&e.into()),
+        );
+        update.finalize();
+        add_update(update).await?;
+        return resource::get::<ResourceSync>(&sync.name).await;
+      }
+    } else if let Err(e) = db_client()
+      .await
+      .resource_syncs
+      .update_one(
+        doc! { "name": &sync.name },
+        doc! { "$set": { "config.file_contents": &res.toml } },
+      )
+      .await
+      .context("failed to update file_contents on db")
+    {
+      update.push_error_log(
+        "Write resource to database",
+        format_serror(&e.into()),
+      );
+      update.finalize();
+      add_update(update).await?;
+      return resource::get::<ResourceSync>(&sync.name).await;
+    }
+
+    update
+      .logs
+      .push(Log::simple("Committed resources", res.toml));
+    update.finalize();
+    add_update(update).await?;
+
+    resource::get::<ResourceSync>(&sync.name).await
   }
 }
 
