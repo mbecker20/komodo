@@ -48,8 +48,8 @@ pub struct Env {
   pub komodo_passkey: Option<String>,
   /// Override `passkey` with file
   pub komodo_passkey_file: Option<PathBuf>,
-  /// Override `ensure_server`
-  pub komodo_ensure_server: Option<String>,
+  /// Override `first_server`
+  pub komodo_first_server: Option<String>,
   /// Override `frontend_path`
   pub komodo_frontend_path: Option<String>,
   /// Override `jwt_secret`
@@ -244,11 +244,10 @@ pub struct CoreConfig {
   #[serde(default)]
   pub ui_write_disabled: bool,
 
-  /// If defined, ensure an enabled server exists at this address.
-  /// Use with All In One compose.
-  /// Example: `http://komodo-periphery:8120`
+  /// If defined, ensure an enabled first server exists at this address.
+  /// Example: `http://periphery:8120`
   #[serde(default)]
-  pub ensure_server: String,
+  pub first_server: String,
 
   /// The path to the built frontend folder.
   #[serde(default = "default_frontend_path")]
@@ -505,7 +504,7 @@ impl CoreConfig {
       host: config.host,
       port: config.port,
       passkey: empty_or_redacted(&config.passkey),
-      ensure_server: config.ensure_server,
+      first_server: config.first_server,
       frontend_path: config.frontend_path,
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_ttl: config.jwt_ttl,

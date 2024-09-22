@@ -290,30 +290,29 @@ async fn startup_open_alert_cleanup() {
 }
 
 /// Ensures a default server exists with the defined address
-pub async fn ensure_server() {
-  let ensure_server = &core_config().ensure_server;
-  if ensure_server.is_empty() {
+pub async fn ensure_first_server() {
+  let first_server = &core_config().first_server;
+  if first_server.is_empty() {
     return;
   }
   let db = db_client().await;
   let Ok(server) = db
     .servers
-    .find_one(doc! { "config.address": ensure_server })
+    .find_one(Document::new())
     .await
-    .inspect_err(|e| error!("Failed to initialize 'ensure_server'. Failed to query db. {e:?}"))
+    .inspect_err(|e| error!("Failed to initialize 'first_server'. Failed to query db. {e:?}"))
   else {
     return;
   };
   if server.is_some() {
     return;
   }
-
   if let Err(e) = State
     .resolve(
       CreateServer {
         name: format!("server-{}", random_string(5)),
         config: PartialServerConfig {
-          address: Some(ensure_server.to_string()),
+          address: Some(first_server.to_string()),
           enabled: Some(true),
           ..Default::default()
         },
@@ -322,6 +321,6 @@ pub async fn ensure_server() {
     )
     .await
   {
-    error!("Failed to initialize 'ensure_server'. Failed to CreateServer. {e:?}");
+    error!("Failed to initialize 'first_server'. Failed to CreateServer. {e:?}");
   }
 }

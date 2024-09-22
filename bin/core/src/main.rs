@@ -36,7 +36,7 @@ async fn app() -> anyhow::Result<()> {
   // includes init db_client check to crash on db init failure
   helpers::startup_cleanup().await;
   // Maybe initialize default server in All In One deployment.
-  helpers::ensure_server().await;
+  helpers::ensure_first_server().await;
   // init jwt client to crash on failure
   state::jwt_client();
   // init periphery client ssl config to crash on failure
