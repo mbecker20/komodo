@@ -64,16 +64,20 @@ pub type ResourceSync =
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ResourceSyncInfo {
   /// Unix timestamp of last applied sync
+  #[serde(default)]
   pub last_sync_ts: I64,
   /// Short commit hash of last applied sync
   pub last_sync_hash: Option<String>,
   /// Commit message of last applied sync
   pub last_sync_message: Option<String>,
   /// Readable logs of pending updates
+  #[serde(default)]
   pub pending: PendingSyncUpdates,
   /// The current sync files
+  #[serde(default)]
   pub remote_contents: Vec<FileContents>,
   /// Any read errors in files by path
+  #[serde(default)]
   pub remote_errors: Vec<FileContents>,
 }
 

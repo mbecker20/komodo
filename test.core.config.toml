@@ -1,13 +1,15 @@
 title = "Komodo Test"
-host = "http://localhost:9120"
+host = "http://localhost:9121"
+port = 9121
 passkey = "a_random_passkey"
-ensure_server = "http://localhost:8120"
 repo_directory = "/Users/max/komodo-repos"
+disable_confirm_dialog = true
 
-mongo.address = "localhost:27017"
-# mongo.username = "admin"
-# mongo.password = "admin"
-# mongo.uri = "mongodb://admin:admin@localhost:27017/komodo" # For ferretdb-postgres
+# database.address = "localhost:27017"
+database.address = "ferretdb.komodo.orb.local"
+# database.username = "admin"
+# database.password = "admin"
+# database.uri = "mongodb://admin:admin@localhost:27017/komodo" # For ferretdb-postgres
 
 local_auth = true
 jwt_secret = "your_random_secret"
