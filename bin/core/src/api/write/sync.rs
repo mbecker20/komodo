@@ -123,10 +123,6 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
 
-    if sync.config.repo.is_empty() {
-      return Err(anyhow!("resource sync repo not configured"));
-    }
-
     let res = async {
       let (res, _, hash, message) =
         crate::helpers::sync::remote::get_remote_resources(&sync)

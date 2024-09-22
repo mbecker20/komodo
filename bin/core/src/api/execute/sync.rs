@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use formatting::{colored, format_serror, Color};
 use komodo_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
@@ -53,10 +53,6 @@ impl Resolve<RunSync, (User, Update)> for State {
       entities::sync::ResourceSync,
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
-
-    if sync.config.repo.is_empty() {
-      return Err(anyhow!("resource sync repo not configured"));
-    }
 
     // Send update here for FE to recheck action state
     update_update(update.clone()).await?;

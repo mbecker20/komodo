@@ -59,6 +59,10 @@ pub async fn get_remote_resources(
   // REPO BASED SYNC
   // ===============
 
+  if sync.config.repo.is_empty() {
+    return Err(anyhow!("No sync files configured"));
+  }
+
   let mut clone_args: CloneArgs = sync.into();
 
   let config = core_config();
