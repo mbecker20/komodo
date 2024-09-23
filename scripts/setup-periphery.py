@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 import platform
 import json
 import urllib.request
@@ -15,6 +16,10 @@ def load_version():
 
 def load_latest_version():
 	return json.load(urllib.request.urlopen("https://api.github.com/repos/mbecker20/komodo/releases/latest"))["tag_name"]
+
+def uses_systemd():
+	# First check if systemctl is an available command, then check if systemd is the init system
+	return shutil.which("systemctl") is not None and os.path.exists("/run/systemd/system/")
 
 def load_paths():
 	# Checks if setup.py is passed --user arg
@@ -131,6 +136,10 @@ def main():
 	print("=====================")
 	print(" PERIPHERY INSTALLER ")
 	print("=====================")
+
+	if not uses_systemd():
+		print("This installer requires systemd and systemd wasn't found. Exiting")
+		sys.exit(1)
 
 	version = load_version()
 	[user_install, bin_dir, config_dir, service_dir] = load_paths()
