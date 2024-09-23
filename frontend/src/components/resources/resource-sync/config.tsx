@@ -62,14 +62,6 @@ export const ResourceSyncConfig = ({
           {
             label: "General",
             components: {
-              managed: (managed ||
-                files_on_host ||
-                ui_defined ||
-                !repo_selected) && {
-                label: "Managed",
-                description:
-                  "Enabled managed mode / the 'Commit' button. Delete mode is always enabled when using managed mode.",
-              },
               files_on_host: {
                 label: "Files on Server",
                 boldLabel: true,
@@ -86,6 +78,14 @@ export const ResourceSyncConfig = ({
                 placeholder: "./resources",
                 description:
                   "Provide the path to resource file / folder, in the container filesystem or from the root of the repo",
+              },
+              managed: (managed ||
+                files_on_host ||
+                ui_defined ||
+                !repo_selected) && {
+                label: "Managed",
+                description:
+                  "Enabled managed mode / the 'Commit' button. Delete mode is always enabled when using managed mode. Warning: Can be a bit confusing.",
               },
             },
           },
