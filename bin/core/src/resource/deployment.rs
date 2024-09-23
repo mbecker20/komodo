@@ -19,13 +19,10 @@ use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;
 
 use crate::{
-  helpers::{
+  config::core_config, helpers::{
     empty_or_only_spaces, periphery_client,
     query::get_deployment_state,
-  },
-  monitor::update_cache_for_server,
-  resource,
-  state::{action_states, db_client, deployment_status_cache},
+  }, monitor::update_cache_for_server, resource, state::{action_states, db_client, deployment_status_cache}
 };
 
 use super::get_check_permissions;
@@ -115,8 +112,8 @@ impl super::KomodoResource for Deployment {
     Operation::CreateDeployment
   }
 
-  fn user_can_create(_user: &User) -> bool {
-    true
+  fn user_can_create(user: &User) -> bool {
+    user.admin || !core_config().disable_non_admin_create
   }
 
   async fn validate_create_config(

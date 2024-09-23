@@ -100,6 +100,8 @@ pub struct Env {
   pub komodo_disable_user_registration: Option<bool>,
   /// Override `disable_confirm_dialog`
   pub komodo_disable_confirm_dialog: Option<bool>,
+  /// Override `disable_non_admin_create`
+  pub komodo_disable_non_admin_create: Option<bool>,
 
   /// Override `local_auth`
   pub komodo_local_auth: Option<bool>,
@@ -283,6 +285,11 @@ pub struct CoreConfig {
   /// With `disable_user_registration = true`, only the first user to log in will registered as a user.
   #[serde(default)]
   pub disable_user_registration: bool,
+
+  /// Normally all users can create resources.
+  /// If `disable_non_admin_create = true`, only admins will be able to create resources.
+  #[serde(default)]
+  pub disable_non_admin_create: bool,
 
   /// Optionally provide a specific jwt secret.
   /// Passing nothing or an empty string will cause one to be generated.
@@ -528,6 +535,7 @@ impl CoreConfig {
       disable_confirm_dialog: config.disable_confirm_dialog,
       enable_new_users: config.enable_new_users,
       disable_user_registration: config.disable_user_registration,
+      disable_non_admin_create: config.disable_non_admin_create,
       local_auth: config.local_auth,
       google_oauth: OauthCredentials {
         enabled: config.google_oauth.enabled,

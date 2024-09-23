@@ -5,7 +5,8 @@ use komodo_client::{
   api::write::{
     UpdatePermissionOnResourceType,
     UpdatePermissionOnResourceTypeResponse, UpdatePermissionOnTarget,
-    UpdatePermissionOnTargetResponse, UpdateUserBasePermissions,
+    UpdatePermissionOnTargetResponse, UpdateUserAdmin,
+    UpdateUserAdminResponse, UpdateUserBasePermissions,
     UpdateUserBasePermissionsResponse,
   },
   entities::{
@@ -28,6 +29,40 @@ use crate::{
   state::{db_client, State},
 };
 
+impl Resolve<UpdateUserAdmin, User> for State {
+  async fn resolve(
+    &self,
+    UpdateUserAdmin { user_id, admin }: UpdateUserAdmin,
+    super_admin: User,
+  ) -> anyhow::Result<UpdateUserAdminResponse> {
+    if !super_admin.super_admin {
+      return Err(anyhow!("Only super admins can call this method."));
+    }
+    let user = find_one_by_id(&db_client().await.users, &user_id)
+      .await
+      .context("failed to query mongo for user")?
+      .context("did not find user with given id")?;
+
+    if !user.enabled {
+      return Err(anyhow!("User is disabled. Enable user first."));
+    }
+
+    if user.super_admin {
+      return Err(anyhow!("Cannot update other super admins"));
+    }
+
+    update_one_by_id(
+      &db_client().await.users,
+      &user_id,
+      doc! { "$set": { "admin": admin } },
+      None,
+    )
+    .await?;
+
+    Ok(UpdateUserAdminResponse {})
+  }
+}
+
 impl Resolve<UpdateUserBasePermissions, User> for State {
   #[instrument(name = "UpdateUserBasePermissions", skip(self, admin))]
   async fn resolve(
@@ -48,9 +83,14 @@ impl Resolve<UpdateUserBasePermissions, User> for State {
       .await
       .context("failed to query mongo for user")?
       .context("did not find user with given id")?;
-    if user.admin {
+    if user.super_admin {
       return Err(anyhow!(
-        "cannot use this method to update other admins permissions"
+        "Cannot use this method to update super admins permissions"
+      ));
+    }
+    if user.admin && !admin.super_admin {
+      return Err(anyhow!(
+        "Only super admins can use this method to update other admins permissions"
       ));
     }
     let mut update_doc = Document::new();

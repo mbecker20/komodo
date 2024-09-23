@@ -187,6 +187,7 @@ export type WriteResponses = {
   SetUsersInUserGroup: Types.UserGroup;
 
   // ==== PERMISSIONS ====
+  UpdateUserAdmin: Types.UpdateUserAdminResponse;
   UpdateUserBasePermissions: Types.UpdateUserBasePermissionsResponse;
   UpdatePermissionOnResourceType: Types.UpdatePermissionOnResourceTypeResponse;
   UpdatePermissionOnTarget: Types.UpdatePermissionOnTargetResponse;

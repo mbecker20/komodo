@@ -21,12 +21,10 @@ use periphery_client::api::compose::ComposeExecution;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{periphery_client, query::get_stack_state},
-  monitor::update_cache_for_server,
-  state::{
+  config::core_config, helpers::{periphery_client, query::get_stack_state}, monitor::update_cache_for_server, state::{
     action_states, db_client, server_status_cache,
     stack_status_cache, State,
-  },
+  }
 };
 
 use super::get_check_permissions;
@@ -134,7 +132,7 @@ impl super::KomodoResource for Stack {
   }
 
   fn user_can_create(user: &User) -> bool {
-    user.admin
+    user.admin || !core_config().disable_non_admin_create
   }
 
   async fn validate_create_config(

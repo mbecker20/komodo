@@ -163,12 +163,16 @@ pub fn core_config() -> &'static CoreConfig {
       ui_write_disabled: env
         .komodo_ui_write_disabled
         .unwrap_or(config.ui_write_disabled),
-      disable_confirm_dialog: env.komodo_disable_confirm_dialog.unwrap_or(config.disable_confirm_dialog),
+      disable_confirm_dialog: env.komodo_disable_confirm_dialog
+        .unwrap_or(config.disable_confirm_dialog),
       enable_new_users: env.komodo_enable_new_users
         .unwrap_or(config.enable_new_users),
       disable_user_registration: env.komodo_disable_user_registration
         .unwrap_or(config.disable_user_registration),
-      local_auth: env.komodo_local_auth.unwrap_or(config.local_auth),
+      disable_non_admin_create: env.komodo_disable_non_admin_create
+        .unwrap_or(config.disable_non_admin_create),
+      local_auth: env.komodo_local_auth
+        .unwrap_or(config.local_auth),
       logging: LogConfig {
         level: env
           .komodo_logging_level
@@ -186,8 +190,10 @@ pub fn core_config() -> &'static CoreConfig {
       ssl_enabled: env.komodo_ssl_enabled.unwrap_or(config.ssl_enabled),
       ssl_key: env.komodo_ssl_key.unwrap_or(config.ssl_key),
       ssl_cert: env.komodo_ssl_cert.unwrap_or(config.ssl_cert),
-      periphery_accept_self_signed_certs: env.komodo_periphery_accept_self_signed_certs.unwrap_or(config.periphery_accept_self_signed_certs),
-      periphery_ca_pem_path: env.komodo_periphery_ca_pem_path.unwrap_or(config.periphery_ca_pem_path),
+      periphery_accept_self_signed_certs: env.komodo_periphery_accept_self_signed_certs
+        .unwrap_or(config.periphery_accept_self_signed_certs),
+      periphery_ca_pem_path: env.komodo_periphery_ca_pem_path
+        .unwrap_or(config.periphery_ca_pem_path),
 
       // These can't be overridden on env
       secrets: config.secrets,

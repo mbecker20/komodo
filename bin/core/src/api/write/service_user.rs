@@ -48,6 +48,7 @@ impl Resolve<CreateServiceUser, User> for State {
       config,
       enabled: true,
       admin: false,
+      super_admin: false,
       create_server_permissions: false,
       create_build_permissions: false,
       last_update_view: 0,

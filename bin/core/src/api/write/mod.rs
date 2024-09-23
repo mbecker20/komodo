@@ -55,6 +55,7 @@ pub enum WriteRequest {
   SetUsersInUserGroup(SetUsersInUserGroup),
 
   // ==== PERMISSIONS ====
+  UpdateUserAdmin(UpdateUserAdmin),
   UpdateUserBasePermissions(UpdateUserBasePermissions),
   UpdatePermissionOnResourceType(UpdatePermissionOnResourceType),
   UpdatePermissionOnTarget(UpdatePermissionOnTarget),

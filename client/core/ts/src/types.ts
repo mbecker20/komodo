@@ -68,6 +68,8 @@ export interface User {
 	username: string;
 	/** Whether user is enabled / able to access the api. */
 	enabled?: boolean;
+	/** Can give / take other users admin priviledges. */
+	super_admin?: boolean;
 	/** Whether the user has global admin permissions. */
 	admin?: boolean;
 	/** Whether the user has permission to create servers. */
@@ -2621,7 +2623,7 @@ export interface ResourceSyncConfig {
 	 * which exports resources matching tags to single file.
 	 * - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
 	 * - If using `file_contents`, it is stored in the database.
-	 * - If using Git Repo, it will commit the resource file
+	 * When using this, "delete" mode is always enabled.
 	 */
 	managed?: boolean;
 	/**
@@ -2667,17 +2669,17 @@ export interface PendingSyncUpdates {
 
 export interface ResourceSyncInfo {
 	/** Unix timestamp of last applied sync */
-	last_sync_ts: I64;
+	last_sync_ts?: I64;
 	/** Short commit hash of last applied sync */
 	last_sync_hash?: string;
 	/** Commit message of last applied sync */
 	last_sync_message?: string;
 	/** Readable logs of pending updates */
-	pending: PendingSyncUpdates;
+	pending?: PendingSyncUpdates;
 	/** The current sync files */
-	remote_contents: FileContents[];
+	remote_contents?: FileContents[];
 	/** Any read errors in files by path */
-	remote_errors: FileContents[];
+	remote_errors?: FileContents[];
 }
 
 export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
@@ -3029,6 +3031,8 @@ export type UpdatePermissionOnTargetResponse = NoData;
 export type UpdatePermissionOnResourceTypeResponse = NoData;
 
 export type UpdateUserBasePermissionsResponse = NoData;
+
+export type UpdateUserAdminResponse = NoData;
 
 export type CreateProcedureResponse = Procedure;
 
@@ -4166,6 +4170,8 @@ export interface GetCoreInfoResponse {
 	transparent_mode: boolean;
 	/** Whether UI write access should be disabled */
 	ui_write_disabled: boolean;
+	/** Whether non admins can create resources */
+	disable_non_admin_create: boolean;
 	/** Whether confirm dialog should be disabled */
 	disable_confirm_dialog: boolean;
 	/** The repo owners for which github webhook management api is available */
@@ -4960,6 +4966,11 @@ export interface ListTags {
 export interface ExportAllResourcesToToml {
 	/** Tag name or id. Empty array will not filter by tag. */
 	tags?: string[];
+	/**
+	 * Exclude a sync by name or id.
+	 * For internal use (syncs can't manage themselves, or problems).
+	 */
+	exclude_sync?: string;
 }
 
 /**
@@ -5478,6 +5489,17 @@ export interface UpdateUserBasePermissions {
 	create_servers?: boolean;
 	/** If specified, will update user's ability to create builds. */
 	create_builds?: boolean;
+}
+
+/**
+ * **Super Admin only.** Update's whether a user is admin.
+ * Response: [NoData].
+ */
+export interface UpdateUserAdmin {
+	/** The target user. */
+	user_id: string;
+	/** Whether user should be admin. */
+	admin: boolean;
 }
 
 /** Create a procedure. Response: [Procedure]. */
@@ -6649,6 +6671,7 @@ export type WriteRequest =
 	| { type: "AddUserToUserGroup", params: AddUserToUserGroup }
 	| { type: "RemoveUserFromUserGroup", params: RemoveUserFromUserGroup }
 	| { type: "SetUsersInUserGroup", params: SetUsersInUserGroup }
+	| { type: "UpdateUserAdmin", params: UpdateUserAdmin }
 	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
 	| { type: "UpdatePermissionOnResourceType", params: UpdatePermissionOnResourceType }
 	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }

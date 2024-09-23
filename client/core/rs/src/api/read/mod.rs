@@ -98,6 +98,8 @@ pub struct GetCoreInfoResponse {
   pub transparent_mode: bool,
   /// Whether UI write access should be disabled
   pub ui_write_disabled: bool,
+  /// Whether non admins can create resources
+  pub disable_non_admin_create: bool,
   /// Whether confirm dialog should be disabled
   pub disable_confirm_dialog: bool,
   /// The repo owners for which github webhook management api is available

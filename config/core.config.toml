@@ -124,6 +124,12 @@ database.address = "localhost:27017"
 ## Default: false
 # disable_user_registration = true
 
+## Normally all enabled users can create resources.
+## If `disable_non_admin_create = true`, only admin users can create resources.
+## Env: KOMODO_DISABLE_NON_ADMIN_CREATE
+## Default: false
+# disable_non_admin_create = true
+
 ## Optionally provide a specific jwt secret.
 ## Passing nothing or an empty string will cause one to be generated on every startup.
 ## This means users will have to log in again if Komodo restarts.

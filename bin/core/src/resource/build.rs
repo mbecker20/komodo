@@ -20,6 +20,7 @@ use mungos::{
 };
 
 use crate::{
+  config::core_config,
   helpers::{empty_or_only_spaces, query::get_latest_update},
   state::{action_states, build_state_cache, db_client},
 };
@@ -80,7 +81,9 @@ impl super::KomodoResource for Build {
   }
 
   fn user_can_create(user: &User) -> bool {
-    user.admin || user.create_build_permissions
+    user.admin
+      || (!core_config().disable_non_admin_create
+        && user.create_build_permissions)
   }
 
   async fn validate_create_config(

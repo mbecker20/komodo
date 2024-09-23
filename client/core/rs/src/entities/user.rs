@@ -37,6 +37,10 @@ pub struct User {
   #[serde(default)]
   pub enabled: bool,
 
+  /// Can give / take other users admin priviledges.
+  #[serde(default)]
+  pub super_admin: bool,
+
   /// Whether the user has global admin permissions.
   #[serde(default)]
   pub admin: bool,

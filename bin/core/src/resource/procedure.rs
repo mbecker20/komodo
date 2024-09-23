@@ -27,7 +27,7 @@ use mungos::{
   mongodb::{bson::doc, options::FindOneOptions, Collection},
 };
 
-use crate::state::{action_states, db_client, procedure_state_cache};
+use crate::{config::core_config, state::{action_states, db_client, procedure_state_cache}};
 
 impl super::KomodoResource for Procedure {
   type Config = ProcedureConfig;
@@ -77,8 +77,8 @@ impl super::KomodoResource for Procedure {
     Operation::CreateProcedure
   }
 
-  fn user_can_create(_user: &User) -> bool {
-    true
+  fn user_can_create(user: &User) -> bool {
+    user.admin || !core_config().disable_non_admin_create
   }
 
   async fn validate_create_config(

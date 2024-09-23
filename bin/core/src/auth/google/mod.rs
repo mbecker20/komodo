@@ -102,6 +102,7 @@ async fn callback(
           .to_string(),
         enabled: no_users_exist || core_config.enable_new_users,
         admin: no_users_exist,
+        super_admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,
         updated_at: ts,
