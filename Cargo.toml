@@ -64,7 +64,7 @@ toml = "0.8.19"
 
 # ERROR
 anyhow = "1.0.89"
-thiserror = "1.0.63"
+thiserror = "1.0.64"
 
 # LOGGING
 opentelemetry_sdk = { version = "0.25.0", features = ["rt-tokio"] }
