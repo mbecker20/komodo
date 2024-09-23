@@ -17,7 +17,8 @@ RUN cd frontend && yarn link @komodo/client && yarn && yarn build
 FROM alpine:3.20
 
 # Install Deps
-RUN apk update && apk add openssl ca-certificates git git-lfs
+RUN apk update && apk add --no-cache --virtual .build-deps \
+	openssl ca-certificates git git-lfs
 
 # Setup an application directory
 WORKDIR /app

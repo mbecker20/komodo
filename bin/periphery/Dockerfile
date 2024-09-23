@@ -9,7 +9,8 @@ RUN cargo build -p komodo_periphery --release
 FROM alpine:3.20
 
 # Install Deps
-RUN apk update && apk add docker-cli docker-cli-compose openssl git git-lfs bash
+RUN apk update && apk add --no-cache --virtual .build-deps \
+	docker-cli docker-cli-compose openssl ca-certificates git git-lfs bash
 
 # Setup an application directory
 WORKDIR /app
