@@ -58,6 +58,10 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
 const ConfigOrChildResources = ({ id }: { id: string }) => {
   const [view, setView] = useLocalStorage("server-tabs-v1", "Config");
 
+  const is_admin = useUser().data?.admin ?? false;
+  const disable_non_admin_create =
+    useRead("GetCoreInfo", {}).data?.disable_non_admin_create ?? true;
+
   const deployments =
     useRead("ListDeployments", {}).data?.filter(
       (deployment) => deployment.info.server_id === id
@@ -111,19 +115,31 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         <Section titleOther={tabsList}>
           <Section
             title="Deployments"
-            actions={<ResourceComponents.Deployment.New server_id={id} />}
+            actions={
+              (is_admin || !disable_non_admin_create) && (
+                <ResourceComponents.Deployment.New server_id={id} />
+              )
+            }
           >
             <DeploymentTable deployments={deployments} />
           </Section>
           <Section
             title="Stacks"
-            actions={<ResourceComponents.Stack.New server_id={id} />}
+            actions={
+              (is_admin || !disable_non_admin_create) && (
+                <ResourceComponents.Stack.New server_id={id} />
+              )
+            }
           >
             <StackTable stacks={stacks} />
           </Section>
           <Section
             title="Repos"
-            actions={<ResourceComponents.Repo.New server_id={id} />}
+            actions={
+              (is_admin || !disable_non_admin_create) && (
+                <ResourceComponents.Repo.New server_id={id} />
+              )
+            }
           >
             <RepoTable repos={repos} />
           </Section>
