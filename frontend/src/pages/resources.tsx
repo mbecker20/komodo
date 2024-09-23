@@ -7,12 +7,16 @@ import {
   useRead,
   useResourceParamType,
   useSetTitle,
+  useUser,
 } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { Input } from "@ui/input";
 import { useState } from "react";
 
 export const Resources = () => {
+  const is_admin = useUser().data?.admin ?? false;
+  const disable_non_admin_create =
+    useRead("GetCoreInfo", {}).data?.disable_non_admin_create ?? true;
   const type = useResourceParamType()!;
   const name =
     type === "ServerTemplate"
@@ -46,7 +50,7 @@ export const Resources = () => {
       actions={
         <div className="flex items-center h-fit gap-4">
           <TagsFilter />
-          <Components.New />
+          {(is_admin || !disable_non_admin_create) && <Components.New />}
         </div>
       }
     >

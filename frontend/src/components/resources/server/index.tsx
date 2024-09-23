@@ -1,4 +1,4 @@
-import { useExecute, useLocalStorage, useRead } from "@lib/hooks";
+import { useExecute, useLocalStorage, useRead, useUser } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { RequiredResourceComponents } from "@types";
@@ -162,7 +162,12 @@ export const ServerComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="Server" />,
+  New: () => {
+    const user = useUser().data;
+    if (!user) return null;
+    if (!user.admin && !user.create_server_permissions) return null;
+    return <NewResource type="Server" />;
+  },
 
   Table: ({ resources }) => (
     <ServerTable servers={resources as Types.ServerListItem[]} />

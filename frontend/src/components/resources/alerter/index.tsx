@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useRead, useUser } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { AlarmClock } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -36,7 +36,10 @@ export const AlerterComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="Alerter" />,
+  New: () => {
+    const is_admin = useUser().data?.admin;
+    return is_admin && <NewResource type="Alerter" />;
+  },
 
   Table: ({ resources }) => (
     <AlerterTable alerters={resources as Types.AlerterListItem[]} />

@@ -1,5 +1,5 @@
 import { NewLayout } from "@components/layouts";
-import { useRead, useWrite } from "@lib/hooks";
+import { useRead, useUser, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
@@ -61,13 +61,15 @@ export const BuilderComponents: RequiredResourceComponents = {
       </Link>
     );
   },
-
   New: () => {
+    const is_admin = useUser().data?.admin;
     const nav = useNavigate();
     const { mutateAsync } = useWrite("CreateBuilder");
     const [name, setName] = useState("");
     const [type, setType] = useState<Types.BuilderConfig["type"]>();
 
+    if (!is_admin) return null;
+    
     return (
       <NewLayout
         entityType="Builder"

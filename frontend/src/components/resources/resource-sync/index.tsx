@@ -1,4 +1,4 @@
-import { useLocalStorage, useRead } from "@lib/hooks";
+import { useLocalStorage, useRead, useUser } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
 import { Clock, FolderSync } from "lucide-react";
@@ -119,7 +119,12 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="ResourceSync" readable_type="Resource Sync" />,
+  New: () => {
+    const admin = useUser().data?.admin;
+    return (
+      admin && <NewResource type="ResourceSync" readable_type="Resource Sync" />
+    );
+  },
 
   Table: ({ resources }) => (
     <ResourceSyncTable syncs={resources as Types.ResourceSyncListItem[]} />

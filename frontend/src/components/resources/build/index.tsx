@@ -1,5 +1,5 @@
 import { Section } from "@components/layouts";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useUser, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Factory, FolderGit, Hammer, Loader2, RefreshCcw } from "lucide-react";
 import { BuildConfig } from "./config";
@@ -112,7 +112,12 @@ export const BuildComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="Build" />,
+  New: () => {
+    const user = useUser().data;
+    if (!user) return null;
+    if (!user.admin && !user.create_build_permissions) return null;
+    return <NewResource type="Build" />;
+  },
 
   Table: ({ resources }) => (
     <BuildTable builds={resources as Types.BuildListItem[]} />
