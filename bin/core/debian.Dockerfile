@@ -1,7 +1,6 @@
 # Build Core
-FROM rust:1.81.0-alpine AS core-builder
+FROM rust:1.81.0-bookworm AS core-builder
 WORKDIR /builder
-RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
 COPY . .
 RUN cargo build -p komodo_core --release
 
@@ -14,26 +13,25 @@ RUN cd client && yarn && yarn build && yarn link
 RUN cd frontend && yarn link @komodo/client && yarn && yarn build
 
 # Final Image
-FROM alpine:3.20
+FROM debian:bookworm-slim
 
 # Install Deps
-RUN apk update && apk add openssl ca-certificates git git-lfs
+RUN apt update && apt install -y git ca-certificates
 
 # Setup an application directory
 WORKDIR /app
-
+	
 # Copy
 COPY ./config/core.config.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /app
 COPY --from=frontend-builder /builder/frontend/dist /app/frontend
 
 # Hint at the port
-EXPOSE 9120 
+EXPOSE 9120
 
 # Label for Ghcr
 LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
 LABEL org.opencontainers.image.description="Komodo Core"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
-# Using ENTRYPOINT allows cli args to be passed, eg using "command" in docker compose.
 ENTRYPOINT [ "/app/core" ]

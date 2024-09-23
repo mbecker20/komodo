@@ -1,15 +1,15 @@
 # Build Periphery
-FROM rust:1.81.0-bookworm AS builder
+FROM rust:1.81.0-alpine AS builder
 WORKDIR /builder
 COPY . .
+RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
 RUN cargo build -p komodo_periphery --release
 
 # Final Image
-FROM debian:bookworm-slim
+FROM alpine:3.20
 
 # Install Deps
-RUN apt update && apt install -y git curl ca-certificates && \
-	curl -fsSL https://get.docker.com | sh
+RUN apk update && apk add docker-cli docker-cli-compose openssl git git-lfs bash
 
 # Setup an application directory
 WORKDIR /app
@@ -18,7 +18,7 @@ WORKDIR /app
 COPY --from=builder /builder/target/release/periphery /app
 
 # Hint at the port
-EXPOSE 8120
+EXPOSE 8120 
 
 # Label for Ghcr
 LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
