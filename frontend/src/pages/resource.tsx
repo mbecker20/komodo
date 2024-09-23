@@ -12,6 +12,7 @@ import {
   useRead,
   useResourceParamType,
   useSetTitle,
+  useUser,
 } from "@lib/hooks";
 import { has_minimum_permissions, usableResourcePath } from "@lib/utils";
 import { Types } from "@komodo/client";
@@ -21,9 +22,11 @@ import { AlertTriangle, ChevronLeft, Clapperboard, Link } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
+  const user = useUser().data;
   const perms = useRead("GetPermissionLevel", { target: { type, id } }).data;
-  const ui_write_disabled =
-    useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
+  const info = useRead("GetCoreInfo", {}).data;
+  const ui_write_disabled = info?.ui_write_disabled ?? false;
+  const disable_non_admin_create = info?.disable_non_admin_create ?? false;
 
   const canWrite = !ui_write_disabled && perms === Types.PermissionLevel.Write;
   const canExecute = has_minimum_permissions(
@@ -31,7 +34,37 @@ export const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
     Types.PermissionLevel.Execute
   );
 
-  return { canWrite, canExecute };
+  if (type === "Server") {
+    return {
+      canWrite,
+      canExecute,
+      canCreate:
+        user?.admin ||
+        (!disable_non_admin_create && user?.create_server_permissions),
+    };
+  }
+  if (type === "Build") {
+    return {
+      canWrite,
+      canExecute,
+      canCreate:
+        user?.admin ||
+        (!disable_non_admin_create && user?.create_build_permissions),
+    };
+  }
+  if (type === "Alerter" || type === "Builder") {
+    return {
+      canWrite,
+      canExecute,
+      canCreate: user?.admin,
+    };
+  }
+
+  return {
+    canWrite,
+    canExecute,
+    canCreate: user?.admin || !disable_non_admin_create,
+  };
 };
 
 export const Resource = () => {
@@ -50,7 +83,7 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
 
   usePushRecentlyViewed({ type, id });
 
-  const { canWrite, canExecute } = useEditPermissions({ type, id });
+  const { canWrite, canExecute, canCreate } = useEditPermissions({ type, id });
 
   if (!type || !id) return null;
 
@@ -93,7 +126,10 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
         <Section
           title="Danger Zone"
           icon={<AlertTriangle className="w-6 h-6" />}
-          actions={type !== "Server" && <CopyResource type={type} id={id} />}
+          actions={
+            type !== "Server" &&
+            canCreate && <CopyResource type={type} id={id} />
+          }
         >
           <Components.DangerZone id={id} />
         </Section>
