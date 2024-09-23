@@ -7,7 +7,7 @@ import { NotebookPen, RefreshCcw, SquarePlay } from "lucide-react";
 export const RefreshSync = ({ id }: { id: string }) => {
   const inv = useInvalidate();
   const { mutate, isPending } = useWrite("RefreshResourceSyncPending", {
-    onSuccess: () => inv(["GetResourceSync", { sync: id }]),
+    onSuccess: () => inv(["GetResourceSync"], ["ListResourceSyncs"]),
   });
   const pending = isPending;
   return (
@@ -30,7 +30,19 @@ export const ExecuteSync = ({ id }: { id: string }) => {
   ).data?.syncing;
   const sync = useRead("GetResourceSync", { sync: id }).data;
 
-  if (!sync || sync_no_changes(sync)) return null;
+  if (!sync || sync_no_changes(sync) || !sync.info?.remote_contents) {
+    return null;
+  }
+
+  let all_empty = true;
+  for (const contents of sync.info.remote_contents) {
+    if (contents.contents.length > 0) {
+      all_empty = false;
+      break;
+    }
+  }
+
+  if (all_empty) return null;
 
   const pending = isPending || syncing;
 

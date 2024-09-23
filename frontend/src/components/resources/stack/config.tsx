@@ -354,7 +354,7 @@ export const StackConfig = ({
         "Git Repo": !files_on_host &&
           !ui_file_contents && [
             {
-              label: "Git",
+              label: "Git Repo",
               description:
                 "Provide config for repo-based compose files. Not necessary if file contents are configured in UI.",
               components: {

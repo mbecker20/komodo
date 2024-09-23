@@ -48,9 +48,9 @@ use crate::{
       remote::RemoteResources,
       resource::{get_updates_for_view, AllResourcesById},
     },
-    update::{add_update, make_update},
+    update::{add_update, make_update, update_update},
   },
-  resource,
+  resource::{self, refresh_resource_sync_state_cache},
   state::{db_client, github_client, State},
 };
 
@@ -182,77 +182,88 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         )
         .await;
 
+      let delete = sync.config.managed || sync.config.delete;
+
       let data = PendingSyncUpdatesDataOk {
         server_updates: get_updates_for_view::<Server>(
           resources.servers,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get server updates")?,
         deployment_updates: get_updates_for_view::<Deployment>(
           resources.deployments,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get deployment updates")?,
         stack_updates: get_updates_for_view::<Stack>(
           resources.stacks,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get stack updates")?,
         build_updates: get_updates_for_view::<Build>(
           resources.builds,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get build updates")?,
         repo_updates: get_updates_for_view::<Repo>(
           resources.repos,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get repo updates")?,
         procedure_updates: get_updates_for_view::<Procedure>(
           resources.procedures,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get procedure updates")?,
         alerter_updates: get_updates_for_view::<Alerter>(
           resources.alerters,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get alerter updates")?,
         builder_updates: get_updates_for_view::<Builder>(
           resources.builders,
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          None,
         )
         .await
         .context("failed to get builder updates")?,
         server_template_updates:
           get_updates_for_view::<ServerTemplate>(
             resources.server_templates,
-            sync.config.delete,
+            delete,
             &all_resources,
             &id_to_tags,
+            None,
           )
           .await
           .context("failed to get server template updates")?,
@@ -265,23 +276,25 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
             .into_iter()
             .filter(|s| !sync.config.managed || s.name != sync.name)
             .collect(),
-          sync.config.delete,
+          delete,
           &all_resources,
           &id_to_tags,
+          // Ignore this sync if managed.
+          sync.config.managed.then(|| sync.name.clone()),
         )
         .await
         .context("failed to get resource sync updates")?,
         variable_updates:
           crate::helpers::sync::variables::get_updates_for_view(
             resources.variables,
-            sync.config.delete,
+            delete,
           )
           .await
           .context("failed to get variable updates")?,
         user_group_updates:
           crate::helpers::sync::user_groups::get_updates_for_view(
             resources.user_groups,
-            sync.config.delete,
+            delete,
             &all_resources,
           )
           .await
@@ -429,6 +442,7 @@ impl Resolve<CommitSync, User> for State {
       Operation::CommitSync,
       &user,
     );
+    update.id = add_update(update.clone()).await?;
 
     if sync.config.files_on_host {
       let path = sync
@@ -486,25 +500,39 @@ impl Resolve<CommitSync, User> for State {
       .logs
       .push(Log::simple("Committed resources", res.toml));
 
-    match State
+    let res = match State
       .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
       .await
     {
-      Ok(sync) => {
-        update.finalize();
-        add_update(update).await?;
-        Ok(sync)
-      }
+      Ok(sync) => Ok(sync),
       Err(e) => {
         update.push_error_log(
           "Refresh sync pending",
           format_serror(&(&e).into()),
         );
-        update.finalize();
-        add_update(update).await?;
         Err(e)
       }
+    };
+
+    update.finalize();
+
+    // Need to manually update the update before cache refresh,
+    // and before broadcast with add_update.
+    // The Err case of to_document should be unreachable,
+    // but will fail to update cache in that case.
+    if let Ok(update_doc) = to_document(&update) {
+      let _ = update_one_by_id(
+        &db_client().await.updates,
+        &update.id,
+        mungos::update::Update::Set(update_doc),
+        None,
+      )
+      .await;
+      refresh_resource_sync_state_cache().await;
     }
+    update_update(update).await?;
+
+    res
   }
 }
 

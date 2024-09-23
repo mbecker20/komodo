@@ -246,7 +246,7 @@ pub struct ResourceSyncConfig {
   /// which exports resources matching tags to single file.
   ///  - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
   ///  - If using `file_contents`, it is stored in the database.
-  ///  - If using Git Repo, it will commit the resource file
+  /// When using this, "delete" mode is always enabled.
   #[serde(default)]
   pub managed: bool,
 

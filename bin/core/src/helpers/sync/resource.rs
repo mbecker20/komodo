@@ -51,6 +51,8 @@ pub trait ResourceSync: KomodoResource + Sized {
   /// before logging
   fn validate_diff(_diff: &mut Self::ConfigDiff) {}
 
+  // fn include()
+
   async fn run_updates(
     to_create: ToCreate<Self::PartialConfig>,
     to_update: ToUpdate<Self::PartialConfig>,
@@ -213,11 +215,18 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
+  ignore_name: Option<String>,
 ) -> anyhow::Result<Option<SyncUpdate>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
+    .filter(|r| {
+      ignore_name
+        .as_ref()
+        .map(|name| name != &r.name)
+        .unwrap_or(true)
+    })
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 
@@ -357,11 +366,18 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
+  ignore_name: Option<String>,
 ) -> anyhow::Result<UpdatesResult<Resource::PartialConfig>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
+    .filter(|r| {
+      ignore_name
+        .as_ref()
+        .map(|name| name != &r.name)
+        .unwrap_or(true)
+    })
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 

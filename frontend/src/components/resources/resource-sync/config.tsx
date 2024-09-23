@@ -43,8 +43,9 @@ export const ResourceSyncConfig = ({
       ? true
       : false;
   const repo_selected = update.repo ?? config.repo ? true : false;
+  const managed = update.managed ?? config.managed;
 
-  const show_git = !files_on_host && !ui_defined;
+  const show_git = !managed && !files_on_host && !ui_defined;
 
   return (
     <Config
@@ -58,6 +59,36 @@ export const ResourceSyncConfig = ({
       }}
       components={{
         general: [
+          {
+            label: "General",
+            components: {
+              managed: (managed ||
+                files_on_host ||
+                ui_defined ||
+                !repo_selected) && {
+                label: "Managed",
+                description:
+                  "Enabled managed mode / the 'Commit' button. Delete mode is always enabled when using managed mode.",
+              },
+              files_on_host: {
+                label: "Files on Server",
+                boldLabel: true,
+                description:
+                  "Manage the sync files on server yourself. Just configure the path to your folder / file.",
+              },
+              delete: !managed && {
+                label: "Delete Unmatched Resources",
+                description:
+                  "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
+              },
+              resource_path: (files_on_host ||
+                (!ui_defined && repo_selected)) && {
+                placeholder: "./resources",
+                description:
+                  "Provide the path to resource file / folder, in the container filesystem or from the root of the repo",
+              },
+            },
+          },
           {
             label: "Resource File",
             hidden: files_on_host,
@@ -87,7 +118,7 @@ export const ResourceSyncConfig = ({
                     value={file_contents}
                     disabled={disabled}
                     onChange={(e) => set({ file_contents: e.target.value })}
-                    className="min-h-[400px] h-fit"
+                    className="min-h-[800px] h-fit"
                     placeholder="Paste resource file contents"
                     spellCheck={false}
                     onKeyDown={(e) => {
@@ -118,79 +149,55 @@ export const ResourceSyncConfig = ({
               },
             },
           },
+        ],
+        "Git Repo": show_git && [
           {
-            label: "General",
+            label: "Git Repo",
             components: {
-              files_on_host: {
-                label: "Files on Server",
-                boldLabel: true,
-                description:
-                  "Manage the sync files on server yourself. Just configure the path to your folder / file.",
+              git_provider: (provider, set) => {
+                const https = update.git_https ?? config.git_https;
+                return (
+                  <ProviderSelectorConfig
+                    account_type="git"
+                    selected={provider}
+                    disabled={disabled}
+                    onSelect={(git_provider) => set({ git_provider })}
+                    https={https}
+                    onHttpsSwitch={() => set({ git_https: !https })}
+                  />
+                );
               },
-              git_provider:
-                show_git &&
-                ((provider: string | undefined, set) => {
-                  const https = update.git_https ?? config.git_https;
-                  return (
-                    <ProviderSelectorConfig
-                      account_type="git"
-                      selected={provider}
-                      disabled={disabled}
-                      onSelect={(git_provider) => set({ git_provider })}
-                      https={https}
-                      onHttpsSwitch={() => set({ git_https: !https })}
-                    />
-                  );
-                }),
-              git_account:
-                show_git &&
-                ((value: string | undefined, set) => {
-                  return (
-                    <AccountSelectorConfig
-                      account_type="git"
-                      type="None"
-                      provider={update.git_provider ?? config.git_provider}
-                      selected={value}
-                      onSelect={(git_account) => set({ git_account })}
-                      disabled={disabled}
-                      placeholder="None"
-                    />
-                  );
-                }),
-              repo: show_git && {
+              git_account: (value, set) => {
+                return (
+                  <AccountSelectorConfig
+                    account_type="git"
+                    type="None"
+                    provider={update.git_provider ?? config.git_provider}
+                    selected={value}
+                    onSelect={(git_account) => set({ git_account })}
+                    disabled={disabled}
+                    placeholder="None"
+                  />
+                );
+              },
+              repo: {
                 placeholder: "Enter repo",
                 description:
                   "The repo path on the provider. {namespace}/{repo_name}",
               },
-              branch: show_git && {
+              branch: {
                 placeholder: "Enter branch",
                 description: "Select a custom branch, or default to 'main'.",
               },
-              commit: show_git && {
+              commit: {
                 placeholder: "Enter a specific commit hash. Optional.",
                 description:
                   "Switch to a specific hash after cloning the branch.",
-              },
-              resource_path: !ui_defined && {
-                placeholder: "./resources",
-                description:
-                  "Provide the path to resource file / folder, relative to the root of the repo",
-              },
-              delete: {
-                label: "Delete Unmatched Resources",
-                description:
-                  "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
-              },
-              managed: (files_on_host || ui_defined || !repo_selected) && {
-                label: "Managed",
-                description:
-                  "Enabled Managed mode / the 'Commit' button",
               },
             },
           },
           {
             label: "Git Webhooks",
-            hidden: files_on_host || ui_defined,
             description:
               "Configure your repo provider to send webhooks to Komodo",
             components: {

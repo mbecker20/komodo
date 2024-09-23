@@ -105,12 +105,15 @@ impl Resolve<RunSync, (User, Update)> for State {
     })
     .await?;
 
+    let delete = sync.config.managed || sync.config.delete;
+
     let (servers_to_create, servers_to_update, servers_to_delete) =
       get_updates_for_execution::<Server>(
         resources.servers,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        None,
       )
       .await?;
     let (
@@ -119,33 +122,37 @@ impl Resolve<RunSync, (User, Update)> for State {
       deployments_to_delete,
     ) = get_updates_for_execution::<Deployment>(
       resources.deployments,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      None,
     )
     .await?;
     let (stacks_to_create, stacks_to_update, stacks_to_delete) =
       get_updates_for_execution::<Stack>(
         resources.stacks,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        None,
       )
       .await?;
     let (builds_to_create, builds_to_update, builds_to_delete) =
       get_updates_for_execution::<Build>(
         resources.builds,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        None,
       )
       .await?;
     let (repos_to_create, repos_to_update, repos_to_delete) =
       get_updates_for_execution::<Repo>(
         resources.repos,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        None,
       )
       .await?;
     let (
@@ -154,25 +161,28 @@ impl Resolve<RunSync, (User, Update)> for State {
       procedures_to_delete,
     ) = get_updates_for_execution::<Procedure>(
       resources.procedures,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      None,
     )
     .await?;
     let (builders_to_create, builders_to_update, builders_to_delete) =
       get_updates_for_execution::<Builder>(
         resources.builders,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        None,
       )
       .await?;
     let (alerters_to_create, alerters_to_update, alerters_to_delete) =
       get_updates_for_execution::<Alerter>(
         resources.alerters,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        None,
       )
       .await?;
     let (
@@ -181,9 +191,10 @@ impl Resolve<RunSync, (User, Update)> for State {
       server_templates_to_delete,
     ) = get_updates_for_execution::<ServerTemplate>(
       resources.server_templates,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      None,
     )
     .await?;
     let (
@@ -192,9 +203,10 @@ impl Resolve<RunSync, (User, Update)> for State {
       resource_syncs_to_delete,
     ) = get_updates_for_execution::<entities::sync::ResourceSync>(
       resources.resource_syncs,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      sync.config.managed.then(|| sync.name.clone()),
     )
     .await?;
     let (
@@ -203,7 +215,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       variables_to_delete,
     ) = crate::helpers::sync::variables::get_updates_for_execution(
       resources.variables,
-      sync.config.delete,
+      delete,
     )
     .await?;
     let (
@@ -212,7 +224,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       user_groups_to_delete,
     ) = crate::helpers::sync::user_groups::get_updates_for_execution(
       resources.user_groups,
-      sync.config.delete,
+      delete,
       &all_resources,
     )
     .await?;

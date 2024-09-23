@@ -251,7 +251,10 @@ async fn get_resource_sync_state_from_db(
       .find_one(doc! {
         "target.type": "ResourceSync",
         "target.id": id,
-        "operation": "RunSync"
+        "$or": [
+          { "operation": "RunSync" },
+          { "operation": "CommitSync" },
+        ],
       })
       .with_options(
         FindOneOptions::builder()

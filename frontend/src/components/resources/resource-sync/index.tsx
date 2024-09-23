@@ -19,6 +19,7 @@ import { StatusBadge } from "@components/util";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceSyncConfig } from "./config";
 import { ResourceSyncInfo } from "./info";
+import { useEffect } from "react";
 
 export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
@@ -37,11 +38,17 @@ const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigInfoPending = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage("sync-tabs-v1", "Config");
+  const [view, setView] = useLocalStorage("sync-tabs-v3", "Config");
   const sync = useFullResourceSync(id);
 
   const pendingDisabled = !sync || sync_no_changes(sync);
   const currentView = view === "Pending" && pendingDisabled ? "Config" : view;
+  useEffect(() => {
+    if (!pendingDisabled) {
+      // there are now changes pending
+      setView("Pending");
+    }
+  }, [pendingDisabled]);
 
   const title = (
     <TabsList className="justify-start w-fit">
@@ -52,7 +59,7 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
         Info
       </TabsTrigger>
       <TabsTrigger
-        value="Services"
+        value="Pending"
         className="w-[110px]"
         disabled={pendingDisabled}
       >
@@ -68,7 +75,7 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
       <TabsContent value="Info">
         <ResourceSyncInfo id={id} titleOther={title} />
       </TabsContent>
-      <TabsContent value="Services">
+      <TabsContent value="Pending">
         <ResourceSyncPending id={id} titleOther={title} />
       </TabsContent>
     </Tabs>
