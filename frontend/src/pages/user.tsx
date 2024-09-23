@@ -7,7 +7,7 @@ import {
   DeleteKeyForServiceUser,
 } from "@components/users/service-api-key";
 import { ConfirmButton } from "@components/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useUser, useWrite } from "@lib/hooks";
 import { Label } from "@ui/label";
 import { Switch } from "@ui/switch";
 import { useToast } from "@ui/use-toast";
@@ -16,22 +16,30 @@ import { Link, useParams } from "react-router-dom";
 import { Button } from "@ui/button";
 
 export const UserPage = () => {
+  const admin_user = useUser().data;
   const { toast } = useToast();
   const inv = useInvalidate();
   const user_id = useParams().id as string;
   const user = useRead("ListUsers", {}).data?.find(
     (user) => user._id?.$oid === user_id
   );
-  const { mutate } = useWrite("UpdateUserBasePermissions", {
+  const { mutate: update_base } = useWrite("UpdateUserBasePermissions", {
     onSuccess: () => {
-      inv(["FindUser", { user: user_id }]);
+      inv(["FindUser"]);
       inv(["ListUsers"]);
       toast({ title: "Modify user base permissions" });
     },
   });
+  const { mutate: update_admin } = useWrite("UpdateUserAdmin", {
+    onSuccess: () => {
+      inv(["FindUser"]);
+      inv(["ListUsers"]);
+      toast({ title: "Modify user admin" });
+    },
+  });
   const enabledClass = user?.enabled ? "text-green-500" : "text-red-500";
   const avatar = (user?.config.data as any)?.avatar as string | undefined;
-  if (!user) return null;
+  if (!user || !admin_user) return null;
   return (
     <Page
       title={user?.username}
@@ -46,25 +54,43 @@ export const UserPage = () => {
         </div>
       }
       actions={
-        !user.admin && (
+        (!user.admin || (!user.super_admin && admin_user.super_admin)) && (
           <div className="flex gap-4 items-center">
-            {(["Server", "Build"] as Array<"Server" | "Build">).map((item) => {
-              const key = `create_${item.toLowerCase()}_permissions` as
-                | "create_server_permissions"
-                | "create_build_permissions";
-              const req_key = `create_${item.toLowerCase()}s`;
-              return (
-                <div key={key} className="flex gap-2 items-center">
-                  <Label htmlFor={key}>Create {item}</Label>
-                  <Switch
-                    id={key}
-                    className="flex gap-4"
-                    checked={user[key]}
-                    onClick={() => mutate({ user_id, [req_key]: !user[key] })}
-                  />
-                </div>
-              );
-            })}
+            {user.enabled &&
+              !user.admin &&
+              (["Server", "Build"] as Array<"Server" | "Build">).map((item) => {
+                const key = `create_${item.toLowerCase()}_permissions` as
+                  | "create_server_permissions"
+                  | "create_build_permissions";
+                const req_key = `create_${item.toLowerCase()}s`;
+                return (
+                  <div key={key} className="flex gap-2 items-center">
+                    <Label htmlFor={key}>Create {item}</Label>
+                    <Switch
+                      id={key}
+                      className="flex gap-4"
+                      checked={user[key]}
+                      onClick={() =>
+                        update_base({ user_id, [req_key]: !user[key] })
+                      }
+                    />
+                  </div>
+                );
+              })}
+            {user.enabled && admin_user.super_admin && (
+              <ConfirmButton
+                title={user.admin ? "Take Admin" : "Make Admin"}
+                icon={
+                  user.admin ? (
+                    <UserMinus className="w-4 h-4" />
+                  ) : (
+                    <UserCheck className="w-4 h-4" />
+                  )
+                }
+                variant={user.admin ? "destructive" : "outline"}
+                onClick={() => update_admin({ user_id, admin: !user.admin })}
+              />
+            )}
             <ConfirmButton
               title={user.enabled ? "Disable User" : "Enable User"}
               icon={
@@ -75,7 +101,7 @@ export const UserPage = () => {
                 )
               }
               variant={user.enabled ? "destructive" : "outline"}
-              onClick={() => mutate({ user_id, enabled: !user.enabled })}
+              onClick={() => update_base({ user_id, enabled: !user.enabled })}
             />
           </div>
         )
