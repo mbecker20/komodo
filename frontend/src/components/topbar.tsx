@@ -46,7 +46,7 @@ export const Topbar = () => {
   useShiftKeyListener("S", () => setOmniOpen(true));
 
   return (
-    <div className="fixed top-0 w-full bg-background z-50 border-b shadow-sm">
+    <div className="fixed top-0 w-full bg-accent z-50 border-b shadow-sm">
       <div className="container h-16 flex items-center justify-between md:grid md:grid-cols-[auto_1fr] lg:grid-cols-3">
         {/* Logo */}
         <Link
