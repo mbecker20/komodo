@@ -245,6 +245,7 @@ const KeyboardShortcuts = () => {
           <KeyboardShortcut label="Go Home" keys={["Shift", "H"]} />
 
           <KeyboardShortcut label="Go to Servers" keys={["Shift", "G"]} />
+          <KeyboardShortcut label="Go to Stacks" keys={["Shift", "Z"]} />
           <KeyboardShortcut label="Go to Deployments" keys={["Shift", "D"]} />
           <KeyboardShortcut label="Go to Builds" keys={["Shift", "B"]} />
           <KeyboardShortcut label="Go to Repos" keys={["Shift", "R"]} />

@@ -24,6 +24,7 @@ export const Layout = () => {
   const nav = useNavigate();
   useShiftKeyListener("H", () => nav("/"));
   useShiftKeyListener("G", () => nav("/servers"));
+  useShiftKeyListener("Z", () => nav("/stacks"));
   useShiftKeyListener("D", () => nav("/deployments"));
   useShiftKeyListener("B", () => nav("/builds"));
   useShiftKeyListener("R", () => nav("/repos"));

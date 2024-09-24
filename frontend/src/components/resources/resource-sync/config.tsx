@@ -2,6 +2,7 @@ import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
   ConfigItem,
+  InputList,
   ProviderSelectorConfig,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
@@ -11,7 +12,8 @@ import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton, MonacoEditor } from "@components/util";
-import { Ban, CirclePlus } from "lucide-react";
+import { Ban, CirclePlus, PlusCircle } from "lucide-react";
+import { Button } from "@ui/button";
 
 export const ResourceSyncConfig = ({
   id,
@@ -34,14 +36,15 @@ export const ResourceSyncConfig = ({
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
   const files_on_host = update.files_on_host ?? config.files_on_host;
-  const ui_defined =
-    !files_on_host && (update.file_contents ?? config.file_contents)
-      ? true
-      : false;
+  const file_contents =
+    update.file_contents ?? config.file_contents ? true : false;
+  const ui_defined = !files_on_host && file_contents;
   const repo_selected = update.repo ?? config.repo ? true : false;
   const managed = update.managed ?? config.managed;
 
   const show_git = !managed && !files_on_host && !ui_defined;
+
+  const fresh_sync = !files_on_host && !file_contents && !repo_selected;
 
   return (
     <Config
@@ -84,6 +87,41 @@ export const ResourceSyncConfig = ({
                   "Enabled managed mode / the 'Commit' button. Delete mode is always enabled when using managed mode. Warning: Can be a bit confusing.",
               },
             },
+          },
+          {
+            label: "Match Tags",
+            hidden: !managed && !fresh_sync,
+            contentHidden:
+              (update.match_tags ?? config.match_tags)?.length === 0,
+            actions: !disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set((update) => ({
+                    ...update,
+                    match_tags: [
+                      ...(update.match_tags ?? config.match_tags ?? []),
+                      "",
+                    ],
+                  }))
+                }
+                className="flex items-center gap-2 w-[200px]"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add Tag
+              </Button>
+            ),
+            components: {
+              match_tags: (values, set) => (
+                <InputList
+                  field="match_tags"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Tag"
+                />
+              ),
+            } as any,
           },
         ],
         "Resource File": !files_on_host &&
