@@ -85,7 +85,7 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
     <div className="border rounded-md flex flex-col md:flex-row">
       <Link
         to={`/${usableResourcePath(type)}`}
-        className="shrink-0 px-6 py-4 flex flex-col justify-between lg:border-r group bg-accent/50 hover:bg-accent/15 transition-colors"
+        className="p-6 flex flex-col justify-between lg:border-r group bg-accent/50 hover:bg-accent/15 transition-colors"
       >
         <div className="flex items-center gap-4 text-xl group-hover:underline">
           <Components.Icon />
@@ -93,12 +93,12 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
         </div>
         <Components.Dashboard />
       </Link>
-      <div className="px-6 py-4 w-full flex flex-col gap-4">
+      <div className="p-6 w-full flex flex-col gap-4">
         <p className="text-sm text-muted-foreground flex items-center gap-2">
           <History className="w-3" />
           Recently Viewed
         </p>
-        <div className="h-44 grid xl:grid-cols-2 2xl:grid-cols-3 gap-4">
+        <div className="h-52 grid xl:grid-cols-2 2xl:grid-cols-3 gap-4">
           {ids.map((id, i) => (
             <RecentCard
               key={type + id}
