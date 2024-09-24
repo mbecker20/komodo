@@ -788,6 +788,8 @@ export const DockerContainersSection = ({
   );
 };
 
+const MIN_EDITOR_HEIGHT = 100;
+
 export const MonacoEditor = ({
   value,
   onValueChange,
@@ -813,7 +815,9 @@ export const MonacoEditor = ({
       // from extra padding top
       20;
     const node = editor.getContainerDomNode();
-    node.style.height = `${Math.ceil(contentHeight)}px`;
+    node.style.height = `${Math.ceil(
+      Math.max(contentHeight, MIN_EDITOR_HEIGHT)
+    )}px`;
   }, [editor, line_count]);
 
   const { theme: _theme } = useTheme();

@@ -336,9 +336,17 @@ export const StackConfig = ({
                 "Manage the file contents here, or use a git repo / files on host option.",
               components: {
                 file_contents: (file_contents, set) => {
+                  const show_default =
+                    !file_contents &&
+                    update.file_contents === undefined &&
+                    !(update.repo ?? config.repo);
                   return (
                     <MonacoEditor
-                      value={file_contents}
+                      value={
+                        show_default
+                          ? DEFAULT_STACK_FILE_CONTENTS
+                          : file_contents
+                      }
                       onValueChange={(file_contents) => set({ file_contents })}
                       language="yaml"
                     />
@@ -647,6 +655,24 @@ export const StackConfig = ({
     />
   );
 };
+
+const DEFAULT_STACK_FILE_CONTENTS = `## 🦎 Hello Komodo 🦎
+services:
+  hello_world:
+    image: hello-world
+    # networks:
+    #   - default
+    # ports:
+    #   - 3000:3000
+    # volumes:
+    #   - data:/data
+
+# networks:
+#   default: {}
+
+# volumes:
+#   data:
+`;
 
 const Environment = ({
   env,

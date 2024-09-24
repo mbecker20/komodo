@@ -10,7 +10,7 @@ import {
 } from "@ui/dialog";
 import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { CopyButton } from "./util";
+import { CopyButton, MonacoEditor } from "./util";
 
 export const ExportButton = ({
   targets,
@@ -92,7 +92,11 @@ const ExportPre = ({
     <div className="relative flex justify-center w-full">
       {loading && <Loader2 className="w-8 h-8 animate-spin" />}
       <div className="overflow-y-scroll max-h-[80vh] w-full">
-        <pre className="h-fit w-full">{content}</pre>
+        <MonacoEditor 
+          value={content}
+          language="yaml"
+          readOnly
+        />
       </div>
       <CopyButton content={content} className="absolute top-4 right-4" />
     </div>
