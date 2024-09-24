@@ -67,8 +67,8 @@ export function DataTable<TData, TValue>({
   }, [tableKey, sorting]);
 
   return (
-    <div className="rounded-md border bg-card text-card-foreground shadow py-1 px-1">
-      <Table className="xl:table-fixed border-separate border-spacing-0">
+    <div className="rounded-xl border bg-card text-card-foreground shadow p-2">
+      <Table className="table-fixed border-separate border-spacing-0">
         <TableHeader className="sticky top-0">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -78,7 +78,7 @@ export function DataTable<TData, TValue>({
                     key={header.id}
                     colSpan={header.colSpan}
                     className={cn(
-                      "relative whitespace-nowrap bg-background border-b border-r last:border-r-0"
+                      "relative whitespace-nowrap bg-accent border-b border-r last:border-r-0"
                       // `w-[${header.column.getSize()}px]`
                     )}
                   >
