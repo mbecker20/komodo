@@ -6,6 +6,7 @@ import { Router } from "@router";
 import { WebsocketProvider } from "@lib/socket";
 import { Toaster } from "@ui/toaster";
 import { atomWithStorage } from "@lib/hooks";
+// Run monaco setup
 import "./monaco"
 
 export const AUTH_TOKEN_STORAGE_KEY = "komodo-auth-token";

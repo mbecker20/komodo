@@ -46,6 +46,8 @@ export const BuildConfig = ({
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Build"
       titleOther={titleOther}
       disabled={disabled}
       config={config}

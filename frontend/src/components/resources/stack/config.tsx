@@ -47,6 +47,8 @@ export const StackConfig = ({
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Stack"
       titleOther={titleOther}
       disabled={disabled}
       config={config}

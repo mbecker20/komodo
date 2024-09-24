@@ -46,6 +46,8 @@ export const ResourceSyncConfig = ({
 
   return (
     <Config
+      resource_id={id}
+      resource_type="ResourceSync"
       titleOther={titleOther}
       disabled={disabled}
       config={config}
@@ -133,7 +135,7 @@ export const ResourceSyncConfig = ({
                     <MonacoEditor
                       value={file_contents}
                       onValueChange={(file_contents) => set({ file_contents })}
-                      language="toml"
+                      language="yaml"
                     />
                   );
                 },

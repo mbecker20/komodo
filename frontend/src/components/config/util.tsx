@@ -30,7 +30,12 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
-import { ConfirmButton, TextUpdateMenu } from "@components/util";
+import {
+  ConfirmButton,
+  MonacoDiffEditor,
+  ShowHideButton,
+  TextUpdateMenu,
+} from "@components/util";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   Command,
@@ -41,7 +46,8 @@ import {
   CommandList,
 } from "@ui/command";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
-import { Card } from "@ui/card";
+import { Card, CardContent, CardHeader } from "@ui/card";
+import { text_color_class_by_intention } from "@lib/color";
 
 export const ConfigItem = ({
   label,
@@ -548,6 +554,117 @@ export const ConfirmUpdate = ({
   );
 };
 
+interface ConfirmUpdate2Props<T> {
+  previous: T;
+  content: Partial<T>;
+  onConfirm: () => void;
+  disabled: boolean;
+}
+
+export function ConfirmUpdate2<T>({
+  previous,
+  content,
+  onConfirm,
+  disabled,
+}: ConfirmUpdate2Props<T>) {
+  const [open, set] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={set}>
+      <DialogTrigger asChild>
+        <Button
+          onClick={() => set(true)}
+          disabled={disabled}
+          className="flex items-center gap-2"
+        >
+          <Save className="w-4 h-4" />
+          Save
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-[800px]">
+        <DialogHeader>
+          <DialogTitle>Confirm Update</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 py-4 my-4 max-h-[70vh] overflow-auto">
+          {Object.entries(content).map(([key, val], i) => (
+            <ConfirmUpdateItem
+              key={i}
+              _key={key as any}
+              val={val as any}
+              previous={previous}
+            />
+          ))}
+          {/* <pre className="h-[300px] overflow-auto">{content}</pre> */}
+        </div>
+        <DialogFooter>
+          <ConfirmButton
+            title="Update"
+            icon={<CheckCircle className="w-4 h-4" />}
+            onClick={() => {
+              onConfirm();
+              set(false);
+            }}
+          />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+function ConfirmUpdateItem<T>({
+  _key,
+  val: _val,
+  previous,
+}: {
+  _key: keyof T;
+  val: T[keyof T];
+  previous: T;
+}) {
+  const [show, setShow] = useState(true);
+  const val = typeof _val === "string" ? _val : JSON.stringify(_val, null, 2);
+  const prev_val =
+    typeof previous[_key] === "string"
+      ? previous[_key]
+      : JSON.stringify(previous[_key], null, 2);
+  const showDiff =
+    val.includes("\n") ||
+    prev_val.includes("\n") ||
+    Math.max(val.length, prev_val.length) > 30;
+  return (
+    <div
+      className={cn("mr-6 flex flex-col gap-2", val === prev_val && "hidden")}
+    >
+      <Card>
+        <CardHeader className="p-4 flex flex-row justify-between items-center">
+          <h1 className={text_color_class_by_intention("Neutral")}>
+            {snake_case_to_upper_space_case(_key as string)}
+          </h1>
+          <ShowHideButton show={show} setShow={setShow} />
+        </CardHeader>
+        {show && (
+          <CardContent>
+            {showDiff ? (
+              <MonacoDiffEditor
+                original={prev_val}
+                modified={val}
+                language="yaml"
+              />
+            ) : (
+              <pre style={{ minHeight: 0 }}>
+                <span className={text_color_class_by_intention("Critical")}>
+                  {prev_val}
+                </span>{" "}
+                <span className="text-muted-foreground">{"->"}</span>{" "}
+                <span className={text_color_class_by_intention("Good")}>
+                  {val}
+                </span>
+              </pre>
+            )}
+          </CardContent>
+        )}
+      </Card>
+    </div>
+  );
+}
+
 export const SystemCommand = ({
   value,
   disabled,
@@ -772,10 +889,7 @@ export const ImageRegistryConfig = ({
   );
 };
 
-const REGISTRY_TYPES: Types.ImageRegistry["type"][] = [
-  "None",
-  "Standard",
-];
+const REGISTRY_TYPES: Types.ImageRegistry["type"][] = ["None", "Standard"];
 
 const RegistryTypeSelector = ({
   registry,

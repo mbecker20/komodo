@@ -1,49 +1,4 @@
-import { loader } from "@monaco-editor/react";
-
 import * as monaco from "monaco-editor";
-import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
-import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
-import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
-import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
-
-self.MonacoEnvironment = {
-  getWorker(_, label) {
-    if (label === "json") {
-      return new jsonWorker();
-    }
-    if (label === "css" || label === "scss" || label === "less") {
-      return new cssWorker();
-    }
-    if (label === "html" || label === "handlebars" || label === "razor") {
-      return new htmlWorker();
-    }
-    if (label === "typescript" || label === "javascript") {
-      return new tsWorker();
-    }
-    return new editorWorker();
-  },
-};
-
-loader.config({ monaco });
-
-monaco.editor.defineTheme("light", {
-  base: "vs",
-  inherit: true,
-  rules: [],
-  colors: {
-    "editor.background": "#f7f8f9",
-  },
-});
-
-monaco.editor.defineTheme("dark", {
-  base: "vs-dark",
-  inherit: true,
-  rules: [],
-  colors: {
-    "editor.background": "#151b25",
-  },
-});
 
 const toml_conf: monaco.languages.LanguageConfiguration = {
   comments: {
@@ -71,6 +26,7 @@ const toml_conf: monaco.languages.LanguageConfiguration = {
   ],
 };
 
+// Includes support for des
 const toml_language = <monaco.languages.IMonarchLanguage>{
   defaultToken: "",
   tokenPostfix: ".toml",
@@ -142,8 +98,8 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
     whitespace: [[/[ \t\r\n]+/, ""]],
 
     string: [
-      // triple-quoted string support
-      [/"""/, { token: "string", next: "@tripleString" }],
+      // triple-quoted string support with YAML inside
+      [/"""/, { token: "string", next: "@tripleStringWithYaml" }],
 
       // single-quoted strings and recover non-terminated strings
       [/"([^"\\]|\\.)*$/, "string.invalid"], // non-terminated string
@@ -154,11 +110,11 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       [/\\./, "invalid.illegal.escape.toml"],
     ],
 
-    tripleString: [
+    tripleStringWithYaml: [
       // End of triple-quoted string
       [/"""/, { token: "string", next: "@pop" }],
-      // Match content within triple-quoted string
-      [/[^"""]+/, "string"],
+      // Match content within triple-quoted string as YAML
+      { include: "@yamlTokenizer" },
     ],
 
     string_double: [
@@ -186,6 +142,56 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
         ],
       ],
     ],
+
+    yamlTokenizer: [
+      // YAML specific content (based on the YAML tokenizer)
+      { include: "@yaml_whitespace" },
+      { include: "@yaml_comments" },
+      { include: "@yaml_keys" },
+      { include: "@yaml_numbers" },
+      { include: "@yaml_booleans" },
+      { include: "@yaml_strings" },
+      { include: "@yaml_constants" },
+    ],
+
+    yaml_whitespace: [[/[ \t\r\n]+/, ""]],
+
+    yaml_comments: [[/#.*$/, "comment"]],
+
+    yaml_keys: [[/([^\s\[\]{},"']+)(\s*)(:)/, ["key", "", "delimiter"]]],
+
+    yaml_numbers: [
+      [/\b\d+\.\d*\b/, "number.float"],
+      [/\b0x[0-9a-fA-F]+\b/, "number.hex"],
+      [/\b\d+\b/, "number"],
+    ],
+
+    yaml_booleans: [
+      [/\b(true|false|yes|no|on|off)\b/, "constant.language.boolean"],
+    ],
+
+    yaml_strings: [
+      [/"([^"\\]|\\.)*$/, "string.invalid"], // non-terminated string
+      [/'([^'\\]|\\.)*$/, "string.invalid"], // non-terminated string
+      [/"/, "string", "@yaml_string_double"],
+      [/'/, "string", "@yaml_string_single"],
+    ],
+
+    yaml_string_double: [
+      [/[^\\"]+/, "string"],
+      [/@escapes/, "string.escape"],
+      [/\\./, "string.escape.invalid"],
+      [/"/, "string", "@pop"],
+    ],
+
+    yaml_string_single: [
+      [/[^\\']+/, "string"],
+      [/@escapes/, "string.escape"],
+      [/\\./, "string.escape.invalid"],
+      [/'/, "string", "@pop"],
+    ],
+
+    yaml_constants: [[/\b(null|~)\b/, "constant.language.null"]],
   },
 };
 

@@ -35,6 +35,8 @@ export const RepoConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Repo"
       disabled={disabled}
       config={config}
       update={update}

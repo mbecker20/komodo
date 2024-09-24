@@ -1,7 +1,7 @@
 import {
   ConfigInput,
   ConfigSwitch,
-  ConfirmUpdate,
+  ConfirmUpdate2,
 } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { cn } from "@lib/utils";
@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "@ui/select";
 import { AlertTriangle, History, Info, Settings } from "lucide-react";
-import { Fragment, ReactNode, SetStateAction, useState } from "react";
+import { Fragment, ReactNode, SetStateAction } from "react";
+import { useLocalStorage } from "@lib/hooks";
 
 const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
@@ -25,6 +26,7 @@ const keys = <T extends Record<string, unknown>>(obj: T) =>
 export const ConfigLayout = <
   T extends Types.Resource<unknown, unknown>["config"]
 >({
+  original,
   config,
   children,
   disabled,
@@ -33,6 +35,7 @@ export const ConfigLayout = <
   selector,
   titleOther,
 }: {
+  original: T;
   config: Partial<T>;
   children: ReactNode;
   disabled: boolean;
@@ -69,8 +72,9 @@ export const ConfigLayout = <
             </Button>
           )}
           {changesMade && (
-            <ConfirmUpdate
-              content={JSON.stringify(config, null, 2)}
+            <ConfirmUpdate2
+              previous={original}
+              content={config}
               onConfirm={onConfirm}
               disabled={disabled}
             />
@@ -107,6 +111,8 @@ type ConfigComponent<T> = {
 };
 
 export const Config = <T,>({
+  resource_id,
+  resource_type,
   config,
   update,
   disabled,
@@ -116,6 +122,8 @@ export const Config = <T,>({
   selector,
   titleOther,
 }: {
+  resource_id: string;
+  resource_type: Types.ResourceTarget["type"];
   config: T;
   update: Partial<T>;
   disabled: boolean;
@@ -128,10 +136,14 @@ export const Config = <T,>({
     ConfigComponent<T>[] | false | undefined
   >;
 }) => {
-  const [show, setShow] = useState(keys(components)[0]);
+  const [show, setShow] = useLocalStorage(
+    `config-${resource_type}-${resource_id}`,
+    keys(components)[0]
+  );
 
   return (
     <ConfigLayout
+      original={config}
       titleOther={titleOther}
       config={update}
       disabled={disabled}

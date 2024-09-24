@@ -50,6 +50,8 @@ export const DeploymentConfig = ({
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Deployment"
       titleOther={titleOther}
       disabled={disabled}
       config={config}

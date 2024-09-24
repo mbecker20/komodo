@@ -75,6 +75,7 @@ const ProcedureConfigInner = ({
   return (
     <div className="flex flex-col gap-8">
       <ConfigLayout
+        original={procedure.config}
         titleOther={
           <div className="flex items-center gap-4 text-muted-foreground">
             <div className="flex items-center gap-2">
