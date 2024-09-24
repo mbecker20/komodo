@@ -22,9 +22,11 @@ use mungos::{
 use periphery_client::api::git::DeleteRepo;
 
 use crate::{
-  config::core_config, helpers::periphery_client, state::{
+  config::core_config,
+  helpers::periphery_client,
+  state::{
     action_states, db_client, repo_state_cache, repo_status_cache,
-  }
+  },
 };
 
 use super::get_check_permissions;

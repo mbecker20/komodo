@@ -106,6 +106,7 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (
@@ -117,6 +118,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (stacks_to_create, stacks_to_update, stacks_to_delete) =
@@ -125,6 +127,7 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (builds_to_create, builds_to_update, builds_to_delete) =
@@ -133,6 +136,7 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (repos_to_create, repos_to_update, repos_to_delete) =
@@ -141,6 +145,7 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (
@@ -152,6 +157,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (builders_to_create, builders_to_update, builders_to_delete) =
@@ -160,6 +166,7 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (alerters_to_create, alerters_to_update, alerters_to_delete) =
@@ -168,6 +175,7 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (
@@ -179,6 +187,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (
@@ -190,6 +199,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (

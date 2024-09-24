@@ -188,6 +188,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get server updates")?,
@@ -196,6 +197,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get deployment updates")?,
@@ -204,6 +206,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get stack updates")?,
@@ -212,6 +215,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get build updates")?,
@@ -220,6 +224,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get repo updates")?,
@@ -228,6 +233,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get procedure updates")?,
@@ -236,6 +242,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get alerter updates")?,
@@ -244,6 +251,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get builder updates")?,
@@ -253,6 +261,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
             delete,
             &all_resources,
             &id_to_tags,
+            &sync.config.match_tags,
           )
           .await
           .context("failed to get server template updates")?,
@@ -263,6 +272,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           delete,
           &all_resources,
           &id_to_tags,
+          &sync.config.match_tags,
         )
         .await
         .context("failed to get resource sync updates")?,

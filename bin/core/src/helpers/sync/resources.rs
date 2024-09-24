@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use formatting::{bold, colored, muted, Color};
 use komodo_client::{
   api::execute::Execution,
@@ -12,6 +14,7 @@ use komodo_client::{
     server::Server,
     server_template::ServerTemplate,
     stack::Stack,
+    tag::Tag,
     update::Log,
     user::sync_user,
     ResourceTarget,
@@ -28,7 +31,8 @@ use crate::{
 };
 
 use super::resource::{
-  AllResourcesById, ToCreate, ToDelete, ToUpdate,
+  include_resource_by_tags, AllResourcesById, ToCreate, ToDelete,
+  ToUpdate,
 };
 
 impl ResourceSync for Server {
@@ -216,27 +220,61 @@ impl ResourceSync for entities::sync::ResourceSync {
     ResourceTarget::ResourceSync(id)
   }
 
-  fn include_resource(config: &Self::Config) -> bool {
+  fn include_resource(
+    config: &Self::Config,
+    resource_tags: &[String],
+    id_to_tags: &HashMap<String, Tag>,
+    match_tags: &[String],
+  ) -> bool {
+    if !include_resource_by_tags(
+      resource_tags,
+      id_to_tags,
+      match_tags,
+    ) {
+      return false;
+    }
     // don't include fresh sync
     let contents_empty = config.file_contents.is_empty();
-    if contents_empty && !config.files_on_host && config.repo.is_empty() {
+    if contents_empty
+      && !config.files_on_host
+      && config.repo.is_empty()
+    {
       return false;
     }
     // The file contents MUST be empty
-    contents_empty && 
+    contents_empty &&
     // The sync must be files on host mode OR NOT managed
     (config.files_on_host || !config.managed)
   }
 
-  fn include_resource_partial(config: &Self::PartialConfig) -> bool {
+  fn include_resource_partial(
+    config: &Self::PartialConfig,
+    resource_tags: &[String],
+    id_to_tags: &HashMap<String, Tag>,
+    match_tags: &[String],
+  ) -> bool {
+    if !include_resource_by_tags(
+      resource_tags,
+      id_to_tags,
+      match_tags,
+    ) {
+      return false;
+    }
     // don't include fresh sync
-    let contents_empty = config.file_contents.as_ref().map(String::is_empty).unwrap_or(true);
+    let contents_empty = config
+      .file_contents
+      .as_ref()
+      .map(String::is_empty)
+      .unwrap_or(true);
     let files_on_host = config.files_on_host.unwrap_or_default();
-    if contents_empty && !files_on_host && config.repo.as_ref().map(String::is_empty).unwrap_or(true) {
+    if contents_empty
+      && !files_on_host
+      && config.repo.as_ref().map(String::is_empty).unwrap_or(true)
+    {
       return false;
     }
     // The file contents MUST be empty
-    contents_empty && 
+    contents_empty &&
     // The sync must be files on host mode OR NOT managed
     (files_on_host || !config.managed.unwrap_or_default())
   }

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::Context;
 use formatting::{bold, colored, muted, Color};
@@ -12,7 +12,7 @@ use komodo_client::{
     user::sync_user, ResourceTarget,
   },
 };
-use mungos::find::find_collect;
+use mungos::{find::find_collect, mongodb::bson::oid::ObjectId};
 use partial_derive2::{Diff, FieldDiff, MaybeNone};
 use resolver_api::Resolve;
 
@@ -32,17 +32,44 @@ pub struct ToUpdateItem<T: Default> {
   pub update_tags: bool,
 }
 
+pub fn include_resource_by_tags(
+  resource_tags: &[String],
+  id_to_tags: &HashMap<String, Tag>,
+  match_tags: &[String],
+) -> bool {
+  let tag_names = resource_tags
+    .iter()
+    .filter_map(|resource_tag| {
+      match ObjectId::from_str(&resource_tag) {
+        Ok(_) => id_to_tags.get(resource_tag).map(|tag| &tag.name),
+        Err(_) => Some(resource_tag),
+      }
+    })
+    .collect::<Vec<_>>();
+  match_tags.iter().all(|tag| tag_names.contains(&tag))
+}
+
 pub trait ResourceSync: KomodoResource + Sized {
   fn resource_target(id: String) -> ResourceTarget;
 
   /// To exclude resource syncs with "file_contents" (they aren't compatible)
-  fn include_resource(_config: &Self::Config) -> bool {
-    true
+  fn include_resource(
+    _config: &Self::Config,
+    resource_tags: &[String],
+    id_to_tags: &HashMap<String, Tag>,
+    match_tags: &[String],
+  ) -> bool {
+    include_resource_by_tags(resource_tags, id_to_tags, match_tags)
   }
 
   /// To exclude resource syncs with "file_contents" (they aren't compatible)
-  fn include_resource_partial(_config: &Self::PartialConfig) -> bool {
-    true
+  fn include_resource_partial(
+    _config: &Self::PartialConfig,
+    resource_tags: &[String],
+    id_to_tags: &HashMap<String, Tag>,
+    match_tags: &[String],
+  ) -> bool {
+    include_resource_by_tags(resource_tags, id_to_tags, match_tags)
   }
 
   /// Apply any changes to incoming toml partial config
@@ -225,12 +252,17 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
+  match_tags: &[String],
 ) -> anyhow::Result<Option<SyncUpdate>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
-    .filter(|r| Resource::include_resource(&r.config))
+    .filter(|r| {
+      Resource::include_resource(
+        &r.config, &r.tags, id_to_tags, match_tags,
+      )
+    })
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 
@@ -251,7 +283,12 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
 
   for mut resource in resources {
     // only resource that might not be included is resource sync
-    if !Resource::include_resource_partial(&resource.config) {
+    if !Resource::include_resource_partial(
+      &resource.config,
+      &resource.tags,
+      id_to_tags,
+      match_tags,
+    ) {
       continue;
     }
     match map.get(&resource.name) {
@@ -374,12 +411,20 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
+  match_tags: &[String],
 ) -> anyhow::Result<UpdatesResult<Resource::PartialConfig>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
-    .filter(|r| Resource::include_resource(&r.config.clone().into()))
+    .filter(|r| {
+      Resource::include_resource(
+        &r.config.clone().into(),
+        &r.tags,
+        id_to_tags,
+        match_tags,
+      )
+    })
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 
@@ -397,7 +442,12 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
 
   for mut resource in resources {
     // only resource that might not be included is resource sync
-    if !Resource::include_resource_partial(&resource.config) {
+    if !Resource::include_resource_partial(
+      &resource.config,
+      &resource.tags,
+      id_to_tags,
+      match_tags,
+    ) {
       continue;
     }
     match map.get(&resource.name) {
