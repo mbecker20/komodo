@@ -12,6 +12,8 @@ use crate::{
   state::resource_sync_lock_cache,
 };
 
+use super::file::extend_resources;
+
 pub struct RemoteResources {
   pub resources: anyhow::Result<ResourcesToml>,
   pub files: Vec<FileContents>,
@@ -21,6 +23,7 @@ pub struct RemoteResources {
   pub message: Option<String>,
 }
 
+/// Use `match_tags` to filter resources by tag.
 pub async fn get_remote_resources(
   sync: &ResourceSync,
 ) -> anyhow::Result<RemoteResources> {
@@ -37,6 +40,7 @@ pub async fn get_remote_resources(
       (Vec::new(), Vec::new(), Vec::new());
     let resources = super::file::read_resources(
       &path,
+      &sync.config.match_tags,
       &mut logs,
       &mut files,
       &mut file_errors,
@@ -55,12 +59,23 @@ pub async fn get_remote_resources(
     // ==========
     // UI DEFINED
     // ==========
-    let resources = if sync.config.file_contents.is_empty() {
-      Ok(ResourcesToml::default())
-    } else {
+    let mut resources = ResourcesToml::default();
+    let resources = if !sync.config.file_contents.is_empty() {
       toml::from_str::<ResourcesToml>(&sync.config.file_contents)
-        .context("Failed to parse UI defined resources")
+        .context("failed to parse resource file contents")
+        .map(|more| {
+          extend_resources(
+            &mut resources,
+            more,
+            &sync.config.match_tags,
+          );
+          resources
+        })
+    } else {
+      Ok(resources)
     };
+
+    // filter_by_
     return Ok(RemoteResources {
       resources,
       files: vec![FileContents {
@@ -144,6 +159,7 @@ pub async fn get_remote_resources(
   let (mut files, mut file_errors) = (Vec::new(), Vec::new());
   let resources = super::file::read_resources(
     &resource_path,
+    &sync.config.match_tags,
     &mut logs,
     &mut files,
     &mut file_errors,

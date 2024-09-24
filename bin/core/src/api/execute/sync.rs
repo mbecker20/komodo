@@ -59,7 +59,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     let RemoteResources {
-      resources: res,
+      resources,
       logs,
       hash,
       message,
@@ -71,10 +71,12 @@ impl Resolve<RunSync, (User, Update)> for State {
     update.logs.extend(logs);
     update_update(update.clone()).await?;
 
-    let resources = res?;
+    let resources = resources?;
 
     let id_to_tags = get_id_to_tags(None).await?;
-    let all_resources = AllResourcesById::load().await?;
+    let all_resources =
+      AllResourcesById::load(&id_to_tags, &sync.config.match_tags)
+        .await?;
 
     let deployments_by_name = all_resources
       .deployments

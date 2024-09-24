@@ -12,6 +12,7 @@ use komodo_client::{
     komodo_timestamp,
     permission::PermissionLevel,
     resource::{AddFilters, Resource, ResourceQuery},
+    tag::Tag,
     to_komodo_name,
     update::Update,
     user::User,
@@ -435,6 +436,8 @@ pub type IdResourceMap<T> = HashMap<
 
 #[instrument(level = "debug")]
 pub async fn get_id_to_resource_map<T: KomodoResource>(
+  id_to_tags: &HashMap<String, Tag>,
+  match_tags: &[String],
 ) -> anyhow::Result<IdResourceMap<T>> {
   let res = find_collect(T::coll().await, None, None)
     .await
@@ -442,6 +445,34 @@ pub async fn get_id_to_resource_map<T: KomodoResource>(
       format!("failed to pull {}s from mongo", T::resource_type())
     })?
     .into_iter()
+    .filter(|resource| {
+      if match_tags.is_empty() {
+        return true;
+      }
+      for tag in match_tags.iter() {
+        for resource_tag in &resource.tags {
+          match ObjectId::from_str(resource_tag) {
+            Ok(_) => match id_to_tags
+              .get(resource_tag)
+              .map(|tag| tag.name.as_str())
+            {
+              Some(name) => {
+                if tag != name {
+                  return false;
+                }
+              }
+              None => return false,
+            },
+            Err(_) => {
+              if resource_tag != tag {
+                return false;
+              }
+            }
+          }
+        }
+      }
+      true
+    })
     .map(|r| (r.id.clone(), r))
     .collect();
   Ok(res)

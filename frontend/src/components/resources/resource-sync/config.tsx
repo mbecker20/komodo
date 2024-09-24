@@ -44,8 +44,6 @@ export const ResourceSyncConfig = ({
 
   const show_git = !managed && !files_on_host && !ui_defined;
 
-  const fresh_sync = !files_on_host && !file_contents && !repo_selected;
-
   return (
     <Config
       titleOther={titleOther}
@@ -90,7 +88,6 @@ export const ResourceSyncConfig = ({
           },
           {
             label: "Match Tags",
-            hidden: !managed && !fresh_sync,
             contentHidden:
               (update.match_tags ?? config.match_tags)?.length === 0,
             actions: !disabled && (

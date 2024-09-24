@@ -537,36 +537,52 @@ pub struct AllResourcesById {
 }
 
 impl AllResourcesById {
-  /// ignore_sync can be id or name
-  pub async fn load() -> anyhow::Result<Self> {
+  /// Use `match_tags` to filter resources by tag.
+  pub async fn load(
+    id_to_tags: &HashMap<String, Tag>,
+    match_tags: &[String],
+  ) -> anyhow::Result<Self> {
     Ok(Self {
-      servers: crate::resource::get_id_to_resource_map::<Server>()
-        .await?,
+      servers: crate::resource::get_id_to_resource_map::<Server>(
+        id_to_tags, match_tags,
+      )
+      .await?,
       deployments: crate::resource::get_id_to_resource_map::<
         Deployment,
-      >()
+      >(id_to_tags, match_tags)
       .await?,
-      builds: crate::resource::get_id_to_resource_map::<Build>()
-        .await?,
-      repos: crate::resource::get_id_to_resource_map::<Repo>()
-        .await?,
+      builds: crate::resource::get_id_to_resource_map::<Build>(
+        id_to_tags, match_tags,
+      )
+      .await?,
+      repos: crate::resource::get_id_to_resource_map::<Repo>(
+        id_to_tags, match_tags,
+      )
+      .await?,
       procedures:
-        crate::resource::get_id_to_resource_map::<Procedure>().await?,
-      builders: crate::resource::get_id_to_resource_map::<Builder>()
+        crate::resource::get_id_to_resource_map::<Procedure>(
+          id_to_tags, match_tags,
+        )
         .await?,
-      alerters: crate::resource::get_id_to_resource_map::<Alerter>()
-        .await?,
+      builders: crate::resource::get_id_to_resource_map::<Builder>(
+        id_to_tags, match_tags,
+      )
+      .await?,
+      alerters: crate::resource::get_id_to_resource_map::<Alerter>(
+        id_to_tags, match_tags,
+      )
+      .await?,
       templates: crate::resource::get_id_to_resource_map::<
         ServerTemplate,
-      >()
+      >(id_to_tags, match_tags)
       .await?,
       syncs: crate::resource::get_id_to_resource_map::<
         entities::sync::ResourceSync,
-      >()
+      >(id_to_tags, match_tags)
       .await?,
       stacks: crate::resource::get_id_to_resource_map::<
         entities::stack::Stack,
-      >()
+      >(id_to_tags, match_tags)
       .await?,
     })
   }

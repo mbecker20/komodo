@@ -19,10 +19,14 @@ use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;
 
 use crate::{
-  config::core_config, helpers::{
+  config::core_config,
+  helpers::{
     empty_or_only_spaces, periphery_client,
     query::get_deployment_state,
-  }, monitor::update_cache_for_server, resource, state::{action_states, db_client, deployment_status_cache}
+  },
+  monitor::update_cache_for_server,
+  resource,
+  state::{action_states, db_client, deployment_status_cache},
 };
 
 use super::get_check_permissions;

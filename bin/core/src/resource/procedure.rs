@@ -27,7 +27,10 @@ use mungos::{
   mongodb::{bson::doc, options::FindOneOptions, Collection},
 };
 
-use crate::{config::core_config, state::{action_states, db_client, procedure_state_cache}};
+use crate::{
+  config::core_config,
+  state::{action_states, db_client, procedure_state_cache},
+};
 
 impl super::KomodoResource for Procedure {
   type Config = ProcedureConfig;
