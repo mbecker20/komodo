@@ -38,7 +38,7 @@ export const TopbarAlerts = () => {
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger disabled={!data?.alerts.length}>
+        <DropdownMenuTrigger asChild disabled={!data?.alerts.length}>
           <Button variant="ghost" size="icon" className="relative">
             <AlertTriangle className="w-4 h-4" />
             {!!data?.alerts.length && (
