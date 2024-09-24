@@ -35,6 +35,16 @@ pub struct ToUpdateItem<T: Default> {
 pub trait ResourceSync: KomodoResource + Sized {
   fn resource_target(id: String) -> ResourceTarget;
 
+  /// To exclude resource syncs with "file_contents" (they aren't compatible)
+  fn include_resource(_config: &Self::Config) -> bool {
+    true
+  }
+
+  /// To exclude resource syncs with "file_contents" (they aren't compatible)
+  fn include_resource_partial(_config: &Self::PartialConfig) -> bool {
+    true
+  }
+
   /// Apply any changes to incoming toml partial config
   /// before it is diffed against existing config
   fn validate_partial_config(_config: &mut Self::PartialConfig) {}
@@ -215,18 +225,12 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
-  ignore_name: Option<String>,
 ) -> anyhow::Result<Option<SyncUpdate>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
-    .filter(|r| {
-      ignore_name
-        .as_ref()
-        .map(|name| name != &r.name)
-        .unwrap_or(true)
-    })
+    .filter(|r| Resource::include_resource(&r.config))
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 
@@ -246,6 +250,10 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
   }
 
   for mut resource in resources {
+    // only resource that might not be included is resource sync
+    if !Resource::include_resource_partial(&resource.config) {
+      continue;
+    }
     match map.get(&resource.name) {
       Some(original) => {
         // First merge toml resource config (partial) onto default resource config.
@@ -366,18 +374,12 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
   delete: bool,
   all_resources: &AllResourcesById,
   id_to_tags: &HashMap<String, Tag>,
-  ignore_name: Option<String>,
 ) -> anyhow::Result<UpdatesResult<Resource::PartialConfig>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
-    .filter(|r| {
-      ignore_name
-        .as_ref()
-        .map(|name| name != &r.name)
-        .unwrap_or(true)
-    })
+    .filter(|r| Resource::include_resource(&r.config.clone().into()))
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 
@@ -394,6 +396,10 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
   }
 
   for mut resource in resources {
+    // only resource that might not be included is resource sync
+    if !Resource::include_resource_partial(&resource.config) {
+      continue;
+    }
     match map.get(&resource.name) {
       Some(original) => {
         // First merge toml resource config (partial) onto default resource config.
@@ -532,9 +538,7 @@ pub struct AllResourcesById {
 
 impl AllResourcesById {
   /// ignore_sync can be id or name
-  pub async fn load(
-    ignore_sync: Option<String>,
-  ) -> anyhow::Result<Self> {
+  pub async fn load() -> anyhow::Result<Self> {
     Ok(Self {
       servers: crate::resource::get_id_to_resource_map::<Server>()
         .await?,
@@ -559,15 +563,7 @@ impl AllResourcesById {
       syncs: crate::resource::get_id_to_resource_map::<
         entities::sync::ResourceSync,
       >()
-      .await?
-      .into_iter()
-      .filter(|(id, resource)| {
-        let Some(ignore) = &ignore_sync else {
-          return true;
-        };
-        ignore != id && ignore != &resource.name
-      })
-      .collect(),
+      .await?,
       stacks: crate::resource::get_id_to_resource_map::<
         entities::stack::Stack,
       >()

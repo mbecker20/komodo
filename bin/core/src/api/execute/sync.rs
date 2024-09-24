@@ -71,19 +71,10 @@ impl Resolve<RunSync, (User, Update)> for State {
     update.logs.extend(logs);
     update_update(update.clone()).await?;
 
-    let mut resources = res?;
-
-    if sync.config.managed {
-      // remove this sync from resources if managed
-      resources.resource_syncs.retain(|s| s.name != sync.name);
-    }
+    let resources = res?;
 
     let id_to_tags = get_id_to_tags(None).await?;
-    let all_resources = AllResourcesById::load(
-      // remove this sync from resources if managed
-      sync.config.managed.then(|| sync.name.clone()),
-    )
-    .await?;
+    let all_resources = AllResourcesById::load().await?;
 
     let deployments_by_name = all_resources
       .deployments
@@ -113,7 +104,6 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
-        None,
       )
       .await?;
     let (
@@ -125,7 +115,6 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
-      None,
     )
     .await?;
     let (stacks_to_create, stacks_to_update, stacks_to_delete) =
@@ -134,7 +123,6 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
-        None,
       )
       .await?;
     let (builds_to_create, builds_to_update, builds_to_delete) =
@@ -143,7 +131,6 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
-        None,
       )
       .await?;
     let (repos_to_create, repos_to_update, repos_to_delete) =
@@ -152,7 +139,6 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
-        None,
       )
       .await?;
     let (
@@ -164,7 +150,6 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
-      None,
     )
     .await?;
     let (builders_to_create, builders_to_update, builders_to_delete) =
@@ -173,7 +158,6 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
-        None,
       )
       .await?;
     let (alerters_to_create, alerters_to_update, alerters_to_delete) =
@@ -182,7 +166,6 @@ impl Resolve<RunSync, (User, Update)> for State {
         delete,
         &all_resources,
         &id_to_tags,
-        None,
       )
       .await?;
     let (
@@ -194,7 +177,6 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
-      None,
     )
     .await?;
     let (
@@ -206,7 +188,6 @@ impl Resolve<RunSync, (User, Update)> for State {
       delete,
       &all_resources,
       &id_to_tags,
-      sync.config.managed.then(|| sync.name.clone()),
     )
     .await?;
     let (

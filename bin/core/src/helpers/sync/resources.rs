@@ -216,6 +216,31 @@ impl ResourceSync for entities::sync::ResourceSync {
     ResourceTarget::ResourceSync(id)
   }
 
+  fn include_resource(config: &Self::Config) -> bool {
+    // don't include fresh sync
+    let contents_empty = config.file_contents.is_empty();
+    if contents_empty && !config.files_on_host && config.repo.is_empty() {
+      return false;
+    }
+    // The file contents MUST be empty
+    contents_empty && 
+    // The sync must be files on host mode OR NOT managed
+    (config.files_on_host || !config.managed)
+  }
+
+  fn include_resource_partial(config: &Self::PartialConfig) -> bool {
+    // don't include fresh sync
+    let contents_empty = config.file_contents.as_ref().map(String::is_empty).unwrap_or(true);
+    let files_on_host = config.files_on_host.unwrap_or_default();
+    if contents_empty && !files_on_host && config.repo.as_ref().map(String::is_empty).unwrap_or(true) {
+      return false;
+    }
+    // The file contents MUST be empty
+    contents_empty && 
+    // The sync must be files on host mode OR NOT managed
+    (files_on_host || !config.managed.unwrap_or_default())
+  }
+
   fn get_diff(
     original: Self::Config,
     update: Self::PartialConfig,

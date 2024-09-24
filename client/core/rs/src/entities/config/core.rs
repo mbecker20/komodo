@@ -198,8 +198,10 @@ pub struct Env {
 
   /// Override `periphery_accept_self_signed_certs`
   pub komodo_periphery_accept_self_signed_certs: Option<bool>,
-  /// Override `periphery_ca_pem_path`
-  pub komodo_periphery_ca_pem_path: Option<PathBuf>,
+  /// Override `periphery_ca_cert_path`
+  pub komodo_periphery_ca_cert_path: Option<PathBuf>,
+  /// Override `periphery_ca_key_path`
+  pub komodo_periphery_ca_key_path: Option<PathBuf>,
 }
 
 fn default_config_path() -> String {
@@ -453,11 +455,13 @@ pub struct CoreConfig {
   #[serde(default = "default_periphery_accept_self_signed_certs")]
   pub periphery_accept_self_signed_certs: bool,
 
-  /// Path to ca pem directory.
-  ///
-  /// Create your own CA and sign ssl certs for Periphery Agents for added security.
-  #[serde(default = "default_periphery_ca_pem_path")]
-  pub periphery_ca_pem_path: PathBuf,
+  /// Path to periphery ca cert.
+  #[serde(default = "default_periphery_ca_cert_path")]
+  pub periphery_ca_cert_path: PathBuf,
+
+  /// Path to periphery ca key.
+  #[serde(default = "default_periphery_ca_key_path")]
+  pub periphery_ca_key_path: PathBuf,
 }
 
 fn default_title() -> String {
@@ -494,19 +498,23 @@ fn default_monitoring_interval() -> Timelength {
 }
 
 fn default_ssl_key() -> PathBuf {
-  "/etc/komodo/ssl/key.pem".parse().unwrap()
+  "/etc/komodo/ssl/core/key.pem".parse().unwrap()
 }
 
 fn default_ssl_cert() -> PathBuf {
-  "/etc/komodo/ssl/cert.pem".parse().unwrap()
+  "/etc/komodo/ssl/core/cert.pem".parse().unwrap()
 }
 
 fn default_periphery_accept_self_signed_certs() -> bool {
   true
 }
 
-fn default_periphery_ca_pem_path() -> PathBuf {
-  "/etc/komodo/ssl/ca.pem".parse().unwrap()
+fn default_periphery_ca_cert_path() -> PathBuf {
+  "/etc/komodo/ssl/periphery/ca.crt".parse().unwrap()
+}
+
+fn default_periphery_ca_key_path() -> PathBuf {
+  "/etc/komodo/ssl/periphery/ca.key".parse().unwrap()
 }
 
 impl CoreConfig {
@@ -604,7 +612,8 @@ impl CoreConfig {
       ssl_cert: config.ssl_cert,
       periphery_accept_self_signed_certs: config
         .periphery_accept_self_signed_certs,
-      periphery_ca_pem_path: config.periphery_ca_pem_path,
+      periphery_ca_cert_path: config.periphery_ca_cert_path,
+      periphery_ca_key_path: config.periphery_ca_key_path,
     }
   }
 }

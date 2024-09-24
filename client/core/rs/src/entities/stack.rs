@@ -57,6 +57,10 @@ pub type StackListItem = ResourceListItem<StackListItemInfo>;
 pub struct StackListItemInfo {
   /// The server that stack is deployed on.
   pub server_id: String,
+  /// Whether stack is using files on host mode
+  pub files_on_host: bool,
+  /// Whether stack has file contents defined.
+  pub file_contents: bool,
   /// The git provider domain
   pub git_provider: String,
   /// The configured repo

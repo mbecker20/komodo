@@ -13,14 +13,8 @@ import { createRef, ReactNode, useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton } from "@components/util";
-import {
-  Ban,
-  ChevronDown,
-  ChevronUp,
-  CirclePlus,
-  PlusCircle,
-} from "lucide-react";
+import { ConfirmButton, MonacoEditor } from "@components/util";
+import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { env_to_text } from "@lib/utils";
 import { Textarea } from "@ui/textarea";
 import { Button } from "@ui/button";
@@ -41,8 +35,6 @@ export const StackConfig = ({
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.StackConfig>>({});
   const { mutateAsync } = useWrite("UpdateStack");
-  const [fileContentsOpen, setFileContentsOpen] = useState(false);
-  const fileContentsRef = createRef<HTMLTextAreaElement>();
 
   if (!config) return null;
 
@@ -51,6 +43,7 @@ export const StackConfig = ({
   const ui_file_contents =
     (update.file_contents ?? config.file_contents ?? "").length > 0;
   const run_build = update.run_build ?? config.run_build;
+  const repo_set = update.repo ?? config.repo ? true : false;
 
   return (
     <Config
@@ -99,6 +92,48 @@ export const StackConfig = ({
                 description:
                   "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
               },
+              run_build: {
+                label: "Auto Build Images",
+                boldLabel: true,
+                description:
+                  "Ensure 'docker compose build' is run *before* redeploying the Stack. Otherwise, can use '--build' as an Extra Arg",
+              },
+            },
+          },
+          {
+            label: "Build Extra Args",
+            hidden: !run_build,
+            description: "Add extra args inserted after 'docker compose build'",
+            contentHidden:
+              ((update.build_extra_args ?? config.build_extra_args)?.length ??
+                0) === 0,
+            actions: !disabled && (
+              <AddExtraArgMenu
+                type="StackBuild"
+                onSelect={(suggestion) =>
+                  set((update) => ({
+                    ...update,
+                    build_extra_args: [
+                      ...(update.build_extra_args ??
+                        config.build_extra_args ??
+                        []),
+                      suggestion,
+                    ],
+                  }))
+                }
+                disabled={disabled}
+              />
+            ),
+            components: {
+              build_extra_args: (value, set) => (
+                <InputList
+                  field="build_extra_args"
+                  values={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="--extra-arg=value"
+                />
+              ),
             },
           },
           {
@@ -149,66 +184,6 @@ export const StackConfig = ({
                   placeholder="compose.yaml"
                 />
               ),
-            },
-          },
-          {
-            label: "Compose File",
-            hidden: files_on_host,
-            description:
-              "Paste the file contents here, or use a git repo / files on host option.",
-            actions: (
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-4"
-                onClick={() => setFileContentsOpen(!fileContentsOpen)}
-              >
-                {fileContentsOpen ? "Hide" : "Show"}
-                {fileContentsOpen ? (
-                  <ChevronUp className="w-4" />
-                ) : (
-                  <ChevronDown className="w-4" />
-                )}
-              </Button>
-            ),
-            contentHidden: !fileContentsOpen,
-            components: {
-              file_contents: (file_contents, set) => {
-                return (
-                  <Textarea
-                    ref={fileContentsRef}
-                    value={file_contents}
-                    disabled={disabled}
-                    onChange={(e) => set({ file_contents: e.target.value })}
-                    className="min-h-[400px] h-fit"
-                    placeholder="Paste compose file contents"
-                    spellCheck={false}
-                    onKeyDown={(e) => {
-                      if (e.key === "Tab") {
-                        e.preventDefault();
-                        if (!fileContentsRef.current) return;
-
-                        const start = fileContentsRef.current.selectionStart;
-                        const end = fileContentsRef.current.selectionEnd;
-
-                        const SPACE_COUNT = 4;
-
-                        // set textarea value to: text before caret + tab + text after caret
-                        fileContentsRef.current.value =
-                          fileContentsRef.current.value.substring(0, start) +
-                          // Use four spaces for indent
-                          " ".repeat(SPACE_COUNT) +
-                          fileContentsRef.current.value.substring(end);
-
-                        // put caret at right position again
-                        fileContentsRef.current.selectionStart =
-                          fileContentsRef.current.selectionEnd =
-                            start + SPACE_COUNT;
-                      }
-                    }}
-                  />
-                );
-              },
             },
           },
           {
@@ -351,6 +326,25 @@ export const StackConfig = ({
             },
           },
         ],
+        "Compose File": !files_on_host &&
+          !repo_set && [
+            {
+              label: "Compose File",
+              description:
+                "Manage the file contents here, or use a git repo / files on host option.",
+              components: {
+                file_contents: (file_contents, set) => {
+                  return (
+                    <MonacoEditor
+                      value={file_contents}
+                      onValueChange={(file_contents) => set({ file_contents })}
+                      language="yaml"
+                    />
+                  );
+                },
+              },
+            },
+          ],
         "Git Repo": !files_on_host &&
           !ui_file_contents && [
             {
@@ -627,56 +621,6 @@ export const StackConfig = ({
               },
             },
           ],
-        build: [
-          {
-            label: "Build",
-            labelHidden: true,
-            components: {
-              run_build: {
-                label: "Auto Build Images",
-                boldLabel: true,
-                description:
-                  "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, use '--build' as an Extra Arg",
-              },
-            },
-          },
-          {
-            label: "Build Extra Args",
-            hidden: !run_build,
-            description: "Add extra args inserted after 'docker compose build'",
-            contentHidden:
-              ((update.build_extra_args ?? config.build_extra_args)?.length ??
-                0) === 0,
-            actions: !disabled && (
-              <AddExtraArgMenu
-                type="StackBuild"
-                onSelect={(suggestion) =>
-                  set((update) => ({
-                    ...update,
-                    build_extra_args: [
-                      ...(update.build_extra_args ??
-                        config.build_extra_args ??
-                        []),
-                      suggestion,
-                    ],
-                  }))
-                }
-                disabled={disabled}
-              />
-            ),
-            components: {
-              build_extra_args: (value, set) => (
-                <InputList
-                  field="build_extra_args"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-        ],
         environment: [
           {
             label: "Environment",

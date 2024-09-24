@@ -192,8 +192,10 @@ pub fn core_config() -> &'static CoreConfig {
       ssl_cert: env.komodo_ssl_cert.unwrap_or(config.ssl_cert),
       periphery_accept_self_signed_certs: env.komodo_periphery_accept_self_signed_certs
         .unwrap_or(config.periphery_accept_self_signed_certs),
-      periphery_ca_pem_path: env.komodo_periphery_ca_pem_path
-        .unwrap_or(config.periphery_ca_pem_path),
+      periphery_ca_cert_path: env.komodo_periphery_ca_cert_path
+        .unwrap_or(config.periphery_ca_cert_path),
+      periphery_ca_key_path: env.komodo_periphery_ca_key_path
+        .unwrap_or(config.periphery_ca_key_path),
 
       // These can't be overridden on env
       secrets: config.secrets,

@@ -188,7 +188,7 @@ export const filterBySplit = <T>(
 };
 
 export const sync_no_changes = (sync: Types.ResourceSync) => {
-  const pending = sync.info?.pending.data;
+  const pending = sync.info?.pending?.data;
   if (!pending) return false;
   if (pending.type === "Err") return false;
   return (

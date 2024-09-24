@@ -52,32 +52,47 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigInfoServices = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage("stack-tabs-v1", "Config");
+  const [_view, setView] = useLocalStorage<"Config" | "Info" | "Services">(
+    "stack-tabs-v1",
+    "Config"
+  );
   const info = useStack(id)?.info;
+
   const state = info?.state;
-  const stackDown =
+  const hideInfo = info?.files_on_host ? false : info?.file_contents;
+  const hideServices =
     state === undefined ||
     state === Types.StackState.Unknown ||
     state === Types.StackState.Down;
+
+  const view =
+    (_view === "Info" && hideInfo) || (_view === "Services" && hideServices)
+      ? "Config"
+      : _view;
+
   const title = (
     <TabsList className="justify-start w-fit">
       <TabsTrigger value="Config" className="w-[110px]">
         Config
       </TabsTrigger>
-      <TabsTrigger value="Info" className="w-[110px]">
+      <TabsTrigger
+        value="Info"
+        className={cn("w-[110px]", hideInfo && "hidden")}
+        disabled={hideInfo}
+      >
         Info
       </TabsTrigger>
-      <TabsTrigger value="Services" className="w-[110px]" disabled={stackDown}>
+      <TabsTrigger
+        value="Services"
+        className="w-[110px]"
+        disabled={hideServices}
+      >
         Services
       </TabsTrigger>
     </TabsList>
   );
   return (
-    <Tabs
-      value={stackDown && view === "Services" ? "Config" : view}
-      onValueChange={setView}
-      className="grid gap-4"
-    >
+    <Tabs value={view} onValueChange={setView as any} className="grid gap-4">
       <TabsContent value="Config">
         <StackConfig id={id} titleOther={title} />
       </TabsContent>

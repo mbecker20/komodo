@@ -2536,6 +2536,10 @@ export enum StackState {
 export interface StackListItemInfo {
 	/** The server that stack is deployed on. */
 	server_id: string;
+	/** Whether stack is using files on host mode */
+	files_on_host: boolean;
+	/** Whether stack has file contents defined. */
+	file_contents: boolean;
 	/** The git provider domain */
 	git_provider: string;
 	/** The configured repo */
@@ -2702,12 +2706,12 @@ export enum ResourceSyncState {
 export interface ResourceSyncListItemInfo {
 	/** Unix timestamp of last sync, or 0 */
 	last_sync_ts: I64;
-	/** Short commit hash of last sync, or empty string */
-	last_sync_hash?: string;
-	/** Commit message of last sync, or empty string */
-	last_sync_message?: string;
 	/** Whether sync is `files_on_host` mode. */
 	files_on_host: boolean;
+	/** Whether sync has file contents defined. */
+	file_contents: boolean;
+	/** Whether sync has `managed` mode enabled. */
+	managed: boolean;
 	/** Resource path to the files. */
 	resource_path: string;
 	/** The git provider domain. */
@@ -2716,6 +2720,10 @@ export interface ResourceSyncListItemInfo {
 	repo: string;
 	/** The branch of the repo */
 	branch: string;
+	/** Short commit hash of last sync, or empty string */
+	last_sync_hash?: string;
+	/** Commit message of last sync, or empty string */
+	last_sync_message?: string;
 	/** State of the sync. Reflects whether most recent sync successful. */
 	state: ResourceSyncState;
 }
@@ -4966,11 +4974,6 @@ export interface ListTags {
 export interface ExportAllResourcesToToml {
 	/** Tag name or id. Empty array will not filter by tag. */
 	tags?: string[];
-	/**
-	 * Exclude a sync by name or id.
-	 * For internal use (syncs can't manage themselves, or problems).
-	 */
-	exclude_sync?: string;
 }
 
 /**

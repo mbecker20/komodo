@@ -122,7 +122,8 @@ export const RestartStack = ({
     !stack ||
     stack?.info.project_missing ||
     (service && container_state !== Types.ContainerStateStatusEnum.Running) ||
-    state !== Types.StackState.Running
+    // Only show if running or unhealthy
+    (state !== Types.StackState.Running && state !== Types.StackState.Unhealthy)
   ) {
     return null;
   }
@@ -165,35 +166,38 @@ export const StartStopStack = ({
     return null;
   }
 
-  if (
+  const showStart =
     (service && container_state === Types.ContainerStateStatusEnum.Exited) ||
-    state === Types.StackState.Stopped
-  ) {
-    return (
-      <ConfirmButton
-        title="Start"
-        icon={<Play className="h-4 w-4" />}
-        onClick={() => start({ stack: id, service })}
-        disabled={startPending}
-        loading={startPending || action_state?.starting}
-      />
-    );
-  }
-  if (
+    state === Types.StackState.Stopped ||
+    state === Types.StackState.Unhealthy;
+  const showStop =
     (service && container_state === Types.ContainerStateStatusEnum.Running) ||
-    state === Types.StackState.Running
-  ) {
-    return (
-      <ActionWithDialog
-        name={`${stack?.name}${service ? ` - ${service}` : ""}`}
-        title="Stop"
-        icon={<Square className="h-4 w-4" />}
-        onClick={() => stop({ stack: id, service })}
-        disabled={stopPending}
-        loading={stopPending || action_state?.stopping}
-      />
-    );
-  }
+    state === Types.StackState.Running ||
+    state === Types.StackState.Unhealthy;
+
+  return (
+    <>
+      {showStart && (
+        <ConfirmButton
+          title="Start"
+          icon={<Play className="h-4 w-4" />}
+          onClick={() => start({ stack: id, service })}
+          disabled={startPending}
+          loading={startPending || action_state?.starting}
+        />
+      )}
+      {showStop && (
+        <ActionWithDialog
+          name={`${stack?.name}${service ? ` - ${service}` : ""}`}
+          title="Stop"
+          icon={<Square className="h-4 w-4" />}
+          onClick={() => stop({ stack: id, service })}
+          disabled={stopPending}
+          loading={stopPending || action_state?.stopping}
+        />
+      )}
+    </>
+  );
 };
 
 export const PauseUnpauseStack = ({

@@ -21,10 +21,13 @@ use periphery_client::api::compose::ComposeExecution;
 use resolver_api::Resolve;
 
 use crate::{
-  config::core_config, helpers::{periphery_client, query::get_stack_state}, monitor::update_cache_for_server, state::{
+  config::core_config,
+  helpers::{periphery_client, query::get_stack_state},
+  monitor::update_cache_for_server,
+  state::{
     action_states, db_client, server_status_cache,
     stack_status_cache, State,
-  }
+  },
 };
 
 use super::get_check_permissions;
@@ -105,8 +108,10 @@ impl super::KomodoResource for Stack {
         status,
         services,
         project_missing,
+        file_contents: !stack.config.file_contents.is_empty(),
         server_id: stack.config.server_id,
         missing_files: stack.info.missing_files,
+        files_on_host: stack.config.files_on_host,
         git_provider: stack.config.git_provider,
         repo: stack.config.repo,
         branch: stack.config.branch,

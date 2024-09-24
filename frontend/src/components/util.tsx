@@ -52,6 +52,9 @@ import { Section } from "./layouts";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useRead } from "@lib/hooks";
 import { Prune } from "./resources/server/actions";
+import { useTheme } from "@ui/theme";
+import * as monaco from "monaco-editor";
+import { Editor } from "@monaco-editor/react";
 
 export const WithLoading = ({
   children,
@@ -781,6 +784,72 @@ export const DockerContainersSection = ({
           />
         )}
       </Section>
+    </div>
+  );
+};
+
+export const MonacoEditor = ({
+  value,
+  onValueChange,
+  language,
+  readOnly,
+}: {
+  value: string | undefined;
+  onValueChange?: (value: string) => void;
+  language: "yaml" | "toml";
+  readOnly?: boolean;
+}) => {
+  const [editor, setEditor] =
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+
+  const line_count = value?.split(/\r\n|\r|\n/).length ?? 0;
+
+  useEffect(() => {
+    if (!editor) return;
+    const contentHeight =
+      line_count *
+        // 19 is the line height of default editor theme
+        18.4 +
+      // from extra padding top
+      10;
+    const node = editor.getContainerDomNode();
+    node.style.height = `${Math.ceil(contentHeight)}px`;
+    node.style.borderRadius = "4px";
+  }, [editor, line_count]);
+
+  const { theme: _theme } = useTheme();
+  const theme =
+    _theme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : _theme;
+
+  const options: monaco.editor.IStandaloneEditorConstructionOptions = {
+    minimap: { enabled: false },
+    scrollbar: { alwaysConsumeMouseWheel: false },
+    scrollBeyondLastLine: false,
+    folding: false,
+    automaticLayout: true,
+    renderValidationDecorations: "on",
+    readOnly,
+    tabSize: 2,
+    detectIndentation: true,
+    padding: {
+      top: 10,
+    },
+  };
+
+  return (
+    <div className="mx-2 my-1">
+      <Editor
+        language={language}
+        value={value}
+        theme={theme}
+        options={options}
+        onChange={(v) => onValueChange?.(v ?? "")}
+        onMount={(editor, _monaco) => setEditor(editor)}
+      />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import { Card, CardHeader } from "@ui/card";
 import { useFullResourceSync } from ".";
 import { updateLogToHtml } from "@lib/utils";
+import { MonacoEditor } from "@components/util";
 
 export const ResourceSyncInfo = ({
   id,
@@ -22,7 +23,11 @@ export const ResourceSyncInfo = ({
               {sync?.info?.remote_contents?.map((content, i) => (
                 <pre key={i} className="flex flex-col gap-2">
                   path: {content.path}
-                  <pre>{content.contents}</pre>
+                  <MonacoEditor
+                    value={content.contents}
+                    language="toml"
+                    readOnly
+                  />
                 </pre>
               ))}
             </CardHeader>

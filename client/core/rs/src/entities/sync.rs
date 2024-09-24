@@ -20,12 +20,12 @@ pub type ResourceSyncListItem =
 pub struct ResourceSyncListItemInfo {
   /// Unix timestamp of last sync, or 0
   pub last_sync_ts: I64,
-  /// Short commit hash of last sync, or empty string
-  pub last_sync_hash: Option<String>,
-  /// Commit message of last sync, or empty string
-  pub last_sync_message: Option<String>,
   /// Whether sync is `files_on_host` mode.
   pub files_on_host: bool,
+  /// Whether sync has file contents defined.
+  pub file_contents: bool,
+  /// Whether sync has `managed` mode enabled.
+  pub managed: bool,
   /// Resource path to the files.
   pub resource_path: String,
   /// The git provider domain.
@@ -34,6 +34,10 @@ pub struct ResourceSyncListItemInfo {
   pub repo: String,
   /// The branch of the repo
   pub branch: String,
+  /// Short commit hash of last sync, or empty string
+  pub last_sync_hash: Option<String>,
+  /// Commit message of last sync, or empty string
+  pub last_sync_message: Option<String>,
   /// State of the sync. Reflects whether most recent sync successful.
   pub state: ResourceSyncState,
 }

@@ -55,8 +55,11 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
   );
 };
 
-const ConfigOrChildResources = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage("server-tabs-v1", "Config");
+const ConfigInfoResources = ({ id }: { id: string }) => {
+  const [view, setView] = useLocalStorage<"Config" | "Info" | "Resources">(
+    "server-tabs-v1",
+    "Config"
+  );
 
   const is_admin = useUser().data?.admin ?? false;
   const disable_non_admin_create =
@@ -102,7 +105,7 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
     </TabsList>
   );
   return (
-    <Tabs value={currentView} onValueChange={setView} className="grid gap-4">
+    <Tabs value={currentView} onValueChange={setView as any} className="grid gap-4">
       <TabsContent value="Config">
         <ServerConfig id={id} titleOther={tabsList} />
       </TabsContent>
@@ -436,7 +439,7 @@ export const ServerComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: ConfigOrChildResources,
+  Config: ConfigInfoResources,
 
   DangerZone: ({ id }) => (
     <>

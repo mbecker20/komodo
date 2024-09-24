@@ -49,7 +49,7 @@ use crate::{
 impl Resolve<ExportAllResourcesToToml, User> for State {
   async fn resolve(
     &self,
-    ExportAllResourcesToToml { tags, exclude_sync }: ExportAllResourcesToToml,
+    ExportAllResourcesToToml { tags }: ExportAllResourcesToToml,
     user: User,
   ) -> anyhow::Result<ExportAllResourcesToTomlResponse> {
     let mut targets = Vec::<ResourceTarget>::new();
@@ -136,18 +136,13 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .map(|resource| ResourceTarget::ServerTemplate(resource.id)),
     );
     targets.extend(
-      resource::list_for_user::<ResourceSync>(
+      resource::list_full_for_user::<ResourceSync>(
         ResourceQuery::builder().tags(tags).build(),
         &user,
       )
       .await?
       .into_iter()
-      .filter(|sync| {
-        let Some(ignore) = &exclude_sync else {
-          return true;
-        };
-        &sync.name != ignore && &sync.id != ignore
-      })
+      // These will already be filtered by [ExportResourcesToToml]
       .map(|resource| ResourceTarget::ResourceSync(resource.id)),
     );
 
@@ -209,9 +204,14 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          res
-            .resource_syncs
-            .push(convert_resource::<ResourceSync>(sync, &names.tags))
+          if sync.config.file_contents.is_empty()
+            && (sync.config.files_on_host || !sync.config.managed)
+          {
+            res.resource_syncs.push(convert_resource::<ResourceSync>(
+              sync,
+              &names.tags,
+            ))
+          }
         }
         ResourceTarget::ServerTemplate(id) => {
           let template = resource::get_check_permissions::<

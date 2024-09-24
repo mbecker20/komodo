@@ -3,6 +3,7 @@ import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { sync_no_changes } from "@lib/utils";
 import { useEditPermissions } from "@pages/resource";
 import { NotebookPen, RefreshCcw, SquarePlay } from "lucide-react";
+import { useFullResourceSync } from ".";
 
 export const RefreshSync = ({ id }: { id: string }) => {
   const inv = useInvalidate();
@@ -28,7 +29,7 @@ export const ExecuteSync = ({ id }: { id: string }) => {
     { sync: id },
     { refetchInterval: 5000 }
   ).data?.syncing;
-  const sync = useRead("GetResourceSync", { sync: id }).data;
+  const sync = useFullResourceSync(id);
 
   if (!sync || sync_no_changes(sync) || !sync.info?.remote_contents) {
     return null;
@@ -60,17 +61,24 @@ export const ExecuteSync = ({ id }: { id: string }) => {
 
 export const CommitSync = ({ id }: { id: string }) => {
   const { mutate, isPending } = useWrite("CommitSync");
-  const sync = useRead("GetResourceSync", { sync: id }).data;
+  const sync = useFullResourceSync(id);
   const { canWrite } = useEditPermissions({ type: "ResourceSync", id });
 
-  if (!canWrite) return null;
+  if (!canWrite || !sync) return null;
 
-  if (!sync || !sync.config?.managed || sync_no_changes(sync)) return null;
+  const freshSync =
+    !sync.config?.files_on_host &&
+    !sync.config?.file_contents &&
+    !sync.config?.repo;
+
+  if (!freshSync && (!sync.config?.managed || sync_no_changes(sync))) {
+    return null;
+  }
 
   return (
     <ActionWithDialog
       name={sync.name}
-      title="Commit Changes"
+      title={freshSync ? "Initialize" : "Commit Changes"}
       icon={<NotebookPen className="w-4 h-4" />}
       onClick={() => mutate({ sync: id })}
       disabled={isPending}

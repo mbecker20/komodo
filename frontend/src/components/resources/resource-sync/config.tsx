@@ -6,14 +6,12 @@ import {
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
-import { createRef, ReactNode, useState } from "react";
+import { ReactNode, useState } from "react";
 import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton } from "@components/util";
-import { Ban, ChevronDown, ChevronUp, CirclePlus } from "lucide-react";
-import { Button } from "@ui/button";
-import { Textarea } from "@ui/textarea";
+import { ConfirmButton, MonacoEditor } from "@components/util";
+import { Ban, CirclePlus } from "lucide-react";
 
 export const ResourceSyncConfig = ({
   id,
@@ -31,8 +29,6 @@ export const ResourceSyncConfig = ({
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.ResourceSyncConfig>>({});
   const { mutateAsync } = useWrite("UpdateResourceSync");
-  const [fileContentsOpen, setFileContentsOpen] = useState(false);
-  const fileContentsRef = createRef<HTMLTextAreaElement>();
 
   if (!config) return null;
 
@@ -89,72 +85,31 @@ export const ResourceSyncConfig = ({
               },
             },
           },
-          {
-            label: "Resource File",
-            hidden: files_on_host,
-            description:
-              "Paste the resource file contents here, or use the git repo / files on host options.",
-            actions: (
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-4"
-                onClick={() => setFileContentsOpen(!fileContentsOpen)}
-              >
-                {fileContentsOpen ? "Hide" : "Show"}
-                {fileContentsOpen ? (
-                  <ChevronUp className="w-4" />
-                ) : (
-                  <ChevronDown className="w-4" />
-                )}
-              </Button>
-            ),
-            contentHidden: !fileContentsOpen,
-            components: {
-              file_contents: (file_contents, set) => {
-                return (
-                  <Textarea
-                    ref={fileContentsRef}
-                    value={file_contents}
-                    disabled={disabled}
-                    onChange={(e) => set({ file_contents: e.target.value })}
-                    className="min-h-[800px] h-fit"
-                    placeholder="Paste resource file contents"
-                    spellCheck={false}
-                    onKeyDown={(e) => {
-                      if (e.key === "Tab") {
-                        e.preventDefault();
-                        if (!fileContentsRef.current) return;
-
-                        const start = fileContentsRef.current.selectionStart;
-                        const end = fileContentsRef.current.selectionEnd;
-
-                        const SPACE_COUNT = 4;
-
-                        // set textarea value to: text before caret + tab + text after caret
-                        fileContentsRef.current.value =
-                          fileContentsRef.current.value.substring(0, start) +
-                          // Use four spaces for indent
-                          " ".repeat(SPACE_COUNT) +
-                          fileContentsRef.current.value.substring(end);
-
-                        // put caret at right position again
-                        fileContentsRef.current.selectionStart =
-                          fileContentsRef.current.selectionEnd =
-                            start + SPACE_COUNT;
-                      }
-                    }}
-                  />
-                );
+        ],
+        "Resource File": !files_on_host &&
+          !repo_selected && [
+            {
+              label: "Resource File",
+              description:
+                "Manage the resource file contents here, or use a git repo / the files on host option.",
+              components: {
+                file_contents: (file_contents: string, set) => {
+                  return (
+                    <MonacoEditor
+                      value={file_contents}
+                      onValueChange={(file_contents) => set({ file_contents })}
+                      language="toml"
+                    />
+                  );
+                },
               },
             },
-          },
-        ],
+          ],
         "Git Repo": show_git && [
           {
             label: "Git Repo",
             components: {
-              git_provider: (provider, set) => {
+              git_provider: (provider: string, set) => {
                 const https = update.git_https ?? config.git_https;
                 return (
                   <ProviderSelectorConfig
@@ -167,7 +122,7 @@ export const ResourceSyncConfig = ({
                   />
                 );
               },
-              git_account: (value, set) => {
+              git_account: (value: string, set) => {
                 return (
                   <AccountSelectorConfig
                     account_type="git"

@@ -42,7 +42,7 @@ async fn app() -> anyhow::Result<()> {
   // init periphery client ssl config to crash on failure
   periphery_client::init_periphery_http_client(
     config.periphery_accept_self_signed_certs,
-    &config.periphery_ca_pem_path,
+    &config.periphery_ca_cert_path,
   );
 
   // Spawn tasks

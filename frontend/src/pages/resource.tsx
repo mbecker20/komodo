@@ -147,14 +147,20 @@ const ResourceHeader = ({
   id: string;
   links: string[] | undefined;
 }) => {
-  const name = useRead(`List${type}s`, {}).data?.find((r) => r.id === id)?.name;
-  useSetTitle(name);
+  const resource = useRead(`List${type}s`, {}).data?.find((r) => r.id === id);
+  useSetTitle(resource?.name);
 
   const Components = ResourceComponents[type];
   const infoEntries = Object.entries(Components.Info);
 
   const { canWrite } = useEditPermissions({ type, id });
   const nav = useNavigate();
+
+  let showExport = true;
+  if (type === "ResourceSync") {
+    const info = resource?.info as Types.ResourceSyncListItemInfo;
+    showExport = !info?.file_contents && (info.file_contents || !info.managed);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -166,7 +172,7 @@ const ResourceHeader = ({
         >
           <ChevronLeft className="w-4" /> Back
         </Button>
-        <ExportButton targets={[{ type, id }]} />
+        {showExport && <ExportButton targets={[{ type, id }]} />}
       </div>
 
       <div className="flex flex-col gap-4">
@@ -175,7 +181,7 @@ const ResourceHeader = ({
             <div className="mt-1">
               <Components.BigIcon id={id} />
             </div>
-            <h1 className="text-3xl text-nowrap">{name}</h1>
+            <h1 className="text-3xl text-nowrap">{resource?.name}</h1>
             <div className="flex items-center gap-4 flex-wrap">
               {Object.entries(Components.Status).map(([key, Status]) => (
                 <Status key={key} id={id} />

@@ -180,22 +180,26 @@ database.address = "localhost:27017"
 ############
 
 ## Enable HTTPS server using the given key and cert.
-## Env: KOMODO_SSL_ENABLED
-# ssl_enabled = true
+## Env: KOMODO_CORE_SSL_ENABLED
+# core_ssl_enabled = true
 
 ## Path to the ssl key.
-## Env: KOMODO_SSL_KEY
+## Env: KOMODO_CORE_SSL_KEY
 ## Default: /etc/komodo/ssl/key.pem
-# ssl_key = "/etc/komodo/ssl/key.pem"
+# core_ssl_key = "/etc/komodo/ssl/core/key.pem"
 
 ## Path to the ssl cert.
-## Env: KOMODO_SSL_CERT
+## Env: KOMODO_CORE_SSL_CERT
 ## Default: /etc/komodo/ssl/cert.pem
-# ssl_cert = "/etc/komodo/ssl/cert.pem"
+# core_ssl_cert = "/etc/komodo/ssl/core/cert.pem"
 
 ## Path to root CA certificate, or folder containing multiple root CA certs.
-## Env: KOMODO_PERIPHERY_CA_PEM_PATH
-# periphery_ca_pem_path = "/etc/komodo/ssl/ca.pem"
+## Env: KOMODO_PERIPHERY_CA_CERT_PATH
+# periphery_ca_cert_path = "/etc/komodo/ssl/periphery/ca.crt"
+
+## Path to periphery root CA private key, or folder containing multiple root CA certs.
+## Env: KOMODO_PERIPHERY_CA_KEY_PATH
+# periphery_ca_key_path = "/etc/komodo/ssl/periphery/ca.key"
 
 ## If providing CA signed certs to periphery,
 ## can disable accepting self signed SSL certificates.

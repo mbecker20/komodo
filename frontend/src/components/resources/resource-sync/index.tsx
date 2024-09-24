@@ -19,7 +19,6 @@ import { StatusBadge } from "@components/util";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceSyncConfig } from "./config";
 import { ResourceSyncInfo } from "./info";
-import { useEffect } from "react";
 
 export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
@@ -38,24 +37,36 @@ const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigInfoPending = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage("sync-tabs-v3", "Config");
+  const [_view, setView] = useLocalStorage<"Config" | "Info" | "Pending">(
+    "sync-tabs-v3",
+    "Config"
+  );
   const sync = useFullResourceSync(id);
 
+  const hideInfo = sync?.config?.files_on_host
+    ? false
+    : sync?.config?.file_contents
+    ? true
+    : false;
   const pendingDisabled = !sync || sync_no_changes(sync);
-  const currentView = view === "Pending" && pendingDisabled ? "Config" : view;
-  useEffect(() => {
-    if (!pendingDisabled) {
-      // there are now changes pending
-      setView("Pending");
-    }
-  }, [pendingDisabled]);
+
+  const view =
+    (_view === "Info" && hideInfo) || (_view === "Pending" && pendingDisabled)
+      ? "Config"
+      : _view;
+
+  // useEffect(() => setView(view), [view]);
 
   const title = (
     <TabsList className="justify-start w-fit">
       <TabsTrigger value="Config" className="w-[110px]">
         Config
       </TabsTrigger>
-      <TabsTrigger value="Info" className="w-[110px]">
+      <TabsTrigger
+        value="Info"
+        className={cn("w-[110px]", hideInfo && "hidden")}
+        disabled={hideInfo}
+      >
         Info
       </TabsTrigger>
       <TabsTrigger
@@ -68,7 +79,7 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
     </TabsList>
   );
   return (
-    <Tabs value={currentView} onValueChange={setView} className="grid gap-4">
+    <Tabs value={view} onValueChange={setView as any} className="grid gap-4">
       <TabsContent value="Config">
         <ResourceSyncConfig id={id} titleOther={title} />
       </TabsContent>

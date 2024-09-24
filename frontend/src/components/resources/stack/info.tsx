@@ -4,6 +4,7 @@ import { Card, CardHeader } from "@ui/card";
 import { useFullStack, useStack } from ".";
 import { Types } from "@komodo/client";
 import { updateLogToHtml } from "@lib/utils";
+import { MonacoEditor } from "@components/util";
 
 export const StackInfo = ({
   id,
@@ -26,20 +27,28 @@ export const StackInfo = ({
             {stack?.info?.deployed_contents?.map((content, i) => (
               <pre key={i} className="flex flex-col gap-2">
                 path: {content.path}
-                <pre>{content.contents}</pre>
+                <MonacoEditor
+                  value={content.contents}
+                  language="yaml"
+                  readOnly
+                />
               </pre>
             ))}
           </CardHeader>
         </Card>
       )}
 
-      {(!stack?.config?.files_on_host && stack?.config?.file_contents) ? (
+      {!stack?.config?.files_on_host && stack?.config?.file_contents ? (
         <Card>
           <CardHeader className="flex flex-col gap-2">
             latest contents:{" "}
             <pre className="flex flex-col gap-2">
               defined in UI:
-              <pre>{stack?.config?.file_contents}</pre>
+              <MonacoEditor
+                value={stack?.config?.file_contents}
+                language="yaml"
+                readOnly
+              />
             </pre>
           </CardHeader>
         </Card>
@@ -52,7 +61,11 @@ export const StackInfo = ({
               {stack?.info?.remote_contents?.map((content, i) => (
                 <pre key={i} className="flex flex-col gap-2">
                   path: {content.path}
-                  <pre>{content.contents}</pre>
+                  <MonacoEditor
+                    value={content.contents}
+                    language="yaml"
+                    readOnly
+                  />
                 </pre>
               ))}
             </CardHeader>
