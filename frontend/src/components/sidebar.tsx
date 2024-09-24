@@ -11,7 +11,7 @@ import { homeViewAtom } from "@main";
 export const Sidebar = () => {
   const [view, setView] = useAtom(homeViewAtom);
   return (
-    <div className="fixed top-24 w-64 border-r hidden lg:block pr-8 pb-4 h-[85vh] overflow-y-auto">
+    <div className="fixed top-0 pt-24 w-64 border-r hidden lg:block pr-8 pb-8 h-screen overflow-y-auto">
       <div className="flex flex-col gap-1">
         <p className="pl-4 pb-1 text-xs text-muted-foreground">Overviews</p>
         <SidebarLink
@@ -102,8 +102,8 @@ const SidebarLink = ({
       <Button
         variant="link"
         className={cn(
-          "flex justify-start items-center gap-2 w-full hover:bg-accent",
-          hl && "bg-accent"
+          "flex justify-start items-center gap-2 w-full hover:bg-accent/75",
+          hl && "bg-accent/75"
         )}
         tabIndex={-1}
       >
