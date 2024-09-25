@@ -316,9 +316,16 @@ pub fn conversions_from_str(
         && !line.starts_with("//")
     })
     .map(|(i, line)| {
+      // Remove any preceding '-' (from yaml list)
+      let line = line.trim_start_matches('-');
+      // Remove wrapping quotes (from yaml list)
+      let line = if let Some(line) = line.strip_prefix('"') {
+        line.strip_suffix('"').unwrap_or(line)
+      } else {
+        line
+      };
+      // Remove any preceding '"' (from yaml list) (wrapping quotes open)
       let (local, container) = line
-        // remove any preceding '-' (from yaml list)
-        .trim_start_matches('-')
         .split_once(['=', ':'])
         .with_context(|| {
           format!(
@@ -577,9 +584,16 @@ pub fn term_signal_labels_from_str(
         && !line.starts_with("//")
     })
     .map(|(i, line)| {
+      // Remove any preceding '-' (from yaml list)
+      let line = line.trim_start_matches('-');
+      // Remove wrapping quotes (from yaml list)
+      let line = if let Some(line) = line.strip_prefix('"') {
+        line.strip_suffix('"').unwrap_or(line)
+      } else {
+        line
+      };
+      // Remove any preceding '"' (from yaml list) (wrapping quotes open)
       let (signal, label) = line
-        // remove any preceding '-' (from yaml list)
-        .trim_start_matches('-')
         .split_once(['=', ':'])
         .with_context(|| {
           format!(
