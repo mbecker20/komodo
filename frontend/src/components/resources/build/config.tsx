@@ -7,21 +7,19 @@ import {
   ImageRegistryConfig,
   InputList,
   ProviderSelectorConfig,
-  SecretsForEnvironment,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { env_to_text } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
-import { Textarea } from "@ui/textarea";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { ReactNode, createRef, useState } from "react";
+import { ReactNode, useState } from "react";
 import { BuilderSelector, CopyGithubWebhook, LabelsConfig } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Link } from "react-router-dom";
+import { BuildArgs } from "@components/config/env_vars";
 
 export const BuildConfig = ({
   id,
@@ -394,18 +392,14 @@ export const BuildConfig = ({
             description:
               "Pass build args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
             components: {
-              build_args: (vars, set) => {
-                const args =
-                  typeof vars === "object" ? env_to_text(vars) : vars;
-                return (
-                  <Args
-                    type="build"
-                    args={args ?? ""}
-                    set={set}
-                    disabled={disabled}
-                  />
-                );
-              },
+              build_args: (vars, set) => (
+                <BuildArgs
+                  type="build"
+                  args={vars ?? ""}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
               skip_secret_interp: true,
             },
           },
@@ -430,55 +424,19 @@ export const BuildConfig = ({
               </div>
             ),
             components: {
-              secret_args: (vars, set) => {
-                const args =
-                  typeof vars === "object" ? env_to_text(vars) : vars;
-                return (
-                  <Args
-                    type="secret"
-                    args={args ?? ""}
-                    set={set}
-                    disabled={disabled}
-                  />
-                );
-              },
+              secret_args: (vars, set) => (
+                <BuildArgs
+                  type="secret"
+                  args={vars ?? ""}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
               skip_secret_interp: true,
             },
           },
         ],
       }}
     />
-  );
-};
-
-const Args = ({
-  type,
-  args,
-  set,
-  disabled,
-}: {
-  type: "build" | "secret";
-  args: string;
-  set: (input: Partial<Types.BuildConfig>) => void;
-  disabled: boolean;
-}) => {
-  const ref = createRef<HTMLTextAreaElement>();
-  const setArgs = (args: string) => set({ [`${type}_args`]: args });
-
-  return (
-    <ConfigItem className="flex-col gap-4 items-start">
-      {!disabled && (
-        <SecretsForEnvironment env={args} setEnv={setArgs} envRef={ref} />
-      )}
-      <Textarea
-        ref={ref}
-        className="min-h-[400px]"
-        placeholder="VARIABLE=value"
-        value={args}
-        onChange={(e) => setArgs(e.target.value)}
-        disabled={disabled}
-        spellCheck={false}
-      />
-    </ConfigItem>
   );
 };

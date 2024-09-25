@@ -36,13 +36,17 @@ services:
     env_file: ./compose.env
     environment:
       KOMODO_DATABASE_ADDRESS: ferretdb:27017
-    # volumes: # Optionally mount a custom core.config.toml
-    #   - /path/to/core.config.toml:/config/config.toml
-    # extra_hosts: # allows for systemd Periphery connection at "http://host.docker.internal:8120"
+    ## allows for systemd Periphery connection at 
+    ## "http://host.docker.internal:8120"
+    # extra_hosts:
     #   - host.docker.internal:host-gateway
+    ## Optionally mount a custom core.config.toml
+    # volumes:
+    #   - /path/to/core.config.toml:/config/config.toml
 
   ## Deploy Periphery container using this block,
-  ## or deploy the Periphery binary with systemd using https://github.com/mbecker20/komodo/tree/main/scripts
+  ## or deploy the Periphery binary with systemd using 
+  ## https://github.com/mbecker20/komodo/tree/main/scripts
   periphery:
     image: ghcr.io/mbecker20/periphery:${COMPOSE_KOMODO_IMAGE_TAG:-latest}
     restart: unless-stopped
@@ -52,11 +56,19 @@ services:
       - default
     env_file: ./compose.env
     volumes:
+      # Mount external docker socket
       - /var/run/docker.sock:/var/run/docker.sock
-      - /proc:/proc # Allow Periphery to see processes outside of container
-      - ssl:/etc/komodo/ssl # use self signed certs in docker volume, or mount your own signed certs.
-      - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
-      - stacks:/etc/komodo/stacks # manage stack files in a docker volume, or change it to an accessible host directory.
+      # Allow Periphery to see processes outside of container
+      - /proc:/proc
+      # use self signed certs in docker volume, 
+      # or mount your own signed certs.
+      - ssl:/etc/komodo/ssl
+      # manage repos in a docker volume, 
+      # or change it to an accessible host directory.
+      - repos:/etc/komodo/repos
+      # manage stack files in a docker volume, 
+      # or change it to an accessible host directory.
+      - stacks:/etc/komodo/stacks
 
 volumes:
   sqlite-data:

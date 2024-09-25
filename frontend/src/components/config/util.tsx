@@ -19,8 +19,8 @@ import {
   Save,
   SearchX,
 } from "lucide-react";
-import { ReactNode, RefObject, useState } from "react";
-import { cn, filterBySplit } from "@lib/utils";
+import { ReactNode, useState } from "react";
+import { cn, env_to_text, filterBySplit } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,6 @@ import {
 import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
   ConfirmButton,
-  MonacoDiffEditor,
   ShowHideButton,
   TextUpdateMenu,
 } from "@components/util";
@@ -48,6 +47,7 @@ import {
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { Card, CardContent, CardHeader } from "@ui/card";
 import { text_color_class_by_intention } from "@lib/color";
+import { MonacoDiffEditor } from "@components/monaco";
 
 export const ConfigItem = ({
   label,
@@ -507,53 +507,6 @@ export const InputList = <T extends { [key: string]: unknown }>({
   </div>
 );
 
-interface ConfirmUpdateProps {
-  content: string;
-  onConfirm: () => void;
-  disabled: boolean;
-}
-
-export const ConfirmUpdate = ({
-  content,
-  onConfirm,
-  disabled,
-}: ConfirmUpdateProps) => {
-  const [open, set] = useState(false);
-  return (
-    <Dialog open={open} onOpenChange={set}>
-      <DialogTrigger asChild>
-        <Button
-          onClick={() => set(true)}
-          disabled={disabled}
-          className="flex items-center gap-2"
-        >
-          <Save className="w-4 h-4" />
-          Save
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Confirm Update</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 py-4 my-4">
-          New configuration to be applied:
-          <pre className="h-[300px] overflow-auto">{content}</pre>
-        </div>
-        <DialogFooter>
-          <ConfirmButton
-            title="Update"
-            icon={<CheckCircle className="w-4 h-4" />}
-            onClick={() => {
-              onConfirm();
-              set(false);
-            }}
-          />
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 interface ConfirmUpdate2Props<T> {
   previous: T;
   content: Partial<T>;
@@ -619,10 +572,25 @@ function ConfirmUpdateItem<T>({
   previous: T;
 }) {
   const [show, setShow] = useState(true);
-  const val = typeof _val === "string" ? _val : JSON.stringify(_val, null, 2);
+  const val =
+    typeof _val === "string"
+      ? _key === "environment" ||
+        _key === "build_args" ||
+        _key === "secret_args"
+        ? _val
+            .split("\n")
+            .filter((line) => !line.startsWith("#"))
+            .map((line) => line.split(" #")[0])
+            .join("\n")
+        : _val
+      : JSON.stringify(_val, null, 2);
   const prev_val =
     typeof previous[_key] === "string"
       ? previous[_key]
+      : _key === "environment" ||
+        _key === "build_args" ||
+        _key === "secret_args"
+      ? env_to_text(previous[_key] as any) ?? ""
       : JSON.stringify(previous[_key], null, 2);
   const showDiff =
     val.includes("\n") ||
@@ -1107,57 +1075,5 @@ export const PermissionLevelSelector = ({
         ))}
       </SelectContent>
     </Select>
-  );
-};
-
-/// Takes in env
-export const SecretsForEnvironment = ({
-  env,
-  setEnv,
-  envRef,
-}: {
-  /// Environment file
-  env?: string;
-  setEnv: (env: string) => void;
-  envRef: RefObject<HTMLTextAreaElement>;
-}) => {
-  const variables = useRead("ListVariables", {}).data ?? [];
-  const secrets = useRead("ListSecrets", {}).data ?? [];
-
-  const _env = env || "";
-
-  if (variables.length === 0 && secrets.length === 0) return;
-
-  return (
-    <div className="flex items-center gap-2">
-      {variables.length > 0 && (
-        <SecretSelector
-          type="Variable"
-          keys={variables.map((v) => v.name)}
-          onSelect={(variable) =>
-            setEnv(
-              _env.slice(0, envRef.current?.selectionStart) +
-                `[[${variable}]]` +
-                _env.slice(envRef.current?.selectionStart, undefined)
-            )
-          }
-          disabled={false}
-        />
-      )}
-      {secrets.length > 0 && (
-        <SecretSelector
-          type="Secret"
-          keys={secrets}
-          onSelect={(secret) =>
-            setEnv(
-              _env.slice(0, envRef.current?.selectionStart) +
-                `[[${secret}]]` +
-                _env.slice(envRef.current?.selectionStart, undefined)
-            )
-          }
-          disabled={false}
-        />
-      )}
-    </div>
   );
 };

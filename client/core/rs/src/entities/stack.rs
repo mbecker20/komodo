@@ -184,6 +184,11 @@ pub struct StackConfig {
   #[builder(default)]
   pub server_id: String,
 
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
+
   /// Optionally specify a custom project name for the stack.
   /// If this is empty string, it will default to the stack name.
   /// Used with `docker compose -p {project_name}`.
@@ -192,48 +197,6 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub project_name: String,
-
-  /// Directory to change to (`cd`) before running `docker compose up -d`.
-  /// Default: `./` (the repo root)
-  #[serde(default = "default_run_directory")]
-  #[builder(default = "default_run_directory()")]
-  #[partial_default(default_run_directory())]
-  pub run_directory: String,
-
-  /// Add paths to compose files, relative to the run path.
-  /// If this is empty, will use file `compose.yaml`.
-  #[serde(default)]
-  #[builder(default)]
-  pub file_paths: Vec<String>,
-
-  /// If this is checked, the stack will source the files on the host.
-  /// Use `run_directory` and `file_paths` to specify the path on the host.
-  /// This is useful for those who wish to setup their files on the host using SSH or similar,
-  /// rather than defining the contents in UI or in a git repo.
-  #[serde(default)]
-  #[builder(default)]
-  pub files_on_host: bool,
-
-  /// Used with `registry_account` to login to a registry before docker compose up.
-  #[serde(default)]
-  #[builder(default)]
-  pub registry_provider: String,
-
-  /// Used with `registry_provider` to login to a registry before docker compose up.
-  #[serde(default)]
-  #[builder(default)]
-  pub registry_account: String,
-
-  /// The extra arguments to pass after `docker compose up -d`.
-  /// If empty, no extra arguments will be passed.
-  #[serde(default)]
-  #[builder(default)]
-  pub extra_args: Vec<String>,
-
-  /// Whether to skip secret interpolation into the stack environment variables.
-  #[serde(default)]
-  #[builder(default)]
-  pub skip_secret_interp: bool,
 
   /// Whether to automatically `compose pull` before redeploying stack.
   /// Ensured latest images are deployed.
@@ -249,19 +212,39 @@ pub struct StackConfig {
   #[builder(default)]
   pub run_build: bool,
 
-  /// The extra arguments to pass after `docker compose build`.
-  /// If empty, no extra build arguments will be passed.
-  /// Only used if `run_build: true`
+  /// Whether to skip secret interpolation into the stack environment variables.
   #[serde(default)]
   #[builder(default)]
-  pub build_extra_args: Vec<String>,
+  pub skip_secret_interp: bool,
 
-  /// Ignore certain services declared in the compose file when checking
-  /// the stack status. For example, an init service might be exited, but the
-  /// stack should be healthy. This init service should be in `ignore_services`
+  /// If this is checked, the stack will source the files on the host.
+  /// Use `run_directory` and `file_paths` to specify the path on the host.
+  /// This is useful for those who wish to setup their files on the host using SSH or similar,
+  /// rather than defining the contents in UI or in a git repo.
   #[serde(default)]
   #[builder(default)]
-  pub ignore_services: Vec<String>,
+  pub files_on_host: bool,
+
+  /// Directory to change to (`cd`) before running `docker compose up -d`.
+  /// Default: `./` (the repo root)
+  #[serde(default = "default_run_directory")]
+  #[builder(default = "default_run_directory()")]
+  #[partial_default(default_run_directory())]
+  pub run_directory: String,
+
+  /// Add paths to compose files, relative to the run path.
+  /// If this is empty, will use file `compose.yaml`.
+  #[serde(default)]
+  #[builder(default)]
+  pub file_paths: Vec<String>,
+
+  /// The name of the written environment file before `docker compose up`.
+  /// Relative to the repo root.
+  /// Default: .env
+  #[serde(default = "default_env_file_path")]
+  #[builder(default = "default_env_file_path()")]
+  #[partial_default(default_env_file_path())]
+  pub env_file_path: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -320,10 +303,35 @@ pub struct StackConfig {
   #[partial_default(default_send_alerts())]
   pub send_alerts: bool,
 
-  /// Configure quick links that are displayed in the resource header
+  /// Used with `registry_account` to login to a registry before docker compose up.
   #[serde(default)]
   #[builder(default)]
-  pub links: Vec<String>,
+  pub registry_provider: String,
+
+  /// Used with `registry_provider` to login to a registry before docker compose up.
+  #[serde(default)]
+  #[builder(default)]
+  pub registry_account: String,
+
+  /// The extra arguments to pass after `docker compose up -d`.
+  /// If empty, no extra arguments will be passed.
+  #[serde(default)]
+  #[builder(default)]
+  pub extra_args: Vec<String>,
+
+  /// The extra arguments to pass after `docker compose build`.
+  /// If empty, no extra build arguments will be passed.
+  /// Only used if `run_build: true`
+  #[serde(default)]
+  #[builder(default)]
+  pub build_extra_args: Vec<String>,
+
+  /// Ignore certain services declared in the compose file when checking
+  /// the stack status. For example, an init service might be exited, but the
+  /// stack should be healthy. This init service should be in `ignore_services`
+  #[serde(default)]
+  #[builder(default)]
+  pub ignore_services: Vec<String>,
 
   /// The contents of the file directly, for management in the UI.
   /// If this is empty, it will fall back to checking git config for
@@ -347,14 +355,6 @@ pub struct StackConfig {
   ))]
   #[builder(default)]
   pub environment: Vec<EnvironmentVar>,
-
-  /// The name of the written environment file before `docker compose up`.
-  /// Relative to the repo root.
-  /// Default: .env
-  #[serde(default = "default_env_file_path")]
-  #[builder(default = "default_env_file_path()")]
-  #[partial_default(default_env_file_path())]
-  pub env_file_path: String,
 }
 
 impl StackConfig {

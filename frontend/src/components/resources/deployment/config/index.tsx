@@ -10,7 +10,6 @@ import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
 import { PortsConfig } from "./components/ports";
-import { EnvVars } from "./components/environment";
 import { VolumesConfig } from "./components/volumes";
 import { Config } from "@components/config";
 import {
@@ -22,8 +21,8 @@ import { LabelsConfig, ServerSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
-import { env_to_text } from "@lib/utils";
 import { Link } from "react-router-dom";
+import { EnvVars } from "@components/config/env_vars";
 
 export const DeploymentConfig = ({
   id,
@@ -313,17 +312,9 @@ export const DeploymentConfig = ({
             description:
               "Pass environment variables to the container. You can interpolate variables and secrets using '[[VAR_NAME]]'",
             components: {
-              environment: (vars, set) => {
-                const env = typeof vars === "object" ? env_to_text(vars) : vars;
-                return (
-                  <EnvVars
-                    env={env ?? ""}
-                    set={set}
-                    server={update.server_id || config.server_id}
-                    disabled={disabled}
-                  />
-                );
-              },
+              environment: (env, set) => (
+                <EnvVars env={env ?? ""} set={set} disabled={disabled} />
+              ),
               skip_secret_interp: true,
             },
           },

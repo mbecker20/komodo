@@ -30,5 +30,4 @@ loader.config({ monaco });
 import "./theme"
 // Load the parsers
 import "./yaml";
-// Not acually using this, yaml parser works better
-// import "./toml";
+import "./toml";

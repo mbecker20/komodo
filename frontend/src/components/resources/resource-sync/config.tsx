@@ -11,9 +11,10 @@ import { ReactNode, useState } from "react";
 import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton, MonacoEditor } from "@components/util";
+import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { Button } from "@ui/button";
+import { MonacoEditor } from "@components/monaco";
 
 export const ResourceSyncConfig = ({
   id,
@@ -135,7 +136,7 @@ export const ResourceSyncConfig = ({
                     <MonacoEditor
                       value={file_contents}
                       onValueChange={(file_contents) => set({ file_contents })}
-                      language="yaml"
+                      language="toml"
                     />
                   );
                 },

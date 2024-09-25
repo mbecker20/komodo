@@ -4,7 +4,7 @@ import { Card, CardHeader } from "@ui/card";
 import { useFullStack, useStack } from ".";
 import { Types } from "@komodo/client";
 import { updateLogToHtml } from "@lib/utils";
-import { MonacoEditor } from "@components/util";
+import { MonacoEditor } from "@components/monaco";
 
 export const StackInfo = ({
   id,

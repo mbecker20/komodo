@@ -5,19 +5,18 @@ import {
   ConfigItem,
   InputList,
   ProviderSelectorConfig,
-  SecretsForEnvironment,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
-import { createRef, ReactNode, useState } from "react";
+import { ReactNode, useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton, MonacoEditor } from "@components/util";
+import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { env_to_text } from "@lib/utils";
-import { Textarea } from "@ui/textarea";
 import { Button } from "@ui/button";
+import { MonacoEditor } from "@components/monaco";
+import { EnvVars } from "@components/config/env_vars";
 
 export const StackConfig = ({
   id,
@@ -636,12 +635,9 @@ export const StackConfig = ({
             label: "Environment",
             description: "Pass these variables to the compose command",
             components: {
-              environment: (env, set) => {
-                const _env = typeof env === "object" ? env_to_text(env) : env;
-                return (
-                  <Environment env={_env ?? ""} set={set} disabled={disabled} />
-                );
-              },
+              environment: (env, set) => (
+                <EnvVars env={env ?? ""} set={set} disabled={disabled} />
+              ),
               env_file_path: {
                 description:
                   "The path to write the file to, relative to the root of the repo.",
@@ -673,32 +669,3 @@ services:
 # volumes:
 #   data:
 `;
-
-const Environment = ({
-  env,
-  set,
-  disabled,
-}: {
-  env: string;
-  set: (input: Partial<Types.StackConfig>) => void;
-  disabled: boolean;
-}) => {
-  const ref = createRef<HTMLTextAreaElement>();
-  const setEnv = (environment: string) => set({ environment });
-  return (
-    <ConfigItem className="flex-col gap-4 items-start">
-      {!disabled && (
-        <SecretsForEnvironment env={env} setEnv={setEnv} envRef={ref} />
-      )}
-      <Textarea
-        ref={ref}
-        className="min-h-[400px]"
-        placeholder="VARIABLE=value"
-        value={env}
-        onChange={(e) => setEnv(e.target.value)}
-        disabled={disabled}
-        spellCheck={false}
-      />
-    </ConfigItem>
-  );
-};

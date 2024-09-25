@@ -29,7 +29,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
 export function env_to_text(envVars: Types.EnvironmentVar[] | undefined) {
   return envVars?.reduce(
     (prev, { variable, value }) =>
-      prev + (prev ? "\n" : "") + `${variable}=${value}`,
+      prev + (prev ? "\n" : "") + `${variable}: ${value}`,
     ""
   );
 }

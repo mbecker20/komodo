@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { Card, CardHeader } from "@ui/card";
 import { useFullResourceSync } from ".";
 import { updateLogToHtml } from "@lib/utils";
-import { MonacoEditor } from "@components/util";
+import { MonacoEditor } from "@components/monaco";
 
 export const ResourceSyncInfo = ({
   id,
