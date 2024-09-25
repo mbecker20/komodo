@@ -40,7 +40,7 @@ pub fn include_resource_by_tags(
   let tag_names = resource_tags
     .iter()
     .filter_map(|resource_tag| {
-      match ObjectId::from_str(&resource_tag) {
+      match ObjectId::from_str(resource_tag) {
         Ok(_) => id_to_tags.get(resource_tag).map(|tag| &tag.name),
         Err(_) => Some(resource_tag),
       }
@@ -419,10 +419,7 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
     .into_iter()
     .filter(|r| {
       Resource::include_resource(
-        &r.config.clone().into(),
-        &r.tags,
-        id_to_tags,
-        match_tags,
+        &r.config, &r.tags, id_to_tags, match_tags,
       )
     })
     .map(|r| (r.name.clone(), r))

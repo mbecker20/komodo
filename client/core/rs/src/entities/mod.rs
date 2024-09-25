@@ -369,8 +369,15 @@ pub fn environment_vars_from_str(
         && !line.starts_with("//")
     })
     .map(|(i, line)| {
-      // Remove any preceding '-' (from yaml list)
-      let line = line.trim_start_matches('-');
+      let line = line
+        // Remove end of line comments
+        .split_once(" #")
+        .unwrap_or((line, ""))
+        .0
+        .trim()
+        // Remove preceding '-' (yaml list)
+        .trim_start_matches('-')
+        .trim();
       // Remove wrapping quotes (from yaml list)
       let line = if let Some(line) = line.strip_prefix('"') {
         line.strip_suffix('"').unwrap_or(line)
@@ -386,13 +393,7 @@ pub fn environment_vars_from_str(
           )
         })
         .map(|(variable, value)| {
-          let value = value
-            .split(" #")
-            .next()
-            .unwrap_or_default()
-            .trim()
-            .to_string();
-          (variable.trim().to_string(), value)
+          (variable.trim().to_string(), value.trim().to_string())
         })?;
       anyhow::Ok(EnvironmentVar { variable, value })
     })

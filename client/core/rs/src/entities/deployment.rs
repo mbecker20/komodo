@@ -316,8 +316,15 @@ pub fn conversions_from_str(
         && !line.starts_with("//")
     })
     .map(|(i, line)| {
-      // Remove any preceding '-' (from yaml list)
-      let line = line.trim_start_matches('-');
+      let line = line
+        // Remove end of line comments
+        .split_once(" #")
+        .unwrap_or((line, ""))
+        .0
+        .trim()
+        // Remove preceding '-' (yaml list)
+        .trim_start_matches('-')
+        .trim();
       // Remove wrapping quotes (from yaml list)
       let line = if let Some(line) = line.strip_prefix('"') {
         line.strip_suffix('"').unwrap_or(line)
@@ -333,13 +340,7 @@ pub fn conversions_from_str(
           )
         })
         .map(|(local, container)| {
-          let container = container
-            .split(" #")
-            .next()
-            .unwrap_or_default()
-            .trim()
-            .to_string();
-          (local.trim().to_string(), container)
+          (local.trim().to_string(), container.trim().to_string())
         })?;
       anyhow::Ok(Conversion { local, container })
     })
@@ -584,8 +585,15 @@ pub fn term_signal_labels_from_str(
         && !line.starts_with("//")
     })
     .map(|(i, line)| {
-      // Remove any preceding '-' (from yaml list)
-      let line = line.trim_start_matches('-');
+      let line = line
+        // Remove end of line comments
+        .split_once(" #")
+        .unwrap_or((line, ""))
+        .0
+        .trim()
+        // Remove preceding '-' (yaml list)
+        .trim_start_matches('-')
+        .trim();
       // Remove wrapping quotes (from yaml list)
       let line = if let Some(line) = line.strip_prefix('"') {
         line.strip_suffix('"').unwrap_or(line)
@@ -601,17 +609,11 @@ pub fn term_signal_labels_from_str(
           )
         })
         .map(|(signal, label)| {
-          let label = label
-            .split(" #")
-            .next()
-            .unwrap_or_default()
-            .trim()
-            .to_string();
           (
             signal.trim().parse::<TerminationSignal>().with_context(
               || format!("line {i} does not have valid signal"),
             ),
-            label,
+            label.trim().to_string(),
           )
         })?;
       anyhow::Ok(TerminationSignalLabel {

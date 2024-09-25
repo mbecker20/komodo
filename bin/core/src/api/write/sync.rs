@@ -404,6 +404,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
 }
 
 impl Resolve<CommitSync, User> for State {
+  #[instrument(name = "CommitSync", skip(self, user))]
   async fn resolve(
     &self,
     CommitSync { sync }: CommitSync,
