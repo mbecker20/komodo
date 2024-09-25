@@ -114,23 +114,35 @@ export const StackComponents: RequiredResourceComponents = {
 
   Dashboard: () => {
     const summary = useRead("GetStacksSummary", {}).data;
+    const all = [
+      summary?.running ?? 0,
+      summary?.stopped ?? 0,
+      summary?.unhealthy ?? 0,
+      summary?.unknown ?? 0,
+    ];
+    const [running, stopped, unhealthy, unknown] = all;
     return (
       <DashboardPieChart
         data={[
-          { intention: "Good", value: summary?.running ?? 0, title: "Running" },
+          all.every((item) => item === 0) && {
+            title: "Down",
+            intention: "Neutral",
+            value: summary?.down ?? 0,
+          },
+          { intention: "Good", value: running, title: "Running" },
+          {
+            intention: "Warning",
+            value: stopped,
+            title: "Stopped",
+          },
           {
             intention: "Critical",
-            value: summary?.unhealthy ?? 0,
+            value: unhealthy,
             title: "Unhealthy",
           },
           {
-            intention: "Neutral",
-            value: summary?.down ?? 0,
-            title: "Down",
-          },
-          {
             intention: "Unknown",
-            value: summary?.unknown ?? 0,
+            value: unknown,
             title: "Unknown",
           },
         ]}

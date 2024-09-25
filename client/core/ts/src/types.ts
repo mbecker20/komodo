@@ -2301,6 +2301,8 @@ export type ListFullServerTemplatesResponse = ServerTemplate[];
 export interface StackConfig {
 	/** The server to deploy the stack on. */
 	server_id?: string;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
 	/**
 	 * Optionally specify a custom project name for the stack.
 	 * If this is empty string, it will default to the stack name.
@@ -2309,34 +2311,6 @@ export interface StackConfig {
 	 * Note. Can be used to import pre-existing stacks.
 	 */
 	project_name?: string;
-	/**
-	 * Directory to change to (`cd`) before running `docker compose up -d`.
-	 * Default: `./` (the repo root)
-	 */
-	run_directory: string;
-	/**
-	 * Add paths to compose files, relative to the run path.
-	 * If this is empty, will use file `compose.yaml`.
-	 */
-	file_paths?: string[];
-	/**
-	 * If this is checked, the stack will source the files on the host.
-	 * Use `run_directory` and `file_paths` to specify the path on the host.
-	 * This is useful for those who wish to setup their files on the host using SSH or similar,
-	 * rather than defining the contents in UI or in a git repo.
-	 */
-	files_on_host?: boolean;
-	/** Used with `registry_account` to login to a registry before docker compose up. */
-	registry_provider?: string;
-	/** Used with `registry_provider` to login to a registry before docker compose up. */
-	registry_account?: string;
-	/**
-	 * The extra arguments to pass after `docker compose up -d`.
-	 * If empty, no extra arguments will be passed.
-	 */
-	extra_args?: string[];
-	/** Whether to skip secret interpolation into the stack environment variables. */
-	skip_secret_interp?: boolean;
 	/**
 	 * Whether to automatically `compose pull` before redeploying stack.
 	 * Ensured latest images are deployed.
@@ -2348,18 +2322,31 @@ export interface StackConfig {
 	 * Combine with build_extra_args for custom behaviors.
 	 */
 	run_build?: boolean;
+	/** Whether to skip secret interpolation into the stack environment variables. */
+	skip_secret_interp?: boolean;
 	/**
-	 * The extra arguments to pass after `docker compose build`.
-	 * If empty, no extra build arguments will be passed.
-	 * Only used if `run_build: true`
+	 * If this is checked, the stack will source the files on the host.
+	 * Use `run_directory` and `file_paths` to specify the path on the host.
+	 * This is useful for those who wish to setup their files on the host using SSH or similar,
+	 * rather than defining the contents in UI or in a git repo.
 	 */
-	build_extra_args?: string[];
+	files_on_host?: boolean;
 	/**
-	 * Ignore certain services declared in the compose file when checking
-	 * the stack status. For example, an init service might be exited, but the
-	 * stack should be healthy. This init service should be in `ignore_services`
+	 * Directory to change to (`cd`) before running `docker compose up -d`.
+	 * Default: `./` (the repo root)
 	 */
-	ignore_services?: string[];
+	run_directory: string;
+	/**
+	 * Add paths to compose files, relative to the run path.
+	 * If this is empty, will use file `compose.yaml`.
+	 */
+	file_paths?: string[];
+	/**
+	 * The name of the written environment file before `docker compose up`.
+	 * Relative to the repo root.
+	 * Default: .env
+	 */
+	env_file_path: string;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**
@@ -2391,8 +2378,27 @@ export interface StackConfig {
 	webhook_secret?: string;
 	/** Whether to send StackStateChange alerts for this stack. */
 	send_alerts: boolean;
-	/** Configure quick links that are displayed in the resource header */
-	links?: string[];
+	/** Used with `registry_account` to login to a registry before docker compose up. */
+	registry_provider?: string;
+	/** Used with `registry_provider` to login to a registry before docker compose up. */
+	registry_account?: string;
+	/**
+	 * The extra arguments to pass after `docker compose up -d`.
+	 * If empty, no extra arguments will be passed.
+	 */
+	extra_args?: string[];
+	/**
+	 * The extra arguments to pass after `docker compose build`.
+	 * If empty, no extra build arguments will be passed.
+	 * Only used if `run_build: true`
+	 */
+	build_extra_args?: string[];
+	/**
+	 * Ignore certain services declared in the compose file when checking
+	 * the stack status. For example, an init service might be exited, but the
+	 * stack should be healthy. This init service should be in `ignore_services`
+	 */
+	ignore_services?: string[];
 	/**
 	 * The contents of the file directly, for management in the UI.
 	 * If this is empty, it will fall back to checking git config for
@@ -2407,12 +2413,6 @@ export interface StackConfig {
 	 * If it is empty, no file will be written.
 	 */
 	environment?: EnvironmentVar[] | string;
-	/**
-	 * The name of the written environment file before `docker compose up`.
-	 * Relative to the repo root.
-	 * Default: .env
-	 */
-	env_file_path: string;
 }
 
 export interface FileContents {
@@ -4130,10 +4130,17 @@ export interface GetDeploymentsSummary {
 
 /** Response for [GetDeploymentsSummary]. */
 export interface GetDeploymentsSummaryResponse {
+	/** The total number of Deployments */
 	total: I64;
+	/** The number of Deployments with Running state */
 	running: I64;
+	/** The number of Deployments with Stopped or Paused state */
 	stopped: I64;
+	/** The number of Deployments with NotDeployed state */
 	not_deployed: I64;
+	/** The number of Deployments with Restarting or Dead or Created (other) state */
+	unhealthy: I64;
+	/** The number of Deployments with Unknown state */
 	unknown: I64;
 }
 
@@ -4847,22 +4854,12 @@ export interface GetStacksSummaryResponse {
 	total: number;
 	/** The number of stacks with Running state. */
 	running: number;
-	/** The number of stacks with Paused state. */
-	paused: number;
-	/** The number of stacks with Stopped state. */
+	/** The number of stacks with Stopped or Paused state. */
 	stopped: number;
-	/** The number of stacks with Restarting state. */
-	restarting: number;
-	/** The number of stacks with Dead state. */
-	dead: number;
-	/** The number of stacks with Created state. */
-	created: number;
-	/** The number of stacks with Removing state. */
-	removing: number;
-	/** The number of stacks with Unhealthy state. */
-	unhealthy: number;
 	/** The number of stacks with Down state. */
 	down: number;
+	/** The number of stacks with Unhealthy or Restarting or Dead or Created or Removing state. */
+	unhealthy: number;
 	/** The number of stacks with Unknown state. */
 	unknown: number;
 }

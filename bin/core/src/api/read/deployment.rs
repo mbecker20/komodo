@@ -223,14 +223,17 @@ impl Resolve<GetDeploymentsSummary, User> for State {
         DeploymentState::Running => {
           res.running += 1;
         }
-        DeploymentState::Unknown => {
-          res.unknown += 1;
+        DeploymentState::Exited | DeploymentState::Paused => {
+          res.stopped += 1;
         }
         DeploymentState::NotDeployed => {
           res.not_deployed += 1;
         }
+        DeploymentState::Unknown => {
+          res.unknown += 1;
+        }
         _ => {
-          res.stopped += 1;
+          res.unhealthy += 1;
         }
       }
     }

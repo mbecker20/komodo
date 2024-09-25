@@ -236,15 +236,10 @@ impl Resolve<GetStacksSummary, User> for State {
       match cache.get(&stack.id).await.unwrap_or_default().curr.state
       {
         StackState::Running => res.running += 1,
-        StackState::Paused => res.paused += 1,
-        StackState::Stopped => res.stopped += 1,
-        StackState::Restarting => res.restarting += 1,
-        StackState::Created => res.created += 1,
-        StackState::Removing => res.removing += 1,
-        StackState::Dead => res.dead += 1,
-        StackState::Unhealthy => res.unhealthy += 1,
+        StackState::Stopped | StackState::Paused => res.stopped += 1,
         StackState::Down => res.down += 1,
         StackState::Unknown => res.unknown += 1,
+        _ => res.unhealthy += 1,
       }
     }
 

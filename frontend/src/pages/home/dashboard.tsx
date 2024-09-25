@@ -153,27 +153,40 @@ const RecentCard = ({
   );
 };
 
+export type DashboardPieChartItem = {
+  title: string;
+  intention: ColorIntention;
+  value: number;
+};
+
 export const DashboardPieChart = ({
-  data,
+  data: _data,
 }: {
-  data: Array<{ title: string; intention: ColorIntention; value: number }>;
+  data: Array<DashboardPieChartItem | false | undefined>;
 }) => {
+  const data = _data.filter((d) => d) as Array<DashboardPieChartItem>;
   return (
     <div className="flex items-center gap-8">
       <div className="flex flex-col gap-2 w-24">
-        {data.map(({ title, value, intention }) => (
-          <p key={title} className="flex gap-2 text-xs text-muted-foreground">
-            <span
-              className={cn(
-                "font-bold",
-                text_color_class_by_intention(intention)
-              )}
-            >
-              {value}
-            </span>
-            {title}
-          </p>
-        ))}
+        {data.map(
+          ({ title, value, intention }) =>
+            (value > 0 ? true : false) && (
+              <p
+                key={title}
+                className="flex gap-2 text-xs text-muted-foreground"
+              >
+                <span
+                  className={cn(
+                    "font-bold",
+                    text_color_class_by_intention(intention)
+                  )}
+                >
+                  {value}
+                </span>
+                {title}
+              </p>
+            )
+        )}
       </div>
       <PieChart
         className="w-32 h-32"
