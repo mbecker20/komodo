@@ -135,7 +135,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
     );
     targets.extend(
       resource::list_full_for_user::<ResourceSync>(
-        ResourceQuery::builder().tags(tags).build(),
+        ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
       )
       .await?
@@ -144,7 +144,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .map(|resource| ResourceTarget::ResourceSync(resource.id)),
     );
 
-    let user_groups = if user.admin {
+    let user_groups = if user.admin && tags.is_empty() {
       find_collect(&db_client().await.user_groups, None, None)
         .await
         .context("failed to query db for user groups")?
@@ -160,7 +160,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
         ExportResourcesToToml {
           targets,
           user_groups,
-          include_variables: true,
+          include_variables: tags.is_empty(),
         },
         user,
       )

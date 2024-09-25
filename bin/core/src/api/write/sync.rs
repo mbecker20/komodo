@@ -279,14 +279,16 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         variable_updates:
           crate::helpers::sync::variables::get_updates_for_view(
             resources.variables,
-            delete,
+            // Delete doesn't work with variables when match tags are set
+            sync.config.match_tags.is_empty() && delete,
           )
           .await
           .context("failed to get variable updates")?,
         user_group_updates:
           crate::helpers::sync::user_groups::get_updates_for_view(
             resources.user_groups,
-            delete,
+            // Delete doesn't work with user groups when match tags are set
+            sync.config.match_tags.is_empty() && delete,
             &all_resources,
           )
           .await

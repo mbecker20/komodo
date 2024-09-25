@@ -208,7 +208,8 @@ impl Resolve<RunSync, (User, Update)> for State {
       variables_to_delete,
     ) = crate::helpers::sync::variables::get_updates_for_execution(
       resources.variables,
-      delete,
+      // Delete doesn't work with variables when match tags are set
+      sync.config.match_tags.is_empty() && delete,
     )
     .await?;
     let (
@@ -217,7 +218,8 @@ impl Resolve<RunSync, (User, Update)> for State {
       user_groups_to_delete,
     ) = crate::helpers::sync::user_groups::get_updates_for_execution(
       resources.user_groups,
-      delete,
+      // Delete doesn't work with user groups when match tags are set
+      sync.config.match_tags.is_empty() && delete,
       &all_resources,
     )
     .await?;
