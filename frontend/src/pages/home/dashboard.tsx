@@ -17,19 +17,22 @@ import { cn, usableResourcePath } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { AlertTriangle, Boxes, Circle, History } from "lucide-react";
+import { AlertTriangle, Box, Boxes, Circle, History } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 
 export const Dashboard = () => {
   const noResources = useNoResources();
   const user = useUser().data!;
+
   return (
-    <Page>
-      <ActiveResources />
-      <Section
+    <>
+      <Page>
+        <ActiveResources />
+      </Page>
+      <Page
         title="Dashboard"
-        icon={<Boxes className="w-4 h-4" />}
+        icon={<Box className="w-8 h-8" />}
         actions={<ExportButton />}
       >
         <div className="flex flex-col gap-6 w-full">
@@ -52,8 +55,8 @@ export const Dashboard = () => {
           <ResourceRow type="ResourceSync" />
           <ResourceRow type="Procedure" />
         </div>
-      </Section>
-    </Page>
+      </Page>
+    </>
   );
 };
 
