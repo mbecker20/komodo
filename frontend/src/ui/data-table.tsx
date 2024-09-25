@@ -67,7 +67,7 @@ export function DataTable<TData, TValue>({
   }, [tableKey, sorting]);
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow p-2">
+    <div className="rounded-md border bg-card text-card-foreground shadow py-1 px-1">
       <Table className="xl:table-fixed border-separate border-spacing-0">
         <TableHeader className="sticky top-0">
           {table.getHeaderGroups().map((headerGroup) => (
