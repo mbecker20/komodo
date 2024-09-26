@@ -191,10 +191,10 @@ pub struct Env {
 
   /// Override `ssl_enabled`.
   pub komodo_ssl_enabled: Option<bool>,
-  /// Override `ssl_key`
-  pub komodo_ssl_key: Option<PathBuf>,
-  /// Override `ssl_cert`
-  pub komodo_ssl_cert: Option<PathBuf>,
+  /// Override `ssl_key_file`
+  pub komodo_ssl_key_file: Option<PathBuf>,
+  /// Override `ssl_cert_file`
+  pub komodo_ssl_cert_file: Option<PathBuf>,
 }
 
 fn default_config_path() -> String {
@@ -432,16 +432,16 @@ pub struct CoreConfig {
 
   /// Whether to enable ssl.
   #[serde(default)]
-  pub core_ssl_enabled: bool,
+  pub ssl_enabled: bool,
 
   /// Path to the ssl key.
-  /// Default: `/etc/komodo/ssl/core/key.pem`.
-  #[serde(default = "default_ssl_key")]
+  /// Default: `/config/ssl/key.pem`.
+  #[serde(default = "default_ssl_key_file")]
   pub ssl_key_file: PathBuf,
 
   /// Path to the ssl cert.
-  /// Default: `/etc/komodo/ssl/core/cert.pem`.
-  #[serde(default = "default_ssl_cert")]
+  /// Default: `/config/ssl/cert.pem`.
+  #[serde(default = "default_ssl_cert_file")]
   pub ssl_cert_file: PathBuf,
 }
 
@@ -478,12 +478,12 @@ fn default_monitoring_interval() -> Timelength {
   Timelength::FifteenSeconds
 }
 
-fn default_ssl_key() -> PathBuf {
-  "/etc/komodo/ssl/core/key.pem".parse().unwrap()
+fn default_ssl_key_file() -> PathBuf {
+  "/config/ssl/key.pem".parse().unwrap()
 }
 
-fn default_ssl_cert() -> PathBuf {
-  "/etc/komodo/ssl/core/cert.pem".parse().unwrap()
+fn default_ssl_cert_file() -> PathBuf {
+  "/config/ssl/cert.pem".parse().unwrap()
 }
 
 impl CoreConfig {
@@ -576,7 +576,7 @@ impl CoreConfig {
         })
         .collect(),
 
-      core_ssl_enabled: config.core_ssl_enabled,
+      ssl_enabled: config.ssl_enabled,
       ssl_key_file: config.ssl_key_file,
       ssl_cert_file: config.ssl_cert_file,
     }

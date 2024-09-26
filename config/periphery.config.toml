@@ -58,17 +58,18 @@
 ## If true and a key / cert at the given paths are not found, 
 ## self signed keys will be generated using openssl.
 ## Env: PERIPHERY_SSL_ENABLED
-# ssl_enabled = true
+## Default: true
+# ssl_enabled = false
 
 ## Path to the ssl key.
 ## Env: PERIPHERY_SSL_KEY_FILE
-## Default: /etc/komodo/ssl/periphery/key.pem
-# ssl_key_file = "/etc/komodo/ssl/periphery/key.pem"
+## Default: /etc/komodo/ssl/key.pem
+# ssl_key_file = "/etc/komodo/ssl/key.pem"
 
 ## Path to the ssl cert.
 ## Env: PERIPHERY_SSL_CERT_FILE
-## Default: /etc/komodo/ssl/periphery/cert.pem
-# ssl_cert_file = "/etc/komodo/ssl/periphery/cert.pem"
+## Default: /etc/komodo/ssl/cert.pem
+# ssl_cert_file = "/etc/komodo/ssl/cert.pem"
 
 ###########
 # SECRETS #

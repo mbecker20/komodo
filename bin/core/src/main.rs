@@ -76,8 +76,8 @@ async fn app() -> anyhow::Result<()> {
     SocketAddr::from_str(&format!("0.0.0.0:{}", core_config().port))
       .context("failed to parse socket addr")?;
 
-  if config.core_ssl_enabled {
-    info!("🔒 SSL Enabled");
+  if config.ssl_enabled {
+    info!("🔒 Core SSL Enabled");
     info!("Komodo Core starting on https://{socket_addr}");
     let ssl_config = OpenSSLConfig::from_pem_file(
       &config.ssl_cert_file,
@@ -88,7 +88,7 @@ async fn app() -> anyhow::Result<()> {
       .serve(app)
       .await?
   } else {
-    info!("🔓 SSL Disabled");
+    info!("🔓 Core SSL Disabled");
     info!("Komodo Core starting on http://{socket_addr}");
     axum_server::bind(socket_addr).serve(app).await?
   }

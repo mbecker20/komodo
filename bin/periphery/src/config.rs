@@ -76,8 +76,12 @@ pub fn periphery_config() -> &'static PeripheryConfig {
       ssl_enabled: env
         .periphery_ssl_enabled
         .unwrap_or(config.ssl_enabled),
-      ssl_key: env.periphery_ssl_key.unwrap_or(config.ssl_key),
-      ssl_cert: env.periphery_ssl_cert.unwrap_or(config.ssl_cert),
+      ssl_key_file: env
+        .periphery_ssl_key_file
+        .unwrap_or(config.ssl_key_file),
+      ssl_cert_file: env
+        .periphery_ssl_cert_file
+        .unwrap_or(config.ssl_cert_file),
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,

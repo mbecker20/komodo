@@ -187,9 +187,9 @@ pub fn core_config() -> &'static CoreConfig {
           .komodo_logging_opentelemetry_service_name
           .unwrap_or(config.logging.opentelemetry_service_name),
       },
-      core_ssl_enabled: env.komodo_ssl_enabled.unwrap_or(config.core_ssl_enabled),
-      ssl_key_file: env.komodo_ssl_key.unwrap_or(config.ssl_key_file),
-      ssl_cert_file: env.komodo_ssl_cert.unwrap_or(config.ssl_cert_file),
+      ssl_enabled: env.komodo_ssl_enabled.unwrap_or(config.ssl_enabled),
+      ssl_key_file: env.komodo_ssl_key_file.unwrap_or(config.ssl_key_file),
+      ssl_cert_file: env.komodo_ssl_cert_file.unwrap_or(config.ssl_cert_file),
 
       // These can't be overridden on env
       secrets: config.secrets,

@@ -146,18 +146,19 @@ passkey = "a_random_passkey"
 ############
 
 ## Enable HTTPS server using the given key and cert.
-## Env: KOMODO_CORE_SSL_ENABLED
-# core_ssl_enabled = true
+## Env: KOMODO_SSL_ENABLED
+## Default: false
+# ssl_enabled = true
 
 ## Path to the ssl key.
-## Env: KOMODO_CORE_SSL_KEY
-## Default: /etc/komodo/ssl/key.pem
-# core_ssl_key = "/etc/komodo/ssl/core/key.pem"
+## Env: KOMODO_SSL_KEY_FILE
+## Default: /config/ssl/key.pem
+# ssl_key_file = "/config/ssl/key.pem"
 
 ## Path to the ssl cert.
-## Env: KOMODO_CORE_SSL_CERT
-## Default: /etc/komodo/ssl/cert.pem
-# core_ssl_cert = "/etc/komodo/ssl/core/cert.pem"
+## Env: KOMODO_SSL_CERT_FILE
+## Default: /config/ssl/cert.pem
+# ssl_cert_file = "/config/ssl/cert.pem"
 
 ############
 # DATABASE #
