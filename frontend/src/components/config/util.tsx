@@ -82,7 +82,11 @@ export const ConfigItem = ({
                 <Info className="w-4 h-4" />
               </Card>
             </HoverCardTrigger>
-            <HoverCardContent align="start" side="right">
+            <HoverCardContent
+              align="start"
+              side="right"
+              className="w-[50vw] max-w-[400px] text-sm font-mono"
+            >
               {description}
             </HoverCardContent>
           </HoverCard>
