@@ -12,6 +12,7 @@ mod config;
 mod docker;
 mod helpers;
 mod router;
+mod ssl;
 mod stats;
 
 struct State;
@@ -35,7 +36,7 @@ async fn app() -> anyhow::Result<()> {
 
   if config.ssl_enabled {
     info!("🔒 SSL Enabled");
-    helpers::ensure_certs().await;
+    ssl::ensure_certs().await;
     info!("Komodo Periphery starting on https://{}", socket_addr);
     let ssl_config =
       OpenSSLConfig::from_pem_file(&config.ssl_cert, &config.ssl_key)
