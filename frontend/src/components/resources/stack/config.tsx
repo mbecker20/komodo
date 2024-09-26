@@ -72,6 +72,43 @@ export const StackConfig = ({
             },
           },
           {
+            label: "Compose File",
+            hidden: files_on_host || (!ui_file_contents && repo_set),
+            description:
+              "Manage the file contents here, or use a git repo / files on host option.",
+            components: {
+              file_contents: (file_contents, set) => {
+                const show_default =
+                  !file_contents &&
+                  update.file_contents === undefined &&
+                  !(update.repo ?? config.repo);
+                return (
+                  <MonacoEditor
+                    value={
+                      show_default ? DEFAULT_STACK_FILE_CONTENTS : file_contents
+                    }
+                    onValueChange={(file_contents) => set({ file_contents })}
+                    language="yaml"
+                  />
+                );
+              },
+            },
+          },
+          {
+            label: "Environment",
+            description: "Pass these variables to the compose command",
+            components: {
+              environment: (env, set) => (
+                <EnvVars env={env ?? ""} set={set} disabled={disabled} />
+              ),
+              env_file_path: {
+                description:
+                  "The path to write the file to, relative to the root of the repo.",
+                placeholder: ".env",
+              },
+            },
+          },
+          {
             label: "Settings",
             labelHidden: true,
             components: {
@@ -327,33 +364,6 @@ export const StackConfig = ({
             },
           },
         ],
-        "Compose File": !files_on_host &&
-          !repo_set && [
-            {
-              label: "Compose File",
-              description:
-                "Manage the file contents here, or use a git repo / files on host option.",
-              components: {
-                file_contents: (file_contents, set) => {
-                  const show_default =
-                    !file_contents &&
-                    update.file_contents === undefined &&
-                    !(update.repo ?? config.repo);
-                  return (
-                    <MonacoEditor
-                      value={
-                        show_default
-                          ? DEFAULT_STACK_FILE_CONTENTS
-                          : file_contents
-                      }
-                      onValueChange={(file_contents) => set({ file_contents })}
-                      language="yaml"
-                    />
-                  );
-                },
-              },
-            },
-          ],
         "Git Repo": !files_on_host &&
           !ui_file_contents && [
             {
@@ -630,23 +640,6 @@ export const StackConfig = ({
               },
             },
           ],
-        environment: [
-          {
-            label: "Environment",
-            description: "Pass these variables to the compose command",
-            components: {
-              environment: (env, set) => (
-                <EnvVars env={env ?? ""} set={set} disabled={disabled} />
-              ),
-              env_file_path: {
-                description:
-                  "The path to write the file to, relative to the root of the repo.",
-                placeholder: ".env",
-              },
-              skip_secret_interp: true,
-            },
-          },
-        ],
       }}
     />
   );

@@ -4,7 +4,7 @@ import { DiffEditor, Editor } from "@monaco-editor/react";
 import { useTheme } from "@ui/theme";
 import { cn } from "@lib/utils";
 
-const MIN_EDITOR_HEIGHT = 100;
+const MIN_EDITOR_HEIGHT = 56;
 
 export const MonacoEditor = ({
   value,
