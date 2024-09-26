@@ -67,7 +67,7 @@ services:
       - /proc:/proc
       # use self signed certs in docker volume, 
       # or mount your own signed certs.
-      - ssl:/etc/komodo/ssl
+      - ssl-certs:/etc/komodo/ssl
       # manage repos in a docker volume, 
       # or change it to an accessible host directory.
       - repos:/etc/komodo/repos
@@ -78,7 +78,7 @@ services:
 volumes:
   mongo-data:
   mongo-config:
-  ssl:
+  ssl-certs:
   repos:
   stacks:
 
