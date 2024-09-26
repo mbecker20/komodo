@@ -268,9 +268,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ec2"
-version = "1.73.0"
+version = "1.74.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f28e99a84594aa86a04ff482f9b836bf796749a97ad811b6b976827d7ba9695f"
+checksum = "ab6f74dd8b24475ed56ffaeabbbbc3748ec639d16e78ff73f3eefa95b90bfebe"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -4215,9 +4215,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41515cc9e193536d93fd0dbbea0c73819c08eca76e0b30909a325c3ec90985bb"
+checksum = "8437150ab6bbc8c5f0f519e3d5ed4aa883a83dd4cdd3d1b21f9482936046cb97"
 dependencies = [
  "bitflags 2.6.0",
  "bytes",

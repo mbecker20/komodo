@@ -1,0 +1,169 @@
+use std::sync::OnceLock;
+
+use serde::Serialize;
+
+use super::*;
+
+#[instrument(level = "debug")]
+pub async fn send_alert(
+  url: &str,
+  alert: &Alert,
+) -> anyhow::Result<()> {
+  let level = fmt_level(alert.level);
+  let content = match &alert.data {
+    AlertData::ServerUnreachable {
+      id,
+      name,
+      region,
+      err,
+    } => {
+      let region = fmt_region(region);
+      let link = resource_link(ResourceTargetVariant::Server, id);
+      match alert.level {
+        SeverityLevel::Ok => {
+          format!(
+            "{level} | *{name}*{region} is now *reachable*\n{link}"
+          )
+        }
+        SeverityLevel::Critical => {
+          let err = err
+            .as_ref()
+            .map(|e| format!("\n**error**: {e:#?}"))
+            .unwrap_or_default();
+          format!(
+            "{level} | *{name}*{region} is *unreachable* ❌\n{link}{err}"
+          )
+        }
+        _ => unreachable!(),
+      }
+    }
+    AlertData::ServerCpu {
+      id,
+      name,
+      region,
+      percentage,
+    } => {
+      let region = fmt_region(region);
+      let link = resource_link(ResourceTargetVariant::Server, id);
+      format!(
+        "{level} | *{name}*{region} cpu usage at *{percentage:.1}%*\n{link}"
+      )
+    }
+    AlertData::ServerMem {
+      id,
+      name,
+      region,
+      used_gb,
+      total_gb,
+    } => {
+      let region = fmt_region(region);
+      let link = resource_link(ResourceTargetVariant::Server, id);
+      let percentage = 100.0 * used_gb / total_gb;
+      format!(
+        "{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾\n\nUsing *{used_gb:.1} GiB* / *{total_gb:.1} GiB*\n{link}"
+      )
+    }
+    AlertData::ServerDisk {
+      id,
+      name,
+      region,
+      path,
+      used_gb,
+      total_gb,
+    } => {
+      let region = fmt_region(region);
+      let link = resource_link(ResourceTargetVariant::Server, id);
+      let percentage = 100.0 * used_gb / total_gb;
+      format!(
+        "{level} | *{name}*{region} disk usage at *{percentage:.1}%* 💿\nmount point: `{path:?}`\nusing *{used_gb:.1} GiB* / *{total_gb:.1} GiB*\n{link}"
+      )
+    }
+    AlertData::ContainerStateChange {
+      id,
+      name,
+      server_id: _server_id,
+      server_name,
+      from,
+      to,
+    } => {
+      let link = resource_link(ResourceTargetVariant::Deployment, id);
+      let to = fmt_docker_container_state(to);
+      format!("📦 Deployment *{name}* is now {to}\nserver: {server_name}\nprevious: {from}\n{link}")
+    }
+    AlertData::StackStateChange {
+      id,
+      name,
+      server_id: _server_id,
+      server_name,
+      from,
+      to,
+    } => {
+      let link = resource_link(ResourceTargetVariant::Stack, id);
+      let to = fmt_stack_state(to);
+      format!("🥞 Stack *{name}* is now {to}\nserver: {server_name}\nprevious: {from}\n{link}")
+    }
+    AlertData::AwsBuilderTerminationFailed {
+      instance_id,
+      message,
+    } => {
+      format!("{level} | Failed to terminated AWS builder instance\ninstance id: *{instance_id}*\n{message}")
+    }
+    AlertData::ResourceSyncPendingUpdates { id, name } => {
+      let link =
+        resource_link(ResourceTargetVariant::ResourceSync, id);
+      format!(
+        "{level} | Pending resource sync updates on *{name}*\n{link}"
+      )
+    }
+    AlertData::BuildFailed { id, name, version } => {
+      let link = resource_link(ResourceTargetVariant::Build, id);
+      format!("{level} | Build *{name}* failed\nversion: v{version}\n{link}")
+    }
+    AlertData::RepoBuildFailed { id, name } => {
+      let link = resource_link(ResourceTargetVariant::Repo, id);
+      format!("{level} | Repo build for *{name}* failed\n{link}")
+    }
+    AlertData::None {} => Default::default(),
+  };
+  if !content.is_empty() {
+    send_message(url, &content).await?;
+  }
+  Ok(())
+}
+
+async fn send_message(
+  url: &str,
+  content: &str,
+) -> anyhow::Result<()> {
+  let body = DiscordMessageBody { content };
+
+  let response = http_client()
+    .post(url)
+    .json(&body)
+    .send()
+    .await
+    .context("Failed to send message")?;
+
+  let status = response.status();
+
+  if status.is_success() {
+    Ok(())
+  } else {
+    let text = response.text().await.with_context(|| {
+      format!("Failed to send message to Discord | {status} | failed to get response text")
+    })?;
+    Err(anyhow::anyhow!(
+      "Failed to send message to Discord | {status} | {text}"
+    ))
+  }
+}
+
+fn http_client() -> &'static reqwest::Client {
+  static CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
+  CLIENT.get_or_init(|| reqwest::Client::new())
+}
+
+#[derive(Serialize)]
+struct DiscordMessageBody<'a> {
+  content: &'a str,
+}
