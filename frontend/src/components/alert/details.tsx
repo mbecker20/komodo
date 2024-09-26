@@ -11,6 +11,7 @@ import {
   alert_level_intention,
   text_color_class_by_intention,
 } from "@lib/color";
+import { MonacoEditor } from "@components/monaco";
 
 export const AlertDetailsDialog = ({ id }: { id: string }) => {
   const [open, set] = useState(false);
@@ -22,12 +23,12 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
           Details
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-fit min-w-[30vw] max-w-[90vw]">
+      <DialogContent className="w-[90vw] max-w-[700px]">
         {alert && (
           <>
-            <DialogHeader className="flex-row justify-between w-full">
+            <DialogHeader>
               {alert && (
-                <>
+                <div className="flex items-center gap-4">
                   <ResourceLink
                     type={alert.target.type as UsableResource}
                     id={alert.target.id}
@@ -36,11 +37,11 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
                   <div className="text-muted-foreground">
                     {fmt_date_with_minutes(new Date(alert.ts))}
                   </div>
-                </>
+                </div>
               )}
             </DialogHeader>
             <DialogDescription>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 <div className="flex gap-4 items-center">
                   {/** Alert type */}
                   <div className="flex gap-2">
@@ -69,7 +70,11 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
                 </div>
 
                 {/** Alert data */}
-                <pre>{JSON.stringify(alert.data.data, undefined, 2)}</pre>
+                <MonacoEditor
+                  value={JSON.stringify(alert.data.data, undefined, 2)}
+                  language="json"
+                  readOnly
+                />
               </div>
             </DialogDescription>
           </>

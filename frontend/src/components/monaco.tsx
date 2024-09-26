@@ -14,7 +14,7 @@ export const MonacoEditor = ({
 }: {
   value: string | undefined;
   onValueChange?: (value: string) => void;
-  language: "yaml" | "toml";
+  language: "yaml" | "toml" | "json";
   readOnly?: boolean;
 }) => {
   const [editor, setEditor] =
