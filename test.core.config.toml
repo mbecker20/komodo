@@ -8,6 +8,7 @@ enable_new_users = true
 
 # database.address = "localhost:27017"
 # database.address = "ferretdb.komodo.orb.local"
+# database.address = "ferretdb.komodo-dev.orb.local"
 database.address = "test-ferretdb.orb.local"
 # database.username = "admin"
 # database.password = "admin"

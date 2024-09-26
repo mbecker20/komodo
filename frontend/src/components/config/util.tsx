@@ -613,7 +613,7 @@ function ConfirmUpdateItem<T>({
               <MonacoDiffEditor
                 original={prev_val}
                 modified={val}
-                language="yaml"
+                language="toml"
               />
             ) : (
               <pre style={{ minHeight: 0 }}>

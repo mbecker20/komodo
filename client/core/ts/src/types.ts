@@ -285,8 +285,10 @@ export interface Resource<Config, Info> {
 export type AlerterEndpoint = 
 	/** Send alert serialized to JSON to an http endpoint. */
 	| { type: "Custom", params: CustomAlerterEndpoint }
-	/** Send alert to a slack app */
-	| { type: "Slack", params: SlackAlerterEndpoint };
+	/** Send alert to a Slack app */
+	| { type: "Slack", params: SlackAlerterEndpoint }
+	/** Send alert to a Discord app */
+	| { type: "Discord", params: DiscordAlerterEndpoint };
 
 export interface AlerterConfig {
 	/** Whether the alerter is enabled */
@@ -6117,15 +6119,21 @@ export interface DeleteVariable {
 	name: string;
 }
 
-/** Configuration for a custom alerter endpoint. */
+/** Configuration for a Custom alerter endpoint. */
 export interface CustomAlerterEndpoint {
 	/** The http/s endpoint to send the POST to */
 	url: string;
 }
 
-/** Configuration for a slack alerter. */
+/** Configuration for a Slack alerter. */
 export interface SlackAlerterEndpoint {
-	/** The slack app url */
+	/** The Slack app webhook url */
+	url: string;
+}
+
+/** Configuration for a Discord alerter. */
+export interface DiscordAlerterEndpoint {
+	/** The Discord webhook url */
 	url: string;
 }
 

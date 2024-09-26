@@ -1,9 +1,19 @@
 import { ConfigItem } from "@components/config/util";
 import { TextUpdateMenu } from "@components/util";
 import { Types } from "@komodo/client";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
 
-const ENDPOINT_TYPES: Types.AlerterEndpoint["type"][] = ["Custom", "Slack"];
+const ENDPOINT_TYPES: Types.AlerterEndpoint["type"][] = [
+  "Custom",
+  "Discord",
+  "Slack",
+];
 
 export const EndpointConfig = ({
   endpoint,
@@ -54,5 +64,7 @@ const default_url = (type: Types.AlerterEndpoint["type"]) => {
     ? "http://localhost:7000"
     : type === "Slack"
     ? "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+    : type === "Discord"
+    ? "https://discord.com/api/webhooks/XXXXXXXXXXXX/XXXX-XXXXXXXXXX"
     : "";
 };

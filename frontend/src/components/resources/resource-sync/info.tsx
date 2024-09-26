@@ -25,7 +25,7 @@ export const ResourceSyncInfo = ({
                   path: {content.path}
                   <MonacoEditor
                     value={content.contents}
-                    language="yaml"
+                    language="toml"
                     readOnly
                   />
                 </pre>

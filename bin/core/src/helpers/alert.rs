@@ -73,6 +73,14 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
     }
 
     match &alerter.config.endpoint {
+      AlerterEndpoint::Custom(CustomAlerterEndpoint { url }) => {
+        send_custom_alert(url, alert).await.with_context(|| {
+          format!(
+            "failed to send alert to custom alerter {}",
+            alerter.name
+          )
+        })
+      }
       AlerterEndpoint::Slack(SlackAlerterEndpoint { url }) => {
         send_slack_alert(url, alert).await.with_context(|| {
           format!(
@@ -81,13 +89,15 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
           )
         })
       }
-      AlerterEndpoint::Custom(CustomAlerterEndpoint { url }) => {
-        send_custom_alert(url, alert).await.with_context(|| {
-          format!(
-            "failed to send alert to custom alerter {}",
-            alerter.name
-          )
-        })
+      AlerterEndpoint::Discord(DiscordAlerterEndpoint { url }) => {
+        send_slack_alert(&format!("{url}/slack"), alert)
+          .await
+          .with_context(|| {
+            format!(
+              "failed to send alert to Discord alerter {}",
+              alerter.name
+            )
+          })
       }
     }
   });
