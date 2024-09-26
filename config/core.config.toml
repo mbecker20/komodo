@@ -55,40 +55,6 @@ passkey = "a_random_passkey"
 ## Default: false
 # disable_confirm_dialog = true
 
-############
-# DATABASE #
-############
-
-## Configure the database connection in one of the following ways:
-
-## Pass a full Mongo URI to the database. Suitable for Mongo Atlas, or with FerretDB adapter to SQL databases.
-## Env: KOMODO_DATABASE_URI or KOMODO_DATABASE_URI_FILE
-# database.uri = "mongodb://username:password@localhost:27017"
-
-## ==== * OR * ==== ##
-
-# Construct the address as mongodb://{username}:{password}@{address}
-## Env: KOMODO_DATABASE_ADDRESS
-database.address = "localhost:27017"
-## Env: KOMODO_DATABASE_USERNAME or KOMODO_DATABASE_USERNAME_FILE
-# database.username = "admin"
-## Env: KOMODO_DATABASE_PASSWORD or KOMODO_DATABASE_PASSWORD_FILE
-# database.password = "admin"
-
-## ==== other ====
-
-## Komodo will create its collections under this database name.
-## The only reason to change this is if multiple Komodo Cores share the same db.
-## Env: KOMODO_DATABASE_DB_NAME
-## Default: komodo.
-# database.db_name = "komodo"
-
-## This is the assigned app_name of the mongo client.
-## The only reason to change this is if multiple Komodo Cores share the same db.
-## Env: KOMODO_DATABASE_APP_NAME
-## Default: komodo_core.
-# database.app_name = "komodo_core_01"
-
 ################
 # AUTH / LOGIN #
 ################
@@ -193,18 +159,39 @@ database.address = "localhost:27017"
 ## Default: /etc/komodo/ssl/cert.pem
 # core_ssl_cert = "/etc/komodo/ssl/core/cert.pem"
 
-## Path to root CA certificate, or folder containing multiple root CA certs.
-## Env: KOMODO_PERIPHERY_CA_CERT_PATH
-# periphery_ca_cert_path = "/etc/komodo/ssl/periphery/ca.crt"
+############
+# DATABASE #
+############
 
-## Path to periphery root CA private key, or folder containing multiple root CA certs.
-## Env: KOMODO_PERIPHERY_CA_KEY_PATH
-# periphery_ca_key_path = "/etc/komodo/ssl/periphery/ca.key"
+## Configure the database connection in one of the following ways:
 
-## If providing CA signed certs to periphery,
-## can disable accepting self signed SSL certificates.
-## Env: KOMODO_PERIPHERY_ACCEPT_SELF_SIGNED_CERTS
-# periphery_accept_self_signed_certs = false
+## Pass a full Mongo URI to the database. Suitable for Mongo Atlas, or with FerretDB adapter to SQL databases.
+## Env: KOMODO_DATABASE_URI or KOMODO_DATABASE_URI_FILE
+# database.uri = "mongodb://username:password@localhost:27017"
+
+## ==== * OR * ==== ##
+
+# Construct the address as mongodb://{username}:{password}@{address}
+## Env: KOMODO_DATABASE_ADDRESS
+database.address = "localhost:27017"
+## Env: KOMODO_DATABASE_USERNAME or KOMODO_DATABASE_USERNAME_FILE
+# database.username = "admin"
+## Env: KOMODO_DATABASE_PASSWORD or KOMODO_DATABASE_PASSWORD_FILE
+# database.password = "admin"
+
+## ==== other ====
+
+## Komodo will create its collections under this database name.
+## The only reason to change this is if multiple Komodo Cores share the same db.
+## Env: KOMODO_DATABASE_DB_NAME
+## Default: komodo.
+# database.db_name = "komodo"
+
+## This is the assigned app_name of the mongo client.
+## The only reason to change this is if multiple Komodo Cores share the same db.
+## Env: KOMODO_DATABASE_APP_NAME
+## Default: komodo_core.
+# database.app_name = "komodo_core_01"
 
 ############
 # WEBHOOKS #

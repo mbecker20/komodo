@@ -55,19 +55,20 @@
 ############
 
 ## Enable HTTPS server using the given key and cert.
-## If a key / cert at the given paths are not found, self signed keys will be generated using openssl.
+## If true and a key / cert at the given paths are not found, 
+## self signed keys will be generated using openssl.
 ## Env: PERIPHERY_SSL_ENABLED
-ssl_enabled = true
+# ssl_enabled = true
 
 ## Path to the ssl key.
-## Env: PERIPHERY_SSL_KEY
-## Default: /etc/komodo/ssl/key.pem
-# ssl_key = "/etc/komodo/ssl/key.pem"
+## Env: PERIPHERY_SSL_KEY_FILE
+## Default: /etc/komodo/ssl/periphery/key.pem
+# ssl_key_file = "/etc/komodo/ssl/periphery/key.pem"
 
 ## Path to the ssl cert.
-## Env: PERIPHERY_SSL_CERT
-## Default: /etc/komodo/ssl/cert.pem
-# ssl_cert = "/etc/komodo/ssl/cert.pem"
+## Env: PERIPHERY_SSL_CERT_FILE
+## Default: /etc/komodo/ssl/periphery/cert.pem
+# ssl_cert_file = "/etc/komodo/ssl/periphery/cert.pem"
 
 ###########
 # SECRETS #

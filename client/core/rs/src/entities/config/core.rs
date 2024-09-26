@@ -195,13 +195,6 @@ pub struct Env {
   pub komodo_ssl_key: Option<PathBuf>,
   /// Override `ssl_cert`
   pub komodo_ssl_cert: Option<PathBuf>,
-
-  /// Override `periphery_accept_self_signed_certs`
-  pub komodo_periphery_accept_self_signed_certs: Option<bool>,
-  /// Override `periphery_ca_cert_path`
-  pub komodo_periphery_ca_cert_path: Option<PathBuf>,
-  /// Override `periphery_ca_key_path`
-  pub komodo_periphery_ca_key_path: Option<PathBuf>,
 }
 
 fn default_config_path() -> String {
@@ -439,29 +432,17 @@ pub struct CoreConfig {
 
   /// Whether to enable ssl.
   #[serde(default)]
-  pub ssl_enabled: bool,
+  pub core_ssl_enabled: bool,
 
   /// Path to the ssl key.
-  /// Default: `/etc/komodo/ssl/key.pem`.
+  /// Default: `/etc/komodo/ssl/core/key.pem`.
   #[serde(default = "default_ssl_key")]
-  pub ssl_key: PathBuf,
+  pub ssl_key_file: PathBuf,
 
   /// Path to the ssl cert.
-  /// Default: `/etc/komodo/ssl/cert.pem`.
+  /// Default: `/etc/komodo/ssl/core/cert.pem`.
   #[serde(default = "default_ssl_cert")]
-  pub ssl_cert: PathBuf,
-
-  /// Whether to accept https communication with self signed certs.
-  #[serde(default = "default_periphery_accept_self_signed_certs")]
-  pub periphery_accept_self_signed_certs: bool,
-
-  /// Path to periphery ca cert.
-  #[serde(default = "default_periphery_ca_cert_path")]
-  pub periphery_ca_cert_path: PathBuf,
-
-  /// Path to periphery ca key.
-  #[serde(default = "default_periphery_ca_key_path")]
-  pub periphery_ca_key_path: PathBuf,
+  pub ssl_cert_file: PathBuf,
 }
 
 fn default_title() -> String {
@@ -503,18 +484,6 @@ fn default_ssl_key() -> PathBuf {
 
 fn default_ssl_cert() -> PathBuf {
   "/etc/komodo/ssl/core/cert.pem".parse().unwrap()
-}
-
-fn default_periphery_accept_self_signed_certs() -> bool {
-  true
-}
-
-fn default_periphery_ca_cert_path() -> PathBuf {
-  "/etc/komodo/ssl/periphery/ca.crt".parse().unwrap()
-}
-
-fn default_periphery_ca_key_path() -> PathBuf {
-  "/etc/komodo/ssl/periphery/ca.key".parse().unwrap()
 }
 
 impl CoreConfig {
@@ -607,13 +576,9 @@ impl CoreConfig {
         })
         .collect(),
 
-      ssl_enabled: config.ssl_enabled,
-      ssl_key: config.ssl_key,
-      ssl_cert: config.ssl_cert,
-      periphery_accept_self_signed_certs: config
-        .periphery_accept_self_signed_certs,
-      periphery_ca_cert_path: config.periphery_ca_cert_path,
-      periphery_ca_key_path: config.periphery_ca_key_path,
+      core_ssl_enabled: config.core_ssl_enabled,
+      ssl_key_file: config.ssl_key_file,
+      ssl_cert_file: config.ssl_cert_file,
     }
   }
 }

@@ -39,11 +39,6 @@ async fn app() -> anyhow::Result<()> {
   helpers::ensure_first_server().await;
   // init jwt client to crash on failure
   state::jwt_client();
-  // init periphery client ssl config to crash on failure
-  periphery_client::init_periphery_http_client(
-    config.periphery_accept_self_signed_certs,
-    &config.periphery_ca_cert_path,
-  );
 
   // Spawn tasks
   monitor::spawn_monitor_loop();
@@ -81,12 +76,14 @@ async fn app() -> anyhow::Result<()> {
     SocketAddr::from_str(&format!("0.0.0.0:{}", core_config().port))
       .context("failed to parse socket addr")?;
 
-  if config.ssl_enabled {
+  if config.core_ssl_enabled {
     info!("🔒 SSL Enabled");
     info!("Komodo Core starting on https://{socket_addr}");
-    let ssl_config =
-      OpenSSLConfig::from_pem_file(&config.ssl_cert, &config.ssl_key)
-        .context("Failed to parse ssl ")?;
+    let ssl_config = OpenSSLConfig::from_pem_file(
+      &config.ssl_cert_file,
+      &config.ssl_key_file,
+    )
+    .context("Failed to parse ssl ")?;
     axum_server::bind_openssl(socket_addr, ssl_config)
       .serve(app)
       .await?
