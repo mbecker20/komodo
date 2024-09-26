@@ -105,7 +105,11 @@ const ConfigInfoResources = ({ id }: { id: string }) => {
     </TabsList>
   );
   return (
-    <Tabs value={currentView} onValueChange={setView as any} className="grid gap-4">
+    <Tabs
+      value={currentView}
+      onValueChange={setView as any}
+      className="grid gap-4"
+    >
       <TabsContent value="Config">
         <ServerConfig id={id} titleOther={tabsList} />
       </TabsContent>
@@ -168,7 +172,7 @@ export const ServerComponents: RequiredResourceComponents = {
           { title: "Healthy", intention: "Good", value: summary?.healthy ?? 0 },
           {
             title: "Unhealthy",
-            intention: "Warning",
+            intention: "Critical",
             value: summary?.unhealthy ?? 0,
           },
           {
