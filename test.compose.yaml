@@ -5,11 +5,15 @@ services:
       dockerfile: bin/core/Dockerfile
     restart: unless-stopped
     logging:
-      driver: local # enable log rotation by default. see `https://docs.docker.com/config/containers/logging/local/`
-    network_mode: host
-    volumes:
-      - ./test.core.config.toml:/config/config.toml
-      - /Users/max/komodo-repos:/Users/max/komodo-repos
+      driver: local
+    networks:
+      - default
+    environment:
+      KOMODO_FIRST_SERVER: https://periphery:8120
+      KOMODO_DATABASE_ADDRESS: ferretdb
+      KOMODO_ENABLE_NEW_USERS: true
+      KOMODO_LOCAL_AUTH: true
+      KOMODO_JWT_SECRET: a_random_secret
 
   periphery:
     build:
@@ -18,69 +22,32 @@ services:
     restart: unless-stopped
     logging:
       driver: local
-    network_mode: host
+    networks:
+      - default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /proc:/proc:ro
-      - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
-      - stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
+      - /proc:/proc
+      - repos:/etc/komodo/repos
+      - stacks:/etc/komodo/stacks
     environment:
-      # If the disk size is overreporting, can use one of these to 
-      # whitelist / blacklist the disks, whichever is easier. 
       PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
-      # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap
 
-  # mongo:
-  #   image: mongo
-  #   command: --quiet # suppress mongo logs a bit
-  #   restart: unless-stopped
-  #   logging:
-  #     driver: local
-  #   network_mode: host
-  #   volumes:
-  #     - mongo-data:/data/db
-  #     - mongo-config:/data/configdb
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: admin # change these
-  #     MONGO_INITDB_ROOT_PASSWORD: admin
-
-  ferretdb-sqlite:
+  ferretdb:
     image: ghcr.io/ferretdb/ferretdb
     restart: unless-stopped
     logging:
       driver: local
-    network_mode: host
+    networks:
+      - default
     environment:
       - FERRETDB_HANDLER=sqlite
     volumes:
-      - sqlite-data:/state
+      - data:/state
 
-  # ferretdb-postgres:
-  #   image: ghcr.io/ferretdb/ferretdb
-  #   restart: unless-stopped
-  #   logging:
-  #     driver: local
-  #   network_mode: host
-  #   environment:
-  #     - FERRETDB_POSTGRESQL_URL=postgres://localhost:5432/komodo
-
-  # postgres:
-  #   image: postgres
-  #   restart: unless-stopped
-  #   logging:
-  #     driver: local
-  #   network_mode: host
-  #   environment:
-  #     - POSTGRES_USER=admin
-  #     - POSTGRES_PASSWORD=admin
-  #     - POSTGRES_DB=komodo
-  #   volumes:
-  #     - pg-data:/var/lib/postgresql/data
+networks:
+  default: {}
 
 volumes:
   repos:
   stacks:
-  mongo-data:
-  mongo-config:
-  sqlite-data:
-  pg-data:
+  data:

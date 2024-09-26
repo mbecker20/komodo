@@ -18,14 +18,14 @@ cmd = "yarn build"
 [test-compose]
 description = "deploys test.compose.yaml"
 cmd = """
-docker compose -f test.compose.yaml down --remove-orphans && \
-docker compose -f test.compose.yaml up -d"""
+docker compose -p komodo-dev -f test.compose.yaml down --remove-orphans && \
+docker compose -p komodo-dev -f test.compose.yaml up -d"""
 
 [test-compose-build]
 description = "builds and deploys test.compose.yaml"
 cmd = """
-docker compose -f test.compose.yaml down --remove-orphans && \
-docker compose -f test.compose.yaml up -d --build"""
+docker compose -p komodo-dev -f test.compose.yaml down --remove-orphans && \
+docker compose -p komodo-dev -f test.compose.yaml up -d --build"""
 
 [test-core]
 description = "runs core --release pointing to test.core.config.toml"
