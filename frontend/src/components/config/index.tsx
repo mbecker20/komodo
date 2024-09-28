@@ -98,6 +98,7 @@ type ConfigComponent<T> = {
   label: string;
   icon?: ReactNode;
   actions?: ReactNode;
+  labelExtra?: ReactNode;
   description?: ReactNode;
   hidden?: boolean;
   labelHidden?: boolean;
@@ -136,10 +137,12 @@ export const Config = <T,>({
     ConfigComponent<T>[] | false | undefined
   >;
 }) => {
-  const [show, setShow] = useLocalStorage(
+  let component_keys = keys(components);
+  const [_show, setShow] = useLocalStorage(
     `config-${resource_type}-${resource_id}`,
-    keys(components)[0]
+    component_keys[0]
   );
+  const show = component_keys[_show] || component_keys[0];
 
   let activeCount = 0;
   for (const key in components) {
@@ -208,6 +211,7 @@ export const Config = <T,>({
                 label,
                 labelHidden,
                 icon,
+                labelExtra,
                 actions,
                 description,
                 hidden,
@@ -215,7 +219,10 @@ export const Config = <T,>({
                 components,
               }) =>
                 !hidden && (
-                  <Card className="w-full grid gap-2" key={label}>
+                  <Card
+                    className="w-full grid gap-2 px-6 xl:px-12 py-2"
+                    key={label}
+                  >
                     {!labelHidden && (
                       <CardHeader
                         className={cn(
@@ -244,6 +251,7 @@ export const Config = <T,>({
                               </HoverCardContent>
                             </HoverCard>
                           )}
+                          {labelExtra}
                         </div>
                         {actions}
                       </CardHeader>

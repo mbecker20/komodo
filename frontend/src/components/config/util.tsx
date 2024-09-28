@@ -993,11 +993,13 @@ export const SecretSelector = ({
   onSelect,
   type,
   disabled,
+  align = "start",
 }: {
   keys: string[];
   onSelect: (key: string) => void;
   type: "Variable" | "Secret";
   disabled: boolean;
+  align?: "start" | "center" | "end";
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -1018,7 +1020,7 @@ export const SecretSelector = ({
           <div>{type}s</div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] max-h-[300px] p-0" align="start">
+      <PopoverContent className="w-[300px] max-h-[300px] p-0" align={align}>
         <Command shouldFilter={false}>
           <CommandInput
             placeholder={`Search ${type}s`}

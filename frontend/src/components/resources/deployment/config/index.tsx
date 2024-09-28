@@ -15,7 +15,7 @@ import { TextUpdateMenu } from "@components/util";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { EnvVars } from "@components/config/env_vars";
+import { SecretsSearch } from "@components/config/env_vars";
 import { MonacoEditor } from "@components/monaco";
 import {
   DefaultTerminationSignal,
@@ -75,6 +75,7 @@ export const DeploymentConfig = ({
           },
           {
             label: "Container",
+            labelHidden: true,
             components: {
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
@@ -141,7 +142,6 @@ export const DeploymentConfig = ({
           {
             label: "Volumes",
             description: "Configure the volume bindings for the container.",
-            contentHidden: (update.volumes ?? config.volumes)?.length === 0,
             components: {
               volumes: (volumes, set) => (
                 <MonacoEditor
@@ -151,6 +151,25 @@ export const DeploymentConfig = ({
                   readOnly={disabled}
                 />
               ),
+            },
+          },
+          {
+            label: "Environment",
+            description:
+              "Pass environment variables to the container. You can interpolate variables and secrets using '[[VAR_NAME]]'",
+            labelExtra: !disabled && (
+              <SecretsSearch server={update.server_id ?? config.server_id} />
+            ),
+            components: {
+              environment: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE: value"}
+                  onValueChange={(environment) => set({ environment })}
+                  language="yaml"
+                  readOnly={disabled}
+                />
+              ),
+              // skip_secret_interp: true,
             },
           },
           {
@@ -250,24 +269,10 @@ export const DeploymentConfig = ({
                 (update.image?.type || config.image?.type) === "Build",
             },
           },
-        ],
-        environment: [
-          {
-            label: "Environment",
-            description:
-              "Pass environment variables to the container. You can interpolate variables and secrets using '[[VAR_NAME]]'",
-            components: {
-              environment: (env, set) => (
-                <EnvVars env={env ?? ""} set={set} disabled={disabled} />
-              ),
-              skip_secret_interp: true,
-            },
-          },
-        ],
-        termination: [
           {
             label: "Termination",
-            description: "Configure the ways to 'docker stop' the container.",
+            description:
+              "Configure the signals used to 'docker stop' the container. Options are SIGTERM, SIGQUIT, SIGINT, and SIGHUP.",
             components: {
               termination_signal: (value, set) => (
                 <DefaultTerminationSignal
@@ -281,7 +286,7 @@ export const DeploymentConfig = ({
               ),
               term_signal_labels: (value, set) => (
                 <MonacoEditor
-                  value={value ?? "  # SIGTERM: your label"}
+                  value={value || "  # SIGTERM: your label"}
                   language="yaml"
                   onValueChange={(term_signal_labels) =>
                     set({ term_signal_labels })

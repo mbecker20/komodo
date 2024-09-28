@@ -90,11 +90,9 @@ const ExportPre = ({
   content: string | undefined;
 }) => {
   return (
-    <div className="relative flex justify-center w-full">
+    <div className="relative flex justify-center w-full overflow-y-scroll max-h-[80vh]">
       {loading && <Loader2 className="w-8 h-8 animate-spin" />}
-      <div className="overflow-y-scroll max-h-[80vh] w-full">
-        <MonacoEditor value={content} language="toml" readOnly />
-      </div>
+      <MonacoEditor value={content} language="toml" readOnly />
       <CopyButton content={content} className="absolute top-4 right-4" />
     </div>
   );

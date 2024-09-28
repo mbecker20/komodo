@@ -7,7 +7,7 @@
     @apply border-border;
   }
   *::-webkit-scrollbar {
-    @apply w-1 bg-background;
+    @apply w-1 h-1 bg-background;
   }
   *::-webkit-scrollbar-thumb {
     @apply rounded-lg bg-primary;

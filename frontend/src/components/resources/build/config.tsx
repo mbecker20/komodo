@@ -19,7 +19,7 @@ import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Link } from "react-router-dom";
-import { BuildArgs } from "@components/config/env_vars";
+import { SecretsSearch } from "@components/config/env_vars";
 import { MonacoEditor } from "@components/monaco";
 
 export const BuildConfig = ({
@@ -62,7 +62,12 @@ export const BuildConfig = ({
             labelHidden: true,
             components: {
               builder_id: (id, set) => (
-                <BuilderSelector selected={id} set={set} disabled={disabled} />
+                <BuilderSelector
+                  selected={id}
+                  set={set}
+                  disabled={disabled}
+                  align="end"
+                />
               ),
             },
           },
@@ -216,33 +221,58 @@ export const BuildConfig = ({
             },
           },
           {
+            label: "Build Args",
+            description:
+              "Pass build args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
+            labelExtra: !disabled && <SecretsSearch />,
+            components: {
+              build_args: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE: value"}
+                  onValueChange={(build_args) => set({ build_args })}
+                  language="yaml"
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Secret Args",
+            description: (
+              <div className="flex flex-row flex-wrap">
+                <div>
+                  Pass secrets to 'docker build'. These values remain hidden in
+                  the final image by using docker secret mounts.
+                </div>
+                <Link
+                  to="https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html#structfield.secret_args"
+                  target="_blank"
+                >
+                  <Button variant="link" className="p-0">
+                    See the docs.
+                  </Button>
+                </Link>
+              </div>
+            ),
+            labelExtra: !disabled && <SecretsSearch />,
+            components: {
+              secret_args: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE: value"}
+                  onValueChange={(secret_args) => set({ secret_args })}
+                  language="yaml"
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
             label: "Labels",
             description: "Attach --labels to image.",
-            // contentHidden: (update.labels ?? config.labels)?.length === 0,
-            // actions: !disabled && (
-            //   <Button
-            //     variant="secondary"
-            //     onClick={() =>
-            //       set((update) => {
-            //         return {
-            //           ...update,
-            //           labels: [
-            //             ...(update.labels ?? config.labels ?? []),
-            //             { variable: "", value: "" },
-            //           ] as Types.EnvironmentVar[],
-            //         };
-            //       })
-            //     }
-            //     className="flex items-center gap-2 w-[200px]"
-            //   >
-            //     <PlusCircle className="w-4 h-4" />
-            //     Add Label
-            //   </Button>
-            // ),
             components: {
               labels: (labels, set) => (
                 <MonacoEditor
-                  value={labels ?? "  # your.docker.label: value"}
+                  value={labels || "  # your.docker.label: value"}
                   language="yaml"
                   onValueChange={(labels) => set({ labels })}
                   readOnly={disabled}
@@ -385,56 +415,6 @@ export const BuildConfig = ({
                   placeholder="Input link"
                 />
               ),
-            },
-          },
-        ],
-        "Build Args": [
-          {
-            label: "Build Args",
-            description:
-              "Pass build args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
-            components: {
-              build_args: (vars, set) => (
-                <BuildArgs
-                  type="build"
-                  args={vars ?? ""}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
-              skip_secret_interp: true,
-            },
-          },
-        ],
-        "Secret Args": [
-          {
-            label: "Secret Args",
-            description: (
-              <div className="flex flex-row flex-wrap">
-                <div>
-                  Pass secrets to 'docker build'. These values remain hidden in
-                  the final image by using docker secret mounts.
-                </div>
-                <Link
-                  to="https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html#structfield.secret_args"
-                  target="_blank"
-                >
-                  <Button variant="link" className="p-0">
-                    See the docs.
-                  </Button>
-                </Link>
-              </div>
-            ),
-            components: {
-              secret_args: (vars, set) => (
-                <BuildArgs
-                  type="secret"
-                  args={vars ?? ""}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
-              skip_secret_interp: true,
             },
           },
         ],

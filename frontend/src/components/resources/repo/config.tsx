@@ -15,7 +15,8 @@ import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { Button } from "@ui/button";
-import { EnvVars } from "@components/config/env_vars";
+import { SecretsSearch } from "@components/config/env_vars";
+import { MonacoEditor } from "@components/monaco";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -121,6 +122,28 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 description:
                   "Explicitly specify the folder on the host to clone the repo in. Optional.",
               },
+            },
+          },
+          {
+            label: "Environment",
+            description:
+              "Write these variables to a .env-formatted file at the specified path, before on_clone / on_pull are run.",
+            labelExtra: !disabled && <SecretsSearch />,
+            components: {
+              environment: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE: value"}
+                  onValueChange={(environment) => set({ environment })}
+                  language="yaml"
+                  readOnly={disabled}
+                />
+              ),
+              env_file_path: {
+                description:
+                  "The path to write the file to, relative to the root of the repo.",
+                placeholder: ".env",
+              },
+              // skip_secret_interp: true,
             },
           },
           {
@@ -392,24 +415,6 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   placeholder="Input link"
                 />
               ),
-            },
-          },
-        ],
-        environment: [
-          {
-            label: "Environment",
-            description:
-              "Write these variables to a .env-formatted file at the specified path, before on_clone / on_pull are run.",
-            components: {
-              environment: (env, set) => (
-                <EnvVars env={env ?? ""} set={set} disabled={disabled} />
-              ),
-              env_file_path: {
-                description:
-                  "The path to write the file to, relative to the root of the repo.",
-                placeholder: ".env",
-              },
-              skip_secret_interp: true,
             },
           },
         ],

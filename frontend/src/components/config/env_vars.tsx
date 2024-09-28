@@ -1,62 +1,9 @@
-import { ConfigItem, SecretSelector } from "@components/config/util";
+import { SecretSelector } from "@components/config/util";
 import { useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
-import { MonacoEditor } from "@components/monaco";
 import { useToast } from "@ui/use-toast";
 
-export const EnvVars = ({
-  env,
-  set,
-  disabled,
-  server,
-}: {
-  env: string;
-  set: (
-    input: Partial<
-      Types.DeploymentConfig | Types.StackConfig | Types.RepoConfig
-    >
-  ) => void;
-  disabled: boolean;
-  /// eg server id
-  server?: string;
-}) => {
-  return (
-    <ConfigItem className="flex-col gap-2 items-start">
-      {!disabled && <Secrets server={server} />}
-      <MonacoEditor
-        value={env || "  # VARIABLE: value"}
-        onValueChange={(environment) => set({ environment })}
-        language="yaml"
-      />
-    </ConfigItem>
-  );
-};
-
-export const BuildArgs = ({
-  type,
-  args,
-  set,
-  disabled,
-}: {
-  type: "build" | "secret";
-  args: string;
-  set: (input: Partial<Types.BuildConfig>) => void;
-  disabled: boolean;
-}) => {
-  const setArgs = (args: string) => set({ [`${type}_args`]: args });
-  return (
-    <ConfigItem className="flex-col gap-4 items-start">
-      {!disabled && <Secrets />}
-      <MonacoEditor
-        value={args || "  # VARIABLE: value"}
-        onValueChange={setArgs}
-        language="yaml"
-      />
-    </ConfigItem>
-  );
-};
-
-const Secrets = ({
+export const SecretsSearch = ({
   server,
 }: {
   /// eg server id
@@ -106,6 +53,7 @@ const SecretsView = ({
             toast({ title: "Copied selection" });
           }}
           disabled={false}
+          align="end"
         />
       )}
       {secrets.length > 0 && (
@@ -118,6 +66,7 @@ const SecretsView = ({
             toast({ title: "Copied selection" });
           }}
           disabled={false}
+          align="end"
         />
       )}
     </div>

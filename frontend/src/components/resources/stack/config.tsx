@@ -6,17 +6,17 @@ import {
   InputList,
   ProviderSelectorConfig,
 } from "@components/config/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { ReactNode, useState } from "react";
 import { CopyGithubWebhook, ServerSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, ShowHideButton } from "@components/util";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { Button } from "@ui/button";
 import { MonacoEditor } from "@components/monaco";
-import { EnvVars } from "@components/config/env_vars";
+import { SecretsSearch } from "@components/config/env_vars";
 
 export const StackConfig = ({
   id,
@@ -25,6 +25,10 @@ export const StackConfig = ({
   id: string;
   titleOther: ReactNode;
 }) => {
+  const [show, setShow] = useLocalStorage(`stack-${id}-show`, {
+    file: true,
+    env: true,
+  });
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Stack", id },
   }).data;
@@ -77,6 +81,13 @@ export const StackConfig = ({
             hidden: files_on_host || (!ui_file_contents && repo_set),
             description:
               "Manage the file contents here, or use a git repo / files on host option.",
+            actions: (
+              <ShowHideButton
+                show={show.file}
+                setShow={(file) => setShow({ ...show, file })}
+              />
+            ),
+            contentHidden: !show.file,
             components: {
               file_contents: (file_contents, set) => {
                 const show_default =
@@ -98,15 +109,31 @@ export const StackConfig = ({
           {
             label: "Environment",
             description: "Pass these variables to the compose command",
+            labelExtra: (
+              <SecretsSearch server={update.server_id ?? config.server_id} />
+            ),
+            actions: (
+              <ShowHideButton
+                show={show.env}
+                setShow={(env) => setShow({ ...show, env })}
+              />
+            ),
+            contentHidden: !show.env,
             components: {
               environment: (env, set) => (
-                <EnvVars env={env ?? ""} set={set} disabled={disabled} />
+                <MonacoEditor
+                  value={env || "  # VARIABLE: value"}
+                  onValueChange={(environment) => set({ environment })}
+                  language="yaml"
+                  readOnly={disabled}
+                />
               ),
               env_file_path: {
                 description:
                   "The path to write the file to, relative to the root of the repo.",
                 placeholder: ".env",
               },
+              // skip_secret_interp: true,
             },
           },
           {
