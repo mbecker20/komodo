@@ -1,9 +1,75 @@
-// import { useRead } from "@lib/hooks";
-// import { sanitizeOnlySpan } from "@lib/utils";
-// import { ReactNode } from "react";
-// import { Section } from "@components/layouts";
-// import { Types } from "@komodo/client";
-// import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
+import { Section } from "@components/layouts";
+import { MonacoDiffEditor, MonacoEditor } from "@components/monaco";
+import { useRead } from "@lib/hooks";
+import { Card, CardContent, CardHeader } from "@ui/card";
+import { ReactNode } from "react";
+import { ResourceLink } from "../common";
+import { UsableResource } from "@types";
+import { diff_type_intention, text_color_class_by_intention } from "@lib/color";
+
+export const ResourceSyncPending = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther: ReactNode;
+}) => {
+  const sync = useRead(
+    "GetResourceSync",
+    { sync: id },
+    { refetchInterval: 5000 }
+  ).data;
+  return (
+    <Section titleOther={titleOther}>
+      {sync?.info?.resource_updates?.map((update) => {
+        return (
+          <Card key={update.target.type + update.target.id}>
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div
+                  className={text_color_class_by_intention(
+                    diff_type_intention(update.data.type)
+                  )}
+                >
+                  {update.data.type} {update.target.type}
+                </div>
+                <div className="text-muted-foreground">|</div>
+                <ResourceLink
+                  type={update.target.type as UsableResource}
+                  id={update.target.id}
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {update.data.type === "Create" && (
+                <MonacoEditor
+                  value={update.data.data.proposed}
+                  language="toml"
+                  readOnly
+                />
+              )}
+              {update.data.type === "Update" && (
+                <MonacoDiffEditor
+                  original={update.data.data.current}
+                  modified={update.data.data.proposed}
+                  language="toml"
+                  readOnly
+                />
+              )}
+              {update.data.type === "Delete" && (
+                <MonacoEditor
+                  value={update.data.data.current}
+                  language="toml"
+                  readOnly
+                />
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </Section>
+  );
+};
 
 // const PENDING_TYPE_KEYS: Array<[string, string]> = [
 //   ["Server", "server_updates"],

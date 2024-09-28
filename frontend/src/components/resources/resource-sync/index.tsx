@@ -18,6 +18,7 @@ import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceSyncConfig } from "./config";
 import { ResourceSyncInfo } from "./info";
+import { ResourceSyncPending } from "./pending";
 
 export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
@@ -86,7 +87,7 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
         <ResourceSyncInfo id={id} titleOther={title} />
       </TabsContent>
       <TabsContent value="Pending">
-        {/* <ResourceSyncPending id={id} titleOther={title} /> */}
+        <ResourceSyncPending id={id} titleOther={title} />
       </TabsContent>
     </Tabs>
   );

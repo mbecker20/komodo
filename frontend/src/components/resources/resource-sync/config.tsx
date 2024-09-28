@@ -5,13 +5,13 @@ import {
   InputList,
   ProviderSelectorConfig,
 } from "@components/config/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { ReactNode, useState } from "react";
 import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, ShowHideButton } from "@components/util";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { Button } from "@ui/button";
 import { MonacoEditor } from "@components/monaco";
@@ -23,6 +23,7 @@ export const ResourceSyncConfig = ({
   id: string;
   titleOther: ReactNode;
 }) => {
+  const [showFile, setShowFile] = useLocalStorage(`sync-${id}-show-file`, true);
   const perms = useRead("GetPermissionLevel", {
     target: { type: "ResourceSync", id },
   }).data;
@@ -90,6 +91,25 @@ export const ResourceSyncConfig = ({
             },
           },
           {
+            label: "Resource File",
+            hidden: files_on_host || repo_selected,
+            description:
+              "Manage the resource file contents here, or use a git repo / the files on host option.",
+            actions: <ShowHideButton show={showFile} setShow={setShowFile} />,
+            contentHidden: !showFile,
+            components: {
+              file_contents: (file_contents, set) => {
+                return (
+                  <MonacoEditor
+                    value={file_contents}
+                    onValueChange={(file_contents) => set({ file_contents })}
+                    language="toml"
+                  />
+                );
+              },
+            },
+          },
+          {
             label: "Match Tags",
             contentHidden:
               (update.match_tags ?? config.match_tags)?.length === 0,
@@ -124,30 +144,11 @@ export const ResourceSyncConfig = ({
             } as any,
           },
         ],
-        "Resource File": !files_on_host &&
-          !repo_selected && [
-            {
-              label: "Resource File",
-              description:
-                "Manage the resource file contents here, or use a git repo / the files on host option.",
-              components: {
-                file_contents: (file_contents: string, set) => {
-                  return (
-                    <MonacoEditor
-                      value={file_contents}
-                      onValueChange={(file_contents) => set({ file_contents })}
-                      language="toml"
-                    />
-                  );
-                },
-              },
-            },
-          ],
         "Git Repo": show_git && [
           {
             label: "Git Repo",
             components: {
-              git_provider: (provider: string, set) => {
+              git_provider: (provider: string | undefined, set) => {
                 const https = update.git_https ?? config.git_https;
                 return (
                   <ProviderSelectorConfig
@@ -160,7 +161,7 @@ export const ResourceSyncConfig = ({
                   />
                 );
               },
-              git_account: (value: string, set) => {
+              git_account: (value: string | undefined, set) => {
                 return (
                   <AccountSelectorConfig
                     account_type="git"

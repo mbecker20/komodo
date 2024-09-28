@@ -253,3 +253,16 @@ export const alert_level_intention: (
       return "Critical";
   }
 };
+
+export const diff_type_intention: (
+  level: Types.DiffData["type"]
+) => ColorIntention = (level) => {
+  switch (level) {
+    case "Create":
+      return "Good";
+    case "Update":
+      return "Neutral";
+    case "Delete":
+      return "Critical";
+  }
+};
