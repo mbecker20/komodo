@@ -184,7 +184,7 @@ const ProcedureConfigInner = ({
         <Button
           variant="secondary"
           onClick={add_stage}
-          className="w-fit self-end"
+          className="w-fit"
           disabled={disabled}
         >
           Add Stage
