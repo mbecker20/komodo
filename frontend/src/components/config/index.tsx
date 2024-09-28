@@ -1,7 +1,7 @@
 import {
   ConfigInput,
   ConfigSwitch,
-  ConfirmUpdate2,
+  ConfirmUpdate,
 } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { cn } from "@lib/utils";
@@ -72,7 +72,7 @@ export const ConfigLayout = <
             </Button>
           )}
           {changesMade && (
-            <ConfirmUpdate2
+            <ConfirmUpdate
               previous={original}
               content={config}
               onConfirm={onConfirm}

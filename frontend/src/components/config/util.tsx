@@ -512,19 +512,19 @@ export const InputList = <T extends { [key: string]: unknown }>({
   </div>
 );
 
-interface ConfirmUpdate2Props<T> {
+interface ConfirmUpdateProps<T> {
   previous: T;
   content: Partial<T>;
   onConfirm: () => void;
   disabled: boolean;
 }
 
-export function ConfirmUpdate2<T>({
+export function ConfirmUpdate<T>({
   previous,
   content,
   onConfirm,
   disabled,
-}: ConfirmUpdate2Props<T>) {
+}: ConfirmUpdateProps<T>) {
   const [open, set] = useState(false);
   return (
     <Dialog open={open} onOpenChange={set}>
@@ -551,7 +551,6 @@ export function ConfirmUpdate2<T>({
               previous={previous}
             />
           ))}
-          {/* <pre className="h-[300px] overflow-auto">{content}</pre> */}
         </div>
         <DialogFooter>
           <ConfirmButton
@@ -623,11 +622,11 @@ function ConfirmUpdateItem<T>({
             ) : (
               <pre style={{ minHeight: 0 }}>
                 <span className={text_color_class_by_intention("Critical")}>
-                  {prev_val}
+                  {prev_val || "None"}
                 </span>{" "}
                 <span className="text-muted-foreground">{"->"}</span>{" "}
                 <span className={text_color_class_by_intention("Good")}>
-                  {val}
+                  {val || "None"}
                 </span>
               </pre>
             )}
