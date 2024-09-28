@@ -28,7 +28,7 @@ export const ExportButton = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex gap-2 items-center">
+        <Button variant="secondary" className="flex gap-2 items-center">
           <FileDown className="w-4 h-4" />
           Toml
         </Button>

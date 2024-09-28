@@ -223,7 +223,7 @@ export const NewLayout = ({
       }}
     >
       <DialogTrigger asChild>
-        <Button className="items-center gap-2">
+        <Button className="items-center gap-2" variant="secondary">
           New {entityType} <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>

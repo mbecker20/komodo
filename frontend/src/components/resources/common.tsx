@@ -3,7 +3,6 @@ import {
   ActionWithDialog,
   ConfirmButton,
   CopyButton,
-  TextUpdateMenu,
   TextUpdateMenu2,
 } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";

@@ -89,6 +89,12 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
     else return null;
   }
 
+  let showExport = true;
+  if (type === "ResourceSync") {
+    const info = resource?.info as Types.ResourceSyncListItemInfo;
+    showExport = !info?.file_contents && (info.file_contents || !info.managed);
+  }
+
   const Components = ResourceComponents[type];
   const links = full_resource ? Components.resource_links(full_resource) : [];
 
@@ -101,13 +107,13 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
             Back
           </Button>
         </Link>
-        <ExportButton targets={[{ type, id }]} />
+        {showExport && <ExportButton targets={[{ type, id }]} />}
       </div>
       <div className="flex flex-col xl:flex-row gap-4">
         <ResourceHeader type={type} id={id} links={links} />
         <ResourceNoficiations type={type} id={id} />
       </div>
-      <div className="mt-16 flex flex-col gap-24">
+      <div className="mt-8 flex flex-col gap-12">
         {canExecute && Object.keys(Components.Actions).length > 0 && (
           <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
             <div className="flex gap-4 items-center flex-wrap">
@@ -184,12 +190,6 @@ const ResourceHeader = ({
   const infoEntries = Object.entries(Components.Info);
 
   const { canWrite } = useEditPermissions({ type, id });
-
-  let showExport = true;
-  if (type === "ResourceSync") {
-    const info = resource?.info as Types.ResourceSyncListItemInfo;
-    showExport = !info?.file_contents && (info.file_contents || !info.managed);
-  }
 
   return (
     <div className="w-full flex flex-col gap-4">
