@@ -13,6 +13,9 @@ export interface RequiredResourceComponents {
 
   Description: React.FC;
 
+  /** Header for individual resource pages */
+  ResourcePageHeader: IdComponent;
+
   /** Summary card for use in dashboard */
   Dashboard: React.FC;
 
