@@ -784,3 +784,36 @@ export const DockerContainersSection = ({
     </div>
   );
 };
+
+export const ResourcePageHeader = ({
+  intent,
+  icon,
+  name,
+  state,
+  status,
+}: {
+  intent: ColorIntention;
+  icon: ReactNode;
+  name: string | undefined;
+  state: string | undefined;
+  status: string | undefined;
+}) => {
+  const color = text_color_class_by_intention(intent);
+  const background = hex_color_by_intention(intent) + "15";
+
+  return (
+    <div
+      className="flex items-center gap-8 pl-8 pr-16 py-4 rounded-t-md w-full"
+      style={{ background }}
+    >
+      {icon}
+      <div>
+        <p className={"text-3xl font-semibold"}>{name}</p>
+        <div className="flex items-center gap-2 text-sm uppercase">
+          <p className={cn(color, "font-semibold")}>{state}</p>
+          <p className="text-muted-foreground">{status}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
