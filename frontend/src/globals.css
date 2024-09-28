@@ -7,20 +7,17 @@
     @apply border-border;
   }
   *::-webkit-scrollbar {
-    background-color: hsl(var(--border));
-    @apply w-1;
-    @apply h-1;
+    @apply w-1 bg-background;
   }
   *::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--primary));
-    @apply rounded-lg;
+    @apply rounded-lg bg-primary;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+      "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-y: hidden;
@@ -29,7 +26,8 @@
     @apply bg-card text-card-foreground border rounded-xl min-h-full text-xs p-4 whitespace-pre-wrap scroll-m-4 break-all;
   }
   code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+      monospace;
   }
 }
 

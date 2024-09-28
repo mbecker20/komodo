@@ -67,9 +67,9 @@ export function DataTable<TData, TValue>({
   }, [tableKey, sorting]);
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow">
-      <Table className="table-fixed">
-        <TableHeader>
+    <div className="rounded-md border bg-card text-card-foreground shadow py-1 px-1">
+      <Table className="xl:table-fixed border-separate border-spacing-0">
+        <TableHeader className="sticky top-0">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -78,8 +78,8 @@ export function DataTable<TData, TValue>({
                     key={header.id}
                     colSpan={header.colSpan}
                     className={cn(
-                      "border-x first:border-r first:border-l-0 last:border-l last:border-r-0 whitespace-nowrap",
-                      `w-[${header.column.getSize()}px]`
+                      "relative whitespace-nowrap bg-background border-b border-r last:border-r-0"
+                      // `w-[${header.column.getSize()}px]`
                     )}
                   >
                     {header.isPlaceholder
@@ -101,7 +101,10 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
                 onClick={() => onRowClick && onRowClick(row.original)}
-                className={cn(onRowClick && "cursor-pointer")}
+                className={cn(
+                  "even:bg-accent/25",
+                  onRowClick && "cursor-pointer"
+                )}
               >
                 {row.getVisibleCells().map((cell) => {
                   const size = cell.column.getSize();

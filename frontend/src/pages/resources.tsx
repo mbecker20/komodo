@@ -12,6 +12,7 @@ import {
 import { Types } from "@komodo/client";
 import { Input } from "@ui/input";
 import { useState } from "react";
+import { Search } from "lucide-react";
 
 export const Resources = () => {
   const is_admin = useUser().data?.admin ?? false;
@@ -47,22 +48,23 @@ export const Resources = () => {
         </div>
       }
       icon={<Components.BigIcon />}
-      actions={
-        <div className="flex items-center h-fit gap-4">
-          <TagsFilter />
-          {(is_admin || !disable_non_admin_create) && <Components.New />}
-        </div>
-      }
+      actions={<ExportButton targets={targets} />}
     >
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-4">
-          <Input
-            value={search}
-            onChange={(e) => set(e.target.value)}
-            placeholder="search..."
-            className="w-[200px] lg:w-[300px]"
-          />
-          <ExportButton targets={targets} />
+        <div className="flex items-center justify-between">
+          {(is_admin || !disable_non_admin_create) && <Components.New />}
+          <div className="flex items-center gap-4">
+            <TagsFilter />
+            <div className="relative">
+              <Search className="w-4 absolute top-[50%] left-3 -translate-y-[50%] text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => set(e.target.value)}
+                placeholder="search..."
+                className="pl-8 w-[200px] lg:w-[300px]"
+              />
+            </div>
+          </div>
         </div>
         <Components.Table resources={filtered ?? []} />
       </div>

@@ -17,19 +17,22 @@ import { cn, usableResourcePath } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { AlertTriangle, Boxes, Circle, History } from "lucide-react";
+import { AlertTriangle, Box, Boxes, Circle, History } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 
 export const Dashboard = () => {
   const noResources = useNoResources();
   const user = useUser().data!;
+
   return (
-    <Page>
-      <ActiveResources />
-      <Section
+    <>
+      <Page>
+        <ActiveResources />
+      </Page>
+      <Page
         title="Dashboard"
-        icon={<Boxes className="w-4 h-4" />}
+        icon={<Box className="w-8 h-8" />}
         actions={<ExportButton />}
       >
         <div className="flex flex-col gap-6 w-full">
@@ -52,8 +55,8 @@ export const Dashboard = () => {
           <ResourceRow type="ResourceSync" />
           <ResourceRow type="Procedure" />
         </div>
-      </Section>
-    </Page>
+      </Page>
+    </>
   );
 };
 
@@ -79,10 +82,10 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
       ? "Resource Sync"
       : type;
   return (
-    <div className="p-6 border rounded-md flex flex-col lg:flex-row gap-8">
+    <div className="border rounded-md flex flex-col md:flex-row">
       <Link
         to={`/${usableResourcePath(type)}`}
-        className="flex flex-col justify-between pr-8 lg:border-r group"
+        className="shrink-0 px-6 py-4 flex flex-col justify-between lg:border-r group bg-accent/50 hover:bg-accent/15 transition-colors"
       >
         <div className="flex items-center gap-4 text-xl group-hover:underline">
           <Components.Icon />
@@ -90,12 +93,12 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
         </div>
         <Components.Dashboard />
       </Link>
-      <div className="w-full flex flex-col gap-4">
-        <p className="text-md text-muted-foreground flex items-center gap-2">
-          <History className="w-4" />
+      <div className="px-6 py-4 w-full flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground flex items-center gap-2">
+          <History className="w-3" />
           Recently Viewed
         </p>
-        <div className="h-52 grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
+        <div className="h-44 grid xl:grid-cols-2 2xl:grid-cols-3 gap-4">
           {ids.map((id, i) => (
             <RecentCard
               key={type + id}
@@ -105,7 +108,7 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
                 i > 3
                   ? "hidden 2xl:flex"
                   : i > 1
-                  ? "hidden sm:flex lg:hidden xl:flex"
+                  ? "hidden sm:flex md:hidden xl:flex"
                   : undefined
               }
             />
@@ -136,7 +139,7 @@ const RecentCard = ({
     <Link
       to={`${usableResourcePath(type)}/${id}`}
       className={cn(
-        "w-full p-4 border rounded-md hover:bg-accent/25 hover:-translate-y-1 transition-all h-24 flex flex-col justify-between",
+        "w-full px-3 py-2 border rounded-md hover:bg-accent/25 hover:-translate-y-1 transition-all h-20 flex flex-col justify-between",
         className
       )}
     >
@@ -167,26 +170,20 @@ export const DashboardPieChart = ({
   const data = _data.filter((d) => d) as Array<DashboardPieChartItem>;
   return (
     <div className="flex items-center gap-8">
-      <div className="flex flex-col gap-2 w-24">
-        {data.map(
-          ({ title, value, intention }) =>
-            (value > 0 ? true : false) && (
-              <p
-                key={title}
-                className="flex gap-2 text-xs text-muted-foreground"
-              >
-                <span
-                  className={cn(
-                    "font-bold",
-                    text_color_class_by_intention(intention)
-                  )}
-                >
-                  {value}
-                </span>
-                {title}
-              </p>
-            )
-        )}
+      <div className="flex flex-col gap-2 w-28">
+        {data.map(({ title, value, intention }) => (
+          <p key={title} className="flex gap-2 text-xs text-muted-foreground">
+            <span
+              className={cn(
+                "font-bold",
+                text_color_class_by_intention(intention)
+              )}
+            >
+              {value}
+            </span>
+            {title}
+          </p>
+        ))}
       </div>
       <PieChart
         className="w-32 h-32"
