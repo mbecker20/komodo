@@ -14,7 +14,7 @@ import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { BuilderSelector, CopyGithubWebhook } from "../common";
+import { BuilderSelector, CopyGithubWebhook, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
@@ -59,17 +59,17 @@ export const BuildConfig = ({
         general: [
           {
             label: "Builder",
-            labelHidden: true,
-            components: {
-              builder_id: (id, set) => (
-                <BuilderSelector
-                  selected={id}
-                  set={set}
-                  disabled={disabled}
-                  align="end"
-                />
-              ),
-            },
+            contentHidden: true,
+            actions: (
+              <ResourceSelector
+                type="Builder"
+                selected={update.builder_id ?? config.builder_id}
+                onSelect={(builder_id) => set({ builder_id })}
+                disabled={disabled}
+                align="end"
+              />
+            ),
+            components: {},
           },
           {
             label: "Version",

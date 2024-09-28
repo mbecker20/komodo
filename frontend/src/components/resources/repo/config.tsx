@@ -9,7 +9,12 @@ import {
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { useState } from "react";
-import { BuilderSelector, CopyGithubWebhook, ServerSelector } from "../common";
+import {
+  BuilderSelector,
+  CopyGithubWebhook,
+  ResourceSelector,
+  ServerSelector,
+} from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
@@ -46,30 +51,32 @@ export const RepoConfig = ({ id }: { id: string }) => {
       components={{
         general: [
           {
-            label: "Server Id",
-            labelHidden: true,
-            components: {
-              server_id: (value, set) => (
-                <ServerSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
-            },
+            label: "Server",
+            contentHidden: true,
+            actions: (
+              <ResourceSelector
+                type="Server"
+                selected={update.server_id ?? config.server_id}
+                onSelect={(server_id) => set({ server_id })}
+                disabled={disabled}
+                align="end"
+              />
+            ),
+            components: {},
           },
           {
-            label: "Builder Id",
-            labelHidden: true,
-            components: {
-              builder_id: (value, set) => (
-                <BuilderSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
-            },
+            label: "Builder",
+            contentHidden: true,
+            actions: (
+              <ResourceSelector
+                type="Builder"
+                selected={update.builder_id ?? config.builder_id}
+                onSelect={(builder_id) => set({ builder_id })}
+                disabled={disabled}
+                align="end"
+              />
+            ),
+            components: {},
           },
           {
             label: "General",

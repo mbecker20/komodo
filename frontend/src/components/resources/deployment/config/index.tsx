@@ -10,7 +10,7 @@ import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
 import { Config } from "@components/config";
-import { ServerSelector } from "@components/resources/common";
+import { ResourceSelector, ServerSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
@@ -60,18 +60,18 @@ export const DeploymentConfig = ({
       components={{
         general: [
           {
-            label: "Server Id",
-            labelHidden: true,
-            components: {
-              server_id: (value, set) => (
-                <ServerSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                  align="end"
-                />
-              ),
-            },
+            label: "Server",
+            contentHidden: true,
+            actions: (
+              <ResourceSelector
+                type="Server"
+                selected={update.server_id ?? config.server_id}
+                onSelect={(server_id) => set({ server_id })}
+                disabled={disabled}
+                align="end"
+              />
+            ),
+            components: {},
           },
           {
             label: "Container",

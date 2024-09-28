@@ -219,6 +219,8 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
 
   const disabled = perms !== Types.PermissionLevel.Write;
 
+  const params = config.params as Types.ServerBuilderConfig;
+
   return (
     <Config
       resource_id={id}
@@ -233,20 +235,18 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
       components={{
         general: [
           {
-            label: "General",
-            components: {
-              server_id: (id, set) => (
-                <div className="flex justify-between items-center border-b pb-4">
-                  Select Server
-                  <ResourceSelector
-                    type="Server"
-                    selected={id}
-                    onSelect={(server_id) => set({ server_id })}
-                    disabled={disabled}
-                  />
-                </div>
-              ),
-            },
+            label: "Server",
+            contentHidden: true,
+            actions: (
+              <ResourceSelector
+                type="Server"
+                selected={update.server_id ?? params.server_id}
+                onSelect={(server_id) => set({ server_id })}
+                disabled={disabled}
+                align="end"
+              />
+            ),
+            components: {},
           },
         ],
       }}
