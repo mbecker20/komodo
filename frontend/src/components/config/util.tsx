@@ -17,6 +17,7 @@ import {
   MinusCircle,
   PlusCircle,
   Save,
+  Search,
   SearchX,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
@@ -1013,8 +1014,8 @@ export const SecretSelector = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="secondary" className="flex gap-2" disabled={disabled}>
-          <PlusCircle className="w-4 h-4" />
-          <div>Add {type}</div>
+          <Search className="w-4 h-4" />
+          <div>{type}s</div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[300px] p-0" align="start">

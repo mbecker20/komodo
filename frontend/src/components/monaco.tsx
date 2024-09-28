@@ -5,6 +5,7 @@ import { useTheme } from "@ui/theme";
 import { cn } from "@lib/utils";
 
 const MIN_EDITOR_HEIGHT = 56;
+const MAX_EDITOR_HEIGHT = 1000;
 
 export const MonacoEditor = ({
   value,
@@ -26,8 +27,9 @@ export const MonacoEditor = ({
     if (!editor) return;
     const contentHeight = line_count * 18 + 30;
     const node = editor.getContainerDomNode();
-    node.style.height = `${Math.ceil(
-      Math.max(contentHeight, MIN_EDITOR_HEIGHT)
+    node.style.height = `${Math.max(
+      Math.min(Math.ceil(contentHeight), MAX_EDITOR_HEIGHT),
+      MIN_EDITOR_HEIGHT
     )}px`;
   }, [editor, line_count]);
 

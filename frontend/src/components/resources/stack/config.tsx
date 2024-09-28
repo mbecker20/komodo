@@ -67,6 +67,7 @@ export const StackConfig = ({
                   selected={value}
                   set={set}
                   disabled={disabled}
+                  align="end"
                 />
               ),
             },

@@ -24,7 +24,7 @@ export const EnvVars = ({
     <ConfigItem className="flex-col gap-2 items-start">
       {!disabled && <Secrets server={server} />}
       <MonacoEditor
-        value={env}
+        value={env || "  # VARIABLE: value"}
         onValueChange={(environment) => set({ environment })}
         language="yaml"
       />
@@ -47,7 +47,11 @@ export const BuildArgs = ({
   return (
     <ConfigItem className="flex-col gap-4 items-start">
       {!disabled && <Secrets />}
-      <MonacoEditor value={args} onValueChange={setArgs} language="yaml" />
+      <MonacoEditor
+        value={args || "  # VARIABLE: value"}
+        onValueChange={setArgs}
+        language="yaml"
+      />
     </ConfigItem>
   );
 };

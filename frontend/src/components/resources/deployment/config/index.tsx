@@ -127,29 +127,10 @@ export const DeploymentConfig = ({
             label: "Ports",
             description: "Configure the port bindings for the container.",
             hidden: hide_ports,
-            // contentHidden: (update.ports ?? config.ports)?.length === 0,
-            // actions: !disabled && (
-            //   <Button
-            //     variant="secondary"
-            //     onClick={() =>
-            //       set((update) => ({
-            //         ...update,
-            //         ports: [
-            //           ...(update.ports ?? config.ports ?? []),
-            //           { container: "", local: "" },
-            //         ],
-            //       }))
-            //     }
-            //     className="flex items-center gap-2 w-[200px]"
-            //   >
-            //     <PlusCircle className="w-4 h-4" />
-            //     Add Port
-            //   </Button>
-            // ),
             components: {
               ports: (ports, set) => (
                 <MonacoEditor
-                  value={ports ?? "  # 3000:3000"}
+                  value={ports || "  # 3000:3000"}
                   language="yaml"
                   onValueChange={(ports) => set({ ports })}
                   readOnly={disabled}
@@ -161,30 +142,26 @@ export const DeploymentConfig = ({
             label: "Volumes",
             description: "Configure the volume bindings for the container.",
             contentHidden: (update.volumes ?? config.volumes)?.length === 0,
-            // actions: !disabled && (
-            //   <Button
-            //     variant="secondary"
-            //     onClick={() =>
-            //       set((update) => ({
-            //         ...update,
-            //         volumes: [
-            //           ...(update.volumes ?? config.volumes ?? []),
-            //           { container: "", local: "" },
-            //         ],
-            //       }))
-            //     }
-            //     className="flex items-center gap-2 w-[200px]"
-            //   >
-            //     <PlusCircle className="w-4 h-4" />
-            //     Add Volume
-            //   </Button>
-            // ),
             components: {
               volumes: (volumes, set) => (
                 <MonacoEditor
-                  value={volumes ?? "  # /local/path:/container/path"}
+                  value={volumes || "  # /local/path:/container/path"}
                   language="yaml"
                   onValueChange={(volumes) => set({ volumes })}
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Labels",
+            description: "Attach --labels to the container.",
+            components: {
+              labels: (labels, set) => (
+                <MonacoEditor
+                  value={labels || "  # your.docker.label: value"}
+                  language="yaml"
+                  onValueChange={(labels) => set({ labels })}
                   readOnly={disabled}
                 />
               ),
@@ -230,39 +207,6 @@ export const DeploymentConfig = ({
                   set={set}
                   disabled={disabled}
                   placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-          {
-            label: "Labels",
-            description: "Attach --labels to the container.",
-            contentHidden: (update.labels ?? config.labels)?.length === 0,
-            // actions: !disabled && (
-            //   <Button
-            //     variant="secondary"
-            //     onClick={() =>
-            //       set({
-            //         ...update,
-            //         labels: [
-            //           ...(update.labels ?? config.labels ?? []),
-            //           { variable: "", value: "" },
-            //         ] as Types.EnvironmentVar[],
-            //       })
-            //     }
-            //     className="flex items-center gap-2 w-[200px]"
-            //   >
-            //     <PlusCircle className="w-4 h-4" />
-            //     Add Label
-            //   </Button>
-            // ),
-            components: {
-              labels: (labels, set) => (
-                <MonacoEditor
-                  value={labels ?? "  # your.docker.label: value"}
-                  language="yaml"
-                  onValueChange={(labels) => set({ labels })}
-                  readOnly={disabled}
                 />
               ),
             },

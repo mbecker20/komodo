@@ -80,6 +80,7 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
   const resources = useRead(`List${type}s`, {}).data;
   const resource = resources?.find((resource) => resource.id === id);
   const full_resource = useRead(`Get${type}`, { id } as any).data;
+  console.log("full_resource", full_resource);
 
   usePushRecentlyViewed({ type, id });
 
