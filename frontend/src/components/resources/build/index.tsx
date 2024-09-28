@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceComponents } from "..";
 import { Types } from "@komodo/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { Card } from "@ui/card";
 import { Badge } from "@ui/badge";
@@ -255,4 +255,18 @@ export const BuildComponents: RequiredResourceComponents = {
   Config: ConfigOrDeployments,
 
   DangerZone: ({ id }) => <DeleteResource type="Build" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const build = useBuild(id);
+
+    return (
+      <ResourcePageHeader
+        intent={build_state_intention(build?.info.state)}
+        icon={<BuildIcon id={id} size={8} />}
+        name={build?.name}
+        state={build?.info.state}
+        status=""
+      />
+    );
+  },
 };

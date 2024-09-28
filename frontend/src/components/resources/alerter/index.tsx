@@ -7,6 +7,7 @@ import { AlerterConfig } from "./config";
 import { DeleteResource, NewResource } from "../common";
 import { AlerterTable } from "./table";
 import { Types } from "@komodo/client";
+import { ResourcePageHeader } from "@components/util";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -66,4 +67,17 @@ export const AlerterComponents: RequiredResourceComponents = {
   Config: AlerterConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Alerter" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const alerter = useAlerter(id);
+    return (
+      <ResourcePageHeader
+        intent="None"
+        icon={<AlarmClock className="w-8" />}
+        name={alerter?.name}
+        state={alerter?.info.enabled ? "Enabled" : "Disabled"}
+        status={alerter?.info.endpoint_type}
+      />
+    );
+  },
 };

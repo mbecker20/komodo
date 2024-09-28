@@ -4,6 +4,7 @@ import {
   ConfirmButton,
   CopyButton,
   TextUpdateMenu,
+  TextUpdateMenu2,
 } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { UsableResource } from "@types";
@@ -67,7 +68,7 @@ export const ResourceDescription = ({
   });
 
   return (
-    <TextUpdateMenu
+    <TextUpdateMenu2
       title="Update Description"
       placeholder="Set Description"
       value={resource?.description}
@@ -77,7 +78,7 @@ export const ResourceDescription = ({
           description,
         })
       }
-      triggerClassName="text-muted-foreground w-[300px]"
+      triggerClassName="text-muted-foreground"
       disabled={disabled}
     />
   );

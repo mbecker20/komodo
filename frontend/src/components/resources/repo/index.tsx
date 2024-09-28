@@ -22,7 +22,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { useServer } from "../server";
 import { Types } from "@komodo/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { Badge } from "@ui/badge";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
@@ -249,4 +249,18 @@ export const RepoComponents: RequiredResourceComponents = {
   Config: RepoConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Repo" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const repo = useRepo(id);
+
+    return (
+      <ResourcePageHeader
+        intent={repo_state_intention(repo?.info.state)}
+        icon={<RepoIcon id={id} size={8} />}
+        name={repo?.name}
+        state={repo?.info.state}
+        status=""
+      />
+    );
+  },
 };

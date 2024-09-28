@@ -24,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { Link } from "react-router-dom";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -234,4 +234,18 @@ export const DeploymentComponents: RequiredResourceComponents = {
       <DeleteResource type="Deployment" id={id} />
     </>
   ),
+
+  ResourcePageHeader: ({ id }) => {
+    const deployment = useDeployment(id);
+
+    return (
+      <ResourcePageHeader
+        intent={deployment_state_intention(deployment?.info.state)}
+        icon={<DeploymentIcon id={id} size={8} />}
+        name={deployment?.name}
+        state={deployment?.info.state}
+        status={deployment?.info.status}
+      />
+    );
+  },
 };

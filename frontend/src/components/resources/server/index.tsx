@@ -26,7 +26,12 @@ import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
-import { ActionWithDialog, ConfirmButton, StatusBadge } from "@components/util";
+import {
+  ActionWithDialog,
+  ConfirmButton,
+  ResourcePageHeader,
+  StatusBadge,
+} from "@components/util";
 import { Button } from "@ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
@@ -451,4 +456,18 @@ export const ServerComponents: RequiredResourceComponents = {
       <DeleteResource type="Server" id={id} />
     </>
   ),
+
+  ResourcePageHeader: ({ id }) => {
+    const server = useServer(id);
+
+    return (
+      <ResourcePageHeader
+        intent={server_state_intention(server?.info.state)}
+        icon={<Icon id={id} size={8} />}
+        name={server?.name}
+        state={server?.info.state}
+        status={server?.info.region}
+      />
+    );
+  },
 };

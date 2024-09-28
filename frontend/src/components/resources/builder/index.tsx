@@ -18,6 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BuilderConfig } from "./config";
 import { DeleteResource, ResourceLink } from "../common";
 import { BuilderTable } from "./table";
+import { ResourcePageHeader } from "@components/util";
 
 export const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}, { refetchInterval: 5000 }).data?.find(
@@ -69,7 +70,7 @@ export const BuilderComponents: RequiredResourceComponents = {
     const [type, setType] = useState<Types.BuilderConfig["type"]>();
 
     if (!is_admin) return null;
-    
+
     return (
       <NewLayout
         entityType="Builder"
@@ -141,4 +142,18 @@ export const BuilderComponents: RequiredResourceComponents = {
   Config: BuilderConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Builder" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const builder = useBuilder(id);
+
+    return (
+      <ResourcePageHeader
+        intent="None"
+        icon={<Factory className="w-8" />}
+        name={builder?.name}
+        state={builder?.info.builder_type}
+        status={builder?.info.instance_type}
+      />
+    );
+  },
 };

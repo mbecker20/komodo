@@ -35,7 +35,7 @@ import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
 import { StackServices } from "./services";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -423,4 +423,18 @@ export const StackComponents: RequiredResourceComponents = {
       <DeleteResource type="Stack" id={id} />
     </>
   ),
+
+  ResourcePageHeader: ({ id }) => {
+    const stack = useStack(id);
+
+    return (
+      <ResourcePageHeader
+        intent={stack_state_intention(stack?.info.state)}
+        icon={<StackIcon id={id} size={8} />}
+        name={stack?.name}
+        state={stack?.info.state}
+        status=""
+      />
+    );
+  },
 };
