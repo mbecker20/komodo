@@ -68,7 +68,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow p-2">
-      <Table className="table-fixed border-separate border-spacing-0">
+      <Table className="xl:table-fixed border-separate border-spacing-0">
         <TableHeader className="sticky top-0">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -78,7 +78,7 @@ export function DataTable<TData, TValue>({
                     key={header.id}
                     colSpan={header.colSpan}
                     className={cn(
-                      "relative whitespace-nowrap bg-accent border-b border-r last:border-r-0"
+                      "relative whitespace-nowrap bg-background border-b border-r last:border-r-0"
                       // `w-[${header.column.getSize()}px]`
                     )}
                   >
@@ -101,7 +101,10 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
                 onClick={() => onRowClick && onRowClick(row.original)}
-                className={cn(onRowClick && "cursor-pointer")}
+                className={cn(
+                  "even:bg-accent/25",
+                  onRowClick && "cursor-pointer"
+                )}
               >
                 {row.getVisibleCells().map((cell) => {
                   const size = cell.column.getSize();
