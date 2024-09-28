@@ -817,3 +817,95 @@ export const ResourcePageHeader = ({
     </div>
   );
 };
+
+export const TextUpdateMenu2 = ({
+  title,
+  titleRight,
+  value = "",
+  triggerClassName,
+  onUpdate,
+  placeholder,
+  confirmButton,
+  disabled,
+  open,
+  setOpen,
+}: {
+  title: string;
+  titleRight?: ReactNode;
+  value: string | undefined;
+  onUpdate: (value: string) => void;
+  triggerClassName?: string;
+  placeholder?: string;
+  confirmButton?: boolean;
+  disabled?: boolean;
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
+}) => {
+  const [_open, _setOpen] = useState(false);
+  const [__open, __setOpen] = [open ?? _open, setOpen ?? _setOpen];
+  const [_value, setValue] = useState(value);
+  useEffect(() => setValue(value), [value]);
+  const onClick = () => {
+    onUpdate(_value);
+    __setOpen(false);
+  };
+
+  return (
+    <Dialog open={__open} onOpenChange={__setOpen}>
+      <DialogTrigger asChild>
+        <div
+          className={cn(
+            "text-sm text-nowrap overflow-hidden overflow-ellipsis p-2 border rounded-md flex-1 cursor-pointer hover:bg-accent/25",
+            (!value || !!disabled) && "text-muted-foreground",
+            triggerClassName
+          )}
+        >
+          {value || placeholder}
+        </div>
+      </DialogTrigger>
+      <DialogContent className="min-w-[50vw]">
+        {titleRight && (
+          <div className="flex items-center gap-4">
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+            </DialogHeader>
+            {titleRight}
+          </div>
+        )}
+        {!titleRight && (
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+        )}
+
+        <Textarea
+          value={_value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          className="min-h-[200px]"
+          disabled={disabled}
+        />
+        {!disabled && (
+          <DialogFooter>
+            {confirmButton ? (
+              <ConfirmButton
+                title="Update"
+                icon={<CheckCircle className="w-4 h-4" />}
+                onClick={onClick}
+              />
+            ) : (
+              <Button
+                variant="secondary"
+                onClick={onClick}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Update
+              </Button>
+            )}
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
