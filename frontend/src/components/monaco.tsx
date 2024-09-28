@@ -75,7 +75,7 @@ export const MonacoEditor = ({
 };
 
 const MIN_DIFF_HEIGHT = 100;
-const MAX_DIFF_HEIGHT = 300;
+const MAX_DIFF_HEIGHT = 400;
 
 export const MonacoDiffEditor = ({
   original,
@@ -119,6 +119,7 @@ export const MonacoDiffEditor = ({
     minimap: { enabled: true },
     scrollbar: { alwaysConsumeMouseWheel: false },
     scrollBeyondLastLine: false,
+    hideUnchangedRegions: { enabled: true },
     folding: false,
     automaticLayout: true,
     renderValidationDecorations: "on",
