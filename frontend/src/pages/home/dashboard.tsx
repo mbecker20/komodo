@@ -17,7 +17,7 @@ import { cn, usableResourcePath } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { UsableResource } from "@types";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { AlertTriangle, Box, Boxes, Circle, History } from "lucide-react";
+import { AlertTriangle, Box, Circle, History } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 
