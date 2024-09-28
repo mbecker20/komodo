@@ -1,10 +1,7 @@
+import { AlertLevel } from "@components/alert";
 import { UpdateDetails } from "@components/updates/details";
 import { Types } from "@komodo/client";
-import {
-  ColorIntention,
-  text_color_class_by_intention,
-  hex_color_by_intention,
-} from "@lib/color";
+import { ColorIntention, text_color_class_by_intention } from "@lib/color";
 import { fmt_operation, fmt_version, fmt_date } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
 import {
@@ -13,8 +10,8 @@ import {
   cn,
   version_is_none,
 } from "@lib/utils";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import { UsableResource } from "@types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import {
   ExternalLink,
   Check,
@@ -22,6 +19,7 @@ import {
   Loader2,
   Milestone,
   Calendar,
+  Clock,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -56,7 +54,9 @@ export const ResourceNoficiations = ({ type, id }: Types.ResourceTarget) => {
           </TabsContent>
           <TabsContent value="alerts">
             {alerts?.alerts.some((alert) => !alert.resolved) ? (
-              alerts?.alerts.slice(0, 10).map((alert) => "ALERT")
+              alerts?.alerts
+                .slice(0, 10)
+                .map((alert) => <Alert alert={alert} key={alert._id?.$oid} />)
             ) : (
               <p className="pl-2 text-sm text-muted-foreground">
                 No open alerts
@@ -90,43 +90,57 @@ const Update = ({ update }: { update: Types.UpdateListItem }) => {
       : "None";
 
   const color = text_color_class_by_intention(intent);
-  const background = hex_color_by_intention(intent) + "25";
 
   const Icon = () =>
     update.status === Types.UpdateStatus.Complete ? (
       update.success ? (
-        <Check className={cn("w-4", color)} />
+        <Check className={"w-4"} />
       ) : (
-        <X className={cn("w-4", color)} />
+        <X className={"w-4"} />
       )
     ) : (
-      <Loader2 className={cn("w-4 animate-spin", color)} />
+      <Loader2 className={"w-4"} />
     );
 
   return (
     <UpdateDetails id={update.id}>
-      <div
-        className={
-          "p-2 grid grid-cols-3 text-sm cursor-pointer odd:bg-accent/50 hover:bg-accent transition-all first:rounded-t-md last:rounded-b-md"
-        }
-      >
-        <div className="flex items-center gap-2">
+      <div className="p-2 flex items-center justify-between gap-4 odd:bg-accent/25 hover:bg-accent cursor-pointer">
+        <div
+          className={cn(
+            "w-full flex items-center gap-2 text-sm font-bold",
+            color
+          )}
+        >
           <Icon />
-          <p className={cn("font-bold", color)}>
-            {fmt_operation(update.operation)}
-          </p>
+          {fmt_operation(update.operation)}
         </div>
-        {!version_is_none(update.version) && (
-          <div className="flex items-center gap-2">
-            <Milestone className="w-4" />
-            <p>{fmt_version(update.version)}</p>
+
+        <div className="flex items-center gap-8 shrink-0">
+          {!version_is_none(update.version) && (
+            <div className="flex items-center gap-2 w-full text-xs text-muted-foreground">
+              <Milestone className="w-4" />
+              {fmt_version(update.version)}
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground text-right shrink-0">
+            <Calendar className="w-4" />
+            {fmt_date(new Date(update.start_ts))}
           </div>
-        )}
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4" />
-          {fmt_date(new Date(update.start_ts))}
         </div>
       </div>
     </UpdateDetails>
   );
 };
+
+const Alert = ({ alert }: { alert: Types.Alert }) => (
+  <div className="p-2 flex items-center justify-between gap-4 odd:bg-accent/25 hover:bg-accent cursor-pointer">
+    <AlertLevel level={alert.level} />
+    <div className="w-full font-bold max-w-[40%] overflow-hidden overflow-ellipsis">
+      {alert.data.type}
+    </div>
+    <div className="w-fit flex items-center gap-2 text-xs text-muted-foreground text-right shrink-0">
+      <Clock className="w-4" />
+      {new Date(alert.ts).toLocaleString()}
+    </div>
+  </div>
+);
