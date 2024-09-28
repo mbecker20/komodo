@@ -131,7 +131,7 @@ export const DeploymentConfig = ({
             components: {
               ports: (ports, set) => (
                 <MonacoEditor
-                  value={ports || "  # 3000:3000"}
+                  value={ports || "  # 3000:3000\n"}
                   language="yaml"
                   onValueChange={(ports) => set({ ports })}
                   readOnly={disabled}
@@ -145,7 +145,7 @@ export const DeploymentConfig = ({
             components: {
               volumes: (volumes, set) => (
                 <MonacoEditor
-                  value={volumes || "  # /local/path:/container/path"}
+                  value={volumes || "  # /local/path:/container/path\n"}
                   language="yaml"
                   onValueChange={(volumes) => set({ volumes })}
                   readOnly={disabled}
@@ -163,7 +163,7 @@ export const DeploymentConfig = ({
             components: {
               environment: (env, set) => (
                 <MonacoEditor
-                  value={env || "  # VARIABLE: value"}
+                  value={env || "  # VARIABLE: value\n"}
                   onValueChange={(environment) => set({ environment })}
                   language="yaml"
                   readOnly={disabled}
@@ -178,7 +178,7 @@ export const DeploymentConfig = ({
             components: {
               labels: (labels, set) => (
                 <MonacoEditor
-                  value={labels || "  # your.docker.label: value"}
+                  value={labels || "  # your.docker.label: value\n"}
                   language="yaml"
                   onValueChange={(labels) => set({ labels })}
                   readOnly={disabled}

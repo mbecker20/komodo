@@ -71,7 +71,10 @@ export const ResourceSyncConfig = ({
               file_contents: (file_contents, set) => {
                 return (
                   <MonacoEditor
-                    value={file_contents}
+                    value={
+                      file_contents ||
+                      "# Initialize the sync to import your current resources.\n"
+                    }
                     onValueChange={(file_contents) => set({ file_contents })}
                     language="toml"
                   />
@@ -104,7 +107,7 @@ export const ResourceSyncConfig = ({
                 !repo_selected) && {
                 label: "Managed",
                 description:
-                  "Enabled managed mode / the 'Commit' button. Delete mode is always enabled when using managed mode. Warning: Can be a bit confusing.",
+                  "Enabled managed mode / the 'Commit' button. Commit is the 'reverse' of Execute, and will update the sync file with your configs updated in the UI.",
               },
             },
           },

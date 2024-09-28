@@ -228,7 +228,7 @@ export const BuildConfig = ({
             components: {
               build_args: (env, set) => (
                 <MonacoEditor
-                  value={env || "  # VARIABLE: value"}
+                  value={env || "  # VARIABLE: value\n"}
                   onValueChange={(build_args) => set({ build_args })}
                   language="yaml"
                   readOnly={disabled}
@@ -258,7 +258,7 @@ export const BuildConfig = ({
             components: {
               secret_args: (env, set) => (
                 <MonacoEditor
-                  value={env || "  # VARIABLE: value"}
+                  value={env || "  # VARIABLE: value\n"}
                   onValueChange={(secret_args) => set({ secret_args })}
                   language="yaml"
                   readOnly={disabled}
@@ -272,7 +272,7 @@ export const BuildConfig = ({
             components: {
               labels: (labels, set) => (
                 <MonacoEditor
-                  value={labels || "  # your.docker.label: value"}
+                  value={labels || "  # your.docker.label: value\n"}
                   language="yaml"
                   onValueChange={(labels) => set({ labels })}
                   readOnly={disabled}

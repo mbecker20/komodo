@@ -139,7 +139,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
             components: {
               environment: (env, set) => (
                 <MonacoEditor
-                  value={env || "  # VARIABLE: value"}
+                  value={env || "  # VARIABLE: value\n"}
                   onValueChange={(environment) => set({ environment })}
                   language="yaml"
                   readOnly={disabled}
