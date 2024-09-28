@@ -8,9 +8,8 @@ use komodo_client::{
     komodo_timestamp,
     resource::Resource,
     sync::{
-      PartialResourceSyncConfig, PendingSyncUpdatesData,
-      ResourceSync, ResourceSyncConfig, ResourceSyncConfigDiff,
-      ResourceSyncInfo, ResourceSyncListItem,
+      PartialResourceSyncConfig, ResourceSync, ResourceSyncConfig,
+      ResourceSyncConfigDiff, ResourceSyncInfo, ResourceSyncListItem,
       ResourceSyncListItemInfo, ResourceSyncQuerySpecifics,
       ResourceSyncState,
     },
@@ -50,11 +49,9 @@ impl super::KomodoResource for ResourceSync {
   async fn to_list_item(
     resource_sync: Resource<Self::Config, Self::Info>,
   ) -> Self::ListItem {
-    let state = get_resource_sync_state(
-      &resource_sync.id,
-      &resource_sync.info.pending.data,
-    )
-    .await;
+    let state =
+      get_resource_sync_state(&resource_sync.id, &resource_sync.info)
+        .await;
     ResourceSyncListItem {
       id: resource_sync.id,
       name: resource_sync.name,
@@ -207,7 +204,7 @@ pub async fn refresh_resource_sync_state_cache() {
 
 async fn get_resource_sync_state(
   id: &String,
-  data: &PendingSyncUpdatesData,
+  data: &ResourceSyncInfo,
 ) -> ResourceSyncState {
   if let Some(state) = action_states()
     .resource_sync
@@ -228,13 +225,14 @@ async fn get_resource_sync_state(
   {
     return state;
   }
-  let data = match data {
-    PendingSyncUpdatesData::Err(_) => {
-      return ResourceSyncState::Failed
-    }
-    PendingSyncUpdatesData::Ok(data) => data,
-  };
-  if !data.no_updates() {
+  if data.pending_error.is_some() {
+    return ResourceSyncState::Failed;
+  }
+  if data.resource_updates.len() > 0
+    || data.variable_updates.len() > 0
+    || data.user_group_updates.len() > 0
+    || data.pending_deploy.to_deploy > 0
+  {
     return ResourceSyncState::Pending;
   }
   resource_sync_state_cache()

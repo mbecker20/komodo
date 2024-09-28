@@ -141,6 +141,14 @@ export const Config = <T,>({
     keys(components)[0]
   );
 
+  let activeCount = 0;
+  for (const key in components) {
+    if (components[key] && components[key].length) {
+      activeCount++;
+    }
+  }
+  const showSidebar = activeCount > 1;
+
   return (
     <ConfigLayout
       original={config}
@@ -157,37 +165,41 @@ export const Config = <T,>({
           {selector}
 
           {/* Add the config page selector when view is small / md / lg (xl:hidden) */}
-          <Select value={show} onValueChange={setShow}>
-            <SelectTrigger className="w-32 capitalize xl:hidden">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="w-32">
-              {keys(components).map((key) => (
-                <SelectItem value={key} key={key} className="capitalize">
-                  {key}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {showSidebar && (
+            <Select value={show} onValueChange={setShow}>
+              <SelectTrigger className="w-32 capitalize xl:hidden">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="w-32">
+                {keys(components).map((key) => (
+                  <SelectItem value={key} key={key} className="capitalize">
+                    {key}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       }
     >
       <div className="flex gap-4">
         {/** The sidebar when large */}
-        <div className="hidden xl:flex flex-col gap-4 w-[300px]">
-          {Object.entries(components)
-            .filter(([_, val]) => val)
-            .map(([tab, _]) => (
-              <Button
-                key={tab}
-                variant={show === tab ? "secondary" : "outline"}
-                onClick={() => setShow(tab)}
-                className="capitalize"
-              >
-                {tab}
-              </Button>
-            ))}
-        </div>
+        {showSidebar && (
+          <div className="hidden xl:flex flex-col gap-4 w-[300px]">
+            {Object.entries(components)
+              .filter(([_, val]) => val)
+              .map(([tab, _]) => (
+                <Button
+                  key={tab}
+                  variant={show === tab ? "secondary" : "outline"}
+                  onClick={() => setShow(tab)}
+                  className="capitalize"
+                >
+                  {tab}
+                </Button>
+              ))}
+          </div>
+        )}
 
         {components[show] && (
           <div className="flex flex-col gap-6 min-h-[500px] w-full">

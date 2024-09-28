@@ -91,7 +91,8 @@ pub trait KomodoResource {
     + Serialize
     + Diff
     + MaybeNone;
-  type Info: Send
+  type Info: Clone
+    + Send
     + Sync
     + Unpin
     + Default

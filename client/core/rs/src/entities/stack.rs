@@ -11,7 +11,7 @@ use typeshare::typeshare;
 use super::{
   docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  to_komodo_name, EnvironmentVar, FileContents,
+  to_komodo_name, FileContents,
 };
 
 #[typeshare]
@@ -336,7 +336,14 @@ pub struct StackConfig {
   /// The contents of the file directly, for management in the UI.
   /// If this is empty, it will fall back to checking git config for
   /// repo based compose file.
-  #[serde(default)]
+  #[serde(
+    default,
+    deserialize_with = "super::file_contents_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_file_contents_deserializer"
+  ))]
   #[builder(default)]
   pub file_contents: String,
 
@@ -354,7 +361,7 @@ pub struct StackConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub environment: Vec<EnvironmentVar>,
+  pub environment: String,
 }
 
 impl StackConfig {

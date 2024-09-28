@@ -17,6 +17,7 @@ use komodo_client::{
     server::Server,
     server_template::ServerTemplate,
     stack::Stack,
+    sync::ResourceSync,
     update::{Log, Update},
     user::{sync_user, User},
   },
@@ -32,10 +33,9 @@ use crate::{
       deploy::{
         build_deploy_cache, deploy_from_cache, SyncDeployParams,
       },
+      execute::{get_updates_for_execution, ExecuteResourceSync},
       remote::RemoteResources,
-      resource::{
-        get_updates_for_execution, AllResourcesById, ResourceSync,
-      },
+      AllResourcesById,
     },
     update::update_update,
   },
@@ -74,9 +74,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     let resources = resources?;
 
     let id_to_tags = get_id_to_tags(None).await?;
-    let all_resources =
-      AllResourcesById::load(&id_to_tags, &sync.config.match_tags)
-        .await?;
+    let all_resources = AllResourcesById::load().await?;
 
     let deployments_by_name = all_resources
       .deployments
@@ -297,7 +295,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      entities::sync::ResourceSync::run_updates(
+      ResourceSync::execute_sync_updates(
         resource_syncs_to_create,
         resource_syncs_to_update,
         resource_syncs_to_delete,
@@ -306,7 +304,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      ServerTemplate::run_updates(
+      ServerTemplate::execute_sync_updates(
         server_templates_to_create,
         server_templates_to_update,
         server_templates_to_delete,
@@ -315,7 +313,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      Server::run_updates(
+      Server::execute_sync_updates(
         servers_to_create,
         servers_to_update,
         servers_to_delete,
@@ -324,7 +322,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      Alerter::run_updates(
+      Alerter::execute_sync_updates(
         alerters_to_create,
         alerters_to_update,
         alerters_to_delete,
@@ -335,7 +333,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependent on server
     maybe_extend(
       &mut update.logs,
-      Builder::run_updates(
+      Builder::execute_sync_updates(
         builders_to_create,
         builders_to_update,
         builders_to_delete,
@@ -344,7 +342,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      Repo::run_updates(
+      Repo::execute_sync_updates(
         repos_to_create,
         repos_to_update,
         repos_to_delete,
@@ -355,7 +353,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependant on builder
     maybe_extend(
       &mut update.logs,
-      Build::run_updates(
+      Build::execute_sync_updates(
         builds_to_create,
         builds_to_update,
         builds_to_delete,
@@ -366,7 +364,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependant on server / build
     maybe_extend(
       &mut update.logs,
-      Deployment::run_updates(
+      Deployment::execute_sync_updates(
         deployments_to_create,
         deployments_to_update,
         deployments_to_delete,
@@ -376,7 +374,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // stack only depends on server, but maybe will depend on build later.
     maybe_extend(
       &mut update.logs,
-      Stack::run_updates(
+      Stack::execute_sync_updates(
         stacks_to_create,
         stacks_to_update,
         stacks_to_delete,
@@ -387,7 +385,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependant on everything
     maybe_extend(
       &mut update.logs,
-      Procedure::run_updates(
+      Procedure::execute_sync_updates(
         procedures_to_create,
         procedures_to_update,
         procedures_to_delete,

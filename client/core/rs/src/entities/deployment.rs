@@ -11,10 +11,12 @@ use serde::{
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
+use crate::parser::parse_key_value_list;
+
 use super::{
   docker::container::ContainerStateStatusEnum,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  EnvironmentVar, TerminationSignal, Version,
+  TerminationSignal, Version,
 };
 
 #[typeshare]
@@ -139,7 +141,7 @@ pub struct DeploymentConfig {
   ))]
   #[builder(default = "default_term_signal_labels()")]
   #[partial_default(default_term_signal_labels())]
-  pub term_signal_labels: Vec<TerminationSignalLabel>,
+  pub term_signal_labels: String,
 
   /// The container port mapping.
   /// Irrelevant if container network is `host`.
@@ -150,7 +152,7 @@ pub struct DeploymentConfig {
     deserialize_with = "option_conversions_deserializer"
   ))]
   #[builder(default)]
-  pub ports: Vec<Conversion>,
+  pub ports: String,
 
   /// The container volume mapping.
   /// Maps files / folders on host to files / folders in container.
@@ -160,7 +162,7 @@ pub struct DeploymentConfig {
     deserialize_with = "option_conversions_deserializer"
   ))]
   #[builder(default)]
-  pub volumes: Vec<Conversion>,
+  pub volumes: String,
 
   /// The environment variables passed to the container.
   #[serde(
@@ -172,7 +174,7 @@ pub struct DeploymentConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub environment: Vec<EnvironmentVar>,
+  pub environment: String,
 
   /// The docker labels given to the container.
   #[serde(
@@ -184,7 +186,7 @@ pub struct DeploymentConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub labels: Vec<EnvironmentVar>,
+  pub labels: String,
 }
 
 impl DeploymentConfig {
@@ -197,8 +199,8 @@ fn default_send_alerts() -> bool {
   true
 }
 
-fn default_term_signal_labels() -> Vec<TerminationSignalLabel> {
-  vec![TerminationSignalLabel::default()]
+fn default_term_signal_labels() -> String {
+  String::from("  SIGTERM:")
 }
 
 fn default_termination_timeout() -> i32 {
@@ -289,68 +291,20 @@ pub struct Conversion {
   pub container: String,
 }
 
-pub fn conversions_to_string(conversions: &[Conversion]) -> String {
-  conversions
-    .iter()
-    .map(|Conversion { local, container }| {
-      format!("{local}:{container}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n")
-}
-
 pub fn conversions_from_str(
-  value: &str,
+  input: &str,
 ) -> anyhow::Result<Vec<Conversion>> {
-  let trimmed = value.trim();
-  if trimmed.is_empty() {
-    return Ok(Vec::new());
-  }
-  let res = trimmed
-    .split('\n')
-    .map(|line| line.trim())
-    .enumerate()
-    .filter(|(_, line)| {
-      !line.is_empty()
-        && !line.starts_with('#')
-        && !line.starts_with("//")
-    })
-    .map(|(i, line)| {
-      let line = line
-        // Remove end of line comments
-        .split_once(" #")
-        .unwrap_or((line, ""))
-        .0
-        .trim()
-        // Remove preceding '-' (yaml list)
-        .trim_start_matches('-')
-        .trim();
-      // Remove wrapping quotes (from yaml list)
-      let line = if let Some(line) = line.strip_prefix('"') {
-        line.strip_suffix('"').unwrap_or(line)
-      } else {
-        line
-      };
-      // Remove any preceding '"' (from yaml list) (wrapping quotes open)
-      let (local, container) = line
-        .split_once(['=', ':'])
-        .with_context(|| {
-          format!(
-            "line {i} missing assignment character ('=' or ':')"
-          )
-        })
-        .map(|(local, container)| {
-          (local.trim().to_string(), container.trim().to_string())
-        })?;
-      anyhow::Ok(Conversion { local, container })
-    })
-    .collect::<anyhow::Result<Vec<_>>>()?;
-  Ok(res)
+  parse_key_value_list(input).map(|conversions| {
+    conversions
+      .into_iter()
+      .map(|(local, container)| Conversion { local, container })
+      .collect()
+  })
 }
 
 pub fn conversions_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Vec<Conversion>, D::Error>
+) -> Result<String, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -359,7 +313,7 @@ where
 
 pub fn option_conversions_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Option<Vec<Conversion>>, D::Error>
+) -> Result<Option<String>, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -369,7 +323,7 @@ where
 struct ConversionVisitor;
 
 impl<'de> Visitor<'de> for ConversionVisitor {
-  type Value = Vec<Conversion>;
+  type Value = String;
 
   fn expecting(
     &self,
@@ -382,43 +336,32 @@ impl<'de> Visitor<'de> for ConversionVisitor {
   where
     E: serde::de::Error,
   {
-    conversions_from_str(v)
-      .map_err(|e| serde::de::Error::custom(format!("{e:#}")))
+    Ok(v.to_string())
   }
 
   fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
   where
     A: serde::de::SeqAccess<'de>,
   {
-    #[derive(Deserialize)]
-    struct ConversionInner {
-      local: String,
-      container: String,
-    }
-
-    impl From<ConversionInner> for Conversion {
-      fn from(value: ConversionInner) -> Self {
-        Self {
-          local: value.local,
-          container: value.container,
-        }
-      }
-    }
-
-    let res = Vec::<ConversionInner>::deserialize(
+    let res = Vec::<Conversion>::deserialize(
       SeqAccessDeserializer::new(seq),
-    )?
-    .into_iter()
-    .map(Into::into)
-    .collect();
-    Ok(res)
+    )?;
+    let res = res
+      .iter()
+      .map(|Conversion { local, container }| {
+        format!("  {local}: {container}")
+      })
+      .collect::<Vec<_>>()
+      .join("\n");
+    let extra = if res.is_empty() { "" } else { "\n" };
+    Ok(res + extra)
   }
 }
 
 struct OptionConversionVisitor;
 
 impl<'de> Visitor<'de> for OptionConversionVisitor {
-  type Value = Option<Vec<Conversion>>;
+  type Value = Option<String>;
 
   fn expecting(
     &self,
@@ -556,78 +499,25 @@ pub struct TerminationSignalLabel {
   pub label: String,
 }
 
-pub fn term_signal_labels_to_string(
-  labels: &[TerminationSignalLabel],
-) -> String {
-  labels
-    .iter()
-    .map(|TerminationSignalLabel { signal, label }| {
-      format!("{signal}={label}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n")
-}
-
 pub fn term_signal_labels_from_str(
-  value: &str,
+  input: &str,
 ) -> anyhow::Result<Vec<TerminationSignalLabel>> {
-  let trimmed = value.trim();
-  if trimmed.is_empty() {
-    return Ok(Vec::new());
-  }
-  let res = trimmed
-    .split('\n')
-    .map(|line| line.trim())
-    .enumerate()
-    .filter(|(_, line)| {
-      !line.is_empty()
-        && !line.starts_with('#')
-        && !line.starts_with("//")
-    })
-    .map(|(i, line)| {
-      let line = line
-        // Remove end of line comments
-        .split_once(" #")
-        .unwrap_or((line, ""))
-        .0
-        .trim()
-        // Remove preceding '-' (yaml list)
-        .trim_start_matches('-')
-        .trim();
-      // Remove wrapping quotes (from yaml list)
-      let line = if let Some(line) = line.strip_prefix('"') {
-        line.strip_suffix('"').unwrap_or(line)
-      } else {
-        line
-      };
-      // Remove any preceding '"' (from yaml list) (wrapping quotes open)
-      let (signal, label) = line
-        .split_once(['=', ':'])
-        .with_context(|| {
-          format!(
-            "line {i} missing assignment character ('=' or ':')"
-          )
+  parse_key_value_list(input).and_then(|list| {
+    list
+      .into_iter()
+      .map(|(signal, label)| {
+        anyhow::Ok(TerminationSignalLabel {
+          signal: signal.parse()?,
+          label,
         })
-        .map(|(signal, label)| {
-          (
-            signal.trim().parse::<TerminationSignal>().with_context(
-              || format!("line {i} does not have valid signal"),
-            ),
-            label.trim().to_string(),
-          )
-        })?;
-      anyhow::Ok(TerminationSignalLabel {
-        signal: signal?,
-        label,
       })
-    })
-    .collect::<anyhow::Result<Vec<_>>>()?;
-  Ok(res)
+      .collect()
+  })
 }
 
 pub fn term_labels_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Vec<TerminationSignalLabel>, D::Error>
+) -> Result<String, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -636,7 +526,7 @@ where
 
 pub fn option_term_labels_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Option<Vec<TerminationSignalLabel>>, D::Error>
+) -> Result<Option<String>, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -646,7 +536,7 @@ where
 struct TermSignalLabelVisitor;
 
 impl<'de> Visitor<'de> for TermSignalLabelVisitor {
-  type Value = Vec<TerminationSignalLabel>;
+  type Value = String;
 
   fn expecting(
     &self,
@@ -659,43 +549,31 @@ impl<'de> Visitor<'de> for TermSignalLabelVisitor {
   where
     E: serde::de::Error,
   {
-    term_signal_labels_from_str(v)
-      .map_err(|e| serde::de::Error::custom(format!("{e:#}")))
+    Ok(v.to_string())
   }
 
   fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
   where
     A: serde::de::SeqAccess<'de>,
   {
-    #[derive(Deserialize)]
-    struct TermSignalLabelInner {
-      signal: TerminationSignal,
-      label: String,
-    }
-
-    impl From<TermSignalLabelInner> for TerminationSignalLabel {
-      fn from(value: TermSignalLabelInner) -> Self {
-        Self {
-          signal: value.signal,
-          label: value.label,
-        }
-      }
-    }
-
-    let res = Vec::<TermSignalLabelInner>::deserialize(
+    let res = Vec::<TerminationSignalLabel>::deserialize(
       SeqAccessDeserializer::new(seq),
     )?
     .into_iter()
-    .map(Into::into)
-    .collect();
-    Ok(res)
+    .map(|TerminationSignalLabel { signal, label }| {
+      format!("  {signal}: {label}")
+    })
+    .collect::<Vec<_>>()
+    .join("\n");
+    let extra = if res.is_empty() { "" } else { "\n" };
+    Ok(res + extra)
   }
 }
 
 struct OptionTermSignalLabelVisitor;
 
 impl<'de> Visitor<'de> for OptionTermSignalLabelVisitor {
-  type Value = Option<Vec<TerminationSignalLabel>>;
+  type Value = Option<String>;
 
   fn expecting(
     &self,

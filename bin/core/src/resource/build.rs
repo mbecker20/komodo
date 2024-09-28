@@ -8,6 +8,7 @@ use komodo_client::entities::{
     PartialBuildConfig,
   },
   builder::Builder,
+  environment_vars_from_str,
   permission::PermissionLevel,
   resource::Resource,
   update::Update,
@@ -184,11 +185,13 @@ async fn validate_config(
       config.builder_id = Some(builder.id)
     }
   }
-  if let Some(build_args) = &mut config.build_args {
-    build_args.retain(|v| {
-      !empty_or_only_spaces(&v.variable)
-        && !empty_or_only_spaces(&v.value)
-    })
+  if let Some(build_args) = &config.build_args {
+    environment_vars_from_str(build_args)
+      .context("Invalid build_args")?;
+  }
+  if let Some(secret_args) = &config.secret_args {
+    environment_vars_from_str(secret_args)
+      .context("Invalid secret_args")?;
   }
   if let Some(extra_args) = &mut config.extra_args {
     extra_args.retain(|v| !empty_or_only_spaces(v))

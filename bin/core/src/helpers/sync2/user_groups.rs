@@ -12,7 +12,6 @@ use komodo_client::{
   },
   entities::{
     permission::{PermissionLevel, UserTarget},
-    sync::DiffData,
     toml::{PermissionToml, UserGroupToml},
     update::Log,
     user::sync_user,
@@ -25,7 +24,7 @@ use resolver_api::Resolve;
 
 use crate::state::{db_client, State};
 
-use super::{toml::TOML_PRETTY_OPTIONS, AllResourcesById};
+use super::resource::AllResourcesById;
 
 pub struct UpdateItem {
   user_group: UserGroupToml,
@@ -42,7 +41,7 @@ pub async fn get_updates_for_view(
   user_groups: Vec<UserGroupToml>,
   delete: bool,
   all_resources: &AllResourcesById,
-) -> anyhow::Result<Vec<DiffData>> {
+) -> anyhow::Result<Option<SyncUpdate>> {
   let map = find_collect(&db_client().await.user_groups, None, None)
     .await
     .context("failed to query db for UserGroups")?
@@ -50,18 +49,18 @@ pub async fn get_updates_for_view(
     .map(|ug| (ug.name.clone(), ug))
     .collect::<HashMap<_, _>>();
 
-  let mut diffs = Vec::<DiffData>::new();
+  let mut update = SyncUpdate {
+    log: String::from("User Group Updates"),
+    ..Default::default()
+  };
+
+  let mut to_delete = Vec::<String>::new();
 
   if delete {
     for user_group in map.values() {
       if !user_groups.iter().any(|ug| ug.name == user_group.name) {
-        diffs.push(DiffData::Delete {
-          current: format!(
-            "[[user_group]]\n{}",
-            toml_pretty::to_string(user_group, TOML_PRETTY_OPTIONS)
-              .context("failed to serialize user group to toml")?
-          ),
-        });
+        update.to_delete += 1;
+        to_delete.push(user_group.name.clone());
       }
     }
   }
@@ -93,20 +92,36 @@ pub async fn get_updates_for_view(
     let original = match map.get(&user_group.name).cloned() {
       Some(original) => original,
       None => {
-        diffs.push(DiffData::Create {
-          proposed: format!(
-            "[[user_group]]\n{}",
-            toml_pretty::to_string(&user_group, TOML_PRETTY_OPTIONS)
-              .context("failed to serialize user group to toml")?
-          ),
-        });
+        update.to_create += 1;
+        if user_group.all.is_empty() {
+          update.log.push_str(&format!(
+            "\n\n{}: user group: {}\n{}: {:#?}\n{}: {:#?}",
+            colored("CREATE", Color::Green),
+            colored(&user_group.name, Color::Green),
+            muted("users"),
+            user_group.users,
+            muted("permissions"),
+            user_group.permissions,
+          ));
+        } else {
+          update.log.push_str(&format!(
+            "\n\n{}: user group: {}\n{}: {:#?}\n{}: {:#?}\n{}: {:#?}",
+            colored("CREATE", Color::Green),
+            colored(&user_group.name, Color::Green),
+            muted("users"),
+            user_group.users,
+            muted("base permissions"),
+            user_group.all,
+            muted("permissions"),
+            user_group.permissions,
+          ));
+        }
         continue;
       }
     };
 
     let mut original_users = original
       .users
-      .clone()
       .into_iter()
       .filter_map(|user_id| {
         id_to_user.get(&user_id).map(|u| u.username.clone())
@@ -116,7 +131,7 @@ pub async fn get_updates_for_view(
     let mut original_permissions = State
       .resolve(
         ListUserTargetPermissions {
-          user_target: UserTarget::UserGroup(original.id.clone()),
+          user_target: UserTarget::UserGroup(original.id),
         },
         sync_user().to_owned(),
       )
@@ -221,22 +236,146 @@ pub async fn get_updates_for_view(
 
     // only add log after diff detected
     if update_users || update_all || update_permissions {
-      diffs.push(DiffData::Update {
-        proposed: format!(
-          "[[user_group]]\n{}",
-          toml_pretty::to_string(&user_group, TOML_PRETTY_OPTIONS)
-            .context("failed to serialize user group to toml")?
-        ),
-        current: format!(
-          "[[user_group]]\n{}",
-          toml_pretty::to_string(&original, TOML_PRETTY_OPTIONS)
-            .context("failed to serialize user group to toml")?
-        ),
-      });
+      update.to_update += 1;
+      update.log.push_str(&format!(
+        "\n\n{}: user group: '{}'\n-------------------",
+        colored("UPDATE", Color::Blue),
+        bold(&user_group.name),
+      ));
+
+      let mut lines = Vec::<String>::new();
+
+      if update_users {
+        let adding = user_group
+          .users
+          .iter()
+          .filter(|user| !original_users.contains(user))
+          .map(|user| user.as_str())
+          .collect::<Vec<_>>();
+        let adding = if adding.is_empty() {
+          String::from("None")
+        } else {
+          colored(adding.join(", "), Color::Green)
+        };
+        let removing = original_users
+          .iter()
+          .filter(|user| !user_group.users.contains(user))
+          .map(|user| user.as_str())
+          .collect::<Vec<_>>();
+        let removing = if removing.is_empty() {
+          String::from("None")
+        } else {
+          colored(removing.join(", "), Color::Red)
+        };
+        lines.push(format!(
+          "{}:    'users'\n{}: {removing}\n{}:   {adding}",
+          muted("field"),
+          muted("removing"),
+          muted("adding"),
+        ))
+      }
+
+      if update_all {
+        let updates = all_diff
+          .into_iter()
+          .map(|(variant, (orig, incoming))| {
+            format!(
+              "{}: {} {} {}",
+              bold(variant),
+              colored(orig, Color::Red),
+              muted("->"),
+              colored(incoming, Color::Green)
+            )
+          })
+          .collect::<Vec<_>>()
+          .join("\n");
+        lines.push(format!(
+          "{}: 'base permission'\n{updates}",
+          muted("field"),
+        ))
+      }
+
+      if update_permissions {
+        let adding = user_group
+          .permissions
+          .iter()
+          .filter(|permission| {
+            // add if original has no exising permission on the target
+            !original_permissions
+              .iter()
+              .any(|p| p.target == permission.target)
+          })
+          .map(|permission| format!("{permission:?}"))
+          .collect::<Vec<_>>();
+        let adding = if adding.is_empty() {
+          String::from("None")
+        } else {
+          colored(adding.join(", "), Color::Green)
+        };
+        let updating = user_group
+          .permissions
+          .iter()
+          .filter(|permission| {
+            // update if original has exising permission on the target with different level
+            let Some(level) = original_permissions
+              .iter()
+              .find(|p| p.target == permission.target)
+              .map(|p| p.level)
+            else {
+              return false;
+            };
+            permission.level != level
+          })
+          .map(|permission| format!("{permission:?}"))
+          .collect::<Vec<_>>();
+        let updating = if updating.is_empty() {
+          String::from("None")
+        } else {
+          colored(updating.join(", "), Color::Blue)
+        };
+        let removing = original_permissions
+          .iter()
+          .filter(|permission| {
+            // remove if incoming has no permission on the target
+            !user_group
+              .permissions
+              .iter()
+              .any(|p| p.target == permission.target)
+          })
+          .map(|permission| format!("{permission:?}"))
+          .collect::<Vec<_>>();
+        let removing = if removing.is_empty() {
+          String::from("None")
+        } else {
+          colored(removing.join(", "), Color::Red)
+        };
+        lines.push(format!(
+          "{}:    'permissions'\n{}: {removing}\n{}: {updating}\n{}:   {adding}",
+          muted("field"),
+          muted("removing"),
+          muted("updating"),
+          muted("adding"),
+        ))
+      }
+
+      update.log.push('\n');
+      update.log.push_str(&lines.join("\n-------------------\n"));
     }
   }
 
-  Ok(diffs)
+  for name in &to_delete {
+    update.log.push_str(&format!(
+      "\n\n{}: user group: '{}'\n-------------------",
+      colored("DELETE", Color::Red),
+      bold(name),
+    ));
+  }
+
+  let any_change = update.to_create > 0
+    || update.to_update > 0
+    || update.to_delete > 0;
+
+  Ok(any_change.then_some(update))
 }
 
 pub async fn get_updates_for_execution(

@@ -4,10 +4,10 @@ use formatting::format_serror;
 use komodo_client::entities::{
   build::{ImageRegistry, StandardRegistryConfig},
   deployment::{
-    extract_registry_domain, Conversion, Deployment,
-    DeploymentConfig, DeploymentImage, RestartMode,
+    conversions_from_str, extract_registry_domain, Conversion,
+    Deployment, DeploymentConfig, DeploymentImage, RestartMode,
   },
-  to_komodo_name,
+  environment_vars_from_str, to_komodo_name,
   update::Log,
   EnvironmentVar, NoData,
 };
@@ -90,7 +90,8 @@ impl Resolve<Deploy> for State {
       .await;
     debug!("container stopped and removed");
 
-    let command = docker_run_command(&deployment, image);
+    let command = docker_run_command(&deployment, image)
+      .context("Unable to generate valid docker run command")?;
     debug!("docker run command: {command}");
 
     if deployment.config.skip_secret_interp {
@@ -142,18 +143,29 @@ fn docker_run_command(
     ..
   }: &Deployment,
   image: &str,
-) -> String {
+) -> anyhow::Result<String> {
   let name = to_komodo_name(name);
-  let ports = parse_conversions(ports, "-p");
-  let volumes = volumes.to_owned();
-  let volumes = parse_conversions(&volumes, "-v");
+  let ports = parse_conversions(
+    &conversions_from_str(ports).context("Invalid ports")?,
+    "-p",
+  );
+  let volumes = parse_conversions(
+    &conversions_from_str(&volumes).context("Invalid volumes")?,
+    "-v",
+  );
   let network = parse_network(network);
   let restart = parse_restart(restart);
-  let environment = parse_environment(environment);
-  let labels = parse_labels(labels);
+  let environment = parse_environment(
+    &environment_vars_from_str(environment)
+      .context("Invalid environment")?,
+  );
+  let labels = parse_labels(
+    &environment_vars_from_str(labels).context("Invalid labels")?,
+  );
   let command = parse_command(command);
   let extra_args = parse_extra_args(extra_args);
-  format!("docker run -d --name {name}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{command}")
+  let command = format!("docker run -d --name {name}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{command}");
+  Ok(command)
 }
 
 fn parse_conversions(

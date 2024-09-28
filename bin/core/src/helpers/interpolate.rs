@@ -1,59 +1,9 @@
 use std::collections::HashSet;
 
 use anyhow::Context;
-use komodo_client::entities::{
-  update::Update, EnvironmentVar, SystemCommand,
-};
+use komodo_client::entities::{update::Update, SystemCommand};
 
 use super::query::VariablesAndSecrets;
-
-pub fn interpolate_variables_secrets_into_environment(
-  VariablesAndSecrets { variables, secrets }: &VariablesAndSecrets,
-  environment: &mut Vec<EnvironmentVar>,
-  global_replacers: &mut HashSet<(String, String)>,
-  secret_replacers: &mut HashSet<(String, String)>,
-) -> anyhow::Result<()> {
-  for env in environment {
-    if env.value.is_empty() {
-      continue;
-    }
-
-    // first pass - global variables
-    let (res, more_replacers) = svi::interpolate_variables(
-      &env.value,
-      variables,
-      svi::Interpolator::DoubleBrackets,
-      false,
-    )
-    .with_context(|| {
-      format!(
-        "failed to interpolate global variables into env var '{}'",
-        env.variable
-      )
-    })?;
-    global_replacers.extend(more_replacers);
-
-    // second pass - core secrets
-    let (res, more_replacers) = svi::interpolate_variables(
-      &res,
-      secrets,
-      svi::Interpolator::DoubleBrackets,
-      false,
-    )
-    .with_context(|| {
-      format!(
-        "failed to interpolate core secrets into env var '{}'",
-        env.variable
-      )
-    })?;
-    secret_replacers.extend(more_replacers);
-
-    // set env value with the result
-    env.value = res;
-  }
-
-  Ok(())
-}
 
 pub fn interpolate_variables_secrets_into_extra_args(
   VariablesAndSecrets { variables, secrets }: &VariablesAndSecrets,
@@ -101,28 +51,24 @@ pub fn interpolate_variables_secrets_into_extra_args(
   Ok(())
 }
 
-pub fn interpolate_variables_secrets_into_container_command(
+pub fn interpolate_variables_secrets_into_string(
   VariablesAndSecrets { variables, secrets }: &VariablesAndSecrets,
-  command: &mut String,
+  target: &mut String,
   global_replacers: &mut HashSet<(String, String)>,
   secret_replacers: &mut HashSet<(String, String)>,
 ) -> anyhow::Result<()> {
-  if command.is_empty() {
+  if target.is_empty() {
     return Ok(());
   }
 
   // first pass - global variables
   let (res, more_replacers) = svi::interpolate_variables(
-    command,
+    target,
     variables,
     svi::Interpolator::DoubleBrackets,
     false,
   )
-  .with_context(|| {
-    format!(
-      "failed to interpolate global variables into command '{command}'",
-    )
-  })?;
+  .context("Failed to interpolate core variables")?;
   global_replacers.extend(more_replacers);
 
   // second pass - core secrets
@@ -132,15 +78,11 @@ pub fn interpolate_variables_secrets_into_container_command(
     svi::Interpolator::DoubleBrackets,
     false,
   )
-  .with_context(|| {
-    format!(
-      "failed to interpolate core secrets into command '{command}'",
-    )
-  })?;
+  .context("Failed to interpolate core secrets")?;
   secret_replacers.extend(more_replacers);
 
   // set command with the result
-  *command = res;
+  *target = res;
 
   Ok(())
 }

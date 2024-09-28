@@ -5,11 +5,22 @@ use formatting::{bold, colored, muted, Color};
 use komodo_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
-    self, alerter::Alerter, build::Build, builder::Builder,
-    deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, server_template::ServerTemplate, stack::Stack,
-    sync::SyncUpdate, tag::Tag, toml::ResourceToml, update::Log,
-    user::sync_user, ResourceTarget,
+    self,
+    alerter::Alerter,
+    build::Build,
+    builder::Builder,
+    deployment::Deployment,
+    procedure::Procedure,
+    repo::Repo,
+    server::Server,
+    server_template::ServerTemplate,
+    stack::Stack,
+    sync::{DiffData, ResourceDiff},
+    tag::Tag,
+    toml::ResourceToml,
+    update::Log,
+    user::sync_user,
+    ResourceTarget,
   },
 };
 use mungos::{find::find_collect, mongodb::bson::oid::ObjectId};
@@ -17,6 +28,8 @@ use partial_derive2::{Diff, FieldDiff, MaybeNone};
 use resolver_api::Resolve;
 
 use crate::{resource::KomodoResource, state::State};
+
+use super::toml::{resource_toml_to_toml, ToToml};
 
 pub type ToUpdate<T> = Vec<ToUpdateItem<T>>;
 pub type ToCreate<T> = Vec<ResourceToml<T>>;
@@ -49,7 +62,7 @@ pub fn include_resource_by_tags(
   match_tags.iter().all(|tag| tag_names.contains(&tag))
 }
 
-pub trait ResourceSync: KomodoResource + Sized {
+pub trait ResourceSyncTrait: ToToml + Sized {
   fn resource_target(id: String) -> ResourceTarget;
 
   /// To exclude resource syncs with "file_contents" (they aren't compatible)
@@ -87,8 +100,6 @@ pub trait ResourceSync: KomodoResource + Sized {
   /// Apply any changes to computed config diff
   /// before logging
   fn validate_diff(_diff: &mut Self::ConfigDiff) {}
-
-  // fn include()
 
   async fn run_updates(
     to_create: ToCreate<Self::PartialConfig>,
@@ -247,36 +258,39 @@ pub trait ResourceSync: KomodoResource + Sized {
 }
 
 /// Turns all the diffs into a readable string
-pub async fn get_updates_for_view<Resource: ResourceSync>(
+pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
   resources: Vec<ResourceToml<Resource::PartialConfig>>,
   delete: bool,
   all_resources: &AllResourcesById,
-  id_to_tags: &HashMap<String, Tag>,
+  all_tags: &HashMap<String, Tag>,
   match_tags: &[String],
-) -> anyhow::Result<Option<SyncUpdate>> {
+  diffs: &mut Vec<ResourceDiff>,
+) -> anyhow::Result<Vec<ResourceDiff>> {
   let map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
     .filter(|r| {
       Resource::include_resource(
-        &r.config, &r.tags, id_to_tags, match_tags,
+        &r.config, &r.tags, all_tags, match_tags,
       )
     })
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
 
-  let mut update = SyncUpdate {
-    log: format!("{} Updates", Resource::resource_type()),
-    ..Default::default()
-  };
-
-  let mut to_delete = Vec::<String>::new();
   if delete {
     for resource in map.values() {
       if !resources.iter().any(|r| r.name == resource.name) {
-        update.to_delete += 1;
-        to_delete.push(resource.name.clone())
+        diffs.push(ResourceDiff {
+          target: Resource::resource_target(resource.name.clone()),
+          data: DiffData::Delete {
+            current: super::toml::resource_to_toml(
+              resource.clone(),
+              all_resources,
+              all_tags,
+            )?,
+          },
+        });
       }
     }
   }
@@ -286,7 +300,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
     if !Resource::include_resource_partial(
       &resource.config,
       &resource.tags,
-      id_to_tags,
+      all_tags,
       match_tags,
     ) {
       continue;
@@ -311,7 +325,7 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
         let original_tags = original
           .tags
           .iter()
-          .filter_map(|id| id_to_tags.get(id).map(|t| t.name.clone()))
+          .filter_map(|id| all_tags.get(id).map(|t| t.name.clone()))
           .collect::<Vec<_>>();
 
         // Only proceed if there are any fields to update,
@@ -322,6 +336,18 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
         {
           continue;
         }
+
+        diffs.push(ResourceDiff {
+          target: Resource::resource_target(resource.name.clone()),
+          data: DiffData::Update {
+            proposed: resource_toml_to_toml(&resource)?,
+            current: super::toml::resource_to_toml(
+              original.clone(),
+              all_resources,
+              all_tags,
+            )?,
+          },
+        });
 
         update.to_update += 1;
 
@@ -389,24 +415,13 @@ pub async fn get_updates_for_view<Resource: ResourceSync>(
     }
   }
 
-  for name in to_delete {
-    update.log.push_str(&format!(
-      "\n\n{}: {}: '{}'\n-------------------",
-      colored("DELETE", Color::Red),
-      Resource::resource_type(),
-      bold(&name)
-    ));
-  }
-
-  let any_change = update.to_create > 0
-    || update.to_update > 0
-    || update.to_delete > 0;
-
-  Ok(any_change.then_some(update))
+  Ok(diffs)
 }
 
 /// Gets all the resources to update. For use in sync execution.
-pub async fn get_updates_for_execution<Resource: ResourceSync>(
+pub async fn get_updates_for_execution<
+  Resource: ResourceSyncTrait,
+>(
   resources: Vec<ResourceToml<Resource::PartialConfig>>,
   delete: bool,
   all_resources: &AllResourcesById,
@@ -499,7 +514,7 @@ pub async fn get_updates_for_execution<Resource: ResourceSync>(
   Ok((to_create, to_update, to_delete))
 }
 
-pub async fn run_update_tags<Resource: ResourceSync>(
+pub async fn run_update_tags<Resource: ResourceSyncTrait>(
   id: String,
   name: &str,
   tags: Vec<String>,
@@ -535,7 +550,7 @@ pub async fn run_update_tags<Resource: ResourceSync>(
   }
 }
 
-pub async fn run_update_description<Resource: ResourceSync>(
+pub async fn run_update_description<Resource: ResourceSyncTrait>(
   id: String,
   name: &str,
   description: String,

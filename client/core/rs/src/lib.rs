@@ -38,6 +38,7 @@ pub mod entities;
 pub mod ws;
 
 mod request;
+mod parser;
 
 #[derive(Deserialize)]
 struct KomodoEnv {

@@ -24,9 +24,8 @@ use crate::{
   helpers::{
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_container_command,
-      interpolate_variables_secrets_into_environment,
       interpolate_variables_secrets_into_extra_args,
+      interpolate_variables_secrets_into_string,
     },
     periphery_client,
     query::get_variables_and_secrets,
@@ -168,9 +167,23 @@ impl Resolve<Deploy, (User, Update)> for State {
       let mut global_replacers = HashSet::new();
       let mut secret_replacers = HashSet::new();
 
-      interpolate_variables_secrets_into_environment(
+      interpolate_variables_secrets_into_string(
         &vars_and_secrets,
         &mut deployment.config.environment,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_string(
+        &vars_and_secrets,
+        &mut deployment.config.ports,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_string(
+        &vars_and_secrets,
+        &mut deployment.config.volumes,
         &mut global_replacers,
         &mut secret_replacers,
       )?;
@@ -182,7 +195,7 @@ impl Resolve<Deploy, (User, Update)> for State {
         &mut secret_replacers,
       )?;
 
-      interpolate_variables_secrets_into_container_command(
+      interpolate_variables_secrets_into_string(
         &vars_and_secrets,
         &mut deployment.config.command,
         &mut global_replacers,

@@ -11,7 +11,7 @@ export const EnvVars = ({
   disabled,
   server,
 }: {
-  env: string | Types.EnvironmentVar[];
+  env: string;
   set: (
     input: Partial<
       Types.DeploymentConfig | Types.StackConfig | Types.RepoConfig
@@ -21,14 +21,11 @@ export const EnvVars = ({
   /// eg server id
   server?: string;
 }) => {
-  const _env =
-    (typeof env === "object" ? env_to_text(env) : env) ||
-    "# ENV_VAR_NAME: value";
   return (
     <ConfigItem className="flex-col gap-2 items-start">
       {!disabled && <Secrets server={server} />}
       <MonacoEditor
-        value={_env}
+        value={env}
         onValueChange={(environment) => set({ environment })}
         language="yaml"
       />
@@ -43,18 +40,15 @@ export const BuildArgs = ({
   disabled,
 }: {
   type: "build" | "secret";
-  args: string | Types.EnvironmentVar[];
+  args: string;
   set: (input: Partial<Types.BuildConfig>) => void;
   disabled: boolean;
 }) => {
   const setArgs = (args: string) => set({ [`${type}_args`]: args });
-  const _args =
-    (typeof args === "object" ? env_to_text(args) : args) ||
-    `# ${type.toUpperCase()}_ARG_NAME: value`;
   return (
     <ConfigItem className="flex-col gap-4 items-start">
       {!disabled && <Secrets />}
-      <MonacoEditor value={_args} onValueChange={setArgs} language="yaml" />
+      <MonacoEditor value={args} onValueChange={setArgs} language="yaml" />
     </ConfigItem>
   );
 };

@@ -361,11 +361,6 @@ export type ImageRegistry =
 	/** Push the image to a standard image registry (any domain) */
 	| { type: "Standard", params: StandardRegistryConfig };
 
-export interface EnvironmentVar {
-	variable: string;
-	value: string;
-}
-
 /** The build configuration. */
 export interface BuildConfig {
 	/** Which builder is used to build the image. */
@@ -449,7 +444,7 @@ export interface BuildConfig {
 	 * 
 	 * These values are visible in the final image by running `docker inspect`.
 	 */
-	build_args?: EnvironmentVar[] | string;
+	build_args?: string;
 	/**
 	 * Secret arguments.
 	 * 
@@ -462,9 +457,9 @@ export interface BuildConfig {
 	 * SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
 	 * ```
 	 */
-	secret_args?: EnvironmentVar[] | string;
+	secret_args?: string;
 	/** Docker labels */
-	labels?: EnvironmentVar[] | string;
+	labels?: string;
 }
 
 export interface BuildInfo {
@@ -593,18 +588,6 @@ export enum TerminationSignal {
 	SigTerm = "SIGTERM",
 }
 
-export interface TerminationSignalLabel {
-	signal: TerminationSignal;
-	label: string;
-}
-
-export interface Conversion {
-	/** reference on the server. */
-	local: string;
-	/** reference in the container. */
-	container: string;
-}
-
 export interface DeploymentConfig {
 	/** The id of server the deployment is deployed on. */
 	server_id?: string;
@@ -657,22 +640,22 @@ export interface DeploymentConfig {
 	 * Labels attached to various termination signal options.
 	 * Used to specify different shutdown functionality depending on the termination signal.
 	 */
-	term_signal_labels: TerminationSignalLabel[];
+	term_signal_labels: string;
 	/**
 	 * The container port mapping.
 	 * Irrelevant if container network is `host`.
 	 * Maps ports on host to ports on container.
 	 */
-	ports?: Conversion[];
+	ports?: string;
 	/**
 	 * The container volume mapping.
 	 * Maps files / folders on host to files / folders in container.
 	 */
-	volumes?: Conversion[];
+	volumes?: string;
 	/** The environment variables passed to the container. */
-	environment?: EnvironmentVar[] | string;
+	environment?: string;
 	/** The docker labels given to the container. */
-	labels?: EnvironmentVar[] | string;
+	labels?: string;
 }
 
 export type Deployment = Resource<DeploymentConfig, undefined>;
@@ -1060,7 +1043,7 @@ export interface RepoConfig {
 	 * 
 	 * If it is empty, no file will be written.
 	 */
-	environment?: EnvironmentVar[] | string;
+	environment?: string;
 	/**
 	 * The name of the written environment file before `docker compose up`.
 	 * Relative to the repo root.
@@ -2414,7 +2397,7 @@ export interface StackConfig {
 	 * 
 	 * If it is empty, no file will be written.
 	 */
-	environment?: EnvironmentVar[] | string;
+	environment?: string;
 }
 
 export interface FileContents {
@@ -2617,13 +2600,26 @@ export interface ResourceSyncConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+	/**
+	 * Optionally provide an alternate webhook secret for this sync.
+	 * If its an empty string, use the default secret from the config.
+	 */
+	webhook_secret?: string;
 	/**
 	 * Files are available on the Komodo Core host.
 	 * Specify the file / folder with [ResourceSyncConfig::resource_path].
 	 */
 	files_on_host?: boolean;
-	/** Manage the file contents in the UI. */
-	file_contents?: string;
+	/**
+	 * The path of the resource file(s) to sync.
+	 * - If Files on Host, this is relative to the configured `sync_directory` in core config.
+	 * - If Git Repo based, this is relative to the root of the repo.
+	 * Can be a specific file, or a directory containing multiple files / folders.
+	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
+	 */
+	resource_path: string;
 	/**
 	 * Enable "pushes" to the file,
 	 * which exports resources matching tags to single file.
@@ -2633,44 +2629,51 @@ export interface ResourceSyncConfig {
 	 */
 	managed?: boolean;
 	/**
-	 * When using `managed` resource sync, will only export resources
-	 * matching all of the given tags. If none, will match all resources.
-	 */
-	match_tags?: string[];
-	/**
-	 * The path of the resource file(s) to sync, relative to the repo root.
-	 * Can be a specific file, or a directory containing multiple files / folders.
-	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
-	 */
-	resource_path: string;
-	/**
 	 * Whether sync should delete resources
 	 * not declared in the resource files
 	 */
 	delete?: boolean;
-	/** Whether incoming webhooks actually trigger action. */
-	webhook_enabled: boolean;
 	/**
-	 * Optionally provide an alternate webhook secret for this sync.
-	 * If its an empty string, use the default secret from the config.
+	 * When using `managed` resource sync, will only export resources
+	 * matching all of the given tags. If none, will match all resources.
 	 */
-	webhook_secret?: string;
+	match_tags?: string[];
+	/** Manage the file contents in the UI. */
+	file_contents?: string;
 }
 
-export type PendingSyncUpdatesData = 
-	| { type: "Ok", data: PendingSyncUpdatesDataOk }
-	| { type: "Err", data: PendingSyncUpdatesDataErr };
+export type DiffData = 
+	/** Resource will be created */
+	| { type: "Create", data: {
+	/** The proposed resource to create in TOML */
+	proposed: string;
+}}
+	| { type: "Update", data: {
+	/** The proposed TOML */
+	proposed: string;
+	/** The current TOML */
+	current: string;
+}}
+	| { type: "Delete", data: {
+	/** The current TOML of the resource to delete */
+	current: string;
+}};
 
-export interface PendingSyncUpdates {
-	/** The commit hash which produced these pending updates */
-	hash?: string;
-	/** The commit message which produced these pending updates */
-	message?: string;
+export interface ResourceDiff {
 	/**
-	 * The data associated with the sync. Either Ok containing diffs,
-	 * or Err containing an error message
+	 * The resource target.
+	 * The target id will be empty if "Create" ResourceDiffType.
 	 */
-	data: PendingSyncUpdatesData;
+	target: ResourceTarget;
+	/** The data associated with the diff. */
+	data: DiffData;
+}
+
+export interface SyncDeployUpdate {
+	/** Resources to deploy */
+	to_deploy: number;
+	/** A readable log of all the changes to be applied */
+	log: string;
 }
 
 export interface ResourceSyncInfo {
@@ -2680,8 +2683,20 @@ export interface ResourceSyncInfo {
 	last_sync_hash?: string;
 	/** Commit message of last applied sync */
 	last_sync_message?: string;
-	/** Readable logs of pending updates */
-	pending?: PendingSyncUpdates;
+	/** The list of pending updates to resources */
+	resource_updates?: ResourceDiff[];
+	/** The list of pending updates to variables */
+	variable_updates?: DiffData[];
+	/** The list of pending updates to user groups */
+	user_group_updates?: DiffData[];
+	/** The list of pending deploys to resources. */
+	pending_deploy?: SyncDeployUpdate;
+	/** If there is an error, it will be stored here */
+	pending_error?: string;
+	/** The commit hash which produced these pending updates. */
+	pending_hash?: string;
+	/** The commit message which produced these pending updates. */
+	pending_message?: string;
 	/** The current sync files */
 	remote_contents?: FileContents[];
 	/** Any read errors in files by path */
@@ -6202,6 +6217,18 @@ export interface AwsBuilderConfig {
 	secrets?: string[];
 }
 
+export interface Conversion {
+	/** reference on the server. */
+	local: string;
+	/** reference in the container. */
+	container: string;
+}
+
+export interface TerminationSignalLabel {
+	signal: TerminationSignal;
+	label: string;
+}
+
 export interface NameAndId {
 	name: string;
 	id: string;
@@ -6223,6 +6250,11 @@ export interface Port {
 	/** Port exposed on the host */
 	PublicPort?: number;
 	Type?: PortTypeEnum;
+}
+
+export interface EnvironmentVar {
+	variable: string;
+	value: string;
 }
 
 export interface LatestCommit {
@@ -6441,57 +6473,6 @@ export interface TotalDiskUsage {
 	used_gb: number;
 	/** Total size in GB */
 	total_gb: number;
-}
-
-export interface SyncDeployUpdate {
-	/** Resources to deploy */
-	to_deploy: number;
-	/** A readable log of all the changes to be applied */
-	log: string;
-}
-
-export interface SyncUpdate {
-	/** Resources to create */
-	to_create: number;
-	/** Resources to update */
-	to_update: number;
-	/** Resources to delete */
-	to_delete: number;
-	/** A readable log of all the changes to be applied */
-	log: string;
-}
-
-export interface PendingSyncUpdatesDataOk {
-	/** Readable log of any deploy actions that will be performed */
-	deploy_updates?: SyncDeployUpdate;
-	/** Readable log of any pending deployment updates */
-	deployment_updates?: SyncUpdate;
-	/** Readable log of any pending deployment updates */
-	stack_updates?: SyncUpdate;
-	/** Readable log of any pending server updates */
-	server_updates?: SyncUpdate;
-	/** Readable log of any pending build updates */
-	build_updates?: SyncUpdate;
-	/** Readable log of any pending repo updates */
-	repo_updates?: SyncUpdate;
-	/** Readable log of any pending procedure updates */
-	procedure_updates?: SyncUpdate;
-	/** Readable log of any pending alerter updates */
-	alerter_updates?: SyncUpdate;
-	/** Readable log of any pending builder updates */
-	builder_updates?: SyncUpdate;
-	/** Readable log of any pending server template updates */
-	server_template_updates?: SyncUpdate;
-	/** Readable log of any pending resource sync updates */
-	resource_sync_updates?: SyncUpdate;
-	/** Readable log of any pending variable updates */
-	variable_updates?: SyncUpdate;
-	/** Readable log of any pending user group updates */
-	user_group_updates?: SyncUpdate;
-}
-
-export interface PendingSyncUpdatesDataErr {
-	message: string;
 }
 
 export type AuthRequest = 

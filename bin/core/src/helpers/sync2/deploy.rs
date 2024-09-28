@@ -33,7 +33,7 @@ use crate::{
   state::{deployment_status_cache, stack_status_cache, State},
 };
 
-use super::{AllResourcesById, ResourceSyncTrait};
+use super::resource::{AllResourcesById, ResourceSyncTrait};
 
 /// All entries in here are due to be deployed,
 /// after the given dependencies,
@@ -179,7 +179,7 @@ pub async fn deploy_from_cache(
 
 pub async fn get_updates_for_view(
   params: SyncDeployParams<'_>,
-) -> SyncDeployUpdate {
+) -> Option<SyncDeployUpdate> {
   let inner = async {
     let mut update = SyncDeployUpdate {
       to_deploy: 0,
@@ -209,16 +209,16 @@ pub async fn get_updates_for_view(
 
     update.log.push_str(&lines.join("\n-------------------\n"));
 
-    anyhow::Ok(update)
+    anyhow::Ok((update.to_deploy > 0).then_some(update))
   };
   match inner.await {
     Ok(res) => res,
-    Err(e) => SyncDeployUpdate {
+    Err(e) => Some(SyncDeployUpdate {
       to_deploy: 0,
       log: format_serror(
         &e.context("failed to get deploy updates for view").into(),
       ),
-    },
+    }),
   }
 }
 

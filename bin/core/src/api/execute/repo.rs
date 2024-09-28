@@ -34,7 +34,7 @@ use crate::{
     git_token,
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_string,
       interpolate_variables_secrets_into_system_command,
     },
     periphery_client,
@@ -100,7 +100,7 @@ impl Resolve<CloneRepo, (User, Update)> for State {
       .request(api::git::CloneRepo {
         args: (&repo).into(),
         git_token,
-        environment: repo.config.environment,
+        environment: repo.config.env_vars()?,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
         replacers: secret_replacers.into_iter().collect(),
@@ -172,8 +172,8 @@ impl Resolve<PullRepo, (User, Update)> for State {
         branch: optional_string(&repo.config.branch),
         commit: optional_string(&repo.config.commit),
         path: optional_string(&repo.config.path),
+        environment: repo.config.env_vars()?,
         on_pull: repo.config.on_pull.into_option(),
-        environment: repo.config.environment,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
         replacers: secret_replacers.into_iter().collect(),
@@ -363,7 +363,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
         .request(api::git::CloneRepo {
           args: (&repo).into(),
           git_token,
-          environment: repo.config.environment,
+          environment: repo.config.env_vars()?,
           env_file_path: repo.config.env_file_path,
           skip_secret_interp: repo.config.skip_secret_interp,
           replacers: secret_replacers.into_iter().collect()
@@ -621,7 +621,7 @@ async fn interpolate(
     let mut global_replacers = HashSet::new();
     let mut secret_replacers = HashSet::new();
 
-    interpolate_variables_secrets_into_environment(
+    interpolate_variables_secrets_into_string(
       &vars_and_secrets,
       &mut repo.config.environment,
       &mut global_replacers,

@@ -4,6 +4,7 @@ use formatting::{bold, colored, muted, Color};
 use komodo_client::{
   api::execute::Execution,
   entities::{
+    self,
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig},
@@ -13,7 +14,6 @@ use komodo_client::{
     server::Server,
     server_template::ServerTemplate,
     stack::Stack,
-    sync::ResourceSync,
     tag::Tag,
     update::Log,
     user::sync_user,
@@ -23,16 +23,16 @@ use komodo_client::{
 use partial_derive2::{MaybeNone, PartialDiff};
 
 use crate::{
-  helpers::sync::{
-    execute::{run_update_description, run_update_tags},
+  helpers::sync::resource::{
+    run_update_description, run_update_tags, ResourceSyncTrait,
     ToUpdateItem,
   },
   resource::KomodoResource,
 };
 
-use super::{
-  execute::ExecuteResourceSync, include_resource_by_tags,
-  AllResourcesById, ResourceSyncTrait, ToCreate, ToDelete, ToUpdate,
+use super::resource::{
+  include_resource_by_tags, AllResourcesById, ToCreate, ToDelete,
+  ToUpdate,
 };
 
 impl ResourceSyncTrait for Server {
@@ -48,8 +48,6 @@ impl ResourceSyncTrait for Server {
     Ok(original.partial_diff(update))
   }
 }
-
-impl ExecuteResourceSync for Server {}
 
 impl ResourceSyncTrait for Deployment {
   fn resource_target(id: String) -> ResourceTarget {
@@ -86,8 +84,6 @@ impl ResourceSyncTrait for Deployment {
   }
 }
 
-impl ExecuteResourceSync for Deployment {}
-
 impl ResourceSyncTrait for Stack {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Stack(id)
@@ -108,8 +104,6 @@ impl ResourceSyncTrait for Stack {
     Ok(original.partial_diff(update))
   }
 }
-
-impl ExecuteResourceSync for Stack {}
 
 impl ResourceSyncTrait for Build {
   fn resource_target(id: String) -> ResourceTarget {
@@ -142,8 +136,6 @@ impl ResourceSyncTrait for Build {
   }
 }
 
-impl ExecuteResourceSync for Build {}
-
 impl ResourceSyncTrait for Repo {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Repo(id)
@@ -172,8 +164,6 @@ impl ResourceSyncTrait for Repo {
   }
 }
 
-impl ExecuteResourceSync for Repo {}
-
 impl ResourceSyncTrait for Alerter {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::Alerter(id)
@@ -187,8 +177,6 @@ impl ResourceSyncTrait for Alerter {
     Ok(original.partial_diff(update))
   }
 }
-
-impl ExecuteResourceSync for Alerter {}
 
 impl ResourceSyncTrait for Builder {
   fn resource_target(id: String) -> ResourceTarget {
@@ -213,8 +201,6 @@ impl ResourceSyncTrait for Builder {
   }
 }
 
-impl ExecuteResourceSync for Builder {}
-
 impl ResourceSyncTrait for ServerTemplate {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::ServerTemplate(id)
@@ -229,9 +215,7 @@ impl ResourceSyncTrait for ServerTemplate {
   }
 }
 
-impl ExecuteResourceSync for ServerTemplate {}
-
-impl ResourceSyncTrait for ResourceSync {
+impl ResourceSyncTrait for entities::sync::ResourceSync {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::ResourceSync(id)
   }
@@ -303,8 +287,6 @@ impl ResourceSyncTrait for ResourceSync {
     Ok(original.partial_diff(update))
   }
 }
-
-impl ExecuteResourceSync for ResourceSync {}
 
 impl ResourceSyncTrait for Procedure {
   fn resource_target(id: String) -> ResourceTarget {
@@ -627,10 +609,8 @@ impl ResourceSyncTrait for Procedure {
     }
     Ok(original.partial_diff(update))
   }
-}
 
-impl ExecuteResourceSync for Procedure {
-  async fn execute_sync_updates(
+  async fn run_updates(
     mut to_create: ToCreate<Self::PartialConfig>,
     mut to_update: ToUpdate<Self::PartialConfig>,
     to_delete: ToDelete,

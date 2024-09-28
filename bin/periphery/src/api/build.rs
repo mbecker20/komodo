@@ -3,7 +3,8 @@ use command::run_komodo_command;
 use formatting::format_serror;
 use komodo_client::entities::{
   build::{Build, BuildConfig},
-  get_image_name, optional_string, to_komodo_name,
+  environment_vars_from_str, get_image_name, optional_string,
+  to_komodo_name,
   update::Log,
   EnvironmentVar, Version,
 };
@@ -83,10 +84,17 @@ impl Resolve<build::Build> for State {
     // Get command parts
     let image_name =
       get_image_name(&build).context("failed to make image name")?;
-    let build_args = parse_build_args(build_args);
+    let build_args = parse_build_args(
+      &environment_vars_from_str(build_args)
+        .context("Invalid build_args")?,
+    );
+    let secret_args = environment_vars_from_str(secret_args)
+      .context("Invalid secret_args")?;
     let _secret_args =
-      parse_secret_args(secret_args, *skip_secret_interp)?;
-    let labels = parse_labels(labels);
+      parse_secret_args(&secret_args, *skip_secret_interp)?;
+    let labels = parse_labels(
+      &environment_vars_from_str(labels).context("Invalid labels")?,
+    );
     let extra_args = parse_extra_args(extra_args);
     let buildx = if *use_buildx { " buildx" } else { "" };
     let image_tags =
@@ -131,7 +139,7 @@ impl Resolve<build::Build> for State {
       logs.push(build_log);
     }
 
-    cleanup_secret_env_vars(secret_args);
+    cleanup_secret_env_vars(&secret_args);
 
     Ok(logs)
   }

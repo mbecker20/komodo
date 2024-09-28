@@ -10,7 +10,7 @@ use crate::entities::I64;
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
-  EnvironmentVar, NoData, SystemCommand, Version,
+  NoData, SystemCommand, Version,
 };
 
 #[typeshare]
@@ -226,7 +226,7 @@ pub struct BuildConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub build_args: Vec<EnvironmentVar>,
+  pub build_args: String,
 
   /// Secret arguments.
   ///
@@ -247,7 +247,7 @@ pub struct BuildConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub secret_args: Vec<EnvironmentVar>,
+  pub secret_args: String,
 
   /// Docker labels
   #[serde(
@@ -259,7 +259,7 @@ pub struct BuildConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub labels: Vec<EnvironmentVar>,
+  pub labels: String,
 }
 
 impl BuildConfig {

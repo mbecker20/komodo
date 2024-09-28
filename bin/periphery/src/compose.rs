@@ -7,6 +7,7 @@ use git::write_environment_file;
 use komodo_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
+  environment_vars_from_str,
   stack::Stack,
   to_komodo_name,
   update::Log,
@@ -267,13 +268,16 @@ async fn write_stack(
   // Cannot use 'canonicalize' yet as directory may not exist.
   let run_directory = run_directory.components().collect::<PathBuf>();
 
+  let env_vars = environment_vars_from_str(&stack.config.environment)
+    .context("Invalid environment variables")?;
+
   if stack.config.files_on_host {
     // =============
     // FILES ON HOST
     // =============
     // Only need to write environment file here (which does nothing if not using this feature)
     let env_file_path = match write_environment_file(
-      &stack.config.environment,
+      &env_vars,
       &stack.config.env_file_path,
       stack
         .config
@@ -343,7 +347,7 @@ async fn write_stack(
         CloneRepo {
           args,
           git_token,
-          environment: stack.config.environment.clone(),
+          environment: env_vars,
           env_file_path: stack.config.env_file_path.clone(),
           skip_secret_interp: stack.config.skip_secret_interp,
           // repo replacer only needed for on_clone / on_pull,
@@ -390,7 +394,7 @@ async fn write_stack(
       )
     })?;
     let env_file_path = match write_environment_file(
-      &stack.config.environment,
+      &env_vars,
       &stack.config.env_file_path,
       stack
         .config

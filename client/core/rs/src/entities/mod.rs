@@ -17,6 +17,8 @@ use serror::Serror;
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
+use crate::parser::parse_key_value_list;
+
 /// Subtypes of [Alert][alert::Alert].
 pub mod alert;
 /// Subtypes of [Alerter][alerter::Alerter].
@@ -342,68 +344,20 @@ pub struct EnvironmentVar {
   pub value: String,
 }
 
-pub fn environment_vars_to_string(vars: &[EnvironmentVar]) -> String {
-  vars
-    .iter()
-    .map(|EnvironmentVar { variable, value }| {
-      format!("{variable}={value}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n")
-}
-
 pub fn environment_vars_from_str(
-  value: &str,
+  input: &str,
 ) -> anyhow::Result<Vec<EnvironmentVar>> {
-  let trimmed = value.trim();
-  if trimmed.is_empty() {
-    return Ok(Vec::new());
-  }
-  let res = trimmed
-    .split('\n')
-    .map(|line| line.trim())
-    .enumerate()
-    .filter(|(_, line)| {
-      !line.is_empty()
-        && !line.starts_with('#')
-        && !line.starts_with("//")
-    })
-    .map(|(i, line)| {
-      let line = line
-        // Remove end of line comments
-        .split_once(" #")
-        .unwrap_or((line, ""))
-        .0
-        .trim()
-        // Remove preceding '-' (yaml list)
-        .trim_start_matches('-')
-        .trim();
-      // Remove wrapping quotes (from yaml list)
-      let line = if let Some(line) = line.strip_prefix('"') {
-        line.strip_suffix('"').unwrap_or(line)
-      } else {
-        line
-      };
-      // Remove any preceding '"' (from yaml list) (wrapping quotes open)
-      let (variable, value) = line
-        .split_once(['=', ':'])
-        .with_context(|| {
-          format!(
-            "line {i} missing assignment character ('=' or ':')"
-          )
-        })
-        .map(|(variable, value)| {
-          (variable.trim().to_string(), value.trim().to_string())
-        })?;
-      anyhow::Ok(EnvironmentVar { variable, value })
-    })
-    .collect::<anyhow::Result<Vec<_>>>()?;
-  Ok(res)
+  parse_key_value_list(input).map(|list| {
+    list
+      .into_iter()
+      .map(|(variable, value)| EnvironmentVar { variable, value })
+      .collect()
+  })
 }
 
 pub fn env_vars_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Vec<EnvironmentVar>, D::Error>
+) -> Result<String, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -412,7 +366,7 @@ where
 
 pub fn option_env_vars_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Option<Vec<EnvironmentVar>>, D::Error>
+) -> Result<Option<String>, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -422,7 +376,7 @@ where
 struct EnvironmentVarVisitor;
 
 impl<'de> Visitor<'de> for EnvironmentVarVisitor {
-  type Value = Vec<EnvironmentVar>;
+  type Value = String;
 
   fn expecting(
     &self,
@@ -435,43 +389,32 @@ impl<'de> Visitor<'de> for EnvironmentVarVisitor {
   where
     E: serde::de::Error,
   {
-    environment_vars_from_str(v)
-      .map_err(|e| serde::de::Error::custom(format!("{e:#}")))
+    Ok(v.to_string())
   }
 
   fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
   where
     A: serde::de::SeqAccess<'de>,
   {
-    #[derive(Deserialize)]
-    struct EnvironmentVarInner {
-      variable: String,
-      value: String,
-    }
-
-    impl From<EnvironmentVarInner> for EnvironmentVar {
-      fn from(value: EnvironmentVarInner) -> Self {
-        Self {
-          variable: value.variable,
-          value: value.value,
-        }
-      }
-    }
-
-    let res = Vec::<EnvironmentVarInner>::deserialize(
+    let vars = Vec::<EnvironmentVar>::deserialize(
       SeqAccessDeserializer::new(seq),
-    )?
-    .into_iter()
-    .map(Into::into)
-    .collect();
-    Ok(res)
+    )?;
+    let vars = vars
+      .iter()
+      .map(|EnvironmentVar { variable, value }| {
+        format!("  {variable}: {value}")
+      })
+      .collect::<Vec<_>>()
+      .join("\n");
+    let extra = if vars.is_empty() { "" } else { "\n" };
+    Ok(vars + extra)
   }
 }
 
 struct OptionEnvVarVisitor;
 
 impl<'de> Visitor<'de> for OptionEnvVarVisitor {
-  type Value = Option<Vec<EnvironmentVar>>;
+  type Value = Option<String>;
 
   fn expecting(
     &self,
@@ -1032,5 +975,84 @@ impl From<&sync::ResourceSync> for ResourceTarget {
 impl From<&stack::Stack> for ResourceTarget {
   fn from(resource_sync: &stack::Stack) -> Self {
     Self::Stack(resource_sync.id.clone())
+  }
+}
+
+/// Using this ensures the file contents end with trailing '\n'
+pub fn file_contents_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<String, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(FileContentsVisitor)
+}
+
+/// Using this ensures the file contents end with trailing '\n'
+pub fn option_file_contents_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Option<String>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(OptionFileContentsVisitor)
+}
+
+struct FileContentsVisitor;
+
+impl<'de> Visitor<'de> for FileContentsVisitor {
+  type Value = String;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "string")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    let out = v.to_string();
+    if out.ends_with('\n') {
+      Ok(out)
+    } else {
+      Ok(out + "\n")
+    }
+  }
+}
+
+struct OptionFileContentsVisitor;
+
+impl<'de> Visitor<'de> for OptionFileContentsVisitor {
+  type Value = Option<String>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "null or string")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    FileContentsVisitor.visit_str(v).map(Some)
+  }
+
+  fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
   }
 }

@@ -1,3 +1,5 @@
+#[allow(unused)]
+
 #[macro_use]
 extern crate tracing;
 
@@ -30,12 +32,12 @@ async fn main() -> anyhow::Result<()> {
 
   match env.migration {
     Migration::V1_11 => {
-      let db = legacy::v1_11::DbClient::new(
-        &env.target_uri,
-        &env.target_db_name,
-      )
-      .await;
-      migrate::v1_11::migrate_all_in_place(&db).await?
+      // let db = legacy::v1_11::DbClient::new(
+      //   &env.target_uri,
+      //   &env.target_db_name,
+      // )
+      // .await;
+      // migrate::v1_11::migrate_all_in_place(&db).await?
     }
   }
 

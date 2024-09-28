@@ -8,9 +8,8 @@ use anyhow::Context;
 use command::run_komodo_command;
 use formatting::{bold, format_serror, muted};
 use komodo_client::entities::{
-  all_logs_success, environment_vars_to_string, komodo_timestamp,
-  to_komodo_name, update::Log, CloneArgs, EnvironmentVar,
-  LatestCommit, SystemCommand,
+  all_logs_success, komodo_timestamp, to_komodo_name, update::Log,
+  CloneArgs, EnvironmentVar, LatestCommit, SystemCommand,
 };
 use run_command::async_run_command;
 use tokio::fs;
@@ -521,7 +520,11 @@ pub async fn write_environment_file(
     return Ok(None);
   }
 
-  let contents = environment_vars_to_string(environment);
+  let contents = environment
+    .iter()
+    .map(|env| format!("{}={}", env.variable, env.value))
+    .collect::<Vec<_>>()
+    .join("\n");
 
   let contents = if let Some(secrets) = secrets {
     let res = svi::interpolate_variables(

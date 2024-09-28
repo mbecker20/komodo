@@ -14,9 +14,7 @@ use komodo_client::{
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig},
-    deployment::{
-      Conversion, Deployment, DeploymentImage, TerminationSignalLabel,
-    },
+    deployment::{Deployment, DeploymentImage},
     permission::{PermissionLevel, UserTarget},
     procedure::Procedure,
     repo::Repo,
@@ -29,7 +27,7 @@ use komodo_client::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
     },
     user::User,
-    EnvironmentVar, ResourceTarget,
+    ResourceTarget,
   },
 };
 use mungos::find::find_collect;
@@ -821,12 +819,6 @@ fn serialize_resources_toml(
       config
         .insert("file_contents".to_string(), Value::String(contents));
     }
-    if let Some(environment) = &stack.config.environment {
-      config.insert(
-        "environment".to_string(),
-        Value::String(serialize_env_vars_toml(environment)),
-      );
-    }
     res.push_str(
       &toml_pretty::to_string(&parsed, options)
         .context("failed to serialize stacks to toml")?,
@@ -864,40 +856,6 @@ fn serialize_resources_toml(
         );
       }
     }
-    if let Some(term_signal_labels) =
-      &deployment.config.term_signal_labels
-    {
-      config.insert(
-        "term_signal_labels".to_string(),
-        Value::String(serialize_term_signal_labels_toml(
-          term_signal_labels,
-        )),
-      );
-    }
-    if let Some(ports) = &deployment.config.ports {
-      config.insert(
-        "ports".to_string(),
-        Value::String(serialize_conversions_toml(ports)),
-      );
-    }
-    if let Some(volumes) = &deployment.config.volumes {
-      config.insert(
-        "volumes".to_string(),
-        Value::String(serialize_conversions_toml(volumes)),
-      );
-    }
-    if let Some(environment) = &deployment.config.environment {
-      config.insert(
-        "environment".to_string(),
-        Value::String(serialize_env_vars_toml(environment)),
-      );
-    }
-    if let Some(labels) = &deployment.config.labels {
-      config.insert(
-        "labels".to_string(),
-        Value::String(serialize_env_vars_toml(labels)),
-      );
-    }
     res.push_str(
       &toml_pretty::to_string(&parsed, options)
         .context("failed to serialize deployments to toml")?,
@@ -923,24 +881,7 @@ fn serialize_resources_toml(
         Value::String(version.to_string()),
       );
     }
-    if let Some(build_args) = &build.config.build_args {
-      config.insert(
-        "build_args".to_string(),
-        Value::String(serialize_env_vars_toml(build_args)),
-      );
-    }
-    if let Some(secret_args) = &build.config.secret_args {
-      config.insert(
-        "secret_args".to_string(),
-        Value::String(serialize_env_vars_toml(secret_args)),
-      );
-    }
-    if let Some(labels) = &build.config.labels {
-      config.insert(
-        "labels".to_string(),
-        Value::String(serialize_env_vars_toml(labels)),
-      );
-    }
+
     res.push_str(
       &toml_pretty::to_string(&parsed, options)
         .context("failed to serialize builds to toml")?,
@@ -1075,57 +1016,4 @@ fn serialize_resources_toml(
   }
 
   Ok(res)
-}
-
-pub fn serialize_env_vars_toml(vars: &[EnvironmentVar]) -> String {
-  let mut res = vars
-    .iter()
-    .map(|EnvironmentVar { variable, value }| {
-      format!("  {variable}: {value}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n");
-
-  // This makes the closing """ of the toml string
-  // on a new line.
-  if !res.is_empty() {
-    res.push('\n');
-  }
-  res
-}
-
-pub fn serialize_conversions_toml(vars: &[Conversion]) -> String {
-  let mut res = vars
-    .iter()
-    .map(|Conversion { local, container }| {
-      format!("  - {local}:{container}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n");
-
-  // This makes the closing """ of the toml string
-  // on a new line.
-  if !res.is_empty() {
-    res.push('\n');
-  }
-  res
-}
-
-pub fn serialize_term_signal_labels_toml(
-  vars: &[TerminationSignalLabel],
-) -> String {
-  let mut res = vars
-    .iter()
-    .map(|TerminationSignalLabel { signal, label }| {
-      format!("  {signal}: {label}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n");
-
-  // This makes the closing """ of the toml string
-  // on a new line.
-  if !res.is_empty() {
-    res.push('\n');
-  }
-  res
 }

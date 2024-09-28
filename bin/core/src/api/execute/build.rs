@@ -37,7 +37,7 @@ use crate::{
     git_token,
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_string,
       interpolate_variables_secrets_into_extra_args,
       interpolate_variables_secrets_into_system_command,
     },
@@ -241,14 +241,14 @@ impl Resolve<RunBuild, (User, Update)> for State {
         let mut global_replacers = HashSet::new();
         let mut secret_replacers = HashSet::new();
 
-        interpolate_variables_secrets_into_environment(
+        interpolate_variables_secrets_into_string(
           &vars_and_secrets,
           &mut build.config.build_args,
           &mut global_replacers,
           &mut secret_replacers,
         )?;
 
-        interpolate_variables_secrets_into_environment(
+        interpolate_variables_secrets_into_string(
           &vars_and_secrets,
           &mut build.config.secret_args,
           &mut global_replacers,
