@@ -14,7 +14,7 @@ import { cn, sync_no_changes } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { fmt_date } from "@lib/formatting";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceSyncConfig } from "./config";
 import { ResourceSyncInfo } from "./info";
@@ -198,4 +198,18 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   Config: ConfigInfoPending,
 
   DangerZone: ({ id }) => <DeleteResource type="ResourceSync" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const sync = useResourceSync(id);
+
+    return (
+      <ResourcePageHeader
+        intent={resource_sync_state_intention(sync?.info.state)}
+        icon={<ResourceSyncIcon id={id} size={8} />}
+        name={sync?.name}
+        state={sync?.info.state}
+        status=""
+      />
+    );
+  },
 };

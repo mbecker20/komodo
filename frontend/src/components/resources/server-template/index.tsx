@@ -19,6 +19,8 @@ import {
 } from "@ui/select";
 import { ServerTemplateTable } from "./table";
 import { LaunchServer } from "./actions";
+import { useServer } from "../server";
+import { ResourcePageHeader } from "@components/util";
 
 export const useServerTemplate = (id?: string) =>
   useRead("ListServerTemplates", {}).data?.find((d) => d.id === id);
@@ -135,4 +137,18 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
   Config: ServerTemplateConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="ServerTemplate" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const template = useServer(id);
+
+    return (
+      <ResourcePageHeader
+        intent="None"
+        icon={<ServerCog className="w-8" />}
+        name={template?.name}
+        state={template?.info.state}
+        status={template?.info.region}
+      />
+    );
+  },
 };

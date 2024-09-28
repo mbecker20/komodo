@@ -1,4 +1,8 @@
-import { ActionWithDialog, StatusBadge } from "@components/util";
+import {
+  ActionWithDialog,
+  ResourcePageHeader,
+  StatusBadge,
+} from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Route } from "lucide-react";
@@ -106,4 +110,18 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Config: ProcedureConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Procedure" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const procedure = useProcedure(id);
+
+    return (
+      <ResourcePageHeader
+        intent={procedure_state_intention(procedure?.info.state)}
+        icon={<ProcedureIcon id={id} size={8} />}
+        name={procedure?.name}
+        state={procedure?.info.state}
+        status={procedure?.info.stages.toString() + "Stages"}
+      />
+    );
+  },
 };
