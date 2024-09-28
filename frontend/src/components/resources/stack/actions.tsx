@@ -270,23 +270,20 @@ export const RenameStack = ({ id }: { id: string }) => {
     },
   });
   return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Rename Stack</div>
-      <div className="flex gap-4 w-full justify-end">
-        <Input
-          value={name}
-          onChange={(e) => set(e.target.value)}
-          className="w-96"
-          placeholder="Enter new name"
-        />
-        <ConfirmButton
-          title="Rename"
-          icon={<Pen className="w-4 h-4" />}
-          loading={isPending}
-          disabled={!name || isPending}
-          onClick={() => mutate({ id, name })}
-        />
-      </div>
+    <div className="flex items-center justify-end gap-4 w-full">
+      <Input
+        value={name}
+        onChange={(e) => set(e.target.value)}
+        className="w-96"
+        placeholder="Enter new name"
+      />
+      <ConfirmButton
+        title="Rename"
+        icon={<Pen className="w-4 h-4" />}
+        loading={isPending}
+        disabled={!name || isPending}
+        onClick={() => mutate({ id, name })}
+      />
     </div>
   );
 };

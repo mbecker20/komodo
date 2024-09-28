@@ -1,5 +1,4 @@
 import {
-  ActionButton,
   ActionWithDialog,
   ConfirmButton,
   CopyButton,
@@ -222,12 +221,15 @@ export const CopyResource = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <ActionButton
-          title="Copy"
-          icon={<Copy className="w-4 h-4" />}
-          disabled={disabled}
+        <Button
+          variant="secondary"
+          className="flex gap-2 items-center"
           onClick={() => setOpen(true)}
-        />
+          disabled={disabled}
+        >
+          <Copy className="w-4 h-4" />
+          Copy
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

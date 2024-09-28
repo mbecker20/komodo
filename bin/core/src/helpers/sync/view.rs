@@ -19,7 +19,7 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
   match_tags: &[String],
   diffs: &mut Vec<ResourceDiff>,
 ) -> anyhow::Result<()> {
-  let map = find_collect(Resource::coll().await, None, None)
+  let current_map = find_collect(Resource::coll().await, None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()
@@ -32,13 +32,15 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
     .collect::<HashMap<_, _>>();
 
   if delete {
-    for resource in map.values() {
-      if !resources.iter().any(|r| r.name == resource.name) {
+    for current_resource in current_map.values() {
+      if !resources.iter().any(|r| r.name == current_resource.name) {
         diffs.push(ResourceDiff {
-          target: Resource::resource_target(resource.name.clone()),
+          target: Resource::resource_target(
+            current_resource.id.clone(),
+          ),
           data: DiffData::Delete {
             current: super::toml::resource_to_toml::<Resource>(
-              resource.clone(),
+              current_resource.clone(),
               all_resources,
               all_tags,
             )?,
@@ -48,37 +50,41 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
     }
   }
 
-  for mut resource in resources {
+  for mut proposed_resource in resources {
     // only resource that might not be included is resource sync
     if !Resource::include_resource_partial(
-      &resource.config,
-      &resource.tags,
+      &proposed_resource.config,
+      &proposed_resource.tags,
       all_tags,
       match_tags,
     ) {
       continue;
     }
-    match map.get(&resource.name) {
-      Some(original) => {
+    match current_map.get(&proposed_resource.name) {
+      Some(current_resource) => {
         // First merge toml resource config (partial) onto default resource config.
         // Makes sure things that aren't defined in toml (come through as None) actually get removed.
-        let config: Resource::Config = resource.config.into();
-        resource.config = config.into();
+        let propsed_config: Resource::Config =
+          proposed_resource.config.into();
+        proposed_resource.config = propsed_config.into();
 
-        Resource::validate_partial_config(&mut resource.config);
+        Resource::validate_partial_config(
+          &mut proposed_resource.config,
+        );
 
-        let proposed =
-          super::toml::resource_toml_to_toml::<Resource>(&resource)?;
+        let proposed = super::toml::resource_toml_to_toml_string::<
+          Resource,
+        >(proposed_resource.clone())?;
 
         let mut diff = Resource::get_diff(
-          original.config.clone(),
-          resource.config,
+          current_resource.config.clone(),
+          proposed_resource.config,
           all_resources,
         )?;
 
         Resource::validate_diff(&mut diff);
 
-        let original_tags = original
+        let current_tags = current_resource
           .tags
           .iter()
           .filter_map(|id| all_tags.get(id).map(|t| t.name.clone()))
@@ -87,18 +93,21 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
         // Only proceed if there are any fields to update,
         // or a change to tags / description
         if diff.is_none()
-          && resource.description == original.description
-          && resource.tags == original_tags
+          && proposed_resource.description
+            == current_resource.description
+          && proposed_resource.tags == current_tags
         {
           continue;
         }
 
         diffs.push(ResourceDiff {
-          target: Resource::resource_target(resource.name.clone()),
+          target: Resource::resource_target(
+            current_resource.id.clone(),
+          ),
           data: DiffData::Update {
             proposed,
             current: super::toml::resource_to_toml::<Resource>(
-              original.clone(),
+              current_resource.clone(),
               all_resources,
               all_tags,
             )?,
@@ -107,11 +116,13 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
       }
       None => {
         diffs.push(ResourceDiff {
-          target: Resource::resource_target(resource.name.clone()),
+          // resources to Create don't have ids yet.
+          target: Resource::resource_target(String::new()),
+
           data: DiffData::Create {
-            proposed: super::toml::resource_toml_to_toml::<Resource>(
-              &resource,
-            )?,
+            proposed: super::toml::resource_toml_to_toml_string::<
+              Resource,
+            >(proposed_resource)?,
           },
         });
       }

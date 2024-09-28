@@ -9,7 +9,7 @@ import {
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { ReactNode, useState } from "react";
-import { CopyGithubWebhook, ServerSelector } from "../common";
+import { CopyGithubWebhook, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton, ShowHideButton } from "@components/util";
@@ -64,17 +64,17 @@ export const StackConfig = ({
         general: [
           {
             label: "Server Id",
-            labelHidden: true,
-            components: {
-              server_id: (value, set) => (
-                <ServerSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                  align="end"
-                />
-              ),
-            },
+            contentHidden: true,
+            actions: (
+              <ResourceSelector
+                type="Server"
+                selected={update.server_id ?? config.server_id}
+                onSelect={(server_id) => set({ server_id })}
+                disabled={disabled}
+                align="end"
+              />
+            ),
+            components: {},
           },
           {
             label: "Compose File",
@@ -162,7 +162,7 @@ export const StackConfig = ({
                 label: "Auto Build Images",
                 boldLabel: true,
                 description:
-                  "Ensure 'docker compose build' is run *before* redeploying the Stack. Otherwise, can use '--build' as an Extra Arg",
+                  "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
               },
             },
           },
@@ -345,7 +345,7 @@ export const StackConfig = ({
                 className="flex items-center gap-2 w-[200px]"
               >
                 <PlusCircle className="w-4 h-4" />
-                Add Service
+                Ignore Service
               </Button>
             ),
             components: {

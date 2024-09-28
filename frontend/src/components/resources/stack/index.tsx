@@ -426,14 +426,13 @@ export const StackComponents: RequiredResourceComponents = {
 
   ResourcePageHeader: ({ id }) => {
     const stack = useStack(id);
-
     return (
       <ResourcePageHeader
         intent={stack_state_intention(stack?.info.state)}
         icon={<StackIcon id={id} size={8} />}
         name={stack?.name}
         state={stack?.info.state}
-        status=""
+        status={stack?.info.deployed_hash}
       />
     );
   },

@@ -79,9 +79,9 @@ export const ConfigItem = ({
         {description && (
           <HoverCard openDelay={200}>
             <HoverCardTrigger asChild>
-              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <Button size="icon" variant="ghost">
                 <Info className="w-4 h-4" />
-              </Card>
+              </Button>
             </HoverCardTrigger>
             <HoverCardContent
               align="start"
@@ -690,6 +690,19 @@ export const AddExtraArgMenu = ({
   const suggestions = useRead(`ListCommon${type}ExtraArgs`, {}).data ?? [];
 
   const filtered = filterBySplit(suggestions, search, (item) => item);
+
+  if (suggestions.length === 0) {
+    return (
+      <Button
+        variant="secondary"
+        className="flex items-center gap-2 w-[200px]"
+        onClick={() => onSelect("")}
+        disabled={disabled}
+      >
+        <PlusCircle className="w-4 h-4" /> Add Extra Arg
+      </Button>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

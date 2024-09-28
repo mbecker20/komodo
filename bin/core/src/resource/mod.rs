@@ -83,7 +83,8 @@ pub trait KomodoResource {
     + From<Self::PartialConfig>
     + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
-  type PartialConfig: Default
+  type PartialConfig: Clone
+    + Default
     + From<Self::Config>
     + Serialize
     + MaybeNone;

@@ -25,12 +25,13 @@ use crate::resource::KomodoResource;
 
 use super::AllResourcesById;
 
-pub const TOML_PRETTY_OPTIONS: toml_pretty::Options = toml_pretty::Options {
-  tab: "  ",
-  skip_empty_string: true,
-  max_inline_array_length: 30,
-  inline_array: false,
-};
+pub const TOML_PRETTY_OPTIONS: toml_pretty::Options =
+  toml_pretty::Options {
+    tab: "  ",
+    skip_empty_string: true,
+    max_inline_array_length: 30,
+    inline_array: false,
+  };
 
 pub trait ToToml: KomodoResource {
   /// Replace linked ids (server_id, build_id, etc) with the resource name.
@@ -40,10 +41,12 @@ pub trait ToToml: KomodoResource {
   ) {
   }
 
-  fn push_to_toml(
-    resource: &ResourceToml<Self::PartialConfig>,
+  fn push_to_toml_string(
+    mut resource: ResourceToml<Self::PartialConfig>,
     toml: &mut String,
   ) -> anyhow::Result<()> {
+    resource.config =
+      Self::Config::default().minimize_partial(resource.config);
     toml.push_str(
       &toml_pretty::to_string(&resource, TOML_PRETTY_OPTIONS)
         .context("failed to serialize resource to toml")?,
@@ -52,15 +55,15 @@ pub trait ToToml: KomodoResource {
   }
 }
 
-pub fn resource_toml_to_toml<R: ToToml>(
-  resource: &ResourceToml<R::PartialConfig>,
+pub fn resource_toml_to_toml_string<R: ToToml>(
+  resource: ResourceToml<R::PartialConfig>,
 ) -> anyhow::Result<String> {
   let mut toml = String::new();
   toml.push_str(&format!(
     "[[{}]]\n",
     R::resource_type().as_ref().to_lowercase()
   ));
-  R::push_to_toml(resource, &mut toml)?;
+  R::push_to_toml_string(resource, &mut toml)?;
   Ok(toml)
 }
 
@@ -78,7 +81,10 @@ pub fn resource_push_to_toml<R: ToToml>(
     "[[{}]]\n",
     R::resource_type().as_ref().to_lowercase()
   ));
-  R::push_to_toml(&convert_resource::<R>(resource, all_tags), toml)?;
+  R::push_to_toml_string(
+    convert_resource::<R>(resource, all_tags),
+    toml,
+  )?;
   Ok(())
 }
 
@@ -96,9 +102,6 @@ fn convert_resource<R: KomodoResource>(
   resource: Resource<R::Config, R::Info>,
   all_tags: &HashMap<String, Tag>,
 ) -> ResourceToml<R::PartialConfig> {
-  // This makes sure all non-necessary (defaulted) fields don't make it into final toml
-  let partial: R::PartialConfig = resource.config.into();
-  let config = R::Config::default().minimize_partial(partial);
   ResourceToml {
     name: resource.name,
     tags: resource
@@ -110,7 +113,9 @@ fn convert_resource<R: KomodoResource>(
     deploy: false,
     after: Default::default(),
     latest_hash: false,
-    config,
+    // The config still needs to be minimized.
+    // This happens in ToToml::push_to_toml
+    config: resource.config.into(),
   }
 }
 

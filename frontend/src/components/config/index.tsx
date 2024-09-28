@@ -230,7 +230,7 @@ export const Config = <T,>({
                           !contentHidden && "border-b"
                         )}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
                           <CardTitle className="flex gap-4">
                             {icon}
                             {label}
@@ -238,9 +238,9 @@ export const Config = <T,>({
                           {description && (
                             <HoverCard openDelay={200}>
                               <HoverCardTrigger asChild>
-                                <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                                <Button size="icon" variant="ghost">
                                   <Info className="w-4 h-4" />
-                                </Card>
+                                </Button>
                               </HoverCardTrigger>
                               <HoverCardContent
                                 align="start"
