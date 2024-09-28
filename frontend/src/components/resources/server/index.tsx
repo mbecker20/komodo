@@ -237,6 +237,21 @@ export const ServerComponents: RequiredResourceComponents = {
   },
 
   Info: {
+    Version: ({ id }) => {
+      const version = useRead(
+        "GetPeripheryVersion",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.version;
+      const _version =
+        version === undefined || version === "unknown" ? "unknown" : version;
+      return (
+        <div className="flex items-center gap-2">
+          <Milestone className="w-4 h-4" />
+          {_version}
+        </div>
+      );
+    },
     Cpu: ({ id }) => {
       const server = useServer(id);
       const core_count =
@@ -290,14 +305,6 @@ export const ServerComponents: RequiredResourceComponents = {
         <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
           <Database className="w-4 h-4" />
           {disk_total_gb?.toFixed(2) ?? "N/A"} GB
-        </Link>
-      );
-    },
-    Alerts: ({ id }) => {
-      return (
-        <Link to={`/servers/${id}/alerts`} className="flex gap-2 items-center">
-          <AlertTriangle className="w-4 h-4" />
-          Alerts
         </Link>
       );
     },

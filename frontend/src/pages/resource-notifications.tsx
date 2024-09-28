@@ -33,15 +33,20 @@ export const ResourceNoficiations = ({ type, id }: Types.ResourceTarget) => {
   const alerts = useRead("ListAlerts", {
     query: getUpdateQuery({ type, id }, deployments),
   }).data;
+  const openAlerts = alerts?.alerts.filter((alert) => !alert.resolved);
+
+  const showAlerts = type === "Server";
 
   return (
     <div className="shrink-0 p-6 pt-5 pr-3 border rounded-md w-full xl:max-w-[500px]">
-      <Tabs defaultValue={alerts?.alerts.length ? "alerts" : "updates"}>
+      <Tabs
+        defaultValue={showAlerts && openAlerts?.length ? "alerts" : "updates"}
+      >
         <TabsList>
           <TabsTrigger value="updates">Updates</TabsTrigger>
-          <TabsTrigger value="alerts">Alerts</TabsTrigger>
+          {showAlerts && <TabsTrigger value="alerts">Alerts</TabsTrigger>}
         </TabsList>
-        <div className="mt-4 pr-3 h-[150px] overflow-y-scroll">
+        <div className="mt-2 pr-3 h-[150px] overflow-y-scroll">
           <TabsContent value="updates">
             {updates?.updates.slice(0, 10).map((update) => (
               <Update key={update.id} update={update} />
@@ -53,8 +58,8 @@ export const ResourceNoficiations = ({ type, id }: Types.ResourceTarget) => {
             />
           </TabsContent>
           <TabsContent value="alerts">
-            {alerts?.alerts.some((alert) => !alert.resolved) ? (
-              alerts?.alerts
+            {openAlerts && openAlerts.length ? (
+              openAlerts
                 .slice(0, 10)
                 .map((alert) => <Alert alert={alert} key={alert._id?.$oid} />)
             ) : (

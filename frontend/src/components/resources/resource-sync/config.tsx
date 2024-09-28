@@ -61,11 +61,29 @@ export const ResourceSyncConfig = ({
       components={{
         general: [
           {
+            label: "Resource File",
+            hidden: files_on_host || repo_selected,
+            description:
+              "Manage the resource file contents here, or use a git repo / the files on host option.",
+            actions: <ShowHideButton show={showFile} setShow={setShowFile} />,
+            contentHidden: !showFile,
+            components: {
+              file_contents: (file_contents, set) => {
+                return (
+                  <MonacoEditor
+                    value={file_contents}
+                    onValueChange={(file_contents) => set({ file_contents })}
+                    language="toml"
+                  />
+                );
+              },
+            },
+          },
+          {
             label: "General",
             components: {
               files_on_host: {
                 label: "Files on Server",
-                boldLabel: true,
                 description:
                   "Manage the sync files on server yourself. Just configure the path to your folder / file.",
               },
@@ -87,25 +105,6 @@ export const ResourceSyncConfig = ({
                 label: "Managed",
                 description:
                   "Enabled managed mode / the 'Commit' button. Delete mode is always enabled when using managed mode. Warning: Can be a bit confusing.",
-              },
-            },
-          },
-          {
-            label: "Resource File",
-            hidden: files_on_host || repo_selected,
-            description:
-              "Manage the resource file contents here, or use a git repo / the files on host option.",
-            actions: <ShowHideButton show={showFile} setShow={setShowFile} />,
-            contentHidden: !showFile,
-            components: {
-              file_contents: (file_contents, set) => {
-                return (
-                  <MonacoEditor
-                    value={file_contents}
-                    onValueChange={(file_contents) => set({ file_contents })}
-                    language="toml"
-                  />
-                );
               },
             },
           },
@@ -143,10 +142,9 @@ export const ResourceSyncConfig = ({
               ),
             } as any,
           },
-        ],
-        "Git Repo": show_git && [
           {
             label: "Git Repo",
+            hidden: !show_git,
             components: {
               git_provider: (provider: string | undefined, set) => {
                 const https = update.git_https ?? config.git_https;
@@ -192,6 +190,7 @@ export const ResourceSyncConfig = ({
           },
           {
             label: "Git Webhooks",
+            hidden: !show_git,
             description:
               "Configure your repo provider to send webhooks to Komodo",
             components: {

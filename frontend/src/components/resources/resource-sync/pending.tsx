@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 import { ResourceLink } from "../common";
 import { UsableResource } from "@types";
 import { diff_type_intention, text_color_class_by_intention } from "@lib/color";
+import { cn, sanitizeOnlySpan } from "@lib/utils";
 
 export const ResourceSyncPending = ({
   id,
@@ -21,11 +22,53 @@ export const ResourceSyncPending = ({
   ).data;
   return (
     <Section titleOther={titleOther}>
+      {/* Pending Error */}
+      {sync?.info?.pending_error && sync.info.pending_error.length ? (
+        <Card>
+          <CardHeader
+            className={cn(
+              "font-mono pb-2",
+              text_color_class_by_intention("Critical")
+            )}
+          >
+            Error
+          </CardHeader>
+          <CardContent>
+            <pre
+              dangerouslySetInnerHTML={{
+                __html: sanitizeOnlySpan(sync.info.pending_error),
+              }}
+            />
+          </CardContent>
+        </Card>
+      ) : undefined}
+      {/* Pending Deploy */}
+      {sync?.info?.pending_deploy?.to_deploy ? (
+        <Card>
+          <CardHeader
+            className={cn(
+              "font-mono pb-2",
+              text_color_class_by_intention("Warning")
+            )}
+          >
+            Deploy {sync.info.pending_deploy.to_deploy} Resource
+            {sync.info.pending_deploy.to_deploy > 1 ? "s" : ""}
+          </CardHeader>
+          <CardContent>
+            <pre
+              dangerouslySetInnerHTML={{
+                __html: sanitizeOnlySpan(sync.info.pending_deploy.log),
+              }}
+            />
+          </CardContent>
+        </Card>
+      ) : undefined}
+      {/* Pending Resource Update */}
       {sync?.info?.resource_updates?.map((update) => {
         return (
           <Card key={update.target.type + update.target.id}>
-            <CardHeader>
-              <div className="flex items-center gap-4">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-4 font-mono">
                 <div
                   className={text_color_class_by_intention(
                     diff_type_intention(update.data.type)
@@ -59,6 +102,84 @@ export const ResourceSyncPending = ({
               {update.data.type === "Delete" && (
                 <MonacoEditor
                   value={update.data.data.current}
+                  language="toml"
+                  readOnly
+                />
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+      {/* Pending Variable Update */}
+      {sync?.info?.variable_updates?.map((data, i) => {
+        return (
+          <Card key={i}>
+            <CardHeader
+              className={cn(
+                "font-mono pb-2",
+                text_color_class_by_intention(diff_type_intention(data.type))
+              )}
+            >
+              {data.type} Variable
+            </CardHeader>
+            <CardContent>
+              {data.type === "Create" && (
+                <MonacoEditor
+                  value={data.data.proposed}
+                  language="toml"
+                  readOnly
+                />
+              )}
+              {data.type === "Update" && (
+                <MonacoDiffEditor
+                  original={data.data.current}
+                  modified={data.data.proposed}
+                  language="toml"
+                  readOnly
+                />
+              )}
+              {data.type === "Delete" && (
+                <MonacoEditor
+                  value={data.data.current}
+                  language="toml"
+                  readOnly
+                />
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+      {/* Pending User Group Update */}
+      {sync?.info?.user_group_updates?.map((data, i) => {
+        return (
+          <Card key={i}>
+            <CardHeader
+              className={cn(
+                "font-mono pb-2",
+                text_color_class_by_intention(diff_type_intention(data.type))
+              )}
+            >
+              {data.type} User Group
+            </CardHeader>
+            <CardContent>
+              {data.type === "Create" && (
+                <MonacoEditor
+                  value={data.data.proposed}
+                  language="toml"
+                  readOnly
+                />
+              )}
+              {data.type === "Update" && (
+                <MonacoDiffEditor
+                  original={data.data.current}
+                  modified={data.data.proposed}
+                  language="toml"
+                  readOnly
+                />
+              )}
+              {data.type === "Delete" && (
+                <MonacoEditor
+                  value={data.data.current}
                   language="toml"
                   readOnly
                 />

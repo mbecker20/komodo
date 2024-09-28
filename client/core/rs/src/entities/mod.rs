@@ -1015,7 +1015,7 @@ impl<'de> Visitor<'de> for FileContentsVisitor {
     E: serde::de::Error,
   {
     let out = v.to_string();
-    if out.ends_with('\n') {
+    if out.is_empty() || out.ends_with('\n') {
       Ok(out)
     } else {
       Ok(out + "\n")

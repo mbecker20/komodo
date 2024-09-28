@@ -1,6 +1,5 @@
 import * as monaco from "monaco-editor";
 
-
 // background: #f7f8f9
 monaco.editor.defineTheme("light", {
   base: "vs",
@@ -338,8 +337,8 @@ monaco.editor.defineTheme("light", {
     },
   ],
   colors: {
-    "editor.foreground": "#24292e",
     "editor.background": "#f7f8f9",
+    "editor.foreground": "#24292e",
     // "editor.selectionBackground": "#c8c8fa",
     // "editor.inactiveSelectionBackground": "#fafbfc",
     // "editor.lineHighlightBackground": "#fafbfc",
@@ -688,8 +687,8 @@ monaco.editor.defineTheme("dark", {
     },
   ],
   colors: {
-    "editor.foreground": "#f6f8fa",
     "editor.background": "#151b25",
+    "editor.foreground": "#f6f8fa",
     // "editor.selectionBackground": "#4c2889",
     // "editor.inactiveSelectionBackground": "#444d56",
     // "editor.lineHighlightBackground": "#444d56",

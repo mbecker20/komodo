@@ -48,10 +48,12 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
     : sync?.config?.file_contents
     ? true
     : false;
-  const pendingDisabled = !sync || sync_no_changes(sync);
+
+  const showPending =
+    sync && (!sync_no_changes(sync) || sync.info?.pending_error);
 
   const view =
-    (_view === "Info" && hideInfo) || (_view === "Pending" && pendingDisabled)
+    (_view === "Info" && hideInfo) || (_view === "Pending" && !showPending)
       ? "Config"
       : _view;
 
@@ -72,7 +74,7 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
       <TabsTrigger
         value="Pending"
         className="w-[110px]"
-        disabled={pendingDisabled}
+        disabled={!showPending}
       >
         Pending
       </TabsTrigger>

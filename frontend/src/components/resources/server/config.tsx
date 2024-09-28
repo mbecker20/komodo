@@ -74,7 +74,7 @@ export const ServerConfig = ({
             },
           },
           {
-            label: "Ignore mounts",
+            label: "Ignore Disks",
             contentHidden:
               (update.ignore_mounts ?? config.ignore_mounts)?.length === 0,
             description:
@@ -94,7 +94,7 @@ export const ServerConfig = ({
                 className="flex items-center gap-2 w-[200px]"
               >
                 <PlusCircle className="w-4 h-4" />
-                Add Ignore
+                Ignore Disk
               </Button>
             ),
             components: {
@@ -104,7 +104,7 @@ export const ServerConfig = ({
                   values={values ?? []}
                   set={set}
                   disabled={disabled}
-                  placeholder="Ignore Mounts"
+                  placeholder="/path/to/disk"
                 />
               ),
             },
