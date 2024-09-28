@@ -9,20 +9,18 @@ import {
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
-import { PortsConfig } from "./components/ports";
-import { VolumesConfig } from "./components/volumes";
 import { Config } from "@components/config";
-import {
-  DefaultTerminationSignal,
-  TermSignalLabels,
-  TerminationTimeout,
-} from "./components/term-signal";
-import { LabelsConfig, ServerSelector } from "@components/resources/common";
+import { ServerSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EnvVars } from "@components/config/env_vars";
+import { MonacoEditor } from "@components/monaco";
+import {
+  DefaultTerminationSignal,
+  TerminationTimeout,
+} from "./components/term-signal";
 
 export const DeploymentConfig = ({
   id,
@@ -129,31 +127,32 @@ export const DeploymentConfig = ({
             label: "Ports",
             description: "Configure the port bindings for the container.",
             hidden: hide_ports,
-            contentHidden: (update.ports ?? config.ports)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    ports: [
-                      ...(update.ports ?? config.ports ?? []),
-                      { container: "", local: "" },
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Port
-              </Button>
-            ),
+            // contentHidden: (update.ports ?? config.ports)?.length === 0,
+            // actions: !disabled && (
+            //   <Button
+            //     variant="secondary"
+            //     onClick={() =>
+            //       set((update) => ({
+            //         ...update,
+            //         ports: [
+            //           ...(update.ports ?? config.ports ?? []),
+            //           { container: "", local: "" },
+            //         ],
+            //       }))
+            //     }
+            //     className="flex items-center gap-2 w-[200px]"
+            //   >
+            //     <PlusCircle className="w-4 h-4" />
+            //     Add Port
+            //   </Button>
+            // ),
             components: {
-              ports: (value, set) => (
-                <PortsConfig
-                  ports={value ?? []}
-                  set={set}
-                  disabled={disabled}
+              ports: (ports, set) => (
+                <MonacoEditor
+                  value={ports ?? "  # 3000:3000"}
+                  language="yaml"
+                  onValueChange={(ports) => set({ ports })}
+                  readOnly={disabled}
                 />
               ),
             },
@@ -162,30 +161,31 @@ export const DeploymentConfig = ({
             label: "Volumes",
             description: "Configure the volume bindings for the container.",
             contentHidden: (update.volumes ?? config.volumes)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    volumes: [
-                      ...(update.volumes ?? config.volumes ?? []),
-                      { container: "", local: "" },
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Volume
-              </Button>
-            ),
+            // actions: !disabled && (
+            //   <Button
+            //     variant="secondary"
+            //     onClick={() =>
+            //       set((update) => ({
+            //         ...update,
+            //         volumes: [
+            //           ...(update.volumes ?? config.volumes ?? []),
+            //           { container: "", local: "" },
+            //         ],
+            //       }))
+            //     }
+            //     className="flex items-center gap-2 w-[200px]"
+            //   >
+            //     <PlusCircle className="w-4 h-4" />
+            //     Add Volume
+            //   </Button>
+            // ),
             components: {
-              volumes: (v, set) => (
-                <VolumesConfig
-                  volumes={v ?? []}
-                  set={set}
-                  disabled={disabled}
+              volumes: (volumes, set) => (
+                <MonacoEditor
+                  value={volumes ?? "  # /local/path:/container/path"}
+                  language="yaml"
+                  onValueChange={(volumes) => set({ volumes })}
+                  readOnly={disabled}
                 />
               ),
             },
@@ -238,30 +238,31 @@ export const DeploymentConfig = ({
             label: "Labels",
             description: "Attach --labels to the container.",
             contentHidden: (update.labels ?? config.labels)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set({
-                    ...update,
-                    labels: [
-                      ...(update.labels ?? config.labels ?? []),
-                      { variable: "", value: "" },
-                    ] as Types.EnvironmentVar[],
-                  })
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Label
-              </Button>
-            ),
+            // actions: !disabled && (
+            //   <Button
+            //     variant="secondary"
+            //     onClick={() =>
+            //       set({
+            //         ...update,
+            //         labels: [
+            //           ...(update.labels ?? config.labels ?? []),
+            //           { variable: "", value: "" },
+            //         ] as Types.EnvironmentVar[],
+            //       })
+            //     }
+            //     className="flex items-center gap-2 w-[200px]"
+            //   >
+            //     <PlusCircle className="w-4 h-4" />
+            //     Add Label
+            //   </Button>
+            // ),
             components: {
-              labels: (l, set) => (
-                <LabelsConfig
-                  labels={(l as Types.EnvironmentVar[]) ?? []}
-                  set={set}
-                  disabled={disabled}
+              labels: (labels, set) => (
+                <MonacoEditor
+                  value={labels ?? "  # your.docker.label: value"}
+                  language="yaml"
+                  onValueChange={(labels) => set({ labels })}
+                  readOnly={disabled}
                 />
               ),
             },
@@ -335,7 +336,14 @@ export const DeploymentConfig = ({
                 <TerminationTimeout arg={value} set={set} disabled={disabled} />
               ),
               term_signal_labels: (value, set) => (
-                <TermSignalLabels args={value} set={set} disabled={disabled} />
+                <MonacoEditor
+                  value={value ?? "  # SIGTERM: your label"}
+                  language="yaml"
+                  onValueChange={(term_signal_labels) =>
+                    set({ term_signal_labels })
+                  }
+                  readOnly={disabled}
+                />
               ),
             },
           },

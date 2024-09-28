@@ -14,12 +14,13 @@ import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { BuilderSelector, CopyGithubWebhook, LabelsConfig } from "../common";
+import { BuilderSelector, CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Link } from "react-router-dom";
 import { BuildArgs } from "@components/config/env_vars";
+import { MonacoEditor } from "@components/monaco";
 
 export const BuildConfig = ({
   id,
@@ -217,33 +218,34 @@ export const BuildConfig = ({
           {
             label: "Labels",
             description: "Attach --labels to image.",
-            contentHidden: (update.labels ?? config.labels)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => {
-                    return {
-                      ...update,
-                      labels: [
-                        ...(update.labels ?? config.labels ?? []),
-                        { variable: "", value: "" },
-                      ] as Types.EnvironmentVar[],
-                    };
-                  })
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Label
-              </Button>
-            ),
+            // contentHidden: (update.labels ?? config.labels)?.length === 0,
+            // actions: !disabled && (
+            //   <Button
+            //     variant="secondary"
+            //     onClick={() =>
+            //       set((update) => {
+            //         return {
+            //           ...update,
+            //           labels: [
+            //             ...(update.labels ?? config.labels ?? []),
+            //             { variable: "", value: "" },
+            //           ] as Types.EnvironmentVar[],
+            //         };
+            //       })
+            //     }
+            //     className="flex items-center gap-2 w-[200px]"
+            //   >
+            //     <PlusCircle className="w-4 h-4" />
+            //     Add Label
+            //   </Button>
+            // ),
             components: {
-              labels: (l, set) => (
-                <LabelsConfig
-                  labels={(l as Types.EnvironmentVar[]) ?? []}
-                  set={set}
-                  disabled={disabled}
+              labels: (labels, set) => (
+                <MonacoEditor
+                  value={labels ?? "  # your.docker.label: value"}
+                  language="yaml"
+                  onValueChange={(labels) => set({ labels })}
+                  readOnly={disabled}
                 />
               ),
             },

@@ -6,7 +6,6 @@ import { DeleteResource, NewResource } from "../common";
 import { ResourceSyncTable } from "./table";
 import { Types } from "@komodo/client";
 import { CommitSync, ExecuteSync, RefreshSync } from "./actions";
-import { ResourceSyncPending } from "./pending";
 import {
   resource_sync_state_intention,
   stroke_color_class_by_intention,
@@ -87,7 +86,7 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
         <ResourceSyncInfo id={id} titleOther={title} />
       </TabsContent>
       <TabsContent value="Pending">
-        <ResourceSyncPending id={id} titleOther={title} />
+        {/* <ResourceSyncPending id={id} titleOther={title} /> */}
       </TabsContent>
     </Tabs>
   );

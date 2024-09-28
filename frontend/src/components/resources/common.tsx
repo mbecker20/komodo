@@ -33,7 +33,7 @@ import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
 import { Types } from "@komodo/client";
-import { ConfigItem, DoubleInput } from "@components/config/util";
+import { ConfigItem } from "@components/config/util";
 import { filterBySplit, usableResourcePath } from "@lib/utils";
 
 export const ResourceDescription = ({
@@ -348,40 +348,6 @@ export const DeleteResource = ({
     </div>
   );
 };
-
-export const LabelsConfig = ({
-  labels,
-  set,
-  disabled,
-}: {
-  labels: Types.EnvironmentVar[];
-  set: (input: Partial<Types.DeploymentConfig | Types.BuildConfig>) => void;
-  disabled: boolean;
-}) => (
-  <div className="py-2 w-full flex justify-end">
-    <DoubleInput
-      disabled={disabled}
-      inputClassName="w-[300px] 2xl:w-[400px] max-w-full"
-      containerClassName="w-fit"
-      values={labels}
-      leftval="variable"
-      leftpl="Key"
-      rightval="value"
-      rightpl="Value"
-      onLeftChange={(variable, i) => {
-        labels[i].variable = variable;
-        set({ labels: [...labels] });
-      }}
-      onRightChange={(value, i) => {
-        labels[i].value = value;
-        set({ labels: [...labels] });
-      }}
-      onRemove={(idx) =>
-        set({ labels: [...labels.filter((_, i) => i !== idx)] })
-      }
-    />
-  </div>
-);
 
 export const CopyGithubWebhook = ({ path }: { path: string }) => {
   const base_url = useRead("GetCoreInfo", {}).data?.webhook_base_url;

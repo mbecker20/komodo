@@ -3,7 +3,6 @@ import { useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { MonacoEditor } from "@components/monaco";
 import { useToast } from "@ui/use-toast";
-import { env_to_text } from "@lib/utils";
 
 export const EnvVars = ({
   env,

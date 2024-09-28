@@ -223,7 +223,12 @@ export const filterBySplit = <T>(
 };
 
 export const sync_no_changes = (sync: Types.ResourceSync) => {
-  return sync.info?.pending_updates?.length ? true : false;
+  return (
+    (sync.info?.pending_deploy?.to_deploy ?? 0) === 0 &&
+    (sync.info?.resource_updates?.length ?? 0) === 0 &&
+    (sync.info?.variable_updates?.length ?? 0) === 0 &&
+    (sync.info?.user_group_updates?.length ?? 0) === 0
+  );
 };
 
 export const is_service_user = (user_id: string) => {
