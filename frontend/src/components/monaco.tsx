@@ -52,6 +52,7 @@ export const MonacoEditor = ({
     folding: false,
     automaticLayout: true,
     renderValidationDecorations: "on",
+    renderLineHighlightOnlyWhenFocus: true,
     readOnly,
     tabSize: 2,
     detectIndentation: true,
@@ -80,15 +81,19 @@ const MAX_DIFF_HEIGHT = 400;
 export const MonacoDiffEditor = ({
   original,
   modified,
+  onModifiedValueChange,
   language,
+  readOnly,
   containerClassName,
+  hideUnchangedRegions = true,
 }: {
   original: string | undefined;
   modified: string | undefined;
-  onValueChange?: (value: string) => void;
+  onModifiedValueChange?: (value: string) => void;
   language: "yaml" | "toml" | undefined;
   readOnly?: boolean;
   containerClassName?: string;
+  hideUnchangedRegions?: boolean;
 }) => {
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneDiffEditor | null>(null);
@@ -119,11 +124,12 @@ export const MonacoDiffEditor = ({
     minimap: { enabled: true },
     scrollbar: { alwaysConsumeMouseWheel: false },
     scrollBeyondLastLine: false,
-    hideUnchangedRegions: { enabled: true },
+    hideUnchangedRegions: { enabled: hideUnchangedRegions },
     folding: false,
     automaticLayout: true,
     renderValidationDecorations: "on",
-    readOnly: true,
+    renderLineHighlightOnlyWhenFocus: true,
+    readOnly,
     padding: {
       top: 15,
     },
@@ -137,7 +143,13 @@ export const MonacoDiffEditor = ({
         modified={modified}
         theme={theme}
         options={options}
-        onMount={setEditor}
+        onMount={(editor) => {
+          const modifiedEditor = editor.getModifiedEditor();
+          modifiedEditor.onDidChangeModelContent((_) => {
+            onModifiedValueChange?.(modifiedEditor.getValue());
+          });
+          setEditor(editor);
+        }}
       />
     </div>
   );

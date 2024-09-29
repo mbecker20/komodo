@@ -597,9 +597,9 @@ function ConfirmUpdateItem<T>({
       ? env_to_text(previous[_key] as any) ?? ""
       : JSON.stringify(previous[_key], null, 2);
   const showDiff =
-    val.includes("\n") ||
-    prev_val.includes("\n") ||
-    Math.max(val.length, prev_val.length) > 30;
+    val?.includes("\n") ||
+    prev_val?.includes("\n") ||
+    Math.max(val?.length ?? 0, prev_val?.length ?? 0) > 30;
   return (
     <div
       className={cn("mr-6 flex flex-col gap-2", val === prev_val && "hidden")}

@@ -160,7 +160,7 @@ impl Resolve<WriteStackFileContents, User> for State {
     let mut update =
       make_update(&stack, Operation::WriteStackContents, &user);
 
-    update.push_simple_log("File Contents", &contents);
+    update.push_simple_log("File contents to write", &contents);
 
     match periphery_client(&server)?
       .request(WriteComposeContentsToHost {
