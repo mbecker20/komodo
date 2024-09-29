@@ -41,14 +41,14 @@ use crate::{
   config::core_config,
   helpers::{
     query::get_id_to_tags,
-    sync::{
-      deploy::SyncDeployParams, remote::RemoteResources,
-      view::push_updates_for_view, AllResourcesById,
-    },
     update::{add_update, make_update, update_update},
   },
   resource::{self, refresh_resource_sync_state_cache},
   state::{db_client, github_client, State},
+  sync::{
+    deploy::SyncDeployParams, remote::RemoteResources,
+    view::push_updates_for_view, AllResourcesById,
+  },
 };
 
 impl Resolve<CreateResourceSync, User> for State {
@@ -138,7 +138,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         hash,
         message,
         ..
-      } = crate::helpers::sync::remote::get_remote_resources(&sync)
+      } = crate::sync::remote::get_remote_resources(&sync)
         .await
         .context("failed to get remote resources")?;
 
@@ -166,7 +166,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         .collect::<HashMap<_, _>>();
 
       let deploy_updates =
-        crate::helpers::sync::deploy::get_updates_for_view(
+        crate::sync::deploy::get_updates_for_view(
           SyncDeployParams {
             deployments: &resources.deployments,
             deployment_map: &deployments_by_name,
@@ -275,7 +275,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       }
 
       let variable_updates =
-        crate::helpers::sync::variables::get_updates_for_view(
+        crate::sync::variables::get_updates_for_view(
           &resources.variables,
           // Delete doesn't work with variables when match tags are set
           sync.config.match_tags.is_empty() && delete,
@@ -283,7 +283,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         .await?;
 
       let user_group_updates =
-        crate::helpers::sync::user_groups::get_updates_for_view(
+        crate::sync::user_groups::get_updates_for_view(
           resources.user_groups,
           // Delete doesn't work with user groups when match tags are set
           sync.config.match_tags.is_empty() && delete,

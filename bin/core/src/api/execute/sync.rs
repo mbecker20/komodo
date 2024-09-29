@@ -27,20 +27,17 @@ use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{
-    query::get_id_to_tags,
-    sync::{
-      deploy::{
-        build_deploy_cache, deploy_from_cache, SyncDeployParams,
-      },
-      execute::{get_updates_for_execution, ExecuteResourceSync},
-      remote::RemoteResources,
-      AllResourcesById,
-    },
-    update::update_update,
-  },
+  helpers::{query::get_id_to_tags, update::update_update},
   resource::{self, refresh_resource_sync_state_cache},
   state::{db_client, State},
+  sync::{
+    deploy::{
+      build_deploy_cache, deploy_from_cache, SyncDeployParams,
+    },
+    execute::{get_updates_for_execution, ExecuteResourceSync},
+    remote::RemoteResources,
+    AllResourcesById,
+  },
 };
 
 impl Resolve<RunSync, (User, Update)> for State {
@@ -64,7 +61,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       hash,
       message,
       ..
-    } = crate::helpers::sync::remote::get_remote_resources(&sync)
+    } = crate::sync::remote::get_remote_resources(&sync)
       .await
       .context("failed to get remote resources")?;
 
@@ -204,7 +201,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       variables_to_create,
       variables_to_update,
       variables_to_delete,
-    ) = crate::helpers::sync::variables::get_updates_for_execution(
+    ) = crate::sync::variables::get_updates_for_execution(
       resources.variables,
       // Delete doesn't work with variables when match tags are set
       sync.config.match_tags.is_empty() && delete,
@@ -214,7 +211,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       user_groups_to_create,
       user_groups_to_update,
       user_groups_to_delete,
-    ) = crate::helpers::sync::user_groups::get_updates_for_execution(
+    ) = crate::sync::user_groups::get_updates_for_execution(
       resources.user_groups,
       // Delete doesn't work with user groups when match tags are set
       sync.config.match_tags.is_empty() && delete,
@@ -277,7 +274,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // No deps
     maybe_extend(
       &mut update.logs,
-      crate::helpers::sync::variables::run_updates(
+      crate::sync::variables::run_updates(
         variables_to_create,
         variables_to_update,
         variables_to_delete,
@@ -286,7 +283,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      crate::helpers::sync::user_groups::run_updates(
+      crate::sync::user_groups::run_updates(
         user_groups_to_create,
         user_groups_to_update,
         user_groups_to_delete,

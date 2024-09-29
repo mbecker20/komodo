@@ -29,15 +29,13 @@ use mungos::find::find_collect;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{
-    query::{get_id_to_tags, get_user_user_group_ids},
-    sync::{
-      toml::{convert_resource, ToToml, TOML_PRETTY_OPTIONS},
-      AllResourcesById,
-    },
-  },
+  helpers::query::{get_id_to_tags, get_user_user_group_ids},
   resource,
   state::{db_client, State},
+  sync::{
+    toml::{convert_resource, ToToml, TOML_PRETTY_OPTIONS},
+    AllResourcesById,
+  },
 };
 
 impl Resolve<ExportAllResourcesToToml, User> for State {

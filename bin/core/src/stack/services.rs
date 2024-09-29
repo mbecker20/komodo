@@ -4,9 +4,9 @@ use komodo_client::entities::{
   FileContents,
 };
 
-use crate::helpers::stack::remote::get_remote_compose_contents;
-
-use super::remote::RemoteComposeContents;
+use super::remote::{
+  get_remote_compose_contents, RemoteComposeContents,
+};
 
 /// Passing fresh will re-extract services from compose file, whether local or remote (repo)
 pub async fn extract_services_from_stack(

@@ -23,11 +23,11 @@ use komodo_client::{
 use partial_derive2::{MaybeNone, PartialDiff};
 
 use crate::{
-  helpers::sync::{
+  resource::KomodoResource,
+  sync::{
     execute::{run_update_description, run_update_tags},
     ToUpdateItem,
   },
-  resource::KomodoResource,
 };
 
 use super::{
