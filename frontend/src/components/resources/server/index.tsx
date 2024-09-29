@@ -9,7 +9,6 @@ import {
   Database,
   AreaChart,
   Milestone,
-  AlertTriangle,
   Play,
   RefreshCcw,
   Pause,

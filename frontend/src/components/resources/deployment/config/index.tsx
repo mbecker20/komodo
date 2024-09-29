@@ -10,7 +10,7 @@ import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
 import { Config } from "@components/config";
-import { ResourceSelector, ServerSelector } from "@components/resources/common";
+import { ResourceSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
@@ -286,7 +286,7 @@ export const DeploymentConfig = ({
               ),
               term_signal_labels: (value, set) => (
                 <MonacoEditor
-                  value={value || "  # SIGTERM: your label"}
+                  value={value || "  # SIGTERM: your label\n"}
                   language="yaml"
                   onValueChange={(term_signal_labels) =>
                     set({ term_signal_labels })

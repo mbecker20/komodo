@@ -14,7 +14,7 @@ import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { BuilderSelector, CopyGithubWebhook, ResourceSelector } from "../common";
+import { CopyGithubWebhook, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";

@@ -32,7 +32,6 @@ import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
 import { Types } from "@komodo/client";
-import { ConfigItem } from "@components/config/util";
 import { filterBySplit, usableResourcePath } from "@lib/utils";
 
 export const ResourceDescription = ({
@@ -361,55 +360,3 @@ export const CopyGithubWebhook = ({ path }: { path: string }) => {
     </div>
   );
 };
-
-export const ServerSelector = ({
-  selected,
-  set,
-  disabled,
-  align,
-}: {
-  selected: string | undefined;
-  set: (input: Partial<Types.DeploymentConfig>) => void;
-  disabled: boolean;
-  align?: "start" | "center" | "end";
-}) => (
-  <ConfigItem
-    label="Server"
-    description="Choose the target server to host the resource"
-    boldLabel
-  >
-    <ResourceSelector
-      type="Server"
-      selected={selected}
-      onSelect={(server_id) => set({ server_id })}
-      disabled={disabled}
-      align={align}
-    />
-  </ConfigItem>
-);
-
-export const BuilderSelector = ({
-  selected,
-  set,
-  disabled,
-  align,
-}: {
-  selected: string | undefined;
-  set: (input: Partial<Types.BuildConfig>) => void;
-  disabled: boolean;
-  align?: "start" | "center" | "end";
-}) => (
-  <ConfigItem
-    label="Builder"
-    description="Choose the target builder to build the resource"
-    boldLabel
-  >
-    <ResourceSelector
-      type="Builder"
-      selected={selected}
-      onSelect={(builder_id) => set({ builder_id })}
-      disabled={disabled}
-      align={align}
-    />
-  </ConfigItem>
-);

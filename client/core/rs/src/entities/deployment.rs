@@ -131,16 +131,12 @@ pub struct DeploymentConfig {
 
   /// Labels attached to various termination signal options.
   /// Used to specify different shutdown functionality depending on the termination signal.
-  #[serde(
-    default = "default_term_signal_labels",
-    deserialize_with = "term_labels_deserializer"
-  )]
+  #[serde(default, deserialize_with = "term_labels_deserializer")]
   #[partial_attr(serde(
     default,
     deserialize_with = "option_term_labels_deserializer"
   ))]
-  #[builder(default = "default_term_signal_labels()")]
-  #[partial_default(default_term_signal_labels())]
+  #[builder(default)]
   pub term_signal_labels: String,
 
   /// The container port mapping.
@@ -199,10 +195,6 @@ fn default_send_alerts() -> bool {
   true
 }
 
-fn default_term_signal_labels() -> String {
-  String::from("  SIGTERM:")
-}
-
 fn default_termination_timeout() -> i32 {
   10
 }
@@ -221,7 +213,7 @@ impl Default for DeploymentConfig {
       image_registry_account: Default::default(),
       skip_secret_interp: Default::default(),
       redeploy_on_build: Default::default(),
-      term_signal_labels: default_term_signal_labels(),
+      term_signal_labels: Default::default(),
       termination_signal: Default::default(),
       termination_timeout: default_termination_timeout(),
       ports: Default::default(),
@@ -336,7 +328,12 @@ impl<'de> Visitor<'de> for ConversionVisitor {
   where
     E: serde::de::Error,
   {
-    Ok(v.to_string())
+    let out = v.to_string();
+    if out.is_empty() || out.ends_with('\n') {
+      Ok(out)
+    } else {
+      Ok(out + "\n")
+    }
   }
 
   fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
@@ -549,7 +546,12 @@ impl<'de> Visitor<'de> for TermSignalLabelVisitor {
   where
     E: serde::de::Error,
   {
-    Ok(v.to_string())
+    let out = v.to_string();
+    if out.is_empty() || out.ends_with('\n') {
+      Ok(out)
+    } else {
+      Ok(out + "\n")
+    }
   }
 
   fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>

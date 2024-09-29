@@ -10,10 +10,8 @@ import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { useState } from "react";
 import {
-  BuilderSelector,
   CopyGithubWebhook,
   ResourceSelector,
-  ServerSelector,
 } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";

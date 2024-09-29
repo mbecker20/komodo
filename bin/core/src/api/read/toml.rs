@@ -2,43 +2,41 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use komodo_client::{
-  api::{
-    execute::Execution,
-    read::{
-      ExportAllResourcesToToml, ExportAllResourcesToTomlResponse,
-      ExportResourcesToToml, ExportResourcesToTomlResponse,
-      GetUserGroup, ListUserTargetPermissions,
-    },
+  api::read::{
+    ExportAllResourcesToToml, ExportAllResourcesToTomlResponse,
+    ExportResourcesToToml, ExportResourcesToTomlResponse,
+    GetUserGroup, ListUserTargetPermissions,
   },
   entities::{
     alerter::Alerter,
     build::Build,
-    builder::{Builder, BuilderConfig},
-    deployment::{Deployment, DeploymentImage},
+    builder::Builder,
+    deployment::Deployment,
     permission::{PermissionLevel, UserTarget},
     procedure::Procedure,
     repo::Repo,
-    resource::{Resource, ResourceQuery},
+    resource::ResourceQuery,
     server::Server,
     server_template::ServerTemplate,
     stack::Stack,
     sync::ResourceSync,
-    toml::{
-      PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
-    },
+    toml::{PermissionToml, ResourcesToml, UserGroupToml},
     user::User,
     ResourceTarget,
   },
 };
 use mungos::find::find_collect;
-use ordered_hash_map::OrderedHashMap;
-use partial_derive2::PartialDiff;
 use resolver_api::Resolve;
-use serde_json::Value;
 
 use crate::{
-  helpers::query::get_user_user_group_ids,
-  resource::{self, KomodoResource},
+  helpers::{
+    query::{get_id_to_tags, get_user_user_group_ids},
+    sync::{
+      toml::{convert_resource, ToToml, TOML_PRETTY_OPTIONS},
+      AllResourcesById,
+    },
+  },
+  resource,
   state::{db_client, State},
 };
 
@@ -177,21 +175,21 @@ impl Resolve<ExportResourcesToToml, User> for State {
     user: User,
   ) -> anyhow::Result<ExportResourcesToTomlResponse> {
     let mut res = ResourcesToml::default();
-    let names = ResourceNames::new()
-      .await
-      .context("failed to init resource name maps")?;
+    let all = AllResourcesById::load().await?;
+    let id_to_tags = get_id_to_tags(None).await?;
     for target in targets {
       match target {
         ResourceTarget::Alerter(id) => {
-          let alerter = resource::get_check_permissions::<Alerter>(
-            &id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+          let alerter =
+            resource::get_check_permissions::<Alerter>(
+              &id,
+              &user,
+              PermissionLevel::Read,
+            )
+            .await?;
           res
             .alerters
-            .push(convert_resource::<Alerter>(alerter, &names.tags))
+            .push(convert_resource::<Alerter>(alerter, &id_to_tags))
         }
         ResourceTarget::ResourceSync(id) => {
           let sync = resource::get_check_permissions::<ResourceSync>(
@@ -201,11 +199,12 @@ impl Resolve<ExportResourcesToToml, User> for State {
           )
           .await?;
           if sync.config.file_contents.is_empty()
-            && (sync.config.files_on_host || !sync.config.managed)
+            && (sync.config.files_on_host
+              || !sync.config.repo.is_empty())
           {
             res.resource_syncs.push(convert_resource::<ResourceSync>(
               sync,
-              &names.tags,
+              &id_to_tags,
             ))
           }
         }
@@ -217,7 +216,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
           )
           .await?;
           res.server_templates.push(
-            convert_resource::<ServerTemplate>(template, &names.tags),
+            convert_resource::<ServerTemplate>(template, &id_to_tags),
           )
         }
         ResourceTarget::Server(id) => {
@@ -229,7 +228,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
           .await?;
           res
             .servers
-            .push(convert_resource::<Server>(server, &names.tags))
+            .push(convert_resource::<Server>(server, &id_to_tags))
         }
         ResourceTarget::Builder(id) => {
           let mut builder =
@@ -239,18 +238,10 @@ impl Resolve<ExportResourcesToToml, User> for State {
               PermissionLevel::Read,
             )
             .await?;
-          // replace server id of builder
-          if let BuilderConfig::Server(config) = &mut builder.config {
-            config.server_id.clone_from(
-              names
-                .servers
-                .get(&config.server_id)
-                .unwrap_or(&String::new()),
-            )
-          }
+          Builder::replace_ids(&mut builder, &all);
           res
             .builders
-            .push(convert_resource::<Builder>(builder, &names.tags))
+            .push(convert_resource::<Builder>(builder, &id_to_tags))
         }
         ResourceTarget::Build(id) => {
           let mut build = resource::get_check_permissions::<Build>(
@@ -259,16 +250,10 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          // replace builder id of build
-          build.config.builder_id.clone_from(
-            names
-              .builders
-              .get(&build.config.builder_id)
-              .unwrap_or(&String::new()),
-          );
+          Build::replace_ids(&mut build, &all);
           res
             .builds
-            .push(convert_resource::<Build>(build, &names.tags))
+            .push(convert_resource::<Build>(build, &id_to_tags))
         }
         ResourceTarget::Deployment(id) => {
           let mut deployment = resource::get_check_permissions::<
@@ -277,24 +262,10 @@ impl Resolve<ExportResourcesToToml, User> for State {
             &id, &user, PermissionLevel::Read
           )
           .await?;
-          // replace deployment server with name
-          deployment.config.server_id.clone_from(
-            names
-              .servers
-              .get(&deployment.config.server_id)
-              .unwrap_or(&String::new()),
-          );
-          // replace deployment build id with name
-          if let DeploymentImage::Build { build_id, .. } =
-            &mut deployment.config.image
-          {
-            build_id.clone_from(
-              names.builds.get(build_id).unwrap_or(&String::new()),
-            );
-          }
+          Deployment::replace_ids(&mut deployment, &all);
           res.deployments.push(convert_resource::<Deployment>(
             deployment,
-            &names.tags,
+            &id_to_tags,
           ))
         }
         ResourceTarget::Repo(id) => {
@@ -304,21 +275,8 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          // replace repo server with name
-          repo.config.server_id.clone_from(
-            names
-              .servers
-              .get(&repo.config.server_id)
-              .unwrap_or(&String::new()),
-          );
-          // replace repo builder with name
-          repo.config.builder_id.clone_from(
-            names
-              .builders
-              .get(&repo.config.builder_id)
-              .unwrap_or(&String::new()),
-          );
-          res.repos.push(convert_resource::<Repo>(repo, &names.tags))
+          Repo::replace_ids(&mut repo, &all);
+          res.repos.push(convert_resource::<Repo>(repo, &id_to_tags))
         }
         ResourceTarget::Stack(id) => {
           let mut stack = resource::get_check_permissions::<Stack>(
@@ -327,29 +285,29 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          // replace stack server with name
-          stack.config.server_id.clone_from(
-            names
-              .servers
-              .get(&stack.config.server_id)
-              .unwrap_or(&String::new()),
-          );
+          Stack::replace_ids(&mut stack, &all);
           res
             .stacks
-            .push(convert_resource::<Stack>(stack, &names.tags))
+            .push(convert_resource::<Stack>(stack, &id_to_tags))
         }
         ResourceTarget::Procedure(id) => {
-          add_procedure(&id, &mut res, &user, &names)
-            .await
-            .with_context(|| {
-              format!("failed to add procedure {id}")
-            })?;
+          let mut procedure = resource::get_check_permissions::<
+            Procedure,
+          >(
+            &id, &user, PermissionLevel::Read
+          )
+          .await?;
+          Procedure::replace_ids(&mut procedure, &all);
+          res.procedures.push(convert_resource::<Procedure>(
+            procedure,
+            &id_to_tags,
+          ));
         }
         ResourceTarget::System(_) => continue,
       };
     }
 
-    add_user_groups(user_groups, &mut res, &names, &user)
+    add_user_groups(user_groups, &mut res, &all, &user)
       .await
       .context("failed to add user groups")?;
 
@@ -368,307 +326,17 @@ impl Resolve<ExportResourcesToToml, User> for State {
           .collect();
     }
 
-    let toml = serialize_resources_toml(&res)
+    let toml = serialize_resources_toml(res)
       .context("failed to serialize resources to toml")?;
 
     Ok(ExportResourcesToTomlResponse { toml })
   }
 }
 
-async fn add_procedure(
-  id: &str,
-  res: &mut ResourcesToml,
-  user: &User,
-  names: &ResourceNames,
-) -> anyhow::Result<()> {
-  let mut procedure = resource::get_check_permissions::<Procedure>(
-    id,
-    user,
-    PermissionLevel::Read,
-  )
-  .await?;
-
-  for stage in &mut procedure.config.stages {
-    for execution in &mut stage.executions {
-      match &mut execution.execution {
-        Execution::RunProcedure(exec) => exec.procedure.clone_from(
-          names
-            .procedures
-            .get(&exec.procedure)
-            .unwrap_or(&String::new()),
-        ),
-        Execution::RunBuild(exec) => exec.build.clone_from(
-          names.builds.get(&exec.build).unwrap_or(&String::new()),
-        ),
-        Execution::CancelBuild(exec) => exec.build.clone_from(
-          names.builds.get(&exec.build).unwrap_or(&String::new()),
-        ),
-        Execution::Deploy(exec) => exec.deployment.clone_from(
-          names
-            .deployments
-            .get(&exec.deployment)
-            .unwrap_or(&String::new()),
-        ),
-        Execution::StartDeployment(exec) => {
-          exec.deployment.clone_from(
-            names
-              .deployments
-              .get(&exec.deployment)
-              .unwrap_or(&String::new()),
-          )
-        }
-        Execution::RestartDeployment(exec) => {
-          exec.deployment.clone_from(
-            names
-              .deployments
-              .get(&exec.deployment)
-              .unwrap_or(&String::new()),
-          )
-        }
-        Execution::PauseDeployment(exec) => {
-          exec.deployment.clone_from(
-            names
-              .deployments
-              .get(&exec.deployment)
-              .unwrap_or(&String::new()),
-          )
-        }
-        Execution::UnpauseDeployment(exec) => {
-          exec.deployment.clone_from(
-            names
-              .deployments
-              .get(&exec.deployment)
-              .unwrap_or(&String::new()),
-          )
-        }
-        Execution::StopDeployment(exec) => {
-          exec.deployment.clone_from(
-            names
-              .deployments
-              .get(&exec.deployment)
-              .unwrap_or(&String::new()),
-          )
-        }
-        Execution::DestroyDeployment(exec) => {
-          exec.deployment.clone_from(
-            names
-              .deployments
-              .get(&exec.deployment)
-              .unwrap_or(&String::new()),
-          )
-        }
-        Execution::CloneRepo(exec) => exec.repo.clone_from(
-          names.repos.get(&exec.repo).unwrap_or(&String::new()),
-        ),
-        Execution::PullRepo(exec) => exec.repo.clone_from(
-          names.repos.get(&exec.repo).unwrap_or(&String::new()),
-        ),
-        Execution::BuildRepo(exec) => exec.repo.clone_from(
-          names.repos.get(&exec.repo).unwrap_or(&String::new()),
-        ),
-        Execution::CancelRepoBuild(exec) => exec.repo.clone_from(
-          names.repos.get(&exec.repo).unwrap_or(&String::new()),
-        ),
-        Execution::StartContainer(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::RestartContainer(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::PauseContainer(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::UnpauseContainer(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::StopContainer(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::DestroyContainer(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::StartAllContainers(exec) => {
-          exec.server.clone_from(
-            names.servers.get(&exec.server).unwrap_or(&String::new()),
-          )
-        }
-        Execution::RestartAllContainers(exec) => {
-          exec.server.clone_from(
-            names.servers.get(&exec.server).unwrap_or(&String::new()),
-          )
-        }
-        Execution::PauseAllContainers(exec) => {
-          exec.server.clone_from(
-            names.servers.get(&exec.server).unwrap_or(&String::new()),
-          )
-        }
-        Execution::UnpauseAllContainers(exec) => {
-          exec.server.clone_from(
-            names.servers.get(&exec.server).unwrap_or(&String::new()),
-          )
-        }
-        Execution::StopAllContainers(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::PruneContainers(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::DeleteNetwork(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::PruneNetworks(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::DeleteImage(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::PruneImages(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::DeleteVolume(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::PruneVolumes(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::PruneDockerBuilders(exec) => {
-          exec.server.clone_from(
-            names.servers.get(&exec.server).unwrap_or(&String::new()),
-          )
-        }
-        Execution::PruneBuildx(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::PruneSystem(exec) => exec.server.clone_from(
-          names.servers.get(&exec.server).unwrap_or(&String::new()),
-        ),
-        Execution::RunSync(exec) => exec.sync.clone_from(
-          names.syncs.get(&exec.sync).unwrap_or(&String::new()),
-        ),
-        Execution::DeployStack(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::StartStack(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::RestartStack(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::PauseStack(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::UnpauseStack(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::StopStack(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::DestroyStack(exec) => exec.stack.clone_from(
-          names.stacks.get(&exec.stack).unwrap_or(&String::new()),
-        ),
-        Execution::Sleep(_) | Execution::None(_) => {}
-      }
-    }
-  }
-
-  res
-    .procedures
-    .push(convert_resource::<Procedure>(procedure, &names.tags));
-  Ok(())
-}
-
-struct ResourceNames {
-  tags: HashMap<String, String>,
-  servers: HashMap<String, String>,
-  builders: HashMap<String, String>,
-  builds: HashMap<String, String>,
-  repos: HashMap<String, String>,
-  deployments: HashMap<String, String>,
-  procedures: HashMap<String, String>,
-  syncs: HashMap<String, String>,
-  stacks: HashMap<String, String>,
-  alerters: HashMap<String, String>,
-  templates: HashMap<String, String>,
-}
-
-impl ResourceNames {
-  async fn new() -> anyhow::Result<ResourceNames> {
-    let db = db_client().await;
-    Ok(ResourceNames {
-      tags: find_collect(&db.tags, None, None)
-        .await
-        .context("failed to get all tags")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      servers: find_collect(&db.servers, None, None)
-        .await
-        .context("failed to get all servers")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      builders: find_collect(&db.builders, None, None)
-        .await
-        .context("failed to get all builders")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      builds: find_collect(&db.builds, None, None)
-        .await
-        .context("failed to get all builds")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      repos: find_collect(&db.repos, None, None)
-        .await
-        .context("failed to get all repos")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      deployments: find_collect(&db.deployments, None, None)
-        .await
-        .context("failed to get all deployments")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      procedures: find_collect(&db.procedures, None, None)
-        .await
-        .context("failed to get all procedures")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      syncs: find_collect(&db.resource_syncs, None, None)
-        .await
-        .context("failed to get all resource syncs")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      stacks: find_collect(&db.stacks, None, None)
-        .await
-        .context("failed to get all stacks")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      alerters: find_collect(&db.alerters, None, None)
-        .await
-        .context("failed to get all alerters")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-      templates: find_collect(&db.server_templates, None, None)
-        .await
-        .context("failed to get all server templates")?
-        .into_iter()
-        .map(|t| (t.id, t.name))
-        .collect::<HashMap<_, _>>(),
-    })
-  }
-}
-
 async fn add_user_groups(
   user_groups: Vec<String>,
   res: &mut ResourcesToml,
-  names: &ResourceNames,
+  all: &AllResourcesById,
   user: &User,
 ) -> anyhow::Result<()> {
   let db = db_client().await;
@@ -699,36 +367,74 @@ async fn add_user_groups(
       .map(|mut permission| {
         match &mut permission.resource_target {
           ResourceTarget::Build(id) => {
-            *id = names.builds.get(id).cloned().unwrap_or_default()
+            *id = all
+              .builds
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::Builder(id) => {
-            *id = names.builders.get(id).cloned().unwrap_or_default()
+            *id = all
+              .builders
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::Deployment(id) => {
-            *id =
-              names.deployments.get(id).cloned().unwrap_or_default()
+            *id = all
+              .deployments
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::Server(id) => {
-            *id = names.servers.get(id).cloned().unwrap_or_default()
+            *id = all
+              .servers
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::Repo(id) => {
-            *id = names.repos.get(id).cloned().unwrap_or_default()
+            *id = all
+              .repos
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::Alerter(id) => {
-            *id = names.alerters.get(id).cloned().unwrap_or_default()
+            *id = all
+              .alerters
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::Procedure(id) => {
-            *id =
-              names.procedures.get(id).cloned().unwrap_or_default()
+            *id = all
+              .procedures
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::ServerTemplate(id) => {
-            *id = names.templates.get(id).cloned().unwrap_or_default()
+            *id = all
+              .templates
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::ResourceSync(id) => {
-            *id = names.syncs.get(id).cloned().unwrap_or_default()
+            *id = all
+              .syncs
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::Stack(id) => {
-            *id = names.stacks.get(id).cloned().unwrap_or_default()
+            *id = all
+              .stacks
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
           }
           ResourceTarget::System(_) => {}
         }
@@ -752,268 +458,112 @@ async fn add_user_groups(
   Ok(())
 }
 
-fn convert_resource<R: KomodoResource>(
-  resource: Resource<R::Config, R::Info>,
-  tag_names: &HashMap<String, String>,
-) -> ResourceToml<R::PartialConfig> {
-  // This makes sure all non-necessary (defaulted) fields don't make it into final toml
-  let partial: R::PartialConfig = resource.config.into();
-  let config = R::Config::default().minimize_partial(partial);
-  ResourceToml {
-    name: resource.name,
-    tags: resource
-      .tags
-      .iter()
-      .filter_map(|t| tag_names.get(t).cloned())
-      .collect(),
-    description: resource.description,
-    deploy: false,
-    after: Default::default(),
-    latest_hash: false,
-    config,
-  }
-}
-
 fn serialize_resources_toml(
-  resources: &ResourcesToml,
+  resources: ResourcesToml,
 ) -> anyhow::Result<String> {
-  let mut res = String::new();
+  let mut toml = String::new();
 
-  let options = toml_pretty::Options::default()
-    .tab("  ")
-    .skip_empty_string(true)
-    .max_inline_array_length(30);
-
-  for server in &resources.servers {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for server in resources.servers {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[server]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&server, options)
-        .context("failed to serialize servers to toml")?,
-    );
+    toml.push_str("[[server]]\n");
+    Server::push_to_toml_string(server, &mut toml)?;
   }
 
-  for stack in &resources.stacks {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for stack in resources.stacks {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[stack]]\n");
-    let mut parsed: OrderedHashMap<String, Value> =
-      serde_json::from_str(&serde_json::to_string(&stack)?)?;
-    let config = parsed
-      .get_mut("config")
-      .context("stack has no config?")?
-      .as_object_mut()
-      .context("config is not object?")?;
-
-    if let Some(Some(file_contents)) =
-      config.get("file_contents").map(|v| v.as_str())
-    {
-      let contents = if !file_contents.ends_with('\n') {
-        file_contents.to_string() + "\n"
-      } else {
-        file_contents.to_string()
-      };
-      config
-        .insert("file_contents".to_string(), Value::String(contents));
-    }
-    res.push_str(
-      &toml_pretty::to_string(&parsed, options)
-        .context("failed to serialize stacks to toml")?,
-    );
+    toml.push_str("[[stack]]\n");
+    Stack::push_to_toml_string(stack, &mut toml)?;
   }
 
-  for deployment in &resources.deployments {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for deployment in resources.deployments {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[deployment]]\n");
-    let mut parsed: OrderedHashMap<String, Value> =
-      serde_json::from_str(&serde_json::to_string(&deployment)?)?;
-    let config = parsed
-      .get_mut("config")
-      .context("deployment has no config?")?
-      .as_object_mut()
-      .context("config is not object?")?;
-    if let Some(DeploymentImage::Build { version, .. }) =
-      &deployment.config.image
-    {
-      let image = config
-        .get_mut("image")
-        .context("deployment has no image")?
-        .get_mut("params")
-        .context("deployment image has no params")?
-        .as_object_mut()
-        .context("deployment image params is not object")?;
-      if version.is_none() {
-        image.remove("version");
-      } else {
-        image.insert(
-          "version".to_string(),
-          Value::String(version.to_string()),
-        );
-      }
-    }
-    res.push_str(
-      &toml_pretty::to_string(&parsed, options)
-        .context("failed to serialize deployments to toml")?,
-    );
+    toml.push_str("[[deployment]]\n");
+    Deployment::push_to_toml_string(deployment, &mut toml)?;
   }
 
-  for build in &resources.builds {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for build in resources.builds {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[build]]\n");
-    let mut parsed: OrderedHashMap<String, Value> =
-      serde_json::from_str(&serde_json::to_string(build)?)?;
-    let config = parsed
-      .get_mut("config")
-      .context("build has no config?")?
-      .as_object_mut()
-      .context("config is not object?")?;
-
-    if let Some(version) = &build.config.version {
-      config.insert(
-        "version".to_string(),
-        Value::String(version.to_string()),
-      );
-    }
-
-    res.push_str(
-      &toml_pretty::to_string(&parsed, options)
-        .context("failed to serialize builds to toml")?,
-    );
+    toml.push_str("[[build]]\n");
+    Build::push_to_toml_string(build, &mut toml)?;
   }
 
-  for repo in &resources.repos {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for repo in resources.repos {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[repo]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&repo, options)
-        .context("failed to serialize repos to toml")?,
-    );
+    toml.push_str("[[repo]]\n");
+    Repo::push_to_toml_string(repo, &mut toml)?;
   }
 
-  for procedure in &resources.procedures {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for procedure in resources.procedures {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    let mut parsed: OrderedHashMap<String, Value> =
-      serde_json::from_str(&serde_json::to_string(&procedure)?)?;
-    let config = parsed
-      .get_mut("config")
-      .context("procedure has no config?")?
-      .as_object_mut()
-      .context("config is not object?")?;
-
-    let stages = config
-      .remove("stages")
-      .context("procedure config has no stages")?;
-    let stages = stages.as_array().context("stages is not array")?;
-
-    res.push_str("[[procedure]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&parsed, options)
-        .context("failed to serialize procedures to toml")?,
-    );
-
-    for stage in stages {
-      res.push_str("\n\n[[procedure.config.stage]]\n");
-      res.push_str(
-        &toml_pretty::to_string(stage, options)
-          .context("failed to serialize procedures to toml")?,
-      );
-    }
+    toml.push_str("[[procedure]]\n");
+    Procedure::push_to_toml_string(procedure, &mut toml)?;
   }
 
-  for alerter in &resources.alerters {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for alerter in resources.alerters {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[alerter]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&alerter, options)
-        .context("failed to serialize alerters to toml")?,
-    );
+    toml.push_str("[[alerter]]\n");
+    Alerter::push_to_toml_string(alerter, &mut toml)?;
   }
 
-  for builder in &resources.builders {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for builder in resources.builders {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[builder]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&builder, options)
-        .context("failed to serialize builders to toml")?,
-    );
+    toml.push_str("[[builder]]\n");
+    Builder::push_to_toml_string(builder, &mut toml)?;
   }
 
-  for server_template in &resources.server_templates {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for server_template in resources.server_templates {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[server_template]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&server_template, options)
-        .context("failed to serialize server_templates to toml")?,
-    );
+    toml.push_str("[[server_template]]\n");
+    ServerTemplate::push_to_toml_string(server_template, &mut toml)?;
   }
 
-  for resource_sync in &resources.resource_syncs {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+  for resource_sync in resources.resource_syncs {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[resource_sync]]\n");
-    let mut parsed: OrderedHashMap<String, Value> =
-      serde_json::from_str(&serde_json::to_string(resource_sync)?)?;
-    let config = parsed
-      .get_mut("config")
-      .context("resource sync has no config?")?
-      .as_object_mut()
-      .context("config is not object?")?;
-    if let Some(Some(file_contents)) =
-      config.get("file_contents").map(|v| v.as_str())
-    {
-      let contents = if !file_contents.ends_with('\n') {
-        file_contents.to_string() + "\n"
-      } else {
-        file_contents.to_string()
-      };
-      config
-        .insert("file_contents".to_string(), Value::String(contents));
-    }
-    res.push_str(
-      &toml_pretty::to_string(&resource_sync, options)
-        .context("failed to serialize resource_syncs to toml")?,
-    );
+    toml.push_str("[[resource_sync]]\n");
+    ResourceSync::push_to_toml_string(resource_sync, &mut toml)?;
   }
 
   for variable in &resources.variables {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[variable]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&variable, options)
+    toml.push_str("[[variable]]\n");
+    toml.push_str(
+      &toml_pretty::to_string(variable, TOML_PRETTY_OPTIONS)
         .context("failed to serialize variables to toml")?,
     );
   }
 
   for user_group in &resources.user_groups {
-    if !res.is_empty() {
-      res.push_str("\n\n##\n\n");
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
     }
-    res.push_str("[[user_group]]\n");
-    res.push_str(
-      &toml_pretty::to_string(&user_group, options)
+    toml.push_str("[[user_group]]\n");
+    toml.push_str(
+      &toml_pretty::to_string(user_group, TOML_PRETTY_OPTIONS)
         .context("failed to serialize user_groups to toml")?,
     );
   }
 
-  Ok(res)
+  Ok(toml)
 }

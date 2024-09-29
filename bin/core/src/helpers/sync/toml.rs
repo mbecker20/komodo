@@ -19,6 +19,7 @@ use komodo_client::{
     toml::ResourceToml,
   },
 };
+use ordered_hash_map::OrderedHashMap;
 use partial_derive2::PartialDiff;
 
 use crate::resource::KomodoResource;
@@ -41,14 +42,29 @@ pub trait ToToml: KomodoResource {
   ) {
   }
 
+  fn edit_config_object(
+    _resource: &ResourceToml<Self::PartialConfig>,
+    _config: &mut serde_json::Map<String, serde_json::Value>,
+  ) -> anyhow::Result<()> {
+    Ok(())
+  }
+
   fn push_to_toml_string(
     mut resource: ResourceToml<Self::PartialConfig>,
     toml: &mut String,
   ) -> anyhow::Result<()> {
     resource.config =
       Self::Config::default().minimize_partial(resource.config);
+    let mut resource_map: OrderedHashMap<String, serde_json::Value> =
+      serde_json::from_str(&serde_json::to_string(&resource)?)?;
+    let config = resource_map
+      .get_mut("config")
+      .context("deployment has no config?")?
+      .as_object_mut()
+      .context("config is not object?")?;
+    Self::edit_config_object(&resource, config)?;
     toml.push_str(
-      &toml_pretty::to_string(&resource, TOML_PRETTY_OPTIONS)
+      &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
         .context("failed to serialize resource to toml")?,
     );
     Ok(())
@@ -98,7 +114,7 @@ pub fn resource_to_toml<R: ToToml>(
   Ok(toml)
 }
 
-fn convert_resource<R: KomodoResource>(
+pub fn convert_resource<R: KomodoResource>(
   resource: Resource<R::Config, R::Info>,
   all_tags: &HashMap<String, Tag>,
 ) -> ResourceToml<R::PartialConfig> {
@@ -164,6 +180,32 @@ impl ToToml for Deployment {
       );
     }
   }
+
+  fn edit_config_object(
+    resource: &ResourceToml<Self::PartialConfig>,
+    config: &mut serde_json::Map<String, serde_json::Value>,
+  ) -> anyhow::Result<()> {
+    if let Some(DeploymentImage::Build { version, .. }) =
+      &resource.config.image
+    {
+      let image = config
+        .get_mut("image")
+        .context("deployment has no image")?
+        .get_mut("params")
+        .context("deployment image has no params")?
+        .as_object_mut()
+        .context("deployment image params is not object")?;
+      if version.is_none() {
+        image.remove("version");
+      } else {
+        image.insert(
+          "version".to_string(),
+          serde_json::Value::String(version.to_string()),
+        );
+      }
+    }
+    Ok(())
+  }
 }
 
 impl ToToml for Build {
@@ -178,6 +220,19 @@ impl ToToml for Build {
         .map(|s| &s.name)
         .unwrap_or(&String::new()),
     );
+  }
+
+  fn edit_config_object(
+    resource: &ResourceToml<Self::PartialConfig>,
+    config: &mut serde_json::Map<String, serde_json::Value>,
+  ) -> anyhow::Result<()> {
+    if let Some(version) = &resource.config.version {
+      config.insert(
+        "version".to_string(),
+        serde_json::Value::String(version.to_string()),
+      );
+    }
+    Ok(())
   }
 }
 
@@ -563,5 +618,43 @@ impl ToToml for Procedure {
         }
       }
     }
+  }
+
+  fn push_to_toml_string(
+    mut resource: ResourceToml<Self::PartialConfig>,
+    toml: &mut String,
+  ) -> anyhow::Result<()> {
+    resource.config =
+      Self::Config::default().minimize_partial(resource.config);
+
+    let mut parsed: OrderedHashMap<String, serde_json::Value> =
+      serde_json::from_str(&serde_json::to_string(&resource)?)?;
+
+    let config = parsed
+      .get_mut("config")
+      .context("procedure has no config?")?
+      .as_object_mut()
+      .context("config is not object?")?;
+
+    let stages = config.remove("stages");
+
+    toml.push_str(
+      &toml_pretty::to_string(&parsed, TOML_PRETTY_OPTIONS)
+        .context("failed to serialize procedures to toml")?,
+    );
+
+    if let Some(stages) = stages {
+      let stages =
+        stages.as_array().context("stages is not array")?;
+      for stage in stages {
+        toml.push_str("\n\n[[procedure.config.stage]]\n");
+        toml.push_str(
+          &toml_pretty::to_string(stage, TOML_PRETTY_OPTIONS)
+            .context("failed to serialize procedures to toml")?,
+        );
+      }
+    }
+
+    Ok(())
   }
 }

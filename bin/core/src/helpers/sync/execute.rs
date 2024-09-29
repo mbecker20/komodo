@@ -19,6 +19,102 @@ use super::{
   ToUpdateItem, UpdatesResult,
 };
 
+/// Gets all the resources to update. For use in sync execution.
+pub async fn get_updates_for_execution<
+  Resource: ResourceSyncTrait,
+>(
+  resources: Vec<ResourceToml<Resource::PartialConfig>>,
+  delete: bool,
+  all_resources: &AllResourcesById,
+  id_to_tags: &HashMap<String, Tag>,
+  match_tags: &[String],
+) -> anyhow::Result<UpdatesResult<Resource::PartialConfig>> {
+  let map = find_collect(Resource::coll().await, None, None)
+    .await
+    .context("failed to get resources from db")?
+    .into_iter()
+    .filter(|r| {
+      Resource::include_resource(
+        &r.config, &r.tags, id_to_tags, match_tags,
+      )
+    })
+    .map(|r| (r.name.clone(), r))
+    .collect::<HashMap<_, _>>();
+
+  let mut to_create = ToCreate::<Resource::PartialConfig>::new();
+  let mut to_update = ToUpdate::<Resource::PartialConfig>::new();
+  let mut to_delete = ToDelete::new();
+
+  if delete {
+    for resource in map.values() {
+      if !resources.iter().any(|r| r.name == resource.name) {
+        to_delete.push(resource.name.clone());
+      }
+    }
+  }
+
+  for mut resource in resources {
+    // only resource that might not be included is resource sync
+    if !Resource::include_resource_partial(
+      &resource.config,
+      &resource.tags,
+      id_to_tags,
+      match_tags,
+    ) {
+      continue;
+    }
+    match map.get(&resource.name) {
+      Some(original) => {
+        // First merge toml resource config (partial) onto default resource config.
+        // Makes sure things that aren't defined in toml (come through as None) actually get removed.
+        let config: Resource::Config = resource.config.into();
+        resource.config = config.into();
+
+        Resource::validate_partial_config(&mut resource.config);
+
+        let mut diff = Resource::get_diff(
+          original.config.clone(),
+          resource.config,
+          all_resources,
+        )?;
+
+        Resource::validate_diff(&mut diff);
+
+        let original_tags = original
+          .tags
+          .iter()
+          .filter_map(|id| id_to_tags.get(id).map(|t| t.name.clone()))
+          .collect::<Vec<_>>();
+
+        // Only proceed if there are any fields to update,
+        // or a change to tags / description
+        if diff.is_none()
+          && resource.description == original.description
+          && resource.tags == original_tags
+        {
+          continue;
+        }
+
+        // Minimizes updates through diffing.
+        resource.config = diff.into();
+
+        let update = ToUpdateItem {
+          id: original.id.clone(),
+          update_description: resource.description
+            != original.description,
+          update_tags: resource.tags != original_tags,
+          resource,
+        };
+
+        to_update.push(update);
+      }
+      None => to_create.push(resource),
+    }
+  }
+
+  Ok((to_create, to_update, to_delete))
+}
+
 pub trait ExecuteResourceSync: ResourceSyncTrait {
   async fn execute_sync_updates(
     to_create: ToCreate<Self::PartialConfig>,
@@ -247,98 +343,3 @@ pub async fn run_update_description<Resource: ResourceSyncTrait>(
   }
 }
 
-/// Gets all the resources to update. For use in sync execution.
-pub async fn get_updates_for_execution<
-  Resource: ResourceSyncTrait,
->(
-  resources: Vec<ResourceToml<Resource::PartialConfig>>,
-  delete: bool,
-  all_resources: &AllResourcesById,
-  id_to_tags: &HashMap<String, Tag>,
-  match_tags: &[String],
-) -> anyhow::Result<UpdatesResult<Resource::PartialConfig>> {
-  let map = find_collect(Resource::coll().await, None, None)
-    .await
-    .context("failed to get resources from db")?
-    .into_iter()
-    .filter(|r| {
-      Resource::include_resource(
-        &r.config, &r.tags, id_to_tags, match_tags,
-      )
-    })
-    .map(|r| (r.name.clone(), r))
-    .collect::<HashMap<_, _>>();
-
-  let mut to_create = ToCreate::<Resource::PartialConfig>::new();
-  let mut to_update = ToUpdate::<Resource::PartialConfig>::new();
-  let mut to_delete = ToDelete::new();
-
-  if delete {
-    for resource in map.values() {
-      if !resources.iter().any(|r| r.name == resource.name) {
-        to_delete.push(resource.name.clone());
-      }
-    }
-  }
-
-  for mut resource in resources {
-    // only resource that might not be included is resource sync
-    if !Resource::include_resource_partial(
-      &resource.config,
-      &resource.tags,
-      id_to_tags,
-      match_tags,
-    ) {
-      continue;
-    }
-    match map.get(&resource.name) {
-      Some(original) => {
-        // First merge toml resource config (partial) onto default resource config.
-        // Makes sure things that aren't defined in toml (come through as None) actually get removed.
-        let config: Resource::Config = resource.config.into();
-        resource.config = config.into();
-
-        Resource::validate_partial_config(&mut resource.config);
-
-        let mut diff = Resource::get_diff(
-          original.config.clone(),
-          resource.config,
-          all_resources,
-        )?;
-
-        Resource::validate_diff(&mut diff);
-
-        let original_tags = original
-          .tags
-          .iter()
-          .filter_map(|id| id_to_tags.get(id).map(|t| t.name.clone()))
-          .collect::<Vec<_>>();
-
-        // Only proceed if there are any fields to update,
-        // or a change to tags / description
-        if diff.is_none()
-          && resource.description == original.description
-          && resource.tags == original_tags
-        {
-          continue;
-        }
-
-        // Minimizes updates through diffing.
-        resource.config = diff.into();
-
-        let update = ToUpdateItem {
-          id: original.id.clone(),
-          update_description: resource.description
-            != original.description,
-          update_tags: resource.tags != original_tags,
-          resource,
-        };
-
-        to_update.push(update);
-      }
-      None => to_create.push(resource),
-    }
-  }
-
-  Ok((to_create, to_update, to_delete))
-}

@@ -389,7 +389,12 @@ impl<'de> Visitor<'de> for EnvironmentVarVisitor {
   where
     E: serde::de::Error,
   {
-    Ok(v.to_string())
+    let out = v.to_string();
+    if out.is_empty() || out.ends_with('\n') {
+      Ok(out)
+    } else {
+      Ok(out + "\n")
+    }
   }
 
   fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
