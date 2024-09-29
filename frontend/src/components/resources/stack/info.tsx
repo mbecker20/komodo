@@ -1,10 +1,9 @@
 import { Section } from "@components/layouts";
 import { ReactNode, useState } from "react";
 import { Card, CardContent, CardHeader } from "@ui/card";
-import { useFullStack, useStack } from ".";
-import { Types } from "@komodo/client";
+import { useFullStack } from ".";
 import { updateLogToHtml } from "@lib/utils";
-import { MonacoDiffEditor, MonacoEditor } from "@components/monaco";
+import { MonacoEditor } from "@components/monaco";
 import { useEditPermissions } from "@pages/resource";
 import { ConfirmUpdate } from "@components/config/util";
 import { useWrite } from "@lib/hooks";
@@ -23,10 +22,10 @@ export const StackInfo = ({
   const { mutateAsync } = useWrite("WriteStackFileContents");
 
   const stack = useFullStack(id);
-  const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
-  const is_down = [Types.StackState.Down, Types.StackState.Unknown].includes(
-    state
-  );
+  // const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
+  // const is_down = [Types.StackState.Down, Types.StackState.Unknown].includes(
+  //   state
+  // );
 
   const file_on_host = stack?.config?.files_on_host;
   const canEdit = canWrite && file_on_host;
