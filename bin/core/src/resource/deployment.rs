@@ -88,12 +88,12 @@ impl super::KomodoResource for Deployment {
         }),
         image: status
           .as_ref()
-          .map(|s| {
-            s.curr
-              .container
-              .as_ref()
-              .and_then(|c| c.image.clone())
-              .unwrap_or_else(|| String::from("Unknown"))
+          .and_then(|s| {
+            s.curr.container.as_ref().map(|c| {
+              c.image
+                .clone()
+                .unwrap_or_else(|| String::from("Unknown"))
+            })
           })
           .unwrap_or(build_image),
         server_id: deployment.config.server_id,
