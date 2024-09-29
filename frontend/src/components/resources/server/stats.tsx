@@ -1,4 +1,4 @@
-import { Page, Section } from "@components/layouts";
+import { Section } from "@components/layouts";
 import {
   Card,
   CardContent,
@@ -10,12 +10,9 @@ import { Progress } from "@ui/progress";
 import { Cpu, Database, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
-import { ServerComponents, useServer } from ".";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { Fragment, useState } from "react";
+import { ReactNode, useState } from "react";
 import { Input } from "@ui/input";
-import { ResourceDescription } from "../common";
-import { AddTags, ResourceTags } from "@components/tags";
 import { StatChart } from "./stat-chart";
 import { useStatsGranularity } from "./hooks";
 import {
@@ -26,10 +23,14 @@ import {
   SelectValue,
 } from "@ui/select";
 
-export const ServerStats = ({ id }: { id: string }) => {
+export const ServerStats = ({
+  id,
+  titleOther,
+}: {
+  id: string;
+  titleOther?: ReactNode;
+}) => {
   const [interval, setInterval] = useStatsGranularity();
-
-  const server = useServer(id);
   const stats = useRead(
     "GetSystemStats",
     { server: id },
@@ -47,40 +48,8 @@ export const ServerStats = ({ id }: { id: string }) => {
   );
 
   return (
-    <Page
-      title={server?.name}
-      titleRight={
-        <div className="flex gap-4 items-center">
-          {Object.entries(ServerComponents.Status).map(([key, Status]) => (
-            <Status key={key} id={id} />
-          ))}
-        </div>
-      }
-      subtitle={
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-4 items-center text-muted-foreground">
-            <ServerComponents.Icon id={id} />
-            {Object.entries(ServerComponents.Info).map(([key, Info], i) => (
-              <Fragment key={key}>
-                | <Info key={i} id={id} />
-              </Fragment>
-            ))}
-          </div>
-          <ResourceDescription type="Server" id={id} disabled />
-        </div>
-      }
-      actions={
-        <div className="flex gap-2 items-center">
-          <div className="text-muted-foreground">tags:</div>
-          <ResourceTags
-            target={{ id, type: "Server" }}
-            className="text-sm"
-            click_to_delete
-          />
-          <AddTags target={{ id, type: "Server" }} />
-        </div>
-      }
-    >
+    <Section titleOther={titleOther}>
+      {/* Stats */}
       <Section title="System Info">
         <DataTable
           tableKey="system-info"
@@ -234,7 +203,7 @@ export const ServerStats = ({ id }: { id: string }) => {
       </Section>
 
       <Processes id={id} />
-    </Page>
+    </Section>
   );
 };
 

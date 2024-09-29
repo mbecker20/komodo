@@ -38,6 +38,7 @@ import { DashboardPieChart } from "@pages/home/dashboard";
 import { StackTable } from "../stack/table";
 import { ResourceComponents } from "..";
 import { ServerInfo } from "./info";
+import { ServerStats } from "./stats";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -59,11 +60,10 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
   );
 };
 
-const ConfigInfoResources = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage<"Config" | "Info" | "Resources">(
-    "server-tabs-v1",
-    "Config"
-  );
+const ConfigStatsDockerResources = ({ id }: { id: string }) => {
+  const [view, setView] = useLocalStorage<
+    "Config" | "Stats" | "Docker" | "Resources"
+  >(`server-${id}-tab`, "Config");
 
   const is_admin = useUser().data?.admin ?? false;
   const disable_non_admin_create =
@@ -95,8 +95,12 @@ const ConfigInfoResources = ({ id }: { id: string }) => {
         Config
       </TabsTrigger>
 
-      <TabsTrigger value="Info" className="w-[110px]">
-        Info
+      <TabsTrigger value="Stats" className="w-[110px]">
+        Stats
+      </TabsTrigger>
+
+      <TabsTrigger value="Docker" className="w-[110px]">
+        Docker
       </TabsTrigger>
 
       <TabsTrigger
@@ -118,7 +122,11 @@ const ConfigInfoResources = ({ id }: { id: string }) => {
         <ServerConfig id={id} titleOther={tabsList} />
       </TabsContent>
 
-      <TabsContent value="Info">
+      <TabsContent value="Stats">
+        <ServerStats id={id} titleOther={tabsList} />
+      </TabsContent>
+
+      <TabsContent value="Docker">
         <ServerInfo id={id} titleOther={tabsList} />
       </TabsContent>
 
@@ -263,10 +271,10 @@ export const ServerComponents: RequiredResourceComponents = {
           }
         ).data?.core_count ?? 0;
       return (
-        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
           <Cpu className="w-4 h-4" />
           {core_count || "N/A"} Core{core_count > 1 ? "s" : ""}
-        </Link>
+        </div>
       );
     },
     Mem: ({ id }) => {
@@ -280,10 +288,10 @@ export const ServerComponents: RequiredResourceComponents = {
         }
       ).data;
       return (
-        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
           <MemoryStick className="w-4 h-4" />
           {stats?.mem_total_gb.toFixed(2) ?? "N/A"} GB
-        </Link>
+        </div>
       );
     },
     Disk: ({ id }) => {
@@ -301,10 +309,10 @@ export const ServerComponents: RequiredResourceComponents = {
         0
       );
       return (
-        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
           <Database className="w-4 h-4" />
           {disk_total_gb?.toFixed(2) ?? "N/A"} GB
-        </Link>
+        </div>
       );
     },
   },
@@ -454,7 +462,7 @@ export const ServerComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: ConfigInfoResources,
+  Config: ConfigStatsDockerResources,
 
   DangerZone: ({ id }) => (
     <>

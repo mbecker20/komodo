@@ -157,7 +157,7 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
   );
 };
 
-const ResourceHeader = ({
+export const ResourceHeader = ({
   type,
   id,
   links,
