@@ -32,10 +32,9 @@ use mungos::{
 use crate::{
   config::core_config,
   resource::{self, get_user_permission_on_resource},
+  stack::compose_container_match_regex,
   state::{db_client, deployment_status_cache, stack_status_cache},
 };
-
-use super::stack::compose_container_match_regex;
 
 // user: Id or username
 #[instrument(level = "debug")]

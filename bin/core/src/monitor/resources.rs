@@ -6,12 +6,10 @@ use komodo_client::entities::{
 };
 
 use crate::{
-  helpers::{
-    query::get_stack_state_from_containers,
-    stack::{
-      compose_container_match_regex,
-      services::extract_services_from_stack,
-    },
+  helpers::query::get_stack_state_from_containers,
+  stack::{
+    compose_container_match_regex,
+    services::extract_services_from_stack,
   },
   state::{deployment_status_cache, stack_status_cache},
 };

@@ -39,7 +39,6 @@ pub mod procedure;
 pub mod prune;
 pub mod query;
 pub mod repo;
-pub mod stack;
 pub mod sync;
 pub mod update;
 

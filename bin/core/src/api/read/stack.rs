@@ -17,8 +17,9 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::{periphery_client, stack::get_stack_and_server},
+  helpers::periphery_client,
   resource,
+  stack::get_stack_and_server,
   state::{action_states, github_client, stack_status_cache, State},
 };
 

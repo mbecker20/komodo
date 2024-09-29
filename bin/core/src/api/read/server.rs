@@ -43,8 +43,9 @@ use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  helpers::{periphery_client, stack::compose_container_match_regex},
+  helpers::periphery_client,
   resource,
+  stack::compose_container_match_regex,
   state::{action_states, db_client, server_status_cache, State},
 };
 

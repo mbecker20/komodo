@@ -31,14 +31,14 @@ use crate::{
   helpers::{
     periphery_client,
     query::get_server_with_state,
-    stack::{
-      get_stack_and_server,
-      remote::{get_remote_compose_contents, RemoteComposeContents},
-      services::extract_services_into_res,
-    },
     update::{add_update, make_update},
   },
   resource,
+  stack::{
+    get_stack_and_server,
+    remote::{get_remote_compose_contents, RemoteComposeContents},
+    services::extract_services_into_res,
+  },
   state::{db_client, github_client, State},
 };
 

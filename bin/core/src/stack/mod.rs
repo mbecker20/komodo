@@ -15,11 +15,10 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::query::get_server_with_state,
   resource,
   state::{db_client, State},
 };
-
-use super::query::get_server_with_state;
 
 pub mod execute;
 pub mod remote;

@@ -26,10 +26,8 @@ use resolver_api::Resolve;
 use crate::{
   api::execute::ExecuteRequest,
   config::core_config,
-  helpers::{
-    random_string, stack::remote::clone_remote_repo,
-    update::init_execution_update,
-  },
+  helpers::{random_string, update::init_execution_update},
+  stack::remote::clone_remote_repo,
   state::{deployment_status_cache, stack_status_cache, State},
 };
 

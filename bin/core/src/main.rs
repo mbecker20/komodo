@@ -23,6 +23,7 @@ mod helpers;
 mod listener;
 mod monitor;
 mod resource;
+mod stack;
 mod state;
 mod ws;
 

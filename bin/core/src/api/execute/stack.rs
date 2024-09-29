@@ -22,13 +22,13 @@ use crate::{
     },
     periphery_client,
     query::get_variables_and_secrets,
-    stack::{
-      execute::execute_compose, get_stack_and_server,
-      services::extract_services_into_res,
-    },
     update::update_update,
   },
   monitor::update_cache_for_server,
+  stack::{
+    execute::execute_compose, get_stack_and_server,
+    services::extract_services_into_res,
+  },
   state::{action_states, db_client, State},
 };
 
