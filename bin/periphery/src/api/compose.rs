@@ -199,9 +199,13 @@ impl Resolve<WriteComposeContentsToHost> for State {
       .join(file_path)
       .components()
       .collect::<PathBuf>();
+    // Ensure parent directory exists
+    if let Some(parent) = file_path.parent() {
+      let _ = fs::create_dir_all(&parent).await;
+    }
     fs::write(&file_path, contents).await.with_context(|| {
       format!(
-        "failed to write compose file contents to {file_path:?}"
+        "Failed to write compose file contents to {file_path:?}"
       )
     })?;
     Ok(Log::simple(
