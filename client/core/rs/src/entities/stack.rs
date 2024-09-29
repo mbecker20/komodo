@@ -226,10 +226,8 @@ pub struct StackConfig {
   pub files_on_host: bool,
 
   /// Directory to change to (`cd`) before running `docker compose up -d`.
-  /// Default: `./` (the repo root)
-  #[serde(default = "default_run_directory")]
-  #[builder(default = "default_run_directory()")]
-  #[partial_default(default_run_directory())]
+  #[serde(default)]
+  #[builder(default)]
   pub run_directory: String,
 
   /// Add paths to compose files, relative to the run path.
@@ -390,10 +388,6 @@ fn default_branch() -> String {
   String::from("main")
 }
 
-fn default_run_directory() -> String {
-  String::from("./")
-}
-
 fn default_webhook_enabled() -> bool {
   true
 }
@@ -407,7 +401,7 @@ impl Default for StackConfig {
     Self {
       server_id: Default::default(),
       project_name: Default::default(),
-      run_directory: default_run_directory(),
+      run_directory: Default::default(),
       file_paths: Default::default(),
       files_on_host: Default::default(),
       registry_provider: Default::default(),

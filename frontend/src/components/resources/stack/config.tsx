@@ -17,6 +17,7 @@ import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { Button } from "@ui/button";
 import { MonacoEditor } from "@components/monaco";
 import { SecretsSearch } from "@components/config/env_vars";
+import { Input } from "@ui/input";
 
 export const StackConfig = ({
   id,
@@ -204,16 +205,19 @@ export const StackConfig = ({
           },
           {
             label: "Run Path",
-            labelHidden: true,
             hidden: !files_on_host,
-            components: {
-              run_directory: {
-                placeholder: "/path/to/folder",
-                description:
-                  "Set the cwd when running compose up command. Should usually be the parent folder of the compose files.",
-                boldLabel: true,
-              },
-            },
+            description:
+              "Set the cwd when running compose up command. Should usually be the parent folder of the compose files.",
+            contentHidden: true,
+            actions: (
+              <Input
+                className="max-w-[75%] lg:max-w-[400px]"
+                placeholder="/path/to/folder"
+                value={update.run_directory ?? config.run_directory}
+                onChange={(e) => set({ run_directory: e.target.value })}
+              />
+            ),
+            components: {},
           },
           {
             label: "File Paths",
@@ -445,15 +449,18 @@ export const StackConfig = ({
             },
             {
               label: "Run Path",
-              labelHidden: true,
-              components: {
-                run_directory: {
-                  placeholder: "./",
-                  description:
-                    "Set the cwd when running compose up command. Relative to the repo root.",
-                  boldLabel: true,
-                },
-              },
+              description:
+                "Set the cwd when running compose up command. Relative to the repo root.",
+              contentHidden: true,
+              actions: (
+                <Input
+                  className="max-w-[75%] lg:max-w-[400px]"
+                  placeholder="./"
+                  value={update.run_directory ?? config.run_directory}
+                  onChange={(e) => set({ run_directory: e.target.value })}
+                />
+              ),
+              components: {},
             },
             {
               label: "File Paths",

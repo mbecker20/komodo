@@ -142,7 +142,7 @@ export const Config = <T,>({
     `config-${resource_type}-${resource_id}`,
     component_keys[0]
   );
-  const show = component_keys[_show] || component_keys[0];
+  const show = (components[_show] && _show) || component_keys[0];
 
   let activeCount = 0;
   for (const key in components) {
