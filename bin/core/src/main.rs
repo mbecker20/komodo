@@ -13,6 +13,7 @@ use tower_http::{
 
 use crate::config::core_config;
 
+mod alert;
 mod api;
 mod auth;
 mod cloud;

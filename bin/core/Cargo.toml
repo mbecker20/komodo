@@ -35,6 +35,7 @@ slack.workspace = true
 svi.workspace = true
 # external
 ordered_hash_map.workspace = true
+openidconnect.workspace = true
 urlencoding.workspace = true
 aws-sdk-ec2.workspace = true
 axum-server.workspace = true

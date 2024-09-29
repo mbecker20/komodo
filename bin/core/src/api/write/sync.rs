@@ -37,9 +37,9 @@ use octorust::types::{
 use resolver_api::Resolve;
 
 use crate::{
+  alert::send_alerts,
   config::core_config,
   helpers::{
-    alert::send_alerts,
     query::get_id_to_tags,
     sync::{
       deploy::SyncDeployParams, remote::RemoteResources,

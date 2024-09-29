@@ -7,7 +7,7 @@ use komodo_client::entities::{
 };
 
 use crate::{
-  helpers::alert::send_alerts,
+  alert::send_alerts,
   resource,
   state::{db_client, stack_status_cache},
 };

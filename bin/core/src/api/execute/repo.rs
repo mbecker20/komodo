@@ -27,8 +27,8 @@ use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
+  alert::send_alerts,
   helpers::{
-    alert::send_alerts,
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::repo_cancel_channel,
     git_token,

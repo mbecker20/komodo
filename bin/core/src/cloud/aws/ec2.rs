@@ -19,7 +19,7 @@ use komodo_client::entities::{
   ResourceTarget,
 };
 
-use crate::{config::core_config, helpers::alert::send_alerts};
+use crate::{alert::send_alerts, config::core_config};
 
 const POLL_RATE_SECS: u64 = 2;
 const MAX_POLL_TRIES: usize = 30;
