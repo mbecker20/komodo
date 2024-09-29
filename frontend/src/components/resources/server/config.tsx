@@ -5,6 +5,7 @@ import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
+import { Switch } from "@ui/switch";
 
 export const ServerConfig = ({
   id,
@@ -109,24 +110,31 @@ export const ServerConfig = ({
               ),
             },
           },
-        ],
-        alerts: [
           {
-            label: "Unreachable Alert",
-            labelHidden: true,
-            components: {
-              send_unreachable_alerts: {
-                description:
-                  "Send an alert if the server could not pass a basic health check. Configure 'Alerter' resources to route these.",
-                boldLabel: true,
-              },
-            },
+            label: "Send Unreachable Alerts",
+            contentHidden: true,
+            description:
+              "Send an alert if the Periphery agent cannot be reached.",
+            actions: (
+              <Switch
+                checked={
+                  update.send_unreachable_alerts ??
+                  config.send_unreachable_alerts
+                }
+                onCheckedChange={(send_unreachable_alerts) =>
+                  set({ send_unreachable_alerts })
+                }
+              />
+            ),
+            components: {},
           },
           {
             label: "CPU Alerts",
+            labelHidden: true,
             components: {
               send_cpu_alerts: {
                 label: "Send CPU Alerts",
+                boldLabel: true,
                 description:
                   "Send an alert if the CPU usage is above the configured thresholds.",
               },
@@ -142,9 +150,11 @@ export const ServerConfig = ({
           },
           {
             label: "Memory Alerts",
+            labelHidden: true,
             components: {
               send_mem_alerts: {
                 label: "Send Memory Alerts",
+                boldLabel: true,
                 description:
                   "Send an alert if the memory usage is above the configured thresholds.",
               },
@@ -160,8 +170,10 @@ export const ServerConfig = ({
           },
           {
             label: "Disk Alerts",
+            labelHidden: true,
             components: {
               send_disk_alerts: {
+                boldLabel: true,
                 description:
                   "Send an alert if the Disk Usage (for any mounted disk) is above the configured thresholds.",
               },
