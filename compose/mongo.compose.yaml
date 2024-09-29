@@ -16,8 +16,8 @@ services:
       driver: ${COMPOSE_LOGGING_DRIVER:-local}
     networks:
       - default
-    ports:
-      - 27017:27017
+    # ports:
+    #   - 27017:27017
     volumes:
       - mongo-data:/data/db
       - mongo-config:/data/configdb

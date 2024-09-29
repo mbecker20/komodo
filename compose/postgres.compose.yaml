@@ -15,8 +15,8 @@ services:
       driver: ${COMPOSE_LOGGING_DRIVER:-local}
     networks:
       - default
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes:
       - pg-data:/var/lib/postgresql/data
     environment:
@@ -33,8 +33,8 @@ services:
       driver: ${COMPOSE_LOGGING_DRIVER:-local}
     networks:
       - default
-    ports:
-      - 27017:27017
+    # ports:
+    #   - 27017:27017
     environment:
       - FERRETDB_POSTGRESQL_URL=postgres://postgres:5432/${KOMODO_DATABASE_DB_NAME:-komodo}
   

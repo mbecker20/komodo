@@ -15,7 +15,7 @@ services:
       driver: ${COMPOSE_LOGGING_DRIVER:-local}
     networks:
       - default
-    # ports: # Port closed due to lack of auth.
+    # ports:
     #   - 27017:27017
     volumes:
       - sqlite-data:/state
