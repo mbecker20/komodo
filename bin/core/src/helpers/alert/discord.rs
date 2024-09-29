@@ -160,7 +160,7 @@ async fn send_message(
 
 fn http_client() -> &'static reqwest::Client {
   static CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
-  CLIENT.get_or_init(|| reqwest::Client::new())
+  CLIENT.get_or_init(reqwest::Client::new)
 }
 
 #[derive(Serialize)]

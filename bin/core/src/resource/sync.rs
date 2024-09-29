@@ -228,9 +228,9 @@ async fn get_resource_sync_state(
   if data.pending_error.is_some() {
     return ResourceSyncState::Failed;
   }
-  if data.resource_updates.len() > 0
-    || data.variable_updates.len() > 0
-    || data.user_group_updates.len() > 0
+  if !data.resource_updates.is_empty()
+    || !data.variable_updates.is_empty()
+    || !data.user_group_updates.is_empty()
     || data.pending_deploy.to_deploy > 0
   {
     return ResourceSyncState::Pending;

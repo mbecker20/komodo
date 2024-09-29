@@ -177,6 +177,42 @@ impl Resolve<GetComposeServiceLogSearch> for State {
 
 //
 
+impl Resolve<WriteComposeContentsToHost> for State {
+  #[instrument(name = "WriteComposeContentsToHost", skip(self))]
+  async fn resolve(
+    &self,
+    WriteComposeContentsToHost {
+      name,
+      run_directory,
+      file_path,
+      contents,
+    }: WriteComposeContentsToHost,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let root =
+      periphery_config().stack_dir.join(to_komodo_name(&name));
+    let run_directory = root.join(&run_directory);
+    let run_directory = run_directory.canonicalize().context(
+      "failed to validate run directory on host (canonicalize error)",
+    )?;
+    let file_path = run_directory
+      .join(file_path)
+      .components()
+      .collect::<PathBuf>();
+    fs::write(&file_path, contents).await.with_context(|| {
+      format!(
+        "failed to write compose file contents to {file_path:?}"
+      )
+    })?;
+    Ok(Log::simple(
+      "Write contents to host",
+      format!("File contents written to {file_path:?}"),
+    ))
+  }
+}
+
+//
+
 impl Resolve<ComposeUp> for State {
   #[instrument(
     name = "ComposeUp",

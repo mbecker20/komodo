@@ -150,7 +150,7 @@ fn docker_run_command(
     "-p",
   );
   let volumes = parse_conversions(
-    &conversions_from_str(&volumes).context("Invalid volumes")?,
+    &conversions_from_str(volumes).context("Invalid volumes")?,
     "-v",
   );
   let network = parse_network(network);

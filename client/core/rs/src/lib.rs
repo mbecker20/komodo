@@ -37,8 +37,8 @@ pub mod busy;
 pub mod entities;
 pub mod ws;
 
-mod request;
 mod parser;
+mod request;
 
 #[derive(Deserialize)]
 struct KomodoEnv {

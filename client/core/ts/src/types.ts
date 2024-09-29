@@ -640,7 +640,7 @@ export interface DeploymentConfig {
 	 * Labels attached to various termination signal options.
 	 * Used to specify different shutdown functionality depending on the termination signal.
 	 */
-	term_signal_labels: string;
+	term_signal_labels?: string;
 	/**
 	 * The container port mapping.
 	 * Irrelevant if container network is `host`.
@@ -2856,6 +2856,7 @@ export enum Operation {
 	UpdateStack = "UpdateStack",
 	RenameStack = "RenameStack",
 	DeleteStack = "DeleteStack",
+	WriteStackContents = "WriteStackContents",
 	RefreshStackCache = "RefreshStackCache",
 	DeployStack = "DeployStack",
 	StartStack = "StartStack",
@@ -5864,6 +5865,19 @@ export interface RenameStack {
 	name: string;
 }
 
+/** Rename the stack at id to the given name. Response: [Update]. */
+export interface WriteStackFileContents {
+	/** The name or id of the Stack to write the contents to. */
+	stack: string;
+	/**
+	 * The file path relative to the stack run directory,
+	 * or absolute path.
+	 */
+	file_path: string;
+	/** The contents to write. */
+	contents: string;
+}
+
 /**
  * Trigger a refresh of the cached compose file contents.
  * Refreshes:
@@ -6718,6 +6732,7 @@ export type WriteRequest =
 	| { type: "DeleteStack", params: DeleteStack }
 	| { type: "UpdateStack", params: UpdateStack }
 	| { type: "RenameStack", params: RenameStack }
+	| { type: "WriteStackFileContents", params: WriteStackFileContents }
 	| { type: "RefreshStackCache", params: RefreshStackCache }
 	| { type: "CreateStackWebhook", params: CreateStackWebhook }
 	| { type: "DeleteStackWebhook", params: DeleteStackWebhook }

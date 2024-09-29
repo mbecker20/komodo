@@ -22,6 +22,7 @@ use octorust::types::{
 };
 use periphery_client::api::compose::{
   GetComposeContentsOnHost, GetComposeContentsOnHostResponse,
+  WriteComposeContentsToHost,
 };
 use resolver_api::Resolve;
 
@@ -31,6 +32,7 @@ use crate::{
     periphery_client,
     query::get_server_with_state,
     stack::{
+      get_stack_and_server,
       remote::{get_remote_compose_contents, RemoteComposeContents},
       services::extract_services_into_res,
     },
@@ -125,6 +127,63 @@ impl Resolve<RenameStack, User> for State {
     );
     update.finalize();
 
+    add_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<WriteStackFileContents, User> for State {
+  async fn resolve(
+    &self,
+    WriteStackFileContents {
+      stack,
+      file_path,
+      contents,
+    }: WriteStackFileContents,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    let (stack, server) = get_stack_and_server(
+      &stack,
+      &user,
+      PermissionLevel::Write,
+      true,
+    )
+    .await?;
+
+    if !stack.config.files_on_host {
+      return Err(anyhow!(
+        "Stack is not configured to use files on host, can't write file contents"
+      ));
+    }
+
+    let mut update =
+      make_update(&stack, Operation::WriteStackContents, &user);
+
+    update.push_simple_log("File Contents", &contents);
+
+    match periphery_client(&server)?
+      .request(WriteComposeContentsToHost {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path,
+        contents,
+      })
+      .await
+      .context("Failed to write contents to host")
+    {
+      Ok(log) => {
+        update.logs.push(log);
+      }
+      Err(e) => {
+        update.push_error_log(
+          "Write file contents",
+          format_serror(&e.into()),
+        );
+      }
+    };
+
+    update.finalize();
     add_update(update.clone()).await?;
 
     Ok(update)

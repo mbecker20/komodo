@@ -770,6 +770,7 @@ pub enum Operation {
   UpdateStack,
   RenameStack,
   DeleteStack,
+  WriteStackContents,
   RefreshStackCache,
   DeployStack,
   StartStack,

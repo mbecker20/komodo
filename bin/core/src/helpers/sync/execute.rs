@@ -342,4 +342,3 @@ pub async fn run_update_description<Resource: ResourceSyncTrait>(
     ));
   }
 }
-

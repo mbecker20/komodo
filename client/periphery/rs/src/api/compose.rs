@@ -76,6 +76,24 @@ pub struct GetComposeServiceLogSearch {
 
 //
 
+/// Write the compose contents to the file on the host, for stacks using
+/// `files_on_host`.
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(Log)]
+pub struct WriteComposeContentsToHost {
+  /// The name of the stack
+  pub name: String,
+  /// The run directory of the stack
+  pub run_directory: String,
+  /// Relative to the stack folder + run directory,
+  /// or absolute path.
+  pub file_path: String,
+  /// The contents to write.
+  pub contents: String,
+}
+
+//
+
 /// Rewrites the compose directory, pulls any images, takes down existing containers,
 /// and runs docker compose up.
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]

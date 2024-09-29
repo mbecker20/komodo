@@ -180,13 +180,12 @@ impl Resolve<ExportResourcesToToml, User> for State {
     for target in targets {
       match target {
         ResourceTarget::Alerter(id) => {
-          let alerter =
-            resource::get_check_permissions::<Alerter>(
-              &id,
-              &user,
-              PermissionLevel::Read,
-            )
-            .await?;
+          let alerter = resource::get_check_permissions::<Alerter>(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
           res
             .alerters
             .push(convert_resource::<Alerter>(alerter, &id_to_tags))

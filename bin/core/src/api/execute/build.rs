@@ -37,8 +37,8 @@ use crate::{
     git_token,
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_string,
       interpolate_variables_secrets_into_extra_args,
+      interpolate_variables_secrets_into_string,
       interpolate_variables_secrets_into_system_command,
     },
     query::{get_deployment_state, get_variables_and_secrets},
