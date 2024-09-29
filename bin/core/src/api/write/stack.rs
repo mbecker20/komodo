@@ -9,7 +9,7 @@ use komodo_client::{
     server::ServerState,
     stack::{PartialStackConfig, Stack, StackInfo},
     update::Update,
-    user::User,
+    user::{stack_user, User},
     FileContents, NoData, Operation,
   },
 };
@@ -182,6 +182,22 @@ impl Resolve<WriteStackFileContents, User> for State {
         );
       }
     };
+
+    if let Err(e) = State
+      .resolve(
+        RefreshStackCache { stack: stack.id },
+        stack_user().to_owned(),
+      )
+      .await
+      .context(
+        "Failed to refresh stack cache after writing file contents",
+      )
+    {
+      update.push_error_log(
+        "Refresh stack cache",
+        format_serror(&e.into()),
+      );
+    }
 
     update.finalize();
     add_update(update.clone()).await?;
