@@ -40,7 +40,7 @@ pub fn spawn_stack_refresh_loop() {
 
 async fn refresh_stacks() {
   let Ok(stacks) =
-    find_collect(&db_client().await.stacks, None, None)
+    find_collect(&db_client().stacks, None, None)
       .await
       .inspect_err(|e| {
         warn!("failed to get stacks from db in refresh task | {e:#}")

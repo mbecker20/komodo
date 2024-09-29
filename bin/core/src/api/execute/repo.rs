@@ -214,7 +214,7 @@ async fn handle_server_update_return(
   // but will fail to update cache in that case.
   if let Ok(update_doc) = to_document(&update) {
     let _ = update_one_by_id(
-      &db_client().await.updates,
+      &db_client().updates,
       &update.id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -229,7 +229,6 @@ async fn handle_server_update_return(
 #[instrument]
 async fn update_last_pulled_time(repo_name: &str) {
   let res = db_client()
-    .await
     .repos
     .update_one(
       doc! { "name": repo_name },
@@ -396,7 +395,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
 
     update.finalize();
 
-    let db = db_client().await;
+    let db = db_client();
 
     if update.success {
       let _ = db
@@ -473,7 +472,7 @@ async fn handle_builder_early_return(
   // but will fail to update cache in that case.
   if let Ok(update_doc) = to_document(&update) {
     let _ = update_one_by_id(
-      &db_client().await.updates,
+      &db_client().updates,
       &update.id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -511,7 +510,7 @@ pub async fn validate_cancel_repo_build(
   if let ExecuteRequest::CancelRepoBuild(req) = request {
     let repo = resource::get::<Repo>(&req.repo).await?;
 
-    let db = db_client().await;
+    let db = db_client();
 
     let (latest_build, latest_cancel) = tokio::try_join!(
       db.updates
@@ -596,7 +595,7 @@ impl Resolve<CancelRepoBuild, (User, Update)> for State {
     tokio::spawn(async move {
       tokio::time::sleep(Duration::from_secs(60)).await;
       if let Err(e) = update_one_by_id(
-        &db_client().await.updates,
+        &db_client().updates,
         &update_id,
         doc! { "$set": { "status": "Complete" } },
         None,

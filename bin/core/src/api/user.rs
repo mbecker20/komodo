@@ -103,7 +103,7 @@ impl Resolve<PushRecentlyViewed, User> for State {
       }
     };
     update_one_by_id(
-      &db_client().await.users,
+      &db_client().users,
       &user.id,
       mungos::update::Update::Set(update),
       None,
@@ -129,7 +129,7 @@ impl Resolve<SetLastSeenUpdate, User> for State {
     user: User,
   ) -> anyhow::Result<SetLastSeenUpdateResponse> {
     update_one_by_id(
-      &db_client().await.users,
+      &db_client().users,
       &user.id,
       mungos::update::Update::Set(doc! {
         "last_update_view": komodo_timestamp()
@@ -172,7 +172,6 @@ impl Resolve<CreateApiKey, User> for State {
       expires,
     };
     db_client()
-      .await
       .api_keys
       .insert_one(api_key)
       .await
@@ -192,7 +191,7 @@ impl Resolve<DeleteApiKey, User> for State {
     DeleteApiKey { key }: DeleteApiKey,
     user: User,
   ) -> anyhow::Result<DeleteApiKeyResponse> {
-    let client = db_client().await;
+    let client = db_client();
     let key = client
       .api_keys
       .find_one(doc! { "key": &key })

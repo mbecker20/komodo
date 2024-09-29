@@ -67,7 +67,6 @@ impl Resolve<GetServerTemplatesSummary, User> for State {
       None => Document::new(),
     };
     let total = db_client()
-      .await
       .server_templates
       .count_documents(query)
       .await

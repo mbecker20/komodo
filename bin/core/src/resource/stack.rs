@@ -46,7 +46,7 @@ impl super::KomodoResource for Stack {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.stacks
+    &db_client().stacks
   }
 
   async fn to_list_item(
@@ -323,7 +323,7 @@ async fn validate_config(
 // pub async fn refresh_resource_sync_state_cache() {
 //   let _ = async {
 //     let resource_syncs =
-//       find_collect(&db_client().await.resource_syncs, None, None)
+//       find_collect(&db_client().resource_syncs, None, None)
 //         .await
 //         .context("failed to get resource_syncs from db")?;
 //     let cache = resource_sync_state_cache();

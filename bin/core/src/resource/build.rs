@@ -40,7 +40,7 @@ impl super::KomodoResource for Build {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.builds
+    &db_client().builds
   }
 
   async fn to_list_item(
@@ -156,7 +156,7 @@ pub fn spawn_build_state_refresh_loop() {
 
 pub async fn refresh_build_state_cache() {
   let _ = async {
-    let builds = find_collect(&db_client().await.builds, None, None)
+    let builds = find_collect(&db_client().builds, None, None)
       .await
       .context("failed to get builds from db")?;
     let cache = build_state_cache();
@@ -264,7 +264,7 @@ async fn latest_2_build_updates(
   id: &str,
 ) -> anyhow::Result<[Option<Update>; 2]> {
   let mut builds = find_collect(
-    &db_client().await.updates,
+    &db_client().updates,
     doc! {
       "target.type": "Build",
       "target.id": id,

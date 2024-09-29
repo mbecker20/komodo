@@ -98,21 +98,16 @@ pub fn spawn_monitor_loop() {
 }
 
 async fn refresh_server_cache(ts: i64) {
-  let servers = match find_collect(
-    &db_client().await.servers,
-    None,
-    None,
-  )
-  .await
-  {
-    Ok(servers) => servers,
-    Err(e) => {
-      error!(
-        "failed to get server list (manage status cache) | {e:#}"
-      );
-      return;
-    }
-  };
+  let servers =
+    match find_collect(&db_client().servers, None, None).await {
+      Ok(servers) => servers,
+      Err(e) => {
+        error!(
+          "failed to get server list (manage status cache) | {e:#}"
+        );
+        return;
+      }
+    };
   let futures = servers.into_iter().map(|server| async move {
     update_cache_for_server(&server).await;
   });
@@ -124,17 +119,17 @@ async fn refresh_server_cache(ts: i64) {
 pub async fn update_cache_for_server(server: &Server) {
   let (deployments, repos, stacks) = tokio::join!(
     find_collect(
-      &db_client().await.deployments,
+      &db_client().deployments,
       doc! { "config.server_id": &server.id },
       None,
     ),
     find_collect(
-      &db_client().await.repos,
+      &db_client().repos,
       doc! { "config.server_id": &server.id },
       None,
     ),
     find_collect(
-      &db_client().await.stacks,
+      &db_client().stacks,
       doc! { "config.server_id": &server.id },
       None,
     )

@@ -31,22 +31,20 @@ use crate::{
 
 pub struct State;
 
-pub async fn db_client() -> &'static DbClient {
-  static DB_CLIENT: OnceCell<DbClient> = OnceCell::const_new();
+static DB_CLIENT: OnceLock<DbClient> = OnceLock::new();
+
+pub fn db_client() -> &'static DbClient {
   DB_CLIENT
-    .get_or_init(|| async {
-      match DbClient::new(&core_config().database)
-        .await
-        .context("failed to initialize database client")
-      {
-        Ok(client) => client,
-        Err(e) => {
-          error!("{e:#}");
-          panic!("Exiting");
-        }
-      }
-    })
+    .get()
+    .expect("db_client accessed before initialized")
+}
+
+pub async fn init_db_client() {
+  let client = DbClient::new(&core_config().database)
     .await
+    .context("failed to initialize database client")
+    .unwrap();
+  DB_CLIENT.set(client).expect("db_clint");
 }
 
 pub fn jwt_client() -> &'static JwtClient {

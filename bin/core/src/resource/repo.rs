@@ -45,7 +45,7 @@ impl super::KomodoResource for Repo {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.repos
+    &db_client().repos
   }
 
   async fn to_list_item(
@@ -184,7 +184,7 @@ pub fn spawn_repo_state_refresh_loop() {
 
 pub async fn refresh_repo_state_cache() {
   let _ = async {
-    let repos = find_collect(&db_client().await.repos, None, None)
+    let repos = find_collect(&db_client().repos, None, None)
       .await
       .context("failed to get repos from db")?;
     let cache = repo_state_cache();
@@ -258,7 +258,6 @@ async fn get_repo_state(id: &String) -> RepoState {
 async fn get_repo_state_from_db(id: &str) -> RepoState {
   async {
     let state = db_client()
-      .await
       .updates
       .find_one(doc! {
         "target.type": "Repo",

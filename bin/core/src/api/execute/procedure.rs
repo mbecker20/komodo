@@ -100,7 +100,7 @@ fn resolve_inner(
     // but will fail to update cache in that case.
     if let Ok(update_doc) = to_document(&update) {
       let _ = update_one_by_id(
-        &db_client().await.updates,
+        &db_client().updates,
         &update.id,
         mungos::update::Update::Set(update_doc),
         None,

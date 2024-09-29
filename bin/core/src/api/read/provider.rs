@@ -28,7 +28,7 @@ impl Resolve<GetGitProviderAccount, User> for State {
         "Only admins can read git provider accounts"
       ));
     }
-    find_one_by_id(&db_client().await.git_accounts, &id)
+    find_one_by_id(&db_client().git_accounts, &id)
       .await
       .context("failed to query db for git provider accounts")?
       .context("did not find git provider account with the given id")
@@ -54,7 +54,7 @@ impl Resolve<ListGitProviderAccounts, User> for State {
       filter.insert("username", username);
     }
     find_collect(
-      &db_client().await.git_accounts,
+      &db_client().git_accounts,
       filter,
       FindOptions::builder()
         .sort(doc! { "domain": 1, "username": 1 })
@@ -76,7 +76,7 @@ impl Resolve<GetDockerRegistryAccount, User> for State {
         "Only admins can read docker registry accounts"
       ));
     }
-    find_one_by_id(&db_client().await.registry_accounts, &id)
+    find_one_by_id(&db_client().registry_accounts, &id)
       .await
       .context("failed to query db for docker registry accounts")?
       .context(
@@ -104,7 +104,7 @@ impl Resolve<ListDockerRegistryAccounts, User> for State {
       filter.insert("username", username);
     }
     find_collect(
-      &db_client().await.registry_accounts,
+      &db_client().registry_accounts,
       filter,
       FindOptions::builder()
         .sort(doc! { "domain": 1, "username": 1 })

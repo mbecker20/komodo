@@ -31,7 +31,7 @@ impl super::KomodoResource for ServerTemplate {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.server_templates
+    &db_client().server_templates
   }
 
   async fn to_list_item(

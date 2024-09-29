@@ -46,7 +46,7 @@ impl super::KomodoResource for Deployment {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.deployments
+    &db_client().deployments
   }
 
   async fn to_list_item(

@@ -205,7 +205,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
         .context("failed to serialize stack info to bson")?;
 
       db_client()
-        .await
         .stacks
         .update_one(
           doc! { "name": &stack.name },

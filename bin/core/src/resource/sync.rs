@@ -43,7 +43,7 @@ impl super::KomodoResource for ResourceSync {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.resource_syncs
+    &db_client().resource_syncs
   }
 
   async fn to_list_item(
@@ -151,7 +151,7 @@ impl super::KomodoResource for ResourceSync {
     resource: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
-    db_client().await.alerts
+    db_client().alerts
       .update_many(
         doc! { "target.type": "ResourceSync", "target.id": &resource.id },
         doc! { "$set": {
@@ -185,7 +185,7 @@ pub fn spawn_resource_sync_state_refresh_loop() {
 pub async fn refresh_resource_sync_state_cache() {
   let _ = async {
     let resource_syncs =
-      find_collect(&db_client().await.resource_syncs, None, None)
+      find_collect(&db_client().resource_syncs, None, None)
         .await
         .context("failed to get resource_syncs from db")?;
     let cache = resource_sync_state_cache();
@@ -246,7 +246,6 @@ async fn get_resource_sync_state_from_db(
 ) -> ResourceSyncState {
   async {
     let state = db_client()
-      .await
       .updates
       .find_one(doc! {
         "target.type": "ResourceSync",

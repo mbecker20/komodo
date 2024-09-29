@@ -29,7 +29,7 @@ impl Resolve<ListTags, User> for State {
     _: User,
   ) -> anyhow::Result<Vec<Tag>> {
     find_collect(
-      &db_client().await.tags,
+      &db_client().tags,
       query,
       FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )

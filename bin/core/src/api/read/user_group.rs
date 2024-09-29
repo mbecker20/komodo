@@ -35,7 +35,6 @@ impl Resolve<GetUserGroup, User> for State {
       filter.insert("users", &user.id);
     }
     db_client()
-      .await
       .user_groups
       .find_one(filter)
       .await
@@ -55,7 +54,7 @@ impl Resolve<ListUserGroups, User> for State {
       filter.insert("users", &user.id);
     }
     find_collect(
-      &db_client().await.user_groups,
+      &db_client().user_groups,
       filter,
       FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )

@@ -43,7 +43,6 @@ pub async fn get_user(user: &str) -> anyhow::Result<User> {
     return Ok(user);
   }
   db_client()
-    .await
     .users
     .find_one(id_or_username_filter(user))
     .await
@@ -183,7 +182,6 @@ pub async fn get_tag(id_or_name: &str) -> anyhow::Result<Tag> {
     Err(_) => doc! { "name": id_or_name },
   };
   db_client()
-    .await
     .tags
     .find_one(query)
     .await
@@ -206,7 +204,7 @@ pub async fn get_tag_check_owner(
 pub async fn get_id_to_tags(
   filter: impl Into<Option<Document>>,
 ) -> anyhow::Result<HashMap<String, Tag>> {
-  let res = find_collect(&db_client().await.tags, filter, None)
+  let res = find_collect(&db_client().tags, filter, None)
     .await
     .context("failed to query db for tags")?
     .into_iter()
@@ -220,7 +218,7 @@ pub async fn get_user_user_groups(
   user_id: &str,
 ) -> anyhow::Result<Vec<UserGroup>> {
   find_collect(
-    &db_client().await.user_groups,
+    &db_client().user_groups,
     doc! {
       "users": user_id
     },
@@ -314,7 +312,6 @@ pub fn id_or_username_filter(id_or_username: &str) -> Document {
 
 pub async fn get_variable(name: &str) -> anyhow::Result<Variable> {
   db_client()
-    .await
     .variables
     .find_one(doc! { "name": &name })
     .await
@@ -330,7 +327,6 @@ pub async fn get_latest_update(
   operation: Operation,
 ) -> anyhow::Result<Option<Update>> {
   db_client()
-    .await
     .updates
     .find_one(doc! {
       "target.type": resource_type.as_ref(),
@@ -354,7 +350,7 @@ pub struct VariablesAndSecrets {
 pub async fn get_variables_and_secrets(
 ) -> anyhow::Result<VariablesAndSecrets> {
   let variables =
-    find_collect(&db_client().await.variables, None, None)
+    find_collect(&db_client().variables, None, None)
       .await
       .context("failed to get all variables from db")?;
   let mut secrets = core_config().secrets.clone();

@@ -72,7 +72,7 @@ pub async fn alert_stacks(
     return;
   }
   send_alerts(&alerts).await;
-  let res = db_client().await.alerts.insert_many(alerts).await;
+  let res = db_client().alerts.insert_many(alerts).await;
   if let Err(e) = res {
     error!("failed to record stack status alerts to db | {e:#}");
   }

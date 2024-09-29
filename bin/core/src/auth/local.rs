@@ -51,7 +51,6 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
       .context("failed to hash password")?;
 
     let no_users_exist = db_client()
-      .await
       .users
       .find_one(Document::new())
       .await?
@@ -79,7 +78,6 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
     };
 
     let user_id = db_client()
-      .await
       .users
       .insert_one(user)
       .await
@@ -109,7 +107,6 @@ impl Resolve<LoginLocalUser, HeaderMap> for State {
     }
 
     let user = db_client()
-      .await
       .users
       .find_one(doc! { "username": &username })
       .await

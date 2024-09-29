@@ -139,7 +139,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
     );
 
     let user_groups = if user.admin && tags.is_empty() {
-      find_collect(&db_client().await.user_groups, None, None)
+      find_collect(&db_client().user_groups, None, None)
         .await
         .context("failed to query db for user groups")?
         .into_iter()
@@ -310,7 +310,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
 
     if include_variables {
       res.variables =
-        find_collect(&db_client().await.variables, None, None)
+        find_collect(&db_client().variables, None, None)
           .await
           .context("failed to get variables from db")?
           .into_iter()
@@ -336,7 +336,7 @@ async fn add_user_groups(
   all: &AllResourcesById,
   user: &User,
 ) -> anyhow::Result<()> {
-  let db = db_client().await;
+  let db = db_client();
 
   let usernames = find_collect(&db.users, None, None)
     .await?

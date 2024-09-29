@@ -145,7 +145,6 @@ impl Resolve<GetBuildMonthlyStats, User> for State {
     let open_ts = close_ts - 30 * ONE_DAY_MS;
 
     let mut build_updates = db_client()
-      .await
       .updates
       .find(doc! {
         "start_ts": {
@@ -229,7 +228,7 @@ impl Resolve<ListBuildVersions, User> for State {
     }
 
     let versions = find_collect(
-      &db_client().await.updates,
+      &db_client().updates,
       filter,
       FindOptions::builder()
         .sort(doc! { "_id": -1 })

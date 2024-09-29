@@ -37,7 +37,7 @@ impl Resolve<ListVariables, User> for State {
     user: User,
   ) -> anyhow::Result<ListVariablesResponse> {
     let variables = find_collect(
-      &db_client().await.variables,
+      &db_client().variables,
       None,
       FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )

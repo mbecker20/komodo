@@ -43,7 +43,7 @@ pub async fn get_updates_for_view(
   delete: bool,
   all_resources: &AllResourcesById,
 ) -> anyhow::Result<Vec<DiffData>> {
-  let map = find_collect(&db_client().await.user_groups, None, None)
+  let map = find_collect(&db_client().user_groups, None, None)
     .await
     .context("failed to query db for UserGroups")?
     .into_iter()
@@ -66,7 +66,7 @@ pub async fn get_updates_for_view(
     }
   }
 
-  let id_to_user = find_collect(&db_client().await.users, None, None)
+  let id_to_user = find_collect(&db_client().users, None, None)
     .await
     .context("failed to query db for Users")?
     .into_iter()
@@ -248,7 +248,7 @@ pub async fn get_updates_for_execution(
   Vec<UpdateItem>,
   Vec<DeleteItem>,
 )> {
-  let map = find_collect(&db_client().await.user_groups, None, None)
+  let map = find_collect(&db_client().user_groups, None, None)
     .await
     .context("failed to query db for UserGroups")?
     .into_iter()
@@ -274,7 +274,7 @@ pub async fn get_updates_for_execution(
     return Ok((to_create, to_update, to_delete));
   }
 
-  let id_to_user = find_collect(&db_client().await.users, None, None)
+  let id_to_user = find_collect(&db_client().users, None, None)
     .await
     .context("failed to query db for Users")?
     .into_iter()

@@ -25,7 +25,7 @@ pub fn spawn_repo_refresh_loop() {
 }
 
 async fn refresh_repos() {
-  let Ok(repos) = find_collect(&db_client().await.repos, None, None)
+  let Ok(repos) = find_collect(&db_client().repos, None, None)
     .await
     .inspect_err(|e| {
       warn!("failed to get repos from db in refresh task | {e:#}")

@@ -64,7 +64,7 @@ async fn callback(
   let github_user =
     client.get_github_user(&token.access_token).await?;
   let github_id = github_user.id.to_string();
-  let db_client = db_client().await;
+  let db_client = db_client();
   let user = db_client
     .users
     .find_one(doc! { "config.data.github_id": &github_id })

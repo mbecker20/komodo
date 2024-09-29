@@ -46,7 +46,7 @@ pub fn spawn_sync_refresh_loop() {
 
 async fn refresh_syncs() {
   let Ok(syncs) =
-    find_collect(&db_client().await.resource_syncs, None, None)
+    find_collect(&db_client().resource_syncs, None, None)
       .await
       .inspect_err(|e| {
         warn!(

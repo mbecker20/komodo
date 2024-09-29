@@ -153,7 +153,6 @@ impl Resolve<RefreshBuildCache, User> for State {
       .context("failed to serialize build info to bson")?;
 
     db_client()
-      .await
       .builds
       .update_one(
         doc! { "name": &build.name },

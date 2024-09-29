@@ -29,7 +29,7 @@ pub async fn get_updates_for_view(
   variables: &[Variable],
   delete: bool,
 ) -> anyhow::Result<Vec<DiffData>> {
-  let map = find_collect(&db_client().await.variables, None, None)
+  let map = find_collect(&db_client().variables, None, None)
     .await
     .context("failed to query db for variables")?
     .into_iter()
@@ -92,7 +92,7 @@ pub async fn get_updates_for_execution(
   variables: Vec<Variable>,
   delete: bool,
 ) -> anyhow::Result<(Vec<Variable>, Vec<ToUpdateItem>, Vec<String>)> {
-  let map = find_collect(&db_client().await.variables, None, None)
+  let map = find_collect(&db_client().variables, None, None)
     .await
     .context("failed to query db for variables")?
     .into_iter()

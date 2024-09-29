@@ -32,7 +32,7 @@ impl super::KomodoResource for Server {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.servers
+    &db_client().servers
   }
 
   async fn to_list_item(
@@ -125,7 +125,7 @@ impl super::KomodoResource for Server {
     resource: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
-    let db = db_client().await;
+    let db = db_client();
 
     let id = &resource.id;
 

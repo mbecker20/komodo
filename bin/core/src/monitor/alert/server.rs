@@ -366,7 +366,7 @@ async fn open_alerts(alerts: &[(Alert, SendAlerts)]) {
     return;
   }
 
-  let db = db_client().await;
+  let db = db_client();
 
   let open = || async {
     let ids = db
@@ -431,7 +431,7 @@ async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
       }).collect::<Vec<_>>();
 
     bulk_update::bulk_update(
-      &db_client().await.db,
+      &db_client().db,
       Alert::default_collection_name(),
       &updates,
       false,
@@ -472,7 +472,6 @@ async fn resolve_alerts(alerts: &[(Alert, SendAlerts)]) {
       .collect::<anyhow::Result<Vec<_>>>()?;
 
     db_client()
-      .await
       .alerts
       .update_many(
         doc! { "_id": { "$in": &alert_ids } },
@@ -518,7 +517,7 @@ async fn resolve_alerts(alerts: &[(Alert, SendAlerts)]) {
 async fn get_open_alerts(
 ) -> anyhow::Result<(OpenAlertMap, OpenDiskAlertMap)> {
   let alerts = find_collect(
-    &db_client().await.alerts,
+    &db_client().alerts,
     doc! { "resolved": false },
     None,
   )

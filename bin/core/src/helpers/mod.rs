@@ -76,7 +76,6 @@ pub async fn git_token(
   mut on_https_found: impl FnMut(bool),
 ) -> anyhow::Result<Option<String>> {
   let db_provider = db_client()
-    .await
     .git_accounts
     .find_one(doc! { "domain": provider_domain, "username": account_username })
     .await
@@ -108,7 +107,6 @@ pub async fn registry_token(
   account_username: &str,
 ) -> anyhow::Result<Option<String>> {
   let provider = db_client()
-    .await
     .registry_accounts
     .find_one(doc! { "domain": provider_domain, "username": account_username })
     .await
@@ -162,7 +160,6 @@ pub async fn create_permission<T>(
   }
   let target: ResourceTarget = target.into();
   if let Err(e) = db_client()
-    .await
     .permissions
     .insert_one(Permission {
       id: Default::default(),
@@ -212,7 +209,6 @@ async fn startup_in_progress_update_cleanup() {
   // This static log won't fail to serialize, unwrap ok.
   let log = to_document(&log).unwrap();
   if let Err(e) = db_client()
-    .await
     .updates
     .update_many(
       doc! { "status": "InProgress" },
@@ -234,7 +230,7 @@ async fn startup_in_progress_update_cleanup() {
 
 /// Run on startup, ensure open alerts pointing to invalid resources are closed.
 async fn startup_open_alert_cleanup() {
-  let db = db_client().await;
+  let db = db_client();
   let Ok(alerts) =
     find_collect(&db.alerts, doc! { "resolved": false }, None)
       .await
@@ -292,7 +288,7 @@ pub async fn ensure_first_server() {
   if first_server.is_empty() {
     return;
   }
-  let db = db_client().await;
+  let db = db_client();
   let Ok(server) = db
     .servers
     .find_one(Document::new())

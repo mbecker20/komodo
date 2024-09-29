@@ -166,15 +166,13 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         .collect::<HashMap<_, _>>();
 
       let deploy_updates =
-        crate::sync::deploy::get_updates_for_view(
-          SyncDeployParams {
-            deployments: &resources.deployments,
-            deployment_map: &deployments_by_name,
-            stacks: &resources.stacks,
-            stack_map: &stacks_by_name,
-            all_resources: &all_resources,
-          },
-        )
+        crate::sync::deploy::get_updates_for_view(SyncDeployParams {
+          deployments: &resources.deployments,
+          deployment_map: &deployments_by_name,
+          stacks: &resources.stacks,
+          stack_map: &stacks_by_name,
+          all_resources: &all_resources,
+        })
         .await;
 
       let delete = sync.config.managed || sync.config.delete;
@@ -341,7 +339,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       .context("failed to serialize pending to document")?;
 
     update_one_by_id(
-      &db_client().await.resource_syncs,
+      &db_client().resource_syncs,
       &sync.id,
       doc! { "$set": { "info": info } },
       None,
@@ -352,9 +350,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     let id = sync.id.clone();
     let name = sync.name.clone();
     tokio::task::spawn(async move {
-      let db = db_client().await;
+      let db = db_client();
       let Some(existing) = db_client()
-        .await
         .alerts
         .find_one(doc! {
           "resolved": false,
@@ -487,7 +484,6 @@ impl Resolve<CommitSync, User> for State {
         return resource::get::<ResourceSync>(&sync.name).await;
       }
     } else if let Err(e) = db_client()
-      .await
       .resource_syncs
       .update_one(
         doc! { "name": &sync.name },
@@ -531,7 +527,7 @@ impl Resolve<CommitSync, User> for State {
     // but will fail to update cache in that case.
     if let Ok(update_doc) = to_document(&update) {
       let _ = update_one_by_id(
-        &db_client().await.updates,
+        &db_client().updates,
         &update.id,
         mungos::update::Update::Set(update_doc),
         None,

@@ -27,6 +27,7 @@ use mungos::{
   mongodb::{Collection, Database},
 };
 
+#[derive(Debug)]
 pub struct DbClient {
   pub users: Collection<User>,
   pub user_groups: Collection<UserGroup>,

@@ -67,7 +67,6 @@ impl Resolve<GetBuildersSummary, User> for State {
         None => Document::new(),
       };
     let total = db_client()
-      .await
       .builders
       .count_documents(query)
       .await

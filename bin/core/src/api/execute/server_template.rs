@@ -34,7 +34,6 @@ impl Resolve<LaunchServer, (User, Update)> for State {
   ) -> anyhow::Result<Update> {
     // validate name isn't already taken by another server
     if db_client()
-      .await
       .servers
       .find_one(doc! {
         "name": &name

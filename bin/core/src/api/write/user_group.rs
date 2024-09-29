@@ -33,7 +33,7 @@ impl Resolve<CreateUserGroup, User> for State {
       updated_at: komodo_timestamp(),
       name,
     };
-    let db = db_client().await;
+    let db = db_client();
     let id = db
       .user_groups
       .insert_one(user_group)
@@ -59,7 +59,7 @@ impl Resolve<RenameUserGroup, User> for State {
     if !admin.admin {
       return Err(anyhow!("This call is admin-only"));
     }
-    let db = db_client().await;
+    let db = db_client();
     update_one_by_id(
       &db.user_groups,
       &id,
@@ -85,7 +85,7 @@ impl Resolve<DeleteUserGroup, User> for State {
       return Err(anyhow!("This call is admin-only"));
     }
 
-    let db = db_client().await;
+    let db = db_client();
 
     let ug = find_one_by_id(&db.user_groups, &id)
       .await
@@ -118,7 +118,7 @@ impl Resolve<AddUserToUserGroup, User> for State {
       return Err(anyhow!("This call is admin-only"));
     }
 
-    let db = db_client().await;
+    let db = db_client();
 
     let filter = match ObjectId::from_str(&user) {
       Ok(id) => doc! { "_id": id },
@@ -163,7 +163,7 @@ impl Resolve<RemoveUserFromUserGroup, User> for State {
       return Err(anyhow!("This call is admin-only"));
     }
 
-    let db = db_client().await;
+    let db = db_client();
 
     let filter = match ObjectId::from_str(&user) {
       Ok(id) => doc! { "_id": id },
@@ -205,7 +205,7 @@ impl Resolve<SetUsersInUserGroup, User> for State {
       return Err(anyhow!("This call is admin-only"));
     }
 
-    let db = db_client().await;
+    let db = db_client();
 
     let all_users = find_collect(&db.users, None, None)
       .await

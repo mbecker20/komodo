@@ -277,7 +277,7 @@ pub async fn get_resource_ids_for_user<T: KomodoResource>(
     ))),
     // And any ids using the permissions table
     find_collect(
-      &db_client().await.permissions,
+      &db_client().permissions,
       doc! {
         "$or": user_target_query(&user.id, &groups)?,
         "resource_target.type": resource_type.as_ref(),
@@ -354,7 +354,7 @@ pub async fn get_user_permission_on_resource<T: KomodoResource>(
 
   // Overlay any specific permissions
   let permission = find_collect(
-    &db_client().await.permissions,
+    &db_client().permissions,
     doc! {
       "$or": user_target_query(&user.id, &groups)?,
       "resource_target.type": resource_type.as_ref(),
@@ -798,7 +798,6 @@ where
   let target: ResourceTarget = target.into();
   let (variant, id) = target.extract_variant_id();
   if let Err(e) = db_client()
-    .await
     .permissions
     .delete_many(doc! {
       "resource_target.type": variant.as_ref(),
@@ -832,7 +831,6 @@ where
     ResourceTarget::System(_) => return,
   };
   if let Err(e) = db_client()
-    .await
     .users
     .update_many(
       doc! {},

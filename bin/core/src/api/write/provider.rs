@@ -47,7 +47,6 @@ impl Resolve<CreateGitProviderAccount, User> for State {
     );
 
     account.id = db_client()
-      .await
       .git_accounts
       .insert_one(&account)
       .await
@@ -118,7 +117,7 @@ impl Resolve<UpdateGitProviderAccount, User> for State {
     let account = to_document(&account).context(
       "failed to serialize partial git provider account to bson",
     )?;
-    let db = db_client().await;
+    let db = db_client();
     update_one_by_id(
       &db.git_accounts,
       &id,
@@ -175,7 +174,7 @@ impl Resolve<DeleteGitProviderAccount, User> for State {
       &user,
     );
 
-    let db = db_client().await;
+    let db = db_client();
     let Some(account) =
       find_one_by_id(&db.git_accounts, &id)
         .await
@@ -237,7 +236,6 @@ impl Resolve<CreateDockerRegistryAccount, User> for State {
     );
 
     account.id = db_client()
-      .await
       .registry_accounts
       .insert_one(&account)
       .await
@@ -310,7 +308,7 @@ impl Resolve<UpdateDockerRegistryAccount, User> for State {
       "failed to serialize partial docker registry account account to bson",
     )?;
 
-    let db = db_client().await;
+    let db = db_client();
     update_one_by_id(
       &db.registry_accounts,
       &id,
@@ -368,7 +366,7 @@ impl Resolve<DeleteDockerRegistryAccount, User> for State {
       &user,
     );
 
-    let db = db_client().await;
+    let db = db_client();
     let Some(account) = find_one_by_id(&db.registry_accounts, &id)
       .await
       .context("failed to query db for git accounts")?

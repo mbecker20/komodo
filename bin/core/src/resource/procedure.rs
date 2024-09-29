@@ -46,7 +46,7 @@ impl super::KomodoResource for Procedure {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.procedures
+    &db_client().procedures
   }
 
   async fn to_list_item(
@@ -577,7 +577,7 @@ pub fn spawn_procedure_state_refresh_loop() {
 pub async fn refresh_procedure_state_cache() {
   let _ = async {
     let procedures =
-      find_collect(&db_client().await.procedures, None, None)
+      find_collect(&db_client().procedures, None, None)
         .await
         .context("failed to get procedures from db")?;
     let cache = procedure_state_cache();
@@ -612,7 +612,6 @@ async fn get_procedure_state(id: &String) -> ProcedureState {
 async fn get_procedure_state_from_db(id: &str) -> ProcedureState {
   async {
     let state = db_client()
-      .await
       .updates
       .find_one(doc! {
         "target.type": "Procedure",

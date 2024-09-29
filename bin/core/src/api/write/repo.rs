@@ -152,7 +152,6 @@ impl Resolve<RefreshRepoCache, User> for State {
       .context("failed to serialize repo info to bson")?;
 
     db_client()
-      .await
       .repos
       .update_one(
         doc! { "name": &repo.name },

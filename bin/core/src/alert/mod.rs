@@ -23,7 +23,7 @@ pub async fn send_alerts(alerts: &[Alert]) {
   }
 
   let Ok(alerters) = find_collect(
-    &db_client().await.alerters,
+    &db_client().alerters,
     doc! { "config.enabled": true },
     None,
   )

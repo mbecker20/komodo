@@ -36,7 +36,9 @@ async fn app() -> anyhow::Result<()> {
   info!("Komodo Core version: v{}", env!("CARGO_PKG_VERSION"));
   info!("{:?}", config.sanitized());
 
-  // includes init db_client check to crash on db init failure
+  // Init db_client check to crash on db init failure
+  state::init_db_client();
+  // Cleanup open updates / invalid alerts
   helpers::startup_cleanup().await;
   // Maybe initialize default server in All In One deployment.
   helpers::ensure_first_server().await;

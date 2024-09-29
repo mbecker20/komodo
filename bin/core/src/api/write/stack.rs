@@ -111,7 +111,7 @@ impl Resolve<RenameStack, User> for State {
       make_update(&stack, Operation::RenameStack, &user);
 
     update_one_by_id(
-      &db_client().await.stacks,
+      &db_client().stacks,
       &stack.id,
       mungos::update::Update::Set(
         doc! { "name": &name, "updated_at": komodo_timestamp() },
@@ -374,7 +374,6 @@ impl Resolve<RefreshStackCache, User> for State {
       .context("failed to serialize stack info to bson")?;
 
     db_client()
-      .await
       .stacks
       .update_one(
         doc! { "name": &stack.name },

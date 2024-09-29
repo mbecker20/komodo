@@ -38,7 +38,7 @@ impl Resolve<UpdateUserAdmin, User> for State {
     if !super_admin.super_admin {
       return Err(anyhow!("Only super admins can call this method."));
     }
-    let user = find_one_by_id(&db_client().await.users, &user_id)
+    let user = find_one_by_id(&db_client().users, &user_id)
       .await
       .context("failed to query mongo for user")?
       .context("did not find user with given id")?;
@@ -52,7 +52,7 @@ impl Resolve<UpdateUserAdmin, User> for State {
     }
 
     update_one_by_id(
-      &db_client().await.users,
+      &db_client().users,
       &user_id,
       doc! { "$set": { "admin": admin } },
       None,
@@ -79,7 +79,7 @@ impl Resolve<UpdateUserBasePermissions, User> for State {
       return Err(anyhow!("this method is admin only"));
     }
 
-    let user = find_one_by_id(&db_client().await.users, &user_id)
+    let user = find_one_by_id(&db_client().users, &user_id)
       .await
       .context("failed to query mongo for user")?
       .context("did not find user with given id")?;
@@ -105,7 +105,7 @@ impl Resolve<UpdateUserBasePermissions, User> for State {
     }
 
     update_one_by_id(
-      &db_client().await.users,
+      &db_client().users,
       &user_id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -159,7 +159,6 @@ impl Resolve<UpdatePermissionOnResourceType, User> for State {
     match user_target_variant {
       UserTargetVariant::User => {
         db_client()
-          .await
           .users
           .update_one(filter, update)
           .await
@@ -169,7 +168,6 @@ impl Resolve<UpdatePermissionOnResourceType, User> for State {
       }
       UserTargetVariant::UserGroup => {
         db_client()
-          .await
           .user_groups
           .update_one(filter, update)
           .await
@@ -221,7 +219,6 @@ impl Resolve<UpdatePermissionOnTarget, User> for State {
       (user_target_variant.as_ref(), resource_variant.as_ref());
 
     db_client()
-      .await
       .permissions
       .update_one(
         doc! {
@@ -258,7 +255,6 @@ async fn extract_user_target_with_validation(
         Err(_) => doc! { "username": ident },
       };
       let id = db_client()
-        .await
         .users
         .find_one(filter)
         .await
@@ -273,7 +269,6 @@ async fn extract_user_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .user_groups
         .find_one(filter)
         .await
@@ -300,7 +295,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .builds
         .find_one(filter)
         .await
@@ -315,7 +309,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .builders
         .find_one(filter)
         .await
@@ -330,7 +323,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .deployments
         .find_one(filter)
         .await
@@ -345,7 +337,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .servers
         .find_one(filter)
         .await
@@ -360,7 +351,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .repos
         .find_one(filter)
         .await
@@ -375,7 +365,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .alerters
         .find_one(filter)
         .await
@@ -390,7 +379,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .procedures
         .find_one(filter)
         .await
@@ -405,7 +393,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .server_templates
         .find_one(filter)
         .await
@@ -420,7 +407,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .resource_syncs
         .find_one(filter)
         .await
@@ -435,7 +421,6 @@ async fn extract_resource_target_with_validation(
         Err(_) => doc! { "name": ident },
       };
       let id = db_client()
-        .await
         .stacks
         .find_one(filter)
         .await

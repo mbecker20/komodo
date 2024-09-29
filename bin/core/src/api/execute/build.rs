@@ -312,7 +312,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     update.finalize();
 
-    let db = db_client().await;
+    let db = db_client();
 
     if update.success {
       let _ = db
@@ -398,7 +398,7 @@ async fn handle_early_return(
   // but will fail to update cache in that case.
   if let Ok(update_doc) = to_document(&update) {
     let _ = update_one_by_id(
-      &db_client().await.updates,
+      &db_client().updates,
       &update.id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -438,7 +438,7 @@ pub async fn validate_cancel_build(
   if let ExecuteRequest::CancelBuild(req) = request {
     let build = resource::get::<Build>(&req.build).await?;
 
-    let db = db_client().await;
+    let db = db_client();
 
     let (latest_build, latest_cancel) = tokio::try_join!(
       db.updates
@@ -521,7 +521,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     tokio::spawn(async move {
       tokio::time::sleep(Duration::from_secs(60)).await;
       if let Err(e) = update_one_by_id(
-        &db_client().await.updates,
+        &db_client().updates,
         &update_id,
         doc! { "$set": { "status": "Complete" } },
         None,
@@ -539,7 +539,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
 #[instrument]
 async fn handle_post_build_redeploy(build_id: &str) {
   let Ok(redeploy_deployments) = find_collect(
-    &db_client().await.deployments,
+    &db_client().deployments,
     doc! {
       "config.image.params.build_id": build_id,
       "config.redeploy_on_build": true

@@ -67,7 +67,6 @@ impl Resolve<GetAlertersSummary, User> for State {
         None => Document::new(),
       };
     let total = db_client()
-      .await
       .alerters
       .count_documents(query)
       .await

@@ -393,7 +393,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Execute the deploy cache
     deploy_from_cache(deploy_cache, &mut update.logs).await;
 
-    let db = db_client().await;
+    let db = db_client();
 
     if let Err(e) = update_one_by_id(
       &db.resource_syncs,
