@@ -61,7 +61,7 @@ export const DeployDeployment = ({ id }: DeploymentId) => {
 
   const term_signal_labels =
     deployed &&
-    parse_key_value(deployment.config!.term_signal_labels).map(
+    parse_key_value(deployment.config?.term_signal_labels ?? "").map(
       (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
     );
 
@@ -126,7 +126,7 @@ export const DestroyDeployment = ({ id }: DeploymentId) => {
   if (state === Types.DeploymentState.NotDeployed) return null;
 
   const term_signal_labels = parse_key_value(
-    deployment.config!.term_signal_labels
+    deployment.config?.term_signal_labels ?? ""
   ).map(
     (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
   );
@@ -234,7 +234,7 @@ const StopDeployment = ({ id }: DeploymentId) => {
   if (!deployment) return null;
 
   const term_signal_labels = parse_key_value(
-    deployment.config!.term_signal_labels
+    deployment.config?.term_signal_labels ?? ""
   ).map(
     (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
   );

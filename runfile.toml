@@ -24,8 +24,7 @@ docker compose -p komodo-dev -f test.compose.yaml up -d"""
 [test-compose-build]
 description = "builds and deploys test.compose.yaml"
 cmd = """
-docker compose -p komodo-dev -f test.compose.yaml down --remove-orphans && \
-docker compose -p komodo-dev -f test.compose.yaml up -d --build"""
+docker compose -p komodo-dev -f test.compose.yaml build"""
 
 [test-core]
 description = "runs core --release pointing to test.core.config.toml"
