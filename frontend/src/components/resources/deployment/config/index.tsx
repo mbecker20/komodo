@@ -66,7 +66,7 @@ export const DeploymentConfig = ({
               <ResourceSelector
                 type="Server"
                 selected={update.server_id ?? config.server_id}
-                onSelect={(server_id) => set({ server_id })}
+                onSelect={(server_id) => set({ ...update, server_id })}
                 disabled={disabled}
                 align="end"
               />

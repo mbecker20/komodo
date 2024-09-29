@@ -50,9 +50,9 @@ export const ServerConfig = ({
             label: "General",
             components: {
               address: {
-                placeholder: "http://12.34.56.78:8120",
+                placeholder: "https://12.34.56.78:8120",
                 description:
-                  "The http/s address of periphery in your network, eg. http://12.34.56.78:8120",
+                  "The http/s address of periphery in your network, eg. https://12.34.56.78:8120",
               },
               region: {
                 placeholder: "Region. Optional.",
@@ -122,7 +122,7 @@ export const ServerConfig = ({
                   config.send_unreachable_alerts
                 }
                 onCheckedChange={(send_unreachable_alerts) =>
-                  set({ send_unreachable_alerts })
+                  set({ ...update, send_unreachable_alerts })
                 }
               />
             ),

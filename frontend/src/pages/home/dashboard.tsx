@@ -48,12 +48,12 @@ export const Dashboard = () => {
             </div>
           )}
           <ResourceRow type="Server" />
-          <ResourceRow type="Deployment" />
           <ResourceRow type="Stack" />
+          <ResourceRow type="Deployment" />
           <ResourceRow type="Build" />
           <ResourceRow type="Repo" />
-          <ResourceRow type="ResourceSync" />
           <ResourceRow type="Procedure" />
+          <ResourceRow type="ResourceSync" />
         </div>
       </Page>
     </>

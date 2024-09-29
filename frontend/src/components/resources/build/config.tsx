@@ -64,7 +64,7 @@ export const BuildConfig = ({
               <ResourceSelector
                 type="Builder"
                 selected={update.builder_id ?? config.builder_id}
-                onSelect={(builder_id) => set({ builder_id })}
+                onSelect={(builder_id) => set({ ...update, builder_id })}
                 disabled={disabled}
                 align="end"
               />

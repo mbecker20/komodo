@@ -55,7 +55,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
               <ResourceSelector
                 type="Server"
                 selected={update.server_id ?? config.server_id}
-                onSelect={(server_id) => set({ server_id })}
+                onSelect={(server_id) => set({ ...update, server_id })}
                 disabled={disabled}
                 align="end"
               />
@@ -69,7 +69,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
               <ResourceSelector
                 type="Builder"
                 selected={update.builder_id ?? config.builder_id}
-                onSelect={(builder_id) => set({ builder_id })}
+                onSelect={(builder_id) => set({ ...update, builder_id })}
                 disabled={disabled}
                 align="end"
               />
