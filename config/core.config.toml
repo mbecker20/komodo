@@ -277,11 +277,12 @@ webhook_secret = "a_random_webhook_secret"
 # POLL INTERVALS #
 ##################
 
-## Interval at which to poll Stacks for any updates / automated actions.
-## Env: KOMODO_STACK_POLL_INTERVAL
-## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-# stack_poll_interval = "1-min"
+## Controls the rate at which servers are polled for health, system stats, and container status.
+## This affects network usage, and the size of the stats stored in mongo.
+## Env: KOMODO_MONITORING_INTERVAL
+## Options: 1-sec, 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
+## Default: 15-sec
+# monitoring_interval = "5-sec"
 
 ## Interval at which to poll Syncs for any updates / automated actions.
 ## Env: KOMODO_SYNC_POLL_INTERVAL
@@ -289,8 +290,14 @@ webhook_secret = "a_random_webhook_secret"
 ## Default: `5-min`.
 # sync_poll_interval = "1-min"
 
-## Interval at which to poll Builds (latest commit hash) for any updates / automated actions.
+## Interval at which to poll Stacks for any updates / automated actions.
 ## Env: KOMODO_STACK_POLL_INTERVAL
+## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
+## Default: `5-min`.
+# stack_poll_interval = "1-min"
+
+## Interval at which to poll Builds (latest commit hash) for any updates / automated actions.
+## Env: KOMODO_BUILD_POLL_INTERVAL
 ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
 ## Default: `5-min`.
 # build_poll_interval = "1-min"
@@ -300,13 +307,6 @@ webhook_secret = "a_random_webhook_secret"
 ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
 ## Default: `5-min`.
 # repo_poll_interval = "1-min"
-
-## Controls the rate at which servers are polled for health, system stats, and container status.
-## This affects network usage, and the size of the stats stored in mongo.
-## Env: KOMODO_MONITORING_INTERVAL
-## Options: 1-sec, 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
-## Default: 15-sec
-# monitoring_interval = "5-sec"
 
 ###################
 # CLOUD PROVIDERS #

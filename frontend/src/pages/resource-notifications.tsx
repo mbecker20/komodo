@@ -99,12 +99,12 @@ const Update = ({ update }: { update: Types.UpdateListItem }) => {
   const Icon = () =>
     update.status === Types.UpdateStatus.Complete ? (
       update.success ? (
-        <Check className={"w-4"} />
+        <Check className="w-4" />
       ) : (
-        <X className={"w-4"} />
+        <X className="w-4" />
       )
     ) : (
-      <Loader2 className={"w-4"} />
+      <Loader2 className="w-4 animate-spin" />
     );
 
   return (

@@ -56,19 +56,21 @@ services:
       - default
     env_file: ./compose.env
     volumes:
-      # Mount external docker socket
+      ## Mount external docker socket
       - /var/run/docker.sock:/var/run/docker.sock
-      # Allow Periphery to see processes outside of container
+      ## Allow Periphery to see processes outside of container
       - /proc:/proc
-      # use self signed certs in docker volume, 
-      # or mount your own signed certs.
+      ## use self signed certs in docker volume, 
+      ## or mount your own signed certs.
       - ssl-certs:/etc/komodo/ssl
-      # manage repos in a docker volume, 
-      # or change it to an accessible host directory.
+      ## manage repos in a docker volume, 
+      ## or change it to an accessible host directory.
       - repos:/etc/komodo/repos
-      # manage stack files in a docker volume, 
-      # or change it to an accessible host directory.
+      ## manage stack files in a docker volume, 
+      ## or change it to an accessible host directory.
       - stacks:/etc/komodo/stacks
+      ## Optionally mount a path to store compose files
+      # - /path/to/compose:/host/compose
 
 volumes:
   sqlite-data:
