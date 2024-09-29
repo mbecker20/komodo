@@ -154,6 +154,8 @@ impl Resolve<DeployStack, (User, Update)> for State {
         stack.info.latest_services.clone()
       };
 
+      // This ensures to get the latest project name,
+      // as it may have changed since the last deploy.
       let project_name = stack.project_name(true);
 
       let (

@@ -214,7 +214,9 @@ export const StackConfig = ({
                 className="max-w-[75%] lg:max-w-[400px]"
                 placeholder="/path/to/folder"
                 value={update.run_directory ?? config.run_directory}
-                onChange={(e) => set({ run_directory: e.target.value })}
+                onChange={(e) =>
+                  set({ ...update, run_directory: e.target.value })
+                }
               />
             ),
             components: {},
@@ -457,7 +459,9 @@ export const StackConfig = ({
                   className="max-w-[75%] lg:max-w-[400px]"
                   placeholder="./"
                   value={update.run_directory ?? config.run_directory}
-                  onChange={(e) => set({ run_directory: e.target.value })}
+                  onChange={(e) =>
+                    set({ ...update, run_directory: e.target.value })
+                  }
                 />
               ),
               components: {},

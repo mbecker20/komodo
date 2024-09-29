@@ -53,6 +53,7 @@ pub async fn compose_up(
     .stack_dir
     .join(to_komodo_name(&stack.name));
   let run_directory = root.join(&stack.config.run_directory);
+  // Canonicalize the path to ensure it exists, and is the cleanest path to the run directory.
   let run_directory = run_directory.canonicalize().context(
     "Failed to validate run directory on host after stack write (canonicalize error)",
   )?;
@@ -113,16 +114,21 @@ pub async fn compose_up(
     .as_ref()
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
+
   let file_args = if stack.config.file_paths.is_empty() {
     String::from("compose.yaml")
   } else {
     stack.config.file_paths.join(" -f ")
   };
+  // This will be the last project name, which is the one that needs to be destroyed.
+  // Might be different from the current project name, if user renames stack / changes to custom project name.
   let last_project_name = stack.project_name(false);
   let project_name = stack.project_name(true);
 
-  // Login to the registry to pull private images, if account is set
-  if !stack.config.registry_account.is_empty() {
+  // Login to the registry to pull private images, if provider / account are set
+  if !stack.config.registry_provider.is_empty()
+    && !stack.config.registry_account.is_empty()
+  {
     let registry = ImageRegistry::Standard(StandardRegistryConfig {
       domain: stack.config.registry_provider.clone(),
       account: stack.config.registry_account.clone(),
@@ -212,10 +218,9 @@ pub async fn compose_up(
   let command = format!(
     "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
   );
-  if stack.config.skip_secret_interp {
-    let log = run_komodo_command("compose up", command).await;
-    res.deployed = log.success;
-    res.logs.push(log);
+
+  let log = if stack.config.skip_secret_interp {
+    run_komodo_command("compose up", command).await
   } else {
     let (command, mut replacers) = svi::interpolate_variables(
       &command,
@@ -231,16 +236,17 @@ pub async fn compose_up(
     log.stdout = svi::replace_in_string(&log.stdout, &replacers);
     log.stderr = svi::replace_in_string(&log.stderr, &replacers);
 
-    res.logs.push(log);
-  }
+    log
+  };
+
+  res.deployed = log.success;
+  res.logs.push(log);
 
   // If using a repo based stack, clean up the file at this point.
   // This will also let user know immediately if there will be a problem
   // with any volume mounted inside repo directory.
   // Just use absolute mount points or docker volumes with repo based stack anyways.
-  if !stack.config.files_on_host
-    && stack.config.file_contents.is_empty()
-  {
+  if !stack.config.files_on_host && !stack.config.repo.is_empty() {
     if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
       format!("failed to clean up files after deploy | path: {root:?} | Bring the stack down, and ensure all volumes are mounted outside the repo directory for the next deploy. (preferably use absolute path for mount point)")
     }) {
@@ -294,14 +300,59 @@ async fn write_stack(
       }
     };
     Ok(env_file_path)
-  } else if stack.config.file_contents.is_empty() {
+  } else if stack.config.repo.is_empty() {
+    if stack.config.file_contents.trim().is_empty() {
+      return Err(anyhow!("Must either input compose file contents directly, or use file one host / git repo options."));
+    }
+    // ==============
+    // UI BASED FILES
+    // ==============
+    // Ensure run directory exists
+    fs::create_dir_all(&run_directory).await.with_context(|| {
+      format!(
+        "failed to create stack run directory at {run_directory:?}"
+      )
+    })?;
+    let env_file_path = match write_environment_file(
+      &env_vars,
+      &stack.config.env_file_path,
+      stack
+        .config
+        .skip_secret_interp
+        .then_some(&periphery_config().secrets),
+      &run_directory,
+      &mut res.logs,
+    )
+    .await
+    {
+      Ok(path) => path,
+      Err(_) => {
+        return Err(anyhow!("failed to write environment file"));
+      }
+    };
+    let file_path = run_directory
+      .join(
+        stack
+          .config
+          .file_paths
+          // only need the first one, or default
+          .first()
+          .map(String::as_str)
+          .unwrap_or("compose.yaml"),
+      )
+      .components()
+      .collect::<PathBuf>();
+    fs::write(&file_path, &stack.config.file_contents)
+      .await
+      .with_context(|| {
+        format!("failed to write compose file to {file_path:?}")
+      })?;
+
+    Ok(env_file_path)
+  } else {
     // ================
     // REPO BASED FILES
     // ================
-    if stack.config.repo.is_empty() {
-      // Err response will be written to return, no need to add it to log here
-      return Err(anyhow!("Must either input compose file contents directly or provide a repo. Got neither."));
-    }
     let mut args: CloneArgs = stack.into();
     // Set the clone destination to the one created for this run
     args.destination = Some(root.display().to_string());
@@ -381,49 +432,6 @@ async fn write_stack(
     if !all_logs_success(&res.logs) {
       return Err(anyhow!("Stopped after clone failure"));
     }
-
-    Ok(env_file_path)
-  } else {
-    // ==============
-    // UI BASED FILES
-    // ==============
-    // Ensure run directory exists
-    fs::create_dir_all(&run_directory).await.with_context(|| {
-      format!(
-        "failed to create stack run directory at {run_directory:?}"
-      )
-    })?;
-    let env_file_path = match write_environment_file(
-      &env_vars,
-      &stack.config.env_file_path,
-      stack
-        .config
-        .skip_secret_interp
-        .then_some(&periphery_config().secrets),
-      &run_directory,
-      &mut res.logs,
-    )
-    .await
-    {
-      Ok(path) => path,
-      Err(_) => {
-        return Err(anyhow!("failed to write environment file"));
-      }
-    };
-    let file_path = run_directory.join(
-      stack
-        .config
-        .file_paths
-        // only need the first one, or default
-        .first()
-        .map(String::as_str)
-        .unwrap_or("compose.yaml"),
-    );
-    fs::write(&file_path, &stack.config.file_contents)
-      .await
-      .with_context(|| {
-        format!("failed to write compose file to {file_path:?}")
-      })?;
 
     Ok(env_file_path)
   }
