@@ -85,6 +85,7 @@ export const HetznerServerTemplateConfig = ({
               ),
               image: true,
               port: true,
+              use_https: true,
               enable_public_ipv4: true,
               enable_public_ipv6: true,
               use_public_ip:

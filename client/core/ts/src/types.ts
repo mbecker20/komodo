@@ -38,6 +38,11 @@ export type UserConfig =
 	github_id: string;
 	avatar: string;
 }}
+	/** User that logs in via Oidc provider */
+	| { type: "Oidc", data: {
+	provider: string;
+	user_id: string;
+}}
 	/** Non-human managed user, can have it's own permissions / api keys */
 	| { type: "Service", data: {
 	description: string;
@@ -6197,6 +6202,7 @@ export interface AwsBuilderConfig {
 	 * Default: `8120`
 	 */
 	port: number;
+	use_https: boolean;
 	/**
 	 * The EC2 ami id to create.
 	 * The ami should have the periphery client configured to start on startup,
@@ -6356,6 +6362,8 @@ export interface AwsServerTemplateConfig {
 	 * Default: `8120`
 	 */
 	port: number;
+	/** Whether Periphery will be running on https */
+	use_https: boolean;
 	/** The user data to deploy the instance with. */
 	user_data: string;
 	/** The security groups to give to the instance. */
@@ -6466,6 +6474,8 @@ export interface HetznerServerTemplateConfig {
 	 * Default: `8120`
 	 */
 	port: number;
+	/** Whether Periphery will be running on https */
+	use_https: boolean;
 }
 
 export interface ComposeService {

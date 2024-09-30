@@ -59,9 +59,10 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               ami_id: true,
               subnet_id: true,
               key_pair_name: true,
+              port: true,
+              use_https: true,
               assign_public_ip: true,
               use_public_ip: true,
-              port: true,
             },
           },
           {
