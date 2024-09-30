@@ -7,8 +7,8 @@ use komodo_client::entities::{
 };
 
 use crate::{
-  alert::send_alerts, monitor::deployment_status_cache,
-  resource, state::db_client,
+  alert::send_alerts, monitor::deployment_status_cache, resource,
+  state::db_client,
 };
 
 #[instrument(level = "debug")]

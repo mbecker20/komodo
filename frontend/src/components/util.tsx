@@ -50,7 +50,7 @@ import { Types } from "@komodo/client";
 import { Badge } from "@ui/badge";
 import { Section } from "./layouts";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { useRead } from "@lib/hooks";
+import { useRead, useUser } from "@lib/hooks";
 import { Prune } from "./resources/server/actions";
 
 export const WithLoading = ({
@@ -280,18 +280,26 @@ export const ConfirmButton = ({
   );
 };
 
-export const Logout = () => (
-  <Button
-    variant="ghost"
-    size="icon"
-    onClick={() => {
-      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-      location.reload();
-    }}
-  >
-    <LogOut className="w-4 h-4" />
-  </Button>
-);
+export const Logout = () => {
+  const user = useUser().data;
+  return (
+    user && (
+      <Button
+        variant="ghost"
+        onClick={() => {
+          localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+          location.reload();
+        }}
+        className="px-2 flex flex-row gap-2 items-center"
+      >
+        <div className="hidden xl:flex max-w-[120px] overflow-hidden overflow-ellipsis">
+          {user.username}
+        </div>
+        <LogOut className="w-4 h-4" />
+      </Button>
+    )
+  );
+};
 
 export const UserSettings = () => (
   <Link to="/settings">

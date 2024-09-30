@@ -36,12 +36,18 @@ async fn app() -> anyhow::Result<()> {
   info!("Komodo Core version: v{}", env!("CARGO_PKG_VERSION"));
   info!("{:?}", config.sanitized());
 
-  // Init db_client check to crash on db init failure
-  state::init_db_client();
-  // Cleanup open updates / invalid alerts
-  helpers::startup_cleanup().await;
-  // Maybe initialize default server in All In One deployment.
-  helpers::ensure_first_server().await;
+  tokio::join!(
+    // Init db_client check to crash on db init failure
+    state::init_db_client(),
+    // Init default OIDC client (defined in config / env vars / compose secret file)
+    auth::oidc::client::init_default_oidc_client()
+  );
+  tokio::join!(
+    // Maybe initialize first server
+    helpers::ensure_first_server(),
+    // Cleanup open updates / invalid alerts
+    helpers::startup_cleanup(),
+  );
   // init jwt client to crash on failure
   state::jwt_client();
 

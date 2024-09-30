@@ -18,6 +18,11 @@ local_auth = true
 jwt_secret = "your_random_secret"
 jwt_ttl = "2-wk"
 
+oidc_enabled = true
+oidc_provider = "http://server.authentik2.orb.local:9000/application/o/komodo"
+oidc_client_id = "komodo"
+oidc_client_secret = "komodo"
+
 webhook_secret = "a_random_webhook_secret"
 
 stack_poll_interval = "1-min"
@@ -25,3 +30,4 @@ sync_poll_interval = "1-min"
 build_poll_interval = "1-min"
 repo_poll_interval = "1-min"
 monitoring_interval = "5-sec"
+

@@ -1,9 +1,9 @@
 import { PermissionLevelSelector } from "@components/config/util";
-import { Section } from "@components/layouts";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RESOURCE_TARGETS } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { useToast } from "@ui/use-toast";
+import { Card, CardContent, CardHeader } from "@ui/card";
 
 export const UserTargetPermissionsOnResourceTypes = ({
   user_target,
@@ -80,8 +80,9 @@ const PermissionsOnResourceType = ({
   ) => void;
 }) => {
   return (
-    <Section title="Base Permissions">
-      <div className="p-1 grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+    <Card>
+      <CardHeader className="border-b pb-6">Base Permissions</CardHeader>
+      <CardContent className="mt-6 grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {RESOURCE_TARGETS.map((type) => {
           const level = all?.[type] ?? Types.PermissionLevel.None;
           return (
@@ -94,7 +95,7 @@ const PermissionsOnResourceType = ({
             </div>
           );
         })}
-      </div>
-    </Section>
+      </CardContent>
+    </Card>
   );
 };

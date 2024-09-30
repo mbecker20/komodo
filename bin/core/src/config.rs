@@ -76,6 +76,16 @@ pub fn core_config() -> &'static CoreConfig {
           .komodo_database_db_name
           .unwrap_or(config.database.db_name),
       },
+      oidc_enabled: env.komodo_oidc_enabled.unwrap_or(config.oidc_enabled),
+      oidc_provider: env.komodo_oidc_provider.unwrap_or(config.oidc_provider),
+      oidc_client_id: maybe_read_item_from_file(env.komodo_oidc_client_id_file,env
+        .komodo_oidc_client_id)
+        .unwrap_or(config.oidc_client_id),
+      oidc_client_secret: maybe_read_item_from_file(env.komodo_oidc_client_secret_file,env
+        .komodo_oidc_client_secret)
+        .unwrap_or(config.oidc_client_secret),
+      oidc_use_full_email: env.komodo_oidc_use_full_email
+        .unwrap_or(config.oidc_use_full_email),
       google_oauth: OauthCredentials {
         enabled: env
           .komodo_google_oauth_enabled

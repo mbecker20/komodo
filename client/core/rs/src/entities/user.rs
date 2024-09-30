@@ -232,6 +232,9 @@ pub enum UserConfig {
   /// User that logs in via Github Oauth
   Github { github_id: String, avatar: String },
 
+  /// User that logs in via Oidc provider
+  Oidc { provider: String, user_id: String },
+
   /// Non-human managed user, can have it's own permissions / api keys
   Service { description: String },
 }

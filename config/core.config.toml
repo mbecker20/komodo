@@ -109,6 +109,38 @@ passkey = "a_random_passkey"
 ## Options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
 # jwt_ttl = "3-day"
 
+#############
+# OIDC Auth #
+#############
+
+## Enable logins with configured OIDC provider.
+## Default: false.
+## Env: KOMODO_OIDC_ENABLED
+# oidc_enabled = true
+
+## Give the provider address.
+## The specific path (eg /application/o/komodo for Authentik)
+## is provider / configuration specific.
+## The core host must also have valid tls certs for the provider
+## if using https provider.
+## Env: KOMODO_OIDC_PROVIDER
+# oidc_provider = "https://your.oidc.provider/application/o/komodo"
+
+## Give the OIDC Client ID.
+## Env: KOMODO_OIDC_CLIENT_ID or KOMODO_OIDC_CLIENT_ID_FILE
+# oidc_client_id = "your_oidc_id"
+
+## Give the OIDC Client Secret.
+## Env: KOMODO_OIDC_CLIENT_SECRET or KOMODO_OIDC_CLIENT_SECRET_FILE
+# oidc_client_secret = "your_oidc_secret"
+
+## If true, use the full email for usernames.
+## Otherwise, the @address will be stripped,
+## making usernames more concise.
+## Default: false.
+## Env: KOMODO_OIDC_USE_FULL_EMAIL
+# oidc_use_full_email = true
+
 #########
 # OAUTH #
 #########

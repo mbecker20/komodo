@@ -2316,11 +2316,8 @@ export interface StackConfig {
 	 * rather than defining the contents in UI or in a git repo.
 	 */
 	files_on_host?: boolean;
-	/**
-	 * Directory to change to (`cd`) before running `docker compose up -d`.
-	 * Default: `./` (the repo root)
-	 */
-	run_directory: string;
+	/** Directory to change to (`cd`) before running `docker compose up -d`. */
+	run_directory?: string;
 	/**
 	 * Add paths to compose files, relative to the run path.
 	 * If this is empty, will use file `compose.yaml`.
@@ -3262,6 +3259,8 @@ export interface GetLoginOptionsResponse {
 	github: boolean;
 	/** Whether google login is enabled. */
 	google: boolean;
+	/** Whether OIDC login is enabled. */
+	oidc: boolean;
 	/** Whether user registration (Sign Up) has been disabled */
 	registration_disabled: boolean;
 }

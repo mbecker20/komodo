@@ -349,10 +349,9 @@ pub struct VariablesAndSecrets {
 
 pub async fn get_variables_and_secrets(
 ) -> anyhow::Result<VariablesAndSecrets> {
-  let variables =
-    find_collect(&db_client().variables, None, None)
-      .await
-      .context("failed to get all variables from db")?;
+  let variables = find_collect(&db_client().variables, None, None)
+    .await
+    .context("failed to get all variables from db")?;
   let mut secrets = core_config().secrets.clone();
 
   // extend secrets with secret variables

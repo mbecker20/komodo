@@ -25,12 +25,11 @@ pub fn spawn_build_refresh_loop() {
 }
 
 async fn refresh_builds() {
-  let Ok(builds) =
-    find_collect(&db_client().builds, None, None)
-      .await
-      .inspect_err(|e| {
-        warn!("failed to get builds from db in refresh task | {e:#}")
-      })
+  let Ok(builds) = find_collect(&db_client().builds, None, None)
+    .await
+    .inspect_err(|e| {
+      warn!("failed to get builds from db in refresh task | {e:#}")
+    })
   else {
     return;
   };

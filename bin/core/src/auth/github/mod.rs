@@ -69,7 +69,7 @@ async fn callback(
     .users
     .find_one(doc! { "config.data.github_id": &github_id })
     .await
-    .context("failed at find user query from mongo")?;
+    .context("failed at find user query from database")?;
   let jwt = match user {
     Some(user) => jwt_client()
       .generate(user.id)

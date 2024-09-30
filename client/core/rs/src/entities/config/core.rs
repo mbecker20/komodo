@@ -106,6 +106,21 @@ pub struct Env {
   /// Override `local_auth`
   pub komodo_local_auth: Option<bool>,
 
+  /// Override `oidc_enabled`
+  pub komodo_oidc_enabled: Option<bool>,
+  /// Override `oidc_provider`
+  pub komodo_oidc_provider: Option<String>,
+  /// Override `oidc_client_id`
+  pub komodo_oidc_client_id: Option<String>,
+  /// Override `oidc_client_id` from file
+  pub komodo_oidc_client_id_file: Option<PathBuf>,
+  /// Override `oidc_client_secret`
+  pub komodo_oidc_client_secret: Option<String>,
+  /// Override `oidc_client_secret` from file
+  pub komodo_oidc_client_secret_file: Option<PathBuf>,
+  /// Override `oidc_use_full_email`
+  pub komodo_oidc_use_full_email: Option<bool>,
+
   /// Override `google_oauth.enabled`
   pub komodo_google_oauth_enabled: Option<bool>,
   /// Override `google_oauth.id`
@@ -296,6 +311,32 @@ pub struct CoreConfig {
   /// Default: `1-day`.
   #[serde(default = "default_jwt_ttl")]
   pub jwt_ttl: Timelength,
+
+  // ========
+  // = OIDC =
+  // ========
+  /// Enable login with configured OIDC provider.
+  #[serde(default)]
+  pub oidc_enabled: bool,
+
+  /// Configure OIDC provider address.
+  /// Eg. `https://accounts.example.com`
+  #[serde(default)]
+  pub oidc_provider: String,
+
+  /// Set OIDC client id
+  #[serde(default)]
+  pub oidc_client_id: String,
+
+  /// Set OIDC client secret
+  #[serde(default)]
+  pub oidc_client_secret: String,
+
+  /// Use the full email for usernames.
+  /// Otherwise, the @address will be stripped,
+  /// making usernames more concise.
+  #[serde(default)]
+  pub oidc_use_full_email: bool,
 
   // =========
   // = Oauth =
@@ -514,6 +555,13 @@ impl CoreConfig {
       disable_user_registration: config.disable_user_registration,
       disable_non_admin_create: config.disable_non_admin_create,
       local_auth: config.local_auth,
+      oidc_enabled: config.oidc_enabled,
+      oidc_provider: config.oidc_provider,
+      oidc_client_id: empty_or_redacted(&config.oidc_client_id),
+      oidc_client_secret: empty_or_redacted(
+        &config.oidc_client_secret,
+      ),
+      oidc_use_full_email: config.oidc_use_full_email,
       google_oauth: OauthCredentials {
         enabled: config.google_oauth.enabled,
         id: empty_or_redacted(&config.google_oauth.id),

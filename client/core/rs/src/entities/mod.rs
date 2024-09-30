@@ -162,6 +162,7 @@ pub fn to_komodo_name(name: &str) -> String {
   name.to_lowercase().replace([' ', '.'], "_")
 }
 
+/// Unix timestamp in milliseconds as i64
 pub fn komodo_timestamp() -> i64 {
   unix_timestamp_ms() as i64
 }

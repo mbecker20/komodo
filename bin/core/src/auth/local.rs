@@ -50,11 +50,8 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
     let password = bcrypt::hash(password, BCRYPT_COST)
       .context("failed to hash password")?;
 
-    let no_users_exist = db_client()
-      .users
-      .find_one(Document::new())
-      .await?
-      .is_none();
+    let no_users_exist =
+      db_client().users.find_one(Document::new()).await?.is_none();
 
     if !no_users_exist && core_config.disable_user_registration {
       return Err(anyhow!("User registration is disabled"));

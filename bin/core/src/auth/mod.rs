@@ -27,7 +27,7 @@ mod local;
 
 const STATE_PREFIX_LENGTH: usize = 20;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RedirectQuery {
   redirect: Option<String>,
 }

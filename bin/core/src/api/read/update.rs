@@ -164,13 +164,12 @@ impl Resolve<ListUpdates, User> for State {
       query.into()
     };
 
-    let usernames =
-      find_collect(&db_client().users, None, None)
-        .await
-        .context("failed to pull users from db")?
-        .into_iter()
-        .map(|u| (u.id, u.username))
-        .collect::<HashMap<_, _>>();
+    let usernames = find_collect(&db_client().users, None, None)
+      .await
+      .context("failed to pull users from db")?
+      .into_iter()
+      .map(|u| (u.id, u.username))
+      .collect::<HashMap<_, _>>();
 
     let updates = find_collect(
       &db_client().updates,

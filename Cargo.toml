@@ -105,7 +105,7 @@ aws-sdk-ec2 = "1.75.0"
 derive_builder = "0.20.1"
 typeshare = "1.0.3"
 octorust = "0.7.0"
+dashmap = "6.1.0"
 colored = "2.1.0"
 regex = "1.11.0"
 bson = "2.13.0"
-

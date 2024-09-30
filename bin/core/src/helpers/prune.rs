@@ -71,7 +71,9 @@ async fn prune_stats() -> anyhow::Result<()> {
       "ts": { "$lt": delete_before_ts }
     })
     .await?;
-  info!("deleted {} stats from db", res.deleted_count);
+  if res.deleted_count > 0 {
+    info!("deleted {} stats from db", res.deleted_count);
+  }
   Ok(())
 }
 
@@ -88,6 +90,8 @@ async fn prune_alerts() -> anyhow::Result<()> {
       "ts": { "$lt": delete_before_ts }
     })
     .await?;
-  info!("deleted {} alerts from db", res.deleted_count);
+  if res.deleted_count > 0 {
+    info!("deleted {} alerts from db", res.deleted_count);
+  }
   Ok(())
 }
