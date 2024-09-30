@@ -52,7 +52,11 @@ export const Resources = () => {
     >
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          {(is_admin || !disable_non_admin_create) && <Components.New />}
+          {is_admin || !disable_non_admin_create ? (
+            <Components.New />
+          ) : (
+            <div></div>
+          )}
           <div className="flex items-center gap-4">
             <TagsFilter />
             <div className="relative">
