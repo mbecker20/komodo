@@ -72,10 +72,11 @@ passkey = "a_random_passkey"
 ## Default: false
 # local_auth = true
 
-## Allows all users to have Read level access to all resources.
-## Env: KOMODO_TRANSPARENT_MODE
+## Normally new users will be registered, but not enabled until an Admin enables them.
+## With `disable_user_registration = true`, only the first user to log in will registered as a user.
+## Env: KOMODO_DISABLE_USER_REGISTRATION
 ## Default: false
-# transparent_mode = true
+# disable_user_registration = true
 
 ## New users will be automatically enabled when they sign up.
 ## Otherwise, new users will be disabled on first login.
@@ -84,11 +85,10 @@ passkey = "a_random_passkey"
 ## Default: false
 # enable_new_users = true
 
-## Normally new users will be registered, but not enabled until an Admin enables them.
-## With `disable_user_registration = true`, only the first user to log in will registered as a user.
-## Env: KOMODO_DISABLE_USER_REGISTRATION
+## Allows all users to have Read level access to all resources.
+## Env: KOMODO_TRANSPARENT_MODE
 ## Default: false
-# disable_user_registration = true
+# transparent_mode = true
 
 ## Normally all enabled users can create resources.
 ## If `disable_non_admin_create = true`, only admin users can create resources.
