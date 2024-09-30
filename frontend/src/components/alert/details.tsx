@@ -2,7 +2,12 @@ import { ResourceLink } from "@components/resources/common";
 import { useRead } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "@ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+} from "@ui/dialog";
 import { useState } from "react";
 import { AlertLevel } from ".";
 import { fmt_date_with_minutes } from "@lib/formatting";
@@ -12,6 +17,7 @@ import {
   text_color_class_by_intention,
 } from "@lib/color";
 import { MonacoEditor } from "@components/monaco";
+import { Types } from "@komodo/client";
 
 export const AlertDetailsDialog = ({ id }: { id: string }) => {
   const [open, set] = useState(false);
@@ -23,6 +29,20 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
           Details
         </Button>
       </DialogTrigger>
+      <AlertDetailsDialogContent alert={alert} onClose={() => set(false)} />
+    </Dialog>
+  );
+};
+
+export const AlertDetailsDialogContent = ({
+  alert,
+  onClose,
+}: {
+  alert: Types.Alert | undefined;
+  onClose: () => void;
+}) => (
+  <>
+    {alert && (
       <DialogContent className="w-[90vw] max-w-[700px]">
         {alert && (
           <>
@@ -32,7 +52,7 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
                   <ResourceLink
                     type={alert.target.type as UsableResource}
                     id={alert.target.id}
-                    onClick={() => set(false)}
+                    onClick={onClose}
                   />
                   <div className="text-muted-foreground">
                     {fmt_date_with_minutes(new Date(alert.ts))}
@@ -80,6 +100,6 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
           </>
         )}
       </DialogContent>
-    </Dialog>
-  );
-};
+    )}
+  </>
+);
