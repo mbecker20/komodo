@@ -243,7 +243,11 @@ export const DeploymentComponents: RequiredResourceComponents = {
         intent={deployment_state_intention(deployment?.info.state)}
         icon={<DeploymentIcon id={id} size={8} />}
         name={deployment?.name}
-        state={deployment?.info.state}
+        state={
+          deployment?.info.state === Types.DeploymentState.NotDeployed
+            ? "Not Deployed"
+            : deployment?.info.state
+        }
         status={deployment?.info.status}
       />
     );

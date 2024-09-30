@@ -479,7 +479,11 @@ export const ServerComponents: RequiredResourceComponents = {
         intent={server_state_intention(server?.info.state)}
         icon={<Icon id={id} size={8} />}
         name={server?.name}
-        state={server?.info.state}
+        state={
+          server?.info.state === Types.ServerState.NotOk
+            ? "Not Ok"
+            : server?.info.state
+        }
         status={server?.info.region}
       />
     );
