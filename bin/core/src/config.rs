@@ -78,6 +78,7 @@ pub fn core_config() -> &'static CoreConfig {
       },
       oidc_enabled: env.komodo_oidc_enabled.unwrap_or(config.oidc_enabled),
       oidc_provider: env.komodo_oidc_provider.unwrap_or(config.oidc_provider),
+      oidc_redirect: env.komodo_oidc_redirect.unwrap_or(config.oidc_redirect),
       oidc_client_id: maybe_read_item_from_file(env.komodo_oidc_client_id_file,env
         .komodo_oidc_client_id)
         .unwrap_or(config.oidc_client_id),

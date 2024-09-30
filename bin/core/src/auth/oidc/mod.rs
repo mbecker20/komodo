@@ -92,7 +92,19 @@ async fn login(
     ),
   );
 
-  Ok(Redirect::to(auth_url.as_str()))
+  let config = core_config();
+  let redirect = if !config.oidc_redirect.is_empty() {
+    Redirect::to(
+      auth_url
+        .as_str()
+        .replace(&config.oidc_provider, &config.oidc_redirect)
+        .as_str(),
+    )
+  } else {
+    Redirect::to(auth_url.as_str())
+  };
+
+  Ok(redirect)
 }
 
 #[derive(Debug, Deserialize)]

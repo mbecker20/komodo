@@ -119,12 +119,20 @@ passkey = "a_random_passkey"
 # oidc_enabled = true
 
 ## Give the provider address.
-## The specific path (eg /application/o/komodo for Authentik)
-## is provider / configuration specific.
+## The path (eg /application/o/komodo for Authentik)
+## is provider and configuration specific.
 ## The core host must also have valid tls certs for the provider
 ## if using https provider.
+## Note. this must be reachable from Komodo Core container.
 ## Env: KOMODO_OIDC_PROVIDER
-# oidc_provider = "https://your.oidc.provider/application/o/komodo"
+# oidc_provider = "https://oidc.provider.internal/application/o/komodo"
+
+## Configure OIDC user redirect address.
+## This is the address users are redirected to in their browser,
+## and may be different from `oidc_provider` depending on your networking.
+## If not provided, the `oidc_provider` will be used.
+## Env: KOMODO_OIDC_REDIRECT
+# oidc_redirect = "https://oidc.provider.external/application/o/komodo"
 
 ## Give the OIDC Client ID.
 ## Env: KOMODO_OIDC_CLIENT_ID or KOMODO_OIDC_CLIENT_ID_FILE
