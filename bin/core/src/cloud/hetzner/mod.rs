@@ -66,6 +66,7 @@ pub async fn launch_hetzner_server(
     labels,
     volumes,
     port: _,
+    use_https: _,
   } = config;
   let datacenter = hetzner_datacenter(datacenter);
 

@@ -61,6 +61,8 @@ impl Resolve<LaunchServer, (User, Update)> for State {
     let config = match template.config {
       ServerTemplateConfig::Aws(config) => {
         let region = config.region.clone();
+        let use_https = config.use_https;
+        let port = config.port;
         let instance = match launch_ec2_instance(&name, config).await
         {
           Ok(instance) => instance,
@@ -81,14 +83,18 @@ impl Resolve<LaunchServer, (User, Update)> for State {
             instance.ip
           ),
         );
+        let protocol = if use_https { "https" } else { "http" };
         PartialServerConfig {
-          address: format!("http://{}:8120", instance.ip).into(),
+          address: format!("{protocol}://{}:{port}", instance.ip)
+            .into(),
           region: region.into(),
           ..Default::default()
         }
       }
       ServerTemplateConfig::Hetzner(config) => {
         let datacenter = config.datacenter;
+        let use_https = config.use_https;
+        let port = config.port;
         let server = match launch_hetzner_server(&name, config).await
         {
           Ok(server) => server,
@@ -109,8 +115,10 @@ impl Resolve<LaunchServer, (User, Update)> for State {
             server.ip
           ),
         );
+        let protocol = if use_https { "https" } else { "http" };
         PartialServerConfig {
-          address: format!("http://{}:8120", server.ip).into(),
+          address: format!("{protocol}://{}:{port}", server.ip)
+            .into(),
           region: datacenter.as_ref().to_string().into(),
           ..Default::default()
         }

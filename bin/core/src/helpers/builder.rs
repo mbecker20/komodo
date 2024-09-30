@@ -93,7 +93,9 @@ async fn get_aws_builder(
 
   update_update(update.clone()).await?;
 
-  let periphery_address = format!("http://{ip}:{}", config.port);
+  let protocol = if config.use_https { "https" } else { "http" };
+  let periphery_address =
+    format!("{protocol}://{ip}:{}", config.port);
   let periphery =
     PeripheryClient::new(&periphery_address, &core_config().passkey);
 

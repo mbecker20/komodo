@@ -50,6 +50,11 @@ pub struct AwsServerTemplateConfig {
   #[builder(default = "default_port()")]
   #[partial_default(default_port())]
   pub port: i32,
+  /// Whether Periphery will be running on https
+  #[serde(default = "default_use_https")]
+  #[builder(default = "default_use_https()")]
+  #[partial_default(default_use_https())]
+  pub use_https: bool,
   /// The user data to deploy the instance with.
   #[serde(default = "default_user_data")]
   #[builder(default = "default_user_data()")]
@@ -102,6 +107,10 @@ fn default_port() -> i32 {
   8120
 }
 
+fn default_use_https() -> bool {
+  true
+}
+
 fn default_user_data() -> String {
   String::from("#!/bin/bash
 apt update
@@ -121,6 +130,7 @@ impl Default for AwsServerTemplateConfig {
       assign_public_ip: default_assign_public_ip(),
       use_public_ip: default_use_public_ip(),
       port: default_port(),
+      use_https: default_use_https(),
       volumes: default_volumes(),
       ami_id: Default::default(),
       subnet_id: Default::default(),
@@ -190,6 +200,7 @@ impl AwsServerTemplateConfig {
       assign_public_ip: value.assign_public_ip,
       use_public_ip: value.use_public_ip,
       port: value.port,
+      use_https: value.use_https,
       user_data: Default::default(),
     }
   }

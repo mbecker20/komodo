@@ -230,6 +230,7 @@ impl MergePartial for BuilderConfig {
               .use_public_ip
               .unwrap_or(config.use_public_ip),
             port: partial.port.unwrap_or(config.port),
+            use_https: partial.use_https.unwrap_or(config.use_https),
             git_providers: partial
               .git_providers
               .unwrap_or(config.git_providers),
@@ -297,6 +298,11 @@ pub struct AwsBuilderConfig {
   #[partial_default(default_port())]
   pub port: i32,
 
+  #[serde(default = "default_use_https")]
+  #[builder(default = "default_use_https()")]
+  #[partial_default(default_use_https())]
+  pub use_https: bool,
+
   /// The EC2 ami id to create.
   /// The ami should have the periphery client configured to start on startup,
   /// and should have the necessary github / dockerhub accounts configured.
@@ -333,12 +339,13 @@ impl Default for AwsBuilderConfig {
       instance_type: aws_default_instance_type(),
       volume_gb: aws_default_volume_gb(),
       port: default_port(),
+      use_https: default_use_https(),
       ami_id: Default::default(),
       subnet_id: Default::default(),
       security_group_ids: Default::default(),
       key_pair_name: Default::default(),
-      assign_public_ip: false,
-      use_public_ip: false,
+      assign_public_ip: Default::default(),
+      use_public_ip: Default::default(),
       git_providers: Default::default(),
       docker_registries: Default::default(),
       secrets: Default::default(),
@@ -366,6 +373,10 @@ fn aws_default_volume_gb() -> i32 {
 
 fn default_port() -> i32 {
   8120
+}
+
+fn default_use_https() -> bool {
+  true
 }
 
 #[typeshare]

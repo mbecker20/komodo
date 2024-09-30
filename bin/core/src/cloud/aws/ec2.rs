@@ -65,6 +65,7 @@ pub async fn launch_ec2_instance(
     use_public_ip,
     user_data,
     port: _,
+    use_https: _,
   } = config;
   let instance_type = handle_unknown_instance_type(
     InstanceType::from(instance_type.as_str()),

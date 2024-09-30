@@ -78,6 +78,11 @@ pub struct HetznerServerTemplateConfig {
   #[builder(default = "default_port()")]
   #[partial_default(default_port())]
   pub port: i32,
+  /// Whether Periphery will be running on https
+  #[serde(default = "default_use_https")]
+  #[builder(default = "default_use_https()")]
+  #[partial_default(default_use_https())]
+  pub use_https: bool,
 }
 
 impl HetznerServerTemplateConfig {
@@ -88,6 +93,10 @@ impl HetznerServerTemplateConfig {
 
 fn default_port() -> i32 {
   8120
+}
+
+fn default_use_https() -> bool {
+  true
 }
 
 fn default_user_data() -> String {
@@ -106,6 +115,7 @@ impl Default for HetznerServerTemplateConfig {
   fn default() -> Self {
     Self {
       port: default_port(),
+      use_https: default_use_https(),
       image: Default::default(),
       datacenter: Default::default(),
       private_network_ids: Default::default(),
