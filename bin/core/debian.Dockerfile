@@ -16,7 +16,9 @@ RUN cd frontend && yarn link @komodo/client && yarn && yarn build
 FROM debian:bookworm-slim
 
 # Install Deps
-RUN apt update && apt install -y git ca-certificates
+RUN apt update && \
+	apt install -y git ca-certificates && \
+	rm -rf /var/lib/apt/lists/*
 
 # Setup an application directory
 WORKDIR /app

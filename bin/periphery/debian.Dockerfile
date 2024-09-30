@@ -9,7 +9,8 @@ FROM debian:bookworm-slim
 
 # Install Deps
 RUN apt update && apt install -y git curl ca-certificates && \
-	curl -fsSL https://get.docker.com | sh
+	curl -fsSL https://get.docker.com | sh && \
+	rm -rf /var/lib/apt/lists/*
 
 # Setup an application directory
 WORKDIR /app
