@@ -75,14 +75,28 @@ export const CommitSync = ({ id }: { id: string }) => {
     return null;
   }
 
-  return (
-    <ActionWithDialog
-      name={sync.name}
-      title={freshSync ? "Initialize" : "Commit Changes"}
-      icon={<NotebookPen className="w-4 h-4" />}
-      onClick={() => mutate({ sync: id })}
-      disabled={isPending}
-      loading={isPending}
-    />
-  );
+  if (freshSync) {
+    return (
+      <ActionButton
+        title="Initialize"
+        icon={<NotebookPen className="w-4 h-4" />}
+        onClick={() => mutate({ sync: id })}
+        disabled={isPending}
+        loading={isPending}
+      />
+    );
+  } else {
+    return (
+      <ActionWithDialog
+        name={sync.name}
+        title="Commit Changes"
+        icon={<NotebookPen className="w-4 h-4" />}
+        onClick={() => mutate({ sync: id })}
+        disabled={isPending}
+        loading={isPending}
+      />
+    );
+  }
+
+  
 };
