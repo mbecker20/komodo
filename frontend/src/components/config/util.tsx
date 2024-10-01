@@ -69,9 +69,9 @@ export const ConfigItem = ({
     )}
   >
     <div>
-      {label && <p className={cn(boldLabel && "font-bold")}>{label}</p>}
+      {label && <div className={cn(boldLabel && "font-bold")}>{label}</div>}
       {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <div className="text-sm text-muted-foreground">{description}</div>
       )}
     </div>
     {children}
