@@ -252,11 +252,11 @@ pub struct BuildConfig {
   /// Docker labels
   #[serde(
     default,
-    deserialize_with = "super::env_vars_deserializer"
+    deserialize_with = "super::labels_deserializer"
   )]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_env_vars_deserializer"
+    deserialize_with = "super::option_labels_deserializer"
   ))]
   #[builder(default)]
   pub labels: String,

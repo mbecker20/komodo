@@ -27,7 +27,9 @@ import { loader } from "@monaco-editor/react";
 loader.config({ monaco });
 
 // Load the themes
-import "./theme"
+import "./theme";
 // Load the parsers
 import "./yaml";
 import "./toml";
+import "./shell";
+import "./key_value";

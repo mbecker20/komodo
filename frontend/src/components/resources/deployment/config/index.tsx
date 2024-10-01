@@ -132,7 +132,7 @@ export const DeploymentConfig = ({
               ports: (ports, set) => (
                 <MonacoEditor
                   value={ports || "  # 3000:3000\n"}
-                  language="yaml"
+                  language="key_value"
                   onValueChange={(ports) => set({ ports })}
                   readOnly={disabled}
                 />
@@ -145,8 +145,8 @@ export const DeploymentConfig = ({
             components: {
               volumes: (volumes, set) => (
                 <MonacoEditor
-                  value={volumes || "  # /local/path:/container/path\n"}
-                  language="yaml"
+                  value={volumes || "  # volume:/container/path\n"}
+                  language="key_value"
                   onValueChange={(volumes) => set({ volumes })}
                   readOnly={disabled}
                 />
@@ -163,9 +163,9 @@ export const DeploymentConfig = ({
             components: {
               environment: (env, set) => (
                 <MonacoEditor
-                  value={env || "  # VARIABLE: value\n"}
+                  value={env || "  # VARIABLE = value\n"}
                   onValueChange={(environment) => set({ environment })}
-                  language="yaml"
+                  language="key_value"
                   readOnly={disabled}
                 />
               ),
@@ -179,7 +179,7 @@ export const DeploymentConfig = ({
               labels: (labels, set) => (
                 <MonacoEditor
                   value={labels || "  # your.docker.label: value\n"}
-                  language="yaml"
+                  language="key_value"
                   onValueChange={(labels) => set({ labels })}
                   readOnly={disabled}
                 />
@@ -287,7 +287,7 @@ export const DeploymentConfig = ({
               term_signal_labels: (value, set) => (
                 <MonacoEditor
                   value={value || "  # SIGTERM: your label\n"}
-                  language="yaml"
+                  language="key_value"
                   onValueChange={(term_signal_labels) =>
                     set({ term_signal_labels })
                   }
