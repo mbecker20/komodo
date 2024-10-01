@@ -3,6 +3,7 @@ import {
   AccountSelectorConfig,
   AddExtraArgMenu,
   ConfigItem,
+  ConfigList,
   InputList,
   ProviderSelectorConfig,
 } from "@components/config/util";
@@ -62,20 +63,28 @@ export const StackConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        "general": [
+        general: [
           {
-            label: "Server Id",
-            contentHidden: true,
-            actions: (
-              <ResourceSelector
-                type="Server"
-                selected={update.server_id ?? config.server_id}
-                onSelect={(server_id) => set({ ...update, server_id })}
-                disabled={disabled}
-                align="end"
-              />
-            ),
-            components: {},
+            label: "Server",
+            labelHidden: true,
+            components: {
+              server_id: (server_id, set) => {
+                return (
+                  <ConfigItem
+                    label={"Select Server"}
+                    description="Choose the Server to deploy the Stack on."
+                  >
+                    <ResourceSelector
+                      type="Server"
+                      selected={server_id}
+                      onSelect={(server_id) => set({ server_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
+            },
           },
           {
             label: "Compose File",
@@ -138,26 +147,68 @@ export const StackConfig = ({
             },
           },
           {
-            label: "Settings",
+            label: "Ignore Services",
+            labelHidden: true,
+            components: {
+              ignore_services: (values, set) => (
+                <ConfigList
+                  label="Ignore Services"
+                  description="If your compose file has init services that exit early, ignore them here so your stack will report the correct health."
+                  field="ignore_services"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Input service name"
+                />
+              ),
+            },
+          },
+          {
+            label: "Links",
+            labelHidden: true,
+            components: {
+              links: (values, set) => (
+                <ConfigList
+                  label="Links"
+                  addLabel="Add Link"
+                  description="Add quick links in the resource header"
+                  field="links"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Input link"
+                />
+              ),
+            },
+          },
+        ],
+        settings: [
+          {
+            label: "Project Name",
             labelHidden: true,
             components: {
               project_name: {
                 placeholder: "Compose project name",
-                boldLabel: true,
                 description:
                   "Optionally override the compose project name. Can import stacks by matching the existing project name on your host.",
               },
+            },
+          },
+          {
+            label: "Settings",
+            labelHidden: true,
+            components: {
               auto_pull: {
                 label: "Auto Pull Images",
                 boldLabel: true,
                 description:
-                "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
+                  "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
               },
               run_build: {
                 label: "Auto Build Images",
                 boldLabel: true,
                 description:
-                "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
+                  "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
               },
               files_on_host: {
                 label: "Files on Server",
@@ -325,76 +376,6 @@ export const StackConfig = ({
                   />
                 );
               },
-            },
-          },
-          {
-            label: "Ignore Services",
-            description:
-              "If your compose file has init services that exit early, ignore them here so your stack will report the correct health.",
-            contentHidden:
-              ((update.ignore_services ?? config.ignore_services)?.length ??
-                0) === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    ignore_services: [
-                      ...(update.ignore_services ??
-                        config.ignore_services ??
-                        []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Ignore Service
-              </Button>
-            ),
-            components: {
-              ignore_services: (values, set) => (
-                <InputList
-                  field="ignore_services"
-                  values={values ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="Input service name"
-                />
-              ),
-            },
-          },
-          {
-            label: "Links",
-            description: "Add quick links in the resource header",
-            contentHidden: ((update.links ?? config.links)?.length ?? 0) === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    links: [...(update.links ?? config.links ?? []), ""],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Link
-              </Button>
-            ),
-            components: {
-              links: (values, set) => (
-                <InputList
-                  field="links"
-                  values={values ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="Input link"
-                />
-              ),
             },
           },
         ],

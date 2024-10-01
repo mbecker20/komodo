@@ -9,7 +9,6 @@ import {
   RefreshCcw,
   Server,
 } from "lucide-react";
-import { StackConfig } from "./config";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { StackTable } from "./table";
 import {
@@ -36,6 +35,7 @@ import { useToast } from "@ui/use-toast";
 import { StackServices } from "./services";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
+import { StackConfig } from "./config2";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(

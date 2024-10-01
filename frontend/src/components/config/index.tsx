@@ -84,14 +84,14 @@ export const ConfigLayout = <
   );
 };
 
-type PrimitiveConfigArgs = {
+export type PrimitiveConfigArgs = {
   placeholder?: string;
   label?: string;
   boldLabel?: boolean;
   description?: string;
 };
 
-type ConfigComponent<T> = {
+export type ConfigComponent<T> = {
   label: string;
   boldLabel?: boolean; // defaults to true
   icon?: ReactNode;
@@ -252,7 +252,7 @@ export const Config = <T,>({
                             className="p-4 border rounded-md flex flex-col gap-4 scroll-mt-40 xl:scroll-mt-24"
                           >
                             {!labelHidden && (
-                              <div className="flex flex-col gap-4">
+                              <div className="flex justify-between">
                                 <div>
                                   <div className="flex items-center gap-4">
                                     {icon}
