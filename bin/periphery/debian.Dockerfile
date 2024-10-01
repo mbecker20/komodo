@@ -1,16 +1,19 @@
 # Build Periphery
-FROM rust:1.81.0-bookworm AS builder
+FROM rust:1.81.0-bullseye AS builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p komodo_periphery --release
 
 # Final Image
-FROM debian:bookworm-slim
+FROM debian:bullseye-slim
 
-# Install Deps
-RUN apt update && apt install -y git curl ca-certificates && \
-	curl -fsSL https://get.docker.com | sh && \
-	rm -rf /var/lib/apt/lists/*
+# # Install Deps
+# RUN apt update && apt install -y git curl ca-certificates && \
+# 	curl -fsSL https://get.docker.com | sh && \
+# 	rm -rf /var/lib/apt/lists/*
+
+COPY ./bin/periphery/debian-deps.sh .
+RUN sh ./debian-deps.sh
 
 # Setup an application directory
 WORKDIR /app

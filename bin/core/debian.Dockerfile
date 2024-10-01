@@ -1,5 +1,5 @@
 # Build Core
-FROM rust:1.81.0-bookworm AS core-builder
+FROM rust:1.81.0-bullseye AS core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p komodo_core --release
@@ -13,7 +13,7 @@ RUN cd client && yarn && yarn build && yarn link
 RUN cd frontend && yarn link @komodo/client && yarn && yarn build
 
 # Final Image
-FROM debian:bookworm-slim
+FROM debian:bullseye-slim
 
 # Install Deps
 RUN apt update && \
