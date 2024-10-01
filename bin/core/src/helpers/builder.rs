@@ -193,6 +193,7 @@ pub fn start_aws_builder_log(
     assign_public_ip,
     security_group_ids,
     use_public_ip,
+    use_https,
     ..
   } = config;
 
@@ -208,6 +209,7 @@ pub fn start_aws_builder_log(
     format!("{}: {readable_sec_group_ids}", muted("security groups")),
     format!("{}: {assign_public_ip}", muted("assign public ip")),
     format!("{}: {use_public_ip}", muted("use public ip")),
+    format!("{}: {use_https}", muted("use https")),
   ]
   .join("\n")
 }
