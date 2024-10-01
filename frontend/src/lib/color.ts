@@ -93,6 +93,23 @@ export const text_color_class_by_intention = (intention: ColorIntention) => {
   }
 };
 
+export const soft_text_color_class_by_intention = (intention: ColorIntention) => {
+  switch (intention) {
+    case "Good":
+      return "text-green-700/60 dark:text-green-400/60";
+    case "Neutral":
+      return "text-blue-700/60 dark:text-blue-400/60";
+    case "Warning":
+      return "text-orange-700/60 dark:text-orange-400/60";
+    case "Critical":
+      return "text-red-700/60 dark:text-red-400/60";
+    case "Unknown":
+      return "text-purple-700/60 dark:text-purple-400/60";
+    case "None":
+      return "";
+  }
+};
+
 export const server_state_intention: (
   status?: Types.ServerState
 ) => ColorIntention = (status) => {

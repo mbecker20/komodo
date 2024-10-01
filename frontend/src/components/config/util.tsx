@@ -46,7 +46,10 @@ import {
 } from "@ui/command";
 
 import { Card, CardContent, CardHeader } from "@ui/card";
-import { text_color_class_by_intention } from "@lib/color";
+import {
+  soft_text_color_class_by_intention,
+  text_color_class_by_intention,
+} from "@lib/color";
 import { MonacoDiffEditor } from "@components/monaco";
 
 export const ConfigItem = ({
@@ -139,7 +142,7 @@ export const ConfigInput = ({
 export const ConfigSwitch = ({
   label,
   boldLabel,
-  value,
+  value: checked,
   description,
   disabled,
   onChange,
@@ -159,18 +162,26 @@ export const ConfigSwitch = ({
   >
     <div
       className="py-2 flex flex-row gap-2 items-center text-sm cursor-pointer"
-      onClick={() => onChange(!value)}
+      onClick={() => onChange(!checked)}
     >
-      <div
-        className={cn("transition-colors", value && "text-muted-foreground")}
+      {/* <div
+        className={cn(
+          "transition-colors text-muted-foreground",
+          !checked && soft_text_color_class_by_intention("Critical")
+          // checked && "text-muted-foreground"
+        )}
       >
         DISABLED
-      </div>
-      <Switch checked={value} disabled={disabled} />
+      </div> */}
+      <Switch checked={checked} disabled={disabled} />
       <div
-        className={cn("transition-colors", !value && "text-muted-foreground")}
+        className={cn(
+          "transition-colors",
+          soft_text_color_class_by_intention(checked ? "Good" : "Critical")
+          // !checked && "text-muted-foreground"
+        )}
       >
-        ENABLED
+        {checked ? "ENABLED" : "DISABLED"}
       </div>
     </div>
   </ConfigItem>
