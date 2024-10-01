@@ -249,7 +249,7 @@ export const Config = <T,>({
                             className="p-4 border rounded-md flex flex-col gap-4 scroll-mt-40 xl:scroll-mt-24"
                           >
                             {!labelHidden && (
-                              <div className="flex items-center justify-between">
+                              <div className="flex flex-col gap-4">
                                 <div>
                                   <div className="flex items-center gap-4">
                                     {icon}

@@ -69,7 +69,7 @@ export const TerminationTimeout = ({
   }, [arg]);
   return (
     <ConfigItem label="Termination Timeout">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
         <Input
           className="w-[100px]"
           placeholder="time in seconds"

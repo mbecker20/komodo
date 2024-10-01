@@ -64,7 +64,7 @@ export const ConfigItem = ({
 }) => (
   <div
     className={cn(
-      "pb-4 border-b flex flex-col gap-2 first:pt-0 last:border-b-0 last:pb-0",
+      "pb-4 border-b flex flex-col gap-4 first:pt-0 last:border-b-0 last:pb-0",
       className
     )}
   >
@@ -155,7 +155,7 @@ export const ConfigSwitch = ({
     label={label}
     description={description}
     boldLabel={boldLabel}
-    className="flex-row items-center justify-between"
+    className="flex-col"
   >
     <Switch checked={value} onCheckedChange={onChange} disabled={disabled} />
   </ConfigItem>
@@ -468,7 +468,7 @@ export const InputList = <T extends { [key: string]: unknown }>({
   placeholder?: string;
   className?: string;
 }) => (
-  <div className="flex justify-end w-full">
+  <div className="flex w-full">
     <div className="flex flex-col gap-4 w-fit">
       {values.map((arg, i) => (
         <div className="w-full flex gap-4" key={i}>

@@ -286,14 +286,19 @@ export const DeploymentConfig = ({
                 <TerminationTimeout arg={value} set={set} disabled={disabled} />
               ),
               term_signal_labels: (value, set) => (
-                <MonacoEditor
-                  value={value || "  # SIGTERM: your label\n"}
-                  language="key_value"
-                  onValueChange={(term_signal_labels) =>
-                    set({ term_signal_labels })
-                  }
-                  readOnly={disabled}
-                />
+                <ConfigItem
+                  label="Termination Signal Labels"
+                  description="Choose between multiple signals when stopping"
+                >
+                  <MonacoEditor
+                    value={value || "  # SIGTERM: your label\n"}
+                    language="key_value"
+                    onValueChange={(term_signal_labels) =>
+                      set({ term_signal_labels })
+                    }
+                    readOnly={disabled}
+                  />
+                </ConfigItem>
               ),
             },
           },

@@ -62,7 +62,7 @@ export const StackConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "general": [
           {
             label: "Server Id",
             contentHidden: true,
@@ -147,23 +147,23 @@ export const StackConfig = ({
                 description:
                   "Optionally override the compose project name. Can import stacks by matching the existing project name on your host.",
               },
-              files_on_host: {
-                label: "Files on Server",
-                boldLabel: true,
-                description:
-                  "Manage the compose files on server yourself. Just configure the Run Directory and File Paths to your files.",
-              },
               auto_pull: {
                 label: "Auto Pull Images",
                 boldLabel: true,
                 description:
-                  "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
+                "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
               },
               run_build: {
                 label: "Auto Build Images",
                 boldLabel: true,
                 description:
-                  "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
+                "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
+              },
+              files_on_host: {
+                label: "Files on Server",
+                boldLabel: true,
+                description:
+                  "Manage the compose files on server yourself. Just configure the Run Directory and File Paths to your files.",
               },
             },
           },
