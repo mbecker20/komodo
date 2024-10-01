@@ -179,15 +179,14 @@ export const BuildConfig = ({
           {
             label: "Extra Args",
             description: (
-              <div className="flex flex-row flex-wrap">
+              <div className="flex flex-row flex-wrap gap-2">
                 <div>Pass extra arguments to 'docker build'.</div>
                 <Link
                   to="https://docs.docker.com/reference/cli/docker/buildx/build/"
                   target="_blank"
+                  className="text-primary"
                 >
-                  <Button variant="link" className="p-0">
-                    See docker docs.
-                  </Button>
+                  See docker docs.
                 </Link>
               </div>
             ),
@@ -239,7 +238,7 @@ export const BuildConfig = ({
           {
             label: "Secret Args",
             description: (
-              <div className="flex flex-row flex-wrap">
+              <div className="flex flex-row flex-wrap gap-2">
                 <div>
                   Pass secrets to 'docker build'. These values remain hidden in
                   the final image by using docker secret mounts.
@@ -247,10 +246,9 @@ export const BuildConfig = ({
                 <Link
                   to="https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html#structfield.secret_args"
                   target="_blank"
+                  className="text-primary"
                 >
-                  <Button variant="link" className="p-0">
-                    See the docs.
-                  </Button>
+                  See docker docs.
                 </Link>
               </div>
             ),

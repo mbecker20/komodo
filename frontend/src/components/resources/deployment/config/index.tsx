@@ -190,15 +190,14 @@ export const DeploymentConfig = ({
           {
             label: "Extra Args",
             description: (
-              <div className="flex flex-row flex-wrap">
+              <div className="flex flex-row flex-wrap gap-2">
                 <div>Pass extra arguments to 'docker run'.</div>
                 <Link
                   to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
                   target="_blank"
+                  className="text-primary"
                 >
-                  <Button variant="link" className="p-0">
-                    See docker docs.
-                  </Button>
+                  See docker docs.
                 </Link>
               </div>
             ),

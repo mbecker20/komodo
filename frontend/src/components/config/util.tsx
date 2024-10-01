@@ -358,9 +358,9 @@ export const ProviderSelectorConfig = (params: {
       description={`Select ${select} domain`}
     >
       {params.account_type === "git" ? (
-        <div className="flex items-center justify-end gap-2 w-[75%]">
+        <div className="flex items-center gap-2 w-[75%]">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={params.onHttpsSwitch}
             className="py-0 px-2"
           >
