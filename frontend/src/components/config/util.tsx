@@ -69,7 +69,11 @@ export const ConfigItem = ({
     )}
   >
     <div>
-      {label && <div className={cn(boldLabel && "font-bold")}>{label}</div>}
+      {label && (
+        <div className={cn("capitalize", boldLabel && "font-bold")}>
+          {label.split("_").join(" ")}
+        </div>
+      )}
       {description && (
         <div className="text-sm text-muted-foreground">{description}</div>
       )}
@@ -147,7 +151,12 @@ export const ConfigSwitch = ({
   disabled: boolean;
   onChange: (value: boolean) => void;
 }) => (
-  <ConfigItem label={label} description={description} boldLabel={boldLabel}>
+  <ConfigItem
+    label={label}
+    description={description}
+    boldLabel={boldLabel}
+    className="flex-row items-center justify-between"
+  >
     <Switch checked={value} onCheckedChange={onChange} disabled={disabled} />
   </ConfigItem>
 );
