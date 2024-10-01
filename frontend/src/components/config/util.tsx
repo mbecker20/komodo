@@ -157,7 +157,22 @@ export const ConfigSwitch = ({
     boldLabel={boldLabel}
     className="flex-col"
   >
-    <Switch checked={value} onCheckedChange={onChange} disabled={disabled} />
+    <div
+      className="py-2 flex flex-row gap-2 items-center text-sm cursor-pointer"
+      onClick={() => onChange(!value)}
+    >
+      <div
+        className={cn("transition-colors", value && "text-muted-foreground")}
+      >
+        DISABLED
+      </div>
+      <Switch checked={value} disabled={disabled} />
+      <div
+        className={cn("transition-colors", !value && "text-muted-foreground")}
+      >
+        ENABLED
+      </div>
+    </div>
   </ConfigItem>
 );
 
