@@ -178,7 +178,7 @@ export const Section = ({
   children,
   itemsCenterTitleRow,
 }: SectionProps) => (
-  <div className="flex flex-col gap-4 overflow-x-auto">
+  <div className="flex flex-col gap-4">
     <div
       className={cn(
         "flex flex-wrap gap-2 justify-between py-1",
