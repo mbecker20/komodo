@@ -1,11 +1,8 @@
 import { Config } from "@components/config";
-import { InputList } from "@components/config/util";
+import { ConfigList } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
-import { Button } from "@ui/button";
-import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { Switch } from "@ui/switch";
 
 export const ServerConfig = ({
   id,
@@ -47,60 +44,41 @@ export const ServerConfig = ({
       components={{
         general: [
           {
-            label: "General",
+            label: "Address",
+            labelHidden: true,
             components: {
               address: {
-                placeholder: "https://12.34.56.78:8120",
+                // boldLabel: true,
                 description:
                   "The http/s address of periphery in your network, eg. https://12.34.56.78:8120",
+                placeholder: "https://12.34.56.78:8120",
               },
               region: {
                 placeholder: "Region. Optional.",
                 description:
                   "Attach a region to the server for visual grouping.",
               },
+            },
+          },
+          {
+            label: "Enabled",
+            labelHidden: true,
+            components: {
               enabled: {
+                // boldLabel: true,
                 description:
                   "Whether to attempt to connect to this host / send alerts if offline. Disabling will also convert all attached resource's state to 'Unknown'.",
-              },
-              stats_monitoring: {
-                description:
-                  "Whether to store historical CPU, RAM, and disk usage.",
-              },
-
-              auto_prune: {
-                description:
-                  "Whether to prune unused images every day at UTC 00:00",
               },
             },
           },
           {
-            label: "Ignore Disks",
-            contentHidden:
-              (update.ignore_mounts ?? config.ignore_mounts)?.length === 0,
-            description:
-              "If undesired mount points are coming through in server stats, filter them out here.",
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    ignore_mounts: [
-                      ...(update.ignore_mounts ?? config.ignore_mounts ?? []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Ignore Disk
-              </Button>
-            ),
+            label: "Disks",
+            labelHidden: true,
             components: {
               ignore_mounts: (values, set) => (
-                <InputList
+                <ConfigList
+                  description="If undesired disk mount points are coming through in server stats, filter them out here."
+                  label="Ignore Disks"
                   field="ignore_mounts"
                   values={values ?? []}
                   set={set}
@@ -111,30 +89,49 @@ export const ServerConfig = ({
             },
           },
           {
-            label: "Send Unreachable Alerts",
-            contentHidden: true,
-            description:
-              "Send an alert if the Periphery agent cannot be reached.",
-            actions: (
-              <Switch
-                checked={
-                  update.send_unreachable_alerts ??
-                  config.send_unreachable_alerts
-                }
-                onCheckedChange={(send_unreachable_alerts) =>
-                  set({ ...update, send_unreachable_alerts })
-                }
-              />
-            ),
-            components: {},
+            label: "Monitoring",
+            labelHidden: true,
+            components: {
+              stats_monitoring: {
+                label: "System Stats Monitoring",
+                // boldLabel: true,
+                description:
+                  "Whether to store historical CPU, RAM, and disk usage.",
+              },
+            },
           },
           {
-            label: "CPU Alerts",
+            label: "Pruning",
+            labelHidden: true,
+            components: {
+              auto_prune: {
+                label: "Auto Prune Images",
+                // boldLabel: true,
+                description:
+                  "Whether to prune unused images every day at UTC 00:00",
+              },
+            },
+          },
+        ],
+        alerts: [
+          {
+            label: "Unreachable",
+            labelHidden: true,
+            components: {
+              send_unreachable_alerts: {
+                // boldLabel: true,
+                description:
+                  "Send an alert if the Periphery agent cannot be reached.",
+              },
+            },
+          },
+          {
+            label: "CPU",
             labelHidden: true,
             components: {
               send_cpu_alerts: {
                 label: "Send CPU Alerts",
-                boldLabel: true,
+                // boldLabel: true,
                 description:
                   "Send an alert if the CPU usage is above the configured thresholds.",
               },
@@ -149,31 +146,33 @@ export const ServerConfig = ({
             },
           },
           {
-            label: "Memory Alerts",
+            label: "Memory",
             labelHidden: true,
             components: {
               send_mem_alerts: {
                 label: "Send Memory Alerts",
-                boldLabel: true,
+                // boldLabel: true,
                 description:
                   "Send an alert if the memory usage is above the configured thresholds.",
               },
               mem_warning: {
+                label: "Memory Warning",
                 description:
                   "Send a 'Warning' alert if the memory usage in % is above these thresholds",
               },
               mem_critical: {
+                label: "Memory Critical",
                 description:
                   "Send a 'Critical' alert if the memory usage in % is above these thresholds",
               },
             },
           },
           {
-            label: "Disk Alerts",
+            label: "Disk",
             labelHidden: true,
             components: {
               send_disk_alerts: {
-                boldLabel: true,
+                // boldLabel: true,
                 description:
                   "Send an alert if the Disk Usage (for any mounted disk) is above the configured thresholds.",
               },

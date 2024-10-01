@@ -5,6 +5,7 @@ import {
 } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { Types } from "@komodo/client";
+import { cn } from "@lib/utils";
 import { Button } from "@ui/button";
 import {
   Select,
@@ -92,6 +93,7 @@ type PrimitiveConfigArgs = {
 
 type ConfigComponent<T> = {
   label: string;
+  boldLabel?: boolean; // defaults to true
   icon?: ReactNode;
   actions?: ReactNode;
   labelExtra?: ReactNode;
@@ -165,7 +167,7 @@ export const Config = <T,>({
     >
       <div className="flex gap-6">
         <div className="hidden xl:block relative pr-6 border-r">
-          <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[180px] h-fit pb-24">
+          <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
             {sections.map((section) => (
               <div key={section}>
                 <p className="text-muted-foreground uppercase text-right mb-2">
@@ -233,6 +235,7 @@ export const Config = <T,>({
                     {components[section].map(
                       ({
                         label,
+                        boldLabel = true,
                         labelHidden,
                         icon,
                         labelExtra,
@@ -253,7 +256,12 @@ export const Config = <T,>({
                                 <div>
                                   <div className="flex items-center gap-4">
                                     {icon}
-                                    <div className="text-lg font-bold">
+                                    <div
+                                      className={cn(
+                                        "text-lg",
+                                        boldLabel && "font-bold"
+                                      )}
+                                    >
                                       {label}
                                     </div>
                                     {labelExtra}

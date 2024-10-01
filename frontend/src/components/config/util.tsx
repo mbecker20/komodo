@@ -161,7 +161,7 @@ export const ConfigSwitch = ({
     className="flex-col"
   >
     <div
-      className="py-2 flex flex-row gap-2 items-center text-sm cursor-pointer"
+      className="py-2 flex flex-row gap-3 items-center text-sm cursor-pointer"
       onClick={() => onChange(!checked)}
     >
       {/* <div
@@ -479,6 +479,47 @@ export const AccountSelectorConfig = (params: {
   );
 };
 
+export const ConfigList = <T extends { [key: string]: unknown }>(
+  props: InputListProps<T> & {
+    label?: string;
+    addLabel?: string;
+    boldLabel?: boolean;
+    description?: ReactNode;
+    configClassname?: string;
+  }
+) => {
+  return (
+    <ConfigItem {...{ ...props, className: props.configClassname }}>
+      {!props.disabled && (
+        <Button
+          variant="secondary"
+          onClick={() =>
+            props.set({
+              [props.field]: [...props.values, ""],
+            } as Partial<T>)
+          }
+          className="flex items-center gap-2 w-[200px]"
+        >
+          <PlusCircle className="w-4 h-4" />
+          {props.addLabel ?? "Add " + props.label?.endsWith("s")
+            ? props.label?.slice(0, -1)
+            : props.label}
+        </Button>
+      )}
+      <InputList {...props} />
+    </ConfigItem>
+  );
+};
+
+export type InputListProps<T extends { [key: string]: unknown }> = {
+  field: keyof T;
+  values: string[];
+  disabled: boolean;
+  set: (update: Partial<T>) => void;
+  placeholder?: string;
+  className?: string;
+};
+
 export const InputList = <T extends { [key: string]: unknown }>({
   field,
   values,
@@ -486,14 +527,7 @@ export const InputList = <T extends { [key: string]: unknown }>({
   set,
   placeholder,
   className,
-}: {
-  field: keyof T;
-  values: string[];
-  disabled: boolean;
-  set: (update: Partial<T>) => void;
-  placeholder?: string;
-  className?: string;
-}) => (
+}: InputListProps<T>) => (
   <div className="flex w-full">
     <div className="flex flex-col gap-4 w-fit">
       {values.map((arg, i) => (
