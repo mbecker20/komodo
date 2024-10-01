@@ -1,3 +1,8 @@
+## This one produces smaller images,
+## but alpine uses `musl` instead of `glibc`.
+## This makes it take longer / more resources to build,
+## and may negatively affect runtime performance.
+
 # Build Core
 FROM rust:1.81.0-alpine AS core-builder
 WORKDIR /builder
