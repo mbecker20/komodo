@@ -8,12 +8,8 @@ RUN cargo build -p komodo_periphery --release
 FROM debian:bullseye-slim
 
 # # Install Deps
-# RUN apt update && apt install -y git curl ca-certificates && \
-# 	curl -fsSL https://get.docker.com | sh && \
-# 	rm -rf /var/lib/apt/lists/*
-
 COPY ./bin/periphery/debian-deps.sh .
-RUN sh ./debian-deps.sh
+RUN sh ./debian-deps.sh && rm ./debian-deps.sh
 
 # Setup an application directory
 WORKDIR /app
