@@ -75,7 +75,7 @@ export const DeploymentConfig = ({
           },
           {
             label: "Container",
-            labelHidden: true,
+            // labelHidden: true,
             components: {
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
@@ -99,15 +99,16 @@ export const DeploymentConfig = ({
                 <ConfigItem
                   label="Command"
                   description={
-                    <div className="flex flex-row flex-wrap">
+                    <div className="flex flex-row flex-wrap gap-2">
                       <div>Replace the CMD, or extend the ENTRYPOINT.</div>
                       <Link
                         to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
                         target="_blank"
+                        className="text-primary"
                       >
-                        <Button variant="link" className="p-0">
-                          See docker docs.
-                        </Button>
+                        See docker docs.
+                        {/* <Button variant="link" className="p-0">
+                        </Button> */}
                       </Link>
                     </div>
                   }

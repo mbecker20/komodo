@@ -138,8 +138,11 @@ export const ImageConfig = ({
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem label="Image" description="Either pass a docker image directly, or choose a Build to deploy">
-    <div className="flex gap-4 w-full items-center justify-end">
+  <ConfigItem
+    label="Image"
+    description="Either pass a docker image directly, or choose a Build to deploy"
+  >
+    <div className="flex gap-4 w-full items-center">
       <ImageTypeSelector
         selected={image?.type}
         disabled={disabled}

@@ -13,7 +13,6 @@ import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import {
   CheckCircle,
-  Info,
   MinusCircle,
   PlusCircle,
   Save,
@@ -45,7 +44,7 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+
 import { Card, CardContent, CardHeader } from "@ui/card";
 import { text_color_class_by_intention } from "@lib/color";
 import { MonacoDiffEditor } from "@components/monaco";
@@ -63,40 +62,24 @@ export const ConfigItem = ({
   children: ReactNode;
   className?: string;
 }) => (
-  <>
-    <div
-      className={cn(
-        "flex justify-between items-center min-h-[60px]",
-        className
+  <div
+    className={cn(
+      "pb-4 border-b flex flex-col gap-2 first:pt-0 last:border-b-0 last:pb-0",
+      className
+    )}
+  >
+    <div>
+      {label && (
+        <div className={cn("capitalize", boldLabel && "font-bold")}>
+          {label.split("_").join(" ")}
+        </div>
       )}
-    >
-      <div className="flex items-center gap-4">
-        {label && (
-          <div className={cn("text-nowrap", boldLabel && "font-semibold")}>
-            {snake_case_to_upper_space_case(label)}
-          </div>
-        )}
-        {description && (
-          <HoverCard openDelay={200}>
-            <HoverCardTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <Info className="w-4 h-4" />
-              </Button>
-            </HoverCardTrigger>
-            <HoverCardContent
-              align="start"
-              side="right"
-              className="w-[50vw] max-w-[400px] text-sm font-mono"
-            >
-              {description}
-            </HoverCardContent>
-          </HoverCard>
-        )}
-      </div>
-      {children}
+      {description && (
+        <div className="text-sm text-muted-foreground">{description}</div>
+      )}
     </div>
-    <div className="w-full h-0 border-b last:hidden" />
-  </>
+    {children}
+  </div>
 );
 
 export const ConfigInput = ({
@@ -168,7 +151,12 @@ export const ConfigSwitch = ({
   disabled: boolean;
   onChange: (value: boolean) => void;
 }) => (
-  <ConfigItem label={label} description={description} boldLabel={boldLabel}>
+  <ConfigItem
+    label={label}
+    description={description}
+    boldLabel={boldLabel}
+    className="flex-row items-center justify-between"
+  >
     <Switch checked={value} onCheckedChange={onChange} disabled={disabled} />
   </ConfigItem>
 );
