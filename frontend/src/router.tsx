@@ -5,7 +5,7 @@ import { Resource } from "@pages/resource";
 import { Resources } from "@pages/resources";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/home/tree";
-import { Updates } from "@pages/updates";
+import { Updates, Updates2 } from "@pages/updates";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
@@ -30,7 +30,7 @@ const ROUTER = createBrowserRouter([
       // { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },
       { path: "alerts", element: <Alerts /> },
-      { path: "updates", element: <Updates /> },
+      { path: "updates", element: <Updates2 /> },
       // { path: "variables", element: <Variables /> },
       { path: "resources", element: <AllResources /> },
       { path: "user-groups/:id", element: <UserGroupPage /> },
