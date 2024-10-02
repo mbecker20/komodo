@@ -42,6 +42,7 @@ async fn app() -> anyhow::Result<()> {
       &config.ssl_cert_file,
       &config.ssl_key_file,
     )
+    .await
     .context("Invalid ssl cert / key")?;
     axum_server::bind_rustls(socket_addr, ssl_config)
       .serve(app)
