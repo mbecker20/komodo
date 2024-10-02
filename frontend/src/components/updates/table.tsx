@@ -3,11 +3,9 @@ import { Types } from "@komodo/client";
 import { DataTable } from "@ui/data-table";
 import { useState } from "react";
 import { UpdateDetailsInner, UpdateUser } from "./details";
-import { bg_color_class_by_intention } from "@lib/color";
-import { Card, CardHeader } from "@ui/card";
-import { cn } from "@lib/utils";
 import { ResourceLink } from "@components/resources/common";
 import { Settings } from "lucide-react";
+import { StatusBadge } from "@components/util";
 
 export const UpdatesTable = ({
   updates,
@@ -61,15 +59,24 @@ export const UpdatesTable = ({
           {
             header: "Result",
             cell: ({ row }) => {
-              const color = bg_color_class_by_intention(
-                row.original.success ? "Good" : "Critical"
-              );
+              const { success, status } = row.original;
               return (
-                <Card className={cn("w-fit", color)}>
-                  <CardHeader className="py-0 px-2">
-                    {row.original.success ? "Success" : "Fail"}
-                  </CardHeader>
-                </Card>
+                <StatusBadge
+                  intent={
+                    status === Types.UpdateStatus.Complete
+                      ? success
+                        ? "Good"
+                        : "Critical"
+                      : "None"
+                  }
+                  text={
+                    status === Types.UpdateStatus.Complete
+                      ? success
+                        ? "Success"
+                        : "Failed"
+                      : "Processing"
+                  }
+                />
               );
             },
           },
