@@ -249,7 +249,7 @@ export const Config = <T,>({
                           <div
                             key={section + label}
                             id={section + label}
-                            className="p-4 border rounded-md flex flex-col gap-4 scroll-mt-40 xl:scroll-mt-24"
+                            className="p-6 border rounded-md flex flex-col gap-6 scroll-mt-40 xl:scroll-mt-24"
                           >
                             {!labelHidden && (
                               <div className="flex justify-between">

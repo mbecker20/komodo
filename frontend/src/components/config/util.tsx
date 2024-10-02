@@ -59,7 +59,7 @@ export const ConfigItem = ({
   children,
   className,
 }: {
-  label?: string;
+  label?: ReactNode;
   boldLabel?: boolean;
   description?: ReactNode;
   children: ReactNode;
@@ -67,16 +67,17 @@ export const ConfigItem = ({
 }) => (
   <div
     className={cn(
-      "pb-4 border-b flex flex-col gap-4 first:pt-0 last:border-b-0 last:pb-0",
+      "pb-6 border-b flex flex-col gap-4 first:pt-0 last:border-b-0 last:pb-0",
       className
     )}
   >
     <div>
-      {label && (
+      {label && typeof label === "string" && (
         <div className={cn("capitalize", boldLabel && "font-bold")}>
           {label.split("_").join(" ")}
         </div>
       )}
+      {label && typeof label !== "string" && label}
       {description && (
         <div className="text-sm text-muted-foreground">{description}</div>
       )}
@@ -366,10 +367,7 @@ export const ProviderSelectorConfig = (params: {
   const label =
     params.account_type === "git" ? "Git Provider" : "Image Registry";
   return (
-    <ConfigItem
-      label={label}
-      description={`Select ${select} domain`}
-    >
+    <ConfigItem label={label} description={`Select ${select} domain`}>
       {params.account_type === "git" ? (
         <div className="flex items-center gap-2 w-[75%]">
           <Button

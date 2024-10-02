@@ -8,9 +8,9 @@ import {
   ProviderSelectorConfig,
 } from "@components/config/util";
 import { Types } from "@komodo/client";
-import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { ReactNode, useState } from "react";
-import { ResourceSelector } from "../common";
+import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
 import {
   Select,
   SelectContent,
@@ -19,8 +19,11 @@ import {
   SelectValue,
 } from "@ui/select";
 import { SecretsSearch } from "@components/config/env_vars";
-import { ShowHideButton } from "@components/util";
+import { ConfirmButton, ShowHideButton } from "@components/util";
 import { MonacoEditor } from "@components/monaco";
+import { useToast } from "@ui/use-toast";
+import { text_color_class_by_intention } from "@lib/color";
+import { Ban, CirclePlus } from "lucide-react";
 
 type StackMode = "UI Defined" | "Files On Server" | "Git Repo" | undefined;
 const STACK_MODES: StackMode[] = ["UI Defined", "Files On Server", "Git Repo"];
@@ -45,6 +48,8 @@ export const StackConfig = ({
   const [show, setShow] = useLocalStorage(`stack-${id}-show`, {
     file: true,
     env: true,
+    git: true,
+    webhooks: true,
   });
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Stack", id },
@@ -103,8 +108,17 @@ export const StackConfig = ({
       server_id: (server_id, set) => {
         return (
           <ConfigItem
-            label={"Select Server"}
-            description="Choose the Server to deploy the Stack on."
+            label={
+              server_id ? (
+                <div className="flex gap-3 text-lg">
+                  Server:
+                  <ResourceLink type="Server" id={server_id} />
+                </div>
+              ) : (
+                "Select Server"
+              )
+            }
+            description="Select the Server to deploy the Stack on."
           >
             <ResourceSelector
               type="Server"
@@ -172,7 +186,7 @@ export const StackConfig = ({
       contentHidden: !show.env,
       components: {
         environment: (env, set) => (
-          <>
+          <div className="flex flex-col gap-4">
             <SecretsSearch server={update.server_id ?? config.server_id} />
             <MonacoEditor
               value={env || "  # VARIABLE = value\n"}
@@ -180,7 +194,7 @@ export const StackConfig = ({
               language="key_value"
               readOnly={disabled}
             />
-          </>
+          </div>
         ),
         env_file_path: {
           description:
@@ -394,7 +408,236 @@ export const StackConfig = ({
     };
   } else if (mode === "Git Repo") {
     components = {
-      general: [server_component, ...general_common],
+      general: [
+        server_component,
+        {
+          label: "Repo Config",
+          boldLabel: false,
+          contentHidden: !show.git,
+          actions: (
+            <ShowHideButton
+              show={show.git}
+              setShow={(git) => setShow({ ...show, git })}
+            />
+          ),
+          components: {
+            git_provider: (provider, set) => {
+              const https = update.git_https ?? config.git_https;
+              return (
+                <ProviderSelectorConfig
+                  account_type="git"
+                  selected={provider}
+                  disabled={disabled}
+                  onSelect={(git_provider) => set({ git_provider })}
+                  https={https}
+                  onHttpsSwitch={() => set({ git_https: !https })}
+                />
+              );
+            },
+            git_account: (value, set) => {
+              const server_id = update.server_id || config.server_id;
+              return (
+                <AccountSelectorConfig
+                  id={server_id}
+                  type={server_id ? "Server" : "None"}
+                  account_type="git"
+                  provider={update.git_provider ?? config.git_provider}
+                  selected={value}
+                  onSelect={(git_account) => set({ git_account })}
+                  disabled={disabled}
+                  placeholder="None"
+                />
+              );
+            },
+            repo: {
+              placeholder: "Enter repo",
+              description:
+                "The repo path on the provider. {namespace}/{repo_name}",
+            },
+            branch: {
+              placeholder: "Enter branch",
+              description: "Select a custom branch, or default to 'main'.",
+            },
+            commit: {
+              placeholder: "Enter a specific commit hash. Optional.",
+              description:
+                "Switch to a specific hash after cloning the branch.",
+            },
+          },
+        },
+        ...general_common,
+        {
+          label: "Webhooks",
+          description:
+            "Configure your repo provider to send webhooks to Komodo",
+          actions: (
+            <ShowHideButton
+              show={show.webhooks}
+              setShow={(webhooks) => setShow({ ...show, webhooks })}
+            />
+          ),
+          contentHidden: !show.webhooks,
+          components: {
+            ["Guard" as any]: () => {
+              if (update.branch ?? config.branch) {
+                return null;
+              }
+              return (
+                <ConfigItem label="Configure Branch">
+                  <div>Must configure Branch before webhooks will work.</div>
+                </ConfigItem>
+              );
+            },
+            ["Refresh" as any]: () =>
+              (update.branch ?? config.branch) && (
+                <ConfigItem label="Refresh Cache">
+                  <CopyGithubWebhook path={`/stack/${id}/refresh`} />
+                </ConfigItem>
+              ),
+            ["Deploy" as any]: () =>
+              (update.branch ?? config.branch) && (
+                <ConfigItem label="Auto Redeploy">
+                  <CopyGithubWebhook path={`/stack/${id}/deploy`} />
+                </ConfigItem>
+              ),
+            webhook_enabled:
+              !!(update.branch ?? config.branch) &&
+              webhooks !== undefined &&
+              !webhooks.managed,
+            webhook_secret: {
+              description:
+                "Provide a custom webhook secret for this resource, or use the global default.",
+              placeholder: "Input custom secret",
+            },
+            ["managed" as any]: () => {
+              const inv = useInvalidate();
+              const { toast } = useToast();
+              const { mutate: createWebhook, isPending: createPending } =
+                useWrite("CreateStackWebhook", {
+                  onSuccess: () => {
+                    toast({ title: "Webhook Created" });
+                    inv(["GetStackWebhooksEnabled", { stack: id }]);
+                  },
+                });
+              const { mutate: deleteWebhook, isPending: deletePending } =
+                useWrite("DeleteStackWebhook", {
+                  onSuccess: () => {
+                    toast({ title: "Webhook Deleted" });
+                    inv(["GetStackWebhooksEnabled", { stack: id }]);
+                  },
+                });
+
+              if (
+                !(update.branch ?? config.branch) ||
+                !webhooks ||
+                !webhooks.managed
+              ) {
+                return null;
+              }
+
+              return (
+                <ConfigItem label="Manage Webhook">
+                  {webhooks.deploy_enabled && (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        Incoming webhook is{" "}
+                        <div className={text_color_class_by_intention("Good")}>
+                          ENABLED
+                        </div>
+                        and will trigger
+                        <div
+                          className={text_color_class_by_intention("Neutral")}
+                        >
+                          DEPLOY
+                        </div>
+                      </div>
+                      <ConfirmButton
+                        title="Disable"
+                        icon={<Ban className="w-4 h-4" />}
+                        variant="destructive"
+                        onClick={() =>
+                          deleteWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Deploy,
+                          })
+                        }
+                        loading={deletePending}
+                        disabled={disabled || deletePending}
+                      />
+                    </div>
+                  )}
+                  {!webhooks.deploy_enabled && webhooks.refresh_enabled && (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        Incoming webhook is{" "}
+                        <div className={text_color_class_by_intention("Good")}>
+                          ENABLED
+                        </div>
+                        and will trigger
+                        <div
+                          className={text_color_class_by_intention("Neutral")}
+                        >
+                          REFRESH
+                        </div>
+                      </div>
+                      <ConfirmButton
+                        title="Disable"
+                        icon={<Ban className="w-4 h-4" />}
+                        variant="destructive"
+                        onClick={() =>
+                          deleteWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Refresh,
+                          })
+                        }
+                        loading={deletePending}
+                        disabled={disabled || deletePending}
+                      />
+                    </div>
+                  )}
+                  {!webhooks.deploy_enabled && !webhooks.refresh_enabled && (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        Incoming webhook is{" "}
+                        <div
+                          className={text_color_class_by_intention("Critical")}
+                        >
+                          DISABLED
+                        </div>
+                      </div>
+                      <ConfirmButton
+                        title="Enable Deploy"
+                        icon={<CirclePlus className="w-4 h-4" />}
+                        onClick={() =>
+                          createWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Deploy,
+                          })
+                        }
+                        loading={createPending}
+                        disabled={disabled || createPending}
+                      />
+                      <ConfirmButton
+                        title="Enable Refresh"
+                        icon={<CirclePlus className="w-4 h-4" />}
+                        onClick={() =>
+                          createWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Refresh,
+                          })
+                        }
+                        loading={createPending}
+                        disabled={disabled || createPending}
+                      />
+                    </div>
+                  )}
+                </ConfigItem>
+              );
+            },
+          },
+        },
+      ],
+      advanced,
     };
   } else if (mode === "UI Defined") {
     components = {
@@ -402,8 +645,8 @@ export const StackConfig = ({
         server_component,
         {
           label: "Compose File",
-          description:
-            "Manage the file contents here, or use a git repo / files on host option.",
+          boldLabel: false,
+          description: "Manage the compose file contents here.",
           actions: (
             <ShowHideButton
               show={show.file}
@@ -431,6 +674,7 @@ export const StackConfig = ({
         },
         ...general_common,
       ],
+      advanced,
     };
   }
 
