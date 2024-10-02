@@ -1,5 +1,5 @@
 import { ConfigItem } from "@components/config/util";
-import { TextUpdateMenu } from "@components/util";
+import { MonacoEditor } from "@components/monaco";
 import { Types } from "@komodo/client";
 import {
   Select,
@@ -25,36 +25,37 @@ export const EndpointConfig = ({
   disabled: boolean;
 }) => {
   return (
-    <ConfigItem label="Endpoint">
-      <div className="flex items-center gap-4">
-        <Select
-          value={endpoint.type}
-          onValueChange={(type: Types.AlerterEndpoint["type"]) => {
-            set({ type, params: { url: default_url(type) } });
-          }}
-          disabled={disabled}
-        >
-          <SelectTrigger className="w-[150px]" disabled={disabled}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ENDPOINT_TYPES.map((endpoint) => (
-              <SelectItem key={endpoint} value={endpoint}>
-                {endpoint}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <TextUpdateMenu
-          title={`${endpoint.type} Alerter Url`}
-          value={endpoint.params.url}
-          onUpdate={(url) =>
-            set({ ...endpoint, params: { ...endpoint.params, url } })
-          }
-          placeholder="Enter endpoint url"
-          triggerClassName="w-[250px]"
-        />
-      </div>
+    <ConfigItem
+      label="Endpoint"
+      description="Configure the endpoint to send the alert to."
+      boldLabel
+    >
+      <Select
+        value={endpoint.type}
+        onValueChange={(type: Types.AlerterEndpoint["type"]) => {
+          set({ type, params: { url: default_url(type) } });
+        }}
+        disabled={disabled}
+      >
+        <SelectTrigger className="w-[150px]" disabled={disabled}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {ENDPOINT_TYPES.map((endpoint) => (
+            <SelectItem key={endpoint} value={endpoint}>
+              {endpoint}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <MonacoEditor
+        value={endpoint.params.url}
+        language={undefined}
+        onValueChange={(url) =>
+          set({ ...endpoint, params: { ...endpoint.params, url } })
+        }
+        readOnly={disabled}
+      />
     </ConfigItem>
   );
 };

@@ -71,17 +71,19 @@ export const ConfigItem = ({
       className
     )}
   >
-    <div>
-      {label && typeof label === "string" && (
-        <div className={cn("capitalize", boldLabel && "font-bold")}>
-          {label.split("_").join(" ")}
-        </div>
-      )}
-      {label && typeof label !== "string" && label}
-      {description && (
-        <div className="text-sm text-muted-foreground">{description}</div>
-      )}
-    </div>
+    {(label || description) && (
+      <div>
+        {label && typeof label === "string" && (
+          <div className={cn("capitalize", boldLabel && "font-bold")}>
+            {label.split("_").join(" ")}
+          </div>
+        )}
+        {label && typeof label !== "string" && label}
+        {description && (
+          <div className="text-sm text-muted-foreground">{description}</div>
+        )}
+      </div>
+    )}
     {children}
   </div>
 );

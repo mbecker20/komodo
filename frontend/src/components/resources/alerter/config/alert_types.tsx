@@ -33,9 +33,29 @@ export const AlertTypeConfig = ({
     (alert_type) => !alert_types.includes(alert_type)
   );
   return (
-    <ConfigItem label="Alert Types">
-      <div className="flex items-center gap-4 justify-end">
-        <div className="flex items-center justify-end flex-wrap gap-2 w-[75%]">
+    <ConfigItem label="Alert Types" description="Only send alerts of certain types." boldLabel>
+      <div className="flex items-center gap-4">
+        {at.length ? (
+          <Select
+            value={undefined}
+            onValueChange={(type: Types.AlertData["type"]) => {
+              set([...alert_types, type]);
+            }}
+            disabled={disabled}
+          >
+            <SelectTrigger className="w-[150px]">
+              <div className="pr-2">Add Filter</div>
+            </SelectTrigger>
+            <SelectContent align="start">
+              {at.map((alert_type) => (
+                <SelectItem key={alert_type} value={alert_type}>
+                  {alert_type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : undefined}
+        <div className="flex items-center flex-wrap gap-2 w-[75%]">
           {alert_types.map((type) => (
             <Badge
               variant="secondary"
@@ -50,26 +70,6 @@ export const AlertTypeConfig = ({
             </Badge>
           ))}
         </div>
-        {at.length ? (
-          <Select
-            value={undefined}
-            onValueChange={(type: Types.AlertData["type"]) => {
-              set([...alert_types, type]);
-            }}
-            disabled={disabled}
-          >
-            <SelectTrigger className="w-[150px]">
-              <div className="pr-2">Add Filter</div>
-            </SelectTrigger>
-            <SelectContent align="end">
-              {at.map((alert_type) => (
-                <SelectItem key={alert_type} value={alert_type}>
-                  {alert_type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : undefined}
       </div>
     </ConfigItem>
   );
