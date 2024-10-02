@@ -51,11 +51,7 @@ export const ResourceNoficiations = ({ type, id }: Types.ResourceTarget) => {
             {updates?.updates.slice(0, 10).map((update) => (
               <Update key={update.id} update={update} />
             ))}
-            <ShowAll
-              to={`/${usableResourcePath(
-                type as UsableResource
-              )}/${id}/updates`}
-            />
+            <ShowAll to={`/updates?type=${type}&id=${id}`} />
           </TabsContent>
           <TabsContent value="alerts">
             {openAlerts && openAlerts.length ? (
