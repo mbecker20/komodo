@@ -354,6 +354,19 @@ export const useShiftKeyListener = (listenKey: string, onPress: () => void) => {
   });
 };
 
+export const useCtrlKeyListener = (listenKey: string, onPress: () => void) => {
+  useEffect(() => {
+    const keydown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === listenKey) {
+        e.preventDefault();
+        onPress();
+      }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => document.removeEventListener("keydown", keydown);
+  });
+};
+
 // Returns true if Komodo has no resources.
 export const useNoResources = () => {
   const servers =

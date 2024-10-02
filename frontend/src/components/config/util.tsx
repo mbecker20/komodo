@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useRead } from "@lib/hooks";
+import { useCtrlKeyListener, useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import {
   Select,
@@ -162,7 +162,7 @@ export const ConfigSwitch = ({
     className="flex-col"
   >
     <div
-      className="py-2 flex flex-row gap-3 items-center text-sm cursor-pointer"
+      className="py-2 flex flex-row gap-4 items-center text-sm cursor-pointer"
       onClick={() => onChange(!checked)}
     >
       {/* <div
@@ -574,6 +574,13 @@ export function ConfirmUpdate<T>({
   disabled,
 }: ConfirmUpdateProps<T>) {
   const [open, set] = useState(false);
+  useCtrlKeyListener("s", () => {
+    if (open) {
+      onConfirm();
+    } else {
+      set(true);
+    }
+  });
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogTrigger asChild>
@@ -695,7 +702,7 @@ export const SystemCommand = ({
   set: (value: Types.SystemCommand) => void;
 }) => {
   return (
-    <div className="w-full flex justify-end flex-wrap">
+    <div className="w-full flex flex-wrap">
       <div className="flex items-center gap-4">
         <div className="grid gap-2">
           <div className="text-muted-foreground">Path:</div>

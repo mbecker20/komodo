@@ -242,6 +242,7 @@ const KeyboardShortcuts = () => {
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3 grid-cols-2 pt-8">
+          <KeyboardShortcut label="Save" keys={["Ctrl", "S"]} />
           <KeyboardShortcut label="Go Home" keys={["Shift", "H"]} />
 
           <KeyboardShortcut label="Go to Servers" keys={["Shift", "G"]} />
