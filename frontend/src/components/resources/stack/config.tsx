@@ -110,7 +110,7 @@ export const StackConfig = ({
           <ConfigItem
             label={
               server_id ? (
-                <div className="flex gap-3 text-lg">
+                <div className="flex gap-3 text-lg font-bold">
                   Server:
                   <ResourceLink type="Server" id={server_id} />
                 </div>
@@ -175,7 +175,6 @@ export const StackConfig = ({
   const general_common: ConfigComponent<Types.StackConfig>[] = [
     {
       label: "Environment",
-      boldLabel: false,
       description: "Pass these variables to the compose command",
       actions: (
         <ShowHideButton
@@ -213,6 +212,7 @@ export const StackConfig = ({
             label="Links"
             addLabel="Add Link"
             description="Add quick links in the resource header"
+            boldLabel
             field="links"
             values={values ?? []}
             set={set}
@@ -231,6 +231,7 @@ export const StackConfig = ({
       components: {
         project_name: {
           placeholder: "Compose project name",
+          boldLabel: true,
           description:
             "Optionally set a different compose project name. It should match the compose project name on your host.",
         },
@@ -243,6 +244,7 @@ export const StackConfig = ({
         extra_args: (value, set) => (
           <ConfigItem
             label="Extra Args"
+            boldLabel
             description="Add extra args inserted after 'docker compose up -d'"
           >
             {!disabled && (
@@ -277,6 +279,7 @@ export const StackConfig = ({
         ignore_services: (values, set) => (
           <ConfigList
             label="Ignore Services"
+            boldLabel
             description="If your compose file has init services that exit early, ignore them here so your stack will report the correct health."
             field="ignore_services"
             values={values ?? []}
@@ -294,6 +297,8 @@ export const StackConfig = ({
         registry_provider: (provider, set) => {
           return (
             <ProviderSelectorConfig
+              boldLabel
+              description="Login to a registry for private image access."
               account_type="docker"
               selected={provider}
               disabled={disabled}
@@ -411,8 +416,7 @@ export const StackConfig = ({
       "": [
         server_component,
         {
-          label: "Repo Config",
-          boldLabel: false,
+          label: "Source",
           contentHidden: !show.git,
           actions: (
             <ShowHideButton

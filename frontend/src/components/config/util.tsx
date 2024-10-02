@@ -363,13 +363,19 @@ export const ProviderSelectorConfig = (params: {
   onSelect: (id: string) => void;
   https?: boolean;
   onHttpsSwitch?: () => void;
+  description?: string;
+  boldLabel?: boolean;
 }) => {
   const select =
     params.account_type === "git" ? "git provider" : "docker registry";
   const label =
     params.account_type === "git" ? "Git Provider" : "Image Registry";
   return (
-    <ConfigItem label={label} description={`Select ${select} domain`}>
+    <ConfigItem
+      label={label}
+      description={params.description ?? `Select ${select} domain`}
+      boldLabel={params.boldLabel}
+    >
       {params.account_type === "git" ? (
         <div className="flex items-center gap-2 w-[75%]">
           <Button
