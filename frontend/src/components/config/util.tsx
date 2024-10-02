@@ -506,7 +506,7 @@ export const ConfigList = <T extends { [key: string]: unknown }>(
             : props.label}
         </Button>
       )}
-      <InputList {...props} />
+      {props.values.length > 0 && <InputList {...props} />}
     </ConfigItem>
   );
 };
