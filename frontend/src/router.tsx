@@ -46,7 +46,7 @@ const ROUTER = createBrowserRouter([
         children: [
           { path: "", element: <Resources /> },
           { path: ":id", element: <Resource /> },
-          { path: ":id/updates", element: <Updates /> },
+          // { path: ":id/updates", element: <Updates /> },
           { path: ":id/alerts", element: <Alerts /> },
           {
             path: ":id/service/:service",
