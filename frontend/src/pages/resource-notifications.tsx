@@ -4,13 +4,7 @@ import { Types } from "@komodo/client";
 import { ColorIntention, text_color_class_by_intention } from "@lib/color";
 import { fmt_operation, fmt_version, fmt_date } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
-import {
-  getUpdateQuery,
-  usableResourcePath,
-  cn,
-  version_is_none,
-} from "@lib/utils";
-import { UsableResource } from "@types";
+import { getUpdateQuery, cn, version_is_none } from "@lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import {
   ExternalLink,
@@ -63,9 +57,7 @@ export const ResourceNoficiations = ({ type, id }: Types.ResourceTarget) => {
                 No open alerts
               </p>
             )}
-            <ShowAll
-              to={`/${usableResourcePath(type as UsableResource)}/${id}/alerts`}
-            />
+            <ShowAll to={`/updates?type=${type}&id=${id}`} />
           </TabsContent>
         </div>
       </Tabs>
