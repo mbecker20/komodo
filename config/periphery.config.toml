@@ -58,8 +58,8 @@
 ## If true and a key / cert at the given paths are not found, 
 ## self signed keys will be generated using openssl.
 ## Env: PERIPHERY_SSL_ENABLED
-## Default: true
-# ssl_enabled = false
+## Default: false (will change in later release)
+ssl_enabled = true
 
 ## Path to the ssl key.
 ## Env: PERIPHERY_SSL_KEY_FILE
