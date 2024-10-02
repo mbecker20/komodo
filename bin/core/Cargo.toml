@@ -34,11 +34,11 @@ mungos.workspace = true
 slack.workspace = true
 svi.workspace = true
 # external
+axum-server = { workspace = true, features = ["tls-openssl"] }
 ordered_hash_map.workspace = true
 openidconnect.workspace = true
 urlencoding.workspace = true
 aws-sdk-ec2.workspace = true
-axum-server.workspace = true
 aws-config.workspace = true
 tokio-util.workspace = true
 axum-extra.workspace = true

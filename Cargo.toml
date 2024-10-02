@@ -41,17 +41,16 @@ mungos = "1.1.0"
 svi = "1.0.1"
 
 # ASYNC
-tokio = { version = "1.38.1", features = ["full"] }
-reqwest = { version = "0.12.7", features = ["json"] }
+tokio = { version = "1.40.0", features = ["full"] }
 tokio-util = "0.7.12"
 futures = "0.3.30"
 futures-util = "0.3.30"
 
 # SERVER
-axum = { version = "0.7.7", features = ["ws", "json"] }
-axum-server = { version = "0.7.1", features = ["tls-openssl"] }
 axum-extra = { version = "0.9.4", features = ["typed-header"] }
 tower-http = { version = "0.6.1", features = ["fs", "cors"] }
+axum = { version = "0.7.7", features = ["ws", "json"] }
+axum-server = "0.7.1"
 tokio-tungstenite = "0.24.0"
 
 # SER/DE
@@ -67,16 +66,16 @@ anyhow = "1.0.89"
 thiserror = "1.0.64"
 
 # LOGGING
-opentelemetry_sdk = { version = "0.25.0", features = ["rt-tokio"] }
+opentelemetry_sdk = { version = "0.26.0", features = ["rt-tokio"] }
 tracing-subscriber = { version = "0.3.18", features = ["json"] }
-opentelemetry-semantic-conventions = "0.25.0"
+opentelemetry-semantic-conventions = "0.26.0"
 tracing-opentelemetry = "0.26.0"
-opentelemetry-otlp = "0.25.0"
-opentelemetry = "0.25.0"
+opentelemetry-otlp = "0.26.0"
+opentelemetry = "0.26.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.18", features = ["derive"] }
+clap = { version = "4.5.19", features = ["derive"] }
 dotenvy = "0.15.7"
 envy = "0.4.2"
 
@@ -109,3 +108,8 @@ dashmap = "6.1.0"
 colored = "2.1.0"
 regex = "1.11.0"
 bson = "2.13.0"
+
+[workspace.dependencies.reqwest]
+version = "0.12.8"
+default-features = false
+features = ["rustls-tls", "json", "charset", "macos-system-configuration"]
