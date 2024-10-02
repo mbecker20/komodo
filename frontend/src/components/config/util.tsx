@@ -363,9 +363,11 @@ export const ProviderSelectorConfig = (params: {
 }) => {
   const select =
     params.account_type === "git" ? "git provider" : "docker registry";
+  const label =
+    params.account_type === "git" ? "Git Provider" : "Image Registry";
   return (
     <ConfigItem
-      label={`${params.account_type} Provider`}
+      label={label}
       description={`Select ${select} domain`}
     >
       {params.account_type === "git" ? (
@@ -1054,12 +1056,14 @@ export const SecretSelector = ({
   type,
   disabled,
   align = "start",
+  side = "right",
 }: {
   keys: string[];
   onSelect: (key: string) => void;
   type: "Variable" | "Secret";
   disabled: boolean;
   align?: "start" | "center" | "end";
+  side?: "bottom" | "right";
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -1080,7 +1084,11 @@ export const SecretSelector = ({
           <div>{type}s</div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] max-h-[300px] p-0" align={align}>
+      <PopoverContent
+        className="w-[300px] max-h-[300px] p-0"
+        align={align}
+        side={side}
+      >
         <Command shouldFilter={false}>
           <CommandInput
             placeholder={`Search ${type}s`}

@@ -1,5 +1,12 @@
 import { Config, ConfigComponent } from "@components/config";
-import { ConfigItem, ConfigList } from "@components/config/util";
+import {
+  AccountSelectorConfig,
+  AddExtraArgMenu,
+  ConfigItem,
+  ConfigList,
+  InputList,
+  ProviderSelectorConfig,
+} from "@components/config/util";
 import { Types } from "@komodo/client";
 import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { ReactNode, useState } from "react";
@@ -52,6 +59,7 @@ export const StackConfig = ({
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
+  const run_build = update.run_build ?? config.run_build;
   const mode = getStackMode(update, config);
 
   const setMode = (mode: StackMode) => {
@@ -153,10 +161,8 @@ export const StackConfig = ({
   const general_common: ConfigComponent<Types.StackConfig>[] = [
     {
       label: "Environment",
+      boldLabel: false,
       description: "Pass these variables to the compose command",
-      labelExtra: (
-        <SecretsSearch server={update.server_id ?? config.server_id} />
-      ),
       actions: (
         <ShowHideButton
           show={show.env}
@@ -166,12 +172,15 @@ export const StackConfig = ({
       contentHidden: !show.env,
       components: {
         environment: (env, set) => (
-          <MonacoEditor
-            value={env || "  # VARIABLE = value\n"}
-            onValueChange={(environment) => set({ environment })}
-            language="key_value"
-            readOnly={disabled}
-          />
+          <>
+            <SecretsSearch server={update.server_id ?? config.server_id} />
+            <MonacoEditor
+              value={env || "  # VARIABLE = value\n"}
+              onValueChange={(environment) => set({ environment })}
+              language="key_value"
+              readOnly={disabled}
+            />
+          </>
         ),
         env_file_path: {
           description:
@@ -182,19 +191,36 @@ export const StackConfig = ({
       },
     },
     {
-      label: "Ignore Services",
+      label: "Extra Args",
       labelHidden: true,
       components: {
-        ignore_services: (values, set) => (
-          <ConfigList
-            label="Ignore Services"
-            description="If your compose file has init services that exit early, ignore them here so your stack will report the correct health."
-            field="ignore_services"
-            values={values ?? []}
-            set={set}
-            disabled={disabled}
-            placeholder="Input service name"
-          />
+        extra_args: (value, set) => (
+          <ConfigItem
+            label="Extra Args"
+            description="Add extra args inserted after 'docker compose up -d'"
+          >
+            {!disabled && (
+              <AddExtraArgMenu
+                type="Stack"
+                onSelect={(suggestion) =>
+                  set({
+                    extra_args: [
+                      ...(update.extra_args ?? config.extra_args ?? []),
+                      suggestion,
+                    ],
+                  })
+                }
+                disabled={disabled}
+              />
+            )}
+            <InputList
+              field="extra_args"
+              values={value ?? []}
+              set={set}
+              disabled={disabled}
+              placeholder="--extra-arg=value"
+            />
+          </ConfigItem>
         ),
       },
     },
@@ -218,7 +244,118 @@ export const StackConfig = ({
     },
   ];
 
-  console.log(mode);
+  const advanced: ConfigComponent<Types.StackConfig>[] = [
+    {
+      label: "Project Name",
+      labelHidden: true,
+      components: {
+        project_name: {
+          placeholder: "Compose project name",
+          description:
+            "Optionally set a different compose project name. It should match the compose project name on your host.",
+        },
+      },
+    },
+    {
+      label: "Ignore Services",
+      labelHidden: true,
+      components: {
+        ignore_services: (values, set) => (
+          <ConfigList
+            label="Ignore Services"
+            description="If your compose file has init services that exit early, ignore them here so your stack will report the correct health."
+            field="ignore_services"
+            values={values ?? []}
+            set={set}
+            disabled={disabled}
+            placeholder="Input service name"
+          />
+        ),
+      },
+    },
+    {
+      label: "Pull Images",
+      labelHidden: true,
+      components: {
+        registry_provider: (provider, set) => {
+          return (
+            <ProviderSelectorConfig
+              account_type="docker"
+              selected={provider}
+              disabled={disabled}
+              onSelect={(registry_provider) => set({ registry_provider })}
+            />
+          );
+        },
+        registry_account: (value, set) => {
+          const server_id = update.server_id || config.server_id;
+          const provider = update.registry_provider ?? config.registry_provider;
+          if (!provider) {
+            return null;
+          }
+          return (
+            <AccountSelectorConfig
+              id={server_id}
+              type={server_id ? "Server" : "None"}
+              account_type="docker"
+              provider={provider}
+              selected={value}
+              onSelect={(registry_account) => set({ registry_account })}
+              disabled={disabled}
+              placeholder="None"
+            />
+          );
+        },
+        auto_pull: {
+          label: "Pre Pull Images",
+          description:
+            "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
+        },
+      },
+    },
+    {
+      label: "Build Images",
+      labelHidden: true,
+      components: {
+        run_build: {
+          label: "Pre Build Images",
+          description:
+            "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
+        },
+        build_extra_args: (value, set) =>
+          run_build && (
+            <ConfigItem
+              label="Build Extra Args"
+              description="Add extra args inserted after 'docker compose build'"
+            >
+              {!disabled && (
+                <AddExtraArgMenu
+                  type="StackBuild"
+                  onSelect={(suggestion) =>
+                    set({
+                      build_extra_args: [
+                        ...(update.build_extra_args ??
+                          config.build_extra_args ??
+                          []),
+                        suggestion,
+                      ],
+                    })
+                  }
+                  disabled={disabled}
+                />
+              )}
+              <InputList
+                field="build_extra_args"
+                values={value ?? []}
+                set={set}
+                disabled={disabled}
+                placeholder="--extra-arg=value"
+              />
+            </ConfigItem>
+          ),
+      },
+    },
+  ];
 
   if (mode === undefined) {
     components = {
@@ -229,7 +366,7 @@ export const StackConfig = ({
       general: [
         server_component,
         {
-          label: "Run Directory",
+          label: "Files",
           labelHidden: true,
           components: {
             run_directory: {
@@ -238,12 +375,6 @@ export const StackConfig = ({
                 "Set the working directory when running the compose up command. Usually is the parent folder of the compose files.",
               placeholder: "/path/to/folder",
             },
-          },
-        },
-        {
-          label: "File Paths",
-          labelHidden: true,
-          components: {
             file_paths: (value, set) => (
               <ConfigList
                 label="File Paths"
@@ -259,6 +390,7 @@ export const StackConfig = ({
         },
         ...general_common,
       ],
+      advanced,
     };
   } else if (mode === "Git Repo") {
     components = {

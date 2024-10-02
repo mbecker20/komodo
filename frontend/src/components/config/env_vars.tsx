@@ -53,7 +53,8 @@ const SecretsView = ({
             toast({ title: "Copied selection" });
           }}
           disabled={false}
-          align="end"
+          side="right"
+          align="start"
         />
       )}
       {secrets.length > 0 && (
@@ -66,7 +67,8 @@ const SecretsView = ({
             toast({ title: "Copied selection" });
           }}
           disabled={false}
-          align="end"
+          side="right"
+          align="start"
         />
       )}
     </div>
