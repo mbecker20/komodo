@@ -2,7 +2,7 @@ import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
   ConfigItem,
-  InputList,
+  ConfigList,
   ProviderSelectorConfig,
 } from "@components/config/util";
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
@@ -12,8 +12,7 @@ import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton, ShowHideButton } from "@components/util";
-import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { Button } from "@ui/button";
+import { Ban, CirclePlus } from "lucide-react";
 import { MonacoEditor } from "@components/monaco";
 
 export const ResourceSyncConfig = ({
@@ -59,7 +58,7 @@ export const ResourceSyncConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "Resource File",
             hidden: files_on_host || repo_selected,
@@ -113,40 +112,23 @@ export const ResourceSyncConfig = ({
           },
           {
             label: "Match Tags",
-            contentHidden:
-              (update.match_tags ?? config.match_tags)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    match_tags: [
-                      ...(update.match_tags ?? config.match_tags ?? []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Tag
-              </Button>
-            ),
             components: {
               match_tags: (values, set) => (
-                <InputList
+                <ConfigList
+                  label="Match Tags"
+                  addLabel="Add Tag"
+                  description="Only sync resources matching these tags."
                   field="match_tags"
                   values={values ?? []}
                   set={set}
                   disabled={disabled}
-                  placeholder="Tag"
+                  placeholder="Input tag name"
                 />
               ),
-            } as any,
+            },
           },
           {
-            label: "Git Repo",
+            label: "Source",
             hidden: !show_git,
             components: {
               git_provider: (provider: string | undefined, set) => {
