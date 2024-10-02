@@ -1,4 +1,4 @@
-import { Config } from "@components/config";
+import { Config, ConfigComponent } from "@components/config";
 import {
   AccountSelectorConfig,
   AddExtraArgMenu,
@@ -7,18 +7,36 @@ import {
   InputList,
   ProviderSelectorConfig,
 } from "@components/config/util";
-import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { ReactNode, useState } from "react";
-import { CopyGithubWebhook, ResourceSelector } from "../common";
+import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
+import { SecretsSearch } from "@components/config/env_vars";
+import { ConfirmButton, ShowHideButton } from "@components/util";
+import { MonacoEditor } from "@components/monaco";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton, ShowHideButton } from "@components/util";
-import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { Button } from "@ui/button";
-import { MonacoEditor } from "@components/monaco";
-import { SecretsSearch } from "@components/config/env_vars";
-import { Input } from "@ui/input";
+import { Ban, CirclePlus } from "lucide-react";
+
+type StackMode = "UI Defined" | "Files On Server" | "Git Repo" | undefined;
+const STACK_MODES: StackMode[] = ["UI Defined", "Files On Server", "Git Repo"];
+
+function getStackMode(
+  update: Partial<Types.StackConfig>,
+  config: Types.StackConfig
+): StackMode {
+  if (update.files_on_host ?? config.files_on_host) return "Files On Server";
+  if (update.repo ?? config.repo) return "Git Repo";
+  if (update.file_contents ?? config.file_contents) return "UI Defined";
+  return undefined;
+}
 
 export const StackConfig = ({
   id,
@@ -30,6 +48,8 @@ export const StackConfig = ({
   const [show, setShow] = useLocalStorage(`stack-${id}-show`, {
     file: true,
     env: true,
+    git: true,
+    webhooks: true,
   });
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Stack", id },
@@ -44,11 +64,619 @@ export const StackConfig = ({
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
-  const files_on_host = update.files_on_host ?? config.files_on_host;
-  const ui_file_contents =
-    (update.file_contents ?? config.file_contents ?? "").length > 0;
   const run_build = update.run_build ?? config.run_build;
-  const repo_set = update.repo ?? config.repo ? true : false;
+  const mode = getStackMode(update, config);
+
+  const setMode = (mode: StackMode) => {
+    if (mode === "Files On Server") {
+      set({ ...update, files_on_host: true });
+    } else if (mode === "Git Repo") {
+      set({
+        ...update,
+        files_on_host: false,
+        repo: update.repo || config.repo || "namespace/repo",
+      });
+    } else if (mode === "UI Defined") {
+      set({
+        ...update,
+        files_on_host: false,
+        repo: "",
+        file_contents:
+          update.file_contents ||
+          config.file_contents ||
+          DEFAULT_STACK_FILE_CONTENTS,
+      });
+    } else if (mode === undefined) {
+      set({
+        ...update,
+        files_on_host: false,
+        repo: "",
+        file_contents: "",
+      });
+    }
+  };
+
+  let components: Record<
+    string,
+    false | ConfigComponent<Types.StackConfig>[] | undefined
+  > = {};
+
+  const server_component: ConfigComponent<Types.StackConfig> = {
+    label: "Server",
+    labelHidden: true,
+    components: {
+      server_id: (server_id, set) => {
+        return (
+          <ConfigItem
+            label={
+              server_id ? (
+                <div className="flex gap-3 text-lg">
+                  Server:
+                  <ResourceLink type="Server" id={server_id} />
+                </div>
+              ) : (
+                "Select Server"
+              )
+            }
+            description="Select the Server to deploy the Stack on."
+          >
+            <ResourceSelector
+              type="Server"
+              selected={server_id}
+              onSelect={(server_id) => set({ server_id })}
+              disabled={disabled}
+              align="start"
+            />
+          </ConfigItem>
+        );
+      },
+    },
+  };
+
+  const choose_mode: ConfigComponent<Types.StackConfig> = {
+    label: "Choose Mode",
+    labelHidden: true,
+    components: {
+      server_id: () => {
+        return (
+          <ConfigItem
+            label="Choose Mode"
+            description="Will the file contents be defined in UI, stored on the server, or pulled from a git repo?"
+          >
+            <Select
+              value={mode}
+              onValueChange={(mode) => setMode(mode as StackMode)}
+              disabled={disabled}
+            >
+              <SelectTrigger
+                className="w-[200px] capitalize"
+                disabled={disabled}
+              >
+                <SelectValue placeholder="Select Mode" />
+              </SelectTrigger>
+              <SelectContent>
+                {STACK_MODES.map((mode) => (
+                  <SelectItem
+                    key={mode}
+                    value={mode!}
+                    className="capitalize cursor-pointer"
+                  >
+                    {mode}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ConfigItem>
+        );
+      },
+    },
+  };
+
+  const general_common: ConfigComponent<Types.StackConfig>[] = [
+    {
+      label: "Environment",
+      boldLabel: false,
+      description: "Pass these variables to the compose command",
+      actions: (
+        <ShowHideButton
+          show={show.env}
+          setShow={(env) => setShow({ ...show, env })}
+        />
+      ),
+      contentHidden: !show.env,
+      components: {
+        environment: (env, set) => (
+          <div className="flex flex-col gap-4">
+            <SecretsSearch server={update.server_id ?? config.server_id} />
+            <MonacoEditor
+              value={env || "  # VARIABLE = value\n"}
+              onValueChange={(environment) => set({ environment })}
+              language="key_value"
+              readOnly={disabled}
+            />
+          </div>
+        ),
+        env_file_path: {
+          description:
+            "The path to write the file to, relative to the root of the repo.",
+          placeholder: ".env",
+        },
+        // skip_secret_interp: true,
+      },
+    },
+    {
+      label: "Extra Args",
+      labelHidden: true,
+      components: {
+        extra_args: (value, set) => (
+          <ConfigItem
+            label="Extra Args"
+            description="Add extra args inserted after 'docker compose up -d'"
+          >
+            {!disabled && (
+              <AddExtraArgMenu
+                type="Stack"
+                onSelect={(suggestion) =>
+                  set({
+                    extra_args: [
+                      ...(update.extra_args ?? config.extra_args ?? []),
+                      suggestion,
+                    ],
+                  })
+                }
+                disabled={disabled}
+              />
+            )}
+            <InputList
+              field="extra_args"
+              values={value ?? []}
+              set={set}
+              disabled={disabled}
+              placeholder="--extra-arg=value"
+            />
+          </ConfigItem>
+        ),
+      },
+    },
+    {
+      label: "Links",
+      labelHidden: true,
+      components: {
+        links: (values, set) => (
+          <ConfigList
+            label="Links"
+            addLabel="Add Link"
+            description="Add quick links in the resource header"
+            field="links"
+            values={values ?? []}
+            set={set}
+            disabled={disabled}
+            placeholder="Input link"
+          />
+        ),
+      },
+    },
+  ];
+
+  const advanced: ConfigComponent<Types.StackConfig>[] = [
+    {
+      label: "Project Name",
+      labelHidden: true,
+      components: {
+        project_name: {
+          placeholder: "Compose project name",
+          description:
+            "Optionally set a different compose project name. It should match the compose project name on your host.",
+        },
+      },
+    },
+    {
+      label: "Ignore Services",
+      labelHidden: true,
+      components: {
+        ignore_services: (values, set) => (
+          <ConfigList
+            label="Ignore Services"
+            description="If your compose file has init services that exit early, ignore them here so your stack will report the correct health."
+            field="ignore_services"
+            values={values ?? []}
+            set={set}
+            disabled={disabled}
+            placeholder="Input service name"
+          />
+        ),
+      },
+    },
+    {
+      label: "Pull Images",
+      labelHidden: true,
+      components: {
+        registry_provider: (provider, set) => {
+          return (
+            <ProviderSelectorConfig
+              account_type="docker"
+              selected={provider}
+              disabled={disabled}
+              onSelect={(registry_provider) => set({ registry_provider })}
+            />
+          );
+        },
+        registry_account: (value, set) => {
+          const server_id = update.server_id || config.server_id;
+          const provider = update.registry_provider ?? config.registry_provider;
+          if (!provider) {
+            return null;
+          }
+          return (
+            <AccountSelectorConfig
+              id={server_id}
+              type={server_id ? "Server" : "None"}
+              account_type="docker"
+              provider={provider}
+              selected={value}
+              onSelect={(registry_account) => set({ registry_account })}
+              disabled={disabled}
+              placeholder="None"
+            />
+          );
+        },
+        auto_pull: {
+          label: "Pre Pull Images",
+          description:
+            "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
+        },
+      },
+    },
+    {
+      label: "Build Images",
+      labelHidden: true,
+      components: {
+        run_build: {
+          label: "Pre Build Images",
+          description:
+            "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
+        },
+        build_extra_args: (value, set) =>
+          run_build && (
+            <ConfigItem
+              label="Build Extra Args"
+              description="Add extra args inserted after 'docker compose build'"
+            >
+              {!disabled && (
+                <AddExtraArgMenu
+                  type="StackBuild"
+                  onSelect={(suggestion) =>
+                    set({
+                      build_extra_args: [
+                        ...(update.build_extra_args ??
+                          config.build_extra_args ??
+                          []),
+                        suggestion,
+                      ],
+                    })
+                  }
+                  disabled={disabled}
+                />
+              )}
+              <InputList
+                field="build_extra_args"
+                values={value ?? []}
+                set={set}
+                disabled={disabled}
+                placeholder="--extra-arg=value"
+              />
+            </ConfigItem>
+          ),
+      },
+    },
+  ];
+
+  if (mode === undefined) {
+    components = {
+      general: [server_component, choose_mode],
+    };
+  } else if (mode === "Files On Server") {
+    components = {
+      general: [
+        server_component,
+        {
+          label: "Files",
+          labelHidden: true,
+          components: {
+            run_directory: {
+              label: "Run Directory",
+              description:
+                "Set the working directory when running the compose up command. Usually is the parent folder of the compose files.",
+              placeholder: "/path/to/folder",
+            },
+            file_paths: (value, set) => (
+              <ConfigList
+                label="File Paths"
+                description="Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'. Relative to 'Run Directory'."
+                field="file_paths"
+                values={value ?? []}
+                set={set}
+                disabled={disabled}
+                placeholder="compose.yaml"
+              />
+            ),
+          },
+        },
+        ...general_common,
+      ],
+      advanced,
+    };
+  } else if (mode === "Git Repo") {
+    components = {
+      general: [
+        server_component,
+        {
+          label: "Repo Config",
+          boldLabel: false,
+          contentHidden: !show.git,
+          actions: (
+            <ShowHideButton
+              show={show.git}
+              setShow={(git) => setShow({ ...show, git })}
+            />
+          ),
+          components: {
+            git_provider: (provider, set) => {
+              const https = update.git_https ?? config.git_https;
+              return (
+                <ProviderSelectorConfig
+                  account_type="git"
+                  selected={provider}
+                  disabled={disabled}
+                  onSelect={(git_provider) => set({ git_provider })}
+                  https={https}
+                  onHttpsSwitch={() => set({ git_https: !https })}
+                />
+              );
+            },
+            git_account: (value, set) => {
+              const server_id = update.server_id || config.server_id;
+              return (
+                <AccountSelectorConfig
+                  id={server_id}
+                  type={server_id ? "Server" : "None"}
+                  account_type="git"
+                  provider={update.git_provider ?? config.git_provider}
+                  selected={value}
+                  onSelect={(git_account) => set({ git_account })}
+                  disabled={disabled}
+                  placeholder="None"
+                />
+              );
+            },
+            repo: {
+              placeholder: "Enter repo",
+              description:
+                "The repo path on the provider. {namespace}/{repo_name}",
+            },
+            branch: {
+              placeholder: "Enter branch",
+              description: "Select a custom branch, or default to 'main'.",
+            },
+            commit: {
+              placeholder: "Enter a specific commit hash. Optional.",
+              description:
+                "Switch to a specific hash after cloning the branch.",
+            },
+          },
+        },
+        ...general_common,
+        {
+          label: "Webhooks",
+          description:
+            "Configure your repo provider to send webhooks to Komodo",
+          actions: (
+            <ShowHideButton
+              show={show.webhooks}
+              setShow={(webhooks) => setShow({ ...show, webhooks })}
+            />
+          ),
+          contentHidden: !show.webhooks,
+          components: {
+            ["Guard" as any]: () => {
+              if (update.branch ?? config.branch) {
+                return null;
+              }
+              return (
+                <ConfigItem label="Configure Branch">
+                  <div>Must configure Branch before webhooks will work.</div>
+                </ConfigItem>
+              );
+            },
+            ["Refresh" as any]: () =>
+              (update.branch ?? config.branch) && (
+                <ConfigItem label="Refresh Cache">
+                  <CopyGithubWebhook path={`/stack/${id}/refresh`} />
+                </ConfigItem>
+              ),
+            ["Deploy" as any]: () =>
+              (update.branch ?? config.branch) && (
+                <ConfigItem label="Auto Redeploy">
+                  <CopyGithubWebhook path={`/stack/${id}/deploy`} />
+                </ConfigItem>
+              ),
+            webhook_enabled:
+              !!(update.branch ?? config.branch) &&
+              webhooks !== undefined &&
+              !webhooks.managed,
+            webhook_secret: {
+              description:
+                "Provide a custom webhook secret for this resource, or use the global default.",
+              placeholder: "Input custom secret",
+            },
+            ["managed" as any]: () => {
+              const inv = useInvalidate();
+              const { toast } = useToast();
+              const { mutate: createWebhook, isPending: createPending } =
+                useWrite("CreateStackWebhook", {
+                  onSuccess: () => {
+                    toast({ title: "Webhook Created" });
+                    inv(["GetStackWebhooksEnabled", { stack: id }]);
+                  },
+                });
+              const { mutate: deleteWebhook, isPending: deletePending } =
+                useWrite("DeleteStackWebhook", {
+                  onSuccess: () => {
+                    toast({ title: "Webhook Deleted" });
+                    inv(["GetStackWebhooksEnabled", { stack: id }]);
+                  },
+                });
+
+              if (
+                !(update.branch ?? config.branch) ||
+                !webhooks ||
+                !webhooks.managed
+              ) {
+                return null;
+              }
+
+              return (
+                <ConfigItem label="Manage Webhook">
+                  {webhooks.deploy_enabled && (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        Incoming webhook is{" "}
+                        <div className={text_color_class_by_intention("Good")}>
+                          ENABLED
+                        </div>
+                        and will trigger
+                        <div
+                          className={text_color_class_by_intention("Neutral")}
+                        >
+                          DEPLOY
+                        </div>
+                      </div>
+                      <ConfirmButton
+                        title="Disable"
+                        icon={<Ban className="w-4 h-4" />}
+                        variant="destructive"
+                        onClick={() =>
+                          deleteWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Deploy,
+                          })
+                        }
+                        loading={deletePending}
+                        disabled={disabled || deletePending}
+                      />
+                    </div>
+                  )}
+                  {!webhooks.deploy_enabled && webhooks.refresh_enabled && (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        Incoming webhook is{" "}
+                        <div className={text_color_class_by_intention("Good")}>
+                          ENABLED
+                        </div>
+                        and will trigger
+                        <div
+                          className={text_color_class_by_intention("Neutral")}
+                        >
+                          REFRESH
+                        </div>
+                      </div>
+                      <ConfirmButton
+                        title="Disable"
+                        icon={<Ban className="w-4 h-4" />}
+                        variant="destructive"
+                        onClick={() =>
+                          deleteWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Refresh,
+                          })
+                        }
+                        loading={deletePending}
+                        disabled={disabled || deletePending}
+                      />
+                    </div>
+                  )}
+                  {!webhooks.deploy_enabled && !webhooks.refresh_enabled && (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        Incoming webhook is{" "}
+                        <div
+                          className={text_color_class_by_intention("Critical")}
+                        >
+                          DISABLED
+                        </div>
+                      </div>
+                      <ConfirmButton
+                        title="Enable Deploy"
+                        icon={<CirclePlus className="w-4 h-4" />}
+                        onClick={() =>
+                          createWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Deploy,
+                          })
+                        }
+                        loading={createPending}
+                        disabled={disabled || createPending}
+                      />
+                      <ConfirmButton
+                        title="Enable Refresh"
+                        icon={<CirclePlus className="w-4 h-4" />}
+                        onClick={() =>
+                          createWebhook({
+                            stack: id,
+                            action: Types.StackWebhookAction.Refresh,
+                          })
+                        }
+                        loading={createPending}
+                        disabled={disabled || createPending}
+                      />
+                    </div>
+                  )}
+                </ConfigItem>
+              );
+            },
+          },
+        },
+      ],
+      advanced,
+    };
+  } else if (mode === "UI Defined") {
+    components = {
+      general: [
+        server_component,
+        {
+          label: "Compose File",
+          boldLabel: false,
+          description: "Manage the compose file contents here.",
+          actions: (
+            <ShowHideButton
+              show={show.file}
+              setShow={(file) => setShow({ ...show, file })}
+            />
+          ),
+          contentHidden: !show.file,
+          components: {
+            file_contents: (file_contents, set) => {
+              const show_default =
+                !file_contents &&
+                update.file_contents === undefined &&
+                !(update.repo ?? config.repo);
+              return (
+                <MonacoEditor
+                  value={
+                    show_default ? DEFAULT_STACK_FILE_CONTENTS : file_contents
+                  }
+                  onValueChange={(file_contents) => set({ file_contents })}
+                  language="yaml"
+                />
+              );
+            },
+          },
+        },
+        ...general_common,
+      ],
+      advanced,
+    };
+  }
 
   return (
     <Config
@@ -62,605 +690,7 @@ export const StackConfig = ({
       onSave={async () => {
         await mutateAsync({ id, config: update });
       }}
-      components={{
-        general: [
-          {
-            label: "Server",
-            labelHidden: true,
-            components: {
-              server_id: (server_id, set) => {
-                return (
-                  <ConfigItem
-                    label={"Select Server"}
-                    description="Choose the Server to deploy the Stack on."
-                  >
-                    <ResourceSelector
-                      type="Server"
-                      selected={server_id}
-                      onSelect={(server_id) => set({ server_id })}
-                      disabled={disabled}
-                      align="start"
-                    />
-                  </ConfigItem>
-                );
-              },
-            },
-          },
-          {
-            label: "Compose File",
-            hidden: files_on_host || (!ui_file_contents && repo_set),
-            description:
-              "Manage the file contents here, or use a git repo / files on host option.",
-            actions: (
-              <ShowHideButton
-                show={show.file}
-                setShow={(file) => setShow({ ...show, file })}
-              />
-            ),
-            contentHidden: !show.file,
-            components: {
-              file_contents: (file_contents, set) => {
-                const show_default =
-                  !file_contents &&
-                  update.file_contents === undefined &&
-                  !(update.repo ?? config.repo);
-                return (
-                  <MonacoEditor
-                    value={
-                      show_default ? DEFAULT_STACK_FILE_CONTENTS : file_contents
-                    }
-                    onValueChange={(file_contents) => set({ file_contents })}
-                    language="yaml"
-                  />
-                );
-              },
-            },
-          },
-          {
-            label: "Environment",
-            description: "Pass these variables to the compose command",
-            labelExtra: (
-              <SecretsSearch server={update.server_id ?? config.server_id} />
-            ),
-            actions: (
-              <ShowHideButton
-                show={show.env}
-                setShow={(env) => setShow({ ...show, env })}
-              />
-            ),
-            contentHidden: !show.env,
-            components: {
-              environment: (env, set) => (
-                <MonacoEditor
-                  value={env || "  # VARIABLE = value\n"}
-                  onValueChange={(environment) => set({ environment })}
-                  language="key_value"
-                  readOnly={disabled}
-                />
-              ),
-              env_file_path: {
-                description:
-                  "The path to write the file to, relative to the root of the repo.",
-                placeholder: ".env",
-              },
-              // skip_secret_interp: true,
-            },
-          },
-          {
-            label: "Ignore Services",
-            labelHidden: true,
-            components: {
-              ignore_services: (values, set) => (
-                <ConfigList
-                  label="Ignore Services"
-                  description="If your compose file has init services that exit early, ignore them here so your stack will report the correct health."
-                  field="ignore_services"
-                  values={values ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="Input service name"
-                />
-              ),
-            },
-          },
-          {
-            label: "Links",
-            labelHidden: true,
-            components: {
-              links: (values, set) => (
-                <ConfigList
-                  label="Links"
-                  addLabel="Add Link"
-                  description="Add quick links in the resource header"
-                  field="links"
-                  values={values ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="Input link"
-                />
-              ),
-            },
-          },
-        ],
-        settings: [
-          {
-            label: "Project Name",
-            labelHidden: true,
-            components: {
-              project_name: {
-                placeholder: "Compose project name",
-                description:
-                  "Optionally override the compose project name. Can import stacks by matching the existing project name on your host.",
-              },
-            },
-          },
-          {
-            label: "Settings",
-            labelHidden: true,
-            components: {
-              auto_pull: {
-                label: "Auto Pull Images",
-                boldLabel: true,
-                description:
-                  "Ensure 'docker compose pull' is run before redeploying the Stack. Otherwise, use 'pull_policy' in docker compose file.",
-              },
-              run_build: {
-                label: "Auto Build Images",
-                boldLabel: true,
-                description:
-                  "Ensure 'docker compose build' is run before redeploying the Stack. Otherwise, can use '--build' as an Extra Arg.",
-              },
-              files_on_host: {
-                label: "Files on Server",
-                boldLabel: true,
-                description:
-                  "Manage the compose files on server yourself. Just configure the Run Directory and File Paths to your files.",
-              },
-            },
-          },
-          {
-            label: "Build Extra Args",
-            hidden: !run_build,
-            description: "Add extra args inserted after 'docker compose build'",
-            contentHidden:
-              ((update.build_extra_args ?? config.build_extra_args)?.length ??
-                0) === 0,
-            actions: !disabled && (
-              <AddExtraArgMenu
-                type="StackBuild"
-                onSelect={(suggestion) =>
-                  set((update) => ({
-                    ...update,
-                    build_extra_args: [
-                      ...(update.build_extra_args ??
-                        config.build_extra_args ??
-                        []),
-                      suggestion,
-                    ],
-                  }))
-                }
-                disabled={disabled}
-              />
-            ),
-            components: {
-              build_extra_args: (value, set) => (
-                <InputList
-                  field="build_extra_args"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-          {
-            label: "Run Path",
-            hidden: !files_on_host,
-            description:
-              "Set the cwd when running compose up command. Should usually be the parent folder of the compose files.",
-            contentHidden: true,
-            actions: (
-              <Input
-                className="max-w-[75%] lg:max-w-[400px]"
-                placeholder="/path/to/folder"
-                value={update.run_directory ?? config.run_directory}
-                onChange={(e) =>
-                  set({ ...update, run_directory: e.target.value })
-                }
-              />
-            ),
-            components: {},
-          },
-          {
-            label: "File Paths",
-            hidden: !files_on_host,
-            description:
-              "Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'. Relative to 'Run Directory'.",
-            contentHidden:
-              (update.file_paths ?? config.file_paths)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    file_paths: [
-                      ...(update.file_paths ?? config.file_paths ?? []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add File
-              </Button>
-            ),
-            components: {
-              file_paths: (value, set) => (
-                <InputList
-                  field="file_paths"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="compose.yaml"
-                />
-              ),
-            },
-          },
-          {
-            label: "Extra Args",
-            description: "Add extra args inserted after 'docker compose up -d'",
-            contentHidden:
-              ((update.extra_args ?? config.extra_args)?.length ?? 0) === 0,
-            actions: !disabled && (
-              <AddExtraArgMenu
-                type="Stack"
-                onSelect={(suggestion) =>
-                  set((update) => ({
-                    ...update,
-                    extra_args: [
-                      ...(update.extra_args ?? config.extra_args ?? []),
-                      suggestion,
-                    ],
-                  }))
-                }
-                disabled={disabled}
-              />
-            ),
-            components: {
-              extra_args: (value, set) => (
-                <InputList
-                  field="extra_args"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-          {
-            label: "Image Registry",
-            description:
-              "Optional. Login to an image registry to pull private images",
-            components: {
-              registry_provider: (provider, set) => {
-                return (
-                  <ProviderSelectorConfig
-                    account_type="docker"
-                    selected={provider}
-                    disabled={disabled}
-                    onSelect={(registry_provider) => set({ registry_provider })}
-                  />
-                );
-              },
-              registry_account: (value, set) => {
-                const server_id = update.server_id || config.server_id;
-                const provider =
-                  update.registry_provider ?? config.registry_provider;
-                if (!provider) {
-                  return null;
-                }
-                return (
-                  <AccountSelectorConfig
-                    id={server_id}
-                    type={server_id ? "Server" : "None"}
-                    account_type="docker"
-                    provider={provider}
-                    selected={value}
-                    onSelect={(registry_account) => set({ registry_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                );
-              },
-            },
-          },
-        ],
-        "Git Repo": !files_on_host &&
-          !ui_file_contents && [
-            {
-              label: "Git Repo",
-              description:
-                "Provide config for repo-based compose files. Not necessary if file contents are configured in UI.",
-              components: {
-                git_provider: (provider, set) => {
-                  const https = update.git_https ?? config.git_https;
-                  return (
-                    <ProviderSelectorConfig
-                      account_type="git"
-                      selected={provider}
-                      disabled={disabled}
-                      onSelect={(git_provider) => set({ git_provider })}
-                      https={https}
-                      onHttpsSwitch={() => set({ git_https: !https })}
-                    />
-                  );
-                },
-                git_account: (value, set) => {
-                  const server_id = update.server_id || config.server_id;
-                  return (
-                    <AccountSelectorConfig
-                      id={server_id}
-                      type={server_id ? "Server" : "None"}
-                      account_type="git"
-                      provider={update.git_provider ?? config.git_provider}
-                      selected={value}
-                      onSelect={(git_account) => set({ git_account })}
-                      disabled={disabled}
-                      placeholder="None"
-                    />
-                  );
-                },
-                repo: {
-                  placeholder: "Enter repo",
-                  description:
-                    "The repo path on the provider. {namespace}/{repo_name}",
-                },
-                branch: {
-                  placeholder: "Enter branch",
-                  description: "Select a custom branch, or default to 'main'.",
-                },
-                commit: {
-                  placeholder: "Enter a specific commit hash. Optional.",
-                  description:
-                    "Switch to a specific hash after cloning the branch.",
-                },
-              },
-            },
-            {
-              label: "Run Path",
-              description:
-                "Set the cwd when running compose up command. Relative to the repo root.",
-              contentHidden: true,
-              actions: (
-                <Input
-                  className="max-w-[75%] lg:max-w-[400px]"
-                  placeholder="./"
-                  value={update.run_directory ?? config.run_directory}
-                  onChange={(e) =>
-                    set({ ...update, run_directory: e.target.value })
-                  }
-                />
-              ),
-              components: {},
-            },
-            {
-              label: "File Paths",
-              description:
-                "Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'. Relative to 'Run Directory'.",
-              contentHidden:
-                (update.file_paths ?? config.file_paths)?.length === 0,
-              actions: !disabled && (
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    set((update) => ({
-                      ...update,
-                      file_paths: [
-                        ...(update.file_paths ?? config.file_paths ?? []),
-                        "",
-                      ],
-                    }))
-                  }
-                  className="flex items-center gap-2 w-[200px]"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Add File
-                </Button>
-              ),
-              components: {
-                file_paths: (value, set) => (
-                  <InputList
-                    field="file_paths"
-                    values={value ?? []}
-                    set={set}
-                    disabled={disabled}
-                    placeholder="compose.yaml"
-                  />
-                ),
-              },
-            },
-            {
-              label: "Git Webhooks",
-              description:
-                "Configure your repo provider to send webhooks to Komodo",
-              components: {
-                ["Guard" as any]: () => {
-                  if (update.branch ?? config.branch) {
-                    return null;
-                  }
-                  return (
-                    <ConfigItem label="Configure Branch">
-                      <div>
-                        Must configure Branch before webhooks will work.
-                      </div>
-                    </ConfigItem>
-                  );
-                },
-                ["Refresh" as any]: () =>
-                  (update.branch ?? config.branch) && (
-                    <ConfigItem label="Refresh Cache">
-                      <CopyGithubWebhook path={`/stack/${id}/refresh`} />
-                    </ConfigItem>
-                  ),
-                ["Deploy" as any]: () =>
-                  (update.branch ?? config.branch) && (
-                    <ConfigItem label="Auto Redeploy">
-                      <CopyGithubWebhook path={`/stack/${id}/deploy`} />
-                    </ConfigItem>
-                  ),
-                webhook_enabled:
-                  !!(update.branch ?? config.branch) &&
-                  webhooks !== undefined &&
-                  !webhooks.managed,
-                webhook_secret: {
-                  description:
-                    "Provide a custom webhook secret for this resource, or use the global default.",
-                  placeholder: "Input custom secret",
-                },
-                ["managed" as any]: () => {
-                  const inv = useInvalidate();
-                  const { toast } = useToast();
-                  const { mutate: createWebhook, isPending: createPending } =
-                    useWrite("CreateStackWebhook", {
-                      onSuccess: () => {
-                        toast({ title: "Webhook Created" });
-                        inv(["GetStackWebhooksEnabled", { stack: id }]);
-                      },
-                    });
-                  const { mutate: deleteWebhook, isPending: deletePending } =
-                    useWrite("DeleteStackWebhook", {
-                      onSuccess: () => {
-                        toast({ title: "Webhook Deleted" });
-                        inv(["GetStackWebhooksEnabled", { stack: id }]);
-                      },
-                    });
-
-                  if (
-                    !(update.branch ?? config.branch) ||
-                    !webhooks ||
-                    !webhooks.managed
-                  ) {
-                    return null;
-                  }
-
-                  return (
-                    <ConfigItem label="Manage Webhook">
-                      {webhooks.deploy_enabled && (
-                        <div className="flex items-center gap-4 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            Incoming webhook is{" "}
-                            <div
-                              className={text_color_class_by_intention("Good")}
-                            >
-                              ENABLED
-                            </div>
-                            and will trigger
-                            <div
-                              className={text_color_class_by_intention(
-                                "Neutral"
-                              )}
-                            >
-                              DEPLOY
-                            </div>
-                          </div>
-                          <ConfirmButton
-                            title="Disable"
-                            icon={<Ban className="w-4 h-4" />}
-                            variant="destructive"
-                            onClick={() =>
-                              deleteWebhook({
-                                stack: id,
-                                action: Types.StackWebhookAction.Deploy,
-                              })
-                            }
-                            loading={deletePending}
-                            disabled={disabled || deletePending}
-                          />
-                        </div>
-                      )}
-                      {!webhooks.deploy_enabled && webhooks.refresh_enabled && (
-                        <div className="flex items-center gap-4 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            Incoming webhook is{" "}
-                            <div
-                              className={text_color_class_by_intention("Good")}
-                            >
-                              ENABLED
-                            </div>
-                            and will trigger
-                            <div
-                              className={text_color_class_by_intention(
-                                "Neutral"
-                              )}
-                            >
-                              REFRESH
-                            </div>
-                          </div>
-                          <ConfirmButton
-                            title="Disable"
-                            icon={<Ban className="w-4 h-4" />}
-                            variant="destructive"
-                            onClick={() =>
-                              deleteWebhook({
-                                stack: id,
-                                action: Types.StackWebhookAction.Refresh,
-                              })
-                            }
-                            loading={deletePending}
-                            disabled={disabled || deletePending}
-                          />
-                        </div>
-                      )}
-                      {!webhooks.deploy_enabled &&
-                        !webhooks.refresh_enabled && (
-                          <div className="flex items-center gap-4 flex-wrap">
-                            <div className="flex items-center gap-2">
-                              Incoming webhook is{" "}
-                              <div
-                                className={text_color_class_by_intention(
-                                  "Critical"
-                                )}
-                              >
-                                DISABLED
-                              </div>
-                            </div>
-                            <ConfirmButton
-                              title="Enable Deploy"
-                              icon={<CirclePlus className="w-4 h-4" />}
-                              onClick={() =>
-                                createWebhook({
-                                  stack: id,
-                                  action: Types.StackWebhookAction.Deploy,
-                                })
-                              }
-                              loading={createPending}
-                              disabled={disabled || createPending}
-                            />
-                            <ConfirmButton
-                              title="Enable Refresh"
-                              icon={<CirclePlus className="w-4 h-4" />}
-                              onClick={() =>
-                                createWebhook({
-                                  stack: id,
-                                  action: Types.StackWebhookAction.Refresh,
-                                })
-                              }
-                              loading={createPending}
-                              disabled={disabled || createPending}
-                            />
-                          </div>
-                        )}
-                    </ConfigItem>
-                  );
-                },
-              },
-            },
-          ],
-      }}
+      components={components}
     />
   );
 };

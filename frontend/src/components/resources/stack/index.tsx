@@ -35,7 +35,7 @@ import { useToast } from "@ui/use-toast";
 import { StackServices } from "./services";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
-import { StackConfig } from "./config2";
+import { StackConfig } from "./config";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
