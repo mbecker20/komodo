@@ -156,13 +156,6 @@ export const DeploymentConfig = ({
             label: "Environment",
             boldLabel: false,
             description: "Pass these variables to the container",
-            // actions: (
-            //   <ShowHideButton
-            //     show={show.env}
-            //     setShow={(env) => setShow({ ...show, env })}
-            //   />
-            // ),
-            // contentHidden: !show.env,
             components: {
               environment: (env, set) => (
                 <div className="flex flex-col gap-4">

@@ -11,6 +11,7 @@ import { Types } from "@komodo/client";
 import { useState } from "react";
 import {
   CopyGithubWebhook,
+  ResourceLink,
   ResourceSelector,
 } from "../common";
 import { useToast } from "@ui/use-toast";
@@ -47,37 +48,71 @@ export const RepoConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "Server",
-            contentHidden: true,
-            actions: (
-              <ResourceSelector
-                type="Server"
-                selected={update.server_id ?? config.server_id}
-                onSelect={(server_id) => set({ ...update, server_id })}
-                disabled={disabled}
-                align="end"
-              />
-            ),
-            components: {},
+            labelHidden: true,
+            components: {
+              server_id: (server_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      server_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Server:
+                          <ResourceLink type="Server" id={server_id} />
+                        </div>
+                      ) : (
+                        "Select Server"
+                      )
+                    }
+                    description="Select the Server to clone on."
+                  >
+                    <ResourceSelector
+                      type="Server"
+                      selected={server_id}
+                      onSelect={(server_id) => set({ server_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
+            },
           },
           {
             label: "Builder",
-            contentHidden: true,
-            actions: (
-              <ResourceSelector
-                type="Builder"
-                selected={update.builder_id ?? config.builder_id}
-                onSelect={(builder_id) => set({ ...update, builder_id })}
-                disabled={disabled}
-                align="end"
-              />
-            ),
-            components: {},
+            labelHidden: true,
+            components: {
+              builder_id: (builder_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      builder_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Builder:
+                          <ResourceLink type="Builder" id={builder_id} />
+                        </div>
+                      ) : (
+                        "Select Builder"
+                      )
+                    }
+                    description="Select the Builder to build with."
+                  >
+                    <ResourceSelector
+                      type="Builder"
+                      selected={builder_id}
+                      onSelect={(builder_id) => set({ builder_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
+            },
           },
           {
-            label: "General",
+            label: "Source",
             components: {
               git_provider: (provider, set) => {
                 const https = update.git_https ?? config.git_https;
@@ -92,21 +127,18 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   />
                 );
               },
-              git_account: (value, set) => {
-                const server_id = update.server_id || config.server_id;
-                return (
-                  <AccountSelectorConfig
-                    id={server_id}
-                    type={server_id ? "Server" : "None"}
-                    account_type="git"
-                    provider={update.git_provider ?? config.git_provider}
-                    selected={value}
-                    onSelect={(git_account) => set({ git_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                );
-              },
+              git_account: (account, set) => (
+                <AccountSelectorConfig
+                  id={update.builder_id ?? config.builder_id ?? undefined}
+                  type="Builder"
+                  account_type="git"
+                  provider={update.git_provider ?? config.git_provider}
+                  selected={account}
+                  onSelect={(git_account) => set({ git_account })}
+                  disabled={disabled}
+                  placeholder="None"
+                />
+              ),
               repo: {
                 placeholder: "Enter repo",
                 description:
@@ -117,7 +149,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 description: "Select a custom branch, or default to 'main'.",
               },
               commit: {
-                placeholder: "Enter a specific commit hash. Optional.",
+                placeholder: "Enter commit hash",
                 description:
                   "Switch to a specific hash after cloning the branch.",
               },
@@ -125,7 +157,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 label: "Clone Path",
                 placeholder: "/clone/path/on/host",
                 description:
-                  "Explicitly specify the folder on the host to clone the repo in. Optional.",
+                  "Explicitly specify the folder on the host to clone the repo in.",
               },
             },
           },
@@ -133,15 +165,19 @@ export const RepoConfig = ({ id }: { id: string }) => {
             label: "Environment",
             description:
               "Write these variables to a .env-formatted file at the specified path, before on_clone / on_pull are run.",
-            labelExtra: !disabled && <SecretsSearch />,
             components: {
               environment: (env, set) => (
-                <MonacoEditor
-                  value={env || "  # VARIABLE = value\n"}
-                  onValueChange={(environment) => set({ environment })}
-                  language="key_value"
-                  readOnly={disabled}
-                />
+                <div className="flex flex-col gap-4">
+                  <SecretsSearch
+                    server={update.server_id ?? config.server_id}
+                  />
+                  <MonacoEditor
+                    value={env || "  # VARIABLE = value\n"}
+                    onValueChange={(environment) => set({ environment })}
+                    language="key_value"
+                    readOnly={disabled}
+                  />
+                </div>
               ),
               env_file_path: {
                 description:
