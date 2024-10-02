@@ -285,7 +285,7 @@ export const DeploymentConfig = ({
                 >
                   <MonacoEditor
                     value={value}
-                    language={undefined}
+                    language="shell"
                     onValueChange={(command) => set({ command })}
                     readOnly={disabled}
                   />

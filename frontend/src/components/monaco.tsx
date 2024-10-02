@@ -7,6 +7,16 @@ import { cn } from "@lib/utils";
 const MIN_EDITOR_HEIGHT = 56;
 // const MAX_EDITOR_HEIGHT = 500;
 
+export type MonacoLanguage =
+  | "yaml"
+  | "toml"
+  | "json"
+  | "key_value"
+  | "shell"
+  | "dockerfile"
+  | "rust"
+  | undefined;
+
 export const MonacoEditor = ({
   value,
   onValueChange,
@@ -15,7 +25,7 @@ export const MonacoEditor = ({
 }: {
   value: string | undefined;
   onValueChange?: (value: string) => void;
-  language: "yaml" | "toml" | "json" | "key_value" | undefined;
+  language: MonacoLanguage;
   readOnly?: boolean;
 }) => {
   const [editor, setEditor] =
@@ -90,7 +100,7 @@ export const MonacoDiffEditor = ({
   original: string | undefined;
   modified: string | undefined;
   onModifiedValueChange?: (value: string) => void;
-  language: "yaml" | "toml" | "json" | "key_value" | undefined;
+  language: MonacoLanguage;
   readOnly?: boolean;
   containerClassName?: string;
   hideUnchangedRegions?: boolean;

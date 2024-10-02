@@ -231,6 +231,7 @@ impl MergePartial for BuilderConfig {
               .unwrap_or(config.use_public_ip),
             port: partial.port.unwrap_or(config.port),
             use_https: partial.use_https.unwrap_or(config.use_https),
+            user_data: partial.user_data.unwrap_or(config.user_data),
             git_providers: partial
               .git_providers
               .unwrap_or(config.git_providers),
@@ -306,29 +307,48 @@ pub struct AwsBuilderConfig {
   /// The EC2 ami id to create.
   /// The ami should have the periphery client configured to start on startup,
   /// and should have the necessary github / dockerhub accounts configured.
+  #[serde(default)]
+  #[builder(default)]
   pub ami_id: String,
   /// The subnet id to create the instance in.
+  #[serde(default)]
+  #[builder(default)]
   pub subnet_id: String,
   /// The key pair name to attach to the instance
+ #[serde(default)]
+  #[builder(default)]
   pub key_pair_name: String,
   /// Whether to assign the instance a public IP address.
   /// Likely needed for the instance to be able to reach the open internet.
+  #[serde(default)]
+  #[builder(default)]
   pub assign_public_ip: bool,
   /// Whether core should use the public IP address to communicate with periphery on the builder.
   /// If false, core will communicate with the instance using the private IP.
+  #[serde(default)]
+  #[builder(default)]
   pub use_public_ip: bool,
   /// The security group ids to attach to the instance.
   /// This should include a security group to allow core inbound access to the periphery port.
+  #[serde(default)]
+  #[builder(default)]
   pub security_group_ids: Vec<String>,
+  /// The user data to deploy the instance with.
+  #[serde(default)]
+  #[builder(default)]
+  pub user_data: String,
 
   /// Which git providers are available on the AMI
   #[serde(default)]
+  #[builder(default)]
   pub git_providers: Vec<GitProvider>,
   /// Which docker registries are available on the AMI.
   #[serde(default)]
+  #[builder(default)]
   pub docker_registries: Vec<DockerRegistry>,
   /// Which secrets are available on the AMI.
   #[serde(default)]
+  #[builder(default)]
   pub secrets: Vec<String>,
 }
 
@@ -346,6 +366,7 @@ impl Default for AwsBuilderConfig {
       key_pair_name: Default::default(),
       assign_public_ip: Default::default(),
       use_public_ip: Default::default(),
+      user_data: Default::default(),
       git_providers: Default::default(),
       docker_registries: Default::default(),
       secrets: Default::default(),

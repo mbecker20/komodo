@@ -16,6 +16,7 @@ import {
 import { Card } from "@ui/card";
 import { cn } from "@lib/utils";
 import { Input } from "@ui/input";
+import { MonacoEditor } from "@components/monaco";
 
 export const BuilderConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuilder", { builder: id }).data?.config;
@@ -109,6 +110,22 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
               },
               use_https: {
                 description: "Whether to connect to Periphery using HTTPS.",
+              },
+            },
+          },
+          {
+            label: "User Data",
+            description: "Run a script to setup the instance.",
+            components: {
+              user_data: (user_data, set) => {
+                return (
+                  <MonacoEditor
+                    value={user_data}
+                    language="shell"
+                    onValueChange={(user_data) => set({ user_data })}
+                    readOnly={disabled}
+                  />
+                );
               },
             },
           },

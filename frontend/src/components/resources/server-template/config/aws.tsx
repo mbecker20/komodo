@@ -1,6 +1,5 @@
 import { Config } from "@components/config";
-import { InputList } from "@components/config/util";
-import { TextUpdateMenu } from "@components/util";
+import { ConfigList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@komodo/client";
@@ -23,6 +22,7 @@ import {
 } from "@ui/select";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { useState } from "react";
+import { MonacoEditor } from "@components/monaco";
 
 export const AwsServerTemplateConfig = ({
   id,
@@ -49,132 +49,145 @@ export const AwsServerTemplateConfig = ({
         await mutateAsync({ id, config: { type: "Aws", params: update } });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "General",
             components: {
-              region: true,
-              instance_type: true,
-              ami_id: true,
-              subnet_id: true,
-              key_pair_name: true,
-              port: true,
-              use_https: true,
-              assign_public_ip: true,
-              use_public_ip: true,
+              region: {
+                description:
+                  "Configure the AWS region to launch the instance in.",
+                placeholder: "Input region",
+              },
+              instance_type: {
+                description: "Choose the instance type to launch",
+                placeholder: "Input instance type",
+              },
+              ami_id: {
+                description:
+                  "Create an Ami with Docker and Komodo Periphery installed.",
+                placeholder: "Input Ami Id",
+              },
+              key_pair_name: {
+                description: "Attach a key pair to the instance",
+                placeholder: "Input key pair name",
+              },
             },
           },
           {
-            label: "Security Group Ids",
-            contentHidden:
-              (update.security_group_ids ?? config.security_group_ids)
-                ?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    security_group_ids: [
-                      ...(update.security_group_ids ??
-                        config.security_group_ids ??
-                        []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Security Group Id
-              </Button>
-            ),
+            label: "Network",
             components: {
+              subnet_id: {
+                description: "Configure the subnet to launch the instance in.",
+                placeholder: "Input subnet id",
+              },
               security_group_ids: (values, set) => (
-                <InputList
+                <ConfigList
+                  label="Security Group Ids"
+                  description="Attach security groups to the instance."
                   field="security_group_ids"
                   values={values ?? []}
                   set={set}
                   disabled={disabled}
-                  placeholder="Security Group Id"
+                  placeholder="Input Id"
                 />
               ),
+              assign_public_ip: {
+                description:
+                  "Whether to assign a public IP to the build instance.",
+              },
+              use_public_ip:
+                update.assign_public_ip ?? config.assign_public_ip
+                  ? {
+                      description:
+                        "Whether to connect to the instance over the public IP. Otherwise, will use the internal IP.",
+                    }
+                  : false,
+              port: {
+                description: "Configure the port to connect to Periphery on.",
+                placeholder: "Input port",
+              },
+              use_https: {
+                description: "Whether to connect to Periphery using HTTPS.",
+              },
             },
           },
           {
             label: "Volumes",
-            contentHidden: (update.volumes ?? config.volumes)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    volumes: [
-                      ...(update.volumes ?? config.volumes ?? []),
-                      newVolume((update.volumes ?? config.volumes).length),
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Volume
-              </Button>
-            ),
             components: {
               volumes: (volumes, set) => {
                 return (
-                  <div className="w-full flex justify-end">
-                    <div className="flex flex-col gap-4 w-full max-w-[400px]">
-                      {volumes.map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between gap-4"
-                        >
-                          <AwsVolumeDialog
-                            volumes={volumes}
-                            index={index}
-                            set={set}
-                            disabled={disabled}
-                          />
-                          {!disabled && (
-                            <Button
-                              variant="secondary"
+                  <>
+                    {!disabled && (
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          set({
+                            volumes: [
+                              ...(update.volumes ?? config.volumes ?? []),
+                              newVolume(
+                                (update.volumes ?? config.volumes).length
+                              ),
+                            ],
+                          })
+                        }
+                        className="flex items-center gap-2 w-[200px]"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        Add Volume
+                      </Button>
+                    )}
+                    <div className="w-full flex">
+                      <div className="flex flex-col gap-4 w-full max-w-[400px]">
+                        {volumes.map((_, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between gap-4"
+                          >
+                            <AwsVolumeDialog
+                              volumes={volumes}
+                              index={index}
+                              set={set}
                               disabled={disabled}
-                              onClick={() =>
-                                set({
-                                  volumes: volumes.filter(
-                                    (_, i) => i !== index
-                                  ),
-                                })
-                              }
-                            >
-                              <MinusCircle className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
+                            />
+                            {!disabled && (
+                              <Button
+                                variant="secondary"
+                                disabled={disabled}
+                                onClick={() =>
+                                  set({
+                                    volumes: volumes.filter(
+                                      (_, i) => i !== index
+                                    ),
+                                  })
+                                }
+                              >
+                                <MinusCircle className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  </>
                 );
               },
             },
           },
           {
             label: "User Data",
-            contentHidden: true,
-            actions: (
-              <TextUpdateMenu
-                title="Update User Data"
-                placeholder="Set User Data"
-                value={update.user_data ?? config.user_data}
-                onUpdate={(user_data) => set({ ...update, user_data })}
-                triggerClassName="min-w-[300px] max-w-[400px]"
-                disabled={disabled}
-              />
-            ),
-            components: {},
+            description: "Run a script to setup the instance",
+            components: {
+              user_data: (user_data, set) => {
+                return (
+                  <MonacoEditor
+                    value={user_data}
+                    language="shell"
+                    onValueChange={(user_data) => set({ user_data })}
+                    readOnly={disabled}
+                  />
+                );
+              },
+            },
           },
         ],
       }}

@@ -6228,6 +6228,8 @@ export interface AwsBuilderConfig {
 	 * This should include a security group to allow core inbound access to the periphery port.
 	 */
 	security_group_ids: string[];
+	/** The user data to deploy the instance with. */
+	user_data?: string;
 	/** Which git providers are available on the AMI */
 	git_providers?: GitProvider[];
 	/** Which docker registries are available on the AMI. */
@@ -6364,12 +6366,12 @@ export interface AwsServerTemplateConfig {
 	port: number;
 	/** Whether Periphery will be running on https */
 	use_https: boolean;
-	/** The user data to deploy the instance with. */
-	user_data: string;
 	/** The security groups to give to the instance. */
 	security_group_ids?: string[];
 	/** Specify the EBS volumes to attach. */
 	volumes: AwsVolume[];
+	/** The user data to deploy the instance with. */
+	user_data: string;
 }
 
 export enum HetznerDatacenter {
@@ -6444,31 +6446,23 @@ export interface HetznerServerTemplateConfig {
 	image?: string;
 	/** ID or name of Datacenter to create Server in */
 	datacenter?: HetznerDatacenter;
-	/** Network IDs which should be attached to the Server private network interface at the creation time */
-	private_network_ids?: I64[];
 	/**
 	 * ID of the Placement Group the server should be in,
 	 * Or 0 to not use placement group.
 	 */
 	placement_group?: I64;
-	/** Attach an IPv4 on the public NIC. If false, no IPv4 address will be attached. */
-	enable_public_ipv4?: boolean;
-	/** Attach an IPv6 on the public NIC. If false, no IPv6 address will be attached. */
-	enable_public_ipv6?: boolean;
-	/** The firewalls to attach to the instance */
-	firewall_ids?: I64[];
 	/** ID or name of the Server type this Server should be created with */
 	server_type?: HetznerServerType;
 	/** SSH key IDs ( integer ) or names ( string ) which should be injected into the Server at creation time */
 	ssh_keys?: string[];
-	/** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
-	user_data: string;
+	/** Network IDs which should be attached to the Server private network interface at the creation time */
+	private_network_ids?: I64[];
+	/** Attach an IPv4 on the public NIC. If false, no IPv4 address will be attached. */
+	enable_public_ipv4?: boolean;
+	/** Attach an IPv6 on the public NIC. If false, no IPv6 address will be attached. */
+	enable_public_ipv6?: boolean;
 	/** Connect to the instance using it's public ip. */
 	use_public_ip?: boolean;
-	/** Labels for the server */
-	labels?: Record<string, string>;
-	/** Specs for volumes to attach */
-	volumes?: HetznerVolumeSpecs[];
 	/**
 	 * The port periphery will be running on in AMI.
 	 * Default: `8120`
@@ -6476,6 +6470,14 @@ export interface HetznerServerTemplateConfig {
 	port: number;
 	/** Whether Periphery will be running on https */
 	use_https: boolean;
+	/** The firewalls to attach to the instance */
+	firewall_ids?: I64[];
+	/** Labels for the server */
+	labels?: Record<string, string>;
+	/** Specs for volumes to attach */
+	volumes?: HetznerVolumeSpecs[];
+	/** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
+	user_data: string;
 }
 
 export interface ComposeService {

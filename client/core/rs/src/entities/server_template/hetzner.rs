@@ -19,34 +19,19 @@ pub type _PartialHetznerServerTemplateConfig =
 #[partial(skip_serializing_none, from, diff)]
 pub struct HetznerServerTemplateConfig {
   /// ID or name of the Image the Server is created from
-  #[serde(default)]
-  #[builder(default)]
+  #[serde(default = "default_image")]
+  #[builder(default = "default_image()")]
+  #[partial_default(default_image())]
   pub image: String,
   /// ID or name of Datacenter to create Server in
   #[serde(default)]
   #[builder(default)]
   pub datacenter: HetznerDatacenter,
-  /// Network IDs which should be attached to the Server private network interface at the creation time
-  #[serde(default)]
-  #[builder(default)]
-  pub private_network_ids: Vec<I64>,
   /// ID of the Placement Group the server should be in,
   /// Or 0 to not use placement group.
   #[serde(default)]
   #[builder(default)]
   pub placement_group: I64,
-  /// Attach an IPv4 on the public NIC. If false, no IPv4 address will be attached.
-  #[serde(default)]
-  #[builder(default)]
-  pub enable_public_ipv4: bool,
-  /// Attach an IPv6 on the public NIC. If false, no IPv6 address will be attached.
-  #[serde(default)]
-  #[builder(default)]
-  pub enable_public_ipv6: bool,
-  /// The firewalls to attach to the instance
-  #[serde(default)]
-  #[builder(default)]
-  pub firewall_ids: Vec<I64>,
   /// ID or name of the Server type this Server should be created with
   #[serde(default)]
   #[builder(default)]
@@ -55,23 +40,22 @@ pub struct HetznerServerTemplateConfig {
   #[serde(default)]
   #[builder(default)]
   pub ssh_keys: Vec<String>,
-  /// Cloud-Init user data to use during Server creation. This field is limited to 32KiB.
-  #[serde(default = "default_user_data")]
-  #[builder(default = "default_user_data()")]
-  #[partial_default(default_user_data())]
-  pub user_data: String,
+  /// Network IDs which should be attached to the Server private network interface at the creation time
+  #[serde(default)]
+  #[builder(default)]
+  pub private_network_ids: Vec<I64>,
+  /// Attach an IPv4 on the public NIC. If false, no IPv4 address will be attached.
+  #[serde(default)]
+  #[builder(default)]
+  pub enable_public_ipv4: bool,
+  /// Attach an IPv6 on the public NIC. If false, no IPv6 address will be attached.
+  #[serde(default)]
+  #[builder(default)]
+  pub enable_public_ipv6: bool,
   /// Connect to the instance using it's public ip.
   #[serde(default)]
   #[builder(default)]
   pub use_public_ip: bool,
-  /// Labels for the server
-  #[serde(default)]
-  #[builder(default)]
-  pub labels: HashMap<String, String>,
-  /// Specs for volumes to attach
-  #[serde(default)]
-  #[builder(default)]
-  pub volumes: Vec<HetznerVolumeSpecs>,
   /// The port periphery will be running on in AMI.
   /// Default: `8120`
   #[serde(default = "default_port")]
@@ -83,12 +67,33 @@ pub struct HetznerServerTemplateConfig {
   #[builder(default = "default_use_https()")]
   #[partial_default(default_use_https())]
   pub use_https: bool,
+  /// The firewalls to attach to the instance
+  #[serde(default)]
+  #[builder(default)]
+  pub firewall_ids: Vec<I64>,
+  /// Labels for the server
+  #[serde(default)]
+  #[builder(default)]
+  pub labels: HashMap<String, String>,
+  /// Specs for volumes to attach
+  #[serde(default)]
+  #[builder(default)]
+  pub volumes: Vec<HetznerVolumeSpecs>,
+  /// Cloud-Init user data to use during Server creation. This field is limited to 32KiB.
+  #[serde(default = "default_user_data")]
+  #[builder(default = "default_user_data()")]
+  #[partial_default(default_user_data())]
+  pub user_data: String,
 }
 
 impl HetznerServerTemplateConfig {
   pub fn builder() -> HetznerServerTemplateConfigBuilder {
     HetznerServerTemplateConfigBuilder::default()
   }
+}
+
+fn default_image() -> String {
+  String::from("ubuntu-24.04")
 }
 
 fn default_port() -> i32 {
@@ -116,7 +121,7 @@ impl Default for HetznerServerTemplateConfig {
     Self {
       port: default_port(),
       use_https: default_use_https(),
-      image: Default::default(),
+      image: default_image(),
       datacenter: Default::default(),
       private_network_ids: Default::default(),
       placement_group: Default::default(),

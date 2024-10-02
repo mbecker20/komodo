@@ -55,11 +55,6 @@ pub struct AwsServerTemplateConfig {
   #[builder(default = "default_use_https()")]
   #[partial_default(default_use_https())]
   pub use_https: bool,
-  /// The user data to deploy the instance with.
-  #[serde(default = "default_user_data")]
-  #[builder(default = "default_user_data()")]
-  #[partial_default(default_user_data())]
-  pub user_data: String,
   /// The security groups to give to the instance.
   #[serde(default)]
   #[builder(default)]
@@ -69,6 +64,11 @@ pub struct AwsServerTemplateConfig {
   #[builder(default = "default_volumes()")]
   #[partial_default(default_volumes())]
   pub volumes: Vec<AwsVolume>,
+  /// The user data to deploy the instance with.
+  #[serde(default = "default_user_data")]
+  #[builder(default = "default_user_data()")]
+  #[partial_default(default_user_data())]
+  pub user_data: String,
 }
 
 impl AwsServerTemplateConfig {
@@ -201,7 +201,7 @@ impl AwsServerTemplateConfig {
       use_public_ip: value.use_public_ip,
       port: value.port,
       use_https: value.use_https,
-      user_data: Default::default(),
+      user_data: value.user_data.clone(),
     }
   }
 }
