@@ -762,7 +762,7 @@ export const AddExtraArgMenu = ({
           <PlusCircle className="w-4 h-4" /> Add Extra Arg
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] max-h-[400px] p-0" align="end">
+      <PopoverContent className="w-[300px] max-h-[400px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search suggestions"

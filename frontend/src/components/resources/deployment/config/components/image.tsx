@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConfigItem } from "@components/config/util";
 import { ResourceSelector } from "@components/resources/common";
 import { fmt_date, fmt_version } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
@@ -138,77 +137,72 @@ export const ImageConfig = ({
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem
-    label="Image"
-    description="Either pass a docker image directly, or choose a Build to deploy"
-  >
-    <div className="flex gap-4 w-full items-center">
-      <ImageTypeSelector
-        selected={image?.type}
-        disabled={disabled}
-        onSelect={(type) =>
-          set({
-            image: {
-              type: type,
-              params:
-                type === "Image"
-                  ? { image: "" }
-                  : ({
-                      build_id: "",
-                      version: { major: 0, minor: 0, patch: 0 },
-                    } as any),
-            },
-          })
-        }
-      />
-      {image?.type === "Build" && (
-        <>
-          <ResourceSelector
-            type="Build"
-            selected={image.params.build_id}
-            onSelect={(id) =>
-              set({
-                image: {
-                  ...image,
-                  params: { ...image.params, build_id: id },
-                },
-              })
-            }
-          />
-          <BuildVersionSelector
-            buildId={image.params.build_id}
-            selected={image.params.version}
-            onSelect={(version) =>
-              set({
-                image: {
-                  ...image,
-                  params: {
-                    ...image.params,
-                    version,
-                  },
-                },
-              })
-            }
-            disabled={disabled}
-          />
-        </>
-      )}
-      {image?.type === "Image" && (
-        <Input
-          value={image.params.image}
-          onChange={(e) =>
+  <div className="flex gap-4 w-full items-center">
+    <ImageTypeSelector
+      selected={image?.type}
+      disabled={disabled}
+      onSelect={(type) =>
+        set({
+          image: {
+            type: type,
+            params:
+              type === "Image"
+                ? { image: "" }
+                : ({
+                    build_id: "",
+                    version: { major: 0, minor: 0, patch: 0 },
+                  } as any),
+          },
+        })
+      }
+    />
+    {image?.type === "Build" && (
+      <>
+        <ResourceSelector
+          type="Build"
+          selected={image.params.build_id}
+          onSelect={(id) =>
             set({
               image: {
                 ...image,
-                params: { image: e.target.value },
+                params: { ...image.params, build_id: id },
               },
             })
           }
-          className="w-full lg:w-[300px]"
-          placeholder="image name"
+        />
+        <BuildVersionSelector
+          buildId={image.params.build_id}
+          selected={image.params.version}
+          onSelect={(version) =>
+            set({
+              image: {
+                ...image,
+                params: {
+                  ...image.params,
+                  version,
+                },
+              },
+            })
+          }
           disabled={disabled}
         />
-      )}
-    </div>
-  </ConfigItem>
+      </>
+    )}
+    {image?.type === "Image" && (
+      <Input
+        value={image.params.image}
+        onChange={(e) =>
+          set({
+            image: {
+              ...image,
+              params: { image: e.target.value },
+            },
+          })
+        }
+        className="w-full lg:w-[300px]"
+        placeholder="image name"
+        disabled={disabled}
+      />
+    )}
+  </div>
 );

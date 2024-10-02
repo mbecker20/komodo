@@ -118,7 +118,7 @@ export const StackConfig = ({
                 "Select Server"
               )
             }
-            description="Select the Server to deploy the Stack on."
+            description="Select the Server to deploy on."
           >
             <ResourceSelector
               type="Server"
@@ -205,6 +205,38 @@ export const StackConfig = ({
       },
     },
     {
+      label: "Links",
+      labelHidden: true,
+      components: {
+        links: (values, set) => (
+          <ConfigList
+            label="Links"
+            addLabel="Add Link"
+            description="Add quick links in the resource header"
+            field="links"
+            values={values ?? []}
+            set={set}
+            disabled={disabled}
+            placeholder="Input link"
+          />
+        ),
+      },
+    },
+  ];
+
+  const advanced: ConfigComponent<Types.StackConfig>[] = [
+    {
+      label: "Project Name",
+      labelHidden: true,
+      components: {
+        project_name: {
+          placeholder: "Compose project name",
+          description:
+            "Optionally set a different compose project name. It should match the compose project name on your host.",
+        },
+      },
+    },
+    {
       label: "Extra Args",
       labelHidden: true,
       components: {
@@ -236,38 +268,6 @@ export const StackConfig = ({
             />
           </ConfigItem>
         ),
-      },
-    },
-    {
-      label: "Links",
-      labelHidden: true,
-      components: {
-        links: (values, set) => (
-          <ConfigList
-            label="Links"
-            addLabel="Add Link"
-            description="Add quick links in the resource header"
-            field="links"
-            values={values ?? []}
-            set={set}
-            disabled={disabled}
-            placeholder="Input link"
-          />
-        ),
-      },
-    },
-  ];
-
-  const advanced: ConfigComponent<Types.StackConfig>[] = [
-    {
-      label: "Project Name",
-      labelHidden: true,
-      components: {
-        project_name: {
-          placeholder: "Compose project name",
-          description:
-            "Optionally set a different compose project name. It should match the compose project name on your host.",
-        },
       },
     },
     {
@@ -373,11 +373,11 @@ export const StackConfig = ({
 
   if (mode === undefined) {
     components = {
-      general: [server_component, choose_mode],
+      "": [server_component, choose_mode],
     };
   } else if (mode === "Files On Server") {
     components = {
-      general: [
+      "": [
         server_component,
         {
           label: "Files",
@@ -408,7 +408,7 @@ export const StackConfig = ({
     };
   } else if (mode === "Git Repo") {
     components = {
-      general: [
+      "": [
         server_component,
         {
           label: "Repo Config",
@@ -641,7 +641,7 @@ export const StackConfig = ({
     };
   } else if (mode === "UI Defined") {
     components = {
-      general: [
+      "": [
         server_component,
         {
           label: "Compose File",

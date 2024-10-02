@@ -42,7 +42,7 @@ export const ServerConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "Address",
             labelHidden: true,

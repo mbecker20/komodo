@@ -52,6 +52,7 @@ import { Section } from "./layouts";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useRead, useUser } from "@lib/hooks";
 import { Prune } from "./resources/server/actions";
+import { MonacoEditor } from "./monaco";
 
 export const WithLoading = ({
   children,
@@ -359,6 +360,7 @@ export const TextUpdateMenu = ({
   open,
   setOpen,
   triggerHidden,
+  language,
 }: {
   title: string;
   titleRight?: ReactNode;
@@ -372,6 +374,7 @@ export const TextUpdateMenu = ({
   open?: boolean;
   setOpen?: (open: boolean) => void;
   triggerHidden?: boolean;
+  language?: "toml" | "yaml" | "json" | "key_value";
 }) => {
   const [_open, _setOpen] = useState(false);
   const [__open, __setOpen] = [open ?? _open, setOpen ?? _setOpen];
@@ -418,13 +421,13 @@ export const TextUpdateMenu = ({
           </DialogHeader>
         )}
 
-        <Textarea
+        <MonacoEditor
           value={_value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={placeholder}
-          className="min-h-[200px]"
-          disabled={disabled}
+          language={language}
+          onValueChange={setValue}
+          readOnly={disabled}
         />
+        
         {!disabled && (
           <DialogFooter>
             {confirmButton ? (

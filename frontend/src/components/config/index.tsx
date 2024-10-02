@@ -170,9 +170,11 @@ export const Config = <T,>({
           <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
             {sections.map((section) => (
               <div key={section}>
-                <p className="text-muted-foreground uppercase text-right mb-2">
-                  {section}
-                </p>
+                {section && (
+                  <p className="text-muted-foreground uppercase text-right mb-2">
+                    {section}
+                  </p>
+                )}
                 <div className="flex flex-col gap-2">
                   {components[section] &&
                     components[section]
@@ -206,7 +208,7 @@ export const Config = <T,>({
                   className="relative pb-12 border-b last:pb-0 last:border-b-0 "
                 >
                   <div className="xl:hidden sticky top-16 h-24 flex items-center justify-between bg-background z-10">
-                    <p className="uppercase text-2xl">{section}</p>
+                    {section && <p className="uppercase text-2xl">{section}</p>}
                     <Select
                       onValueChange={(value) => (window.location.hash = value)}
                     >
@@ -228,9 +230,11 @@ export const Config = <T,>({
                       </SelectContent>
                     </Select>
                   </div>
-                  <p className="hidden xl:block bg-background text-2xl uppercase mb-6 h-fit">
-                    {section}
-                  </p>
+                  {section && (
+                    <p className="hidden xl:block bg-background text-2xl uppercase mb-6 h-fit">
+                      {section}
+                    </p>
+                  )}
                   <div className="flex flex-col gap-6 w-full">
                     {components[section].map(
                       ({

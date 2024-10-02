@@ -4,16 +4,14 @@ import { ReactNode, useState } from "react";
 import {
   AddExtraArgMenu,
   ConfigItem,
+  ConfigList,
   InputList,
 } from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
 import { Config } from "@components/config";
-import { ResourceSelector } from "@components/resources/common";
-import { TextUpdateMenu } from "@components/util";
-import { Button } from "@ui/button";
-import { PlusCircle } from "lucide-react";
+import { ResourceLink, ResourceSelector } from "@components/resources/common";
 import { Link } from "react-router-dom";
 import { SecretsSearch } from "@components/config/env_vars";
 import { MonacoEditor } from "@components/monaco";
@@ -58,35 +56,60 @@ export const DeploymentConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "Server",
-            contentHidden: true,
-            actions: (
-              <ResourceSelector
-                type="Server"
-                selected={update.server_id ?? config.server_id}
-                onSelect={(server_id) => set({ ...update, server_id })}
-                disabled={disabled}
-                align="end"
-              />
-            ),
-            components: {},
+            labelHidden: true,
+            components: {
+              server_id: (server_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      server_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Server:
+                          <ResourceLink type="Server" id={server_id} />
+                        </div>
+                      ) : (
+                        "Select Server"
+                      )
+                    }
+                    description="Select the Server to deploy on."
+                  >
+                    <ResourceSelector
+                      type="Server"
+                      selected={server_id}
+                      onSelect={(server_id) => set({ server_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
+            },
           },
           {
-            label: "Container",
-            // labelHidden: true,
+            label:
+              (update.image ?? config.image)?.type === "Build"
+                ? "Build"
+                : "Image",
+            description:
+              "Either pass a docker image directly, or choose a Build to deploy",
+            boldLabel: false,
             components: {
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
               ),
-              restart: (value, set) => (
-                <RestartModeSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
+              redeploy_on_build: (update.image?.type ?? config.image?.type) ===
+                "Build" && {
+                description: "Automatically redeploy when the image is built.",
+              },
+            },
+          },
+          {
+            label: "Network",
+            labelHidden: true,
+            components: {
               network: (value, set) => (
                 <NetworkModeSelector
                   server_id={update.server_id ?? config.server_id}
@@ -95,6 +118,160 @@ export const DeploymentConfig = ({
                   disabled={disabled}
                 />
               ),
+              ports:
+                !hide_ports &&
+                ((ports, set) => (
+                  <ConfigItem
+                    label="Ports"
+                    description="Configure port mappings."
+                  >
+                    <MonacoEditor
+                      value={ports || "  # 3000:3000\n"}
+                      language="key_value"
+                      onValueChange={(ports) => set({ ports })}
+                      readOnly={disabled}
+                    />
+                  </ConfigItem>
+                )),
+            },
+          },
+          {
+            label: "Links",
+            labelHidden: true,
+            components: {
+              links: (values, set) => (
+                <ConfigList
+                  label="Links"
+                  description="Add quick links in the resource header"
+                  field="links"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Input link"
+                />
+              ),
+            },
+          },
+          {
+            label: "Environment",
+            boldLabel: false,
+            description: "Pass these variables to the container",
+            // actions: (
+            //   <ShowHideButton
+            //     show={show.env}
+            //     setShow={(env) => setShow({ ...show, env })}
+            //   />
+            // ),
+            // contentHidden: !show.env,
+            components: {
+              environment: (env, set) => (
+                <div className="flex flex-col gap-4">
+                  <SecretsSearch
+                    server={update.server_id ?? config.server_id}
+                  />
+                  <MonacoEditor
+                    value={env || "  # VARIABLE = value\n"}
+                    onValueChange={(environment) => set({ environment })}
+                    language="key_value"
+                    readOnly={disabled}
+                  />
+                </div>
+              ),
+              // skip_secret_interp: true,
+            },
+          },
+          {
+            label: "Volumes",
+            description: "Configure the volume bindings.",
+            boldLabel: false,
+            components: {
+              volumes: (volumes, set) => (
+                <MonacoEditor
+                  value={volumes || "  # volume:/container/path\n"}
+                  language="key_value"
+                  onValueChange={(volumes) => set({ volumes })}
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Labels",
+            description: "Attach --labels to the container.",
+            boldLabel: false,
+            components: {
+              labels: (labels, set) => (
+                <MonacoEditor
+                  value={labels || "  # your.docker.label: value\n"}
+                  language="key_value"
+                  onValueChange={(labels) => set({ labels })}
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Restart",
+            labelHidden: true,
+            components: {
+              restart: (value, set) => (
+                <RestartModeSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Extra Args",
+            labelHidden: true,
+            components: {
+              extra_args: (value, set) => (
+                <ConfigItem
+                  label="Extra Args"
+                  description={
+                    <div className="flex flex-row flex-wrap gap-2">
+                      <div>Pass extra arguments to 'docker run'.</div>
+                      <Link
+                        to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
+                        target="_blank"
+                        className="text-primary"
+                      >
+                        See docker docs.
+                      </Link>
+                    </div>
+                  }
+                >
+                  {!disabled && (
+                    <AddExtraArgMenu
+                      type="Deployment"
+                      onSelect={(suggestion) =>
+                        set({
+                          extra_args: [
+                            ...(update.extra_args ?? config.extra_args ?? []),
+                            suggestion,
+                          ],
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  )}
+                  <InputList
+                    field="extra_args"
+                    values={value ?? []}
+                    set={set}
+                    disabled={disabled}
+                    placeholder="--extra-arg=value"
+                  />
+                </ConfigItem>
+              ),
+            },
+          },
+          {
+            label: "Command",
+            labelHidden: true,
+            components: {
               command: (value, set) => (
                 <ConfigItem
                   label="Command"
@@ -113,164 +290,19 @@ export const DeploymentConfig = ({
                     </div>
                   }
                 >
-                  <TextUpdateMenu
-                    title="Update Command"
-                    placeholder="Set custom command"
+                  <MonacoEditor
                     value={value}
-                    onUpdate={(command) => set({ command })}
-                    triggerClassName="min-w-[300px] max-w-[400px]"
-                    disabled={disabled}
+                    language={undefined}
+                    onValueChange={(command) => set({ command })}
+                    readOnly={disabled}
                   />
                 </ConfigItem>
               ),
             },
           },
           {
-            label: "Ports",
-            description: "Configure the port bindings for the container.",
-            hidden: hide_ports,
-            components: {
-              ports: (ports, set) => (
-                <MonacoEditor
-                  value={ports || "  # 3000:3000\n"}
-                  language="key_value"
-                  onValueChange={(ports) => set({ ports })}
-                  readOnly={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Volumes",
-            description: "Configure the volume bindings for the container.",
-            components: {
-              volumes: (volumes, set) => (
-                <MonacoEditor
-                  value={volumes || "  # volume:/container/path\n"}
-                  language="key_value"
-                  onValueChange={(volumes) => set({ volumes })}
-                  readOnly={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Environment",
-            description:
-              "Pass environment variables to the container. You can interpolate variables and secrets using '[[VAR_NAME]]'",
-            labelExtra: !disabled && (
-              <SecretsSearch server={update.server_id ?? config.server_id} />
-            ),
-            components: {
-              environment: (env, set) => (
-                <MonacoEditor
-                  value={env || "  # VARIABLE = value\n"}
-                  onValueChange={(environment) => set({ environment })}
-                  language="key_value"
-                  readOnly={disabled}
-                />
-              ),
-              // skip_secret_interp: true,
-            },
-          },
-          {
-            label: "Labels",
-            description: "Attach --labels to the container.",
-            components: {
-              labels: (labels, set) => (
-                <MonacoEditor
-                  value={labels || "  # your.docker.label: value\n"}
-                  language="key_value"
-                  onValueChange={(labels) => set({ labels })}
-                  readOnly={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Extra Args",
-            description: (
-              <div className="flex flex-row flex-wrap gap-2">
-                <div>Pass extra arguments to 'docker run'.</div>
-                <Link
-                  to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
-                  target="_blank"
-                  className="text-primary"
-                >
-                  See docker docs.
-                </Link>
-              </div>
-            ),
-            contentHidden:
-              (update.extra_args ?? config.extra_args)?.length === 0,
-            actions: !disabled && (
-              <AddExtraArgMenu
-                type="Deployment"
-                onSelect={(suggestion) =>
-                  set((update) => ({
-                    ...update,
-                    extra_args: [
-                      ...(update.extra_args ?? config.extra_args ?? []),
-                      suggestion,
-                    ],
-                  }))
-                }
-                disabled={disabled}
-              />
-            ),
-            components: {
-              extra_args: (value, set) => (
-                <InputList
-                  field="extra_args"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-          {
-            label: "Links",
-            description: "Add quick links in the resource header",
-            contentHidden: ((update.links ?? config.links)?.length ?? 0) === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    links: [...(update.links ?? config.links ?? []), ""],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Link
-              </Button>
-            ),
-            components: {
-              links: (values, set) => (
-                <InputList
-                  field="links"
-                  values={values ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="Input link"
-                />
-              ),
-            },
-          },
-          {
-            label: "Settings",
-            components: {
-              send_alerts: true,
-              redeploy_on_build:
-                (update.image?.type || config.image?.type) === "Build",
-            },
-          },
-          {
             label: "Termination",
+            boldLabel: false,
             description:
               "Configure the signals used to 'docker stop' the container. Options are SIGTERM, SIGQUIT, SIGINT, and SIGHUP.",
             components: {

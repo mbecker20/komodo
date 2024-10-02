@@ -6,6 +6,7 @@ const shell_conf: monaco.languages.LanguageConfiguration = {
   },
   brackets: [
     ["{", "}"],
+    ["[", "]"],
     ["(", ")"],
   ],
   autoClosingPairs: [
@@ -26,7 +27,7 @@ const shell_conf: monaco.languages.LanguageConfiguration = {
 
 const shell_language = <monaco.languages.IMonarchLanguage>{
   defaultToken: "",
-  tokenPostfix: ".shell",
+  ignoreCase: true,
 
   keywords: [
     "if",
@@ -37,80 +38,88 @@ const shell_language = <monaco.languages.IMonarchLanguage>{
     "while",
     "do",
     "done",
+    "echo",
+    "return",
+    "exit",
     "in",
-    "case",
-    "esac",
     "function",
   ],
 
-  builtins: [
-    "echo",
-    "cd",
-    "pwd",
-    "ls",
-    "rm",
-    "cp",
-    "mv",
-    "cat",
-    "grep",
-    "find",
-    "chmod",
-    "chown",
-    "mkdir",
-    "rmdir",
-    "touch",
-    "exit",
-    "source",
+  operators: [
+    "&&",
+    "||",
+    "==",
+    "!=",
+    "<",
+    ">",
+    ">=",
+    "<=",
+    "=",
+    "+=",
+    "-=",
+    "*=",
+    "/=",
+    "%=",
   ],
 
-  // Common operators
-  symbols: /[=><!~?:&|+\-*\/\^%]+/,
+  brackets: [
+    { open: "{", close: "}", token: "delimiter.curly" },
+    { open: "[", close: "]", token: "delimiter.square" },
+    { open: "(", close: ")", token: "delimiter.parenthesis" },
+  ],
 
   tokenizer: {
     root: [
       // Comments
       [/#.*$/, "comment"],
 
-      // Keywords
+      // Keywords and control flow, use \b for word boundaries
       [
-        /\b(if|then|else|fi|for|while|do|done|in|case|esac|function)\b/,
+        /\b(if|then|else|fi|for|while|do|done|echo|return|exit|in|function)\b/,
         "keyword",
       ],
 
-      // Built-in commands
-      [
-        /\b(echo|cd|pwd|ls|rm|cp|mv|cat|grep|find|chmod|chown|mkdir|rmdir|touch|exit|source)\b/,
-        "type.identifier",
-      ],
-
-      // Variables like $VAR, $1, etc.
-      [/\$\w+/, "variable"],
+      // Operators
+      [/\b(and|or|not|eq|ne|lt|gt|le|ge)\b/, "operator"],
 
       // Strings
       [/"/, "string", "@string_double"],
       [/'/, "string", "@string_single"],
 
-      // Operators
-      [/@symbols/, "delimiter"],
+      // Variables and parameter expansions
+      [/\$[a-zA-Z_][a-zA-Z0-9_]*/, "variable"], // Variables like $VAR
+      [/\$\{[^}]+\}/, "variable"], // Variables like ${VAR}
 
       // Numbers
-      [/\b\d+\b/, "number"],
+      [/\b\d+(\.\d+)?\b/, "number"],
+
+      // Brackets
+      [/[{}[\]()]/, "@brackets"],
+
+      // Operators
+      [/[<>=!%&+\-*/|^~]+/, "operator"],
+
+      // Whitespace
+      { include: "@whitespace" },
     ],
 
     string_double: [
       [/[^\\"]+/, "string"],
       [/\\./, "string.escape"],
-      [/"/, "string", "@pop"],
+      [/"/, { token: "string", next: "@pop" }],
     ],
 
     string_single: [
       [/[^\\']+/, "string"],
       [/\\./, "string.escape"],
-      [/'/, "string", "@pop"],
+      [/'/, { token: "string", next: "@pop" }],
     ],
+
+    whitespace: [[/\s+/, "white"]],
   },
 };
 
+// Register the shell language
 monaco.languages.register({ id: "shell" });
 monaco.languages.setLanguageConfiguration("shell", shell_conf);
 monaco.languages.setMonarchTokensProvider("shell", shell_language);
