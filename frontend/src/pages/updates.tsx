@@ -80,8 +80,9 @@ export const Updates2 = () => {
               value={type ?? "all"}
               onValueChange={(type) => {
                 const p = new URLSearchParams(params.toString());
-                p.set("type", type);
+                type === "all" ? p.delete("type") : p.set("type", type);
                 p.delete("id");
+                p.delete("operation");
                 setParams(p);
               }}
             >
@@ -118,7 +119,7 @@ export const Updates2 = () => {
               disabled={!type}
               onValueChange={(id) => {
                 const p = new URLSearchParams(params.toString());
-                p.set("id", id);
+                id === "all" ? p.delete("id") : p.set("id", id);
                 setParams(p);
               }}
             >
