@@ -34,7 +34,7 @@ mungos.workspace = true
 slack.workspace = true
 svi.workspace = true
 # external
-axum-server = { workspace = true, features = ["tls-openssl"] }
+axum-server.workspace = true
 ordered_hash_map.workspace = true
 openidconnect.workspace = true
 urlencoding.workspace = true
