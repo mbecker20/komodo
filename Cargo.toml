@@ -41,11 +41,11 @@ mungos = "1.1.0"
 svi = "1.0.1"
 
 # ASYNC
+reqwest = { version = "0.12.8", features = ["json"] }
 tokio = { version = "1.38.1", features = ["full"] }
 tokio-util = "0.7.12"
 futures = "0.3.30"
 futures-util = "0.3.30"
-reqwest = "0.12.8"
 
 # SERVER
 axum-extra = { version = "0.9.4", features = ["typed-header"] }
