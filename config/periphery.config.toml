@@ -2,53 +2,70 @@
 # 🦎 KOMODO PERIPHERY CONFIG 🦎 #
 ################################
 
-## Optional. The port the server runs on. 8120 is default
-## Env: PERIPHERY_PORT
-# port = 8120
+## This is the offical "Default" config file for Komodo Periphery.
+## It serves as documentation for the meaning of the fields.
+## It is located at `https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml`.
 
-## Optional. /etc/komodo/repos is default.
+## All fields with a "Default" provided are optional. If they are
+## left out of the file, the "Default" value will be used.
+
+## If Periphery was installed on the host (systemd install script), this
+## file will be located either in `/etc/komodo/periphery.config.toml`,
+## or for user installs, `$HOME/.config/komodo/periphery.config.toml`.
+
+## Optional. The port the server runs on.
+## Env: PERIPHERY_PORT
+## Default: 8120
+port = 8120
+
 ## The directory periphery will use to manage repos.
 ## The periphery user must have write access to this directory.
 ## Env: PERIPHERY_REPO_DIR
-# repo_dir = "/home/ubuntu/komodo/repos"
+## Default: /etc/komodo/repos
+repo_dir = "/etc/komodo/repos"
 
-## Optional. /etc/komodo/stacks is default.
 ## The directory periphery will use to manage stacks.
 ## The periphery user must have write access to this directory.
 ## Env: PERIPHERY_STACK_DIR
-# stack_dir = "/home/ubuntu/komodo/stacks"
+## Default: /etc/komodo/stacks
+stack_dir = "/etc/komodo/stacks"
 
-## Optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
+## How often Periphery polls the host for system stats,
+## like CPU / memory usage.
 ## Env: PERIPHERY_STATS_POLLING_RATE
-# stats_polling_rate = "1-sec"
+## Options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min
+## Default: 5-sec
+stats_polling_rate = "5-sec"
 
 ## Whether stack actions should use `docker-compose ...`
 ## instead of `docker compose ...`.
-## default: false
 ## Env: PERIPHERY_LEGACY_COMPOSE_CLI
-# legacy_compose_cli = true
+## Default: false
+legacy_compose_cli = false
 
-## Optional. Only include mounts at specific paths in the disc report.
+## Optional. Only include mounts at specific paths in the disk report.
 ## Env: PERIPHERY_INCLUDE_DISK_MOUNTS
-# include_disk_mounts = ["/etc/komodo/repos"]
+## Default: empty, which won't filter down the disks.
+include_disk_mounts = []
 
 ## Optional. Don't include these mounts in the disk report.
 ## Env: PERIPHERY_EXCLUDE_DISK_MOUNTS
-# exclude_disk_mounts = ["/etc/komodo/repos"]
+## Default: empty, which won't exclude any disks.
+exclude_disk_mounts = []
 
 ########
 # AUTH #
 ########
 
 ## Optional. Limit the ip addresses which can call the periphery api.
-## Default is empty, which will not block any request by ip.
 ## Env: PERIPHERY_ALLOWED_IPS
-# allowed_ips = ["127.0.0.1"]
+## Default: empty, which will not block any request by ip.
+allowed_ips = []
 
 ## Optional. Require callers to provide on of the provided passkeys to access the periphery api.
-## Default is empty, which will not require any passkey to be passed by core.
 ## Env: PERIPHERY_PASSKEYS or PERIPHERY_PASSKEYS_FILE
-# passkeys = ["abcdefghijk"]
+## Default: empty, which will not require any passkey to be passed by core.
+passkeys = []
 
 ############
 # Security #
@@ -58,24 +75,24 @@
 ## If true and a key / cert at the given paths are not found, 
 ## self signed keys will be generated using openssl.
 ## Env: PERIPHERY_SSL_ENABLED
-## Default: false (will change in later release)
+## Default: false (will change to `true` in later release)
 ssl_enabled = true
 
 ## Path to the ssl key.
 ## Env: PERIPHERY_SSL_KEY_FILE
 ## Default: /etc/komodo/ssl/key.pem
-# ssl_key_file = "/etc/komodo/ssl/key.pem"
+ssl_key_file = "/etc/komodo/ssl/key.pem"
 
 ## Path to the ssl cert.
 ## Env: PERIPHERY_SSL_CERT_FILE
 ## Default: /etc/komodo/ssl/cert.pem
-# ssl_cert_file = "/etc/komodo/ssl/cert.pem"
+ssl_cert_file = "/etc/komodo/ssl/cert.pem"
 
 ###########
 # SECRETS #
 ###########
 
-## provide periphery-based secrets
+## Provide periphery-based secrets
 # [secrets]
 # SECRET_1 = "value_1"
 # SECRET_2 = "value_2"
@@ -84,7 +101,7 @@ ssl_enabled = true
 # GIT PROVIDERS #
 #################
 
-## configure periphery-based git providers
+## configure Periphery based git providers
 # [[git_provider]]
 # domain = "github.com"
 # accounts = [
@@ -109,7 +126,7 @@ ssl_enabled = true
 # REGISTRY PROVIDERS #
 ######################
 
-## configure periphery-based docker registries
+## Configure Periphery based docker registries
 # [[docker_registry]]
 # domain = "docker.io"
 # accounts = [
@@ -129,23 +146,24 @@ ssl_enabled = true
 ###########
 
 ## Specify the logging verbosity
-## Default: info
 ## Options: off, error, warn, info, debug, trace
+## Default: info
 ## Env: PERIPHERY_LOGGING_LEVEL
-# logging.level = "debug"
+logging.level = "info"
 
 ## Specify the logging format for stdout / stderr.
-## Default: standard
-## Options: standard, json, none
 ## Env: PERIPHERY_LOGGING_STDIO
-# logging.stdio = "json"
+## Options: standard, json, none
+## Default: standard
+logging.stdio = "standard"
 
-## Specify a opentelemetry otlp endpoint to send traces to
-## Optional, default unassigned
+## Specify a opentelemetry otlp endpoint to send traces to.
+## Example: http://localhost:4317.
 ## Env: PERIPHERY_LOGGING_OTLP_ENDPOINT
-# logging.otlp_endpoint = "http://localhost:4317"
+## Optional, no default
+logging.otlp_endpoint = ""
 
-## Set the opentelemetry service name attached to the telemetry this periphery will send.
-## Default: "Komodo"
+## Set the opentelemetry service name attached to the telemetry Periphery will send.
 ## Env: PERIPHERY_LOGGING_OPENTELEMETRY_SERVICE_NAME
-# logging.opentelemetry_service_name = "Periphery-02"
+## Default: "Komodo"
+logging.opentelemetry_service_name = "Periphery"

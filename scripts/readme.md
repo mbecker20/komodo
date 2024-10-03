@@ -33,6 +33,6 @@ curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-
 ```
 
 Will install to paths:
-- periphery (binary) -> $HOME/.local/bin
-- periphery.service -> $HOME/.config/systemd/user/periphery.service
-- periphery.config.toml -> $HOME/.config/komodo/periphery.config.toml
+- periphery (binary) -> `$HOME/.local/bin`
+- periphery.service -> `$HOME/.config/systemd/user/periphery.service`
+- periphery.config.toml -> `$HOME/.config/komodo/periphery.config.toml`
