@@ -281,10 +281,11 @@ fn core_info() -> &'static String {
     let info = GetCoreInfoResponse {
       title: config.title.clone(),
       monitoring_interval: config.monitoring_interval,
-      webhook_base_url: config
-        .webhook_base_url
-        .clone()
-        .unwrap_or_else(|| config.host.clone()),
+      webhook_base_url: if config.webhook_base_url.is_empty() {
+        config.host.clone()
+      } else {
+        config.webhook_base_url.clone()
+      },
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
       disable_confirm_dialog: config.disable_confirm_dialog,

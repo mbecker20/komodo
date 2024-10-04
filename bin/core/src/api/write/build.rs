@@ -225,7 +225,11 @@ impl Resolve<CreateBuildWebhook, User> for State {
       &build.config.webhook_secret
     };
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {
@@ -331,7 +335,11 @@ impl Resolve<DeleteBuildWebhook, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {

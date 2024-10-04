@@ -54,7 +54,7 @@ pub fn periphery_config() -> &'static PeripheryConfig {
           .unwrap_or(config.logging.stdio),
         otlp_endpoint: env
           .periphery_logging_otlp_endpoint
-          .or(config.logging.otlp_endpoint),
+          .unwrap_or(config.logging.otlp_endpoint),
         opentelemetry_service_name: env
           .periphery_logging_opentelemetry_service_name
           .unwrap_or(config.logging.opentelemetry_service_name),

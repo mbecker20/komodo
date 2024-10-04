@@ -445,7 +445,11 @@ impl Resolve<CreateStackWebhook, User> for State {
       &stack.config.webhook_secret
     };
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       StackWebhookAction::Refresh => {
         format!("{host}/listener/github/stack/{}/refresh", stack.id)
@@ -559,7 +563,11 @@ impl Resolve<DeleteStackWebhook, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       StackWebhookAction::Refresh => {
         format!("{host}/listener/github/stack/{}/refresh", stack.id)

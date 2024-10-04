@@ -220,7 +220,11 @@ impl Resolve<CreateRepoWebhook, User> for State {
       &repo.config.webhook_secret
     };
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       RepoWebhookAction::Clone => {
         format!("{host}/listener/github/repo/{}/clone", repo.id)
@@ -337,7 +341,11 @@ impl Resolve<DeleteRepoWebhook, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       RepoWebhookAction::Clone => {
         format!("{host}/listener/github/repo/{}/clone", repo.id)

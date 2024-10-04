@@ -14,10 +14,10 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
   let registry =
     Registry::default().with(LevelFilter::from(log_level));
 
-  match (config.stdio, &config.otlp_endpoint) {
-    (StdioLogMode::Standard, Some(endpoint)) => {
+  match (config.stdio, !config.otlp_endpoint.is_empty()) {
+    (StdioLogMode::Standard, true) => {
       let tracer = otel::tracer(
-        endpoint,
+        &config.otlp_endpoint,
         config.opentelemetry_service_name.clone(),
       );
       registry
@@ -26,9 +26,9 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
         .try_init()
     }
 
-    (StdioLogMode::Json, Some(endpoint)) => {
+    (StdioLogMode::Json, true) => {
       let tracer = otel::tracer(
-        endpoint,
+        &config.otlp_endpoint,
         config.opentelemetry_service_name.clone(),
       );
       registry
@@ -37,23 +37,23 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
         .try_init()
     }
 
-    (StdioLogMode::None, Some(endpoint)) => {
+    (StdioLogMode::None, true) => {
       let tracer = otel::tracer(
-        endpoint,
+        &config.otlp_endpoint,
         config.opentelemetry_service_name.clone(),
       );
       registry.with(OpenTelemetryLayer::new(tracer)).try_init()
     }
 
-    (StdioLogMode::Standard, None) => {
+    (StdioLogMode::Standard, false) => {
       registry.with(tracing_subscriber::fmt::layer()).try_init()
     }
 
-    (StdioLogMode::Json, None) => registry
+    (StdioLogMode::Json, false) => registry
       .with(tracing_subscriber::fmt::layer().json())
       .try_init(),
 
-    (StdioLogMode::None, None) => Ok(()),
+    (StdioLogMode::None, false) => Ok(()),
   }
   .context("failed to init logger")
 }

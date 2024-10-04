@@ -370,7 +370,8 @@ pub struct CoreConfig {
   /// This can be used if Komodo Core sits on an internal network which is
   /// unreachable directly from the open internet.
   /// A reverse proxy in a public network can forward webhooks to Komodo.
-  pub webhook_base_url: Option<String>,
+  #[serde(default)]
+  pub webhook_base_url: String,
 
   /// Configure a Github Webhook app.
   /// Allows users to manage repo webhooks from within the Komodo UI.

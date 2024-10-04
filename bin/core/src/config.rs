@@ -158,7 +158,7 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or(config.keep_alerts_for_days),
       webhook_base_url: env
         .komodo_webhook_base_url
-        .or(config.webhook_base_url),
+        .unwrap_or(config.webhook_base_url),
       transparent_mode: env
         .komodo_transparent_mode
         .unwrap_or(config.transparent_mode),
@@ -184,7 +184,7 @@ pub fn core_config() -> &'static CoreConfig {
           .unwrap_or(config.logging.stdio),
         otlp_endpoint: env
           .komodo_logging_otlp_endpoint
-          .or(config.logging.otlp_endpoint),
+          .unwrap_or(config.logging.otlp_endpoint),
         opentelemetry_service_name: env
           .komodo_logging_opentelemetry_service_name
           .unwrap_or(config.logging.opentelemetry_service_name),

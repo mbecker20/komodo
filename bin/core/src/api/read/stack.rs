@@ -307,7 +307,11 @@ impl Resolve<GetStackWebhooksEnabled, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let refresh_url =
       format!("{host}/listener/github/stack/{}/refresh", stack.id);
     let deploy_url =
