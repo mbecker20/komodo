@@ -45,7 +45,9 @@ where
   // Set remote url
   let mut set_remote = run_komodo_command(
     "set git remote",
-    format!("git remote set-url origin {repo_url}"),
+    format!(
+      "cd {path_display} && git remote set-url origin {repo_url}"
+    ),
   )
   .await;
 
@@ -68,7 +70,7 @@ where
 
   let checkout = run_komodo_command(
     "checkout branch",
-    format!("git checkout -f {}", args.branch),
+    format!("cd {path_display} && git checkout -f {}", args.branch),
   )
   .await;
 
