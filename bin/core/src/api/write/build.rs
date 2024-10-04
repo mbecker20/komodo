@@ -107,8 +107,9 @@ impl Resolve<RefreshBuildCache, User> for State {
     let config = core_config();
 
     let mut clone_args: CloneArgs = (&build).into();
-    let repo_dir = clone_args.unique_path()?;
-    clone_args.destination = Some(repo_dir.display().to_string());
+    let repo_path =
+      clone_args.unique_path(&core_config().repo_directory)?;
+    clone_args.destination = Some(repo_path.display().to_string());
     // Don't want to run these on core.
     clone_args.on_clone = None;
     clone_args.on_pull = None;

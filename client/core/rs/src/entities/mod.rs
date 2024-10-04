@@ -632,12 +632,16 @@ impl CloneArgs {
     ))
   }
 
-  pub fn unique_path(&self) -> anyhow::Result<PathBuf> {
+  pub fn unique_path(
+    &self,
+    repo_dir: &Path,
+  ) -> anyhow::Result<PathBuf> {
     let repo = self
       .repo
       .as_ref()
       .context("resource has no repo attached")?;
-    let res = PathBuf::from(self.provider.replace('/', "-"))
+    let res = repo_dir
+      .join(self.provider.replace('/', "-"))
       .join(repo.replace('/', "-"))
       .join(self.branch.replace('/', "-"))
       .join(

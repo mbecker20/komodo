@@ -469,6 +469,29 @@ export const StackConfig = ({
             },
           },
         },
+        {
+          label: "Files",
+          labelHidden: true,
+          components: {
+            run_directory: {
+              label: "Run Directory",
+              description:
+                "Set the working directory when running the compose up command, relative to the repo root.",
+              placeholder: "./path/to/folder",
+            },
+            file_paths: (value, set) => (
+              <ConfigList
+                label="File Paths"
+                description="Add files to include using 'docker compose -f'. If empty, uses 'compose.yaml'. Relative to 'Run Directory'."
+                field="file_paths"
+                values={value ?? []}
+                set={set}
+                disabled={disabled}
+                placeholder="compose.yaml"
+              />
+            ),
+          },
+        },
         ...general_common,
         {
           label: "Webhooks",

@@ -109,11 +109,9 @@ pub async fn get_remote_resources(
     None
   };
 
-  let repo_path = clone_args.unique_path()?;
-
-  // This overrides any other method of determining clone path.
+  let repo_path =
+    clone_args.unique_path(&core_config().repo_directory)?;
   clone_args.destination = Some(repo_path.display().to_string());
-
   // Don't want to run these on core.
   clone_args.on_clone = None;
   clone_args.on_pull = None;

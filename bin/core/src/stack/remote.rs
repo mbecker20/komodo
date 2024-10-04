@@ -85,12 +85,12 @@ pub async fn ensure_remote_repo(
     None
   };
 
-  let destination = clone_args.unique_path()?;
-
+  let repo_path =
+    clone_args.unique_path(&core_config().repo_directory)?;
+  clone_args.destination = Some(repo_path.display().to_string());
   // Don't want to run these on core.
   clone_args.on_clone = None;
   clone_args.on_pull = None;
-  clone_args.destination = Some(destination.display().to_string());
 
   git::pull_or_clone(
     clone_args,
@@ -103,5 +103,5 @@ pub async fn ensure_remote_repo(
   )
   .await
   .context("failed to clone stack repo")
-  .map(|res| (destination, res.logs, res.hash, res.message))
+  .map(|res| (repo_path, res.logs, res.hash, res.message))
 }

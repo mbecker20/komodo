@@ -103,9 +103,10 @@ impl Resolve<RefreshRepoCache, User> for State {
     }
 
     let mut clone_args: CloneArgs = (&repo).into();
-    let repo_dir = clone_args.unique_path()?;
-
-    clone_args.destination = Some(repo_dir.display().to_string());
+    let repo_path =
+      clone_args.unique_path(&core_config().repo_directory)?;
+    clone_args.destination = Some(repo_path.display().to_string());
+    // Don't want to run these on core.
     clone_args.on_clone = None;
     clone_args.on_pull = None;
 
@@ -132,7 +133,7 @@ impl Resolve<RefreshRepoCache, User> for State {
     )
     .await
     .with_context(|| {
-      format!("Failed to update repo at {repo_dir:?}")
+      format!("Failed to update repo at {repo_path:?}")
     })?;
 
     let info = RepoInfo {

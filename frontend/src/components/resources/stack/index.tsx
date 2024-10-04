@@ -59,8 +59,7 @@ const ConfigInfoServices = ({ id }: { id: string }) => {
   const info = useStack(id)?.info;
 
   const state = info?.state;
-  const hideInfo =
-    !info?.files_on_host || !!info?.file_contents || !!info?.repo;
+  const hideInfo = !info?.files_on_host && !info?.repo;
   const hideServices =
     state === undefined ||
     state === Types.StackState.Unknown ||
