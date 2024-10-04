@@ -2,7 +2,7 @@ import { Page } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { UpdatesTable } from "@components/updates/table";
 import { useRead, useResourceParamType, useSetTitle } from "@lib/hooks";
-import { filterBySplit } from "@lib/utils";
+import { filterBySplit, RESOURCE_TARGETS } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { UsableResource } from "@types";
@@ -16,9 +16,194 @@ import {
   CommandList,
 } from "@ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-import { Bell, SearchX } from "lucide-react";
+import {
+  Bell,
+  Box,
+  ChevronLeft,
+  ChevronRight,
+  MinusCircle,
+  SearchX,
+} from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
+import { ResourceLink } from "@components/resources/common";
+
+export const Updates2 = () => {
+  const [page, setPage] = useState(0);
+  const [params, setParams] = useSearchParams();
+
+  // const { type, id, operation } = useMemo(
+  //   () => ({
+  //     type: (params.get("type") as UsableResource) ?? undefined,
+  //     id: params.get("id") ?? undefined,
+  //     operation: (params.get("operation") as Types.Operation) ?? undefined,
+  //   }),
+  //   [params]
+  // );
+
+  const { type, id, operation } = {
+    type: (params.get("type") as UsableResource) ?? undefined,
+    id: params.get("id") ?? undefined,
+    operation: (params.get("operation") as Types.Operation) ?? undefined,
+  };
+
+  const { data: updates } = useRead("ListUpdates", {
+    query: { "target.type": type, "target.id": id, operation },
+    page,
+  });
+
+  const resources = useRead(`List${type}s`, {}, { enabled: !!type }).data;
+
+  const SelectedResourceIcon = () => {
+    if (!type) return null;
+    const Icon = ResourceComponents[type].Icon;
+    return <Icon />;
+  };
+
+  return (
+    <Page
+      title="Updates"
+      icon={<Bell className="w-8" />}
+      actions={
+        <>
+          <div className="flex items-center md:justify-end gap-4 flex-wrap">
+            {/* resource type */}
+            <Select
+              value={type ?? "all"}
+              onValueChange={(type) => {
+                const p = new URLSearchParams(params.toString());
+                type === "all" ? p.delete("type") : p.set("type", type);
+                p.delete("id");
+                p.delete("operation");
+                setParams(p);
+              }}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <Box className="w-4 text-muted-foreground" />
+                    All Resources
+                  </div>
+                </SelectItem>
+                <SelectSeparator />
+                {RESOURCE_TARGETS.map((type) => {
+                  const Icon = ResourceComponents[type].Icon;
+                  return (
+                    <SelectItem key={type} value={type}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">
+                          <Icon />
+                        </span>
+                        {type}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
+            {/* resource id */}
+            <Select
+              value={id ? id : type ? "all" : undefined}
+              disabled={!type}
+              onValueChange={(id) => {
+                const p = new URLSearchParams(params.toString());
+                id === "all" ? p.delete("id") : p.set("id", id);
+                setParams(p);
+              }}
+            >
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Resources" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      <SelectedResourceIcon />
+                    </span>
+                    All {type}s
+                  </div>
+                </SelectItem>
+                <SelectSeparator />
+                {resources?.map((resource) => (
+                  <SelectItem key={resource.id} value={resource.id}>
+                    <ResourceLink type={type} id={resource.id} />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* operation */}
+            <OperationSelector
+              selected={operation}
+              options={type && OPERATIONS_BY_RESOURCE[type]}
+              onSelect={(op) => {
+                const p = new URLSearchParams(params.toString());
+                op ? p.set("operation", op) : p.delete("operation");
+                setParams(p);
+              }}
+            />
+
+            {/* reset */}
+            <Button
+              size="icon"
+              onClick={() => setParams({})}
+              variant="secondary"
+            >
+              <MinusCircle className="w-4" />
+            </Button>
+          </div>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-2">
+        <UpdatesTable
+          updates={updates?.updates ?? []}
+          showTarget={!params.get("id")}
+        />
+        <div className="flex gap-4 items-center">
+          <Button
+            variant="outline"
+            onClick={() => setPage(page - 1)}
+            disabled={page === 0}
+            size="icon"
+          >
+            <ChevronLeft className="w-4" />
+          </Button>
+          {Array.from(new Array(page + 1)).map((_, i) => (
+            <Button
+              key={i}
+              onClick={() => setPage(i)}
+              variant={page === i ? "secondary" : "outline"}
+            >
+              {i + 1}
+            </Button>
+          ))}
+          {/* Page: {page + 1} */}
+          <Button
+            variant="outline"
+            onClick={() => updates?.next_page && setPage(updates.next_page)}
+            disabled={!updates?.next_page}
+            size="icon"
+          >
+            <ChevronRight className="w-4" />
+          </Button>
+        </div>
+      </div>
+    </Page>
+  );
+};
 
 export const Updates = () => {
   const type = useResourceParamType()!;
@@ -236,6 +421,7 @@ const OperationSelector = ({
 
               {filtered.map((operation) => (
                 <CommandItem
+                  key={operation}
                   className="cursor-pointer"
                   onSelect={() => {
                     onSelect(operation);
