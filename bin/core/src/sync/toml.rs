@@ -226,11 +226,21 @@ impl ToToml for Build {
     resource: &ResourceToml<Self::PartialConfig>,
     config: &mut serde_json::Map<String, serde_json::Value>,
   ) -> anyhow::Result<()> {
-    if let Some(version) = &resource.config.version {
-      config.insert(
-        "version".to_string(),
-        serde_json::Value::String(version.to_string()),
-      );
+    match (
+      &resource.config.version,
+      resource.config.auto_increment_version,
+    ) {
+      (None, _) => {}
+      (_, Some(true)) | (_, None) => {
+        // The toml shouldn't have a version attached if auto incrementing.
+        config.remove("version");
+      }
+      (Some(version), _) => {
+        config.insert(
+          "version".to_string(),
+          serde_json::Value::String(version.to_string()),
+        );
+      }
     }
     Ok(())
   }
