@@ -50,7 +50,7 @@ fn resolve_inner(
     // assumes first log is already created
     // and will panic otherwise.
     update.push_simple_log(
-      "execute_procedure",
+      "Execute procedure",
       format!(
         "{}: executing procedure '{}'",
         muted("INFO"),
@@ -80,9 +80,9 @@ fn resolve_inner(
     match res {
       Ok(_) => {
         update.push_simple_log(
-          "execution ok",
+          "Execution ok",
           format!(
-            "{}: the procedure has {} with no errors",
+            "{}: The procedure has {} with no errors",
             muted("INFO"),
             colored("completed", Color::Green)
           ),

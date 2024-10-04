@@ -90,7 +90,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
                   label="Security Group Ids"
                   description="Attach security groups to the instance."
                   field="security_group_ids"
-                  values={values}
+                  values={values ?? []}
                   set={set}
                   disabled={disabled}
                   placeholder="Input Id"

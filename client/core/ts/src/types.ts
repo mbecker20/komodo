@@ -6208,26 +6208,26 @@ export interface AwsBuilderConfig {
 	 * The ami should have the periphery client configured to start on startup,
 	 * and should have the necessary github / dockerhub accounts configured.
 	 */
-	ami_id: string;
+	ami_id?: string;
 	/** The subnet id to create the instance in. */
-	subnet_id: string;
+	subnet_id?: string;
 	/** The key pair name to attach to the instance */
-	key_pair_name: string;
+	key_pair_name?: string;
 	/**
 	 * Whether to assign the instance a public IP address.
 	 * Likely needed for the instance to be able to reach the open internet.
 	 */
-	assign_public_ip: boolean;
+	assign_public_ip?: boolean;
 	/**
 	 * Whether core should use the public IP address to communicate with periphery on the builder.
 	 * If false, core will communicate with the instance using the private IP.
 	 */
-	use_public_ip: boolean;
+	use_public_ip?: boolean;
 	/**
 	 * The security group ids to attach to the instance.
 	 * This should include a security group to allow core inbound access to the periphery port.
 	 */
-	security_group_ids: string[];
+	security_group_ids?: string[];
 	/** The user data to deploy the instance with. */
 	user_data?: string;
 	/** Which git providers are available on the AMI */
@@ -6287,13 +6287,13 @@ export interface CloneArgs {
 	/** Resource name (eg Build name, Repo name) */
 	name: string;
 	/** Git provider domain. Default: `github.com` */
-	provider?: string;
+	provider: string;
 	/** Use https (vs http). */
 	https: boolean;
 	/** Full repo identifier. <namespace>/<repo_name> */
 	repo?: string;
 	/** Git Branch. Default: `main` */
-	branch?: string;
+	branch: string;
 	/** Specific commit hash. Optional */
 	commit?: string;
 	/** The clone destination path */
@@ -6443,7 +6443,7 @@ export interface HetznerVolumeSpecs {
 /** Hetzner server config. */
 export interface HetznerServerTemplateConfig {
 	/** ID or name of the Image the Server is created from */
-	image?: string;
+	image: string;
 	/** ID or name of Datacenter to create Server in */
 	datacenter?: HetznerDatacenter;
 	/**
