@@ -562,16 +562,10 @@ impl CoreConfig {
       webhook_base_url: config.webhook_base_url,
       github_webhook_app: config.github_webhook_app,
       database: DatabaseConfig {
-        uri: config.database.uri.map(|cur| empty_or_redacted(&cur)),
+        uri: empty_or_redacted(&config.database.uri),
         address: config.database.address,
-        username: config
-          .database
-          .username
-          .map(|cur| empty_or_redacted(&cur)),
-        password: config
-          .database
-          .password
-          .map(|cur| empty_or_redacted(&cur)),
+        username: empty_or_redacted(&config.database.username),
+        password: empty_or_redacted(&config.database.password),
         app_name: config.database.app_name,
         db_name: config.database.db_name,
       },
@@ -641,39 +635,47 @@ pub struct OauthCredentials {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DatabaseConfig {
   /// Full mongo uri string, eg. `mongodb://username:password@your.mongo.int:27017`
-  pub uri: Option<String>,
+  #[serde(default)]
+  pub uri: String,
   /// Just the address part of the mongo uri, eg `your.mongo.int:27017`
-  pub address: Option<String>,
+  #[serde(default = "default_database_address")]
+  pub address: String,
   /// Mongo user username
-  pub username: Option<String>,
+  #[serde(default)]
+  pub username: String,
   /// Mongo user password
-  pub password: Option<String>,
+  #[serde(default)]
+  pub password: String,
   /// Mongo app name. default: `komodo_core`
-  #[serde(default = "default_core_database_app_name")]
+  #[serde(default = "default_database_app_name")]
   pub app_name: String,
   /// Mongo db name. Which mongo database to create the collections in.
   /// Default: `komodo`.
-  #[serde(default = "default_core_database_db_name")]
+  #[serde(default = "default_database_db_name")]
   pub db_name: String,
 }
 
-fn default_core_database_app_name() -> String {
+fn default_database_address() -> String {
+  String::from("localhost:27017")
+}
+
+fn default_database_app_name() -> String {
   "komodo_core".to_string()
 }
 
-fn default_core_database_db_name() -> String {
+fn default_database_db_name() -> String {
   "komodo".to_string()
 }
 
 impl Default for DatabaseConfig {
   fn default() -> Self {
     Self {
-      uri: None,
-      address: Some("localhost:27017".to_string()),
-      username: None,
-      password: None,
-      app_name: default_core_database_app_name(),
-      db_name: default_core_database_db_name(),
+      uri: Default::default(),
+      address: default_database_address(),
+      username: Default::default(),
+      password: Default::default(),
+      app_name: default_database_app_name(),
+      db_name: default_database_db_name(),
     }
   }
 }

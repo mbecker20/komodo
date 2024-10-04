@@ -61,14 +61,14 @@ pub fn core_config() -> &'static CoreConfig {
       webhook_secret: maybe_read_item_from_file(env.komodo_webhook_secret_file, env.komodo_webhook_secret)
         .unwrap_or(config.webhook_secret),
       database: DatabaseConfig {
-        uri: maybe_read_item_from_file(env.komodo_database_uri_file,env.komodo_database_uri).or(config.database.uri),
-        address: env.komodo_database_address.or(config.database.address),
+        uri: maybe_read_item_from_file(env.komodo_database_uri_file,env.komodo_database_uri).unwrap_or(config.database.uri),
+        address: env.komodo_database_address.unwrap_or(config.database.address),
         username: maybe_read_item_from_file(env.komodo_database_username_file,env
           .komodo_database_username)
-          .or(config.database.username),
+          .unwrap_or(config.database.username),
         password: maybe_read_item_from_file(env.komodo_database_password_file,env
           .komodo_database_password)
-          .or(config.database.password),
+          .unwrap_or(config.database.password),
         app_name: env
           .komodo_database_app_name
           .unwrap_or(config.database.app_name),

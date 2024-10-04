@@ -68,17 +68,22 @@ impl DbClient {
   ) -> anyhow::Result<DbClient> {
     let mut client = MongoBuilder::default().app_name(app_name);
 
-    match (uri, address, username, password) {
-      (Some(uri), _, _, _) => {
+    match (
+      !uri.is_empty(),
+      !address.is_empty(),
+      !username.is_empty(),
+      !password.is_empty(),
+    ) {
+      (true, _, _, _) => {
         client = client.uri(uri);
       }
-      (_, Some(address), Some(username), Some(password)) => {
+      (_, true, true, true) => {
         client = client
           .address(address)
           .username(username)
           .password(password);
       }
-      (_, Some(address), _, _) => {
+      (_, true, _, _) => {
         client = client.address(address);
       }
       _ => {
