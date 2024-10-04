@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Context};
 use command::run_komodo_command;
 use formatting::format_serror;
-use git::write_environment_file;
+use git::environment;
 use komodo_client::entities::{
   all_logs_success,
   build::{ImageRegistry, StandardRegistryConfig},
@@ -15,7 +15,7 @@ use komodo_client::entities::{
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
-  git::{CloneRepo, RepoActionResponse},
+  git::{PullOrCloneRepo, RepoActionResponse},
 };
 use resolver_api::Resolve;
 use tokio::fs;
@@ -45,14 +45,11 @@ pub async fn compose_up(
   // Write the stack to local disk. For repos, will first delete any existing folder to ensure fresh deploy.
   // Will also set additional fields on the reponse.
   // Use the env_file_path in the compose command.
-  let env_file_path = write_stack(&stack, git_token, res)
-    .await
-    .context("Failed to write / clone compose file")?;
+  let (run_directory, env_file_path) =
+    write_stack(&stack, git_token, res)
+      .await
+      .context("Failed to write / clone compose file")?;
 
-  let root = periphery_config()
-    .stack_dir
-    .join(to_komodo_name(&stack.name));
-  let run_directory = root.join(&stack.config.run_directory);
   // Canonicalize the path to ensure it exists, and is the cleanest path to the run directory.
   let run_directory = run_directory.canonicalize().context(
     "Failed to validate run directory on host after stack write (canonicalize error)",
@@ -242,30 +239,16 @@ pub async fn compose_up(
   res.deployed = log.success;
   res.logs.push(log);
 
-  // If using a repo based stack, clean up the file at this point.
-  // This will also let user know immediately if there will be a problem
-  // with any volume mounted inside repo directory.
-  // Just use absolute mount points or docker volumes with repo based stack anyways.
-  if !stack.config.files_on_host && !stack.config.repo.is_empty() {
-    if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
-      format!("failed to clean up files after deploy | path: {root:?} | Bring the stack down, and ensure all volumes are mounted outside the repo directory for the next deploy. (preferably use absolute path for mount point)")
-    }) {
-      res
-        .logs
-        .push(Log::error("clean up files", format_serror(&e.into())))
-    }
-  }
-
   Ok(())
 }
 
 /// Either writes the stack file_contents to a file, or clones the repo.
-/// Returns the env file path, to maybe include in command with --env-file.
+/// Returns (run_directory, env_file_path)
 async fn write_stack(
   stack: &Stack,
   git_token: Option<String>,
   res: &mut ComposeUpResponse,
-) -> anyhow::Result<Option<PathBuf>> {
+) -> anyhow::Result<(PathBuf, Option<PathBuf>)> {
   let root = periphery_config()
     .stack_dir
     .join(to_komodo_name(&stack.name));
@@ -282,7 +265,7 @@ async fn write_stack(
     // FILES ON HOST
     // =============
     // Only need to write environment file here (which does nothing if not using this feature)
-    let env_file_path = match write_environment_file(
+    let env_file_path = match environment::write_file(
       &env_vars,
       &stack.config.env_file_path,
       stack
@@ -299,7 +282,7 @@ async fn write_stack(
         return Err(anyhow!("failed to write environment file"));
       }
     };
-    Ok(env_file_path)
+    Ok((run_directory, env_file_path))
   } else if stack.config.repo.is_empty() {
     if stack.config.file_contents.trim().is_empty() {
       return Err(anyhow!("Must either input compose file contents directly, or use file one host / git repo options."));
@@ -313,7 +296,7 @@ async fn write_stack(
         "failed to create stack run directory at {run_directory:?}"
       )
     })?;
-    let env_file_path = match write_environment_file(
+    let env_file_path = match environment::write_file(
       &env_vars,
       &stack.config.env_file_path,
       stack
@@ -348,7 +331,7 @@ async fn write_stack(
         format!("failed to write compose file to {file_path:?}")
       })?;
 
-    Ok(env_file_path)
+    Ok((run_directory, env_file_path))
   } else {
     // ================
     // REPO BASED FILES
@@ -386,8 +369,6 @@ async fn write_stack(
       }
     };
 
-    // 🚨 This has to delete the existing folder before clone.
-    // 🚨 If any volumes were mounted inside the repo folder, the data will be deleted.
     let RepoActionResponse {
       logs,
       commit_hash,
@@ -395,7 +376,7 @@ async fn write_stack(
       env_file_path,
     } = match State
       .resolve(
-        CloneRepo {
+        PullOrCloneRepo {
           args,
           git_token,
           environment: env_vars,
@@ -412,15 +393,15 @@ async fn write_stack(
       Ok(res) => res,
       Err(e) => {
         let error = format_serror(
-          &e.context("failed to clone stack repo").into(),
+          &e.context("failed to pull stack repo").into(),
         );
-        res.logs.push(Log::error("clone stack repo", error.clone()));
+        res.logs.push(Log::error("pull stack repo", error.clone()));
         res.remote_errors.push(FileContents {
           path: Default::default(),
           contents: error,
         });
         return Err(anyhow!(
-          "failed to clone stack repo, stopping run"
+          "failed to pull stack repo, stopping run"
         ));
       }
     };
@@ -430,10 +411,10 @@ async fn write_stack(
     res.commit_message = commit_message;
 
     if !all_logs_success(&res.logs) {
-      return Err(anyhow!("Stopped after clone failure"));
+      return Err(anyhow!("Stopped after repo pull failure"));
     }
 
-    Ok(env_file_path)
+    Ok((run_directory, env_file_path))
   }
 }
 

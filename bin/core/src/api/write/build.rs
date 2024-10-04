@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use git::GitRes;
 use komodo_client::{
   api::write::*,
   entities::{
@@ -18,7 +19,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::{git_token, random_string},
+  helpers::git_token,
   resource,
   state::{db_client, github_client, State},
 };
@@ -96,40 +97,39 @@ impl Resolve<RefreshBuildCache, User> for State {
     )
     .await?;
 
-    if build.config.repo.is_empty() {
+    if build.config.repo.is_empty()
+      || build.config.git_provider.is_empty()
+    {
       // Nothing to do here
       return Ok(NoData {});
     }
 
     let config = core_config();
 
-    let repo_dir = config.repo_directory.join(random_string(10));
     let mut clone_args: CloneArgs = (&build).into();
+    let repo_dir = clone_args.unique_path()?;
+    clone_args.destination = Some(repo_dir.display().to_string());
     // Don't want to run these on core.
     clone_args.on_clone = None;
     clone_args.on_pull = None;
-    clone_args.destination = Some(repo_dir.display().to_string());
 
-    let access_token = match (&clone_args.account, &clone_args.provider)
-    {
-      (None, _) => None,
-      (Some(_), None) => {
-        return Err(anyhow!(
-          "Account is configured, but provider is empty"
-        ))
-      }
-      (Some(username), Some(provider)) => {
-        git_token(provider, username, |https| {
+    let access_token = if let Some(username) = &clone_args.account {
+      git_token(&clone_args.provider, username, |https| {
           clone_args.https = https
         })
         .await
         .with_context(
-          || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+          || format!("Failed to get git token in call to db. Stopping run. | {} | {username}", clone_args.provider),
         )?
-      }
+    } else {
+      None
     };
 
-    let (_, latest_hash, latest_message, _) = git::clone(
+    let GitRes {
+      hash: latest_hash,
+      message: latest_message,
+      ..
+    } = git::pull_or_clone(
       clone_args,
       &config.repo_directory,
       access_token,
@@ -160,12 +160,6 @@ impl Resolve<RefreshBuildCache, User> for State {
       )
       .await
       .context("failed to update build info on db")?;
-
-    if repo_dir.exists() {
-      if let Err(e) = std::fs::remove_dir_all(&repo_dir) {
-        warn!("failed to remove build cache update repo directory | {e:?}")
-      }
-    }
 
     Ok(NoData {})
   }

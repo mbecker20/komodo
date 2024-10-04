@@ -309,8 +309,7 @@ impl Resolve<RefreshStackCache, User> for State {
         ..
       } =
         get_remote_compose_contents(&stack, Some(&mut missing_files))
-          .await
-          .context("failed to clone remote compose file")?;
+          .await?;
 
       let project_name = stack.project_name(true);
 

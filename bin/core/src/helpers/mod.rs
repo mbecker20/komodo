@@ -30,7 +30,6 @@ use crate::{
 };
 
 pub mod action_state;
-pub mod build;
 pub mod builder;
 pub mod cache;
 pub mod channel;
@@ -38,7 +37,6 @@ pub mod interpolate;
 pub mod procedure;
 pub mod prune;
 pub mod query;
-pub mod repo;
 pub mod update;
 
 // pub mod resource;

@@ -7,7 +7,7 @@ use komodo_client::{
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
     builder::{Builder, BuilderConfig},
-    komodo_timestamp, optional_string,
+    komodo_timestamp,
     permission::PermissionLevel,
     repo::Repo,
     server::Server,
@@ -72,6 +72,10 @@ impl Resolve<CloneRepo, (User, Update)> for State {
 
     update_update(update.clone()).await?;
 
+    if repo.config.server_id.is_empty() {
+      return Err(anyhow!("repo has no server attached"));
+    }
+
     let git_token = git_token(
       &repo.config.git_provider,
       &repo.config.git_account,
@@ -81,10 +85,6 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     .with_context(
       || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
     )?;
-
-    if repo.config.server_id.is_empty() {
-      return Err(anyhow!("repo has no server attached"));
-    }
 
     let server =
       resource::get::<Server>(&repo.config.server_id).await?;
@@ -156,6 +156,16 @@ impl Resolve<PullRepo, (User, Update)> for State {
       return Err(anyhow!("repo has no server attached"));
     }
 
+    let git_token = git_token(
+      &repo.config.git_provider,
+      &repo.config.git_account,
+      |https| repo.config.git_https = https,
+    )
+    .await
+    .with_context(
+      || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
+    )?;
+
     let server =
       resource::get::<Server>(&repo.config.server_id).await?;
 
@@ -168,12 +178,9 @@ impl Resolve<PullRepo, (User, Update)> for State {
 
     let logs = match periphery
       .request(api::git::PullRepo {
-        name: repo.name.clone(),
-        branch: optional_string(&repo.config.branch),
-        commit: optional_string(&repo.config.commit),
-        path: optional_string(&repo.config.path),
+        args: (&repo).into(),
+        git_token,
         environment: repo.config.env_vars()?,
-        on_pull: repo.config.on_pull.into_option(),
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
         replacers: secret_replacers.into_iter().collect(),

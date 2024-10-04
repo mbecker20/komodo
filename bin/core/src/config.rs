@@ -144,18 +144,9 @@ pub fn core_config() -> &'static CoreConfig {
       repo_directory: env
         .komodo_repo_directory
         .unwrap_or(config.repo_directory),
-      stack_poll_interval: env
-        .komodo_stack_poll_interval
-        .unwrap_or(config.stack_poll_interval),
-      sync_poll_interval: env
-        .komodo_sync_poll_interval
-        .unwrap_or(config.sync_poll_interval),
-      build_poll_interval: env
-        .komodo_build_poll_interval
-        .unwrap_or(config.build_poll_interval),
-      repo_poll_interval: env
-        .komodo_repo_poll_interval
-        .unwrap_or(config.repo_poll_interval),
+      resource_poll_interval: env
+        .komodo_resource_poll_interval
+        .unwrap_or(config.resource_poll_interval),
       monitoring_interval: env
         .komodo_monitoring_interval
         .unwrap_or(config.monitoring_interval),

@@ -338,29 +338,11 @@ keep_alerts_for_days = 14
 ## Default: 15-sec
 monitoring_interval = "15-sec"
 
-## Interval at which to poll Syncs for any updates / automated actions.
-## Env: KOMODO_SYNC_POLL_INTERVAL
+## Interval at which to poll Resources for any updates / automated actions.
+## Env: KOMODO_RESOURCE_POLL_INTERVAL
 ## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-sync_poll_interval = "5-min"
-
-## Interval at which to poll Stacks for any updates / automated actions.
-## Env: KOMODO_STACK_POLL_INTERVAL
-## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-stack_poll_interval = "5-min"
-
-## Interval at which to poll Builds (latest commit hash) for any updates / automated actions.
-## Env: KOMODO_BUILD_POLL_INTERVAL
-## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-build_poll_interval = "5-min"
-
-## Interval at which to poll Repos (latest commit hash) for any updates / automated actions.
-## Env: KOMODO_REPO_POLL_INTERVAL
-## Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`.
-## Default: `5-min`.
-repo_poll_interval = "5-min"
+## Default: 5-min
+resource_poll_interval = "5-min"
 
 ###################
 # CLOUD PROVIDERS #

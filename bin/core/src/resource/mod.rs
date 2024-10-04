@@ -50,6 +50,7 @@ mod build;
 mod builder;
 mod deployment;
 mod procedure;
+mod refresh;
 mod repo;
 mod server;
 mod server_template;
@@ -62,6 +63,7 @@ pub use build::{
 pub use procedure::{
   refresh_procedure_state_cache, spawn_procedure_state_refresh_loop,
 };
+pub use refresh::spawn_resource_refresh_loop;
 pub use repo::{
   refresh_repo_state_cache, spawn_repo_state_refresh_loop,
 };

@@ -1,65 +1,17 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::{wait_until_timelength, Timelength};
-use komodo_client::{
-  api::write::RefreshStackCache,
-  entities::{
-    permission::PermissionLevel,
-    server::{Server, ServerState},
-    stack::Stack,
-    user::{stack_user, User},
-  },
+use komodo_client::entities::{
+  permission::PermissionLevel,
+  server::{Server, ServerState},
+  stack::Stack,
+  user::User,
 };
-use mungos::find::find_collect;
 use regex::Regex;
-use resolver_api::Resolve;
 
-use crate::{
-  config::core_config,
-  helpers::query::get_server_with_state,
-  resource,
-  state::{db_client, State},
-};
+use crate::{helpers::query::get_server_with_state, resource};
 
 pub mod execute;
 pub mod remote;
 pub mod services;
-
-pub fn spawn_stack_refresh_loop() {
-  let interval: Timelength = core_config()
-    .stack_poll_interval
-    .try_into()
-    .expect("Invalid stack poll interval");
-  tokio::spawn(async move {
-    refresh_stacks().await;
-    loop {
-      wait_until_timelength(interval, 3000).await;
-      refresh_stacks().await;
-    }
-  });
-}
-
-async fn refresh_stacks() {
-  let Ok(stacks) = find_collect(&db_client().stacks, None, None)
-    .await
-    .inspect_err(|e| {
-      warn!("failed to get stacks from db in refresh task | {e:#}")
-    })
-  else {
-    return;
-  };
-  for stack in stacks {
-    State
-      .resolve(
-        RefreshStackCache { stack: stack.id },
-        stack_user().clone(),
-      )
-      .await
-      .inspect_err(|e| {
-        warn!("failed to refresh stack cache in refresh task | stack: {} | {e:#}", stack.name)
-      })
-      .ok();
-  }
-}
 
 pub async fn get_stack_and_server(
   stack: &str,

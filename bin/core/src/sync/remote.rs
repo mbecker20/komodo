@@ -1,16 +1,13 @@
-use std::{fs, path::PathBuf};
+use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
+use git::GitRes;
 use komodo_client::entities::{
   sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
   FileContents,
 };
 
-use crate::{
-  config::core_config,
-  helpers::{git_token, random_string},
-  state::resource_sync_lock_cache,
-};
+use crate::{config::core_config, helpers::git_token};
 
 use super::file::extend_resources;
 
@@ -102,35 +99,18 @@ pub async fn get_remote_resources(
 
   let mut clone_args: CloneArgs = sync.into();
 
-  let config = core_config();
-
-  let access_token = match (&clone_args.account, &clone_args.provider)
-  {
-    (None, _) => None,
-    (Some(_), None) => {
-      return Err(anyhow!(
-        "Account is configured, but provider is empty"
-      ))
-    }
-    (Some(username), Some(provider)) => {
-      git_token(provider, username, |https| clone_args.https = https)
+  let access_token = if let Some(account) = &clone_args.account {
+    git_token(&clone_args.provider, account, |https| clone_args.https = https)
         .await
         .with_context(
-          || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+          || format!("Failed to get git token in call to db. Stopping run. | {} | {account}", clone_args.provider),
         )?
-    }
+  } else {
+    None
   };
 
-  fs::create_dir_all(&config.repo_directory)
-    .context("failed to create sync directory")?;
+  let repo_path = clone_args.unique_path()?;
 
-  // lock simultaneous access to same directory
-  let lock = resource_sync_lock_cache()
-    .get_or_insert_default(&sync.id)
-    .await;
-  let _lock = lock.lock().await;
-
-  let repo_path = config.repo_directory.join(random_string(10));
   // This overrides any other method of determining clone path.
   clone_args.destination = Some(repo_path.display().to_string());
 
@@ -138,9 +118,14 @@ pub async fn get_remote_resources(
   clone_args.on_clone = None;
   clone_args.on_pull = None;
 
-  let (mut logs, hash, message, _) = git::clone(
+  let GitRes {
+    mut logs,
+    hash,
+    message,
+    ..
+  } = git::pull_or_clone(
     clone_args,
-    &config.repo_directory,
+    &core_config().repo_directory,
     access_token,
     &[],
     "",
@@ -148,7 +133,9 @@ pub async fn get_remote_resources(
     &[],
   )
   .await
-  .context("failed to clone resource repo")?;
+  .with_context(|| {
+    format!("Failed to update resource repo at {repo_path:?}")
+  })?;
 
   let hash = hash.context("failed to get commit hash")?;
   let message =
@@ -164,12 +151,6 @@ pub async fn get_remote_resources(
     &mut files,
     &mut file_errors,
   );
-
-  if repo_path.exists() {
-    if let Err(e) = std::fs::remove_dir_all(&repo_path) {
-      warn!("failed to remove sync repo directory | {e:?}")
-    }
-  }
 
   Ok(RemoteResources {
     resources,

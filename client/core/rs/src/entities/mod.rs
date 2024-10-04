@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+  path::{Path, PathBuf},
+  str::FromStr,
+};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -582,13 +585,13 @@ pub struct CloneArgs {
   /// Resource name (eg Build name, Repo name)
   pub name: String,
   /// Git provider domain. Default: `github.com`
-  pub provider: Option<String>,
+  pub provider: String,
   /// Use https (vs http).
   pub https: bool,
   /// Full repo identifier. <namespace>/<repo_name>
   pub repo: Option<String>,
   /// Git Branch. Default: `main`
-  pub branch: Option<String>,
+  pub branch: String,
   /// Specific commit hash. Optional
   pub commit: Option<String>,
   /// The clone destination path
@@ -601,17 +604,62 @@ pub struct CloneArgs {
   pub account: Option<String>,
 }
 
+impl CloneArgs {
+  pub fn path(&self, repo_dir: &Path) -> PathBuf {
+    let path = match &self.destination {
+      Some(destination) => PathBuf::from(&destination),
+      None => repo_dir.join(&to_komodo_name(&self.name)),
+    };
+    path.components().collect::<PathBuf>()
+  }
+
+  pub fn remote_url(
+    &self,
+    access_token: Option<&str>,
+  ) -> anyhow::Result<String> {
+    let access_token_at = match &access_token {
+      Some(token) => format!("{token}@"),
+      None => String::new(),
+    };
+    let protocol = if self.https { "https" } else { "http" };
+    let repo = self
+      .repo
+      .as_ref()
+      .context("resource has no repo attached")?;
+    Ok(format!(
+      "{protocol}://{access_token_at}{}/{repo}.git",
+      self.provider
+    ))
+  }
+
+  pub fn unique_path(&self) -> anyhow::Result<PathBuf> {
+    let repo = self
+      .repo
+      .as_ref()
+      .context("resource has no repo attached")?;
+    let res = PathBuf::from(self.provider.replace('/', "-"))
+      .join(repo.replace('/', "-"))
+      .join(self.branch.replace('/', "-"))
+      .join(
+        self.commit.as_ref().map(String::as_str).unwrap_or("latest"),
+      );
+    Ok(res)
+  }
+}
+
 impl From<&self::build::Build> for CloneArgs {
   fn from(build: &self::build::Build) -> CloneArgs {
     CloneArgs {
       name: build.name.clone(),
+      provider: optional_string(&build.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&build.config.repo),
-      branch: optional_string(&build.config.branch),
+      branch: optional_string(&build.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&build.config.commit),
       destination: None,
       on_clone: build.config.pre_build.clone().into_option(),
       on_pull: None,
-      provider: optional_string(&build.config.git_provider),
       https: build.config.git_https,
       account: optional_string(&build.config.git_account),
     }
@@ -622,13 +670,15 @@ impl From<&self::repo::Repo> for CloneArgs {
   fn from(repo: &self::repo::Repo) -> CloneArgs {
     CloneArgs {
       name: repo.name.clone(),
+      provider: optional_string(&repo.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&repo.config.repo),
-      branch: optional_string(&repo.config.branch),
+      branch: optional_string(&repo.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&repo.config.commit),
       destination: optional_string(&repo.config.path),
       on_clone: repo.config.on_clone.clone().into_option(),
       on_pull: repo.config.on_pull.clone().into_option(),
-      provider: optional_string(&repo.config.git_provider),
       https: repo.config.git_https,
       account: optional_string(&repo.config.git_account),
     }
@@ -639,13 +689,15 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
   fn from(sync: &self::sync::ResourceSync) -> Self {
     CloneArgs {
       name: sync.name.clone(),
+      provider: optional_string(&sync.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&sync.config.repo),
-      branch: optional_string(&sync.config.branch),
+      branch: optional_string(&sync.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&sync.config.commit),
       destination: None,
       on_clone: None,
       on_pull: None,
-      provider: optional_string(&sync.config.git_provider),
       https: sync.config.git_https,
       account: optional_string(&sync.config.git_account),
     }
@@ -656,13 +708,15 @@ impl From<&self::stack::Stack> for CloneArgs {
   fn from(stack: &self::stack::Stack) -> Self {
     CloneArgs {
       name: stack.name.clone(),
+      provider: optional_string(&stack.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&stack.config.repo),
-      branch: optional_string(&stack.config.branch),
+      branch: optional_string(&stack.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&stack.config.commit),
       destination: None,
       on_clone: None,
       on_pull: None,
-      provider: optional_string(&stack.config.git_provider),
       https: stack.config.git_https,
       account: optional_string(&stack.config.git_account),
     }

@@ -1,18 +1,12 @@
-use std::{
-  fs,
-  path::{Path, PathBuf},
-};
+use std::{fs, path::PathBuf};
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use formatting::format_serror;
 use komodo_client::entities::{
   stack::Stack, update::Log, CloneArgs, FileContents,
 };
 
-use crate::{
-  config::core_config,
-  helpers::{git_token, random_string},
-};
+use crate::{config::core_config, helpers::git_token};
 
 pub struct RemoteComposeContents {
   pub successful: Vec<FileContents>,
@@ -28,12 +22,11 @@ pub async fn get_remote_compose_contents(
   // Collect any files which are missing in the repo.
   mut missing_files: Option<&mut Vec<String>>,
 ) -> anyhow::Result<RemoteComposeContents> {
-  let repo_path =
-    core_config().repo_directory.join(random_string(10));
-
-  let (_logs, hash, message) = clone_remote_repo(&repo_path, stack)
-    .await
-    .context("failed to clone stack repo")?;
+  let clone_args: CloneArgs = stack.into();
+  let (repo_path, _logs, hash, message) =
+    ensure_remote_repo(clone_args)
+      .await
+      .context("failed to clone stack repo")?;
 
   let run_directory = repo_path.join(&stack.config.run_directory);
   // This will remove any intermediate '/./' which can be a problem for some OS.
@@ -64,12 +57,6 @@ pub async fn get_remote_compose_contents(
     }
   }
 
-  if repo_path.exists() {
-    if let Err(e) = std::fs::remove_dir_all(&repo_path) {
-      warn!("failed to remove stack repo directory | {e:?}")
-    }
-  }
-
   Ok(RemoteComposeContents {
     successful,
     errored,
@@ -79,40 +66,33 @@ pub async fn get_remote_compose_contents(
   })
 }
 
-/// Returns (logs, hash, message)
-pub async fn clone_remote_repo(
-  repo_path: &Path,
-  stack: &Stack,
-) -> anyhow::Result<(Vec<Log>, Option<String>, Option<String>)> {
-  let mut clone_args: CloneArgs = stack.into();
-
+/// Returns (destination, logs, hash, message)
+pub async fn ensure_remote_repo(
+  mut clone_args: CloneArgs,
+) -> anyhow::Result<(PathBuf, Vec<Log>, Option<String>, Option<String>)>
+{
   let config = core_config();
 
-  let access_token = match (&clone_args.account, &clone_args.provider)
-  {
-    (None, _) => None,
-    (Some(_), None) => {
-      return Err(anyhow!(
-        "Account is configured, but provider is empty"
-      ))
-    }
-    (Some(username), Some(provider)) => {
-      git_token(provider, username, |https| {
+  let access_token = if let Some(username) = &clone_args.account {
+    git_token(&clone_args.provider, username, |https| {
         clone_args.https = https
       })
       .await
       .with_context(
-        || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+        || format!("Failed to get git token in call to db. Stopping run. | {} | {username}", clone_args.provider),
       )?
-    }
+  } else {
+    None
   };
+
+  let destination = clone_args.unique_path()?;
 
   // Don't want to run these on core.
   clone_args.on_clone = None;
   clone_args.on_pull = None;
-  clone_args.destination = Some(repo_path.display().to_string());
+  clone_args.destination = Some(destination.display().to_string());
 
-  git::clone(
+  git::pull_or_clone(
     clone_args,
     &config.repo_directory,
     access_token,
@@ -123,5 +103,5 @@ pub async fn clone_remote_repo(
   )
   .await
   .context("failed to clone stack repo")
-  .map(|(a, b, c, _)| (a, b, c))
+  .map(|res| (destination, res.logs, res.hash, res.message))
 }

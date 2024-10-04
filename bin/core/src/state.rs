@@ -16,7 +16,6 @@ use komodo_client::entities::{
 use octorust::auth::{
   Credentials, InstallationTokenGenerator, JWTCredentials,
 };
-use tokio::sync::Mutex;
 
 use crate::{
   auth::jwt::JwtClient,
@@ -200,12 +199,3 @@ pub fn resource_sync_state_cache() -> &'static ResourceSyncStateCache
     OnceLock::new();
   RESOURCE_SYNC_STATE_CACHE.get_or_init(Default::default)
 }
-
-pub type ResourceSyncLockCache = Cache<String, Arc<Mutex<()>>>;
-
-pub fn resource_sync_lock_cache() -> &'static ResourceSyncLockCache {
-  static RESOURCE_SYNC_LOCK_CACHE: OnceLock<ResourceSyncLockCache> =
-    OnceLock::new();
-  RESOURCE_SYNC_LOCK_CACHE.get_or_init(Default::default)
-}
-

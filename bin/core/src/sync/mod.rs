@@ -1,24 +1,13 @@
 use std::{collections::HashMap, str::FromStr};
 
-use async_timing_util::{wait_until_timelength, Timelength};
-use komodo_client::{
-  api::write::RefreshResourceSyncPending,
-  entities::{
-    alerter::Alerter, build::Build, builder::Builder,
-    deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, server_template::ServerTemplate, stack::Stack,
-    sync::ResourceSync, tag::Tag, toml::ResourceToml,
-    user::sync_user, ResourceTarget,
-  },
+use komodo_client::entities::{
+  alerter::Alerter, build::Build, builder::Builder,
+  deployment::Deployment, procedure::Procedure, repo::Repo,
+  server::Server, server_template::ServerTemplate, stack::Stack,
+  sync::ResourceSync, tag::Tag, toml::ResourceToml, ResourceTarget,
 };
-use mungos::{find::find_collect, mongodb::bson::oid::ObjectId};
-use resolver_api::Resolve;
+use mungos::mongodb::bson::oid::ObjectId;
 use toml::ToToml;
-
-use crate::{
-  config::core_config,
-  state::{db_client, State},
-};
 
 pub mod deploy;
 pub mod execute;
@@ -29,49 +18,6 @@ pub mod toml;
 pub mod user_groups;
 pub mod variables;
 pub mod view;
-
-pub fn spawn_sync_refresh_loop() {
-  let interval: Timelength = core_config()
-    .sync_poll_interval
-    .try_into()
-    .expect("Invalid sync poll interval");
-  tokio::spawn(async move {
-    refresh_syncs().await;
-    loop {
-      wait_until_timelength(interval, 0).await;
-      refresh_syncs().await;
-    }
-  });
-}
-
-async fn refresh_syncs() {
-  let Ok(syncs) =
-    find_collect(&db_client().resource_syncs, None, None)
-      .await
-      .inspect_err(|e| {
-        warn!(
-      "failed to get resource syncs from db in refresh task | {e:#}"
-    )
-      })
-  else {
-    return;
-  };
-  for sync in syncs {
-    if sync.config.repo.is_empty() {
-      continue;
-    }
-    State
-      .resolve(
-        RefreshResourceSyncPending { sync: sync.id },
-        sync_user().clone(),
-      )
-      .await
-      .inspect_err(|e| {
-        warn!("failed to refresh resource sync in refresh task | sync: {} | {e:#}", sync.name)
-      })
-      .ok();
-  }
-}
 
 pub type ToUpdate<T> = Vec<ToUpdateItem<T>>;
 pub type ToCreate<T> = Vec<ResourceToml<T>>;

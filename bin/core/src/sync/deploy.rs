@@ -25,9 +25,8 @@ use resolver_api::Resolve;
 
 use crate::{
   api::execute::ExecuteRequest,
-  config::core_config,
-  helpers::{random_string, update::init_execution_update},
-  stack::remote::clone_remote_repo,
+  helpers::update::init_execution_update,
+  stack::remote::ensure_remote_repo,
   state::{deployment_status_cache, stack_status_cache, State},
 };
 
@@ -595,9 +594,7 @@ fn build_cache_for_stack<'a>(
     // Can use 'original' for this (config hasn't changed)
     if stack.latest_hash {
       if let Some(deployed_hash) = &original.info.deployed_hash {
-        let repo_path =
-          core_config().repo_directory.join(random_string(10));
-        let (_, hash, _) = clone_remote_repo(&repo_path, original)
+        let (_, _, hash, _) = ensure_remote_repo(original.into())
           .await
           .context("failed to get latest hash for repo based stack")
           .with_context(|| {
