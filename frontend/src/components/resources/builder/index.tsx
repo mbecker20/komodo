@@ -118,6 +118,7 @@ export const BuilderComponents: RequiredResourceComponents = {
   Icon: () => <Factory className="w-4 h-4" />,
   BigIcon: () => <Factory className="w-8 h-8" />,
 
+  State: () => null,
   Status: {},
 
   Info: {

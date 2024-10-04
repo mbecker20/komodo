@@ -7,7 +7,6 @@ import {
   Cpu,
   MemoryStick,
   Database,
-  AreaChart,
   Milestone,
   Play,
   RefreshCcw,
@@ -23,7 +22,6 @@ import {
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
-import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
 import {
   ActionWithDialog,
@@ -31,7 +29,6 @@ import {
   ResourcePageHeader,
   StatusBadge,
 } from "@components/util";
-import { Button } from "@ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
 import { DashboardPieChart } from "@pages/home/dashboard";
@@ -211,37 +208,12 @@ export const ServerComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <Icon id={id} size={4} />,
   BigIcon: ({ id }) => <Icon id={id} size={8} />,
 
-  Status: {
-    State: ({ id }) => {
-      const state = useServer(id)?.info.state;
-      return (
-        <StatusBadge text={state} intent={server_state_intention(state)} />
-      );
-    },
-    Version: ({ id }) => {
-      const version = useRead(
-        "GetPeripheryVersion",
-        { server: id },
-        { refetchInterval: 5000 }
-      ).data?.version;
-      const _version =
-        version === undefined || version === "unknown" ? "unknown" : version;
-      return (
-        <div className="flex items-center gap-2">
-          <Milestone className="w-4 h-4" />
-          {_version}
-        </div>
-      );
-    },
-    Stats: ({ id }) => (
-      <Link to={`/servers/${id}/stats`}>
-        <Button variant="link" className="flex gap-2 items-center p-0">
-          <AreaChart className="w-4 h-4" />
-          Stats
-        </Button>
-      </Link>
-    ),
+  State: ({ id }) => {
+    const state = useServer(id)?.info.state;
+    return <StatusBadge text={state} intent={server_state_intention(state)} />;
   },
+
+  Status: {},
 
   Info: {
     Version: ({ id }) => {

@@ -158,21 +158,15 @@ export const DeploymentComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
   BigIcon: ({ id }) => <DeploymentIcon id={id} size={8} />,
 
-  Status: {
-    State: ({ id }) => {
-      const state =
-        useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
-      return (
-        <StatusBadge text={state} intent={deployment_state_intention(state)} />
-      );
-    },
-    Status: ({ id }) => {
-      const status = useDeployment(id)?.info.status;
-      return (
-        status && <p className="text-sm text-muted-foreground">{status}</p>
-      );
-    },
+  State: ({ id }) => {
+    const state =
+      useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
+    return (
+      <StatusBadge text={state} intent={deployment_state_intention(state)} />
+    );
   },
+
+  Status: {},
 
   Info: {
     Image: ({ id }) => {

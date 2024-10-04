@@ -49,6 +49,7 @@ export const AlerterComponents: RequiredResourceComponents = {
   Icon: () => <AlarmClock className="w-4 h-4" />,
   BigIcon: () => <AlarmClock className="w-8 h-8" />,
 
+  State: () => null,
   Status: {},
 
   Info: {

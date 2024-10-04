@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export const ResourceNoficiations = ({ type, id }: Types.ResourceTarget) => {
+export const ResourceNotifications = ({ type, id }: Types.ResourceTarget) => {
   const deployments = useRead("ListDeployments", {}).data;
 
   const updates = useRead("ListUpdates", {
@@ -40,7 +40,7 @@ export const ResourceNoficiations = ({ type, id }: Types.ResourceTarget) => {
           <TabsTrigger value="updates">Updates</TabsTrigger>
           {showAlerts && <TabsTrigger value="alerts">Alerts</TabsTrigger>}
         </TabsList>
-        <div className="mt-2 pr-3 h-[150px] overflow-y-scroll">
+        <div className="mt-2 pr-3 h-[180px] overflow-y-scroll">
           <TabsContent value="updates">
             {updates?.updates.slice(0, 10).map((update) => (
               <Update key={update.id} update={update} />

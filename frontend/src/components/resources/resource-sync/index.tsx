@@ -146,16 +146,14 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <ResourceSyncIcon id={id} size={4} />,
   BigIcon: ({ id }) => <ResourceSyncIcon id={id} size={8} />,
 
+  State: ({ id }) => {
+    const state = useResourceSync(id)?.info.state;
+    return (
+      <StatusBadge text={state} intent={resource_sync_state_intention(state)} />
+    );
+  },
+
   Status: {
-    State: ({ id }) => {
-      const state = useResourceSync(id)?.info.state;
-      return (
-        <StatusBadge
-          text={state}
-          intent={resource_sync_state_intention(state)}
-        />
-      );
-    },
     Status: ({ id }) => {
       const info = useResourceSync(id)?.info;
       if (info?.last_sync_hash && info?.last_sync_message) {

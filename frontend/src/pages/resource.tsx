@@ -24,7 +24,7 @@ import {
   LinkIcon,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ResourceNoficiations } from "./resource-notifications";
+import { ResourceNotifications } from "./resource-notifications";
 
 export const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
   const user = useUser().data;
@@ -124,7 +124,7 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
       </div>
       <div className="flex flex-col xl:flex-row gap-4">
         <ResourceHeader type={type} id={id} links={links} />
-        <ResourceNoficiations type={type} id={id} />
+        <ResourceNotifications type={type} id={id} />
       </div>
       <div className="mt-8 flex flex-col gap-12">
         {canExecute && Object.keys(Components.Actions).length > 0 && (
@@ -171,6 +171,7 @@ export const ResourceHeader = ({
 
   const Components = ResourceComponents[type];
   const infoEntries = Object.entries(Components.Info);
+  const statusEntries = Object.entries(Components.Status);
 
   const { canWrite } = useEditPermissions({ type, id });
 
@@ -178,11 +179,14 @@ export const ResourceHeader = ({
     <div className="w-full flex flex-col gap-4">
       <div className="flex flex-col gap-4 border rounded-md">
         <Components.ResourcePageHeader id={id} />
-        <div className="flex items-center gap-4 flex-wrap p-4 pt-0">
+        <div className="flex items-center gap-x-4 gap-y-2 flex-wrap px-4 py-0">
           {infoEntries.map(([key, Info]) => (
             <div key={key} className="pr-4 text-sm border-r">
               <Info id={id} />
             </div>
+          ))}
+          {statusEntries.map(([key, Status]) => (
+            <Status key={key} id={id} />
           ))}
           {links?.map((link) => (
             <a
@@ -197,18 +201,16 @@ export const ResourceHeader = ({
               </div>
             </a>
           ))}
-          <div className="flex items-center gap-3 h-7 lg:justify-self-end">
-            <p className="text-sm text-muted-foreground">Tags:</p>
-            <div className="flex items-center gap-2">
-              <ResourceTags
-                target={{ id, type }}
-                className="text-sm"
-                disabled={!canWrite}
-                click_to_delete
-              />
-              {canWrite && <AddTags target={{ id, type }} />}
-            </div>
-          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap p-4 pt-0">
+          <p className="text-sm text-muted-foreground">Tags:</p>
+          <ResourceTags
+            target={{ id, type }}
+            className="text-sm"
+            disabled={!canWrite}
+            click_to_delete
+          />
+          {canWrite && <AddTags target={{ id, type }} />}
         </div>
       </div>
       <ResourceDescription type={type} id={id} disabled={!canWrite} />

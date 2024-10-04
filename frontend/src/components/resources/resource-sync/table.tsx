@@ -44,7 +44,7 @@ export const ResourceSyncTable = ({
             <SortableHeader column={column} title="State" />
           ),
           cell: ({ row }) => (
-            <ResourceSyncComponents.Status.State id={row.original.id} />
+            <ResourceSyncComponents.State id={row.original.id} />
           ),
           size: 120,
         },

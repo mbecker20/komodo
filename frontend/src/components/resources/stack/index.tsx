@@ -160,24 +160,12 @@ export const StackComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <StackIcon id={id} size={4} />,
   BigIcon: ({ id }) => <StackIcon id={id} size={8} />,
 
+  State: ({ id }) => {
+    const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
+    return <StatusBadge text={state} intent={stack_state_intention(state)} />;
+  },
+
   Status: {
-    State: ({ id }) => {
-      const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
-      const config = useFullStack(id)?.config;
-      if (!config?.files_on_host && !config?.file_contents && !config?.repo) {
-        return null;
-      }
-      return <StatusBadge text={state} intent={stack_state_intention(state)} />;
-    },
-    Status: ({ id }) => {
-      const info = useStack(id)?.info;
-      if (info?.state !== Types.StackState.Unhealthy) return null;
-      return (
-        info?.status && (
-          <p className="text-sm text-muted-foreground">{info.status}</p>
-        )
-      );
-    },
     NoConfig: ({ id }) => {
       const config = useFullStack(id)?.config;
       if (
@@ -432,7 +420,11 @@ export const StackComponents: RequiredResourceComponents = {
         icon={<StackIcon id={id} size={8} />}
         name={stack?.name}
         state={stack?.info.state}
-        status={stack?.info.deployed_hash}
+        status={
+          stack?.info.state === Types.StackState.Unhealthy
+            ? stack?.info.status
+            : undefined
+        }
       />
     );
   },

@@ -38,7 +38,7 @@ export const RepoTable = ({ repos }: { repos: Types.RepoListItem[] }) => {
             <SortableHeader column={column} title="State" />
           ),
           cell: ({ row }) => (
-            <RepoComponents.Status.State id={row.original.id} />
+            <RepoComponents.State id={row.original.id} />
           ),
           size: 120,
         },

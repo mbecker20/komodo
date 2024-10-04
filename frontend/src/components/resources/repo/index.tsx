@@ -83,11 +83,12 @@ export const RepoComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,
 
+  State: ({ id }) => {
+    const state = useRepo(id)?.info.state;
+    return <StatusBadge text={state} intent={repo_state_intention(state)} />;
+  },
+  
   Status: {
-    State: ({ id }) => {
-      const state = useRepo(id)?.info.state;
-      return <StatusBadge text={state} intent={repo_state_intention(state)} />;
-    },
     Cloned: ({ id }) => {
       const info = useRepo(id)?.info;
       if (!info?.cloned_hash || info.cloned_hash === info.latest_hash) {

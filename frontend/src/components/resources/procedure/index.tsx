@@ -69,14 +69,14 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <ProcedureIcon id={id} size={4} />,
   BigIcon: ({ id }) => <ProcedureIcon id={id} size={8} />,
 
-  Status: {
-    State: ({ id }) => {
-      let state = useProcedure(id)?.info.state;
-      return (
-        <StatusBadge text={state} intent={procedure_state_intention(state)} />
-      );
-    },
+  State: ({ id }) => {
+    let state = useProcedure(id)?.info.state;
+    return (
+      <StatusBadge text={state} intent={procedure_state_intention(state)} />
+    );
   },
+  
+  Status: {},
 
   Info: {
     Stages: ({ id }) => <div>Stages: {useProcedure(id)?.info.stages}</div>,

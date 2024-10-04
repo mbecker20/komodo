@@ -283,7 +283,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
           </Badge> */}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" sideOffset={12} align="end">
+      <PopoverContent className="w-[200px] p-0" sideOffset={12} align="start">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search / Create"

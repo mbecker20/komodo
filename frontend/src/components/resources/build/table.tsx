@@ -37,7 +37,7 @@ export const BuildTable = ({ builds }: { builds: Types.BuildListItem[] }) => {
             <SortableHeader column={column} title="State" />
           ),
           cell: ({ row }) => (
-            <BuildComponents.Status.State id={row.original.id} />
+            <BuildComponents.State id={row.original.id} />
           ),
           size: 120,
         },

@@ -29,6 +29,8 @@ export interface RequiredResourceComponents {
   Icon: OptionalIdComponent;
   BigIcon: OptionalIdComponent;
 
+  State: IdComponent;
+
   /** status metrics, like deployment state / status */
   Status: { [status: string]: IdComponent };
 

@@ -52,9 +52,7 @@ export const StackTable = ({ stacks }: { stacks: Types.StackListItem[] }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="State" />
           ),
-          cell: ({ row }) => (
-            <StackComponents.Status.State id={row.original.id} />
-          ),
+          cell: ({ row }) => <StackComponents.State id={row.original.id} />,
           size: 120,
         },
         {

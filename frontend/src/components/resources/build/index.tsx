@@ -126,11 +126,12 @@ export const BuildComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <BuildIcon id={id} size={4} />,
   BigIcon: ({ id }) => <BuildIcon id={id} size={8} />,
 
+  State: ({ id }) => {
+    let state = useBuild(id)?.info.state;
+    return <StatusBadge text={state} intent={build_state_intention(state)} />;
+  },
+
   Status: {
-    State: ({ id }) => {
-      let state = useBuild(id)?.info.state;
-      return <StatusBadge text={state} intent={build_state_intention(state)} />;
-    },
     Built: ({ id }) => {
       const info = useFullBuild(id)?.info;
       if (!info?.built_hash) {

@@ -104,6 +104,8 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
   Icon: () => <ServerCog className="w-4 h-4" />,
   BigIcon: () => <ServerCog className="w-8 h-8" />,
 
+  State: () => null,
+
   Status: {},
 
   Info: {
