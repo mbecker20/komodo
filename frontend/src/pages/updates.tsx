@@ -34,20 +34,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { ResourceLink } from "@components/resources/common";
+import { ResourceSelector } from "@components/resources/common";
 
-export const Updates2 = () => {
+export const UpdatesPage = () => {
   const [page, setPage] = useState(0);
   const [params, setParams] = useSearchParams();
-
-  // const { type, id, operation } = useMemo(
-  //   () => ({
-  //     type: (params.get("type") as UsableResource) ?? undefined,
-  //     id: params.get("id") ?? undefined,
-  //     operation: (params.get("operation") as Types.Operation) ?? undefined,
-  //   }),
-  //   [params]
-  // );
 
   const { type, id, operation } = {
     type: (params.get("type") as UsableResource) ?? undefined,
@@ -59,14 +50,6 @@ export const Updates2 = () => {
     query: { "target.type": type, "target.id": id, operation },
     page,
   });
-
-  const resources = useRead(`List${type}s`, {}, { enabled: !!type }).data;
-
-  const SelectedResourceIcon = () => {
-    if (!type) return null;
-    const Icon = ResourceComponents[type].Icon;
-    return <Icon />;
-  };
 
   return (
     <Page
@@ -114,35 +97,17 @@ export const Updates2 = () => {
             </Select>
 
             {/* resource id */}
-            <Select
-              value={id ? id : type ? "all" : undefined}
-              disabled={!type}
-              onValueChange={(id) => {
-                const p = new URLSearchParams(params.toString());
-                id === "all" ? p.delete("id") : p.set("id", id);
-                setParams(p);
-              }}
-            >
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Resources" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
-                      <SelectedResourceIcon />
-                    </span>
-                    All {type}s
-                  </div>
-                </SelectItem>
-                <SelectSeparator />
-                {resources?.map((resource) => (
-                  <SelectItem key={resource.id} value={resource.id}>
-                    <ResourceLink type={type} id={resource.id} />
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {type && (
+              <ResourceSelector
+                type={type}
+                selected={id}
+                onSelect={(id) => {
+                  const p = new URLSearchParams(params.toString());
+                  id === "all" ? p.delete("id") : p.set("id", id);
+                  setParams(p);
+                }}
+              />
+            )}
 
             {/* operation */}
             <OperationSelector
@@ -313,30 +278,38 @@ const OPERATIONS_BY_RESOURCE: { [key: string]: Types.Operation[] } = {
   Server: [
     Types.Operation.CreateServer,
     Types.Operation.UpdateServer,
+    Types.Operation.DeleteServer,
     Types.Operation.RenameServer,
-    Types.Operation.PruneImages,
+    Types.Operation.StartContainer,
+    Types.Operation.RestartContainer,
+    Types.Operation.PauseContainer,
+    Types.Operation.UnpauseContainer,
+    Types.Operation.StopContainer,
+    Types.Operation.DestroyContainer,
+    Types.Operation.StartAllContainers,
+    Types.Operation.RestartAllContainers,
+    Types.Operation.PauseAllContainers,
+    Types.Operation.UnpauseAllContainers,
+    Types.Operation.StopAllContainers,
     Types.Operation.PruneContainers,
-    Types.Operation.PruneNetworks,
     Types.Operation.CreateNetwork,
     Types.Operation.DeleteNetwork,
-    Types.Operation.StopAllContainers,
-  ],
-  Deployment: [
-    Types.Operation.CreateDeployment,
-    Types.Operation.UpdateDeployment,
-    Types.Operation.RenameDeployment,
-    Types.Operation.Deploy,
-    Types.Operation.StartDeployment,
-    Types.Operation.RestartDeployment,
-    Types.Operation.PauseDeployment,
-    Types.Operation.UnpauseDeployment,
-    Types.Operation.StopDeployment,
-    Types.Operation.DestroyDeployment,
+    Types.Operation.PruneNetworks,
+    Types.Operation.DeleteImage,
+    Types.Operation.PruneImages,
+    Types.Operation.DeleteVolume,
+    Types.Operation.PruneVolumes,
+    Types.Operation.PruneDockerBuilders,
+    Types.Operation.PruneBuildx,
+    Types.Operation.PruneSystem,
   ],
   Stack: [
     Types.Operation.CreateStack,
     Types.Operation.UpdateStack,
     Types.Operation.RenameStack,
+    Types.Operation.DeleteStack,
+    Types.Operation.WriteStackContents,
+    Types.Operation.RefreshStackCache,
     Types.Operation.DeployStack,
     Types.Operation.StartStack,
     Types.Operation.RestartStack,
@@ -344,31 +317,69 @@ const OPERATIONS_BY_RESOURCE: { [key: string]: Types.Operation[] } = {
     Types.Operation.UnpauseStack,
     Types.Operation.StopStack,
     Types.Operation.DestroyStack,
+    Types.Operation.StartStackService,
+    Types.Operation.RestartStackService,
+    Types.Operation.PauseStackService,
+    Types.Operation.UnpauseStackService,
+    Types.Operation.StopStackService,
+  ],
+  Deployment: [
+    Types.Operation.CreateDeployment,
+    Types.Operation.UpdateDeployment,
+    Types.Operation.DeleteDeployment,
+    Types.Operation.Deploy,
+    Types.Operation.StartDeployment,
+    Types.Operation.RestartDeployment,
+    Types.Operation.PauseDeployment,
+    Types.Operation.UnpauseDeployment,
+    Types.Operation.StopDeployment,
+    Types.Operation.DestroyDeployment,
+    Types.Operation.RenameDeployment,
   ],
   Build: [
     Types.Operation.CreateBuild,
     Types.Operation.UpdateBuild,
+    Types.Operation.DeleteBuild,
     Types.Operation.RunBuild,
     Types.Operation.CancelBuild,
   ],
   Repo: [
     Types.Operation.CreateRepo,
     Types.Operation.UpdateRepo,
+    Types.Operation.DeleteRepo,
     Types.Operation.CloneRepo,
     Types.Operation.PullRepo,
     Types.Operation.BuildRepo,
+    Types.Operation.CancelRepoBuild,
   ],
   Procedure: [
     Types.Operation.CreateProcedure,
     Types.Operation.UpdateProcedure,
+    Types.Operation.DeleteProcedure,
     Types.Operation.RunProcedure,
   ],
-  Builder: [Types.Operation.CreateBuilder, Types.Operation.UpdateBuilder],
-  Alerter: [Types.Operation.CreateAlerter, Types.Operation.UpdateAlerter],
+  Builder: [
+    Types.Operation.CreateBuilder,
+    Types.Operation.UpdateBuilder,
+    Types.Operation.DeleteBuilder,
+  ],
+  Alerter: [
+    Types.Operation.CreateAlerter,
+    Types.Operation.UpdateAlerter,
+    Types.Operation.DeleteAlerter,
+  ],
   ServerTemplate: [
     Types.Operation.CreateServerTemplate,
     Types.Operation.UpdateServerTemplate,
+    Types.Operation.DeleteServerTemplate,
     Types.Operation.LaunchServer,
+  ],
+  ResourceSync: [
+    Types.Operation.CreateResourceSync,
+    Types.Operation.UpdateResourceSync,
+    Types.Operation.DeleteResourceSync,
+    Types.Operation.CommitSync,
+    Types.Operation.RunSync,
   ],
 };
 

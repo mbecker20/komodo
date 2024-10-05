@@ -5,11 +5,11 @@ import { Resource } from "@pages/resource";
 import { Resources } from "@pages/resources";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/home/tree";
-import { Updates2 } from "@pages/updates";
+import { UpdatesPage } from "@pages/updates";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
-import { Alerts2 } from "@pages/alerts";
+import { AlertsPage } from "@pages/alerts";
 import { UserPage } from "@pages/user";
 import { UserGroupPage } from "@pages/user-group";
 import { Settings } from "@pages/settings";
@@ -29,8 +29,8 @@ const ROUTER = createBrowserRouter([
       // { path: "keys", element: <Keys /> },
       // { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },
-      { path: "alerts", element: <Alerts2 /> },
-      { path: "updates", element: <Updates2 /> },
+      { path: "alerts", element: <AlertsPage /> },
+      { path: "updates", element: <UpdatesPage /> },
       // { path: "variables", element: <Variables /> },
       { path: "resources", element: <AllResources /> },
       { path: "user-groups/:id", element: <UserGroupPage /> },

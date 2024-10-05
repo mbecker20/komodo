@@ -868,64 +868,6 @@ pub enum Operation {
   PruneBuildx,
   PruneSystem,
 
-  // build
-  CreateBuild,
-  UpdateBuild,
-  DeleteBuild,
-  RunBuild,
-  CancelBuild,
-
-  // builder
-  CreateBuilder,
-  UpdateBuilder,
-  DeleteBuilder,
-
-  // deployment
-  CreateDeployment,
-  UpdateDeployment,
-  DeleteDeployment,
-  Deploy,
-  StartDeployment,
-  RestartDeployment,
-  PauseDeployment,
-  UnpauseDeployment,
-  StopDeployment,
-  DestroyDeployment,
-  RenameDeployment,
-
-  // repo
-  CreateRepo,
-  UpdateRepo,
-  DeleteRepo,
-  CloneRepo,
-  PullRepo,
-  BuildRepo,
-  CancelRepoBuild,
-
-  // alerter
-  CreateAlerter,
-  UpdateAlerter,
-  DeleteAlerter,
-
-  // procedure
-  CreateProcedure,
-  UpdateProcedure,
-  DeleteProcedure,
-  RunProcedure,
-
-  // server template
-  CreateServerTemplate,
-  UpdateServerTemplate,
-  DeleteServerTemplate,
-  LaunchServer,
-
-  // sync
-  CreateResourceSync,
-  UpdateResourceSync,
-  DeleteResourceSync,
-  CommitSync,
-  RunSync,
-
   // stack
   CreateStack,
   UpdateStack,
@@ -947,6 +889,64 @@ pub enum Operation {
   PauseStackService,
   UnpauseStackService,
   StopStackService,
+
+  // deployment
+  CreateDeployment,
+  UpdateDeployment,
+  DeleteDeployment,
+  Deploy,
+  StartDeployment,
+  RestartDeployment,
+  PauseDeployment,
+  UnpauseDeployment,
+  StopDeployment,
+  DestroyDeployment,
+  RenameDeployment,
+
+  // build
+  CreateBuild,
+  UpdateBuild,
+  DeleteBuild,
+  RunBuild,
+  CancelBuild,
+
+  // repo
+  CreateRepo,
+  UpdateRepo,
+  DeleteRepo,
+  CloneRepo,
+  PullRepo,
+  BuildRepo,
+  CancelRepoBuild,
+
+  // procedure
+  CreateProcedure,
+  UpdateProcedure,
+  DeleteProcedure,
+  RunProcedure,
+
+  // builder
+  CreateBuilder,
+  UpdateBuilder,
+  DeleteBuilder,
+
+  // alerter
+  CreateAlerter,
+  UpdateAlerter,
+  DeleteAlerter,
+
+  // server template
+  CreateServerTemplate,
+  UpdateServerTemplate,
+  DeleteServerTemplate,
+  LaunchServer,
+
+  // sync
+  CreateResourceSync,
+  UpdateResourceSync,
+  DeleteResourceSync,
+  CommitSync,
+  RunSync,
 
   // variable
   CreateVariable,
