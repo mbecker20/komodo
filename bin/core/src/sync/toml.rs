@@ -138,7 +138,6 @@ pub fn convert_resource<R: KomodoResource>(
 // These have no linked resource ids to replace
 impl ToToml for Alerter {}
 impl ToToml for Server {}
-impl ToToml for ServerTemplate {}
 impl ToToml for ResourceSync {}
 
 impl ToToml for Stack {
@@ -268,6 +267,20 @@ impl ToToml for Repo {
   }
 }
 
+impl ToToml for ServerTemplate {
+  fn edit_config_object(
+    _resource: &ResourceToml<Self::PartialConfig>,
+    config: &mut serde_json::Map<String, serde_json::Value>,
+  ) -> anyhow::Result<()> {
+    if config.contains_key("type") && !config.contains_key("params") {
+      // The deserializer doesn't like if type is there but not params.
+      config
+        .insert("params".to_string(), serde_json::Map::new().into());
+    }
+    Ok(())
+  }
+}
+
 impl ToToml for Builder {
   fn replace_ids(
     resource: &mut Resource<Self::Config, Self::Info>,
@@ -282,6 +295,18 @@ impl ToToml for Builder {
           .unwrap_or(&String::new()),
       )
     }
+  }
+
+  fn edit_config_object(
+    _resource: &ResourceToml<Self::PartialConfig>,
+    config: &mut serde_json::Map<String, serde_json::Value>,
+  ) -> anyhow::Result<()> {
+    if config.contains_key("type") && !config.contains_key("params") {
+      // The deserializer doesn't like if type is there but not params.
+      config
+        .insert("params".to_string(), serde_json::Map::new().into());
+    }
+    Ok(())
   }
 }
 

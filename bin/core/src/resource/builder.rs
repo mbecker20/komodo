@@ -156,11 +156,9 @@ async fn validate_config(
   user: &User,
 ) -> anyhow::Result<()> {
   match config {
-    PartialBuilderConfig::Server(Some(
-      PartialServerBuilderConfig {
-        server_id: Some(server_id),
-      },
-    )) if !server_id.is_empty() => {
+    PartialBuilderConfig::Server(PartialServerBuilderConfig {
+      server_id: Some(server_id),
+    }) if !server_id.is_empty() => {
       let server = super::get_check_permissions::<Server>(
         server_id,
         user,

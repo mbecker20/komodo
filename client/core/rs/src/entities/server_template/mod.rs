@@ -74,8 +74,10 @@ impl Default for ServerTemplateConfig {
 )]
 #[serde(tag = "type", content = "params")]
 pub enum PartialServerTemplateConfig {
-  Aws(aws::_PartialAwsServerTemplateConfig),
-  Hetzner(hetzner::_PartialHetznerServerTemplateConfig),
+  Aws(#[serde(default)] aws::_PartialAwsServerTemplateConfig),
+  Hetzner(
+    #[serde(default)] hetzner::_PartialHetznerServerTemplateConfig,
+  ),
 }
 
 impl Default for PartialServerTemplateConfig {
