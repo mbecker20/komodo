@@ -50,7 +50,7 @@ import {
   soft_text_color_class_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
-import { MonacoDiffEditor } from "@components/monaco";
+import { MonacoDiffEditor, MonacoEditor } from "@components/monaco";
 
 export const ConfigItem = ({
   label,
@@ -710,30 +710,23 @@ export const SystemCommand = ({
   set: (value: Types.SystemCommand) => void;
 }) => {
   return (
-    <div className="w-full flex flex-wrap">
-      <div className="flex items-center gap-4">
-        <div className="grid gap-2">
-          <div className="text-muted-foreground">Path:</div>
-          <Input
-            placeholder="Command working directory"
-            value={value?.path}
-            className="w-[200px] lg:w-[300px]"
-            onChange={(e) => set({ ...(value || {}), path: e.target.value })}
-            disabled={disabled}
-          />
-        </div>
-        <div className="grid gap-2">
-          <div className="text-muted-foreground">Command:</div>
-          <TextUpdateMenu
-            title="Update Command"
-            placeholder="Set shell command"
-            value={value?.command}
-            onUpdate={(command) => set({ ...(value || {}), command })}
-            triggerClassName="w-[200px] lg:w-[300px] xl:w-[400px]"
-            disabled={disabled}
-          />
-        </div>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <div className="text-muted-foreground">Path:</div>
+        <Input
+          placeholder="Command working directory"
+          value={value?.path}
+          className="w-[200px] lg:w-[300px]"
+          onChange={(e) => set({ ...(value || {}), path: e.target.value })}
+          disabled={disabled}
+        />
       </div>
+      <MonacoEditor
+        value={value?.command}
+        language="shell"
+        onValueChange={(command) => set({ ...(value || {}), command })}
+        readOnly={disabled}
+      />
     </div>
   );
 };
