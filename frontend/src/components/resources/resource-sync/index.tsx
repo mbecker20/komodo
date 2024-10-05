@@ -7,6 +7,7 @@ import { ResourceSyncTable } from "./table";
 import { Types } from "@komodo/client";
 import { CommitSync, ExecuteSync, RefreshSync } from "./actions";
 import {
+  border_color_class_by_intention,
   resource_sync_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -19,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceSyncConfig } from "./config";
 import { ResourceSyncInfo } from "./info";
 import { ResourceSyncPending } from "./pending";
+import { Badge } from "@ui/badge";
 
 export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
@@ -154,29 +156,60 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   },
 
   Status: {
-    Status: ({ id }) => {
-      const info = useResourceSync(id)?.info;
-      if (info?.last_sync_hash && info?.last_sync_message) {
-        return (
-          <HoverCard openDelay={200}>
-            <HoverCardTrigger asChild>
-              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-                <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                  last sync: {info.last_sync_hash}
-                </div>
-              </Card>
-            </HoverCardTrigger>
-            <HoverCardContent align="start">
-              <div className="grid">
-                <div className="text-muted-foreground">commit message:</div>
-                {info.last_sync_message}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        );
-      } else if (!info?.last_sync_ts) {
-        return <div className="text-muted-foreground">{"Never synced"}</div>;
+    Hash: ({ id }) => {
+      const info = useFullResourceSync(id)?.info;
+      if (!info?.pending_hash) {
+        return null;
       }
+      const out_of_date =
+        info.last_sync_hash && info.last_sync_hash !== info.pending_hash;
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card
+              className={cn(
+                "px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer",
+                out_of_date && border_color_class_by_intention("Warning")
+              )}
+            >
+              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                {info.last_sync_hash ? "synced" : "latest"}:{" "}
+                {info.last_sync_hash || info.pending_hash}
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start">
+            <div className="grid gap-2">
+              <Badge
+                variant="secondary"
+                className="w-fit text-muted-foreground"
+              >
+                message
+              </Badge>
+              {info.last_sync_message || info.pending_message}
+              {out_of_date && (
+                <>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "w-fit text-muted-foreground border-[1px]",
+                      border_color_class_by_intention("Warning")
+                    )}
+                  >
+                    latest
+                  </Badge>
+                  <div>
+                    <span className="text-muted-foreground">
+                      {info.pending_hash}
+                    </span>
+                    : {info.pending_message}
+                  </div>
+                </>
+              )}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
     },
   },
 

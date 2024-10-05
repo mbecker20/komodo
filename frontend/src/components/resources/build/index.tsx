@@ -8,6 +8,7 @@ import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { DeploymentTable } from "../deployment/table";
 import { RunBuild } from "./actions";
 import {
+  border_color_class_by_intention,
   build_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -132,17 +133,25 @@ export const BuildComponents: RequiredResourceComponents = {
   },
 
   Status: {
-    Built: ({ id }) => {
+    Hash: ({ id }) => {
       const info = useFullBuild(id)?.info;
-      if (!info?.built_hash) {
+      if (!info?.latest_hash) {
         return null;
       }
+      const out_of_date =
+        info.built_hash && info.built_hash !== info.latest_hash;
       return (
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+            <Card
+              className={cn(
+                "px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer",
+                out_of_date && border_color_class_by_intention("Warning")
+              )}
+            >
               <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                built: {info.built_hash}
+                {info.built_hash ? "built" : "latest"}:{" "}
+                {info.built_hash || info.latest_hash}
               </div>
             </Card>
           </HoverCardTrigger>
@@ -152,37 +161,28 @@ export const BuildComponents: RequiredResourceComponents = {
                 variant="secondary"
                 className="w-fit text-muted-foreground"
               >
-                commit message
+                message
               </Badge>
-              {info.built_message}
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      );
-    },
-    Latest: ({ id }) => {
-      const info = useFullBuild(id)?.info;
-      if (!info?.latest_hash || info.latest_hash === info?.built_hash) {
-        return null;
-      }
-      return (
-        <HoverCard openDelay={200}>
-          <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                latest: {info.latest_hash}
-              </div>
-            </Card>
-          </HoverCardTrigger>
-          <HoverCardContent align="start">
-            <div className="grid gap-2">
-              <Badge
-                variant="secondary"
-                className="w-fit text-muted-foreground"
-              >
-                commit message
-              </Badge>
-              {info.latest_message}
+              {info.built_message || info.latest_message}
+              {out_of_date && (
+                <>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "w-fit text-muted-foreground border-[1px]",
+                      border_color_class_by_intention("Warning")
+                    )}
+                  >
+                    latest
+                  </Badge>
+                  <div>
+                    <span className="text-muted-foreground">
+                      {info.latest_hash}
+                    </span>
+                    : {info.latest_message}
+                  </div>
+                </>
+              )}
             </div>
           </HoverCardContent>
         </HoverCard>

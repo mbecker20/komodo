@@ -12,6 +12,7 @@ import {
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { StackTable } from "./table";
 import {
+  border_color_class_by_intention,
   stack_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -200,7 +201,7 @@ export const StackComponents: RequiredResourceComponents = {
       if (
         !info ||
         !info?.project_missing ||
-        ![Types.StackState.Down, Types.StackState.Unknown].includes(state)
+        [Types.StackState.Down, Types.StackState.Unknown].includes(state)
       ) {
         return null;
       }
@@ -247,7 +248,7 @@ export const StackComponents: RequiredResourceComponents = {
         </HoverCard>
       );
     },
-    Deployed: ({ id }) => {
+    Hash: ({ id }) => {
       const info = useStack(id)?.info;
       const fullInfo = useFullStack(id)?.info;
       const state = info?.state;
@@ -258,51 +259,25 @@ export const StackComponents: RequiredResourceComponents = {
       if (
         stackDown ||
         info?.project_missing ||
-        !fullInfo?.deployed_hash ||
-        !fullInfo?.deployed_message
-      ) {
-        return null;
-      }
-      return (
-        <HoverCard openDelay={200}>
-          <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                deployed: {fullInfo.deployed_hash}
-              </div>
-            </Card>
-          </HoverCardTrigger>
-          <HoverCardContent align="start">
-            <div className="grid gap-2">
-              <Badge
-                variant="secondary"
-                className="w-fit text-muted-foreground"
-              >
-                commit message
-              </Badge>
-              {fullInfo.deployed_message}
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      );
-    },
-    Latest: ({ id }) => {
-      const info = useStack(id)?.info;
-      const fullInfo = useFullStack(id)?.info;
-      if (
-        info?.project_missing ||
         !info?.latest_hash ||
-        !fullInfo?.latest_message ||
-        info?.latest_hash === info?.deployed_hash
+        !fullInfo
       ) {
         return null;
       }
+      const out_of_date =
+        info.deployed_hash && info.deployed_hash !== info.latest_hash;
       return (
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+            <Card
+              className={cn(
+                "px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer",
+                out_of_date && border_color_class_by_intention("Warning")
+              )}
+            >
               <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                latest: {info.latest_hash}
+                {info.deployed_hash ? "deployed" : "latest"}:{" "}
+                {info.deployed_hash || info.latest_hash}
               </div>
             </Card>
           </HoverCardTrigger>
@@ -312,14 +287,67 @@ export const StackComponents: RequiredResourceComponents = {
                 variant="secondary"
                 className="w-fit text-muted-foreground"
               >
-                commit message
+                message
               </Badge>
-              {fullInfo.latest_message}
+              {fullInfo.deployed_message || fullInfo.latest_message}
+              {out_of_date && (
+                <>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "w-fit text-muted-foreground border-[1px]",
+                      border_color_class_by_intention("Warning")
+                    )}
+                  >
+                    latest
+                  </Badge>
+                  <div>
+                    <span className="text-muted-foreground">
+                      {info.latest_hash}
+                    </span>
+                    : {fullInfo.latest_message}
+                  </div>
+                </>
+              )}
             </div>
           </HoverCardContent>
         </HoverCard>
       );
     },
+    // Latest: ({ id }) => {
+    //   const info = useStack(id)?.info;
+    //   const fullInfo = useFullStack(id)?.info;
+    //   if (
+    //     info?.project_missing ||
+    //     !info?.latest_hash ||
+    //     !fullInfo?.latest_message ||
+    //     info?.latest_hash === info?.deployed_hash
+    //   ) {
+    //     return null;
+    //   }
+    //   return (
+    //     <HoverCard openDelay={200}>
+    //       <HoverCardTrigger asChild>
+    //         <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+    //           <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+    //             latest: {info.latest_hash}
+    //           </div>
+    //         </Card>
+    //       </HoverCardTrigger>
+    //       <HoverCardContent align="start">
+    //         <div className="grid gap-2">
+    //           <Badge
+    //             variant="secondary"
+    //             className="w-fit text-muted-foreground"
+    //           >
+    //             commit message
+    //           </Badge>
+    //           {fullInfo.latest_message}
+    //         </div>
+    //       </HoverCardContent>
+    //     </HoverCard>
+    //   );
+    // },
     Refresh: ({ id }) => {
       const { toast } = useToast();
       const inv = useInvalidate();

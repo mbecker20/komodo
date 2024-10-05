@@ -76,6 +76,23 @@ export const bg_color_class_by_intention = (intention: ColorIntention) => {
   }
 };
 
+export const border_color_class_by_intention = (intention: ColorIntention) => {
+  switch (intention) {
+    case "Good":
+      return "border-green-700 dark:border-green-400";
+    case "Neutral":
+      return "border-blue-700 dark:border-blue-400";
+    case "Warning":
+      return "border-orange-700 dark:border-orange-400";
+    case "Critical":
+      return "border-red-700 dark:border-red-400";
+    case "Unknown":
+      return "border-purple-700 dark:border-purple-400";
+    case "None":
+      return "";
+  }
+};
+
 export const text_color_class_by_intention = (intention: ColorIntention) => {
   switch (intention) {
     case "Good":
@@ -93,7 +110,9 @@ export const text_color_class_by_intention = (intention: ColorIntention) => {
   }
 };
 
-export const soft_text_color_class_by_intention = (intention: ColorIntention) => {
+export const soft_text_color_class_by_intention = (
+  intention: ColorIntention
+) => {
   switch (intention) {
     case "Good":
       return "text-green-700/60 dark:text-green-400/60";
