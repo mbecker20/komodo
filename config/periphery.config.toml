@@ -89,13 +89,31 @@ ssl_key_file = "/etc/komodo/ssl/key.pem"
 ssl_cert_file = "/etc/komodo/ssl/cert.pem"
 
 ###########
-# SECRETS #
+# LOGGING #
 ###########
 
-## Provide periphery-based secrets
-# [secrets]
-# SECRET_1 = "value_1"
-# SECRET_2 = "value_2"
+## Specify the logging verbosity
+## Options: off, error, warn, info, debug, trace
+## Default: info
+## Env: PERIPHERY_LOGGING_LEVEL
+logging.level = "info"
+
+## Specify the logging format for stdout / stderr.
+## Env: PERIPHERY_LOGGING_STDIO
+## Options: standard, json, none
+## Default: standard
+logging.stdio = "standard"
+
+## Specify a opentelemetry otlp endpoint to send traces to.
+## Example: http://localhost:4317.
+## Env: PERIPHERY_LOGGING_OTLP_ENDPOINT
+## Optional, no default
+logging.otlp_endpoint = ""
+
+## Set the opentelemetry service name attached to the telemetry Periphery will send.
+## Env: PERIPHERY_LOGGING_OPENTELEMETRY_SERVICE_NAME
+## Default: "Komodo"
+logging.opentelemetry_service_name = "Periphery"
 
 #################
 # GIT PROVIDERS #
@@ -142,28 +160,10 @@ ssl_cert_file = "/etc/komodo/ssl/cert.pem"
 # organizations = ["Mogh"] # These become available in the UI
 
 ###########
-# LOGGING #
+# SECRETS #
 ###########
 
-## Specify the logging verbosity
-## Options: off, error, warn, info, debug, trace
-## Default: info
-## Env: PERIPHERY_LOGGING_LEVEL
-logging.level = "info"
-
-## Specify the logging format for stdout / stderr.
-## Env: PERIPHERY_LOGGING_STDIO
-## Options: standard, json, none
-## Default: standard
-logging.stdio = "standard"
-
-## Specify a opentelemetry otlp endpoint to send traces to.
-## Example: http://localhost:4317.
-## Env: PERIPHERY_LOGGING_OTLP_ENDPOINT
-## Optional, no default
-logging.otlp_endpoint = ""
-
-## Set the opentelemetry service name attached to the telemetry Periphery will send.
-## Env: PERIPHERY_LOGGING_OPENTELEMETRY_SERVICE_NAME
-## Default: "Komodo"
-logging.opentelemetry_service_name = "Periphery"
+## Provide periphery-based secrets
+# [secrets]
+# SECRET_1 = "value_1"
+# SECRET_2 = "value_2"
