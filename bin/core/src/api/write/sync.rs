@@ -147,6 +147,12 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       sync.info.pending_hash = hash;
       sync.info.pending_message = message;
 
+      if !sync.info.remote_errors.is_empty() {
+        return Err(anyhow!(
+          "Remote resources have errors. Cannot compute diffs."
+        ));
+      }
+
       let resources = resources?;
 
       let id_to_tags = get_id_to_tags(None).await?;

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use formatting::{colored, format_serror, Color};
 use komodo_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
@@ -60,6 +60,7 @@ impl Resolve<RunSync, (User, Update)> for State {
       logs,
       hash,
       message,
+      file_errors,
       ..
     } = crate::sync::remote::get_remote_resources(&sync)
       .await
@@ -67,6 +68,10 @@ impl Resolve<RunSync, (User, Update)> for State {
 
     update.logs.extend(logs);
     update_update(update.clone()).await?;
+
+    if !file_errors.is_empty() {
+      return Err(anyhow!("Found file errors. Cannot execute sync."))
+    }
 
     let resources = resources?;
 
