@@ -72,8 +72,8 @@ impl Default for BuilderConfig {
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::large_enum_variant)]
 pub enum PartialBuilderConfig {
-  Server(_PartialServerBuilderConfig),
-  Aws(_PartialAwsBuilderConfig),
+  Server(Option<_PartialServerBuilderConfig>),
+  Aws(Option<_PartialAwsBuilderConfig>),
 }
 
 impl Default for PartialBuilderConfig {
@@ -102,10 +102,10 @@ impl From<BuilderConfigDiff> for PartialBuilderConfig {
   fn from(value: BuilderConfigDiff) -> Self {
     match value {
       BuilderConfigDiff::Server(diff) => {
-        PartialBuilderConfig::Server(diff.into())
+        PartialBuilderConfig::Server(Some(diff.into()))
       }
       BuilderConfigDiff::Aws(diff) => {
-        PartialBuilderConfig::Aws(diff.into())
+        PartialBuilderConfig::Aws(Some(diff.into()))
       }
     }
   }
@@ -136,20 +136,26 @@ impl PartialDiff<PartialBuilderConfig, BuilderConfigDiff>
     match self {
       BuilderConfig::Server(original) => match partial {
         PartialBuilderConfig::Server(partial) => {
-          BuilderConfigDiff::Server(original.partial_diff(partial))
+          BuilderConfigDiff::Server(
+            original.partial_diff(partial.unwrap_or_default()),
+          )
         }
         PartialBuilderConfig::Aws(partial) => {
           let default = AwsBuilderConfig::default();
-          BuilderConfigDiff::Aws(default.partial_diff(partial))
+          BuilderConfigDiff::Aws(
+            default.partial_diff(partial.unwrap_or_default()),
+          )
         }
       },
       BuilderConfig::Aws(original) => match partial {
-        PartialBuilderConfig::Aws(partial) => {
-          BuilderConfigDiff::Aws(original.partial_diff(partial))
-        }
+        PartialBuilderConfig::Aws(partial) => BuilderConfigDiff::Aws(
+          original.partial_diff(partial.unwrap_or_default()),
+        ),
         PartialBuilderConfig::Server(partial) => {
           let default = ServerBuilderConfig::default();
-          BuilderConfigDiff::Server(default.partial_diff(partial))
+          BuilderConfigDiff::Server(
+            default.partial_diff(partial.unwrap_or_default()),
+          )
         }
       },
     }
@@ -169,10 +175,10 @@ impl From<PartialBuilderConfig> for BuilderConfig {
   fn from(value: PartialBuilderConfig) -> BuilderConfig {
     match value {
       PartialBuilderConfig::Server(server) => {
-        BuilderConfig::Server(server.into())
+        BuilderConfig::Server(server.unwrap_or_default().into())
       }
       PartialBuilderConfig::Aws(builder) => {
-        BuilderConfig::Aws(builder.into())
+        BuilderConfig::Aws(builder.unwrap_or_default().into())
       }
     }
   }
@@ -182,10 +188,10 @@ impl From<BuilderConfig> for PartialBuilderConfig {
   fn from(value: BuilderConfig) -> Self {
     match value {
       BuilderConfig::Server(config) => {
-        PartialBuilderConfig::Server(config.into())
+        PartialBuilderConfig::Server(Some(config.into()))
       }
       BuilderConfig::Aws(config) => {
-        PartialBuilderConfig::Aws(config.into())
+        PartialBuilderConfig::Aws(Some(config.into()))
       }
     }
   }
@@ -200,15 +206,19 @@ impl MergePartial for BuilderConfig {
     match partial {
       PartialBuilderConfig::Server(partial) => match self {
         BuilderConfig::Server(config) => {
+          let partial = partial.unwrap_or_default();
           let config = ServerBuilderConfig {
             server_id: partial.server_id.unwrap_or(config.server_id),
           };
           BuilderConfig::Server(config)
         }
-        _ => BuilderConfig::Server(partial.into()),
+        _ => {
+          BuilderConfig::Server(partial.unwrap_or_default().into())
+        }
       },
       PartialBuilderConfig::Aws(partial) => match self {
         BuilderConfig::Aws(config) => {
+          let partial = partial.unwrap_or_default();
           let config = AwsBuilderConfig {
             region: partial.region.unwrap_or(config.region),
             instance_type: partial
@@ -242,7 +252,7 @@ impl MergePartial for BuilderConfig {
           };
           BuilderConfig::Aws(config)
         }
-        _ => BuilderConfig::Aws(partial.into()),
+        _ => BuilderConfig::Aws(partial.unwrap_or_default().into()),
       },
     }
   }
@@ -315,7 +325,7 @@ pub struct AwsBuilderConfig {
   #[builder(default)]
   pub subnet_id: String,
   /// The key pair name to attach to the instance
- #[serde(default)]
+  #[serde(default)]
   #[builder(default)]
   pub key_pair_name: String,
   /// Whether to assign the instance a public IP address.
