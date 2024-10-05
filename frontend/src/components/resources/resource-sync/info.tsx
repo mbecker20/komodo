@@ -15,24 +15,6 @@ export const ResourceSyncInfo = ({
   const sync = useFullResourceSync(id);
   return (
     <Section titleOther={titleOther}>
-      {sync?.info?.remote_contents &&
-        sync?.info?.remote_contents.length > 0 && (
-          <Card>
-            <CardHeader className="flex flex-col gap-2">
-              latest contents:{" "}
-              {sync?.info?.remote_contents?.map((content, i) => (
-                <pre key={i} className="flex flex-col gap-2">
-                  path: {content.path}
-                  <MonacoEditor
-                    value={content.contents}
-                    language="toml"
-                    readOnly
-                  />
-                </pre>
-              ))}
-            </CardHeader>
-          </Card>
-        )}
       {sync?.info?.remote_errors && sync?.info?.remote_errors.length > 0 && (
         <Card>
           <CardHeader className="flex flex-col gap-2">
@@ -51,6 +33,24 @@ export const ResourceSyncInfo = ({
           </CardHeader>
         </Card>
       )}
+      {sync?.info?.remote_contents &&
+        sync?.info?.remote_contents.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-col gap-2">
+              latest contents:{" "}
+              {sync?.info?.remote_contents?.map((content, i) => (
+                <pre key={i} className="flex flex-col gap-2">
+                  path: {content.path}
+                  <MonacoEditor
+                    value={content.contents}
+                    language="toml"
+                    readOnly
+                  />
+                </pre>
+              ))}
+            </CardHeader>
+          </Card>
+        )}
     </Section>
   );
 };

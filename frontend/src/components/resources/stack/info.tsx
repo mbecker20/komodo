@@ -61,6 +61,26 @@ export const StackInfo = ({
 
   return (
     <Section titleOther={titleOther}>
+      {/* ERRORS */}
+      {stack?.info?.remote_errors && stack?.info?.remote_errors.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-col gap-2">
+            remote errors:{" "}
+            {stack?.info?.remote_errors?.map((content, i) => (
+              <pre key={i} className="flex flex-col gap-2">
+                path: {content.path}
+                <pre
+                  dangerouslySetInnerHTML={{
+                    __html: updateLogToHtml(content.contents),
+                  }}
+                  className="max-h-[500px] overflow-y-auto"
+                />
+              </pre>
+            ))}
+          </CardHeader>
+        </Card>
+      )}
+      
       {/* Update deployed contents with diff */}
       {/* {!is_down && deployed_contents.length > 0 && (
         <Card>
@@ -183,26 +203,6 @@ export const StackInfo = ({
             </CardContent>
           </Card>
         ))}
-
-      {/* ERRORS */}
-      {stack?.info?.remote_errors && stack?.info?.remote_errors.length > 0 && (
-        <Card>
-          <CardHeader className="flex flex-col gap-2">
-            remote errors:{" "}
-            {stack?.info?.remote_errors?.map((content, i) => (
-              <pre key={i} className="flex flex-col gap-2">
-                path: {content.path}
-                <pre
-                  dangerouslySetInnerHTML={{
-                    __html: updateLogToHtml(content.contents),
-                  }}
-                  className="max-h-[500px] overflow-y-auto"
-                />
-              </pre>
-            ))}
-          </CardHeader>
-        </Card>
-      )}
     </Section>
   );
 };
