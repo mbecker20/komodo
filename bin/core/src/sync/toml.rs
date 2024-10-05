@@ -59,9 +59,9 @@ pub trait ToToml: KomodoResource {
       serde_json::from_str(&serde_json::to_string(&resource)?)?;
     let config = resource_map
       .get_mut("config")
-      .context("deployment has no config?")?
+      .context("resource has no config?")?
       .as_object_mut()
-      .context("config is not object?")?;
+      .context("resource config is not object?")?;
     Self::edit_config_object(&resource, config)?;
     toml.push_str(
       &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
@@ -268,14 +268,31 @@ impl ToToml for Repo {
 }
 
 impl ToToml for ServerTemplate {
-  fn edit_config_object(
-    _resource: &ResourceToml<Self::PartialConfig>,
-    config: &mut serde_json::Map<String, serde_json::Value>,
+  fn push_to_toml_string(
+    mut resource: ResourceToml<Self::PartialConfig>,
+    toml: &mut String,
   ) -> anyhow::Result<()> {
-    if config.contains_key("type") && !config.contains_key("params") {
-      // The deserializer doesn't like if type is there but not params.
-      config
-        .insert("params".to_string(), serde_json::Map::new().into());
+    resource.config =
+      Self::Config::default().minimize_partial(resource.config);
+    let resource_map: OrderedHashMap<String, serde_json::Value> =
+      serde_json::from_str(&serde_json::to_string(&resource)?)?;
+    let params = resource_map
+      .get("config")
+      .context("server template has no config?")?
+      .as_object()
+      .context("config is not object?")?
+      .get("params")
+      .context("context")?
+      .as_object()
+      .context("params is not object?")?;
+    toml.push_str(
+      &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
+        .context("failed to serialize resource to toml")?,
+    );
+    if params.is_empty() {
+      // toml_pretty will remove empty map 
+      // but in this case its needed to deserialize the enums.
+      toml.push_str("\nconfig.params = {}");
     }
     Ok(())
   }
@@ -297,14 +314,31 @@ impl ToToml for Builder {
     }
   }
 
-  fn edit_config_object(
-    _resource: &ResourceToml<Self::PartialConfig>,
-    config: &mut serde_json::Map<String, serde_json::Value>,
+  fn push_to_toml_string(
+    mut resource: ResourceToml<Self::PartialConfig>,
+    toml: &mut String,
   ) -> anyhow::Result<()> {
-    if config.contains_key("type") && !config.contains_key("params") {
-      // The deserializer doesn't like if type is there but not params.
-      config
-        .insert("params".to_string(), serde_json::Map::new().into());
+    resource.config =
+      Self::Config::default().minimize_partial(resource.config);
+    let resource_map: OrderedHashMap<String, serde_json::Value> =
+      serde_json::from_str(&serde_json::to_string(&resource)?)?;
+    let params = resource_map
+      .get("config")
+      .context("server template has no config?")?
+      .as_object()
+      .context("config is not object?")?
+      .get("params")
+      .context("context")?
+      .as_object()
+      .context("params is not object?")?;
+    toml.push_str(
+      &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
+        .context("failed to serialize resource to toml")?,
+    );
+    if params.is_empty() {
+      // toml_pretty will remove empty map 
+      // but in this case its needed to deserialize the enums.
+      toml.push_str("\nconfig.params = {}");
     }
     Ok(())
   }
