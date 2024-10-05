@@ -29,9 +29,9 @@ use super::RedirectQuery;
 
 pub mod client;
 
-/// CSRF tokens can be used once from the callback,
+/// CSRF tokens can only be used once from the callback,
 /// and must be used within this timeframe
-const CSRF_VALID_FOR_MS: i64 = 10_000;
+const CSRF_VALID_FOR_MS: i64 = 120_000; // 2 minutes for user to log in.
 
 type RedirectUrl = Option<String>;
 type CsrfMap =
@@ -68,20 +68,19 @@ async fn login(
   let (pkce_challenge, pkce_verifier) =
     PkceCodeChallenge::new_random_sha256();
 
-  // Generate the full authorization URL.
+  // Generate the authorization URL.
   let (auth_url, csrf_token, nonce) = client
     .authorize_url(
       CoreAuthenticationFlow::AuthorizationCode,
       CsrfToken::new_random,
       Nonce::new_random,
     )
+    .add_scope(Scope::new("openid".to_string()))
     .add_scope(Scope::new("email".to_string()))
-    // // Set the desired scopes.
-    // .add_scope(Scope::new("user".to_string()))
-    // Set the PKCE code challenge.
     .set_pkce_challenge(pkce_challenge)
     .url();
 
+  // Data inserted here will be matched on callback side for csrf protection.
   csrf_verifier_tokens().insert(
     csrf_token.secret().clone(),
     (
@@ -131,12 +130,12 @@ async fn callback(
   );
 
   let (_, (pkce_verifier, nonce, redirect, valid_until)) =
-    csrf_verifier_tokens().remove(state.secret()).context(
-      "Did not find matching callback secret during OIDC callback",
-    )?;
+    csrf_verifier_tokens()
+      .remove(state.secret())
+      .context("CSRF Token invalid")?;
 
   if komodo_timestamp() > valid_until {
-    return Err(anyhow!("CSRF token invalid (timed out)"));
+    return Err(anyhow!("CSRF token invalid (Timed out). The token must be "));
   }
 
   let token_response = client

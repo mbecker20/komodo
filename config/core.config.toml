@@ -59,6 +59,12 @@ ui_write_disabled = false
 ## Default: false
 disable_confirm_dialog = false
 
+## Configure the repo directory (inside the container).
+## There shouldn't be a need to change this, just mount a volume.
+## Env: KOMODO_REPO_DIRECTORY
+## Default: /repo-cache
+repo_directory = "/repo-cache"
+
 ################
 # AUTH / LOGIN #
 ################

@@ -455,8 +455,7 @@ pub struct CoreConfig {
   // =========
   /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
   /// The default is fine when using a container.
-  /// This directory has no need for persistence, so no need to mount it.
-  /// Default: `/repos`
+  /// Default: `/repo-cache`
   #[serde(default = "default_repo_directory")]
   pub repo_directory: PathBuf,
 
@@ -492,8 +491,8 @@ fn default_jwt_ttl() -> Timelength {
 }
 
 fn default_repo_directory() -> PathBuf {
-  // unwrap ok: `/repos` will always be valid path
-  PathBuf::from_str("/repos").unwrap()
+  // unwrap ok: `/repo-cache` will always be valid path
+  PathBuf::from_str("/repo-cache").unwrap()
 }
 
 fn default_prune_days() -> u64 {

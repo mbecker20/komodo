@@ -1,5 +1,7 @@
 import * as monaco from "monaco-editor";
 
+// This is the one provided by Microsoft.
+// https://github.com/microsoft/monaco-editor/blob/main/src/basic-languages/yaml/yaml.ts
 const yaml_conf: monaco.languages.LanguageConfiguration = {
   comments: {
     lineComment: "#",
@@ -7,81 +9,246 @@ const yaml_conf: monaco.languages.LanguageConfiguration = {
   brackets: [
     ["{", "}"],
     ["[", "]"],
+    ["(", ")"],
   ],
   autoClosingPairs: [
     { open: "{", close: "}" },
     { open: "[", close: "]" },
+    { open: "(", close: ")" },
     { open: '"', close: '"' },
     { open: "'", close: "'" },
   ],
   surroundingPairs: [
     { open: "{", close: "}" },
     { open: "[", close: "]" },
+    { open: "(", close: ")" },
     { open: '"', close: '"' },
     { open: "'", close: "'" },
   ],
-  indentationRules: {
-    increaseIndentPattern: /^.*(\{[^}]*|\[[^\]]*)$/,
-    decreaseIndentPattern: /^\s*[}\]],?\s*$/,
+  folding: {
+    offSide: true,
   },
+  onEnterRules: [
+    {
+      beforeText: /:\s*$/,
+      action: {
+        indentAction: monaco.languages.IndentAction.Indent,
+      },
+    },
+  ],
 };
 
 const yaml_language = <monaco.languages.IMonarchLanguage>{
-  defaultToken: "",
   tokenPostfix: ".yaml",
 
-  // Common regular expressions
-  escapes:
-    /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+  brackets: [
+    { token: "delimiter.bracket", open: "{", close: "}" },
+    { token: "delimiter.square", open: "[", close: "]" },
+  ],
 
-  // The main tokenizer for YAML
+  keywords: [
+    "true",
+    "True",
+    "TRUE",
+    "false",
+    "False",
+    "FALSE",
+    "null",
+    "Null",
+    "Null",
+    "~",
+  ],
+
+  numberInteger: /(?:0|[+-]?[0-9]+)/,
+  numberFloat: /(?:0|[+-]?[0-9]+)(?:\.[0-9]+)?(?:e[-+][1-9][0-9]*)?/,
+  numberOctal: /0o[0-7]+/,
+  numberHex: /0x[0-9a-fA-F]+/,
+  numberInfinity: /[+-]?\.(?:inf|Inf|INF)/,
+  numberNaN: /\.(?:nan|Nan|NAN)/,
+  numberDate:
+    /\d{4}-\d\d-\d\d([Tt ]\d\d:\d\d:\d\d(\.\d+)?(( ?[+-]\d\d?(:\d\d)?)|Z)?)?/,
+
+  escapes: /\\(?:[btnfr\\"']|[0-7][0-7]?|[0-3][0-7]{2})/,
+
   tokenizer: {
     root: [
       { include: "@whitespace" },
-      { include: "@comments" },
-      { include: "@keys" },
-      { include: "@numbers" },
-      { include: "@booleans" },
-      { include: "@strings" },
-      { include: "@constants" },
+      { include: "@comment" },
+
+      // Directive
+      [/%[^ ]+.*$/, "meta.directive"],
+
+      // Document Markers
+      [/---/, "operators.directivesEnd"],
+      [/\.{3}/, "operators.documentEnd"],
+
+      // Block Structure Indicators
+      [/[-?:](?= )/, "operators"],
+
+      { include: "@anchor" },
+      { include: "@tagHandle" },
+      { include: "@flowCollections" },
+      { include: "@blockStyle" },
+
+      // Numbers
+      [/@numberInteger(?![ \t]*\S+)/, "number"],
+      [/@numberFloat(?![ \t]*\S+)/, "number.float"],
+      [/@numberOctal(?![ \t]*\S+)/, "number.octal"],
+      [/@numberHex(?![ \t]*\S+)/, "number.hex"],
+      [/@numberInfinity(?![ \t]*\S+)/, "number.infinity"],
+      [/@numberNaN(?![ \t]*\S+)/, "number.nan"],
+      [/@numberDate(?![ \t]*\S+)/, "number.date"],
+
+      // Key:Value pair
+      [
+        /(".*?"|'.*?'|[^#'"]*?)([ \t]*)(:)( |$)/,
+        ["type", "white", "operators", "white"],
+      ],
+
+      { include: "@flowScalars" },
+
+      // String nodes
+      [
+        /.+?(?=(\s+#|$))/,
+        {
+          cases: {
+            "@keywords": "keyword",
+            "@default": "string",
+          },
+        },
+      ],
     ],
 
-    whitespace: [[/[ \t\r\n]+/, ""]],
+    // Flow Collection: Flow Mapping
+    object: [
+      { include: "@whitespace" },
+      { include: "@comment" },
 
-    comments: [[/#.*$/, "comment"]],
+      // Flow Mapping termination
+      [/\}/, "@brackets", "@pop"],
 
-    keys: [[/([^\s\[\]{},"']+)(\s*)(:)/, ["key", "", "delimiter"]]],
+      // Flow Mapping delimiter
+      [/,/, "delimiter.comma"],
 
-    numbers: [
-      [/\b\d+\.\d*\b/, "number.float"],
-      [/\b0x[0-9a-fA-F]+\b/, "number.hex"],
-      [/\b\d+\b/, "number"],
+      // Flow Mapping Key:Value delimiter
+      [/:(?= )/, "operators"],
+
+      // Flow Mapping Key:Value key
+      [/(?:".*?"|'.*?'|[^,\{\[]+?)(?=: )/, "type"],
+
+      // Start Flow Style
+      { include: "@flowCollections" },
+      { include: "@flowScalars" },
+
+      // Scalar Data types
+      { include: "@tagHandle" },
+      { include: "@anchor" },
+      { include: "@flowNumber" },
+
+      // Other value (keyword or string)
+      [
+        /[^\},]+/,
+        {
+          cases: {
+            "@keywords": "keyword",
+            "@default": "string",
+          },
+        },
+      ],
     ],
 
-    booleans: [[/\b(true|false|yes|no|on|off)\b/, "constant.language.boolean"]],
+    // Flow Collection: Flow Sequence
+    array: [
+      { include: "@whitespace" },
+      { include: "@comment" },
 
-    strings: [
-      [/"([^"\\]|\\.)*$/, "string.invalid"], // non-terminated string
-      [/'([^'\\]|\\.)*$/, "string.invalid"], // non-terminated string
-      [/"/, "string", "@string_double"],
-      [/'/, "string", "@string_single"],
+      // Flow Sequence termination
+      [/\]/, "@brackets", "@pop"],
+
+      // Flow Sequence delimiter
+      [/,/, "delimiter.comma"],
+
+      // Start Flow Style
+      { include: "@flowCollections" },
+      { include: "@flowScalars" },
+
+      // Scalar Data types
+      { include: "@tagHandle" },
+      { include: "@anchor" },
+      { include: "@flowNumber" },
+
+      // Other value (keyword or string)
+      [
+        /[^\],]+/,
+        {
+          cases: {
+            "@keywords": "keyword",
+            "@default": "string",
+          },
+        },
+      ],
     ],
 
-    string_double: [
+    // First line of a Block Style
+    multiString: [[/^( +).+$/, "string", "@multiStringContinued.$1"]],
+
+    // Further lines of a Block Style
+    //   Workaround for indentation detection
+    multiStringContinued: [
+      [
+        /^( *).+$/,
+        {
+          cases: {
+            "$1==$S2": "string",
+            "@default": { token: "@rematch", next: "@popall" },
+          },
+        },
+      ],
+    ],
+
+    whitespace: [[/[ \t\r\n]+/, "white"]],
+
+    // Only line comments
+    comment: [[/#.*$/, "comment"]],
+
+    // Start Flow Collections
+    flowCollections: [
+      [/\[/, "@brackets", "@array"],
+      [/\{/, "@brackets", "@object"],
+    ],
+
+    // Start Flow Scalars (quoted strings)
+    flowScalars: [
+      [/"([^"\\]|\\.)*$/, "string.invalid"],
+      [/'([^'\\]|\\.)*$/, "string.invalid"],
+      [/'[^']*'/, "string"],
+      [/"/, "string", "@doubleQuotedString"],
+    ],
+
+    doubleQuotedString: [
       [/[^\\"]+/, "string"],
       [/@escapes/, "string.escape"],
       [/\\./, "string.escape.invalid"],
       [/"/, "string", "@pop"],
     ],
 
-    string_single: [
-      [/[^\\']+/, "string"],
-      [/@escapes/, "string.escape"],
-      [/\\./, "string.escape.invalid"],
-      [/'/, "string", "@pop"],
+    // Start Block Scalar
+    blockStyle: [[/[>|][0-9]*[+-]?$/, "operators", "@multiString"]],
+
+    // Numbers in Flow Collections (terminate with ,]})
+    flowNumber: [
+      [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
+      [/@numberFloat(?=[ \t]*[,\]\}])/, "number.float"],
+      [/@numberOctal(?=[ \t]*[,\]\}])/, "number.octal"],
+      [/@numberHex(?=[ \t]*[,\]\}])/, "number.hex"],
+      [/@numberInfinity(?=[ \t]*[,\]\}])/, "number.infinity"],
+      [/@numberNaN(?=[ \t]*[,\]\}])/, "number.nan"],
+      [/@numberDate(?=[ \t]*[,\]\}])/, "number.date"],
     ],
 
-    constants: [[/\b(null|~)\b/, "constant.language.null"]],
+    tagHandle: [[/\![^ ]*/, "tag"]],
+
+    anchor: [[/[&*][^ ]+/, "namespace"]],
   },
 };
 
@@ -89,255 +256,90 @@ monaco.languages.register({ id: "yaml" });
 monaco.languages.setMonarchTokensProvider("yaml", yaml_language);
 monaco.languages.setLanguageConfiguration("yaml", yaml_conf);
 
-// This is the one provided by Microsoft.
-// https://github.com/microsoft/monaco-editor/blob/main/src/basic-languages/yaml/yaml.ts
-// export const yaml_conf: monaco.languages.LanguageConfiguration = {
+
+/// V1
+// const yaml_conf: monaco.languages.LanguageConfiguration = {
 //   comments: {
 //     lineComment: "#",
 //   },
 //   brackets: [
 //     ["{", "}"],
 //     ["[", "]"],
-//     ["(", ")"],
 //   ],
 //   autoClosingPairs: [
 //     { open: "{", close: "}" },
 //     { open: "[", close: "]" },
-//     { open: "(", close: ")" },
 //     { open: '"', close: '"' },
 //     { open: "'", close: "'" },
 //   ],
 //   surroundingPairs: [
 //     { open: "{", close: "}" },
 //     { open: "[", close: "]" },
-//     { open: "(", close: ")" },
 //     { open: '"', close: '"' },
 //     { open: "'", close: "'" },
 //   ],
-//   folding: {
-//     offSide: true,
+//   indentationRules: {
+//     increaseIndentPattern: /^.*(\{[^}]*|\[[^\]]*)$/,
+//     decreaseIndentPattern: /^\s*[}\]],?\s*$/,
 //   },
-//   onEnterRules: [
-//     {
-//       beforeText: /:\s*$/,
-//       action: {
-//         indentAction: monaco.languages.IndentAction.Indent,
-//       },
-//     },
-//   ],
 // };
 
-// export const yaml_language = <monaco.languages.IMonarchLanguage>{
+// const yaml_language = <monaco.languages.IMonarchLanguage>{
+//   defaultToken: "",
 //   tokenPostfix: ".yaml",
 
-//   brackets: [
-//     { token: "delimiter.bracket", open: "{", close: "}" },
-//     { token: "delimiter.square", open: "[", close: "]" },
-//   ],
+//   // Common regular expressions
+//   escapes:
+//     /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-//   keywords: [
-//     "true",
-//     "True",
-//     "TRUE",
-//     "false",
-//     "False",
-//     "FALSE",
-//     "null",
-//     "Null",
-//     "Null",
-//     "~",
-//   ],
-
-//   numberInteger: /(?:0|[+-]?[0-9]+)/,
-//   numberFloat: /(?:0|[+-]?[0-9]+)(?:\.[0-9]+)?(?:e[-+][1-9][0-9]*)?/,
-//   numberOctal: /0o[0-7]+/,
-//   numberHex: /0x[0-9a-fA-F]+/,
-//   numberInfinity: /[+-]?\.(?:inf|Inf|INF)/,
-//   numberNaN: /\.(?:nan|Nan|NAN)/,
-//   numberDate:
-//     /\d{4}-\d\d-\d\d([Tt ]\d\d:\d\d:\d\d(\.\d+)?(( ?[+-]\d\d?(:\d\d)?)|Z)?)?/,
-
-//   escapes: /\\(?:[btnfr\\"']|[0-7][0-7]?|[0-3][0-7]{2})/,
-
+//   // The main tokenizer for YAML
 //   tokenizer: {
 //     root: [
 //       { include: "@whitespace" },
-//       { include: "@comment" },
-
-//       // Directive
-//       [/%[^ ]+.*$/, "meta.directive"],
-
-//       // Document Markers
-//       [/---/, "operators.directivesEnd"],
-//       [/\.{3}/, "operators.documentEnd"],
-
-//       // Block Structure Indicators
-//       [/[-?:](?= )/, "operators"],
-
-//       { include: "@anchor" },
-//       { include: "@tagHandle" },
-//       { include: "@flowCollections" },
-//       { include: "@blockStyle" },
-
-//       // Numbers
-//       [/@numberInteger(?![ \t]*\S+)/, "number"],
-//       [/@numberFloat(?![ \t]*\S+)/, "number.float"],
-//       [/@numberOctal(?![ \t]*\S+)/, "number.octal"],
-//       [/@numberHex(?![ \t]*\S+)/, "number.hex"],
-//       [/@numberInfinity(?![ \t]*\S+)/, "number.infinity"],
-//       [/@numberNaN(?![ \t]*\S+)/, "number.nan"],
-//       [/@numberDate(?![ \t]*\S+)/, "number.date"],
-
-//       // Key:Value pair
-//       [
-//         /(".*?"|'.*?'|[^#'"]*?)([ \t]*)(:)( |$)/,
-//         ["type", "white", "operators", "white"],
-//       ],
-
-//       { include: "@flowScalars" },
-
-//       // String nodes
-//       [
-//         /.+?(?=(\s+#|$))/,
-//         {
-//           cases: {
-//             "@keywords": "keyword",
-//             "@default": "string",
-//           },
-//         },
-//       ],
+//       { include: "@comments" },
+//       { include: "@keys" },
+//       { include: "@numbers" },
+//       { include: "@booleans" },
+//       { include: "@strings" },
+//       { include: "@constants" },
 //     ],
 
-//     // Flow Collection: Flow Mapping
-//     object: [
-//       { include: "@whitespace" },
-//       { include: "@comment" },
+//     whitespace: [[/[ \t\r\n]+/, ""]],
 
-//       // Flow Mapping termination
-//       [/\}/, "@brackets", "@pop"],
+//     comments: [[/#.*$/, "comment"]],
 
-//       // Flow Mapping delimiter
-//       [/,/, "delimiter.comma"],
+//     keys: [[/([^\s\[\]{},"']+)(\s*)(:)/, ["key", "", "delimiter"]]],
 
-//       // Flow Mapping Key:Value delimiter
-//       [/:(?= )/, "operators"],
-
-//       // Flow Mapping Key:Value key
-//       [/(?:".*?"|'.*?'|[^,\{\[]+?)(?=: )/, "type"],
-
-//       // Start Flow Style
-//       { include: "@flowCollections" },
-//       { include: "@flowScalars" },
-
-//       // Scalar Data types
-//       { include: "@tagHandle" },
-//       { include: "@anchor" },
-//       { include: "@flowNumber" },
-
-//       // Other value (keyword or string)
-//       [
-//         /[^\},]+/,
-//         {
-//           cases: {
-//             "@keywords": "keyword",
-//             "@default": "string",
-//           },
-//         },
-//       ],
+//     numbers: [
+//       [/\b\d+\.\d*\b/, "number.float"],
+//       [/\b0x[0-9a-fA-F]+\b/, "number.hex"],
+//       [/\b\d+\b/, "number"],
 //     ],
 
-//     // Flow Collection: Flow Sequence
-//     array: [
-//       { include: "@whitespace" },
-//       { include: "@comment" },
+//     booleans: [[/\b(true|false|yes|no|on|off)\b/, "constant.language.boolean"]],
 
-//       // Flow Sequence termination
-//       [/\]/, "@brackets", "@pop"],
-
-//       // Flow Sequence delimiter
-//       [/,/, "delimiter.comma"],
-
-//       // Start Flow Style
-//       { include: "@flowCollections" },
-//       { include: "@flowScalars" },
-
-//       // Scalar Data types
-//       { include: "@tagHandle" },
-//       { include: "@anchor" },
-//       { include: "@flowNumber" },
-
-//       // Other value (keyword or string)
-//       [
-//         /[^\],]+/,
-//         {
-//           cases: {
-//             "@keywords": "keyword",
-//             "@default": "string",
-//           },
-//         },
-//       ],
+//     strings: [
+//       [/"([^"\\]|\\.)*$/, "string.invalid"], // non-terminated string
+//       [/'([^'\\]|\\.)*$/, "string.invalid"], // non-terminated string
+//       [/"/, "string", "@string_double"],
+//       [/'/, "string", "@string_single"],
 //     ],
 
-//     // First line of a Block Style
-//     multiString: [[/^( +).+$/, "string", "@multiStringContinued.$1"]],
-
-//     // Further lines of a Block Style
-//     //   Workaround for indentation detection
-//     multiStringContinued: [
-//       [
-//         /^( *).+$/,
-//         {
-//           cases: {
-//             "$1==$S2": "string",
-//             "@default": { token: "@rematch", next: "@popall" },
-//           },
-//         },
-//       ],
-//     ],
-
-//     whitespace: [[/[ \t\r\n]+/, "white"]],
-
-//     // Only line comments
-//     comment: [[/#.*$/, "comment"]],
-
-//     // Start Flow Collections
-//     flowCollections: [
-//       [/\[/, "@brackets", "@array"],
-//       [/\{/, "@brackets", "@object"],
-//     ],
-
-//     // Start Flow Scalars (quoted strings)
-//     flowScalars: [
-//       [/"([^"\\]|\\.)*$/, "string.invalid"],
-//       [/'([^'\\]|\\.)*$/, "string.invalid"],
-//       [/'[^']*'/, "string"],
-//       [/"/, "string", "@doubleQuotedString"],
-//     ],
-
-//     doubleQuotedString: [
+//     string_double: [
 //       [/[^\\"]+/, "string"],
 //       [/@escapes/, "string.escape"],
 //       [/\\./, "string.escape.invalid"],
 //       [/"/, "string", "@pop"],
 //     ],
 
-//     // Start Block Scalar
-//     blockStyle: [[/[>|][0-9]*[+-]?$/, "operators", "@multiString"]],
-
-//     // Numbers in Flow Collections (terminate with ,]})
-//     flowNumber: [
-//       [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
-//       [/@numberFloat(?=[ \t]*[,\]\}])/, "number.float"],
-//       [/@numberOctal(?=[ \t]*[,\]\}])/, "number.octal"],
-//       [/@numberHex(?=[ \t]*[,\]\}])/, "number.hex"],
-//       [/@numberInfinity(?=[ \t]*[,\]\}])/, "number.infinity"],
-//       [/@numberNaN(?=[ \t]*[,\]\}])/, "number.nan"],
-//       [/@numberDate(?=[ \t]*[,\]\}])/, "number.date"],
+//     string_single: [
+//       [/[^\\']+/, "string"],
+//       [/@escapes/, "string.escape"],
+//       [/\\./, "string.escape.invalid"],
+//       [/'/, "string", "@pop"],
 //     ],
 
-//     tagHandle: [[/\![^ ]*/, "tag"]],
-
-//     anchor: [[/[&*][^ ]+/, "namespace"]],
+//     constants: [[/\b(null|~)\b/, "constant.language.null"]],
 //   },
 // };
 

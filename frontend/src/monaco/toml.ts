@@ -146,9 +146,8 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
     ],
 
     yamlTokenizer: [
-      // YAML specific content
       { include: "@yaml_whitespace" },
-      { include: "@yaml_comments" },
+      { include: "@yaml_comment" },
       { include: "@yaml_keys" },
       { include: "@yaml_numbers" },
       { include: "@yaml_booleans" },
@@ -161,27 +160,19 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       [
         /(\s*-*\s*)([A-Za-z0-9_]+)(\s*)(=|:)(\s*)/,
         [
-          "", // Maybe starting -
-          "key", // Use the same token as YAML keys for the environment variable key
+          "", // Optional leading dash or space
+          "key", // Key (Environment Variable)
           "", // Whitespace
           "operator.assignment", // Equals sign (=)
           "", // Whitespace
         ],
       ],
-
-      // Parse value as yaml
-      { include: "@yaml_whitespace" },
-      { include: "@yaml_comments" },
-      { include: "@yaml_keys" },
-      { include: "@yaml_numbers" },
-      { include: "@yaml_booleans" },
-      { include: "@yaml_strings" },
-      { include: "@yaml_constants" },
+      { include: "@yamlTokenizer" }, // Use YAML parsing for values
     ],
 
     yaml_whitespace: [[/[ \t\r\n]+/, ""]],
 
-    yaml_comments: [[/#.*$/, "comment"]],
+    yaml_comment: [[/#.*$/, "comment"]],
 
     yaml_keys: [[/([^\s\[\]{},"']+)(\s*)(:)/, ["key", "", "delimiter"]]],
 
@@ -196,8 +187,8 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
     ],
 
     yaml_strings: [
-      [/"([^"\\]|\\.)*$/, "string.invalid"], // non-terminated string
-      [/'([^'\\]|\\.)*$/, "string.invalid"], // non-terminated string
+      [/"([^"\\]|\\.)*$/, "string.invalid"], // Non-terminated string
+      [/'([^'\\]|\\.)*$/, "string.invalid"], // Non-terminated string
       [/"/, "string", "@yaml_string_double"],
       [/'/, "string", "@yaml_string_single"],
     ],
