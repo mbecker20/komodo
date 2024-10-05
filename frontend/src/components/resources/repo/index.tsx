@@ -87,7 +87,7 @@ export const RepoComponents: RequiredResourceComponents = {
     const state = useRepo(id)?.info.state;
     return <StatusBadge text={state} intent={repo_state_intention(state)} />;
   },
-  
+
   Status: {
     Cloned: ({ id }) => {
       const info = useRepo(id)?.info;
@@ -199,27 +199,21 @@ export const RepoComponents: RequiredResourceComponents = {
   },
 
   Info: {
-    Server: ({ id }) => {
+    Target: ({ id }) => {
       const info = useRepo(id)?.info;
       const server = useServer(info?.server_id);
-      return server?.id ? (
-        <ResourceLink type="Server" id={server?.id} />
-      ) : (
-        <div className="flex gap-2 items-center">
-          <Server className="w-4 h-4" />
-          <div>No Server</div>
-        </div>
-      );
-    },
-    Builder: ({ id }) => {
-      const info = useRepo(id)?.info;
       const builder = useBuilder(info?.builder_id);
-      return builder?.id ? (
-        <ResourceLink type="Builder" id={builder?.id} />
-      ) : (
-        <div className="flex gap-2 items-center">
-          <Factory className="w-4 h-4" />
-          <div>No Builder</div>
+      return (
+        <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+          {server?.id &&
+            (builder?.id ? (
+              <div className="pr-4 text-sm border-r">
+                <ResourceLink type="Server" id={server.id} />
+              </div>
+            ) : (
+              <ResourceLink type="Server" id={server.id} />
+            ))}
+          {builder?.id && <ResourceLink type="Builder" id={builder.id} />}
         </div>
       );
     },
