@@ -6,13 +6,13 @@ use komodo_client::{
   entities::{
     alerter::Alerter,
     build::Build,
-    builder::{Builder, BuilderConfig},
+    builder::{Builder, BuilderConfig, PartialBuilderConfig},
     deployment::{Deployment, DeploymentImage},
     procedure::Procedure,
     repo::Repo,
     resource::Resource,
     server::Server,
-    server_template::ServerTemplate,
+    server_template::{PartialServerTemplateConfig, ServerTemplate},
     stack::Stack,
     sync::ResourceSync,
     tag::Tag,
@@ -20,7 +20,7 @@ use komodo_client::{
   },
 };
 use ordered_hash_map::OrderedHashMap;
-use partial_derive2::PartialDiff;
+use partial_derive2::{MaybeNone, PartialDiff};
 
 use crate::resource::KomodoResource;
 
@@ -274,23 +274,18 @@ impl ToToml for ServerTemplate {
   ) -> anyhow::Result<()> {
     resource.config =
       Self::Config::default().minimize_partial(resource.config);
-    let resource_map: OrderedHashMap<String, serde_json::Value> =
-      serde_json::from_str(&serde_json::to_string(&resource)?)?;
-    let params = resource_map
-      .get("config")
-      .context("server template has no config?")?
-      .as_object()
-      .context("config is not object?")?
-      .get("params")
-      .context("context")?
-      .as_object()
-      .context("params is not object?")?;
     toml.push_str(
-      &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
+      &toml_pretty::to_string(&resource, TOML_PRETTY_OPTIONS)
         .context("failed to serialize resource to toml")?,
     );
-    if params.is_empty() {
-      // toml_pretty will remove empty map 
+    let empty_params = match resource.config {
+      PartialServerTemplateConfig::Aws(config) => config.is_none(),
+      PartialServerTemplateConfig::Hetzner(config) => {
+        config.is_none()
+      }
+    };
+    if empty_params {
+      // toml_pretty will remove empty map
       // but in this case its needed to deserialize the enums.
       toml.push_str("\nconfig.params = {}");
     }
@@ -320,23 +315,16 @@ impl ToToml for Builder {
   ) -> anyhow::Result<()> {
     resource.config =
       Self::Config::default().minimize_partial(resource.config);
-    let resource_map: OrderedHashMap<String, serde_json::Value> =
-      serde_json::from_str(&serde_json::to_string(&resource)?)?;
-    let params = resource_map
-      .get("config")
-      .context("server template has no config?")?
-      .as_object()
-      .context("config is not object?")?
-      .get("params")
-      .context("context")?
-      .as_object()
-      .context("params is not object?")?;
     toml.push_str(
-      &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
+      &toml_pretty::to_string(&resource, TOML_PRETTY_OPTIONS)
         .context("failed to serialize resource to toml")?,
     );
-    if params.is_empty() {
-      // toml_pretty will remove empty map 
+    let empty_params = match resource.config {
+      PartialBuilderConfig::Aws(config) => config.is_none(),
+      PartialBuilderConfig::Server(config) => config.is_none(),
+    };
+    if empty_params {
+      // toml_pretty will remove empty map
       // but in this case its needed to deserialize the enums.
       toml.push_str("\nconfig.params = {}");
     }
