@@ -89,12 +89,8 @@ export const BuildConfig = ({
             },
           },
           {
-            label: "Tagging",
+            label: "Version",
             components: {
-              image_name: {
-                description: "Push the image under a different name",
-                placeholder: "Custom image name",
-              },
               version: (_version, set) => {
                 const version =
                   typeof _version === "object"
@@ -116,10 +112,6 @@ export const BuildConfig = ({
               auto_increment_version: {
                 description:
                   "Automatically increment the patch number on every build.",
-              },
-              image_tag: {
-                description: "Postfix the image version with a custom tag.",
-                placeholder: "Custom image tag",
               },
             },
           },
@@ -168,20 +160,6 @@ export const BuildConfig = ({
             },
           },
           {
-            label: "Pre Build",
-            description:
-              "Execute a shell command before running docker build. The 'path' is relative to the root of the repo.",
-            components: {
-              pre_build: (value, set) => (
-                <SystemCommand
-                  value={value}
-                  set={(value) => set({ pre_build: value })}
-                  disabled={disabled}
-                />
-              ),
-            },
-          },
-          {
             label: "Build",
             components: {
               build_path: {
@@ -205,111 +183,7 @@ export const BuildConfig = ({
             },
           },
           {
-            label: "Build Args",
-            description:
-              "Pass build args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
-            labelExtra: !disabled && <SecretsSearch />,
-            components: {
-              build_args: (env, set) => (
-                <MonacoEditor
-                  value={env || "  # VARIABLE = value\n"}
-                  onValueChange={(build_args) => set({ build_args })}
-                  language="key_value"
-                  readOnly={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Secret Args",
-            description: (
-              <div className="flex flex-row flex-wrap gap-2">
-                <div>
-                  Pass secrets to 'docker build'. These values remain hidden in
-                  the final image by using docker secret mounts.
-                </div>
-                <Link
-                  to="https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html#structfield.secret_args"
-                  target="_blank"
-                  className="text-primary"
-                >
-                  See docker docs.
-                </Link>
-              </div>
-            ),
-            labelExtra: !disabled && <SecretsSearch />,
-            components: {
-              secret_args: (env, set) => (
-                <MonacoEditor
-                  value={env || "  # VARIABLE = value\n"}
-                  onValueChange={(secret_args) => set({ secret_args })}
-                  language="key_value"
-                  readOnly={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Extra Args",
-            labelHidden: true,
-            components: {
-              extra_args: (value, set) => (
-                <ConfigItem
-                  label="Extra Args"
-                  description={
-                    <div className="flex flex-row flex-wrap gap-2">
-                      <div>Pass extra arguments to 'docker build'.</div>
-                      <Link
-                        to="https://docs.docker.com/reference/cli/docker/buildx/build/"
-                        target="_blank"
-                        className="text-primary"
-                      >
-                        See docker docs.
-                      </Link>
-                    </div>
-                  }
-                >
-                  {!disabled && (
-                    <AddExtraArgMenu
-                      type="Build"
-                      onSelect={(suggestion) =>
-                        set({
-                          extra_args: [
-                            ...(update.extra_args ?? config.extra_args ?? []),
-                            suggestion,
-                          ],
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  )}
-                  <InputList
-                    field="extra_args"
-                    values={value ?? []}
-                    set={set}
-                    disabled={disabled}
-                    placeholder="--extra-arg=value"
-                  />
-                </ConfigItem>
-              ),
-            },
-          },
-          {
-            label: "Labels",
-            description: "Attach --labels to image.",
-            components: {
-              labels: (labels, set) => (
-                <MonacoEditor
-                  value={labels || "  # your.docker.label: value\n"}
-                  language="key_value"
-                  onValueChange={(labels) => set({ labels })}
-                  readOnly={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Git Webhook",
+            label: "Webhook",
             description:
               "Configure your repo provider to send webhooks to Komodo",
             components: {
@@ -427,6 +301,140 @@ export const BuildConfig = ({
                   set={set}
                   disabled={disabled}
                   placeholder="Input link"
+                />
+              ),
+            },
+          },
+        ],
+        advanced: [
+          {
+            label: "Tagging",
+            components: {
+              image_name: {
+                description: "Push the image under a different name",
+                placeholder: "Custom image name",
+              },
+              image_tag: {
+                description: "Postfix the image version with a custom tag.",
+                placeholder: "Custom image tag",
+              },
+            },
+          },
+          {
+            label: "Pre Build",
+            description:
+              "Execute a shell command before running docker build. The 'path' is relative to the root of the repo.",
+            components: {
+              pre_build: (value, set) => (
+                <SystemCommand
+                  value={value}
+                  set={(value) => set({ pre_build: value })}
+                  disabled={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Build Args",
+            description:
+              "Pass build args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
+            labelExtra: !disabled && <SecretsSearch />,
+            components: {
+              build_args: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE = value\n"}
+                  onValueChange={(build_args) => set({ build_args })}
+                  language="key_value"
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Secret Args",
+            description: (
+              <div className="flex flex-row flex-wrap gap-2">
+                <div>
+                  Pass secrets to 'docker build'. These values remain hidden in
+                  the final image by using docker secret mounts.
+                </div>
+                <Link
+                  to="https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html#structfield.secret_args"
+                  target="_blank"
+                  className="text-primary"
+                >
+                  See docker docs.
+                </Link>
+              </div>
+            ),
+            labelExtra: !disabled && <SecretsSearch />,
+            components: {
+              secret_args: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE = value\n"}
+                  onValueChange={(secret_args) => set({ secret_args })}
+                  language="key_value"
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Extra Args",
+            labelHidden: true,
+            components: {
+              extra_args: (value, set) => (
+                <ConfigItem
+                  label="Extra Args"
+                  boldLabel
+                  description={
+                    <div className="flex flex-row flex-wrap gap-2">
+                      <div>Pass extra arguments to 'docker build'.</div>
+                      <Link
+                        to="https://docs.docker.com/reference/cli/docker/buildx/build/"
+                        target="_blank"
+                        className="text-primary"
+                      >
+                        See docker docs.
+                      </Link>
+                    </div>
+                  }
+                >
+                  {!disabled && (
+                    <AddExtraArgMenu
+                      type="Build"
+                      onSelect={(suggestion) =>
+                        set({
+                          extra_args: [
+                            ...(update.extra_args ?? config.extra_args ?? []),
+                            suggestion,
+                          ],
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  )}
+                  <InputList
+                    field="extra_args"
+                    values={value ?? []}
+                    set={set}
+                    disabled={disabled}
+                    placeholder="--extra-arg=value"
+                  />
+                </ConfigItem>
+              ),
+            },
+          },
+          {
+            label: "Labels",
+            description: "Attach --labels to image.",
+            components: {
+              labels: (labels, set) => (
+                <MonacoEditor
+                  value={labels || "  # your.docker.label: value\n"}
+                  language="key_value"
+                  onValueChange={(labels) => set({ labels })}
+                  readOnly={disabled}
                 />
               ),
             },
