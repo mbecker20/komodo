@@ -2,12 +2,10 @@ import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
 import {
-  Factory,
   FolderGit,
   GitBranch,
   Loader2,
   RefreshCcw,
-  Server,
 } from "lucide-react";
 import { RepoConfig } from "./config";
 import { BuildRepo, CloneRepo, PullRepo } from "./actions";
