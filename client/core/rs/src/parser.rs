@@ -34,7 +34,7 @@ pub fn parse_key_value_list(
       };
       // Remove any preceding '"' (from yaml list) (wrapping quotes open)
       let (key, value) = line
-        .split_once(['=', ':', ' '])
+        .split_once(['=', ':'])
         .with_context(|| {
           format!(
             "line {i} missing assignment character ('=' or ':')"
