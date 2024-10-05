@@ -133,12 +133,6 @@ export const DeploymentConfig = ({
                     />
                   </ConfigItem>
                 )),
-            },
-          },
-          {
-            label: "Links",
-            labelHidden: true,
-            components: {
               links: (values, set) => (
                 <ConfigList
                   label="Links"
