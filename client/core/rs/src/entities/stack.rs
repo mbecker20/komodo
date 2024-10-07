@@ -180,7 +180,8 @@ pub type _PartialStackConfig = PartialStackConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct StackConfig {
   /// The server to deploy the stack on.
-  #[serde(default)]
+  #[serde(default, alias = "server")]
+  #[partial_attr(serde(alias = "server"))]
   #[builder(default)]
   pub server_id: String,
 

@@ -98,12 +98,14 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct RepoConfig {
   /// The server to clone the repo on.
-  #[serde(default)]
+  #[serde(default, alias = "server")]
+  #[partial_attr(serde(alias = "server"))]
   #[builder(default)]
   pub server_id: String,
 
   /// Attach a builder to 'build' the repo.
-  #[serde(default)]
+  #[serde(default, alias = "builder")]
+  #[partial_attr(serde(alias = "builder"))]
   #[builder(default)]
   pub builder_id: String,
 

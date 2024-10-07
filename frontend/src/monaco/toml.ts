@@ -44,7 +44,8 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
         /^\s*(\[\[)([^[\]]+)(\]\])/,
         [
           "punctuation.definition.array.table.toml",
-          "support.type.property-name.array.toml",
+          // "support.type.property-name.array.toml",
+          "entity.other.attribute-name.table.array.toml",
           "punctuation.definition.array.table.toml",
         ],
       ],
@@ -52,7 +53,8 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
         /^\s*(\[)([^[\]]+)(\])/,
         [
           "punctuation.definition.table.toml",
-          "support.type.property-name.table.toml",
+          // "support.type.property-name.table.toml",
+          "entity.other.attribute-name.table.toml",
           "punctuation.definition.table.toml",
         ],
       ],
