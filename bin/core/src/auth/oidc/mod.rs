@@ -135,7 +135,9 @@ async fn callback(
       .context("CSRF Token invalid")?;
 
   if komodo_timestamp() > valid_until {
-    return Err(anyhow!("CSRF token invalid (Timed out). The token must be "));
+    return Err(anyhow!(
+      "CSRF token invalid (Timed out). The token must be "
+    ));
   }
 
   let token_response = client
@@ -191,20 +193,25 @@ async fn callback(
       if !no_users_exist && core_config.disable_user_registration {
         return Err(anyhow!("User registration is disabled"));
       }
-      // Email will use user_id if it isn't available.
-      let email = claims
-        .email()
-        .map(|email| email.as_str())
-        .unwrap_or(user_id);
-      let username = if core_config.oidc_use_full_email {
-        email
-      } else {
-        email
-          .split_once('@')
-          .map(|(username, _)| username)
-          .unwrap_or(email)
-      }
-      .to_string();
+      // Will use preferred_username, then email, then user_id if it isn't available.
+      let username = claims
+        .preferred_username()
+        .map(|username| username.to_string())
+        .unwrap_or_else(|| {
+          let email = claims
+            .email()
+            .map(|email| email.as_str())
+            .unwrap_or(user_id);
+          if core_config.oidc_use_full_email {
+            email
+          } else {
+            email
+              .split_once('@')
+              .map(|(username, _)| username)
+              .unwrap_or(email)
+          }
+          .to_string()
+        });
       let user = User {
         id: Default::default(),
         username,
