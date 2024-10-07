@@ -27,9 +27,7 @@ export const Dashboard = () => {
 
   return (
     <>
-      <div className="mb-12">
-        <ActiveResources />
-      </div>
+      <ActiveResources />
       <Page
         title="Dashboard"
         icon={<Box className="w-8 h-8" />}
@@ -253,37 +251,39 @@ const ActiveResources = () => {
   if (resources.length === 0) return null;
 
   return (
-    <Section
-      title="Active"
-      icon={
-        <Circle className="w-4 h-4 stroke-none transition-colors fill-green-500" />
-      }
-    >
-      <DataTable
-        tableKey="active-resources"
-        data={resources}
-        columns={[
-          {
-            accessorKey: "name",
-            header: ({ column }) => (
-              <SortableHeader column={column} title="Name" />
-            ),
-            cell: ({ row }) => (
-              <ResourceLink type={row.original.type} id={row.original.id} />
-            ),
-          },
-          {
-            accessorKey: "type",
-            header: ({ column }) => (
-              <SortableHeader column={column} title="Resource" />
-            ),
-          },
-          {
-            header: "State",
-            cell: ({ row }) => row.original.state,
-          },
-        ]}
-      />
-    </Section>
+    <div className="mb-12">
+      <Section
+        title="Active"
+        icon={
+          <Circle className="w-4 h-4 stroke-none transition-colors fill-green-500" />
+        }
+      >
+        <DataTable
+          tableKey="active-resources"
+          data={resources}
+          columns={[
+            {
+              accessorKey: "name",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Name" />
+              ),
+              cell: ({ row }) => (
+                <ResourceLink type={row.original.type} id={row.original.id} />
+              ),
+            },
+            {
+              accessorKey: "type",
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Resource" />
+              ),
+            },
+            {
+              header: "State",
+              cell: ({ row }) => row.original.state,
+            },
+          ]}
+        />
+      </Section>
+    </div>
   );
 };
