@@ -42,7 +42,10 @@ pub async fn init_default_oidc_client() {
       })?,
       async_http_client,
     )
-    .await?;
+    .await
+    .context(
+      "Failed to get OIDC /.well-known/openid-configuration",
+    )?;
 
     // Create an OpenID Connect client by specifying the client ID, client secret, authorization URL
     // and token URL.
