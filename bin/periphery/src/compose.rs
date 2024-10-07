@@ -5,13 +5,8 @@ use command::run_komodo_command;
 use formatting::format_serror;
 use git::environment;
 use komodo_client::entities::{
-  all_logs_success,
-  build::{ImageRegistry, StandardRegistryConfig},
-  environment_vars_from_str,
-  stack::Stack,
-  to_komodo_name,
-  update::Log,
-  CloneArgs, FileContents,
+  all_logs_success, environment_vars_from_str, stack::Stack,
+  to_komodo_name, update::Log, CloneArgs, FileContents,
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
@@ -126,21 +121,19 @@ pub async fn compose_up(
   if !stack.config.registry_provider.is_empty()
     && !stack.config.registry_account.is_empty()
   {
-    let registry = ImageRegistry::Standard(StandardRegistryConfig {
-      domain: stack.config.registry_provider.clone(),
-      account: stack.config.registry_account.clone(),
-      ..Default::default()
-    });
-    docker_login(&registry, registry_token.as_deref())
-      .await
-      .with_context(|| {
-        format!(
-          "domain: {} | account: {}",
-          stack.config.registry_provider,
-          stack.config.registry_account
-        )
-      })
-      .context("failed to login to image registry")?;
+    docker_login(
+      &stack.config.registry_provider,
+      &stack.config.registry_account,
+      registry_token.as_deref(),
+    )
+    .await
+    .with_context(|| {
+      format!(
+        "domain: {} | account: {}",
+        stack.config.registry_provider, stack.config.registry_account
+      )
+    })
+    .context("failed to login to image registry")?;
   }
 
   let env_file = env_file_path

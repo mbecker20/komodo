@@ -2,7 +2,10 @@ use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use partial_derive2::Partial;
-use serde::{Deserialize, Serialize};
+use serde::{
+  de::{value::MapAccessDeserializer, Visitor},
+  Deserialize, Deserializer, Serialize,
+};
 use strum::Display;
 use typeshare::typeshare;
 
@@ -182,9 +185,13 @@ pub struct BuildConfig {
   pub pre_build: SystemCommand,
 
   /// Configuration for the registry to push the built image to.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "image_registry_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_image_registry_deserializer"
+  ))]
   #[builder(default)]
-  pub image_registry: ImageRegistry,
+  pub image_registry: ImageRegistryConfig,
 
   /// The path of the docker build context relative to the root of the repo.
   /// Default: "." (the root of the repo).
@@ -250,10 +257,7 @@ pub struct BuildConfig {
   pub secret_args: String,
 
   /// Docker labels
-  #[serde(
-    default,
-    deserialize_with = "super::labels_deserializer"
-  )]
+  #[serde(default, deserialize_with = "super::labels_deserializer")]
   #[partial_attr(serde(
     default,
     deserialize_with = "super::option_labels_deserializer"
@@ -327,31 +331,15 @@ impl Default for BuildConfig {
   }
 }
 
-/// Configuration for the registry to push the built image to.
-#[typeshare]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type", content = "params")]
-pub enum ImageRegistry {
-  /// Don't push the image to any registry
-  None(NoData),
-  /// Push the image to a standard image registry (any domain)
-  Standard(StandardRegistryConfig),
-}
-
-impl Default for ImageRegistry {
-  fn default() -> Self {
-    Self::None(NoData {})
-  }
-}
-
-/// Configuration for a standard image registry
+/// Configuration for an image registry
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
-pub struct StandardRegistryConfig {
-  /// Specify the registry provider domain. Default: `docker.io`
-  #[serde(default = "default_registry_domain")]
+pub struct ImageRegistryConfig {
+  /// Specify the registry provider domain, eg `docker.io`.
+  /// If not provided, will not push to any registry.
+  #[serde(default)]
   pub domain: String,
 
   /// Specify an account to use with the registry.
@@ -364,8 +352,120 @@ pub struct StandardRegistryConfig {
   pub organization: String,
 }
 
-fn default_registry_domain() -> String {
-  String::from("docker.io")
+pub fn image_registry_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<ImageRegistryConfig, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(ImageRegistryVisitor)
+}
+
+pub fn option_image_registry_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Option<ImageRegistryConfig>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(OptionImageRegistryVisitor)
+}
+
+struct ImageRegistryVisitor;
+
+impl<'de> Visitor<'de> for ImageRegistryVisitor {
+  type Value = ImageRegistryConfig;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "{{ \"domain\": string, \"account\": string, \"organization\": string }}")
+  }
+
+  fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::MapAccess<'de>,
+  {
+    // Need to use Value intermediate to get something cloneable.
+    let value = serde_json::Value::deserialize(
+      MapAccessDeserializer::new(map),
+    )?;
+    // 1.14 and before: try to use ImageRegistry1_14 syntax
+    if let Ok(config) =
+      serde_json::from_value::<ImageRegistryLegacy1_14>(value.clone())
+    {
+      return Ok(config.into());
+    }
+    serde_json::from_value(value).map_err(serde::de::Error::custom)
+  }
+}
+
+struct OptionImageRegistryVisitor;
+
+impl<'de> Visitor<'de> for OptionImageRegistryVisitor {
+  type Value = Option<ImageRegistryConfig>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "null or {{ \"domain\": string, \"account\": string, \"organization\": string }}")
+  }
+
+  fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::MapAccess<'de>,
+  {
+    ImageRegistryVisitor.visit_map(map).map(Some)
+  }
+
+  fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+}
+
+/// Configuration for the registry to push the built image to.
+#[typeshare]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", content = "params")]
+pub enum ImageRegistryLegacy1_14 {
+  /// Don't push the image to any registry
+  None(NoData),
+  /// Push the image to a standard image registry (any domain)
+  Standard(ImageRegistryConfig),
+}
+
+impl Default for ImageRegistryLegacy1_14 {
+  fn default() -> Self {
+    Self::None(NoData {})
+  }
+}
+
+impl From<ImageRegistryLegacy1_14> for ImageRegistryConfig {
+  fn from(value: ImageRegistryLegacy1_14) -> Self {
+    match value {
+      ImageRegistryLegacy1_14::None(_) => {
+        ImageRegistryConfig::default()
+      }
+      ImageRegistryLegacy1_14::Standard(mut config) => {
+        // This version had domain defaulted to docker.io
+        if config.domain.is_empty() {
+          config.domain = String::from("docker.io");
+        }
+        config
+      }
+    }
+  }
 }
 
 #[typeshare]

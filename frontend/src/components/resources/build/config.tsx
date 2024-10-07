@@ -161,6 +161,7 @@ export const BuildConfig = ({
           },
           {
             label: "Build",
+            labelHidden: true,
             components: {
               build_path: {
                 placeholder: ".",
@@ -172,6 +173,12 @@ export const BuildConfig = ({
                 description:
                   "The path to the dockerfile, relative to the build path.",
               },
+            },
+          },
+          {
+            label: "Registry",
+            labelHidden: true,
+            components: {
               image_registry: (registry, set) => (
                 <ImageRegistryConfig
                   registry={registry}

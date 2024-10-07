@@ -30,10 +30,7 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
-import {
-  ConfirmButton,
-  ShowHideButton,
-} from "@components/util";
+import { ConfirmButton, ShowHideButton } from "@components/util";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   Command,
@@ -817,47 +814,23 @@ export const AddExtraArgMenu = ({
 const IMAGE_REGISTRY_DESCRIPTION = "Configure where the built image is pushed.";
 
 export const ImageRegistryConfig = ({
-  registry: _registry,
+  registry,
   setRegistry,
   disabled,
   resource_id,
-  registry_types,
 }: {
-  registry: Types.ImageRegistry | undefined;
-  setRegistry: (registry: Types.ImageRegistry) => void;
+  registry: Types.ImageRegistryConfig | undefined;
+  setRegistry: (registry: Types.ImageRegistryConfig) => void;
   disabled: boolean;
   // For builds, its builder id. For servers, its server id.
   resource_id?: string;
-  registry_types?: Types.ImageRegistry["type"][];
 }) => {
-  const registry = _registry ?? default_registry_config("None");
-
   // This is the only way to get organizations for now
   const config_provider = useRead("ListDockerRegistriesFromConfig", {
     target: resource_id ? { type: "Builder", id: resource_id } : undefined,
   }).data?.find((provider) => {
-    if (registry.type === "Standard") {
-      return provider.domain === registry.params.domain;
-    } else {
-      return false;
-    }
+    return provider.domain === registry?.domain;
   });
-
-  if (registry.type === "None") {
-    return (
-      <ConfigItem
-        label="Image Registry"
-        description={IMAGE_REGISTRY_DESCRIPTION}
-      >
-        <RegistryTypeSelector
-          registry={registry}
-          setRegistry={setRegistry}
-          disabled={disabled}
-          registry_types={registry_types}
-        />
-      </ConfigItem>
-    );
-  }
 
   const organizations = config_provider?.organizations ?? [];
 
@@ -865,26 +838,21 @@ export const ImageRegistryConfig = ({
     <>
       <ConfigItem
         label="Image Registry"
+        boldLabel
         description={IMAGE_REGISTRY_DESCRIPTION}
       >
         <div className="flex items-center justify-stretch gap-4">
           <ProviderSelector
             disabled={disabled}
             account_type="docker"
-            selected={registry.params?.domain}
+            selected={registry?.domain}
             onSelect={(domain) =>
               setRegistry({
                 ...registry,
-                params: { ...registry.params, domain },
+                domain,
               })
             }
             showCustom={false}
-          />
-          <RegistryTypeSelector
-            registry={registry}
-            setRegistry={setRegistry}
-            disabled={disabled}
-            registry_types={registry_types}
           />
         </div>
       </ConfigItem>
@@ -895,77 +863,39 @@ export const ImageRegistryConfig = ({
         >
           <OrganizationSelector
             organizations={organizations}
-            selected={registry.params?.organization!}
+            selected={registry?.organization!}
             set={(organization) =>
               setRegistry({
                 ...registry,
-                params: { ...registry.params, organization },
+                organization,
               })
             }
             disabled={disabled}
           />
         </ConfigItem>
       )}
-      <ConfigItem
-        label="Account"
-        description="Select the account used to authenticate against the registry."
-      >
-        <AccountSelector
-          id={resource_id}
-          type="Builder"
-          account_type="docker"
-          provider={registry.params.domain!}
-          selected={registry.params.account}
-          onSelect={(account) =>
-            setRegistry({
-              ...registry,
-              params: { ...registry.params, account },
-            })
-          }
-          disabled={disabled}
-        />
-      </ConfigItem>
+      {registry && (
+        <ConfigItem
+          label="Account"
+          description="Select the account used to authenticate against the registry."
+        >
+          <AccountSelector
+            id={resource_id}
+            type="Builder"
+            account_type="docker"
+            provider={registry.domain!}
+            selected={registry.account}
+            onSelect={(account) =>
+              setRegistry({
+                ...registry,
+                account,
+              })
+            }
+            disabled={disabled}
+          />
+        </ConfigItem>
+      )}
     </>
-  );
-};
-
-const REGISTRY_TYPES: Types.ImageRegistry["type"][] = ["None", "Standard"];
-
-const RegistryTypeSelector = ({
-  registry,
-  setRegistry,
-  registry_types = REGISTRY_TYPES,
-  disabled,
-}: {
-  registry: Types.ImageRegistry;
-  setRegistry: (registry: Types.ImageRegistry) => void;
-  registry_types?: Types.ImageRegistry["type"][];
-  disabled: boolean;
-}) => {
-  return (
-    <Select
-      value={registry.type}
-      onValueChange={(type: Types.ImageRegistry["type"]) => {
-        setRegistry(default_registry_config(type));
-      }}
-      disabled={disabled}
-    >
-      <SelectTrigger
-        className="w-full lg:w-[200px] max-w-[50%]"
-        disabled={disabled}
-      >
-        <SelectValue placeholder="Select Registry" />
-      </SelectTrigger>
-      <SelectContent align="end">
-        {registry_types.map((type) => {
-          return (
-            <SelectItem key={type} value={type}>
-              {type}
-            </SelectItem>
-          );
-        })}
-      </SelectContent>
-    </Select>
   );
 };
 
@@ -1039,20 +969,6 @@ const OrganizationSelector = ({
       </SelectContent>
     </Select>
   );
-};
-
-const default_registry_config = (
-  type: Types.ImageRegistry["type"]
-): Types.ImageRegistry => {
-  switch (type) {
-    case "None":
-      return { type, params: {} };
-    case "Standard":
-      return {
-        type,
-        params: { domain: "docker.io", account: "", organization: "" },
-      };
-  }
 };
 
 export const SecretSelector = ({

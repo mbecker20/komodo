@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
-use build::StandardRegistryConfig;
+use build::ImageRegistryConfig;
 use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use derive_variants::{EnumVariants, ExtractVariant};
@@ -130,7 +130,12 @@ pub fn get_image_name(
     config:
       build::BuildConfig {
         image_name,
-        image_registry,
+        image_registry:
+          ImageRegistryConfig {
+            domain,
+            account,
+            organization,
+          },
         ..
       },
     ..
@@ -141,22 +146,19 @@ pub fn get_image_name(
   } else {
     to_komodo_name(image_name)
   };
-  let name = match image_registry {
-    build::ImageRegistry::None(_) => name,
-    build::ImageRegistry::Standard(StandardRegistryConfig {
-      domain,
-      account,
-      organization,
-    }) => {
-      if !organization.is_empty() {
-        let org = organization.to_lowercase();
-        format!("{domain}/{org}/{name}")
-      } else if !account.is_empty() {
-        format!("{domain}/{account}/{name}")
-      } else {
-        name
-      }
+  let name = match (
+    !domain.is_empty(),
+    !organization.is_empty(),
+    !account.is_empty(),
+  ) {
+    // If organization and account provided, name under organization.
+    (true, true, true) => {
+      format!("{domain}/{}/{name}", organization.to_lowercase())
     }
+    // Just domain / account provided
+    (true, false, true) => format!("{domain}/{account}/{name}"),
+    // Otherwise, just use name
+    _ => name,
   };
   Ok(name)
 }
@@ -1042,16 +1044,16 @@ pub enum TerminationSignal {
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {
   System(String),
-  Build(String),
-  Builder(String),
-  Deployment(String),
   Server(String),
+  Stack(String),
+  Deployment(String),
+  Build(String),
   Repo(String),
-  Alerter(String),
   Procedure(String),
+  Builder(String),
+  Alerter(String),
   ServerTemplate(String),
   ResourceSync(String),
-  Stack(String),
 }
 
 impl ResourceTarget {
@@ -1060,16 +1062,16 @@ impl ResourceTarget {
   ) -> (ResourceTargetVariant, &String) {
     let id = match &self {
       ResourceTarget::System(id) => id,
+      ResourceTarget::Server(id) => id,
+      ResourceTarget::Stack(id) => id,
       ResourceTarget::Build(id) => id,
       ResourceTarget::Builder(id) => id,
       ResourceTarget::Deployment(id) => id,
-      ResourceTarget::Server(id) => id,
       ResourceTarget::Repo(id) => id,
       ResourceTarget::Alerter(id) => id,
       ResourceTarget::Procedure(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
       ResourceTarget::ResourceSync(id) => id,
-      ResourceTarget::Stack(id) => id,
     };
     (self.extract_variant(), id)
   }
@@ -1142,6 +1144,25 @@ impl From<&sync::ResourceSync> for ResourceTarget {
 impl From<&stack::Stack> for ResourceTarget {
   fn from(resource_sync: &stack::Stack) -> Self {
     Self::Stack(resource_sync.id.clone())
+  }
+}
+
+impl ResourceTargetVariant {
+  /// These need to use snake case
+  pub fn toml_header(&self) -> &'static str {
+    match self {
+      ResourceTargetVariant::System => "system",
+      ResourceTargetVariant::Build => "build",
+      ResourceTargetVariant::Builder => "builder",
+      ResourceTargetVariant::Deployment => "deployment",
+      ResourceTargetVariant::Server => "server",
+      ResourceTargetVariant::Repo => "repo",
+      ResourceTargetVariant::Alerter => "alerter",
+      ResourceTargetVariant::Procedure => "procedure",
+      ResourceTargetVariant::ServerTemplate => "server_template",
+      ResourceTargetVariant::ResourceSync => "resource_sync",
+      ResourceTargetVariant::Stack => "stack",
+    }
   }
 }
 

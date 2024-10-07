@@ -2,14 +2,13 @@ use anyhow::Context;
 use command::run_komodo_command;
 use formatting::format_serror;
 use komodo_client::entities::{
-  build::{ImageRegistry, StandardRegistryConfig},
   deployment::{
     conversions_from_str, extract_registry_domain, Conversion,
     Deployment, DeploymentConfig, DeploymentImage, RestartMode,
   },
   environment_vars_from_str, to_komodo_name,
   update::Log,
-  EnvironmentVar, NoData,
+  EnvironmentVar,
 };
 use periphery_client::api::container::{Deploy, RemoveContainer};
 use resolver_api::Resolve;
@@ -54,19 +53,12 @@ impl Resolve<Deploy> for State {
       ));
     };
 
-    let image_registry =
-      if deployment.config.image_registry_account.is_empty() {
-        ImageRegistry::None(NoData {})
-      } else {
-        ImageRegistry::Standard(StandardRegistryConfig {
-          account: deployment.config.image_registry_account.clone(),
-          domain: extract_registry_domain(image)?,
-          ..Default::default()
-        })
-      };
-
-    if let Err(e) =
-      docker_login(&image_registry, registry_token.as_deref()).await
+    if let Err(e) = docker_login(
+      &extract_registry_domain(image)?,
+      &deployment.config.image_registry_account,
+      registry_token.as_deref(),
+    )
+    .await
     {
       return Ok(Log::error(
         "docker login",

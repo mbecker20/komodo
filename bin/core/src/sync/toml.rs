@@ -44,9 +44,9 @@ pub trait ToToml: KomodoResource {
 
   fn edit_config_object(
     _resource: &ResourceToml<Self::PartialConfig>,
-    _config: &mut serde_json::Map<String, serde_json::Value>,
-  ) -> anyhow::Result<()> {
-    Ok(())
+    config: OrderedHashMap<String, serde_json::Value>,
+  ) -> anyhow::Result<OrderedHashMap<String, serde_json::Value>> {
+    Ok(config)
   }
 
   fn push_additional(
@@ -61,19 +61,16 @@ pub trait ToToml: KomodoResource {
   ) -> anyhow::Result<()> {
     resource.config =
       Self::Config::default().minimize_partial(resource.config);
+
     let mut resource_map: OrderedHashMap<String, serde_json::Value> =
       serde_json::from_str(&serde_json::to_string(&resource)?)?;
+    resource_map.remove("config");
 
-    // Remove config from top level resource, leaving only top level metadata.
-    let mut config = resource_map
-      .remove("config")
-      .context("resource has no config?")?;
+    let config = serde_json::from_str(&serde_json::to_string(
+      &resource.config,
+    )?)?;
 
-    let config = config
-      .as_object_mut()
-      .context("resource config is not object?")?;
-
-    Self::edit_config_object(&resource, config)?;
+    let config = Self::edit_config_object(&resource, config)?;
 
     toml.push_str(
       &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
@@ -86,7 +83,7 @@ pub trait ToToml: KomodoResource {
     ));
 
     toml.push_str(
-      &toml_pretty::to_string(config, TOML_PRETTY_OPTIONS)
+      &toml_pretty::to_string(&config, TOML_PRETTY_OPTIONS)
         .context("failed to serialize resource config to toml")?,
     );
 
@@ -174,6 +171,22 @@ impl ToToml for Stack {
         .unwrap_or(&String::new()),
     );
   }
+
+  fn edit_config_object(
+    _resource: &ResourceToml<Self::PartialConfig>,
+    config: OrderedHashMap<String, serde_json::Value>,
+  ) -> anyhow::Result<OrderedHashMap<String, serde_json::Value>> {
+    config
+      .into_iter()
+      .map(|(key, value)| {
+        match key.as_str() {
+          "server_id" => return Ok((String::from("server"), value)),
+          _ => {}
+        }
+        Ok((key, value))
+      })
+      .collect()
+  }
 }
 
 impl ToToml for Deployment {
@@ -203,28 +216,40 @@ impl ToToml for Deployment {
 
   fn edit_config_object(
     resource: &ResourceToml<Self::PartialConfig>,
-    config: &mut serde_json::Map<String, serde_json::Value>,
-  ) -> anyhow::Result<()> {
-    if let Some(DeploymentImage::Build { version, .. }) =
-      &resource.config.image
-    {
-      let image = config
-        .get_mut("image")
-        .context("deployment has no image")?
-        .get_mut("params")
-        .context("deployment image has no params")?
-        .as_object_mut()
-        .context("deployment image params is not object")?;
-      if version.is_none() {
-        image.remove("version");
-      } else {
-        image.insert(
-          "version".to_string(),
-          serde_json::Value::String(version.to_string()),
-        );
-      }
-    }
-    Ok(())
+    config: OrderedHashMap<String, serde_json::Value>,
+  ) -> anyhow::Result<OrderedHashMap<String, serde_json::Value>> {
+    config
+      .into_iter()
+      .map(|(key, mut value)| {
+        match key.as_str() {
+          "server_id" => return Ok((String::from("server"), value)),
+          "image" => {
+            if let Some(DeploymentImage::Build { version, .. }) =
+              &resource.config.image
+            {
+              let image = value
+                .get_mut("params")
+                .context("deployment image has no params")?
+                .as_object_mut()
+                .context("deployment image params is not object")?;
+              if let Some(build) = image.remove("build_id") {
+                image.insert(String::from("build"), build);
+              }
+              if version.is_none() {
+                image.remove("version");
+              } else {
+                image.insert(
+                  "version".to_string(),
+                  serde_json::Value::String(version.to_string()),
+                );
+              }
+            }
+          }
+          _ => {}
+        }
+        Ok((key, value))
+      })
+      .collect()
   }
 }
 
@@ -244,25 +269,32 @@ impl ToToml for Build {
 
   fn edit_config_object(
     resource: &ResourceToml<Self::PartialConfig>,
-    config: &mut serde_json::Map<String, serde_json::Value>,
-  ) -> anyhow::Result<()> {
-    match (
-      &resource.config.version,
-      resource.config.auto_increment_version,
-    ) {
-      (None, _) => {}
-      (_, Some(true)) | (_, None) => {
-        // The toml shouldn't have a version attached if auto incrementing.
-        config.remove("version");
-      }
-      (Some(version), _) => {
-        config.insert(
-          "version".to_string(),
-          serde_json::Value::String(version.to_string()),
-        );
-      }
-    }
-    Ok(())
+    config: OrderedHashMap<String, serde_json::Value>,
+  ) -> anyhow::Result<OrderedHashMap<String, serde_json::Value>> {
+    config
+      .into_iter()
+      .map(|(key, value)| match key.as_str() {
+        "builder_id" => return Ok((String::from("builder"), value)),
+        "version" => {
+          match (
+            &resource.config.version,
+            resource.config.auto_increment_version,
+          ) {
+            (None, _) => Ok((key, value)),
+            (_, Some(true)) | (_, None) => {
+              // The toml shouldn't have a version attached if auto incrementing.
+              // Empty string will be filtered out in final toml.
+              Ok((key, serde_json::Value::String(String::new())))
+            }
+            (Some(version), _) => Ok((
+              key,
+              serde_json::Value::String(version.to_string()),
+            )),
+          }
+        }
+        _ => Ok((key, value)),
+      })
+      .collect()
   }
 }
 
@@ -285,6 +317,25 @@ impl ToToml for Repo {
         .map(|s| &s.name)
         .unwrap_or(&String::new()),
     );
+  }
+
+  fn edit_config_object(
+    _resource: &ResourceToml<Self::PartialConfig>,
+    config: OrderedHashMap<String, serde_json::Value>,
+  ) -> anyhow::Result<OrderedHashMap<String, serde_json::Value>> {
+    config
+      .into_iter()
+      .map(|(key, value)| {
+        match key.as_str() {
+          "server_id" => return Ok((String::from("server"), value)),
+          "builder_id" => {
+            return Ok((String::from("builder"), value))
+          }
+          _ => {}
+        }
+        Ok((key, value))
+      })
+      .collect()
   }
 }
 

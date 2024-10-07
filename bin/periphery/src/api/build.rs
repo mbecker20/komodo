@@ -55,21 +55,24 @@ impl Resolve<build::Build> for State {
     let mut logs = Vec::new();
 
     // Maybe docker login
-    let should_push =
-      match docker_login(image_registry, registry_token.as_deref())
-        .await
-      {
-        Ok(should_push) => should_push,
-        Err(e) => {
-          logs.push(Log::error(
-            "docker login",
-            format_serror(
-              &e.context("failed to login to docker registry").into(),
-            ),
-          ));
-          return Ok(logs);
-        }
-      };
+    let should_push = match docker_login(
+      &image_registry.domain,
+      &image_registry.account,
+      registry_token.as_deref(),
+    )
+    .await
+    {
+      Ok(should_push) => should_push,
+      Err(e) => {
+        logs.push(Log::error(
+          "docker login",
+          format_serror(
+            &e.context("failed to login to docker registry").into(),
+          ),
+        ));
+        return Ok(logs);
+      }
+    };
 
     let name = to_komodo_name(name);
 

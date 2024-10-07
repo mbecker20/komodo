@@ -210,9 +210,9 @@ export const StackConfig = ({
         links: (values, set) => (
           <ConfigList
             label="Links"
+            boldLabel
             addLabel="Add Link"
             description="Add quick links in the resource header"
-            boldLabel
             field="links"
             values={values ?? []}
             set={set}
@@ -672,7 +672,6 @@ export const StackConfig = ({
         server_component,
         {
           label: "Compose File",
-          boldLabel: false,
           description: "Manage the compose file contents here.",
           actions: (
             <ShowHideButton

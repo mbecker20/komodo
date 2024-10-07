@@ -8,7 +8,6 @@ use bollard::{
 };
 use command::run_komodo_command;
 use komodo_client::entities::{
-  build::{ImageRegistry, StandardRegistryConfig},
   docker::{
     container::*, image::*, network::*, volume::*, ContainerConfig,
     GraphDriverData, HealthConfig, PortBinding,
@@ -906,21 +905,13 @@ impl DockerClient {
 /// Returns whether build result should be pushed after build
 #[instrument(skip(registry_token))]
 pub async fn docker_login(
-  registry: &ImageRegistry,
+  domain: &str,
+  account: &str,
   // For local token override from core.
   registry_token: Option<&str>,
 ) -> anyhow::Result<bool> {
-  let (domain, account) = match registry {
-    // Early return for no login
-    ImageRegistry::None(_) => return Ok(false),
-    ImageRegistry::Standard(StandardRegistryConfig {
-      domain,
-      account,
-      ..
-    }) => (domain.as_str(), account),
-  };
-  if account.is_empty() {
-    return Err(anyhow!("Must configure account for registry domain {domain}, got empty string"));
+  if domain.is_empty() || account.is_empty() {
+    return Ok(false);
   }
   let registry_token = match registry_token {
     Some(token) => token,

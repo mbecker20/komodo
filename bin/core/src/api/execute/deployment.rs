@@ -5,7 +5,7 @@ use formatting::format_serror;
 use komodo_client::{
   api::execute::*,
   entities::{
-    build::{Build, ImageRegistry},
+    build::{Build, ImageRegistryConfig},
     deployment::{
       extract_registry_domain, Deployment, DeploymentImage,
     },
@@ -120,26 +120,27 @@ impl Resolve<Deploy, (User, Update)> for State {
         deployment.config.image = DeploymentImage::Image {
           image: format!("{image_name}:{version_str}"),
         };
-        match build.config.image_registry {
-          ImageRegistry::None(_) => (version, None),
-          ImageRegistry::Standard(params) => {
-            if deployment.config.image_registry_account.is_empty() {
-              deployment.config.image_registry_account =
-                params.account
-            }
-            let token = if !deployment
-              .config
-              .image_registry_account
-              .is_empty()
-            {
-              registry_token(&params.domain, &deployment.config.image_registry_account).await.with_context(
-                || format!("Failed to get git token in call to db. Stopping run. | {} | {}", params.domain, deployment.config.image_registry_account),
-              )?
-            } else {
-              None
-            };
-            (version, token)
+        if build.config.image_registry.domain.is_empty() {
+          (version, None)
+        } else {
+          let ImageRegistryConfig {
+            domain, account, ..
+          } = build.config.image_registry;
+          if deployment.config.image_registry_account.is_empty() {
+            deployment.config.image_registry_account = account
           }
+          let token = if !deployment
+            .config
+            .image_registry_account
+            .is_empty()
+          {
+            registry_token(&domain, &deployment.config.image_registry_account).await.with_context(
+              || format!("Failed to get git token in call to db. Stopping run. | {domain} | {}", deployment.config.image_registry_account),
+            )?
+          } else {
+            None
+          };
+          (version, token)
         }
       }
       DeploymentImage::Image { image } => {

@@ -107,16 +107,16 @@ export enum SeverityLevel {
 /** Used to reference a specific resource across all resource types */
 export type ResourceTarget = 
 	| { type: "System", id: string }
-	| { type: "Build", id: string }
-	| { type: "Builder", id: string }
-	| { type: "Deployment", id: string }
 	| { type: "Server", id: string }
+	| { type: "Stack", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Build", id: string }
 	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string }
 	| { type: "Procedure", id: string }
+	| { type: "Builder", id: string }
+	| { type: "Alerter", id: string }
 	| { type: "ServerTemplate", id: string }
-	| { type: "ResourceSync", id: string }
-	| { type: "Stack", id: string };
+	| { type: "ResourceSync", id: string };
 
 /** The variants of data related to the alert. */
 export type AlertData = 
@@ -359,12 +359,21 @@ export interface SystemCommand {
 	command?: string;
 }
 
-/** Configuration for the registry to push the built image to. */
-export type ImageRegistry = 
-	/** Don't push the image to any registry */
-	| { type: "None", params: NoData }
-	/** Push the image to a standard image registry (any domain) */
-	| { type: "Standard", params: StandardRegistryConfig };
+/** Configuration for an image registry */
+export interface ImageRegistryConfig {
+	/**
+	 * Specify the registry provider domain, eg `docker.io`.
+	 * If not provided, will not push to any registry.
+	 */
+	domain?: string;
+	/** Specify an account to use with the registry. */
+	account?: string;
+	/**
+	 * Optional. Specify an organization to push the image under.
+	 * Empty string means no organization.
+	 */
+	organization?: string;
+}
 
 /** The build configuration. */
 export interface BuildConfig {
@@ -430,7 +439,7 @@ export interface BuildConfig {
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
 	/** Configuration for the registry to push the built image to. */
-	image_registry?: ImageRegistry;
+	image_registry?: ImageRegistryConfig;
 	/**
 	 * The path of the docker build context relative to the root of the repo.
 	 * Default: "." (the root of the repo).
@@ -2812,48 +2821,6 @@ export enum Operation {
 	PruneDockerBuilders = "PruneDockerBuilders",
 	PruneBuildx = "PruneBuildx",
 	PruneSystem = "PruneSystem",
-	CreateBuild = "CreateBuild",
-	UpdateBuild = "UpdateBuild",
-	DeleteBuild = "DeleteBuild",
-	RunBuild = "RunBuild",
-	CancelBuild = "CancelBuild",
-	CreateBuilder = "CreateBuilder",
-	UpdateBuilder = "UpdateBuilder",
-	DeleteBuilder = "DeleteBuilder",
-	CreateDeployment = "CreateDeployment",
-	UpdateDeployment = "UpdateDeployment",
-	DeleteDeployment = "DeleteDeployment",
-	Deploy = "Deploy",
-	StartDeployment = "StartDeployment",
-	RestartDeployment = "RestartDeployment",
-	PauseDeployment = "PauseDeployment",
-	UnpauseDeployment = "UnpauseDeployment",
-	StopDeployment = "StopDeployment",
-	DestroyDeployment = "DestroyDeployment",
-	RenameDeployment = "RenameDeployment",
-	CreateRepo = "CreateRepo",
-	UpdateRepo = "UpdateRepo",
-	DeleteRepo = "DeleteRepo",
-	CloneRepo = "CloneRepo",
-	PullRepo = "PullRepo",
-	BuildRepo = "BuildRepo",
-	CancelRepoBuild = "CancelRepoBuild",
-	CreateAlerter = "CreateAlerter",
-	UpdateAlerter = "UpdateAlerter",
-	DeleteAlerter = "DeleteAlerter",
-	CreateProcedure = "CreateProcedure",
-	UpdateProcedure = "UpdateProcedure",
-	DeleteProcedure = "DeleteProcedure",
-	RunProcedure = "RunProcedure",
-	CreateServerTemplate = "CreateServerTemplate",
-	UpdateServerTemplate = "UpdateServerTemplate",
-	DeleteServerTemplate = "DeleteServerTemplate",
-	LaunchServer = "LaunchServer",
-	CreateResourceSync = "CreateResourceSync",
-	UpdateResourceSync = "UpdateResourceSync",
-	DeleteResourceSync = "DeleteResourceSync",
-	CommitSync = "CommitSync",
-	RunSync = "RunSync",
 	CreateStack = "CreateStack",
 	UpdateStack = "UpdateStack",
 	RenameStack = "RenameStack",
@@ -2872,6 +2839,48 @@ export enum Operation {
 	PauseStackService = "PauseStackService",
 	UnpauseStackService = "UnpauseStackService",
 	StopStackService = "StopStackService",
+	CreateDeployment = "CreateDeployment",
+	UpdateDeployment = "UpdateDeployment",
+	DeleteDeployment = "DeleteDeployment",
+	Deploy = "Deploy",
+	StartDeployment = "StartDeployment",
+	RestartDeployment = "RestartDeployment",
+	PauseDeployment = "PauseDeployment",
+	UnpauseDeployment = "UnpauseDeployment",
+	StopDeployment = "StopDeployment",
+	DestroyDeployment = "DestroyDeployment",
+	RenameDeployment = "RenameDeployment",
+	CreateBuild = "CreateBuild",
+	UpdateBuild = "UpdateBuild",
+	DeleteBuild = "DeleteBuild",
+	RunBuild = "RunBuild",
+	CancelBuild = "CancelBuild",
+	CreateRepo = "CreateRepo",
+	UpdateRepo = "UpdateRepo",
+	DeleteRepo = "DeleteRepo",
+	CloneRepo = "CloneRepo",
+	PullRepo = "PullRepo",
+	BuildRepo = "BuildRepo",
+	CancelRepoBuild = "CancelRepoBuild",
+	CreateProcedure = "CreateProcedure",
+	UpdateProcedure = "UpdateProcedure",
+	DeleteProcedure = "DeleteProcedure",
+	RunProcedure = "RunProcedure",
+	CreateBuilder = "CreateBuilder",
+	UpdateBuilder = "UpdateBuilder",
+	DeleteBuilder = "DeleteBuilder",
+	CreateAlerter = "CreateAlerter",
+	UpdateAlerter = "UpdateAlerter",
+	DeleteAlerter = "DeleteAlerter",
+	CreateServerTemplate = "CreateServerTemplate",
+	UpdateServerTemplate = "UpdateServerTemplate",
+	DeleteServerTemplate = "DeleteServerTemplate",
+	LaunchServer = "LaunchServer",
+	CreateResourceSync = "CreateResourceSync",
+	UpdateResourceSync = "UpdateResourceSync",
+	DeleteResourceSync = "DeleteResourceSync",
+	CommitSync = "CommitSync",
+	RunSync = "RunSync",
 	CreateVariable = "CreateVariable",
 	UpdateVariableValue = "UpdateVariableValue",
 	DeleteVariable = "DeleteVariable",
@@ -6170,19 +6179,6 @@ export interface DiscordAlerterEndpoint {
 	url: string;
 }
 
-/** Configuration for a standard image registry */
-export interface StandardRegistryConfig {
-	/** Specify the registry provider domain. Default: `docker.io` */
-	domain: string;
-	/** Specify an account to use with the registry. */
-	account?: string;
-	/**
-	 * Optional. Specify an organization to push the image under.
-	 * Empty string means no organization.
-	 */
-	organization?: string;
-}
-
 /** Configuration for a Komodo Server Builder. */
 export interface ServerBuilderConfig {
 	/** The server id of the builder */
@@ -6762,6 +6758,13 @@ export type WriteRequest =
 	| { type: "CreateDockerRegistryAccount", params: CreateDockerRegistryAccount }
 	| { type: "UpdateDockerRegistryAccount", params: UpdateDockerRegistryAccount }
 	| { type: "DeleteDockerRegistryAccount", params: DeleteDockerRegistryAccount };
+
+/** Configuration for the registry to push the built image to. */
+export type ImageRegistryLegacy1_14 = 
+	/** Don't push the image to any registry */
+	| { type: "None", params: NoData }
+	/** Push the image to a standard image registry (any domain) */
+	| { type: "Standard", params: ImageRegistryConfig };
 
 export type WsLoginMessage = 
 	| { type: "Jwt", params: {

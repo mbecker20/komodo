@@ -8,7 +8,7 @@ use komodo_client::{
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
     all_logs_success,
-    build::{Build, ImageRegistry, StandardRegistryConfig},
+    build::{Build, BuildConfig, ImageRegistryConfig},
     builder::{Builder, BuilderConfig},
     deployment::DeploymentState,
     komodo_timestamp,
@@ -598,18 +598,21 @@ async fn handle_post_build_redeploy(build_id: &str) {
 /// and will check the core config for a token matching requirements.
 /// Otherwise it is left to periphery.
 async fn validate_account_extract_registry_token(
-  build: &Build,
+  Build {
+    config:
+      BuildConfig {
+        image_registry:
+          ImageRegistryConfig {
+            domain, account, ..
+          },
+        ..
+      },
+    ..
+  }: &Build,
 ) -> anyhow::Result<Option<String>> {
-  let (domain, account) = match &build.config.image_registry {
-    // Early return for None
-    ImageRegistry::None(_) => return Ok(None),
-    ImageRegistry::Standard(StandardRegistryConfig {
-      domain,
-      account,
-      ..
-    }) => (domain.as_str(), account),
-  };
-
+  if domain.is_empty() {
+    return Ok(None);
+  }
   if account.is_empty() {
     return Err(anyhow!(
       "Must attach account to use registry provider {domain}"
