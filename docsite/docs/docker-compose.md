@@ -6,16 +6,14 @@ Komodo can deploy docker compose projects through the `Stack` resource.
 
 Komodo supports 3 ways of defining the compose files:
 	1. **Write them in the UI**, and Komodo will write them to your host at deploy-time.
-	2. **Store them in a git repo**, and have Komodo clone it on the host to deploy.
-	3. **Store the files anywhere on the host**, and Komodo will just run the compose commands on the existing files.
-
-The recommended way to deploy Stacks is using compose files located in a git repo.
+	2. **Store the files anywhere on the host**, and Komodo will just run the compose commands on the existing files.
+	3. **Store them in a git repo**, and have Komodo clone it on the host to deploy.
 
 If you manage your compose files in git repos:
 
 - All your files, across all servers, are available locally to edit in your favorite text editor.
 - All of your changes are tracked, and can be reverted.
-- You can use the git webhooks to do other automations when you change the compose file contents. Redeploying will be as easy as just `git push`.
+- You can use the git webhooks to do other automations when you change the compose file contents. Redeploying will be as easy as `git push`.
 
 :::info
 Many Komodo resources need access to git repos. There is an in-built token management system (managed in UI or in config file) to give resources access to credentials.
