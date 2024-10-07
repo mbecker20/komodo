@@ -101,7 +101,7 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
   list_item: (id) => useResourceSync(id),
   resource_links: () => undefined,
 
-  Description: () => <>Define resources in git-checked files.</>,
+  Description: () => <>Declare resources in TOML files.</>,
 
   Dashboard: () => {
     const summary = useRead("GetResourceSyncsSummary", {}).data;
