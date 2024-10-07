@@ -1,6 +1,7 @@
 use std::sync::OnceLock;
 
 use clap::Parser;
+use environment_file::maybe_read_list_from_file;
 use komodo_client::entities::{
   config::periphery::{CliArgs, Env, PeripheryConfig},
   logger::{LogConfig, LogLevel},
@@ -53,7 +54,7 @@ pub fn periphery_config() -> &'static PeripheryConfig {
           .unwrap_or(config.logging.stdio),
         otlp_endpoint: env
           .periphery_logging_otlp_endpoint
-          .or(config.logging.otlp_endpoint),
+          .unwrap_or(config.logging.otlp_endpoint),
         opentelemetry_service_name: env
           .periphery_logging_opentelemetry_service_name
           .unwrap_or(config.logging.opentelemetry_service_name),
@@ -61,13 +62,26 @@ pub fn periphery_config() -> &'static PeripheryConfig {
       allowed_ips: env
         .periphery_allowed_ips
         .unwrap_or(config.allowed_ips),
-      passkeys: env.periphery_passkeys.unwrap_or(config.passkeys),
+      passkeys: maybe_read_list_from_file(
+        env.periphery_passkeys_file,
+        env.periphery_passkeys,
+      )
+      .unwrap_or(config.passkeys),
       include_disk_mounts: env
         .periphery_include_disk_mounts
         .unwrap_or(config.include_disk_mounts),
       exclude_disk_mounts: env
         .periphery_exclude_disk_mounts
         .unwrap_or(config.exclude_disk_mounts),
+      ssl_enabled: env
+        .periphery_ssl_enabled
+        .unwrap_or(config.ssl_enabled),
+      ssl_key_file: env
+        .periphery_ssl_key_file
+        .unwrap_or(config.ssl_key_file),
+      ssl_cert_file: env
+        .periphery_ssl_cert_file
+        .unwrap_or(config.ssl_cert_file),
       secrets: config.secrets,
       git_providers: config.git_providers,
       docker_registries: config.docker_registries,

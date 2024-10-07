@@ -18,7 +18,7 @@ use crate::entities::{
   Timelength,
 };
 
-use super::{DockerRegistry, GitProvider};
+use super::{empty_or_redacted, DockerRegistry, GitProvider};
 
 /// # Komodo Core Environment Variables
 ///
@@ -46,22 +46,22 @@ pub struct Env {
   pub komodo_port: Option<u16>,
   /// Override `passkey`
   pub komodo_passkey: Option<String>,
-  /// Override `ensure_server`
-  pub komodo_ensure_server: Option<String>,
+  /// Override `passkey` with file
+  pub komodo_passkey_file: Option<PathBuf>,
+  /// Override `first_server`
+  pub komodo_first_server: Option<String>,
+  /// Override `frontend_path`
+  pub komodo_frontend_path: Option<String>,
   /// Override `jwt_secret`
   pub komodo_jwt_secret: Option<String>,
+  /// Override `jwt_secret` from file
+  pub komodo_jwt_secret_file: Option<PathBuf>,
   /// Override `jwt_ttl`
   pub komodo_jwt_ttl: Option<Timelength>,
   /// Override `repo_directory`
-  pub komodo_repo_directory: Option<String>,
-  /// Override `sync_poll_interval`
-  pub komodo_sync_poll_interval: Option<Timelength>,
-  /// Override `stack_poll_interval`
-  pub komodo_stack_poll_interval: Option<Timelength>,
-  /// Override `build_poll_interval`
-  pub komodo_build_poll_interval: Option<Timelength>,
-  /// Override `repo_poll_interval`
-  pub komodo_repo_poll_interval: Option<Timelength>,
+  pub komodo_repo_directory: Option<PathBuf>,
+  /// Override `resource_poll_interval`
+  pub komodo_resource_poll_interval: Option<Timelength>,
   /// Override `monitoring_interval`
   pub komodo_monitoring_interval: Option<Timelength>,
   /// Override `keep_stats_for_days`
@@ -70,6 +70,8 @@ pub struct Env {
   pub komodo_keep_alerts_for_days: Option<u64>,
   /// Override `webhook_secret`
   pub komodo_webhook_secret: Option<String>,
+  /// Override `webhook_secret` with file
+  pub komodo_webhook_secret_file: Option<PathBuf>,
   /// Override `webhook_base_url`
   pub komodo_webhook_base_url: Option<String>,
 
@@ -90,30 +92,64 @@ pub struct Env {
   pub komodo_enable_new_users: Option<bool>,
   /// Override `disable_user_registration`
   pub komodo_disable_user_registration: Option<bool>,
+  /// Override `disable_confirm_dialog`
+  pub komodo_disable_confirm_dialog: Option<bool>,
+  /// Override `disable_non_admin_create`
+  pub komodo_disable_non_admin_create: Option<bool>,
 
   /// Override `local_auth`
   pub komodo_local_auth: Option<bool>,
+
+  /// Override `oidc_enabled`
+  pub komodo_oidc_enabled: Option<bool>,
+  /// Override `oidc_provider`
+  pub komodo_oidc_provider: Option<String>,
+  /// Override `oidc_redirect`
+  pub komodo_oidc_redirect: Option<String>,
+  /// Override `oidc_client_id`
+  pub komodo_oidc_client_id: Option<String>,
+  /// Override `oidc_client_id` from file
+  pub komodo_oidc_client_id_file: Option<PathBuf>,
+  /// Override `oidc_client_secret`
+  pub komodo_oidc_client_secret: Option<String>,
+  /// Override `oidc_client_secret` from file
+  pub komodo_oidc_client_secret_file: Option<PathBuf>,
+  /// Override `oidc_use_full_email`
+  pub komodo_oidc_use_full_email: Option<bool>,
 
   /// Override `google_oauth.enabled`
   pub komodo_google_oauth_enabled: Option<bool>,
   /// Override `google_oauth.id`
   pub komodo_google_oauth_id: Option<String>,
+  /// Override `google_oauth.id` from file
+  pub komodo_google_oauth_id_file: Option<PathBuf>,
   /// Override `google_oauth.secret`
   pub komodo_google_oauth_secret: Option<String>,
+  /// Override `google_oauth.secret` from file
+  pub komodo_google_oauth_secret_file: Option<PathBuf>,
 
   /// Override `github_oauth.enabled`
   pub komodo_github_oauth_enabled: Option<bool>,
   /// Override `github_oauth.id`
   pub komodo_github_oauth_id: Option<String>,
+  /// Override `github_oauth.id` from file
+  pub komodo_github_oauth_id_file: Option<PathBuf>,
   /// Override `github_oauth.secret`
   pub komodo_github_oauth_secret: Option<String>,
+  /// Override `github_oauth.secret` from file
+  pub komodo_github_oauth_secret_file: Option<PathBuf>,
 
   /// Override `github_webhook_app.app_id`
   pub komodo_github_webhook_app_app_id: Option<i64>,
+  /// Override `github_webhook_app.app_id` from file
+  pub komodo_github_webhook_app_app_id_file: Option<PathBuf>,
   /// Override `github_webhook_app.installations[i].id`. Accepts comma seperated list.
   ///
   /// Note. Paired by index with values in `komodo_github_webhook_app_installations_namespaces`
   pub komodo_github_webhook_app_installations_ids: Option<Vec<i64>>,
+  /// Override `github_webhook_app.installations[i].id` from file
+  pub komodo_github_webhook_app_installations_ids_file:
+    Option<PathBuf>,
   /// Override `github_webhook_app.installations[i].namespace`. Accepts comma seperated list.
   ///
   /// Note. Paired by index with values in `komodo_github_webhook_app_installations_ids`
@@ -122,26 +158,54 @@ pub struct Env {
   /// Override `github_webhook_app.pk_path`
   pub komodo_github_webhook_app_pk_path: Option<String>,
 
-  /// Override `mongo.uri`
-  pub komodo_mongo_uri: Option<String>,
-  /// Override `mongo.address`
-  pub komodo_mongo_address: Option<String>,
-  /// Override `mongo.username`
-  pub komodo_mongo_username: Option<String>,
-  /// Override `mongo.password`
-  pub komodo_mongo_password: Option<String>,
-  /// Override `mongo.app_name`
-  pub komodo_mongo_app_name: Option<String>,
-  /// Override `mongo.db_name`
-  pub komodo_mongo_db_name: Option<String>,
+  /// Override `database.uri`
+  #[serde(alias = "KOMODO_MONGO_URI")]
+  pub komodo_database_uri: Option<String>,
+  /// Override `database.uri` from file
+  #[serde(alias = "KOMODO_MONGO_URI_FILE")]
+  pub komodo_database_uri_file: Option<PathBuf>,
+  /// Override `database.address`
+  #[serde(alias = "KOMODO_MONGO_ADDRESS")]
+  pub komodo_database_address: Option<String>,
+  /// Override `database.username`
+  #[serde(alias = "KOMODO_MONGO_USERNAME")]
+  pub komodo_database_username: Option<String>,
+  /// Override `database.username` with file
+  #[serde(alias = "KOMODO_MONGO_USERNAME_FILE")]
+  pub komodo_database_username_file: Option<PathBuf>,
+  /// Override `database.password`
+  #[serde(alias = "KOMODO_MONGO_PASSWORD")]
+  pub komodo_database_password: Option<String>,
+  /// Override `database.password` with file
+  #[serde(alias = "KOMODO_MONGO_PASSWORD_FILE")]
+  pub komodo_database_password_file: Option<PathBuf>,
+  /// Override `database.app_name`
+  #[serde(alias = "KOMODO_MONGO_APP_NAME")]
+  pub komodo_database_app_name: Option<String>,
+  /// Override `database.db_name`
+  #[serde(alias = "KOMODO_MONGO_DB_NAME")]
+  pub komodo_database_db_name: Option<String>,
 
   /// Override `aws.access_key_id`
   pub komodo_aws_access_key_id: Option<String>,
+  /// Override `aws.access_key_id` with file
+  pub komodo_aws_access_key_id_file: Option<PathBuf>,
   /// Override `aws.secret_access_key`
   pub komodo_aws_secret_access_key: Option<String>,
+  /// Override `aws.secret_access_key` with file
+  pub komodo_aws_secret_access_key_file: Option<PathBuf>,
 
   /// Override `hetzner.token`
   pub komodo_hetzner_token: Option<String>,
+  /// Override `hetzner.token` with file
+  pub komodo_hetzner_token_file: Option<PathBuf>,
+
+  /// Override `ssl_enabled`.
+  pub komodo_ssl_enabled: Option<bool>,
+  /// Override `ssl_key_file`
+  pub komodo_ssl_key_file: Option<PathBuf>,
+  /// Override `ssl_cert_file`
+  pub komodo_ssl_cert_file: Option<PathBuf>,
 }
 
 fn default_config_path() -> String {
@@ -190,20 +254,22 @@ pub struct CoreConfig {
   #[serde(default)]
   pub ui_write_disabled: bool,
 
-  /// If defined, ensure an enabled server exists at this address.
-  /// Use with All In One compose.
-  /// Example: `http://komodo-periphery:8120`
+  /// Disable the popup confirm dialogs. All buttons will just be double click.
   #[serde(default)]
-  pub ensure_server: String,
+  pub disable_confirm_dialog: bool,
 
-  // ============
-  // = Database =
-  // ============
-  /// Configure core mongo connection.
-  ///
-  /// An easy deployment method is to use Mongo Atlas to provide
-  /// a reliable database.
-  pub mongo: MongoConfig,
+  /// If defined, ensure an enabled first server exists at this address.
+  /// Example: `http://periphery:8120`
+  #[serde(default)]
+  pub first_server: String,
+
+  /// The path to the built frontend folder.
+  #[serde(default = "default_frontend_path")]
+  pub frontend_path: String,
+
+  /// Configure database connection
+  #[serde(alias = "mongo")]
+  pub database: DatabaseConfig,
 
   // ================
   // = Auth / Login =
@@ -226,6 +292,11 @@ pub struct CoreConfig {
   #[serde(default)]
   pub disable_user_registration: bool,
 
+  /// Normally all users can create resources.
+  /// If `disable_non_admin_create = true`, only admins will be able to create resources.
+  #[serde(default)]
+  pub disable_non_admin_create: bool,
+
   /// Optionally provide a specific jwt secret.
   /// Passing nothing or an empty string will cause one to be generated.
   /// Default: "" (empty string)
@@ -236,6 +307,42 @@ pub struct CoreConfig {
   /// Default: `1-day`.
   #[serde(default = "default_jwt_ttl")]
   pub jwt_ttl: Timelength,
+
+  // ========
+  // = OIDC =
+  // ========
+  /// Enable login with configured OIDC provider.
+  #[serde(default)]
+  pub oidc_enabled: bool,
+
+  /// Configure OIDC provider address for
+  /// communcation directly with Komodo Core.
+  /// Note. Needs to be reachable from Komodo Core.
+  /// Eg. `https://accounts.example.internal/application/o/komodo`
+  #[serde(default)]
+  pub oidc_provider: String,
+
+  /// Configure OIDC user redirect address.
+  /// This is the address users are redirected to in their browser,
+  /// and may be different from `oidc_provider`.
+  /// If not provided, the `oidc_provider` will be used.
+  /// Eg. `https://accounts.example.external/application/o/komodo`
+  #[serde(default)]
+  pub oidc_redirect: String,
+
+  /// Set OIDC client id
+  #[serde(default)]
+  pub oidc_client_id: String,
+
+  /// Set OIDC client secret
+  #[serde(default)]
+  pub oidc_client_secret: String,
+
+  /// Use the full email for usernames.
+  /// Otherwise, the @address will be stripped,
+  /// making usernames more concise.
+  #[serde(default)]
+  pub oidc_use_full_email: bool,
 
   // =========
   // = Oauth =
@@ -263,7 +370,8 @@ pub struct CoreConfig {
   /// This can be used if Komodo Core sits on an internal network which is
   /// unreachable directly from the open internet.
   /// A reverse proxy in a public network can forward webhooks to Komodo.
-  pub webhook_base_url: Option<String>,
+  #[serde(default)]
+  pub webhook_base_url: String,
 
   /// Configure a Github Webhook app.
   /// Allows users to manage repo webhooks from within the Komodo UI.
@@ -295,29 +403,11 @@ pub struct CoreConfig {
   // ==================
   // = Poll Intervals =
   // ==================
-  /// Interval at which to poll stacks for any updates / automated actions.
+  /// Interval at which to poll resources for any updates / automated actions.
   /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
   /// Default: `5-min`.  
   #[serde(default = "default_poll_interval")]
-  pub stack_poll_interval: Timelength,
-
-  /// Interval at which to poll syncs for any updates / automated actions.
-  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
-  /// Default: `5-min`.  
-  #[serde(default = "default_poll_interval")]
-  pub sync_poll_interval: Timelength,
-
-  /// Interval at which to poll build commit hash for any updates / automated actions.
-  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
-  /// Default: `5-min`.  
-  #[serde(default = "default_poll_interval")]
-  pub build_poll_interval: Timelength,
-
-  /// Interval at which to poll repo commit hash for any updates / automated actions.
-  /// Options: `15-sec`, `1-min`, `5-min`, `15-min`, `1-hr`
-  /// Default: `5-min`.  
-  #[serde(default = "default_poll_interval")]
-  pub repo_poll_interval: Timelength,
+  pub resource_poll_interval: Timelength,
 
   /// Interval at which to collect server stats and send any alerts.
   /// Default: `15-sec`
@@ -351,10 +441,6 @@ pub struct CoreConfig {
   #[serde(default, alias = "docker_registry")]
   pub docker_registries: Vec<DockerRegistry>,
 
-  /// Configure aws ecr registries, which are handled differently than other registries
-  #[serde(default, alias = "aws_ecr_registry")]
-  pub aws_ecr_registries: Vec<AwsEcrConfigWithCredentials>,
-
   // ===========
   // = Secrets =
   // ===========
@@ -369,10 +455,23 @@ pub struct CoreConfig {
   // =========
   /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
   /// The default is fine when using a container.
-  /// This directory has no need for persistence, so no need to mount it.
-  /// Default: `/repos`
+  /// Default: `/repo-cache`
   #[serde(default = "default_repo_directory")]
   pub repo_directory: PathBuf,
+
+  /// Whether to enable ssl.
+  #[serde(default)]
+  pub ssl_enabled: bool,
+
+  /// Path to the ssl key.
+  /// Default: `/config/ssl/key.pem`.
+  #[serde(default = "default_ssl_key_file")]
+  pub ssl_key_file: PathBuf,
+
+  /// Path to the ssl cert.
+  /// Default: `/config/ssl/cert.pem`.
+  #[serde(default = "default_ssl_cert_file")]
+  pub ssl_cert_file: PathBuf,
 }
 
 fn default_title() -> String {
@@ -383,13 +482,17 @@ fn default_core_port() -> u16 {
   9120
 }
 
+fn default_frontend_path() -> String {
+  "/app/frontend".to_string()
+}
+
 fn default_jwt_ttl() -> Timelength {
   Timelength::OneDay
 }
 
 fn default_repo_directory() -> PathBuf {
-  // unwrap ok: `/repos` will always be valid path
-  PathBuf::from_str("/repos").unwrap()
+  // unwrap ok: `/repo-cache` will always be valid path
+  PathBuf::from_str("/repo-cache").unwrap()
 }
 
 fn default_prune_days() -> u64 {
@@ -404,6 +507,14 @@ fn default_monitoring_interval() -> Timelength {
   Timelength::FifteenSeconds
 }
 
+fn default_ssl_key_file() -> PathBuf {
+  "/config/ssl/key.pem".parse().unwrap()
+}
+
+fn default_ssl_cert_file() -> PathBuf {
+  "/config/ssl/cert.pem".parse().unwrap()
+}
+
 impl CoreConfig {
   pub fn sanitized(&self) -> CoreConfig {
     let config = self.clone();
@@ -412,23 +523,31 @@ impl CoreConfig {
       host: config.host,
       port: config.port,
       passkey: empty_or_redacted(&config.passkey),
-      ensure_server: config.ensure_server,
+      first_server: config.first_server,
+      frontend_path: config.frontend_path,
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_ttl: config.jwt_ttl,
       repo_directory: config.repo_directory,
-      sync_poll_interval: config.sync_poll_interval,
-      stack_poll_interval: config.stack_poll_interval,
-      build_poll_interval: config.build_poll_interval,
-      repo_poll_interval: config.repo_poll_interval,
+      resource_poll_interval: config.resource_poll_interval,
       monitoring_interval: config.monitoring_interval,
       keep_stats_for_days: config.keep_stats_for_days,
       keep_alerts_for_days: config.keep_alerts_for_days,
       logging: config.logging,
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
+      disable_confirm_dialog: config.disable_confirm_dialog,
       enable_new_users: config.enable_new_users,
       disable_user_registration: config.disable_user_registration,
+      disable_non_admin_create: config.disable_non_admin_create,
       local_auth: config.local_auth,
+      oidc_enabled: config.oidc_enabled,
+      oidc_provider: config.oidc_provider,
+      oidc_redirect: config.oidc_redirect,
+      oidc_client_id: empty_or_redacted(&config.oidc_client_id),
+      oidc_client_secret: empty_or_redacted(
+        &config.oidc_client_secret,
+      ),
+      oidc_use_full_email: config.oidc_use_full_email,
       google_oauth: OauthCredentials {
         enabled: config.google_oauth.enabled,
         id: empty_or_redacted(&config.google_oauth.id),
@@ -442,19 +561,13 @@ impl CoreConfig {
       webhook_secret: empty_or_redacted(&config.webhook_secret),
       webhook_base_url: config.webhook_base_url,
       github_webhook_app: config.github_webhook_app,
-      mongo: MongoConfig {
-        uri: config.mongo.uri.map(|cur| empty_or_redacted(&cur)),
-        address: config.mongo.address,
-        username: config
-          .mongo
-          .username
-          .map(|cur| empty_or_redacted(&cur)),
-        password: config
-          .mongo
-          .password
-          .map(|cur| empty_or_redacted(&cur)),
-        app_name: config.mongo.app_name,
-        db_name: config.mongo.db_name,
+      database: DatabaseConfig {
+        uri: empty_or_redacted(&config.database.uri),
+        address: config.database.address,
+        username: empty_or_redacted(&config.database.username),
+        password: empty_or_redacted(&config.database.password),
+        app_name: config.database.app_name,
+        db_name: config.database.db_name,
       },
       aws: AwsCredentials {
         access_key_id: empty_or_redacted(&config.aws.access_key_id),
@@ -490,25 +603,11 @@ impl CoreConfig {
           provider
         })
         .collect(),
-      aws_ecr_registries: config
-        .aws_ecr_registries
-        .into_iter()
-        .map(|mut ecr| {
-          ecr.access_key_id = empty_or_redacted(&ecr.access_key_id);
-          ecr.secret_access_key =
-            empty_or_redacted(&ecr.secret_access_key);
-          ecr
-        })
-        .collect(),
-    }
-  }
-}
 
-fn empty_or_redacted(src: &str) -> String {
-  if src.is_empty() {
-    String::new()
-  } else {
-    String::from("##############")
+      ssl_enabled: config.ssl_enabled,
+      ssl_key_file: config.ssl_key_file,
+      ssl_cert_file: config.ssl_cert_file,
+    }
   }
 }
 
@@ -526,46 +625,57 @@ pub struct OauthCredentials {
   pub secret: String,
 }
 
-/// Provide mongo connection information.
+/// Provide database connection information.
+/// Komodo uses the MongoDB api driver for database communication,
+/// and FerretDB to support Postgres and Sqlite storage options.
+///
 /// Must provide ONE of:
 /// 1. `uri`
 /// 2. `address` + `username` + `password`
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MongoConfig {
+pub struct DatabaseConfig {
   /// Full mongo uri string, eg. `mongodb://username:password@your.mongo.int:27017`
-  pub uri: Option<String>,
-  /// Just the address part of the uri, eg `your.mongo.int:27017`
-  pub address: Option<String>,
+  #[serde(default)]
+  pub uri: String,
+  /// Just the address part of the mongo uri, eg `your.mongo.int:27017`
+  #[serde(default = "default_database_address")]
+  pub address: String,
   /// Mongo user username
-  pub username: Option<String>,
+  #[serde(default)]
+  pub username: String,
   /// Mongo user password
-  pub password: Option<String>,
+  #[serde(default)]
+  pub password: String,
   /// Mongo app name. default: `komodo_core`
-  #[serde(default = "default_core_mongo_app_name")]
+  #[serde(default = "default_database_app_name")]
   pub app_name: String,
   /// Mongo db name. Which mongo database to create the collections in.
   /// Default: `komodo`.
-  #[serde(default = "default_core_mongo_db_name")]
+  #[serde(default = "default_database_db_name")]
   pub db_name: String,
 }
 
-fn default_core_mongo_app_name() -> String {
+fn default_database_address() -> String {
+  String::from("localhost:27017")
+}
+
+fn default_database_app_name() -> String {
   "komodo_core".to_string()
 }
 
-fn default_core_mongo_db_name() -> String {
+fn default_database_db_name() -> String {
   "komodo".to_string()
 }
 
-impl Default for MongoConfig {
+impl Default for DatabaseConfig {
   fn default() -> Self {
     Self {
-      uri: None,
-      address: Some("localhost:27017".to_string()),
-      username: None,
-      password: None,
-      app_name: default_core_mongo_app_name(),
-      db_name: default_core_mongo_db_name(),
+      uri: Default::default(),
+      address: default_database_address(),
+      username: Default::default(),
+      password: Default::default(),
+      app_name: default_database_app_name(),
+      db_name: default_database_db_name(),
     }
   }
 }
@@ -583,39 +693,6 @@ pub struct AwsCredentials {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct HetznerCredentials {
   pub token: String,
-}
-
-/// Provide configuration for an Aws Ecr registry.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AwsEcrConfigWithCredentials {
-  /// A label for the registry
-  pub label: String,
-  /// The Aws region
-  pub region: String,
-  /// The Aws account id
-  pub account_id: String,
-  /// The Aws ACCESS_KEY_ID
-  pub access_key_id: String,
-  /// The Aws SECRET_ACCESS_KEY
-  pub secret_access_key: String,
-}
-
-/// Provide configuration for an Aws Ecr registry.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AwsEcrConfig {
-  /// The Aws region
-  pub region: String,
-  /// The Aws account id
-  pub account_id: String,
-}
-
-impl AwsEcrConfig {
-  pub fn from(config: &AwsEcrConfigWithCredentials) -> AwsEcrConfig {
-    AwsEcrConfig {
-      region: config.region.to_string(),
-      account_id: config.account_id.to_string(),
-    }
-  }
 }
 
 /// Provide configuration for a Github Webhook app.

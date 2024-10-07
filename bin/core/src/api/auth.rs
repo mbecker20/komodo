@@ -16,6 +16,7 @@ use crate::{
     get_user_id_from_headers,
     github::{self, client::github_oauth_client},
     google::{self, client::google_oauth_client},
+    oidc,
   },
   config::core_config,
   helpers::query::get_user,
@@ -39,12 +40,23 @@ pub enum AuthRequest {
 pub fn router() -> Router {
   let mut router = Router::new().route("/", post(handler));
 
+  if core_config().local_auth {
+    info!("🔑 Local Login Enabled");
+  }
+
   if github_oauth_client().is_some() {
+    info!("🔑 Github Login Enabled");
     router = router.nest("/github", github::router())
   }
 
   if google_oauth_client().is_some() {
+    info!("🔑 Github Login Enabled");
     router = router.nest("/google", google::router())
+  }
+
+  if core_config().oidc_enabled {
+    info!("🔑 OIDC Login Enabled");
+    router = router.nest("/oidc", oidc::router())
   }
 
   router
@@ -91,6 +103,10 @@ fn login_options_reponse() -> &'static GetLoginOptionsResponse {
       google: config.google_oauth.enabled
         && !config.google_oauth.id.is_empty()
         && !config.google_oauth.secret.is_empty(),
+      oidc: config.oidc_enabled
+        && !config.oidc_provider.is_empty()
+        && !config.oidc_client_id.is_empty()
+        && !config.oidc_client_secret.is_empty(),
       registration_disabled: config.disable_user_registration,
     }
   })

@@ -11,7 +11,7 @@ use typeshare::typeshare;
 use super::{
   docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  to_komodo_name, EnvironmentVar,
+  to_komodo_name, FileContents,
 };
 
 #[typeshare]
@@ -57,6 +57,10 @@ pub type StackListItem = ResourceListItem<StackListItemInfo>;
 pub struct StackListItemInfo {
   /// The server that stack is deployed on.
   pub server_id: String,
+  /// Whether stack is using files on host mode
+  pub files_on_host: bool,
+  /// Whether stack has file contents defined.
+  pub file_contents: bool,
   /// The git provider domain
   pub git_provider: String,
   /// The configured repo
@@ -143,7 +147,7 @@ pub struct StackInfo {
   /// Deployed commit message, or null. Only for repo based stacks
   pub deployed_message: Option<String>,
   /// The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack.
-  pub deployed_contents: Option<Vec<ComposeContents>>,
+  pub deployed_contents: Option<Vec<FileContents>>,
   /// The deployed service names.
   /// This is updated whenever it is empty, or deployed contents is updated.
   pub deployed_services: Option<Vec<StackServiceNames>>,
@@ -156,9 +160,9 @@ pub struct StackInfo {
   /// The remote compose file contents, whether on host or in repo.
   /// This is updated whenever Komodo refreshes the stack cache.
   /// It will be empty if the file is defined directly in the stack config.
-  pub remote_contents: Option<Vec<ComposeContents>>,
+  pub remote_contents: Option<Vec<FileContents>>,
   /// If there was an error in getting the remote contents, it will be here.
-  pub remote_errors: Option<Vec<ComposeContents>>,
+  pub remote_errors: Option<Vec<FileContents>>,
 
   /// Latest commit hash, or null
   pub latest_hash: Option<String>,
@@ -176,9 +180,15 @@ pub type _PartialStackConfig = PartialStackConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct StackConfig {
   /// The server to deploy the stack on.
-  #[serde(default)]
+  #[serde(default, alias = "server")]
+  #[partial_attr(serde(alias = "server"))]
   #[builder(default)]
   pub server_id: String,
+
+  /// Configure quick links that are displayed in the resource header
+  #[serde(default)]
+  #[builder(default)]
+  pub links: Vec<String>,
 
   /// Optionally specify a custom project name for the stack.
   /// If this is empty string, it will default to the stack name.
@@ -188,48 +198,6 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub project_name: String,
-
-  /// Directory to change to (`cd`) before running `docker compose up -d`.
-  /// Default: `./` (the repo root)
-  #[serde(default = "default_run_directory")]
-  #[builder(default = "default_run_directory()")]
-  #[partial_default(default_run_directory())]
-  pub run_directory: String,
-
-  /// Add paths to compose files, relative to the run path.
-  /// If this is empty, will use file `compose.yaml`.
-  #[serde(default)]
-  #[builder(default)]
-  pub file_paths: Vec<String>,
-
-  /// If this is checked, the stack will source the files on the host.
-  /// Use `run_directory` and `file_paths` to specify the path on the host.
-  /// This is useful for those who wish to setup their files on the host using SSH or similar,
-  /// rather than defining the contents in UI or in a git repo.
-  #[serde(default)]
-  #[builder(default)]
-  pub files_on_host: bool,
-
-  /// Used with `registry_account` to login to a registry before docker compose up.
-  #[serde(default)]
-  #[builder(default)]
-  pub registry_provider: String,
-
-  /// Used with `registry_provider` to login to a registry before docker compose up.
-  #[serde(default)]
-  #[builder(default)]
-  pub registry_account: String,
-
-  /// The extra arguments to pass after `docker compose up -d`.
-  /// If empty, no extra arguments will be passed.
-  #[serde(default)]
-  #[builder(default)]
-  pub extra_args: Vec<String>,
-
-  /// Whether to skip secret interpolation into the stack environment variables.
-  #[serde(default)]
-  #[builder(default)]
-  pub skip_secret_interp: bool,
 
   /// Whether to automatically `compose pull` before redeploying stack.
   /// Ensured latest images are deployed.
@@ -245,19 +213,37 @@ pub struct StackConfig {
   #[builder(default)]
   pub run_build: bool,
 
-  /// The extra arguments to pass after `docker compose build`.
-  /// If empty, no extra build arguments will be passed.
-  /// Only used if `run_build: true`
+  /// Whether to skip secret interpolation into the stack environment variables.
   #[serde(default)]
   #[builder(default)]
-  pub build_extra_args: Vec<String>,
+  pub skip_secret_interp: bool,
 
-  /// Ignore certain services declared in the compose file when checking
-  /// the stack status. For example, an init service might be exited, but the
-  /// stack should be healthy. This init service should be in `ignore_services`
+  /// If this is checked, the stack will source the files on the host.
+  /// Use `run_directory` and `file_paths` to specify the path on the host.
+  /// This is useful for those who wish to setup their files on the host using SSH or similar,
+  /// rather than defining the contents in UI or in a git repo.
   #[serde(default)]
   #[builder(default)]
-  pub ignore_services: Vec<String>,
+  pub files_on_host: bool,
+
+  /// Directory to change to (`cd`) before running `docker compose up -d`.
+  #[serde(default)]
+  #[builder(default)]
+  pub run_directory: String,
+
+  /// Add paths to compose files, relative to the run path.
+  /// If this is empty, will use file `compose.yaml`.
+  #[serde(default)]
+  #[builder(default)]
+  pub file_paths: Vec<String>,
+
+  /// The name of the written environment file before `docker compose up`.
+  /// Relative to the repo root.
+  /// Default: .env
+  #[serde(default = "default_env_file_path")]
+  #[builder(default = "default_env_file_path()")]
+  #[partial_default(default_env_file_path())]
+  pub env_file_path: String,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -316,15 +302,47 @@ pub struct StackConfig {
   #[partial_default(default_send_alerts())]
   pub send_alerts: bool,
 
-  /// Configure quick links that are displayed in the resource header
+  /// Used with `registry_account` to login to a registry before docker compose up.
   #[serde(default)]
   #[builder(default)]
-  pub links: Vec<String>,
+  pub registry_provider: String,
+
+  /// Used with `registry_provider` to login to a registry before docker compose up.
+  #[serde(default)]
+  #[builder(default)]
+  pub registry_account: String,
+
+  /// The extra arguments to pass after `docker compose up -d`.
+  /// If empty, no extra arguments will be passed.
+  #[serde(default)]
+  #[builder(default)]
+  pub extra_args: Vec<String>,
+
+  /// The extra arguments to pass after `docker compose build`.
+  /// If empty, no extra build arguments will be passed.
+  /// Only used if `run_build: true`
+  #[serde(default)]
+  #[builder(default)]
+  pub build_extra_args: Vec<String>,
+
+  /// Ignore certain services declared in the compose file when checking
+  /// the stack status. For example, an init service might be exited, but the
+  /// stack should be healthy. This init service should be in `ignore_services`
+  #[serde(default)]
+  #[builder(default)]
+  pub ignore_services: Vec<String>,
 
   /// The contents of the file directly, for management in the UI.
   /// If this is empty, it will fall back to checking git config for
   /// repo based compose file.
-  #[serde(default)]
+  #[serde(
+    default,
+    deserialize_with = "super::file_contents_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_file_contents_deserializer"
+  ))]
   #[builder(default)]
   pub file_contents: String,
 
@@ -342,15 +360,7 @@ pub struct StackConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub environment: Vec<EnvironmentVar>,
-
-  /// The name of the written environment file before `docker compose up`.
-  /// Relative to the repo root.
-  /// Default: .env
-  #[serde(default = "default_env_file_path")]
-  #[builder(default = "default_env_file_path()")]
-  #[partial_default(default_env_file_path())]
-  pub env_file_path: String,
+  pub environment: String,
 }
 
 impl StackConfig {
@@ -379,10 +389,6 @@ fn default_branch() -> String {
   String::from("main")
 }
 
-fn default_run_directory() -> String {
-  String::from("./")
-}
-
 fn default_webhook_enabled() -> bool {
   true
 }
@@ -396,7 +402,7 @@ impl Default for StackConfig {
     Self {
       server_id: Default::default(),
       project_name: Default::default(),
-      run_directory: default_run_directory(),
+      run_directory: Default::default(),
       file_paths: Default::default(),
       files_on_host: Default::default(),
       registry_provider: Default::default(),
@@ -433,15 +439,6 @@ pub struct ComposeProject {
   pub status: Option<String>,
   /// The compose files included in the project.
   pub compose_files: Vec<String>,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ComposeContents {
-  /// The path of the file on the host
-  pub path: String,
-  /// The contents of the file
-  pub contents: String,
 }
 
 #[typeshare]

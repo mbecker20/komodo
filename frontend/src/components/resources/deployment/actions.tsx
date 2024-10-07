@@ -1,5 +1,13 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { Play, Trash, Pause, Rocket, Pen, RefreshCcw, Square } from "lucide-react";
+import {
+  Play,
+  Trash,
+  Pause,
+  Rocket,
+  Pen,
+  RefreshCcw,
+  Square,
+} from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
@@ -13,6 +21,7 @@ import {
   SelectTrigger,
 } from "@ui/select";
 import { useDeployment } from ".";
+import { parse_key_value } from "@lib/utils";
 
 interface DeploymentId {
   id: string;
@@ -50,6 +59,12 @@ export const DeployDeployment = ({ id }: DeploymentId) => {
     deployment_item?.info.state !== Types.DeploymentState.NotDeployed &&
     deployment_item?.info.state !== Types.DeploymentState.Unknown;
 
+  const term_signal_labels =
+    deployed &&
+    parse_key_value(deployment.config?.term_signal_labels ?? "").map(
+      (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
+    );
+
   if (deployed) {
     return (
       <ActionWithDialog
@@ -60,9 +75,9 @@ export const DeployDeployment = ({ id }: DeploymentId) => {
         disabled={pending}
         loading={pending}
         additional={
-          deployed && deployment.config!.term_signal_labels.length > 1 ? (
+          term_signal_labels && term_signal_labels.length > 1 ? (
             <TermSignalSelector
-              signals={deployment.config!.term_signal_labels}
+              signals={term_signal_labels}
               signal={signal}
               setSignal={setSignal}
             />
@@ -110,6 +125,12 @@ export const DestroyDeployment = ({ id }: DeploymentId) => {
   if (!deployment) return null;
   if (state === Types.DeploymentState.NotDeployed) return null;
 
+  const term_signal_labels = parse_key_value(
+    deployment.config?.term_signal_labels ?? ""
+  ).map(
+    (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
+  );
+
   return (
     <ActionWithDialog
       name={deployment.name}
@@ -119,9 +140,9 @@ export const DestroyDeployment = ({ id }: DeploymentId) => {
       disabled={pending}
       loading={pending}
       additional={
-        deployment.config!.term_signal_labels.length > 1 ? (
+        term_signal_labels && term_signal_labels.length > 1 ? (
           <TermSignalSelector
-            signals={deployment.config!.term_signal_labels}
+            signals={term_signal_labels}
             signal={signal}
             setSignal={setSignal}
           />
@@ -212,6 +233,12 @@ const StopDeployment = ({ id }: DeploymentId) => {
 
   if (!deployment) return null;
 
+  const term_signal_labels = parse_key_value(
+    deployment.config?.term_signal_labels ?? ""
+  ).map(
+    (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
+  );
+
   return (
     <ActionWithDialog
       name={deployment.name}
@@ -221,9 +248,9 @@ const StopDeployment = ({ id }: DeploymentId) => {
       disabled={pending}
       loading={pending}
       additional={
-        deployment.config!.term_signal_labels.length > 1 ? (
+        term_signal_labels && term_signal_labels.length > 1 ? (
           <TermSignalSelector
-            signals={deployment.config!.term_signal_labels}
+            signals={term_signal_labels}
             signal={signal}
             setSignal={setSignal}
           />

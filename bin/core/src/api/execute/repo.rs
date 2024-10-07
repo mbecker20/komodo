@@ -7,7 +7,7 @@ use komodo_client::{
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
     builder::{Builder, BuilderConfig},
-    komodo_timestamp, optional_string,
+    komodo_timestamp,
     permission::PermissionLevel,
     repo::Repo,
     server::Server,
@@ -27,14 +27,14 @@ use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
+  alert::send_alerts,
   helpers::{
-    alert::send_alerts,
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::repo_cancel_channel,
     git_token,
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_environment,
+      interpolate_variables_secrets_into_string,
       interpolate_variables_secrets_into_system_command,
     },
     periphery_client,
@@ -72,6 +72,10 @@ impl Resolve<CloneRepo, (User, Update)> for State {
 
     update_update(update.clone()).await?;
 
+    if repo.config.server_id.is_empty() {
+      return Err(anyhow!("repo has no server attached"));
+    }
+
     let git_token = git_token(
       &repo.config.git_provider,
       &repo.config.git_account,
@@ -81,10 +85,6 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     .with_context(
       || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
     )?;
-
-    if repo.config.server_id.is_empty() {
-      return Err(anyhow!("repo has no server attached"));
-    }
 
     let server =
       resource::get::<Server>(&repo.config.server_id).await?;
@@ -100,7 +100,7 @@ impl Resolve<CloneRepo, (User, Update)> for State {
       .request(api::git::CloneRepo {
         args: (&repo).into(),
         git_token,
-        environment: repo.config.environment,
+        environment: repo.config.env_vars()?,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
         replacers: secret_replacers.into_iter().collect(),
@@ -156,6 +156,16 @@ impl Resolve<PullRepo, (User, Update)> for State {
       return Err(anyhow!("repo has no server attached"));
     }
 
+    let git_token = git_token(
+      &repo.config.git_provider,
+      &repo.config.git_account,
+      |https| repo.config.git_https = https,
+    )
+    .await
+    .with_context(
+      || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", repo.config.git_provider, repo.config.git_account),
+    )?;
+
     let server =
       resource::get::<Server>(&repo.config.server_id).await?;
 
@@ -168,12 +178,9 @@ impl Resolve<PullRepo, (User, Update)> for State {
 
     let logs = match periphery
       .request(api::git::PullRepo {
-        name: repo.name.clone(),
-        branch: optional_string(&repo.config.branch),
-        commit: optional_string(&repo.config.commit),
-        path: optional_string(&repo.config.path),
-        on_pull: repo.config.on_pull.into_option(),
-        environment: repo.config.environment,
+        args: (&repo).into(),
+        git_token,
+        environment: repo.config.env_vars()?,
         env_file_path: repo.config.env_file_path,
         skip_secret_interp: repo.config.skip_secret_interp,
         replacers: secret_replacers.into_iter().collect(),
@@ -214,7 +221,7 @@ async fn handle_server_update_return(
   // but will fail to update cache in that case.
   if let Ok(update_doc) = to_document(&update) {
     let _ = update_one_by_id(
-      &db_client().await.updates,
+      &db_client().updates,
       &update.id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -229,7 +236,6 @@ async fn handle_server_update_return(
 #[instrument]
 async fn update_last_pulled_time(repo_name: &str) {
   let res = db_client()
-    .await
     .repos
     .update_one(
       doc! { "name": repo_name },
@@ -363,7 +369,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
         .request(api::git::CloneRepo {
           args: (&repo).into(),
           git_token,
-          environment: repo.config.environment,
+          environment: repo.config.env_vars()?,
           env_file_path: repo.config.env_file_path,
           skip_secret_interp: repo.config.skip_secret_interp,
           replacers: secret_replacers.into_iter().collect()
@@ -396,7 +402,7 @@ impl Resolve<BuildRepo, (User, Update)> for State {
 
     update.finalize();
 
-    let db = db_client().await;
+    let db = db_client();
 
     if update.success {
       let _ = db
@@ -473,7 +479,7 @@ async fn handle_builder_early_return(
   // but will fail to update cache in that case.
   if let Ok(update_doc) = to_document(&update) {
     let _ = update_one_by_id(
-      &db_client().await.updates,
+      &db_client().updates,
       &update.id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -511,7 +517,7 @@ pub async fn validate_cancel_repo_build(
   if let ExecuteRequest::CancelRepoBuild(req) = request {
     let repo = resource::get::<Repo>(&req.repo).await?;
 
-    let db = db_client().await;
+    let db = db_client();
 
     let (latest_build, latest_cancel) = tokio::try_join!(
       db.updates
@@ -596,7 +602,7 @@ impl Resolve<CancelRepoBuild, (User, Update)> for State {
     tokio::spawn(async move {
       tokio::time::sleep(Duration::from_secs(60)).await;
       if let Err(e) = update_one_by_id(
-        &db_client().await.updates,
+        &db_client().updates,
         &update_id,
         doc! { "$set": { "status": "Complete" } },
         None,
@@ -621,7 +627,7 @@ async fn interpolate(
     let mut global_replacers = HashSet::new();
     let mut secret_replacers = HashSet::new();
 
-    interpolate_variables_secrets_into_environment(
+    interpolate_variables_secrets_into_string(
       &vars_and_secrets,
       &mut repo.config.environment,
       &mut global_replacers,

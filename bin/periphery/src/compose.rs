@@ -3,18 +3,14 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Context};
 use command::run_komodo_command;
 use formatting::format_serror;
-use git::write_environment_file;
+use git::environment;
 use komodo_client::entities::{
-  all_logs_success,
-  build::{ImageRegistry, StandardRegistryConfig},
-  stack::{ComposeContents, Stack},
-  to_komodo_name,
-  update::Log,
-  CloneArgs,
+  all_logs_success, environment_vars_from_str, stack::Stack,
+  to_komodo_name, update::Log, CloneArgs, FileContents,
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
-  git::{CloneRepo, RepoActionResponse},
+  git::{PullOrCloneRepo, RepoActionResponse},
 };
 use resolver_api::Resolve;
 use tokio::fs;
@@ -44,16 +40,14 @@ pub async fn compose_up(
   // Write the stack to local disk. For repos, will first delete any existing folder to ensure fresh deploy.
   // Will also set additional fields on the reponse.
   // Use the env_file_path in the compose command.
-  let env_file_path = write_stack(&stack, git_token, res)
-    .await
-    .context("failed to write / clone compose file")?;
+  let (run_directory, env_file_path) =
+    write_stack(&stack, git_token, res)
+      .await
+      .context("Failed to write / clone compose file")?;
 
-  let root = periphery_config()
-    .stack_dir
-    .join(to_komodo_name(&stack.name));
-  let run_directory = root.join(&stack.config.run_directory);
+  // Canonicalize the path to ensure it exists, and is the cleanest path to the run directory.
   let run_directory = run_directory.canonicalize().context(
-    "failed to validate run directory on host after stack write (canonicalize error)",
+    "Failed to validate run directory on host after stack write (canonicalize error)",
   )?;
 
   let file_paths = stack
@@ -91,7 +85,7 @@ pub async fn compose_up(
             .logs
             .push(Log::error("read compose file", error.clone()));
           // This should only happen for repo stacks, ie remote error
-          res.remote_errors.push(ComposeContents {
+          res.remote_errors.push(FileContents {
             path: full_path.display().to_string(),
             contents: error,
           });
@@ -100,47 +94,51 @@ pub async fn compose_up(
         ));
         }
       };
-    res.file_contents.push(ComposeContents {
+    res.file_contents.push(FileContents {
       path: full_path.display().to_string(),
       contents: file_contents,
     });
   }
 
   let docker_compose = docker_compose();
-  let run_dir = run_directory
-    .canonicalize()
-    .context("failed to canonicalize run directory on host")?;
-  let run_dir = run_dir.display();
+  let run_dir = run_directory.display();
   let service_arg = service
     .as_ref()
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
+
   let file_args = if stack.config.file_paths.is_empty() {
     String::from("compose.yaml")
   } else {
     stack.config.file_paths.join(" -f ")
   };
+  // This will be the last project name, which is the one that needs to be destroyed.
+  // Might be different from the current project name, if user renames stack / changes to custom project name.
   let last_project_name = stack.project_name(false);
   let project_name = stack.project_name(true);
 
-  // Login to the registry to pull private images, if account is set
-  if !stack.config.registry_account.is_empty() {
-    let registry = ImageRegistry::Standard(StandardRegistryConfig {
-      domain: stack.config.registry_provider.clone(),
-      account: stack.config.registry_account.clone(),
-      ..Default::default()
-    });
-    docker_login(&registry, registry_token.as_deref(), None)
-      .await
-      .with_context(|| {
-        format!(
-          "domain: {} | account: {}",
-          stack.config.registry_provider,
-          stack.config.registry_account
-        )
-      })
-      .context("failed to login to image registry")?;
+  // Login to the registry to pull private images, if provider / account are set
+  if !stack.config.registry_provider.is_empty()
+    && !stack.config.registry_account.is_empty()
+  {
+    docker_login(
+      &stack.config.registry_provider,
+      &stack.config.registry_account,
+      registry_token.as_deref(),
+    )
+    .await
+    .with_context(|| {
+      format!(
+        "domain: {} | account: {}",
+        stack.config.registry_provider, stack.config.registry_account
+      )
+    })
+    .context("failed to login to image registry")?;
   }
+
+  let env_file = env_file_path
+    .map(|path| format!(" --env-file {}", path.display()))
+    .unwrap_or_default();
 
   // Build images before destroying to minimize downtime.
   // If this fails, do not continue.
@@ -148,7 +146,7 @@ pub async fn compose_up(
     let build_extra_args =
       parse_extra_args(&stack.config.build_extra_args);
     let command = format!(
-      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} build{build_extra_args}{service_arg}",
+      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} build{build_extra_args}{service_arg}",
     );
     if stack.config.skip_secret_interp {
       let log = run_komodo_command("compose build", command).await;
@@ -185,7 +183,7 @@ pub async fn compose_up(
     let log = run_komodo_command(
       "compose pull",
       format!(
-        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args} pull{service_arg}",
+        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} pull{service_arg}",
       ),
     )
     .await;
@@ -207,16 +205,12 @@ pub async fn compose_up(
 
   // Run compose up
   let extra_args = parse_extra_args(&stack.config.extra_args);
-  let env_file = env_file_path
-    .map(|path| format!(" --env-file {}", path.display()))
-    .unwrap_or_default();
   let command = format!(
     "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
   );
-  if stack.config.skip_secret_interp {
-    let log = run_komodo_command("compose up", command).await;
-    res.deployed = log.success;
-    res.logs.push(log);
+
+  let log = if stack.config.skip_secret_interp {
+    run_komodo_command("compose up", command).await
   } else {
     let (command, mut replacers) = svi::interpolate_variables(
       &command,
@@ -232,35 +226,22 @@ pub async fn compose_up(
     log.stdout = svi::replace_in_string(&log.stdout, &replacers);
     log.stderr = svi::replace_in_string(&log.stderr, &replacers);
 
-    res.logs.push(log);
-  }
+    log
+  };
 
-  // If using a repo based stack, clean up the file at this point.
-  // This will also let user know immediately if there will be a problem
-  // with any volume mounted inside repo directory.
-  // Just use absolute mount points or docker volumes with repo based stack anyways.
-  if !stack.config.files_on_host
-    && stack.config.file_contents.is_empty()
-  {
-    if let Err(e) = fs::remove_dir_all(&root).await.with_context(|| {
-      format!("failed to clean up files after deploy | path: {root:?} | Bring the stack down, and ensure all volumes are mounted outside the repo directory for the next deploy. (preferably use absolute path for mount point)")
-    }) {
-      res
-        .logs
-        .push(Log::error("clean up files", format_serror(&e.into())))
-    }
-  }
+  res.deployed = log.success;
+  res.logs.push(log);
 
   Ok(())
 }
 
 /// Either writes the stack file_contents to a file, or clones the repo.
-/// Returns the env file path, to maybe include in command with --env-file.
+/// Returns (run_directory, env_file_path)
 async fn write_stack(
   stack: &Stack,
   git_token: Option<String>,
   res: &mut ComposeUpResponse,
-) -> anyhow::Result<Option<PathBuf>> {
+) -> anyhow::Result<(PathBuf, Option<PathBuf>)> {
   let root = periphery_config()
     .stack_dir
     .join(to_komodo_name(&stack.name));
@@ -269,13 +250,16 @@ async fn write_stack(
   // Cannot use 'canonicalize' yet as directory may not exist.
   let run_directory = run_directory.components().collect::<PathBuf>();
 
+  let env_vars = environment_vars_from_str(&stack.config.environment)
+    .context("Invalid environment variables")?;
+
   if stack.config.files_on_host {
     // =============
     // FILES ON HOST
     // =============
     // Only need to write environment file here (which does nothing if not using this feature)
-    let env_file_path = match write_environment_file(
-      &stack.config.environment,
+    let env_file_path = match environment::write_file(
+      &env_vars,
       &stack.config.env_file_path,
       stack
         .config
@@ -291,15 +275,60 @@ async fn write_stack(
         return Err(anyhow!("failed to write environment file"));
       }
     };
-    Ok(env_file_path)
-  } else if stack.config.file_contents.is_empty() {
+    Ok((run_directory, env_file_path))
+  } else if stack.config.repo.is_empty() {
+    if stack.config.file_contents.trim().is_empty() {
+      return Err(anyhow!("Must either input compose file contents directly, or use file one host / git repo options."));
+    }
+    // ==============
+    // UI BASED FILES
+    // ==============
+    // Ensure run directory exists
+    fs::create_dir_all(&run_directory).await.with_context(|| {
+      format!(
+        "failed to create stack run directory at {run_directory:?}"
+      )
+    })?;
+    let env_file_path = match environment::write_file(
+      &env_vars,
+      &stack.config.env_file_path,
+      stack
+        .config
+        .skip_secret_interp
+        .then_some(&periphery_config().secrets),
+      &run_directory,
+      &mut res.logs,
+    )
+    .await
+    {
+      Ok(path) => path,
+      Err(_) => {
+        return Err(anyhow!("failed to write environment file"));
+      }
+    };
+    let file_path = run_directory
+      .join(
+        stack
+          .config
+          .file_paths
+          // only need the first one, or default
+          .first()
+          .map(String::as_str)
+          .unwrap_or("compose.yaml"),
+      )
+      .components()
+      .collect::<PathBuf>();
+    fs::write(&file_path, &stack.config.file_contents)
+      .await
+      .with_context(|| {
+        format!("failed to write compose file to {file_path:?}")
+      })?;
+
+    Ok((run_directory, env_file_path))
+  } else {
     // ================
     // REPO BASED FILES
     // ================
-    if stack.config.repo.is_empty() {
-      // Err response will be written to return, no need to add it to log here
-      return Err(anyhow!("Must either input compose file contents directly or provide a repo. Got neither."));
-    }
     let mut args: CloneArgs = stack.into();
     // Set the clone destination to the one created for this run
     args.destination = Some(root.display().to_string());
@@ -318,7 +347,7 @@ async fn write_stack(
               res
                 .logs
                 .push(Log::error("no git token", error.clone()));
-              res.remote_errors.push(ComposeContents {
+              res.remote_errors.push(FileContents {
                 path: Default::default(),
                 contents: error,
               });
@@ -333,8 +362,6 @@ async fn write_stack(
       }
     };
 
-    // 🚨 This has to delete the existing folder before clone.
-    // 🚨 If any volumes were mounted inside the repo folder, the data will be deleted.
     let RepoActionResponse {
       logs,
       commit_hash,
@@ -342,10 +369,10 @@ async fn write_stack(
       env_file_path,
     } = match State
       .resolve(
-        CloneRepo {
+        PullOrCloneRepo {
           args,
           git_token,
-          environment: stack.config.environment.clone(),
+          environment: env_vars,
           env_file_path: stack.config.env_file_path.clone(),
           skip_secret_interp: stack.config.skip_secret_interp,
           // repo replacer only needed for on_clone / on_pull,
@@ -359,15 +386,15 @@ async fn write_stack(
       Ok(res) => res,
       Err(e) => {
         let error = format_serror(
-          &e.context("failed to clone stack repo").into(),
+          &e.context("failed to pull stack repo").into(),
         );
-        res.logs.push(Log::error("clone stack repo", error.clone()));
-        res.remote_errors.push(ComposeContents {
+        res.logs.push(Log::error("pull stack repo", error.clone()));
+        res.remote_errors.push(FileContents {
           path: Default::default(),
           contents: error,
         });
         return Err(anyhow!(
-          "failed to clone stack repo, stopping run"
+          "failed to pull stack repo, stopping run"
         ));
       }
     };
@@ -377,53 +404,10 @@ async fn write_stack(
     res.commit_message = commit_message;
 
     if !all_logs_success(&res.logs) {
-      return Err(anyhow!("Stopped after clone failure"));
+      return Err(anyhow!("Stopped after repo pull failure"));
     }
 
-    Ok(env_file_path)
-  } else {
-    // ==============
-    // UI BASED FILES
-    // ==============
-    // Ensure run directory exists
-    fs::create_dir_all(&run_directory).await.with_context(|| {
-      format!(
-        "failed to create stack run directory at {run_directory:?}"
-      )
-    })?;
-    let env_file_path = match write_environment_file(
-      &stack.config.environment,
-      &stack.config.env_file_path,
-      stack
-        .config
-        .skip_secret_interp
-        .then_some(&periphery_config().secrets),
-      &run_directory,
-      &mut res.logs,
-    )
-    .await
-    {
-      Ok(path) => path,
-      Err(_) => {
-        return Err(anyhow!("failed to write environment file"));
-      }
-    };
-    let file_path = run_directory.join(
-      stack
-        .config
-        .file_paths
-        // only need the first one, or default
-        .first()
-        .map(String::as_str)
-        .unwrap_or("compose.yaml"),
-    );
-    fs::write(&file_path, &stack.config.file_contents)
-      .await
-      .with_context(|| {
-        format!("failed to write compose file to {file_path:?}")
-      })?;
-
-    Ok(env_file_path)
+    Ok((run_directory, env_file_path))
   }
 }
 

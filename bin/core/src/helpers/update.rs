@@ -44,7 +44,6 @@ pub async fn add_update(
   mut update: Update,
 ) -> anyhow::Result<String> {
   update.id = db_client()
-    .await
     .updates
     .insert_one(&update)
     .await
@@ -64,7 +63,6 @@ pub async fn add_update_without_send(
   update: &Update,
 ) -> anyhow::Result<String> {
   let id = db_client()
-    .await
     .updates
     .insert_one(update)
     .await
@@ -78,7 +76,7 @@ pub async fn add_update_without_send(
 
 #[instrument(level = "debug")]
 pub async fn update_update(update: Update) -> anyhow::Result<()> {
-  update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
+  update_one_by_id(&db_client().updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
     .await
     .context("failed to update the update on db. the update build process was deleted")?;
   let update = update_list_item(update).await?;
@@ -93,7 +91,7 @@ async fn update_list_item(
   let username = if User::is_service_user(&update.operator) {
     update.operator.clone()
   } else {
-    find_one_by_id(&db_client().await.users, &update.operator)
+    find_one_by_id(&db_client().users, &update.operator)
       .await
       .context("failed to query mongo for user")?
       .with_context(|| {

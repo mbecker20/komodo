@@ -1,0 +1,207 @@
+use ::slack::types::Block;
+use anyhow::{anyhow, Context};
+use derive_variants::ExtractVariant;
+use futures::future::join_all;
+use komodo_client::entities::{
+  alert::{Alert, AlertData, SeverityLevel},
+  alerter::*,
+  deployment::DeploymentState,
+  stack::StackState,
+  ResourceTargetVariant,
+};
+use mungos::{find::find_collect, mongodb::bson::doc};
+
+use crate::{config::core_config, state::db_client};
+
+mod discord;
+mod slack;
+
+#[instrument]
+pub async fn send_alerts(alerts: &[Alert]) {
+  if alerts.is_empty() {
+    return;
+  }
+
+  let Ok(alerters) = find_collect(
+    &db_client().alerters,
+    doc! { "config.enabled": true },
+    None,
+  )
+  .await
+  .inspect_err(|e| {
+    error!(
+      "ERROR sending alerts | failed to get alerters from db | {e:#}"
+    )
+  }) else {
+    return;
+  };
+
+  let handles =
+    alerts.iter().map(|alert| send_alert(&alerters, alert));
+
+  join_all(handles).await;
+}
+
+#[instrument(level = "debug")]
+async fn send_alert(alerters: &[Alerter], alert: &Alert) {
+  if alerters.is_empty() {
+    return;
+  }
+
+  let alert_type = alert.data.extract_variant();
+
+  let handles = alerters.iter().map(|alerter| async {
+    // Don't send if not enabled
+    if !alerter.config.enabled {
+      return Ok(());
+    }
+
+    // Don't send if alert type not configured on the alerter
+    if !alerter.config.alert_types.is_empty()
+      && !alerter.config.alert_types.contains(&alert_type)
+    {
+      return Ok(());
+    }
+
+    // Don't send if resource is in the blacklist
+    if alerter.config.except_resources.contains(&alert.target) {
+      return Ok(());
+    }
+
+    // Don't send if whitelist configured and target is not included
+    if !alerter.config.resources.is_empty()
+      && !alerter.config.resources.contains(&alert.target)
+    {
+      return Ok(());
+    }
+
+    match &alerter.config.endpoint {
+      AlerterEndpoint::Custom(CustomAlerterEndpoint { url }) => {
+        send_custom_alert(url, alert).await.with_context(|| {
+          format!(
+            "failed to send alert to custom alerter {}",
+            alerter.name
+          )
+        })
+      }
+      AlerterEndpoint::Slack(SlackAlerterEndpoint { url }) => {
+        slack::send_alert(url, alert).await.with_context(|| {
+          format!(
+            "failed to send alert to slack alerter {}",
+            alerter.name
+          )
+        })
+      }
+      AlerterEndpoint::Discord(DiscordAlerterEndpoint { url }) => {
+        discord::send_alert(url, alert).await.with_context(|| {
+          format!(
+            "failed to send alert to Discord alerter {}",
+            alerter.name
+          )
+        })
+      }
+    }
+  });
+
+  join_all(handles)
+    .await
+    .into_iter()
+    .filter_map(|res| res.err())
+    .for_each(|e| error!("{e:#}"));
+}
+
+#[instrument(level = "debug")]
+async fn send_custom_alert(
+  url: &str,
+  alert: &Alert,
+) -> anyhow::Result<()> {
+  let res = reqwest::Client::new()
+    .post(url)
+    .json(alert)
+    .send()
+    .await
+    .context("failed at post request to alerter")?;
+  let status = res.status();
+  if !status.is_success() {
+    let text = res
+      .text()
+      .await
+      .context("failed to get response text on alerter response")?;
+    return Err(anyhow!(
+      "post to alerter failed | {status} | {text}"
+    ));
+  }
+  Ok(())
+}
+
+fn fmt_region(region: &Option<String>) -> String {
+  match region {
+    Some(region) => format!(" ({region})"),
+    None => String::new(),
+  }
+}
+
+fn fmt_docker_container_state(state: &DeploymentState) -> String {
+  match state {
+    DeploymentState::Running => String::from("Running ▶️"),
+    DeploymentState::Exited => String::from("Exited 🛑"),
+    DeploymentState::Restarting => String::from("Restarting 🔄"),
+    DeploymentState::NotDeployed => String::from("Not Deployed"),
+    _ => state.to_string(),
+  }
+}
+
+fn fmt_stack_state(state: &StackState) -> String {
+  match state {
+    StackState::Running => String::from("Running ▶️"),
+    StackState::Stopped => String::from("Stopped 🛑"),
+    StackState::Restarting => String::from("Restarting 🔄"),
+    StackState::Down => String::from("Down ⬇️"),
+    _ => state.to_string(),
+  }
+}
+
+fn fmt_level(level: SeverityLevel) -> &'static str {
+  match level {
+    SeverityLevel::Critical => "CRITICAL 🚨",
+    SeverityLevel::Warning => "WARNING ‼️",
+    SeverityLevel::Ok => "OK ✅",
+  }
+}
+
+fn resource_link(
+  resource_type: ResourceTargetVariant,
+  id: &str,
+) -> String {
+  let path = match resource_type {
+    ResourceTargetVariant::System => unreachable!(),
+    ResourceTargetVariant::Build => format!("/builds/{id}"),
+    ResourceTargetVariant::Builder => {
+      format!("/builders/{id}")
+    }
+    ResourceTargetVariant::Deployment => {
+      format!("/deployments/{id}")
+    }
+    ResourceTargetVariant::Stack => {
+      format!("/stacks/{id}")
+    }
+    ResourceTargetVariant::Server => {
+      format!("/servers/{id}")
+    }
+    ResourceTargetVariant::Repo => format!("/repos/{id}"),
+    ResourceTargetVariant::Alerter => {
+      format!("/alerters/{id}")
+    }
+    ResourceTargetVariant::Procedure => {
+      format!("/procedures/{id}")
+    }
+    ResourceTargetVariant::ServerTemplate => {
+      format!("/server-templates/{id}")
+    }
+    ResourceTargetVariant::ResourceSync => {
+      format!("/resource-syncs/{id}")
+    }
+  };
+
+  format!("{}{path}", core_config().host)
+}

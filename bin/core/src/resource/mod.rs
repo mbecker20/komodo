@@ -12,6 +12,7 @@ use komodo_client::{
     komodo_timestamp,
     permission::PermissionLevel,
     resource::{AddFilters, Resource, ResourceQuery},
+    tag::Tag,
     to_komodo_name,
     update::Update,
     user::User,
@@ -49,6 +50,7 @@ mod build;
 mod builder;
 mod deployment;
 mod procedure;
+mod refresh;
 mod repo;
 mod server;
 mod server_template;
@@ -61,6 +63,7 @@ pub use build::{
 pub use procedure::{
   refresh_procedure_state_cache, spawn_procedure_state_refresh_loop,
 };
+pub use refresh::spawn_resource_refresh_loop;
 pub use repo::{
   refresh_repo_state_cache, spawn_repo_state_refresh_loop,
 };
@@ -82,7 +85,8 @@ pub trait KomodoResource {
     + From<Self::PartialConfig>
     + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
-  type PartialConfig: Default
+  type PartialConfig: Clone
+    + Default
     + From<Self::Config>
     + Serialize
     + MaybeNone;
@@ -90,7 +94,8 @@ pub trait KomodoResource {
     + Serialize
     + Diff
     + MaybeNone;
-  type Info: Send
+  type Info: Clone
+    + Send
     + Sync
     + Unpin
     + Default
@@ -274,7 +279,7 @@ pub async fn get_resource_ids_for_user<T: KomodoResource>(
     ))),
     // And any ids using the permissions table
     find_collect(
-      &db_client().await.permissions,
+      &db_client().permissions,
       doc! {
         "$or": user_target_query(&user.id, &groups)?,
         "resource_target.type": resource_type.as_ref(),
@@ -351,7 +356,7 @@ pub async fn get_user_permission_on_resource<T: KomodoResource>(
 
   // Overlay any specific permissions
   let permission = find_collect(
-    &db_client().await.permissions,
+    &db_client().permissions,
     doc! {
       "$or": user_target_query(&user.id, &groups)?,
       "resource_target.type": resource_type.as_ref(),
@@ -435,6 +440,8 @@ pub type IdResourceMap<T> = HashMap<
 
 #[instrument(level = "debug")]
 pub async fn get_id_to_resource_map<T: KomodoResource>(
+  id_to_tags: &HashMap<String, Tag>,
+  match_tags: &[String],
 ) -> anyhow::Result<IdResourceMap<T>> {
   let res = find_collect(T::coll().await, None, None)
     .await
@@ -442,6 +449,34 @@ pub async fn get_id_to_resource_map<T: KomodoResource>(
       format!("failed to pull {}s from mongo", T::resource_type())
     })?
     .into_iter()
+    .filter(|resource| {
+      if match_tags.is_empty() {
+        return true;
+      }
+      for tag in match_tags.iter() {
+        for resource_tag in &resource.tags {
+          match ObjectId::from_str(resource_tag) {
+            Ok(_) => match id_to_tags
+              .get(resource_tag)
+              .map(|tag| tag.name.as_str())
+            {
+              Some(name) => {
+                if tag != name {
+                  return false;
+                }
+              }
+              None => return false,
+            },
+            Err(_) => {
+              if resource_tag != tag {
+                return false;
+              }
+            }
+          }
+        }
+      }
+      true
+    })
     .map(|r| (r.id.clone(), r))
     .collect();
   Ok(res)
@@ -765,7 +800,6 @@ where
   let target: ResourceTarget = target.into();
   let (variant, id) = target.extract_variant_id();
   if let Err(e) = db_client()
-    .await
     .permissions
     .delete_many(doc! {
       "resource_target.type": variant.as_ref(),
@@ -799,7 +833,6 @@ where
     ResourceTarget::System(_) => return,
   };
   if let Err(e) = db_client()
-    .await
     .users
     .update_many(
       doc! {},

@@ -30,7 +30,7 @@ pub fn spawn_prune_loop() {
 }
 
 async fn prune_images() -> anyhow::Result<()> {
-  let futures = find_collect(&db_client().await.servers, None, None)
+  let futures = find_collect(&db_client().servers, None, None)
     .await
     .context("failed to get servers from db")?
     .into_iter()
@@ -66,13 +66,14 @@ async fn prune_stats() -> anyhow::Result<()> {
     - core_config().keep_stats_for_days as u128 * ONE_DAY_MS)
     as i64;
   let res = db_client()
-    .await
     .stats
     .delete_many(doc! {
       "ts": { "$lt": delete_before_ts }
     })
     .await?;
-  info!("deleted {} stats from db", res.deleted_count);
+  if res.deleted_count > 0 {
+    info!("deleted {} stats from db", res.deleted_count);
+  }
   Ok(())
 }
 
@@ -84,12 +85,13 @@ async fn prune_alerts() -> anyhow::Result<()> {
     - core_config().keep_alerts_for_days as u128 * ONE_DAY_MS)
     as i64;
   let res = db_client()
-    .await
     .alerts
     .delete_many(doc! {
       "ts": { "$lt": delete_before_ts }
     })
     .await?;
-  info!("deleted {} alerts from db", res.deleted_count);
+  if res.deleted_count > 0 {
+    info!("deleted {} alerts from db", res.deleted_count);
+  }
   Ok(())
 }

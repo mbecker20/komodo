@@ -5,8 +5,8 @@ use komodo_client::{
     config::core::CoreConfig,
     permission::PermissionLevel,
     sync::{
-      PendingSyncUpdatesData, ResourceSync, ResourceSyncActionState,
-      ResourceSyncListItem, ResourceSyncState,
+      ResourceSync, ResourceSyncActionState, ResourceSyncListItem,
+      ResourceSyncState,
     },
     user::User,
   },
@@ -100,17 +100,18 @@ impl Resolve<GetResourceSyncsSummary, User> for State {
     for resource_sync in resource_syncs {
       res.total += 1;
 
-      match resource_sync.info.pending.data {
-        PendingSyncUpdatesData::Ok(data) => {
-          if !data.no_updates() {
-            res.pending += 1;
-            continue;
-          }
-        }
-        PendingSyncUpdatesData::Err(_) => {
-          res.failed += 1;
-          continue;
-        }
+      if !(resource_sync.info.pending_deploy.to_deploy == 0
+        && resource_sync.info.resource_updates.is_empty()
+        && resource_sync.info.variable_updates.is_empty()
+        && resource_sync.info.user_group_updates.is_empty())
+      {
+        res.pending += 1;
+        continue;
+      } else if resource_sync.info.pending_error.is_some()
+        || !resource_sync.info.remote_errors.is_empty()
+      {
+        res.failed += 1;
+        continue;
       }
 
       match (
@@ -201,7 +202,11 @@ impl Resolve<GetSyncWebhooksEnabled, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let refresh_url =
       format!("{host}/listener/github/sync/{}/refresh", sync.id);
     let sync_url =

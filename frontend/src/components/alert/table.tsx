@@ -4,9 +4,10 @@ import { AlertLevel } from ".";
 import { AlertDetailsDialog } from "./details";
 import { UsableResource } from "@types";
 import { ResourceLink } from "@components/resources/common";
-import { bg_color_class_by_intention } from "@lib/color";
-import { Card, CardHeader } from "@ui/card";
-import { cn } from "@lib/utils";
+import {
+  alert_level_intention,
+  text_color_class_by_intention,
+} from "@lib/color";
 
 export const AlertsTable = ({
   alerts,
@@ -37,15 +38,16 @@ export const AlertsTable = ({
         showResolved && {
           header: "Status",
           cell: ({ row }) => {
-            const color = bg_color_class_by_intention(
-              row.original.resolved ? "Good" : "Critical"
-            );
             return (
-              <Card className={cn("w-fit", color)}>
-                <CardHeader className="py-0 px-2">
-                  {row.original.resolved ? "Resolved" : "Open"}
-                </CardHeader>
-              </Card>
+              <div
+                className={text_color_class_by_intention(
+                  row.original.resolved
+                    ? "Good"
+                    : alert_level_intention(row.original.level)
+                )}
+              >
+                {row.original.resolved ? "RESOLVED" : "OPEN"}
+              </div>
             );
           },
         },

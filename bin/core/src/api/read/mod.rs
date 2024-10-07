@@ -60,8 +60,6 @@ enum ReadRequest {
   GetVersion(GetVersion),
   #[to_string_resolver]
   GetCoreInfo(GetCoreInfo),
-  #[to_string_resolver]
-  ListAwsEcrLabels(ListAwsEcrLabels),
   ListSecrets(ListSecrets),
   ListGitProvidersFromConfig(ListGitProvidersFromConfig),
   ListDockerRegistriesFromConfig(ListDockerRegistriesFromConfig),
@@ -283,12 +281,15 @@ fn core_info() -> &'static String {
     let info = GetCoreInfoResponse {
       title: config.title.clone(),
       monitoring_interval: config.monitoring_interval,
-      webhook_base_url: config
-        .webhook_base_url
-        .clone()
-        .unwrap_or_else(|| config.host.clone()),
+      webhook_base_url: if config.webhook_base_url.is_empty() {
+        config.host.clone()
+      } else {
+        config.webhook_base_url.clone()
+      },
       transparent_mode: config.transparent_mode,
       ui_write_disabled: config.ui_write_disabled,
+      disable_confirm_dialog: config.disable_confirm_dialog,
+      disable_non_admin_create: config.disable_non_admin_create,
       github_webhook_owners: config
         .github_webhook_app
         .installations
@@ -309,31 +310,6 @@ impl ResolveToString<GetCoreInfo, User> for State {
     _: User,
   ) -> anyhow::Result<String> {
     Ok(core_info().to_string())
-  }
-}
-
-fn ecr_labels() -> &'static String {
-  static ECR_LABELS: OnceLock<String> = OnceLock::new();
-  ECR_LABELS.get_or_init(|| {
-    serde_json::to_string(
-      &core_config()
-        .aws_ecr_registries
-        .iter()
-        .map(|reg| reg.label.clone())
-        .collect::<Vec<_>>(),
-    )
-    .context("failed to serialize ecr registries")
-    .unwrap()
-  })
-}
-
-impl ResolveToString<ListAwsEcrLabels, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListAwsEcrLabels {}: ListAwsEcrLabels,
-    _: User,
-  ) -> anyhow::Result<String> {
-    Ok(ecr_labels().to_string())
   }
 }
 

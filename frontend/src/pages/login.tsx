@@ -13,11 +13,11 @@ import { useAuth, useLoginOptions, useUserInvalidate } from "@lib/hooks";
 import { useState } from "react";
 import { ThemeToggle } from "@ui/theme";
 import { AUTH_TOKEN_STORAGE_KEY, KOMODO_BASE_URL } from "@main";
-import { Loader2, X } from "lucide-react";
+import { KeyRound, Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useToast } from "@ui/use-toast";
 
-type OauthProvider = "Github" | "Google";
+type OauthProvider = "Github" | "Google" | "OIDC";
 
 const login_with_oauth = (provider: OauthProvider) => {
   const redirect = encodeURIComponent(location.href);
@@ -153,6 +153,7 @@ export const Login = () => {
                 [
                   [options?.google, "Google"],
                   [options?.github, "Github"],
+                  [options?.oidc, "OIDC"],
                 ] as Array<[boolean | undefined, OauthProvider]>
               ).map(
                 ([enabled, provider]) =>
@@ -164,11 +165,15 @@ export const Login = () => {
                       onClick={() => login_with_oauth(provider)}
                     >
                       {provider}
-                      <img
-                        src={`/icons/${provider.toLowerCase()}.svg`}
-                        alt={provider}
-                        className="w-4 h-4"
-                      />
+                      {provider === "OIDC" ? (
+                        <KeyRound className="w-4 h-4" />
+                      ) : (
+                        <img
+                          src={`/icons/${provider.toLowerCase()}.svg`}
+                          alt={provider}
+                          className="w-4 h-4"
+                        />
+                      )}
                     </Button>
                   )
               )}

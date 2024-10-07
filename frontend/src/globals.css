@@ -4,23 +4,20 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border scroll-smooth;
   }
   *::-webkit-scrollbar {
-    background-color: hsl(var(--border));
-    @apply w-1;
-    @apply h-1;
+    @apply w-1 h-1 bg-background;
   }
   *::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--primary));
-    @apply rounded-lg;
+    @apply rounded-lg bg-primary;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+      "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-y: hidden;
@@ -29,14 +26,15 @@
     @apply bg-card text-card-foreground border rounded-xl min-h-full text-xs p-4 whitespace-pre-wrap scroll-m-4 break-all;
   }
   code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+      monospace;
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 220.1 0.1% 98.3%;
+    --foreground: 220.1 40.1% 5.2%;
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
@@ -63,24 +61,24 @@
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
+    --background: 220.1 27.9% 6.1%;
     --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
+    --card: 220.1 27.9% 6.1%;
     --card-foreground: 210 20% 98%;
-    --popover: 224 71.4% 4.1%;
+    --popover: 220.1 27.9% 6.1%;
     --popover-foreground: 210 20% 98%;
     --primary: 210 20% 98%;
     --primary-foreground: 220.9 39.3% 11%;
-    --secondary: 215 27.9% 16.9%;
+    --secondary: 220.1 27.9% 12.9%;
     --secondary-foreground: 210 20% 98%;
-    --muted: 215 27.9% 16.9%;
+    --muted: 220.1 27.9% 12.9%;
     --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 215 27.9% 16.9%;
+    --accent: 220.1 27.9% 12.9%;
     --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
+    --border: 220.1 27.9% 12.9%;
+    --input: 220.1 27.9% 12.9%;
     --ring: 216 12.2% 83.9%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -88,4 +86,12 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+}
+
+.monaco-editor {
+  position: absolute !important;
+}
+
+.asdfa {
+  color: #151b25
 }

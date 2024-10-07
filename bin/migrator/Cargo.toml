@@ -10,10 +10,10 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-komodo_client.workspace = true
+# komodo_client.workspace = true
 logger.workspace = true
 #
-mungos.workspace = true
+# mungos.workspace = true
 #
 tokio.workspace = true
 anyhow.workspace = true

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use komodo_client::entities::{
-  update::Log, CloneArgs, EnvironmentVar, LatestCommit, SystemCommand,
+  update::Log, CloneArgs, EnvironmentVar, LatestCommit,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -38,17 +38,35 @@ fn default_env_file_path() -> String {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(RepoActionResponse)]
 pub struct PullRepo {
-  pub name: String,
-  pub branch: Option<String>,
-  pub commit: Option<String>,
-  pub path: Option<String>,
-  pub on_pull: Option<SystemCommand>,
+  pub args: CloneArgs,
   #[serde(default)]
   pub environment: Vec<EnvironmentVar>,
   #[serde(default = "default_env_file_path")]
   pub env_file_path: String,
   #[serde(default)]
   pub skip_secret_interp: bool,
+  /// Override git token with one sent from core.
+  pub git_token: Option<String>,
+  /// Propogate any secret replacers from core interpolation.
+  #[serde(default)]
+  pub replacers: Vec<(String, String)>,
+}
+
+//
+
+/// Either pull or clone depending on whether it exists.
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(RepoActionResponse)]
+pub struct PullOrCloneRepo {
+  pub args: CloneArgs,
+  #[serde(default)]
+  pub environment: Vec<EnvironmentVar>,
+  #[serde(default = "default_env_file_path")]
+  pub env_file_path: String,
+  #[serde(default)]
+  pub skip_secret_interp: bool,
+  /// Override git token with one sent from core.
+  pub git_token: Option<String>,
   /// Propogate any secret replacers from core interpolation.
   #[serde(default)]
   pub replacers: Vec<(String, String)>,

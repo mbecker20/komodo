@@ -217,10 +217,17 @@ pub struct GetDeploymentsSummary {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetDeploymentsSummaryResponse {
+  /// The total number of Deployments
   pub total: I64,
+  /// The number of Deployments with Running state
   pub running: I64,
+  /// The number of Deployments with Stopped or Paused state
   pub stopped: I64,
+  /// The number of Deployments with NotDeployed state
   pub not_deployed: I64,
+  /// The number of Deployments with Restarting or Dead or Created (other) state
+  pub unhealthy: I64,
+  /// The number of Deployments with Unknown state
   pub unknown: I64,
 }
 

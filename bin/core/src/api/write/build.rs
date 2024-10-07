@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context};
-use mongo_indexed::doc;
+use git::GitRes;
 use komodo_client::{
   api::write::*,
   entities::{
@@ -10,6 +10,7 @@ use komodo_client::{
     CloneArgs, NoData,
   },
 };
+use mongo_indexed::doc;
 use mungos::mongodb::bson::to_document;
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
@@ -18,7 +19,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::{git_token, random_string},
+  helpers::git_token,
   resource,
   state::{db_client, github_client, State},
 };
@@ -96,40 +97,40 @@ impl Resolve<RefreshBuildCache, User> for State {
     )
     .await?;
 
-    if build.config.repo.is_empty() {
+    if build.config.repo.is_empty()
+      || build.config.git_provider.is_empty()
+    {
       // Nothing to do here
-      return Ok(NoData {})
+      return Ok(NoData {});
     }
 
     let config = core_config();
 
-    let repo_dir = config.repo_directory.join(random_string(10));
     let mut clone_args: CloneArgs = (&build).into();
+    let repo_path =
+      clone_args.unique_path(&core_config().repo_directory)?;
+    clone_args.destination = Some(repo_path.display().to_string());
     // Don't want to run these on core.
     clone_args.on_clone = None;
     clone_args.on_pull = None;
-    clone_args.destination = Some(repo_dir.display().to_string());
 
-    let access_token = match (&clone_args.account, &clone_args.provider)
-    {
-      (None, _) => None,
-      (Some(_), None) => {
-        return Err(anyhow!(
-          "Account is configured, but provider is empty"
-        ))
-      }
-      (Some(username), Some(provider)) => {
-        git_token(provider, username, |https| {
+    let access_token = if let Some(username) = &clone_args.account {
+      git_token(&clone_args.provider, username, |https| {
           clone_args.https = https
         })
         .await
         .with_context(
-          || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+          || format!("Failed to get git token in call to db. Stopping run. | {} | {username}", clone_args.provider),
         )?
-      }
+    } else {
+      None
     };
 
-    let (_, latest_hash, latest_message, _) = git::clone(
+    let GitRes {
+      hash: latest_hash,
+      message: latest_message,
+      ..
+    } = git::pull_or_clone(
       clone_args,
       &config.repo_directory,
       access_token,
@@ -153,7 +154,6 @@ impl Resolve<RefreshBuildCache, User> for State {
       .context("failed to serialize build info to bson")?;
 
     db_client()
-      .await
       .builds
       .update_one(
         doc! { "name": &build.name },
@@ -161,12 +161,6 @@ impl Resolve<RefreshBuildCache, User> for State {
       )
       .await
       .context("failed to update build info on db")?;
-
-    if repo_dir.exists() {
-      if let Err(e) = std::fs::remove_dir_all(&repo_dir) {
-        warn!("failed to remove build cache update repo directory | {e:?}")
-      }
-    }
 
     Ok(NoData {})
   }
@@ -232,7 +226,11 @@ impl Resolve<CreateBuildWebhook, User> for State {
       &build.config.webhook_secret
     };
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {
@@ -338,7 +336,11 @@ impl Resolve<DeleteBuildWebhook, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {

@@ -156,7 +156,7 @@ impl ServerConfig {
 }
 
 fn default_address() -> String {
-  String::from("http://localhost:8120")
+  String::from("https://periphery:8120")
 }
 
 fn default_enabled() -> bool {

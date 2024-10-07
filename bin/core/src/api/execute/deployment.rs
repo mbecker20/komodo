@@ -5,8 +5,7 @@ use formatting::format_serror;
 use komodo_client::{
   api::execute::*,
   entities::{
-    build::{Build, ImageRegistry},
-    config::core::AwsEcrConfig,
+    build::{Build, ImageRegistryConfig},
     deployment::{
       extract_registry_domain, Deployment, DeploymentImage,
     },
@@ -22,14 +21,11 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  cloud::aws::ecr,
-  config::core_config,
   helpers::{
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_container_command,
-      interpolate_variables_secrets_into_environment,
       interpolate_variables_secrets_into_extra_args,
+      interpolate_variables_secrets_into_string,
     },
     periphery_client,
     query::get_variables_and_secrets,
@@ -98,20 +94,11 @@ impl Resolve<Deploy, (User, Update)> for State {
       .context("Failed server health check, stopping run.")?;
 
     // This block resolves the attached Build to an actual versioned image
-    let (version, registry_token, aws_ecr) = match &deployment
-      .config
-      .image
-    {
+    let (version, registry_token) = match &deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
         let build = resource::get::<Build>(build_id).await?;
-        let image_name = get_image_name(&build, |label| {
-          core_config()
-            .aws_ecr_registries
-            .iter()
-            .find(|reg| &reg.label == label)
-            .map(AwsEcrConfig::from)
-        })
-        .context("failed to create image name")?;
+        let image_name = get_image_name(&build)
+          .context("failed to create image name")?;
         let version = if version.is_none() {
           build.config.version
         } else {
@@ -133,45 +120,27 @@ impl Resolve<Deploy, (User, Update)> for State {
         deployment.config.image = DeploymentImage::Image {
           image: format!("{image_name}:{version_str}"),
         };
-        match build.config.image_registry {
-          ImageRegistry::None(_) => (version, None, None),
-          ImageRegistry::AwsEcr(label) => {
-            let config = core_config()
-              .aws_ecr_registries
-              .iter()
-              .find(|reg| reg.label == label)
-              .with_context(|| {
-                format!(
-                  "did not find config for aws ecr registry {label}"
-                )
-              })?;
-            let token = ecr::get_ecr_token(
-              &config.region,
-              &config.access_key_id,
-              &config.secret_access_key,
-            )
-            .await
-            .context("failed to create aws ecr login token")?;
-            (version, Some(token), Some(AwsEcrConfig::from(config)))
+        if build.config.image_registry.domain.is_empty() {
+          (version, None)
+        } else {
+          let ImageRegistryConfig {
+            domain, account, ..
+          } = build.config.image_registry;
+          if deployment.config.image_registry_account.is_empty() {
+            deployment.config.image_registry_account = account
           }
-          ImageRegistry::Standard(params) => {
-            if deployment.config.image_registry_account.is_empty() {
-              deployment.config.image_registry_account =
-                params.account
-            }
-            let token = if !deployment
-              .config
-              .image_registry_account
-              .is_empty()
-            {
-              registry_token(&params.domain, &deployment.config.image_registry_account).await.with_context(
-                || format!("Failed to get git token in call to db. Stopping run. | {} | {}", params.domain, deployment.config.image_registry_account),
-              )?
-            } else {
-              None
-            };
-            (version, token, None)
-          }
+          let token = if !deployment
+            .config
+            .image_registry_account
+            .is_empty()
+          {
+            registry_token(&domain, &deployment.config.image_registry_account).await.with_context(
+              || format!("Failed to get git token in call to db. Stopping run. | {domain} | {}", deployment.config.image_registry_account),
+            )?
+          } else {
+            None
+          };
+          (version, token)
         }
       }
       DeploymentImage::Image { image } => {
@@ -187,7 +156,7 @@ impl Resolve<Deploy, (User, Update)> for State {
         } else {
           None
         };
-        (Version::default(), token, None)
+        (Version::default(), token)
       }
     };
 
@@ -199,9 +168,23 @@ impl Resolve<Deploy, (User, Update)> for State {
       let mut global_replacers = HashSet::new();
       let mut secret_replacers = HashSet::new();
 
-      interpolate_variables_secrets_into_environment(
+      interpolate_variables_secrets_into_string(
         &vars_and_secrets,
         &mut deployment.config.environment,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_string(
+        &vars_and_secrets,
+        &mut deployment.config.ports,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_string(
+        &vars_and_secrets,
+        &mut deployment.config.volumes,
         &mut global_replacers,
         &mut secret_replacers,
       )?;
@@ -213,7 +196,7 @@ impl Resolve<Deploy, (User, Update)> for State {
         &mut secret_replacers,
       )?;
 
-      interpolate_variables_secrets_into_container_command(
+      interpolate_variables_secrets_into_string(
         &vars_and_secrets,
         &mut deployment.config.command,
         &mut global_replacers,
@@ -240,7 +223,6 @@ impl Resolve<Deploy, (User, Update)> for State {
         stop_signal,
         stop_time,
         registry_token,
-        aws_ecr,
         replacers: secret_replacers.into_iter().collect(),
       })
       .await

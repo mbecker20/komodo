@@ -46,7 +46,6 @@ impl Resolve<CreateVariable, User> for State {
     };
 
     db_client()
-      .await
       .variables
       .insert_one(&variable)
       .await
@@ -86,7 +85,6 @@ impl Resolve<UpdateVariableValue, User> for State {
     }
 
     db_client()
-      .await
       .variables
       .update_one(
         doc! { "name": &name },
@@ -133,7 +131,6 @@ impl Resolve<UpdateVariableDescription, User> for State {
       return Err(anyhow!("only admins can update variables"));
     }
     db_client()
-      .await
       .variables
       .update_one(
         doc! { "name": &name },
@@ -156,7 +153,6 @@ impl Resolve<UpdateVariableIsSecret, User> for State {
       return Err(anyhow!("only admins can update variables"));
     }
     db_client()
-      .await
       .variables
       .update_one(
         doc! { "name": &name },
@@ -179,7 +175,6 @@ impl Resolve<DeleteVariable, User> for State {
     }
     let variable = get_variable(&name).await?;
     db_client()
-      .await
       .variables
       .delete_one(doc! { "name": &name })
       .await

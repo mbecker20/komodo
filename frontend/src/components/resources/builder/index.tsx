@@ -1,5 +1,5 @@
 import { NewLayout } from "@components/layouts";
-import { useRead, useWrite } from "@lib/hooks";
+import { useRead, useUser, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
@@ -18,6 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BuilderConfig } from "./config";
 import { DeleteResource, ResourceLink } from "../common";
 import { BuilderTable } from "./table";
+import { ResourcePageHeader } from "@components/util";
 
 export const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}, { refetchInterval: 5000 }).data?.find(
@@ -39,7 +40,7 @@ export const BuilderInstanceType = ({ id }: { id: string }) => {
 
 export const BuilderComponents: RequiredResourceComponents = {
   list_item: (id) => useBuilder(id),
-  use_links: () => undefined,
+  resource_links: () => undefined,
 
   Description: () => <>Build on your servers, or single-use AWS instances.</>,
 
@@ -61,12 +62,14 @@ export const BuilderComponents: RequiredResourceComponents = {
       </Link>
     );
   },
-
   New: () => {
+    const is_admin = useUser().data?.admin;
     const nav = useNavigate();
     const { mutateAsync } = useWrite("CreateBuilder");
     const [name, setName] = useState("");
     const [type, setType] = useState<Types.BuilderConfig["type"]>();
+
+    if (!is_admin) return null;
 
     return (
       <NewLayout
@@ -115,6 +118,7 @@ export const BuilderComponents: RequiredResourceComponents = {
   Icon: () => <Factory className="w-4 h-4" />,
   BigIcon: () => <Factory className="w-8 h-8" />,
 
+  State: () => null,
   Status: {},
 
   Info: {
@@ -139,4 +143,18 @@ export const BuilderComponents: RequiredResourceComponents = {
   Config: BuilderConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Builder" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const builder = useBuilder(id);
+
+    return (
+      <ResourcePageHeader
+        intent="None"
+        icon={<Factory className="w-8" />}
+        name={builder?.name}
+        state={builder?.info.builder_type}
+        status={builder?.info.instance_type}
+      />
+    );
+  },
 };

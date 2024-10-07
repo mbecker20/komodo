@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Context};
+use git::GitRes;
 use komodo_client::entities::{
   to_komodo_name, update::Log, CloneArgs, LatestCommit,
 };
 use periphery_client::api::git::{
-  CloneRepo, DeleteRepo, GetLatestCommit, PullRepo,
+  CloneRepo, DeleteRepo, GetLatestCommit, PullOrCloneRepo, PullRepo,
   RepoActionResponse,
 };
 use resolver_api::Resolve;
@@ -19,7 +20,7 @@ impl Resolve<GetLatestCommit, ()> for State {
     let repo_path = periphery_config().repo_dir.join(name);
     if !repo_path.is_dir() {
       return Err(anyhow!(
-        "repo path is not directory. is it cloned?"
+        "Repo path is not directory. is it cloned?"
       ));
     }
     git::get_commit_hash_info(&repo_path).await
@@ -27,7 +28,10 @@ impl Resolve<GetLatestCommit, ()> for State {
 }
 
 impl Resolve<CloneRepo> for State {
-  #[instrument(name = "CloneRepo", skip(self, environment))]
+  #[instrument(
+    name = "CloneRepo",
+    skip(self, git_token, environment, replacers)
+  )]
   async fn resolve(
     &self,
     CloneRepo {
@@ -43,18 +47,13 @@ impl Resolve<CloneRepo> for State {
     let CloneArgs {
       provider, account, ..
     } = &args;
-    let token = match (account, provider, git_token) {
-      (None, _, _) => None,
-      (Some(_), None, _) => {
-        return Err(anyhow!(
-          "got incoming git account but no git provider"
-        ))
-      }
-      (Some(_), Some(_), Some(token)) => Some(token),
-      (Some(account), Some(provider), None) => Some(
+    let token = match (account, git_token) {
+      (None, _) => None,
+      (Some(_), Some(token)) => Some(token),
+      (Some(account),  None) => Some(
         crate::helpers::git_token(provider, account).map(ToString::to_string)
           .with_context(
-            || format!("failed to get git token from periphery config | provider: {provider} | account: {account}")
+            || format!("Failed to get git token from periphery config | provider: {provider} | account: {account}")
           )?,
       ),
     };
@@ -68,29 +67,36 @@ impl Resolve<CloneRepo> for State {
       &replacers,
     )
     .await
-    .map(|(logs, commit_hash, commit_message, env_file_path)| {
-      RepoActionResponse {
-        logs,
-        commit_hash,
-        commit_message,
-        env_file_path,
-      }
-    })
+    .map(
+      |GitRes {
+         logs,
+         hash,
+         message,
+         env_file_path,
+       }| {
+        RepoActionResponse {
+          logs,
+          commit_hash: hash,
+          commit_message: message,
+          env_file_path,
+        }
+      },
+    )
   }
 }
 
 //
 
 impl Resolve<PullRepo> for State {
-  #[instrument(name = "PullRepo", skip(self, on_pull, environment))]
+  #[instrument(
+    name = "PullRepo",
+    skip(self, git_token, environment, replacers)
+  )]
   async fn resolve(
     &self,
     PullRepo {
-      name,
-      branch,
-      commit,
-      path,
-      on_pull,
+      args,
+      git_token,
       environment,
       env_file_path,
       skip_secret_interp,
@@ -98,32 +104,104 @@ impl Resolve<PullRepo> for State {
     }: PullRepo,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
-    let default_path =
-      periphery_config().repo_dir.join(to_komodo_name(&name));
-    let path = match path {
-      // If path is absolute, this will resolve to exactly the given absolute path.
-      // If path is relative, it will be relative to the default repo directory.
-      Some(path) => default_path.join(path),
-      None => default_path,
+    let CloneArgs {
+      provider, account, ..
+    } = &args;
+    let token = match (account, git_token) {
+      (None, _) => None,
+      (Some(_), Some(token)) => Some(token),
+      (Some(account),  None) => Some(
+        crate::helpers::git_token(provider, account).map(ToString::to_string)
+          .with_context(
+            || format!("Failed to get git token from periphery config | provider: {provider} | account: {account}")
+          )?,
+      ),
     };
-    let (logs, commit_hash, commit_message, env_file_path) =
-      git::pull(
-        &path,
-        &branch,
-        &commit,
-        &on_pull,
-        &environment,
-        &env_file_path,
-        (!skip_secret_interp).then_some(&periphery_config().secrets),
-        &replacers,
-      )
-      .await;
-    Ok(RepoActionResponse {
-      logs,
-      commit_hash,
-      commit_message,
+    git::pull(
+      args,
+      &periphery_config().repo_dir,
+      token,
+      &environment,
+      &env_file_path,
+      (!skip_secret_interp).then_some(&periphery_config().secrets),
+      &replacers,
+    )
+    .await
+    .map(
+      |GitRes {
+         logs,
+         hash,
+         message,
+         env_file_path,
+       }| {
+        RepoActionResponse {
+          logs,
+          commit_hash: hash,
+          commit_message: message,
+          env_file_path,
+        }
+      },
+    )
+  }
+}
+
+//
+
+impl Resolve<PullOrCloneRepo> for State {
+  #[instrument(
+    name = "PullOrCloneRepo",
+    skip(self, git_token, environment, replacers)
+  )]
+  async fn resolve(
+    &self,
+    PullOrCloneRepo {
+      args,
+      git_token,
+      environment,
       env_file_path,
-    })
+      skip_secret_interp,
+      replacers,
+    }: PullOrCloneRepo,
+    _: (),
+  ) -> anyhow::Result<RepoActionResponse> {
+    let CloneArgs {
+      provider, account, ..
+    } = &args;
+    let token = match (account, git_token) {
+      (None, _) => None,
+      (Some(_), Some(token)) => Some(token),
+      (Some(account),  None) => Some(
+        crate::helpers::git_token(provider, account).map(ToString::to_string)
+          .with_context(
+            || format!("Failed to get git token from periphery config | provider: {provider} | account: {account}")
+          )?,
+      ),
+    };
+    git::pull_or_clone(
+      args,
+      &periphery_config().repo_dir,
+      token,
+      &environment,
+      &env_file_path,
+      (!skip_secret_interp).then_some(&periphery_config().secrets),
+      &replacers,
+    )
+    .await
+    .map(
+      |GitRes {
+         logs,
+         hash,
+         message,
+         env_file_path,
+       }| {
+        RepoActionResponse {
+          logs,
+          commit_hash: hash,
+          commit_message: message,
+          env_file_path,
+        }
+      },
+    )
   }
 }
 

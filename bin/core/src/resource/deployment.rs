@@ -3,11 +3,12 @@ use formatting::format_serror;
 use komodo_client::entities::{
   build::Build,
   deployment::{
-    Deployment, DeploymentConfig, DeploymentConfigDiff,
-    DeploymentImage, DeploymentListItem, DeploymentListItemInfo,
-    DeploymentQuerySpecifics, DeploymentState,
-    PartialDeploymentConfig,
+    conversions_from_str, Deployment, DeploymentConfig,
+    DeploymentConfigDiff, DeploymentImage, DeploymentListItem,
+    DeploymentListItemInfo, DeploymentQuerySpecifics,
+    DeploymentState, PartialDeploymentConfig,
   },
+  environment_vars_from_str,
   permission::PermissionLevel,
   resource::Resource,
   server::Server,
@@ -19,6 +20,7 @@ use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;
 
 use crate::{
+  config::core_config,
   helpers::{
     empty_or_only_spaces, periphery_client,
     query::get_deployment_state,
@@ -44,7 +46,7 @@ impl super::KomodoResource for Deployment {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.deployments
+    &db_client().deployments
   }
 
   async fn to_list_item(
@@ -86,12 +88,12 @@ impl super::KomodoResource for Deployment {
         }),
         image: status
           .as_ref()
-          .map(|s| {
-            s.curr
-              .container
-              .as_ref()
-              .and_then(|c| c.image.clone())
-              .unwrap_or_else(|| String::from("Unknown"))
+          .and_then(|s| {
+            s.curr.container.as_ref().map(|c| {
+              c.image
+                .clone()
+                .unwrap_or_else(|| String::from("Unknown"))
+            })
           })
           .unwrap_or(build_image),
         server_id: deployment.config.server_id,
@@ -115,8 +117,8 @@ impl super::KomodoResource for Deployment {
     Operation::CreateDeployment
   }
 
-  fn user_can_create(_user: &User) -> bool {
-    true
+  fn user_can_create(user: &User) -> bool {
+    user.admin || !core_config().disable_non_admin_create
   }
 
   async fn validate_create_config(
@@ -279,23 +281,15 @@ async fn validate_config(
       });
     }
   }
-  if let Some(volumes) = &mut config.volumes {
-    volumes.retain(|v| {
-      !empty_or_only_spaces(&v.local)
-        && !empty_or_only_spaces(&v.container)
-    })
+  if let Some(volumes) = &config.volumes {
+    conversions_from_str(volumes).context("Invalid volumes")?;
   }
-  if let Some(ports) = &mut config.ports {
-    ports.retain(|v| {
-      !empty_or_only_spaces(&v.local)
-        && !empty_or_only_spaces(&v.container)
-    })
+  if let Some(ports) = &config.ports {
+    conversions_from_str(ports).context("Invalid ports")?;
   }
-  if let Some(environment) = &mut config.environment {
-    environment.retain(|v| {
-      !empty_or_only_spaces(&v.variable)
-        && !empty_or_only_spaces(&v.value)
-    })
+  if let Some(environment) = &config.environment {
+    environment_vars_from_str(environment)
+      .context("Invalid environment")?;
   }
   if let Some(extra_args) = &mut config.extra_args {
     extra_args.retain(|v| !empty_or_only_spaces(v))

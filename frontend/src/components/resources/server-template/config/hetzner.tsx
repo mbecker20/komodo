@@ -1,6 +1,5 @@
 import { Config } from "@components/config";
-import { ConfigItem, InputList } from "@components/config/util";
-import { TextUpdateMenu } from "@components/util";
+import { ConfigItem, ConfigList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { cn, filterBySplit } from "@lib/utils";
 import { Types } from "@komodo/client";
@@ -32,6 +31,7 @@ import {
 } from "@ui/select";
 import { ChevronsUpDown, MinusCircle, PlusCircle, SearchX } from "lucide-react";
 import { useState } from "react";
+import { MonacoEditor } from "@components/monaco";
 
 export const HetznerServerTemplateConfig = ({
   id,
@@ -50,6 +50,8 @@ export const HetznerServerTemplateConfig = ({
 
   return (
     <Config
+      resource_id={id}
+      resource_type="ServerTemplate"
       disabled={disabled}
       config={config}
       update={update}
@@ -58,7 +60,7 @@ export const HetznerServerTemplateConfig = ({
         await mutateAsync({ id, config: { type: "Hetzner", params: update } });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "General",
             components: {
@@ -81,42 +83,20 @@ export const HetznerServerTemplateConfig = ({
                   disabled={disabled}
                 />
               ),
-              image: true,
-              port: true,
-              enable_public_ipv4: true,
-              enable_public_ipv6: true,
-              use_public_ip:
-                update.enable_public_ipv4 ?? config.enable_public_ipv4,
+              image: {
+                description:
+                  "The hetzner VM image name (default: ubuntu-24.04)",
+                placeholder: "Input image name",
+              },
             },
           },
           {
-            label: "Private Network Ids",
-            contentHidden:
-              (update.private_network_ids ?? config.private_network_ids)
-                ?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    private_network_ids: [
-                      ...(update.private_network_ids ??
-                        config.private_network_ids ??
-                        []),
-                      0,
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Network Id
-              </Button>
-            ),
+            label: "Network",
             components: {
               private_network_ids: (values, set) => (
-                <InputList
+                <ConfigList
+                  label="Private Network Ids"
+                  description="Attach the VM to private networks."
                   field="private_network_ids"
                   values={values?.map((val) => val.toString()) ?? []}
                   set={({ private_network_ids }) =>
@@ -127,36 +107,13 @@ export const HetznerServerTemplateConfig = ({
                     })
                   }
                   disabled={disabled}
-                  placeholder="Private Network Id"
+                  placeholder="Network Id"
                 />
               ),
-            },
-          },
-          {
-            label: "Firewall Ids",
-            contentHidden:
-              (update.firewall_ids ?? config.firewall_ids)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    firewall_ids: [
-                      ...(update.firewall_ids ?? config.firewall_ids ?? []),
-                      0,
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Firewall Id
-              </Button>
-            ),
-            components: {
               firewall_ids: (values, set) => (
-                <InputList
+                <ConfigList
+                  label="Firewall Ids"
+                  description="Attach firewall rules to the VM."
                   field="firewall_ids"
                   values={values?.map((val) => val.toString()) ?? []}
                   set={({ firewall_ids }) =>
@@ -170,69 +127,74 @@ export const HetznerServerTemplateConfig = ({
                   placeholder="Firewall Id"
                 />
               ),
+              enable_public_ipv4: {
+                description:
+                  "Whether to assign a public IPv4 to the build instance.",
+              },
+              enable_public_ipv6: {
+                description:
+                  "Whether to assign a public IPv6 to the build instance.",
+              },
+              use_public_ip:
+                update.enable_public_ipv4 ?? config.enable_public_ipv4
+                  ? {
+                      description:
+                        "Whether to connect to the instance over the public IPv4. Otherwise, will use the internal IP.",
+                    }
+                  : false,
+              port: {
+                description: "Configure the port to connect to Periphery on.",
+                placeholder: "Input port",
+              },
+              use_https: {
+                description: "Whether to connect to Periphery using HTTPS.",
+              },
             },
           },
           {
             label: "Volumes",
-            contentHidden:
-              ((update.volumes ?? config.volumes)?.length ?? 0) === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    volumes: [
-                      ...(update.volumes ?? config.volumes ?? []),
-                      newVolume(
-                        (update.volumes ?? config.volumes)?.length ?? 0
-                      ),
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Volume
-              </Button>
-            ),
             components: {
               volumes: (volumes, set) => {
                 return (
-                  <HetznerVolumesConfig
-                    volumes={volumes ?? []}
-                    set={set}
-                    disabled={disabled}
-                  />
+                  <>
+                    {!disabled && (
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          set({
+                            volumes: [
+                              ...(update.volumes ?? config.volumes ?? []),
+                              newVolume(
+                                (update.volumes ?? config.volumes)?.length ?? 0
+                              ),
+                            ],
+                          })
+                        }
+                        className="flex items-center gap-2 w-[200px]"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        Add Volume
+                      </Button>
+                    )}
+                    <HetznerVolumesConfig
+                      volumes={volumes ?? []}
+                      set={set}
+                      disabled={disabled}
+                    />
+                  </>
                 );
               },
             },
           },
-
           {
             label: "SSH Keys",
-            contentHidden: (update.ssh_keys ?? config.ssh_keys)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    ssh_keys: [
-                      ...(update.ssh_keys ?? config.ssh_keys ?? []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add SSH Key
-              </Button>
-            ),
+            labelHidden: true,
             components: {
               ssh_keys: (values, set) => (
-                <InputList
+                <ConfigList
+                  label="SSH Keys"
+                  boldLabel
+                  description="Attach SSH keys to the VM. Accepts the key id or name (found on Hetzner)."
                   field="ssh_keys"
                   values={values?.map((val) => val.toString()) ?? []}
                   set={set}
@@ -242,21 +204,21 @@ export const HetznerServerTemplateConfig = ({
               ),
             },
           },
-
           {
             label: "User Data",
-            contentHidden: true,
-            actions: (
-              <TextUpdateMenu
-                title="Update User Data"
-                placeholder="Set User Data"
-                value={update.user_data ?? config.user_data}
-                onUpdate={(user_data) => set({ ...update, user_data })}
-                triggerClassName="min-w-[300px] max-w-[400px]"
-                disabled={disabled}
-              />
-            ),
-            components: {},
+            description: "Use cloud-init to setup the instance.",
+            components: {
+              user_data: (user_data, set) => {
+                return (
+                  <MonacoEditor
+                    value={user_data}
+                    language="yaml"
+                    onValueChange={(user_data) => set({ user_data })}
+                    readOnly={disabled}
+                  />
+                );
+              },
+            },
           },
         ],
       }}
@@ -324,49 +286,51 @@ const ServerTypeSelector = ({
   const filtered = filterBySplit(server_types, search, (item) => item);
   return (
     <ConfigItem label="Server Type">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="secondary"
-            className="flex gap-2"
-            disabled={disabled}
-          >
-            {selected ?? "Select Server Type"}
-            {!disabled && <ChevronsUpDown className="w-3 h-3" />}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] max-h-[200px] p-0" align="end">
-          <Command shouldFilter={false}>
-            <CommandInput
-              placeholder="Search Server Types"
-              className="h-9"
-              value={search}
-              onValueChange={setSearch}
-            />
-            <CommandList>
-              <CommandEmpty className="flex justify-evenly items-center">
-                No Server Types Found
-                <SearchX className="w-3 h-3" />
-              </CommandEmpty>
+      <div>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="secondary"
+              className="flex gap-2 w-fit"
+              disabled={disabled}
+            >
+              {selected ?? "Select Server Type"}
+              <ChevronsUpDown className="w-3 h-3" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] max-h-[200px] p-0" align="end">
+            <Command shouldFilter={false}>
+              <CommandInput
+                placeholder="Search Server Types"
+                className="h-9"
+                value={search}
+                onValueChange={setSearch}
+              />
+              <CommandList>
+                <CommandEmpty className="flex justify-evenly items-center">
+                  No Server Types Found
+                  <SearchX className="w-3 h-3" />
+                </CommandEmpty>
 
-              <CommandGroup>
-                {filtered.map((server_type) => (
-                  <CommandItem
-                    key={server_type}
-                    onSelect={() => {
-                      set({ server_type });
-                      setOpen(false);
-                    }}
-                    className="flex items-center justify-between cursor-pointer"
-                  >
-                    <div className="p-1">{server_type}</div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+                <CommandGroup>
+                  {filtered.map((server_type) => (
+                    <CommandItem
+                      key={server_type}
+                      onSelect={() => {
+                        set({ server_type });
+                        setOpen(false);
+                      }}
+                      className="flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="p-1">{server_type}</div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </div>
     </ConfigItem>
   );
 };
@@ -377,7 +341,7 @@ const HetznerVolumesConfig = (params: {
   disabled: boolean;
 }) => {
   return (
-    <div className="w-full flex justify-end">
+    <div className="w-full flex">
       <div className="flex flex-col gap-4 w-full max-w-[400px]">
         {params.volumes?.map((_, index) => (
           <div key={index} className="flex items-center justify-between gap-4">

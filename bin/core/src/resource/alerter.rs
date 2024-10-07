@@ -27,7 +27,7 @@ impl super::KomodoResource for Alerter {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.alerters
+    &db_client().alerters
   }
 
   async fn to_list_item(

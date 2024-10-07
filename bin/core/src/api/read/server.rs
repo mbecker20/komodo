@@ -43,8 +43,9 @@ use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  helpers::{periphery_client, stack::compose_container_match_regex},
+  helpers::periphery_client,
   resource,
+  stack::compose_container_match_regex,
   state::{action_states, db_client, server_status_cache, State},
 };
 
@@ -320,7 +321,7 @@ impl Resolve<GetHistoricalServerStats, User> for State {
     }
 
     let stats = find_collect(
-      &db_client().await.stats,
+      &db_client().stats,
       doc! {
         "sid": server.id,
         "ts": { "$in": ts_vec },

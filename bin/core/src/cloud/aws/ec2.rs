@@ -19,7 +19,7 @@ use komodo_client::entities::{
   ResourceTarget,
 };
 
-use crate::{config::core_config, helpers::alert::send_alerts};
+use crate::{alert::send_alerts, config::core_config};
 
 const POLL_RATE_SECS: u64 = 2;
 const MAX_POLL_TRIES: usize = 30;
@@ -65,6 +65,7 @@ pub async fn launch_ec2_instance(
     use_public_ip,
     user_data,
     port: _,
+    use_https: _,
   } = config;
   let instance_type = handle_unknown_instance_type(
     InstanceType::from(instance_type.as_str()),

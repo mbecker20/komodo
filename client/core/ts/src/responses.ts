@@ -18,7 +18,6 @@ export type UserResponses = {
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
-  ListAwsEcrLabels: Types.ListAwsEcrLabelsResponse;
   ListSecrets: Types.ListSecretsResponse;
   ListGitProvidersFromConfig: Types.ListGitProvidersFromConfigResponse;
   ListDockerRegistriesFromConfig: Types.ListDockerRegistriesFromConfigResponse;
@@ -188,6 +187,7 @@ export type WriteResponses = {
   SetUsersInUserGroup: Types.UserGroup;
 
   // ==== PERMISSIONS ====
+  UpdateUserAdmin: Types.UpdateUserAdminResponse;
   UpdateUserBasePermissions: Types.UpdateUserBasePermissionsResponse;
   UpdatePermissionOnResourceType: Types.UpdatePermissionOnResourceTypeResponse;
   UpdatePermissionOnTarget: Types.UpdatePermissionOnTargetResponse;
@@ -258,6 +258,7 @@ export type WriteResponses = {
   DeleteResourceSync: Types.ResourceSync;
   UpdateResourceSync: Types.ResourceSync;
   RefreshResourceSyncPending: Types.ResourceSync;
+  CommitSync: Types.ResourceSync;
   CreateSyncWebhook: Types.CreateSyncWebhookResponse;
   DeleteSyncWebhook: Types.DeleteSyncWebhookResponse;
 
@@ -267,6 +268,7 @@ export type WriteResponses = {
   DeleteStack: Types.Stack;
   UpdateStack: Types.Stack;
   RenameStack: Types.Update;
+  WriteStackFileContents: Types.Update;
   RefreshStackCache: Types.NoData;
   CreateStackWebhook: Types.CreateStackWebhookResponse;
   DeleteStackWebhook: Types.DeleteStackWebhookResponse;

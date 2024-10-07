@@ -4,11 +4,9 @@ import {
   ConfirmUpdate,
 } from "@components/config/util";
 import { Section } from "@components/layouts";
-import { cn } from "@lib/utils";
 import { Types } from "@komodo/client";
+import { cn } from "@lib/utils";
 import { Button } from "@ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import {
   Select,
   SelectContent,
@@ -16,8 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { AlertTriangle, History, Info, Settings } from "lucide-react";
-import { Fragment, ReactNode, SetStateAction, useState } from "react";
+import { AlertTriangle, History, Settings } from "lucide-react";
+import { Fragment, ReactNode, SetStateAction } from "react";
 
 const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
@@ -25,6 +23,7 @@ const keys = <T extends Record<string, unknown>>(obj: T) =>
 export const ConfigLayout = <
   T extends Types.Resource<unknown, unknown>["config"]
 >({
+  original,
   config,
   children,
   disabled,
@@ -33,6 +32,7 @@ export const ConfigLayout = <
   selector,
   titleOther,
 }: {
+  original: T;
   config: Partial<T>;
   children: ReactNode;
   disabled: boolean;
@@ -70,7 +70,8 @@ export const ConfigLayout = <
           )}
           {changesMade && (
             <ConfirmUpdate
-              content={JSON.stringify(config, null, 2)}
+              previous={original}
+              content={config}
               onConfirm={onConfirm}
               disabled={disabled}
             />
@@ -83,17 +84,19 @@ export const ConfigLayout = <
   );
 };
 
-type PrimitiveConfigArgs = {
+export type PrimitiveConfigArgs = {
   placeholder?: string;
   label?: string;
   boldLabel?: boolean;
   description?: string;
 };
 
-type ConfigComponent<T> = {
+export type ConfigComponent<T> = {
   label: string;
+  boldLabel?: boolean; // defaults to true
   icon?: ReactNode;
   actions?: ReactNode;
+  labelExtra?: ReactNode;
   description?: ReactNode;
   hidden?: boolean;
   labelHidden?: boolean;
@@ -107,6 +110,8 @@ type ConfigComponent<T> = {
 };
 
 export const Config = <T,>({
+  // resource_id,
+  // resource_type,
   config,
   update,
   disabled,
@@ -116,6 +121,8 @@ export const Config = <T,>({
   selector,
   titleOther,
 }: {
+  resource_id: string;
+  resource_type: Types.ResourceTarget["type"];
   config: T;
   update: Partial<T>;
   disabled: boolean;
@@ -128,10 +135,26 @@ export const Config = <T,>({
     ConfigComponent<T>[] | false | undefined
   >;
 }) => {
-  const [show, setShow] = useState(keys(components)[0]);
+  // let component_keys = keys(components);
+  // const [_show, setShow] = useLocalStorage(
+  //   `config-${resource_type}-${resource_id}`,
+  //   component_keys[0]
+  // );
+  // const show = (components[_show] && _show) || component_keys[0];
+
+  // let activeCount = 0;
+  // for (const key in components) {
+  //   if (components[key] && components[key].length) {
+  //     activeCount++;
+  //   }
+  // }
+  // const showSidebar = activeCount > 1;
+
+  const sections = keys(components).filter((section) => !!components[section]);
 
   return (
     <ConfigLayout
+      original={config}
       titleOther={titleOther}
       config={update}
       disabled={disabled}
@@ -140,107 +163,139 @@ export const Config = <T,>({
         set({});
       }}
       onReset={() => set({})}
-      selector={
-        <div className="flex gap-4 items-center">
-          {selector}
-
-          {/* Add the config page selector when view is small / md / lg (xl:hidden) */}
-          <Select value={show} onValueChange={setShow}>
-            <SelectTrigger className="w-32 capitalize xl:hidden">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="w-32">
-              {keys(components).map((key) => (
-                <SelectItem value={key} key={key} className="capitalize">
-                  {key}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      }
+      selector={selector}
     >
-      <div className="flex gap-4">
-        {/** The sidebar when large */}
-        <div className="hidden xl:flex flex-col gap-4 w-[300px]">
-          {Object.entries(components)
-            .filter(([_, val]) => val)
-            .map(([tab, _]) => (
-              <Button
-                key={tab}
-                variant={show === tab ? "secondary" : "outline"}
-                onClick={() => setShow(tab)}
-                className="capitalize"
-              >
-                {tab}
-              </Button>
+      <div className="flex gap-6">
+        <div className="hidden xl:block relative pr-6 border-r">
+          <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
+            {sections.map((section) => (
+              <div key={section}>
+                {section && (
+                  <p className="text-muted-foreground uppercase text-right mb-2">
+                    {section}
+                  </p>
+                )}
+                <div className="flex flex-col gap-2">
+                  {components[section] &&
+                    components[section]
+                      .filter((item) => !item.hidden)
+                      .map((item) => (
+                        // uses a tags becasue react-router-dom Links don't reliably hash scroll
+                        <a
+                          href={"#" + section + item.label}
+                          key={section + item.label}
+                        >
+                          <Button
+                            variant="outline"
+                            className="justify-end w-full"
+                            size="sm"
+                          >
+                            {item.label}
+                          </Button>
+                        </a>
+                      ))}
+                </div>
+              </div>
             ))}
-        </div>
-
-        {components[show] && (
-          <div className="flex flex-col gap-6 min-h-[500px] w-full">
-            {components[show].map(
-              ({
-                label,
-                labelHidden,
-                icon,
-                actions,
-                description,
-                hidden,
-                contentHidden,
-                components,
-              }) =>
-                !hidden && (
-                  <Card className="w-full grid gap-2" key={label}>
-                    {!labelHidden && (
-                      <CardHeader
-                        className={cn(
-                          "flex-row items-center justify-between w-full py-0 h-[60px] space-y-0",
-                          !contentHidden && "border-b"
-                        )}
-                      >
-                        <div className="flex items-center gap-4">
-                          <CardTitle className="flex gap-4">
-                            {icon}
-                            {label}
-                          </CardTitle>
-                          {description && (
-                            <HoverCard openDelay={200}>
-                              <HoverCardTrigger asChild>
-                                <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-                                  <Info className="w-4 h-4" />
-                                </Card>
-                              </HoverCardTrigger>
-                              <HoverCardContent align="start" side="right">
-                                {description}
-                              </HoverCardContent>
-                            </HoverCard>
-                          )}
-                        </div>
-                        {actions}
-                      </CardHeader>
-                    )}
-                    {!contentHidden && (
-                      <CardContent
-                        className={cn(
-                          "flex flex-col gap-1 pb-3",
-                          labelHidden && "pt-3"
-                        )}
-                      >
-                        <ConfigAgain
-                          config={config}
-                          update={update}
-                          set={(u) => set((p) => ({ ...p, ...u }))}
-                          components={components}
-                          disabled={disabled}
-                        />
-                      </CardContent>
-                    )}
-                  </Card>
-                )
-            )}
           </div>
-        )}
+        </div>
+        <div className="w-full flex flex-col gap-12">
+          {sections.map(
+            (section) =>
+              components[section] && (
+                <div
+                  key={section}
+                  className="relative pb-12 border-b last:pb-0 last:border-b-0 "
+                >
+                  <div className="xl:hidden sticky top-16 h-24 flex items-center justify-between bg-background z-10">
+                    {section && <p className="uppercase text-2xl">{section}</p>}
+                    <Select
+                      onValueChange={(value) => (window.location.hash = value)}
+                    >
+                      <SelectTrigger className="w-32 capitalize xl:hidden">
+                        <SelectValue placeholder="Go To" />
+                      </SelectTrigger>
+                      <SelectContent className="w-32">
+                        {components[section]
+                          .filter((item) => !item.hidden)
+                          .map(({ label }) => (
+                            <SelectItem
+                              key={section + label}
+                              value={section + label}
+                              className="capitalize"
+                            >
+                              {label}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {section && (
+                    <p className="hidden xl:block bg-background text-2xl uppercase mb-6 h-fit">
+                      {section}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-6 w-full">
+                    {components[section].map(
+                      ({
+                        label,
+                        boldLabel = true,
+                        labelHidden,
+                        icon,
+                        labelExtra,
+                        actions,
+                        description,
+                        hidden,
+                        contentHidden,
+                        components,
+                      }) =>
+                        !hidden && (
+                          <div
+                            key={section + label}
+                            id={section + label}
+                            className="p-6 border rounded-md flex flex-col gap-6 scroll-mt-40 xl:scroll-mt-24"
+                          >
+                            {!labelHidden && (
+                              <div className="flex justify-between">
+                                <div>
+                                  <div className="flex items-center gap-4">
+                                    {icon}
+                                    <div
+                                      className={cn(
+                                        "text-lg",
+                                        boldLabel && "font-bold"
+                                      )}
+                                    >
+                                      {label}
+                                    </div>
+                                    {labelExtra}
+                                  </div>
+                                  {description && (
+                                    <div className="text-sm text-muted-foreground">
+                                      {description}
+                                    </div>
+                                  )}
+                                </div>
+                                {actions}
+                              </div>
+                            )}
+                            {!contentHidden && (
+                              <ConfigAgain
+                                config={config}
+                                update={update}
+                                set={(u) => set((p) => ({ ...p, ...u }))}
+                                components={components}
+                                disabled={disabled}
+                              />
+                            )}
+                          </div>
+                        )
+                    )}
+                  </div>
+                </div>
+              )
+          )}
+        </div>
       </div>
     </ConfigLayout>
   );

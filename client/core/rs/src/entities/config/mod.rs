@@ -85,3 +85,11 @@ pub struct ProviderAccount {
   #[serde(default, skip_serializing)]
   pub token: String,
 }
+
+fn empty_or_redacted(src: &str) -> String {
+  if src.is_empty() {
+    String::new()
+  } else {
+    String::from("##############")
+  }
+}

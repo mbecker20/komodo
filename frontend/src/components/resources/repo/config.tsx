@@ -4,20 +4,23 @@ import {
   ConfigItem,
   InputList,
   ProviderSelectorConfig,
-  SecretsForEnvironment,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
-import { createRef, useState } from "react";
-import { BuilderSelector, CopyGithubWebhook, ServerSelector } from "../common";
+import { useState } from "react";
+import {
+  CopyGithubWebhook,
+  ResourceLink,
+  ResourceSelector,
+} from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { env_to_text } from "@lib/utils";
-import { Textarea } from "@ui/textarea";
 import { Button } from "@ui/button";
+import { SecretsSearch } from "@components/config/env_vars";
+import { MonacoEditor } from "@components/monaco";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -35,6 +38,8 @@ export const RepoConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Repo"
       disabled={disabled}
       config={config}
       update={update}
@@ -43,35 +48,71 @@ export const RepoConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
-            label: "Server Id",
+            label: "Server",
             labelHidden: true,
             components: {
-              server_id: (value, set) => (
-                <ServerSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
+              server_id: (server_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      server_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Server:
+                          <ResourceLink type="Server" id={server_id} />
+                        </div>
+                      ) : (
+                        "Select Server"
+                      )
+                    }
+                    description="Select the Server to clone on."
+                  >
+                    <ResourceSelector
+                      type="Server"
+                      selected={server_id}
+                      onSelect={(server_id) => set({ server_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
             },
           },
           {
-            label: "Builder Id",
+            label: "Builder",
             labelHidden: true,
             components: {
-              builder_id: (value, set) => (
-                <BuilderSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
+              builder_id: (builder_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      builder_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Builder:
+                          <ResourceLink type="Builder" id={builder_id} />
+                        </div>
+                      ) : (
+                        "Select Builder"
+                      )
+                    }
+                    description="Select the Builder to build with."
+                  >
+                    <ResourceSelector
+                      type="Builder"
+                      selected={builder_id}
+                      onSelect={(builder_id) => set({ builder_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
             },
           },
           {
-            label: "General",
+            label: "Source",
             components: {
               git_provider: (provider, set) => {
                 const https = update.git_https ?? config.git_https;
@@ -86,21 +127,18 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   />
                 );
               },
-              git_account: (value, set) => {
-                const server_id = update.server_id || config.server_id;
-                return (
-                  <AccountSelectorConfig
-                    id={server_id}
-                    type={server_id ? "Server" : "None"}
-                    account_type="git"
-                    provider={update.git_provider ?? config.git_provider}
-                    selected={value}
-                    onSelect={(git_account) => set({ git_account })}
-                    disabled={disabled}
-                    placeholder="None"
-                  />
-                );
-              },
+              git_account: (account, set) => (
+                <AccountSelectorConfig
+                  id={update.builder_id ?? config.builder_id ?? undefined}
+                  type="Builder"
+                  account_type="git"
+                  provider={update.git_provider ?? config.git_provider}
+                  selected={account}
+                  onSelect={(git_account) => set({ git_account })}
+                  disabled={disabled}
+                  placeholder="None"
+                />
+              ),
               repo: {
                 placeholder: "Enter repo",
                 description:
@@ -111,7 +149,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 description: "Select a custom branch, or default to 'main'.",
               },
               commit: {
-                placeholder: "Enter a specific commit hash. Optional.",
+                placeholder: "Enter commit hash",
                 description:
                   "Switch to a specific hash after cloning the branch.",
               },
@@ -119,8 +157,34 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 label: "Clone Path",
                 placeholder: "/clone/path/on/host",
                 description:
-                  "Explicitly specify the folder on the host to clone the repo in. Optional.",
+                  "Explicitly specify the folder on the host to clone the repo in.",
               },
+            },
+          },
+          {
+            label: "Environment",
+            description:
+              "Write these variables to a .env-formatted file at the specified path, before on_clone / on_pull are run.",
+            components: {
+              environment: (env, set) => (
+                <div className="flex flex-col gap-4">
+                  <SecretsSearch
+                    server={update.server_id ?? config.server_id}
+                  />
+                  <MonacoEditor
+                    value={env || "  # VARIABLE = value\n"}
+                    onValueChange={(environment) => set({ environment })}
+                    language="key_value"
+                    readOnly={disabled}
+                  />
+                </div>
+              ),
+              env_file_path: {
+                description:
+                  "The path to write the file to, relative to the root of the repo.",
+                placeholder: ".env",
+              },
+              // skip_secret_interp: true,
             },
           },
           {
@@ -395,57 +459,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
             },
           },
         ],
-        environment: [
-          {
-            label: "Environment",
-            description:
-              "Write these variables to a .env-formatted file at the specified path, before on_clone / on_pull are run.",
-            components: {
-              environment: (env, set) => {
-                const _env = typeof env === "object" ? env_to_text(env) : env;
-                return (
-                  <Environment env={_env ?? ""} set={set} disabled={disabled} />
-                );
-              },
-              env_file_path: {
-                description:
-                  "The path to write the file to, relative to the root of the repo.",
-                placeholder: ".env",
-              },
-              skip_secret_interp: true,
-            },
-          },
-        ],
       }}
     />
-  );
-};
-
-const Environment = ({
-  env,
-  set,
-  disabled,
-}: {
-  env: string;
-  set: (input: Partial<Types.RepoConfig>) => void;
-  disabled: boolean;
-}) => {
-  const ref = createRef<HTMLTextAreaElement>();
-  const setEnv = (environment: string) => set({ environment });
-  return (
-    <ConfigItem className="flex-col gap-4 items-start">
-      {!disabled && (
-        <SecretsForEnvironment env={env} setEnv={setEnv} envRef={ref} />
-      )}
-      <Textarea
-        ref={ref}
-        className="min-h-[400px]"
-        placeholder="VARIABLE=value"
-        value={env}
-        onChange={(e) => setEnv(e.target.value)}
-        disabled={disabled}
-        spellCheck={false}
-      />
-    </ConfigItem>
   );
 };

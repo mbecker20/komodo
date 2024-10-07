@@ -37,6 +37,7 @@ pub mod busy;
 pub mod entities;
 pub mod ws;
 
+mod parser;
 mod request;
 
 #[derive(Deserialize)]

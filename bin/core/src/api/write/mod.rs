@@ -55,6 +55,7 @@ pub enum WriteRequest {
   SetUsersInUserGroup(SetUsersInUserGroup),
 
   // ==== PERMISSIONS ====
+  UpdateUserAdmin(UpdateUserAdmin),
   UpdateUserBasePermissions(UpdateUserBasePermissions),
   UpdatePermissionOnResourceType(UpdatePermissionOnResourceType),
   UpdatePermissionOnTarget(UpdatePermissionOnTarget),
@@ -124,6 +125,7 @@ pub enum WriteRequest {
   DeleteResourceSync(DeleteResourceSync),
   UpdateResourceSync(UpdateResourceSync),
   RefreshResourceSyncPending(RefreshResourceSyncPending),
+  CommitSync(CommitSync),
   CreateSyncWebhook(CreateSyncWebhook),
   DeleteSyncWebhook(DeleteSyncWebhook),
 
@@ -133,6 +135,7 @@ pub enum WriteRequest {
   DeleteStack(DeleteStack),
   UpdateStack(UpdateStack),
   RenameStack(RenameStack),
+  WriteStackFileContents(WriteStackFileContents),
   RefreshStackCache(RefreshStackCache),
   CreateStackWebhook(CreateStackWebhook),
   DeleteStackWebhook(DeleteStackWebhook),

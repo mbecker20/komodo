@@ -44,7 +44,6 @@ impl Resolve<CreateTag, User> for State {
     };
 
     tag.id = db_client()
-      .await
       .tags
       .insert_one(&tag)
       .await
@@ -72,7 +71,7 @@ impl Resolve<RenameTag, User> for State {
     get_tag_check_owner(&id, &user).await?;
 
     update_one_by_id(
-      &db_client().await.tags,
+      &db_client().tags,
       &id,
       doc! { "$set": { "name": name } },
       None,
@@ -105,7 +104,7 @@ impl Resolve<DeleteTag, User> for State {
       resource::remove_tag_from_all::<ServerTemplate>(&id),
     )?;
 
-    delete_one_by_id(&db_client().await.tags, &id, None).await?;
+    delete_one_by_id(&db_client().tags, &id, None).await?;
 
     Ok(tag)
   }

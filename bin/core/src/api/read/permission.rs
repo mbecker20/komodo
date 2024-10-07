@@ -22,7 +22,7 @@ impl Resolve<ListPermissions, User> for State {
     user: User,
   ) -> anyhow::Result<ListPermissionsResponse> {
     find_collect(
-      &db_client().await.permissions,
+      &db_client().permissions,
       doc! {
         "user_target.type": "User",
         "user_target.id": &user.id
@@ -58,7 +58,7 @@ impl Resolve<ListUserTargetPermissions, User> for State {
     }
     let (variant, id) = user_target.extract_variant_id();
     find_collect(
-      &db_client().await.permissions,
+      &db_client().permissions,
       doc! {
         "user_target.type": variant.as_ref(),
         "user_target.id": id

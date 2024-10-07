@@ -21,14 +21,15 @@ use self::jwt::JwtClaims;
 pub mod github;
 pub mod google;
 pub mod jwt;
+pub mod oidc;
 
 mod local;
 
 const STATE_PREFIX_LENGTH: usize = 20;
 
-#[derive(Deserialize)]
-pub struct RedirectQuery {
-  pub redirect: Option<String>,
+#[derive(Debug, Deserialize)]
+struct RedirectQuery {
+  redirect: Option<String>,
 }
 
 #[instrument(level = "debug")]
@@ -116,7 +117,6 @@ pub async fn auth_api_key_get_user_id(
   secret: &str,
 ) -> anyhow::Result<String> {
   let key = db_client()
-    .await
     .api_keys
     .find_one(doc! { "key": key })
     .await

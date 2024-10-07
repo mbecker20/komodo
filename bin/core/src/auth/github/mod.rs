@@ -64,12 +64,12 @@ async fn callback(
   let github_user =
     client.get_github_user(&token.access_token).await?;
   let github_id = github_user.id.to_string();
-  let db_client = db_client().await;
+  let db_client = db_client();
   let user = db_client
     .users
     .find_one(doc! { "config.data.github_id": &github_id })
     .await
-    .context("failed at find user query from mongo")?;
+    .context("failed at find user query from database")?;
   let jwt = match user {
     Some(user) => jwt_client()
       .generate(user.id)
@@ -87,6 +87,7 @@ async fn callback(
         username: github_user.login,
         enabled: no_users_exist || core_config.enable_new_users,
         admin: no_users_exist,
+        super_admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,
         updated_at: ts,

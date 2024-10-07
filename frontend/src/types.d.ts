@@ -7,9 +7,14 @@ type OptionalIdComponent = React.FC<{ id?: string }>;
 
 export interface RequiredResourceComponents {
   list_item: (id: string) => Types.ResourceListItem<unknown> | undefined;
-  use_links: (id: string) => Array<string> | undefined;
+  resource_links: (
+    resource: Types.Resource<unknown, unknown>
+  ) => Array<string> | undefined;
 
   Description: React.FC;
+
+  /** Header for individual resource pages */
+  ResourcePageHeader: IdComponent;
 
   /** Summary card for use in dashboard */
   Dashboard: React.FC;
@@ -23,6 +28,8 @@ export interface RequiredResourceComponents {
   /** Icon for the component */
   Icon: OptionalIdComponent;
   BigIcon: OptionalIdComponent;
+
+  State: IdComponent;
 
   /** status metrics, like deployment state / status */
   Status: { [status: string]: IdComponent };

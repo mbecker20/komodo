@@ -2,12 +2,10 @@ import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
 import {
-  Factory,
   FolderGit,
   GitBranch,
   Loader2,
   RefreshCcw,
-  Server,
 } from "lucide-react";
 import { RepoConfig } from "./config";
 import { BuildRepo, CloneRepo, PullRepo } from "./actions";
@@ -22,7 +20,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { useServer } from "../server";
 import { Types } from "@komodo/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { Badge } from "@ui/badge";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
@@ -44,7 +42,7 @@ const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const RepoComponents: RequiredResourceComponents = {
   list_item: (id) => useRepo(id),
-  use_links: (id) => useFullRepo(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.RepoConfig).links,
 
   Description: () => <>Build using custom scripts. Or anything else.</>,
 
@@ -83,11 +81,12 @@ export const RepoComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,
 
+  State: ({ id }) => {
+    const state = useRepo(id)?.info.state;
+    return <StatusBadge text={state} intent={repo_state_intention(state)} />;
+  },
+
   Status: {
-    State: ({ id }) => {
-      const state = useRepo(id)?.info.state;
-      return <StatusBadge text={state} intent={repo_state_intention(state)} />;
-    },
     Cloned: ({ id }) => {
       const info = useRepo(id)?.info;
       if (!info?.cloned_hash || info.cloned_hash === info.latest_hash) {
@@ -198,27 +197,21 @@ export const RepoComponents: RequiredResourceComponents = {
   },
 
   Info: {
-    Server: ({ id }) => {
+    Target: ({ id }) => {
       const info = useRepo(id)?.info;
       const server = useServer(info?.server_id);
-      return server?.id ? (
-        <ResourceLink type="Server" id={server?.id} />
-      ) : (
-        <div className="flex gap-2 items-center">
-          <Server className="w-4 h-4" />
-          <div>No Server</div>
-        </div>
-      );
-    },
-    Builder: ({ id }) => {
-      const info = useRepo(id)?.info;
       const builder = useBuilder(info?.builder_id);
-      return builder?.id ? (
-        <ResourceLink type="Builder" id={builder?.id} />
-      ) : (
-        <div className="flex gap-2 items-center">
-          <Factory className="w-4 h-4" />
-          <div>No Builder</div>
+      return (
+        <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+          {server?.id &&
+            (builder?.id ? (
+              <div className="pr-4 text-sm border-r">
+                <ResourceLink type="Server" id={server.id} />
+              </div>
+            ) : (
+              <ResourceLink type="Server" id={server.id} />
+            ))}
+          {builder?.id && <ResourceLink type="Builder" id={builder.id} />}
         </div>
       );
     },
@@ -249,4 +242,18 @@ export const RepoComponents: RequiredResourceComponents = {
   Config: RepoConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Repo" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const repo = useRepo(id);
+
+    return (
+      <ResourcePageHeader
+        intent={repo_state_intention(repo?.info.state)}
+        icon={<RepoIcon id={id} size={8} />}
+        name={repo?.name}
+        state={repo?.info.state}
+        status=""
+      />
+    );
+  },
 };

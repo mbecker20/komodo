@@ -4,6 +4,7 @@ extern crate tracing;
 use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
+use axum_server::tls_openssl::OpenSSLConfig;
 
 mod api;
 mod compose;
@@ -11,6 +12,7 @@ mod config;
 mod docker;
 mod helpers;
 mod router;
+mod ssl;
 mod stats;
 
 struct State;
@@ -20,7 +22,8 @@ async fn app() -> anyhow::Result<()> {
   let config = config::periphery_config();
   logger::init(&config.logging)?;
 
-  info!("version: v{}", env!("CARGO_PKG_VERSION"));
+  info!("Komodo Periphery version: v{}", env!("CARGO_PKG_VERSION"));
+  info!("{:?}", config.sanitized());
 
   stats::spawn_system_stats_polling_threads();
 
@@ -28,18 +31,26 @@ async fn app() -> anyhow::Result<()> {
     SocketAddr::from_str(&format!("0.0.0.0:{}", config.port))
       .context("failed to parse socket addr")?;
 
-  let listener = tokio::net::TcpListener::bind(&socket_addr)
-    .await
-    .context("failed to bind tcp listener")?;
+  let app = router::router()
+    .into_make_service_with_connect_info::<SocketAddr>();
 
-  info!("Komodo Periphery started on {}", socket_addr);
-
-  axum::serve(
-    listener,
-    router::router()
-      .into_make_service_with_connect_info::<SocketAddr>(),
-  )
-  .await?;
+  if config.ssl_enabled {
+    info!("🔒 Periphery SSL Enabled");
+    ssl::ensure_certs().await;
+    info!("Komodo Periphery starting on https://{}", socket_addr);
+    let ssl_config = OpenSSLConfig::from_pem_file(
+      &config.ssl_cert_file,
+      &config.ssl_key_file,
+    )
+    .context("Invalid ssl cert / key")?;
+    axum_server::bind_openssl(socket_addr, ssl_config)
+      .serve(app)
+      .await?
+  } else {
+    info!("🔓 Periphery SSL Disabled");
+    info!("Komodo Periphery starting on http://{}", socket_addr);
+    axum_server::bind(socket_addr).serve(app).await?
+  }
 
   Ok(())
 }

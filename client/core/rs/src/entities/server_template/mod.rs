@@ -74,8 +74,10 @@ impl Default for ServerTemplateConfig {
 )]
 #[serde(tag = "type", content = "params")]
 pub enum PartialServerTemplateConfig {
-  Aws(aws::_PartialAwsServerTemplateConfig),
-  Hetzner(hetzner::_PartialHetznerServerTemplateConfig),
+  Aws(#[serde(default)] aws::_PartialAwsServerTemplateConfig),
+  Hetzner(
+    #[serde(default)] hetzner::_PartialHetznerServerTemplateConfig,
+  ),
 }
 
 impl Default for PartialServerTemplateConfig {
@@ -233,6 +235,7 @@ impl MergePartial for ServerTemplateConfig {
               .use_public_ip
               .unwrap_or(config.use_public_ip),
             port: partial.port.unwrap_or(config.port),
+            use_https: partial.use_https.unwrap_or(config.use_https),
             user_data: partial.user_data.unwrap_or(config.user_data),
           };
           ServerTemplateConfig::Aws(config)
@@ -274,6 +277,7 @@ impl MergePartial for ServerTemplateConfig {
             labels: partial.labels.unwrap_or(config.labels),
             volumes: partial.volumes.unwrap_or(config.volumes),
             port: partial.port.unwrap_or(config.port),
+            use_https: partial.use_https.unwrap_or(config.use_https),
           };
           ServerTemplateConfig::Hetzner(config)
         }

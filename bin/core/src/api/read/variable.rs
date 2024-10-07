@@ -1,5 +1,4 @@
 use anyhow::Context;
-use mongo_indexed::doc;
 use komodo_client::{
   api::read::{
     GetVariable, GetVariableResponse, ListVariables,
@@ -7,6 +6,7 @@ use komodo_client::{
   },
   entities::user::User,
 };
+use mongo_indexed::doc;
 use mungos::{find::find_collect, mongodb::options::FindOptions};
 use resolver_api::Resolve;
 
@@ -37,7 +37,7 @@ impl Resolve<ListVariables, User> for State {
     user: User,
   ) -> anyhow::Result<ListVariablesResponse> {
     let variables = find_collect(
-      &db_client().await.variables,
+      &db_client().variables,
       None,
       FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )

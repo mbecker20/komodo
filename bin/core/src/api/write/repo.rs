@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context};
-use mongo_indexed::doc;
+use git::GitRes;
 use komodo_client::{
   api::write::*,
   entities::{
@@ -10,6 +10,7 @@ use komodo_client::{
     CloneArgs, NoData,
   },
 };
+use mongo_indexed::doc;
 use mungos::mongodb::bson::to_document;
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
@@ -18,7 +19,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::{git_token, random_string},
+  helpers::git_token,
   resource,
   state::{db_client, github_client, State},
 };
@@ -94,42 +95,36 @@ impl Resolve<RefreshRepoCache, User> for State {
     )
     .await?;
 
-    if repo.config.repo.is_empty() {
+    if repo.config.git_provider.is_empty()
+      || repo.config.repo.is_empty()
+    {
       // Nothing to do
       return Ok(NoData {});
     }
 
-    let config = core_config();
-
-    let repo_dir = config.repo_directory.join(random_string(10));
     let mut clone_args: CloneArgs = (&repo).into();
-    // No reason to to the commands here.
+    let repo_path =
+      clone_args.unique_path(&core_config().repo_directory)?;
+    clone_args.destination = Some(repo_path.display().to_string());
+    // Don't want to run these on core.
     clone_args.on_clone = None;
     clone_args.on_pull = None;
-    clone_args.destination = Some(repo_dir.display().to_string());
 
-    let access_token = match (&clone_args.account, &clone_args.provider)
-    {
-      (None, _) => None,
-      (Some(_), None) => {
-        return Err(anyhow!(
-          "Account is configured, but provider is empty"
-        ))
-      }
-      (Some(username), Some(provider)) => {
-        git_token(provider, username, |https| {
+    let access_token = if let Some(username) = &clone_args.account {
+      git_token(&clone_args.provider, username, |https| {
           clone_args.https = https
         })
         .await
         .with_context(
-          || format!("Failed to get git token in call to db. Stopping run. | {provider} | {username}"),
+          || format!("Failed to get git token in call to db. Stopping run. | {} | {username}", clone_args.provider),
         )?
-      }
+    } else {
+      None
     };
 
-    let (_, latest_hash, latest_message, _) = git::clone(
+    let GitRes { hash, message, .. } = git::pull_or_clone(
       clone_args,
-      &config.repo_directory,
+      &core_config().repo_directory,
       access_token,
       &[],
       "",
@@ -137,22 +132,23 @@ impl Resolve<RefreshRepoCache, User> for State {
       &[],
     )
     .await
-    .context("failed to clone repo (the resource) repo")?;
+    .with_context(|| {
+      format!("Failed to update repo at {repo_path:?}")
+    })?;
 
     let info = RepoInfo {
       last_pulled_at: repo.info.last_pulled_at,
       last_built_at: repo.info.last_built_at,
       built_hash: repo.info.built_hash,
       built_message: repo.info.built_message,
-      latest_hash,
-      latest_message,
+      latest_hash: hash,
+      latest_message: message,
     };
 
     let info = to_document(&info)
       .context("failed to serialize repo info to bson")?;
 
     db_client()
-      .await
       .repos
       .update_one(
         doc! { "name": &repo.name },
@@ -160,14 +156,6 @@ impl Resolve<RefreshRepoCache, User> for State {
       )
       .await
       .context("failed to update repo info on db")?;
-
-    if repo_dir.exists() {
-      if let Err(e) = std::fs::remove_dir_all(&repo_dir) {
-        warn!(
-          "failed to remove repo (resource) cache update repo directory | {e:?}"
-        )
-      }
-    }
 
     Ok(NoData {})
   }
@@ -233,7 +221,11 @@ impl Resolve<CreateRepoWebhook, User> for State {
       &repo.config.webhook_secret
     };
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       RepoWebhookAction::Clone => {
         format!("{host}/listener/github/repo/{}/clone", repo.id)
@@ -350,7 +342,11 @@ impl Resolve<DeleteRepoWebhook, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       RepoWebhookAction::Clone => {
         format!("{host}/listener/github/repo/{}/clone", repo.id)

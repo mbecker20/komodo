@@ -135,7 +135,7 @@ async fn handler(
       };
       let res = async {
         let mut update =
-          find_one_by_id(&db_client().await.updates, &update_id)
+          find_one_by_id(&db_client().updates, &update_id)
             .await
             .context("failed to query to db")?
             .context("no update exists with given id")?;

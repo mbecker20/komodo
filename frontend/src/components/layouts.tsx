@@ -24,6 +24,7 @@ export const Layout = () => {
   const nav = useNavigate();
   useShiftKeyListener("H", () => nav("/"));
   useShiftKeyListener("G", () => nav("/servers"));
+  useShiftKeyListener("Z", () => nav("/stacks"));
   useShiftKeyListener("D", () => nav("/deployments"));
   useShiftKeyListener("B", () => nav("/builds"));
   useShiftKeyListener("R", () => nav("/repos"));
@@ -32,7 +33,7 @@ export const Layout = () => {
   return (
     <>
       <Topbar />
-      <div className="h-screen overflow-y-auto">
+      <div className="h-screen overflow-y-scroll">
         <div className="container">
           <Sidebar />
           <div className="lg:ml-64 lg:pl-8 py-24">
@@ -90,7 +91,7 @@ export const Page = ({
         <div
           className={`flex flex-col gap-6 md:flex-row md:gap-0 md:justify-between`}
         >
-          <div className="flex flex-col gap-4">
+          <div>
             <div className="flex flex-wrap gap-4 items-center">
               {icon}
               <h1 className="text-4xl">{title}</h1>
@@ -177,7 +178,7 @@ export const Section = ({
   children,
   itemsCenterTitleRow,
 }: SectionProps) => (
-  <div className="flex flex-col gap-4 overflow-x-auto">
+  <div className="flex flex-col gap-4">
     <div
       className={cn(
         "flex flex-wrap gap-2 justify-between py-1",
@@ -222,7 +223,7 @@ export const NewLayout = ({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="secondary" className="items-center gap-2">
+        <Button className="items-center gap-2" variant="secondary">
           New {entityType} <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>

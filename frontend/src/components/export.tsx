@@ -11,6 +11,7 @@ import {
 import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { CopyButton } from "./util";
+import { MonacoEditor } from "./monaco";
 
 export const ExportButton = ({
   targets,
@@ -27,7 +28,7 @@ export const ExportButton = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex gap-2 items-center">
+        <Button variant="secondary" className="flex gap-2 items-center">
           <FileDown className="w-4 h-4" />
           Toml
         </Button>
@@ -89,11 +90,9 @@ const ExportPre = ({
   content: string | undefined;
 }) => {
   return (
-    <div className="relative flex justify-center w-full">
+    <div className="relative flex justify-center w-full overflow-y-scroll max-h-[80vh]">
       {loading && <Loader2 className="w-8 h-8 animate-spin" />}
-      <div className="overflow-y-scroll max-h-[80vh] w-full">
-        <pre className="h-fit w-full">{content}</pre>
-      </div>
+      <MonacoEditor value={content} language="toml" readOnly />
       <CopyButton content={content} className="absolute top-4 right-4" />
     </div>
   );

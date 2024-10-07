@@ -970,16 +970,17 @@ impl Resolve<PruneDockerBuilders, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let log = match periphery.request(api::build::PruneBuilders {}).await {
-      Ok(log) => log,
-      Err(e) => Log::error(
-        "prune builders",
-        format!(
-          "failed to docker builder prune on server {} | {e:#?}",
-          server.name
+    let log =
+      match periphery.request(api::build::PruneBuilders {}).await {
+        Ok(log) => log,
+        Err(e) => Log::error(
+          "prune builders",
+          format!(
+            "failed to docker builder prune on server {} | {e:#?}",
+            server.name
+          ),
         ),
-      ),
-    };
+      };
 
     update.logs.push(log);
     update_cache_for_server(&server).await;
@@ -1020,16 +1021,17 @@ impl Resolve<PruneBuildx, (User, Update)> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let log = match periphery.request(api::build::PruneBuildx {}).await {
-      Ok(log) => log,
-      Err(e) => Log::error(
-        "prune buildx",
-        format!(
-          "failed to docker buildx prune on server {} | {e:#?}",
-          server.name
+    let log =
+      match periphery.request(api::build::PruneBuildx {}).await {
+        Ok(log) => log,
+        Err(e) => Log::error(
+          "prune buildx",
+          format!(
+            "failed to docker buildx prune on server {} | {e:#?}",
+            server.name
+          ),
         ),
-      ),
-    };
+      };
 
     update.logs.push(log);
     update_cache_for_server(&server).await;

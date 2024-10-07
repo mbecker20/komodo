@@ -14,8 +14,8 @@ You can install Periphery as a systemd managed process, run it as a [docker cont
 :::warning
 Allowing unintended access to the Periphery agent API is a security risk.
 Ensure to take appropriate measures to block access to the Periphery API, such as firewall rules on port `8120`.
-Additionally, you can whitelist your Komodo Core IP address in the [Periphery config](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L46),
-and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/komodo/blob/2463ed3879ee56821f99d1f09581d659ee5d0575/config_example/periphery.config.example.toml#L51).
+Additionally, you can whitelist your Komodo Core IP address in the [Periphery config](https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml#L46),
+and configure it to [only accept requests matching including your Core passkey](https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml#L51).
 :::
 
 ### Install the Periphery agent - systemd
@@ -50,18 +50,34 @@ services:
     ports:
       - 8120:8120
     volumes:
+      ## Mount external docker socket
       - /var/run/docker.sock:/var/run/docker.sock
-      - repos:/etc/komodo/repos # manage repos in a docker volume, or change it to an accessible host directory.
-      - stacks:/etc/komodo/stacks # manage stacks in a docker volume, or change it to an accessible host directory.
+      ## Allow Periphery to see processes outside of container
+      - /proc:/proc
+      ## use self signed certs in docker volume, 
+      ## or mount your own signed certs.
+      - ssl-certs:/etc/komodo/ssl
+      ## manage repos in a docker volume, 
+      ## or change it to an accessible host directory.
+      - repos:/etc/komodo/repos
+      ## manage stack files in a docker volume, 
+      ## or change it to an accessible host directory.
+      - stacks:/etc/komodo/stacks
+      ## Optionally mount a path to store compose files
+      # - /path/to/compose:/host/compose
     environment:
-      # If the disk size is overreporting, can use one of these to 
-      # whitelist / blacklist the disks to filter them, whichever is easier.
-      # Accepts comma separated list of paths.
-      # Usually whitelisting just /etc/hostname gives correct size.
+      ## Full list: `https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml`
+      ## Enable HTTPS server
+      PERIPHERY_SSL_ENABLED: true
+      ## If the disk size is overreporting, can use one of these to 
+      ## whitelist / blacklist the disks to filter them, whichever is easier.
+      ## Accepts comma separated list of paths.
+      ## Usually whitelisting just /etc/hostname gives correct size.
       PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
       # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap,/etc/repos
 
 volumes:
+  ssl-certs:
   repos:
   stacks:
 ```
@@ -70,7 +86,7 @@ volumes:
 
 1.  Download the periphery binary from the latest [release](https://github.com/mbecker20/komodo/releases).
 
-2.  Create and edit your config files, following the [config example](https://github.com/mbecker20/komodo/blob/main/config_example/periphery.config.example.toml).
+2.  Create and edit your config files, following the [config example](https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml).
 
 :::note
 See the [periphery config docs](https://docs.rs/komodo_client/latest/komodo_client/entities/config/periphery/index.html)
@@ -113,3 +129,20 @@ There are two ways to merge config files. The default behavior is to completely 
 For example, with `--merge-nested-config true` you can specify an allowed ip in the base config, and another in the overide config, they will both be present in the final config.
 
 Similarly, you can specify a base docker / github account pair, and extend them with additional accounts in the overide config.
+
+## Configuration
+
+Quick download to `./komodo/periphery.config.toml`:
+```bash
+wget -P komodo https://raw.githubusercontent.com/mbecker20/komodo/main/config/periphery.config.toml
+```
+
+```mdx-code-block
+import RemoteCodeFile from "@site/src/components/RemoteCodeFile";
+
+<RemoteCodeFile
+	title="https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml"
+	url="https://raw.githubusercontent.com/mbecker20/komodo/main/config/periphery.config.toml"
+	language="toml"
+/>
+```

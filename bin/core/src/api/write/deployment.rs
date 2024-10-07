@@ -116,7 +116,7 @@ impl Resolve<RenameDeployment, User> for State {
       make_update(&deployment, Operation::RenameDeployment, &user);
 
     update_one_by_id(
-      &db_client().await.deployments,
+      &db_client().deployments,
       &deployment.id,
       mungos::update::Update::Set(
         doc! { "name": &name, "updated_at": komodo_timestamp() },

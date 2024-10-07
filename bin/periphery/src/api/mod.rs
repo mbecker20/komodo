@@ -75,6 +75,7 @@ pub enum PeripheryRequest {
   GetComposeServiceLogSearch(GetComposeServiceLogSearch),
 
   // Compose (Write)
+  WriteComposeContentsToHost(WriteComposeContentsToHost),
   ComposeUp(ComposeUp),
   ComposeExecution(ComposeExecution),
 

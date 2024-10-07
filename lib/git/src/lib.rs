@@ -1,442 +1,28 @@
-use std::{
-  collections::HashMap,
-  path::{Path, PathBuf},
-  str::FromStr,
-};
+use std::path::{Path, PathBuf};
 
-use anyhow::Context;
-use command::run_komodo_command;
-use formatting::{bold, format_serror, muted};
+use anyhow::{anyhow, Context};
+use formatting::{bold, muted};
 use komodo_client::entities::{
-  all_logs_success, environment_vars_to_string, komodo_timestamp,
-  to_komodo_name, update::Log, CloneArgs, EnvironmentVar,
-  LatestCommit, SystemCommand,
+  komodo_timestamp, update::Log, LatestCommit,
 };
 use run_command::async_run_command;
-use tokio::fs;
 use tracing::instrument;
 
-/// Return (logs, commit hash, commit msg)
-#[tracing::instrument(
-  level = "debug",
-  skip(environment, secrets, on_pull, core_replacers)
-)]
-#[allow(clippy::too_many_arguments)]
-pub async fn pull(
-  path: &Path,
-  branch: &Option<String>,
-  commit: &Option<String>,
-  on_pull: &Option<SystemCommand>,
-  environment: &[EnvironmentVar],
-  env_file_path: &str,
-  // if skip_secret_interp is none, make sure to pass None here
-  secrets: Option<&HashMap<String, String>>,
-  core_replacers: &[(String, String)],
-) -> (Vec<Log>, Option<String>, Option<String>, Option<PathBuf>) {
-  let branch = match branch {
-    Some(branch) => branch.to_owned(),
-    None => "main".to_string(),
-  };
+pub mod environment;
 
-  // This will remove any intermediate '/./' which can be a problem for some OS.
-  let path = path.components().collect::<PathBuf>();
+mod clone;
+mod pull;
+mod pull_or_clone;
 
-  let command =
-    format!("cd {} && git pull --force origin {branch}", path.display());
+pub use clone::clone;
+pub use pull::pull;
+pub use pull_or_clone::pull_or_clone;
 
-  let pull_log = run_komodo_command("git pull", command).await;
-
-  let mut logs = vec![pull_log];
-
-  if !logs[0].success {
-    return (logs, None, None, None);
-  }
-
-  if let Some(commit) = commit {
-    let reset_log = run_komodo_command(
-      "set commit",
-      format!("cd {} && git reset --hard {commit}", path.display()),
-    )
-    .await;
-    logs.push(reset_log);
-  }
-
-  let (hash, message) = match get_commit_hash_log(&path).await {
-    Ok((log, hash, message)) => {
-      logs.push(log);
-      (Some(hash), Some(message))
-    }
-    Err(e) => {
-      logs.push(Log::simple(
-        "latest commit",
-        format_serror(
-          &e.context("failed to get latest commit").into(),
-        ),
-      ));
-      (None, None)
-    }
-  };
-
-  let Ok(env_file_path) = write_environment_file(
-    environment,
-    env_file_path,
-    secrets,
-    &path,
-    &mut logs,
-  )
-  .await
-  else {
-    return (logs, hash, message, None);
-  };
-
-  if let Some(command) = on_pull {
-    if !command.path.is_empty() && !command.command.is_empty() {
-      let on_pull_path = path.join(&command.path);
-      if let Some(secrets) = secrets {
-        let (full_command, mut replacers) =
-          match svi::interpolate_variables(
-            &command.command,
-            secrets,
-            svi::Interpolator::DoubleBrackets,
-            true,
-          )
-          .context(
-            "failed to interpolate secrets into on_pull command",
-          ) {
-            Ok(res) => res,
-            Err(e) => {
-              logs.push(Log::error(
-                "interpolate secrets - on_pull",
-                format_serror(&e.into()),
-              ));
-              return (logs, hash, message, None);
-            }
-          };
-        replacers.extend(core_replacers.to_owned());
-        let mut on_pull_log = run_komodo_command(
-          "on pull",
-          format!("cd {} && {full_command}", on_pull_path.display()),
-        )
-        .await;
-
-        on_pull_log.command =
-          svi::replace_in_string(&on_pull_log.command, &replacers);
-        on_pull_log.stdout =
-          svi::replace_in_string(&on_pull_log.stdout, &replacers);
-        on_pull_log.stderr =
-          svi::replace_in_string(&on_pull_log.stderr, &replacers);
-
-        tracing::debug!(
-          "run repo on_pull command | command: {} | cwd: {:?}",
-          on_pull_log.command,
-          on_pull_path
-        );
-
-        logs.push(on_pull_log);
-      } else {
-        let on_pull_log = run_komodo_command(
-          "on pull",
-          format!(
-            "cd {} && {}",
-            on_pull_path.display(),
-            command.command
-          ),
-        )
-        .await;
-        tracing::debug!(
-          "run repo on_pull command | command: {} | cwd: {:?}",
-          command.command,
-          on_pull_path
-        );
-        logs.push(on_pull_log);
-      }
-    }
-  }
-
-  (logs, hash, message, env_file_path)
-}
-
-/// (logs, commit hash, commit message, env_file_path)
-pub type CloneRes =
-  (Vec<Log>, Option<String>, Option<String>, Option<PathBuf>);
-
-/// returns (logs, commit hash, commit message, env_file_path)
-#[tracing::instrument(
-  level = "debug",
-  skip(
-    clone_args,
-    access_token,
-    environment,
-    secrets,
-    core_replacers
-  )
-)]
-pub async fn clone<T>(
-  clone_args: T,
-  repo_dir: &Path,
-  access_token: Option<String>,
-  environment: &[EnvironmentVar],
-  env_file_path: &str,
-  // if skip_secret_interp is none, make sure to pass None here
-  secrets: Option<&HashMap<String, String>>,
-  core_replacers: &[(String, String)],
-) -> anyhow::Result<CloneRes>
-where
-  T: Into<CloneArgs> + std::fmt::Debug,
-{
-  let CloneArgs {
-    name,
-    provider,
-    https,
-    repo,
-    branch,
-    commit,
-    destination,
-    on_clone,
-    on_pull,
-    ..
-  } = clone_args.into();
-
-  let provider = provider
-    .as_ref()
-    .context("resource has no provider attached")?;
-  let repo =
-    repo.as_ref().context("resource has no repo attached")?;
-  let name = to_komodo_name(&name);
-
-  let repo_dir = match destination {
-    Some(destination) => PathBuf::from_str(&destination)
-      .context("destination is not valid path")?,
-    None => repo_dir.join(name),
-  };
-  // This will remove any intermediate '/./' which can be a problem for some OS.
-  let repo_dir = repo_dir.components().collect::<PathBuf>();
-
-  let mut logs = clone_inner(
-    provider,
-    https,
-    repo,
-    &branch,
-    &commit,
-    &repo_dir,
-    access_token,
-  )
-  .await;
-
-  if !all_logs_success(&logs) {
-    tracing::warn!("failed to clone repo at {repo_dir:?} | {logs:?}");
-    return Ok((logs, None, None, None));
-  }
-
-  tracing::debug!("repo at {repo_dir:?} cloned");
-
-  let (hash, message) = match get_commit_hash_log(&repo_dir).await {
-    Ok((log, hash, message)) => {
-      logs.push(log);
-      (Some(hash), Some(message))
-    }
-    Err(e) => {
-      logs.push(Log::simple(
-        "latest commit",
-        format_serror(
-          &e.context("failed to get latest commit").into(),
-        ),
-      ));
-      (None, None)
-    }
-  };
-
-  let Ok(env_file_path) = write_environment_file(
-    environment,
-    env_file_path,
-    secrets,
-    &repo_dir,
-    &mut logs,
-  )
-  .await
-  else {
-    return Ok((logs, hash, message, None));
-  };
-
-  if let Some(command) = on_clone {
-    if !command.path.is_empty() && !command.command.is_empty() {
-      let on_clone_path = repo_dir.join(&command.path);
-      if let Some(secrets) = secrets {
-        let (full_command, mut replacers) =
-          svi::interpolate_variables(
-            &command.command,
-            secrets,
-            svi::Interpolator::DoubleBrackets,
-            true,
-          )
-          .context(
-            "failed to interpolate secrets into on_clone command",
-          )?;
-        replacers.extend(core_replacers.to_owned());
-        let mut on_clone_log = run_komodo_command(
-          "on clone",
-          format!("cd {} && {full_command}", on_clone_path.display()),
-        )
-        .await;
-
-        on_clone_log.command =
-          svi::replace_in_string(&on_clone_log.command, &replacers);
-        on_clone_log.stdout =
-          svi::replace_in_string(&on_clone_log.stdout, &replacers);
-        on_clone_log.stderr =
-          svi::replace_in_string(&on_clone_log.stderr, &replacers);
-
-        tracing::debug!(
-          "run repo on_clone command | command: {} | cwd: {:?}",
-          on_clone_log.command,
-          on_clone_path
-        );
-
-        logs.push(on_clone_log);
-      } else {
-        let on_clone_log = run_komodo_command(
-          "on clone",
-          format!(
-            "cd {} && {}",
-            on_clone_path.display(),
-            command.command
-          ),
-        )
-        .await;
-        tracing::debug!(
-          "run repo on_clone command | command: {} | cwd: {:?}",
-          command.command,
-          on_clone_path
-        );
-        logs.push(on_clone_log);
-      }
-    }
-  }
-  if let Some(command) = on_pull {
-    if !command.path.is_empty() && !command.command.is_empty() {
-      let on_pull_path = repo_dir.join(&command.path);
-      if let Some(secrets) = secrets {
-        let (full_command, mut replacers) =
-          svi::interpolate_variables(
-            &command.command,
-            secrets,
-            svi::Interpolator::DoubleBrackets,
-            true,
-          )
-          .context(
-            "failed to interpolate secrets into on_pull command",
-          )?;
-        replacers.extend(core_replacers.to_owned());
-        let mut on_pull_log = run_komodo_command(
-          "on pull",
-          format!("cd {} && {full_command}", on_pull_path.display()),
-        )
-        .await;
-
-        on_pull_log.command =
-          svi::replace_in_string(&on_pull_log.command, &replacers);
-        on_pull_log.stdout =
-          svi::replace_in_string(&on_pull_log.stdout, &replacers);
-        on_pull_log.stderr =
-          svi::replace_in_string(&on_pull_log.stderr, &replacers);
-
-        tracing::debug!(
-          "run repo on_pull command | command: {} | cwd: {:?}",
-          on_pull_log.command,
-          on_pull_path
-        );
-
-        logs.push(on_pull_log);
-      } else {
-        let on_pull_log = run_komodo_command(
-          "on pull",
-          format!(
-            "cd {} && {}",
-            on_pull_path.display(),
-            command.command
-          ),
-        )
-        .await;
-        tracing::debug!(
-          "run repo on_pull command | command: {} | cwd: {:?}",
-          command.command,
-          on_pull_path
-        );
-        logs.push(on_pull_log);
-      }
-    }
-  }
-
-  Ok((logs, hash, message, env_file_path))
-}
-
-#[tracing::instrument(
-  level = "debug",
-  skip(destination, access_token)
-)]
-async fn clone_inner(
-  provider: &str,
-  https: bool,
-  repo: &str,
-  branch: &Option<String>,
-  commit: &Option<String>,
-  destination: &Path,
-  access_token: Option<String>,
-) -> Vec<Log> {
-  let _ = std::fs::remove_dir_all(destination);
-  let access_token_at = match &access_token {
-    Some(token) => format!("{token}@"),
-    None => String::new(),
-  };
-  let branch = match branch {
-    Some(branch) => format!(" -b {branch}"),
-    None => String::new(),
-  };
-  let protocol = if https { "https" } else { "http" };
-  let repo_url =
-    format!("{protocol}://{access_token_at}{provider}/{repo}.git");
-  let command =
-    format!("git clone {repo_url} {}{branch}", destination.display());
-  let start_ts = komodo_timestamp();
-  let output = async_run_command(&command).await;
-  let success = output.success();
-  let (command, stderr) = if !access_token_at.is_empty() {
-    // know that access token can't be none if access token non-empty
-    let access_token = access_token.unwrap();
-    (
-      command.replace(&access_token, "<TOKEN>"),
-      output.stderr.replace(&access_token, "<TOKEN>"),
-    )
-  } else {
-    (command, output.stderr)
-  };
-  let mut logs = vec![Log {
-    stage: "clone repo".to_string(),
-    command,
-    success,
-    stdout: output.stdout,
-    stderr,
-    start_ts,
-    end_ts: komodo_timestamp(),
-  }];
-
-  if !logs[0].success {
-    return logs;
-  }
-
-  if let Some(commit) = commit {
-    let reset_log = run_komodo_command(
-      "set commit",
-      format!(
-        "cd {} && git reset --hard {commit}",
-        destination.display()
-      ),
-    )
-    .await;
-    logs.push(reset_log);
-  }
-
-  logs
+pub struct GitRes {
+  pub logs: Vec<Log>,
+  pub hash: Option<String>,
+  pub message: Option<String>,
+  pub env_file_path: Option<PathBuf>,
 }
 
 #[instrument(level = "debug")]
@@ -449,12 +35,12 @@ pub async fn get_commit_hash_info(
   let (hash, _, message) = (
     split
       .next()
-      .context("failed to get short commit hash")?
+      .context("Failed to get short commit hash")?
       .to_string(),
     split.next().context("failed to get long commit hash")?,
     split
       .next()
-      .context("failed to get commit message")?
+      .context("Failed to get commit message")?
       .to_string(),
   );
   Ok(LatestCommit { hash, message })
@@ -472,12 +58,12 @@ pub async fn get_commit_hash_log(
   let (short_hash, _, msg) = (
     split
       .next()
-      .context("failed to get short commit hash")?
+      .context("Failed to get short commit hash")?
       .to_string(),
-    split.next().context("failed to get long commit hash")?,
+    split.next().context("Failed to get long commit hash")?,
     split
       .next()
-      .context("failed to get commit message")?
+      .context("Failed to get commit message")?
       .to_string(),
   );
   let log = Log {
@@ -498,75 +84,24 @@ pub async fn get_commit_hash_log(
   Ok((log, short_hash, msg))
 }
 
-/// If the environment was written and needs to be passed to the compose command,
-/// will return the env file PathBuf
-pub async fn write_environment_file(
-  environment: &[EnvironmentVar],
-  env_file_path: &str,
-  secrets: Option<&HashMap<String, String>>,
-  folder: &Path,
-  logs: &mut Vec<Log>,
-) -> Result<Option<PathBuf>, ()> {
-  if environment.is_empty() {
-    return Ok(None);
-  }
-
-  let contents = environment_vars_to_string(environment);
-
-  let contents = if let Some(secrets) = secrets {
-    let res = svi::interpolate_variables(
-      &contents,
-      secrets,
-      svi::Interpolator::DoubleBrackets,
-      true,
+/// Gets the remote url, with `.git` stripped from the end.
+pub async fn get_remote_url(path: &Path) -> anyhow::Result<String> {
+  let command =
+    format!("cd {} && git remote show origin", path.display());
+  let output = async_run_command(&command).await;
+  if output.success() {
+    Ok(
+      output
+        .stdout
+        .strip_suffix(".git")
+        .map(str::to_string)
+        .unwrap_or(output.stdout),
     )
-    .context("failed to interpolate secrets into environment");
-
-    let (contents, replacers) = match res {
-      Ok(res) => res,
-      Err(e) => {
-        logs.push(Log::error(
-          "interpolate periphery secrets",
-          format_serror(&e.into()),
-        ));
-        return Err(());
-      }
-    };
-
-    if !replacers.is_empty() {
-      logs.push(Log::simple(
-        "interpolate periphery secrets",
-        replacers
-            .iter()
-            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
-            .collect::<Vec<_>>()
-            .join("\n"),
-      ))
-    }
-
-    contents
   } else {
-    contents
-  };
-
-  let file = folder.join(env_file_path);
-
-  if let Err(e) =
-    fs::write(&file, contents).await.with_context(|| {
-      format!("failed to write environment file to {file:?}")
-    })
-  {
-    logs.push(Log::error(
-      "write environment file",
-      format_serror(&e.into()),
-    ));
-    return Err(());
+    Err(anyhow!(
+      "Failed to get remote url | stdout: {} | stderr: {}",
+      output.stdout,
+      output.stderr
+    ))
   }
-
-  logs.push(Log::simple(
-    "write environment file",
-    format!("environment written to {file:?}"),
-  ));
-
-  Ok(Some(file))
 }

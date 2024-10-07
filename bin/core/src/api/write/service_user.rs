@@ -48,6 +48,7 @@ impl Resolve<CreateServiceUser, User> for State {
       config,
       enabled: true,
       admin: false,
+      super_admin: false,
       create_server_permissions: false,
       create_build_permissions: false,
       last_update_view: 0,
@@ -56,7 +57,6 @@ impl Resolve<CreateServiceUser, User> for State {
       updated_at: komodo_timestamp(),
     };
     user.id = db_client()
-      .await
       .users
       .insert_one(&user)
       .await
@@ -85,7 +85,7 @@ impl Resolve<UpdateServiceUserDescription, User> for State {
     if !user.admin {
       return Err(anyhow!("user not admin"));
     }
-    let db = db_client().await;
+    let db = db_client();
     let service_user = db
       .users
       .find_one(doc! { "username": &username })
@@ -124,11 +124,10 @@ impl Resolve<CreateApiKeyForServiceUser, User> for State {
     if !user.admin {
       return Err(anyhow!("user not admin"));
     }
-    let service_user =
-      find_one_by_id(&db_client().await.users, &user_id)
-        .await
-        .context("failed to query db for user")?
-        .context("no user found with id")?;
+    let service_user = find_one_by_id(&db_client().users, &user_id)
+      .await
+      .context("failed to query db for user")?
+      .context("no user found with id")?;
     let UserConfig::Service { .. } = &service_user.config else {
       return Err(anyhow!("user is not service user"));
     };
@@ -148,7 +147,7 @@ impl Resolve<DeleteApiKeyForServiceUser, User> for State {
     if !user.admin {
       return Err(anyhow!("user not admin"));
     }
-    let db = db_client().await;
+    let db = db_client();
     let api_key = db
       .api_keys
       .find_one(doc! { "key": &key })
@@ -156,7 +155,7 @@ impl Resolve<DeleteApiKeyForServiceUser, User> for State {
       .context("failed to query db for api key")?
       .context("did not find matching api key")?;
     let service_user =
-      find_one_by_id(&db_client().await.users, &api_key.user_id)
+      find_one_by_id(&db_client().users, &api_key.user_id)
         .await
         .context("failed to query db for user")?
         .context("no user found with id")?;

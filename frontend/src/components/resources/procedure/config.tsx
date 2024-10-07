@@ -75,6 +75,7 @@ const ProcedureConfigInner = ({
   return (
     <div className="flex flex-col gap-8">
       <ConfigLayout
+        original={procedure.config}
         titleOther={
           <div className="flex items-center gap-4 text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -183,7 +184,7 @@ const ProcedureConfigInner = ({
         <Button
           variant="secondary"
           onClick={add_stage}
-          className="w-fit self-end"
+          className="w-fit"
           disabled={disabled}
         >
           Add Stage

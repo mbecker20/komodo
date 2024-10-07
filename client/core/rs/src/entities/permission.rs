@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
-use super::{ResourceTarget, MongoId};
+use super::{MongoId, ResourceTarget};
 
 /// Representation of a User or UserGroups permission on a resource.
 #[typeshare]

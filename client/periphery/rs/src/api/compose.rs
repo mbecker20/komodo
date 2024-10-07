@@ -1,7 +1,7 @@
 use komodo_client::entities::{
-  stack::{ComposeContents, ComposeProject, Stack},
+  stack::{ComposeProject, Stack},
   update::Log,
-  SearchCombinator,
+  FileContents, SearchCombinator,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -30,8 +30,8 @@ pub struct GetComposeContentsOnHost {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct GetComposeContentsOnHostResponse {
-  pub contents: Vec<ComposeContents>,
-  pub errors: Vec<ComposeContents>,
+  pub contents: Vec<FileContents>,
+  pub errors: Vec<FileContents>,
 }
 
 //
@@ -76,6 +76,24 @@ pub struct GetComposeServiceLogSearch {
 
 //
 
+/// Write the compose contents to the file on the host, for stacks using
+/// `files_on_host`.
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(Log)]
+pub struct WriteComposeContentsToHost {
+  /// The name of the stack
+  pub name: String,
+  /// The run directory of the stack
+  pub run_directory: String,
+  /// Relative to the stack folder + run directory,
+  /// or absolute path.
+  pub file_path: String,
+  /// The contents to write.
+  pub contents: String,
+}
+
+//
+
 /// Rewrites the compose directory, pulls any images, takes down existing containers,
 /// and runs docker compose up.
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
@@ -103,9 +121,9 @@ pub struct ComposeUpResponse {
   /// whether stack was successfully deployed
   pub deployed: bool,
   /// The deploy compose file contents if they could be acquired, or empty vec.
-  pub file_contents: Vec<ComposeContents>,
+  pub file_contents: Vec<FileContents>,
   /// The error in getting remote file contents at the path, or null
-  pub remote_errors: Vec<ComposeContents>,
+  pub remote_errors: Vec<FileContents>,
   /// If its a repo based stack, will include the latest commit hash
   pub commit_hash: Option<String>,
   /// If its a repo based stack, will include the latest commit message

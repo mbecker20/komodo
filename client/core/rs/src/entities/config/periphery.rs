@@ -22,7 +22,9 @@ use crate::entities::{
   Timelength,
 };
 
-use super::{DockerRegistry, GitProvider};
+use super::{
+  empty_or_redacted, DockerRegistry, GitProvider, ProviderAccount,
+};
 
 /// # Periphery Command Line Arguments.
 ///
@@ -135,10 +137,19 @@ pub struct Env {
   pub periphery_allowed_ips: Option<Vec<IpAddr>>,
   /// Override `passkeys`
   pub periphery_passkeys: Option<Vec<String>>,
+  /// Override `passkeys` from file
+  pub periphery_passkeys_file: Option<PathBuf>,
   /// Override `include_disk_mounts`
   pub periphery_include_disk_mounts: Option<Vec<PathBuf>>,
   /// Override `exclude_disk_mounts`
   pub periphery_exclude_disk_mounts: Option<Vec<PathBuf>>,
+
+  /// Override `ssl_enabled`
+  pub periphery_ssl_enabled: Option<bool>,
+  /// Override `ssl_key_file`
+  pub periphery_ssl_key_file: Option<PathBuf>,
+  /// Override `ssl_cert_file`
+  pub periphery_ssl_cert_file: Option<PathBuf>,
 }
 
 /// # Periphery Configuration File
@@ -212,6 +223,21 @@ pub struct PeripheryConfig {
   /// Supports any docker image repository.
   #[serde(default, alias = "docker_registry")]
   pub docker_registries: Vec<DockerRegistry>,
+
+  /// Whether to enable ssl.
+  /// Default: false (will change in later release)
+  #[serde(default = "default_ssl_enabled")]
+  pub ssl_enabled: bool,
+
+  /// Path to the ssl key.
+  /// Default: `/etc/komodo/ssl/periphery/key.pem`.
+  #[serde(default = "default_ssl_key_file")]
+  pub ssl_key_file: PathBuf,
+
+  /// Path to the ssl cert.
+  /// Default: `/etc/komodo/ssl/periphery/cert.pem`.
+  #[serde(default = "default_ssl_cert_file")]
+  pub ssl_cert_file: PathBuf,
 }
 
 fn default_periphery_port() -> u16 {
@@ -230,6 +256,18 @@ fn default_stats_polling_rate() -> Timelength {
   Timelength::FiveSeconds
 }
 
+fn default_ssl_enabled() -> bool {
+  false
+}
+
+fn default_ssl_key_file() -> PathBuf {
+  "/etc/komodo/ssl/key.pem".parse().unwrap()
+}
+
+fn default_ssl_cert_file() -> PathBuf {
+  "/etc/komodo/ssl/cert.pem".parse().unwrap()
+}
+
 impl Default for PeripheryConfig {
   fn default() -> Self {
     Self {
@@ -246,6 +284,72 @@ impl Default for PeripheryConfig {
       secrets: Default::default(),
       git_providers: Default::default(),
       docker_registries: Default::default(),
+      ssl_enabled: default_ssl_enabled(),
+      ssl_key_file: default_ssl_key_file(),
+      ssl_cert_file: default_ssl_cert_file(),
+    }
+  }
+}
+
+impl PeripheryConfig {
+  pub fn sanitized(&self) -> PeripheryConfig {
+    PeripheryConfig {
+      port: self.port,
+      repo_dir: self.repo_dir.clone(),
+      stack_dir: self.stack_dir.clone(),
+      stats_polling_rate: self.stats_polling_rate,
+      legacy_compose_cli: self.legacy_compose_cli,
+      logging: self.logging.clone(),
+      allowed_ips: self.allowed_ips.clone(),
+      passkeys: self
+        .passkeys
+        .iter()
+        .map(|passkey| empty_or_redacted(passkey))
+        .collect(),
+      include_disk_mounts: self.include_disk_mounts.clone(),
+      exclude_disk_mounts: self.exclude_disk_mounts.clone(),
+      secrets: self
+        .secrets
+        .iter()
+        .map(|(var, secret)| {
+          (var.to_string(), empty_or_redacted(secret))
+        })
+        .collect(),
+      git_providers: self
+        .git_providers
+        .iter()
+        .map(|provider| GitProvider {
+          domain: provider.domain.clone(),
+          https: provider.https,
+          accounts: provider
+            .accounts
+            .iter()
+            .map(|account| ProviderAccount {
+              username: account.username.clone(),
+              token: empty_or_redacted(&account.token),
+            })
+            .collect(),
+        })
+        .collect(),
+      docker_registries: self
+        .docker_registries
+        .iter()
+        .map(|provider| DockerRegistry {
+          domain: provider.domain.clone(),
+          organizations: provider.organizations.clone(),
+          accounts: provider
+            .accounts
+            .iter()
+            .map(|account| ProviderAccount {
+              username: account.username.clone(),
+              token: empty_or_redacted(&account.token),
+            })
+            .collect(),
+        })
+        .collect(),
+      ssl_enabled: self.ssl_enabled,
+      ssl_key_file: self.ssl_key_file.clone(),
+      ssl_cert_file: self.ssl_cert_file.clone(),
     }
   }
 }

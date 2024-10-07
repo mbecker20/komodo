@@ -75,3 +75,21 @@ pub struct UpdateUserBasePermissions {
 
 #[typeshare]
 pub type UpdateUserBasePermissionsResponse = NoData;
+
+/// **Super Admin only.** Update's whether a user is admin.
+/// Response: [NoData].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(UpdateUserAdminResponse)]
+pub struct UpdateUserAdmin {
+  /// The target user.
+  pub user_id: String,
+  /// Whether user should be admin.
+  pub admin: bool,
+}
+
+#[typeshare]
+pub type UpdateUserAdminResponse = NoData;

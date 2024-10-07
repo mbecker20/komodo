@@ -1,10 +1,12 @@
-use std::str::FromStr;
+use std::{
+  path::{Path, PathBuf},
+  str::FromStr,
+};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
-use build::StandardRegistryConfig;
+use build::ImageRegistryConfig;
 use clap::Parser;
-use config::core::AwsEcrConfig;
 use derive_empty_traits::EmptyTraits;
 use derive_variants::{EnumVariants, ExtractVariant};
 use serde::{
@@ -17,6 +19,8 @@ use serde::{
 use serror::Serror;
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
+
+use crate::parser::parse_key_value_list;
 
 /// Subtypes of [Alert][alert::Alert].
 pub mod alert;
@@ -126,42 +130,35 @@ pub fn get_image_name(
     config:
       build::BuildConfig {
         image_name,
-        image_registry,
+        image_registry:
+          ImageRegistryConfig {
+            domain,
+            account,
+            organization,
+          },
         ..
       },
     ..
   }: &build::Build,
-  aws_ecr: impl FnOnce(&String) -> Option<AwsEcrConfig>,
 ) -> anyhow::Result<String> {
   let name = if image_name.is_empty() {
     to_komodo_name(name)
   } else {
     to_komodo_name(image_name)
   };
-  let name = match image_registry {
-    build::ImageRegistry::None(_) => name,
-    build::ImageRegistry::AwsEcr(label) => {
-      let AwsEcrConfig {
-        region, account_id, ..
-      } = aws_ecr(label).with_context(|| {
-        format!("didn't find aws ecr config for registry {label}")
-      })?;
-      format!("{account_id}.dkr.ecr.{region}.amazonaws.com/{name}")
+  let name = match (
+    !domain.is_empty(),
+    !organization.is_empty(),
+    !account.is_empty(),
+  ) {
+    // If organization and account provided, name under organization.
+    (true, true, true) => {
+      format!("{domain}/{}/{name}", organization.to_lowercase())
     }
-    build::ImageRegistry::Standard(StandardRegistryConfig {
-      domain,
-      account,
-      organization,
-    }) => {
-      if !organization.is_empty() {
-        let org = organization.to_lowercase();
-        format!("{domain}/{org}/{name}")
-      } else if !account.is_empty() {
-        format!("{domain}/{account}/{name}")
-      } else {
-        name
-      }
-    }
+    // Just domain / account provided
+    (true, false, true) => format!("{domain}/{account}/{name}"),
+    // Otherwise, just use name
+    _ => name,
   };
   Ok(name)
 }
@@ -170,6 +167,7 @@ pub fn to_komodo_name(name: &str) -> String {
   name.to_lowercase().replace([' ', '.'], "_")
 }
 
+/// Unix timestamp in milliseconds as i64
 pub fn komodo_timestamp() -> i64 {
   unix_timestamp_ms() as i64
 }
@@ -352,54 +350,20 @@ pub struct EnvironmentVar {
   pub value: String,
 }
 
-pub fn environment_vars_to_string(vars: &[EnvironmentVar]) -> String {
-  vars
-    .iter()
-    .map(|EnvironmentVar { variable, value }| {
-      format!("{variable}={value}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n")
-}
-
 pub fn environment_vars_from_str(
-  value: &str,
+  input: &str,
 ) -> anyhow::Result<Vec<EnvironmentVar>> {
-  let trimmed = value.trim();
-  if trimmed.is_empty() {
-    return Ok(Vec::new());
-  }
-  let res = trimmed
-    .split('\n')
-    .map(|line| line.trim())
-    .enumerate()
-    .filter(|(_, line)| {
-      !line.is_empty()
-        && !line.starts_with('#')
-        && !line.starts_with("//")
-    })
-    .map(|(i, line)| {
-      let (variable, value) = line
-        .split_once('=')
-        .with_context(|| format!("line {i} missing assignment (=)"))
-        .map(|(variable, value)| {
-          let value = value
-            .split(" #")
-            .next()
-            .unwrap_or_default()
-            .trim()
-            .to_string();
-          (variable.trim().to_string(), value)
-        })?;
-      anyhow::Ok(EnvironmentVar { variable, value })
-    })
-    .collect::<anyhow::Result<Vec<_>>>()?;
-  Ok(res)
+  parse_key_value_list(input).map(|list| {
+    list
+      .into_iter()
+      .map(|(variable, value)| EnvironmentVar { variable, value })
+      .collect()
+  })
 }
 
 pub fn env_vars_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Vec<EnvironmentVar>, D::Error>
+) -> Result<String, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -408,7 +372,7 @@ where
 
 pub fn option_env_vars_deserializer<'de, D>(
   deserializer: D,
-) -> Result<Option<Vec<EnvironmentVar>>, D::Error>
+) -> Result<Option<String>, D::Error>
 where
   D: Deserializer<'de>,
 {
@@ -418,7 +382,7 @@ where
 struct EnvironmentVarVisitor;
 
 impl<'de> Visitor<'de> for EnvironmentVarVisitor {
-  type Value = Vec<EnvironmentVar>;
+  type Value = String;
 
   fn expecting(
     &self,
@@ -431,43 +395,37 @@ impl<'de> Visitor<'de> for EnvironmentVarVisitor {
   where
     E: serde::de::Error,
   {
-    environment_vars_from_str(v)
-      .map_err(|e| serde::de::Error::custom(format!("{e:#}")))
+    let out = v.to_string();
+    if out.is_empty() || out.ends_with('\n') {
+      Ok(out)
+    } else {
+      Ok(out + "\n")
+    }
   }
 
   fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
   where
     A: serde::de::SeqAccess<'de>,
   {
-    #[derive(Deserialize)]
-    struct EnvironmentVarInner {
-      variable: String,
-      value: String,
-    }
-
-    impl From<EnvironmentVarInner> for EnvironmentVar {
-      fn from(value: EnvironmentVarInner) -> Self {
-        Self {
-          variable: value.variable,
-          value: value.value,
-        }
-      }
-    }
-
-    let res = Vec::<EnvironmentVarInner>::deserialize(
+    let vars = Vec::<EnvironmentVar>::deserialize(
       SeqAccessDeserializer::new(seq),
-    )?
-    .into_iter()
-    .map(Into::into)
-    .collect();
-    Ok(res)
+    )?;
+    let vars = vars
+      .iter()
+      .map(|EnvironmentVar { variable, value }| {
+        format!("  {variable} = {value}")
+      })
+      .collect::<Vec<_>>()
+      .join("\n");
+    let extra = if vars.is_empty() { "" } else { "\n" };
+    Ok(vars + extra)
   }
 }
 
 struct OptionEnvVarVisitor;
 
 impl<'de> Visitor<'de> for OptionEnvVarVisitor {
-  type Value = Option<Vec<EnvironmentVar>>;
+  type Value = Option<String>;
 
   fn expecting(
     &self,
@@ -505,6 +463,108 @@ impl<'de> Visitor<'de> for OptionEnvVarVisitor {
   }
 }
 
+pub fn labels_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<String, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(LabelVisitor)
+}
+
+pub fn option_labels_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Option<String>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(OptionLabelVisitor)
+}
+
+struct LabelVisitor;
+
+impl<'de> Visitor<'de> for LabelVisitor {
+  type Value = String;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "string or Vec<EnvironmentVar>")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    let out = v.to_string();
+    if out.is_empty() || out.ends_with('\n') {
+      Ok(out)
+    } else {
+      Ok(out + "\n")
+    }
+  }
+
+  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::SeqAccess<'de>,
+  {
+    let vars = Vec::<EnvironmentVar>::deserialize(
+      SeqAccessDeserializer::new(seq),
+    )?;
+    let vars = vars
+      .iter()
+      .map(|EnvironmentVar { variable, value }| {
+        format!("  {variable}: {value}")
+      })
+      .collect::<Vec<_>>()
+      .join("\n");
+    let extra = if vars.is_empty() { "" } else { "\n" };
+    Ok(vars + extra)
+  }
+}
+
+struct OptionLabelVisitor;
+
+impl<'de> Visitor<'de> for OptionLabelVisitor {
+  type Value = Option<String>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "null or string or Vec<EnvironmentVar>")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    LabelVisitor.visit_str(v).map(Some)
+  }
+
+  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::SeqAccess<'de>,
+  {
+    LabelVisitor.visit_seq(seq).map(Some)
+  }
+
+  fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+}
+
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LatestCommit {
@@ -513,18 +573,27 @@ pub struct LatestCommit {
 }
 
 #[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct FileContents {
+  /// The path of the file on the host
+  pub path: String,
+  /// The contents of the file
+  pub contents: String,
+}
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CloneArgs {
   /// Resource name (eg Build name, Repo name)
   pub name: String,
   /// Git provider domain. Default: `github.com`
-  pub provider: Option<String>,
+  pub provider: String,
   /// Use https (vs http).
   pub https: bool,
   /// Full repo identifier. <namespace>/<repo_name>
   pub repo: Option<String>,
   /// Git Branch. Default: `main`
-  pub branch: Option<String>,
+  pub branch: String,
   /// Specific commit hash. Optional
   pub commit: Option<String>,
   /// The clone destination path
@@ -537,17 +606,66 @@ pub struct CloneArgs {
   pub account: Option<String>,
 }
 
+impl CloneArgs {
+  pub fn path(&self, repo_dir: &Path) -> PathBuf {
+    let path = match &self.destination {
+      Some(destination) => PathBuf::from(&destination),
+      None => repo_dir.join(&to_komodo_name(&self.name)),
+    };
+    path.components().collect::<PathBuf>()
+  }
+
+  pub fn remote_url(
+    &self,
+    access_token: Option<&str>,
+  ) -> anyhow::Result<String> {
+    let access_token_at = match &access_token {
+      Some(token) => format!("{token}@"),
+      None => String::new(),
+    };
+    let protocol = if self.https { "https" } else { "http" };
+    let repo = self
+      .repo
+      .as_ref()
+      .context("resource has no repo attached")?;
+    Ok(format!(
+      "{protocol}://{access_token_at}{}/{repo}.git",
+      self.provider
+    ))
+  }
+
+  pub fn unique_path(
+    &self,
+    repo_dir: &Path,
+  ) -> anyhow::Result<PathBuf> {
+    let repo = self
+      .repo
+      .as_ref()
+      .context("resource has no repo attached")?;
+    let res = repo_dir
+      .join(self.provider.replace('/', "-"))
+      .join(repo.replace('/', "-"))
+      .join(self.branch.replace('/', "-"))
+      .join(
+        self.commit.as_ref().map(String::as_str).unwrap_or("latest"),
+      );
+    Ok(res)
+  }
+}
+
 impl From<&self::build::Build> for CloneArgs {
   fn from(build: &self::build::Build) -> CloneArgs {
     CloneArgs {
       name: build.name.clone(),
+      provider: optional_string(&build.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&build.config.repo),
-      branch: optional_string(&build.config.branch),
+      branch: optional_string(&build.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&build.config.commit),
       destination: None,
       on_clone: build.config.pre_build.clone().into_option(),
       on_pull: None,
-      provider: optional_string(&build.config.git_provider),
       https: build.config.git_https,
       account: optional_string(&build.config.git_account),
     }
@@ -558,13 +676,15 @@ impl From<&self::repo::Repo> for CloneArgs {
   fn from(repo: &self::repo::Repo) -> CloneArgs {
     CloneArgs {
       name: repo.name.clone(),
+      provider: optional_string(&repo.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&repo.config.repo),
-      branch: optional_string(&repo.config.branch),
+      branch: optional_string(&repo.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&repo.config.commit),
       destination: optional_string(&repo.config.path),
       on_clone: repo.config.on_clone.clone().into_option(),
       on_pull: repo.config.on_pull.clone().into_option(),
-      provider: optional_string(&repo.config.git_provider),
       https: repo.config.git_https,
       account: optional_string(&repo.config.git_account),
     }
@@ -575,13 +695,15 @@ impl From<&self::sync::ResourceSync> for CloneArgs {
   fn from(sync: &self::sync::ResourceSync) -> Self {
     CloneArgs {
       name: sync.name.clone(),
+      provider: optional_string(&sync.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&sync.config.repo),
-      branch: optional_string(&sync.config.branch),
+      branch: optional_string(&sync.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&sync.config.commit),
       destination: None,
       on_clone: None,
       on_pull: None,
-      provider: optional_string(&sync.config.git_provider),
       https: sync.config.git_https,
       account: optional_string(&sync.config.git_account),
     }
@@ -592,13 +714,15 @@ impl From<&self::stack::Stack> for CloneArgs {
   fn from(stack: &self::stack::Stack) -> Self {
     CloneArgs {
       name: stack.name.clone(),
+      provider: optional_string(&stack.config.git_provider)
+        .unwrap_or_else(|| String::from("github.com")),
       repo: optional_string(&stack.config.repo),
-      branch: optional_string(&stack.config.branch),
+      branch: optional_string(&stack.config.branch)
+        .unwrap_or_else(|| String::from("main")),
       commit: optional_string(&stack.config.commit),
       destination: None,
       on_clone: None,
       on_pull: None,
-      provider: optional_string(&stack.config.git_provider),
       https: stack.config.git_https,
       account: optional_string(&stack.config.git_account),
     }
@@ -746,68 +870,12 @@ pub enum Operation {
   PruneBuildx,
   PruneSystem,
 
-  // build
-  CreateBuild,
-  UpdateBuild,
-  DeleteBuild,
-  RunBuild,
-  CancelBuild,
-
-  // builder
-  CreateBuilder,
-  UpdateBuilder,
-  DeleteBuilder,
-
-  // deployment
-  CreateDeployment,
-  UpdateDeployment,
-  DeleteDeployment,
-  Deploy,
-  StartDeployment,
-  RestartDeployment,
-  PauseDeployment,
-  UnpauseDeployment,
-  StopDeployment,
-  DestroyDeployment,
-  RenameDeployment,
-
-  // repo
-  CreateRepo,
-  UpdateRepo,
-  DeleteRepo,
-  CloneRepo,
-  PullRepo,
-  BuildRepo,
-  CancelRepoBuild,
-
-  // alerter
-  CreateAlerter,
-  UpdateAlerter,
-  DeleteAlerter,
-
-  // procedure
-  CreateProcedure,
-  UpdateProcedure,
-  DeleteProcedure,
-  RunProcedure,
-
-  // server template
-  CreateServerTemplate,
-  UpdateServerTemplate,
-  DeleteServerTemplate,
-  LaunchServer,
-
-  // sync
-  CreateResourceSync,
-  UpdateResourceSync,
-  DeleteResourceSync,
-  RunSync,
-
   // stack
   CreateStack,
   UpdateStack,
   RenameStack,
   DeleteStack,
+  WriteStackContents,
   RefreshStackCache,
   DeployStack,
   StartStack,
@@ -823,6 +891,64 @@ pub enum Operation {
   PauseStackService,
   UnpauseStackService,
   StopStackService,
+
+  // deployment
+  CreateDeployment,
+  UpdateDeployment,
+  DeleteDeployment,
+  Deploy,
+  StartDeployment,
+  RestartDeployment,
+  PauseDeployment,
+  UnpauseDeployment,
+  StopDeployment,
+  DestroyDeployment,
+  RenameDeployment,
+
+  // build
+  CreateBuild,
+  UpdateBuild,
+  DeleteBuild,
+  RunBuild,
+  CancelBuild,
+
+  // repo
+  CreateRepo,
+  UpdateRepo,
+  DeleteRepo,
+  CloneRepo,
+  PullRepo,
+  BuildRepo,
+  CancelRepoBuild,
+
+  // procedure
+  CreateProcedure,
+  UpdateProcedure,
+  DeleteProcedure,
+  RunProcedure,
+
+  // builder
+  CreateBuilder,
+  UpdateBuilder,
+  DeleteBuilder,
+
+  // alerter
+  CreateAlerter,
+  UpdateAlerter,
+  DeleteAlerter,
+
+  // server template
+  CreateServerTemplate,
+  UpdateServerTemplate,
+  DeleteServerTemplate,
+  LaunchServer,
+
+  // sync
+  CreateResourceSync,
+  UpdateResourceSync,
+  DeleteResourceSync,
+  CommitSync,
+  RunSync,
 
   // variable
   CreateVariable,
@@ -918,16 +1044,16 @@ pub enum TerminationSignal {
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {
   System(String),
-  Build(String),
-  Builder(String),
-  Deployment(String),
   Server(String),
+  Stack(String),
+  Deployment(String),
+  Build(String),
   Repo(String),
-  Alerter(String),
   Procedure(String),
+  Builder(String),
+  Alerter(String),
   ServerTemplate(String),
   ResourceSync(String),
-  Stack(String),
 }
 
 impl ResourceTarget {
@@ -936,16 +1062,16 @@ impl ResourceTarget {
   ) -> (ResourceTargetVariant, &String) {
     let id = match &self {
       ResourceTarget::System(id) => id,
+      ResourceTarget::Server(id) => id,
+      ResourceTarget::Stack(id) => id,
       ResourceTarget::Build(id) => id,
       ResourceTarget::Builder(id) => id,
       ResourceTarget::Deployment(id) => id,
-      ResourceTarget::Server(id) => id,
       ResourceTarget::Repo(id) => id,
       ResourceTarget::Alerter(id) => id,
       ResourceTarget::Procedure(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
       ResourceTarget::ResourceSync(id) => id,
-      ResourceTarget::Stack(id) => id,
     };
     (self.extract_variant(), id)
   }
@@ -1018,5 +1144,103 @@ impl From<&sync::ResourceSync> for ResourceTarget {
 impl From<&stack::Stack> for ResourceTarget {
   fn from(resource_sync: &stack::Stack) -> Self {
     Self::Stack(resource_sync.id.clone())
+  }
+}
+
+impl ResourceTargetVariant {
+  /// These need to use snake case
+  pub fn toml_header(&self) -> &'static str {
+    match self {
+      ResourceTargetVariant::System => "system",
+      ResourceTargetVariant::Build => "build",
+      ResourceTargetVariant::Builder => "builder",
+      ResourceTargetVariant::Deployment => "deployment",
+      ResourceTargetVariant::Server => "server",
+      ResourceTargetVariant::Repo => "repo",
+      ResourceTargetVariant::Alerter => "alerter",
+      ResourceTargetVariant::Procedure => "procedure",
+      ResourceTargetVariant::ServerTemplate => "server_template",
+      ResourceTargetVariant::ResourceSync => "resource_sync",
+      ResourceTargetVariant::Stack => "stack",
+    }
+  }
+}
+
+/// Using this ensures the file contents end with trailing '\n'
+pub fn file_contents_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<String, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(FileContentsVisitor)
+}
+
+/// Using this ensures the file contents end with trailing '\n'
+pub fn option_file_contents_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Option<String>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(OptionFileContentsVisitor)
+}
+
+struct FileContentsVisitor;
+
+impl<'de> Visitor<'de> for FileContentsVisitor {
+  type Value = String;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "string")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    let out = v.to_string();
+    if out.is_empty() || out.ends_with('\n') {
+      Ok(out)
+    } else {
+      Ok(out + "\n")
+    }
+  }
+}
+
+struct OptionFileContentsVisitor;
+
+impl<'de> Visitor<'de> for OptionFileContentsVisitor {
+  type Value = Option<String>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "null or string")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    FileContentsVisitor.visit_str(v).map(Some)
+  }
+
+  fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
   }
 }

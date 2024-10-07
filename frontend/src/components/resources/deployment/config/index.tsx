@@ -4,26 +4,21 @@ import { ReactNode, useState } from "react";
 import {
   AddExtraArgMenu,
   ConfigItem,
+  ConfigList,
   InputList,
 } from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
-import { PortsConfig } from "./components/ports";
-import { EnvVars } from "./components/environment";
-import { VolumesConfig } from "./components/volumes";
 import { Config } from "@components/config";
+import { ResourceLink, ResourceSelector } from "@components/resources/common";
+import { Link } from "react-router-dom";
+import { SecretsSearch } from "@components/config/env_vars";
+import { MonacoEditor } from "@components/monaco";
 import {
   DefaultTerminationSignal,
-  TermSignalLabels,
   TerminationTimeout,
 } from "./components/term-signal";
-import { LabelsConfig, ServerSelector } from "@components/resources/common";
-import { TextUpdateMenu } from "@components/util";
-import { Button } from "@ui/button";
-import { PlusCircle } from "lucide-react";
-import { env_to_text } from "@lib/utils";
-import { Link } from "react-router-dom";
 
 export const DeploymentConfig = ({
   id,
@@ -50,6 +45,8 @@ export const DeploymentConfig = ({
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Deployment"
       titleOther={titleOther}
       disabled={disabled}
       config={config}
@@ -59,34 +56,60 @@ export const DeploymentConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
-            label: "Server Id",
+            label: "Server",
             labelHidden: true,
             components: {
-              server_id: (value, set) => (
-                <ServerSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                  align="end"
-                />
-              ),
+              server_id: (server_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      server_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Server:
+                          <ResourceLink type="Server" id={server_id} />
+                        </div>
+                      ) : (
+                        "Select Server"
+                      )
+                    }
+                    description="Select the Server to deploy on."
+                  >
+                    <ResourceSelector
+                      type="Server"
+                      selected={server_id}
+                      onSelect={(server_id) => set({ server_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
             },
           },
           {
-            label: "Container",
+            label:
+              (update.image ?? config.image)?.type === "Build"
+                ? "Build"
+                : "Image",
+            description:
+              "Either pass a docker image directly, or choose a Build to deploy",
+            boldLabel: false,
             components: {
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
               ),
-              restart: (value, set) => (
-                <RestartModeSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
+              redeploy_on_build: (update.image?.type ?? config.image?.type) ===
+                "Build" && {
+                description: "Automatically redeploy when the image is built.",
+              },
+            },
+          },
+          {
+            label: "Network",
+            labelHidden: true,
+            components: {
               network: (value, set) => (
                 <NetworkModeSelector
                   server_id={update.server_id ?? config.server_id}
@@ -95,198 +118,25 @@ export const DeploymentConfig = ({
                   disabled={disabled}
                 />
               ),
-              command: (value, set) => (
-                <ConfigItem
-                  label="Command"
-                  description={
-                    <div className="flex flex-row flex-wrap">
-                      <div>Replace the CMD, or extend the ENTRYPOINT.</div>
-                      <Link
-                        to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
-                        target="_blank"
-                      >
-                        <Button variant="link" className="p-0">
-                          See docker docs.
-                        </Button>
-                      </Link>
-                    </div>
-                  }
-                >
-                  <TextUpdateMenu
-                    title="Update Command"
-                    placeholder="Set custom command"
-                    value={value}
-                    onUpdate={(command) => set({ command })}
-                    triggerClassName="min-w-[300px] max-w-[400px]"
-                    disabled={disabled}
-                  />
-                </ConfigItem>
-              ),
-            },
-          },
-          {
-            label: "Ports",
-            description: "Configure the port bindings for the container.",
-            hidden: hide_ports,
-            contentHidden: (update.ports ?? config.ports)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    ports: [
-                      ...(update.ports ?? config.ports ?? []),
-                      { container: "", local: "" },
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Port
-              </Button>
-            ),
-            components: {
-              ports: (value, set) => (
-                <PortsConfig
-                  ports={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Volumes",
-            description: "Configure the volume bindings for the container.",
-            contentHidden: (update.volumes ?? config.volumes)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    volumes: [
-                      ...(update.volumes ?? config.volumes ?? []),
-                      { container: "", local: "" },
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Volume
-              </Button>
-            ),
-            components: {
-              volumes: (v, set) => (
-                <VolumesConfig
-                  volumes={v ?? []}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Extra Args",
-            description: (
-              <div className="flex flex-row flex-wrap">
-                <div>Pass extra arguments to 'docker run'.</div>
-                <Link
-                  to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
-                  target="_blank"
-                >
-                  <Button variant="link" className="p-0">
-                    See docker docs.
-                  </Button>
-                </Link>
-              </div>
-            ),
-            contentHidden:
-              (update.extra_args ?? config.extra_args)?.length === 0,
-            actions: !disabled && (
-              <AddExtraArgMenu
-                type="Deployment"
-                onSelect={(suggestion) =>
-                  set((update) => ({
-                    ...update,
-                    extra_args: [
-                      ...(update.extra_args ?? config.extra_args ?? []),
-                      suggestion,
-                    ],
-                  }))
-                }
-                disabled={disabled}
-              />
-            ),
-            components: {
-              extra_args: (value, set) => (
-                <InputList
-                  field="extra_args"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-          {
-            label: "Labels",
-            description: "Attach --labels to the container.",
-            contentHidden: (update.labels ?? config.labels)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set({
-                    ...update,
-                    labels: [
-                      ...(update.labels ?? config.labels ?? []),
-                      { variable: "", value: "" },
-                    ] as Types.EnvironmentVar[],
-                  })
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Label
-              </Button>
-            ),
-            components: {
-              labels: (l, set) => (
-                <LabelsConfig
-                  labels={(l as Types.EnvironmentVar[]) ?? []}
-                  set={set}
-                  disabled={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Links",
-            description: "Add quick links in the resource header",
-            contentHidden: ((update.links ?? config.links)?.length ?? 0) === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    links: [...(update.links ?? config.links ?? []), ""],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Link
-              </Button>
-            ),
-            components: {
+              ports:
+                !hide_ports &&
+                ((ports, set) => (
+                  <ConfigItem
+                    label="Ports"
+                    description="Configure port mappings."
+                  >
+                    <MonacoEditor
+                      value={ports || "  # 3000:3000\n"}
+                      language="key_value"
+                      onValueChange={(ports) => set({ ports })}
+                      readOnly={disabled}
+                    />
+                  </ConfigItem>
+                )),
               links: (values, set) => (
-                <InputList
+                <ConfigList
+                  label="Links"
+                  description="Add quick links in the resource header"
                   field="links"
                   values={values ?? []}
                   set={set}
@@ -297,39 +147,151 @@ export const DeploymentConfig = ({
             },
           },
           {
-            label: "Settings",
-            components: {
-              send_alerts: true,
-              redeploy_on_build:
-                (update.image?.type || config.image?.type) === "Build",
-            },
-          },
-        ],
-        environment: [
-          {
             label: "Environment",
-            description:
-              "Pass environment variables to the container. You can interpolate variables and secrets using '[[VAR_NAME]]'",
+            boldLabel: false,
+            description: "Pass these variables to the container",
             components: {
-              environment: (vars, set) => {
-                const env = typeof vars === "object" ? env_to_text(vars) : vars;
-                return (
-                  <EnvVars
-                    env={env ?? ""}
-                    set={set}
-                    server={update.server_id || config.server_id}
-                    disabled={disabled}
+              environment: (env, set) => (
+                <div className="flex flex-col gap-4">
+                  <SecretsSearch
+                    server={update.server_id ?? config.server_id}
                   />
-                );
-              },
-              skip_secret_interp: true,
+                  <MonacoEditor
+                    value={env || "  # VARIABLE = value\n"}
+                    onValueChange={(environment) => set({ environment })}
+                    language="key_value"
+                    readOnly={disabled}
+                  />
+                </div>
+              ),
+              // skip_secret_interp: true,
             },
           },
-        ],
-        termination: [
+          {
+            label: "Volumes",
+            description: "Configure the volume bindings.",
+            boldLabel: false,
+            components: {
+              volumes: (volumes, set) => (
+                <MonacoEditor
+                  value={volumes || "  # volume:/container/path\n"}
+                  language="key_value"
+                  onValueChange={(volumes) => set({ volumes })}
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Labels",
+            description: "Attach --labels to the container.",
+            boldLabel: false,
+            components: {
+              labels: (labels, set) => (
+                <MonacoEditor
+                  value={labels || "  # your.docker.label: value\n"}
+                  language="key_value"
+                  onValueChange={(labels) => set({ labels })}
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Restart",
+            labelHidden: true,
+            components: {
+              restart: (value, set) => (
+                <RestartModeSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Extra Args",
+            labelHidden: true,
+            components: {
+              extra_args: (value, set) => (
+                <ConfigItem
+                  label="Extra Args"
+                  description={
+                    <div className="flex flex-row flex-wrap gap-2">
+                      <div>Pass extra arguments to 'docker run'.</div>
+                      <Link
+                        to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
+                        target="_blank"
+                        className="text-primary"
+                      >
+                        See docker docs.
+                      </Link>
+                    </div>
+                  }
+                >
+                  {!disabled && (
+                    <AddExtraArgMenu
+                      type="Deployment"
+                      onSelect={(suggestion) =>
+                        set({
+                          extra_args: [
+                            ...(update.extra_args ?? config.extra_args ?? []),
+                            suggestion,
+                          ],
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  )}
+                  <InputList
+                    field="extra_args"
+                    values={value ?? []}
+                    set={set}
+                    disabled={disabled}
+                    placeholder="--extra-arg=value"
+                  />
+                </ConfigItem>
+              ),
+            },
+          },
+          {
+            label: "Command",
+            labelHidden: true,
+            components: {
+              command: (value, set) => (
+                <ConfigItem
+                  label="Command"
+                  description={
+                    <div className="flex flex-row flex-wrap gap-2">
+                      <div>Replace the CMD, or extend the ENTRYPOINT.</div>
+                      <Link
+                        to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
+                        target="_blank"
+                        className="text-primary"
+                      >
+                        See docker docs.
+                        {/* <Button variant="link" className="p-0">
+                        </Button> */}
+                      </Link>
+                    </div>
+                  }
+                >
+                  <MonacoEditor
+                    value={value}
+                    language="shell"
+                    onValueChange={(command) => set({ command })}
+                    readOnly={disabled}
+                  />
+                </ConfigItem>
+              ),
+            },
+          },
           {
             label: "Termination",
-            description: "Configure the ways to 'docker stop' the container.",
+            boldLabel: false,
+            description:
+              "Configure the signals used to 'docker stop' the container. Options are SIGTERM, SIGQUIT, SIGINT, and SIGHUP.",
             components: {
               termination_signal: (value, set) => (
                 <DefaultTerminationSignal
@@ -342,7 +304,19 @@ export const DeploymentConfig = ({
                 <TerminationTimeout arg={value} set={set} disabled={disabled} />
               ),
               term_signal_labels: (value, set) => (
-                <TermSignalLabels args={value} set={set} disabled={disabled} />
+                <ConfigItem
+                  label="Termination Signal Labels"
+                  description="Choose between multiple signals when stopping"
+                >
+                  <MonacoEditor
+                    value={value || "  # SIGTERM: your label\n"}
+                    language="key_value"
+                    onValueChange={(term_signal_labels) =>
+                      set({ term_signal_labels })
+                    }
+                    readOnly={disabled}
+                  />
+                </ConfigItem>
               ),
             },
           },

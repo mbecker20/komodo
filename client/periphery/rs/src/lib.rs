@@ -8,10 +8,16 @@ use serror::deserialize_error;
 
 pub mod api;
 
-fn http_client() -> &'static reqwest::Client {
+fn periphery_http_client() -> &'static reqwest::Client {
   static PERIPHERY_HTTP_CLIENT: OnceLock<reqwest::Client> =
     OnceLock::new();
-  PERIPHERY_HTTP_CLIENT.get_or_init(Default::default)
+  PERIPHERY_HTTP_CLIENT.get_or_init(|| {
+    reqwest::Client::builder()
+      // Use to allow communication with Periphery self-signed certs.
+      .danger_accept_invalid_certs(true)
+      .build()
+      .expect("Failed to build Periphery http client")
+  })
 }
 
 pub struct PeripheryClient {
@@ -64,7 +70,7 @@ impl PeripheryClient {
     tracing::trace!(
       "sending request | type: {req_type} | body: {request:?}"
     );
-    let mut req = http_client()
+    let mut req = periphery_http_client()
       .post(&self.address)
       .json(&json!({
         "type": req_type,

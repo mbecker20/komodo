@@ -1,3 +1,4 @@
+use anyhow::Context;
 use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
@@ -9,6 +10,7 @@ use typeshare::typeshare;
 use crate::entities::I64;
 
 use super::{
+  environment_vars_from_str,
   resource::{Resource, ResourceListItem, ResourceQuery},
   EnvironmentVar, SystemCommand,
 };
@@ -96,12 +98,14 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct RepoConfig {
   /// The server to clone the repo on.
-  #[serde(default)]
+  #[serde(default, alias = "server")]
+  #[partial_attr(serde(alias = "server"))]
   #[builder(default)]
   pub server_id: String,
 
   /// Attach a builder to 'build' the repo.
-  #[serde(default)]
+  #[serde(default, alias = "builder")]
+  #[partial_attr(serde(alias = "builder"))]
   #[builder(default)]
   pub builder_id: String,
 
@@ -192,7 +196,7 @@ pub struct RepoConfig {
     deserialize_with = "super::option_env_vars_deserializer"
   ))]
   #[builder(default)]
-  pub environment: Vec<EnvironmentVar>,
+  pub environment: String,
 
   /// The name of the written environment file before `docker compose up`.
   /// Relative to the repo root.
@@ -211,6 +215,11 @@ pub struct RepoConfig {
 impl RepoConfig {
   pub fn builder() -> RepoConfigBuilder {
     RepoConfigBuilder::default()
+  }
+
+  pub fn env_vars(&self) -> anyhow::Result<Vec<EnvironmentVar>> {
+    environment_vars_from_str(&self.environment)
+      .context("Invalid environment")
   }
 }
 

@@ -16,7 +16,6 @@ use komodo_client::entities::{
 use octorust::auth::{
   Credentials, InstallationTokenGenerator, JWTCredentials,
 };
-use tokio::sync::{Mutex, OnceCell};
 
 use crate::{
   auth::jwt::JwtClient,
@@ -31,22 +30,20 @@ use crate::{
 
 pub struct State;
 
-pub async fn db_client() -> &'static DbClient {
-  static DB_CLIENT: OnceCell<DbClient> = OnceCell::const_new();
+static DB_CLIENT: OnceLock<DbClient> = OnceLock::new();
+
+pub fn db_client() -> &'static DbClient {
   DB_CLIENT
-    .get_or_init(|| async {
-      match DbClient::new(&core_config().mongo)
-        .await
-        .context("failed to initialize mongo client")
-      {
-        Ok(client) => client,
-        Err(e) => {
-          error!("{e:#}");
-          panic!("Exiting");
-        }
-      }
-    })
+    .get()
+    .expect("db_client accessed before initialized")
+}
+
+pub async fn init_db_client() {
+  let client = DbClient::new(&core_config().database)
     .await
+    .context("failed to initialize database client")
+    .unwrap();
+  DB_CLIENT.set(client).expect("db_clint");
 }
 
 pub fn jwt_client() -> &'static JwtClient {
@@ -201,12 +198,4 @@ pub fn resource_sync_state_cache() -> &'static ResourceSyncStateCache
   static RESOURCE_SYNC_STATE_CACHE: OnceLock<ResourceSyncStateCache> =
     OnceLock::new();
   RESOURCE_SYNC_STATE_CACHE.get_or_init(Default::default)
-}
-
-pub type ResourceSyncLockCache = Cache<String, Arc<Mutex<()>>>;
-
-pub fn resource_sync_lock_cache() -> &'static ResourceSyncLockCache {
-  static RESOURCE_SYNC_LOCK_CACHE: OnceLock<ResourceSyncLockCache> =
-    OnceLock::new();
-  RESOURCE_SYNC_LOCK_CACHE.get_or_init(Default::default)
 }

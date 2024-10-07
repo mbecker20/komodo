@@ -50,8 +50,9 @@ import { Types } from "@komodo/client";
 import { Badge } from "@ui/badge";
 import { Section } from "./layouts";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { useRead } from "@lib/hooks";
+import { useRead, useUser } from "@lib/hooks";
 import { Prune } from "./resources/server/actions";
+import { MonacoEditor } from "./monaco";
 
 export const WithLoading = ({
   children,
@@ -150,8 +151,24 @@ export const ActionWithDialog = ({
     | null
     | undefined;
 }) => {
+  const disable_confirm_dialog =
+    useRead("GetCoreInfo", {}).data?.disable_confirm_dialog ?? false;
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+
+  if (disable_confirm_dialog) {
+    return (
+      <ConfirmButton
+        variant={variant}
+        title={title}
+        icon={icon}
+        disabled={disabled}
+        loading={loading}
+        className={targetClassName}
+        onClick={onClick}
+      />
+    );
+  }
 
   return (
     <Dialog
@@ -264,18 +281,26 @@ export const ConfirmButton = ({
   );
 };
 
-export const Logout = () => (
-  <Button
-    variant="ghost"
-    size="icon"
-    onClick={() => {
-      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-      location.reload();
-    }}
-  >
-    <LogOut className="w-4 h-4" />
-  </Button>
-);
+export const Logout = () => {
+  const user = useUser().data;
+  return (
+    user && (
+      <Button
+        variant="ghost"
+        onClick={() => {
+          localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+          location.reload();
+        }}
+        className="px-2 flex flex-row gap-2 items-center"
+      >
+        <div className="hidden xl:flex max-w-[120px] overflow-hidden overflow-ellipsis">
+          {user.username}
+        </div>
+        <LogOut className="w-4 h-4" />
+      </Button>
+    )
+  );
+};
 
 export const UserSettings = () => (
   <Link to="/settings">
@@ -335,6 +360,7 @@ export const TextUpdateMenu = ({
   open,
   setOpen,
   triggerHidden,
+  language,
 }: {
   title: string;
   titleRight?: ReactNode;
@@ -348,6 +374,7 @@ export const TextUpdateMenu = ({
   open?: boolean;
   setOpen?: (open: boolean) => void;
   triggerHidden?: boolean;
+  language?: "toml" | "yaml" | "json" | "key_value";
 }) => {
   const [_open, _setOpen] = useState(false);
   const [__open, __setOpen] = [open ?? _open, setOpen ?? _setOpen];
@@ -394,13 +421,13 @@ export const TextUpdateMenu = ({
           </DialogHeader>
         )}
 
-        <Textarea
+        <MonacoEditor
           value={_value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={placeholder}
-          className="min-h-[200px]"
-          disabled={disabled}
+          language={language}
+          onValueChange={setValue}
+          readOnly={disabled}
         />
+        
         {!disabled && (
           <DialogFooter>
             {confirmButton ? (
@@ -766,5 +793,130 @@ export const DockerContainersSection = ({
         )}
       </Section>
     </div>
+  );
+};
+
+export const ResourcePageHeader = ({
+  intent,
+  icon,
+  name,
+  state,
+  status,
+}: {
+  intent: ColorIntention;
+  icon: ReactNode;
+  name: string | undefined;
+  state: string | undefined;
+  status: string | undefined;
+}) => {
+  const color = text_color_class_by_intention(intent);
+  const background = hex_color_by_intention(intent) + "15";
+
+  return (
+    <div
+      className="flex items-center gap-8 pl-8 pr-16 py-4 rounded-t-md w-full"
+      style={{ background }}
+    >
+      {icon}
+      <div>
+        <p className={"text-3xl font-semibold"}>{name}</p>
+        <div className="flex items-center gap-2 text-sm uppercase">
+          <p className={cn(color, "font-semibold")}>{state}</p>
+          <p className="text-muted-foreground">{status}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const TextUpdateMenu2 = ({
+  title,
+  titleRight,
+  value = "",
+  triggerClassName,
+  onUpdate,
+  placeholder,
+  confirmButton,
+  disabled,
+  open,
+  setOpen,
+}: {
+  title: string;
+  titleRight?: ReactNode;
+  value: string | undefined;
+  onUpdate: (value: string) => void;
+  triggerClassName?: string;
+  placeholder?: string;
+  confirmButton?: boolean;
+  disabled?: boolean;
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
+}) => {
+  const [_open, _setOpen] = useState(false);
+  const [__open, __setOpen] = [open ?? _open, setOpen ?? _setOpen];
+  const [_value, setValue] = useState(value);
+  useEffect(() => setValue(value), [value]);
+  const onClick = () => {
+    onUpdate(_value);
+    __setOpen(false);
+  };
+
+  return (
+    <Dialog open={__open} onOpenChange={__setOpen}>
+      <DialogTrigger asChild>
+        <div
+          className={cn(
+            "text-sm text-nowrap overflow-hidden overflow-ellipsis p-2 border rounded-md flex-1 cursor-pointer hover:bg-accent/25",
+            (!value || !!disabled) && "text-muted-foreground",
+            triggerClassName
+          )}
+        >
+          {value || placeholder}
+        </div>
+      </DialogTrigger>
+      <DialogContent className="min-w-[50vw]">
+        {titleRight && (
+          <div className="flex items-center gap-4">
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+            </DialogHeader>
+            {titleRight}
+          </div>
+        )}
+        {!titleRight && (
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+        )}
+
+        <Textarea
+          value={_value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          className="min-h-[200px]"
+          disabled={disabled}
+        />
+        {!disabled && (
+          <DialogFooter>
+            {confirmButton ? (
+              <ConfirmButton
+                title="Update"
+                icon={<CheckCircle className="w-4 h-4" />}
+                onClick={onClick}
+              />
+            ) : (
+              <Button
+                variant="secondary"
+                onClick={onClick}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Update
+              </Button>
+            )}
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };

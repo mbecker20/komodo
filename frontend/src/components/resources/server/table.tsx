@@ -72,7 +72,7 @@ export const ServerTable = ({
             <SortableHeader column={column} title="State" />
           ),
           cell: ({ row }) => (
-            <ServerComponents.Status.State id={row.original.id} />
+            <ServerComponents.State id={row.original.id} />
           ),
         },
         {

@@ -1,9 +1,9 @@
 use anyhow::Context;
-use mongo_indexed::doc;
 use komodo_client::{
   api::read::{GetTag, ListTags},
   entities::{tag::Tag, user::User},
 };
+use mongo_indexed::doc;
 use mungos::{find::find_collect, mongodb::options::FindOptions};
 use resolver_api::Resolve;
 
@@ -29,7 +29,7 @@ impl Resolve<ListTags, User> for State {
     _: User,
   ) -> anyhow::Result<Vec<Tag>> {
     find_collect(
-      &db_client().await.tags,
+      &db_client().tags,
       query,
       FindOptions::builder().sort(doc! { "name": 1 }).build(),
     )

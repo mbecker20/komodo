@@ -5,12 +5,11 @@ import { Resource } from "@pages/resource";
 import { Resources } from "@pages/resources";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/home/tree";
-import { Updates } from "@pages/updates";
+import { UpdatesPage } from "@pages/updates";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
-import { ResourceStats } from "@pages/resource_stats";
-import { Alerts } from "@pages/alerts";
+import { AlertsPage } from "@pages/alerts";
 import { UserPage } from "@pages/user";
 import { UserGroupPage } from "@pages/user-group";
 import { Settings } from "@pages/settings";
@@ -30,8 +29,8 @@ const ROUTER = createBrowserRouter([
       // { path: "keys", element: <Keys /> },
       // { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },
-      { path: "alerts", element: <Alerts /> },
-      { path: "updates", element: <Updates /> },
+      { path: "alerts", element: <AlertsPage /> },
+      { path: "updates", element: <UpdatesPage /> },
       // { path: "variables", element: <Variables /> },
       { path: "resources", element: <AllResources /> },
       { path: "user-groups/:id", element: <UserGroupPage /> },
@@ -47,9 +46,8 @@ const ROUTER = createBrowserRouter([
         children: [
           { path: "", element: <Resources /> },
           { path: ":id", element: <Resource /> },
-          { path: ":id/stats", element: <ResourceStats /> },
-          { path: ":id/updates", element: <Updates /> },
-          { path: ":id/alerts", element: <Alerts /> },
+          // { path: ":id/updates", element: <Updates /> },
+          // { path: ":id/alerts", element: <Alerts /> },
           {
             path: ":id/service/:service",
             element: <StackServicePage />,

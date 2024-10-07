@@ -74,7 +74,7 @@ export const DeploymentTable = ({
             <SortableHeader column={column} title="State" />
           ),
           cell: ({ row }) => (
-            <DeploymentComponents.Status.State id={row.original.id} />
+            <DeploymentComponents.State id={row.original.id} />
           ),
           size: 120,
         },

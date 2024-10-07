@@ -1,4 +1,4 @@
-import { useExecute, useLocalStorage, useRead } from "@lib/hooks";
+import { useExecute, useLocalStorage, useRead, useUser } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { RequiredResourceComponents } from "@types";
@@ -7,9 +7,7 @@ import {
   Cpu,
   MemoryStick,
   Database,
-  AreaChart,
   Milestone,
-  AlertTriangle,
   Play,
   RefreshCcw,
   Pause,
@@ -24,16 +22,20 @@ import {
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
-import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
-import { ActionWithDialog, ConfirmButton, StatusBadge } from "@components/util";
-import { Button } from "@ui/button";
+import {
+  ActionWithDialog,
+  ConfirmButton,
+  ResourcePageHeader,
+  StatusBadge,
+} from "@components/util";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { RepoTable } from "../repo/table";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { StackTable } from "../stack/table";
 import { ResourceComponents } from "..";
 import { ServerInfo } from "./info";
+import { ServerStats } from "./stats";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
@@ -55,8 +57,14 @@ const Icon = ({ id, size }: { id?: string; size: number }) => {
   );
 };
 
-const ConfigOrChildResources = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage("server-tabs-v1", "Config");
+const ConfigStatsDockerResources = ({ id }: { id: string }) => {
+  const [view, setView] = useLocalStorage<
+    "Config" | "Stats" | "Docker" | "Resources"
+  >(`server-${id}-tab`, "Config");
+
+  const is_admin = useUser().data?.admin ?? false;
+  const disable_non_admin_create =
+    useRead("GetCoreInfo", {}).data?.disable_non_admin_create ?? true;
 
   const deployments =
     useRead("ListDeployments", {}).data?.filter(
@@ -84,8 +92,12 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         Config
       </TabsTrigger>
 
-      <TabsTrigger value="Info" className="w-[110px]">
-        Info
+      <TabsTrigger value="Stats" className="w-[110px]">
+        Stats
+      </TabsTrigger>
+
+      <TabsTrigger value="Docker" className="w-[110px]">
+        Docker
       </TabsTrigger>
 
       <TabsTrigger
@@ -98,12 +110,20 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
     </TabsList>
   );
   return (
-    <Tabs value={currentView} onValueChange={setView} className="grid gap-4">
+    <Tabs
+      value={currentView}
+      onValueChange={setView as any}
+      className="grid gap-4"
+    >
       <TabsContent value="Config">
         <ServerConfig id={id} titleOther={tabsList} />
       </TabsContent>
 
-      <TabsContent value="Info">
+      <TabsContent value="Stats">
+        <ServerStats id={id} titleOther={tabsList} />
+      </TabsContent>
+
+      <TabsContent value="Docker">
         <ServerInfo id={id} titleOther={tabsList} />
       </TabsContent>
 
@@ -111,19 +131,31 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
         <Section titleOther={tabsList}>
           <Section
             title="Deployments"
-            actions={<ResourceComponents.Deployment.New server_id={id} />}
+            actions={
+              (is_admin || !disable_non_admin_create) && (
+                <ResourceComponents.Deployment.New server_id={id} />
+              )
+            }
           >
             <DeploymentTable deployments={deployments} />
           </Section>
           <Section
             title="Stacks"
-            actions={<ResourceComponents.Stack.New server_id={id} />}
+            actions={
+              (is_admin || !disable_non_admin_create) && (
+                <ResourceComponents.Stack.New server_id={id} />
+              )
+            }
           >
             <StackTable stacks={stacks} />
           </Section>
           <Section
             title="Repos"
-            actions={<ResourceComponents.Repo.New server_id={id} />}
+            actions={
+              (is_admin || !disable_non_admin_create) && (
+                <ResourceComponents.Repo.New server_id={id} />
+              )
+            }
           >
             <RepoTable repos={repos} />
           </Section>
@@ -135,7 +167,7 @@ const ConfigOrChildResources = ({ id }: { id: string }) => {
 
 export const ServerComponents: RequiredResourceComponents = {
   list_item: (id) => useServer(id),
-  use_links: (id) => useFullServer(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.ServerConfig).links,
 
   Description: () => (
     <>Connect servers for alerting, building, and deploying.</>
@@ -149,7 +181,7 @@ export const ServerComponents: RequiredResourceComponents = {
           { title: "Healthy", intention: "Good", value: summary?.healthy ?? 0 },
           {
             title: "Unhealthy",
-            intention: "Warning",
+            intention: "Critical",
             value: summary?.unhealthy ?? 0,
           },
           {
@@ -162,7 +194,12 @@ export const ServerComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="Server" />,
+  New: () => {
+    const user = useUser().data;
+    if (!user) return null;
+    if (!user.admin && !user.create_server_permissions) return null;
+    return <NewResource type="Server" />;
+  },
 
   Table: ({ resources }) => (
     <ServerTable servers={resources as Types.ServerListItem[]} />
@@ -171,13 +208,14 @@ export const ServerComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <Icon id={id} size={4} />,
   BigIcon: ({ id }) => <Icon id={id} size={8} />,
 
-  Status: {
-    State: ({ id }) => {
-      const state = useServer(id)?.info.state;
-      return (
-        <StatusBadge text={state} intent={server_state_intention(state)} />
-      );
-    },
+  State: ({ id }) => {
+    const state = useServer(id)?.info.state;
+    return <StatusBadge text={state} intent={server_state_intention(state)} />;
+  },
+
+  Status: {},
+
+  Info: {
     Version: ({ id }) => {
       const version = useRead(
         "GetPeripheryVersion",
@@ -193,17 +231,6 @@ export const ServerComponents: RequiredResourceComponents = {
         </div>
       );
     },
-    Stats: ({ id }) => (
-      <Link to={`/servers/${id}/stats`}>
-        <Button variant="link" className="flex gap-2 items-center p-0">
-          <AreaChart className="w-4 h-4" />
-          Stats
-        </Button>
-      </Link>
-    ),
-  },
-
-  Info: {
     Cpu: ({ id }) => {
       const server = useServer(id);
       const core_count =
@@ -216,10 +243,10 @@ export const ServerComponents: RequiredResourceComponents = {
           }
         ).data?.core_count ?? 0;
       return (
-        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
           <Cpu className="w-4 h-4" />
           {core_count || "N/A"} Core{core_count > 1 ? "s" : ""}
-        </Link>
+        </div>
       );
     },
     Mem: ({ id }) => {
@@ -233,10 +260,10 @@ export const ServerComponents: RequiredResourceComponents = {
         }
       ).data;
       return (
-        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
           <MemoryStick className="w-4 h-4" />
           {stats?.mem_total_gb.toFixed(2) ?? "N/A"} GB
-        </Link>
+        </div>
       );
     },
     Disk: ({ id }) => {
@@ -254,18 +281,10 @@ export const ServerComponents: RequiredResourceComponents = {
         0
       );
       return (
-        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
           <Database className="w-4 h-4" />
           {disk_total_gb?.toFixed(2) ?? "N/A"} GB
-        </Link>
-      );
-    },
-    Alerts: ({ id }) => {
-      return (
-        <Link to={`/servers/${id}/alerts`} className="flex gap-2 items-center">
-          <AlertTriangle className="w-4 h-4" />
-          Alerts
-        </Link>
+        </div>
       );
     },
   },
@@ -415,7 +434,7 @@ export const ServerComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: ConfigOrChildResources,
+  Config: ConfigStatsDockerResources,
 
   DangerZone: ({ id }) => (
     <>
@@ -423,4 +442,22 @@ export const ServerComponents: RequiredResourceComponents = {
       <DeleteResource type="Server" id={id} />
     </>
   ),
+
+  ResourcePageHeader: ({ id }) => {
+    const server = useServer(id);
+
+    return (
+      <ResourcePageHeader
+        intent={server_state_intention(server?.info.state)}
+        icon={<Icon id={id} size={8} />}
+        name={server?.name}
+        state={
+          server?.info.state === Types.ServerState.NotOk
+            ? "Not Ok"
+            : server?.info.state
+        }
+        status={server?.info.region}
+      />
+    );
+  },
 };

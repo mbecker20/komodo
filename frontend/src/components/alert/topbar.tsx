@@ -6,19 +6,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { AlertTriangle, Clock } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { AlertLevel } from ".";
 import { ResourceLink } from "@components/resources/common";
 import { UsableResource } from "@types";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@ui/dialog";
+import { Dialog } from "@ui/dialog";
 import { Types } from "@komodo/client";
 import { useState } from "react";
+import { AlertDetailsDialogContent } from "./details";
 
 export const TopbarAlerts = () => {
   const { data } = useRead(
@@ -38,7 +33,7 @@ export const TopbarAlerts = () => {
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger disabled={!data?.alerts.length}>
+        <DropdownMenuTrigger asChild disabled={!data?.alerts.length}>
           <Button variant="ghost" size="icon" className="relative">
             <AlertTriangle className="w-4 h-4" />
             {!!data?.alerts.length && (
@@ -87,34 +82,7 @@ const AlertDetails = ({
   <>
     {alert && (
       <Dialog open={!!alert} onOpenChange={(o) => !o && onClose()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alert - {alert?.data.type}</DialogTitle>
-            <DialogDescription className="flex items-center gap-2">
-              <Clock className="w-4" />
-              {new Date(alert?.ts!).toLocaleString()}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="pt-4 flex flex-col gap-8">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <p className="text-muted-foreground">{alert?.target.type}:</p>
-                <ResourceLink
-                  type={alert?.target.type as UsableResource}
-                  id={alert?.target.id ?? ""}
-                  onClick={onClose}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <p className="text-muted-foreground">Alert Level:</p>
-                <AlertLevel level={alert?.level} />
-              </div>
-            </div>
-            <div>
-              <pre>{JSON.stringify(alert.data.data, undefined, 2)}</pre>
-            </div>
-          </div>
-        </DialogContent>
+        <AlertDetailsDialogContent alert={alert} onClose={onClose} />
       </Dialog>
     )}
   </>

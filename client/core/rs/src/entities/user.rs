@@ -5,9 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
-use super::{
-  permission::PermissionLevel, ResourceTargetVariant,
-};
+use super::{permission::PermissionLevel, ResourceTargetVariant};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -38,6 +36,10 @@ pub struct User {
   #[cfg_attr(feature = "mongo", index)]
   #[serde(default)]
   pub enabled: bool,
+
+  /// Can give / take other users admin priviledges.
+  #[serde(default)]
+  pub super_admin: bool,
 
   /// Whether the user has global admin permissions.
   #[serde(default)]
@@ -229,6 +231,9 @@ pub enum UserConfig {
 
   /// User that logs in via Github Oauth
   Github { github_id: String, avatar: String },
+
+  /// User that logs in via Oidc provider
+  Oidc { provider: String, user_id: String },
 
   /// Non-human managed user, can have it's own permissions / api keys
   Service { description: String },

@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useRead, useUser } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { AlarmClock } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,13 +7,14 @@ import { AlerterConfig } from "./config";
 import { DeleteResource, NewResource } from "../common";
 import { AlerterTable } from "./table";
 import { Types } from "@komodo/client";
+import { ResourcePageHeader } from "@components/util";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
 
 export const AlerterComponents: RequiredResourceComponents = {
   list_item: (id) => useAlerter(id),
-  use_links: () => undefined,
+  resource_links: () => undefined,
 
   Description: () => <>Route alerts to various endpoints.</>,
 
@@ -36,7 +37,10 @@ export const AlerterComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="Alerter" />,
+  New: () => {
+    const is_admin = useUser().data?.admin;
+    return is_admin && <NewResource type="Alerter" />;
+  },
 
   Table: ({ resources }) => (
     <AlerterTable alerters={resources as Types.AlerterListItem[]} />
@@ -45,6 +49,7 @@ export const AlerterComponents: RequiredResourceComponents = {
   Icon: () => <AlarmClock className="w-4 h-4" />,
   BigIcon: () => <AlarmClock className="w-8 h-8" />,
 
+  State: () => null,
   Status: {},
 
   Info: {
@@ -63,4 +68,17 @@ export const AlerterComponents: RequiredResourceComponents = {
   Config: AlerterConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Alerter" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const alerter = useAlerter(id);
+    return (
+      <ResourcePageHeader
+        intent="None"
+        icon={<AlarmClock className="w-8" />}
+        name={alerter?.name}
+        state={alerter?.info.enabled ? "Enabled" : "Disabled"}
+        status={alerter?.info.endpoint_type}
+      />
+    );
+  },
 };

@@ -1,5 +1,5 @@
 import { Section } from "@components/layouts";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useUser, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Factory, FolderGit, Hammer, Loader2, RefreshCcw } from "lucide-react";
 import { BuildConfig } from "./config";
@@ -8,6 +8,7 @@ import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { DeploymentTable } from "../deployment/table";
 import { RunBuild } from "./actions";
 import {
+  border_color_class_by_intention,
   build_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -17,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceComponents } from "..";
 import { Types } from "@komodo/client";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { Card } from "@ui/card";
 import { Badge } from "@ui/badge";
@@ -82,7 +83,7 @@ const ConfigOrDeployments = ({ id }: { id: string }) => {
 
 export const BuildComponents: RequiredResourceComponents = {
   list_item: (id) => useBuild(id),
-  use_links: (id) => useFullBuild(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.BuildConfig).links,
 
   Description: () => <>Build docker images.</>,
 
@@ -112,7 +113,12 @@ export const BuildComponents: RequiredResourceComponents = {
     );
   },
 
-  New: () => <NewResource type="Build" />,
+  New: () => {
+    const user = useUser().data;
+    if (!user) return null;
+    if (!user.admin && !user.create_build_permissions) return null;
+    return <NewResource type="Build" />;
+  },
 
   Table: ({ resources }) => (
     <BuildTable builds={resources as Types.BuildListItem[]} />
@@ -121,22 +127,31 @@ export const BuildComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <BuildIcon id={id} size={4} />,
   BigIcon: ({ id }) => <BuildIcon id={id} size={8} />,
 
+  State: ({ id }) => {
+    let state = useBuild(id)?.info.state;
+    return <StatusBadge text={state} intent={build_state_intention(state)} />;
+  },
+
   Status: {
-    State: ({ id }) => {
-      let state = useBuild(id)?.info.state;
-      return <StatusBadge text={state} intent={build_state_intention(state)} />;
-    },
-    Built: ({ id }) => {
+    Hash: ({ id }) => {
       const info = useFullBuild(id)?.info;
-      if (!info?.built_hash) {
+      if (!info?.latest_hash) {
         return null;
       }
+      const out_of_date =
+        info.built_hash && info.built_hash !== info.latest_hash;
       return (
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+            <Card
+              className={cn(
+                "px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer",
+                out_of_date && border_color_class_by_intention("Warning")
+              )}
+            >
               <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                built: {info.built_hash}
+                {info.built_hash ? "built" : "latest"}:{" "}
+                {info.built_hash || info.latest_hash}
               </div>
             </Card>
           </HoverCardTrigger>
@@ -146,37 +161,28 @@ export const BuildComponents: RequiredResourceComponents = {
                 variant="secondary"
                 className="w-fit text-muted-foreground"
               >
-                commit message
+                message
               </Badge>
-              {info.built_message}
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      );
-    },
-    Latest: ({ id }) => {
-      const info = useFullBuild(id)?.info;
-      if (!info?.latest_hash || info.latest_hash === info?.built_hash) {
-        return null;
-      }
-      return (
-        <HoverCard openDelay={200}>
-          <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                latest: {info.latest_hash}
-              </div>
-            </Card>
-          </HoverCardTrigger>
-          <HoverCardContent align="start">
-            <div className="grid gap-2">
-              <Badge
-                variant="secondary"
-                className="w-fit text-muted-foreground"
-              >
-                commit message
-              </Badge>
-              {info.latest_message}
+              {info.built_message || info.latest_message}
+              {out_of_date && (
+                <>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "w-fit text-muted-foreground border-[1px]",
+                      border_color_class_by_intention("Warning")
+                    )}
+                  >
+                    latest
+                  </Badge>
+                  <div>
+                    <span className="text-muted-foreground">
+                      {info.latest_hash}
+                    </span>
+                    : {info.latest_message}
+                  </div>
+                </>
+              )}
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -250,4 +256,18 @@ export const BuildComponents: RequiredResourceComponents = {
   Config: ConfigOrDeployments,
 
   DangerZone: ({ id }) => <DeleteResource type="Build" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const build = useBuild(id);
+
+    return (
+      <ResourcePageHeader
+        intent={build_state_intention(build?.info.state)}
+        icon={<BuildIcon id={id} size={8} />}
+        name={build?.name}
+        state={build?.info.state}
+        status=""
+      />
+    );
+  },
 };

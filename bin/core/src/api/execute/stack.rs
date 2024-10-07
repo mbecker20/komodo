@@ -17,18 +17,18 @@ use crate::{
   helpers::{
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_environment,
       interpolate_variables_secrets_into_extra_args,
+      interpolate_variables_secrets_into_string,
     },
     periphery_client,
     query::get_variables_and_secrets,
-    stack::{
-      execute::execute_compose, get_stack_and_server,
-      services::extract_services_into_res,
-    },
     update::update_update,
   },
   monitor::update_cache_for_server,
+  stack::{
+    execute::execute_compose, get_stack_and_server,
+    services::extract_services_into_res,
+  },
   state::{action_states, db_client, State},
 };
 
@@ -81,7 +81,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
       let mut global_replacers = HashSet::new();
       let mut secret_replacers = HashSet::new();
 
-      interpolate_variables_secrets_into_environment(
+      interpolate_variables_secrets_into_string(
         &vars_and_secrets,
         &mut stack.config.environment,
         &mut global_replacers,
@@ -154,6 +154,8 @@ impl Resolve<DeployStack, (User, Update)> for State {
         stack.info.latest_services.clone()
       };
 
+      // This ensures to get the latest project name,
+      // as it may have changed since the last deploy.
       let project_name = stack.project_name(true);
 
       let (
@@ -203,7 +205,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
         .context("failed to serialize stack info to bson")?;
 
       db_client()
-        .await
         .stacks
         .update_one(
           doc! { "name": &stack.name },

@@ -164,16 +164,15 @@ impl Resolve<ListUpdates, User> for State {
       query.into()
     };
 
-    let usernames =
-      find_collect(&db_client().await.users, None, None)
-        .await
-        .context("failed to pull users from db")?
-        .into_iter()
-        .map(|u| (u.id, u.username))
-        .collect::<HashMap<_, _>>();
+    let usernames = find_collect(&db_client().users, None, None)
+      .await
+      .context("failed to pull users from db")?
+      .into_iter()
+      .map(|u| (u.id, u.username))
+      .collect::<HashMap<_, _>>();
 
     let updates = find_collect(
-      &db_client().await.updates,
+      &db_client().updates,
       query,
       FindOptions::builder()
         .sort(doc! { "start_ts": -1 })
@@ -224,7 +223,7 @@ impl Resolve<GetUpdate, User> for State {
     GetUpdate { id }: GetUpdate,
     user: User,
   ) -> anyhow::Result<Update> {
-    let update = find_one_by_id(&db_client().await.updates, &id)
+    let update = find_one_by_id(&db_client().updates, &id)
       .await
       .context("failed to query to db")?
       .context("no update exists with given id")?;

@@ -1,6 +1,5 @@
 import { ConfigItem } from "@components/config/util";
 import { Types } from "@komodo/client";
-import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -11,7 +10,6 @@ import {
   SelectValue,
 } from "@ui/select";
 import { useToast } from "@ui/use-toast";
-import { MinusCircle, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const DefaultTerminationSignal = ({
@@ -71,7 +69,7 @@ export const TerminationTimeout = ({
   }, [arg]);
   return (
     <ConfigItem label="Termination Timeout">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
         <Input
           className="w-[100px]"
           placeholder="time in seconds"
@@ -94,101 +92,101 @@ export const TerminationTimeout = ({
   );
 };
 
-export const TermSignalLabels = ({
-  args,
-  set,
-  disabled,
-}: {
-  args: Types.TerminationSignalLabel[];
-  set: (input: Partial<Types.DeploymentConfig>) => void;
-  disabled: boolean;
-}) => {
-  const signals = Object.values(Types.TerminationSignal)
-    .filter((signal) => args.every((arg) => arg.signal !== signal))
-    .reverse();
-  return (
-    <ConfigItem label="Signal Labels" className="items-start">
-      <div className="grid gap-2">
-        {args.map((label, i) => (
-          <div key={label.signal} className="flex gap-4 items-center w-full">
-            <Input
-              placeholder="Label this termination signal"
-              value={label.label}
-              onChange={(e) =>
-                set({
-                  term_signal_labels: args.map((item, index) =>
-                    index === i ? { ...item, label: e.target.value } : item
-                  ),
-                })
-              }
-              disabled={disabled}
-            />
+// export const TermSignalLabels = ({
+//   args,
+//   set,
+//   disabled,
+// }: {
+//   args: Types.TerminationSignalLabel[];
+//   set: (input: Partial<Types.DeploymentConfig>) => void;
+//   disabled: boolean;
+// }) => {
+//   const signals = Object.values(Types.TerminationSignal)
+//     .filter((signal) => args.every((arg) => arg.signal !== signal))
+//     .reverse();
+//   return (
+//     <ConfigItem label="Signal Labels" className="items-start">
+//       <div className="grid gap-2">
+//         {args.map((label, i) => (
+//           <div key={label.signal} className="flex gap-4 items-center w-full">
+//             <Input
+//               placeholder="Label this termination signal"
+//               value={label.label}
+//               onChange={(e) =>
+//                 set({
+//                   term_signal_labels: args.map((item, index) =>
+//                     index === i ? { ...item, label: e.target.value } : item
+//                   ),
+//                 })
+//               }
+//               disabled={disabled}
+//             />
 
-            <Select
-              value={label.signal}
-              onValueChange={(value) =>
-                set({
-                  term_signal_labels: args.map((item, index) =>
-                    index === i
-                      ? { ...item, signal: value as Types.TerminationSignal }
-                      : item
-                  ),
-                })
-              }
-              disabled={disabled}
-            >
-              <SelectTrigger className="w-[200px]" disabled={disabled}>
-                {label.signal}
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {signals.map((term_signal) => (
-                    <SelectItem
-                      key={term_signal}
-                      value={term_signal}
-                      className="cursor-pointer"
-                    >
-                      {term_signal}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+//             <Select
+//               value={label.signal}
+//               onValueChange={(value) =>
+//                 set({
+//                   term_signal_labels: args.map((item, index) =>
+//                     index === i
+//                       ? { ...item, signal: value as Types.TerminationSignal }
+//                       : item
+//                   ),
+//                 })
+//               }
+//               disabled={disabled}
+//             >
+//               <SelectTrigger className="w-[200px]" disabled={disabled}>
+//                 {label.signal}
+//               </SelectTrigger>
+//               <SelectContent>
+//                 <SelectGroup>
+//                   {signals.map((term_signal) => (
+//                     <SelectItem
+//                       key={term_signal}
+//                       value={term_signal}
+//                       className="cursor-pointer"
+//                     >
+//                       {term_signal}
+//                     </SelectItem>
+//                   ))}
+//                 </SelectGroup>
+//               </SelectContent>
+//             </Select>
 
-            {!disabled && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() =>
-                  set({
-                    term_signal_labels: args.filter((_, index) => i !== index),
-                  })
-                }
-                className="p-2"
-              >
-                <MinusCircle className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        ))}
-        {!disabled && signals.length > 0 && (
-          <Button
-            className="justify-self-end p-2"
-            variant="outline"
-            size="icon"
-            onClick={() =>
-              set({
-                term_signal_labels: [
-                  ...args,
-                  { label: "", signal: signals[0] },
-                ],
-              })
-            }
-          >
-            <PlusCircle className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
-    </ConfigItem>
-  );
-};
+//             {!disabled && (
+//               <Button
+//                 variant="outline"
+//                 size="icon"
+//                 onClick={() =>
+//                   set({
+//                     term_signal_labels: args.filter((_, index) => i !== index),
+//                   })
+//                 }
+//                 className="p-2"
+//               >
+//                 <MinusCircle className="w-4 h-4" />
+//               </Button>
+//             )}
+//           </div>
+//         ))}
+//         {!disabled && signals.length > 0 && (
+//           <Button
+//             className="justify-self-end p-2"
+//             variant="outline"
+//             size="icon"
+//             onClick={() =>
+//               set({
+//                 term_signal_labels: [
+//                   ...args,
+//                   { label: "", signal: signals[0] },
+//                 ],
+//               })
+//             }
+//           >
+//             <PlusCircle className="w-4 h-4" />
+//           </Button>
+//         )}
+//       </div>
+//     </ConfigItem>
+//   );
+// };

@@ -1,0 +1,107 @@
+use std::{fs, path::PathBuf};
+
+use anyhow::Context;
+use formatting::format_serror;
+use komodo_client::entities::{
+  stack::Stack, update::Log, CloneArgs, FileContents,
+};
+
+use crate::{config::core_config, helpers::git_token};
+
+pub struct RemoteComposeContents {
+  pub successful: Vec<FileContents>,
+  pub errored: Vec<FileContents>,
+  pub hash: Option<String>,
+  pub message: Option<String>,
+  pub _logs: Vec<Log>,
+}
+
+/// Returns Result<(read paths, error paths, logs, short hash, commit message)>
+pub async fn get_remote_compose_contents(
+  stack: &Stack,
+  // Collect any files which are missing in the repo.
+  mut missing_files: Option<&mut Vec<String>>,
+) -> anyhow::Result<RemoteComposeContents> {
+  let clone_args: CloneArgs = stack.into();
+  let (repo_path, _logs, hash, message) =
+    ensure_remote_repo(clone_args)
+      .await
+      .context("failed to clone stack repo")?;
+
+  let run_directory = repo_path.join(&stack.config.run_directory);
+  // This will remove any intermediate '/./' which can be a problem for some OS.
+  let run_directory = run_directory.components().collect::<PathBuf>();
+
+  let mut successful = Vec::new();
+  let mut errored = Vec::new();
+
+  for path in stack.file_paths() {
+    let file_path = run_directory.join(path);
+    if !file_path.exists() {
+      if let Some(missing_files) = &mut missing_files {
+        missing_files.push(path.to_string());
+      }
+    }
+    // If file does not exist, will show up in err case so the log is handled
+    match fs::read_to_string(&file_path).with_context(|| {
+      format!("failed to read file contents from {file_path:?}")
+    }) {
+      Ok(contents) => successful.push(FileContents {
+        path: path.to_string(),
+        contents,
+      }),
+      Err(e) => errored.push(FileContents {
+        path: path.to_string(),
+        contents: format_serror(&e.into()),
+      }),
+    }
+  }
+
+  Ok(RemoteComposeContents {
+    successful,
+    errored,
+    hash,
+    message,
+    _logs,
+  })
+}
+
+/// Returns (destination, logs, hash, message)
+pub async fn ensure_remote_repo(
+  mut clone_args: CloneArgs,
+) -> anyhow::Result<(PathBuf, Vec<Log>, Option<String>, Option<String>)>
+{
+  let config = core_config();
+
+  let access_token = if let Some(username) = &clone_args.account {
+    git_token(&clone_args.provider, username, |https| {
+        clone_args.https = https
+      })
+      .await
+      .with_context(
+        || format!("Failed to get git token in call to db. Stopping run. | {} | {username}", clone_args.provider),
+      )?
+  } else {
+    None
+  };
+
+  let repo_path =
+    clone_args.unique_path(&core_config().repo_directory)?;
+  clone_args.destination = Some(repo_path.display().to_string());
+  // Don't want to run these on core.
+  clone_args.on_clone = None;
+  clone_args.on_pull = None;
+
+  git::pull_or_clone(
+    clone_args,
+    &config.repo_directory,
+    access_token,
+    &[],
+    "",
+    None,
+    &[],
+  )
+  .await
+  .context("failed to clone stack repo")
+  .map(|res| (repo_path, res.logs, res.hash, res.message))
+}

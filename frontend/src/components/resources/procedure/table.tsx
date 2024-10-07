@@ -34,9 +34,7 @@ export const ProcedureTable = ({
           header: ({ column }) => (
             <SortableHeader column={column} title="State" />
           ),
-          cell: ({ row }) => (
-            <ProcedureComponents.Status.State id={row.original.id} />
-          ),
+          cell: ({ row }) => <ProcedureComponents.State id={row.original.id} />,
         },
         {
           header: "Tags",

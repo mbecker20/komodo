@@ -19,13 +19,14 @@ import {
 } from "@ui/select";
 import { ServerTemplateTable } from "./table";
 import { LaunchServer } from "./actions";
+import { ResourcePageHeader } from "@components/util";
 
 export const useServerTemplate = (id?: string) =>
   useRead("ListServerTemplates", {}).data?.find((d) => d.id === id);
 
 export const ServerTemplateComponents: RequiredResourceComponents = {
   list_item: (id) => useServerTemplate(id),
-  use_links: () => undefined,
+  resource_links: () => undefined,
 
   Description: () => <>Deploy more cloud-based servers on a button click.</>,
 
@@ -103,6 +104,8 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
   Icon: () => <ServerCog className="w-4 h-4" />,
   BigIcon: () => <ServerCog className="w-8 h-8" />,
 
+  State: () => null,
+
   Status: {},
 
   Info: {
@@ -135,4 +138,17 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
   Config: ServerTemplateConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="ServerTemplate" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const template = useServerTemplate(id);
+    return (
+      <ResourcePageHeader
+        intent="None"
+        icon={<ServerCog className="w-8" />}
+        name={template?.name}
+        state={undefined}
+        status={undefined}
+      />
+    );
+  },
 };

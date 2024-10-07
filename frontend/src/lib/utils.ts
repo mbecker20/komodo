@@ -15,8 +15,8 @@ export const object_keys = <T extends object>(o: T): (keyof T)[] =>
 
 export const RESOURCE_TARGETS: UsableResource[] = [
   "Server",
-  "Deployment",
   "Stack",
+  "Deployment",
   "Build",
   "Repo",
   "Procedure",
@@ -29,7 +29,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
 export function env_to_text(envVars: Types.EnvironmentVar[] | undefined) {
   return envVars?.reduce(
     (prev, { variable, value }) =>
-      prev + (prev ? "\n" : "") + `${variable}=${value}`,
+      prev + (prev ? "\n" : "") + `${variable}: ${value}`,
     ""
   );
 }
@@ -57,6 +57,41 @@ function keep_line(line: string) {
   if (firstIndex === -1) return false;
   if (line[firstIndex] === "#") return false;
   return true;
+}
+
+export function parse_key_value(
+  input: string
+): Array<{ key: string; value: string }> {
+  const trimmed = input.trim();
+  if (trimmed.length === 0) return [];
+  return trimmed
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(
+      (line) =>
+        line.length > 0 && !line.startsWith("#") && !line.startsWith("//")
+    )
+    .map((line) => {
+      const no_comment = line.split(" #", 1)[0].trim();
+      const no_dash = no_comment.startsWith("-")
+        ? no_comment.slice(1).trim()
+        : no_comment;
+      const no_leading_quote = no_dash.startsWith('"')
+        ? no_dash.slice(1)
+        : no_dash;
+      const no_trailing_quote = no_leading_quote.endsWith('"')
+        ? no_leading_quote.slice(0, -1)
+        : no_leading_quote;
+      const res = no_trailing_quote.split(/[=: ]/, 1);
+      const [key, value] = [res[0]?.trim() ?? "", res[1]?.trim() ?? ""];
+      const value_no_leading_quote = value.startsWith('"')
+        ? value.slice(1)
+        : value;
+      const value_no_trailing_quote = value_no_leading_quote.endsWith('"')
+        ? value_no_leading_quote.slice(0, -1)
+        : value_no_leading_quote;
+      return { key, value: value_no_trailing_quote.trim() };
+    });
 }
 
 export function version_is_none(version?: Types.Version) {
@@ -188,23 +223,11 @@ export const filterBySplit = <T>(
 };
 
 export const sync_no_changes = (sync: Types.ResourceSync) => {
-  const pending = sync.info?.pending.data;
-  if (!pending) return false;
-  if (pending.type === "Err") return false;
   return (
-    !pending.data.server_updates &&
-    !pending.data.deploy_updates &&
-    !pending.data.deployment_updates &&
-    !pending.data.stack_updates &&
-    !pending.data.build_updates &&
-    !pending.data.repo_updates &&
-    !pending.data.procedure_updates &&
-    !pending.data.alerter_updates &&
-    !pending.data.builder_updates &&
-    !pending.data.server_template_updates &&
-    !pending.data.resource_sync_updates &&
-    !pending.data.variable_updates &&
-    !pending.data.user_group_updates
+    (sync.info?.pending_deploy?.to_deploy ?? 0) === 0 &&
+    (sync.info?.resource_updates?.length ?? 0) === 0 &&
+    (sync.info?.variable_updates?.length ?? 0) === 0 &&
+    (sync.info?.user_group_updates?.length ?? 0) === 0
   );
 };
 

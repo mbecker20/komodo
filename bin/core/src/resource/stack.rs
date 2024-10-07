@@ -21,6 +21,7 @@ use periphery_client::api::compose::ComposeExecution;
 use resolver_api::Resolve;
 
 use crate::{
+  config::core_config,
   helpers::{periphery_client, query::get_stack_state},
   monitor::update_cache_for_server,
   state::{
@@ -45,7 +46,7 @@ impl super::KomodoResource for Stack {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.stacks
+    &db_client().stacks
   }
 
   async fn to_list_item(
@@ -107,8 +108,10 @@ impl super::KomodoResource for Stack {
         status,
         services,
         project_missing,
+        file_contents: !stack.config.file_contents.is_empty(),
         server_id: stack.config.server_id,
         missing_files: stack.info.missing_files,
+        files_on_host: stack.config.files_on_host,
         git_provider: stack.config.git_provider,
         repo: stack.config.repo,
         branch: stack.config.branch,
@@ -134,7 +137,7 @@ impl super::KomodoResource for Stack {
   }
 
   fn user_can_create(user: &User) -> bool {
-    user.admin
+    user.admin || !core_config().disable_non_admin_create
   }
 
   async fn validate_create_config(
@@ -158,7 +161,7 @@ impl super::KomodoResource for Stack {
       .await
     {
       update.push_error_log(
-        "refresh stack cache",
+        "Refresh stack cache",
         format_serror(&e.context("The stack cache has failed to refresh. This is likely due to a misconfiguration of the Stack").into())
       );
     };
@@ -320,7 +323,7 @@ async fn validate_config(
 // pub async fn refresh_resource_sync_state_cache() {
 //   let _ = async {
 //     let resource_syncs =
-//       find_collect(&db_client().await.resource_syncs, None, None)
+//       find_collect(&db_client().resource_syncs, None, None)
 //         .await
 //         .context("failed to get resource_syncs from db")?;
 //     let cache = resource_sync_state_cache();

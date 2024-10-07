@@ -2,16 +2,18 @@ import { Config } from "@components/config";
 import {
   AccountSelectorConfig,
   ConfigItem,
+  ConfigList,
   ProviderSelectorConfig,
 } from "@components/config/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { ReactNode, useState } from "react";
 import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, ShowHideButton } from "@components/util";
 import { Ban, CirclePlus } from "lucide-react";
+import { MonacoEditor } from "@components/monaco";
 
 export const ResourceSyncConfig = ({
   id,
@@ -20,6 +22,7 @@ export const ResourceSyncConfig = ({
   id: string;
   titleOther: ReactNode;
 }) => {
+  const [showFile, setShowFile] = useLocalStorage(`sync-${id}-show-file`, true);
   const perms = useRead("GetPermissionLevel", {
     target: { type: "ResourceSync", id },
   }).data;
@@ -29,12 +32,23 @@ export const ResourceSyncConfig = ({
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.ResourceSyncConfig>>({});
   const { mutateAsync } = useWrite("UpdateResourceSync");
+
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
+  const files_on_host = update.files_on_host ?? config.files_on_host;
+  const file_contents =
+    update.file_contents ?? config.file_contents ? true : false;
+  const ui_defined = !files_on_host && file_contents;
+  const repo_selected = update.repo ?? config.repo ? true : false;
+  const managed = update.managed ?? config.managed;
+
+  const show_git = !managed && !files_on_host && !ui_defined;
 
   return (
     <Config
+      resource_id={id}
+      resource_type="ResourceSync"
       titleOther={titleOther}
       disabled={disabled}
       config={config}
@@ -44,11 +58,80 @@ export const ResourceSyncConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
+          {
+            label: "Resource File",
+            hidden: files_on_host || repo_selected,
+            description:
+              "Manage the resource file contents here, or use a git repo / the files on host option.",
+            actions: <ShowHideButton show={showFile} setShow={setShowFile} />,
+            contentHidden: !showFile,
+            components: {
+              file_contents: (file_contents, set) => {
+                return (
+                  <MonacoEditor
+                    value={
+                      file_contents ||
+                      "# Initialize the sync to import your current resources.\n"
+                    }
+                    onValueChange={(file_contents) => set({ file_contents })}
+                    language="toml"
+                  />
+                );
+              },
+            },
+          },
           {
             label: "General",
             components: {
-              git_provider: (provider, set) => {
+              files_on_host: {
+                label: "Files on Server",
+                description:
+                  "Manage the sync files on server yourself. Just configure the path to your folder / file.",
+              },
+              delete: !managed && {
+                label: "Delete Unmatched Resources",
+                description:
+                  "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
+              },
+              resource_path: (files_on_host ||
+                (!ui_defined && repo_selected)) && {
+                placeholder: "./resources",
+                description:
+                  "Provide the path to resource file / folder, in the container filesystem or from the root of the repo",
+              },
+              managed: (managed ||
+                files_on_host ||
+                ui_defined ||
+                !repo_selected) && {
+                label: "Managed",
+                description:
+                  "Enabled managed mode / the 'Commit' button. Commit is the 'reverse' of Execute, and will update the sync file with your configs updated in the UI.",
+              },
+            },
+          },
+          {
+            label: "Match Tags",
+            components: {
+              match_tags: (values, set) => (
+                <ConfigList
+                  label="Match Tags"
+                  addLabel="Add Tag"
+                  description="Only sync resources matching these tags."
+                  field="match_tags"
+                  values={values ?? []}
+                  set={set}
+                  disabled={disabled}
+                  placeholder="Input tag name"
+                />
+              ),
+            },
+          },
+          {
+            label: "Source",
+            hidden: !show_git,
+            components: {
+              git_provider: (provider: string | undefined, set) => {
                 const https = update.git_https ?? config.git_https;
                 return (
                   <ProviderSelectorConfig
@@ -61,7 +144,7 @@ export const ResourceSyncConfig = ({
                   />
                 );
               },
-              git_account: (value, set) => {
+              git_account: (value: string | undefined, set) => {
                 return (
                   <AccountSelectorConfig
                     account_type="git"
@@ -88,20 +171,11 @@ export const ResourceSyncConfig = ({
                 description:
                   "Switch to a specific hash after cloning the branch.",
               },
-              resource_path: {
-                placeholder: "./resources",
-                description:
-                  "Provide the path to resource file / folder, relative to the root of the repo",
-              },
-              delete: {
-                label: "Delete Unmatched Resources",
-                description:
-                  "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
-              },
             },
           },
           {
             label: "Git Webhooks",
+            hidden: !show_git,
             description:
               "Configure your repo provider to send webhooks to Komodo",
             components: {

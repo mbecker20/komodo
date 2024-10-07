@@ -9,10 +9,10 @@ import {
   RefreshCcw,
   Server,
 } from "lucide-react";
-import { StackConfig } from "./config";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { StackTable } from "./table";
 import {
+  border_color_class_by_intention,
   stack_state_intention,
   stroke_color_class_by_intention,
 } from "@lib/color";
@@ -35,7 +35,8 @@ import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
 import { StackServices } from "./services";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
+import { StackConfig } from "./config";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
@@ -52,32 +53,47 @@ const StackIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigInfoServices = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage("stack-tabs-v1", "Config");
+  const [_view, setView] = useLocalStorage<"Config" | "Info" | "Services">(
+    "stack-tabs-v1",
+    "Config"
+  );
   const info = useStack(id)?.info;
+
   const state = info?.state;
-  const stackDown =
+  const hideInfo = !info?.files_on_host && !info?.repo;
+  const hideServices =
     state === undefined ||
     state === Types.StackState.Unknown ||
     state === Types.StackState.Down;
+
+  const view =
+    (_view === "Info" && hideInfo) || (_view === "Services" && hideServices)
+      ? "Config"
+      : _view;
+
   const title = (
     <TabsList className="justify-start w-fit">
       <TabsTrigger value="Config" className="w-[110px]">
         Config
       </TabsTrigger>
-      <TabsTrigger value="Info" className="w-[110px]">
+      <TabsTrigger
+        value="Info"
+        className={cn("w-[110px]", hideInfo && "hidden")}
+        disabled={hideInfo}
+      >
         Info
       </TabsTrigger>
-      <TabsTrigger value="Services" className="w-[110px]" disabled={stackDown}>
+      <TabsTrigger
+        value="Services"
+        className="w-[110px]"
+        disabled={hideServices}
+      >
         Services
       </TabsTrigger>
     </TabsList>
   );
   return (
-    <Tabs
-      value={stackDown && view === "Services" ? "Config" : view}
-      onValueChange={setView}
-      className="grid gap-4"
-    >
+    <Tabs value={view} onValueChange={setView as any} className="grid gap-4">
       <TabsContent value="Config">
         <StackConfig id={id} titleOther={title} />
       </TabsContent>
@@ -93,29 +109,41 @@ const ConfigInfoServices = ({ id }: { id: string }) => {
 
 export const StackComponents: RequiredResourceComponents = {
   list_item: (id) => useStack(id),
-  use_links: (id) => useFullStack(id)?.config?.links,
+  resource_links: (resource) => (resource.config as Types.StackConfig).links,
 
   Description: () => <>Deploy docker compose files.</>,
 
   Dashboard: () => {
     const summary = useRead("GetStacksSummary", {}).data;
+    const all = [
+      summary?.running ?? 0,
+      summary?.stopped ?? 0,
+      summary?.unhealthy ?? 0,
+      summary?.unknown ?? 0,
+    ];
+    const [running, stopped, unhealthy, unknown] = all;
     return (
       <DashboardPieChart
         data={[
-          { intention: "Good", value: summary?.running ?? 0, title: "Running" },
+          all.every((item) => item === 0) && {
+            title: "Down",
+            intention: "Neutral",
+            value: summary?.down ?? 0,
+          },
+          { intention: "Good", value: running, title: "Running" },
+          {
+            intention: "Warning",
+            value: stopped,
+            title: "Stopped",
+          },
           {
             intention: "Critical",
-            value: summary?.unhealthy ?? 0,
+            value: unhealthy,
             title: "Unhealthy",
           },
           {
-            intention: "Neutral",
-            value: summary?.down ?? 0,
-            title: "Down",
-          },
-          {
             intention: "Unknown",
-            value: summary?.unknown ?? 0,
+            value: unknown,
             title: "Unknown",
           },
         ]}
@@ -132,24 +160,12 @@ export const StackComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <StackIcon id={id} size={4} />,
   BigIcon: ({ id }) => <StackIcon id={id} size={8} />,
 
+  State: ({ id }) => {
+    const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
+    return <StatusBadge text={state} intent={stack_state_intention(state)} />;
+  },
+
   Status: {
-    State: ({ id }) => {
-      const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
-      const config = useFullStack(id)?.config;
-      if (!config?.files_on_host && !config?.file_contents && !config?.repo) {
-        return null;
-      }
-      return <StatusBadge text={state} intent={stack_state_intention(state)} />;
-    },
-    Status: ({ id }) => {
-      const info = useStack(id)?.info;
-      if (info?.state !== Types.StackState.Unhealthy) return null;
-      return (
-        info?.status && (
-          <p className="text-sm text-muted-foreground">{info.status}</p>
-        )
-      );
-    },
     NoConfig: ({ id }) => {
       const config = useFullStack(id)?.config;
       if (
@@ -185,7 +201,7 @@ export const StackComponents: RequiredResourceComponents = {
       if (
         !info ||
         !info?.project_missing ||
-        ![Types.StackState.Down, Types.StackState.Unknown].includes(state)
+        [Types.StackState.Down, Types.StackState.Unknown].includes(state)
       ) {
         return null;
       }
@@ -232,7 +248,7 @@ export const StackComponents: RequiredResourceComponents = {
         </HoverCard>
       );
     },
-    Deployed: ({ id }) => {
+    Hash: ({ id }) => {
       const info = useStack(id)?.info;
       const fullInfo = useFullStack(id)?.info;
       const state = info?.state;
@@ -243,51 +259,25 @@ export const StackComponents: RequiredResourceComponents = {
       if (
         stackDown ||
         info?.project_missing ||
-        !fullInfo?.deployed_hash ||
-        !fullInfo?.deployed_message
-      ) {
-        return null;
-      }
-      return (
-        <HoverCard openDelay={200}>
-          <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
-              <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                deployed: {fullInfo.deployed_hash}
-              </div>
-            </Card>
-          </HoverCardTrigger>
-          <HoverCardContent align="start">
-            <div className="grid gap-2">
-              <Badge
-                variant="secondary"
-                className="w-fit text-muted-foreground"
-              >
-                commit message
-              </Badge>
-              {fullInfo.deployed_message}
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      );
-    },
-    Latest: ({ id }) => {
-      const info = useStack(id)?.info;
-      const fullInfo = useFullStack(id)?.info;
-      if (
-        info?.project_missing ||
         !info?.latest_hash ||
-        !fullInfo?.latest_message ||
-        info?.latest_hash === info?.deployed_hash
+        !fullInfo
       ) {
         return null;
       }
+      const out_of_date =
+        info.deployed_hash && info.deployed_hash !== info.latest_hash;
       return (
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
-            <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+            <Card
+              className={cn(
+                "px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer",
+                out_of_date && border_color_class_by_intention("Warning")
+              )}
+            >
               <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
-                latest: {info.latest_hash}
+                {info.deployed_hash ? "deployed" : "latest"}:{" "}
+                {info.deployed_hash || info.latest_hash}
               </div>
             </Card>
           </HoverCardTrigger>
@@ -297,14 +287,67 @@ export const StackComponents: RequiredResourceComponents = {
                 variant="secondary"
                 className="w-fit text-muted-foreground"
               >
-                commit message
+                message
               </Badge>
-              {fullInfo.latest_message}
+              {fullInfo.deployed_message || fullInfo.latest_message}
+              {out_of_date && (
+                <>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "w-fit text-muted-foreground border-[1px]",
+                      border_color_class_by_intention("Warning")
+                    )}
+                  >
+                    latest
+                  </Badge>
+                  <div>
+                    <span className="text-muted-foreground">
+                      {info.latest_hash}
+                    </span>
+                    : {fullInfo.latest_message}
+                  </div>
+                </>
+              )}
             </div>
           </HoverCardContent>
         </HoverCard>
       );
     },
+    // Latest: ({ id }) => {
+    //   const info = useStack(id)?.info;
+    //   const fullInfo = useFullStack(id)?.info;
+    //   if (
+    //     info?.project_missing ||
+    //     !info?.latest_hash ||
+    //     !fullInfo?.latest_message ||
+    //     info?.latest_hash === info?.deployed_hash
+    //   ) {
+    //     return null;
+    //   }
+    //   return (
+    //     <HoverCard openDelay={200}>
+    //       <HoverCardTrigger asChild>
+    //         <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+    //           <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+    //             latest: {info.latest_hash}
+    //           </div>
+    //         </Card>
+    //       </HoverCardTrigger>
+    //       <HoverCardContent align="start">
+    //         <div className="grid gap-2">
+    //           <Badge
+    //             variant="secondary"
+    //             className="w-fit text-muted-foreground"
+    //           >
+    //             commit message
+    //           </Badge>
+    //           {fullInfo.latest_message}
+    //         </div>
+    //       </HoverCardContent>
+    //     </HoverCard>
+    //   );
+    // },
     Refresh: ({ id }) => {
       const { toast } = useToast();
       const inv = useInvalidate();
@@ -395,4 +438,21 @@ export const StackComponents: RequiredResourceComponents = {
       <DeleteResource type="Stack" id={id} />
     </>
   ),
+
+  ResourcePageHeader: ({ id }) => {
+    const stack = useStack(id);
+    return (
+      <ResourcePageHeader
+        intent={stack_state_intention(stack?.info.state)}
+        icon={<StackIcon id={id} size={8} />}
+        name={stack?.name}
+        state={stack?.info.state}
+        status={
+          stack?.info.state === Types.StackState.Unhealthy
+            ? stack?.info.status
+            : undefined
+        }
+      />
+    );
+  },
 };

@@ -4,9 +4,7 @@ use anyhow::{anyhow, Context};
 use command::run_komodo_command;
 use formatting::format_serror;
 use komodo_client::entities::{
-  stack::{ComposeContents, ComposeProject},
-  to_komodo_name,
-  update::Log,
+  stack::ComposeProject, to_komodo_name, update::Log, FileContents,
 };
 use periphery_client::api::compose::*;
 use resolver_api::Resolve;
@@ -78,6 +76,24 @@ pub struct DockerComposeLsItem {
 
 //
 
+const DEFAULT_COMPOSE_CONTENTS: &str = "## 🦎 Hello Komodo 🦎
+services:
+  hello_world:
+    image: hello-world
+    # networks:
+    #   - default
+    # ports:
+    #   - 3000:3000
+    # volumes:
+    #   - data:/data
+
+# networks:
+#   default: {}
+
+# volumes:
+#   data:
+";
+
 impl Resolve<GetComposeContentsOnHost, ()> for State {
   async fn resolve(
     &self,
@@ -90,10 +106,14 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
   ) -> anyhow::Result<GetComposeContentsOnHostResponse> {
     let root =
       periphery_config().stack_dir.join(to_komodo_name(&name));
-    let run_directory = root.join(&run_directory);
-    let run_directory = run_directory.canonicalize().context(
-      "failed to validate run directory on host (canonicalize error)",
-    )?;
+    let run_directory =
+      root.join(&run_directory).components().collect::<PathBuf>();
+
+    if !run_directory.exists() {
+      fs::create_dir_all(&run_directory)
+        .await
+        .context("Failed to initialize run directory")?;
+    }
 
     let file_paths = file_paths
       .iter()
@@ -105,19 +125,24 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
     let mut res = GetComposeContentsOnHostResponse::default();
 
     for full_path in &file_paths {
+      if !full_path.exists() {
+        fs::write(&full_path, DEFAULT_COMPOSE_CONTENTS)
+          .await
+          .context("Failed to init missing compose file on host")?;
+      }
       match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
-          "failed to read compose file contents at {full_path:?}"
+          "Failed to read compose file contents at {full_path:?}"
         )
       }) {
         Ok(contents) => {
-          res.contents.push(ComposeContents {
+          res.contents.push(FileContents {
             path: full_path.display().to_string(),
             contents,
           });
         }
         Err(e) => {
-          res.errors.push(ComposeContents {
+          res.errors.push(FileContents {
             path: full_path.display().to_string(),
             contents: format_serror(&e.into()),
           });
@@ -174,6 +199,46 @@ impl Resolve<GetComposeServiceLogSearch> for State {
     let grep = log_grep(&terms, combinator, invert);
     let command = format!("{docker_compose} -p {project} logs {service} --tail 5000 2>&1 | {grep}");
     Ok(run_komodo_command("get stack log grep", command).await)
+  }
+}
+
+//
+
+impl Resolve<WriteComposeContentsToHost> for State {
+  #[instrument(name = "WriteComposeContentsToHost", skip(self))]
+  async fn resolve(
+    &self,
+    WriteComposeContentsToHost {
+      name,
+      run_directory,
+      file_path,
+      contents,
+    }: WriteComposeContentsToHost,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let root =
+      periphery_config().stack_dir.join(to_komodo_name(&name));
+    let run_directory = root.join(&run_directory);
+    let run_directory = run_directory.canonicalize().context(
+      "failed to validate run directory on host (canonicalize error)",
+    )?;
+    let file_path = run_directory
+      .join(file_path)
+      .components()
+      .collect::<PathBuf>();
+    // Ensure parent directory exists
+    if let Some(parent) = file_path.parent() {
+      let _ = fs::create_dir_all(&parent).await;
+    }
+    fs::write(&file_path, contents).await.with_context(|| {
+      format!(
+        "Failed to write compose file contents to {file_path:?}"
+      )
+    })?;
+    Ok(Log::simple(
+      "Write contents to host",
+      format!("File contents written to {file_path:?}"),
+    ))
   }
 }
 

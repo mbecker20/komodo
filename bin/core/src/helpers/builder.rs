@@ -93,7 +93,9 @@ async fn get_aws_builder(
 
   update_update(update.clone()).await?;
 
-  let periphery_address = format!("http://{ip}:{}", config.port);
+  let protocol = if config.use_https { "https" } else { "http" };
+  let periphery_address =
+    format!("{protocol}://{ip}:{}", config.port);
   let periphery =
     PeripheryClient::new(&periphery_address, &core_config().passkey);
 
@@ -191,6 +193,7 @@ pub fn start_aws_builder_log(
     assign_public_ip,
     security_group_ids,
     use_public_ip,
+    use_https,
     ..
   } = config;
 
@@ -206,6 +209,7 @@ pub fn start_aws_builder_log(
     format!("{}: {readable_sec_group_ids}", muted("security groups")),
     format!("{}: {assign_public_ip}", muted("assign public ip")),
     format!("{}: {use_public_ip}", muted("use public ip")),
+    format!("{}: {use_https}", muted("use https")),
   ]
   .join("\n")
 }

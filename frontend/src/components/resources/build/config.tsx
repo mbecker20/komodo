@@ -7,21 +7,20 @@ import {
   ImageRegistryConfig,
   InputList,
   ProviderSelectorConfig,
-  SecretsForEnvironment,
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { env_to_text } from "@lib/utils";
 import { Types } from "@komodo/client";
 import { Button } from "@ui/button";
-import { Textarea } from "@ui/textarea";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { ReactNode, createRef, useState } from "react";
-import { BuilderSelector, CopyGithubWebhook, LabelsConfig } from "../common";
+import { ReactNode, useState } from "react";
+import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
 import { Link } from "react-router-dom";
+import { SecretsSearch } from "@components/config/env_vars";
+import { MonacoEditor } from "@components/monaco";
 
 export const BuildConfig = ({
   id,
@@ -46,6 +45,8 @@ export const BuildConfig = ({
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Build"
       titleOther={titleOther}
       disabled={disabled}
       config={config}
@@ -55,19 +56,40 @@ export const BuildConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "Builder",
             labelHidden: true,
             components: {
-              builder_id: (id, set) => (
-                <BuilderSelector selected={id} set={set} disabled={disabled} />
-              ),
+              builder_id: (builder_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      builder_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Builder:
+                          <ResourceLink type="Builder" id={builder_id} />
+                        </div>
+                      ) : (
+                        "Select Builder"
+                      )
+                    }
+                    description="Select the Builder to build with."
+                  >
+                    <ResourceSelector
+                      type="Builder"
+                      selected={builder_id}
+                      onSelect={(builder_id) => set({ builder_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
             },
           },
           {
             label: "Version",
-            labelHidden: true,
             components: {
               version: (_version, set) => {
                 const version =
@@ -78,6 +100,7 @@ export const BuildConfig = ({
                   <ConfigInput
                     className="text-lg w-[200px]"
                     label="Version"
+                    description="Version the image tag using server (major.minor.patch)"
                     placeholder="0.0.0"
                     value={version}
                     onChange={(version) => set({ version: version as any })}
@@ -86,11 +109,14 @@ export const BuildConfig = ({
                   />
                 );
               },
-              auto_increment_version: true,
+              auto_increment_version: {
+                description:
+                  "Automatically increment the patch number on every build.",
+              },
             },
           },
           {
-            label: "Git",
+            label: "Source",
             components: {
               git_provider: (provider, set) => {
                 const https = update.git_https ?? config.git_https;
@@ -127,23 +153,16 @@ export const BuildConfig = ({
                 description: "Select a custom branch, or default to 'main'.",
               },
               commit: {
-                placeholder: "Enter a specific commit hash. Optional.",
+                placeholder: "Enter commit hash",
                 description:
                   "Switch to a specific hash after cloning the branch.",
               },
             },
           },
           {
-            label: "Image",
+            label: "Build",
+            labelHidden: true,
             components: {
-              image_registry: (registry, set) => (
-                <ImageRegistryConfig
-                  registry={registry}
-                  setRegistry={(image_registry) => set({ image_registry })}
-                  resource_id={update.builder_id ?? config.builder_id}
-                  disabled={disabled}
-                />
-              ),
               build_path: {
                 placeholder: ".",
                 description:
@@ -157,113 +176,21 @@ export const BuildConfig = ({
             },
           },
           {
-            label: "Custom Name / Tag",
+            label: "Registry",
+            labelHidden: true,
             components: {
-              image_name: {
-                description: "Optional. Push the image under a different name",
-                placeholder: "Custom image name",
-              },
-              image_tag: {
-                description:
-                  "Optional. Postfix the image version with a custom tag.",
-                placeholder: "Custom image tag",
-              },
-            },
-          },
-          {
-            label: "Extra Args",
-            description: (
-              <div className="flex flex-row flex-wrap">
-                <div>Pass extra arguments to 'docker build'.</div>
-                <Link
-                  to="https://docs.docker.com/reference/cli/docker/buildx/build/"
-                  target="_blank"
-                >
-                  <Button variant="link" className="p-0">
-                    See docker docs.
-                  </Button>
-                </Link>
-              </div>
-            ),
-            contentHidden:
-              (update.extra_args ?? config.extra_args)?.length === 0,
-            actions: !disabled && (
-              <AddExtraArgMenu
-                type="Build"
-                onSelect={(suggestion) =>
-                  set((update) => ({
-                    ...update,
-                    extra_args: [
-                      ...(update.extra_args ?? config.extra_args ?? []),
-                      suggestion,
-                    ],
-                  }))
-                }
-                disabled={disabled}
-              />
-            ),
-            components: {
-              extra_args: (value, set) => (
-                <InputList
-                  field="extra_args"
-                  values={value ?? []}
-                  set={set}
-                  disabled={disabled}
-                  placeholder="--extra-arg=value"
-                />
-              ),
-            },
-          },
-          {
-            label: "Labels",
-            description: "Attach --labels to image.",
-            contentHidden: (update.labels ?? config.labels)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => {
-                    return {
-                      ...update,
-                      labels: [
-                        ...(update.labels ?? config.labels ?? []),
-                        { variable: "", value: "" },
-                      ] as Types.EnvironmentVar[],
-                    };
-                  })
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Label
-              </Button>
-            ),
-            components: {
-              labels: (l, set) => (
-                <LabelsConfig
-                  labels={(l as Types.EnvironmentVar[]) ?? []}
-                  set={set}
+              image_registry: (registry, set) => (
+                <ImageRegistryConfig
+                  registry={registry}
+                  setRegistry={(image_registry) => set({ image_registry })}
+                  resource_id={update.builder_id ?? config.builder_id}
                   disabled={disabled}
                 />
               ),
             },
           },
           {
-            label: "Pre Build",
-            description:
-              "Execute a shell command before running docker build. The given Cwd is relative to repo root.",
-            components: {
-              pre_build: (value, set) => (
-                <SystemCommand
-                  value={value}
-                  set={(value) => set({ pre_build: value })}
-                  disabled={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Git Webhook",
+            label: "Webhook",
             description:
               "Configure your repo provider to send webhooks to Komodo",
             components: {
@@ -386,83 +313,141 @@ export const BuildConfig = ({
             },
           },
         ],
-        "Build Args": [
+        advanced: [
+          {
+            label: "Tagging",
+            components: {
+              image_name: {
+                description: "Push the image under a different name",
+                placeholder: "Custom image name",
+              },
+              image_tag: {
+                description: "Postfix the image version with a custom tag.",
+                placeholder: "Custom image tag",
+              },
+            },
+          },
+          {
+            label: "Pre Build",
+            description:
+              "Execute a shell command before running docker build. The 'path' is relative to the root of the repo.",
+            components: {
+              pre_build: (value, set) => (
+                <SystemCommand
+                  value={value}
+                  set={(value) => set({ pre_build: value })}
+                  disabled={disabled}
+                />
+              ),
+            },
+          },
           {
             label: "Build Args",
             description:
               "Pass build args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
+            labelExtra: !disabled && <SecretsSearch />,
             components: {
-              build_args: (vars, set) => {
-                const args =
-                  typeof vars === "object" ? env_to_text(vars) : vars;
-                return (
-                  <Args
-                    type="build"
-                    args={args ?? ""}
-                    set={set}
-                    disabled={disabled}
-                  />
-                );
-              },
-              skip_secret_interp: true,
+              build_args: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE = value\n"}
+                  onValueChange={(build_args) => set({ build_args })}
+                  language="key_value"
+                  readOnly={disabled}
+                />
+              ),
             },
           },
-        ],
-        "Secret Args": [
           {
             label: "Secret Args",
-            description:
-              "Pass secret args to 'docker build'. These can be used in the Dockerfile via ARG, and are visible in the final image.",
+            description: (
+              <div className="flex flex-row flex-wrap gap-2">
+                <div>
+                  Pass secrets to 'docker build'. These values remain hidden in
+                  the final image by using docker secret mounts.
+                </div>
+                <Link
+                  to="https://docs.rs/komodo_client/latest/komodo_client/entities/build/struct.BuildConfig.html#structfield.secret_args"
+                  target="_blank"
+                  className="text-primary"
+                >
+                  See docker docs.
+                </Link>
+              </div>
+            ),
+            labelExtra: !disabled && <SecretsSearch />,
             components: {
-              secret_args: (vars, set) => {
-                const args =
-                  typeof vars === "object" ? env_to_text(vars) : vars;
-                return (
-                  <Args
-                    type="secret"
-                    args={args ?? ""}
+              secret_args: (env, set) => (
+                <MonacoEditor
+                  value={env || "  # VARIABLE = value\n"}
+                  onValueChange={(secret_args) => set({ secret_args })}
+                  language="key_value"
+                  readOnly={disabled}
+                />
+              ),
+            },
+          },
+          {
+            label: "Extra Args",
+            labelHidden: true,
+            components: {
+              extra_args: (value, set) => (
+                <ConfigItem
+                  label="Extra Args"
+                  boldLabel
+                  description={
+                    <div className="flex flex-row flex-wrap gap-2">
+                      <div>Pass extra arguments to 'docker build'.</div>
+                      <Link
+                        to="https://docs.docker.com/reference/cli/docker/buildx/build/"
+                        target="_blank"
+                        className="text-primary"
+                      >
+                        See docker docs.
+                      </Link>
+                    </div>
+                  }
+                >
+                  {!disabled && (
+                    <AddExtraArgMenu
+                      type="Build"
+                      onSelect={(suggestion) =>
+                        set({
+                          extra_args: [
+                            ...(update.extra_args ?? config.extra_args ?? []),
+                            suggestion,
+                          ],
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  )}
+                  <InputList
+                    field="extra_args"
+                    values={value ?? []}
                     set={set}
                     disabled={disabled}
+                    placeholder="--extra-arg=value"
                   />
-                );
-              },
-              skip_secret_interp: true,
+                </ConfigItem>
+              ),
+            },
+          },
+          {
+            label: "Labels",
+            description: "Attach --labels to image.",
+            components: {
+              labels: (labels, set) => (
+                <MonacoEditor
+                  value={labels || "  # your.docker.label: value\n"}
+                  language="key_value"
+                  onValueChange={(labels) => set({ labels })}
+                  readOnly={disabled}
+                />
+              ),
             },
           },
         ],
       }}
     />
-  );
-};
-
-const Args = ({
-  type,
-  args,
-  set,
-  disabled,
-}: {
-  type: "build" | "secret";
-  args: string;
-  set: (input: Partial<Types.BuildConfig>) => void;
-  disabled: boolean;
-}) => {
-  const ref = createRef<HTMLTextAreaElement>();
-  const setArgs = (args: string) => set({ [`${type}_args`]: args });
-
-  return (
-    <ConfigItem className="flex-col gap-4 items-start">
-      {!disabled && (
-        <SecretsForEnvironment env={args} setEnv={setArgs} envRef={ref} />
-      )}
-      <Textarea
-        ref={ref}
-        className="min-h-[400px]"
-        placeholder="VARIABLE=value"
-        value={args}
-        onChange={(e) => setArgs(e.target.value)}
-        disabled={disabled}
-        spellCheck={false}
-      />
-    </ConfigItem>
   );
 };

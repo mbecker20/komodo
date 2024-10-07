@@ -1,4 +1,8 @@
-import { ActionWithDialog, StatusBadge } from "@components/util";
+import {
+  ActionWithDialog,
+  ResourcePageHeader,
+  StatusBadge,
+} from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Route } from "lucide-react";
@@ -26,7 +30,7 @@ const ProcedureIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const ProcedureComponents: RequiredResourceComponents = {
   list_item: (id) => useProcedure(id),
-  use_links: () => undefined,
+  resource_links: () => undefined,
 
   Description: () => <>Compose Komodo actions together.</>,
 
@@ -65,14 +69,14 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <ProcedureIcon id={id} size={4} />,
   BigIcon: ({ id }) => <ProcedureIcon id={id} size={8} />,
 
-  Status: {
-    State: ({ id }) => {
-      let state = useProcedure(id)?.info.state;
-      return (
-        <StatusBadge text={state} intent={procedure_state_intention(state)} />
-      );
-    },
+  State: ({ id }) => {
+    let state = useProcedure(id)?.info.state;
+    return (
+      <StatusBadge text={state} intent={procedure_state_intention(state)} />
+    );
   },
+  
+  Status: {},
 
   Info: {
     Stages: ({ id }) => <div>Stages: {useProcedure(id)?.info.stages}</div>,
@@ -106,4 +110,18 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Config: ProcedureConfig,
 
   DangerZone: ({ id }) => <DeleteResource type="Procedure" id={id} />,
+
+  ResourcePageHeader: ({ id }) => {
+    const procedure = useProcedure(id);
+
+    return (
+      <ResourcePageHeader
+        intent={procedure_state_intention(procedure?.info.state)}
+        icon={<ProcedureIcon id={id} size={8} />}
+        name={procedure?.name}
+        state={procedure?.info.state}
+        status={procedure?.info.stages.toString() + "Stages"}
+      />
+    );
+  },
 };

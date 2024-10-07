@@ -8,7 +8,7 @@ use typeshare::typeshare;
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
-  I64,
+  FileContents, ResourceTarget, I64,
 };
 
 #[typeshare]
@@ -20,16 +20,24 @@ pub type ResourceSyncListItem =
 pub struct ResourceSyncListItemInfo {
   /// Unix timestamp of last sync, or 0
   pub last_sync_ts: I64,
-  /// Short commit hash of last sync, or empty string
-  pub last_sync_hash: String,
-  /// Commit message of last sync, or empty string
-  pub last_sync_message: String,
-  /// The git provider domain
+  /// Whether sync is `files_on_host` mode.
+  pub files_on_host: bool,
+  /// Whether sync has file contents defined.
+  pub file_contents: bool,
+  /// Whether sync has `managed` mode enabled.
+  pub managed: bool,
+  /// Resource path to the files.
+  pub resource_path: String,
+  /// The git provider domain.
   pub git_provider: String,
   /// The Github repo used as the source of the sync resources
   pub repo: String,
   /// The branch of the repo
   pub branch: String,
+  /// Short commit hash of last sync, or empty string
+  pub last_sync_hash: Option<String>,
+  /// Commit message of last sync, or empty string
+  pub last_sync_message: Option<String>,
   /// State of the sync. Reflects whether most recent sync successful.
   pub state: ResourceSyncState,
 }
@@ -60,102 +68,69 @@ pub type ResourceSync =
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ResourceSyncInfo {
   /// Unix timestamp of last applied sync
+  #[serde(default)]
   pub last_sync_ts: I64,
   /// Short commit hash of last applied sync
-  pub last_sync_hash: String,
+  pub last_sync_hash: Option<String>,
   /// Commit message of last applied sync
-  pub last_sync_message: String,
-  /// Readable logs of pending updates
-  pub pending: PendingSyncUpdates,
+  pub last_sync_message: Option<String>,
+
+  /// The list of pending updates to resources
+  #[serde(default)]
+  pub resource_updates: Vec<ResourceDiff>,
+  /// The list of pending updates to variables
+  #[serde(default)]
+  pub variable_updates: Vec<DiffData>,
+  /// The list of pending updates to user groups
+  #[serde(default)]
+  pub user_group_updates: Vec<DiffData>,
+  /// The list of pending deploys to resources.
+  #[serde(default)]
+  pub pending_deploy: SyncDeployUpdate,
+  /// If there is an error, it will be stored here
+  pub pending_error: Option<String>,
+  /// The commit hash which produced these pending updates.
+  pub pending_hash: Option<String>,
+  /// The commit message which produced these pending updates.
+  pub pending_message: Option<String>,
+
+  /// The current sync files
+  #[serde(default)]
+  pub remote_contents: Vec<FileContents>,
+  /// Any read errors in files by path
+  #[serde(default)]
+  pub remote_errors: Vec<FileContents>,
 }
 
 #[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct PendingSyncUpdates {
-  /// The commit hash which produced these pending updates
-  pub hash: Option<String>,
-  /// The commit message which produced these pending updates
-  pub message: Option<String>,
-  /// The data associated with the sync. Either Ok containing diffs,
-  /// or Err containing an error message
-  pub data: PendingSyncUpdatesData,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceDiff {
+  /// The resource target.
+  /// The target id will be empty if "Create" ResourceDiffType.
+  pub target: ResourceTarget,
+  /// The data associated with the diff.
+  pub data: DiffData,
 }
 
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data")]
-#[allow(clippy::large_enum_variant)]
-pub enum PendingSyncUpdatesData {
-  Ok(PendingSyncUpdatesDataOk),
-  Err(PendingSyncUpdatesDataErr),
-}
-
-impl Default for PendingSyncUpdatesData {
-  fn default() -> Self {
-    Self::Ok(Default::default())
-  }
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct PendingSyncUpdatesDataOk {
-  /// Readable log of any deploy actions that will be performed
-  pub deploy_updates: Option<SyncDeployUpdate>,
-  /// Readable log of any pending deployment updates
-  pub deployment_updates: Option<SyncUpdate>,
-  /// Readable log of any pending deployment updates
-  pub stack_updates: Option<SyncUpdate>,
-  /// Readable log of any pending server updates
-  pub server_updates: Option<SyncUpdate>,
-  /// Readable log of any pending build updates
-  pub build_updates: Option<SyncUpdate>,
-  /// Readable log of any pending repo updates
-  pub repo_updates: Option<SyncUpdate>,
-  /// Readable log of any pending procedure updates
-  pub procedure_updates: Option<SyncUpdate>,
-  /// Readable log of any pending alerter updates
-  pub alerter_updates: Option<SyncUpdate>,
-  /// Readable log of any pending builder updates
-  pub builder_updates: Option<SyncUpdate>,
-  /// Readable log of any pending server template updates
-  pub server_template_updates: Option<SyncUpdate>,
-  /// Readable log of any pending resource sync updates
-  pub resource_sync_updates: Option<SyncUpdate>,
-  /// Readable log of any pending variable updates
-  pub variable_updates: Option<SyncUpdate>,
-  /// Readable log of any pending user group updates
-  pub user_group_updates: Option<SyncUpdate>,
-}
-
-impl PendingSyncUpdatesDataOk {
-  pub fn no_updates(&self) -> bool {
-    self.deploy_updates.is_none()
-      && self.deployment_updates.is_none()
-      && self.stack_updates.is_none()
-      && self.server_updates.is_none()
-      && self.build_updates.is_none()
-      && self.repo_updates.is_none()
-      && self.procedure_updates.is_none()
-      && self.alerter_updates.is_none()
-      && self.builder_updates.is_none()
-      && self.server_template_updates.is_none()
-      && self.resource_sync_updates.is_none()
-      && self.variable_updates.is_none()
-      && self.user_group_updates.is_none()
-  }
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct SyncUpdate {
-  /// Resources to create
-  pub to_create: i32,
-  /// Resources to update
-  pub to_update: i32,
-  /// Resources to delete
-  pub to_delete: i32,
-  /// A readable log of all the changes to be applied
-  pub log: String,
+pub enum DiffData {
+  /// Resource will be created
+  Create {
+    /// The proposed resource to create in TOML
+    proposed: String,
+  },
+  Update {
+    /// The proposed TOML
+    proposed: String,
+    /// The current TOML
+    current: String,
+  },
+  Delete {
+    /// The current TOML of the resource to delete
+    current: String,
+  },
 }
 
 #[typeshare]
@@ -165,12 +140,6 @@ pub struct SyncDeployUpdate {
   pub to_deploy: i32,
   /// A readable log of all the changes to be applied
   pub log: String,
-}
-
-#[typeshare]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PendingSyncUpdatesDataErr {
-  pub message: String,
 }
 
 #[typeshare(serialized_as = "Partial<ResourceSyncConfig>")]
@@ -221,20 +190,6 @@ pub struct ResourceSyncConfig {
   #[builder(default)]
   pub git_account: String,
 
-  /// The path of the resource file(s) to sync, relative to the repo root.
-  /// Can be a specific file, or a directory containing multiple files / folders.
-  /// See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
-  #[serde(default = "default_resource_path")]
-  #[builder(default = "default_resource_path()")]
-  #[partial_default(default_resource_path())]
-  pub resource_path: String,
-
-  /// Whether sync should delete resources
-  /// not declared in the resource files
-  #[serde(default)]
-  #[builder(default)]
-  pub delete: bool,
-
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
   #[builder(default = "default_webhook_enabled()")]
@@ -246,6 +201,55 @@ pub struct ResourceSyncConfig {
   #[serde(default)]
   #[builder(default)]
   pub webhook_secret: String,
+
+  /// Files are available on the Komodo Core host.
+  /// Specify the file / folder with [ResourceSyncConfig::resource_path].
+  #[serde(default)]
+  #[builder(default)]
+  pub files_on_host: bool,
+
+  /// The path of the resource file(s) to sync.
+  ///  - If Files on Host, this is relative to the configured `sync_directory` in core config.
+  ///  - If Git Repo based, this is relative to the root of the repo.
+  /// Can be a specific file, or a directory containing multiple files / folders.
+  /// See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
+  #[serde(default = "default_resource_path")]
+  #[builder(default = "default_resource_path()")]
+  #[partial_default(default_resource_path())]
+  pub resource_path: String,
+
+  /// Enable "pushes" to the file,
+  /// which exports resources matching tags to single file.
+  ///  - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
+  ///  - If using `file_contents`, it is stored in the database.
+  /// When using this, "delete" mode is always enabled.
+  #[serde(default)]
+  #[builder(default)]
+  pub managed: bool,
+
+  /// Whether sync should delete resources
+  /// not declared in the resource files
+  #[serde(default)]
+  #[builder(default)]
+  pub delete: bool,
+
+  /// When using `managed` resource sync, will only export resources
+  /// matching all of the given tags. If none, will match all resources.
+  #[serde(default)]
+  #[builder(default)]
+  pub match_tags: Vec<String>,
+
+  /// Manage the file contents in the UI.
+  #[serde(
+    default,
+    deserialize_with = "super::file_contents_deserializer"
+  )]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "super::option_file_contents_deserializer"
+  ))]
+  #[builder(default)]
+  pub file_contents: String,
 }
 
 impl ResourceSyncConfig {
@@ -267,7 +271,7 @@ fn default_branch() -> String {
 }
 
 fn default_resource_path() -> String {
-  String::from("resources")
+  String::from("./resources.toml")
 }
 
 fn default_webhook_enabled() -> bool {
@@ -284,6 +288,10 @@ impl Default for ResourceSyncConfig {
       commit: Default::default(),
       git_account: Default::default(),
       resource_path: default_resource_path(),
+      files_on_host: Default::default(),
+      file_contents: Default::default(),
+      managed: Default::default(),
+      match_tags: Default::default(),
       delete: Default::default(),
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),

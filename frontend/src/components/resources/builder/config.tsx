@@ -1,9 +1,9 @@
 import { Config } from "@components/config";
-import { InputList } from "@components/config/util";
+import { ConfigItem, ConfigList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { useState } from "react";
-import { ResourceSelector } from "../common";
+import { ResourceLink, ResourceSelector } from "../common";
 import { Button } from "@ui/button";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import {
@@ -16,6 +16,7 @@ import {
 import { Card } from "@ui/card";
 import { cn } from "@lib/utils";
 import { Input } from "@ui/input";
+import { MonacoEditor } from "@components/monaco";
 
 export const BuilderConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuilder", { builder: id }).data?.config;
@@ -39,6 +40,8 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Builder"
       disabled={disabled}
       config={config}
       update={update}
@@ -47,150 +50,179 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: { type: "Aws", params: update } });
       }}
       components={{
-        general: [
+        "": [
           {
             label: "General",
             components: {
-              region: true,
-              instance_type: true,
-              volume_gb: true,
-              ami_id: true,
-              subnet_id: true,
-              key_pair_name: true,
-              assign_public_ip: true,
-              use_public_ip: true,
-              port: true,
+              region: {
+                description:
+                  "Configure the AWS region to launch the instance in.",
+                placeholder: "Input region",
+              },
+              instance_type: {
+                description: "Choose the instance type to launch",
+                placeholder: "Input instance type",
+              },
+              ami_id: {
+                description:
+                  "Create an Ami with Docker and Komodo Periphery installed.",
+                placeholder: "Input Ami Id",
+              },
+              volume_gb: {
+                description: "The size of the disk to attach to the instance.",
+                placeholder: "Input size",
+              },
+              key_pair_name: {
+                description: "Attach a key pair to the instance",
+                placeholder: "Input key pair name",
+              },
             },
           },
           {
-            label: "Security Group Ids",
-            contentHidden:
-              (update.security_group_ids ?? config.security_group_ids)
-                ?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    security_group_ids: [
-                      ...(update.security_group_ids ??
-                        config.security_group_ids ??
-                        []),
-                      "",
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Security Group Id
-              </Button>
-            ),
+            label: "Network",
             components: {
+              subnet_id: {
+                description: "Configure the subnet to launch the instance in.",
+                placeholder: "Input subnet id",
+              },
               security_group_ids: (values, set) => (
-                <InputList
+                <ConfigList
+                  label="Security Group Ids"
+                  description="Attach security groups to the instance."
                   field="security_group_ids"
-                  values={values}
+                  values={values ?? []}
                   set={set}
                   disabled={disabled}
-                  placeholder="Security Group Id"
+                  placeholder="Input Id"
                 />
               ),
+              assign_public_ip: {
+                description:
+                  "Whether to assign a public IP to the build instance.",
+              },
+              use_public_ip: {
+                description:
+                  "Whether to connect to the instance over the public IP. Otherwise, will use the internal IP.",
+              },
+              port: {
+                description: "Configure the port to connect to Periphery on.",
+                placeholder: "Input port",
+              },
+              use_https: {
+                description: "Whether to connect to Periphery using HTTPS.",
+              },
             },
           },
           {
-            label: "Additional Git Providers",
-            contentHidden:
-              (update.git_providers ?? config.git_providers)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    git_providers: [
-                      ...(update.git_providers ?? config.git_providers ?? []),
-                      { domain: "github.com", https: true, accounts: [] },
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Git Provider
-              </Button>
-            ),
+            label: "User Data",
+            description: "Run a script to setup the instance.",
+            components: {
+              user_data: (user_data, set) => {
+                return (
+                  <MonacoEditor
+                    value={user_data}
+                    language="shell"
+                    onValueChange={(user_data) => set({ user_data })}
+                    readOnly={disabled}
+                  />
+                );
+              },
+            },
+          },
+        ],
+        additional: [
+          {
+            label: "Git Providers",
+            boldLabel: false,
+            description:
+              "If you configured additional git providers / tokens in Periphery config on the builder, add them here so they will be suggested.",
             components: {
               git_providers: (providers, set) =>
                 providers && (
-                  <ProvidersConfig
-                    type="git"
-                    providers={providers}
-                    set={set}
-                    disabled={disabled}
-                  />
+                  <>
+                    {!disabled && (
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          set({
+                            git_providers: [
+                              ...(update.git_providers ??
+                                config.git_providers ??
+                                []),
+                              {
+                                domain: "github.com",
+                                https: true,
+                                accounts: [],
+                              },
+                            ],
+                          })
+                        }
+                        className="flex items-center gap-2 w-[200px]"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        Add Git Provider
+                      </Button>
+                    )}
+                    <ProvidersConfig
+                      type="git"
+                      providers={providers}
+                      set={set}
+                      disabled={disabled}
+                    />
+                  </>
                 ),
             },
           },
           {
-            label: "Additional Docker Registries",
-            contentHidden:
-              (update.docker_registries ?? config.docker_registries)?.length ===
-              0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    docker_registries: [
-                      ...(update.docker_registries ??
-                        config.docker_registries ??
-                        []),
-                      { domain: "docker.io", accounts: [], organizations: [] },
-                    ],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Docker Registry
-              </Button>
-            ),
+            label: "Docker Registries",
+            boldLabel: false,
+            description:
+              "If you configured additional registries / tokens in Periphery config on the builder, add them here so they will be suggested.",
             components: {
               docker_registries: (providers, set) =>
                 providers && (
-                  <ProvidersConfig
-                    type="docker"
-                    providers={providers}
-                    set={set}
-                    disabled={disabled}
-                  />
+                  <>
+                    {!disabled && (
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          set({
+                            docker_registries: [
+                              ...(update.docker_registries ??
+                                config.docker_registries ??
+                                []),
+                              {
+                                domain: "docker.io",
+                                accounts: [],
+                                organizations: [],
+                              },
+                            ],
+                          })
+                        }
+                        className="flex items-center gap-2 w-[200px]"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        Add Docker Registry
+                      </Button>
+                    )}
+                    <ProvidersConfig
+                      type="docker"
+                      providers={providers}
+                      set={set}
+                      disabled={disabled}
+                    />
+                  </>
                 ),
             },
           },
           {
-            label: "Additional Secret Keys",
-            contentHidden: (update.secrets ?? config.secrets)?.length === 0,
-            actions: !disabled && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  set((update) => ({
-                    ...update,
-                    secrets: [...(update.secrets ?? config.secrets ?? []), ""],
-                  }))
-                }
-                className="flex items-center gap-2 w-[200px]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add Secret Key
-              </Button>
-            ),
+            label: "Secret Keys",
+            labelHidden: true,
             components: {
               secrets: (secrets, set) => (
-                <InputList
+                <ConfigList
+                  label="Secret Keys"
+                  description="If you configured additional secrets in Periphery config on the builder, add them here so they will be suggested."
                   field="secrets"
                   values={secrets ?? []}
                   set={set}
@@ -219,6 +251,8 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Builder"
       disabled={disabled}
       config={config.params as Types.ServerBuilderConfig}
       update={update}
@@ -227,21 +261,36 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: { type: "Server", params: update } });
       }}
       components={{
-        general: [
+        "": [
           {
-            label: "General",
+            label: "Server",
+            labelHidden: true,
             components: {
-              server_id: (id, set) => (
-                <div className="flex justify-between items-center border-b pb-4">
-                  Select Server
-                  <ResourceSelector
-                    type="Server"
-                    selected={id}
-                    onSelect={(server_id) => set({ server_id })}
-                    disabled={disabled}
-                  />
-                </div>
-              ),
+              server_id: (server_id, set) => {
+                return (
+                  <ConfigItem
+                    label={
+                      server_id ? (
+                        <div className="flex gap-3 text-lg">
+                          Server:
+                          <ResourceLink type="Server" id={server_id} />
+                        </div>
+                      ) : (
+                        "Select Server"
+                      )
+                    }
+                    description="Select the Server to build on."
+                  >
+                    <ResourceSelector
+                      type="Server"
+                      selected={server_id}
+                      onSelect={(server_id) => set({ server_id })}
+                      disabled={disabled}
+                      align="start"
+                    />
+                  </ConfigItem>
+                );
+              },
             },
           },
         ],
@@ -258,8 +307,9 @@ const ProvidersConfig = (params: {
 }) => {
   const arr_field =
     params.type === "git" ? "git_providers" : "docker_registries";
+  if (!params.providers.length) return null;
   return (
-    <div className="w-full flex justify-end">
+    <div className="w-full flex">
       <div className="flex flex-col gap-4 w-full max-w-[400px]">
         {params.providers?.map((_, index) => (
           <div key={index} className="flex items-center justify-between gap-4">

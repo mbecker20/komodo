@@ -2,7 +2,6 @@ use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
-use mongo_indexed::Document;
 use komodo_client::{
   api::write::CreateServer,
   entities::{
@@ -15,6 +14,7 @@ use komodo_client::{
     ResourceTarget,
   },
 };
+use mongo_indexed::Document;
 use mungos::{
   find::find_collect,
   mongodb::bson::{doc, oid::ObjectId, to_document, Bson},
@@ -30,8 +30,6 @@ use crate::{
 };
 
 pub mod action_state;
-pub mod alert;
-pub mod build;
 pub mod builder;
 pub mod cache;
 pub mod channel;
@@ -39,9 +37,6 @@ pub mod interpolate;
 pub mod procedure;
 pub mod prune;
 pub mod query;
-pub mod repo;
-pub mod stack;
-pub mod sync;
 pub mod update;
 
 // pub mod resource;
@@ -79,7 +74,6 @@ pub async fn git_token(
   mut on_https_found: impl FnMut(bool),
 ) -> anyhow::Result<Option<String>> {
   let db_provider = db_client()
-    .await
     .git_accounts
     .find_one(doc! { "domain": provider_domain, "username": account_username })
     .await
@@ -111,7 +105,6 @@ pub async fn registry_token(
   account_username: &str,
 ) -> anyhow::Result<Option<String>> {
   let provider = db_client()
-    .await
     .registry_accounts
     .find_one(doc! { "domain": provider_domain, "username": account_username })
     .await
@@ -165,7 +158,6 @@ pub async fn create_permission<T>(
   }
   let target: ResourceTarget = target.into();
   if let Err(e) = db_client()
-    .await
     .permissions
     .insert_one(Permission {
       id: Default::default(),
@@ -215,7 +207,6 @@ async fn startup_in_progress_update_cleanup() {
   // This static log won't fail to serialize, unwrap ok.
   let log = to_document(&log).unwrap();
   if let Err(e) = db_client()
-    .await
     .updates
     .update_many(
       doc! { "status": "InProgress" },
@@ -237,7 +228,7 @@ async fn startup_in_progress_update_cleanup() {
 
 /// Run on startup, ensure open alerts pointing to invalid resources are closed.
 async fn startup_open_alert_cleanup() {
-  let db = db_client().await;
+  let db = db_client();
   let Ok(alerts) =
     find_collect(&db.alerts, doc! { "resolved": false }, None)
       .await
@@ -290,30 +281,29 @@ async fn startup_open_alert_cleanup() {
 }
 
 /// Ensures a default server exists with the defined address
-pub async fn ensure_server() {
-  let ensure_server = &core_config().ensure_server;
-  if ensure_server.is_empty() {
+pub async fn ensure_first_server() {
+  let first_server = &core_config().first_server;
+  if first_server.is_empty() {
     return;
   }
-  let db = db_client().await;
+  let db = db_client();
   let Ok(server) = db
     .servers
-    .find_one(doc! { "config.address": ensure_server })
+    .find_one(Document::new())
     .await
-    .inspect_err(|e| error!("Failed to initialize 'ensure_server'. Failed to query db. {e:?}"))
+    .inspect_err(|e| error!("Failed to initialize 'first_server'. Failed to query db. {e:?}"))
   else {
     return;
   };
   if server.is_some() {
     return;
   }
-
   if let Err(e) = State
     .resolve(
       CreateServer {
         name: format!("server-{}", random_string(5)),
         config: PartialServerConfig {
-          address: Some(ensure_server.to_string()),
+          address: Some(first_server.to_string()),
           enabled: Some(true),
           ..Default::default()
         },
@@ -322,6 +312,6 @@ pub async fn ensure_server() {
     )
     .await
   {
-    error!("Failed to initialize 'ensure_server'. Failed to CreateServer. {e:?}");
+    error!("Failed to initialize 'first_server'. Failed to CreateServer. {e:?}");
   }
 }

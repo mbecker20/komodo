@@ -145,7 +145,6 @@ impl Resolve<GetBuildMonthlyStats, User> for State {
     let open_ts = close_ts - 30 * ONE_DAY_MS;
 
     let mut build_updates = db_client()
-      .await
       .updates
       .find(doc! {
         "start_ts": {
@@ -229,7 +228,7 @@ impl Resolve<ListBuildVersions, User> for State {
     }
 
     let versions = find_collect(
-      &db_client().await.updates,
+      &db_client().updates,
       filter,
       FindOptions::builder()
         .sort(doc! { "_id": -1 })
@@ -328,7 +327,11 @@ impl Resolve<GetBuildWebhookEnabled, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = format!("{host}/listener/github/build/{}", build.id);
 
     for webhook in webhooks {

@@ -8,13 +8,11 @@ use komodo_client::{
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
     all_logs_success,
-    build::{Build, ImageRegistry, StandardRegistryConfig},
+    build::{Build, BuildConfig, ImageRegistryConfig},
     builder::{Builder, BuilderConfig},
-    config::core::{AwsEcrConfig, AwsEcrConfigWithCredentials},
     deployment::DeploymentState,
     komodo_timestamp,
     permission::PermissionLevel,
-    to_komodo_name,
     update::{Log, Update},
     user::{auto_redeploy_user, User},
   },
@@ -32,17 +30,15 @@ use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-  cloud::aws::ecr,
-  config::core_config,
+  alert::send_alerts,
   helpers::{
-    alert::send_alerts,
     builder::{cleanup_builder_instance, get_builder_periphery},
     channel::build_cancel_channel,
     git_token,
     interpolate::{
       add_interp_update_log,
-      interpolate_variables_secrets_into_environment,
       interpolate_variables_secrets_into_extra_args,
+      interpolate_variables_secrets_into_string,
       interpolate_variables_secrets_into_system_command,
     },
     query::{get_deployment_state, get_variables_and_secrets},
@@ -99,8 +95,8 @@ impl Resolve<RunBuild, (User, Update)> for State {
       || format!("Failed to get git token in call to db. This is a database error, not a token exisitence error. Stopping run. | {} | {}", build.config.git_provider, build.config.git_account),
     )?;
 
-    let (registry_token, aws_ecr) =
-      validate_account_extract_registry_token_aws_ecr(&build).await?;
+    let registry_token =
+      validate_account_extract_registry_token(&build).await?;
 
     let cancel = CancellationToken::new();
     let cancel_clone = cancel.clone();
@@ -245,14 +241,14 @@ impl Resolve<RunBuild, (User, Update)> for State {
         let mut global_replacers = HashSet::new();
         let mut secret_replacers = HashSet::new();
 
-        interpolate_variables_secrets_into_environment(
+        interpolate_variables_secrets_into_string(
           &vars_and_secrets,
           &mut build.config.build_args,
           &mut global_replacers,
           &mut secret_replacers,
         )?;
 
-        interpolate_variables_secrets_into_environment(
+        interpolate_variables_secrets_into_string(
           &vars_and_secrets,
           &mut build.config.secret_args,
           &mut global_replacers,
@@ -282,7 +278,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
           .request(api::build::Build {
             build: build.clone(),
             registry_token,
-            aws_ecr,
             replacers: secret_replacers.into_iter().collect(),
             // Push a commit hash tagged image
             additional_tags: if update.commit_hash.is_empty() {
@@ -317,7 +312,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
 
     update.finalize();
 
-    let db = db_client().await;
+    let db = db_client();
 
     if update.success {
       let _ = db
@@ -403,7 +398,7 @@ async fn handle_early_return(
   // but will fail to update cache in that case.
   if let Ok(update_doc) = to_document(&update) {
     let _ = update_one_by_id(
-      &db_client().await.updates,
+      &db_client().updates,
       &update.id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -443,7 +438,7 @@ pub async fn validate_cancel_build(
   if let ExecuteRequest::CancelBuild(req) = request {
     let build = resource::get::<Build>(&req.build).await?;
 
-    let db = db_client().await;
+    let db = db_client();
 
     let (latest_build, latest_cancel) = tokio::try_join!(
       db.updates
@@ -526,7 +521,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
     tokio::spawn(async move {
       tokio::time::sleep(Duration::from_secs(60)).await;
       if let Err(e) = update_one_by_id(
-        &db_client().await.updates,
+        &db_client().updates,
         &update_id,
         doc! { "$set": { "status": "Complete" } },
         None,
@@ -544,7 +539,7 @@ impl Resolve<CancelBuild, (User, Update)> for State {
 #[instrument]
 async fn handle_post_build_redeploy(build_id: &str) {
   let Ok(redeploy_deployments) = find_collect(
-    &db_client().await.deployments,
+    &db_client().deployments,
     doc! {
       "config.image.params.build_id": build_id,
       "config.redeploy_on_build": true
@@ -600,56 +595,24 @@ async fn handle_post_build_redeploy(build_id: &str) {
 }
 
 /// This will make sure that a build with non-none image registry has an account attached,
-/// and will check the core config for a token / aws ecr config matching requirements.
+/// and will check the core config for a token matching requirements.
 /// Otherwise it is left to periphery.
-async fn validate_account_extract_registry_token_aws_ecr(
-  build: &Build,
-) -> anyhow::Result<(Option<String>, Option<AwsEcrConfig>)> {
-  let (domain, account) = match &build.config.image_registry {
-    // Early return for None
-    ImageRegistry::None(_) => return Ok((None, None)),
-    // Early return for AwsEcr
-    ImageRegistry::AwsEcr(label) => {
-      // Note that aws ecr config still only lives in config file
-      let config = core_config()
-        .aws_ecr_registries
-        .iter()
-        .find(|reg| &reg.label == label);
-      let token = match config {
-        Some(AwsEcrConfigWithCredentials {
-          region,
-          access_key_id,
-          secret_access_key,
-          ..
-        }) => {
-          let token = ecr::get_ecr_token(
-            region,
-            access_key_id,
-            secret_access_key,
-          )
-          .await
-          .context("failed to get aws ecr token")?;
-          ecr::maybe_create_repo(
-            &to_komodo_name(&build.name),
-            region.to_string(),
-            access_key_id,
-            secret_access_key,
-          )
-          .await
-          .context("failed to create aws ecr repo")?;
-          Some(token)
-        }
-        None => None,
-      };
-      return Ok((token, config.map(AwsEcrConfig::from)));
-    }
-    ImageRegistry::Standard(StandardRegistryConfig {
-      domain,
-      account,
-      ..
-    }) => (domain.as_str(), account),
-  };
-
+async fn validate_account_extract_registry_token(
+  Build {
+    config:
+      BuildConfig {
+        image_registry:
+          ImageRegistryConfig {
+            domain, account, ..
+          },
+        ..
+      },
+    ..
+  }: &Build,
+) -> anyhow::Result<Option<String>> {
+  if domain.is_empty() {
+    return Ok(None);
+  }
   if account.is_empty() {
     return Err(anyhow!(
       "Must attach account to use registry provider {domain}"
@@ -660,5 +623,5 @@ async fn validate_account_extract_registry_token_aws_ecr(
     || format!("Failed to get registry token in call to db. Stopping run. | {domain} | {account}"),
   )?;
 
-  Ok((registry_token, None))
+  Ok(registry_token)
 }

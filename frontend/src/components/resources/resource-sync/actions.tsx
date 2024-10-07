@@ -1,12 +1,14 @@
 import { ActionButton, ActionWithDialog } from "@components/util";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { sync_no_changes } from "@lib/utils";
-import { RefreshCcw, SquarePlay } from "lucide-react";
+import { useEditPermissions } from "@pages/resource";
+import { NotebookPen, RefreshCcw, SquarePlay } from "lucide-react";
+import { useFullResourceSync } from ".";
 
 export const RefreshSync = ({ id }: { id: string }) => {
   const inv = useInvalidate();
   const { mutate, isPending } = useWrite("RefreshResourceSyncPending", {
-    onSuccess: () => inv(["GetResourceSync", { sync: id }]),
+    onSuccess: () => inv(["GetResourceSync"], ["ListResourceSyncs"]),
   });
   const pending = isPending;
   return (
@@ -27,9 +29,21 @@ export const ExecuteSync = ({ id }: { id: string }) => {
     { sync: id },
     { refetchInterval: 5000 }
   ).data?.syncing;
-  const sync = useRead("GetResourceSync", { sync: id }).data;
+  const sync = useFullResourceSync(id);
 
-  if (!sync || sync_no_changes(sync)) return null;
+  if (!sync || sync_no_changes(sync) || !sync.info?.remote_contents) {
+    return null;
+  }
+
+  let all_empty = true;
+  for (const contents of sync.info.remote_contents) {
+    if (contents.contents.length > 0) {
+      all_empty = false;
+      break;
+    }
+  }
+
+  if (all_empty) return null;
 
   const pending = isPending || syncing;
 
@@ -43,4 +57,46 @@ export const ExecuteSync = ({ id }: { id: string }) => {
       loading={pending}
     />
   );
+};
+
+export const CommitSync = ({ id }: { id: string }) => {
+  const { mutate, isPending } = useWrite("CommitSync");
+  const sync = useFullResourceSync(id);
+  const { canWrite } = useEditPermissions({ type: "ResourceSync", id });
+
+  if (!canWrite || !sync) return null;
+
+  const freshSync =
+    !sync.config?.files_on_host &&
+    !sync.config?.file_contents &&
+    !sync.config?.repo;
+
+  if (!freshSync && (!sync.config?.managed || sync_no_changes(sync))) {
+    return null;
+  }
+
+  if (freshSync) {
+    return (
+      <ActionButton
+        title="Initialize"
+        icon={<NotebookPen className="w-4 h-4" />}
+        onClick={() => mutate({ sync: id })}
+        disabled={isPending}
+        loading={isPending}
+      />
+    );
+  } else {
+    return (
+      <ActionWithDialog
+        name={sync.name}
+        title="Commit Changes"
+        icon={<NotebookPen className="w-4 h-4" />}
+        onClick={() => mutate({ sync: id })}
+        disabled={isPending}
+        loading={isPending}
+      />
+    );
+  }
+
+  
 };

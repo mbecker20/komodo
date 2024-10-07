@@ -24,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { Link } from "react-router-dom";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { StatusBadge } from "@components/util";
+import { ResourcePageHeader, StatusBadge } from "@components/util";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -102,30 +102,43 @@ const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
 
 export const DeploymentComponents: RequiredResourceComponents = {
   list_item: (id) => useDeployment(id),
-  use_links: (id) => useFullDeployment(id)?.config?.links,
+  resource_links: (resource) =>
+    (resource.config as Types.DeploymentConfig).links,
 
   Description: () => <>Deploy containers on your servers.</>,
 
   Dashboard: () => {
     const summary = useRead("GetDeploymentsSummary", {}).data;
+    const all = [
+      summary?.running ?? 0,
+      summary?.stopped ?? 0,
+      summary?.unhealthy ?? 0,
+      summary?.unknown ?? 0,
+    ];
+    const [running, stopped, unhealthy, unknown] = all;
     return (
       <DashboardPieChart
         data={[
-          { intention: "Good", value: summary?.running ?? 0, title: "Running" },
-          {
-            intention: "Critical",
-            value: summary?.stopped ?? 0,
-            title: "Stopped",
-          },
-          {
+          all.every((item) => item === 0) && {
+            title: "Not Deployed",
             intention: "Neutral",
             value: summary?.not_deployed ?? 0,
-            title: "Not Deployed",
+          },
+          { intention: "Good", value: running, title: "Running" },
+          {
+            title: "Stopped",
+            intention: "Warning",
+            value: stopped,
           },
           {
-            intention: "Unknown",
-            value: summary?.unknown ?? 0,
+            title: "Unhealthy",
+            intention: "Critical",
+            value: unhealthy,
+          },
+          {
             title: "Unknown",
+            intention: "Unknown",
+            value: unknown,
           },
         ]}
       />
@@ -145,21 +158,15 @@ export const DeploymentComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
   BigIcon: ({ id }) => <DeploymentIcon id={id} size={8} />,
 
-  Status: {
-    State: ({ id }) => {
-      const state =
-        useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
-      return (
-        <StatusBadge text={state} intent={deployment_state_intention(state)} />
-      );
-    },
-    Status: ({ id }) => {
-      const status = useDeployment(id)?.info.status;
-      return (
-        status && <p className="text-sm text-muted-foreground">{status}</p>
-      );
-    },
+  State: ({ id }) => {
+    const state =
+      useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
+    return (
+      <StatusBadge text={state} intent={deployment_state_intention(state)} />
+    );
   },
+
+  Status: {},
 
   Info: {
     Image: ({ id }) => {
@@ -221,4 +228,22 @@ export const DeploymentComponents: RequiredResourceComponents = {
       <DeleteResource type="Deployment" id={id} />
     </>
   ),
+
+  ResourcePageHeader: ({ id }) => {
+    const deployment = useDeployment(id);
+
+    return (
+      <ResourcePageHeader
+        intent={deployment_state_intention(deployment?.info.state)}
+        icon={<DeploymentIcon id={id} size={8} />}
+        name={deployment?.name}
+        state={
+          deployment?.info.state === Types.DeploymentState.NotDeployed
+            ? "Not Deployed"
+            : deployment?.info.state
+        }
+        status={deployment?.info.status}
+      />
+    );
+  },
 };

@@ -122,7 +122,8 @@ export const RestartStack = ({
     !stack ||
     stack?.info.project_missing ||
     (service && container_state !== Types.ContainerStateStatusEnum.Running) ||
-    state !== Types.StackState.Running
+    // Only show if running or unhealthy
+    (state !== Types.StackState.Running && state !== Types.StackState.Unhealthy)
   ) {
     return null;
   }
@@ -165,35 +166,38 @@ export const StartStopStack = ({
     return null;
   }
 
-  if (
+  const showStart =
     (service && container_state === Types.ContainerStateStatusEnum.Exited) ||
-    state === Types.StackState.Stopped
-  ) {
-    return (
-      <ConfirmButton
-        title="Start"
-        icon={<Play className="h-4 w-4" />}
-        onClick={() => start({ stack: id, service })}
-        disabled={startPending}
-        loading={startPending || action_state?.starting}
-      />
-    );
-  }
-  if (
+    state === Types.StackState.Stopped ||
+    state === Types.StackState.Unhealthy;
+  const showStop =
     (service && container_state === Types.ContainerStateStatusEnum.Running) ||
-    state === Types.StackState.Running
-  ) {
-    return (
-      <ActionWithDialog
-        name={`${stack?.name}${service ? ` - ${service}` : ""}`}
-        title="Stop"
-        icon={<Square className="h-4 w-4" />}
-        onClick={() => stop({ stack: id, service })}
-        disabled={stopPending}
-        loading={stopPending || action_state?.stopping}
-      />
-    );
-  }
+    state === Types.StackState.Running ||
+    state === Types.StackState.Unhealthy;
+
+  return (
+    <>
+      {showStart && (
+        <ConfirmButton
+          title="Start"
+          icon={<Play className="h-4 w-4" />}
+          onClick={() => start({ stack: id, service })}
+          disabled={startPending}
+          loading={startPending || action_state?.starting}
+        />
+      )}
+      {showStop && (
+        <ActionWithDialog
+          name={`${stack?.name}${service ? ` - ${service}` : ""}`}
+          title="Stop"
+          icon={<Square className="h-4 w-4" />}
+          onClick={() => stop({ stack: id, service })}
+          disabled={stopPending}
+          loading={stopPending || action_state?.stopping}
+        />
+      )}
+    </>
+  );
 };
 
 export const PauseUnpauseStack = ({
@@ -266,23 +270,20 @@ export const RenameStack = ({ id }: { id: string }) => {
     },
   });
   return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Rename Stack</div>
-      <div className="flex gap-4 w-full justify-end">
-        <Input
-          value={name}
-          onChange={(e) => set(e.target.value)}
-          className="w-96"
-          placeholder="Enter new name"
-        />
-        <ConfirmButton
-          title="Rename"
-          icon={<Pen className="w-4 h-4" />}
-          loading={isPending}
-          disabled={!name || isPending}
-          onClick={() => mutate({ id, name })}
-        />
-      </div>
+    <div className="flex items-center justify-end gap-4 w-full">
+      <Input
+        value={name}
+        onChange={(e) => set(e.target.value)}
+        className="w-96"
+        placeholder="Enter new name"
+      />
+      <ConfirmButton
+        title="Rename"
+        icon={<Pen className="w-4 h-4" />}
+        loading={isPending}
+        disabled={!name || isPending}
+        onClick={() => mutate({ id, name })}
+      />
     </div>
   );
 };

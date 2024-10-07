@@ -8,6 +8,7 @@ use komodo_client::entities::{
     PartialBuildConfig,
   },
   builder::Builder,
+  environment_vars_from_str,
   permission::PermissionLevel,
   resource::Resource,
   update::Update,
@@ -20,6 +21,7 @@ use mungos::{
 };
 
 use crate::{
+  config::core_config,
   helpers::{empty_or_only_spaces, query::get_latest_update},
   state::{action_states, build_state_cache, db_client},
 };
@@ -38,7 +40,7 @@ impl super::KomodoResource for Build {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.builds
+    &db_client().builds
   }
 
   async fn to_list_item(
@@ -80,7 +82,9 @@ impl super::KomodoResource for Build {
   }
 
   fn user_can_create(user: &User) -> bool {
-    user.admin || user.create_build_permissions
+    user.admin
+      || (!core_config().disable_non_admin_create
+        && user.create_build_permissions)
   }
 
   async fn validate_create_config(
@@ -152,7 +156,7 @@ pub fn spawn_build_state_refresh_loop() {
 
 pub async fn refresh_build_state_cache() {
   let _ = async {
-    let builds = find_collect(&db_client().await.builds, None, None)
+    let builds = find_collect(&db_client().builds, None, None)
       .await
       .context("failed to get builds from db")?;
     let cache = build_state_cache();
@@ -181,11 +185,13 @@ async fn validate_config(
       config.builder_id = Some(builder.id)
     }
   }
-  if let Some(build_args) = &mut config.build_args {
-    build_args.retain(|v| {
-      !empty_or_only_spaces(&v.variable)
-        && !empty_or_only_spaces(&v.value)
-    })
+  if let Some(build_args) = &config.build_args {
+    environment_vars_from_str(build_args)
+      .context("Invalid build_args")?;
+  }
+  if let Some(secret_args) = &config.secret_args {
+    environment_vars_from_str(secret_args)
+      .context("Invalid secret_args")?;
   }
   if let Some(extra_args) = &mut config.extra_args {
     extra_args.retain(|v| !empty_or_only_spaces(v))
@@ -258,7 +264,7 @@ async fn latest_2_build_updates(
   id: &str,
 ) -> anyhow::Result<[Option<Update>; 2]> {
   let mut builds = find_collect(
-    &db_client().await.updates,
+    &db_client().updates,
     doc! {
       "target.type": "Build",
       "target.id": id,

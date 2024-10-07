@@ -110,8 +110,11 @@ pub enum AlerterEndpoint {
   /// Send alert serialized to JSON to an http endpoint.
   Custom(CustomAlerterEndpoint),
 
-  /// Send alert to a slack app
+  /// Send alert to a Slack app
   Slack(SlackAlerterEndpoint),
+
+  /// Send alert to a Discord app
+  Discord(DiscordAlerterEndpoint),
 }
 
 impl Default for AlerterEndpoint {
@@ -120,7 +123,7 @@ impl Default for AlerterEndpoint {
   }
 }
 
-/// Configuration for a custom alerter endpoint.
+/// Configuration for a Custom alerter endpoint.
 #[typeshare]
 #[derive(
   Debug, Clone, PartialEq, Serialize, Deserialize, Builder,
@@ -144,13 +147,13 @@ fn default_custom_url() -> String {
   String::from("http://localhost:7000")
 }
 
-/// Configuration for a slack alerter.
+/// Configuration for a Slack alerter.
 #[typeshare]
 #[derive(
   Debug, Clone, PartialEq, Serialize, Deserialize, Builder,
 )]
 pub struct SlackAlerterEndpoint {
-  /// The slack app url
+  /// The Slack app webhook url
   #[serde(default = "default_slack_url")]
   #[builder(default = "default_slack_url()")]
   pub url: String,
@@ -167,6 +170,32 @@ impl Default for SlackAlerterEndpoint {
 fn default_slack_url() -> String {
   String::from(
     "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
+  )
+}
+
+/// Configuration for a Discord alerter.
+#[typeshare]
+#[derive(
+  Debug, Clone, PartialEq, Serialize, Deserialize, Builder,
+)]
+pub struct DiscordAlerterEndpoint {
+  /// The Discord webhook url
+  #[serde(default = "default_discord_url")]
+  #[builder(default = "default_discord_url()")]
+  pub url: String,
+}
+
+impl Default for DiscordAlerterEndpoint {
+  fn default() -> Self {
+    Self {
+      url: default_discord_url(),
+    }
+  }
+}
+
+fn default_discord_url() -> String {
+  String::from(
+    "https://discord.com/api/webhooks/XXXXXXXXXXXX/XXXX-XXXXXXXXXX",
   )
 }
 

@@ -38,6 +38,11 @@ export type UserConfig =
 	github_id: string;
 	avatar: string;
 }}
+	/** User that logs in via Oidc provider */
+	| { type: "Oidc", data: {
+	provider: string;
+	user_id: string;
+}}
 	/** Non-human managed user, can have it's own permissions / api keys */
 	| { type: "Service", data: {
 	description: string;
@@ -68,6 +73,8 @@ export interface User {
 	username: string;
 	/** Whether user is enabled / able to access the api. */
 	enabled?: boolean;
+	/** Can give / take other users admin priviledges. */
+	super_admin?: boolean;
 	/** Whether the user has global admin permissions. */
 	admin?: boolean;
 	/** Whether the user has permission to create servers. */
@@ -100,16 +107,16 @@ export enum SeverityLevel {
 /** Used to reference a specific resource across all resource types */
 export type ResourceTarget = 
 	| { type: "System", id: string }
-	| { type: "Build", id: string }
-	| { type: "Builder", id: string }
-	| { type: "Deployment", id: string }
 	| { type: "Server", id: string }
+	| { type: "Stack", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Build", id: string }
 	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string }
 	| { type: "Procedure", id: string }
+	| { type: "Builder", id: string }
+	| { type: "Alerter", id: string }
 	| { type: "ServerTemplate", id: string }
-	| { type: "ResourceSync", id: string }
-	| { type: "Stack", id: string };
+	| { type: "ResourceSync", id: string };
 
 /** The variants of data related to the alert. */
 export type AlertData = 
@@ -283,8 +290,10 @@ export interface Resource<Config, Info> {
 export type AlerterEndpoint = 
 	/** Send alert serialized to JSON to an http endpoint. */
 	| { type: "Custom", params: CustomAlerterEndpoint }
-	/** Send alert to a slack app */
-	| { type: "Slack", params: SlackAlerterEndpoint };
+	/** Send alert to a Slack app */
+	| { type: "Slack", params: SlackAlerterEndpoint }
+	/** Send alert to a Discord app */
+	| { type: "Discord", params: DiscordAlerterEndpoint };
 
 export interface AlerterConfig {
 	/** Whether the alerter is enabled */
@@ -350,22 +359,20 @@ export interface SystemCommand {
 	command?: string;
 }
 
-/** Configuration for the registry to push the built image to. */
-export type ImageRegistry = 
-	/** Don't push the image to any registry */
-	| { type: "None", params: NoData }
-	/** Push the image to a standard image registry (any domain) */
-	| { type: "Standard", params: StandardRegistryConfig }
+/** Configuration for an image registry */
+export interface ImageRegistryConfig {
 	/**
-	 * Push the image to Aws Elastic Container Registry
-	 * 
-	 * The string held in 'params' should match a label of an `aws_ecr_registry` in the core config.
+	 * Specify the registry provider domain, eg `docker.io`.
+	 * If not provided, will not push to any registry.
 	 */
-	| { type: "AwsEcr", params: string };
-
-export interface EnvironmentVar {
-	variable: string;
-	value: string;
+	domain?: string;
+	/** Specify an account to use with the registry. */
+	account?: string;
+	/**
+	 * Optional. Specify an organization to push the image under.
+	 * Empty string means no organization.
+	 */
+	organization?: string;
 }
 
 /** The build configuration. */
@@ -432,7 +439,7 @@ export interface BuildConfig {
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
 	/** Configuration for the registry to push the built image to. */
-	image_registry?: ImageRegistry;
+	image_registry?: ImageRegistryConfig;
 	/**
 	 * The path of the docker build context relative to the root of the repo.
 	 * Default: "." (the root of the repo).
@@ -451,12 +458,12 @@ export interface BuildConfig {
 	 * 
 	 * These values are visible in the final image by running `docker inspect`.
 	 */
-	build_args?: EnvironmentVar[] | string;
+	build_args?: string;
 	/**
 	 * Secret arguments.
 	 * 
 	 * These values remain hidden in the final image by using
-	 * docker secret mounts. See `<https://docs.docker.com/build/building/secrets>`.
+	 * docker secret mounts. See [https://docs.docker.com/build/building/secrets].
 	 * 
 	 * The values can be used in RUN commands:
 	 * ```
@@ -464,9 +471,9 @@ export interface BuildConfig {
 	 * SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
 	 * ```
 	 */
-	secret_args?: EnvironmentVar[] | string;
+	secret_args?: string;
 	/** Docker labels */
-	labels?: EnvironmentVar[] | string;
+	labels?: string;
 }
 
 export interface BuildInfo {
@@ -595,18 +602,6 @@ export enum TerminationSignal {
 	SigTerm = "SIGTERM",
 }
 
-export interface TerminationSignalLabel {
-	signal: TerminationSignal;
-	label: string;
-}
-
-export interface Conversion {
-	/** reference on the server. */
-	local: string;
-	/** reference in the container. */
-	container: string;
-}
-
 export interface DeploymentConfig {
 	/** The id of server the deployment is deployed on. */
 	server_id?: string;
@@ -659,22 +654,22 @@ export interface DeploymentConfig {
 	 * Labels attached to various termination signal options.
 	 * Used to specify different shutdown functionality depending on the termination signal.
 	 */
-	term_signal_labels: TerminationSignalLabel[];
+	term_signal_labels?: string;
 	/**
 	 * The container port mapping.
 	 * Irrelevant if container network is `host`.
 	 * Maps ports on host to ports on container.
 	 */
-	ports?: Conversion[];
+	ports?: string;
 	/**
 	 * The container volume mapping.
 	 * Maps files / folders on host to files / folders in container.
 	 */
-	volumes?: Conversion[];
+	volumes?: string;
 	/** The environment variables passed to the container. */
-	environment?: EnvironmentVar[] | string;
+	environment?: string;
 	/** The docker labels given to the container. */
-	labels?: EnvironmentVar[] | string;
+	labels?: string;
 }
 
 export type Deployment = Resource<DeploymentConfig, undefined>;
@@ -800,8 +795,6 @@ export interface DockerRegistry {
 }
 
 export type ListDockerRegistriesFromConfigResponse = DockerRegistry[];
-
-export type ListAwsEcrLabelsResponse = string[];
 
 export type ListSecretsResponse = string[];
 
@@ -1064,7 +1057,7 @@ export interface RepoConfig {
 	 * 
 	 * If it is empty, no file will be written.
 	 */
-	environment?: EnvironmentVar[] | string;
+	environment?: string;
 	/**
 	 * The name of the written environment file before `docker compose up`.
 	 * Relative to the repo root.
@@ -2307,6 +2300,8 @@ export type ListFullServerTemplatesResponse = ServerTemplate[];
 export interface StackConfig {
 	/** The server to deploy the stack on. */
 	server_id?: string;
+	/** Configure quick links that are displayed in the resource header */
+	links?: string[];
 	/**
 	 * Optionally specify a custom project name for the stack.
 	 * If this is empty string, it will default to the stack name.
@@ -2315,34 +2310,6 @@ export interface StackConfig {
 	 * Note. Can be used to import pre-existing stacks.
 	 */
 	project_name?: string;
-	/**
-	 * Directory to change to (`cd`) before running `docker compose up -d`.
-	 * Default: `./` (the repo root)
-	 */
-	run_directory: string;
-	/**
-	 * Add paths to compose files, relative to the run path.
-	 * If this is empty, will use file `compose.yaml`.
-	 */
-	file_paths?: string[];
-	/**
-	 * If this is checked, the stack will source the files on the host.
-	 * Use `run_directory` and `file_paths` to specify the path on the host.
-	 * This is useful for those who wish to setup their files on the host using SSH or similar,
-	 * rather than defining the contents in UI or in a git repo.
-	 */
-	files_on_host?: boolean;
-	/** Used with `registry_account` to login to a registry before docker compose up. */
-	registry_provider?: string;
-	/** Used with `registry_provider` to login to a registry before docker compose up. */
-	registry_account?: string;
-	/**
-	 * The extra arguments to pass after `docker compose up -d`.
-	 * If empty, no extra arguments will be passed.
-	 */
-	extra_args?: string[];
-	/** Whether to skip secret interpolation into the stack environment variables. */
-	skip_secret_interp?: boolean;
 	/**
 	 * Whether to automatically `compose pull` before redeploying stack.
 	 * Ensured latest images are deployed.
@@ -2354,18 +2321,28 @@ export interface StackConfig {
 	 * Combine with build_extra_args for custom behaviors.
 	 */
 	run_build?: boolean;
+	/** Whether to skip secret interpolation into the stack environment variables. */
+	skip_secret_interp?: boolean;
 	/**
-	 * The extra arguments to pass after `docker compose build`.
-	 * If empty, no extra build arguments will be passed.
-	 * Only used if `run_build: true`
+	 * If this is checked, the stack will source the files on the host.
+	 * Use `run_directory` and `file_paths` to specify the path on the host.
+	 * This is useful for those who wish to setup their files on the host using SSH or similar,
+	 * rather than defining the contents in UI or in a git repo.
 	 */
-	build_extra_args?: string[];
+	files_on_host?: boolean;
+	/** Directory to change to (`cd`) before running `docker compose up -d`. */
+	run_directory?: string;
 	/**
-	 * Ignore certain services declared in the compose file when checking
-	 * the stack status. For example, an init service might be exited, but the
-	 * stack should be healthy. This init service should be in `ignore_services`
+	 * Add paths to compose files, relative to the run path.
+	 * If this is empty, will use file `compose.yaml`.
 	 */
-	ignore_services?: string[];
+	file_paths?: string[];
+	/**
+	 * The name of the written environment file before `docker compose up`.
+	 * Relative to the repo root.
+	 * Default: .env
+	 */
+	env_file_path: string;
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**
@@ -2397,8 +2374,27 @@ export interface StackConfig {
 	webhook_secret?: string;
 	/** Whether to send StackStateChange alerts for this stack. */
 	send_alerts: boolean;
-	/** Configure quick links that are displayed in the resource header */
-	links?: string[];
+	/** Used with `registry_account` to login to a registry before docker compose up. */
+	registry_provider?: string;
+	/** Used with `registry_provider` to login to a registry before docker compose up. */
+	registry_account?: string;
+	/**
+	 * The extra arguments to pass after `docker compose up -d`.
+	 * If empty, no extra arguments will be passed.
+	 */
+	extra_args?: string[];
+	/**
+	 * The extra arguments to pass after `docker compose build`.
+	 * If empty, no extra build arguments will be passed.
+	 * Only used if `run_build: true`
+	 */
+	build_extra_args?: string[];
+	/**
+	 * Ignore certain services declared in the compose file when checking
+	 * the stack status. For example, an init service might be exited, but the
+	 * stack should be healthy. This init service should be in `ignore_services`
+	 */
+	ignore_services?: string[];
 	/**
 	 * The contents of the file directly, for management in the UI.
 	 * If this is empty, it will fall back to checking git config for
@@ -2412,16 +2408,10 @@ export interface StackConfig {
 	 * 
 	 * If it is empty, no file will be written.
 	 */
-	environment?: EnvironmentVar[] | string;
-	/**
-	 * The name of the written environment file before `docker compose up`.
-	 * Relative to the repo root.
-	 * Default: .env
-	 */
-	env_file_path: string;
+	environment?: string;
 }
 
-export interface ComposeContents {
+export interface FileContents {
 	/** The path of the file on the host */
 	path: string;
 	/** The contents of the file */
@@ -2470,7 +2460,7 @@ export interface StackInfo {
 	/** Deployed commit message, or null. Only for repo based stacks */
 	deployed_message?: string;
 	/** The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack. */
-	deployed_contents?: ComposeContents[];
+	deployed_contents?: FileContents[];
 	/**
 	 * The deployed service names.
 	 * This is updated whenever it is empty, or deployed contents is updated.
@@ -2486,9 +2476,9 @@ export interface StackInfo {
 	 * This is updated whenever Komodo refreshes the stack cache.
 	 * It will be empty if the file is defined directly in the stack config.
 	 */
-	remote_contents?: ComposeContents[];
+	remote_contents?: FileContents[];
 	/** If there was an error in getting the remote contents, it will be here. */
-	remote_errors?: ComposeContents[];
+	remote_errors?: FileContents[];
 	/** Latest commit hash, or null */
 	latest_hash?: string;
 	/** Latest commit message, or null */
@@ -2542,6 +2532,10 @@ export enum StackState {
 export interface StackListItemInfo {
 	/** The server that stack is deployed on. */
 	server_id: string;
+	/** Whether stack is using files on host mode */
+	files_on_host: boolean;
+	/** Whether stack has file contents defined. */
+	file_contents: boolean;
 	/** The git provider domain */
 	git_provider: string;
 	/** The configured repo */
@@ -2617,17 +2611,6 @@ export interface ResourceSyncConfig {
 	 * for the configured git provider.
 	 */
 	git_account?: string;
-	/**
-	 * The path of the resource file(s) to sync, relative to the repo root.
-	 * Can be a specific file, or a directory containing multiple files / folders.
-	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
-	 */
-	resource_path: string;
-	/**
-	 * Whether sync should delete resources
-	 * not declared in the resource files
-	 */
-	delete?: boolean;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
 	/**
@@ -2635,33 +2618,100 @@ export interface ResourceSyncConfig {
 	 * If its an empty string, use the default secret from the config.
 	 */
 	webhook_secret?: string;
+	/**
+	 * Files are available on the Komodo Core host.
+	 * Specify the file / folder with [ResourceSyncConfig::resource_path].
+	 */
+	files_on_host?: boolean;
+	/**
+	 * The path of the resource file(s) to sync.
+	 * - If Files on Host, this is relative to the configured `sync_directory` in core config.
+	 * - If Git Repo based, this is relative to the root of the repo.
+	 * Can be a specific file, or a directory containing multiple files / folders.
+	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
+	 */
+	resource_path: string;
+	/**
+	 * Enable "pushes" to the file,
+	 * which exports resources matching tags to single file.
+	 * - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
+	 * - If using `file_contents`, it is stored in the database.
+	 * When using this, "delete" mode is always enabled.
+	 */
+	managed?: boolean;
+	/**
+	 * Whether sync should delete resources
+	 * not declared in the resource files
+	 */
+	delete?: boolean;
+	/**
+	 * When using `managed` resource sync, will only export resources
+	 * matching all of the given tags. If none, will match all resources.
+	 */
+	match_tags?: string[];
+	/** Manage the file contents in the UI. */
+	file_contents?: string;
 }
 
-export type PendingSyncUpdatesData = 
-	| { type: "Ok", data: PendingSyncUpdatesDataOk }
-	| { type: "Err", data: PendingSyncUpdatesDataErr };
+export type DiffData = 
+	/** Resource will be created */
+	| { type: "Create", data: {
+	/** The proposed resource to create in TOML */
+	proposed: string;
+}}
+	| { type: "Update", data: {
+	/** The proposed TOML */
+	proposed: string;
+	/** The current TOML */
+	current: string;
+}}
+	| { type: "Delete", data: {
+	/** The current TOML of the resource to delete */
+	current: string;
+}};
 
-export interface PendingSyncUpdates {
-	/** The commit hash which produced these pending updates */
-	hash?: string;
-	/** The commit message which produced these pending updates */
-	message?: string;
+export interface ResourceDiff {
 	/**
-	 * The data associated with the sync. Either Ok containing diffs,
-	 * or Err containing an error message
+	 * The resource target.
+	 * The target id will be empty if "Create" ResourceDiffType.
 	 */
-	data: PendingSyncUpdatesData;
+	target: ResourceTarget;
+	/** The data associated with the diff. */
+	data: DiffData;
+}
+
+export interface SyncDeployUpdate {
+	/** Resources to deploy */
+	to_deploy: number;
+	/** A readable log of all the changes to be applied */
+	log: string;
 }
 
 export interface ResourceSyncInfo {
 	/** Unix timestamp of last applied sync */
-	last_sync_ts: I64;
+	last_sync_ts?: I64;
 	/** Short commit hash of last applied sync */
-	last_sync_hash: string;
+	last_sync_hash?: string;
 	/** Commit message of last applied sync */
-	last_sync_message: string;
-	/** Readable logs of pending updates */
-	pending: PendingSyncUpdates;
+	last_sync_message?: string;
+	/** The list of pending updates to resources */
+	resource_updates?: ResourceDiff[];
+	/** The list of pending updates to variables */
+	variable_updates?: DiffData[];
+	/** The list of pending updates to user groups */
+	user_group_updates?: DiffData[];
+	/** The list of pending deploys to resources. */
+	pending_deploy?: SyncDeployUpdate;
+	/** If there is an error, it will be stored here */
+	pending_error?: string;
+	/** The commit hash which produced these pending updates. */
+	pending_hash?: string;
+	/** The commit message which produced these pending updates. */
+	pending_message?: string;
+	/** The current sync files */
+	remote_contents?: FileContents[];
+	/** Any read errors in files by path */
+	remote_errors?: FileContents[];
 }
 
 export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
@@ -2684,16 +2734,24 @@ export enum ResourceSyncState {
 export interface ResourceSyncListItemInfo {
 	/** Unix timestamp of last sync, or 0 */
 	last_sync_ts: I64;
-	/** Short commit hash of last sync, or empty string */
-	last_sync_hash: string;
-	/** Commit message of last sync, or empty string */
-	last_sync_message: string;
-	/** The git provider domain */
+	/** Whether sync is `files_on_host` mode. */
+	files_on_host: boolean;
+	/** Whether sync has file contents defined. */
+	file_contents: boolean;
+	/** Whether sync has `managed` mode enabled. */
+	managed: boolean;
+	/** Resource path to the files. */
+	resource_path: string;
+	/** The git provider domain. */
 	git_provider: string;
 	/** The Github repo used as the source of the sync resources */
 	repo: string;
 	/** The branch of the repo */
 	branch: string;
+	/** Short commit hash of last sync, or empty string */
+	last_sync_hash?: string;
+	/** Commit message of last sync, or empty string */
+	last_sync_message?: string;
 	/** State of the sync. Reflects whether most recent sync successful. */
 	state: ResourceSyncState;
 }
@@ -2763,51 +2821,11 @@ export enum Operation {
 	PruneDockerBuilders = "PruneDockerBuilders",
 	PruneBuildx = "PruneBuildx",
 	PruneSystem = "PruneSystem",
-	CreateBuild = "CreateBuild",
-	UpdateBuild = "UpdateBuild",
-	DeleteBuild = "DeleteBuild",
-	RunBuild = "RunBuild",
-	CancelBuild = "CancelBuild",
-	CreateBuilder = "CreateBuilder",
-	UpdateBuilder = "UpdateBuilder",
-	DeleteBuilder = "DeleteBuilder",
-	CreateDeployment = "CreateDeployment",
-	UpdateDeployment = "UpdateDeployment",
-	DeleteDeployment = "DeleteDeployment",
-	Deploy = "Deploy",
-	StartDeployment = "StartDeployment",
-	RestartDeployment = "RestartDeployment",
-	PauseDeployment = "PauseDeployment",
-	UnpauseDeployment = "UnpauseDeployment",
-	StopDeployment = "StopDeployment",
-	DestroyDeployment = "DestroyDeployment",
-	RenameDeployment = "RenameDeployment",
-	CreateRepo = "CreateRepo",
-	UpdateRepo = "UpdateRepo",
-	DeleteRepo = "DeleteRepo",
-	CloneRepo = "CloneRepo",
-	PullRepo = "PullRepo",
-	BuildRepo = "BuildRepo",
-	CancelRepoBuild = "CancelRepoBuild",
-	CreateAlerter = "CreateAlerter",
-	UpdateAlerter = "UpdateAlerter",
-	DeleteAlerter = "DeleteAlerter",
-	CreateProcedure = "CreateProcedure",
-	UpdateProcedure = "UpdateProcedure",
-	DeleteProcedure = "DeleteProcedure",
-	RunProcedure = "RunProcedure",
-	CreateServerTemplate = "CreateServerTemplate",
-	UpdateServerTemplate = "UpdateServerTemplate",
-	DeleteServerTemplate = "DeleteServerTemplate",
-	LaunchServer = "LaunchServer",
-	CreateResourceSync = "CreateResourceSync",
-	UpdateResourceSync = "UpdateResourceSync",
-	DeleteResourceSync = "DeleteResourceSync",
-	RunSync = "RunSync",
 	CreateStack = "CreateStack",
 	UpdateStack = "UpdateStack",
 	RenameStack = "RenameStack",
 	DeleteStack = "DeleteStack",
+	WriteStackContents = "WriteStackContents",
 	RefreshStackCache = "RefreshStackCache",
 	DeployStack = "DeployStack",
 	StartStack = "StartStack",
@@ -2821,6 +2839,48 @@ export enum Operation {
 	PauseStackService = "PauseStackService",
 	UnpauseStackService = "UnpauseStackService",
 	StopStackService = "StopStackService",
+	CreateDeployment = "CreateDeployment",
+	UpdateDeployment = "UpdateDeployment",
+	DeleteDeployment = "DeleteDeployment",
+	Deploy = "Deploy",
+	StartDeployment = "StartDeployment",
+	RestartDeployment = "RestartDeployment",
+	PauseDeployment = "PauseDeployment",
+	UnpauseDeployment = "UnpauseDeployment",
+	StopDeployment = "StopDeployment",
+	DestroyDeployment = "DestroyDeployment",
+	RenameDeployment = "RenameDeployment",
+	CreateBuild = "CreateBuild",
+	UpdateBuild = "UpdateBuild",
+	DeleteBuild = "DeleteBuild",
+	RunBuild = "RunBuild",
+	CancelBuild = "CancelBuild",
+	CreateRepo = "CreateRepo",
+	UpdateRepo = "UpdateRepo",
+	DeleteRepo = "DeleteRepo",
+	CloneRepo = "CloneRepo",
+	PullRepo = "PullRepo",
+	BuildRepo = "BuildRepo",
+	CancelRepoBuild = "CancelRepoBuild",
+	CreateProcedure = "CreateProcedure",
+	UpdateProcedure = "UpdateProcedure",
+	DeleteProcedure = "DeleteProcedure",
+	RunProcedure = "RunProcedure",
+	CreateBuilder = "CreateBuilder",
+	UpdateBuilder = "UpdateBuilder",
+	DeleteBuilder = "DeleteBuilder",
+	CreateAlerter = "CreateAlerter",
+	UpdateAlerter = "UpdateAlerter",
+	DeleteAlerter = "DeleteAlerter",
+	CreateServerTemplate = "CreateServerTemplate",
+	UpdateServerTemplate = "UpdateServerTemplate",
+	DeleteServerTemplate = "DeleteServerTemplate",
+	LaunchServer = "LaunchServer",
+	CreateResourceSync = "CreateResourceSync",
+	UpdateResourceSync = "UpdateResourceSync",
+	DeleteResourceSync = "DeleteResourceSync",
+	CommitSync = "CommitSync",
+	RunSync = "RunSync",
 	CreateVariable = "CreateVariable",
 	UpdateVariableValue = "UpdateVariableValue",
 	DeleteVariable = "DeleteVariable",
@@ -3008,6 +3068,8 @@ export type UpdatePermissionOnTargetResponse = NoData;
 export type UpdatePermissionOnResourceTypeResponse = NoData;
 
 export type UpdateUserBasePermissionsResponse = NoData;
+
+export type UpdateUserAdminResponse = NoData;
 
 export type CreateProcedureResponse = Procedure;
 
@@ -3211,6 +3273,8 @@ export interface GetLoginOptionsResponse {
 	github: boolean;
 	/** Whether google login is enabled. */
 	google: boolean;
+	/** Whether OIDC login is enabled. */
+	oidc: boolean;
 	/** Whether user registration (Sign Up) has been disabled */
 	registration_disabled: boolean;
 }
@@ -4097,10 +4161,17 @@ export interface GetDeploymentsSummary {
 
 /** Response for [GetDeploymentsSummary]. */
 export interface GetDeploymentsSummaryResponse {
+	/** The total number of Deployments */
 	total: I64;
+	/** The number of Deployments with Running state */
 	running: I64;
+	/** The number of Deployments with Stopped or Paused state */
 	stopped: I64;
+	/** The number of Deployments with NotDeployed state */
 	not_deployed: I64;
+	/** The number of Deployments with Restarting or Dead or Created (other) state */
+	unhealthy: I64;
+	/** The number of Deployments with Unknown state */
 	unknown: I64;
 }
 
@@ -4145,6 +4216,10 @@ export interface GetCoreInfoResponse {
 	transparent_mode: boolean;
 	/** Whether UI write access should be disabled */
 	ui_write_disabled: boolean;
+	/** Whether non admins can create resources */
+	disable_non_admin_create: boolean;
+	/** Whether confirm dialog should be disabled */
+	disable_confirm_dialog: boolean;
 	/** The repo owners for which github webhook management api is available */
 	github_webhook_owners: string[];
 }
@@ -4181,13 +4256,6 @@ export interface ListDockerRegistriesFromConfig {
 	 * providers available on that specific resource.
 	 */
 	target?: ResourceTarget;
-}
-
-/**
- * List the available aws ecr config labels from the core config.
- * Response: [ListAwsEcrLabelsResponse].
- */
-export interface ListAwsEcrLabels {
 }
 
 /**
@@ -4817,22 +4885,12 @@ export interface GetStacksSummaryResponse {
 	total: number;
 	/** The number of stacks with Running state. */
 	running: number;
-	/** The number of stacks with Paused state. */
-	paused: number;
-	/** The number of stacks with Stopped state. */
+	/** The number of stacks with Stopped or Paused state. */
 	stopped: number;
-	/** The number of stacks with Restarting state. */
-	restarting: number;
-	/** The number of stacks with Dead state. */
-	dead: number;
-	/** The number of stacks with Created state. */
-	created: number;
-	/** The number of stacks with Removing state. */
-	removing: number;
-	/** The number of stacks with Unhealthy state. */
-	unhealthy: number;
 	/** The number of stacks with Down state. */
 	down: number;
+	/** The number of stacks with Unhealthy or Restarting or Dead or Created or Removing state. */
+	unhealthy: number;
 	/** The number of stacks with Unknown state. */
 	unknown: number;
 }
@@ -5464,6 +5522,17 @@ export interface UpdateUserBasePermissions {
 	create_builds?: boolean;
 }
 
+/**
+ * **Super Admin only.** Update's whether a user is admin.
+ * Response: [NoData].
+ */
+export interface UpdateUserAdmin {
+	/** The target user. */
+	user_id: string;
+	/** Whether user should be admin. */
+	admin: boolean;
+}
+
 /** Create a procedure. Response: [Procedure]. */
 export interface CreateProcedure {
 	/** The name given to newly created build. */
@@ -5809,6 +5878,19 @@ export interface RenameStack {
 	name: string;
 }
 
+/** Rename the stack at id to the given name. Response: [Update]. */
+export interface WriteStackFileContents {
+	/** The name or id of the Stack to write the contents to. */
+	stack: string;
+	/**
+	 * The file path relative to the stack run directory,
+	 * or absolute path.
+	 */
+	file_path: string;
+	/** The contents to write. */
+	contents: string;
+}
+
 /**
  * Trigger a refresh of the cached compose file contents.
  * Refreshes:
@@ -5892,8 +5974,18 @@ export interface UpdateResourceSync {
 	config: _PartialResourceSyncConfig;
 }
 
-/** Trigger a refresh of the computed diff logs for view. */
+/** Trigger a refresh of the computed diff logs for view. Response: [ResourceSync] */
 export interface RefreshResourceSyncPending {
+	/** Id or name */
+	sync: string;
+}
+
+/**
+ * Commits matching resources updated configuration to the target resource sync. Response: [Update]
+ * 
+ * Note. Will fail if the Sync is not `managed`.
+ */
+export interface CommitSync {
 	/** Id or name */
 	sync: string;
 }
@@ -6069,29 +6161,22 @@ export interface DeleteVariable {
 	name: string;
 }
 
-/** Configuration for a custom alerter endpoint. */
+/** Configuration for a Custom alerter endpoint. */
 export interface CustomAlerterEndpoint {
 	/** The http/s endpoint to send the POST to */
 	url: string;
 }
 
-/** Configuration for a slack alerter. */
+/** Configuration for a Slack alerter. */
 export interface SlackAlerterEndpoint {
-	/** The slack app url */
+	/** The Slack app webhook url */
 	url: string;
 }
 
-/** Configuration for a standard image registry */
-export interface StandardRegistryConfig {
-	/** Specify the registry provider domain. Default: `docker.io` */
-	domain: string;
-	/** Specify an account to use with the registry. */
-	account?: string;
-	/**
-	 * Optional. Specify an organization to push the image under.
-	 * Empty string means no organization.
-	 */
-	organization?: string;
+/** Configuration for a Discord alerter. */
+export interface DiscordAlerterEndpoint {
+	/** The Discord webhook url */
+	url: string;
 }
 
 /** Configuration for a Komodo Server Builder. */
@@ -6113,37 +6198,52 @@ export interface AwsBuilderConfig {
 	 * Default: `8120`
 	 */
 	port: number;
+	use_https: boolean;
 	/**
 	 * The EC2 ami id to create.
 	 * The ami should have the periphery client configured to start on startup,
 	 * and should have the necessary github / dockerhub accounts configured.
 	 */
-	ami_id: string;
+	ami_id?: string;
 	/** The subnet id to create the instance in. */
-	subnet_id: string;
+	subnet_id?: string;
 	/** The key pair name to attach to the instance */
-	key_pair_name: string;
+	key_pair_name?: string;
 	/**
 	 * Whether to assign the instance a public IP address.
 	 * Likely needed for the instance to be able to reach the open internet.
 	 */
-	assign_public_ip: boolean;
+	assign_public_ip?: boolean;
 	/**
 	 * Whether core should use the public IP address to communicate with periphery on the builder.
 	 * If false, core will communicate with the instance using the private IP.
 	 */
-	use_public_ip: boolean;
+	use_public_ip?: boolean;
 	/**
 	 * The security group ids to attach to the instance.
 	 * This should include a security group to allow core inbound access to the periphery port.
 	 */
-	security_group_ids: string[];
+	security_group_ids?: string[];
+	/** The user data to deploy the instance with. */
+	user_data?: string;
 	/** Which git providers are available on the AMI */
 	git_providers?: GitProvider[];
 	/** Which docker registries are available on the AMI. */
 	docker_registries?: DockerRegistry[];
 	/** Which secrets are available on the AMI. */
 	secrets?: string[];
+}
+
+export interface Conversion {
+	/** reference on the server. */
+	local: string;
+	/** reference in the container. */
+	container: string;
+}
+
+export interface TerminationSignalLabel {
+	signal: TerminationSignal;
+	label: string;
 }
 
 export interface NameAndId {
@@ -6169,6 +6269,11 @@ export interface Port {
 	Type?: PortTypeEnum;
 }
 
+export interface EnvironmentVar {
+	variable: string;
+	value: string;
+}
+
 export interface LatestCommit {
 	hash: string;
 	message: string;
@@ -6178,13 +6283,13 @@ export interface CloneArgs {
 	/** Resource name (eg Build name, Repo name) */
 	name: string;
 	/** Git provider domain. Default: `github.com` */
-	provider?: string;
+	provider: string;
 	/** Use https (vs http). */
 	https: boolean;
 	/** Full repo identifier. <namespace>/<repo_name> */
 	repo?: string;
 	/** Git Branch. Default: `main` */
-	branch?: string;
+	branch: string;
 	/** Specific commit hash. Optional */
 	commit?: string;
 	/** The clone destination path */
@@ -6255,12 +6360,14 @@ export interface AwsServerTemplateConfig {
 	 * Default: `8120`
 	 */
 	port: number;
-	/** The user data to deploy the instance with. */
-	user_data: string;
+	/** Whether Periphery will be running on https */
+	use_https: boolean;
 	/** The security groups to give to the instance. */
 	security_group_ids?: string[];
 	/** Specify the EBS volumes to attach. */
 	volumes: AwsVolume[];
+	/** The user data to deploy the instance with. */
+	user_data: string;
 }
 
 export enum HetznerDatacenter {
@@ -6332,39 +6439,41 @@ export interface HetznerVolumeSpecs {
 /** Hetzner server config. */
 export interface HetznerServerTemplateConfig {
 	/** ID or name of the Image the Server is created from */
-	image?: string;
+	image: string;
 	/** ID or name of Datacenter to create Server in */
 	datacenter?: HetznerDatacenter;
-	/** Network IDs which should be attached to the Server private network interface at the creation time */
-	private_network_ids?: I64[];
 	/**
 	 * ID of the Placement Group the server should be in,
 	 * Or 0 to not use placement group.
 	 */
 	placement_group?: I64;
-	/** Attach an IPv4 on the public NIC. If false, no IPv4 address will be attached. */
-	enable_public_ipv4?: boolean;
-	/** Attach an IPv6 on the public NIC. If false, no IPv6 address will be attached. */
-	enable_public_ipv6?: boolean;
-	/** The firewalls to attach to the instance */
-	firewall_ids?: I64[];
 	/** ID or name of the Server type this Server should be created with */
 	server_type?: HetznerServerType;
 	/** SSH key IDs ( integer ) or names ( string ) which should be injected into the Server at creation time */
 	ssh_keys?: string[];
-	/** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
-	user_data: string;
+	/** Network IDs which should be attached to the Server private network interface at the creation time */
+	private_network_ids?: I64[];
+	/** Attach an IPv4 on the public NIC. If false, no IPv4 address will be attached. */
+	enable_public_ipv4?: boolean;
+	/** Attach an IPv6 on the public NIC. If false, no IPv6 address will be attached. */
+	enable_public_ipv6?: boolean;
 	/** Connect to the instance using it's public ip. */
 	use_public_ip?: boolean;
-	/** Labels for the server */
-	labels?: Record<string, string>;
-	/** Specs for volumes to attach */
-	volumes?: HetznerVolumeSpecs[];
 	/**
 	 * The port periphery will be running on in AMI.
 	 * Default: `8120`
 	 */
 	port: number;
+	/** Whether Periphery will be running on https */
+	use_https: boolean;
+	/** The firewalls to attach to the instance */
+	firewall_ids?: I64[];
+	/** Labels for the server */
+	labels?: Record<string, string>;
+	/** Specs for volumes to attach */
+	volumes?: HetznerVolumeSpecs[];
+	/** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
+	user_data: string;
 }
 
 export interface ComposeService {
@@ -6385,57 +6494,6 @@ export interface TotalDiskUsage {
 	used_gb: number;
 	/** Total size in GB */
 	total_gb: number;
-}
-
-export interface SyncDeployUpdate {
-	/** Resources to deploy */
-	to_deploy: number;
-	/** A readable log of all the changes to be applied */
-	log: string;
-}
-
-export interface SyncUpdate {
-	/** Resources to create */
-	to_create: number;
-	/** Resources to update */
-	to_update: number;
-	/** Resources to delete */
-	to_delete: number;
-	/** A readable log of all the changes to be applied */
-	log: string;
-}
-
-export interface PendingSyncUpdatesDataOk {
-	/** Readable log of any deploy actions that will be performed */
-	deploy_updates?: SyncDeployUpdate;
-	/** Readable log of any pending deployment updates */
-	deployment_updates?: SyncUpdate;
-	/** Readable log of any pending deployment updates */
-	stack_updates?: SyncUpdate;
-	/** Readable log of any pending server updates */
-	server_updates?: SyncUpdate;
-	/** Readable log of any pending build updates */
-	build_updates?: SyncUpdate;
-	/** Readable log of any pending repo updates */
-	repo_updates?: SyncUpdate;
-	/** Readable log of any pending procedure updates */
-	procedure_updates?: SyncUpdate;
-	/** Readable log of any pending alerter updates */
-	alerter_updates?: SyncUpdate;
-	/** Readable log of any pending builder updates */
-	builder_updates?: SyncUpdate;
-	/** Readable log of any pending server template updates */
-	server_template_updates?: SyncUpdate;
-	/** Readable log of any pending resource sync updates */
-	resource_sync_updates?: SyncUpdate;
-	/** Readable log of any pending variable updates */
-	variable_updates?: SyncUpdate;
-	/** Readable log of any pending user group updates */
-	user_group_updates?: SyncUpdate;
-}
-
-export interface PendingSyncUpdatesDataErr {
-	message: string;
 }
 
 export type AuthRequest = 
@@ -6494,7 +6552,6 @@ export type ExecuteRequest =
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
-	| { type: "ListAwsEcrLabels", params: ListAwsEcrLabels }
 	| { type: "ListSecrets", params: ListSecrets }
 	| { type: "ListGitProvidersFromConfig", params: ListGitProvidersFromConfig }
 	| { type: "ListDockerRegistriesFromConfig", params: ListDockerRegistriesFromConfig }
@@ -6624,6 +6681,7 @@ export type WriteRequest =
 	| { type: "AddUserToUserGroup", params: AddUserToUserGroup }
 	| { type: "RemoveUserFromUserGroup", params: RemoveUserFromUserGroup }
 	| { type: "SetUsersInUserGroup", params: SetUsersInUserGroup }
+	| { type: "UpdateUserAdmin", params: UpdateUserAdmin }
 	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
 	| { type: "UpdatePermissionOnResourceType", params: UpdatePermissionOnResourceType }
 	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }
@@ -6673,6 +6731,7 @@ export type WriteRequest =
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }
 	| { type: "UpdateResourceSync", params: UpdateResourceSync }
 	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
+	| { type: "CommitSync", params: CommitSync }
 	| { type: "CreateSyncWebhook", params: CreateSyncWebhook }
 	| { type: "DeleteSyncWebhook", params: DeleteSyncWebhook }
 	| { type: "CreateStack", params: CreateStack }
@@ -6680,6 +6739,7 @@ export type WriteRequest =
 	| { type: "DeleteStack", params: DeleteStack }
 	| { type: "UpdateStack", params: UpdateStack }
 	| { type: "RenameStack", params: RenameStack }
+	| { type: "WriteStackFileContents", params: WriteStackFileContents }
 	| { type: "RefreshStackCache", params: RefreshStackCache }
 	| { type: "CreateStackWebhook", params: CreateStackWebhook }
 	| { type: "DeleteStackWebhook", params: DeleteStackWebhook }
@@ -6698,6 +6758,13 @@ export type WriteRequest =
 	| { type: "CreateDockerRegistryAccount", params: CreateDockerRegistryAccount }
 	| { type: "UpdateDockerRegistryAccount", params: UpdateDockerRegistryAccount }
 	| { type: "DeleteDockerRegistryAccount", params: DeleteDockerRegistryAccount };
+
+/** Configuration for the registry to push the built image to. */
+export type ImageRegistryLegacy1_14 = 
+	/** Don't push the image to any registry */
+	| { type: "None", params: NoData }
+	/** Push the image to a standard image registry (any domain) */
+	| { type: "Standard", params: ImageRegistryConfig };
 
 export type WsLoginMessage = 
 	| { type: "Jwt", params: {

@@ -13,6 +13,7 @@ use komodo_client::entities::{
 use mungos::mongodb::{bson::doc, Collection};
 
 use crate::{
+  config::core_config,
   monitor::update_cache_for_server,
   state::{action_states, db_client, server_status_cache},
 };
@@ -31,7 +32,7 @@ impl super::KomodoResource for Server {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.servers
+    &db_client().servers
   }
 
   async fn to_list_item(
@@ -72,7 +73,9 @@ impl super::KomodoResource for Server {
   }
 
   fn user_can_create(user: &User) -> bool {
-    user.admin || user.create_server_permissions
+    user.admin
+      || (!core_config().disable_non_admin_create
+        && user.create_server_permissions)
   }
 
   async fn validate_create_config(
@@ -122,7 +125,7 @@ impl super::KomodoResource for Server {
     resource: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
-    let db = db_client().await;
+    let db = db_client();
 
     let id = &resource.id;
 

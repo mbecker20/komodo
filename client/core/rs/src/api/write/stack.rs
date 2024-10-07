@@ -103,6 +103,26 @@ pub struct RenameStack {
 
 //
 
+/// Rename the stack at id to the given name. Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct WriteStackFileContents {
+  /// The name or id of the Stack to write the contents to.
+  #[serde(alias = "id", alias = "name")]
+  pub stack: String,
+  /// The file path relative to the stack run directory,
+  /// or absolute path.
+  pub file_path: String,
+  /// The contents to write.
+  pub contents: String,
+}
+
+//
+
 /// Trigger a refresh of the cached compose file contents.
 /// Refreshes:
 ///   - Whether the remote file is missing
@@ -115,6 +135,7 @@ pub struct RenameStack {
 #[response(NoData)]
 pub struct RefreshStackCache {
   /// Id or name
+  #[serde(alias = "id", alias = "name")]
   pub stack: String,
 }
 

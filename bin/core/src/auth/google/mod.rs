@@ -73,7 +73,7 @@ async fn callback(
     .await?;
   let google_user = client.get_google_user(&token.id_token)?;
   let google_id = google_user.id.to_string();
-  let db_client = db_client().await;
+  let db_client = db_client();
   let user = db_client
     .users
     .find_one(doc! { "config.data.google_id": &google_id })
@@ -102,6 +102,7 @@ async fn callback(
           .to_string(),
         enabled: no_users_exist || core_config.enable_new_users,
         admin: no_users_exist,
+        super_admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,
         updated_at: ts,

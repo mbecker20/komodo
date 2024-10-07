@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 use formatting::{colored, format_serror, Color};
-use mongo_indexed::doc;
 use komodo_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
   entities::{
@@ -18,28 +17,27 @@ use komodo_client::{
     server::Server,
     server_template::ServerTemplate,
     stack::Stack,
+    sync::ResourceSync,
     update::{Log, Update},
     user::{sync_user, User},
   },
 };
+use mongo_indexed::doc;
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{
-    query::get_id_to_tags,
-    sync::{
-      deploy::{
-        build_deploy_cache, deploy_from_cache, SyncDeployParams,
-      },
-      resource::{
-        get_updates_for_execution, AllResourcesById, ResourceSync,
-      },
-    },
-    update::update_update,
-  },
+  helpers::{query::get_id_to_tags, update::update_update},
   resource::{self, refresh_resource_sync_state_cache},
   state::{db_client, State},
+  sync::{
+    deploy::{
+      build_deploy_cache, deploy_from_cache, SyncDeployParams,
+    },
+    execute::{get_updates_for_execution, ExecuteResourceSync},
+    remote::RemoteResources,
+    AllResourcesById,
+  },
 };
 
 impl Resolve<RunSync, (User, Update)> for State {
@@ -54,22 +52,28 @@ impl Resolve<RunSync, (User, Update)> for State {
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
 
-    if sync.config.repo.is_empty() {
-      return Err(anyhow!("resource sync repo not configured"));
-    }
-
     // Send update here for FE to recheck action state
     update_update(update.clone()).await?;
 
-    let (res, logs, hash, message) =
-      crate::helpers::sync::remote::get_remote_resources(&sync)
-        .await
-        .context("failed to get remote resources")?;
+    let RemoteResources {
+      resources,
+      logs,
+      hash,
+      message,
+      file_errors,
+      ..
+    } = crate::sync::remote::get_remote_resources(&sync)
+      .await
+      .context("failed to get remote resources")?;
 
     update.logs.extend(logs);
     update_update(update.clone()).await?;
 
-    let resources = res?;
+    if !file_errors.is_empty() {
+      return Err(anyhow!("Found file errors. Cannot execute sync."))
+    }
+
+    let resources = resources?;
 
     let id_to_tags = get_id_to_tags(None).await?;
     let all_resources = AllResourcesById::load().await?;
@@ -94,12 +98,15 @@ impl Resolve<RunSync, (User, Update)> for State {
     })
     .await?;
 
+    let delete = sync.config.managed || sync.config.delete;
+
     let (servers_to_create, servers_to_update, servers_to_delete) =
       get_updates_for_execution::<Server>(
         resources.servers,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (
@@ -108,33 +115,37 @@ impl Resolve<RunSync, (User, Update)> for State {
       deployments_to_delete,
     ) = get_updates_for_execution::<Deployment>(
       resources.deployments,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (stacks_to_create, stacks_to_update, stacks_to_delete) =
       get_updates_for_execution::<Stack>(
         resources.stacks,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (builds_to_create, builds_to_update, builds_to_delete) =
       get_updates_for_execution::<Build>(
         resources.builds,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (repos_to_create, repos_to_update, repos_to_delete) =
       get_updates_for_execution::<Repo>(
         resources.repos,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (
@@ -143,25 +154,28 @@ impl Resolve<RunSync, (User, Update)> for State {
       procedures_to_delete,
     ) = get_updates_for_execution::<Procedure>(
       resources.procedures,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (builders_to_create, builders_to_update, builders_to_delete) =
       get_updates_for_execution::<Builder>(
         resources.builders,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (alerters_to_create, alerters_to_update, alerters_to_delete) =
       get_updates_for_execution::<Alerter>(
         resources.alerters,
-        sync.config.delete,
+        delete,
         &all_resources,
         &id_to_tags,
+        &sync.config.match_tags,
       )
       .await?;
     let (
@@ -170,9 +184,10 @@ impl Resolve<RunSync, (User, Update)> for State {
       server_templates_to_delete,
     ) = get_updates_for_execution::<ServerTemplate>(
       resources.server_templates,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (
@@ -181,27 +196,30 @@ impl Resolve<RunSync, (User, Update)> for State {
       resource_syncs_to_delete,
     ) = get_updates_for_execution::<entities::sync::ResourceSync>(
       resources.resource_syncs,
-      sync.config.delete,
+      delete,
       &all_resources,
       &id_to_tags,
+      &sync.config.match_tags,
     )
     .await?;
     let (
       variables_to_create,
       variables_to_update,
       variables_to_delete,
-    ) = crate::helpers::sync::variables::get_updates_for_execution(
+    ) = crate::sync::variables::get_updates_for_execution(
       resources.variables,
-      sync.config.delete,
+      // Delete doesn't work with variables when match tags are set
+      sync.config.match_tags.is_empty() && delete,
     )
     .await?;
     let (
       user_groups_to_create,
       user_groups_to_update,
       user_groups_to_delete,
-    ) = crate::helpers::sync::user_groups::get_updates_for_execution(
+    ) = crate::sync::user_groups::get_updates_for_execution(
       resources.user_groups,
-      sync.config.delete,
+      // Delete doesn't work with user groups when match tags are set
+      sync.config.match_tags.is_empty() && delete,
       &all_resources,
     )
     .await?;
@@ -261,7 +279,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // No deps
     maybe_extend(
       &mut update.logs,
-      crate::helpers::sync::variables::run_updates(
+      crate::sync::variables::run_updates(
         variables_to_create,
         variables_to_update,
         variables_to_delete,
@@ -270,7 +288,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      crate::helpers::sync::user_groups::run_updates(
+      crate::sync::user_groups::run_updates(
         user_groups_to_create,
         user_groups_to_update,
         user_groups_to_delete,
@@ -279,7 +297,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      entities::sync::ResourceSync::run_updates(
+      ResourceSync::execute_sync_updates(
         resource_syncs_to_create,
         resource_syncs_to_update,
         resource_syncs_to_delete,
@@ -288,7 +306,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      ServerTemplate::run_updates(
+      ServerTemplate::execute_sync_updates(
         server_templates_to_create,
         server_templates_to_update,
         server_templates_to_delete,
@@ -297,7 +315,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      Server::run_updates(
+      Server::execute_sync_updates(
         servers_to_create,
         servers_to_update,
         servers_to_delete,
@@ -306,7 +324,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      Alerter::run_updates(
+      Alerter::execute_sync_updates(
         alerters_to_create,
         alerters_to_update,
         alerters_to_delete,
@@ -317,7 +335,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependent on server
     maybe_extend(
       &mut update.logs,
-      Builder::run_updates(
+      Builder::execute_sync_updates(
         builders_to_create,
         builders_to_update,
         builders_to_delete,
@@ -326,7 +344,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     );
     maybe_extend(
       &mut update.logs,
-      Repo::run_updates(
+      Repo::execute_sync_updates(
         repos_to_create,
         repos_to_update,
         repos_to_delete,
@@ -337,7 +355,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependant on builder
     maybe_extend(
       &mut update.logs,
-      Build::run_updates(
+      Build::execute_sync_updates(
         builds_to_create,
         builds_to_update,
         builds_to_delete,
@@ -348,7 +366,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependant on server / build
     maybe_extend(
       &mut update.logs,
-      Deployment::run_updates(
+      Deployment::execute_sync_updates(
         deployments_to_create,
         deployments_to_update,
         deployments_to_delete,
@@ -358,7 +376,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // stack only depends on server, but maybe will depend on build later.
     maybe_extend(
       &mut update.logs,
-      Stack::run_updates(
+      Stack::execute_sync_updates(
         stacks_to_create,
         stacks_to_update,
         stacks_to_delete,
@@ -369,7 +387,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Dependant on everything
     maybe_extend(
       &mut update.logs,
-      Procedure::run_updates(
+      Procedure::execute_sync_updates(
         procedures_to_create,
         procedures_to_update,
         procedures_to_delete,
@@ -380,7 +398,7 @@ impl Resolve<RunSync, (User, Update)> for State {
     // Execute the deploy cache
     deploy_from_cache(deploy_cache, &mut update.logs).await;
 
-    let db = db_client().await;
+    let db = db_client();
 
     if let Err(e) = update_one_by_id(
       &db.resource_syncs,

@@ -7,10 +7,10 @@ use komodo_client::{
     komodo_timestamp,
     permission::PermissionLevel,
     server::ServerState,
-    stack::{ComposeContents, PartialStackConfig, Stack, StackInfo},
+    stack::{PartialStackConfig, Stack, StackInfo},
     update::Update,
-    user::User,
-    NoData, Operation,
+    user::{stack_user, User},
+    FileContents, NoData, Operation,
   },
 };
 use mungos::{
@@ -22,6 +22,7 @@ use octorust::types::{
 };
 use periphery_client::api::compose::{
   GetComposeContentsOnHost, GetComposeContentsOnHostResponse,
+  WriteComposeContentsToHost,
 };
 use resolver_api::Resolve;
 
@@ -30,13 +31,14 @@ use crate::{
   helpers::{
     periphery_client,
     query::get_server_with_state,
-    stack::{
-      remote::get_remote_compose_contents,
-      services::extract_services_into_res,
-    },
     update::{add_update, make_update},
   },
   resource,
+  stack::{
+    get_stack_and_server,
+    remote::{get_remote_compose_contents, RemoteComposeContents},
+    services::extract_services_into_res,
+  },
   state::{db_client, github_client, State},
 };
 
@@ -109,7 +111,7 @@ impl Resolve<RenameStack, User> for State {
       make_update(&stack, Operation::RenameStack, &user);
 
     update_one_by_id(
-      &db_client().await.stacks,
+      &db_client().stacks,
       &stack.id,
       mungos::update::Update::Set(
         doc! { "name": &name, "updated_at": komodo_timestamp() },
@@ -125,6 +127,79 @@ impl Resolve<RenameStack, User> for State {
     );
     update.finalize();
 
+    add_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<WriteStackFileContents, User> for State {
+  async fn resolve(
+    &self,
+    WriteStackFileContents {
+      stack,
+      file_path,
+      contents,
+    }: WriteStackFileContents,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    let (stack, server) = get_stack_and_server(
+      &stack,
+      &user,
+      PermissionLevel::Write,
+      true,
+    )
+    .await?;
+
+    if !stack.config.files_on_host {
+      return Err(anyhow!(
+        "Stack is not configured to use files on host, can't write file contents"
+      ));
+    }
+
+    let mut update =
+      make_update(&stack, Operation::WriteStackContents, &user);
+
+    update.push_simple_log("File contents to write", &contents);
+
+    match periphery_client(&server)?
+      .request(WriteComposeContentsToHost {
+        name: stack.name,
+        run_directory: stack.config.run_directory,
+        file_path,
+        contents,
+      })
+      .await
+      .context("Failed to write contents to host")
+    {
+      Ok(log) => {
+        update.logs.push(log);
+      }
+      Err(e) => {
+        update.push_error_log(
+          "Write file contents",
+          format_serror(&e.into()),
+        );
+      }
+    };
+
+    if let Err(e) = State
+      .resolve(
+        RefreshStackCache { stack: stack.id },
+        stack_user().to_owned(),
+      )
+      .await
+      .context(
+        "Failed to refresh stack cache after writing file contents",
+      )
+    {
+      update.push_error_log(
+        "Refresh stack cache",
+        format_serror(&e.into()),
+      );
+    }
+
+    update.finalize();
     add_update(update.clone()).await?;
 
     Ok(update)
@@ -195,7 +270,7 @@ impl Resolve<RefreshStackCache, User> for State {
               Ok(res) => res,
               Err(e) => GetComposeContentsOnHostResponse {
                 contents: Default::default(),
-                errors: vec![ComposeContents {
+                errors: vec![FileContents {
                   path: stack.config.run_directory.clone(),
                   contents: format_serror(&e.into()),
                 }],
@@ -226,16 +301,16 @@ impl Resolve<RefreshStackCache, User> for State {
       // ================
       // REPO BASED STACK
       // ================
-      let (
-        remote_contents,
-        remote_errors,
-        _,
-        latest_hash,
-        latest_message,
-      ) =
+      let RemoteComposeContents {
+        successful: remote_contents,
+        errored: remote_errors,
+        hash: latest_hash,
+        message: latest_message,
+        ..
+      } =
         get_remote_compose_contents(&stack, Some(&mut missing_files))
-          .await
-          .context("failed to clone remote compose file")?;
+          .await?;
+
       let project_name = stack.project_name(true);
 
       let mut services = Vec::new();
@@ -298,7 +373,6 @@ impl Resolve<RefreshStackCache, User> for State {
       .context("failed to serialize stack info to bson")?;
 
     db_client()
-      .await
       .stacks
       .update_one(
         doc! { "name": &stack.name },
@@ -371,7 +445,11 @@ impl Resolve<CreateStackWebhook, User> for State {
       &stack.config.webhook_secret
     };
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       StackWebhookAction::Refresh => {
         format!("{host}/listener/github/stack/{}/refresh", stack.id)
@@ -485,7 +563,11 @@ impl Resolve<DeleteStackWebhook, User> for State {
       ..
     } = core_config();
 
-    let host = webhook_base_url.as_ref().unwrap_or(host);
+    let host = if webhook_base_url.is_empty() {
+      host
+    } else {
+      webhook_base_url
+    };
     let url = match action {
       StackWebhookAction::Refresh => {
         format!("{host}/listener/github/stack/{}/refresh", stack.id)

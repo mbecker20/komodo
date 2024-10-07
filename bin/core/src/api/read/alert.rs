@@ -41,7 +41,7 @@ impl Resolve<ListAlerts, User> for State {
     }
 
     let alerts = find_collect(
-      &db_client().await.alerts,
+      &db_client().alerts,
       query,
       FindOptions::builder()
         .sort(doc! { "ts": -1 })
@@ -70,7 +70,7 @@ impl Resolve<GetAlert, User> for State {
     GetAlert { id }: GetAlert,
     _: User,
   ) -> anyhow::Result<GetAlertResponse> {
-    find_one_by_id(&db_client().await.alerts, &id)
+    find_one_by_id(&db_client().alerts, &id)
       .await
       .context("failed to query db for alert")?
       .context("no alert found with given id")

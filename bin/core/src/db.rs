@@ -1,11 +1,10 @@
-use mongo_indexed::{create_index, create_unique_index};
 use komodo_client::entities::{
   alert::Alert,
   alerter::Alerter,
   api_key::ApiKey,
   build::Build,
   builder::Builder,
-  config::core::MongoConfig,
+  config::core::DatabaseConfig,
   deployment::Deployment,
   permission::Permission,
   procedure::Procedure,
@@ -22,11 +21,13 @@ use komodo_client::entities::{
   user_group::UserGroup,
   variable::Variable,
 };
+use mongo_indexed::{create_index, create_unique_index};
 use mungos::{
   init::MongoBuilder,
   mongodb::{Collection, Database},
 };
 
+#[derive(Debug)]
 pub struct DbClient {
   pub users: Collection<User>,
   pub user_groups: Collection<UserGroup>,
@@ -56,28 +57,33 @@ pub struct DbClient {
 
 impl DbClient {
   pub async fn new(
-    MongoConfig {
+    DatabaseConfig {
       uri,
       address,
       username,
       password,
       app_name,
       db_name,
-    }: &MongoConfig,
+    }: &DatabaseConfig,
   ) -> anyhow::Result<DbClient> {
     let mut client = MongoBuilder::default().app_name(app_name);
 
-    match (uri, address, username, password) {
-      (Some(uri), _, _, _) => {
+    match (
+      !uri.is_empty(),
+      !address.is_empty(),
+      !username.is_empty(),
+      !password.is_empty(),
+    ) {
+      (true, _, _, _) => {
         client = client.uri(uri);
       }
-      (_, Some(address), Some(username), Some(password)) => {
+      (_, true, true, true) => {
         client = client
           .address(address)
           .username(username)
           .password(password);
       }
-      (_, Some(address), _, _) => {
+      (_, true, _, _) => {
         client = client.address(address);
       }
       _ => {

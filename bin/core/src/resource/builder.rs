@@ -33,7 +33,7 @@ impl super::KomodoResource for Builder {
 
   async fn coll(
   ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
-    &db_client().await.builders
+    &db_client().builders
   }
 
   async fn to_list_item(
@@ -130,7 +130,6 @@ impl super::KomodoResource for Builder {
   ) -> anyhow::Result<()> {
     // remove the builder from any attached builds
     db_client()
-      .await
       .builds
       .update_many(
         doc! { "config.builder.params.builder_id": &resource.id },

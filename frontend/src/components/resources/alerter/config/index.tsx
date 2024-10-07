@@ -21,6 +21,8 @@ export const AlerterConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      resource_id={id}
+      resource_type="Alerter"
       disabled={disabled}
       config={config}
       update={update}
@@ -29,11 +31,21 @@ export const AlerterConfig = ({ id }: { id: string }) => {
         await mutateAsync({ id, config: update });
       }}
       components={{
-        general: [
+        "": [
           {
-            label: "General",
+            label: "Enabled",
+            labelHidden: true,
             components: {
-              enabled: true,
+              enabled: {
+                boldLabel: true,
+                description: "Whether to send alerts to the endpoint.",
+              },
+            },
+          },
+          {
+            label: "Endpoint",
+            labelHidden: true,
+            components: {
               endpoint: (endpoint, set) => (
                 <EndpointConfig
                   endpoint={endpoint!}
@@ -41,6 +53,12 @@ export const AlerterConfig = ({ id }: { id: string }) => {
                   disabled={disabled}
                 />
               ),
+            },
+          },
+          {
+            label: "Filter",
+            labelHidden: true,
+            components: {
               alert_types: (alert_types, set) => (
                 <AlertTypeConfig
                   alert_types={alert_types!}

@@ -1,9 +1,8 @@
 import {
-  ActionButton,
   ActionWithDialog,
   ConfirmButton,
   CopyButton,
-  TextUpdateMenu,
+  TextUpdateMenu2,
 } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { UsableResource } from "@types";
@@ -33,7 +32,6 @@ import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
 import { Types } from "@komodo/client";
-import { ConfigItem, DoubleInput } from "@components/config/util";
 import { filterBySplit, usableResourcePath } from "@lib/utils";
 
 export const ResourceDescription = ({
@@ -67,7 +65,7 @@ export const ResourceDescription = ({
   });
 
   return (
-    <TextUpdateMenu
+    <TextUpdateMenu2
       title="Update Description"
       placeholder="Set Description"
       value={resource?.description}
@@ -77,7 +75,7 @@ export const ResourceDescription = ({
           description,
         })
       }
-      triggerClassName="text-muted-foreground w-[300px]"
+      triggerClassName="text-muted-foreground"
       disabled={disabled}
     />
   );
@@ -121,7 +119,7 @@ export const ResourceSelector = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="secondary" className="flex gap-2" disabled={disabled}>
+        <Button variant="secondary" className="flex justify-start gap-2 w-fit max-w-[200px]" disabled={disabled}>
           {name || `Select ${type}`}
           {!disabled && <ChevronsUpDown className="w-3 h-3" />}
         </Button>
@@ -135,7 +133,7 @@ export const ResourceSelector = ({
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty className="flex justify-evenly items-center pt-2">
+            <CommandEmpty className="flex justify-evenly items-center pt-3 pb-2">
               {`No ${type}s Found`}
               <SearchX className="w-3 h-3" />
             </CommandEmpty>
@@ -222,12 +220,15 @@ export const CopyResource = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <ActionButton
-          title="Copy"
-          icon={<Copy className="w-4 h-4" />}
-          disabled={disabled}
+        <Button
+          variant="secondary"
+          className="flex gap-2 items-center"
           onClick={() => setOpen(true)}
-        />
+          disabled={disabled}
+        >
+          <Copy className="w-4 h-4" />
+          Copy
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -349,40 +350,6 @@ export const DeleteResource = ({
   );
 };
 
-export const LabelsConfig = ({
-  labels,
-  set,
-  disabled,
-}: {
-  labels: Types.EnvironmentVar[];
-  set: (input: Partial<Types.DeploymentConfig | Types.BuildConfig>) => void;
-  disabled: boolean;
-}) => (
-  <div className="py-2 w-full flex justify-end">
-    <DoubleInput
-      disabled={disabled}
-      inputClassName="w-[300px] 2xl:w-[400px] max-w-full"
-      containerClassName="w-fit"
-      values={labels}
-      leftval="variable"
-      leftpl="Key"
-      rightval="value"
-      rightpl="Value"
-      onLeftChange={(variable, i) => {
-        labels[i].variable = variable;
-        set({ labels: [...labels] });
-      }}
-      onRightChange={(value, i) => {
-        labels[i].value = value;
-        set({ labels: [...labels] });
-      }}
-      onRemove={(idx) =>
-        set({ labels: [...labels.filter((_, i) => i !== idx)] })
-      }
-    />
-  </div>
-);
-
 export const CopyGithubWebhook = ({ path }: { path: string }) => {
   const base_url = useRead("GetCoreInfo", {}).data?.webhook_base_url;
   const url = base_url + "/listener/github" + path;
@@ -393,55 +360,3 @@ export const CopyGithubWebhook = ({ path }: { path: string }) => {
     </div>
   );
 };
-
-export const ServerSelector = ({
-  selected,
-  set,
-  disabled,
-  align,
-}: {
-  selected: string | undefined;
-  set: (input: Partial<Types.DeploymentConfig>) => void;
-  disabled: boolean;
-  align?: "start" | "center" | "end";
-}) => (
-  <ConfigItem
-    label="Server"
-    description="Choose the target server to host the resource"
-    boldLabel
-  >
-    <ResourceSelector
-      type="Server"
-      selected={selected}
-      onSelect={(server_id) => set({ server_id })}
-      disabled={disabled}
-      align={align}
-    />
-  </ConfigItem>
-);
-
-export const BuilderSelector = ({
-  selected,
-  set,
-  disabled,
-  align,
-}: {
-  selected: string | undefined;
-  set: (input: Partial<Types.BuildConfig>) => void;
-  disabled: boolean;
-  align?: "start" | "center" | "end";
-}) => (
-  <ConfigItem
-    label="Builder"
-    description="Choose the target builder to build the resource"
-    boldLabel
-  >
-    <ResourceSelector
-      type="Builder"
-      selected={selected}
-      onSelect={(builder_id) => set({ builder_id })}
-      disabled={disabled}
-      align={align}
-    />
-  </ConfigItem>
-);

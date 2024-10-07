@@ -34,7 +34,7 @@ pub async fn execute_procedure(
     add_line_to_update(
       update,
       &format!(
-        "{}: executing stage: '{}'",
+        "{}: Executing stage: '{}'",
         muted("INFO"),
         bold(&stage.name)
       ),
@@ -55,7 +55,7 @@ pub async fn execute_procedure(
     .await
     .with_context(|| {
       format!(
-        "failed stage '{}' execution after {:?}",
+        "Failed stage '{}' execution after {:?}",
         bold(&stage.name),
         timer.elapsed(),
       )
@@ -65,7 +65,7 @@ pub async fn execute_procedure(
       &format!(
         "{}: {} stage '{}' execution in {:?}",
         muted("INFO"),
-        colored("finished", Color::Green),
+        colored("Finished", Color::Green),
         bold(&stage.name),
         timer.elapsed()
       ),
@@ -76,6 +76,7 @@ pub async fn execute_procedure(
   Ok(())
 }
 
+#[allow(dependency_on_unit_never_type_fallback)]
 #[instrument(skip(update))]
 async fn execute_stage(
   executions: Vec<Execution>,
@@ -87,11 +88,11 @@ async fn execute_stage(
     let now = Instant::now();
     add_line_to_update(
       update,
-      &format!("{}: executing: {execution:?}", muted("INFO")),
+      &format!("{}: Executing: {execution:?}", muted("INFO")),
     )
     .await;
     let fail_log = format!(
-      "{}: failed on {execution:?}",
+      "{}: Failed on {execution:?}",
       colored("ERROR", Color::Red)
     );
     let res =
@@ -103,7 +104,7 @@ async fn execute_stage(
       &format!(
         "{}: {} execution in {:?}: {execution:?}",
         muted("INFO"),
-        colored("finished", Color::Green),
+        colored("Finished", Color::Green),
         now.elapsed()
       ),
     )
@@ -140,7 +141,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RunProcedure"),
+          .context("Failed at RunProcedure"),
         &update_id,
       )
       .await?
@@ -156,7 +157,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RunBuild"),
+          .context("Failed at RunBuild"),
         &update_id,
       )
       .await?
@@ -172,7 +173,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at CancelBuild"),
+          .context("Failed at CancelBuild"),
         &update_id,
       )
       .await?
@@ -188,7 +189,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at Deploy"),
+          .context("Failed at Deploy"),
         &update_id,
       )
       .await?
@@ -204,7 +205,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StartDeployment"),
+          .context("Failed at StartDeployment"),
         &update_id,
       )
       .await?
@@ -220,7 +221,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RestartDeployment"),
+          .context("Failed at RestartDeployment"),
         &update_id,
       )
       .await?
@@ -236,7 +237,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PauseDeployment"),
+          .context("Failed at PauseDeployment"),
         &update_id,
       )
       .await?
@@ -252,7 +253,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at UnpauseDeployment"),
+          .context("Failed at UnpauseDeployment"),
         &update_id,
       )
       .await?
@@ -268,7 +269,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StopDeployment"),
+          .context("Failed at StopDeployment"),
         &update_id,
       )
       .await?
@@ -284,7 +285,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RemoveDeployment"),
+          .context("Failed at RemoveDeployment"),
         &update_id,
       )
       .await?
@@ -300,7 +301,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at CloneRepo"),
+          .context("Failed at CloneRepo"),
         &update_id,
       )
       .await?
@@ -316,7 +317,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PullRepo"),
+          .context("Failed at PullRepo"),
         &update_id,
       )
       .await?
@@ -332,7 +333,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at BuildRepo"),
+          .context("Failed at BuildRepo"),
         &update_id,
       )
       .await?
@@ -348,7 +349,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at CancelRepoBuild"),
+          .context("Failed at CancelRepoBuild"),
         &update_id,
       )
       .await?
@@ -364,7 +365,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StartContainer"),
+          .context("Failed at StartContainer"),
         &update_id,
       )
       .await?
@@ -380,7 +381,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RestartContainer"),
+          .context("Failed at RestartContainer"),
         &update_id,
       )
       .await?
@@ -396,7 +397,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PauseContainer"),
+          .context("Failed at PauseContainer"),
         &update_id,
       )
       .await?
@@ -412,7 +413,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at UnpauseContainer"),
+          .context("Failed at UnpauseContainer"),
         &update_id,
       )
       .await?
@@ -428,7 +429,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StopContainer"),
+          .context("Failed at StopContainer"),
         &update_id,
       )
       .await?
@@ -444,7 +445,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RemoveContainer"),
+          .context("Failed at RemoveContainer"),
         &update_id,
       )
       .await?
@@ -460,7 +461,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StartAllContainers"),
+          .context("Failed at StartAllContainers"),
         &update_id,
       )
       .await?
@@ -476,7 +477,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RestartAllContainers"),
+          .context("Failed at RestartAllContainers"),
         &update_id,
       )
       .await?
@@ -492,7 +493,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PauseAllContainers"),
+          .context("Failed at PauseAllContainers"),
         &update_id,
       )
       .await?
@@ -508,7 +509,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at UnpauseAllContainers"),
+          .context("Failed at UnpauseAllContainers"),
         &update_id,
       )
       .await?
@@ -524,7 +525,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StopAllContainers"),
+          .context("Failed at StopAllContainers"),
         &update_id,
       )
       .await?
@@ -540,7 +541,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneContainers"),
+          .context("Failed at PruneContainers"),
         &update_id,
       )
       .await?
@@ -556,7 +557,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at DeleteNetwork"),
+          .context("Failed at DeleteNetwork"),
         &update_id,
       )
       .await?
@@ -572,7 +573,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneNetworks"),
+          .context("Failed at PruneNetworks"),
         &update_id,
       )
       .await?
@@ -588,7 +589,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at DeleteImage"),
+          .context("Failed at DeleteImage"),
         &update_id,
       )
       .await?
@@ -604,7 +605,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneImages"),
+          .context("Failed at PruneImages"),
         &update_id,
       )
       .await?
@@ -620,7 +621,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at DeleteVolume"),
+          .context("Failed at DeleteVolume"),
         &update_id,
       )
       .await?
@@ -636,7 +637,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneVolumes"),
+          .context("Failed at PruneVolumes"),
         &update_id,
       )
       .await?
@@ -652,7 +653,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneDockerBuilders"),
+          .context("Failed at PruneDockerBuilders"),
         &update_id,
       )
       .await?
@@ -668,7 +669,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneBuildx"),
+          .context("Failed at PruneBuildx"),
         &update_id,
       )
       .await?
@@ -684,7 +685,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PruneSystem"),
+          .context("Failed at PruneSystem"),
         &update_id,
       )
       .await?
@@ -700,7 +701,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RunSync"),
+          .context("Failed at RunSync"),
         &update_id,
       )
       .await?
@@ -716,7 +717,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at DeployStack"),
+          .context("Failed at DeployStack"),
         &update_id,
       )
       .await?
@@ -732,7 +733,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StartStack"),
+          .context("Failed at StartStack"),
         &update_id,
       )
       .await?
@@ -748,7 +749,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at RestartStack"),
+          .context("Failed at RestartStack"),
         &update_id,
       )
       .await?
@@ -764,7 +765,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at PauseStack"),
+          .context("Failed at PauseStack"),
         &update_id,
       )
       .await?
@@ -780,7 +781,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at UnpauseStack"),
+          .context("Failed at UnpauseStack"),
         &update_id,
       )
       .await?
@@ -796,7 +797,7 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at StopStack"),
+          .context("Failed at StopStack"),
         &update_id,
       )
       .await?
@@ -812,16 +813,14 @@ async fn execute_execution(
         State
           .resolve(req, (user, update))
           .await
-          .context("failed at DestroyStack"),
+          .context("Failed at DestroyStack"),
         &update_id,
       )
       .await?
     }
     Execution::Sleep(req) => {
-      tokio::time::sleep(Duration::from_millis(
-        req.duration_ms as u64,
-      ))
-      .await;
+      let duration = Duration::from_millis(req.duration_ms as u64);
+      tokio::time::sleep(duration).await;
       Update {
         success: true,
         ..Default::default()
@@ -851,9 +850,9 @@ async fn handle_resolve_result(
       let log =
         Log::error("execution error", format_serror(&e.into()));
       let mut update =
-        find_one_by_id(&db_client().await.updates, update_id)
+        find_one_by_id(&db_client().updates, update_id)
           .await
-          .context("failed to query to db")?
+          .context("Failed to query to db")?
           .context("no update exists with given id")?;
       update.logs.push(log);
       update.finalize();
@@ -873,6 +872,6 @@ async fn add_line_to_update(update: &Mutex<Update>, line: &str) {
   let update = lock.clone();
   drop(lock);
   if let Err(e) = update_update(update).await {
-    error!("failed to update an update during procedure | {e:#}");
+    error!("Failed to update an update during procedure | {e:#}");
   };
 }
