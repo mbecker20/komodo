@@ -159,31 +159,31 @@ pub struct Env {
   pub komodo_github_webhook_app_pk_path: Option<String>,
 
   /// Override `database.uri`
-  #[serde(alias = "KOMODO_MONGO_URI")]
+  #[serde(alias = "komodo_mongo_uri")]
   pub komodo_database_uri: Option<String>,
   /// Override `database.uri` from file
-  #[serde(alias = "KOMODO_MONGO_URI_FILE")]
+  #[serde(alias = "komodo_mongo_uri_file")]
   pub komodo_database_uri_file: Option<PathBuf>,
   /// Override `database.address`
-  #[serde(alias = "KOMODO_MONGO_ADDRESS")]
+  #[serde(alias = "komodo_mongo_address")]
   pub komodo_database_address: Option<String>,
   /// Override `database.username`
-  #[serde(alias = "KOMODO_MONGO_USERNAME")]
+  #[serde(alias = "komodo_mongo_username")]
   pub komodo_database_username: Option<String>,
   /// Override `database.username` with file
-  #[serde(alias = "KOMODO_MONGO_USERNAME_FILE")]
+  #[serde(alias = "komodo_mongo_username_file")]
   pub komodo_database_username_file: Option<PathBuf>,
   /// Override `database.password`
-  #[serde(alias = "KOMODO_MONGO_PASSWORD")]
+  #[serde(alias = "komodo_mongo_password")]
   pub komodo_database_password: Option<String>,
   /// Override `database.password` with file
-  #[serde(alias = "KOMODO_MONGO_PASSWORD_FILE")]
+  #[serde(alias = "komodo_mongo_password_file")]
   pub komodo_database_password_file: Option<PathBuf>,
   /// Override `database.app_name`
-  #[serde(alias = "KOMODO_MONGO_APP_NAME")]
+  #[serde(alias = "komodo_mongo_app_name")]
   pub komodo_database_app_name: Option<String>,
   /// Override `database.db_name`
-  #[serde(alias = "KOMODO_MONGO_DB_NAME")]
+  #[serde(alias = "komodo_mongo_db_name")]
   pub komodo_database_db_name: Option<String>,
 
   /// Override `aws.access_key_id`
