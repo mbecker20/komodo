@@ -27,9 +27,9 @@ export const Dashboard = () => {
 
   return (
     <>
-      <Page>
+      <div className="mb-12">
         <ActiveResources />
-      </Page>
+      </div>
       <Page
         title="Dashboard"
         icon={<Box className="w-8 h-8" />}
