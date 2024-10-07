@@ -49,6 +49,12 @@ pub trait ToToml: KomodoResource {
     Ok(())
   }
 
+  fn push_additional(
+    _resource: ResourceToml<Self::PartialConfig>,
+    _toml: &mut String,
+  ) {
+  }
+
   fn push_to_toml_string(
     mut resource: ResourceToml<Self::PartialConfig>,
     toml: &mut String,
@@ -57,16 +63,35 @@ pub trait ToToml: KomodoResource {
       Self::Config::default().minimize_partial(resource.config);
     let mut resource_map: OrderedHashMap<String, serde_json::Value> =
       serde_json::from_str(&serde_json::to_string(&resource)?)?;
-    let config = resource_map
-      .get_mut("config")
-      .context("resource has no config?")?
+
+    // Remove config from top level resource, leaving only top level metadata.
+    let mut config = resource_map
+      .remove("config")
+      .context("resource has no config?")?;
+
+    let config = config
       .as_object_mut()
       .context("resource config is not object?")?;
+
     Self::edit_config_object(&resource, config)?;
+
     toml.push_str(
       &toml_pretty::to_string(&resource_map, TOML_PRETTY_OPTIONS)
         .context("failed to serialize resource to toml")?,
     );
+
+    toml.push_str(&format!(
+      "\n[{}.config]\n",
+      Self::resource_type().toml_header()
+    ));
+
+    toml.push_str(
+      &toml_pretty::to_string(config, TOML_PRETTY_OPTIONS)
+        .context("failed to serialize resource config to toml")?,
+    );
+
+    Self::push_additional(resource, toml);
+
     Ok(())
   }
 }
@@ -75,10 +100,8 @@ pub fn resource_toml_to_toml_string<R: ToToml>(
   resource: ResourceToml<R::PartialConfig>,
 ) -> anyhow::Result<String> {
   let mut toml = String::new();
-  toml.push_str(&format!(
-    "[[{}]]\n",
-    R::resource_type().as_ref().to_lowercase()
-  ));
+  toml
+    .push_str(&format!("[[{}]]\n", R::resource_type().toml_header()));
   R::push_to_toml_string(resource, &mut toml)?;
   Ok(toml)
 }
@@ -93,10 +116,8 @@ pub fn resource_push_to_toml<R: ToToml>(
   if !toml.is_empty() {
     toml.push_str("\n\n##\n\n");
   }
-  toml.push_str(&format!(
-    "[[{}]]\n",
-    R::resource_type().as_ref().to_lowercase()
-  ));
+  toml
+    .push_str(&format!("[[{}]]\n", R::resource_type().toml_header()));
   R::push_to_toml_string(
     convert_resource::<R>(resource, all_tags),
     toml,
@@ -268,16 +289,10 @@ impl ToToml for Repo {
 }
 
 impl ToToml for ServerTemplate {
-  fn push_to_toml_string(
-    mut resource: ResourceToml<Self::PartialConfig>,
+  fn push_additional(
+    resource: ResourceToml<Self::PartialConfig>,
     toml: &mut String,
-  ) -> anyhow::Result<()> {
-    resource.config =
-      Self::Config::default().minimize_partial(resource.config);
-    toml.push_str(
-      &toml_pretty::to_string(&resource, TOML_PRETTY_OPTIONS)
-        .context("failed to serialize resource to toml")?,
-    );
+  ) {
     let empty_params = match resource.config {
       PartialServerTemplateConfig::Aws(config) => config.is_none(),
       PartialServerTemplateConfig::Hetzner(config) => {
@@ -289,7 +304,6 @@ impl ToToml for ServerTemplate {
       // but in this case its needed to deserialize the enums.
       toml.push_str("\nconfig.params = {}");
     }
-    Ok(())
   }
 }
 
@@ -309,16 +323,10 @@ impl ToToml for Builder {
     }
   }
 
-  fn push_to_toml_string(
-    mut resource: ResourceToml<Self::PartialConfig>,
+  fn push_additional(
+    resource: ResourceToml<Self::PartialConfig>,
     toml: &mut String,
-  ) -> anyhow::Result<()> {
-    resource.config =
-      Self::Config::default().minimize_partial(resource.config);
-    toml.push_str(
-      &toml_pretty::to_string(&resource, TOML_PRETTY_OPTIONS)
-        .context("failed to serialize resource to toml")?,
-    );
+  ) {
     let empty_params = match resource.config {
       PartialBuilderConfig::Aws(config) => config.is_none(),
       PartialBuilderConfig::Server(config) => config.is_none(),
@@ -328,7 +336,6 @@ impl ToToml for Builder {
       // but in this case its needed to deserialize the enums.
       toml.push_str("\nconfig.params = {}");
     }
-    Ok(())
   }
 }
 
