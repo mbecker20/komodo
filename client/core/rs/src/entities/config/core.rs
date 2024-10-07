@@ -116,6 +116,10 @@ pub struct Env {
   pub komodo_oidc_client_secret_file: Option<PathBuf>,
   /// Override `oidc_use_full_email`
   pub komodo_oidc_use_full_email: Option<bool>,
+  /// Override `oidc_additional_audiences`
+  pub komodo_oidc_additional_audiences: Option<Vec<String>>,
+  /// Override `oidc_additional_audiences` from file
+  pub komodo_oidc_additional_audiences_file: Option<PathBuf>,
 
   /// Override `google_oauth.enabled`
   pub komodo_google_oauth_enabled: Option<bool>,
@@ -344,6 +348,11 @@ pub struct CoreConfig {
   #[serde(default)]
   pub oidc_use_full_email: bool,
 
+  /// Your OIDC provider may set additional audiences other than `client_id`,
+  /// they must be added here to make claims verification work.
+  #[serde(default)]
+  pub oidc_additional_audiences: Vec<String>,
+
   // =========
   // = Oauth =
   // =========
@@ -548,6 +557,11 @@ impl CoreConfig {
         &config.oidc_client_secret,
       ),
       oidc_use_full_email: config.oidc_use_full_email,
+      oidc_additional_audiences: config
+        .oidc_additional_audiences
+        .iter()
+        .map(|aud| empty_or_redacted(aud))
+        .collect(),
       google_oauth: OauthCredentials {
         enabled: config.google_oauth.enabled,
         id: empty_or_redacted(&config.google_oauth.id),

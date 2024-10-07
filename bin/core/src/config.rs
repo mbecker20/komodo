@@ -87,6 +87,9 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or(config.oidc_client_secret),
       oidc_use_full_email: env.komodo_oidc_use_full_email
         .unwrap_or(config.oidc_use_full_email),
+      oidc_additional_audiences: maybe_read_list_from_file(env.komodo_oidc_additional_audiences_file,env
+        .komodo_oidc_additional_audiences)
+        .unwrap_or(config.oidc_additional_audiences),
       google_oauth: OauthCredentials {
         enabled: env
           .komodo_google_oauth_enabled

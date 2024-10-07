@@ -161,9 +161,16 @@ oidc_client_secret = ""
 ## If true, use the full email for usernames.
 ## Otherwise, the @address will be stripped,
 ## making usernames more concise.
-## Default: false.
 ## Env: KOMODO_OIDC_USE_FULL_EMAIL
+## Default: false.
 oidc_use_full_email = false
+
+## Some providers attach other audiences in addition to the client_id.
+## If you have this issue, `Invalid audiences: `...` is not a trusted audience"`,
+## you can add the audience `...` to the list here (assuming it should be trusted).
+## Env: KOMODO_OIDC_ADDITIONAL_AUDIENCES or KOMODO_OIDC_ADDITIONAL_AUDIENCES_FILE
+## Default: empty
+oidc_additional_audiences = []
 
 #########
 # OAUTH #

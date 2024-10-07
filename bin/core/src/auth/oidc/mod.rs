@@ -152,8 +152,21 @@ async fn callback(
   let id_token = token_response
     .id_token()
     .context("OIDC Server did not return an ID token")?;
+
+  // Some providers attach additional audiences, they must be added here
+  // so token verification succeeds.
+  let verifier = client.id_token_verifier();
+  let additional_audiences = &core_config().oidc_additional_audiences;
+  let verifier = if additional_audiences.is_empty() {
+    verifier
+  } else {
+    verifier.set_other_audience_verifier_fn(|aud| {
+      additional_audiences.contains(aud)
+    })
+  };
+
   let claims = id_token
-    .claims(&client.id_token_verifier(), &nonce)
+    .claims(&verifier, &nonce)
     .context("Failed to verify token claims")?;
 
   // Verify the access token hash to ensure that the access token hasn't been substituted for
