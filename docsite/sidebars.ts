@@ -16,7 +16,7 @@ const sidebars: SidebarsConfig = {
     "resources",
     {
       type: "category",
-      label: "Setup Komodo",
+      label: "Setup Komodo Core",
       link: {
         type: "doc",
         id: "setup/index",
@@ -26,9 +26,9 @@ const sidebars: SidebarsConfig = {
         "setup/postgres",
         "setup/sqlite",
         "setup/advanced",
-        "setup/connect-servers",
       ],
     },
+    "connect-servers",
     {
       type: "category",
       label: "Build Images",
