@@ -693,6 +693,7 @@ export const StackConfig = ({
                   }
                   onValueChange={(file_contents) => set({ file_contents })}
                   language="yaml"
+                  readOnly={disabled}
                 />
               );
             },
