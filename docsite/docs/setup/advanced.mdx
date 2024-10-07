@@ -1,15 +1,18 @@
 # Advanced Configuration
 
-### Oauth2
+### OIDC / Oauth2
 
 To enable OAuth2 login, you must create a client on the respective OAuth provider,
 for example [Github](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app)
 or [Google](https://developers.google.com/identity/protocols/oauth2).
 
+Komodo also supports self hosted Oauth2 providers like [Authentik](https://docs.goauthentik.io/docs/providers/oauth2/) or [Gitea](https://docs.gitea.com/development/oauth2-provider).
+
 - Komodo uses the `web application` login flow.
 - The redirect uri is:
 	- `<KOMODO_HOST>/auth/github/callback` for Github.
 	- `<KOMODO_HOST>/auth/google/callback` for Google.
+	- `<KOMODO_HOST>/auth/oidc/callback` for OIDC.
 
 ### Mount a config file
 
