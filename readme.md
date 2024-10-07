@@ -6,6 +6,8 @@ A tool to build and deploy software across many servers.
 
 🦎 [Try the Demo](https://demo.komo.do)
 
+🦎 [See the Build Server](https://build.komo.do)
+
 🦎 [Join the Discord](https://discord.gg/DRqE8Fvg5c)
 
 ## About
