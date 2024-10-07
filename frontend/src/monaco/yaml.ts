@@ -102,7 +102,7 @@ const yaml_language = <monaco.languages.IMonarchLanguage>{
       // Key:Value pair
       [
         /(".*?"|'.*?'|[^#'"]*?)([ \t]*)(:)( |$)/,
-        ["type", "white", "operators", "white"],
+        ["key", "white", "operators", "white"],
       ],
 
       { include: "@flowScalars" },

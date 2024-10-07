@@ -43,19 +43,17 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       [
         /^\s*(\[\[)([^[\]]+)(\]\])/,
         [
-          "punctuation.definition.array.table.toml",
-          // "support.type.property-name.array.toml",
-          "entity.other.attribute-name.table.array.toml",
-          "punctuation.definition.array.table.toml",
+          "punctuation.definition.array.table",
+          "entity.other.attribute-name.table.array",
+          "punctuation.definition.array.table",
         ],
       ],
       [
         /^\s*(\[)([^[\]]+)(\])/,
         [
-          "punctuation.definition.table.toml",
-          // "support.type.property-name.table.toml",
-          "entity.other.attribute-name.table.toml",
-          "punctuation.definition.table.toml",
+          "punctuation.definition.table",
+          "entity.other.attribute-name.table",
+          "punctuation.definition.table",
         ],
       ],
 
@@ -63,7 +61,7 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       [
         /\{/,
         {
-          token: "punctuation.definition.table.inline.toml",
+          token: "punctuation.definition.table.inline",
           next: "@inlineTable",
         },
       ],
@@ -71,7 +69,7 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       // Entry (Key = Value)
       [
         /\s*((?:(?:(?:[A-Za-z0-9_+-]+)|(?:\"[^\"]+\")|(?:'[^']+'))\s*\.?\s*)+)\s*(=)/,
-        ["support.type.property-name.toml", "delimiter"],
+        ["", "delimiter"],
       ],
 
       // Values (booleans, numbers, dates, strings, arrays)
@@ -82,10 +80,10 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
     inlineTable: [
       [
         /\}/,
-        { token: "punctuation.definition.table.inline.toml", next: "@pop" },
+        { token: "punctuation.definition.table.inline", next: "@pop" },
       ],
       { include: "@comments" },
-      [/,/, "punctuation.separator.table.inline.toml"],
+      [/,/, "punctuation.separator.table.inline"],
       { include: "@values" },
     ],
 
@@ -97,15 +95,15 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       // Single quoted string
       [
         /"/,
-        { token: "string.quoted.single.basic.line.toml", next: "@basicString" },
+        { token: "string.quoted.single.basic.line", next: "@basicString" },
       ],
 
       // Triple quoted literal string
       [
         /'''/,
         {
-          token: "string.quoted.triple.literal.block.toml",
-          next: "@literalStringTriple",
+          token: "string.quoted.triple.literal.block",
+          next: "@literalTripleStringWithYamlEnv",
         },
       ],
 
@@ -113,7 +111,7 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       [
         /'/,
         {
-          token: "string.quoted.single.literal.line.toml",
+          token: "string.quoted.single.literal.line",
           next: "@literalStringSingle",
         },
       ],
@@ -121,67 +119,71 @@ const toml_language = <monaco.languages.IMonarchLanguage>{
       // Dates and Times
       [
         /\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/,
-        "constant.other.time.datetime.offset.toml",
+        "constant.other.time.datetime.offset",
       ],
       [
         /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?/,
-        "constant.other.time.datetime.local.toml",
+        "constant.other.time.datetime.local",
       ],
-      [/\d{4}-\d{2}-\d{2}/, "constant.other.time.date.toml"],
-      [/\d{2}:\d{2}:\d{2}(?:\.\d+)?/, "constant.other.time.time.toml"],
+      [/\d{4}-\d{2}-\d{2}/, "constant.other.time.date"],
+      [/\d{2}:\d{2}:\d{2}(?:\.\d+)?/, "constant.other.time.time"],
 
       // Booleans
-      [/\b(true|false)\b/, "constant.language.boolean.toml"],
+      [/\b(true|false)\b/, "constant.language.boolean"],
 
       // Numbers
+      [/[+-]?(0x[0-9A-Fa-f_]+|0o[0-7_]+|0b[01_]+)/, "number.hex"],
       [
-        /[+-]?(0|[1-9][0-9_]*)(\.[0-9_]+)?([eE][+-]?[0-9_]+)?/,
-        "constant.numeric.float.toml",
+        /(?<!\w)([+-]?(0|([1-9](([0-9]|_[0-9])+)?))(?:(?:\.(0|([1-9](([0-9]|_[0-9])+)?)))?[eE][+-]?[1-9]_?[0-9]*|(?:\.[0-9_]*)))(?!\w)/,
+        "number.float",
       ],
-      [
-        /[+-]?(0x[0-9A-Fa-f_]+|0o[0-7_]+|0b[01_]+)/,
-        "constant.numeric.hex.toml",
-      ],
+      [/(?<!\w)((?:[+-]?(0|([1-9](([0-9]|_[0-9])+)?))))(?!\w)/, "number"],
 
       // Arrays
-      [/\[/, { token: "punctuation.definition.array.toml", next: "@array" }],
+      [/\[/, { token: "punctuation.definition.array", next: "@array" }],
     ],
 
     // Basic quoted string
     basicString: [
       [/[^\\"]+/, "string"],
-      [/@escapes/, "constant.character.escape.toml"],
+      [/@escapes/, "constant.character.escape"],
       [/\\./, "invalid"],
-      [/"/, { token: "string.quoted.single.basic.line.toml", next: "@pop" }],
+      [/"/, { token: "string.quoted.single.basic.line", next: "@pop" }],
     ],
 
     // Literal triple quoted string
     literalStringTriple: [
       [/[^']+/, "string"],
-      [/'/, { token: "string.quoted.triple.literal.block.toml", next: "@pop" }],
+      [/'/, { token: "string.quoted.triple.literal.block", next: "@pop" }],
     ],
 
     // Literal single quoted string
     literalStringSingle: [
       [/[^']+/, "string"],
-      [/'/, { token: "string.quoted.single.literal.line.toml", next: "@pop" }],
+      [/'/, { token: "string.quoted.single.literal.line", next: "@pop" }],
     ],
 
     // Arrays
     array: [
-      [/\]/, { token: "punctuation.definition.array.toml", next: "@pop" }],
-      [/,/, "punctuation.separator.array.toml"],
+      [/\]/, { token: "punctuation.definition.array", next: "@pop" }],
+      [/,/, "punctuation.separator.array"],
       { include: "@values" },
     ],
 
     // Handle whitespace and comments
     whitespace: [[/\s+/, ""]],
-    comments: [[/\s*((#).*)$/, "comment.line.number-sign.toml"]],
+    comments: [[/\s*((#).*)$/, "comment.line.number-sign"]],
 
     // CUSTOM STUFF FOR YAML / ENV IN TRIPLE STRING
 
     tripleStringWithYamlEnv: [
       [/"""/, { token: "string", next: "@pop" }],
+      { include: "@yamlTokenizer" }, // YAML inside triple quotes
+      { include: "@envVariableTokenizer" }, // Environment Variable parsing inside triple quotes
+    ],
+
+    literalTripleStringWithYamlEnv: [
+      [/'''/, { token: "string", next: "@pop" }],
       { include: "@yamlTokenizer" }, // YAML inside triple quotes
       { include: "@envVariableTokenizer" }, // Environment Variable parsing inside triple quotes
     ],
