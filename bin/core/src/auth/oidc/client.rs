@@ -32,14 +32,9 @@ pub async fn init_default_oidc_client() {
     return;
   }
   async {
-    let provider = config.oidc_provider.to_string();
     // Use OpenID Connect Discovery to fetch the provider metadata.
     let provider_metadata = CoreProviderMetadata::discover_async(
-      IssuerUrl::new(if provider.ends_with('/') {
-        provider
-      } else {
-        provider + "/"
-      })?,
+      IssuerUrl::new(config.oidc_provider.clone())?,
       async_http_client,
     )
     .await
