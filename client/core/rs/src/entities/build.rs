@@ -184,15 +184,6 @@ pub struct BuildConfig {
   #[builder(default)]
   pub pre_build: SystemCommand,
 
-  /// Configuration for the registry to push the built image to.
-  #[serde(default, deserialize_with = "image_registry_deserializer")]
-  #[partial_attr(serde(
-    default,
-    deserialize_with = "option_image_registry_deserializer"
-  ))]
-  #[builder(default)]
-  pub image_registry: ImageRegistryConfig,
-
   /// The path of the docker build context relative to the root of the repo.
   /// Default: "." (the root of the repo).
   #[serde(default = "default_build_path")]
@@ -205,6 +196,15 @@ pub struct BuildConfig {
   #[builder(default = "default_dockerfile_path()")]
   #[partial_default(default_dockerfile_path())]
   pub dockerfile_path: String,
+
+  /// Configuration for the registry to push the built image to.
+  #[serde(default, deserialize_with = "image_registry_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_image_registry_deserializer"
+  ))]
+  #[builder(default)]
+  pub image_registry: ImageRegistryConfig,
 
   /// Whether to skip secret interpolation in the build_args.
   #[serde(default)]
