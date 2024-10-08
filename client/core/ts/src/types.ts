@@ -2383,6 +2383,8 @@ export interface StackConfig {
 	registry_provider?: string;
 	/** Used with `registry_provider` to login to a registry before docker compose up. */
 	registry_account?: string;
+	/** The optional command to run before the Stack is deployed. */
+	pre_deploy?: SystemCommand;
 	/**
 	 * The extra arguments to pass after `docker compose up -d`.
 	 * If empty, no extra arguments will be passed.

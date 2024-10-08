@@ -6,6 +6,7 @@ import {
   ConfigList,
   InputList,
   ProviderSelectorConfig,
+  SystemCommand,
 } from "@components/config/util";
 import { Types } from "@komodo/client";
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
@@ -235,6 +236,20 @@ export const StackConfig = ({
           description:
             "Optionally set a different compose project name. It should match the compose project name on your host.",
         },
+      },
+    },
+    {
+      label: "Pre Deploy",
+      description:
+        "Execute a shell command before running docker compose up. The 'path' is relative to the Run Directory",
+      components: {
+        pre_deploy: (value, set) => (
+          <SystemCommand
+            value={value}
+            set={(value) => set({ pre_deploy: value })}
+            disabled={disabled}
+          />
+        ),
       },
     },
     {

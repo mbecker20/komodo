@@ -19,6 +19,7 @@ use crate::{
       add_interp_update_log,
       interpolate_variables_secrets_into_extra_args,
       interpolate_variables_secrets_into_string,
+      interpolate_variables_secrets_into_system_command,
     },
     periphery_client,
     query::get_variables_and_secrets,
@@ -98,6 +99,13 @@ impl Resolve<DeployStack, (User, Update)> for State {
       interpolate_variables_secrets_into_extra_args(
         &vars_and_secrets,
         &mut stack.config.build_extra_args,
+        &mut global_replacers,
+        &mut secret_replacers,
+      )?;
+
+      interpolate_variables_secrets_into_system_command(
+        &vars_and_secrets,
+        &mut stack.config.pre_deploy,
         &mut global_replacers,
         &mut secret_replacers,
       )?;

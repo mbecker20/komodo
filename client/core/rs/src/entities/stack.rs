@@ -11,7 +11,7 @@ use typeshare::typeshare;
 use super::{
   docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  to_komodo_name, FileContents,
+  to_komodo_name, FileContents, SystemCommand,
 };
 
 #[typeshare]
@@ -318,6 +318,11 @@ pub struct StackConfig {
   #[builder(default)]
   pub registry_account: String,
 
+  /// The optional command to run before the Stack is deployed.
+  #[serde(default)]
+  #[builder(default)]
+  pub pre_deploy: SystemCommand,
+
   /// The extra arguments to pass after `docker compose up -d`.
   /// If empty, no extra arguments will be passed.
   #[serde(default)]
@@ -416,6 +421,7 @@ impl Default for StackConfig {
       file_contents: Default::default(),
       auto_pull: default_auto_pull(),
       ignore_services: Default::default(),
+      pre_deploy: Default::default(),
       extra_args: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),

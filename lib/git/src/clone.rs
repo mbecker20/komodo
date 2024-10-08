@@ -100,7 +100,7 @@ where
   };
 
   if let Some(command) = args.on_clone {
-    if !command.path.is_empty() && !command.command.is_empty() {
+    if !command.command.is_empty() {
       let on_clone_path = repo_dir.join(&command.path);
       if let Some(secrets) = secrets {
         let (full_command, mut replacers) =
@@ -154,7 +154,7 @@ where
     }
   }
   if let Some(command) = args.on_pull {
-    if !command.path.is_empty() && !command.command.is_empty() {
+    if !command.command.is_empty() {
       let on_pull_path = repo_dir.join(&command.path);
       if let Some(secrets) = secrets {
         let (full_command, mut replacers) =

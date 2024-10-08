@@ -197,6 +197,64 @@ pub async fn compose_up(
     }
   }
 
+  if !stack.config.pre_deploy.command.is_empty() {
+    let pre_deploy_path =
+      run_directory.join(&stack.config.pre_deploy.path);
+    if !stack.config.skip_secret_interp {
+      let (full_command, mut replacers) = svi::interpolate_variables(
+        &stack.config.pre_deploy.command,
+        &periphery_config().secrets,
+        svi::Interpolator::DoubleBrackets,
+        true,
+      )
+      .context(
+        "failed to interpolate secrets into pre_deploy command",
+      )?;
+      replacers.extend(core_replacers.to_owned());
+      let mut pre_deploy_log = run_komodo_command(
+        "pre deploy",
+        format!("cd {} && {full_command}", pre_deploy_path.display()),
+      )
+      .await;
+
+      pre_deploy_log.command =
+        svi::replace_in_string(&pre_deploy_log.command, &replacers);
+      pre_deploy_log.stdout =
+        svi::replace_in_string(&pre_deploy_log.stdout, &replacers);
+      pre_deploy_log.stderr =
+        svi::replace_in_string(&pre_deploy_log.stderr, &replacers);
+
+      tracing::debug!(
+        "run Stack pre_deploy command | command: {} | cwd: {:?}",
+        pre_deploy_log.command,
+        pre_deploy_path
+      );
+
+      res.logs.push(pre_deploy_log);
+    } else {
+      let pre_deploy_log = run_komodo_command(
+        "pre deploy",
+        format!(
+          "cd {} && {}",
+          pre_deploy_path.display(),
+          stack.config.pre_deploy.command
+        ),
+      )
+      .await;
+      tracing::debug!(
+        "run Stack pre_deploy command | command: {} | cwd: {:?}",
+        &stack.config.pre_deploy.command,
+        pre_deploy_path
+      );
+      res.logs.push(pre_deploy_log);
+    }
+    if !all_logs_success(&res.logs) {
+      return Err(anyhow!(
+        "Failed at running pre_deploy command, stopping the run."
+      ));
+    }
+  }
+
   // Take down the existing containers.
   // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
   compose_down(&last_project_name, service, res)
