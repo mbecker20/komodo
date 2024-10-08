@@ -620,7 +620,7 @@ impl CloneArgs {
     access_token: Option<&str>,
   ) -> anyhow::Result<String> {
     let access_token_at = match &access_token {
-      Some(token) => format!("{token}@"),
+      Some(token) => format!("token:{token}@"),
       None => String::new(),
     };
     let protocol = if self.https { "https" } else { "http" };
