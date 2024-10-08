@@ -186,7 +186,7 @@ export const Config = <T,>({
                           key={section + item.label}
                         >
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             className="justify-end w-full"
                             size="sm"
                           >
