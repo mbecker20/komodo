@@ -438,8 +438,6 @@ export interface BuildConfig {
 	webhook_secret?: string;
 	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
-	/** Configuration for the registry to push the built image to. */
-	image_registry?: ImageRegistryConfig;
 	/**
 	 * The path of the docker build context relative to the root of the repo.
 	 * Default: "." (the root of the repo).
@@ -447,6 +445,8 @@ export interface BuildConfig {
 	build_path: string;
 	/** The path of the dockerfile relative to the build path. */
 	dockerfile_path: string;
+	/** Configuration for the registry to push the built image to. */
+	image_registry?: ImageRegistryConfig;
 	/** Whether to skip secret interpolation in the build_args. */
 	skip_secret_interp?: boolean;
 	/** Whether to use buildx to build (eg `docker buildx build ...`) */
@@ -2365,6 +2365,11 @@ export interface StackConfig {
 	branch: string;
 	/** Optionally set a specific commit hash. */
 	commit?: string;
+	/**
+	 * By default, the Stack will `git pull` the repo after it is first cloned.
+	 * If this option is enabled, the repo folder will be deleted and recloned instead.
+	 */
+	reclone?: boolean;
 	/** Whether incoming webhooks actually trigger action. */
 	webhook_enabled: boolean;
 	/**

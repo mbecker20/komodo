@@ -10,7 +10,7 @@ use komodo_client::entities::{
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
-  git::{PullOrCloneRepo, RepoActionResponse},
+  git::{CloneRepo, PullOrCloneRepo, RepoActionResponse},
 };
 use resolver_api::Resolve;
 use tokio::fs;
@@ -362,27 +362,46 @@ async fn write_stack(
       }
     };
 
+    let clone_or_pull_res = if stack.config.reclone {
+      State
+        .resolve(
+          CloneRepo {
+            args,
+            git_token,
+            environment: env_vars,
+            env_file_path: stack.config.env_file_path.clone(),
+            skip_secret_interp: stack.config.skip_secret_interp,
+            // repo replacer only needed for on_clone / on_pull,
+            // which aren't available for stacks
+            replacers: Default::default(),
+          },
+          (),
+        )
+        .await
+    } else {
+      State
+        .resolve(
+          PullOrCloneRepo {
+            args,
+            git_token,
+            environment: env_vars,
+            env_file_path: stack.config.env_file_path.clone(),
+            skip_secret_interp: stack.config.skip_secret_interp,
+            // repo replacer only needed for on_clone / on_pull,
+            // which aren't available for stacks
+            replacers: Default::default(),
+          },
+          (),
+        )
+        .await
+    };
+
     let RepoActionResponse {
       logs,
       commit_hash,
       commit_message,
       env_file_path,
-    } = match State
-      .resolve(
-        PullOrCloneRepo {
-          args,
-          git_token,
-          environment: env_vars,
-          env_file_path: stack.config.env_file_path.clone(),
-          skip_secret_interp: stack.config.skip_secret_interp,
-          // repo replacer only needed for on_clone / on_pull,
-          // which aren't available for stacks
-          replacers: Default::default(),
-        },
-        (),
-      )
-      .await
-    {
+    } = match clone_or_pull_res {
       Ok(res) => res,
       Err(e) => {
         let error = format_serror(

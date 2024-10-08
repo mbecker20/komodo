@@ -284,6 +284,12 @@ pub struct StackConfig {
   #[builder(default)]
   pub commit: String,
 
+  /// By default, the Stack will `git pull` the repo after it is first cloned.
+  /// If this option is enabled, the repo folder will be deleted and recloned instead.
+  #[serde(default)]
+  #[builder(default)]
+  pub reclone: bool,
+
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
   #[builder(default = "default_webhook_enabled()")]
@@ -421,6 +427,7 @@ impl Default for StackConfig {
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),
+      reclone: Default::default(),
       git_account: Default::default(),
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),

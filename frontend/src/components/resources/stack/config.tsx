@@ -467,6 +467,10 @@ export const StackConfig = ({
               description:
                 "Switch to a specific hash after cloning the branch.",
             },
+            reclone: {
+              description:
+                "Delete the repo folder and clone it again, instead of using 'git pull'",
+            },
           },
         },
         {
