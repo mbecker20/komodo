@@ -1,27 +1,26 @@
-# React + TypeScript + Vite
+# Komodo Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Komodo JS stack uses Yarn + Vite + React + Tailwind + shadcn/ui
 
-Currently, two official plugins are available:
+## Setup Dev Environment
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The frontend depends on the local package `@komodo/client` located at `/client/core/ts`.
+This must first be built and prepared for yarn link.
 
-## Expanding the ESLint configuration
+The following command should setup everything up (run with /frontend as working directory):
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
+```sh
+cd ../client/core/ts && yarn && yarn build && yarn link && \
+cd ../../../frontend && yarn link @komodo/client && yarn
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+You can make a new file `.env.development` (gitignored) which holds:
+```sh
+VITE_KOMODO_HOST=https://demo.komo.do
+```
+You can point it to any Komodo host you like, including the demo.
+
+Now you can start the dev frontend server:
+```sh
+yarn dev
+```
