@@ -353,7 +353,7 @@ impl ToToml for ServerTemplate {
     if empty_params {
       // toml_pretty will remove empty map
       // but in this case its needed to deserialize the enums.
-      toml.push_str("\nconfig.params = {}");
+      toml.push_str("\nparams = {}");
     }
   }
 }
@@ -385,7 +385,7 @@ impl ToToml for Builder {
     if empty_params {
       // toml_pretty will remove empty map
       // but in this case its needed to deserialize the enums.
-      toml.push_str("\nconfig.params = {}");
+      toml.push_str("\nparams = {}");
     }
   }
 }
