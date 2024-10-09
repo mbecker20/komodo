@@ -1,7 +1,7 @@
 import { useLocalStorage, useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { RequiredResourceComponents } from "@types";
-import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
+import { HardDrive, Rocket, Server } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useServer } from "../server";
 import {
@@ -22,7 +22,6 @@ import { DeleteResource, NewResource, ResourceLink } from "../common";
 import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
-import { Link } from "react-router-dom";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
 
@@ -202,17 +201,6 @@ export const DeploymentComponents: RequiredResourceComponents = {
           <Server className="w-4 h-4" />
           <div>Unknown Server</div>
         </div>
-      );
-    },
-    Alerts: ({ id }) => {
-      return (
-        <Link
-          to={`/deployments/${id}/alerts`}
-          className="flex gap-2 items-center"
-        >
-          <AlertTriangle className="w-4 h-4" />
-          Alerts
-        </Link>
       );
     },
   },

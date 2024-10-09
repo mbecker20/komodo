@@ -46,7 +46,11 @@ import {
   soft_text_color_class_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
-import { MonacoDiffEditor, MonacoEditor } from "@components/monaco";
+import {
+  MonacoDiffEditor,
+  MonacoEditor,
+  MonacoLanguage,
+} from "@components/monaco";
 
 export const ConfigItem = ({
   label,
@@ -575,6 +579,8 @@ interface ConfirmUpdateProps<T> {
   content: Partial<T>;
   onConfirm: () => void;
   disabled: boolean;
+  language?: MonacoLanguage;
+  file_contents_language?: MonacoLanguage;
 }
 
 export function ConfirmUpdate<T>({
@@ -582,6 +588,8 @@ export function ConfirmUpdate<T>({
   content,
   onConfirm,
   disabled,
+  language,
+  file_contents_language,
 }: ConfirmUpdateProps<T>) {
   const [open, set] = useState(false);
   useCtrlKeyListener("s", () => {
@@ -614,6 +622,8 @@ export function ConfirmUpdate<T>({
               _key={key as any}
               val={val as any}
               previous={previous}
+              language={language}
+              file_contents_language={file_contents_language}
             />
           ))}
         </div>
@@ -635,10 +645,14 @@ function ConfirmUpdateItem<T>({
   _key,
   val: _val,
   previous,
+  language,
+  file_contents_language,
 }: {
   _key: keyof T;
   val: T[keyof T];
   previous: T;
+  language?: MonacoLanguage;
+  file_contents_language?: MonacoLanguage;
 }) {
   const [show, setShow] = useState(true);
   const val =
@@ -682,7 +696,16 @@ function ConfirmUpdateItem<T>({
               <MonacoDiffEditor
                 original={prev_val}
                 modified={val}
-                language="toml"
+                language={
+                  language ??
+                  (["environment", "build_args", "secret_args"].includes(
+                    _key as string
+                  )
+                    ? "key_value"
+                    : _key === "file_contents"
+                    ? file_contents_language
+                    : "json")
+                }
               />
             ) : (
               <pre style={{ minHeight: 0 }}>

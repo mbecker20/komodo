@@ -737,6 +737,7 @@ export const StackConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={components}
+      file_contents_language="yaml"
     />
   );
 };

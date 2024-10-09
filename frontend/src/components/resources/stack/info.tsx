@@ -80,7 +80,7 @@ export const StackInfo = ({
           </CardHeader>
         </Card>
       )}
-      
+
       {/* Update deployed contents with diff */}
       {/* {!is_down && deployed_contents.length > 0 && (
         <Card>
@@ -189,6 +189,7 @@ export const StackInfo = ({
                       }
                     }}
                     disabled={!edits[content.path]}
+                    language="yaml"
                   />
                 </div>
               )}

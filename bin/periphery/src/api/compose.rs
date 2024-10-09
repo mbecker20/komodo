@@ -95,6 +95,7 @@ services:
 ";
 
 impl Resolve<GetComposeContentsOnHost, ()> for State {
+  #[instrument(name = "GetComposeContentsOnHost", level = "debug", skip(self))]
   async fn resolve(
     &self,
     GetComposeContentsOnHost {
