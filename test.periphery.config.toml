@@ -14,3 +14,11 @@ include_disk_mounts = []
 ssl_enabled = false
 ssl_key_file = ".ssl/key.pem"
 ssl_cert_file = ".ssl/cert.pem"
+
+###########
+# LOGGING #
+###########
+logging.level = "info"
+logging.stdio = "standard"
+logging.otlp_endpoint = "http://tempo.grafana.orb.local:4317"
+logging.opentelemetry_service_name = "Periphery"

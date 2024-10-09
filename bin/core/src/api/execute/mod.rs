@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
+use derive_variants::{EnumVariants, ExtractVariant};
 use formatting::format_serror;
 use komodo_client::{
   api::execute::*,
@@ -33,7 +34,10 @@ mod stack;
 mod sync;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
+)]
+#[variant_derive(Debug)]
 #[resolver_target(State)]
 #[resolver_args((User, Update))]
 #[serde(tag = "type", content = "params")]
@@ -154,7 +158,15 @@ async fn handler(
   Ok(Json(update))
 }
 
-#[instrument(name = "ExecuteRequest", skip(user, update), fields(user_id = user.id, update_id = update.id))]
+#[instrument(
+  name = "ExecuteRequest",
+  skip(user, update),
+  fields(
+    user_id = user.id,
+    update_id = update.id,
+    request = format!("{:?}", request.extract_variant()))
+  )
+]
 async fn task(
   req_id: Uuid,
   request: ExecuteRequest,

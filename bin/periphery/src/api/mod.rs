@@ -1,5 +1,6 @@
 use anyhow::Context;
 use command::run_komodo_command;
+use derive_variants::EnumVariants;
 use futures::TryFutureExt;
 use komodo_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
@@ -30,7 +31,10 @@ mod network;
 mod stats;
 mod volume;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
+)]
+#[variant_derive(Debug)]
 #[serde(tag = "type", content = "params")]
 #[resolver_target(State)]
 #[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
@@ -206,7 +210,7 @@ impl ResolveToString<ListSecrets> for State {
 }
 
 impl Resolve<GetDockerLists> for State {
-  #[instrument(name = "GetDockerLists", skip(self))]
+  #[instrument(name = "GetDockerLists", level = "debug", skip(self))]
   async fn resolve(
     &self,
     GetDockerLists {}: GetDockerLists,

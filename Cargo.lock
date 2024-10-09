@@ -2306,6 +2306,7 @@ dependencies = [
  "bollard",
  "clap",
  "command",
+ "derive_variants",
  "dotenvy",
  "environment_file",
  "envy",

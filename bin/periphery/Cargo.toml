@@ -26,6 +26,7 @@ git.workspace = true
 serror = { workspace = true, features = ["axum"] }
 merge_config_files.workspace = true
 async_timing_util.workspace = true
+derive_variants.workspace = true
 resolver_api.workspace = true
 run_command.workspace = true
 svi.workspace = true

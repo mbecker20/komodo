@@ -31,3 +31,11 @@ webhook_secret = "a_random_webhook_secret"
 
 monitoring_interval = "5-sec"
 resource_poll_interval = "1-min"
+
+###########
+# LOGGING #
+###########
+logging.level = "info"
+logging.stdio = "standard"
+logging.otlp_endpoint = "http://tempo.grafana.orb.local:4317"
+logging.opentelemetry_service_name = "Komodo"
