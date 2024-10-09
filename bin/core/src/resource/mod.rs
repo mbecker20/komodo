@@ -15,7 +15,7 @@ use komodo_client::{
     tag::Tag,
     to_komodo_name,
     update::Update,
-    user::User,
+    user::{system_user, User},
     Operation, ResourceTarget, ResourceTargetVariant,
   },
 };
@@ -506,6 +506,18 @@ pub async fn create<T: KomodoResource>(
 
   if ObjectId::from_str(&name).is_ok() {
     return Err(anyhow!("valid ObjectIds cannot be used as names."));
+  }
+
+  // Ensure an existing resource with same name doesn't already exist
+  // The database indexing also ensures this but doesn't give a good error message.
+  if list_full_for_user::<T>(Default::default(), system_user())
+    .await
+    .context("Failed to list all resources for duplicate name check")?
+    .into_iter()
+    .find(|r| r.name == name)
+    .is_some()
+  {
+    return Err(anyhow!("Must provide unique name for resource."));
   }
 
   let start_ts = komodo_timestamp();

@@ -164,7 +164,11 @@ pub fn get_image_name(
 }
 
 pub fn to_komodo_name(name: &str) -> String {
-  name.to_lowercase().replace([' ', '.'], "_")
+  name
+    .to_lowercase()
+    .replace([' ', '.'], "_")
+    .trim()
+    .to_string()
 }
 
 /// Unix timestamp in milliseconds as i64
