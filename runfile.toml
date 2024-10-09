@@ -30,6 +30,10 @@ docker compose -p komodo-dev -f test.compose.yaml build"""
 description = "runs core --release pointing to test.core.config.toml"
 cmd = "KOMODO_CONFIG_PATH=test.core.config.toml cargo run -p komodo_core --release"
 
+[test-periphery]
+description = "runs periphery --release pointing to test.periphery.config.toml"
+cmd = "PERIPHERY_CONFIG_PATH=test.periphery.config.toml cargo run -p komodo_periphery --release"
+
 [docsite-start]
 path = "docsite"
 cmd = "yarn start"
@@ -38,5 +42,5 @@ cmd = "yarn start"
 path = "docsite"
 cmd = "yarn deploy"
 
-[rustdoc-server]
-cmd = "cargo watch -s 'cargo doc --no-deps -p komodo_client' & http --quiet target/doc"
+# [rustdoc-server]
+# cmd = "cargo watch -s 'cargo doc --no-deps -p komodo_client' & http --quiet target/doc"

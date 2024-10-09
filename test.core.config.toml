@@ -1,14 +1,18 @@
+###########################
+# 🦎 KOMODO CORE CONFIG 🦎 #
+###########################
 title = "Komodo Test"
 host = "http://localhost:9121"
 port = 9121
 passkey = "a_random_passkey"
-repo_directory = "/Users/max/komodo-repos"
+repo_directory = ".core-repos"
+frontend_path = "frontend/dist"
+first_server = "http://localhost:8121"
+
 disable_confirm_dialog = true
 enable_new_users = true
 
 # database.address = "localhost:27017"
-# database.address = "ferretdb.komodo.orb.local"
-# database.address = "ferretdb.komodo-dev.orb.local"
 database.address = "test-ferretdb.orb.local"
 # database.username = "admin"
 # database.password = "admin"
@@ -18,16 +22,12 @@ local_auth = true
 jwt_secret = "your_random_secret"
 jwt_ttl = "2-wk"
 
-oidc_enabled = true
-oidc_provider = "http://server.authentik2.orb.local:9000/application/o/komodo"
-oidc_client_id = "komodo"
-oidc_client_secret = "komodo"
+oidc_enabled = false
+# oidc_provider = "http://server.authentik2.orb.local:9000/application/o/komodo"
+# oidc_client_id = "komodo"
+# oidc_client_secret = "komodo"
 
 webhook_secret = "a_random_webhook_secret"
 
-stack_poll_interval = "1-min"
-sync_poll_interval = "1-min"
-build_poll_interval = "1-min"
-repo_poll_interval = "1-min"
 monitoring_interval = "5-sec"
-
+resource_poll_interval = "1-min"

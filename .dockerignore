@@ -6,3 +6,9 @@ LICENSE
 
 */node_modules
 */dist
+
+creds.toml
+.core-repos
+.repos
+.stacks
+.ssl
