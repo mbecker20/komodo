@@ -17,7 +17,7 @@ export const NewUserGroup = () => {
   return (
     <NewLayout
       entityType="User Group"
-      onSuccess={() => mutateAsync({ name })}
+      onConfirm={() => mutateAsync({ name })}
       enabled={!!name}
       onOpenChange={() => setName("")}
     >
@@ -46,7 +46,7 @@ export const NewServiceUser = () => {
   return (
     <NewLayout
       entityType="Service User"
-      onSuccess={() => mutateAsync({ username, description: "" })}
+      onConfirm={() => mutateAsync({ username, description: "" })}
       enabled={!!username}
       onOpenChange={() => setUsername("")}
     >

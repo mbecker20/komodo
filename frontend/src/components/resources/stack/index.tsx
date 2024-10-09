@@ -151,7 +151,15 @@ export const StackComponents: RequiredResourceComponents = {
     );
   },
 
-  New: ({ server_id }) => <NewResource type="Stack" server_id={server_id} />,
+  New: ({ server_id: _server_id }) => {
+    const servers = useRead("ListServers", {}).data;
+    const server_id = _server_id
+      ? _server_id
+      : servers && servers.length === 1
+      ? servers[0].id
+      : undefined;
+    return <NewResource type="Stack" server_id={server_id} />;
+  },
 
   Table: ({ resources }) => (
     <StackTable stacks={resources as Types.StackListItem[]} />

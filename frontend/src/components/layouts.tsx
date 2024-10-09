@@ -203,13 +203,13 @@ export const NewLayout = ({
   entityType,
   children,
   enabled,
-  onSuccess,
+  onConfirm,
   onOpenChange,
 }: {
   entityType: string;
   children: ReactNode;
   enabled: boolean;
-  onSuccess: () => Promise<unknown>;
+  onConfirm: () => Promise<unknown>;
   onOpenChange?: (open: boolean) => void;
 }) => {
   const [open, set] = useState(false);
@@ -237,7 +237,7 @@ export const NewLayout = ({
             variant="outline"
             onClick={async () => {
               setLoading(true);
-              await onSuccess();
+              await onConfirm();
               setLoading(false);
               set(false);
             }}

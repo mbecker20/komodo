@@ -119,7 +119,11 @@ export const ResourceSelector = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="secondary" className="flex justify-start gap-2 w-fit max-w-[200px]" disabled={disabled}>
+        <Button
+          variant="secondary"
+          className="flex justify-start gap-2 w-fit max-w-[200px]"
+          disabled={disabled}
+        >
           {name || `Select ${type}`}
           {!disabled && <ChevronsUpDown className="w-3 h-3" />}
         </Button>
@@ -258,16 +262,19 @@ export const NewResource = ({
   type,
   readable_type,
   server_id,
+  builder_id,
   build_id,
   name: _name = "",
 }: {
   type: UsableResource;
   readable_type?: string;
   server_id?: string;
+  builder_id?: string;
   build_id?: string;
   name?: string;
 }) => {
   const nav = useNavigate();
+  const { toast } = useToast();
   const { mutateAsync } = useWrite(`Create${type}`);
   const [name, setName] = useState(_name);
   const type_display =
@@ -276,7 +283,7 @@ export const NewResource = ({
       : type === "ResourceSync"
       ? "resource-sync"
       : type.toLowerCase();
-  const config: Types._PartialDeploymentConfig =
+  const config: Types._PartialDeploymentConfig | Types._PartialRepoConfig =
     type === "Deployment"
       ? {
           server_id,
@@ -287,15 +294,19 @@ export const NewResource = ({
       : type === "Stack"
       ? { server_id }
       : type === "Repo"
-      ? { server_id }
+      ? { server_id, builder_id }
+      : type === "Build"
+      ? { builder_id }
       : {};
+  const onConfirm = async () => {
+    if (!name) toast({ title: "Name cannot be empty" });
+    const id = (await mutateAsync({ name, config }))._id?.$oid!;
+    nav(`/${usableResourcePath(type)}/${id}`);
+  };
   return (
     <NewLayout
       entityType={readable_type ?? type}
-      onSuccess={async () => {
-        const id = (await mutateAsync({ name, config }))._id?.$oid!;
-        nav(`/${usableResourcePath(type)}/${id}`);
-      }}
+      onConfirm={onConfirm}
       enabled={!!name}
       onOpenChange={() => setName("")}
     >
@@ -305,6 +316,12 @@ export const NewResource = ({
           placeholder={`${type_display}-name`}
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (!name) return;
+            if (e.key === "Enter") {
+              onConfirm();
+            }
+          }}
         />
       </div>
     </NewLayout>

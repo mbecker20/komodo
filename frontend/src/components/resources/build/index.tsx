@@ -115,9 +115,17 @@ export const BuildComponents: RequiredResourceComponents = {
 
   New: () => {
     const user = useUser().data;
+    const builders = useRead("ListBuilders", {}).data;
     if (!user) return null;
     if (!user.admin && !user.create_build_permissions) return null;
-    return <NewResource type="Build" />;
+    return (
+      <NewResource
+        type="Build"
+        builder_id={
+          builders && builders.length === 1 ? builders[0].id : undefined
+        }
+      />
+    );
   },
 
   Table: ({ resources }) => (
