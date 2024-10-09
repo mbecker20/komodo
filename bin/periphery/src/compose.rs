@@ -499,7 +499,7 @@ async fn compose_down(
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
   let log = run_komodo_command(
-    "destroy container",
+    "compose down",
     format!("{docker_compose} -p {project} down{service_arg}"),
   )
   .await;
