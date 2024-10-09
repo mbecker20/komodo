@@ -484,7 +484,7 @@ export const StackConfig = ({
             },
             reclone: {
               description:
-                "Delete the repo folder and clone it again, instead of using 'git pull'",
+                "Delete the repo folder and clone it again, instead of using 'git pull'.",
             },
           },
         },
