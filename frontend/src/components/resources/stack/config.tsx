@@ -234,7 +234,7 @@ export const StackConfig = ({
           placeholder: "Compose project name",
           boldLabel: true,
           description:
-            "Optionally set a different compose project name. It should match the compose project name on your host.",
+            "Optionally set a different compose project name. If importing existing stack, this should match the compose project name on your host.",
         },
       },
     },

@@ -398,6 +398,7 @@ export const AccountSelector = ({
   provider,
   selected,
   onSelect,
+  placeholder = "Select Account",
 }: {
   disabled: boolean;
   type: "Server" | "Builder" | "None";
@@ -406,6 +407,7 @@ export const AccountSelector = ({
   provider: string;
   selected: string | undefined;
   onSelect: (id: string) => void;
+  placeholder?: string;
 }) => {
   const [db_request, config_request]:
     | ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
@@ -447,7 +449,7 @@ export const AccountSelector = ({
         className="w-full lg:w-[200px] max-w-[50%]"
         disabled={disabled}
       >
-        <SelectValue placeholder="Select Account" />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
@@ -471,12 +473,16 @@ export const AccountSelectorConfig = (params: {
   provider: string;
   selected: string | undefined;
   onSelect: (id: string) => void;
-  placeholder: string;
+  placeholder?: string;
+  description?: string;
 }) => {
   return (
     <ConfigItem
       label="Account"
-      description="Select the account used to log in to the provider"
+      description={
+        params.description ??
+        "Select the account used to log in to the provider"
+      }
     >
       <AccountSelector {...params} />
     </ConfigItem>

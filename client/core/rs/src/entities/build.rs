@@ -33,6 +33,8 @@ pub struct BuildListItemInfo {
   pub builder_id: String,
   /// The git provider domain
   pub git_provider: String,
+  /// The image registry domain
+  pub image_registry_domain: String,
   /// The repo used as the source of the build
   pub repo: String,
   /// The branch of the repo

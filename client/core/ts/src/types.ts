@@ -512,6 +512,8 @@ export interface BuildListItemInfo {
 	builder_id: string;
 	/** The git provider domain */
 	git_provider: string;
+	/** The image registry domain */
+	image_registry_domain: string;
 	/** The repo used as the source of the build */
 	repo: string;
 	/** The branch of the repo */
