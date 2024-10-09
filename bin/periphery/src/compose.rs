@@ -71,7 +71,7 @@ pub async fn compose_up(
     return Err(anyhow!("A compose file doesn't exist after writing stack. Ensure the run_directory and file_paths are correct."));
   }
 
-  for (_, full_path) in &file_paths {
+  for (path, full_path) in &file_paths {
     let file_contents =
       match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
@@ -86,7 +86,7 @@ pub async fn compose_up(
             .push(Log::error("read compose file", error.clone()));
           // This should only happen for repo stacks, ie remote error
           res.remote_errors.push(FileContents {
-            path: full_path.display().to_string(),
+            path: path.to_string(),
             contents: error,
           });
           return Err(anyhow!(
@@ -95,7 +95,7 @@ pub async fn compose_up(
         }
       };
     res.file_contents.push(FileContents {
-      path: full_path.display().to_string(),
+      path: path.to_string(),
       contents: file_contents,
     });
   }
@@ -137,7 +137,7 @@ pub async fn compose_up(
   }
 
   let env_file = env_file_path
-    .map(|path| format!(" --env-file {}", path.display()))
+    .map(|path| format!(" --env-file {path}"))
     .unwrap_or_default();
 
   // Build images before destroying to minimize downtime.
@@ -295,11 +295,11 @@ pub async fn compose_up(
 
 /// Either writes the stack file_contents to a file, or clones the repo.
 /// Returns (run_directory, env_file_path)
-async fn write_stack(
-  stack: &Stack,
+async fn write_stack<'a>(
+  stack: &'a Stack,
   git_token: Option<String>,
   res: &mut ComposeUpResponse,
-) -> anyhow::Result<(PathBuf, Option<PathBuf>)> {
+) -> anyhow::Result<(PathBuf, Option<&'a str>)> {
   let root = periphery_config()
     .stack_dir
     .join(to_komodo_name(&stack.name));
@@ -333,7 +333,14 @@ async fn write_stack(
         return Err(anyhow!("failed to write environment file"));
       }
     };
-    Ok((run_directory, env_file_path))
+    Ok((
+      run_directory,
+      // Env file paths are already relative to run directory,
+      // so need to pass original env_file_path here.
+      env_file_path
+        .is_some()
+        .then_some(&stack.config.env_file_path),
+    ))
   } else if stack.config.repo.is_empty() {
     if stack.config.file_contents.trim().is_empty() {
       return Err(anyhow!("Must either input compose file contents directly, or use file one host / git repo options."));
@@ -382,7 +389,12 @@ async fn write_stack(
         format!("failed to write compose file to {file_path:?}")
       })?;
 
-    Ok((run_directory, env_file_path))
+    Ok((
+      run_directory,
+      env_file_path
+        .is_some()
+        .then_some(&stack.config.env_file_path),
+    ))
   } else {
     // ================
     // REPO BASED FILES
@@ -484,7 +496,12 @@ async fn write_stack(
       return Err(anyhow!("Stopped after repo pull failure"));
     }
 
-    Ok((run_directory, env_file_path))
+    Ok((
+      run_directory,
+      env_file_path
+        .is_some()
+        .then_some(&stack.config.env_file_path),
+    ))
   }
 }
 
