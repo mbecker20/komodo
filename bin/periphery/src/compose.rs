@@ -10,7 +10,7 @@ use komodo_client::entities::{
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
-  git::{PullOrCloneRepo, RepoActionResponse},
+  git::{CloneRepo, PullOrCloneRepo, RepoActionResponse},
 };
 use resolver_api::Resolve;
 use tokio::fs;
@@ -71,7 +71,7 @@ pub async fn compose_up(
     return Err(anyhow!("A compose file doesn't exist after writing stack. Ensure the run_directory and file_paths are correct."));
   }
 
-  for (_, full_path) in &file_paths {
+  for (path, full_path) in &file_paths {
     let file_contents =
       match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
@@ -86,7 +86,7 @@ pub async fn compose_up(
             .push(Log::error("read compose file", error.clone()));
           // This should only happen for repo stacks, ie remote error
           res.remote_errors.push(FileContents {
-            path: full_path.display().to_string(),
+            path: path.to_string(),
             contents: error,
           });
           return Err(anyhow!(
@@ -95,7 +95,7 @@ pub async fn compose_up(
         }
       };
     res.file_contents.push(FileContents {
-      path: full_path.display().to_string(),
+      path: path.to_string(),
       contents: file_contents,
     });
   }
@@ -137,7 +137,7 @@ pub async fn compose_up(
   }
 
   let env_file = env_file_path
-    .map(|path| format!(" --env-file {}", path.display()))
+    .map(|path| format!(" --env-file {path}"))
     .unwrap_or_default();
 
   // Build images before destroying to minimize downtime.
@@ -197,6 +197,64 @@ pub async fn compose_up(
     }
   }
 
+  if !stack.config.pre_deploy.command.is_empty() {
+    let pre_deploy_path =
+      run_directory.join(&stack.config.pre_deploy.path);
+    if !stack.config.skip_secret_interp {
+      let (full_command, mut replacers) = svi::interpolate_variables(
+        &stack.config.pre_deploy.command,
+        &periphery_config().secrets,
+        svi::Interpolator::DoubleBrackets,
+        true,
+      )
+      .context(
+        "failed to interpolate secrets into pre_deploy command",
+      )?;
+      replacers.extend(core_replacers.to_owned());
+      let mut pre_deploy_log = run_komodo_command(
+        "pre deploy",
+        format!("cd {} && {full_command}", pre_deploy_path.display()),
+      )
+      .await;
+
+      pre_deploy_log.command =
+        svi::replace_in_string(&pre_deploy_log.command, &replacers);
+      pre_deploy_log.stdout =
+        svi::replace_in_string(&pre_deploy_log.stdout, &replacers);
+      pre_deploy_log.stderr =
+        svi::replace_in_string(&pre_deploy_log.stderr, &replacers);
+
+      tracing::debug!(
+        "run Stack pre_deploy command | command: {} | cwd: {:?}",
+        pre_deploy_log.command,
+        pre_deploy_path
+      );
+
+      res.logs.push(pre_deploy_log);
+    } else {
+      let pre_deploy_log = run_komodo_command(
+        "pre deploy",
+        format!(
+          "cd {} && {}",
+          pre_deploy_path.display(),
+          stack.config.pre_deploy.command
+        ),
+      )
+      .await;
+      tracing::debug!(
+        "run Stack pre_deploy command | command: {} | cwd: {:?}",
+        &stack.config.pre_deploy.command,
+        pre_deploy_path
+      );
+      res.logs.push(pre_deploy_log);
+    }
+    if !all_logs_success(&res.logs) {
+      return Err(anyhow!(
+        "Failed at running pre_deploy command, stopping the run."
+      ));
+    }
+  }
+
   // Take down the existing containers.
   // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
   compose_down(&last_project_name, service, res)
@@ -237,11 +295,11 @@ pub async fn compose_up(
 
 /// Either writes the stack file_contents to a file, or clones the repo.
 /// Returns (run_directory, env_file_path)
-async fn write_stack(
-  stack: &Stack,
+async fn write_stack<'a>(
+  stack: &'a Stack,
   git_token: Option<String>,
   res: &mut ComposeUpResponse,
-) -> anyhow::Result<(PathBuf, Option<PathBuf>)> {
+) -> anyhow::Result<(PathBuf, Option<&'a str>)> {
   let root = periphery_config()
     .stack_dir
     .join(to_komodo_name(&stack.name));
@@ -275,7 +333,14 @@ async fn write_stack(
         return Err(anyhow!("failed to write environment file"));
       }
     };
-    Ok((run_directory, env_file_path))
+    Ok((
+      run_directory,
+      // Env file paths are already relative to run directory,
+      // so need to pass original env_file_path here.
+      env_file_path
+        .is_some()
+        .then_some(&stack.config.env_file_path),
+    ))
   } else if stack.config.repo.is_empty() {
     if stack.config.file_contents.trim().is_empty() {
       return Err(anyhow!("Must either input compose file contents directly, or use file one host / git repo options."));
@@ -324,7 +389,12 @@ async fn write_stack(
         format!("failed to write compose file to {file_path:?}")
       })?;
 
-    Ok((run_directory, env_file_path))
+    Ok((
+      run_directory,
+      env_file_path
+        .is_some()
+        .then_some(&stack.config.env_file_path),
+    ))
   } else {
     // ================
     // REPO BASED FILES
@@ -362,27 +432,46 @@ async fn write_stack(
       }
     };
 
+    let clone_or_pull_res = if stack.config.reclone {
+      State
+        .resolve(
+          CloneRepo {
+            args,
+            git_token,
+            environment: env_vars,
+            env_file_path: stack.config.env_file_path.clone(),
+            skip_secret_interp: stack.config.skip_secret_interp,
+            // repo replacer only needed for on_clone / on_pull,
+            // which aren't available for stacks
+            replacers: Default::default(),
+          },
+          (),
+        )
+        .await
+    } else {
+      State
+        .resolve(
+          PullOrCloneRepo {
+            args,
+            git_token,
+            environment: env_vars,
+            env_file_path: stack.config.env_file_path.clone(),
+            skip_secret_interp: stack.config.skip_secret_interp,
+            // repo replacer only needed for on_clone / on_pull,
+            // which aren't available for stacks
+            replacers: Default::default(),
+          },
+          (),
+        )
+        .await
+    };
+
     let RepoActionResponse {
       logs,
       commit_hash,
       commit_message,
       env_file_path,
-    } = match State
-      .resolve(
-        PullOrCloneRepo {
-          args,
-          git_token,
-          environment: env_vars,
-          env_file_path: stack.config.env_file_path.clone(),
-          skip_secret_interp: stack.config.skip_secret_interp,
-          // repo replacer only needed for on_clone / on_pull,
-          // which aren't available for stacks
-          replacers: Default::default(),
-        },
-        (),
-      )
-      .await
-    {
+    } = match clone_or_pull_res {
       Ok(res) => res,
       Err(e) => {
         let error = format_serror(
@@ -407,7 +496,12 @@ async fn write_stack(
       return Err(anyhow!("Stopped after repo pull failure"));
     }
 
-    Ok((run_directory, env_file_path))
+    Ok((
+      run_directory,
+      env_file_path
+        .is_some()
+        .then_some(&stack.config.env_file_path),
+    ))
   }
 }
 
@@ -422,7 +516,7 @@ async fn compose_down(
     .map(|service| format!(" {service}"))
     .unwrap_or_default();
   let log = run_komodo_command(
-    "destroy container",
+    "compose down",
     format!("{docker_compose} -p {project} down{service_arg}"),
   )
   .await;

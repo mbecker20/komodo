@@ -2,6 +2,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { ReactNode, useState } from "react";
 import {
+  AccountSelectorConfig,
   AddExtraArgMenu,
   ConfigItem,
   ConfigList,
@@ -19,6 +20,7 @@ import {
   DefaultTerminationSignal,
   TerminationTimeout,
 } from "./components/term-signal";
+import { extract_registry_domain } from "@lib/utils";
 
 export const DeploymentConfig = ({
   id,
@@ -31,6 +33,7 @@ export const DeploymentConfig = ({
     target: { type: "Deployment", id },
   }).data;
   const config = useRead("GetDeployment", { deployment: id }).data?.config;
+  const builds = useRead("ListBuilds", {}).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
@@ -100,6 +103,37 @@ export const DeploymentConfig = ({
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
               ),
+              image_registry_account: (account, set) => {
+                const image = update.image ?? config.image;
+                const provider =
+                  image?.type === "Image" && image.params.image
+                    ? extract_registry_domain(image.params.image)
+                    : image?.type === "Build" && image.params.build_id
+                    ? builds?.find((b) => b.id === image.params.build_id)?.info
+                        .image_registry_domain
+                    : undefined;
+                return (
+                  <AccountSelectorConfig
+                    id={update.server_id ?? config.server_id ?? undefined}
+                    type="Server"
+                    account_type="docker"
+                    provider={provider ?? "docker.io"}
+                    selected={account}
+                    onSelect={(image_registry_account) =>
+                      set({ image_registry_account })
+                    }
+                    disabled={disabled}
+                    placeholder={
+                      image?.type === "Build" ? "Same as Build" : undefined
+                    }
+                    description={
+                      image?.type === "Build"
+                        ? "Select an alternate account used to log in to the provider"
+                        : undefined
+                    }
+                  />
+                );
+              },
               redeploy_on_build: (update.image?.type ?? config.image?.type) ===
                 "Build" && {
                 description: "Automatically redeploy when the image is built.",
@@ -183,6 +217,53 @@ export const DeploymentConfig = ({
             },
           },
           {
+            label: "Restart",
+            labelHidden: true,
+            components: {
+              restart: (value, set) => (
+                <RestartModeSelector
+                  selected={value}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+            },
+          },
+        ],
+        advanced: [
+          {
+            label: "Command",
+            labelHidden: true,
+            components: {
+              command: (value, set) => (
+                <ConfigItem
+                  label="Command"
+                  description={
+                    <div className="flex flex-row flex-wrap gap-2">
+                      <div>Replace the CMD, or extend the ENTRYPOINT.</div>
+                      <Link
+                        to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
+                        target="_blank"
+                        className="text-primary"
+                      >
+                        See docker docs.
+                        {/* <Button variant="link" className="p-0">
+                        </Button> */}
+                      </Link>
+                    </div>
+                  }
+                >
+                  <MonacoEditor
+                    value={value}
+                    language="shell"
+                    onValueChange={(command) => set({ command })}
+                    readOnly={disabled}
+                  />
+                </ConfigItem>
+              ),
+            },
+          },
+          {
             label: "Labels",
             description: "Attach --labels to the container.",
             boldLabel: false,
@@ -193,19 +274,6 @@ export const DeploymentConfig = ({
                   language="key_value"
                   onValueChange={(labels) => set({ labels })}
                   readOnly={disabled}
-                />
-              ),
-            },
-          },
-          {
-            label: "Restart",
-            labelHidden: true,
-            components: {
-              restart: (value, set) => (
-                <RestartModeSelector
-                  selected={value}
-                  set={set}
-                  disabled={disabled}
                 />
               ),
             },
@@ -250,38 +318,6 @@ export const DeploymentConfig = ({
                     set={set}
                     disabled={disabled}
                     placeholder="--extra-arg=value"
-                  />
-                </ConfigItem>
-              ),
-            },
-          },
-          {
-            label: "Command",
-            labelHidden: true,
-            components: {
-              command: (value, set) => (
-                <ConfigItem
-                  label="Command"
-                  description={
-                    <div className="flex flex-row flex-wrap gap-2">
-                      <div>Replace the CMD, or extend the ENTRYPOINT.</div>
-                      <Link
-                        to="https://docs.docker.com/engine/reference/run/#commands-and-arguments"
-                        target="_blank"
-                        className="text-primary"
-                      >
-                        See docker docs.
-                        {/* <Button variant="link" className="p-0">
-                        </Button> */}
-                      </Link>
-                    </div>
-                  }
-                >
-                  <MonacoEditor
-                    value={value}
-                    language="shell"
-                    onValueChange={(command) => set({ command })}
-                    readOnly={disabled}
                   />
                 </ConfigItem>
               ),

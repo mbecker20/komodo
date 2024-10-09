@@ -4,6 +4,7 @@ import {
   ConfirmUpdate,
 } from "@components/config/util";
 import { Section } from "@components/layouts";
+import { MonacoLanguage } from "@components/monaco";
 import { Types } from "@komodo/client";
 import { cn } from "@lib/utils";
 import { Button } from "@ui/button";
@@ -31,6 +32,7 @@ export const ConfigLayout = <
   onReset,
   selector,
   titleOther,
+  file_contents_language,
 }: {
   original: T;
   config: Partial<T>;
@@ -40,6 +42,7 @@ export const ConfigLayout = <
   onReset: () => void;
   selector?: ReactNode;
   titleOther?: ReactNode;
+  file_contents_language?: MonacoLanguage;
 }) => {
   const titleProps = titleOther
     ? { titleOther }
@@ -74,6 +77,7 @@ export const ConfigLayout = <
               content={config}
               onConfirm={onConfirm}
               disabled={disabled}
+              file_contents_language={file_contents_language}
             />
           )}
         </div>
@@ -120,6 +124,7 @@ export const Config = <T,>({
   components,
   selector,
   titleOther,
+  file_contents_language,
 }: {
   resource_id: string;
   resource_type: Types.ResourceTarget["type"];
@@ -134,6 +139,7 @@ export const Config = <T,>({
     string, // sidebar key
     ConfigComponent<T>[] | false | undefined
   >;
+  file_contents_language?: MonacoLanguage;
 }) => {
   // let component_keys = keys(components);
   // const [_show, setShow] = useLocalStorage(
@@ -164,6 +170,7 @@ export const Config = <T,>({
       }}
       onReset={() => set({})}
       selector={selector}
+      file_contents_language={file_contents_language}
     >
       <div className="flex gap-6">
         <div className="hidden xl:block relative pr-6 border-r">

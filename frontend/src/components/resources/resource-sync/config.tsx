@@ -57,6 +57,7 @@ export const ResourceSyncConfig = ({
       onSave={async () => {
         await mutateAsync({ id, config: update });
       }}
+      file_contents_language="toml"
       components={{
         "": [
           {

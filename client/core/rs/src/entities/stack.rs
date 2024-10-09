@@ -11,7 +11,7 @@ use typeshare::typeshare;
 use super::{
   docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
-  to_komodo_name, FileContents,
+  to_komodo_name, FileContents, SystemCommand,
 };
 
 #[typeshare]
@@ -284,6 +284,12 @@ pub struct StackConfig {
   #[builder(default)]
   pub commit: String,
 
+  /// By default, the Stack will `git pull` the repo after it is first cloned.
+  /// If this option is enabled, the repo folder will be deleted and recloned instead.
+  #[serde(default)]
+  #[builder(default)]
+  pub reclone: bool,
+
   /// Whether incoming webhooks actually trigger action.
   #[serde(default = "default_webhook_enabled")]
   #[builder(default = "default_webhook_enabled()")]
@@ -311,6 +317,11 @@ pub struct StackConfig {
   #[serde(default)]
   #[builder(default)]
   pub registry_account: String,
+
+  /// The optional command to run before the Stack is deployed.
+  #[serde(default)]
+  #[builder(default)]
+  pub pre_deploy: SystemCommand,
 
   /// The extra arguments to pass after `docker compose up -d`.
   /// If empty, no extra arguments will be passed.
@@ -410,6 +421,7 @@ impl Default for StackConfig {
       file_contents: Default::default(),
       auto_pull: default_auto_pull(),
       ignore_services: Default::default(),
+      pre_deploy: Default::default(),
       extra_args: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),
@@ -421,6 +433,7 @@ impl Default for StackConfig {
       repo: Default::default(),
       branch: default_branch(),
       commit: Default::default(),
+      reclone: Default::default(),
       git_account: Default::default(),
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),

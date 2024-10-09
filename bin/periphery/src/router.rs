@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, time::Instant};
+use std::net::SocketAddr;
 
 use anyhow::{anyhow, Context};
 use axum::{
@@ -11,6 +11,7 @@ use axum::{
   Router,
 };
 use axum_extra::{headers::ContentType, TypedHeader};
+use derive_variants::ExtractVariant;
 use resolver_api::Resolver;
 use serror::{AddStatusCode, AddStatusCodeError, Json};
 use uuid::Uuid;
@@ -40,13 +41,12 @@ async fn handler(
   Ok((TypedHeader(ContentType::json()), res??))
 }
 
-#[instrument(name = "PeripheryHandler")]
 async fn task(
   req_id: Uuid,
   request: crate::api::PeripheryRequest,
 ) -> anyhow::Result<String> {
-  let timer = Instant::now();
-
+  let variant = request.extract_variant();
+  
   let res =
     State
       .resolve_request(request, ())
@@ -59,16 +59,12 @@ async fn task(
       });
 
   if let Err(e) = &res {
-    warn!("request {req_id} error: {e:#}");
+    warn!("request {req_id} | type: {variant:?} | error: {e:#}");
   }
-
-  let elapsed = timer.elapsed();
-  debug!("request {req_id} | resolve time: {elapsed:?}");
 
   res
 }
 
-#[instrument(level = "debug")]
 async fn guard_request_by_passkey(
   req: Request<Body>,
   next: Next,
@@ -100,7 +96,6 @@ async fn guard_request_by_passkey(
   }
 }
 
-#[instrument(level = "debug")]
 async fn guard_request_by_ip(
   req: Request<Body>,
   next: Next,

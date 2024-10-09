@@ -57,6 +57,7 @@ impl super::KomodoResource for Build {
         version: build.config.version,
         builder_id: build.config.builder_id,
         git_provider: build.config.git_provider,
+        image_registry_domain: build.config.image_registry.domain,
         repo: build.config.repo,
         branch: build.config.branch,
         built_hash: build.info.built_hash,

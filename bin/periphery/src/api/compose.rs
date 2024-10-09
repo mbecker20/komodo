@@ -76,85 +76,6 @@ pub struct DockerComposeLsItem {
 
 //
 
-const DEFAULT_COMPOSE_CONTENTS: &str = "## 🦎 Hello Komodo 🦎
-services:
-  hello_world:
-    image: hello-world
-    # networks:
-    #   - default
-    # ports:
-    #   - 3000:3000
-    # volumes:
-    #   - data:/data
-
-# networks:
-#   default: {}
-
-# volumes:
-#   data:
-";
-
-impl Resolve<GetComposeContentsOnHost, ()> for State {
-  async fn resolve(
-    &self,
-    GetComposeContentsOnHost {
-      name,
-      run_directory,
-      file_paths,
-    }: GetComposeContentsOnHost,
-    _: (),
-  ) -> anyhow::Result<GetComposeContentsOnHostResponse> {
-    let root =
-      periphery_config().stack_dir.join(to_komodo_name(&name));
-    let run_directory =
-      root.join(&run_directory).components().collect::<PathBuf>();
-
-    if !run_directory.exists() {
-      fs::create_dir_all(&run_directory)
-        .await
-        .context("Failed to initialize run directory")?;
-    }
-
-    let file_paths = file_paths
-      .iter()
-      .map(|path| {
-        run_directory.join(path).components().collect::<PathBuf>()
-      })
-      .collect::<Vec<_>>();
-
-    let mut res = GetComposeContentsOnHostResponse::default();
-
-    for full_path in &file_paths {
-      if !full_path.exists() {
-        fs::write(&full_path, DEFAULT_COMPOSE_CONTENTS)
-          .await
-          .context("Failed to init missing compose file on host")?;
-      }
-      match fs::read_to_string(&full_path).await.with_context(|| {
-        format!(
-          "Failed to read compose file contents at {full_path:?}"
-        )
-      }) {
-        Ok(contents) => {
-          res.contents.push(FileContents {
-            path: full_path.display().to_string(),
-            contents,
-          });
-        }
-        Err(e) => {
-          res.errors.push(FileContents {
-            path: full_path.display().to_string(),
-            contents: format_serror(&e.into()),
-          });
-        }
-      }
-    }
-    Ok(res)
-  }
-}
-
-//
-
 impl Resolve<GetComposeServiceLog> for State {
   #[instrument(
     name = "GetComposeServiceLog",
@@ -204,6 +125,85 @@ impl Resolve<GetComposeServiceLogSearch> for State {
 
 //
 
+const DEFAULT_COMPOSE_CONTENTS: &str = "## 🦎 Hello Komodo 🦎
+services:
+  hello_world:
+    image: hello-world
+    # networks:
+    #   - default
+    # ports:
+    #   - 3000:3000
+    # volumes:
+    #   - data:/data
+
+# networks:
+#   default: {}
+
+# volumes:
+#   data:
+";
+
+impl Resolve<GetComposeContentsOnHost, ()> for State {
+  #[instrument(
+    name = "GetComposeContentsOnHost",
+    level = "debug",
+    skip(self)
+  )]
+  async fn resolve(
+    &self,
+    GetComposeContentsOnHost {
+      name,
+      run_directory,
+      file_paths,
+    }: GetComposeContentsOnHost,
+    _: (),
+  ) -> anyhow::Result<GetComposeContentsOnHostResponse> {
+    let root =
+      periphery_config().stack_dir.join(to_komodo_name(&name));
+    let run_directory =
+      root.join(&run_directory).components().collect::<PathBuf>();
+
+    if !run_directory.exists() {
+      fs::create_dir_all(&run_directory)
+        .await
+        .context("Failed to initialize run directory")?;
+    }
+
+    let mut res = GetComposeContentsOnHostResponse::default();
+
+    for path in file_paths {
+      let full_path =
+        run_directory.join(&path).components().collect::<PathBuf>();
+      if !full_path.exists() {
+        fs::write(&full_path, DEFAULT_COMPOSE_CONTENTS)
+          .await
+          .context("Failed to init missing compose file on host")?;
+      }
+      match fs::read_to_string(&full_path).await.with_context(|| {
+        format!(
+          "Failed to read compose file contents at {full_path:?}"
+        )
+      }) {
+        Ok(contents) => {
+          // The path we store here has to be the same as incoming file path in the array,
+          // in order for WriteComposeContentsToHost to write to the correct path.
+          res.contents.push(FileContents { path, contents });
+        }
+        Err(e) => {
+          res.errors.push(FileContents {
+            path,
+            contents: format_serror(&e.into()),
+          });
+        }
+      }
+    }
+
+    Ok(res)
+  }
+}
+
+//
+
 impl Resolve<WriteComposeContentsToHost> for State {
   #[instrument(name = "WriteComposeContentsToHost", skip(self))]
   async fn resolve(
@@ -216,13 +216,10 @@ impl Resolve<WriteComposeContentsToHost> for State {
     }: WriteComposeContentsToHost,
     _: (),
   ) -> anyhow::Result<Log> {
-    let root =
-      periphery_config().stack_dir.join(to_komodo_name(&name));
-    let run_directory = root.join(&run_directory);
-    let run_directory = run_directory.canonicalize().context(
-      "failed to validate run directory on host (canonicalize error)",
-    )?;
-    let file_path = run_directory
+    let file_path = periphery_config()
+      .stack_dir
+      .join(to_komodo_name(&name))
+      .join(&run_directory)
       .join(file_path)
       .components()
       .collect::<PathBuf>();

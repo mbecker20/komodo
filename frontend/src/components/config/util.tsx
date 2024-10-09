@@ -46,7 +46,11 @@ import {
   soft_text_color_class_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
-import { MonacoDiffEditor, MonacoEditor } from "@components/monaco";
+import {
+  MonacoDiffEditor,
+  MonacoEditor,
+  MonacoLanguage,
+} from "@components/monaco";
 
 export const ConfigItem = ({
   label,
@@ -398,6 +402,7 @@ export const AccountSelector = ({
   provider,
   selected,
   onSelect,
+  placeholder = "Select Account",
 }: {
   disabled: boolean;
   type: "Server" | "Builder" | "None";
@@ -406,6 +411,7 @@ export const AccountSelector = ({
   provider: string;
   selected: string | undefined;
   onSelect: (id: string) => void;
+  placeholder?: string;
 }) => {
   const [db_request, config_request]:
     | ["ListGitProviderAccounts", "ListGitProvidersFromConfig"]
@@ -447,7 +453,7 @@ export const AccountSelector = ({
         className="w-full lg:w-[200px] max-w-[50%]"
         disabled={disabled}
       >
-        <SelectValue placeholder="Select Account" />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={"Empty"}>None</SelectItem>
@@ -471,12 +477,16 @@ export const AccountSelectorConfig = (params: {
   provider: string;
   selected: string | undefined;
   onSelect: (id: string) => void;
-  placeholder: string;
+  placeholder?: string;
+  description?: string;
 }) => {
   return (
     <ConfigItem
       label="Account"
-      description="Select the account used to log in to the provider"
+      description={
+        params.description ??
+        "Select the account used to log in to the provider"
+      }
     >
       <AccountSelector {...params} />
     </ConfigItem>
@@ -569,6 +579,8 @@ interface ConfirmUpdateProps<T> {
   content: Partial<T>;
   onConfirm: () => void;
   disabled: boolean;
+  language?: MonacoLanguage;
+  file_contents_language?: MonacoLanguage;
 }
 
 export function ConfirmUpdate<T>({
@@ -576,6 +588,8 @@ export function ConfirmUpdate<T>({
   content,
   onConfirm,
   disabled,
+  language,
+  file_contents_language,
 }: ConfirmUpdateProps<T>) {
   const [open, set] = useState(false);
   useCtrlKeyListener("s", () => {
@@ -608,6 +622,8 @@ export function ConfirmUpdate<T>({
               _key={key as any}
               val={val as any}
               previous={previous}
+              language={language}
+              file_contents_language={file_contents_language}
             />
           ))}
         </div>
@@ -629,23 +645,24 @@ function ConfirmUpdateItem<T>({
   _key,
   val: _val,
   previous,
+  language,
+  file_contents_language,
 }: {
   _key: keyof T;
   val: T[keyof T];
   previous: T;
+  language?: MonacoLanguage;
+  file_contents_language?: MonacoLanguage;
 }) {
   const [show, setShow] = useState(true);
   const val =
     typeof _val === "string"
-      ? _key === "environment" ||
-        _key === "build_args" ||
-        _key === "secret_args"
-        ? _val
-            .split("\n")
-            .filter((line) => !line.startsWith("#"))
-            .map((line) => line.split(" #")[0])
-            .join("\n")
-        : _val
+      ? _val
+      : Array.isArray(_val)
+      ? _val.length > 0 &&
+        ["string", "number", "boolean"].includes(typeof _val[0])
+        ? JSON.stringify(_val)
+        : JSON.stringify(_val, null, 2)
       : JSON.stringify(_val, null, 2);
   const prev_val =
     typeof previous[_key] === "string"
@@ -653,7 +670,12 @@ function ConfirmUpdateItem<T>({
       : _key === "environment" ||
         _key === "build_args" ||
         _key === "secret_args"
-      ? env_to_text(previous[_key] as any) ?? ""
+      ? env_to_text(previous[_key] as any) ?? "" // For backward compat with 1.14
+      : Array.isArray(previous[_key])
+      ? previous[_key].length > 0 &&
+        ["string", "number", "boolean"].includes(typeof previous[_key][0])
+        ? JSON.stringify(previous[_key])
+        : JSON.stringify(previous[_key], null, 2)
       : JSON.stringify(previous[_key], null, 2);
   const showDiff =
     val?.includes("\n") ||
@@ -676,7 +698,16 @@ function ConfirmUpdateItem<T>({
               <MonacoDiffEditor
                 original={prev_val}
                 modified={val}
-                language="toml"
+                language={
+                  language ??
+                  (["environment", "build_args", "secret_args"].includes(
+                    _key as string
+                  )
+                    ? "key_value"
+                    : _key === "file_contents"
+                    ? file_contents_language
+                    : "json")
+                }
               />
             ) : (
               <pre style={{ minHeight: 0 }}>

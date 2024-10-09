@@ -58,7 +58,7 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
     return (
       <NewLayout
         entityType="Server Template"
-        onSuccess={async () => {
+        onConfirm={async () => {
           if (!type) return;
           const id = (await mutateAsync({ name, config: { type, params: {} } }))
             ._id?.$oid!;

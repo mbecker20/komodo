@@ -87,7 +87,7 @@ pub struct Env {
   /// If not provided, will use Default config.
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
-  #[serde(default)]
+  #[serde(default, alias = "periphery_config_path")]
   pub periphery_config_paths: Vec<String>,
   /// If specifying folders, use this to narrow down which
   /// files will be matched to parse into the final [PeripheryConfig].
@@ -95,7 +95,7 @@ pub struct Env {
   /// provided to `config_keywords` will be included.
   ///
   /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
-  #[serde(default)]
+  #[serde(default, alias = "periphery_config_keyword")]
   pub periphery_config_keywords: Vec<String>,
 
   /// Will merge nested config object (eg. secrets, providers) across multiple

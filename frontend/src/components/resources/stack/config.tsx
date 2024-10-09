@@ -6,6 +6,7 @@ import {
   ConfigList,
   InputList,
   ProviderSelectorConfig,
+  SystemCommand,
 } from "@components/config/util";
 import { Types } from "@komodo/client";
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
@@ -233,8 +234,22 @@ export const StackConfig = ({
           placeholder: "Compose project name",
           boldLabel: true,
           description:
-            "Optionally set a different compose project name. It should match the compose project name on your host.",
+            "Optionally set a different compose project name. If importing existing stack, this should match the compose project name on your host.",
         },
+      },
+    },
+    {
+      label: "Pre Deploy",
+      description:
+        "Execute a shell command before running docker compose up. The 'path' is relative to the Run Directory",
+      components: {
+        pre_deploy: (value, set) => (
+          <SystemCommand
+            value={value}
+            set={(value) => set({ pre_deploy: value })}
+            disabled={disabled}
+          />
+        ),
       },
     },
     {
@@ -466,6 +481,10 @@ export const StackConfig = ({
               placeholder: "Enter a specific commit hash. Optional.",
               description:
                 "Switch to a specific hash after cloning the branch.",
+            },
+            reclone: {
+              description:
+                "Delete the repo folder and clone it again, instead of using 'git pull'.",
             },
           },
         },
@@ -718,6 +737,7 @@ export const StackConfig = ({
         await mutateAsync({ id, config: update });
       }}
       components={components}
+      file_contents_language="yaml"
     />
   );
 };

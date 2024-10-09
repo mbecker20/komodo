@@ -74,7 +74,7 @@ export const BuilderComponents: RequiredResourceComponents = {
     return (
       <NewLayout
         entityType="Builder"
-        onSuccess={async () => {
+        onConfirm={async () => {
           if (!type) return;
           const id = (await mutateAsync({ name, config: { type, params: {} } }))
             ._id?.$oid!;

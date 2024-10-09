@@ -164,7 +164,11 @@ pub fn get_image_name(
 }
 
 pub fn to_komodo_name(name: &str) -> String {
-  name.to_lowercase().replace([' ', '.'], "_")
+  name
+    .to_lowercase()
+    .replace([' ', '.'], "_")
+    .trim()
+    .to_string()
 }
 
 /// Unix timestamp in milliseconds as i64
@@ -620,7 +624,7 @@ impl CloneArgs {
     access_token: Option<&str>,
   ) -> anyhow::Result<String> {
     let access_token_at = match &access_token {
-      Some(token) => format!("{token}@"),
+      Some(token) => format!("token:{token}@"),
       None => String::new(),
     };
     let protocol = if self.https { "https" } else { "http" };

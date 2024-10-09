@@ -10,36 +10,42 @@ use komodo_client::entities::{
   ResourceTargetVariant,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
+use tracing::Instrument;
 
 use crate::{config::core_config, state::db_client};
 
 mod discord;
 mod slack;
 
-#[instrument]
 pub async fn send_alerts(alerts: &[Alert]) {
   if alerts.is_empty() {
     return;
   }
 
-  let Ok(alerters) = find_collect(
-    &db_client().alerters,
-    doc! { "config.enabled": true },
-    None,
-  )
-  .await
-  .inspect_err(|e| {
-    error!(
+  let span =
+    info_span!("send_alerts", alerts = format!("{alerts:?}"));
+  async {
+    let Ok(alerters) = find_collect(
+      &db_client().alerters,
+      doc! { "config.enabled": true },
+      None,
+    )
+    .await
+    .inspect_err(|e| {
+      error!(
       "ERROR sending alerts | failed to get alerters from db | {e:#}"
     )
-  }) else {
-    return;
-  };
+    }) else {
+      return;
+    };
 
-  let handles =
-    alerts.iter().map(|alert| send_alert(&alerters, alert));
+    let handles =
+      alerts.iter().map(|alert| send_alert(&alerters, alert));
 
-  join_all(handles).await;
+    join_all(handles).await;
+  }
+  .instrument(span)
+  .await
 }
 
 #[instrument(level = "debug")]

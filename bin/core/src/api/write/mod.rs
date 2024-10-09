@@ -188,7 +188,10 @@ async fn handler(
 #[instrument(
   name = "WriteRequest",
   skip(user, request),
-  fields(user_id = user.id, request = format!("{:?}", request.extract_variant()))
+  fields(
+    user_id = user.id,
+    request = format!("{:?}", request.extract_variant())
+  )
 )]
 async fn task(
   req_id: Uuid,

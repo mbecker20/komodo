@@ -27,8 +27,8 @@ pub fn parse_key_value_list(
         .trim_start_matches('-')
         .trim();
       // Remove wrapping quotes (from yaml list)
-      let line = if let Some(line) = line.strip_prefix('"') {
-        line.strip_suffix('"').unwrap_or(line)
+      let line = if let Some(line) = line.strip_prefix(['"', '\'']) {
+        line.strip_suffix(['"', '\'']).unwrap_or(line)
       } else {
         line
       };
@@ -43,11 +43,12 @@ pub fn parse_key_value_list(
         .map(|(key, value)| {
           let value = value.trim();
           // Remove wrapping quotes around value
-          if let Some(value) = value.strip_prefix('"') {
-            value.strip_suffix('"').unwrap_or(value)
-          } else {
-            value
-          };
+          let value =
+            if let Some(value) = value.strip_prefix(['"', '\'']) {
+              value.strip_suffix(['"', '\'']).unwrap_or(value)
+            } else {
+              value
+            };
           (key.trim().to_string(), value.trim().to_string())
         })?;
       anyhow::Ok((key, value))

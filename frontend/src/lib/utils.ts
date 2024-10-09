@@ -244,3 +244,13 @@ export const is_service_user = (user_id: string) => {
     user_id === "Repo Manager"
   );
 };
+
+export const extract_registry_domain = (image_name: string) => {
+  if (!image_name) return "docker.io";
+  const maybe_domain = image_name.split("/")[0];
+  if (maybe_domain.includes(".")) {
+    return maybe_domain
+  } else {
+    return "docker.io"
+  }
+}
