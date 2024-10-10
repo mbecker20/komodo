@@ -749,7 +749,7 @@ export const SystemCommand = ({
         />
       </div>
       <MonacoEditor
-        value={value?.command}
+        value={value?.command || "  # Add multiple commands on new lines. Supports comments."}
         language="shell"
         onValueChange={(command) => set({ ...(value || {}), command })}
         readOnly={disabled}
