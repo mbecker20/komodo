@@ -64,7 +64,7 @@ impl Resolve<RunBuild, (User, Update)> for State {
       PermissionLevel::Execute,
     )
     .await?;
-    let vars_and_secrets = get_variables_and_secrets().await?;
+    let mut vars_and_secrets = get_variables_and_secrets().await?;
 
     if build.config.builder_id.is_empty() {
       return Err(anyhow!("Must attach builder to RunBuild"));
@@ -84,6 +84,14 @@ impl Resolve<RunBuild, (User, Update)> for State {
     }
     update.version = build.config.version;
     update_update(update.clone()).await?;
+
+    // Add the $VERSION to variables. Use with [[$VERSION]]
+    if !vars_and_secrets.variables.contains_key("$VERSION") {
+      vars_and_secrets.variables.insert(
+        String::from("$VERSION"),
+        build.config.version.to_string(),
+      );
+    }
 
     let git_token = git_token(
       &build.config.git_provider,
@@ -171,7 +179,6 @@ impl Resolve<RunBuild, (User, Update)> for State {
     };
 
     // CLONE REPO
-
     let secret_replacers = if !build.config.skip_secret_interp {
       // Interpolate variables / secrets into pre build command
       let mut global_replacers = HashSet::new();

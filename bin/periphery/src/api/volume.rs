@@ -28,7 +28,7 @@ impl Resolve<DeleteVolume> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = format!("docker volume rm {name}");
-    Ok(run_komodo_command("delete volume", command).await)
+    Ok(run_komodo_command("delete volume", None, command).await)
   }
 }
 
@@ -42,6 +42,6 @@ impl Resolve<PruneVolumes> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker volume prune -a -f");
-    Ok(run_komodo_command("prune volumes", command).await)
+    Ok(run_komodo_command("prune volumes", None, command).await)
   }
 }

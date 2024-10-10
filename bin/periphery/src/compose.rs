@@ -16,8 +16,10 @@ use resolver_api::Resolve;
 use tokio::fs;
 
 use crate::{
-  config::periphery_config, docker::docker_login,
-  helpers::parse_extra_args, State,
+  config::periphery_config,
+  docker::docker_login,
+  helpers::{interpolate_variables, parse_extra_args},
+  State,
 };
 
 pub fn docker_compose() -> &'static str {
@@ -101,7 +103,6 @@ pub async fn compose_up(
   }
 
   let docker_compose = docker_compose();
-  let run_dir = run_directory.display();
   let service_arg = service
     .as_ref()
     .map(|service| format!(" {service}"))
@@ -146,10 +147,15 @@ pub async fn compose_up(
     let build_extra_args =
       parse_extra_args(&stack.config.build_extra_args);
     let command = format!(
-      "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} build{build_extra_args}{service_arg}",
+      "{docker_compose} -p {project_name} -f {file_args}{env_file} build{build_extra_args}{service_arg}",
     );
     if stack.config.skip_secret_interp {
-      let log = run_komodo_command("compose build", command).await;
+      let log = run_komodo_command(
+        "compose build",
+        run_directory.as_ref(),
+        command,
+      )
+      .await;
       res.logs.push(log);
     } else {
       let (command, mut replacers) = svi::interpolate_variables(
@@ -160,8 +166,12 @@ pub async fn compose_up(
       ).context("failed to interpolate periphery secrets into stack build command")?;
       replacers.extend(core_replacers.clone());
 
-      let mut log =
-        run_komodo_command("compose build", command).await;
+      let mut log = run_komodo_command(
+        "compose build",
+        run_directory.as_ref(),
+        command,
+      )
+      .await;
 
       log.command = svi::replace_in_string(&log.command, &replacers);
       log.stdout = svi::replace_in_string(&log.stdout, &replacers);
@@ -177,13 +187,15 @@ pub async fn compose_up(
     }
   }
 
+  //
   if stack.config.auto_pull {
     // Pull images before destroying to minimize downtime.
     // If this fails, do not continue.
     let log = run_komodo_command(
       "compose pull",
+      run_directory.as_ref(),
       format!(
-        "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} pull{service_arg}",
+        "{docker_compose} -p {project_name} -f {file_args}{env_file} pull{service_arg}",
       ),
     )
     .await;
@@ -201,19 +213,16 @@ pub async fn compose_up(
     let pre_deploy_path =
       run_directory.join(&stack.config.pre_deploy.path);
     if !stack.config.skip_secret_interp {
-      let (full_command, mut replacers) = svi::interpolate_variables(
-        &stack.config.pre_deploy.command,
-        &periphery_config().secrets,
-        svi::Interpolator::DoubleBrackets,
-        true,
-      )
-      .context(
-        "failed to interpolate secrets into pre_deploy command",
-      )?;
+      let (full_command, mut replacers) =
+        interpolate_variables(&stack.config.pre_deploy.command)
+          .context(
+            "failed to interpolate secrets into pre_deploy command",
+          )?;
       replacers.extend(core_replacers.to_owned());
       let mut pre_deploy_log = run_komodo_command(
         "pre deploy",
-        format!("cd {} && {full_command}", pre_deploy_path.display()),
+        pre_deploy_path.as_ref(),
+        &full_command,
       )
       .await;
 
@@ -234,11 +243,8 @@ pub async fn compose_up(
     } else {
       let pre_deploy_log = run_komodo_command(
         "pre deploy",
-        format!(
-          "cd {} && {}",
-          pre_deploy_path.display(),
-          stack.config.pre_deploy.command
-        ),
+        pre_deploy_path.as_ref(),
+        &stack.config.pre_deploy.command,
       )
       .await;
       tracing::debug!(
@@ -255,20 +261,26 @@ pub async fn compose_up(
     }
   }
 
-  // Take down the existing containers.
-  // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
-  compose_down(&last_project_name, service, res)
-    .await
-    .context("failed to destroy existing containers")?;
+  if stack.config.destroy_before_deploy
+    // Also check if project name changed, which also requires taking down.
+    || last_project_name != project_name
+  {
+    // Take down the existing containers.
+    // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
+    compose_down(&last_project_name, service, res)
+      .await
+      .context("failed to destroy existing containers")?;
+  }
 
   // Run compose up
   let extra_args = parse_extra_args(&stack.config.extra_args);
   let command = format!(
-    "cd {run_dir} && {docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
+    "{docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
   );
 
   let log = if stack.config.skip_secret_interp {
-    run_komodo_command("compose up", command).await
+    run_komodo_command("compose up", run_directory.as_ref(), command)
+      .await
   } else {
     let (command, mut replacers) = svi::interpolate_variables(
       &command,
@@ -278,7 +290,12 @@ pub async fn compose_up(
     ).context("failed to interpolate periphery secrets into stack run command")?;
     replacers.extend(core_replacers);
 
-    let mut log = run_komodo_command("compose up", command).await;
+    let mut log = run_komodo_command(
+      "compose up",
+      run_directory.as_ref(),
+      command,
+    )
+    .await;
 
     log.command = svi::replace_in_string(&log.command, &replacers);
     log.stdout = svi::replace_in_string(&log.stdout, &replacers);
@@ -323,7 +340,7 @@ async fn write_stack<'a>(
         .config
         .skip_secret_interp
         .then_some(&periphery_config().secrets),
-      &run_directory,
+      run_directory.as_ref(),
       &mut res.logs,
     )
     .await
@@ -361,7 +378,7 @@ async fn write_stack<'a>(
         .config
         .skip_secret_interp
         .then_some(&periphery_config().secrets),
-      &run_directory,
+      run_directory.as_ref(),
       &mut res.logs,
     )
     .await
@@ -517,6 +534,7 @@ async fn compose_down(
     .unwrap_or_default();
   let log = run_komodo_command(
     "compose down",
+    None,
     format!("{docker_compose} -p {project} down{service_arg}"),
   )
   .await;

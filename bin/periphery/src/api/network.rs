@@ -34,7 +34,7 @@ impl Resolve<CreateNetwork> for State {
       None => String::new(),
     };
     let command = format!("docker network create{driver} {name}");
-    Ok(run_komodo_command("create network", command).await)
+    Ok(run_komodo_command("create network", None, command).await)
   }
 }
 
@@ -48,7 +48,7 @@ impl Resolve<DeleteNetwork> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = format!("docker network rm {name}");
-    Ok(run_komodo_command("delete network", command).await)
+    Ok(run_komodo_command("delete network", None, command).await)
   }
 }
 
@@ -62,6 +62,6 @@ impl Resolve<PruneNetworks> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker network prune -f");
-    Ok(run_komodo_command("prune networks", command).await)
+    Ok(run_komodo_command("prune networks", None, command).await)
   }
 }

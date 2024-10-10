@@ -25,6 +25,10 @@ export const ContainerLogs = ({
   const [invert, setInvert] = useState(false);
   const [search, setSearch] = useState("");
   const [poll, setPoll] = useLocalStorage("log-poll-v1", false);
+  const [timestamps, setTimestamps] = useLocalStorage(
+    "log-timestamps-v1",
+    false
+  );
 
   const addTerm = () => {
     if (!search.length) return;
@@ -43,8 +47,8 @@ export const ContainerLogs = ({
   };
 
   const { Log, refetch, stderr } = terms.length
-    ? SearchLogs(id, container_name, terms, invert)
-    : NoSearchLogs(id, container_name, tail, stream);
+    ? SearchLogs(id, container_name, terms, invert, timestamps)
+    : NoSearchLogs(id, container_name, tail, timestamps, stream);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -61,10 +65,7 @@ export const ContainerLogs = ({
       actions={
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="text-muted-foreground flex gap-1">
-              <div>Invert</div>
-              <div className="hidden xl:block">Search</div>
-            </div>
+            <div className="text-muted-foreground flex gap-1">Invert</div>
             <Switch checked={invert} onCheckedChange={setInvert} />
           </div>
           {terms.map((term, index) => (
@@ -110,9 +111,19 @@ export const ContainerLogs = ({
           <Button variant="secondary" size="icon" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground">Poll</div>
-            <Switch checked={poll} onCheckedChange={setPoll} />
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => setTimestamps((t) => !t)}
+          >
+            <div className="text-muted-foreground text-sm">Timestamps</div>
+            <Switch checked={timestamps} />
+          </div>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => setPoll((p) => !p)}
+          >
+            <div className="text-muted-foreground text-sm">Poll</div>
+            <Switch checked={poll} />
           </div>
           <TailLengthSelector
             selected={tail}
@@ -131,13 +142,15 @@ const NoSearchLogs = (
   id: string,
   container: string,
   tail: string,
+  timestamps: boolean,
   stream: string
 ) => {
-  const { data: log, refetch } = useRead(
-    "GetContainerLog",
-    { server: id, container, tail: Number(tail) },
-    { refetchInterval: 30000 }
-  );
+  const { data: log, refetch } = useRead("GetContainerLog", {
+    server: id,
+    container,
+    tail: Number(tail),
+    timestamps,
+  });
   return {
     Log: (
       <div className="relative">
@@ -153,7 +166,8 @@ const SearchLogs = (
   id: string,
   container: string,
   terms: string[],
-  invert: boolean
+  invert: boolean,
+  timestamps: boolean
 ) => {
   const { data: log, refetch } = useRead("SearchContainerLog", {
     server: id,
@@ -161,6 +175,7 @@ const SearchLogs = (
     terms,
     combinator: Types.SearchCombinator.And,
     invert,
+    timestamps,
   });
   return {
     Log: (

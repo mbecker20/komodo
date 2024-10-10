@@ -23,6 +23,9 @@ pub struct GetContainerLog {
   pub name: String,
   #[serde(default = "default_tail")]
   pub tail: u64,
+  /// Enable `--timestamps`
+  #[serde(default)]
+  pub timestamps: bool,
 }
 
 fn default_tail() -> u64 {
@@ -40,6 +43,9 @@ pub struct GetContainerLogSearch {
   pub combinator: SearchCombinator,
   #[serde(default)]
   pub invert: bool,
+  /// Enable `--timestamps`
+  #[serde(default)]
+  pub timestamps: bool,
 }
 
 //

@@ -2323,6 +2323,8 @@ export interface StackConfig {
 	 * Combine with build_extra_args for custom behaviors.
 	 */
 	run_build?: boolean;
+	/** Whether to run `docker compose down` before `compose up`. */
+	destroy_before_deploy?: boolean;
 	/** Whether to skip secret interpolation into the stack environment variables. */
 	skip_secret_interp?: boolean;
 	/**
@@ -3797,7 +3799,7 @@ export interface UnpauseStack {
 	service?: string;
 }
 
-/** Starts the target stack. `docker compose stop`. Response: [Update] */
+/** Stops the target stack. `docker compose stop`. Response: [Update] */
 export interface StopStack {
 	/** Id or name */
 	stack: string;
@@ -4112,6 +4114,8 @@ export interface GetDeploymentLog {
 	 * Max: 5000.
 	 */
 	tail: U64;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 export enum SearchCombinator {
@@ -4139,6 +4143,8 @@ export interface SearchDeploymentLog {
 	combinator?: SearchCombinator;
 	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
 	invert?: boolean;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**
@@ -4605,6 +4611,8 @@ export interface GetContainerLog {
 	 * Max: 5000.
 	 */
 	tail: U64;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**
@@ -4629,6 +4637,8 @@ export interface SearchContainerLog {
 	combinator?: SearchCombinator;
 	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
 	invert?: boolean;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /** Inspect a docker container on the server. Response: [Container]. */
@@ -4819,6 +4829,8 @@ export interface GetStackServiceLog {
 	 * Max: 5000.
 	 */
 	tail: U64;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**
@@ -4843,6 +4855,8 @@ export interface SearchStackServiceLog {
 	combinator?: SearchCombinator;
 	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
 	invert?: boolean;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**

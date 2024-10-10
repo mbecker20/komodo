@@ -87,10 +87,18 @@ impl Resolve<build::Build> for State {
     // Get command parts
     let image_name =
       get_image_name(&build).context("failed to make image name")?;
-    let build_args = parse_build_args(
-      &environment_vars_from_str(build_args)
-        .context("Invalid build_args")?,
-    );
+
+    // Add VERSION to build args (if not already there)
+    let mut build_args = environment_vars_from_str(build_args)
+      .context("Invalid build_args")?;
+    if !build_args.iter().any(|a| a.variable == "VERSION") {
+      build_args.push(EnvironmentVar {
+        variable: String::from("VERSION"),
+        value: build.config.version.to_string(),
+      });
+    }
+    let build_args = parse_build_args(&build_args);
+
     let secret_args = environment_vars_from_str(secret_args)
       .context("Invalid secret_args")?;
     let _secret_args =
@@ -110,13 +118,16 @@ impl Resolve<build::Build> for State {
 
     // Construct command
     let command = format!(
-      "cd {} && docker{buildx} build{build_args}{_secret_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
-      build_dir.display()
+      "docker{buildx} build{build_args}{_secret_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
     );
 
     if *skip_secret_interp {
-      let build_log =
-        run_komodo_command("docker build", command).await;
+      let build_log = run_komodo_command(
+        "docker build",
+        build_dir.as_ref(),
+        command,
+      )
+      .await;
       logs.push(build_log);
     } else {
       // Interpolate any missing secrets
@@ -131,8 +142,12 @@ impl Resolve<build::Build> for State {
       )?;
       replacers.extend(core_replacers);
 
-      let mut build_log =
-        run_komodo_command("docker build", command).await;
+      let mut build_log = run_komodo_command(
+        "docker build",
+        build_dir.as_ref(),
+        command,
+      )
+      .await;
       build_log.command =
         svi::replace_in_string(&build_log.command, &replacers);
       build_log.stdout =
@@ -229,7 +244,7 @@ impl Resolve<PruneBuilders> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker builder prune -a -f");
-    Ok(run_komodo_command("prune builders", command).await)
+    Ok(run_komodo_command("prune builders", None, command).await)
   }
 }
 
@@ -243,6 +258,6 @@ impl Resolve<PruneBuildx> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker buildx prune -a -f");
-    Ok(run_komodo_command("prune buildx", command).await)
+    Ok(run_komodo_command("prune buildx", None, command).await)
   }
 }

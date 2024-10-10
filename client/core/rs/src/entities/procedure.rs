@@ -104,7 +104,7 @@ pub struct ProcedureStage {
   #[serde(default = "default_enabled")]
   pub enabled: bool,
   /// The executions in the stage
-  #[serde(default)]
+  #[serde(default, alias = "execution")]
   pub executions: Vec<EnabledExecution>,
 }
 

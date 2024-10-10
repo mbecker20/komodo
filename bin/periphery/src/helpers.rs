@@ -66,3 +66,14 @@ pub fn log_grep(
     }
   }
 }
+
+pub fn interpolate_variables(
+  input: &str,
+) -> svi::Result<(String, Vec<(String, String)>)> {
+  svi::interpolate_variables(
+    input,
+    &periphery_config().secrets,
+    svi::Interpolator::DoubleBrackets,
+    true,
+  )
+}

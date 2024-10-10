@@ -935,7 +935,7 @@ pub async fn docker_login(
 #[instrument]
 pub async fn pull_image(image: &str) -> Log {
   let command = format!("docker pull {image}");
-  run_komodo_command("docker pull", command).await
+  run_komodo_command("docker pull", None, command).await
 }
 
 pub fn stop_container_command(

@@ -70,6 +70,7 @@ impl Resolve<GetStackServiceLog, User> for State {
       stack,
       service,
       tail,
+      timestamps,
     }: GetStackServiceLog,
     user: User,
   ) -> anyhow::Result<GetStackServiceLogResponse> {
@@ -85,6 +86,7 @@ impl Resolve<GetStackServiceLog, User> for State {
         project: stack.project_name(false),
         service,
         tail,
+        timestamps,
       })
       .await
       .context("failed to get stack service log from periphery")
@@ -100,6 +102,7 @@ impl Resolve<SearchStackServiceLog, User> for State {
       terms,
       combinator,
       invert,
+      timestamps,
     }: SearchStackServiceLog,
     user: User,
   ) -> anyhow::Result<SearchStackServiceLogResponse> {
@@ -117,6 +120,7 @@ impl Resolve<SearchStackServiceLog, User> for State {
         terms,
         combinator,
         invert,
+        timestamps,
       })
       .await
       .context("failed to get stack service log from periphery")

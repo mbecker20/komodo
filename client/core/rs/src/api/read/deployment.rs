@@ -120,6 +120,9 @@ pub struct GetDeploymentLog {
   /// Max: 5000.
   #[serde(default = "default_tail")]
   pub tail: U64,
+  /// Enable `--timestamps`
+  #[serde(default)]
+  pub timestamps: bool,
 }
 
 fn default_tail() -> u64 {
@@ -156,6 +159,9 @@ pub struct SearchDeploymentLog {
   /// Invert the results, ie return all lines that DON'T match the terms / combinator.
   #[serde(default)]
   pub invert: bool,
+  /// Enable `--timestamps`
+  #[serde(default)]
+  pub timestamps: bool,
 }
 
 #[typeshare]

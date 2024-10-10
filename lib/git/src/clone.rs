@@ -39,8 +39,7 @@ where
 {
   let args: CloneArgs = clone_args.into();
   let repo_dir = args.path(repo_dir);
-  let repo_url =
-    args.remote_url(access_token.as_ref().map(String::as_str))?;
+  let repo_url = args.remote_url(access_token.as_deref())?;
 
   let mut logs = clone_inner(
     &repo_url,
@@ -116,7 +115,8 @@ where
         replacers.extend(core_replacers.to_owned());
         let mut on_clone_log = run_komodo_command(
           "on clone",
-          format!("cd {} && {full_command}", on_clone_path.display()),
+          on_clone_path.as_ref(),
+          full_command,
         )
         .await;
 
@@ -137,11 +137,8 @@ where
       } else {
         let on_clone_log = run_komodo_command(
           "on clone",
-          format!(
-            "cd {} && {}",
-            on_clone_path.display(),
-            command.command
-          ),
+          on_clone_path.as_ref(),
+          &command.command,
         )
         .await;
         tracing::debug!(
@@ -170,7 +167,8 @@ where
         replacers.extend(core_replacers.to_owned());
         let mut on_pull_log = run_komodo_command(
           "on pull",
-          format!("cd {} && {full_command}", on_pull_path.display()),
+          on_pull_path.as_ref(),
+          &full_command,
         )
         .await;
 
@@ -191,11 +189,8 @@ where
       } else {
         let on_pull_log = run_komodo_command(
           "on pull",
-          format!(
-            "cd {} && {}",
-            on_pull_path.display(),
-            command.command
-          ),
+          on_pull_path.as_ref(),
+          &command.command,
         )
         .await;
         tracing::debug!(
@@ -256,10 +251,8 @@ async fn clone_inner(
   if let Some(commit) = commit {
     let reset_log = run_komodo_command(
       "set commit",
-      format!(
-        "cd {} && git reset --hard {commit}",
-        destination.display()
-      ),
+      destination,
+      format!("git reset --hard {commit}",),
     )
     .await;
     logs.push(reset_log);

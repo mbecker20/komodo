@@ -3,8 +3,9 @@ use std::{str::FromStr, time::Duration};
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
 use komodo_client::{
-  api::write::CreateServer,
+  api::write::{CreateBuilder, CreateServer},
   entities::{
+    builder::{PartialBuilderConfig, PartialServerBuilderConfig},
     komodo_timestamp,
     permission::{Permission, PermissionLevel, UserTarget},
     server::{PartialServerConfig, Server},
@@ -280,8 +281,8 @@ async fn startup_open_alert_cleanup() {
   }
 }
 
-/// Ensures a default server exists with the defined address
-pub async fn ensure_first_server() {
+/// Ensures a default server / builder exists with the defined address
+pub async fn ensure_first_server_and_builder() {
   let first_server = &core_config().first_server;
   if first_server.is_empty() {
     return;
@@ -295,23 +296,49 @@ pub async fn ensure_first_server() {
   else {
     return;
   };
-  if server.is_some() {
-    return;
-  }
+  let server = if let Some(server) = server {
+    server
+  } else {
+    match State
+      .resolve(
+        CreateServer {
+          name: format!("server-{}", random_string(5)),
+          config: PartialServerConfig {
+            address: Some(first_server.to_string()),
+            enabled: Some(true),
+            ..Default::default()
+          },
+        },
+        system_user().to_owned(),
+      )
+      .await
+    {
+      Ok(server) => server,
+      Err(e) => {
+        error!("Failed to initialize 'first_server'. Failed to CreateServer. {e:?}");
+        return;
+      }
+    }
+  };
+  let Ok(None) = db.builders
+    .find_one(Document::new()).await
+    .inspect_err(|e| error!("Failed to initialize 'first_builder'. Failed to query db. {e:?}")) else {
+      return;
+    };
   if let Err(e) = State
     .resolve(
-      CreateServer {
-        name: format!("server-{}", random_string(5)),
-        config: PartialServerConfig {
-          address: Some(first_server.to_string()),
-          enabled: Some(true),
-          ..Default::default()
-        },
+      CreateBuilder {
+        name: String::from("local"),
+        config: PartialBuilderConfig::Server(
+          PartialServerBuilderConfig {
+            server_id: Some(server.id),
+          },
+        ),
       },
       system_user().to_owned(),
     )
     .await
   {
-    error!("Failed to initialize 'first_server'. Failed to CreateServer. {e:?}");
+    error!("Failed to initialize 'first_builder'. Failed to CreateBuilder. {e:?}");
   }
 }

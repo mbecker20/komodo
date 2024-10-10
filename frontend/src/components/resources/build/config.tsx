@@ -100,7 +100,7 @@ export const BuildConfig = ({
                   <ConfigInput
                     className="text-lg w-[200px]"
                     label="Version"
-                    description="Version the image tag using server (major.minor.patch)"
+                    description="Version the image with major.minor.patch. It can be interpolated using [[$VERSION]]."
                     placeholder="0.0.0"
                     value={version}
                     onChange={(version) => set({ version: version as any })}

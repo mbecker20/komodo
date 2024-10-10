@@ -213,6 +213,11 @@ pub struct StackConfig {
   #[builder(default)]
   pub run_build: bool,
 
+  /// Whether to run `docker compose down` before `compose up`.
+  #[serde(default)]
+  #[builder(default)]
+  pub destroy_before_deploy: bool,
+
   /// Whether to skip secret interpolation into the stack environment variables.
   #[serde(default)]
   #[builder(default)]
@@ -426,6 +431,7 @@ impl Default for StackConfig {
       environment: Default::default(),
       env_file_path: default_env_file_path(),
       run_build: Default::default(),
+      destroy_before_deploy: Default::default(),
       build_extra_args: Default::default(),
       skip_secret_interp: Default::default(),
       git_provider: default_git_provider(),
