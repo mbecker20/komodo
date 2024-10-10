@@ -128,7 +128,7 @@ pub struct UnpauseStack {
 
 //
 
-/// Starts the target stack. `docker compose stop`. Response: [Update]
+/// Stops the target stack. `docker compose stop`. Response: [Update]
 #[typeshare]
 #[derive(
   Debug,

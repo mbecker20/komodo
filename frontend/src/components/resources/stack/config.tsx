@@ -389,6 +389,17 @@ export const StackConfig = ({
           ),
       },
     },
+    {
+      label: "Destroy",
+      labelHidden: true,
+      components: {
+        run_build: {
+          label: "Destroy Before Deploy",
+          description:
+            "Ensure 'docker compose down' is run before redeploying the Stack.",
+        },
+      },
+    },
   ];
 
   if (mode === undefined) {

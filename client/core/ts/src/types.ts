@@ -2323,6 +2323,8 @@ export interface StackConfig {
 	 * Combine with build_extra_args for custom behaviors.
 	 */
 	run_build?: boolean;
+	/** Whether to run `docker compose down` before `compose up`. */
+	destroy_before_deploy?: boolean;
 	/** Whether to skip secret interpolation into the stack environment variables. */
 	skip_secret_interp?: boolean;
 	/**
@@ -3797,7 +3799,7 @@ export interface UnpauseStack {
 	service?: string;
 }
 
-/** Starts the target stack. `docker compose stop`. Response: [Update] */
+/** Stops the target stack. `docker compose stop`. Response: [Update] */
 export interface StopStack {
 	/** Id or name */
 	stack: string;

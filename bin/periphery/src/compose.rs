@@ -16,8 +16,10 @@ use resolver_api::Resolve;
 use tokio::fs;
 
 use crate::{
-  config::periphery_config, docker::docker_login,
-  helpers::parse_extra_args, State,
+  config::periphery_config,
+  docker::docker_login,
+  helpers::{interpolate_variables, parse_extra_args},
+  State,
 };
 
 pub fn docker_compose() -> &'static str {
@@ -177,6 +179,7 @@ pub async fn compose_up(
     }
   }
 
+  //
   if stack.config.auto_pull {
     // Pull images before destroying to minimize downtime.
     // If this fails, do not continue.
@@ -201,15 +204,11 @@ pub async fn compose_up(
     let pre_deploy_path =
       run_directory.join(&stack.config.pre_deploy.path);
     if !stack.config.skip_secret_interp {
-      let (full_command, mut replacers) = svi::interpolate_variables(
-        &stack.config.pre_deploy.command,
-        &periphery_config().secrets,
-        svi::Interpolator::DoubleBrackets,
-        true,
-      )
-      .context(
-        "failed to interpolate secrets into pre_deploy command",
-      )?;
+      let (full_command, mut replacers) =
+        interpolate_variables(&stack.config.pre_deploy.command)
+          .context(
+            "failed to interpolate secrets into pre_deploy command",
+          )?;
       replacers.extend(core_replacers.to_owned());
       let mut pre_deploy_log = run_komodo_command(
         "pre deploy",
@@ -255,11 +254,16 @@ pub async fn compose_up(
     }
   }
 
-  // Take down the existing containers.
-  // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
-  compose_down(&last_project_name, service, res)
-    .await
-    .context("failed to destroy existing containers")?;
+  if stack.config.destroy_before_deploy
+    // Also check if project name changed, which also requires taking down.
+    || last_project_name != project_name
+  {
+    // Take down the existing containers.
+    // This one tries to use the previously deployed service name, to ensure the right stack is taken down.
+    compose_down(&last_project_name, service, res)
+      .await
+      .context("failed to destroy existing containers")?;
+  }
 
   // Run compose up
   let extra_args = parse_extra_args(&stack.config.extra_args);
