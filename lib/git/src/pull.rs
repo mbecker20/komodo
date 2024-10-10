@@ -38,15 +38,13 @@ where
 {
   let args: CloneArgs = clone_args.into();
   let path = args.path(repo_dir);
-  let path_display = path.display();
   let repo_url = args.remote_url(access_token.as_deref())?;
 
   // Set remote url
   let mut set_remote = run_komodo_command(
     "set git remote",
-    format!(
-      "cd {path_display} && git remote set-url origin {repo_url}"
-    ),
+    path.as_ref(),
+    format!("git remote set-url origin {repo_url}"),
   )
   .await;
 
@@ -69,7 +67,8 @@ where
 
   let checkout = run_komodo_command(
     "checkout branch",
-    format!("cd {path_display} && git checkout -f {}", args.branch),
+    path.as_ref(),
+    format!("git checkout -f {}", args.branch),
   )
   .await;
 
@@ -82,12 +81,12 @@ where
     });
   }
 
-  let command = format!(
-    "cd {path_display} && git pull --rebase --force origin {}",
-    args.branch
-  );
-
-  let pull_log = run_komodo_command("git pull", command).await;
+  let pull_log = run_komodo_command(
+    "git pull",
+    path.as_ref(),
+    format!("git pull --rebase --force origin {}", args.branch),
+  )
+  .await;
 
   let mut logs = vec![pull_log];
 
@@ -103,7 +102,8 @@ where
   if let Some(commit) = args.commit {
     let reset_log = run_komodo_command(
       "set commit",
-      format!("cd {path_display} && git reset --hard {commit}"),
+      path.as_ref(),
+      format!("git reset --hard {commit}"),
     )
     .await;
     logs.push(reset_log);
@@ -143,7 +143,7 @@ where
   };
 
   if let Some(command) = args.on_pull {
-    if !command.path.is_empty() && !command.command.is_empty() {
+    if !command.command.is_empty() {
       let on_pull_path = path.join(&command.path);
       if let Some(secrets) = secrets {
         let (full_command, mut replacers) =
@@ -173,7 +173,8 @@ where
         replacers.extend(core_replacers.to_owned());
         let mut on_pull_log = run_komodo_command(
           "on pull",
-          format!("cd {} && {full_command}", on_pull_path.display()),
+          on_pull_path.as_ref(),
+          &full_command,
         )
         .await;
 
@@ -194,11 +195,8 @@ where
       } else {
         let on_pull_log = run_komodo_command(
           "on pull",
-          format!(
-            "cd {} && {}",
-            on_pull_path.display(),
-            command.command
-          ),
+          on_pull_path.as_ref(),
+          &command.command,
         )
         .await;
         tracing::debug!(

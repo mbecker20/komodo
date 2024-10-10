@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use komodo_client::entities::{komodo_timestamp, update::Log};
 use run_command::{async_run_command, CommandOutput};
 
@@ -7,9 +9,15 @@ use run_command::{async_run_command, CommandOutput};
 /// Supports full line and end of line comments. See [parse_multiline_command].
 pub async fn run_komodo_command(
   stage: &str,
+  path: impl Into<Option<&Path>>,
   command: impl AsRef<str>,
 ) -> Log {
   let command = parse_multiline_command(command);
+  let command = if let Some(path) = path.into() {
+    format!("cd {} && {command}", path.display(),)
+  } else {
+    command
+  };
   let start_ts = komodo_timestamp();
   let output = async_run_command(&command).await;
   output_into_log(stage, command, start_ts, output)

@@ -219,7 +219,7 @@ impl SystemCommand {
   }
 
   pub fn is_none(&self) -> bool {
-    self.path.is_empty() || self.command.is_empty()
+    self.command.is_empty()
   }
 }
 
