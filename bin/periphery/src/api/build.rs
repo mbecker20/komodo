@@ -87,10 +87,22 @@ impl Resolve<build::Build> for State {
     // Get command parts
     let image_name =
       get_image_name(&build).context("failed to make image name")?;
-    let build_args = parse_build_args(
-      &environment_vars_from_str(build_args)
-        .context("Invalid build_args")?,
-    );
+
+    // Add VERSION to build args (if not already there)
+    let mut build_args = environment_vars_from_str(build_args)
+      .context("Invalid build_args")?;
+    if build_args
+      .iter()
+      .find(|a| a.variable == "VERSION")
+      .is_none()
+    {
+      build_args.push(EnvironmentVar {
+        variable: String::from("VERSION"),
+        value: build.config.version.to_string(),
+      });
+    }
+    let build_args = parse_build_args(&build_args);
+
     let secret_args = environment_vars_from_str(secret_args)
       .context("Invalid secret_args")?;
     let _secret_args =
