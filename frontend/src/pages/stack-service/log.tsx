@@ -45,6 +45,10 @@ const StackLogsInner = ({
   const [invert, setInvert] = useState(false);
   const [search, setSearch] = useState("");
   const [poll, setPoll] = useLocalStorage("log-poll-v1", false);
+  const [timestamps, setTimestamps] = useLocalStorage(
+    "log-timestamps-v1",
+    false
+  );
 
   const addTerm = () => {
     if (!search.length) return;
@@ -63,8 +67,8 @@ const StackLogsInner = ({
   };
 
   const { Log, refetch, stderr } = terms.length
-    ? SearchLogs(id, service, terms, invert)
-    : NoSearchLogs(id, service, tail, stream);
+    ? SearchLogs(id, service, terms, invert, timestamps)
+    : NoSearchLogs(id, service, tail, timestamps, stream);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -81,9 +85,8 @@ const StackLogsInner = ({
       actions={
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="text-muted-foreground flex gap-1">
-              <div>Invert</div>
-              <div className="hidden xl:block">Search</div>
+            <div className="text-muted-foreground flex gap-1 text-sm">
+              Invert
             </div>
             <Switch checked={invert} onCheckedChange={setInvert} />
           </div>
@@ -130,9 +133,19 @@ const StackLogsInner = ({
           <Button variant="secondary" size="icon" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground">Poll</div>
-            <Switch checked={poll} onCheckedChange={setPoll} />
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => setTimestamps((t) => !t)}
+          >
+            <div className="text-muted-foreground text-sm">Timestamps</div>
+            <Switch checked={timestamps} />
+          </div>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => setPoll((p) => !p)}
+          >
+            <div className="text-muted-foreground text-sm">Poll</div>
+            <Switch checked={poll} />
           </div>
           <TailLengthSelector
             selected={tail}
@@ -151,13 +164,15 @@ const NoSearchLogs = (
   id: string,
   service: string,
   tail: string,
+  timestamps: boolean,
   stream: string
 ) => {
-  const { data: log, refetch } = useRead(
-    "GetStackServiceLog",
-    { stack: id, service, tail: Number(tail) },
-    { refetchInterval: 30000 }
-  );
+  const { data: log, refetch } = useRead("GetStackServiceLog", {
+    stack: id,
+    service,
+    tail: Number(tail),
+    timestamps,
+  });
   return {
     Log: (
       <div className="relative">
@@ -173,7 +188,8 @@ const SearchLogs = (
   id: string,
   service: string,
   terms: string[],
-  invert: boolean
+  invert: boolean,
+  timestamps: boolean
 ) => {
   const { data: log, refetch } = useRead("SearchStackServiceLog", {
     stack: id,
@@ -181,6 +197,7 @@ const SearchLogs = (
     terms,
     combinator: Types.SearchCombinator.And,
     invert,
+    timestamps,
   });
   return {
     Log: (

@@ -88,7 +88,11 @@ const MAX_LOG_LENGTH: u64 = 5000;
 impl Resolve<GetDeploymentLog, User> for State {
   async fn resolve(
     &self,
-    GetDeploymentLog { deployment, tail }: GetDeploymentLog,
+    GetDeploymentLog {
+      deployment,
+      tail,
+      timestamps,
+    }: GetDeploymentLog,
     user: User,
   ) -> anyhow::Result<Log> {
     let Deployment {
@@ -109,6 +113,7 @@ impl Resolve<GetDeploymentLog, User> for State {
       .request(api::container::GetContainerLog {
         name,
         tail: cmp::min(tail, MAX_LOG_LENGTH),
+        timestamps,
       })
       .await
       .context("failed at call to periphery")
@@ -123,6 +128,7 @@ impl Resolve<SearchDeploymentLog, User> for State {
       terms,
       combinator,
       invert,
+      timestamps,
     }: SearchDeploymentLog,
     user: User,
   ) -> anyhow::Result<Log> {
@@ -146,6 +152,7 @@ impl Resolve<SearchDeploymentLog, User> for State {
         terms,
         combinator,
         invert,
+        timestamps,
       })
       .await
       .context("failed at call to periphery")

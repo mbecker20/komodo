@@ -44,9 +44,12 @@ pub struct GetComposeServiceLog {
   pub project: String,
   /// The service name
   pub service: String,
-  /// pass `--tail` for only recent log contents
+  /// Pass `--tail` for only recent log contents. Max of 5000
   #[serde(default = "default_tail")]
   pub tail: u64,
+  /// Enable `--timestamps`
+  #[serde(default)]
+  pub timestamps: bool,
 }
 
 fn default_tail() -> u64 {
@@ -72,6 +75,9 @@ pub struct GetComposeServiceLogSearch {
   /// Invert the search (search for everything not matching terms)
   #[serde(default)]
   pub invert: bool,
+  /// Enable `--timestamps`
+  #[serde(default)]
+  pub timestamps: bool,
 }
 
 //

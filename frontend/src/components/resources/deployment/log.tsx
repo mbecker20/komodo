@@ -43,6 +43,10 @@ const DeploymentLogsInner = ({
   const [invert, setInvert] = useState(false);
   const [search, setSearch] = useState("");
   const [poll, setPoll] = useLocalStorage("log-poll-v1", false);
+  const [timestamps, setTimestamps] = useLocalStorage(
+    "log-timestamps-v1",
+    false
+  );
 
   const addTerm = () => {
     if (!search.length) return;
@@ -61,8 +65,8 @@ const DeploymentLogsInner = ({
   };
 
   const { Log, refetch, stderr } = terms.length
-    ? SearchLogs(id, terms, invert)
-    : NoSearchLogs(id, tail, stream);
+    ? SearchLogs(id, terms, invert, timestamps)
+    : NoSearchLogs(id, tail, timestamps, stream);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -77,9 +81,8 @@ const DeploymentLogsInner = ({
       actions={
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="text-muted-foreground flex gap-1">
-              <div>Invert</div>
-              <div className="hidden xl:block">Search</div>
+            <div className="text-muted-foreground flex gap-1 text-sm">
+              Invert
             </div>
             <Switch checked={invert} onCheckedChange={setInvert} />
           </div>
@@ -126,9 +129,19 @@ const DeploymentLogsInner = ({
           <Button variant="secondary" size="icon" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground">Poll</div>
-            <Switch checked={poll} onCheckedChange={setPoll} />
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => setTimestamps((t) => !t)}
+          >
+            <div className="text-muted-foreground text-sm">Timestamps</div>
+            <Switch checked={timestamps} />
+          </div>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => setPoll((p) => !p)}
+          >
+            <div className="text-muted-foreground text-sm">Poll</div>
+            <Switch checked={poll} />
           </div>
           <TailLengthSelector
             selected={tail}
@@ -143,12 +156,17 @@ const DeploymentLogsInner = ({
   );
 };
 
-const NoSearchLogs = (id: string, tail: string, stream: string) => {
-  const { data: log, refetch } = useRead(
-    "GetDeploymentLog",
-    { deployment: id, tail: Number(tail) },
-    { refetchInterval: 30000 }
-  );
+const NoSearchLogs = (
+  id: string,
+  tail: string,
+  timestamps: boolean,
+  stream: string
+) => {
+  const { data: log, refetch } = useRead("GetDeploymentLog", {
+    deployment: id,
+    tail: Number(tail),
+    timestamps,
+  });
   return {
     Log: (
       <div className="relative">
@@ -160,12 +178,18 @@ const NoSearchLogs = (id: string, tail: string, stream: string) => {
   };
 };
 
-const SearchLogs = (id: string, terms: string[], invert: boolean) => {
+const SearchLogs = (
+  id: string,
+  terms: string[],
+  invert: boolean,
+  timestamps: boolean
+) => {
   const { data: log, refetch } = useRead("SearchDeploymentLog", {
     deployment: id,
     terms,
     combinator: Types.SearchCombinator.And,
     invert,
+    timestamps,
   });
   return {
     Log: (

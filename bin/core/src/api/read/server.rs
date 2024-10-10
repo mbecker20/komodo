@@ -404,6 +404,7 @@ impl Resolve<GetContainerLog, User> for State {
       server,
       container,
       tail,
+      timestamps,
     }: GetContainerLog,
     user: User,
   ) -> anyhow::Result<Log> {
@@ -417,6 +418,7 @@ impl Resolve<GetContainerLog, User> for State {
       .request(periphery::container::GetContainerLog {
         name: container,
         tail: cmp::min(tail, MAX_LOG_LENGTH),
+        timestamps,
       })
       .await
       .context("failed at call to periphery")
@@ -432,6 +434,7 @@ impl Resolve<SearchContainerLog, User> for State {
       terms,
       combinator,
       invert,
+      timestamps,
     }: SearchContainerLog,
     user: User,
   ) -> anyhow::Result<Log> {
@@ -447,6 +450,7 @@ impl Resolve<SearchContainerLog, User> for State {
         terms,
         combinator,
         invert,
+        timestamps,
       })
       .await
       .context("failed at call to periphery")

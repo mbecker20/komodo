@@ -88,12 +88,15 @@ impl Resolve<GetComposeServiceLog> for State {
       project,
       service,
       tail,
+      timestamps,
     }: GetComposeServiceLog,
     _: (),
   ) -> anyhow::Result<Log> {
     let docker_compose = docker_compose();
+    let timestamps =
+      timestamps.then_some(" --timestamps").unwrap_or_default();
     let command = format!(
-      "{docker_compose} -p {project} logs {service} --tail {tail}"
+      "{docker_compose} -p {project} logs {service} --tail {tail}{timestamps}"
     );
     Ok(run_komodo_command("get stack log", command).await)
   }
@@ -113,12 +116,15 @@ impl Resolve<GetComposeServiceLogSearch> for State {
       terms,
       combinator,
       invert,
+      timestamps,
     }: GetComposeServiceLogSearch,
     _: (),
   ) -> anyhow::Result<Log> {
     let docker_compose = docker_compose();
     let grep = log_grep(&terms, combinator, invert);
-    let command = format!("{docker_compose} -p {project} logs {service} --tail 5000 2>&1 | {grep}");
+    let timestamps =
+      timestamps.then_some(" --timestamps").unwrap_or_default();
+    let command = format!("{docker_compose} -p {project} logs {service} --tail 5000{timestamps} 2>&1 | {grep}");
     Ok(run_komodo_command("get stack log grep", command).await)
   }
 }

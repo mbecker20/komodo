@@ -4114,6 +4114,8 @@ export interface GetDeploymentLog {
 	 * Max: 5000.
 	 */
 	tail: U64;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 export enum SearchCombinator {
@@ -4141,6 +4143,8 @@ export interface SearchDeploymentLog {
 	combinator?: SearchCombinator;
 	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
 	invert?: boolean;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**
@@ -4607,6 +4611,8 @@ export interface GetContainerLog {
 	 * Max: 5000.
 	 */
 	tail: U64;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**
@@ -4631,6 +4637,8 @@ export interface SearchContainerLog {
 	combinator?: SearchCombinator;
 	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
 	invert?: boolean;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /** Inspect a docker container on the server. Response: [Container]. */
@@ -4821,6 +4829,8 @@ export interface GetStackServiceLog {
 	 * Max: 5000.
 	 */
 	tail: U64;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**
@@ -4845,6 +4855,8 @@ export interface SearchStackServiceLog {
 	combinator?: SearchCombinator;
 	/** Invert the results, ie return all lines that DON'T match the terms / combinator. */
 	invert?: boolean;
+	/** Enable `--timestamps` */
+	timestamps?: boolean;
 }
 
 /**

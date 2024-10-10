@@ -42,10 +42,17 @@ impl Resolve<GetContainerLog> for State {
   #[instrument(name = "GetContainerLog", level = "debug", skip(self))]
   async fn resolve(
     &self,
-    GetContainerLog { name, tail }: GetContainerLog,
+    GetContainerLog {
+      name,
+      tail,
+      timestamps,
+    }: GetContainerLog,
     _: (),
   ) -> anyhow::Result<Log> {
-    let command = format!("docker logs {name} --tail {tail}");
+    let timestamps =
+      timestamps.then_some(" --timestamps").unwrap_or_default();
+    let command =
+      format!("docker logs {name} --tail {tail}{timestamps}");
     Ok(run_komodo_command("get container log", command).await)
   }
 }
@@ -65,12 +72,16 @@ impl Resolve<GetContainerLogSearch> for State {
       terms,
       combinator,
       invert,
+      timestamps,
     }: GetContainerLogSearch,
     _: (),
   ) -> anyhow::Result<Log> {
     let grep = log_grep(&terms, combinator, invert);
-    let command =
-      format!("docker logs {name} --tail 5000 2>&1 | {grep}");
+    let timestamps =
+      timestamps.then_some(" --timestamps").unwrap_or_default();
+    let command = format!(
+      "docker logs {name} --tail 5000{timestamps} 2>&1 | {grep}"
+    );
     Ok(run_komodo_command("get container log grep", command).await)
   }
 }
