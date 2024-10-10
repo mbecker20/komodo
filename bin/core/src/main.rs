@@ -44,7 +44,7 @@ async fn app() -> anyhow::Result<()> {
   );
   tokio::join!(
     // Maybe initialize first server
-    helpers::ensure_first_server(),
+    helpers::ensure_first_server_and_builder(),
     // Cleanup open updates / invalid alerts
     helpers::startup_cleanup(),
   );
