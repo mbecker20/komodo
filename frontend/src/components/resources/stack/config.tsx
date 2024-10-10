@@ -393,7 +393,7 @@ export const StackConfig = ({
       label: "Destroy",
       labelHidden: true,
       components: {
-        run_build: {
+        destroy_before_deploy: {
           label: "Destroy Before Deploy",
           description:
             "Ensure 'docker compose down' is run before redeploying the Stack.",
