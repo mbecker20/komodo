@@ -39,8 +39,7 @@ where
   let args: CloneArgs = clone_args.into();
   let path = args.path(repo_dir);
   let path_display = path.display();
-  let repo_url =
-    args.remote_url(access_token.as_ref().map(String::as_str))?;
+  let repo_url = args.remote_url(access_token.as_deref())?;
 
   // Set remote url
   let mut set_remote = run_komodo_command(

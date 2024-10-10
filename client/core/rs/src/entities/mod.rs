@@ -614,7 +614,7 @@ impl CloneArgs {
   pub fn path(&self, repo_dir: &Path) -> PathBuf {
     let path = match &self.destination {
       Some(destination) => PathBuf::from(&destination),
-      None => repo_dir.join(&to_komodo_name(&self.name)),
+      None => repo_dir.join(to_komodo_name(&self.name)),
     };
     path.components().collect::<PathBuf>()
   }
@@ -650,9 +650,7 @@ impl CloneArgs {
       .join(self.provider.replace('/', "-"))
       .join(repo.replace('/', "-"))
       .join(self.branch.replace('/', "-"))
-      .join(
-        self.commit.as_ref().map(String::as_str).unwrap_or("latest"),
-      );
+      .join(self.commit.as_deref().unwrap_or("latest"));
     Ok(res)
   }
 }

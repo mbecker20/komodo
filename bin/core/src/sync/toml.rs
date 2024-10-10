@@ -274,7 +274,7 @@ impl ToToml for Build {
     config
       .into_iter()
       .map(|(key, value)| match key.as_str() {
-        "builder_id" => return Ok((String::from("builder"), value)),
+        "builder_id" => Ok((String::from("builder"), value)),
         "version" => {
           match (
             &resource.config.version,

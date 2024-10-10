@@ -39,8 +39,7 @@ where
 {
   let args: CloneArgs = clone_args.into();
   let repo_dir = args.path(repo_dir);
-  let repo_url =
-    args.remote_url(access_token.as_ref().map(String::as_str))?;
+  let repo_url = args.remote_url(access_token.as_deref())?;
 
   let mut logs = clone_inner(
     &repo_url,

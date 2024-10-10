@@ -91,11 +91,7 @@ impl Resolve<build::Build> for State {
     // Add VERSION to build args (if not already there)
     let mut build_args = environment_vars_from_str(build_args)
       .context("Invalid build_args")?;
-    if build_args
-      .iter()
-      .find(|a| a.variable == "VERSION")
-      .is_none()
-    {
+    if !build_args.iter().any(|a| a.variable == "VERSION") {
       build_args.push(EnvironmentVar {
         variable: String::from("VERSION"),
         value: build.config.version.to_string(),

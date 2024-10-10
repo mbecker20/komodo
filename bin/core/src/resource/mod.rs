@@ -514,8 +514,7 @@ pub async fn create<T: KomodoResource>(
     .await
     .context("Failed to list all resources for duplicate name check")?
     .into_iter()
-    .find(|r| r.name == name)
-    .is_some()
+    .any(|r| r.name == name)
   {
     return Err(anyhow!("Must provide unique name for resource."));
   }
