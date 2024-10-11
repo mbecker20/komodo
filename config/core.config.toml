@@ -74,7 +74,7 @@ repo_directory = "/repo-cache"
 ##
 ## NOTE:
 ## Komodo has no API to recover account logins, but if this happens you can doctor the database using Mongo Compass.
-## Create a new user, login to the database with Compass, note down your old users username and _id.
+## Create a new Komodo user (Sign Up button), login to the database with Compass, note down your old users username and _id.
 ## Then delete the old user, and update the new user to have the same username and _id. 
 ## Make sure to set `enabled: true` and maybe `admin: true` on the new user as well, while using Compass.
 ##
