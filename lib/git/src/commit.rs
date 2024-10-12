@@ -98,8 +98,7 @@ pub async fn commit_file_inner(
   };
 
   let push_log =
-    run_komodo_command("push", repo_dir, format!("git push -f"))
-      .await;
+    run_komodo_command("push", repo_dir, "git push -f").await;
   res.logs.push(push_log);
 }
 
