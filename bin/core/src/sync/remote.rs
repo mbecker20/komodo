@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use anyhow::{anyhow, Context};
 use git::GitRes;
 use komodo_client::entities::{
@@ -28,11 +26,9 @@ pub async fn get_remote_resources(
     // =============
     // FILES ON HOST
     // =============
-    let path = sync
-      .config
-      .resource_path
-      .parse::<PathBuf>()
-      .context("Resource path is not valid path")?;
+    let path = core_config()
+      .sync_directory
+      .join(&sync.config.resource_path);
     let (mut logs, mut files, mut file_errors) =
       (Vec::new(), Vec::new(), Vec::new());
     let resources = super::file::read_resources(

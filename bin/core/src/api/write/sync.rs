@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
@@ -457,29 +457,23 @@ impl Resolve<CommitSync, User> for State {
     update.id = add_update(update.clone()).await?;
 
     if sync.config.files_on_host {
-      let path = sync
-        .config
-        .resource_path
-        .parse::<PathBuf>()
-        .context("Resource path is not valid file path")?;
-      let extension = path
+      let file_path = core_config()
+        .sync_directory
+        .join(&sync.config.resource_path);
+      let extension = file_path
         .extension()
         .context("Resource path missing '.toml' extension")?;
       if extension != "toml" {
         return Err(anyhow!("Wrong file extension. Expected '.toml', got '.{extension:?}'"));
       }
-      if let Some(parent) = path.parent() {
+      if let Some(parent) = file_path.parent() {
         let _ = tokio::fs::create_dir_all(&parent).await;
       };
-      if let Err(e) =
-        tokio::fs::write(&sync.config.resource_path, &res.toml)
-          .await
-          .with_context(|| {
-            format!(
-              "Failed to write resource file to {}",
-              sync.config.resource_path
-            )
-          })
+      if let Err(e) = tokio::fs::write(&file_path, &res.toml)
+        .await
+        .with_context(|| {
+          format!("Failed to write resource file to {file_path:?}",)
+        })
       {
         update.push_error_log(
           "Write resource file",

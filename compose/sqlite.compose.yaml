@@ -40,13 +40,17 @@ services:
     env_file: ./compose.env
     environment:
       KOMODO_DATABASE_ADDRESS: ferretdb
-    ## allows for systemd Periphery connection at 
+    volumes:
+      ## Core cache for repos for latest commit hash / contents
+      - repo-cache:/repo-cache
+      ## Store sync files on server
+      # - /path/to/syncs:/syncs
+      ## Optionally mount a custom core.config.toml
+      # - /path/to/core.config.toml:/config/config.toml
+    ## Allows for systemd Periphery connection at 
     ## "http://host.docker.internal:8120"
     # extra_hosts:
     #   - host.docker.internal:host-gateway
-    ## Optionally mount a custom core.config.toml
-    # volumes:
-    #   - /path/to/core.config.toml:/config/config.toml
 
   ## Deploy Periphery container using this block,
   ## or deploy the Periphery binary with systemd using 
@@ -79,7 +83,12 @@ services:
       # - /path/to/compose:/host/compose
 
 volumes:
+  # Sqlite
   sqlite-data:
+  # Core
+  syncs:
+  repo-cache:
+  # Periphery
   ssl-certs:
   repos:
   stacks:
