@@ -297,7 +297,7 @@ export type AlerterEndpoint =
 
 export interface AlerterConfig {
 	/** Whether the alerter is enabled */
-	enabled: boolean;
+	enabled?: boolean;
 	/**
 	 * Where to route the alert messages.
 	 * 
@@ -1522,6 +1522,12 @@ export interface ContainerListItem {
 	networks: string[];
 	/** The volume names attached to container */
 	volumes: string[];
+	/**
+	 * The labels attached to container.
+	 * It's too big to send with container list,
+	 * can get it using InspectContainer
+	 */
+	labels?: Record<string, string>;
 }
 
 export type ListDockerContainersResponse = ContainerListItem[];

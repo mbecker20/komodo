@@ -43,6 +43,8 @@ services:
   periphery:
     image: ghcr.io/mbecker20/periphery:latest
     # image: ghcr.io/mbecker20/periphery:latest-aarch64 # use for arm support
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
     logging:
       driver: local
     ports:
@@ -65,12 +67,16 @@ services:
       # - /path/to/compose:/host/compose
     environment:
       ## Full list: `https://github.com/mbecker20/komodo/blob/main/config/periphery.config.toml`
+      ## Configure the same passkey given to Komodo Core (KOMODO_PASSKEY)
+      PERIPHERY_PASSKEYS: your_core_passkey # Alt: PERIPHERY_PASSKEYS_FILE
+      ## Adding IP here will ensure calling IP is in the list. (optional)
+      PERIPHERY_ALLOWED_IPS:
       ## Enable HTTPS server
       PERIPHERY_SSL_ENABLED: true
       ## If the disk size is overreporting, can use one of these to 
       ## whitelist / blacklist the disks to filter them, whichever is easier.
       ## Accepts comma separated list of paths.
-      ## Usually whitelisting just /etc/hostname gives correct size.
+      ## Usually whitelisting /etc/hostname gives correct size.
       PERIPHERY_INCLUDE_DISK_MOUNTS: /etc/hostname
       # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap,/etc/repos
 

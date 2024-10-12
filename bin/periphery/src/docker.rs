@@ -88,6 +88,7 @@ impl DockerClient {
                 .collect()
             })
             .unwrap_or_default(),
+          labels: container.labels.unwrap_or_default(),
         })
       })
       .collect()

@@ -10,6 +10,8 @@
 services:
   ferretdb:
     image: ghcr.io/ferretdb/ferretdb
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
     restart: unless-stopped
     logging:
       driver: ${COMPOSE_LOGGING_DRIVER:-local}
@@ -24,6 +26,8 @@ services:
   
   core:
     image: ghcr.io/mbecker20/komodo:${COMPOSE_KOMODO_IMAGE_TAG:-latest}
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
     restart: unless-stopped
     depends_on:
       - ferretdb
@@ -49,6 +53,8 @@ services:
   ## https://github.com/mbecker20/komodo/tree/main/scripts
   periphery:
     image: ghcr.io/mbecker20/periphery:${COMPOSE_KOMODO_IMAGE_TAG:-latest}
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
     restart: unless-stopped
     logging:
       driver: ${COMPOSE_LOGGING_DRIVER:-local}

@@ -37,6 +37,11 @@ pub struct ContainerListItem {
   pub networks: Vec<String>,
   /// The volume names attached to container
   pub volumes: Vec<String>,
+  /// The labels attached to container.
+  /// It's too big to send with container list,
+  /// can get it using InspectContainer
+  #[serde(default, skip_serializing)]
+  pub labels: HashMap<String, String>,
 }
 
 #[typeshare]
