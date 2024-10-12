@@ -5,21 +5,30 @@ import { useNavigate } from "react-router-dom";
 import { ColumnDef } from "@tanstack/react-table";
 import { MinusCircle } from "lucide-react";
 import { ConfirmButton } from "@components/util";
+import { useUser } from "@lib/hooks";
 
 export const UserTable = ({
   users,
   onUserRemove,
+  onUserDelete,
+  userDeleteDisabled,
+  onSelfClick,
 }: {
   users: Types.User[];
   onUserRemove?: (user_id: string) => void;
+  onUserDelete?: (user_id: string) => void;
+  userDeleteDisabled?: (user_id: string) => boolean;
+  onSelfClick?: () => void;
 }) => {
+  const user = useUser().data;
   const nav = useNavigate();
-  const columns: ColumnDef<Types.User, "User" | "Admin">[] = [
+  const columns: ColumnDef<Types.User, "User" | "Admin" | "Super Admin">[] = [
     { header: "Username", accessorKey: "username" },
     { header: "Type", accessorKey: "config.type" },
     {
       header: "Level",
-      accessorFn: (user) => (user.admin ? "Admin" : "User"),
+      accessorFn: (user) =>
+        user.admin ? (user.super_admin ? "Super Admin" : "Admin") : "User",
     },
     {
       header: "Enabled",
@@ -51,12 +60,37 @@ export const UserTable = ({
       ),
     });
   }
+  if (onUserDelete) {
+    columns.push({
+      header: "Delete",
+      cell: ({ row }) => (
+        <ConfirmButton
+          title="Delete"
+          variant="destructive"
+          icon={<MinusCircle className="w-4 h-4" />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onUserDelete(row.original._id?.$oid!);
+          }}
+          disabled={
+            row.original._id?.$oid
+              ? userDeleteDisabled?.(row.original._id.$oid) ?? true
+              : true
+          }
+        />
+      ),
+    });
+  }
   return (
     <DataTable
       tableKey="users"
       data={users}
       columns={columns}
-      onRowClick={(user) => nav(`/users/${user._id!.$oid}`)}
+      onRowClick={(row) =>
+        row._id?.$oid === user?._id?.$oid
+          ? onSelfClick?.()
+          : nav(`/users/${row._id!.$oid}`)
+      }
     />
   );
 };

@@ -80,7 +80,11 @@ export const CreateKeyForServiceUser = ({ user_id }: { user_id: string }) => {
               </div>
             </div>
             <DialogFooter className="flex justify-end">
-              <Button className="gap-4" onClick={() => onOpenChange(false)}>
+              <Button
+                variant="secondary"
+                className="gap-4"
+                onClick={() => onOpenChange(false)}
+              >
                 Confirm <Check className="w-4" />
               </Button>
             </DialogFooter>
@@ -103,7 +107,10 @@ export const CreateKeyForServiceUser = ({ user_id }: { user_id: string }) => {
                 Expiry
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="w-36 justify-between px-3">
+                    <Button
+                      variant="outline"
+                      className="w-36 justify-between px-3"
+                    >
                       {expires}
                     </Button>
                   </DropdownMenuTrigger>
@@ -125,7 +132,12 @@ export const CreateKeyForServiceUser = ({ user_id }: { user_id: string }) => {
               </div>
             </div>
             <DialogFooter className="flex justify-end">
-              <Button className="gap-4" onClick={submit} disabled={isPending}>
+              <Button
+                variant="secondary"
+                className="gap-4"
+                onClick={submit}
+                disabled={isPending}
+              >
                 Submit
                 {isPending ? (
                   <Loader2 className="w-4 animate-spin" />

@@ -1,18 +1,18 @@
 import { useLocalStorage, useUser } from "@lib/hooks";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
-import { CreateVariable, Variables } from "./variables";
-import { CreateTag, Tags } from "./tags";
+import { Variables } from "./variables";
+import { Tags } from "./tags";
 import { UsersPage } from "./users";
-import { CreateKey, Keys } from "./keys";
+import { Profile } from "./profile";
 import { Page } from "@components/layouts";
-import { useState } from "react";
-import { Input } from "@ui/input";
 import { ProvidersPage } from "./providers";
+import { ExportButton } from "@components/export";
 
 export const Settings = () => {
   const user = useUser().data;
-  const [view, setView] = useLocalStorage("settings-view-v0", "Variables");
-  const [search, setSearch] = useState("");
+  const [view, setView] = useLocalStorage<
+    "Variables" | "Tags" | "Providers" | "Users" | "Profile"
+  >("settings-view-v1", "Variables");
   const currentView =
     (view === "Users" || view === "Providers") && !user?.admin
       ? "Variables"
@@ -21,7 +21,7 @@ export const Settings = () => {
     <Page>
       <Tabs
         value={currentView}
-        onValueChange={setView}
+        onValueChange={setView as any}
         className="flex flex-col gap-6"
       >
         <div className="flex items-center justify-between">
@@ -32,20 +32,10 @@ export const Settings = () => {
               <TabsTrigger value="Providers">Providers</TabsTrigger>
             )}
             {user?.admin && <TabsTrigger value="Users">Users</TabsTrigger>}
-            <TabsTrigger value="Api Keys">Api Keys</TabsTrigger>
+            <TabsTrigger value="Profile">Profile</TabsTrigger>
           </TabsList>
 
-          {currentView === "Variables" && <CreateVariable />}
-          {currentView === "Tags" && <CreateTag />}
-          {currentView === "Api Keys" && <CreateKey />}
-          {currentView === "Users" && (
-            <Input
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-[250px]"
-            />
-          )}
+          {currentView === "Variables" && <ExportButton include_variables />}
         </div>
 
         <TabsContent value="Variables">
@@ -61,11 +51,11 @@ export const Settings = () => {
         )}
         {user?.admin && (
           <TabsContent value="Users">
-            <UsersPage search={search} />
+            <UsersPage goToProfile={() => setView("Profile")} />
           </TabsContent>
         )}
-        <TabsContent value="Api Keys">
-          <Keys />
+        <TabsContent value="Profile">
+          <Profile />
         </TabsContent>
       </Tabs>
     </Page>
