@@ -206,7 +206,7 @@ const UserAvatar = ({ avatar }: { avatar: string | undefined }) =>
     <User className="w-4" />
   );
 
-const DeleteUserGroup = ({ group }: { group: Types.UserGroup }) => {
+export const DeleteUserGroup = ({ group }: { group: Types.UserGroup }) => {
   const nav = useNavigate();
   const inv = useInvalidate();
   const { toast } = useToast();

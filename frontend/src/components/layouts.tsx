@@ -163,6 +163,7 @@ export const PageXlRow = ({
 interface SectionProps {
   title?: ReactNode;
   icon?: ReactNode;
+  titleRight?: ReactNode;
   titleOther?: ReactNode;
   children?: ReactNode;
   actions?: ReactNode;
@@ -173,6 +174,7 @@ interface SectionProps {
 export const Section = ({
   title,
   icon,
+  titleRight,
   titleOther,
   actions,
   children,
@@ -189,6 +191,7 @@ export const Section = ({
         <div className="px-2 flex items-center gap-2 text-muted-foreground">
           {icon}
           {title && <h2 className="text-xl">{title}</h2>}
+          {titleRight}
         </div>
       ) : (
         titleOther
@@ -234,7 +237,7 @@ export const NewLayout = ({
         <div className="flex flex-col gap-4 py-8">{children}</div>
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={async () => {
               setLoading(true);
               await onConfirm();

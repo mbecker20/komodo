@@ -172,6 +172,11 @@ export type ReadResponses = {
 };
 
 export type WriteResponses = {
+  // ==== USER ====
+  UpdateUserUsername: Types.UpdateUserUsername;
+  UpdateUserPassword: Types.UpdateUserPassword;
+  DeleteUser: Types.DeleteUser;
+
   // ==== SERVICE USER ====
   CreateServiceUser: Types.CreateServiceUserResponse;
   UpdateServiceUserDescription: Types.UpdateServiceUserDescriptionResponse;

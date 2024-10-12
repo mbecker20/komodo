@@ -1,4 +1,3 @@
-import { ExportButton } from "@components/export";
 import { ConfirmButton, CopyButton, TextUpdateMenu } from "@components/util";
 import {
   useInvalidate,
@@ -22,7 +21,7 @@ import {
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import { useToast } from "@ui/use-toast";
-import { Check, Loader2, PlusCircle, Trash } from "lucide-react";
+import { Check, Loader2, PlusCircle, Search, Trash } from "lucide-react";
 import { useState } from "react";
 
 export const Variables = () => {
@@ -71,14 +70,17 @@ export const Variables = () => {
   });
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <Input
-          placeholder="search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-[200px] lg:w-[300px]"
-        />
-        <ExportButton include_variables />
+      <div className="flex justify-between gap-4">
+        <CreateVariable />
+        <div className="relative">
+          <Search className="w-4 absolute top-[50%] left-3 -translate-y-[50%] text-muted-foreground" />
+          <Input
+            placeholder="search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8 w-[200px] lg:w-[300px]"
+          />
+        </div>
       </div>
 
       {updateMenuData && (
@@ -101,6 +103,7 @@ export const Variables = () => {
 
       {/** VARIABLES */}
       <div className="max-w-full overflow-auto">
+        {/* <div className="w-full min-w-[1200px]"> */}
         <DataTable
           tableKey="variables"
           data={filtered}
@@ -196,11 +199,12 @@ export const Variables = () => {
             },
             {
               header: "Delete",
+              size: 200,
               cell: ({ row }) => <DeleteVariable name={row.original.name} />,
-              minSize: 200,
             },
           ]}
         />
+        {/* </div> */}
       </div>
 
       {/** SECRETS */}
@@ -216,7 +220,7 @@ export const Variables = () => {
   );
 };
 
-export const CreateVariable = () => {
+const CreateVariable = () => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");

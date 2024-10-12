@@ -21,12 +21,21 @@ import {
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import { useToast } from "@ui/use-toast";
-import { Check, Loader2, PlusCircle, Trash } from "lucide-react";
+import {
+  Check,
+  GitBranch,
+  HardDrive,
+  Loader2,
+  PlusCircle,
+  Search,
+  Trash,
+} from "lucide-react";
 import { ChangeEvent, ReactNode, useState } from "react";
+import { Section } from "@components/layouts";
 
 export const ProvidersPage = () => {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <Providers type="GitProvider" />
       <Providers type="DockerRegistry" />
     </div>
@@ -70,42 +79,31 @@ const Providers = ({ type }: { type: "GitProvider" | "DockerRegistry" }) => {
     },
   });
   return (
-    <div className="flex flex-col gap-4">
+    <Section
+      title={type === "DockerRegistry" ? "Registry Accounts" : "Git Accounts"}
+      icon={
+        type === "DockerRegistry" ? (
+          <HardDrive className="w-4 h-4" />
+        ) : (
+          <GitBranch className="w-4 h-4" />
+        )
+      }
+    >
+      {/* Create / Search */}
       <div className="flex items-center justify-between">
-        <h2>
-          {type === "DockerRegistry" ? "Registry Accounts" : "Git Accounts"}
-        </h2>
-        <div className="flex items-center gap-2">
+        <CreateAccount type={type} />
+        <div className="relative">
+          <Search className="w-4 absolute top-[50%] left-3 -translate-y-[50%] text-muted-foreground" />
           <Input
             placeholder="search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-[200px] lg:w-[300px]"
+            className="pl-8 w-[200px] lg:w-[300px]"
           />
-          <CreateAccount type={type} />
         </div>
       </div>
 
-      {updateMenuData && (
-        <TextUpdateMenu
-          title={updateMenuData.title}
-          titleRight={updateMenuData.titleRight}
-          placeholder={updateMenuData.placeholder}
-          value={updateMenuData.value}
-          onUpdate={updateMenuData.onUpdate}
-          triggerClassName="w-full"
-          disabled={disabled}
-          open={!!updateMenuData}
-          setOpen={(open) => {
-            if (!open) {
-              setUpdateMenuData(false);
-            }
-          }}
-          triggerHidden
-        />
-      )}
-
-      {/** ACCOUNTS */}
+      {/* ACCOUNTS */}
       <DataTable
         tableKey={type + "-accounts"}
         data={filtered}
@@ -234,17 +232,25 @@ const Providers = ({ type }: { type: "GitProvider" | "DockerRegistry" }) => {
           },
         ]}
       />
-
-      {/** SECRETS */}
-      {/* {secrets.length && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <div>Core Secrets:</div>
-          {secrets.map((secret) => (
-            <Badge variant="secondary">{secret}</Badge>
-          ))}
-        </div>
-      )} */}
-    </div>
+      {updateMenuData && (
+        <TextUpdateMenu
+          title={updateMenuData.title}
+          titleRight={updateMenuData.titleRight}
+          placeholder={updateMenuData.placeholder}
+          value={updateMenuData.value}
+          onUpdate={updateMenuData.onUpdate}
+          triggerClassName="w-full"
+          disabled={disabled}
+          open={!!updateMenuData}
+          setOpen={(open) => {
+            if (!open) {
+              setUpdateMenuData(false);
+            }
+          }}
+          triggerHidden
+        />
+      )}
+    </Section>
   );
 };
 

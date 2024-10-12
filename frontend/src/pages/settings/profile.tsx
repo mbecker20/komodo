@@ -1,5 +1,12 @@
 import { ConfirmButton, CopyButton } from "@components/util";
-import { useInvalidate, useManageUser, useRead, useSetTitle } from "@lib/hooks";
+import {
+  useInvalidate,
+  useManageUser,
+  useRead,
+  useSetTitle,
+  useUser,
+  useWrite,
+} from "@lib/hooks";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +17,17 @@ import {
 } from "@ui/dialog";
 import { Button } from "@ui/button";
 import { useToast } from "@ui/use-toast";
-import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
+import {
+  Trash,
+  PlusCircle,
+  Loader2,
+  Check,
+  User,
+  Eye,
+  EyeOff,
+  KeyRound,
+  UserPen,
+} from "lucide-react";
 import { useState } from "react";
 import { Input } from "@ui/input";
 import {
@@ -21,18 +38,143 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { KeysTable } from "@components/keys/table";
+import { Section } from "@components/layouts";
+import { Card, CardHeader } from "@ui/card";
+import { Types } from "@komodo/client";
 
-export const Keys = () => {
-  useSetTitle("Api Keys");
+export const Profile = () => {
+  useSetTitle("Profile");
+  const user = useUser().data;
+  if (!user) {
+    return (
+      <div className="w-full h-[400px] flex justify-center items-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+  return <ProfileInner user={user} />;
+};
+
+const ProfileInner = ({ user }: { user: Types.User }) => {
+  const { refetch: refetchUser } = useUser();
+  const { toast } = useToast();
   const keys = useRead("ListApiKeys", {}).data ?? [];
-  return <KeysTable keys={keys} DeleteKey={DeleteKey} />;
+  const [username, setUsername] = useState(user.username);
+  const [password, setPassword] = useState("");
+  const [hidePassword, setHidePassword] = useState(true);
+  const { mutate: updateUsername } = useWrite("UpdateUserUsername", {
+    onSuccess: () => {
+      toast({ title: "Username updated." });
+      refetchUser();
+    },
+  });
+  const { mutate: updatePassword } = useWrite("UpdateUserPassword", {
+    onSuccess: () => {
+      toast({ title: "Password updated." });
+      setPassword("");
+    },
+  });
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Profile */}
+      <Section title="Profile" icon={<User className="w-4 h-4" />}>
+        <Card>
+          <CardHeader className="gap-4">
+            {/* Profile Info */}
+            <UserProfile user={user} />
+
+            {/* Update Username */}
+            <div className="flex items-center gap-4">
+              <div className="text-muted-foreground font-mono">Username:</div>
+              <div className="w-[200px] lg:w-[300px]">
+                <Input
+                  placeholder="Input username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <ConfirmButton
+                title="Update Username"
+                icon={<UserPen className="w-4 h-4" />}
+                onClick={() => updateUsername({ username })}
+                disabled={!username || username === user.username}
+              />
+            </div>
+
+            {/* Update Password */}
+            {user.config.type === "Local" && (
+              <div className="flex items-center gap-4">
+                <div className="text-muted-foreground font-mono">Password:</div>
+                <div className="w-[200px] lg:w-[300px] flex items-center gap-2">
+                  <Input
+                    placeholder="Input password"
+                    type={hidePassword ? "password" : "text"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => setHidePassword((curr) => !curr)}
+                  >
+                    {hidePassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+                <ConfirmButton
+                  title="Update Password"
+                  icon={<UserPen className="w-4 h-4" />}
+                  onClick={() => updatePassword({ password })}
+                  disabled={!password}
+                />
+              </div>
+            )}
+          </CardHeader>
+        </Card>
+      </Section>
+
+      {/* Api Keys */}
+      <Section title="Api Keys" icon={<KeyRound className="w-4 h-4" />}>
+        <div>
+          <CreateKey />
+        </div>
+        <KeysTable keys={keys} DeleteKey={DeleteKey} />
+      </Section>
+    </div>
+  );
+};
+
+const UserProfile = ({ user }: { user: Types.User }) => {
+  return (
+    <div className="flex items-center gap-4 flex-wrap">
+      <div className="font-mono text-muted-foreground">Type:</div>
+      {user.config.type}
+
+      <div className="font-mono text-muted-foreground">|</div>
+
+      <div className="font-mono text-muted-foreground">Admin:</div>
+      {user.admin ? "True" : "False"}
+
+      {user.admin && (
+        <>
+          <div className="font-mono text-muted-foreground">|</div>
+
+          <div className="font-mono text-muted-foreground">Super Admin:</div>
+          {user.super_admin ? "True" : "False"}
+        </>
+      )}
+    </div>
+  );
 };
 
 const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 type ExpiresOptions = "90 days" | "180 days" | "1 year" | "never";
 
-export const CreateKey = () => {
+const CreateKey = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [expires, setExpires] = useState<ExpiresOptions>("never");
@@ -86,7 +228,11 @@ export const CreateKey = () => {
               </div>
             </div>
             <DialogFooter className="flex justify-end">
-              <Button className="gap-4" onClick={() => onOpenChange(false)}>
+              <Button
+                variant="secondary"
+                className="gap-4"
+                onClick={() => onOpenChange(false)}
+              >
                 Confirm <Check className="w-4" />
               </Button>
             </DialogFooter>
@@ -109,7 +255,10 @@ export const CreateKey = () => {
                 Expiry
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="w-36 justify-between px-3">
+                    <Button
+                      className="w-36 justify-between px-3"
+                      variant="outline"
+                    >
                       {expires}
                     </Button>
                   </DropdownMenuTrigger>
@@ -131,7 +280,12 @@ export const CreateKey = () => {
               </div>
             </div>
             <DialogFooter className="flex justify-end">
-              <Button className="gap-4" onClick={submit} disabled={isPending}>
+              <Button
+                variant="secondary"
+                className="gap-4"
+                onClick={submit}
+                disabled={isPending}
+              >
                 Submit
                 {isPending ? (
                   <Loader2 className="w-4 animate-spin" />
@@ -162,6 +316,7 @@ const DeleteKey = ({ api_key }: { api_key: string }) => {
   return (
     <ConfirmButton
       title="Delete"
+      variant="destructive"
       icon={<Trash className="w-4 h-4" />}
       onClick={(e) => {
         e.stopPropagation();

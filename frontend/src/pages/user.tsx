@@ -136,7 +136,7 @@ const ApiKeysTable = ({ user_id }: { user_id: string }) => {
   const keys = useRead("ListApiKeysForServiceUser", { user: user_id }).data;
   return (
     <Card>
-      <CardHeader className="border-b pb-6 flex justify-between">
+      <CardHeader className="border-b pb-6 flex flex-row items-center gap-4">
         Api Keys <CreateKeyForServiceUser user_id={user_id} />
       </CardHeader>
       <CardContent>

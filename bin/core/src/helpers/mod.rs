@@ -66,6 +66,15 @@ pub fn random_string(length: usize) -> String {
     .collect()
 }
 
+const BCRYPT_COST: u32 = 10;
+pub fn hash_password<P>(password: P) -> anyhow::Result<String>
+where
+  P: AsRef<[u8]>,
+{
+  bcrypt::hash(password, BCRYPT_COST)
+    .context("failed to hash password")
+}
+
 /// First checks db for token, then checks core config.
 /// Only errors if db call errors.
 /// Returns (token, use_https)

@@ -73,14 +73,13 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
+                const size = header.column.getSize();
                 return (
                   <TableHead
                     key={header.id}
                     colSpan={header.colSpan}
-                    className={cn(
-                      "relative whitespace-nowrap bg-background border-b border-r last:border-r-0"
-                      // `w-[${header.column.getSize()}px]`
-                    )}
+                    className="relative whitespace-nowrap bg-background border-b border-r last:border-r-0"
+                    style={{ width: `${size}px` }}
                   >
                     {header.isPlaceholder
                       ? null
@@ -111,11 +110,8 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableCell
                       key={cell.id}
-                      // className="p-4 border-x first:border-r first:border-l-0 last:border-l last:border-r-0"
-                      className={cn(
-                        "p-4 overflow-hidden overflow-ellipsis",
-                        size && `w-[${size}px]`
-                      )}
+                      className="p-4 overflow-hidden overflow-ellipsis"
+                      style={{ width: `${size}px` }}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

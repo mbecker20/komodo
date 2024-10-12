@@ -11,7 +11,7 @@ import {
 import { Button } from "@ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 import { useToast } from "@ui/use-toast";
-import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
+import { Trash, PlusCircle, Loader2, Check, Search } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@ui/input";
 import { UpdateUser } from "@components/updates/details";
@@ -26,12 +26,18 @@ export const Tags = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <Input
-        placeholder="search..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-[200px] lg:w-[300px]"
-      />
+      <div className="flex items-center justify-between">
+        <CreateTag />
+        <div className="relative">
+          <Search className="w-4 absolute top-[50%] left-3 -translate-y-[50%] text-muted-foreground" />
+          <Input
+            placeholder="search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8 w-[200px] lg:w-[300px]"
+          />
+        </div>
+      </div>
       <DataTable
         tableKey="tags"
         data={tags?.filter((tag) => tag.name.includes(search)) ?? []}

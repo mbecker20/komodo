@@ -28,6 +28,7 @@ mod service_user;
 mod stack;
 mod sync;
 mod tag;
+mod user;
 mod user_group;
 mod variable;
 
@@ -40,6 +41,11 @@ mod variable;
 #[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
 pub enum WriteRequest {
+  // ==== USER ====
+  UpdateUserUsername(UpdateUserUsername),
+  UpdateUserPassword(UpdateUserPassword),
+  DeleteUser(DeleteUser),
+
   // ==== SERVICE USER ====
   CreateServiceUser(CreateServiceUser),
   UpdateServiceUserDescription(UpdateServiceUserDescription),

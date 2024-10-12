@@ -53,7 +53,7 @@ export const NewServiceUser = () => {
       <div className="grid md:grid-cols-2">
         Username
         <Input
-          placeholder="user-group-name"
+          placeholder="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />

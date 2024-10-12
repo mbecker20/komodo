@@ -28,7 +28,11 @@ export const KeysTable = ({
           }) => {
             return (
               <div className="flex items-center gap-2">
-                <Input className="w-40" value={key} disabled />
+                <Input
+                  className="w-[100px] lg:w-[200px] overflow-ellipsis"
+                  value={key}
+                  disabled
+                />
                 <CopyButton content={key} />
               </div>
             );
