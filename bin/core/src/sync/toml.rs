@@ -687,6 +687,15 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::DeployStackIfChanged(exec) => {
+            exec.stack.clone_from(
+              all
+                .stacks
+                .get(&exec.stack)
+                .map(|r| &r.name)
+                .unwrap_or(&String::new()),
+            )
+          }
           Execution::StartStack(exec) => exec.stack.clone_from(
             all
               .stacks

@@ -6,6 +6,8 @@ use komodo_client::entities::{
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
+use super::git::RepoActionResponse;
+
 /// List the compose project names that are on the host.
 /// List running `docker compose ls`
 ///
@@ -100,6 +102,23 @@ pub struct WriteComposeContentsToHost {
 
 //
 
+/// Write and commit compose contents.
+/// Only works with git repo based stacks.
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(RepoActionResponse)]
+pub struct WriteCommitComposeContents {
+  /// The stack to write to.
+  pub stack: Stack,
+  /// Relative to the stack folder + run directory.
+  pub file_path: String,
+  /// The contents to write.
+  pub contents: String,
+  /// If provided, use it to login in. Otherwise check periphery local git providers.
+  pub git_token: Option<String>,
+}
+
+//
+
 /// Rewrites the compose directory, pulls any images, takes down existing containers,
 /// and runs docker compose up.
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
@@ -111,7 +130,7 @@ pub struct ComposeUp {
   pub service: Option<String>,
   /// If provided, use it to login in. Otherwise check periphery local registries.
   pub git_token: Option<String>,
-  /// If provided, use it to login in. Otherwise check periphery local registries.
+  /// If provided, use it to login in. Otherwise check periphery local git providers.
   pub registry_token: Option<String>,
   /// Propogate any secret replacers from core interpolation.
   #[serde(default)]

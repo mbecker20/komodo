@@ -3,10 +3,15 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Context};
 use command::run_komodo_command;
 use formatting::format_serror;
+use git::{write_commit_file, GitRes};
 use komodo_client::entities::{
-  stack::ComposeProject, to_komodo_name, update::Log, FileContents,
+  stack::ComposeProject, to_komodo_name, update::Log, CloneArgs,
+  FileContents,
 };
-use periphery_client::api::compose::*;
+use periphery_client::api::{
+  compose::*,
+  git::{PullOrCloneRepo, RepoActionResponse},
+};
 use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 use tokio::fs;
@@ -243,6 +248,97 @@ impl Resolve<WriteComposeContentsToHost> for State {
       "Write contents to host",
       format!("File contents written to {file_path:?}"),
     ))
+  }
+}
+
+//
+
+impl Resolve<WriteCommitComposeContents> for State {
+  #[instrument(name = "WriteCommitComposeContents", skip(self))]
+  async fn resolve(
+    &self,
+    WriteCommitComposeContents {
+      stack,
+      file_path,
+      contents,
+      git_token,
+    }: WriteCommitComposeContents,
+    _: (),
+  ) -> anyhow::Result<RepoActionResponse> {
+    if stack.config.files_on_host {
+      return Err(anyhow!(
+        "Wrong method called for files on host stack"
+      ));
+    }
+    if stack.config.repo.is_empty() {
+      return Err(anyhow!("Repo is not configured"));
+    }
+
+    let root = periphery_config()
+      .stack_dir
+      .join(to_komodo_name(&stack.name));
+
+    let mut args: CloneArgs = (&stack).into();
+    // Set the clone destination to the one created for this run
+    args.destination = Some(root.display().to_string());
+
+    let git_token = match git_token {
+      Some(token) => Some(token),
+      None => {
+        if !stack.config.git_account.is_empty() {
+          match crate::helpers::git_token(
+            &stack.config.git_provider,
+            &stack.config.git_account,
+          ) {
+            Ok(token) => Some(token.to_string()),
+            Err(e) => {
+              return Err(
+                e.context("Failed to find required git token"),
+              );
+            }
+          }
+        } else {
+          None
+        }
+      }
+    };
+
+    State
+      .resolve(
+        PullOrCloneRepo {
+          args,
+          git_token,
+          environment: vec![],
+          env_file_path: stack.config.env_file_path.clone(),
+          skip_secret_interp: stack.config.skip_secret_interp,
+          // repo replacer only needed for on_clone / on_pull,
+          // which aren't available for stacks
+          replacers: Default::default(),
+        },
+        (),
+      )
+      .await?;
+
+    let file_path = stack
+      .config
+      .run_directory
+      .parse::<PathBuf>()
+      .context("Run directory is not a valid path")?
+      .join(&file_path);
+
+    let GitRes {
+      logs,
+      hash,
+      message,
+      ..
+    } = write_commit_file(&root, &file_path, &contents).await?;
+
+    Ok(RepoActionResponse {
+      logs,
+      commit_hash: hash,
+      commit_message: message,
+      env_file_path: None,
+    })
   }
 }
 

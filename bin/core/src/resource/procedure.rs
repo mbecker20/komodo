@@ -503,6 +503,15 @@ async fn validate_config(
           .await?;
           params.stack = stack.id;
         }
+        Execution::DeployStackIfChanged(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
+        }
         Execution::StartStack(params) => {
           let stack = super::get_check_permissions::<Stack>(
             &params.stack,

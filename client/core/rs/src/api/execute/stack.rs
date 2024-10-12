@@ -9,8 +9,6 @@ use crate::entities::update::Update;
 use super::KomodoExecuteRequest;
 
 /// Deploys the target stack. `docker compose up`. Response: [Update]
-///
-/// Note. If the stack is already deployed, it will be destroyed first.
 #[typeshare]
 #[derive(
   Debug,
@@ -25,6 +23,30 @@ use super::KomodoExecuteRequest;
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
 pub struct DeployStack {
+  /// Id or name
+  pub stack: String,
+  /// Override the default termination max time.
+  /// Only used if the stack needs to be taken down first.
+  pub stop_time: Option<i32>,
+}
+
+/// Checks deployed contents vs latest contents,
+/// and only if any changes found
+/// will `docker compose up`. Response: [Update]
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct DeployStackIfChanged {
   /// Id or name
   pub stack: String,
   /// Override the default termination max time.

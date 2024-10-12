@@ -3,7 +3,10 @@ use std::sync::OnceLock;
 use anyhow::anyhow;
 use axum::http::HeaderMap;
 use komodo_client::{
-  api::{execute::DeployStack, write::RefreshStackCache},
+  api::{
+    execute::{DeployStack, DeployStackIfChanged},
+    write::RefreshStackCache,
+  },
   entities::{stack::Stack, user::git_webhook_user},
 };
 use resolver_api::Resolve;
@@ -78,14 +81,28 @@ pub async fn handle_stack_deploy_webhook(
   }
 
   let user = git_webhook_user().to_owned();
-  let req = ExecuteRequest::DeployStack(DeployStack {
-    stack: stack_id,
-    stop_time: None,
-  });
-  let update = init_execution_update(&req, &user).await?;
-  let ExecuteRequest::DeployStack(req) = req else {
-    unreachable!()
-  };
-  State.resolve(req, (user, update)).await?;
+  if stack.config.webhook_force_deploy {
+    let req = ExecuteRequest::DeployStack(DeployStack {
+      stack: stack_id,
+      stop_time: None,
+    });
+    let update = init_execution_update(&req, &user).await?;
+    let ExecuteRequest::DeployStack(req) = req else {
+      unreachable!()
+    };
+    State.resolve(req, (user, update)).await?;
+  } else {
+    let req =
+      ExecuteRequest::DeployStackIfChanged(DeployStackIfChanged {
+        stack: stack_id,
+        stop_time: None,
+      });
+    let update = init_execution_update(&req, &user).await?;
+    let ExecuteRequest::DeployStackIfChanged(req) = req else {
+      unreachable!()
+    };
+    State.resolve(req, (user, update)).await?;
+  }
+
   Ok(())
 }

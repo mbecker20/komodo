@@ -752,6 +752,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  DeployStackIfChanged: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
   StartStack: {
     params: { stack: "" },
     Component: ({ params, setParams, disabled }) => (

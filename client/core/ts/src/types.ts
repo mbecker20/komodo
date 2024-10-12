@@ -865,6 +865,7 @@ export type Execution =
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
+	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "PauseStack", params: PauseStack }
@@ -2387,6 +2388,11 @@ export interface StackConfig {
 	 * If its an empty string, use the default secret from the config.
 	 */
 	webhook_secret?: string;
+	/**
+	 * By default, the Stack will `DeployStackIfChanged`.
+	 * If this option is enabled, will always run `DeployStack` without diffing.
+	 */
+	webhook_force_deploy?: boolean;
 	/** Whether to send StackStateChange alerts for this stack. */
 	send_alerts: boolean;
 	/** Used with `registry_account` to login to a registry before docker compose up. */
@@ -3760,12 +3766,23 @@ export interface LaunchServer {
 	server_template: string;
 }
 
-/**
- * Deploys the target stack. `docker compose up`. Response: [Update]
- * 
- * Note. If the stack is already deployed, it will be destroyed first.
- */
+/** Deploys the target stack. `docker compose up`. Response: [Update] */
 export interface DeployStack {
+	/** Id or name */
+	stack: string;
+	/**
+	 * Override the default termination max time.
+	 * Only used if the stack needs to be taken down first.
+	 */
+	stop_time?: number;
+}
+
+/**
+ * Checks deployed contents vs latest contents,
+ * and only if any changes found
+ * will `docker compose up`. Response: [Update]
+ */
+export interface DeployStackIfChanged {
 	/** Id or name */
 	stack: string;
 	/**
@@ -6597,6 +6614,7 @@ export type ExecuteRequest =
 	| { type: "StopDeployment", params: StopDeployment }
 	| { type: "DestroyDeployment", params: DestroyDeployment }
 	| { type: "DeployStack", params: DeployStack }
+	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "StopStack", params: StopStack }

@@ -354,6 +354,7 @@ export type ExecuteResponses = {
 
   // ==== STACK ====
   DeployStack: Types.Update;
+  DeployStackIfChanged: Types.Update;
   StartStack: Types.Update;
   RestartStack: Types.Update;
   StopStack: Types.Update;

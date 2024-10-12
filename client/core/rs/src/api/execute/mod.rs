@@ -104,6 +104,7 @@ pub enum Execution {
 
   // STACK
   DeployStack(DeployStack),
+  DeployStackIfChanged(DeployStackIfChanged),
   StartStack(StartStack),
   RestartStack(RestartStack),
   PauseStack(PauseStack),

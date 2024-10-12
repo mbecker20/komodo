@@ -76,6 +76,7 @@ pub enum ExecuteRequest {
 
   // ==== STACK ====
   DeployStack(DeployStack),
+  DeployStackIfChanged(DeployStackIfChanged),
   StartStack(StartStack),
   RestartStack(RestartStack),
   StopStack(StopStack),
