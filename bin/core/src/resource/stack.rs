@@ -301,9 +301,13 @@ async fn validate_config(
 ) -> anyhow::Result<()> {
   if let Some(server_id) = &config.server_id {
     if !server_id.is_empty() {
-      let server = get_check_permissions::<Server>(server_id, user, PermissionLevel::Write)
-          .await
-          .context("cannot create stack on this server. user must have update permissions on the server to perform this action.")?;
+      let server = get_check_permissions::<Server>(
+        server_id,
+        user,
+        PermissionLevel::Write,
+      )
+      .await
+      .context("Cannot attach stack to this Server.")?;
       // in case it comes in as name
       config.server_id = Some(server.id);
     }

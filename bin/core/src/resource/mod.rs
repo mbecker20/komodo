@@ -228,7 +228,7 @@ pub async fn get_check_permissions<T: KomodoResource>(
     Ok(resource)
   } else {
     Err(anyhow!(
-      "user does not have required permissions on this {}",
+      "User does not have required permissions on this {}. Must have at least {permission_level} permissions",
       T::resource_type()
     ))
   }
