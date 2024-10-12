@@ -37,9 +37,8 @@ pub type _PartialAlerterConfig = PartialAlerterConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct AlerterConfig {
   /// Whether the alerter is enabled
-  #[serde(default = "default_enabled")]
-  #[builder(default = "default_enabled()")]
-  #[partial_default(default_enabled())]
+  #[serde(default)]
+  #[builder(default)]
   pub enabled: bool,
 
   /// Where to route the alert messages.
@@ -73,14 +72,10 @@ impl AlerterConfig {
   }
 }
 
-fn default_enabled() -> bool {
-  true
-}
-
 impl Default for AlerterConfig {
   fn default() -> Self {
     Self {
-      enabled: default_enabled(),
+      enabled: Default::default(),
       endpoint: Default::default(),
       alert_types: Default::default(),
       resources: Default::default(),
