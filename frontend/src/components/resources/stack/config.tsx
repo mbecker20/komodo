@@ -758,7 +758,7 @@ export const StackConfig = ({
   );
 };
 
-const DEFAULT_STACK_FILE_CONTENTS = `## 🦎 Hello Komodo 🦎
+export const DEFAULT_STACK_FILE_CONTENTS = `## 🦎 Hello Komodo 🦎
 services:
   hello_world:
     image: hello-world
