@@ -71,6 +71,7 @@ const ProfileInner = ({ user }: { user: Types.User }) => {
   const { mutate: updatePassword } = useWrite("UpdateUserPassword", {
     onSuccess: () => {
       toast({ title: "Password updated." });
+      setPassword("");
     },
   });
   return (
