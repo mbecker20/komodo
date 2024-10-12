@@ -16,11 +16,9 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  state::State,
-  state::{db_client, jwt_client},
+  helpers::hash_password,
+  state::{db_client, jwt_client, State},
 };
-
-const BCRYPT_COST: u32 = 10;
 
 impl Resolve<CreateLocalUser, HeaderMap> for State {
   #[instrument(name = "CreateLocalUser", skip(self))]
@@ -47,8 +45,7 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
       return Err(anyhow!("Password cannot be empty string"));
     }
 
-    let password = bcrypt::hash(password, BCRYPT_COST)
-      .context("failed to hash password")?;
+    let hashed_password = hash_password(password)?;
 
     let no_users_exist =
       db_client().users.find_one(Document::new()).await?.is_none();
@@ -71,7 +68,9 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
       last_update_view: 0,
       recents: Default::default(),
       all: Default::default(),
-      config: UserConfig::Local { password },
+      config: UserConfig::Local {
+        password: hashed_password,
+      },
     };
 
     let user_id = db_client()

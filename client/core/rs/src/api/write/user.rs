@@ -43,9 +43,10 @@ pub type UpdateUserPasswordResponse = NoData;
 
 //
 
-/// **Only for admin**. Delete user.
+/// **Admin only**. Delete a user.
 /// Admins can delete any non-admin user.
 /// Only Super Admin can delete an admin.
+/// No users can delete a Super Admin user. 
 /// User cannot delete themselves.
 /// Response: [NoData].
 #[typeshare]
@@ -56,11 +57,12 @@ pub type UpdateUserPasswordResponse = NoData;
 #[response(DeleteUserResponse)]
 pub struct DeleteUser {
   /// User id or username
+  #[serde(alias = "username", alias = "id")]
   pub user: String,
 }
 
 #[typeshare]
-pub type DeleteUserResponse = NoData;
+pub type DeleteUserResponse = User;
 
 //
 

@@ -3116,6 +3116,12 @@ export type DeleteSyncWebhookResponse = NoData;
 
 export type UpdateTagsOnResourceResponse = NoData;
 
+export type UpdateUserUsernameResponse = NoData;
+
+export type UpdateUserPasswordResponse = NoData;
+
+export type DeleteUserResponse = User;
+
 export type CreateServiceUserResponse = User;
 
 export type UpdateServiceUserDescriptionResponse = User;
@@ -6075,6 +6081,35 @@ export interface UpdateTagsOnResource {
 }
 
 /**
+ * **Only for local users**. Update the calling users username.
+ * Response: [NoData].
+ */
+export interface UpdateUserUsername {
+	username: string;
+}
+
+/**
+ * **Only for local users**. Update the calling users password.
+ * Response: [NoData].
+ */
+export interface UpdateUserPassword {
+	password: string;
+}
+
+/**
+ * **Admin only**. Delete a user.
+ * Admins can delete any non-admin user.
+ * Only Super Admin can delete an admin.
+ * No users can delete a Super Admin user.
+ * User cannot delete themselves.
+ * Response: [NoData].
+ */
+export interface DeleteUser {
+	/** User id or username */
+	user: string;
+}
+
+/**
  * **Admin only.** Create a service user.
  * Response: [User].
  */
@@ -6694,6 +6729,9 @@ export type UserRequest =
 	| { type: "DeleteApiKey", params: DeleteApiKey };
 
 export type WriteRequest = 
+	| { type: "UpdateUserUsername", params: UpdateUserUsername }
+	| { type: "UpdateUserPassword", params: UpdateUserPassword }
+	| { type: "DeleteUser", params: DeleteUser }
 	| { type: "CreateServiceUser", params: CreateServiceUser }
 	| { type: "UpdateServiceUserDescription", params: UpdateServiceUserDescription }
 	| { type: "CreateApiKeyForServiceUser", params: CreateApiKeyForServiceUser }
