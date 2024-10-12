@@ -1,4 +1,7 @@
-use std::{fs, path::Path};
+use std::{
+  fs,
+  path::{Path, PathBuf},
+};
 
 use anyhow::{anyhow, Context};
 use formatting::{colored, format_serror, muted, Color};
@@ -9,17 +12,20 @@ use komodo_client::entities::{
 };
 
 pub fn read_resources(
+  root_path: &Path,
   path: &Path,
   match_tags: &[String],
   logs: &mut Vec<Log>,
   files: &mut Vec<FileContents>,
   file_errors: &mut Vec<FileContents>,
 ) -> anyhow::Result<ResourcesToml> {
+  let path = path.components().collect::<PathBuf>();
   let mut res = ResourcesToml::default();
   let mut log =
     format!("{}: reading resources from {path:?}", muted("INFO"));
   if let Err(e) = read_resources_recursive(
-    path,
+    if path.is_file() { root_path } else { &path },
+    &path,
     match_tags,
     &mut res,
     &mut log,
@@ -40,6 +46,7 @@ pub fn read_resources(
 }
 
 fn read_resources_recursive(
+  root_path: &Path,
   path: &Path,
   match_tags: &[String],
   resources: &mut ResourcesToml,
@@ -59,8 +66,15 @@ fn read_resources_recursive(
     }
     let contents = std::fs::read_to_string(path)
       .context("failed to read file contents")?;
+    let path_for_view = if root_path.ends_with(".toml") {
+      path
+    } else {
+      path
+        .strip_prefix(root_path)
+        .context("Failed to strip root path prefix")?
+    };
     files.push(FileContents {
-      path: path.display().to_string(),
+      path: path_for_view.display().to_string(),
       contents: contents.clone(),
     });
     let more = toml::from_str::<ResourcesToml>(&contents)
@@ -85,6 +99,7 @@ fn read_resources_recursive(
     for entry in directory.into_iter().flatten() {
       let path = entry.path();
       if let Err(e) = read_resources_recursive(
+        root_path,
         &path,
         match_tags,
         resources,

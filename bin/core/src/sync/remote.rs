@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Context};
 use git::GitRes;
 use komodo_client::entities::{
-  sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
-  FileContents,
+  sync::ResourceSync, to_komodo_name, toml::ResourcesToml,
+  update::Log, CloneArgs, FileContents,
 };
 
 use crate::{config::core_config, helpers::git_token};
@@ -28,10 +28,12 @@ pub async fn get_remote_resources(
     // =============
     let path = core_config()
       .sync_directory
+      .join(to_komodo_name(&sync.name))
       .join(&sync.config.resource_path);
     let (mut logs, mut files, mut file_errors) =
       (Vec::new(), Vec::new(), Vec::new());
     let resources = super::file::read_resources(
+      &path,
       &path,
       &sync.config.match_tags,
       &mut logs,
@@ -97,10 +99,10 @@ pub async fn get_remote_resources(
 
   let access_token = if let Some(account) = &clone_args.account {
     git_token(&clone_args.provider, account, |https| clone_args.https = https)
-        .await
-        .with_context(
-          || format!("Failed to get git token in call to db. Stopping run. | {} | {account}", clone_args.provider),
-        )?
+      .await
+      .with_context(
+        || format!("Failed to get git token in call to db. Stopping run. | {} | {account}", clone_args.provider),
+      )?
   } else {
     None
   };
@@ -139,6 +141,7 @@ pub async fn get_remote_resources(
 
   let (mut files, mut file_errors) = (Vec::new(), Vec::new());
   let resources = super::file::read_resources(
+    &repo_path,
     &resource_path,
     &sync.config.match_tags,
     &mut logs,

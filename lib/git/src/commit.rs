@@ -26,7 +26,15 @@ pub async fn write_commit_file(
     format!("Failed to write contents to {path:?}")
   })?;
 
-  Ok(commit_file(repo_dir, file).await)
+  let mut res = GitRes::default();
+  res.logs.push(Log::simple(
+    "Write file",
+    format!("File contents written to {path:?}"),
+  ));
+
+  commit_file_inner(&mut res, repo_dir, file).await;
+
+  Ok(res)
 }
 
 /// Add file, commit, force push.
@@ -37,7 +45,16 @@ pub async fn commit_file(
   file: &Path,
 ) -> GitRes {
   let mut res = GitRes::default();
+  commit_file_inner(&mut res, repo_dir, file).await;
+  res
+}
 
+pub async fn commit_file_inner(
+  res: &mut GitRes,
+  repo_dir: &Path,
+  // relative to repo root
+  file: &Path,
+) {
   let add_log = run_komodo_command(
     "add files",
     repo_dir,
@@ -46,7 +63,7 @@ pub async fn commit_file(
   .await;
   res.logs.push(add_log);
   if !all_logs_success(&res.logs) {
-    return res;
+    return;
   }
 
   let commit_log = run_komodo_command(
@@ -57,7 +74,7 @@ pub async fn commit_file(
   .await;
   res.logs.push(commit_log);
   if !all_logs_success(&res.logs) {
-    return res;
+    return;
   }
 
   match get_commit_hash_log(repo_dir).await {
@@ -71,7 +88,7 @@ pub async fn commit_file(
         "get commit hash",
         format_serror(&e.into()),
       ));
-      return res;
+      return;
     }
   };
 
@@ -79,8 +96,6 @@ pub async fn commit_file(
     run_komodo_command("push", repo_dir, format!("git push -f"))
       .await;
   res.logs.push(push_log);
-
-  res
 }
 
 /// Add, commit, and force push.

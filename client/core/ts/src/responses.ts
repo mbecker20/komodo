@@ -262,8 +262,9 @@ export type WriteResponses = {
   CopyResourceSync: Types.ResourceSync;
   DeleteResourceSync: Types.ResourceSync;
   UpdateResourceSync: Types.ResourceSync;
-  RefreshResourceSyncPending: Types.ResourceSync;
   CommitSync: Types.ResourceSync;
+  WriteSyncFileContents: Types.Update;
+  RefreshResourceSyncPending: Types.ResourceSync;
   CreateSyncWebhook: Types.CreateSyncWebhookResponse;
   DeleteSyncWebhook: Types.DeleteSyncWebhookResponse;
 

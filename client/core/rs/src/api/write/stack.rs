@@ -103,7 +103,7 @@ pub struct RenameStack {
 
 //
 
-/// Rename the stack at id to the given name. Response: [Update].
+/// Update file contents in Files on Server or Git Repo mode. Response: [Update].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -111,7 +111,7 @@ pub struct RenameStack {
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
 pub struct WriteStackFileContents {
-  /// The name or id of the Stack to write the contents to.
+  /// The name or id of the target Stack.
   #[serde(alias = "id", alias = "name")]
   pub stack: String,
   /// The file path relative to the stack run directory,

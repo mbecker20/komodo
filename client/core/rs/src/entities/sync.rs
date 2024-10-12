@@ -213,9 +213,8 @@ pub struct ResourceSyncConfig {
   ///  - If Git Repo based, this is relative to the root of the repo.
   /// Can be a specific file, or a directory containing multiple files / folders.
   /// See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
-  #[serde(default = "default_resource_path")]
-  #[builder(default = "default_resource_path()")]
-  #[partial_default(default_resource_path())]
+  #[serde(default)]
+  #[builder(default)]
   pub resource_path: String,
 
   /// Enable "pushes" to the file,
@@ -270,10 +269,6 @@ fn default_branch() -> String {
   String::from("main")
 }
 
-fn default_resource_path() -> String {
-  String::from("./resources.toml")
-}
-
 fn default_webhook_enabled() -> bool {
   true
 }
@@ -287,7 +282,7 @@ impl Default for ResourceSyncConfig {
       branch: default_branch(),
       commit: Default::default(),
       git_account: Default::default(),
-      resource_path: default_resource_path(),
+      resource_path: Default::default(),
       files_on_host: Default::default(),
       file_contents: Default::default(),
       managed: Default::default(),

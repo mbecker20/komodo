@@ -949,6 +949,7 @@ pub enum Operation {
   CreateResourceSync,
   UpdateResourceSync,
   DeleteResourceSync,
+  WriteSyncContents,
   CommitSync,
   RunSync,
 

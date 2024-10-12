@@ -2653,7 +2653,7 @@ export interface ResourceSyncConfig {
 	 * Can be a specific file, or a directory containing multiple files / folders.
 	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
 	 */
-	resource_path: string;
+	resource_path?: string;
 	/**
 	 * Enable "pushes" to the file,
 	 * which exports resources matching tags to single file.
@@ -2902,6 +2902,7 @@ export enum Operation {
 	CreateResourceSync = "CreateResourceSync",
 	UpdateResourceSync = "UpdateResourceSync",
 	DeleteResourceSync = "DeleteResourceSync",
+	WriteSyncContents = "WriteSyncContents",
 	CommitSync = "CommitSync",
 	RunSync = "RunSync",
 	CreateVariable = "CreateVariable",
@@ -5930,9 +5931,9 @@ export interface RenameStack {
 	name: string;
 }
 
-/** Rename the stack at id to the given name. Response: [Update]. */
+/** Update file contents in Files on Server or Git Repo mode. Response: [Update]. */
 export interface WriteStackFileContents {
-	/** The name or id of the Stack to write the contents to. */
+	/** The name or id of the target Stack. */
 	stack: string;
 	/**
 	 * The file path relative to the stack run directory,
@@ -6030,6 +6031,16 @@ export interface UpdateResourceSync {
 export interface RefreshResourceSyncPending {
 	/** Id or name */
 	sync: string;
+}
+
+/** Rename the stack at id to the given name. Response: [Update]. */
+export interface WriteSyncFileContents {
+	/** The name or id of the target Sync. */
+	sync: string;
+	/** The file path relative to the sync resource path, or absolute. */
+	file_path: string;
+	/** The contents to write. */
+	contents: string;
 }
 
 /**
@@ -6815,8 +6826,9 @@ export type WriteRequest =
 	| { type: "CopyResourceSync", params: CopyResourceSync }
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }
 	| { type: "UpdateResourceSync", params: UpdateResourceSync }
-	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
+	| { type: "WriteSyncFileContents", params: WriteSyncFileContents }
 	| { type: "CommitSync", params: CommitSync }
+	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
 	| { type: "CreateSyncWebhook", params: CreateSyncWebhook }
 	| { type: "DeleteSyncWebhook", params: DeleteSyncWebhook }
 	| { type: "CreateStack", params: CreateStack }

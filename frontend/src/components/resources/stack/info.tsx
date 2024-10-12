@@ -9,6 +9,7 @@ import { ConfirmUpdate } from "@components/config/util";
 import { useWrite } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { History } from "lucide-react";
+import { useToast } from "@ui/use-toast";
 
 export const StackInfo = ({
   id,
@@ -19,7 +20,15 @@ export const StackInfo = ({
 }) => {
   const [edits, setEdits] = useState<Record<string, string | undefined>>({});
   const { canWrite } = useEditPermissions({ type: "Stack", id });
-  const { mutateAsync } = useWrite("WriteStackFileContents");
+  const { toast } = useToast();
+  const { mutateAsync } = useWrite("WriteStackFileContents", {
+    onSuccess: (res) => {
+      toast({
+        title: res.success ? "Contents written." : "Failed to write contents.",
+        variant: res.success ? undefined : "destructive",
+      });
+    },
+  });
 
   const stack = useFullStack(id);
   // const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
