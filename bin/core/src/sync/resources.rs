@@ -259,8 +259,8 @@ impl ResourceSyncTrait for ResourceSync {
     }
     // The file contents MUST be empty
     contents_empty &&
-    // The sync must be files on host mode OR NOT managed
-    (config.files_on_host || !config.managed)
+    // The sync must be files on host mode OR git repo mode
+    (config.files_on_host || !config.repo.is_empty())
   }
 
   fn include_resource_partial(
@@ -291,8 +291,8 @@ impl ResourceSyncTrait for ResourceSync {
     }
     // The file contents MUST be empty
     contents_empty &&
-    // The sync must be files on host mode OR NOT managed
-    (files_on_host || !config.managed.unwrap_or_default())
+    // The sync must be files on host mode OR git repo mode
+    (files_on_host || !config.repo.as_deref().unwrap_or_default().is_empty())
   }
 
   fn get_diff(

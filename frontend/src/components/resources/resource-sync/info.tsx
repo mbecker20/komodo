@@ -8,8 +8,9 @@ import { useEditPermissions } from "@pages/resource";
 import { useWrite } from "@lib/hooks";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
-import { History } from "lucide-react";
+import { FilePlus, History } from "lucide-react";
 import { ConfirmUpdate } from "@components/config/util";
+import { ConfirmButton } from "@components/util";
 
 export const ResourceSyncInfo = ({
   id,
@@ -45,12 +46,27 @@ export const ResourceSyncInfo = ({
       {latest_errors &&
         latest_errors.length > 0 &&
         latest_errors.map((error) => (
-          <Card key={error.path} className="flex flex-col gap-2">
+          <Card key={error.path} className="flex flex-col gap-4">
             <CardHeader className="flex flex-row justify-between items-center pb-0">
               <div className="font-mono flex gap-2">
                 <div className="text-muted-foreground">Path:</div>
                 {error.path}
               </div>
+              {canEdit && (
+                <ConfirmButton
+                  title="Init File"
+                  icon={<FilePlus className="w-4 h-4" />}
+                  onClick={() => {
+                    if (sync) {
+                      mutateAsync({
+                        sync: sync.name,
+                        file_path: error.path,
+                        contents: "## Add resources to get started\n",
+                      });
+                    }
+                  }}
+                />
+              )}
             </CardHeader>
             <CardContent className="pr-8">
               <pre
@@ -67,9 +83,12 @@ export const ResourceSyncInfo = ({
       {latest_contents &&
         latest_contents.length > 0 &&
         latest_contents.map((content) => (
-          <Card key={content.path} className="flex flex-col gap-2">
+          <Card key={content.path} className="flex flex-col gap-4">
             <CardHeader className="flex flex-row justify-between items-center pb-0">
-              <div className="font-mono">{content.path}</div>
+              <div className="font-mono flex gap-2">
+                <div className="text-muted-foreground">Path:</div>
+                {content.path}
+              </div>
               {canEdit && (
                 <div className="flex items-center gap-2">
                   <Button

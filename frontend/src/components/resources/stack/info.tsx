@@ -173,7 +173,10 @@ export const StackInfo = ({
         latest_contents.map((content) => (
           <Card key={content.path} className="flex flex-col gap-2">
             <CardHeader className="flex flex-row justify-between items-center pb-0">
-              <div className="font-mono">{content.path}</div>
+              <div className="font-mono flex gap-2">
+                <div className="text-muted-foreground">Path:</div>
+                {content.path}
+              </div>
               {canEdit && (
                 <div className="flex items-center gap-2">
                   <Button
