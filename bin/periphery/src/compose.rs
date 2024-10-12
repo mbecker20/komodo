@@ -449,6 +449,15 @@ async fn write_stack<'a>(
       }
     };
 
+    let env_file_path = stack
+      .config
+      .run_directory
+      .parse::<PathBuf>()
+      .context("Invalid run_directory")?
+      .join(&stack.config.env_file_path)
+      .display()
+      .to_string();
+
     let clone_or_pull_res = if stack.config.reclone {
       State
         .resolve(
@@ -456,7 +465,7 @@ async fn write_stack<'a>(
             args,
             git_token,
             environment: env_vars,
-            env_file_path: stack.config.env_file_path.clone(),
+            env_file_path,
             skip_secret_interp: stack.config.skip_secret_interp,
             // repo replacer only needed for on_clone / on_pull,
             // which aren't available for stacks
@@ -472,7 +481,7 @@ async fn write_stack<'a>(
             args,
             git_token,
             environment: env_vars,
-            env_file_path: stack.config.env_file_path.clone(),
+            env_file_path,
             skip_secret_interp: stack.config.skip_secret_interp,
             // repo replacer only needed for on_clone / on_pull,
             // which aren't available for stacks
