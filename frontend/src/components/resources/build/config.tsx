@@ -153,9 +153,10 @@ export const BuildConfig = ({
                 description: "Select a custom branch, or default to 'main'.",
               },
               commit: {
-                placeholder: "Enter commit hash",
+                label: "Commit Hash",
+                placeholder: "Input commit hash",
                 description:
-                  "Switch to a specific hash after cloning the branch.",
+                  "Optional. Switch to a specific commit hash after cloning the branch.",
               },
             },
           },

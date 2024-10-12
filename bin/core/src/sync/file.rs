@@ -13,29 +13,38 @@ use komodo_client::entities::{
 
 pub fn read_resources(
   root_path: &Path,
-  path: &Path,
+  resource_path: &str,
   match_tags: &[String],
   logs: &mut Vec<Log>,
   files: &mut Vec<FileContents>,
   file_errors: &mut Vec<FileContents>,
 ) -> anyhow::Result<ResourcesToml> {
-  let path = path.components().collect::<PathBuf>();
+  let resource_path = resource_path
+    .parse::<PathBuf>()
+    .context("Invalid resource path")?;
+  let full_path = root_path
+    .join(&resource_path)
+    .components()
+    .collect::<PathBuf>();
   let mut res = ResourcesToml::default();
-  let mut log =
-    format!("{}: reading resources from {path:?}", muted("INFO"));
+  let mut log = format!(
+    "{}: reading resources from {full_path:?}",
+    muted("INFO")
+  );
   if let Err(e) = read_resources_recursive(
-    if path.is_file() { root_path } else { &path },
-    &path,
+    root_path,
+    &resource_path,
     match_tags,
     &mut res,
     &mut log,
     files,
     file_errors,
   )
-  .with_context(|| format!("failed to read resources from {path:?}"))
-  {
+  .with_context(|| {
+    format!("failed to read resources from {full_path:?}")
+  }) {
     file_errors.push(FileContents {
-      path: path.display().to_string(),
+      path: resource_path.display().to_string(),
       contents: format_serror(&e.into()),
     });
     logs.push(Log::error("read remote resources", log));
@@ -47,34 +56,30 @@ pub fn read_resources(
 
 fn read_resources_recursive(
   root_path: &Path,
-  path: &Path,
+  // relative to root path.
+  resource_path: &Path,
   match_tags: &[String],
   resources: &mut ResourcesToml,
   log: &mut String,
   files: &mut Vec<FileContents>,
   file_errors: &mut Vec<FileContents>,
 ) -> anyhow::Result<()> {
-  let res =
-    fs::metadata(path).context("failed to get path metadata")?;
-  if res.is_file() {
-    if !path
+  let full_path = root_path.join(resource_path);
+  let metadata = fs::metadata(&full_path)
+    .context("failed to get path metadata")?;
+  if metadata.is_file() {
+    if !full_path
       .extension()
       .map(|ext| ext == "toml")
       .unwrap_or_default()
     {
       return Ok(());
     }
-    let contents = std::fs::read_to_string(path)
+    let contents = std::fs::read_to_string(&full_path)
       .context("failed to read file contents")?;
-    let path_for_view = if root_path.ends_with(".toml") {
-      path
-    } else {
-      path
-        .strip_prefix(root_path)
-        .context("Failed to strip root path prefix")?
-    };
+
     files.push(FileContents {
-      path: path_for_view.display().to_string(),
+      path: resource_path.display().to_string(),
       contents: contents.clone(),
     });
     let more = toml::from_str::<ResourcesToml>(&contents)
@@ -87,15 +92,16 @@ fn read_resources_recursive(
       "{}: {} from {}",
       muted("INFO"),
       colored("adding resources", Color::Green),
-      colored(path.display(), Color::Blue)
+      colored(resource_path.display(), Color::Blue)
     ));
 
     extend_resources(resources, more, match_tags);
 
     Ok(())
-  } else if res.is_dir() {
-    let directory = fs::read_dir(path)
-      .context("failed to read directory contents")?;
+  } else if metadata.is_dir() {
+    let directory = fs::read_dir(&full_path).with_context(|| {
+      format!("Failed to read directory contents at {full_path:?}")
+    })?;
     for entry in directory.into_iter().flatten() {
       let path = entry.path();
       if let Err(e) = read_resources_recursive(
@@ -111,7 +117,7 @@ fn read_resources_recursive(
         format!("failed to read resources from {path:?}")
       }) {
         file_errors.push(FileContents {
-          path: path.display().to_string(),
+          path: resource_path.display().to_string(),
           contents: format_serror(&e.into()),
         });
         log.push('\n');

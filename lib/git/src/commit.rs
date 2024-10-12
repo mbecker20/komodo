@@ -11,6 +11,7 @@ use crate::{get_commit_hash_log, GitRes};
 /// Write file, add, commit, force push.
 /// Repo must be cloned.
 pub async fn write_commit_file(
+  commit_msg: &str,
   repo_dir: &Path,
   // relative to repo root
   file: &Path,
@@ -32,7 +33,7 @@ pub async fn write_commit_file(
     format!("File contents written to {path:?}"),
   ));
 
-  commit_file_inner(&mut res, repo_dir, file).await;
+  commit_file_inner(commit_msg, &mut res, repo_dir, file).await;
 
   Ok(res)
 }
@@ -40,16 +41,18 @@ pub async fn write_commit_file(
 /// Add file, commit, force push.
 /// Repo must be cloned.
 pub async fn commit_file(
+  commit_msg: &str,
   repo_dir: &Path,
   // relative to repo root
   file: &Path,
 ) -> GitRes {
   let mut res = GitRes::default();
-  commit_file_inner(&mut res, repo_dir, file).await;
+  commit_file_inner(commit_msg, &mut res, repo_dir, file).await;
   res
 }
 
 pub async fn commit_file_inner(
+  commit_msg: &str,
   res: &mut GitRes,
   repo_dir: &Path,
   // relative to repo root
@@ -69,7 +72,9 @@ pub async fn commit_file_inner(
   let commit_log = run_komodo_command(
     "commit",
     repo_dir,
-    format!("git commit -m \"Komodo: update {file:?}\""),
+    format!(
+      "git commit -m \"[Komodo] {commit_msg}: update {file:?}\""
+    ),
   )
   .await;
   res.logs.push(commit_log);
@@ -113,7 +118,7 @@ pub async fn commit_all(repo_dir: &Path, message: &str) -> GitRes {
   let commit_log = run_komodo_command(
     "commit",
     repo_dir,
-    format!("git commit -m \"{message}\""),
+    format!("git commit -m \"[Komodo] {message}\""),
   )
   .await;
   res.logs.push(commit_log);

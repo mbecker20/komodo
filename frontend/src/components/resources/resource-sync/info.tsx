@@ -37,28 +37,31 @@ export const ResourceSyncInfo = ({
     setEdits({ ...edits, [path]: contents });
 
   const latest_contents = sync?.info?.remote_contents;
+  const latest_errors = sync?.info?.remote_errors;
 
   return (
     <Section titleOther={titleOther}>
-      {/* ERRORS */}
-      {sync?.info?.remote_errors && sync?.info?.remote_errors.length > 0 && (
-        <Card>
-          <CardHeader className="flex flex-col gap-2">
-            remote errors:{" "}
-            {sync?.info?.remote_errors?.map((content, i) => (
-              <pre key={i} className="flex flex-col gap-2">
-                path: {content.path}
-                <pre
-                  dangerouslySetInnerHTML={{
-                    __html: updateLogToHtml(content.contents),
-                  }}
-                  className="max-h-[500px] overflow-y-auto"
-                />
-              </pre>
-            ))}
-          </CardHeader>
-        </Card>
-      )}
+      {/* Errors */}
+      {latest_errors &&
+        latest_errors.length > 0 &&
+        latest_errors.map((error) => (
+          <Card key={error.path} className="flex flex-col gap-2">
+            <CardHeader className="flex flex-row justify-between items-center pb-0">
+              <div className="font-mono flex gap-2">
+                <div className="text-muted-foreground">Path:</div>
+                {error.path}
+              </div>
+            </CardHeader>
+            <CardContent className="pr-8">
+              <pre
+                dangerouslySetInnerHTML={{
+                  __html: updateLogToHtml(error.contents),
+                }}
+                className="max-h-[500px] overflow-y-auto"
+              />
+            </CardContent>
+          </Card>
+        ))}
 
       {/* Update latest contents */}
       {latest_contents &&

@@ -489,9 +489,10 @@ export const StackConfig = ({
               description: "Select a custom branch, or default to 'main'.",
             },
             commit: {
-              placeholder: "Enter a specific commit hash. Optional.",
+              label: "Commit Hash",
+              placeholder: "Input commit hash",
               description:
-                "Switch to a specific hash after cloning the branch.",
+                "Optional. Switch to a specific commit hash after cloning the branch.",
             },
             reclone: {
               description:

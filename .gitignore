@@ -8,7 +8,4 @@ dist
 .DS_Store
 
 creds.toml
-.core-repos
-.repos
-.stacks
-.ssl
+.komodo

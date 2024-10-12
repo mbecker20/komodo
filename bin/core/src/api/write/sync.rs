@@ -193,9 +193,11 @@ impl Resolve<WriteSyncFileContents, User> for State {
       return Ok(update);
     }
 
-    update
-      .logs
-      .extend(git::commit_file(&root, &file_path).await.logs);
+    update.logs.extend(
+      git::commit_file("Update Resource File", &root, &file_path)
+        .await
+        .logs,
+    );
 
     if let Err(e) = State
       .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
@@ -237,22 +239,21 @@ impl Resolve<CommitSync, User> for State {
     let res = State
       .resolve(
         ExportAllResourcesToToml {
-          tags: sync.config.match_tags,
+          tags: sync.config.match_tags.clone(),
         },
         sync_user().to_owned(),
       )
       .await?;
 
-    let mut update = make_update(
-      ResourceTarget::ResourceSync(sync.id),
-      Operation::CommitSync,
-      &user,
-    );
+    let mut update = make_update(&sync, Operation::CommitSync, &user);
     update.id = add_update(update.clone()).await?;
+
+    update.logs.push(Log::simple("Resources", res.toml.clone()));
 
     if sync.config.files_on_host {
       let file_path = core_config()
         .sync_directory
+        .join(to_komodo_name(&sync.name))
         .join(&sync.config.resource_path);
       let extension = file_path
         .extension()
@@ -276,12 +277,53 @@ impl Resolve<CommitSync, User> for State {
         update.finalize();
         add_update(update).await?;
         return resource::get::<ResourceSync>(&sync.name).await;
+      } else {
+        update.push_simple_log(
+          "Write contents",
+          format!("File contents written to {file_path:?}"),
+        );
       }
+    } else if !sync.config.repo.is_empty() {
+      // GIT REPO
+      let resource_path = sync
+        .config
+        .resource_path
+        .parse::<PathBuf>()
+        .context("Invalid resource path")?;
+      let extension = resource_path
+        .extension()
+        .context("Resource path missing '.toml' extension")?;
+      if extension != "toml" {
+        return Err(anyhow!("Wrong file extension. Expected '.toml', got '.{extension:?}'"));
+      }
+      let args: CloneArgs = (&sync).into();
+      let root = args.unique_path(&core_config().repo_directory)?;
+      match git::write_commit_file(
+        "Commit Sync",
+        &root,
+        &resource_path,
+        &res.toml,
+      )
+      .await
+      {
+        Ok(res) => update.logs.extend(res.logs),
+        Err(e) => {
+          update.push_error_log(
+            "Write resource file",
+            format_serror(&e.into()),
+          );
+          update.finalize();
+          add_update(update).await?;
+          return resource::get::<ResourceSync>(&sync.name).await;
+        }
+      }
+      // ===========
+      // UI DEFINED
     } else if let Err(e) = db_client()
       .resource_syncs
       .update_one(
         doc! { "name": &sync.name },
-        doc! { "$set": { "config.file_contents": &res.toml } },
+        doc! { "$set": { "config.file_contents": res.toml } },
       )
       .await
       .context("failed to update file_contents on db")
@@ -294,10 +336,6 @@ impl Resolve<CommitSync, User> for State {
       add_update(update).await?;
       return resource::get::<ResourceSync>(&sync.name).await;
     }
-
-    update
-      .logs
-      .push(Log::simple("Committed resources", res.toml));
 
     let res = match State
       .resolve(RefreshResourceSyncPending { sync: sync.name }, user)

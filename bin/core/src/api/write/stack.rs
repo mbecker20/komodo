@@ -268,10 +268,11 @@ impl Resolve<RefreshStackCache, User> for State {
     .await?;
 
     let file_contents_empty = stack.config.file_contents.is_empty();
+    let repo_empty = stack.config.repo.is_empty();
 
     if !stack.config.files_on_host
       && file_contents_empty
-      && stack.config.repo.is_empty()
+      && repo_empty
     {
       // Nothing to do without one of these
       return Ok(NoData {});
@@ -338,7 +339,7 @@ impl Resolve<RefreshStackCache, User> for State {
           (services, Some(contents), Some(errors), None, None)
         }
       }
-    } else if file_contents_empty {
+    } else if !repo_empty {
       // ================
       // REPO BASED STACK
       // ================

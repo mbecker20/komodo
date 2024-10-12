@@ -5,8 +5,8 @@ title = "Komodo Test"
 host = "http://localhost:9121"
 port = 9121
 passkey = "a_random_passkey"
-sync_directory = ".syncs"
-repo_directory = ".core-repos"
+sync_directory = ".komodo/syncs"
+repo_directory = ".komodo/core-repos"
 frontend_path = "frontend/dist"
 first_server = "http://localhost:8121"
 

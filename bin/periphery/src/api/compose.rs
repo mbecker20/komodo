@@ -331,7 +331,13 @@ impl Resolve<WriteCommitComposeContents> for State {
       hash,
       message,
       ..
-    } = write_commit_file(&root, &file_path, &contents).await?;
+    } = write_commit_file(
+      "Write Compose File",
+      &root,
+      &file_path,
+      &contents,
+    )
+    .await?;
 
     Ok(RepoActionResponse {
       logs,

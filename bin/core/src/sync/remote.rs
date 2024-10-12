@@ -26,15 +26,14 @@ pub async fn get_remote_resources(
     // =============
     // FILES ON HOST
     // =============
-    let path = core_config()
+    let root_path = core_config()
       .sync_directory
-      .join(to_komodo_name(&sync.name))
-      .join(&sync.config.resource_path);
+      .join(to_komodo_name(&sync.name));
     let (mut logs, mut files, mut file_errors) =
       (Vec::new(), Vec::new(), Vec::new());
     let resources = super::file::read_resources(
-      &path,
-      &path,
+      &root_path,
+      &sync.config.resource_path,
       &sync.config.match_tags,
       &mut logs,
       &mut files,
@@ -48,9 +47,7 @@ pub async fn get_remote_resources(
       hash: None,
       message: None,
     });
-  } else if sync.config.managed
-    || !sync.config.file_contents.is_empty()
-  {
+  } else if sync.config.repo.is_empty() {
     // ==========
     // UI DEFINED
     // ==========
@@ -70,7 +67,6 @@ pub async fn get_remote_resources(
       Ok(resources)
     };
 
-    // filter_by_
     return Ok(RemoteResources {
       resources,
       files: vec![FileContents {
@@ -137,12 +133,10 @@ pub async fn get_remote_resources(
   let message =
     message.context("failed to get commit hash message")?;
 
-  let resource_path = repo_path.join(&sync.config.resource_path);
-
   let (mut files, mut file_errors) = (Vec::new(), Vec::new());
   let resources = super::file::read_resources(
     &repo_path,
-    &resource_path,
+    &sync.config.resource_path,
     &sync.config.match_tags,
     &mut logs,
     &mut files,
