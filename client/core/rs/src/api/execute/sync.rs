@@ -4,7 +4,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::update::Update;
+use crate::entities::{update::Update, ResourceTargetVariant};
 
 use super::KomodoExecuteRequest;
 
@@ -25,4 +25,11 @@ use super::KomodoExecuteRequest;
 pub struct RunSync {
   /// Id or name
   pub sync: String,
+  /// Only execute sync on a specific resource type.
+  /// Combine with `resource_id` to specify resource.
+  pub resource_type: Option<ResourceTargetVariant>,
+  /// Only execute sync on a specific resources.
+  /// Combine with `resource_type` to specify resources.
+  /// Supports name or id.
+  pub resources: Option<Vec<String>>,
 }

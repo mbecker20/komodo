@@ -118,6 +118,9 @@ pub struct ResourceDiff {
 pub enum DiffData {
   /// Resource will be created
   Create {
+    /// The name of resource to create
+    #[serde(default)]
+    name: String,
     /// The proposed resource to create in TOML
     proposed: String,
   },

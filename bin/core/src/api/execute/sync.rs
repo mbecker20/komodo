@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use formatting::{colored, format_serror, Color};
@@ -20,10 +20,14 @@ use komodo_client::{
     sync::ResourceSync,
     update::{Log, Update},
     user::{sync_user, User},
+    ResourceTargetVariant,
   },
 };
 use mongo_indexed::doc;
-use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
+use mungos::{
+  by_id::update_one_by_id,
+  mongodb::bson::{oid::ObjectId, to_document},
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -36,7 +40,7 @@ use crate::{
     },
     execute::{get_updates_for_execution, ExecuteResourceSync},
     remote::RemoteResources,
-    AllResourcesById,
+    AllResourcesById, ResourceSyncTrait,
   },
 };
 
@@ -44,7 +48,11 @@ impl Resolve<RunSync, (User, Update)> for State {
   #[instrument(name = "RunSync", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    RunSync { sync }: RunSync,
+    RunSync {
+      sync,
+      resource_type: match_resource_type,
+      resources: match_resources,
+    }: RunSync,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let sync = resource::get_check_permissions::<
@@ -70,22 +78,101 @@ impl Resolve<RunSync, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     if !file_errors.is_empty() {
-      return Err(anyhow!("Found file errors. Cannot execute sync."))
+      return Err(anyhow!("Found file errors. Cannot execute sync."));
     }
 
     let resources = resources?;
 
     let id_to_tags = get_id_to_tags(None).await?;
     let all_resources = AllResourcesById::load().await?;
+    // Convert all match_resources to names
+    let match_resources = match_resources.map(|resources| {
+      resources
+        .into_iter()
+        .filter_map(|name_or_id| {
+          let Some(resource_type) = match_resource_type else {
+            return Some(name_or_id);
+          };
+          match ObjectId::from_str(&name_or_id) {
+            Ok(_) => match resource_type {
+              ResourceTargetVariant::Alerter => all_resources
+                .alerters
+                .get(&name_or_id)
+                .map(|a| a.name.clone()),
+              ResourceTargetVariant::Build => all_resources
+                .builds
+                .get(&name_or_id)
+                .map(|b| b.name.clone()),
+              ResourceTargetVariant::Builder => all_resources
+                .builders
+                .get(&name_or_id)
+                .map(|b| b.name.clone()),
+              ResourceTargetVariant::Deployment => all_resources
+                .deployments
+                .get(&name_or_id)
+                .map(|d| d.name.clone()),
+              ResourceTargetVariant::Procedure => all_resources
+                .procedures
+                .get(&name_or_id)
+                .map(|p| p.name.clone()),
+              ResourceTargetVariant::Repo => all_resources
+                .repos
+                .get(&name_or_id)
+                .map(|r| r.name.clone()),
+              ResourceTargetVariant::Server => all_resources
+                .servers
+                .get(&name_or_id)
+                .map(|s| s.name.clone()),
+              ResourceTargetVariant::ServerTemplate => all_resources
+                .templates
+                .get(&name_or_id)
+                .map(|t| t.name.clone()),
+              ResourceTargetVariant::Stack => all_resources
+                .stacks
+                .get(&name_or_id)
+                .map(|s| s.name.clone()),
+              ResourceTargetVariant::ResourceSync => all_resources
+                .syncs
+                .get(&name_or_id)
+                .map(|s| s.name.clone()),
+              ResourceTargetVariant::System => None,
+            },
+            Err(_) => Some(name_or_id),
+          }
+        })
+        .collect::<Vec<_>>()
+    });
 
     let deployments_by_name = all_resources
       .deployments
       .values()
+      .filter(|deployment| {
+        Deployment::include_resource(
+          &deployment.name,
+          &deployment.config,
+          match_resource_type,
+          match_resources.as_deref(),
+          &deployment.tags,
+          &id_to_tags,
+          &sync.config.match_tags,
+        )
+      })
       .map(|deployment| (deployment.name.clone(), deployment.clone()))
       .collect::<HashMap<_, _>>();
     let stacks_by_name = all_resources
       .stacks
       .values()
+      .filter(|stack| {
+        Stack::include_resource(
+          &stack.name,
+          &stack.config,
+          match_resource_type,
+          match_resources.as_deref(),
+          &stack.tags,
+          &id_to_tags,
+          &sync.config.match_tags,
+        )
+      })
       .map(|stack| (stack.name.clone(), stack.clone()))
       .collect::<HashMap<_, _>>();
 
@@ -105,6 +192,8 @@ impl Resolve<RunSync, (User, Update)> for State {
         resources.servers,
         delete,
         &all_resources,
+        match_resource_type,
+        match_resources.as_deref(),
         &id_to_tags,
         &sync.config.match_tags,
       )
@@ -117,6 +206,8 @@ impl Resolve<RunSync, (User, Update)> for State {
       resources.deployments,
       delete,
       &all_resources,
+      match_resource_type,
+      match_resources.as_deref(),
       &id_to_tags,
       &sync.config.match_tags,
     )
@@ -126,6 +217,8 @@ impl Resolve<RunSync, (User, Update)> for State {
         resources.stacks,
         delete,
         &all_resources,
+        match_resource_type,
+        match_resources.as_deref(),
         &id_to_tags,
         &sync.config.match_tags,
       )
@@ -135,6 +228,8 @@ impl Resolve<RunSync, (User, Update)> for State {
         resources.builds,
         delete,
         &all_resources,
+        match_resource_type,
+        match_resources.as_deref(),
         &id_to_tags,
         &sync.config.match_tags,
       )
@@ -144,6 +239,8 @@ impl Resolve<RunSync, (User, Update)> for State {
         resources.repos,
         delete,
         &all_resources,
+        match_resource_type,
+        match_resources.as_deref(),
         &id_to_tags,
         &sync.config.match_tags,
       )
@@ -156,6 +253,8 @@ impl Resolve<RunSync, (User, Update)> for State {
       resources.procedures,
       delete,
       &all_resources,
+      match_resource_type,
+      match_resources.as_deref(),
       &id_to_tags,
       &sync.config.match_tags,
     )
@@ -165,6 +264,8 @@ impl Resolve<RunSync, (User, Update)> for State {
         resources.builders,
         delete,
         &all_resources,
+        match_resource_type,
+        match_resources.as_deref(),
         &id_to_tags,
         &sync.config.match_tags,
       )
@@ -174,6 +275,8 @@ impl Resolve<RunSync, (User, Update)> for State {
         resources.alerters,
         delete,
         &all_resources,
+        match_resource_type,
+        match_resources.as_deref(),
         &id_to_tags,
         &sync.config.match_tags,
       )
@@ -186,6 +289,8 @@ impl Resolve<RunSync, (User, Update)> for State {
       resources.server_templates,
       delete,
       &all_resources,
+      match_resource_type,
+      match_resources.as_deref(),
       &id_to_tags,
       &sync.config.match_tags,
     )
@@ -198,31 +303,48 @@ impl Resolve<RunSync, (User, Update)> for State {
       resources.resource_syncs,
       delete,
       &all_resources,
+      match_resource_type,
+      match_resources.as_deref(),
       &id_to_tags,
       &sync.config.match_tags,
     )
     .await?;
+
     let (
       variables_to_create,
       variables_to_update,
       variables_to_delete,
-    ) = crate::sync::variables::get_updates_for_execution(
-      resources.variables,
-      // Delete doesn't work with variables when match tags are set
-      sync.config.match_tags.is_empty() && delete,
-    )
-    .await?;
+    ) = if match_resource_type.is_none()
+      && match_resources.is_none()
+      && sync.config.match_tags.is_empty()
+    {
+      crate::sync::variables::get_updates_for_execution(
+        resources.variables,
+        // Delete doesn't work with variables when match tags are set
+        sync.config.match_tags.is_empty() && delete,
+      )
+      .await?
+    } else {
+      Default::default()
+    };
     let (
       user_groups_to_create,
       user_groups_to_update,
       user_groups_to_delete,
-    ) = crate::sync::user_groups::get_updates_for_execution(
-      resources.user_groups,
-      // Delete doesn't work with user groups when match tags are set
-      sync.config.match_tags.is_empty() && delete,
-      &all_resources,
-    )
-    .await?;
+    ) = if match_resource_type.is_none()
+      && match_resources.is_none()
+      && sync.config.match_tags.is_empty()
+    {
+      crate::sync::user_groups::get_updates_for_execution(
+        resources.user_groups,
+        // Delete doesn't work with user groups when match tags are set
+        sync.config.match_tags.is_empty() && delete,
+        &all_resources,
+      )
+      .await?
+    } else {
+      Default::default()
+    };
 
     if deploy_cache.is_empty()
       && resource_syncs_to_create.is_empty()

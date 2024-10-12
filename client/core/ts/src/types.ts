@@ -2679,6 +2679,8 @@ export interface ResourceSyncConfig {
 export type DiffData = 
 	/** Resource will be created */
 	| { type: "Create", data: {
+	/** The name of resource to create */
+	name: string;
 	/** The proposed resource to create in TOML */
 	proposed: string;
 }}
@@ -3853,6 +3855,17 @@ export interface DestroyStack {
 export interface RunSync {
 	/** Id or name */
 	sync: string;
+	/**
+	 * Only execute sync on a specific resource type.
+	 * Combine with `resource_id` to specify resource.
+	 */
+	resource_type?: ResourceTarget["type"];
+	/**
+	 * Only execute sync on a specific resources.
+	 * Combine with `resource_type` to specify resources.
+	 * Supports name or id.
+	 */
+	resources?: string[];
 }
 
 /**

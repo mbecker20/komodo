@@ -94,6 +94,7 @@ pub async fn get_updates_for_view(
       Some(original) => original,
       None => {
         diffs.push(DiffData::Create {
+          name: user_group.name.clone(),
           proposed: format!(
             "[[user_group]]\n{}",
             toml_pretty::to_string(&user_group, TOML_PRETTY_OPTIONS)

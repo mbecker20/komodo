@@ -460,6 +460,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.servers,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -469,6 +471,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.stacks,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -478,6 +482,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.deployments,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -487,6 +493,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.builds,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -496,6 +504,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.repos,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -505,6 +515,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.procedures,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -514,6 +526,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.builders,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -523,6 +537,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.alerters,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -532,6 +548,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.server_templates,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -541,6 +559,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.resource_syncs,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -548,22 +568,28 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         .await?;
       }
 
-      let variable_updates =
+      let variable_updates = if sync.config.match_tags.is_empty() {
         crate::sync::variables::get_updates_for_view(
           &resources.variables,
           // Delete doesn't work with variables when match tags are set
           sync.config.match_tags.is_empty() && delete,
         )
-        .await?;
+        .await?
+      } else {
+        Default::default()
+      };
 
-      let user_group_updates =
+      let user_group_updates = if sync.config.match_tags.is_empty() {
         crate::sync::user_groups::get_updates_for_view(
           resources.user_groups,
           // Delete doesn't work with user groups when match tags are set
           sync.config.match_tags.is_empty() && delete,
           &all_resources,
         )
-        .await?;
+        .await?
+      } else {
+        Default::default()
+      };
 
       anyhow::Ok((
         diffs,

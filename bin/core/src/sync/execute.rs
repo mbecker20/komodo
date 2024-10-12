@@ -6,6 +6,7 @@ use komodo_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
     tag::Tag, toml::ResourceToml, update::Log, user::sync_user,
+    ResourceTargetVariant,
   },
 };
 use mungos::find::find_collect;
@@ -26,6 +27,8 @@ pub async fn get_updates_for_execution<
   resources: Vec<ResourceToml<Resource::PartialConfig>>,
   delete: bool,
   all_resources: &AllResourcesById,
+  match_resource_type: Option<ResourceTargetVariant>,
+  match_resources: Option<&[String]>,
   id_to_tags: &HashMap<String, Tag>,
   match_tags: &[String],
 ) -> anyhow::Result<UpdatesResult<Resource::PartialConfig>> {
@@ -35,11 +38,31 @@ pub async fn get_updates_for_execution<
     .into_iter()
     .filter(|r| {
       Resource::include_resource(
-        &r.config, &r.tags, id_to_tags, match_tags,
+        &r.name,
+        &r.config,
+        match_resource_type,
+        match_resources,
+        &r.tags,
+        id_to_tags,
+        match_tags,
       )
     })
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
+  let resources = resources
+    .into_iter()
+    .filter(|r| {
+      Resource::include_resource_partial(
+        &r.name,
+        &r.config,
+        match_resource_type,
+        match_resources,
+        &r.tags,
+        id_to_tags,
+        match_tags,
+      )
+    })
+    .collect::<Vec<_>>();
 
   let mut to_create = ToCreate::<Resource::PartialConfig>::new();
   let mut to_update = ToUpdate::<Resource::PartialConfig>::new();
@@ -54,15 +77,6 @@ pub async fn get_updates_for_execution<
   }
 
   for mut resource in resources {
-    // only resource that might not be included is resource sync
-    if !Resource::include_resource_partial(
-      &resource.config,
-      &resource.tags,
-      id_to_tags,
-      match_tags,
-    ) {
-      continue;
-    }
     match map.get(&resource.name) {
       Some(original) => {
         // First merge toml resource config (partial) onto default resource config.

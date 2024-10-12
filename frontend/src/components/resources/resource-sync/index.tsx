@@ -55,11 +55,13 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
     sync && (!sync_no_changes(sync) || sync.info?.pending_error);
 
   const view =
-    (_view === "Info" && hideInfo) || (_view === "Pending" && !showPending)
+    _view === "Info" && hideInfo
       ? "Config"
+      : _view === "Pending" && !showPending
+      ? sync?.config?.files_on_host || sync?.config?.repo
+        ? "Info"
+        : "Config"
       : _view;
-
-  // useEffect(() => setView(view), [view]);
 
   const title = (
     <TabsList className="justify-start w-fit">

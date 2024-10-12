@@ -5,9 +5,12 @@ use komodo_client::entities::{
   deployment::Deployment, procedure::Procedure, repo::Repo,
   server::Server, server_template::ServerTemplate, stack::Stack,
   sync::ResourceSync, tag::Tag, toml::ResourceToml, ResourceTarget,
+  ResourceTargetVariant,
 };
 use mungos::mongodb::bson::oid::ObjectId;
 use toml::ToToml;
+
+use crate::resource::KomodoResource;
 
 pub mod deploy;
 pub mod execute;
@@ -38,22 +41,44 @@ pub trait ResourceSyncTrait: ToToml + Sized {
 
   /// To exclude resource syncs with "file_contents" (they aren't compatible)
   fn include_resource(
+    name: &String,
     _config: &Self::Config,
+    match_resource_type: Option<ResourceTargetVariant>,
+    match_resources: Option<&[String]>,
     resource_tags: &[String],
     id_to_tags: &HashMap<String, Tag>,
     match_tags: &[String],
   ) -> bool {
-    include_resource_by_tags(resource_tags, id_to_tags, match_tags)
+    include_resource_by_resource_type_and_name::<Self>(
+      match_resource_type,
+      match_resources,
+      name,
+    ) && include_resource_by_tags(
+      resource_tags,
+      id_to_tags,
+      match_tags,
+    )
   }
 
   /// To exclude resource syncs with "file_contents" (they aren't compatible)
   fn include_resource_partial(
+    name: &String,
     _config: &Self::PartialConfig,
+    match_resource_type: Option<ResourceTargetVariant>,
+    match_resources: Option<&[String]>,
     resource_tags: &[String],
     id_to_tags: &HashMap<String, Tag>,
     match_tags: &[String],
   ) -> bool {
-    include_resource_by_tags(resource_tags, id_to_tags, match_tags)
+    include_resource_by_resource_type_and_name::<Self>(
+      match_resource_type,
+      match_resources,
+      name,
+    ) && include_resource_by_tags(
+      resource_tags,
+      id_to_tags,
+      match_tags,
+    )
   }
 
   /// Apply any changes to incoming toml partial config
@@ -88,6 +113,31 @@ pub fn include_resource_by_tags(
     })
     .collect::<Vec<_>>();
   match_tags.iter().all(|tag| tag_names.contains(&tag))
+}
+
+pub fn include_resource_by_resource_type_and_name<
+  T: KomodoResource,
+>(
+  resource_type: Option<ResourceTargetVariant>,
+  resources: Option<&[String]>,
+  name: &String,
+) -> bool {
+  match (resource_type, resources) {
+    (Some(resource_type), Some(resources)) => {
+      if T::resource_type() != resource_type {
+        return false;
+      }
+      resources.contains(name)
+    }
+    (Some(resource_type), None) => {
+      if T::resource_type() != resource_type {
+        return false;
+      }
+      true
+    }
+    (None, Some(resources)) => resources.contains(name),
+    (None, None) => true,
+  }
 }
 
 pub struct AllResourcesById {

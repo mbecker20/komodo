@@ -75,6 +75,7 @@ pub async fn get_updates_for_view(
       }
       None => {
         diffs.push(DiffData::Create {
+          name: variable.name.clone(),
           proposed: format!(
             "[[variable]]\n{}",
             toml_pretty::to_string(variable, TOML_PRETTY_OPTIONS)
