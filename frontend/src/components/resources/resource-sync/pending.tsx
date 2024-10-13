@@ -19,9 +19,12 @@ export const ResourceSyncPending = ({
   id: string;
   titleOther: ReactNode;
 }) => {
+  const syncing = useRead("GetResourceSyncActionState", { sync: id }).data
+    ?.syncing;
   const sync = useFullResourceSync(id);
   const { canExecute } = useEditPermissions({ type: "ResourceSync", id });
-  const { mutate } = useExecute("RunSync");
+  const { mutate, isPending } = useExecute("RunSync");
+  const loading = isPending || syncing;
   return (
     <Section titleOther={titleOther}>
       {/* Pending Error */}
@@ -105,6 +108,7 @@ export const ResourceSyncPending = ({
                       ],
                     })
                   }
+                  loading={loading}
                 />
               )}
             </CardHeader>

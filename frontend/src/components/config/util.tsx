@@ -577,7 +577,8 @@ export const InputList = <T extends { [key: string]: unknown }>({
 interface ConfirmUpdateProps<T> {
   previous: T;
   content: Partial<T>;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
+  loading?: boolean;
   disabled: boolean;
   language?: MonacoLanguage;
   file_contents_language?: MonacoLanguage;
@@ -587,6 +588,7 @@ export function ConfirmUpdate<T>({
   previous,
   content,
   onConfirm,
+  loading,
   disabled,
   language,
   file_contents_language,
@@ -631,10 +633,11 @@ export function ConfirmUpdate<T>({
           <ConfirmButton
             title="Update"
             icon={<CheckCircle className="w-4 h-4" />}
-            onClick={() => {
-              onConfirm();
+            onClick={async () => {
+              await onConfirm();
               set(false);
             }}
+            loading={loading}
           />
         </DialogFooter>
       </DialogContent>
@@ -749,7 +752,10 @@ export const SystemCommand = ({
         />
       </div>
       <MonacoEditor
-        value={value?.command || "  # Add multiple commands on new lines. Supports comments.\n  "}
+        value={
+          value?.command ||
+          "  # Add multiple commands on new lines. Supports comments.\n  "
+        }
         language="shell"
         onValueChange={(command) => set({ ...(value || {}), command })}
         readOnly={disabled}

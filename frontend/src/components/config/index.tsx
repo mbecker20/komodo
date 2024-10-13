@@ -75,7 +75,7 @@ export const ConfigLayout = <
             <ConfirmUpdate
               previous={original}
               content={config}
-              onConfirm={onConfirm}
+              onConfirm={async () => onConfirm()}
               disabled={disabled}
               file_contents_language={file_contents_language}
             />

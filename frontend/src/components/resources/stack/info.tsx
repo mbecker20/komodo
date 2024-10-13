@@ -23,7 +23,7 @@ export const StackInfo = ({
   const [edits, setEdits] = useState<Record<string, string | undefined>>({});
   const { canWrite } = useEditPermissions({ type: "Stack", id });
   const { toast } = useToast();
-  const { mutateAsync } = useWrite("WriteStackFileContents", {
+  const { mutateAsync, isPending } = useWrite("WriteStackFileContents", {
     onSuccess: (res) => {
       toast({
         title: res.success ? "Contents written." : "Failed to write contents.",
@@ -97,6 +97,7 @@ export const StackInfo = ({
                       });
                     }
                   }}
+                  loading={isPending}
                 />
               )}
             </CardHeader>
@@ -210,9 +211,9 @@ export const StackInfo = ({
                   <ConfirmUpdate
                     previous={{ contents: content.contents }}
                     content={{ contents: edits[content.path] }}
-                    onConfirm={() => {
+                    onConfirm={async () => {
                       if (stack) {
-                        mutateAsync({
+                        return await mutateAsync({
                           stack: stack.name,
                           file_path: content.path,
                           contents: edits[content.path]!,
@@ -223,6 +224,7 @@ export const StackInfo = ({
                     }}
                     disabled={!edits[content.path]}
                     language="yaml"
+                    loading={isPending}
                   />
                 </div>
               )}

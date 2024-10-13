@@ -22,7 +22,7 @@ export const ResourceSyncInfo = ({
   const [edits, setEdits] = useState<Record<string, string | undefined>>({});
   const { canWrite } = useEditPermissions({ type: "ResourceSync", id });
   const { toast } = useToast();
-  const { mutateAsync } = useWrite("WriteSyncFileContents", {
+  const { mutateAsync, isPending } = useWrite("WriteSyncFileContents", {
     onSuccess: (res) => {
       toast({
         title: res.success ? "Contents written." : "Failed to write contents.",
@@ -77,6 +77,7 @@ export const ResourceSyncInfo = ({
                       });
                     }
                   }}
+                  loading={isPending}
                 />
               )}
             </CardHeader>
@@ -128,9 +129,9 @@ export const ResourceSyncInfo = ({
                   <ConfirmUpdate
                     previous={{ contents: content.contents }}
                     content={{ contents: edits[content.path] }}
-                    onConfirm={() => {
+                    onConfirm={async () => {
                       if (sync) {
-                        mutateAsync({
+                        return await mutateAsync({
                           sync: sync.name,
                           resource_path: content.resource_path ?? "",
                           file_path: content.path,
@@ -142,6 +143,7 @@ export const ResourceSyncInfo = ({
                     }}
                     disabled={!edits[content.path]}
                     language="toml"
+                    loading={isPending}
                   />
                 </div>
               )}
