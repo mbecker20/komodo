@@ -425,7 +425,7 @@ impl Resolve<RestartAllContainers, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     let logs = periphery_client(&server)?
-      .request(api::container::StartAllContainers {})
+      .request(api::container::RestartAllContainers {})
       .await
       .context("failed to restart all containers on host")?;
 
@@ -525,7 +525,7 @@ impl Resolve<UnpauseAllContainers, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     let logs = periphery_client(&server)?
-      .request(api::container::StartAllContainers {})
+      .request(api::container::UnpauseAllContainers {})
       .await
       .context("failed to unpause all containers on host")?;
 

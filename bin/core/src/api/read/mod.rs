@@ -403,12 +403,18 @@ impl Resolve<ListGitProvidersFromConfig, User> for State {
     let (builds, repos, syncs) = tokio::try_join!(
       resource::list_full_for_user::<Build>(
         Default::default(),
-        &user
+        &user,
+        &[]
       ),
-      resource::list_full_for_user::<Repo>(Default::default(), &user),
+      resource::list_full_for_user::<Repo>(
+        Default::default(),
+        &user,
+        &[]
+      ),
       resource::list_full_for_user::<ResourceSync>(
         Default::default(),
-        &user
+        &user,
+        &[]
       ),
     )?;
 

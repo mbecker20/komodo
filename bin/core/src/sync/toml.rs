@@ -687,6 +687,13 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::CommitSync(exec) => exec.sync.clone_from(
+            all
+              .syncs
+              .get(&exec.sync)
+              .map(|r| &r.name)
+              .unwrap_or(&String::new()),
+          ),
           Execution::DeployStack(exec) => exec.stack.clone_from(
             all
               .stacks

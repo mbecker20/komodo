@@ -201,6 +201,14 @@ pub async fn get_tag_check_owner(
   Err(anyhow!("user must be tag owner or admin"))
 }
 
+pub async fn get_all_tags(
+  filter: impl Into<Option<Document>>,
+) -> anyhow::Result<Vec<Tag>> {
+  find_collect(&db_client().tags, filter, None)
+    .await
+    .context("failed to query db for tags")
+}
+
 pub async fn get_id_to_tags(
   filter: impl Into<Option<Document>>,
 ) -> anyhow::Result<HashMap<String, Tag>> {

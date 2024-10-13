@@ -22,6 +22,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::query::get_all_tags,
   resource,
   state::{
     action_states, build_state_cache, db_client, github_client, State,
@@ -49,7 +50,12 @@ impl Resolve<ListBuilds, User> for State {
     ListBuilds { query }: ListBuilds,
     user: User,
   ) -> anyhow::Result<Vec<BuildListItem>> {
-    resource::list_for_user::<Build>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Build>(query, &user, &all_tags).await
   }
 }
 
@@ -59,7 +65,13 @@ impl Resolve<ListFullBuilds, User> for State {
     ListFullBuilds { query }: ListFullBuilds,
     user: User,
   ) -> anyhow::Result<ListFullBuildsResponse> {
-    resource::list_full_for_user::<Build>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Build>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -94,6 +106,7 @@ impl Resolve<GetBuildsSummary, User> for State {
     let builds = resource::list_full_for_user::<Build>(
       Default::default(),
       &user,
+      &[],
     )
     .await
     .context("failed to get all builds")?;
@@ -252,9 +265,15 @@ impl Resolve<ListCommonBuildExtraArgs, User> for State {
     ListCommonBuildExtraArgs { query }: ListCommonBuildExtraArgs,
     user: User,
   ) -> anyhow::Result<ListCommonBuildExtraArgsResponse> {
-    let builds = resource::list_full_for_user::<Build>(query, &user)
-      .await
-      .context("failed to get resources matching query")?;
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    let builds =
+      resource::list_full_for_user::<Build>(query, &user, &all_tags)
+        .await
+        .context("failed to get resources matching query")?;
 
     // first collect with guaranteed uniqueness
     let mut res = HashSet::<String>::new();

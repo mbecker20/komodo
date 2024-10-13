@@ -706,6 +706,11 @@ async fn execute_execution(
       )
       .await?
     }
+    // Exception: This is a write operation.
+    Execution::CommitSync(req) => State
+      .resolve(req, user)
+      .await
+      .context("Failed at CommitSync")?,
     Execution::DeployStack(req) => {
       let req = ExecuteRequest::DeployStack(req);
       let update = init_execution_update(&req, &user).await?;

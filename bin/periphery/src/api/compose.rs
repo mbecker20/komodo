@@ -137,24 +137,6 @@ impl Resolve<GetComposeServiceLogSearch> for State {
 
 //
 
-const DEFAULT_COMPOSE_CONTENTS: &str = "## 🦎 Hello Komodo 🦎
-services:
-  hello_world:
-    image: hello-world
-    # networks:
-    #   - default
-    # ports:
-    #   - 3000:3000
-    # volumes:
-    #   - data:/data
-
-# networks:
-#   default: {}
-
-# volumes:
-#   data:
-";
-
 impl Resolve<GetComposeContentsOnHost, ()> for State {
   #[instrument(
     name = "GetComposeContentsOnHost",
@@ -186,11 +168,6 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
     for path in file_paths {
       let full_path =
         run_directory.join(&path).components().collect::<PathBuf>();
-      if !full_path.exists() {
-        fs::write(&full_path, DEFAULT_COMPOSE_CONTENTS)
-          .await
-          .context("Failed to init missing compose file on host")?;
-      }
       match fs::read_to_string(&full_path).await.with_context(|| {
         format!(
           "Failed to read compose file contents at {full_path:?}"

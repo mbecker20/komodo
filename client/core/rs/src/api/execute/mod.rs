@@ -23,7 +23,10 @@ pub use server_template::*;
 pub use stack::*;
 pub use sync::*;
 
-use crate::entities::{NoData, I64};
+use crate::{
+  api::write::CommitSync,
+  entities::{NoData, I64},
+};
 
 pub trait KomodoExecuteRequest: HasResponse {}
 
@@ -101,6 +104,7 @@ pub enum Execution {
 
   // SYNC
   RunSync(RunSync),
+  CommitSync(CommitSync), // This is a special case, its actually a write operation.
 
   // STACK
   DeployStack(DeployStack),

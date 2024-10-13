@@ -11,6 +11,7 @@ use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
+  helpers::query::get_all_tags,
   resource,
   state::{db_client, State},
 };
@@ -36,7 +37,13 @@ impl Resolve<ListServerTemplates, User> for State {
     ListServerTemplates { query }: ListServerTemplates,
     user: User,
   ) -> anyhow::Result<ListServerTemplatesResponse> {
-    resource::list_for_user::<ServerTemplate>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<ServerTemplate>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -46,7 +53,15 @@ impl Resolve<ListFullServerTemplates, User> for State {
     ListFullServerTemplates { query }: ListFullServerTemplates,
     user: User,
   ) -> anyhow::Result<ListFullServerTemplatesResponse> {
-    resource::list_full_for_user::<ServerTemplate>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<ServerTemplate>(
+      query, &user, &all_tags,
+    )
+    .await
   }
 }
 

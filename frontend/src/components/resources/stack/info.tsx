@@ -2,7 +2,7 @@ import { Section } from "@components/layouts";
 import { ReactNode, useState } from "react";
 import { Card, CardContent, CardHeader } from "@ui/card";
 import { useFullStack } from ".";
-import { updateLogToHtml } from "@lib/utils";
+import { cn, updateLogToHtml } from "@lib/utils";
 import { MonacoEditor } from "@components/monaco";
 import { useEditPermissions } from "@pages/resource";
 import { ConfirmUpdate } from "@components/config/util";
@@ -10,7 +10,7 @@ import { useWrite } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { FilePlus, History } from "lucide-react";
 import { useToast } from "@ui/use-toast";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, ShowHideButton } from "@components/util";
 import { DEFAULT_STACK_FILE_CONTENTS } from "./config";
 
 export const StackInfo = ({
@@ -21,6 +21,7 @@ export const StackInfo = ({
   titleOther: ReactNode;
 }) => {
   const [edits, setEdits] = useState<Record<string, string | undefined>>({});
+  const [show, setShow] = useState<Record<string, boolean | undefined>>({});
   const { canWrite } = useEditPermissions({ type: "Stack", id });
   const { toast } = useToast();
   const { mutateAsync, isPending } = useWrite("WriteStackFileContents", {
@@ -72,6 +73,9 @@ export const StackInfo = ({
   const latest_contents = stack?.info?.remote_contents;
   const latest_errors = stack?.info?.remote_errors;
 
+  // Contents will be default hidden if there is more than 2 file editor to show
+  const default_show_contents = !latest_contents || latest_contents.length < 3;
+
   return (
     <Section titleOther={titleOther}>
       {/* Errors */}
@@ -86,7 +90,7 @@ export const StackInfo = ({
               </div>
               {canEdit && (
                 <ConfirmButton
-                  title="Init File"
+                  title="Initialize File"
                   icon={<FilePlus className="w-4 h-4" />}
                   onClick={() => {
                     if (stack) {
@@ -188,57 +192,73 @@ export const StackInfo = ({
       {/* Update latest contents */}
       {latest_contents &&
         latest_contents.length > 0 &&
-        latest_contents.map((content) => (
-          <Card key={content.path} className="flex flex-col gap-4">
-            <CardHeader className="flex flex-row justify-between items-center pb-0">
-              <div className="font-mono flex gap-2">
-                <div className="text-muted-foreground">File:</div>
-                {content.path}
-              </div>
-              {canEdit && (
+        latest_contents.map((content) => {
+          const showContents = show[content.path] ?? default_show_contents;
+          return (
+            <Card key={content.path} className="flex flex-col gap-4">
+              <CardHeader
+                className={cn(
+                  "flex flex-row justify-between items-center",
+                  showContents && "pb-2"
+                )}
+              >
+                <div className="font-mono flex gap-2">
+                  <div className="text-muted-foreground">File:</div>
+                  {content.path}
+                </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setEdits({ ...edits, [content.path]: undefined })
-                    }
-                    className="flex items-center gap-2"
-                    disabled={!edits[content.path]}
-                  >
-                    <History className="w-4 h-4" />
-                    Reset
-                  </Button>
-                  <ConfirmUpdate
-                    previous={{ contents: content.contents }}
-                    content={{ contents: edits[content.path] }}
-                    onConfirm={async () => {
-                      if (stack) {
-                        return await mutateAsync({
-                          stack: stack.name,
-                          file_path: content.path,
-                          contents: edits[content.path]!,
-                        }).then(() =>
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
                           setEdits({ ...edits, [content.path]: undefined })
-                        );
-                      }
-                    }}
-                    disabled={!edits[content.path]}
-                    language="yaml"
-                    loading={isPending}
+                        }
+                        className="flex items-center gap-2"
+                        disabled={!edits[content.path]}
+                      >
+                        <History className="w-4 h-4" />
+                        Reset
+                      </Button>
+                      <ConfirmUpdate
+                        previous={{ contents: content.contents }}
+                        content={{ contents: edits[content.path] }}
+                        onConfirm={async () => {
+                          if (stack) {
+                            return await mutateAsync({
+                              stack: stack.name,
+                              file_path: content.path,
+                              contents: edits[content.path]!,
+                            }).then(() =>
+                              setEdits({ ...edits, [content.path]: undefined })
+                            );
+                          }
+                        }}
+                        disabled={!edits[content.path]}
+                        language="yaml"
+                        loading={isPending}
+                      />
+                    </>
+                  )}
+                  <ShowHideButton
+                    show={showContents}
+                    setShow={(val) => setShow({ ...show, [content.path]: val })}
                   />
                 </div>
+              </CardHeader>
+              {showContents && (
+                <CardContent className="pr-8">
+                  <MonacoEditor
+                    value={edits[content.path] ?? content.contents}
+                    language="yaml"
+                    readOnly={!canEdit}
+                    onValueChange={editFileCallback(content.path)}
+                  />
+                </CardContent>
               )}
-            </CardHeader>
-            <CardContent className="pr-8">
-              <MonacoEditor
-                value={edits[content.path] ?? content.contents}
-                language="yaml"
-                readOnly={!canEdit}
-                onValueChange={editFileCallback(content.path)}
-              />
-            </CardContent>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
     </Section>
   );
 };

@@ -12,6 +12,7 @@ use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
+  helpers::query::get_all_tags,
   resource,
   state::{db_client, State},
 };
@@ -37,7 +38,12 @@ impl Resolve<ListBuilders, User> for State {
     ListBuilders { query }: ListBuilders,
     user: User,
   ) -> anyhow::Result<Vec<BuilderListItem>> {
-    resource::list_for_user::<Builder>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Builder>(query, &user, &all_tags).await
   }
 }
 
@@ -47,7 +53,13 @@ impl Resolve<ListFullBuilders, User> for State {
     ListFullBuilders { query }: ListFullBuilders,
     user: User,
   ) -> anyhow::Result<ListFullBuildersResponse> {
-    resource::list_full_for_user::<Builder>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Builder>(query, &user, &all_tags)
+      .await
   }
 }
 

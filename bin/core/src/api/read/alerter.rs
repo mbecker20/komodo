@@ -12,6 +12,7 @@ use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
+  helpers::query::get_all_tags,
   resource,
   state::{db_client, State},
 };
@@ -37,7 +38,12 @@ impl Resolve<ListAlerters, User> for State {
     ListAlerters { query }: ListAlerters,
     user: User,
   ) -> anyhow::Result<Vec<AlerterListItem>> {
-    resource::list_for_user::<Alerter>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Alerter>(query, &user, &all_tags).await
   }
 }
 
@@ -47,7 +53,13 @@ impl Resolve<ListFullAlerters, User> for State {
     ListFullAlerters { query }: ListFullAlerters,
     user: User,
   ) -> anyhow::Result<ListFullAlertersResponse> {
-    resource::list_full_for_user::<Alerter>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Alerter>(query, &user, &all_tags)
+      .await
   }
 }
 

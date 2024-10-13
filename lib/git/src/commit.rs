@@ -60,7 +60,7 @@ pub async fn commit_file_inner(
   file: &Path,
 ) {
   ensure_global_git_config_set().await;
-  
+
   let add_log = run_komodo_command(
     "add files",
     repo_dir,
@@ -146,8 +146,7 @@ pub async fn commit_all(repo_dir: &Path, message: &str) -> GitRes {
   };
 
   let push_log =
-    run_komodo_command("push", repo_dir, format!("git push -f"))
-      .await;
+    run_komodo_command("push", repo_dir, "git push -f").await;
   res.logs.push(push_log);
 
   res

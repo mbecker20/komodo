@@ -42,6 +42,7 @@ async fn get_all_servers_map() -> anyhow::Result<(
       admin: true,
       ..Default::default()
     },
+    &[],
   )
   .await
   .context("failed to get servers from db (in alert_servers)")?;
