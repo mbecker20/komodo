@@ -10,6 +10,8 @@
 services:
   mongo:
     image: mongo
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
     command: --quiet --wiredTigerCacheSizeGB 0.25
     restart: unless-stopped
     logging:
@@ -27,6 +29,8 @@ services:
   
   core:
     image: ghcr.io/mbecker20/komodo:${COMPOSE_KOMODO_IMAGE_TAG:-latest}
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
     restart: unless-stopped
     depends_on:
       - mongo
