@@ -11,7 +11,7 @@ import { Cpu, Database, Loader2, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { ReactNode, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { Input } from "@ui/input";
 import { StatChart } from "./stat-chart";
 import { useStatsGranularity } from "./hooks";
@@ -217,7 +217,7 @@ export const ServerStats = ({
 const Processes = ({ id }: { id: string }) => {
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState("");
-  const searchSplit = search.split(" ");
+  const searchSplit = search.toLowerCase().split(" ");
   return (
     <Section
       title="Processes"
@@ -243,20 +243,29 @@ const ProcessesInner = ({
   id: string;
   searchSplit: string[];
 }) => {
-  const { data: processes } = useRead("ListSystemProcesses", { server: id });
-  if (!processes || processes.length === 0)
+  const { data: processes, isPending } = useRead("ListSystemProcesses", {
+    server: id,
+  });
+  const filtered = useMemo(
+    () =>
+      processes?.filter((process) => {
+        const name = process.name.toLowerCase();
+        return searchSplit.every((search) => name.includes(search));
+      }),
+    [processes, searchSplit]
+  );
+  if (isPending)
     return (
       <div className="flex items-center justify-center h-[200px]">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
+  if (!processes) return null;
   return (
     <DataTable
       sortDescFirst
       tableKey="server-processes"
-      data={processes.filter((process) =>
-        searchSplit.every((search) => process.name.includes(search))
-      )}
+      data={filtered ?? []}
       columns={[
         {
           header: "Name",

@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { AxisOptions, Chart } from "react-charts";
 import { convertTsMsToLocalUnixTsInMs } from "@lib/utils";
 import { useTheme } from "@ui/theme";
+import { fmt_date } from "@lib/formatting";
 
 type StatType = "cpu" | "mem" | "disk";
 
@@ -78,6 +79,15 @@ export const InnerStatChart = ({
       hardMax: new Date(max + diff * 0.02),
       hardMin: new Date(min - diff * 0.02),
       tickCount: 6,
+      formatters: {
+        // scale: (value?: Date) => fmt_date(value ?? new Date()),
+        tooltip: (value?: Date) => (
+          <div className="text-lg font-mono">
+            {fmt_date(value ?? new Date())}
+          </div>
+        ),
+        cursor: (_value?: Date) => false,
+      },
     };
   }, []);
   const valueAxis = useMemo(
@@ -88,7 +98,12 @@ export const InnerStatChart = ({
         min: 0,
         max: 100,
         formatters: {
-          tooltip: (value) => `${value?.toFixed(2)}%`,
+          tooltip: (value?: number) => (
+            <div className="text-lg font-mono">
+              {(value ?? 0) >= 10 ? value?.toFixed(2) : "0" + value?.toFixed(2)}
+              %
+            </div>
+          ),
         },
       },
     ],
@@ -107,6 +122,13 @@ export const InnerStatChart = ({
         secondaryAxes: valueAxis,
         defaultColors: [getColor(type)],
         dark: theme === "dark",
+        padding: {
+          left: 10,
+          right: 10,
+        },
+        // tooltip: {
+        //   showDatumInTooltip: () => false,
+        // },
       }}
     />
   );
