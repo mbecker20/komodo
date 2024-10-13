@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { AxisOptions, Chart } from "react-charts";
 import { convertTsMsToLocalUnixTsInMs } from "@lib/utils";
 import { useTheme } from "@ui/theme";
-import { fmt_date } from "@lib/formatting";
+import { fmt_utc_date } from "@lib/formatting";
 
 type StatType = "cpu" | "mem" | "disk";
 
@@ -83,7 +83,7 @@ export const InnerStatChart = ({
         // scale: (value?: Date) => fmt_date(value ?? new Date()),
         tooltip: (value?: Date) => (
           <div className="text-lg font-mono">
-            {fmt_date(value ?? new Date())}
+            {fmt_utc_date(value ?? new Date())}
           </div>
         ),
         cursor: (_value?: Date) => false,

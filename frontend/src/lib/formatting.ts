@@ -8,6 +8,14 @@ export const fmt_date = (d: Date) => {
   }:${minutes > 9 ? minutes : "0" + minutes}`;
 };
 
+export const fmt_utc_date = (d: Date) => {
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes();
+  return `${fmt_month(d.getUTCMonth())} ${d.getUTCDate()} ${
+    hours > 9 ? hours : "0" + hours
+  }:${minutes > 9 ? minutes : "0" + minutes}`;
+};
+
 const fmt_month = (month: number) => {
   switch (month) {
     case 0:
