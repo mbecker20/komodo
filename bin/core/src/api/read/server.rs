@@ -43,7 +43,7 @@ use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  helpers::periphery_client,
+  helpers::{periphery_client, query::get_all_tags},
   resource,
   stack::compose_container_match_regex,
   state::{action_states, db_client, server_status_cache, State},
@@ -55,9 +55,12 @@ impl Resolve<GetServersSummary, User> for State {
     GetServersSummary {}: GetServersSummary,
     user: User,
   ) -> anyhow::Result<GetServersSummaryResponse> {
-    let servers =
-      resource::list_for_user::<Server>(Default::default(), &user)
-        .await?;
+    let servers = resource::list_for_user::<Server>(
+      Default::default(),
+      &user,
+      &[],
+    )
+    .await?;
     let mut res = GetServersSummaryResponse::default();
     for server in servers {
       res.total += 1;
@@ -119,7 +122,12 @@ impl Resolve<ListServers, User> for State {
     ListServers { query }: ListServers,
     user: User,
   ) -> anyhow::Result<Vec<ServerListItem>> {
-    resource::list_for_user::<Server>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Server>(query, &user, &all_tags).await
   }
 }
 
@@ -129,7 +137,13 @@ impl Resolve<ListFullServers, User> for State {
     ListFullServers { query }: ListFullServers,
     user: User,
   ) -> anyhow::Result<ListFullServersResponse> {
-    resource::list_full_for_user::<Server>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Server>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -374,15 +388,18 @@ impl Resolve<ListAllDockerContainers, User> for State {
     ListAllDockerContainers { servers }: ListAllDockerContainers,
     user: User,
   ) -> anyhow::Result<Vec<ContainerListItem>> {
-    let servers =
-      resource::list_for_user::<Server>(Default::default(), &user)
-        .await?
-        .into_iter()
-        .filter(|server| {
-          servers.is_empty()
-            || servers.contains(&server.id)
-            || servers.contains(&server.name)
-        });
+    let servers = resource::list_for_user::<Server>(
+      Default::default(),
+      &user,
+      &[],
+    )
+    .await?
+    .into_iter()
+    .filter(|server| {
+      servers.is_empty()
+        || servers.contains(&server.id)
+        || servers.contains(&server.name)
+    });
 
     let mut containers = Vec::<ContainerListItem>::new();
 

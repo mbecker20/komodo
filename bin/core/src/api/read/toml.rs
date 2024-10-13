@@ -29,7 +29,9 @@ use mungos::find::find_collect;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::query::{get_id_to_tags, get_user_user_group_ids},
+  helpers::query::{
+    get_all_tags, get_id_to_tags, get_user_user_group_ids,
+  },
   resource,
   state::{db_client, State},
   sync::{
@@ -46,10 +48,17 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
   ) -> anyhow::Result<ExportAllResourcesToTomlResponse> {
     let mut targets = Vec::<ResourceTarget>::new();
 
+    let all_tags = if tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+
     targets.extend(
       resource::list_for_user::<Alerter>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -59,6 +68,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<Builder>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -68,6 +78,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<Server>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -77,6 +88,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<Deployment>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -86,6 +98,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<Stack>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -95,6 +108,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<Build>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -104,6 +118,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<Repo>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -113,6 +128,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<Procedure>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -122,6 +138,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_for_user::<ServerTemplate>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()
@@ -131,6 +148,7 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       resource::list_full_for_user::<ResourceSync>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,
+        &all_tags,
       )
       .await?
       .into_iter()

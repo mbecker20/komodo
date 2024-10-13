@@ -19,7 +19,7 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::periphery_client,
+  helpers::{periphery_client, query::get_all_tags},
   resource,
   state::{action_states, deployment_status_cache, State},
 };
@@ -45,7 +45,13 @@ impl Resolve<ListDeployments, User> for State {
     ListDeployments { query }: ListDeployments,
     user: User,
   ) -> anyhow::Result<Vec<DeploymentListItem>> {
-    resource::list_for_user::<Deployment>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Deployment>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -55,7 +61,15 @@ impl Resolve<ListFullDeployments, User> for State {
     ListFullDeployments { query }: ListFullDeployments,
     user: User,
   ) -> anyhow::Result<ListFullDeploymentsResponse> {
-    resource::list_full_for_user::<Deployment>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Deployment>(
+      query, &user, &all_tags,
+    )
+    .await
   }
 }
 
@@ -217,6 +231,7 @@ impl Resolve<GetDeploymentsSummary, User> for State {
     let deployments = resource::list_full_for_user::<Deployment>(
       Default::default(),
       &user,
+      &[],
     )
     .await
     .context("failed to get deployments from db")?;
@@ -254,10 +269,16 @@ impl Resolve<ListCommonDeploymentExtraArgs, User> for State {
     ListCommonDeploymentExtraArgs { query }: ListCommonDeploymentExtraArgs,
     user: User,
   ) -> anyhow::Result<ListCommonDeploymentExtraArgsResponse> {
-    let deployments =
-      resource::list_full_for_user::<Deployment>(query, &user)
-        .await
-        .context("failed to get resources matching query")?;
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    let deployments = resource::list_full_for_user::<Deployment>(
+      query, &user, &all_tags,
+    )
+    .await
+    .context("failed to get resources matching query")?;
 
     // first collect with guaranteed uniqueness
     let mut res = HashSet::<String>::new();

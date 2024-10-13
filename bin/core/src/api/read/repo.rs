@@ -12,6 +12,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::query::get_all_tags,
   resource,
   state::{action_states, github_client, repo_state_cache, State},
 };
@@ -37,7 +38,12 @@ impl Resolve<ListRepos, User> for State {
     ListRepos { query }: ListRepos,
     user: User,
   ) -> anyhow::Result<Vec<RepoListItem>> {
-    resource::list_for_user::<Repo>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Repo>(query, &user, &all_tags).await
   }
 }
 
@@ -47,7 +53,13 @@ impl Resolve<ListFullRepos, User> for State {
     ListFullRepos { query }: ListFullRepos,
     user: User,
   ) -> anyhow::Result<ListFullReposResponse> {
-    resource::list_full_for_user::<Repo>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Repo>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -79,10 +91,13 @@ impl Resolve<GetReposSummary, User> for State {
     GetReposSummary {}: GetReposSummary,
     user: User,
   ) -> anyhow::Result<GetReposSummaryResponse> {
-    let repos =
-      resource::list_full_for_user::<Repo>(Default::default(), &user)
-        .await
-        .context("failed to get repos from db")?;
+    let repos = resource::list_full_for_user::<Repo>(
+      Default::default(),
+      &user,
+      &[],
+    )
+    .await
+    .context("failed to get repos from db")?;
 
     let mut res = GetReposSummaryResponse::default();
 

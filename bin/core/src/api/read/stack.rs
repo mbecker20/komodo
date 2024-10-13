@@ -17,7 +17,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::periphery_client,
+  helpers::{periphery_client, query::get_all_tags},
   resource,
   stack::get_stack_and_server,
   state::{action_states, github_client, stack_status_cache, State},
@@ -133,9 +133,15 @@ impl Resolve<ListCommonStackExtraArgs, User> for State {
     ListCommonStackExtraArgs { query }: ListCommonStackExtraArgs,
     user: User,
   ) -> anyhow::Result<ListCommonStackExtraArgsResponse> {
-    let stacks = resource::list_full_for_user::<Stack>(query, &user)
-      .await
-      .context("failed to get resources matching query")?;
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    let stacks =
+      resource::list_full_for_user::<Stack>(query, &user, &all_tags)
+        .await
+        .context("failed to get resources matching query")?;
 
     // first collect with guaranteed uniqueness
     let mut res = HashSet::<String>::new();
@@ -158,9 +164,15 @@ impl Resolve<ListCommonStackBuildExtraArgs, User> for State {
     ListCommonStackBuildExtraArgs { query }: ListCommonStackBuildExtraArgs,
     user: User,
   ) -> anyhow::Result<ListCommonStackBuildExtraArgsResponse> {
-    let stacks = resource::list_full_for_user::<Stack>(query, &user)
-      .await
-      .context("failed to get resources matching query")?;
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    let stacks =
+      resource::list_full_for_user::<Stack>(query, &user, &all_tags)
+        .await
+        .context("failed to get resources matching query")?;
 
     // first collect with guaranteed uniqueness
     let mut res = HashSet::<String>::new();
@@ -183,7 +195,12 @@ impl Resolve<ListStacks, User> for State {
     ListStacks { query }: ListStacks,
     user: User,
   ) -> anyhow::Result<Vec<StackListItem>> {
-    resource::list_for_user::<Stack>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Stack>(query, &user, &all_tags).await
   }
 }
 
@@ -193,7 +210,13 @@ impl Resolve<ListFullStacks, User> for State {
     ListFullStacks { query }: ListFullStacks,
     user: User,
   ) -> anyhow::Result<ListFullStacksResponse> {
-    resource::list_full_for_user::<Stack>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Stack>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -228,6 +251,7 @@ impl Resolve<GetStacksSummary, User> for State {
     let stacks = resource::list_full_for_user::<Stack>(
       Default::default(),
       &user,
+      &[],
     )
     .await
     .context("failed to get stacks from db")?;

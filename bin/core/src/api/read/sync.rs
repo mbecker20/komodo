@@ -15,6 +15,7 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
+  helpers::query::get_all_tags,
   resource,
   state::{
     action_states, github_client, resource_sync_state_cache, State,
@@ -42,7 +43,13 @@ impl Resolve<ListResourceSyncs, User> for State {
     ListResourceSyncs { query }: ListResourceSyncs,
     user: User,
   ) -> anyhow::Result<Vec<ResourceSyncListItem>> {
-    resource::list_for_user::<ResourceSync>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<ResourceSync>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -52,7 +59,15 @@ impl Resolve<ListFullResourceSyncs, User> for State {
     ListFullResourceSyncs { query }: ListFullResourceSyncs,
     user: User,
   ) -> anyhow::Result<ListFullResourceSyncsResponse> {
-    resource::list_full_for_user::<ResourceSync>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<ResourceSync>(
+      query, &user, &all_tags,
+    )
+    .await
   }
 }
 
@@ -88,6 +103,7 @@ impl Resolve<GetResourceSyncsSummary, User> for State {
       resource::list_full_for_user::<ResourceSync>(
         Default::default(),
         &user,
+        &[],
       )
       .await
       .context("failed to get resource_syncs from db")?;

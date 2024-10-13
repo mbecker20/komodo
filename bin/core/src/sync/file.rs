@@ -80,9 +80,25 @@ pub fn read_resources(
       } else {
         logs.push(Log::simple("Read remote resources", log));
       };
+    } else if !full_path.exists() {
+      file_errors.push(SyncFileContents {
+        resource_path: String::new(),
+        path: resource_path.display().to_string(),
+        contents: format_serror(
+          &anyhow!("Initialize the file to proceed.")
+            .context(format!("Path {full_path:?} does not exist."))
+            .into(),
+        ),
+      });
+      log.push_str(&format!(
+        "{}: Resoure path {} does not exist.",
+        colored("ERROR", Color::Red),
+        bold(resource_path.display())
+      ));
+      logs.push(Log::error("Read remote resources", log));
     } else {
       log.push_str(&format!(
-        "{}: Resoure path {} is neither a file nor a directory.",
+        "{}: Resoure path {} exists, but is neither a file nor a directory.",
         colored("WARN", Color::Red),
         bold(resource_path.display())
       ));

@@ -37,8 +37,8 @@ use crate::{
   helpers::{
     create_permission, flatten_document,
     query::{
-      get_tag, get_user_user_groups, id_or_name_filter,
-      user_target_query,
+      get_all_tags, get_id_to_tags, get_tag, get_user_user_groups,
+      id_or_name_filter, user_target_query,
     },
     update::{add_update, make_update},
   },
@@ -382,8 +382,9 @@ pub async fn get_user_permission_on_resource<T: KomodoResource>(
 pub async fn list_for_user<T: KomodoResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
+  all_tags: &[Tag],
 ) -> anyhow::Result<Vec<T::ListItem>> {
-  validate_resource_query_tags(&mut query).await?;
+  validate_resource_query_tags(&mut query, all_tags)?;
   let mut filters = Document::new();
   query.add_filters(&mut filters);
   list_for_user_using_document::<T>(filters, user).await
@@ -404,8 +405,9 @@ pub async fn list_for_user_using_document<T: KomodoResource>(
 pub async fn list_full_for_user<T: KomodoResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
+  all_tags: &[Tag],
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
-  validate_resource_query_tags(&mut query).await?;
+  validate_resource_query_tags(&mut query, all_tags)?;
   let mut filters = Document::new();
   query.add_filters(&mut filters);
   list_full_for_user_using_document::<T>(filters, user).await
@@ -510,7 +512,7 @@ pub async fn create<T: KomodoResource>(
 
   // Ensure an existing resource with same name doesn't already exist
   // The database indexing also ensures this but doesn't give a good error message.
-  if list_full_for_user::<T>(Default::default(), system_user())
+  if list_full_for_user::<T>(Default::default(), system_user(), &[])
     .await
     .context("Failed to list all resources for duplicate name check")?
     .into_iter()
@@ -793,17 +795,23 @@ pub async fn delete<T: KomodoResource>(
 // =======
 
 #[instrument(level = "debug")]
-pub async fn validate_resource_query_tags<
-  T: Default + std::fmt::Debug,
->(
+pub fn validate_resource_query_tags<T: Default + std::fmt::Debug>(
   query: &mut ResourceQuery<T>,
+  all_tags: &[Tag],
 ) -> anyhow::Result<()> {
-  let futures = query.tags.iter().map(|tag| get_tag(tag));
-  let res = join_all(futures)
-    .await
-    .into_iter()
+  query.tags = query
+    .tags
+    .iter()
+    .map(|tag| {
+      all_tags
+        .iter()
+        .find(|t| t.name == *tag || t.id == *tag)
+        .map(|tag| tag.id.clone())
+        .with_context(|| {
+          format!("No tag found matching name or id: {}", tag)
+        })
+    })
     .collect::<anyhow::Result<Vec<_>>>()?;
-  query.tags = res.into_iter().map(|tag| tag.id).collect();
   Ok(())
 }
 

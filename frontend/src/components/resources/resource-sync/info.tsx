@@ -65,7 +65,7 @@ export const ResourceSyncInfo = ({
               </div>
               {canEdit && (
                 <ConfirmButton
-                  title="Init File"
+                  title="Initialize File"
                   icon={<FilePlus className="w-4 h-4" />}
                   onClick={() => {
                     if (sync) {

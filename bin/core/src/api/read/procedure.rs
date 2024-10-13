@@ -10,6 +10,7 @@ use komodo_client::{
 use resolver_api::Resolve;
 
 use crate::{
+  helpers::query::get_all_tags,
   resource,
   state::{action_states, procedure_state_cache, State},
 };
@@ -35,7 +36,13 @@ impl Resolve<ListProcedures, User> for State {
     ListProcedures { query }: ListProcedures,
     user: User,
   ) -> anyhow::Result<ListProceduresResponse> {
-    resource::list_for_user::<Procedure>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_for_user::<Procedure>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -45,7 +52,13 @@ impl Resolve<ListFullProcedures, User> for State {
     ListFullProcedures { query }: ListFullProcedures,
     user: User,
   ) -> anyhow::Result<ListFullProceduresResponse> {
-    resource::list_full_for_user::<Procedure>(query, &user).await
+    let all_tags = if query.tags.is_empty() {
+      vec![]
+    } else {
+      get_all_tags(None).await?
+    };
+    resource::list_full_for_user::<Procedure>(query, &user, &all_tags)
+      .await
   }
 }
 
@@ -58,6 +71,7 @@ impl Resolve<GetProceduresSummary, User> for State {
     let procedures = resource::list_full_for_user::<Procedure>(
       Default::default(),
       &user,
+      &[],
     )
     .await
     .context("failed to get procedures from db")?;
