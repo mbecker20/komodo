@@ -26,7 +26,6 @@ use resolver_api::Resolve;
 use crate::{
   api::execute::ExecuteRequest,
   helpers::update::init_execution_update,
-  stack::remote::ensure_remote_repo,
   state::{deployment_status_cache, stack_status_cache, State},
 };
 
@@ -626,40 +625,6 @@ fn build_cache_for_stack<'a>(
         return Ok(());
       }
     };
-
-    // We know the config hasn't changed at this point, but still need
-    // to check if its a repo based stack, and the hash has updated.
-    // Can use 'original' for this (config hasn't changed)
-    if stack.latest_hash {
-      if let Some(deployed_hash) = &original.info.deployed_hash {
-        let (_, _, hash, _) = ensure_remote_repo(original.into())
-          .await
-          .context("failed to get latest hash for repo based stack")
-          .with_context(|| {
-            format!(
-              "Stack {} {}",
-              bold(&stack.name),
-              colored("has errors", Color::Red)
-            )
-          })?;
-        if let Some(hash) = hash {
-          if &hash != deployed_hash {
-            cache.insert(
-              target,
-              Some((
-                format!(
-                  "outdated hash. deployed: {} -> latest: {}",
-                  colored(deployed_hash, Color::Red),
-                  colored(hash, Color::Green)
-                ),
-                after,
-              )),
-            );
-            return Ok(());
-          }
-        }
-      }
-    }
 
     // Check 'after' to see if they deploy.
     insert_target_using_after_list(

@@ -129,14 +129,6 @@ pub struct ResourceToml<PartialConfig: Default> {
   #[serde(default, skip_serializing_if = "Vec::is_empty")]
   pub after: Vec<String>,
 
-  /// Optional. Only relevant for stacks / repos.
-  ///
-  /// Will ensure stacks with 'deploy = true' are running with the latest commit hash for the repo.
-  /// Deploy actions to achieve this will be included in the sync.
-  /// Default is false.
-  #[serde(default, skip_serializing_if = "is_false")]
-  pub latest_hash: bool,
-
   /// Resource specific configuration.
   #[serde(default)]
   pub config: PartialConfig,

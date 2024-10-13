@@ -65,6 +65,8 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
           data: DiffData::Delete {
             current: super::toml::resource_to_toml::<Resource>(
               current_resource.clone(),
+              false,
+              vec![],
               all_resources,
               id_to_tags,
             )?,
@@ -120,12 +122,14 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
             current_resource.id.clone(),
           ),
           data: DiffData::Update {
-            proposed,
             current: super::toml::resource_to_toml::<Resource>(
               current_resource.clone(),
+              proposed_resource.deploy,
+              proposed_resource.after,
               all_resources,
               id_to_tags,
             )?,
+            proposed,
           },
         });
       }
