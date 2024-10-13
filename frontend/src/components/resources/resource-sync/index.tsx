@@ -23,12 +23,12 @@ import { ResourceSyncPending } from "./pending";
 import { Badge } from "@ui/badge";
 
 export const useResourceSync = (id?: string) =>
-  useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.find(
+  useRead("ListResourceSyncs", {}, { refetchInterval: 10_000 }).data?.find(
     (d) => d.id === id
   );
 
 export const useFullResourceSync = (id: string) =>
-  useRead("GetResourceSync", { sync: id }, { refetchInterval: 5000 }).data;
+  useRead("GetResourceSync", { sync: id }, { refetchInterval: 10_000 }).data;
 
 const ResourceSyncIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useResourceSync(id)?.info.state;

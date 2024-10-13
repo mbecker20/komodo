@@ -11,7 +11,7 @@ export const RunBuild = ({ id }: { id: string }) => {
   const building = useRead(
     "GetBuildActionState",
     { build: id },
-    { refetchInterval: 5000 }
+    { refetchInterval: 5_000 }
   ).data?.building;
   const updates = useRead("ListUpdates", {
     query: {
@@ -22,7 +22,7 @@ export const RunBuild = ({ id }: { id: string }) => {
   const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild");
   const { mutate: cancel_mutate, isPending: cancelPending } =
     useExecute("CancelBuild");
-  const build = useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.find(
+  const build = useRead("ListBuilds", {}).data?.find(
     (d) => d.id === id
   );
   const builder = useBuilder(build?.info.builder_id);

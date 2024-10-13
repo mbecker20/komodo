@@ -11,7 +11,7 @@ export const Containers = ({
   setShow: (show: boolean) => void;
 }) => {
   const containers =
-    useRead("ListDockerContainers", { server: id }, { refetchInterval: 5000 })
+    useRead("ListDockerContainers", { server: id }, { refetchInterval: 10_000 })
       .data ?? [];
   return (
     <DockerContainersSection

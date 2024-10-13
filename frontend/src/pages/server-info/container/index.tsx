@@ -60,7 +60,7 @@ const ContainerPageInner = ({
     {
       server: id,
     },
-    { refetchInterval: 30_000 }
+    { refetchInterval: 10_000 }
   ).data?.find((container) => container.name === container_name);
 
   if (isPending) {
@@ -183,7 +183,7 @@ const AttachedResource = ({
   const { data: attached, isPending } = useRead(
     "GetResourceMatchingContainer",
     { server: id, container },
-    { refetchInterval: 30_000 }
+    { refetchInterval: 10_000 }
   );
 
   if (isPending) {

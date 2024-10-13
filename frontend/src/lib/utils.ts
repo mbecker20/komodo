@@ -127,10 +127,9 @@ export const has_minimum_permissions = (
   return level_to_number(level) >= level_to_number(greater_than);
 };
 
-const tzOffset = new Date().getTimezoneOffset() * 60;
+const tzOffsetMs = new Date().getTimezoneOffset() * 60 * 1000;
 
-export const convertTsMsToLocalUnixTsInSecs = (ts: number) =>
-  ts / 1000 - tzOffset;
+export const convertTsMsToLocalUnixTsInMs = (ts: number) => ts - tzOffsetMs;
 
 export const usableResourcePath = (resource: UsableResource) => {
   if (resource === "ServerTemplate") return "server-templates";
@@ -249,8 +248,8 @@ export const extract_registry_domain = (image_name: string) => {
   if (!image_name) return "docker.io";
   const maybe_domain = image_name.split("/")[0];
   if (maybe_domain.includes(".")) {
-    return maybe_domain
+    return maybe_domain;
   } else {
-    return "docker.io"
+    return "docker.io";
   }
-}
+};

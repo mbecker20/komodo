@@ -289,7 +289,7 @@ impl ResolveToString<ListSystemProcesses, User> for State {
   }
 }
 
-const STATS_PER_PAGE: i64 = 500;
+const STATS_PER_PAGE: i64 = 200;
 
 impl Resolve<GetHistoricalServerStats, User> for State {
   async fn resolve(

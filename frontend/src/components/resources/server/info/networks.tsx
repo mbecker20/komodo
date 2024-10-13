@@ -16,7 +16,7 @@ export const Networks = ({
   setShow: (show: boolean) => void;
 }) => {
   const networks =
-    useRead("ListDockerNetworks", { server: id }, { refetchInterval: 5000 })
+    useRead("ListDockerNetworks", { server: id }, { refetchInterval: 10_000 })
       .data ?? [];
 
   const allInUse = networks.every((network) =>

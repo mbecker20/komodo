@@ -27,12 +27,12 @@ import { Button } from "@ui/button";
 import { useBuilder } from "../builder";
 
 export const useRepo = (id?: string) =>
-  useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
+  useRead("ListRepos", {}, { refetchInterval: 10_000 }).data?.find(
     (d) => d.id === id
   );
 
 export const useFullRepo = (id: string) =>
-  useRead("GetRepo", { repo: id }, { refetchInterval: 5000 }).data;
+  useRead("GetRepo", { repo: id }, { refetchInterval: 10_000 }).data;
 
 const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useRepo(id)?.info.state;

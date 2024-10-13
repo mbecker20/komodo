@@ -10,6 +10,7 @@ import { cn, sanitizeOnlySpan } from "@lib/utils";
 import { ConfirmButton } from "@components/util";
 import { SquarePlay } from "lucide-react";
 import { useEditPermissions } from "@pages/resource";
+import { useFullResourceSync } from ".";
 
 export const ResourceSyncPending = ({
   id,
@@ -18,11 +19,7 @@ export const ResourceSyncPending = ({
   id: string;
   titleOther: ReactNode;
 }) => {
-  const sync = useRead(
-    "GetResourceSync",
-    { sync: id },
-    { refetchInterval: 5000 }
-  ).data;
+  const sync = useFullResourceSync(id);
   const { canExecute } = useEditPermissions({ type: "ResourceSync", id });
   const { mutate } = useExecute("RunSync");
   return (

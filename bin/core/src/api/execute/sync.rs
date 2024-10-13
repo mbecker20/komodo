@@ -33,7 +33,7 @@ use resolver_api::Resolve;
 use crate::{
   helpers::{query::get_id_to_tags, update::update_update},
   resource::{self, refresh_resource_sync_state_cache},
-  state::{db_client, State},
+  state::{action_states, db_client, State},
   sync::{
     deploy::{
       build_deploy_cache, deploy_from_cache, SyncDeployParams,
@@ -59,6 +59,17 @@ impl Resolve<RunSync, (User, Update)> for State {
       entities::sync::ResourceSync,
     >(&sync, &user, PermissionLevel::Execute)
     .await?;
+
+    // get the action state for the sync (or insert default).
+    let action_state = action_states()
+      .resource_sync
+      .get_or_insert_default(&sync.id)
+      .await;
+
+    // This will set action state back to default when dropped.
+    // Will also check to ensure sync not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.syncing = true)?;
 
     // Send update here for FE to recheck action state
     update_update(update.clone()).await?;
