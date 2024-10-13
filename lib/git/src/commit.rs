@@ -4,6 +4,7 @@ use anyhow::Context;
 use command::run_komodo_command;
 use formatting::format_serror;
 use komodo_client::entities::{all_logs_success, update::Log};
+use run_command::async_run_command;
 use tokio::fs;
 
 use crate::{get_commit_hash_log, GitRes};
@@ -58,6 +59,8 @@ pub async fn commit_file_inner(
   // relative to repo root
   file: &Path,
 ) {
+  ensure_global_git_config_set().await;
+  
   let add_log = run_komodo_command(
     "add files",
     repo_dir,
@@ -105,6 +108,8 @@ pub async fn commit_file_inner(
 /// Add, commit, and force push.
 /// Repo must be cloned.
 pub async fn commit_all(repo_dir: &Path, message: &str) -> GitRes {
+  ensure_global_git_config_set().await;
+
   let mut res = GitRes::default();
 
   let add_log =
@@ -146,4 +151,21 @@ pub async fn commit_all(repo_dir: &Path, message: &str) -> GitRes {
   res.logs.push(push_log);
 
   res
+}
+
+async fn ensure_global_git_config_set() {
+  let res =
+    async_run_command("git config --global --get user.email").await;
+  if !res.success() {
+    let _ = async_run_command(
+      "git config --global user.email komodo@komo.do",
+    )
+    .await;
+  }
+  let res =
+    async_run_command("git config --global --get user.name").await;
+  if !res.success() {
+    let _ =
+      async_run_command("git config --global user.name komodo").await;
+  }
 }
