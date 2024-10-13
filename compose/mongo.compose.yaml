@@ -92,7 +92,6 @@ volumes:
   mongo-data:
   mongo-config:
   # Core
-  syncs:
   repo-cache:
   # Periphery
   ssl-certs:

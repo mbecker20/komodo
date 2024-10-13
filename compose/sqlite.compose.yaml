@@ -86,7 +86,6 @@ volumes:
   # Sqlite
   sqlite-data:
   # Core
-  syncs:
   repo-cache:
   # Periphery
   ssl-certs:

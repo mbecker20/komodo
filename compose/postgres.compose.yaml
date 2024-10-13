@@ -104,7 +104,6 @@ volumes:
   # Postgres
   pg-data:
   # Core
-  syncs:
   repo-cache:
   # Periphery
   ssl-certs:
