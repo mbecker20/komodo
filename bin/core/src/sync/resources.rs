@@ -675,14 +675,14 @@ impl ExecuteResourceSync for Procedure {
       {
         has_error = true;
         log.push_str(&format!(
-          "{}: failed to delete {} '{}' | {e:#}",
+          "\n{}: failed to delete {} '{}' | {e:#}",
           colored("ERROR", Color::Red),
           Self::resource_type(),
           bold(&name),
         ))
       } else {
         log.push_str(&format!(
-          "{}: {} {} '{}'",
+          "\n{}: {} {} '{}'",
           muted("INFO"),
           colored("deleted", Color::Red),
           Self::resource_type(),
