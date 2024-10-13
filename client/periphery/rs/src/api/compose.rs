@@ -109,6 +109,8 @@ pub struct WriteComposeContentsToHost {
 pub struct WriteCommitComposeContents {
   /// The stack to write to.
   pub stack: Stack,
+  /// The username of user which committed the file.
+  pub username: Option<String>,
   /// Relative to the stack folder + run directory.
   pub file_path: String,
   /// The contents to write.

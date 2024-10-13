@@ -205,6 +205,7 @@ impl Resolve<WriteStackFileContents, User> for State {
       match periphery_client(&server)?
         .request(WriteCommitComposeContents {
           stack,
+          username: Some(user.username),
           file_path,
           contents,
           git_token,
