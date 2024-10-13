@@ -206,7 +206,10 @@ pub async fn update_cache_for_server(server: &Server) {
   };
 
   match lists::get_docker_lists(&periphery).await {
-    Ok((containers, networks, images, volumes, projects)) => {
+    Ok((mut containers, networks, images, volumes, projects)) => {
+      containers.iter_mut().for_each(|container| {
+        container.server_id = Some(server.id.clone())
+      });
       tokio::join!(
         resources::update_deployment_cache(deployments, &containers),
         resources::update_stack_cache(stacks, &containers),

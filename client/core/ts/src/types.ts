@@ -1499,6 +1499,8 @@ export enum ContainerStateStatusEnum {
 }
 
 export interface ContainerListItem {
+	/** The Server which holds the container. */
+	server_id?: string;
 	/** The first name in Names, not including the initial '/' */
 	name: string;
 	/** The ID of this container */
@@ -1532,6 +1534,8 @@ export interface ContainerListItem {
 }
 
 export type ListDockerContainersResponse = ContainerListItem[];
+
+export type ListAllDockerContainersResponse = ContainerListItem[];
 
 export enum HealthStatusEnum {
 	Empty = "",
@@ -4638,6 +4642,15 @@ export interface ListDockerContainers {
 	server: string;
 }
 
+/**
+ * List all docker containers on the target server.
+ * Response: [ListDockerContainersResponse].
+ */
+export interface ListAllDockerContainers {
+	/** Filter by server id or name. */
+	servers?: string[];
+}
+
 /** Inspect a docker container on the server. Response: [Container]. */
 export interface InspectDockerContainer {
 	/** Id or name */
@@ -6711,6 +6724,7 @@ export type ReadRequest =
 	| { type: "InspectDockerImage", params: InspectDockerImage }
 	| { type: "ListDockerImageHistory", params: ListDockerImageHistory }
 	| { type: "InspectDockerVolume", params: InspectDockerVolume }
+	| { type: "ListAllDockerContainers", params: ListAllDockerContainers }
 	| { type: "ListDockerContainers", params: ListDockerContainers }
 	| { type: "ListDockerNetworks", params: ListDockerNetworks }
 	| { type: "ListDockerImages", params: ListDockerImages }

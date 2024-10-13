@@ -1,6 +1,13 @@
 import { RESOURCE_TARGETS, cn, usableResourcePath } from "@lib/utils";
 import { Button } from "@ui/button";
-import { AlertTriangle, Bell, Box, Boxes, Settings } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  Box,
+  Boxes,
+  LayoutDashboard,
+  Settings,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { ResourceComponents } from "./resources";
 import { Separator } from "@ui/separator";
@@ -17,7 +24,7 @@ export const Sidebar = () => {
         <SidebarLink
           label="Dashboard"
           to="/"
-          icon={<Box className="w-4 h-4" />}
+          icon={<LayoutDashboard className="w-4 h-4" />}
           onClick={() => setView("Dashboard")}
           highlighted={view === "Dashboard"}
         />
@@ -28,13 +35,12 @@ export const Sidebar = () => {
           onClick={() => setView("Resources")}
           highlighted={view === "Resources"}
         />
-        {/* <SidebarLink
-          label="Tree"
-          to="/"
-          icon={<FolderTree className="w-4 h-4" />}
-          onClick={() => setView("Tree")}
-          highlighted={view === "Tree"}
-        /> */}
+        <SidebarLink
+          label="Containers"
+          to="/containers"
+          icon={<Box className="w-4 h-4" />}
+        />
+
         <Separator className="my-3" />
 
         <p className="pl-4 pb-1 text-xs text-muted-foreground">Resources</p>

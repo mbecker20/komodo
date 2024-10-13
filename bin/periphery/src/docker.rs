@@ -50,6 +50,7 @@ impl DockerClient {
       .into_iter()
       .map(|container| {
         Ok(ContainerListItem {
+          server_id: None,
           name: container
             .names
             .context("no names on container")?

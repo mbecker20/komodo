@@ -249,6 +249,7 @@ const ProcessesInner = ({
   const filtered = useMemo(
     () =>
       processes?.filter((process) => {
+        if (searchSplit.length === 0) return true;
         const name = process.name.toLowerCase();
         return searchSplit.every((search) => name.includes(search));
       }),

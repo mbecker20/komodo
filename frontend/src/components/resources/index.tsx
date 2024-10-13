@@ -14,13 +14,13 @@ export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
 } = {
   Server: ServerComponents,
-  Deployment: DeploymentComponents,
   Stack: StackComponents,
+  Deployment: DeploymentComponents,
   Build: BuildComponents,
   Repo: RepoComponents,
   Procedure: ProcedureComponents,
-  Builder: BuilderComponents,
-  ServerTemplate: ServerTemplateComponents,
-  Alerter: AlerterComponents,
   ResourceSync: ResourceSyncComponents,
+  Builder: BuilderComponents,
+  Alerter: AlerterComponents,
+  ServerTemplate: ServerTemplateComponents,
 };

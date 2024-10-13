@@ -13,6 +13,8 @@ use super::{ContainerConfig, GraphDriverData, PortBinding};
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
 pub struct ContainerListItem {
+  /// The Server which holds the container.
+  pub server_id: Option<String>,
   /// The first name in Names, not including the initial '/'
   pub name: String,
   /// The ID of this container

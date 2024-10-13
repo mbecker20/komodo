@@ -262,6 +262,25 @@ pub type ListDockerContainersResponse = Vec<ContainerListItem>;
 
 //
 
+/// List all docker containers on the target server.
+/// Response: [ListDockerContainersResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoReadRequest)]
+#[response(ListAllDockerContainersResponse)]
+pub struct ListAllDockerContainers {
+  /// Filter by server id or name.
+  #[serde(default)]
+  pub servers: Vec<String>,
+}
+
+#[typeshare]
+pub type ListAllDockerContainersResponse = Vec<ContainerListItem>;
+
+//
+
 /// Inspect a docker container on the server. Response: [Container].
 #[typeshare]
 #[derive(
