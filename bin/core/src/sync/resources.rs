@@ -588,6 +588,13 @@ impl ResourceSyncTrait for Procedure {
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
+          Execution::CommitSync(config) => {
+            config.sync = resources
+              .syncs
+              .get(&config.sync)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
           Execution::DeployStack(config) => {
             config.stack = resources
               .stacks

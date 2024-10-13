@@ -129,6 +129,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunSync(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::CommitSync(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::DeployStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -272,6 +275,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     }
     Execution::RunSync(request) => {
       komodo_client().execute(request).await
+    }
+    Execution::CommitSync(request) => {
+      komodo_client().write(request).await
     }
     Execution::DeployStack(request) => {
       komodo_client().execute(request).await

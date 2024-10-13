@@ -1059,6 +1059,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  CommitSync: {
+    params: { sync: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="ResourceSync"
+        selected={params.sync}
+        onSelect={(id) => setParams({ sync: id })}
+        disabled={disabled}
+      />
+    ),
+  },
 
   Sleep: {
     params: { duration_ms: 0 },

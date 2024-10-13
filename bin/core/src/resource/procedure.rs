@@ -494,6 +494,16 @@ async fn validate_config(
           .await?;
           params.sync = sync.id;
         }
+        Execution::CommitSync(params) => {
+          // This one is actually a write operation.
+          let sync = super::get_check_permissions::<ResourceSync>(
+            &params.sync,
+            user,
+            PermissionLevel::Write,
+          )
+          .await?;
+          params.sync = sync.id;
+        }
         Execution::DeployStack(params) => {
           let stack = super::get_check_permissions::<Stack>(
             &params.stack,

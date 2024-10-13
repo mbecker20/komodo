@@ -1,3 +1,4 @@
+use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -121,15 +122,22 @@ pub struct WriteSyncFileContents {
 
 //
 
-/// Commits matching resources updated configuration to the target resource sync. Response: [Update]
+/// Exports matching resources, and writes to the target sync's resource file. Response: [Update]
 ///
 /// Note. Will fail if the Sync is not `managed`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
 )]
 #[empty_traits(KomodoWriteRequest)]
-#[response(ResourceSync)]
+#[response(Update)]
 pub struct CommitSync {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

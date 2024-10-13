@@ -864,6 +864,7 @@ export type Execution =
 	| { type: "PruneBuildx", params: PruneBuildx }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "RunSync", params: RunSync }
+	| { type: "CommitSync", params: CommitSync }
 	| { type: "DeployStack", params: DeployStack }
 	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
 	| { type: "StartStack", params: StartStack }
@@ -6084,7 +6085,7 @@ export interface WriteSyncFileContents {
 }
 
 /**
- * Commits matching resources updated configuration to the target resource sync. Response: [Update]
+ * Exports matching resources, and writes to the target sync's resource file. Response: [Update]
  * 
  * Note. Will fail if the Sync is not `managed`.
  */

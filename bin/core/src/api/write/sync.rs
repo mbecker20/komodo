@@ -219,7 +219,7 @@ impl Resolve<CommitSync, User> for State {
     &self,
     CommitSync { sync }: CommitSync,
     user: User,
-  ) -> anyhow::Result<ResourceSync> {
+  ) -> anyhow::Result<Update> {
     let sync = resource::get_check_permissions::<
       entities::sync::ResourceSync,
     >(&sync, &user, PermissionLevel::Write)
@@ -234,8 +234,6 @@ impl Resolve<CommitSync, User> for State {
         "Cannot commit to sync. Enabled 'managed' mode."
       ));
     }
-
-    
 
     let resource_path = sync
       .config
@@ -286,8 +284,8 @@ impl Resolve<CommitSync, User> for State {
           format_serror(&e.into()),
         );
         update.finalize();
-        add_update(update).await?;
-        return resource::get::<ResourceSync>(&sync.name).await;
+        add_update(update.clone()).await?;
+        return Ok(update);
       } else {
         update.push_simple_log(
           "Write contents",
@@ -313,8 +311,8 @@ impl Resolve<CommitSync, User> for State {
             format_serror(&e.into()),
           );
           update.finalize();
-          add_update(update).await?;
-          return resource::get::<ResourceSync>(&sync.name).await;
+          add_update(update.clone()).await?;
+          return Ok(update);
         }
       }
       // ===========
@@ -333,22 +331,18 @@ impl Resolve<CommitSync, User> for State {
         format_serror(&e.into()),
       );
       update.finalize();
-      add_update(update).await?;
-      return resource::get::<ResourceSync>(&sync.name).await;
+      add_update(update.clone()).await?;
+      return Ok(update);
     }
 
-    let res = match State
+    if let Err(e) = State
       .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
       .await
     {
-      Ok(sync) => Ok(sync),
-      Err(e) => {
-        update.push_error_log(
-          "Refresh sync pending",
-          format_serror(&(&e).into()),
-        );
-        Err(e)
-      }
+      update.push_error_log(
+        "Refresh sync pending",
+        format_serror(&(&e).into()),
+      );
     };
 
     update.finalize();
@@ -367,9 +361,9 @@ impl Resolve<CommitSync, User> for State {
       .await;
       refresh_resource_sync_state_cache().await;
     }
-    update_update(update).await?;
+    update_update(update.clone()).await?;
 
-    res
+    Ok(update)
   }
 }
 
