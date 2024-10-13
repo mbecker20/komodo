@@ -520,7 +520,7 @@ impl Resolve<UnpauseAllContainers, (User, Update)> for State {
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard = action_state
-      .update(|state| state.starting_containers = true)?;
+      .update(|state| state.unpausing_containers = true)?;
 
     update_update(update.clone()).await?;
 
