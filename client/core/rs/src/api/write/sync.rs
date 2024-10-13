@@ -5,6 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{
   sync::{ResourceSync, _PartialResourceSyncConfig},
+  update::Update,
   NoData,
 };
 
@@ -94,6 +95,28 @@ pub struct RefreshResourceSyncPending {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub sync: String,
+}
+
+//
+
+/// Rename the stack at id to the given name. Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct WriteSyncFileContents {
+  /// The name or id of the target Sync.
+  #[serde(alias = "id", alias = "name")]
+  pub sync: String,
+  /// If this file was under a resource folder, this will be the folder.
+  /// Otherwise, it should be empty string.
+  pub resource_path: String,
+  /// The file path relative to the resource path.
+  pub file_path: String,
+  /// The contents to write.
+  pub contents: String,
 }
 
 //

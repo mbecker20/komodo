@@ -370,6 +370,12 @@ pub async fn init_execution_update(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
+    ExecuteRequest::DeployStackIfChanged(data) => (
+      Operation::DeployStack,
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
     ExecuteRequest::StartStack(data) => (
       if data.service.is_some() {
         Operation::StartStackService
@@ -429,7 +435,10 @@ pub async fn init_execution_update(
   };
   let mut update = make_update(target, operation, user);
   update.in_progress();
-  // Don't actually send it here, let the handlers send it after they can set action state.
-  update.id = add_update_without_send(&update).await?;
+  // Hold off on even adding update for DeployStackIfChanged
+  if !matches!(&request, ExecuteRequest::DeployStackIfChanged(_)) {
+    // Don't actually send it here, let the handlers send it after they can set action state.
+    update.id = add_update_without_send(&update).await?;
+  }
   Ok(update)
 }

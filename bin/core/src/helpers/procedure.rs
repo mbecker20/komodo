@@ -722,6 +722,22 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::DeployStackIfChanged(req) => {
+      let req = ExecuteRequest::DeployStackIfChanged(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::DeployStackIfChanged(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("Failed at DeployStackIfChanged"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::StartStack(req) => {
       let req = ExecuteRequest::StartStack(req);
       let update = init_execution_update(&req, &user).await?;

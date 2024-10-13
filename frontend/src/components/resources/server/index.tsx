@@ -38,12 +38,12 @@ import { ServerInfo } from "./info";
 import { ServerStats } from "./stats";
 
 export const useServer = (id?: string) =>
-  useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
+  useRead("ListServers", {}, { refetchInterval: 10_000 }).data?.find(
     (d) => d.id === id
   );
 
 export const useFullServer = (id: string) =>
-  useRead("GetServer", { server: id }, { refetchInterval: 5000 }).data;
+  useRead("GetServer", { server: id }, { refetchInterval: 10_000 }).data;
 
 const Icon = ({ id, size }: { id?: string; size: number }) => {
   const state = useServer(id)?.info.state;

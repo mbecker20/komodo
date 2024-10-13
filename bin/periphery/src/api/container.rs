@@ -317,13 +317,17 @@ impl Resolve<StartAllContainers> for State {
       .list_containers()
       .await
       .context("failed to list all containers on host")?;
-    let futures =
-      containers.iter().map(|ContainerListItem { name, .. }| {
-        let command = format!("docker start {name}");
-        async move {
-          run_komodo_command(&command.clone(), None, command).await
+    let futures = containers.iter().filter_map(
+      |ContainerListItem { name, labels, .. }| {
+        if labels.contains_key("komodo.skip") {
+          return None;
         }
-      });
+        let command = format!("docker start {name}");
+        Some(async move {
+          run_komodo_command(&command.clone(), None, command).await
+        })
+      },
+    );
     Ok(join_all(futures).await)
   }
 }
@@ -341,13 +345,17 @@ impl Resolve<RestartAllContainers> for State {
       .list_containers()
       .await
       .context("failed to list all containers on host")?;
-    let futures =
-      containers.iter().map(|ContainerListItem { name, .. }| {
-        let command = format!("docker restart {name}");
-        async move {
-          run_komodo_command(&command.clone(), None, command).await
+    let futures = containers.iter().filter_map(
+      |ContainerListItem { name, labels, .. }| {
+        if labels.contains_key("komodo.skip") {
+          return None;
         }
-      });
+        let command = format!("docker restart {name}");
+        Some(async move {
+          run_komodo_command(&command.clone(), None, command).await
+        })
+      },
+    );
     Ok(join_all(futures).await)
   }
 }
@@ -365,13 +373,17 @@ impl Resolve<PauseAllContainers> for State {
       .list_containers()
       .await
       .context("failed to list all containers on host")?;
-    let futures =
-      containers.iter().map(|ContainerListItem { name, .. }| {
-        let command = format!("docker pause {name}");
-        async move {
-          run_komodo_command(&command.clone(), None, command).await
+    let futures = containers.iter().filter_map(
+      |ContainerListItem { name, labels, .. }| {
+        if labels.contains_key("komodo.skip") {
+          return None;
         }
-      });
+        let command = format!("docker pause {name}");
+        Some(async move {
+          run_komodo_command(&command.clone(), None, command).await
+        })
+      },
+    );
     Ok(join_all(futures).await)
   }
 }
@@ -389,13 +401,17 @@ impl Resolve<UnpauseAllContainers> for State {
       .list_containers()
       .await
       .context("failed to list all containers on host")?;
-    let futures =
-      containers.iter().map(|ContainerListItem { name, .. }| {
-        let command = format!("docker unpause {name}");
-        async move {
-          run_komodo_command(&command.clone(), None, command).await
+    let futures = containers.iter().filter_map(
+      |ContainerListItem { name, labels, .. }| {
+        if labels.contains_key("komodo.skip") {
+          return None;
         }
-      });
+        let command = format!("docker unpause {name}");
+        Some(async move {
+          run_komodo_command(&command.clone(), None, command).await
+        })
+      },
+    );
     Ok(join_all(futures).await)
   }
 }
@@ -413,14 +429,19 @@ impl Resolve<StopAllContainers> for State {
       .list_containers()
       .await
       .context("failed to list all containers on host")?;
-    let futures = containers.iter().map(
-      |ContainerListItem { name, .. }| async move {
-        run_komodo_command(
-          &format!("docker stop {name}"),
-          None,
-          stop_container_command(name, None, None),
-        )
-        .await
+    let futures = containers.iter().filter_map(
+      |ContainerListItem { name, labels, .. }| {
+        if labels.contains_key("komodo.skip") {
+          return None;
+        }
+        Some(async move {
+          run_komodo_command(
+            &format!("docker stop {name}"),
+            None,
+            stop_container_command(name, None, None),
+          )
+          .await
+        })
       },
     );
     Ok(join_all(futures).await)

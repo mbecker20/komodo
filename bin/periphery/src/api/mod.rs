@@ -80,6 +80,7 @@ pub enum PeripheryRequest {
 
   // Compose (Write)
   WriteComposeContentsToHost(WriteComposeContentsToHost),
+  WriteCommitComposeContents(WriteCommitComposeContents),
   ComposeUp(ComposeUp),
   ComposeExecution(ComposeExecution),
 

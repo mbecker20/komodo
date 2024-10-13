@@ -1,10 +1,11 @@
-use std::path::PathBuf;
-
 use anyhow::{anyhow, Context};
 use git::GitRes;
 use komodo_client::entities::{
-  sync::ResourceSync, toml::ResourcesToml, update::Log, CloneArgs,
-  FileContents,
+  sync::{ResourceSync, SyncFileContents},
+  to_komodo_name,
+  toml::ResourcesToml,
+  update::Log,
+  CloneArgs,
 };
 
 use crate::{config::core_config, helpers::git_token};
@@ -13,8 +14,8 @@ use super::file::extend_resources;
 
 pub struct RemoteResources {
   pub resources: anyhow::Result<ResourcesToml>,
-  pub files: Vec<FileContents>,
-  pub file_errors: Vec<FileContents>,
+  pub files: Vec<SyncFileContents>,
+  pub file_errors: Vec<SyncFileContents>,
   pub logs: Vec<Log>,
   pub hash: Option<String>,
   pub message: Option<String>,
@@ -28,15 +29,14 @@ pub async fn get_remote_resources(
     // =============
     // FILES ON HOST
     // =============
-    let path = sync
-      .config
-      .resource_path
-      .parse::<PathBuf>()
-      .context("Resource path is not valid path")?;
+    let root_path = core_config()
+      .sync_directory
+      .join(to_komodo_name(&sync.name));
     let (mut logs, mut files, mut file_errors) =
       (Vec::new(), Vec::new(), Vec::new());
     let resources = super::file::read_resources(
-      &path,
+      &root_path,
+      &sync.config.resource_path,
       &sync.config.match_tags,
       &mut logs,
       &mut files,
@@ -50,9 +50,7 @@ pub async fn get_remote_resources(
       hash: None,
       message: None,
     });
-  } else if sync.config.managed
-    || !sync.config.file_contents.is_empty()
-  {
+  } else if sync.config.repo.is_empty() {
     // ==========
     // UI DEFINED
     // ==========
@@ -72,10 +70,10 @@ pub async fn get_remote_resources(
       Ok(resources)
     };
 
-    // filter_by_
     return Ok(RemoteResources {
       resources,
-      files: vec![FileContents {
+      files: vec![SyncFileContents {
+        resource_path: String::new(),
         path: "database file".to_string(),
         contents: sync.config.file_contents.clone(),
       }],
@@ -101,10 +99,10 @@ pub async fn get_remote_resources(
 
   let access_token = if let Some(account) = &clone_args.account {
     git_token(&clone_args.provider, account, |https| clone_args.https = https)
-        .await
-        .with_context(
-          || format!("Failed to get git token in call to db. Stopping run. | {} | {account}", clone_args.provider),
-        )?
+      .await
+      .with_context(
+        || format!("Failed to get git token in call to db. Stopping run. | {} | {account}", clone_args.provider),
+      )?
   } else {
     None
   };
@@ -139,11 +137,10 @@ pub async fn get_remote_resources(
   let message =
     message.context("failed to get commit hash message")?;
 
-  let resource_path = repo_path.join(&sync.config.resource_path);
-
   let (mut files, mut file_errors) = (Vec::new(), Vec::new());
   let resources = super::file::read_resources(
-    &resource_path,
+    &repo_path,
+    &sync.config.resource_path,
     &sync.config.match_tags,
     &mut logs,
     &mut files,

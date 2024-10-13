@@ -42,6 +42,7 @@ import {
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { filterBySplit } from "@lib/utils";
 import { useToast } from "@ui/use-toast";
+import { fmt_upper_camelcase } from "@lib/formatting";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
   const procedure = useRead("GetProcedure", { procedure: id }).data;
@@ -502,36 +503,6 @@ const default_enabled_execution: () => Types.EnabledExecution = () => ({
   },
 });
 
-const EXECUTION_TYPES: Types.Execution["type"][] = [
-  "RunBuild",
-  "Deploy",
-  "RestartDeployment",
-  "StartDeployment",
-  "PauseDeployment",
-  "UnpauseDeployment",
-  "StopDeployment",
-  "DestroyDeployment",
-  "DeployStack",
-  "StartStack",
-  "RestartStack",
-  "PauseStack",
-  "UnpauseStack",
-  "StopStack",
-  "DestroyStack",
-  "CloneRepo",
-  "PullRepo",
-  "BuildRepo",
-  "RunProcedure",
-  "RunSync",
-  "StopAllContainers",
-  "PruneContainers",
-  "PruneNetworks",
-  "PruneImages",
-  "PruneVolumes",
-  "PruneSystem",
-  "Sleep",
-];
-
 const ExecutionTypeSelector = ({
   type,
   onSelect,
@@ -541,15 +512,19 @@ const ExecutionTypeSelector = ({
   onSelect: (type: Types.Execution["type"]) => void;
   disabled: boolean;
 }) => {
+  const execution_types = Object.keys(TARGET_COMPONENTS).filter(
+    (c) => !["None"].includes(c)
+  );
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const filtered = filterBySplit(EXECUTION_TYPES, search, (item) => item);
+  const filtered = filterBySplit(execution_types, search, (item) => item);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="secondary" className="flex gap-2" disabled={disabled}>
-          {type}
+          {fmt_upper_camelcase(type)}
           <ChevronsUpDown className="w-3 h-3" />
         </Button>
       </PopoverTrigger>
@@ -573,7 +548,7 @@ const ExecutionTypeSelector = ({
                   onSelect={() => onSelect(type as Types.Execution["type"])}
                   className="flex items-center justify-between"
                 >
-                  <div className="p-1">{type}</div>
+                  <div className="p-1">{fmt_upper_camelcase(type)}</div>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -742,6 +717,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
   },
   // Stack
   DeployStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
+      />
+    ),
+  },
+  DeployStackIfChanged: {
     params: { stack: "" },
     Component: ({ params, setParams, disabled }) => (
       <ResourceSelector

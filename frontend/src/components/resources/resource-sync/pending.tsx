@@ -1,12 +1,16 @@
 import { Section } from "@components/layouts";
 import { MonacoDiffEditor, MonacoEditor } from "@components/monaco";
-import { useRead } from "@lib/hooks";
+import { useExecute, useRead } from "@lib/hooks";
 import { Card, CardContent, CardHeader } from "@ui/card";
 import { ReactNode } from "react";
 import { ResourceLink } from "../common";
 import { UsableResource } from "@types";
 import { diff_type_intention, text_color_class_by_intention } from "@lib/color";
 import { cn, sanitizeOnlySpan } from "@lib/utils";
+import { ConfirmButton } from "@components/util";
+import { SquarePlay } from "lucide-react";
+import { useEditPermissions } from "@pages/resource";
+import { useFullResourceSync } from ".";
 
 export const ResourceSyncPending = ({
   id,
@@ -15,11 +19,12 @@ export const ResourceSyncPending = ({
   id: string;
   titleOther: ReactNode;
 }) => {
-  const sync = useRead(
-    "GetResourceSync",
-    { sync: id },
-    { refetchInterval: 5000 }
-  ).data;
+  const syncing = useRead("GetResourceSyncActionState", { sync: id }).data
+    ?.syncing;
+  const sync = useFullResourceSync(id);
+  const { canExecute } = useEditPermissions({ type: "ResourceSync", id });
+  const { mutate, isPending } = useExecute("RunSync");
+  const loading = isPending || syncing;
   return (
     <Section titleOther={titleOther}>
       {/* Pending Error */}
@@ -42,6 +47,7 @@ export const ResourceSyncPending = ({
           </CardContent>
         </Card>
       ) : undefined}
+
       {/* Pending Deploy */}
       {sync?.info?.pending_deploy?.to_deploy ? (
         <Card>
@@ -63,11 +69,12 @@ export const ResourceSyncPending = ({
           </CardContent>
         </Card>
       ) : undefined}
+
       {/* Pending Resource Update */}
       {sync?.info?.resource_updates?.map((update) => {
         return (
           <Card key={update.target.type + update.target.id}>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-4 flex flex-row justify-between items-center">
               <div className="flex items-center gap-4 font-mono">
                 <div
                   className={text_color_class_by_intention(
@@ -77,11 +84,33 @@ export const ResourceSyncPending = ({
                   {update.data.type} {update.target.type}
                 </div>
                 <div className="text-muted-foreground">|</div>
-                <ResourceLink
-                  type={update.target.type as UsableResource}
-                  id={update.target.id}
-                />
+                {update.data.type === "Create" ? (
+                  <div>{update.data.data.name}</div>
+                ) : (
+                  <ResourceLink
+                    type={update.target.type as UsableResource}
+                    id={update.target.id}
+                  />
+                )}
               </div>
+              {canExecute && (
+                <ConfirmButton
+                  title="Execute Change"
+                  icon={<SquarePlay className="w-4 h-4" />}
+                  onClick={() =>
+                    mutate({
+                      sync: id,
+                      resource_type: update.target.type,
+                      resources: [
+                        update.data.type === "Create"
+                          ? update.data.data.name!
+                          : update.target.id,
+                      ],
+                    })
+                  }
+                  loading={loading}
+                />
+              )}
             </CardHeader>
             <CardContent>
               {update.data.type === "Create" && (

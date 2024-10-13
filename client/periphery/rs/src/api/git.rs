@@ -74,7 +74,7 @@ pub struct PullOrCloneRepo {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RepoActionResponse {
   pub logs: Vec<Log>,
   pub commit_hash: Option<String>,

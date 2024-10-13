@@ -2,13 +2,16 @@ use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use partial_derive2::Partial;
-use serde::{Deserialize, Serialize};
+use serde::{
+  de::{value::SeqAccessDeserializer, Visitor},
+  Deserialize, Deserializer, Serialize,
+};
 use strum::Display;
 use typeshare::typeshare;
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
-  FileContents, ResourceTarget, I64,
+  ResourceTarget, I64,
 };
 
 #[typeshare]
@@ -26,8 +29,8 @@ pub struct ResourceSyncListItemInfo {
   pub file_contents: bool,
   /// Whether sync has `managed` mode enabled.
   pub managed: bool,
-  /// Resource path to the files.
-  pub resource_path: String,
+  /// Resource paths to the files.
+  pub resource_path: Vec<String>,
   /// The git provider domain.
   pub git_provider: String,
   /// The Github repo used as the source of the sync resources
@@ -96,10 +99,10 @@ pub struct ResourceSyncInfo {
 
   /// The current sync files
   #[serde(default)]
-  pub remote_contents: Vec<FileContents>,
+  pub remote_contents: Vec<SyncFileContents>,
   /// Any read errors in files by path
   #[serde(default)]
-  pub remote_errors: Vec<FileContents>,
+  pub remote_errors: Vec<SyncFileContents>,
 }
 
 #[typeshare]
@@ -118,6 +121,9 @@ pub struct ResourceDiff {
 pub enum DiffData {
   /// Resource will be created
   Create {
+    /// The name of resource to create
+    #[serde(default)]
+    name: String,
     /// The proposed resource to create in TOML
     proposed: String,
   },
@@ -213,10 +219,13 @@ pub struct ResourceSyncConfig {
   ///  - If Git Repo based, this is relative to the root of the repo.
   /// Can be a specific file, or a directory containing multiple files / folders.
   /// See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
-  #[serde(default = "default_resource_path")]
-  #[builder(default = "default_resource_path()")]
-  #[partial_default(default_resource_path())]
-  pub resource_path: String,
+  #[serde(default, deserialize_with = "resource_path_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_resource_path_deserializer"
+  ))]
+  #[builder(default)]
+  pub resource_path: Vec<String>,
 
   /// Enable "pushes" to the file,
   /// which exports resources matching tags to single file.
@@ -270,10 +279,6 @@ fn default_branch() -> String {
   String::from("main")
 }
 
-fn default_resource_path() -> String {
-  String::from("./resources.toml")
-}
-
 fn default_webhook_enabled() -> bool {
   true
 }
@@ -287,7 +292,7 @@ impl Default for ResourceSyncConfig {
       branch: default_branch(),
       commit: Default::default(),
       git_account: Default::default(),
-      resource_path: default_resource_path(),
+      resource_path: Default::default(),
       files_on_host: Default::default(),
       file_contents: Default::default(),
       managed: Default::default(),
@@ -296,6 +301,106 @@ impl Default for ResourceSyncConfig {
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),
     }
+  }
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SyncFileContents {
+  /// The base resource path.
+  #[serde(default)]
+  pub resource_path: String,
+  /// The path of the file / error path relative to the resource path.
+  pub path: String,
+  /// The contents of the file
+  pub contents: String,
+}
+
+/// Using this ensures the resource path deserialized to Vec<String>
+pub fn resource_path_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Vec<String>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(ResourcePathVisitor)
+}
+
+/// Using this ensures the resource path deserialized to Vec<String>
+pub fn option_resource_path_deserializer<'de, D>(
+  deserializer: D,
+) -> Result<Option<Vec<String>>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  deserializer.deserialize_any(OptionResourcePathVisitor)
+}
+
+struct ResourcePathVisitor;
+
+impl<'de> Visitor<'de> for ResourcePathVisitor {
+  type Value = Vec<String>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "string")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(vec![v.to_string()])
+  }
+
+  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::SeqAccess<'de>,
+  {
+    Vec::deserialize(SeqAccessDeserializer::new(seq))
+  }
+}
+
+struct OptionResourcePathVisitor;
+
+impl<'de> Visitor<'de> for OptionResourcePathVisitor {
+  type Value = Option<Vec<String>>;
+
+  fn expecting(
+    &self,
+    formatter: &mut std::fmt::Formatter,
+  ) -> std::fmt::Result {
+    write!(formatter, "null or string")
+  }
+
+  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    ResourcePathVisitor.visit_str(v).map(Some)
+  }
+
+  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::SeqAccess<'de>,
+  {
+    ResourcePathVisitor.visit_seq(seq).map(Some)
+  }
+
+  fn visit_none<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
+  }
+
+  fn visit_unit<E>(self) -> Result<Self::Value, E>
+  where
+    E: serde::de::Error,
+  {
+    Ok(None)
   }
 }
 

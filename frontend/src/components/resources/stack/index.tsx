@@ -39,12 +39,12 @@ import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { StackConfig } from "./config";
 
 export const useStack = (id?: string) =>
-  useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.find(
+  useRead("ListStacks", {}, { refetchInterval: 10_000 }).data?.find(
     (d) => d.id === id
   );
 
 export const useFullStack = (id: string) =>
-  useRead("GetStack", { stack: id }, { refetchInterval: 5000 }).data;
+  useRead("GetStack", { stack: id }, { refetchInterval: 10_000 }).data;
 
 const StackIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useStack(id)?.info.state;

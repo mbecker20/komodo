@@ -78,7 +78,11 @@ pub async fn handle_sync_execute_webhook(
   }
 
   let user = git_webhook_user().to_owned();
-  let req = ExecuteRequest::RunSync(RunSync { sync: sync_id });
+  let req = ExecuteRequest::RunSync(RunSync {
+    sync: sync_id,
+    resource_type: None,
+    resources: None,
+  });
   let update = init_execution_update(&req, &user).await?;
   let ExecuteRequest::RunSync(req) = req else {
     unreachable!()

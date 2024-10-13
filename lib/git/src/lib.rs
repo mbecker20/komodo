@@ -11,13 +11,16 @@ use tracing::instrument;
 pub mod environment;
 
 mod clone;
+mod commit;
 mod pull;
 mod pull_or_clone;
 
 pub use clone::clone;
+pub use commit::{commit_all, commit_file, write_commit_file};
 pub use pull::pull;
 pub use pull_or_clone::pull_or_clone;
 
+#[derive(Debug, Default, Clone)]
 pub struct GitRes {
   pub logs: Vec<Log>,
   pub hash: Option<String>,
@@ -45,7 +48,6 @@ pub async fn get_commit_hash_info(
   );
   Ok(LatestCommit { hash, message })
 }
-
 /// returns (Log, commit hash, commit message)
 #[instrument(level = "debug")]
 pub async fn get_commit_hash_log(

@@ -297,7 +297,7 @@ export type AlerterEndpoint =
 
 export interface AlerterConfig {
 	/** Whether the alerter is enabled */
-	enabled: boolean;
+	enabled?: boolean;
 	/**
 	 * Where to route the alert messages.
 	 * 
@@ -865,6 +865,7 @@ export type Execution =
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "RunSync", params: RunSync }
 	| { type: "DeployStack", params: DeployStack }
+	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "PauseStack", params: PauseStack }
@@ -1498,6 +1499,8 @@ export enum ContainerStateStatusEnum {
 }
 
 export interface ContainerListItem {
+	/** The Server which holds the container. */
+	server_id?: string;
 	/** The first name in Names, not including the initial '/' */
 	name: string;
 	/** The ID of this container */
@@ -1522,9 +1525,17 @@ export interface ContainerListItem {
 	networks: string[];
 	/** The volume names attached to container */
 	volumes: string[];
+	/**
+	 * The labels attached to container.
+	 * It's too big to send with container list,
+	 * can get it using InspectContainer
+	 */
+	labels?: Record<string, string>;
 }
 
 export type ListDockerContainersResponse = ContainerListItem[];
+
+export type ListAllDockerContainersResponse = ContainerListItem[];
 
 export enum HealthStatusEnum {
 	Empty = "",
@@ -2381,6 +2392,11 @@ export interface StackConfig {
 	 * If its an empty string, use the default secret from the config.
 	 */
 	webhook_secret?: string;
+	/**
+	 * By default, the Stack will `DeployStackIfChanged`.
+	 * If this option is enabled, will always run `DeployStack` without diffing.
+	 */
+	webhook_force_deploy?: boolean;
 	/** Whether to send StackStateChange alerts for this stack. */
 	send_alerts: boolean;
 	/** Used with `registry_account` to login to a registry before docker compose up. */
@@ -2641,7 +2657,7 @@ export interface ResourceSyncConfig {
 	 * Can be a specific file, or a directory containing multiple files / folders.
 	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
 	 */
-	resource_path: string;
+	resource_path?: string[];
 	/**
 	 * Enable "pushes" to the file,
 	 * which exports resources matching tags to single file.
@@ -2667,6 +2683,8 @@ export interface ResourceSyncConfig {
 export type DiffData = 
 	/** Resource will be created */
 	| { type: "Create", data: {
+	/** The name of resource to create */
+	name?: string;
 	/** The proposed resource to create in TOML */
 	proposed: string;
 }}
@@ -2698,6 +2716,15 @@ export interface SyncDeployUpdate {
 	log: string;
 }
 
+export interface SyncFileContents {
+	/** The base resource path. */
+	resource_path?: string;
+	/** The path of the file / error path relative to the resource path. */
+	path: string;
+	/** The contents of the file */
+	contents: string;
+}
+
 export interface ResourceSyncInfo {
 	/** Unix timestamp of last applied sync */
 	last_sync_ts?: I64;
@@ -2720,9 +2747,9 @@ export interface ResourceSyncInfo {
 	/** The commit message which produced these pending updates. */
 	pending_message?: string;
 	/** The current sync files */
-	remote_contents?: FileContents[];
+	remote_contents?: SyncFileContents[];
 	/** Any read errors in files by path */
-	remote_errors?: FileContents[];
+	remote_errors?: SyncFileContents[];
 }
 
 export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
@@ -2751,8 +2778,8 @@ export interface ResourceSyncListItemInfo {
 	file_contents: boolean;
 	/** Whether sync has `managed` mode enabled. */
 	managed: boolean;
-	/** Resource path to the files. */
-	resource_path: string;
+	/** Resource paths to the files. */
+	resource_path: string[];
 	/** The git provider domain. */
 	git_provider: string;
 	/** The Github repo used as the source of the sync resources */
@@ -2890,6 +2917,7 @@ export enum Operation {
 	CreateResourceSync = "CreateResourceSync",
 	UpdateResourceSync = "UpdateResourceSync",
 	DeleteResourceSync = "DeleteResourceSync",
+	WriteSyncContents = "WriteSyncContents",
 	CommitSync = "CommitSync",
 	RunSync = "RunSync",
 	CreateVariable = "CreateVariable",
@@ -3754,12 +3782,23 @@ export interface LaunchServer {
 	server_template: string;
 }
 
-/**
- * Deploys the target stack. `docker compose up`. Response: [Update]
- * 
- * Note. If the stack is already deployed, it will be destroyed first.
- */
+/** Deploys the target stack. `docker compose up`. Response: [Update] */
 export interface DeployStack {
+	/** Id or name */
+	stack: string;
+	/**
+	 * Override the default termination max time.
+	 * Only used if the stack needs to be taken down first.
+	 */
+	stop_time?: number;
+}
+
+/**
+ * Checks deployed contents vs latest contents,
+ * and only if any changes found
+ * will `docker compose up`. Response: [Update]
+ */
+export interface DeployStackIfChanged {
 	/** Id or name */
 	stack: string;
 	/**
@@ -3829,6 +3868,17 @@ export interface DestroyStack {
 export interface RunSync {
 	/** Id or name */
 	sync: string;
+	/**
+	 * Only execute sync on a specific resource type.
+	 * Combine with `resource_id` to specify resource.
+	 */
+	resource_type?: ResourceTarget["type"];
+	/**
+	 * Only execute sync on a specific resources.
+	 * Combine with `resource_type` to specify resources.
+	 * Supports name or id.
+	 */
+	resources?: string[];
 }
 
 /**
@@ -4590,6 +4640,15 @@ export interface ListDockerImageHistory {
 export interface ListDockerContainers {
 	/** Id or name */
 	server: string;
+}
+
+/**
+ * List all docker containers on the target server.
+ * Response: [ListDockerContainersResponse].
+ */
+export interface ListAllDockerContainers {
+	/** Filter by server id or name. */
+	servers?: string[];
 }
 
 /** Inspect a docker container on the server. Response: [Container]. */
@@ -5907,9 +5966,9 @@ export interface RenameStack {
 	name: string;
 }
 
-/** Rename the stack at id to the given name. Response: [Update]. */
+/** Update file contents in Files on Server or Git Repo mode. Response: [Update]. */
 export interface WriteStackFileContents {
-	/** The name or id of the Stack to write the contents to. */
+	/** The name or id of the target Stack. */
 	stack: string;
 	/**
 	 * The file path relative to the stack run directory,
@@ -6007,6 +6066,21 @@ export interface UpdateResourceSync {
 export interface RefreshResourceSyncPending {
 	/** Id or name */
 	sync: string;
+}
+
+/** Rename the stack at id to the given name. Response: [Update]. */
+export interface WriteSyncFileContents {
+	/** The name or id of the target Sync. */
+	sync: string;
+	/**
+	 * If this file was under a resource folder, this will be the folder.
+	 * Otherwise, it should be empty string.
+	 */
+	resource_path: string;
+	/** The file path relative to the resource path. */
+	file_path: string;
+	/** The contents to write. */
+	contents: string;
 }
 
 /**
@@ -6591,6 +6665,7 @@ export type ExecuteRequest =
 	| { type: "StopDeployment", params: StopDeployment }
 	| { type: "DestroyDeployment", params: DestroyDeployment }
 	| { type: "DeployStack", params: DeployStack }
+	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "StopStack", params: StopStack }
@@ -6649,6 +6724,7 @@ export type ReadRequest =
 	| { type: "InspectDockerImage", params: InspectDockerImage }
 	| { type: "ListDockerImageHistory", params: ListDockerImageHistory }
 	| { type: "InspectDockerVolume", params: InspectDockerVolume }
+	| { type: "ListAllDockerContainers", params: ListAllDockerContainers }
 	| { type: "ListDockerContainers", params: ListDockerContainers }
 	| { type: "ListDockerNetworks", params: ListDockerNetworks }
 	| { type: "ListDockerImages", params: ListDockerImages }
@@ -6791,8 +6867,9 @@ export type WriteRequest =
 	| { type: "CopyResourceSync", params: CopyResourceSync }
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }
 	| { type: "UpdateResourceSync", params: UpdateResourceSync }
-	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
+	| { type: "WriteSyncFileContents", params: WriteSyncFileContents }
 	| { type: "CommitSync", params: CommitSync }
+	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }
 	| { type: "CreateSyncWebhook", params: CreateSyncWebhook }
 	| { type: "DeleteSyncWebhook", params: DeleteSyncWebhook }
 	| { type: "CreateStack", params: CreateStack }

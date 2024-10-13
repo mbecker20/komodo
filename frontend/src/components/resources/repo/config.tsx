@@ -9,11 +9,7 @@ import {
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@komodo/client";
 import { useState } from "react";
-import {
-  CopyGithubWebhook,
-  ResourceLink,
-  ResourceSelector,
-} from "../common";
+import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
@@ -149,12 +145,20 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 description: "Select a custom branch, or default to 'main'.",
               },
               commit: {
-                placeholder: "Enter commit hash",
+                label: "Commit Hash",
+                placeholder: "Input commit hash",
                 description:
-                  "Switch to a specific hash after cloning the branch.",
+                  "Optional. Switch to a specific commit hash after cloning the branch.",
               },
+            },
+          },
+          {
+            label: "Path",
+            labelHidden: true,
+            components: {
               path: {
                 label: "Clone Path",
+                boldLabel: true,
                 placeholder: "/clone/path/on/host",
                 description:
                   "Explicitly specify the folder on the host to clone the repo in.",

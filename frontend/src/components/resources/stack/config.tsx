@@ -198,7 +198,7 @@ export const StackConfig = ({
         ),
         env_file_path: {
           description:
-            "The path to write the file to, relative to the root of the repo.",
+            "The path to write the file to, relative to the run directory",
           placeholder: ".env",
         },
         // skip_secret_interp: true,
@@ -489,9 +489,10 @@ export const StackConfig = ({
               description: "Select a custom branch, or default to 'main'.",
             },
             commit: {
-              placeholder: "Enter a specific commit hash. Optional.",
+              label: "Commit Hash",
+              placeholder: "Input commit hash",
               description:
-                "Switch to a specific hash after cloning the branch.",
+                "Optional. Switch to a specific commit hash after cloning the branch.",
             },
             reclone: {
               description:
@@ -561,6 +562,10 @@ export const StackConfig = ({
               !!(update.branch ?? config.branch) &&
               webhooks !== undefined &&
               !webhooks.managed,
+            webhook_force_deploy: {
+              description:
+                "Usually the Stack won't deploy unless there are changes to the files. Use this to force deploy.",
+            },
             webhook_secret: {
               description:
                 "Provide a custom webhook secret for this resource, or use the global default.",
@@ -753,7 +758,7 @@ export const StackConfig = ({
   );
 };
 
-const DEFAULT_STACK_FILE_CONTENTS = `## 🦎 Hello Komodo 🦎
+export const DEFAULT_STACK_FILE_CONTENTS = `## 🦎 Hello Komodo 🦎
 services:
   hello_world:
     image: hello-world

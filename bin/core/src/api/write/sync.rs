@@ -8,6 +8,7 @@ use komodo_client::{
     self,
     alert::{Alert, AlertData, SeverityLevel},
     alerter::Alerter,
+    all_logs_success,
     build::Build,
     builder::Builder,
     config::core::CoreConfig,
@@ -22,9 +23,10 @@ use komodo_client::{
     sync::{
       PartialResourceSyncConfig, ResourceSync, ResourceSyncInfo,
     },
-    update::Log,
+    to_komodo_name,
+    update::{Log, Update},
     user::{sync_user, User},
-    NoData, Operation, ResourceTarget,
+    CloneArgs, NoData, Operation, ResourceTarget,
   },
 };
 use mungos::{
@@ -35,6 +37,7 @@ use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
 use resolver_api::Resolve;
+use tokio::fs;
 
 use crate::{
   alert::send_alerts,
@@ -100,6 +103,271 @@ impl Resolve<UpdateResourceSync, User> for State {
     user: User,
   ) -> anyhow::Result<ResourceSync> {
     resource::update::<ResourceSync>(&id, config, &user).await
+  }
+}
+
+impl Resolve<WriteSyncFileContents, User> for State {
+  async fn resolve(
+    &self,
+    WriteSyncFileContents {
+      sync,
+      resource_path,
+      file_path,
+      contents,
+    }: WriteSyncFileContents,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    let sync = resource::get_check_permissions::<ResourceSync>(
+      &sync,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
+
+    if !sync.config.files_on_host && sync.config.repo.is_empty() {
+      return Err(anyhow!(
+        "This method is only for files on host, or repo based syncs."
+      ));
+    }
+
+    let mut update =
+      make_update(&sync, Operation::WriteSyncContents, &user);
+
+    update.push_simple_log("File contents", &contents);
+
+    let root = if sync.config.files_on_host {
+      core_config()
+        .sync_directory
+        .join(to_komodo_name(&sync.name))
+    } else {
+      let clone_args: CloneArgs = (&sync).into();
+      clone_args.unique_path(&core_config().repo_directory)?
+    };
+    let file_path =
+      file_path.parse::<PathBuf>().context("Invalid file path")?;
+    let resource_path = resource_path
+      .parse::<PathBuf>()
+      .context("Invalid resource path")?;
+    let full_path = root.join(&resource_path).join(&file_path);
+
+    if let Some(parent) = full_path.parent() {
+      let _ = fs::create_dir_all(parent).await;
+    }
+
+    if let Err(e) =
+      fs::write(&full_path, &contents).await.with_context(|| {
+        format!("Failed to write file contents to {full_path:?}")
+      })
+    {
+      update.push_error_log("Write file", format_serror(&e.into()));
+    } else {
+      update.push_simple_log(
+        "Write file",
+        format!("File written to {full_path:?}"),
+      );
+    };
+
+    if !all_logs_success(&update.logs) {
+      update.finalize();
+      update.id = add_update(update.clone()).await?;
+
+      return Ok(update);
+    }
+
+    if sync.config.files_on_host {
+      if let Err(e) = State
+        .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
+        .await
+      {
+        update
+          .push_error_log("Refresh failed", format_serror(&e.into()));
+      }
+
+      update.finalize();
+      update.id = add_update(update.clone()).await?;
+
+      return Ok(update);
+    }
+
+    let commit_res = git::commit_file(
+      "Commit Resource File",
+      &root,
+      &resource_path.join(&file_path),
+    )
+    .await;
+
+    update.logs.extend(commit_res.logs);
+
+    if let Err(e) = State
+      .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
+      .await
+    {
+      update
+        .push_error_log("Refresh failed", format_serror(&e.into()));
+    }
+
+    update.finalize();
+    update.id = add_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+impl Resolve<CommitSync, User> for State {
+  #[instrument(name = "CommitSync", skip(self, user))]
+  async fn resolve(
+    &self,
+    CommitSync { sync }: CommitSync,
+    user: User,
+  ) -> anyhow::Result<ResourceSync> {
+    let sync = resource::get_check_permissions::<
+      entities::sync::ResourceSync,
+    >(&sync, &user, PermissionLevel::Write)
+    .await?;
+
+    let fresh_sync = !sync.config.files_on_host
+      && sync.config.file_contents.is_empty()
+      && sync.config.repo.is_empty();
+
+    if !sync.config.managed && !fresh_sync {
+      return Err(anyhow!(
+        "Cannot commit to sync. Enabled 'managed' mode."
+      ));
+    }
+
+    let resource_path = sync
+      .config
+      .resource_path
+      .first()
+      .context("Sync does not have resource path configured.")?
+      .parse::<PathBuf>()
+      .context("Invalid resource path")?;
+
+    if resource_path
+      .extension()
+      .context("Resource path missing '.toml' extension")?
+      != "toml"
+    {
+      return Err(anyhow!("Resource path missing '.toml' extension"));
+    }
+
+    let res = State
+      .resolve(
+        ExportAllResourcesToToml {
+          tags: sync.config.match_tags.clone(),
+        },
+        sync_user().to_owned(),
+      )
+      .await?;
+
+    let mut update = make_update(&sync, Operation::CommitSync, &user);
+    update.id = add_update(update.clone()).await?;
+
+    update.logs.push(Log::simple("Resources", res.toml.clone()));
+
+    if sync.config.files_on_host {
+      let file_path = core_config()
+        .sync_directory
+        .join(to_komodo_name(&sync.name))
+        .join(&resource_path);
+      if let Some(parent) = file_path.parent() {
+        let _ = tokio::fs::create_dir_all(&parent).await;
+      };
+      if let Err(e) = tokio::fs::write(&file_path, &res.toml)
+        .await
+        .with_context(|| {
+          format!("Failed to write resource file to {file_path:?}",)
+        })
+      {
+        update.push_error_log(
+          "Write resource file",
+          format_serror(&e.into()),
+        );
+        update.finalize();
+        add_update(update).await?;
+        return resource::get::<ResourceSync>(&sync.name).await;
+      } else {
+        update.push_simple_log(
+          "Write contents",
+          format!("File contents written to {file_path:?}"),
+        );
+      }
+    } else if !sync.config.repo.is_empty() {
+      // GIT REPO
+      let args: CloneArgs = (&sync).into();
+      let root = args.unique_path(&core_config().repo_directory)?;
+      match git::write_commit_file(
+        "Commit Sync",
+        &root,
+        &resource_path,
+        &res.toml,
+      )
+      .await
+      {
+        Ok(res) => update.logs.extend(res.logs),
+        Err(e) => {
+          update.push_error_log(
+            "Write resource file",
+            format_serror(&e.into()),
+          );
+          update.finalize();
+          add_update(update).await?;
+          return resource::get::<ResourceSync>(&sync.name).await;
+        }
+      }
+      // ===========
+      // UI DEFINED
+    } else if let Err(e) = db_client()
+      .resource_syncs
+      .update_one(
+        doc! { "name": &sync.name },
+        doc! { "$set": { "config.file_contents": res.toml } },
+      )
+      .await
+      .context("failed to update file_contents on db")
+    {
+      update.push_error_log(
+        "Write resource to database",
+        format_serror(&e.into()),
+      );
+      update.finalize();
+      add_update(update).await?;
+      return resource::get::<ResourceSync>(&sync.name).await;
+    }
+
+    let res = match State
+      .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
+      .await
+    {
+      Ok(sync) => Ok(sync),
+      Err(e) => {
+        update.push_error_log(
+          "Refresh sync pending",
+          format_serror(&(&e).into()),
+        );
+        Err(e)
+      }
+    };
+
+    update.finalize();
+
+    // Need to manually update the update before cache refresh,
+    // and before broadcast with add_update.
+    // The Err case of to_document should be unreachable,
+    // but will fail to update cache in that case.
+    if let Ok(update_doc) = to_document(&update) {
+      let _ = update_one_by_id(
+        &db_client().updates,
+        &update.id,
+        mungos::update::Update::Set(update_doc),
+        None,
+      )
+      .await;
+      refresh_resource_sync_state_cache().await;
+    }
+    update_update(update).await?;
+
+    res
   }
 }
 
@@ -190,6 +458,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.servers,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -199,6 +469,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.stacks,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -208,6 +480,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.deployments,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -217,6 +491,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.builds,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -226,6 +502,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.repos,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -235,6 +513,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.procedures,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -244,6 +524,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.builders,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -253,6 +535,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.alerters,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -262,6 +546,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.server_templates,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -271,6 +557,8 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
           resources.resource_syncs,
           delete,
           &all_resources,
+          None,
+          None,
           &id_to_tags,
           &sync.config.match_tags,
           &mut diffs,
@@ -278,22 +566,28 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         .await?;
       }
 
-      let variable_updates =
+      let variable_updates = if sync.config.match_tags.is_empty() {
         crate::sync::variables::get_updates_for_view(
           &resources.variables,
           // Delete doesn't work with variables when match tags are set
           sync.config.match_tags.is_empty() && delete,
         )
-        .await?;
+        .await?
+      } else {
+        Default::default()
+      };
 
-      let user_group_updates =
+      let user_group_updates = if sync.config.match_tags.is_empty() {
         crate::sync::user_groups::get_updates_for_view(
           resources.user_groups,
           // Delete doesn't work with user groups when match tags are set
           sync.config.match_tags.is_empty() && delete,
           &all_resources,
         )
-        .await?;
+        .await?
+      } else {
+        Default::default()
+      };
 
       anyhow::Ok((
         diffs,
@@ -415,135 +709,6 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
     });
 
     crate::resource::get::<ResourceSync>(&sync.id).await
-  }
-}
-
-impl Resolve<CommitSync, User> for State {
-  #[instrument(name = "CommitSync", skip(self, user))]
-  async fn resolve(
-    &self,
-    CommitSync { sync }: CommitSync,
-    user: User,
-  ) -> anyhow::Result<ResourceSync> {
-    let sync = resource::get_check_permissions::<
-      entities::sync::ResourceSync,
-    >(&sync, &user, PermissionLevel::Write)
-    .await?;
-
-    let fresh_sync = !sync.config.files_on_host
-      && sync.config.file_contents.is_empty()
-      && sync.config.repo.is_empty();
-
-    if !sync.config.managed && !fresh_sync {
-      return Err(anyhow!(
-        "Cannot commit to sync. Enabled 'managed' mode."
-      ));
-    }
-
-    let res = State
-      .resolve(
-        ExportAllResourcesToToml {
-          tags: sync.config.match_tags,
-        },
-        sync_user().to_owned(),
-      )
-      .await?;
-
-    let mut update = make_update(
-      ResourceTarget::ResourceSync(sync.id),
-      Operation::CommitSync,
-      &user,
-    );
-    update.id = add_update(update.clone()).await?;
-
-    if sync.config.files_on_host {
-      let path = sync
-        .config
-        .resource_path
-        .parse::<PathBuf>()
-        .context("Resource path is not valid file path")?;
-      let extension = path
-        .extension()
-        .context("Resource path missing '.toml' extension")?;
-      if extension != "toml" {
-        return Err(anyhow!("Wrong file extension. Expected '.toml', got '.{extension:?}'"));
-      }
-      if let Some(parent) = path.parent() {
-        let _ = tokio::fs::create_dir_all(&parent).await;
-      };
-      if let Err(e) =
-        tokio::fs::write(&sync.config.resource_path, &res.toml)
-          .await
-          .with_context(|| {
-            format!(
-              "Failed to write resource file to {}",
-              sync.config.resource_path
-            )
-          })
-      {
-        update.push_error_log(
-          "Write resource file",
-          format_serror(&e.into()),
-        );
-        update.finalize();
-        add_update(update).await?;
-        return resource::get::<ResourceSync>(&sync.name).await;
-      }
-    } else if let Err(e) = db_client()
-      .resource_syncs
-      .update_one(
-        doc! { "name": &sync.name },
-        doc! { "$set": { "config.file_contents": &res.toml } },
-      )
-      .await
-      .context("failed to update file_contents on db")
-    {
-      update.push_error_log(
-        "Write resource to database",
-        format_serror(&e.into()),
-      );
-      update.finalize();
-      add_update(update).await?;
-      return resource::get::<ResourceSync>(&sync.name).await;
-    }
-
-    update
-      .logs
-      .push(Log::simple("Committed resources", res.toml));
-
-    let res = match State
-      .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
-      .await
-    {
-      Ok(sync) => Ok(sync),
-      Err(e) => {
-        update.push_error_log(
-          "Refresh sync pending",
-          format_serror(&(&e).into()),
-        );
-        Err(e)
-      }
-    };
-
-    update.finalize();
-
-    // Need to manually update the update before cache refresh,
-    // and before broadcast with add_update.
-    // The Err case of to_document should be unreachable,
-    // but will fail to update cache in that case.
-    if let Ok(update_doc) = to_document(&update) {
-      let _ = update_one_by_id(
-        &db_client().updates,
-        &update.id,
-        mungos::update::Update::Set(update_doc),
-        None,
-      )
-      .await;
-      refresh_resource_sync_state_cache().await;
-    }
-    update_update(update).await?;
-
-    res
   }
 }
 

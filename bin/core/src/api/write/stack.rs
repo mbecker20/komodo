@@ -22,14 +22,14 @@ use octorust::types::{
 };
 use periphery_client::api::compose::{
   GetComposeContentsOnHost, GetComposeContentsOnHostResponse,
-  WriteComposeContentsToHost,
+  WriteCommitComposeContents, WriteComposeContentsToHost,
 };
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
   helpers::{
-    periphery_client,
+    git_token, periphery_client,
     query::get_server_with_state,
     update::{add_update, make_update},
   },
@@ -143,7 +143,7 @@ impl Resolve<WriteStackFileContents, User> for State {
     }: WriteStackFileContents,
     user: User,
   ) -> anyhow::Result<Update> {
-    let (stack, server) = get_stack_and_server(
+    let (mut stack, server) = get_stack_and_server(
       &stack,
       &user,
       PermissionLevel::Write,
@@ -151,9 +151,9 @@ impl Resolve<WriteStackFileContents, User> for State {
     )
     .await?;
 
-    if !stack.config.files_on_host {
+    if !stack.config.files_on_host && stack.config.repo.is_empty() {
       return Err(anyhow!(
-        "Stack is not configured to use files on host, can't write file contents"
+        "Stack is not configured to use Files on Host or Git Repo, can't write file contents"
       ));
     }
 
@@ -162,30 +162,71 @@ impl Resolve<WriteStackFileContents, User> for State {
 
     update.push_simple_log("File contents to write", &contents);
 
-    match periphery_client(&server)?
-      .request(WriteComposeContentsToHost {
-        name: stack.name,
-        run_directory: stack.config.run_directory,
-        file_path,
-        contents,
-      })
-      .await
-      .context("Failed to write contents to host")
-    {
-      Ok(log) => {
-        update.logs.push(log);
-      }
-      Err(e) => {
-        update.push_error_log(
-          "Write file contents",
-          format_serror(&e.into()),
-        );
-      }
-    };
+    let stack_id = stack.id.clone();
+
+    if stack.config.files_on_host {
+      match periphery_client(&server)?
+        .request(WriteComposeContentsToHost {
+          name: stack.name,
+          run_directory: stack.config.run_directory,
+          file_path,
+          contents,
+        })
+        .await
+        .context("Failed to write contents to host")
+      {
+        Ok(log) => {
+          update.logs.push(log);
+        }
+        Err(e) => {
+          update.push_error_log(
+            "Write file contents",
+            format_serror(&e.into()),
+          );
+        }
+      };
+    } else {
+      let git_token = if !stack.config.git_account.is_empty() {
+        git_token(
+          &stack.config.git_provider,
+          &stack.config.git_account,
+          |https| stack.config.git_https = https,
+        )
+        .await
+        .with_context(|| {
+          format!(
+            "Failed to get git token. | {} | {}",
+            stack.config.git_account, stack.config.git_provider
+          )
+        })?
+      } else {
+        None
+      };
+      match periphery_client(&server)?
+        .request(WriteCommitComposeContents {
+          stack,
+          file_path,
+          contents,
+          git_token,
+        })
+        .await
+        .context("Failed to write contents to host")
+      {
+        Ok(res) => {
+          update.logs.extend(res.logs);
+        }
+        Err(e) => {
+          update.push_error_log(
+            "Write file contents",
+            format_serror(&e.into()),
+          );
+        }
+      };
+    }
 
     if let Err(e) = State
       .resolve(
-        RefreshStackCache { stack: stack.id },
+        RefreshStackCache { stack: stack_id },
         stack_user().to_owned(),
       )
       .await
@@ -227,10 +268,11 @@ impl Resolve<RefreshStackCache, User> for State {
     .await?;
 
     let file_contents_empty = stack.config.file_contents.is_empty();
+    let repo_empty = stack.config.repo.is_empty();
 
     if !stack.config.files_on_host
       && file_contents_empty
-      && stack.config.repo.is_empty()
+      && repo_empty
     {
       // Nothing to do without one of these
       return Ok(NoData {});
@@ -297,7 +339,7 @@ impl Resolve<RefreshStackCache, User> for State {
           (services, Some(contents), Some(errors), None, None)
         }
       }
-    } else if file_contents_empty {
+    } else if !repo_empty {
       // ================
       // REPO BASED STACK
       // ================

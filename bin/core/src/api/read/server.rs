@@ -13,7 +13,7 @@ use komodo_client::{
   entities::{
     deployment::Deployment,
     docker::{
-      container::Container,
+      container::{Container, ContainerListItem},
       image::{Image, ImageHistoryResponseItem},
       network::Network,
       volume::Volume,
@@ -289,7 +289,7 @@ impl ResolveToString<ListSystemProcesses, User> for State {
   }
 }
 
-const STATS_PER_PAGE: i64 = 500;
+const STATS_PER_PAGE: i64 = 200;
 
 impl Resolve<GetHistoricalServerStats, User> for State {
   async fn resolve(
@@ -365,6 +365,37 @@ impl ResolveToString<ListDockerContainers, User> for State {
     } else {
       Ok(String::from("[]"))
     }
+  }
+}
+
+impl Resolve<ListAllDockerContainers, User> for State {
+  async fn resolve(
+    &self,
+    ListAllDockerContainers { servers }: ListAllDockerContainers,
+    user: User,
+  ) -> anyhow::Result<Vec<ContainerListItem>> {
+    let servers =
+      resource::list_for_user::<Server>(Default::default(), &user)
+        .await?
+        .into_iter()
+        .filter(|server| {
+          servers.is_empty()
+            || servers.contains(&server.id)
+            || servers.contains(&server.name)
+        });
+
+    let mut containers = Vec::<ContainerListItem>::new();
+
+    for server in servers {
+      let cache = server_status_cache()
+        .get_or_insert_default(&server.id)
+        .await;
+      if let Some(more_containers) = &cache.containers {
+        containers.extend(more_containers.clone());
+      }
+    }
+
+    Ok(containers)
   }
 }
 

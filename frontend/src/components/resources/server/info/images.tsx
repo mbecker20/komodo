@@ -17,7 +17,7 @@ export const Images = ({
   setShow: (show: boolean) => void;
 }) => {
   const images =
-    useRead("ListDockerImages", { server: id }, { refetchInterval: 5000 })
+    useRead("ListDockerImages", { server: id }, { refetchInterval: 10_000 })
       .data ?? [];
 
   const allInUse = images.every((image) => image.in_use);

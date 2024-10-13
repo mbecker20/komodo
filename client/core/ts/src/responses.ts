@@ -58,6 +58,7 @@ export type ReadResponses = {
   GetServerState: Types.GetServerStateResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   ListDockerContainers: Types.ListDockerContainersResponse;
+  ListAllDockerContainers: Types.ListAllDockerContainersResponse;
   InspectDockerContainer: Types.InspectDockerContainerResponse;
   GetResourceMatchingContainer: Types.GetResourceMatchingContainerResponse;
   GetContainerLog: Types.GetContainerLogResponse;
@@ -262,8 +263,9 @@ export type WriteResponses = {
   CopyResourceSync: Types.ResourceSync;
   DeleteResourceSync: Types.ResourceSync;
   UpdateResourceSync: Types.ResourceSync;
-  RefreshResourceSyncPending: Types.ResourceSync;
   CommitSync: Types.ResourceSync;
+  WriteSyncFileContents: Types.Update;
+  RefreshResourceSyncPending: Types.ResourceSync;
   CreateSyncWebhook: Types.CreateSyncWebhookResponse;
   DeleteSyncWebhook: Types.DeleteSyncWebhookResponse;
 
@@ -354,6 +356,7 @@ export type ExecuteResponses = {
 
   // ==== STACK ====
   DeployStack: Types.Update;
+  DeployStackIfChanged: Types.Update;
   StartStack: Types.Update;
   RestartStack: Types.Update;
   StopStack: Types.Update;

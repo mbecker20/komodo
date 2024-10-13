@@ -21,7 +21,7 @@ import { BuilderTable } from "./table";
 import { ResourcePageHeader } from "@components/util";
 
 export const useBuilder = (id?: string) =>
-  useRead("ListBuilders", {}, { refetchInterval: 5000 }).data?.find(
+  useRead("ListBuilders", {}, { refetchInterval: 10_000 }).data?.find(
     (d) => d.id === id
   );
 

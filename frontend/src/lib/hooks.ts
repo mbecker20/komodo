@@ -33,12 +33,20 @@ export const useLoginOptions = () =>
     queryFn: () => client().auth({ type: "GetLoginOptions", params: {} }),
   });
 
-export const useUser = () =>
-  useQuery({
+export const useUser = () => {
+  const userInvalidate = useUserInvalidate();
+  const query = useQuery({
     queryKey: ["GetUser"],
     queryFn: () => client().auth({ type: "GetUser", params: {} }),
     refetchInterval: 30_000,
   });
+  useEffect(() => {
+    if (query.data && query.error) {
+      userInvalidate();
+    }
+  }, [query.data, query.error]);
+  return query;
+};
 
 export const useUserInvalidate = () => {
   const qc = useQueryClient();

@@ -58,6 +58,8 @@ pub struct Env {
   pub komodo_jwt_secret_file: Option<PathBuf>,
   /// Override `jwt_ttl`
   pub komodo_jwt_ttl: Option<Timelength>,
+  /// Override `sync_directory`
+  pub komodo_sync_directory: Option<PathBuf>,
   /// Override `repo_directory`
   pub komodo_repo_directory: Option<PathBuf>,
   /// Override `resource_poll_interval`
@@ -459,15 +461,9 @@ pub struct CoreConfig {
   #[serde(default)]
   pub secrets: HashMap<String, String>,
 
-  // =========
-  // = Other =
-  // =========
-  /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
-  /// The default is fine when using a container.
-  /// Default: `/repo-cache`
-  #[serde(default = "default_repo_directory")]
-  pub repo_directory: PathBuf,
-
+  // =======
+  // = SSL =
+  // =======
   /// Whether to enable ssl.
   #[serde(default)]
   pub ssl_enabled: bool,
@@ -481,6 +477,20 @@ pub struct CoreConfig {
   /// Default: `/config/ssl/cert.pem`.
   #[serde(default = "default_ssl_cert_file")]
   pub ssl_cert_file: PathBuf,
+
+  // =========
+  // = Other =
+  // =========
+  /// Configure directory to store sync files.
+  /// Default: `/syncs`
+  #[serde(default = "default_sync_directory")]
+  pub sync_directory: PathBuf,
+
+  /// Specify the directory used to clone stack / repo / build repos, for latest hash / contents.
+  /// The default is fine when using a container.
+  /// Default: `/repo-cache`
+  #[serde(default = "default_repo_directory")]
+  pub repo_directory: PathBuf,
 }
 
 fn default_title() -> String {
@@ -502,6 +512,11 @@ fn default_jwt_ttl() -> Timelength {
 fn default_repo_directory() -> PathBuf {
   // unwrap ok: `/repo-cache` will always be valid path
   PathBuf::from_str("/repo-cache").unwrap()
+}
+
+fn default_sync_directory() -> PathBuf {
+  // unwrap ok: `/syncs` will always be valid path
+  PathBuf::from_str("/syncs").unwrap()
 }
 
 fn default_prune_days() -> u64 {
@@ -537,6 +552,7 @@ impl CoreConfig {
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_ttl: config.jwt_ttl,
       repo_directory: config.repo_directory,
+      sync_directory: config.sync_directory,
       resource_poll_interval: config.resource_poll_interval,
       monitoring_interval: config.monitoring_interval,
       keep_stats_for_days: config.keep_stats_for_days,

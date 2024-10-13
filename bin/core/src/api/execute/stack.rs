@@ -3,9 +3,11 @@ use std::collections::HashSet;
 use anyhow::Context;
 use formatting::format_serror;
 use komodo_client::{
-  api::execute::*,
+  api::{execute::*, write::RefreshStackCache},
   entities::{
-    permission::PermissionLevel, stack::StackInfo, update::Update,
+    permission::PermissionLevel,
+    stack::{Stack, StackInfo},
+    update::Update,
     user::User,
   },
 };
@@ -23,9 +25,10 @@ use crate::{
     },
     periphery_client,
     query::get_variables_and_secrets,
-    update::update_update,
+    update::{add_update_without_send, update_update},
   },
   monitor::update_cache_for_server,
+  resource,
   stack::{
     execute::execute_compose, get_stack_and_server,
     services::extract_services_into_res,
@@ -240,6 +243,77 @@ impl Resolve<DeployStack, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     Ok(update)
+  }
+}
+
+impl Resolve<DeployStackIfChanged, (User, Update)> for State {
+  async fn resolve(
+    &self,
+    DeployStackIfChanged { stack, stop_time }: DeployStackIfChanged,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let stack = resource::get_check_permissions::<Stack>(
+      &stack,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+    State
+      .resolve(
+        RefreshStackCache {
+          stack: stack.id.clone(),
+        },
+        user.clone(),
+      )
+      .await?;
+    let stack = resource::get::<Stack>(&stack.id).await?;
+    let changed = match (
+      &stack.info.deployed_contents,
+      &stack.info.remote_contents,
+    ) {
+      (Some(deployed_contents), Some(latest_contents)) => {
+        let changed = || {
+          for latest in latest_contents {
+            let Some(deployed) = deployed_contents
+              .iter()
+              .find(|c| c.path == latest.path)
+            else {
+              return true;
+            };
+            if latest.contents != deployed.contents {
+              return true;
+            }
+          }
+          false
+        };
+        changed()
+      }
+      (None, _) => true,
+      _ => false,
+    };
+
+    if !changed {
+      update.push_simple_log(
+        "Diff compose files",
+        String::from("Deploy cancelled after no changes detected."),
+      );
+      update.finalize();
+      return Ok(update);
+    }
+
+    // Don't actually send it here, let the handler send it after it can set action state.
+    // This is usually done in crate::helpers::update::init_execution_update.
+    update.id = add_update_without_send(&update).await?;
+
+    State
+      .resolve(
+        DeployStack {
+          stack: stack.name,
+          stop_time,
+        },
+        (user, update),
+      )
+      .await
   }
 }
 

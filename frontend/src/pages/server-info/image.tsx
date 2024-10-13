@@ -59,7 +59,7 @@ const ImagePageInner = ({
     {
       server: id,
     },
-    { refetchInterval: 5000 }
+    { refetchInterval: 10_000 }
   ).data?.filter((container) =>
     !image?.Id ? false : container.image_id === image?.Id
   );

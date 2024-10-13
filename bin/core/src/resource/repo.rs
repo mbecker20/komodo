@@ -213,15 +213,19 @@ async fn validate_config(
         PermissionLevel::Write,
       )
       .await
-      .context("Cannot attach repo to this server. User must have write permissions on the server.")?;
+      .context("Cannot attach Repo to this Server")?;
       config.server_id = Some(server.id);
     }
   }
   if let Some(builder_id) = &config.builder_id {
     if !builder_id.is_empty() {
-      let builder = super::get_check_permissions::<Builder>(builder_id, user, PermissionLevel::Read)
-        .await
-        .context("Cannot attach repo to this builder. User must have at least read permissions on the builder.")?;
+      let builder = super::get_check_permissions::<Builder>(
+        builder_id,
+        user,
+        PermissionLevel::Read,
+      )
+      .await
+      .context("Cannot attach Repo to this Builder")?;
       config.builder_id = Some(builder.id);
     }
   }

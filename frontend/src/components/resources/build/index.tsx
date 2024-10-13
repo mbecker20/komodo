@@ -27,12 +27,12 @@ import { Button } from "@ui/button";
 import { useBuilder } from "../builder";
 
 export const useBuild = (id?: string) =>
-  useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.find(
+  useRead("ListBuilds", {}, { refetchInterval: 10_000 }).data?.find(
     (d) => d.id === id
   );
 
 export const useFullBuild = (id: string) =>
-  useRead("GetBuild", { build: id }, { refetchInterval: 5000 }).data;
+  useRead("GetBuild", { build: id }, { refetchInterval: 10_000 }).data;
 
 const BuildIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useBuild(id)?.info.state;

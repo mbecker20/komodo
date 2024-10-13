@@ -59,7 +59,7 @@ const VolumePageInner = ({
     {
       server: id,
     },
-    { refetchInterval: 5000 }
+    { refetchInterval: 10_000 }
   ).data?.filter((container) => container.volumes?.includes(volume_name));
 
   const { mutate: deleteVolume, isPending: deletePending } = useExecute(

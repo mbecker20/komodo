@@ -262,9 +262,13 @@ async fn validate_config(
 ) -> anyhow::Result<()> {
   if let Some(server_id) = &config.server_id {
     if !server_id.is_empty() {
-      let server = get_check_permissions::<Server>(server_id, user, PermissionLevel::Write)
-          .await
-          .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+      let server = get_check_permissions::<Server>(
+        server_id,
+        user,
+        PermissionLevel::Write,
+      )
+      .await
+      .context("Cannot attach Deployment to this Server")?;
       config.server_id = Some(server.id);
     }
   }
@@ -272,9 +276,15 @@ async fn validate_config(
     &config.image
   {
     if !build_id.is_empty() {
-      let build = get_check_permissions::<Build>(build_id, user, PermissionLevel::Read)
-          .await
-          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+      let build = get_check_permissions::<Build>(
+        build_id,
+        user,
+        PermissionLevel::Read,
+      )
+      .await
+      .context(
+        "Cannot update deployment with this build attached.",
+      )?;
       config.image = Some(DeploymentImage::Build {
         build_id: build.id,
         version: *version,

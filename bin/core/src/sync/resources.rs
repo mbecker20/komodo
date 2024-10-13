@@ -17,7 +17,7 @@ use komodo_client::{
     tag::Tag,
     update::Log,
     user::sync_user,
-    ResourceTarget,
+    ResourceTarget, ResourceTargetVariant,
   },
 };
 use partial_derive2::{MaybeNone, PartialDiff};
@@ -31,8 +31,10 @@ use crate::{
 };
 
 use super::{
-  execute::ExecuteResourceSync, include_resource_by_tags,
-  AllResourcesById, ResourceSyncTrait, ToCreate, ToDelete, ToUpdate,
+  execute::ExecuteResourceSync,
+  include_resource_by_resource_type_and_name,
+  include_resource_by_tags, AllResourcesById, ResourceSyncTrait,
+  ToCreate, ToDelete, ToUpdate,
 };
 
 impl ResourceSyncTrait for Server {
@@ -237,12 +239,19 @@ impl ResourceSyncTrait for ResourceSync {
   }
 
   fn include_resource(
+    name: &String,
     config: &Self::Config,
+    match_resource_type: Option<ResourceTargetVariant>,
+    match_resources: Option<&[String]>,
     resource_tags: &[String],
     id_to_tags: &HashMap<String, Tag>,
     match_tags: &[String],
   ) -> bool {
-    if !include_resource_by_tags(
+    if !include_resource_by_resource_type_and_name::<ResourceSync>(
+      match_resource_type,
+      match_resources,
+      name,
+    ) || !include_resource_by_tags(
       resource_tags,
       id_to_tags,
       match_tags,
@@ -259,17 +268,24 @@ impl ResourceSyncTrait for ResourceSync {
     }
     // The file contents MUST be empty
     contents_empty &&
-    // The sync must be files on host mode OR NOT managed
-    (config.files_on_host || !config.managed)
+    // The sync must be files on host mode OR git repo mode
+    (config.files_on_host || !config.repo.is_empty())
   }
 
   fn include_resource_partial(
+    name: &String,
     config: &Self::PartialConfig,
+    match_resource_type: Option<ResourceTargetVariant>,
+    match_resources: Option<&[String]>,
     resource_tags: &[String],
     id_to_tags: &HashMap<String, Tag>,
     match_tags: &[String],
   ) -> bool {
-    if !include_resource_by_tags(
+    if !include_resource_by_resource_type_and_name::<ResourceSync>(
+      match_resource_type,
+      match_resources,
+      name,
+    ) || !include_resource_by_tags(
       resource_tags,
       id_to_tags,
       match_tags,
@@ -291,8 +307,8 @@ impl ResourceSyncTrait for ResourceSync {
     }
     // The file contents MUST be empty
     contents_empty &&
-    // The sync must be files on host mode OR NOT managed
-    (files_on_host || !config.managed.unwrap_or_default())
+    // The sync must be files on host mode OR git repo mode
+    (files_on_host || !config.repo.as_deref().unwrap_or_default().is_empty())
   }
 
   fn get_diff(
@@ -573,6 +589,13 @@ impl ResourceSyncTrait for Procedure {
               .unwrap_or_default();
           }
           Execution::DeployStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::DeployStackIfChanged(config) => {
             config.stack = resources
               .stacks
               .get(&config.stack)

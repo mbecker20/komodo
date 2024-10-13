@@ -13,6 +13,8 @@ use super::{ContainerConfig, GraphDriverData, PortBinding};
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
 pub struct ContainerListItem {
+  /// The Server which holds the container.
+  pub server_id: Option<String>,
   /// The first name in Names, not including the initial '/'
   pub name: String,
   /// The ID of this container
@@ -37,6 +39,11 @@ pub struct ContainerListItem {
   pub networks: Vec<String>,
   /// The volume names attached to container
   pub volumes: Vec<String>,
+  /// The labels attached to container.
+  /// It's too big to send with container list,
+  /// can get it using InspectContainer
+  #[serde(default, skip_serializing)]
+  pub labels: HashMap<String, String>,
 }
 
 #[typeshare]

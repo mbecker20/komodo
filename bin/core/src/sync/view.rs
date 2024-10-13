@@ -5,6 +5,7 @@ use komodo_client::entities::{
   sync::{DiffData, ResourceDiff},
   tag::Tag,
   toml::ResourceToml,
+  ResourceTargetVariant,
 };
 use mungos::find::find_collect;
 use partial_derive2::MaybeNone;
@@ -15,7 +16,9 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
   resources: Vec<ResourceToml<Resource::PartialConfig>>,
   delete: bool,
   all_resources: &AllResourcesById,
-  all_tags: &HashMap<String, Tag>,
+  match_resource_type: Option<ResourceTargetVariant>,
+  match_resources: Option<&[String]>,
+  id_to_tags: &HashMap<String, Tag>,
   match_tags: &[String],
   diffs: &mut Vec<ResourceDiff>,
 ) -> anyhow::Result<()> {
@@ -25,11 +28,32 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
     .into_iter()
     .filter(|r| {
       Resource::include_resource(
-        &r.config, &r.tags, all_tags, match_tags,
+        &r.name,
+        &r.config,
+        match_resource_type,
+        match_resources,
+        &r.tags,
+        id_to_tags,
+        match_tags,
       )
     })
     .map(|r| (r.name.clone(), r))
     .collect::<HashMap<_, _>>();
+
+  let resources = resources
+    .into_iter()
+    .filter(|r| {
+      Resource::include_resource_partial(
+        &r.name,
+        &r.config,
+        match_resource_type,
+        match_resources,
+        &r.tags,
+        id_to_tags,
+        match_tags,
+      )
+    })
+    .collect::<Vec<_>>();
 
   if delete {
     for current_resource in current_map.values() {
@@ -41,8 +65,10 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
           data: DiffData::Delete {
             current: super::toml::resource_to_toml::<Resource>(
               current_resource.clone(),
+              false,
+              vec![],
               all_resources,
-              all_tags,
+              id_to_tags,
             )?,
           },
         });
@@ -51,15 +77,6 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
   }
 
   for mut proposed_resource in resources {
-    // only resource that might not be included is resource sync
-    if !Resource::include_resource_partial(
-      &proposed_resource.config,
-      &proposed_resource.tags,
-      all_tags,
-      match_tags,
-    ) {
-      continue;
-    }
     match current_map.get(&proposed_resource.name) {
       Some(current_resource) => {
         // First merge toml resource config (partial) onto default resource config.
@@ -87,7 +104,7 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
         let current_tags = current_resource
           .tags
           .iter()
-          .filter_map(|id| all_tags.get(id).map(|t| t.name.clone()))
+          .filter_map(|id| id_to_tags.get(id).map(|t| t.name.clone()))
           .collect::<Vec<_>>();
 
         // Only proceed if there are any fields to update,
@@ -105,12 +122,14 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
             current_resource.id.clone(),
           ),
           data: DiffData::Update {
-            proposed,
             current: super::toml::resource_to_toml::<Resource>(
               current_resource.clone(),
+              proposed_resource.deploy,
+              proposed_resource.after,
               all_resources,
-              all_tags,
+              id_to_tags,
             )?,
+            proposed,
           },
         });
       }
@@ -120,6 +139,7 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
           target: Resource::resource_target(String::new()),
 
           data: DiffData::Create {
+            name: proposed_resource.name.clone(),
             proposed: super::toml::resource_toml_to_toml_string::<
               Resource,
             >(proposed_resource)?,

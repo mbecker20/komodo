@@ -307,6 +307,12 @@ pub struct StackConfig {
   #[builder(default)]
   pub webhook_secret: String,
 
+  /// By default, the Stack will `DeployStackIfChanged`.
+  /// If this option is enabled, will always run `DeployStack` without diffing.
+  #[serde(default)]
+  #[builder(default)]
+  pub webhook_force_deploy: bool,
+
   /// Whether to send StackStateChange alerts for this stack.
   #[serde(default = "default_send_alerts")]
   #[builder(default = "default_send_alerts()")]
@@ -443,6 +449,7 @@ impl Default for StackConfig {
       git_account: Default::default(),
       webhook_enabled: default_webhook_enabled(),
       webhook_secret: Default::default(),
+      webhook_force_deploy: Default::default(),
       send_alerts: default_send_alerts(),
       links: Default::default(),
     }

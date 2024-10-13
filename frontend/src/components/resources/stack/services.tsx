@@ -25,7 +25,7 @@ export const StackServices = ({
   const services = useRead(
     "ListStackServices",
     { stack: id },
-    { refetchInterval: 5000 }
+    { refetchInterval: 10_000 }
   ).data;
   if (
     !services ||

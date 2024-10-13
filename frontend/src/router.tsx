@@ -18,6 +18,7 @@ import { NetworkPage } from "@pages/server-info/network";
 import { ImagePage } from "@pages/server-info/image";
 import { VolumePage } from "@pages/server-info/volume";
 import { ContainerPage } from "@pages/server-info/container";
+import { ContainersPage } from "@pages/containers";
 
 const ROUTER = createBrowserRouter([
   {
@@ -26,28 +27,22 @@ const ROUTER = createBrowserRouter([
     children: [
       { path: "", element: <Home /> },
       { path: "settings", element: <Settings /> },
-      // { path: "keys", element: <Keys /> },
-      // { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },
       { path: "alerts", element: <AlertsPage /> },
       { path: "updates", element: <UpdatesPage /> },
-      // { path: "variables", element: <Variables /> },
+      { path: "updates", element: <UpdatesPage /> },
+      { path: "containers", element: <ContainersPage /> },
       { path: "resources", element: <AllResources /> },
       { path: "user-groups/:id", element: <UserGroupPage /> },
       {
         path: "users",
-        children: [
-          // { path: "", element: <UsersPage /> },
-          { path: ":id", element: <UserPage /> },
-        ],
+        children: [{ path: ":id", element: <UserPage /> }],
       },
       {
         path: ":type",
         children: [
           { path: "", element: <Resources /> },
           { path: ":id", element: <Resource /> },
-          // { path: ":id/updates", element: <Updates /> },
-          // { path: ":id/alerts", element: <Alerts /> },
           {
             path: ":id/service/:service",
             element: <StackServicePage />,

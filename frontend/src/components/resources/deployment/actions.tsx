@@ -38,17 +38,13 @@ export const DeployDeployment = ({ id }: DeploymentId) => {
 
   const { mutate: deploy, isPending } = useExecute("Deploy");
 
-  const deployments = useRead(
-    "ListDeployments",
-    {},
-    { refetchInterval: 5000 }
-  ).data;
+  const deployments = useRead("ListDeployments", {}).data;
   const deployment_item = deployments?.find((d) => d.id === id);
 
   const deploying = useRead(
     "GetDeploymentActionState",
     { deployment: id },
-    { refetchInterval: 5000 }
+    { refetchInterval: 5_000 }
   ).data?.deploying;
 
   const pending = isPending || deploying;

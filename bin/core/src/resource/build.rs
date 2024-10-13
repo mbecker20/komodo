@@ -180,9 +180,13 @@ async fn validate_config(
 ) -> anyhow::Result<()> {
   if let Some(builder_id) = &config.builder_id {
     if !builder_id.is_empty() {
-      let builder = super::get_check_permissions::<Builder>(builder_id, user, PermissionLevel::Read)
-        .await
-        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+      let builder = super::get_check_permissions::<Builder>(
+        builder_id,
+        user,
+        PermissionLevel::Read,
+      )
+      .await
+      .context("Cannot attach Build to this Builder")?;
       config.builder_id = Some(builder.id)
     }
   }

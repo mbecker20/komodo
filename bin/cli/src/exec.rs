@@ -132,6 +132,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::DeployStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::DeployStackIfChanged(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::StartStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -271,6 +274,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       komodo_client().execute(request).await
     }
     Execution::DeployStack(request) => {
+      komodo_client().execute(request).await
+    }
+    Execution::DeployStackIfChanged(request) => {
       komodo_client().execute(request).await
     }
     Execution::StartStack(request) => {

@@ -8,7 +8,10 @@ import { useEditPermissions } from "@pages/resource";
 import { ConfirmUpdate } from "@components/config/util";
 import { useWrite } from "@lib/hooks";
 import { Button } from "@ui/button";
-import { History } from "lucide-react";
+import { FilePlus, History } from "lucide-react";
+import { useToast } from "@ui/use-toast";
+import { ConfirmButton } from "@components/util";
+import { DEFAULT_STACK_FILE_CONTENTS } from "./config";
 
 export const StackInfo = ({
   id,
@@ -19,7 +22,15 @@ export const StackInfo = ({
 }) => {
   const [edits, setEdits] = useState<Record<string, string | undefined>>({});
   const { canWrite } = useEditPermissions({ type: "Stack", id });
-  const { mutateAsync } = useWrite("WriteStackFileContents");
+  const { toast } = useToast();
+  const { mutateAsync, isPending } = useWrite("WriteStackFileContents", {
+    onSuccess: (res) => {
+      toast({
+        title: res.success ? "Contents written." : "Failed to write contents.",
+        variant: res.success ? undefined : "destructive",
+      });
+    },
+  });
 
   const stack = useFullStack(id);
   // const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
@@ -27,8 +38,9 @@ export const StackInfo = ({
   //   state
   // );
 
-  const file_on_host = stack?.config?.files_on_host;
-  const canEdit = canWrite && file_on_host;
+  const file_on_host = stack?.config?.files_on_host ?? false;
+  const git_repo = stack?.config?.repo ? true : false;
+  const canEdit = canWrite && (file_on_host || git_repo);
   const editFileCallback = (path: string) => (contents: string) =>
     setEdits({ ...edits, [path]: contents });
 
@@ -58,28 +70,47 @@ export const StackInfo = ({
   // }
 
   const latest_contents = stack?.info?.remote_contents;
+  const latest_errors = stack?.info?.remote_errors;
 
   return (
     <Section titleOther={titleOther}>
-      {/* ERRORS */}
-      {stack?.info?.remote_errors && stack?.info?.remote_errors.length > 0 && (
-        <Card>
-          <CardHeader className="flex flex-col gap-2">
-            remote errors:{" "}
-            {stack?.info?.remote_errors?.map((content, i) => (
-              <pre key={i} className="flex flex-col gap-2">
-                path: {content.path}
-                <pre
-                  dangerouslySetInnerHTML={{
-                    __html: updateLogToHtml(content.contents),
+      {/* Errors */}
+      {latest_errors &&
+        latest_errors.length > 0 &&
+        latest_errors.map((error) => (
+          <Card key={error.path} className="flex flex-col gap-4">
+            <CardHeader className="flex flex-row justify-between items-center pb-0">
+              <div className="font-mono flex gap-2">
+                <div className="text-muted-foreground">Path:</div>
+                {error.path}
+              </div>
+              {canEdit && (
+                <ConfirmButton
+                  title="Init File"
+                  icon={<FilePlus className="w-4 h-4" />}
+                  onClick={() => {
+                    if (stack) {
+                      mutateAsync({
+                        stack: stack.name,
+                        file_path: error.path,
+                        contents: DEFAULT_STACK_FILE_CONTENTS,
+                      });
+                    }
                   }}
-                  className="max-h-[500px] overflow-y-auto"
+                  loading={isPending}
                 />
-              </pre>
-            ))}
-          </CardHeader>
-        </Card>
-      )}
+              )}
+            </CardHeader>
+            <CardContent className="pr-8">
+              <pre
+                dangerouslySetInnerHTML={{
+                  __html: updateLogToHtml(error.contents),
+                }}
+                className="max-h-[500px] overflow-y-auto"
+              />
+            </CardContent>
+          </Card>
+        ))}
 
       {/* Update deployed contents with diff */}
       {/* {!is_down && deployed_contents.length > 0 && (
@@ -158,9 +189,12 @@ export const StackInfo = ({
       {latest_contents &&
         latest_contents.length > 0 &&
         latest_contents.map((content) => (
-          <Card key={content.path} className="flex flex-col gap-2">
+          <Card key={content.path} className="flex flex-col gap-4">
             <CardHeader className="flex flex-row justify-between items-center pb-0">
-              <div className="font-mono">{content.path}</div>
+              <div className="font-mono flex gap-2">
+                <div className="text-muted-foreground">File:</div>
+                {content.path}
+              </div>
               {canEdit && (
                 <div className="flex items-center gap-2">
                   <Button
@@ -177,9 +211,9 @@ export const StackInfo = ({
                   <ConfirmUpdate
                     previous={{ contents: content.contents }}
                     content={{ contents: edits[content.path] }}
-                    onConfirm={() => {
+                    onConfirm={async () => {
                       if (stack) {
-                        mutateAsync({
+                        return await mutateAsync({
                           stack: stack.name,
                           file_path: content.path,
                           contents: edits[content.path]!,
@@ -190,6 +224,7 @@ export const StackInfo = ({
                     }}
                     disabled={!edits[content.path]}
                     language="yaml"
+                    loading={isPending}
                   />
                 </div>
               )}

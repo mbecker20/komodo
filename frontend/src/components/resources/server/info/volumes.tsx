@@ -16,7 +16,7 @@ export const Volumes = ({
   setShow: (show: boolean) => void;
 }) => {
   const volumes =
-    useRead("ListDockerVolumes", { server: id }, { refetchInterval: 5000 })
+    useRead("ListDockerVolumes", { server: id }, { refetchInterval: 10_000 })
       .data ?? [];
 
   const allInUse = volumes.every((volume) => volume.in_use);

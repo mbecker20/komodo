@@ -197,7 +197,7 @@ pub struct __Serror {
 pub struct SystemCommand {
   #[serde(default)]
   pub path: String,
-  #[serde(default)]
+  #[serde(default, deserialize_with = "file_contents_deserializer")]
   pub command: String,
 }
 
@@ -949,6 +949,7 @@ pub enum Operation {
   CreateResourceSync,
   UpdateResourceSync,
   DeleteResourceSync,
+  WriteSyncContents,
   CommitSync,
   RunSync,
 
@@ -1204,8 +1205,8 @@ impl<'de> Visitor<'de> for FileContentsVisitor {
   where
     E: serde::de::Error,
   {
-    let out = v.to_string();
-    if out.is_empty() || out.ends_with('\n') {
+    let out = v.trim_end().to_string();
+    if out.is_empty() {
       Ok(out)
     } else {
       Ok(out + "\n")

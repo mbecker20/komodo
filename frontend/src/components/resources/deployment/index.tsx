@@ -28,12 +28,12 @@ import { ResourcePageHeader, StatusBadge } from "@components/util";
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
 export const useDeployment = (id?: string) =>
-  useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
+  useRead("ListDeployments", {}, { refetchInterval: 10_000 }).data?.find(
     (d) => d.id === id
   );
 
 export const useFullDeployment = (id: string) =>
-  useRead("GetDeployment", { deployment: id }, { refetchInterval: 5000 }).data;
+  useRead("GetDeployment", { deployment: id }, { refetchInterval: 10_000 }).data;
 
 const ConfigOrLog = ({ id }: { id: string }) => {
   // const [view, setView] = useAtom(configOrLog);

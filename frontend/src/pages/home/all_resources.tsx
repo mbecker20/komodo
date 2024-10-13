@@ -51,14 +51,16 @@ export const AllResources = () => {
           </p>
         </div>
       )}
-      {Object.entries(ResourceComponents).map(([type, Components]) => (
-        <TableSection
-          key={type}
-          type={type}
-          Components={Components}
-          search={search}
-        />
-      ))}
+      <div className="flex flex-col gap-6">
+        {Object.entries(ResourceComponents).map(([type, Components]) => (
+          <TableSection
+            key={type}
+            type={type}
+            Components={Components}
+            search={search}
+          />
+        ))}
+      </div>
     </Page>
   );
 };
@@ -92,7 +94,7 @@ const TableSection = ({
       icon={<Components.Icon />}
       actions={<ShowHideButton show={show} setShow={setShow} />}
     >
-      <div className={cn("border-b", show && "pb-16")}>
+      <div className={cn("border-b", show && "pb-8")}>
         {show && <Components.Table resources={filtered ?? []} />}
       </div>
     </Section>

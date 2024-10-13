@@ -144,6 +144,9 @@ pub fn core_config() -> &'static CoreConfig {
       jwt_ttl: env
         .komodo_jwt_ttl
         .unwrap_or(config.jwt_ttl),
+      sync_directory: env
+        .komodo_sync_directory
+        .unwrap_or(config.sync_directory),
       repo_directory: env
         .komodo_repo_directory
         .unwrap_or(config.repo_directory),
