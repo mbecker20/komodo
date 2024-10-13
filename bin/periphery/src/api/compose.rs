@@ -259,6 +259,7 @@ impl Resolve<WriteCommitComposeContents> for State {
     &self,
     WriteCommitComposeContents {
       stack,
+      username,
       file_path,
       contents,
       git_token,
@@ -326,18 +327,18 @@ impl Resolve<WriteCommitComposeContents> for State {
       .context("Run directory is not a valid path")?
       .join(&file_path);
 
+    let msg = if let Some(username) = username {
+      format!("{}: Write Compose File", username)
+    } else {
+      "Write Compose File".to_string()
+    };
+
     let GitRes {
       logs,
       hash,
       message,
       ..
-    } = write_commit_file(
-      "Write Compose File",
-      &root,
-      &file_path,
-      &contents,
-    )
-    .await?;
+    } = write_commit_file(&msg, &root, &file_path, &contents).await?;
 
     Ok(RepoActionResponse {
       logs,

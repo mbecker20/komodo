@@ -190,7 +190,7 @@ impl Resolve<WriteSyncFileContents, User> for State {
     }
 
     let commit_res = git::commit_file(
-      "Commit Resource File",
+      &format!("{}: Commit Resource File", user.username),
       &root,
       &resource_path.join(&file_path),
     )
