@@ -18,7 +18,7 @@ use komodo_client::{
     toml::ResourceToml,
     update::Log,
     user::sync_user,
-    ResourceTarget,
+    FileContents, ResourceTarget,
   },
 };
 use resolver_api::Resolve;
@@ -541,7 +541,45 @@ fn build_cache_for_stack<'a>(
       StackState::Running => {
         // Here can diff the changes, to see if they merit a redeploy.
 
-        // First merge toml resource config (partial) onto default resource config.
+        // See if any remote contents don't match deployed contents
+        match (
+          &original.info.deployed_contents,
+          &original.info.remote_contents,
+        ) {
+          (Some(deployed_contents), Some(remote_contents)) => {
+            for FileContents { path, contents } in remote_contents {
+              if let Some(deployed) =
+                deployed_contents.iter().find(|c| &c.path == path)
+              {
+                if &deployed.contents != contents {
+                  cache.insert(
+                    target,
+                    Some((
+                      format!(
+                        "File contents for {path} have changed"
+                      ),
+                      after,
+                    )),
+                  );
+                  return Ok(());
+                }
+              } else {
+                cache.insert(
+                  target,
+                  Some((
+                    format!("New file contents at {path}"),
+                    after,
+                  )),
+                );
+                return Ok(());
+              }
+            }
+          }
+          // Maybe should handle other cases
+          _ => {}
+        }
+
+        // Merge toml resource config (partial) onto default resource config.
         // Makes sure things that aren't defined in toml (come through as None) actually get removed.
         let config: StackConfig = stack.config.clone().into();
         let mut config: PartialStackConfig = config.into();
