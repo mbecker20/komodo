@@ -225,9 +225,11 @@ impl Resolve<CommitSync, User> for State {
     >(&sync, &user, PermissionLevel::Write)
     .await?;
 
+    let file_contents_empty = sync.config.file_contents_empty();
+
     let fresh_sync = !sync.config.files_on_host
-      && sync.config.file_contents.is_empty()
-      && sync.config.repo.is_empty();
+      && sync.config.repo.is_empty()
+      && file_contents_empty;
 
     if !sync.config.managed && !fresh_sync {
       return Err(anyhow!(
@@ -235,21 +237,30 @@ impl Resolve<CommitSync, User> for State {
       ));
     }
 
-    let resource_path = sync
-      .config
-      .resource_path
-      .first()
-      .context("Sync does not have resource path configured.")?
-      .parse::<PathBuf>()
-      .context("Invalid resource path")?;
+    // Get this here so it can fail before update created.
+    let resource_path =
+      if sync.config.files_on_host || !sync.config.repo.is_empty() {
+        let resource_path = sync
+          .config
+          .resource_path
+          .first()
+          .context("Sync does not have resource path configured.")?
+          .parse::<PathBuf>()
+          .context("Invalid resource path")?;
 
-    if resource_path
-      .extension()
-      .context("Resource path missing '.toml' extension")?
-      != "toml"
-    {
-      return Err(anyhow!("Resource path missing '.toml' extension"));
-    }
+        if resource_path
+          .extension()
+          .context("Resource path missing '.toml' extension")?
+          != "toml"
+        {
+          return Err(anyhow!(
+            "Resource path missing '.toml' extension"
+          ));
+        }
+        Some(resource_path)
+      } else {
+        None
+      };
 
     let res = State
       .resolve(
@@ -266,6 +277,10 @@ impl Resolve<CommitSync, User> for State {
     update.logs.push(Log::simple("Resources", res.toml.clone()));
 
     if sync.config.files_on_host {
+      let Some(resource_path) = resource_path else {
+        // Resource path checked above for files_on_host mode.
+        unreachable!()
+      };
       let file_path = core_config()
         .sync_directory
         .join(to_komodo_name(&sync.name))
@@ -293,6 +308,10 @@ impl Resolve<CommitSync, User> for State {
         );
       }
     } else if !sync.config.repo.is_empty() {
+      let Some(resource_path) = resource_path else {
+        // Resource path checked above for repo mode.
+        unreachable!()
+      };
       // GIT REPO
       let args: CloneArgs = (&sync).into();
       let root = args.unique_path(&core_config().repo_directory)?;

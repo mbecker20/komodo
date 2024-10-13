@@ -1,6 +1,6 @@
 import { ActionButton, ActionWithDialog } from "@components/util";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { sync_no_changes } from "@lib/utils";
+import { file_contents_empty, sync_no_changes } from "@lib/utils";
 import { useEditPermissions } from "@pages/resource";
 import { NotebookPen, RefreshCcw, SquarePlay } from "lucide-react";
 import { useFullResourceSync } from ".";
@@ -68,7 +68,7 @@ export const CommitSync = ({ id }: { id: string }) => {
 
   const freshSync =
     !sync.config?.files_on_host &&
-    !sync.config?.file_contents &&
+    file_contents_empty(sync.config?.file_contents) &&
     !sync.config?.repo;
 
   if (!freshSync && (!sync.config?.managed || sync_no_changes(sync))) {
@@ -97,6 +97,4 @@ export const CommitSync = ({ id }: { id: string }) => {
       />
     );
   }
-
-  
 };

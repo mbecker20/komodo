@@ -16,7 +16,7 @@ use resolver_api::Resolve;
 use tokio::sync::Mutex;
 
 use crate::{
-  api::{execute::ExecuteRequest, write::WriteRequest},
+  api::execute::ExecuteRequest,
   state::{db_client, State},
 };
 

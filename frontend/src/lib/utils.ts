@@ -253,3 +253,14 @@ export const extract_registry_domain = (image_name: string) => {
     return "docker.io";
   }
 };
+
+/** Checks file contents empty, not including whitespace / comments */
+export const file_contents_empty = (contents?: string) => {
+  if (!contents) return true;
+  return (
+    contents
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length !== 0 && !line.startsWith("#")).length === 0
+  );
+};

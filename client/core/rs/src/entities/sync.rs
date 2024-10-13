@@ -265,6 +265,17 @@ impl ResourceSyncConfig {
   pub fn builder() -> ResourceSyncConfigBuilder {
     ResourceSyncConfigBuilder::default()
   }
+
+  /// Checks for empty file contents, ignoring whitespace / comments.
+  pub fn file_contents_empty(&self) -> bool {
+    self
+      .file_contents
+      .split('\n')
+      .map(str::trim)
+      .filter(|line| !line.is_empty() && !line.starts_with('#'))
+      .count()
+      == 0
+  }
 }
 
 fn default_git_provider() -> String {

@@ -383,7 +383,7 @@ pub async fn list_for_user<T: KomodoResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
 ) -> anyhow::Result<Vec<T::ListItem>> {
-  validate_resource_query_tags(&mut query).await;
+  validate_resource_query_tags(&mut query).await?;
   let mut filters = Document::new();
   query.add_filters(&mut filters);
   list_for_user_using_document::<T>(filters, user).await
@@ -405,7 +405,7 @@ pub async fn list_full_for_user<T: KomodoResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
-  validate_resource_query_tags(&mut query).await;
+  validate_resource_query_tags(&mut query).await?;
   let mut filters = Document::new();
   query.add_filters(&mut filters);
   list_full_for_user_using_document::<T>(filters, user).await
@@ -797,10 +797,14 @@ pub async fn validate_resource_query_tags<
   T: Default + std::fmt::Debug,
 >(
   query: &mut ResourceQuery<T>,
-) {
+) -> anyhow::Result<()> {
   let futures = query.tags.iter().map(|tag| get_tag(tag));
-  let res = join_all(futures).await;
-  query.tags = res.into_iter().flatten().map(|tag| tag.id).collect();
+  let res = join_all(futures)
+    .await
+    .into_iter()
+    .collect::<anyhow::Result<Vec<_>>>()?;
+  query.tags = res.into_iter().map(|tag| tag.id).collect();
+  Ok(())
 }
 
 #[instrument]
