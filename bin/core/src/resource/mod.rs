@@ -37,8 +37,8 @@ use crate::{
   helpers::{
     create_permission, flatten_document,
     query::{
-      get_all_tags, get_id_to_tags, get_tag, get_user_user_groups,
-      id_or_name_filter, user_target_query,
+      get_tag, get_user_user_groups, id_or_name_filter,
+      user_target_query,
     },
     update::{add_update, make_update},
   },

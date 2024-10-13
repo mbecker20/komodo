@@ -150,7 +150,7 @@ fn read_resource_file(
   log.push('\n');
   let path_for_view =
     if let Some(resource_path) = resource_path.as_ref() {
-      resource_path.join(&file_path)
+      resource_path.join(file_path)
     } else {
       file_path.to_path_buf()
     };
@@ -180,7 +180,7 @@ fn read_resources_directory(
   file_errors: &mut Vec<SyncFileContents>,
 ) -> anyhow::Result<()> {
   let full_resource_path = root_path.join(resource_path);
-  let full_path = full_resource_path.join(&curr_path);
+  let full_path = full_resource_path.join(curr_path);
   let directory = fs::read_dir(&full_path).with_context(|| {
     format!("Failed to read directory contents at {full_path:?}")
   })?;

@@ -23,7 +23,6 @@ import {
 } from "@ui/select";
 import { filterBySplit } from "@lib/utils";
 import { Button } from "@ui/button";
-import { TagsFilterTags } from "@components/tags";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   Command,
@@ -33,7 +32,6 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
-import { Badge } from "@ui/badge";
 
 type SyncMode = "UI Defined" | "Files On Server" | "Git Repo" | undefined;
 const SYNC_MODES: SyncMode[] = ["UI Defined", "Files On Server", "Git Repo"];
