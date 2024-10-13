@@ -235,6 +235,8 @@ impl Resolve<CommitSync, User> for State {
       ));
     }
 
+    
+
     let resource_path = sync
       .config
       .resource_path
