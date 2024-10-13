@@ -1,8 +1,11 @@
 use anyhow::{anyhow, Context};
 use git::GitRes;
 use komodo_client::entities::{
-  sync::ResourceSync, to_komodo_name, toml::ResourcesToml,
-  update::Log, CloneArgs, FileContents,
+  sync::{ResourceSync, SyncFileContents},
+  to_komodo_name,
+  toml::ResourcesToml,
+  update::Log,
+  CloneArgs,
 };
 
 use crate::{config::core_config, helpers::git_token};
@@ -11,8 +14,8 @@ use super::file::extend_resources;
 
 pub struct RemoteResources {
   pub resources: anyhow::Result<ResourcesToml>,
-  pub files: Vec<FileContents>,
-  pub file_errors: Vec<FileContents>,
+  pub files: Vec<SyncFileContents>,
+  pub file_errors: Vec<SyncFileContents>,
   pub logs: Vec<Log>,
   pub hash: Option<String>,
   pub message: Option<String>,
@@ -69,7 +72,8 @@ pub async fn get_remote_resources(
 
     return Ok(RemoteResources {
       resources,
-      files: vec![FileContents {
+      files: vec![SyncFileContents {
+        resource_path: String::new(),
         path: "database file".to_string(),
         contents: sync.config.file_contents.clone(),
       }],

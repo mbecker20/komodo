@@ -103,7 +103,7 @@ export const ResourceSyncPending = ({
                       resource_type: update.target.type,
                       resources: [
                         update.data.type === "Create"
-                          ? update.data.data.name
+                          ? update.data.data.name!
                           : update.target.id,
                       ],
                     })

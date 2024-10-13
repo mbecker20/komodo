@@ -213,7 +213,7 @@ async fn validate_config(
         PermissionLevel::Write,
       )
       .await
-      .context("Cannot attach Repo to this Server.")?;
+      .context("Cannot attach Repo to this Server")?;
       config.server_id = Some(server.id);
     }
   }
@@ -225,7 +225,7 @@ async fn validate_config(
         PermissionLevel::Read,
       )
       .await
-      .context("Cannot attach Repo to this Builder.")?;
+      .context("Cannot attach Repo to this Builder")?;
       config.builder_id = Some(builder.id);
     }
   }

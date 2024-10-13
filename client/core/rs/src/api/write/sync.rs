@@ -110,7 +110,10 @@ pub struct WriteSyncFileContents {
   /// The name or id of the target Sync.
   #[serde(alias = "id", alias = "name")]
   pub sync: String,
-  /// The file path relative to the sync resource path, or absolute.
+  /// If this file was under a resource folder, this will be the folder.
+  /// Otherwise, it should be empty string.
+  pub resource_path: String,
+  /// The file path relative to the resource path.
   pub file_path: String,
   /// The contents to write.
   pub contents: String,

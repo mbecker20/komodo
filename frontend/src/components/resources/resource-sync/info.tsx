@@ -49,8 +49,19 @@ export const ResourceSyncInfo = ({
           <Card key={error.path} className="flex flex-col gap-4">
             <CardHeader className="flex flex-row justify-between items-center pb-0">
               <div className="font-mono flex gap-2">
-                <div className="text-muted-foreground">Path:</div>
-                {error.path}
+                {error.resource_path && (
+                  <>
+                    <div className="flex gap-2">
+                      <div className="text-muted-foreground">Folder:</div>
+                      {error.resource_path}
+                    </div>
+                    <div className="text-muted-foreground">|</div>
+                  </>
+                )}
+                <div className="flex gap-2">
+                  <div className="text-muted-foreground">Path:</div>
+                  {error.path}
+                </div>
               </div>
               {canEdit && (
                 <ConfirmButton
@@ -60,6 +71,7 @@ export const ResourceSyncInfo = ({
                     if (sync) {
                       mutateAsync({
                         sync: sync.name,
+                        resource_path: error.resource_path ?? "",
                         file_path: error.path,
                         contents: "## Add resources to get started\n",
                       });
@@ -85,9 +97,20 @@ export const ResourceSyncInfo = ({
         latest_contents.map((content) => (
           <Card key={content.path} className="flex flex-col gap-4">
             <CardHeader className="flex flex-row justify-between items-center pb-0">
-              <div className="font-mono flex gap-2">
-                <div className="text-muted-foreground">Path:</div>
-                {content.path}
+              <div className="font-mono flex gap-4">
+                {content.resource_path && (
+                  <>
+                    <div className="flex gap-2">
+                      <div className="text-muted-foreground">Folder:</div>
+                      {content.resource_path}
+                    </div>
+                    <div className="text-muted-foreground">|</div>
+                  </>
+                )}
+                <div className="flex gap-2">
+                  <div className="text-muted-foreground">File:</div>
+                  {content.path}
+                </div>
               </div>
               {canEdit && (
                 <div className="flex items-center gap-2">
@@ -109,6 +132,7 @@ export const ResourceSyncInfo = ({
                       if (sync) {
                         mutateAsync({
                           sync: sync.name,
+                          resource_path: content.resource_path ?? "",
                           file_path: content.path,
                           contents: edits[content.path]!,
                         }).then(() =>

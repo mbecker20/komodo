@@ -186,7 +186,7 @@ async fn validate_config(
         PermissionLevel::Read,
       )
       .await
-      .context("Cannot attach Build to this Builder.")?;
+      .context("Cannot attach Build to this Builder")?;
       config.builder_id = Some(builder.id)
     }
   }

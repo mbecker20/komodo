@@ -111,6 +111,7 @@ impl Resolve<WriteSyncFileContents, User> for State {
     &self,
     WriteSyncFileContents {
       sync,
+      resource_path,
       file_path,
       contents,
     }: WriteSyncFileContents,
@@ -142,17 +143,12 @@ impl Resolve<WriteSyncFileContents, User> for State {
       let clone_args: CloneArgs = (&sync).into();
       clone_args.unique_path(&core_config().repo_directory)?
     };
-    let file_path = if sync.config.resource_path.ends_with(".toml") {
-      file_path.parse().context("Invalid file path")?
-    } else {
-      sync
-        .config
-        .resource_path
-        .parse::<PathBuf>()
-        .context("Resource path invalid")?
-        .join(&file_path)
-    };
-    let full_path = root.join(&file_path);
+    let file_path =
+      file_path.parse::<PathBuf>().context("Invalid file path")?;
+    let resource_path = resource_path
+      .parse::<PathBuf>()
+      .context("Invalid resource path")?;
+    let full_path = root.join(&resource_path).join(&file_path);
 
     if let Some(parent) = full_path.parent() {
       let _ = fs::create_dir_all(parent).await;
@@ -193,11 +189,14 @@ impl Resolve<WriteSyncFileContents, User> for State {
       return Ok(update);
     }
 
-    update.logs.extend(
-      git::commit_file("Update Resource File", &root, &file_path)
-        .await
-        .logs,
-    );
+    let commit_res = git::commit_file(
+      "Commit Resource File",
+      &root,
+      &resource_path.join(&file_path),
+    )
+    .await;
+
+    update.logs.extend(commit_res.logs);
 
     if let Err(e) = State
       .resolve(RefreshResourceSyncPending { sync: sync.name }, user)
@@ -236,6 +235,22 @@ impl Resolve<CommitSync, User> for State {
       ));
     }
 
+    let resource_path = sync
+      .config
+      .resource_path
+      .first()
+      .context("Sync does not have resource path configured.")?
+      .parse::<PathBuf>()
+      .context("Invalid resource path")?;
+
+    if resource_path
+      .extension()
+      .context("Resource path missing '.toml' extension")?
+      != "toml"
+    {
+      return Err(anyhow!("Resource path missing '.toml' extension"));
+    }
+
     let res = State
       .resolve(
         ExportAllResourcesToToml {
@@ -254,13 +269,7 @@ impl Resolve<CommitSync, User> for State {
       let file_path = core_config()
         .sync_directory
         .join(to_komodo_name(&sync.name))
-        .join(&sync.config.resource_path);
-      let extension = file_path
-        .extension()
-        .context("Resource path missing '.toml' extension")?;
-      if extension != "toml" {
-        return Err(anyhow!("Wrong file extension. Expected '.toml', got '.{extension:?}'"));
-      }
+        .join(&resource_path);
       if let Some(parent) = file_path.parent() {
         let _ = tokio::fs::create_dir_all(&parent).await;
       };
@@ -285,17 +294,6 @@ impl Resolve<CommitSync, User> for State {
       }
     } else if !sync.config.repo.is_empty() {
       // GIT REPO
-      let resource_path = sync
-        .config
-        .resource_path
-        .parse::<PathBuf>()
-        .context("Invalid resource path")?;
-      let extension = resource_path
-        .extension()
-        .context("Resource path missing '.toml' extension")?;
-      if extension != "toml" {
-        return Err(anyhow!("Wrong file extension. Expected '.toml', got '.{extension:?}'"));
-      }
       let args: CloneArgs = (&sync).into();
       let root = args.unique_path(&core_config().repo_directory)?;
       match git::write_commit_file(

@@ -2653,7 +2653,7 @@ export interface ResourceSyncConfig {
 	 * Can be a specific file, or a directory containing multiple files / folders.
 	 * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
 	 */
-	resource_path?: string;
+	resource_path?: string[];
 	/**
 	 * Enable "pushes" to the file,
 	 * which exports resources matching tags to single file.
@@ -2680,7 +2680,7 @@ export type DiffData =
 	/** Resource will be created */
 	| { type: "Create", data: {
 	/** The name of resource to create */
-	name: string;
+	name?: string;
 	/** The proposed resource to create in TOML */
 	proposed: string;
 }}
@@ -2712,6 +2712,15 @@ export interface SyncDeployUpdate {
 	log: string;
 }
 
+export interface SyncFileContents {
+	/** The base resource path. */
+	resource_path?: string;
+	/** The path of the file / error path relative to the resource path. */
+	path: string;
+	/** The contents of the file */
+	contents: string;
+}
+
 export interface ResourceSyncInfo {
 	/** Unix timestamp of last applied sync */
 	last_sync_ts?: I64;
@@ -2734,9 +2743,9 @@ export interface ResourceSyncInfo {
 	/** The commit message which produced these pending updates. */
 	pending_message?: string;
 	/** The current sync files */
-	remote_contents?: FileContents[];
+	remote_contents?: SyncFileContents[];
 	/** Any read errors in files by path */
-	remote_errors?: FileContents[];
+	remote_errors?: SyncFileContents[];
 }
 
 export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
@@ -2765,8 +2774,8 @@ export interface ResourceSyncListItemInfo {
 	file_contents: boolean;
 	/** Whether sync has `managed` mode enabled. */
 	managed: boolean;
-	/** Resource path to the files. */
-	resource_path: string;
+	/** Resource paths to the files. */
+	resource_path: string[];
 	/** The git provider domain. */
 	git_provider: string;
 	/** The Github repo used as the source of the sync resources */
@@ -6050,7 +6059,12 @@ export interface RefreshResourceSyncPending {
 export interface WriteSyncFileContents {
 	/** The name or id of the target Sync. */
 	sync: string;
-	/** The file path relative to the sync resource path, or absolute. */
+	/**
+	 * If this file was under a resource folder, this will be the folder.
+	 * Otherwise, it should be empty string.
+	 */
+	resource_path: string;
+	/** The file path relative to the resource path. */
 	file_path: string;
 	/** The contents to write. */
 	contents: string;

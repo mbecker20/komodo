@@ -4,109 +4,198 @@ use std::{
 };
 
 use anyhow::{anyhow, Context};
-use formatting::{colored, format_serror, muted, Color};
+use formatting::{bold, colored, format_serror, muted, Color};
 use komodo_client::entities::{
+  sync::SyncFileContents,
   toml::{ResourceToml, ResourcesToml},
   update::Log,
-  FileContents,
 };
 
 pub fn read_resources(
   root_path: &Path,
-  resource_path: &str,
+  resource_path: &[String],
   match_tags: &[String],
   logs: &mut Vec<Log>,
-  files: &mut Vec<FileContents>,
-  file_errors: &mut Vec<FileContents>,
+  files: &mut Vec<SyncFileContents>,
+  file_errors: &mut Vec<SyncFileContents>,
 ) -> anyhow::Result<ResourcesToml> {
-  let resource_path = resource_path
-    .parse::<PathBuf>()
-    .context("Invalid resource path")?;
-  let full_path = root_path
-    .join(&resource_path)
-    .components()
-    .collect::<PathBuf>();
-  let mut res = ResourcesToml::default();
-  let mut log = format!(
-    "{}: reading resources from {full_path:?}",
-    muted("INFO")
-  );
-  if let Err(e) = read_resources_recursive(
-    root_path,
-    &resource_path,
-    match_tags,
-    &mut res,
-    &mut log,
-    files,
-    file_errors,
-  )
-  .with_context(|| {
-    format!("failed to read resources from {full_path:?}")
-  }) {
-    file_errors.push(FileContents {
-      path: resource_path.display().to_string(),
-      contents: format_serror(&e.into()),
-    });
-    logs.push(Log::error("read remote resources", log));
-  } else {
-    logs.push(Log::simple("read remote resources", log));
-  };
-  Ok(res)
+  let mut resources = ResourcesToml::default();
+
+  for resource_path in resource_path {
+    let resource_path = resource_path
+      .parse::<PathBuf>()
+      .context("Invalid resource path")?;
+    let full_path = root_path
+      .join(&resource_path)
+      .components()
+      .collect::<PathBuf>();
+
+    let mut log = format!(
+      "{}: reading resources from {full_path:?}",
+      muted("INFO")
+    );
+
+    if full_path.is_file() {
+      if let Err(e) = read_resource_file(
+        root_path,
+        None,
+        &resource_path,
+        match_tags,
+        &mut resources,
+        &mut log,
+        files,
+      )
+      .with_context(|| {
+        format!("failed to read resources from {full_path:?}")
+      }) {
+        file_errors.push(SyncFileContents {
+          resource_path: String::new(),
+          path: resource_path.display().to_string(),
+          contents: format_serror(&e.into()),
+        });
+        logs.push(Log::error("Read remote resources", log));
+      } else {
+        logs.push(Log::simple("Read remote resources", log));
+      };
+    } else if full_path.is_dir() {
+      if let Err(e) = read_resources_directory(
+        root_path,
+        &resource_path,
+        &PathBuf::new(),
+        match_tags,
+        &mut resources,
+        &mut log,
+        files,
+        file_errors,
+      )
+      .with_context(|| {
+        format!("Failed to read resources from {full_path:?}")
+      }) {
+        file_errors.push(SyncFileContents {
+          resource_path: String::new(),
+          path: resource_path.display().to_string(),
+          contents: format_serror(&e.into()),
+        });
+        logs.push(Log::error("Read remote resources", log));
+      } else {
+        logs.push(Log::simple("Read remote resources", log));
+      };
+    } else {
+      log.push_str(&format!(
+        "{}: Resoure path {} is neither a file nor a directory.",
+        colored("WARN", Color::Red),
+        bold(resource_path.display())
+      ));
+      logs.push(Log::error("Read remote resources", log));
+    }
+  }
+
+  Ok(resources)
 }
 
-fn read_resources_recursive(
+/// Use when incoming resource path is a file.
+fn read_resource_file(
   root_path: &Path,
   // relative to root path.
-  resource_path: &Path,
+  resource_path: Option<&Path>,
+  // relative to resource path if provided, or root path.
+  file_path: &Path,
   match_tags: &[String],
   resources: &mut ResourcesToml,
   log: &mut String,
-  files: &mut Vec<FileContents>,
-  file_errors: &mut Vec<FileContents>,
+  files: &mut Vec<SyncFileContents>,
 ) -> anyhow::Result<()> {
-  let full_path = root_path.join(resource_path);
-  let metadata = fs::metadata(&full_path)
-    .context("failed to get path metadata")?;
-  if metadata.is_file() {
-    if !full_path
-      .extension()
-      .map(|ext| ext == "toml")
-      .unwrap_or_default()
-    {
-      return Ok(());
-    }
-    let contents = std::fs::read_to_string(&full_path)
-      .context("failed to read file contents")?;
+  let full_path = if let Some(resource_path) = resource_path {
+    root_path.join(resource_path).join(file_path)
+  } else {
+    root_path.join(file_path)
+  };
+  if !full_path
+    .extension()
+    .map(|ext| ext == "toml")
+    .unwrap_or_default()
+  {
+    return Ok(());
+  }
+  let contents = std::fs::read_to_string(&full_path)
+    .context("failed to read file contents")?;
 
-    files.push(FileContents {
-      path: resource_path.display().to_string(),
-      contents: contents.clone(),
-    });
-    let more = toml::from_str::<ResourcesToml>(&contents)
-      // the error without this comes through with multiple lines (\n) and looks bad
-      .map_err(|e| anyhow!("{e:#}"))
-      .context("failed to parse resource file contents")?;
+  files.push(SyncFileContents {
+    resource_path: resource_path
+      .map(|path| path.display().to_string())
+      .unwrap_or_default(),
+    path: file_path.display().to_string(),
+    contents: contents.clone(),
+  });
+  let more = toml::from_str::<ResourcesToml>(&contents)
+    // the error without this comes through with multiple lines (\n) and looks bad
+    .map_err(|e| anyhow!("{e:#}"))
+    .context("failed to parse resource file contents")?;
+  log.push('\n');
+  let path_for_view =
+    if let Some(resource_path) = resource_path.as_ref() {
+      resource_path.join(&file_path)
+    } else {
+      file_path.to_path_buf()
+    };
+  log.push_str(&format!(
+    "{}: {} from {}",
+    muted("INFO"),
+    colored("adding resources", Color::Green),
+    colored(path_for_view.display(), Color::Blue)
+  ));
 
-    log.push('\n');
-    log.push_str(&format!(
-      "{}: {} from {}",
-      muted("INFO"),
-      colored("adding resources", Color::Green),
-      colored(resource_path.display(), Color::Blue)
-    ));
+  extend_resources(resources, more, match_tags);
 
-    extend_resources(resources, more, match_tags);
+  Ok(())
+}
 
-    Ok(())
-  } else if metadata.is_dir() {
-    let directory = fs::read_dir(&full_path).with_context(|| {
-      format!("Failed to read directory contents at {full_path:?}")
-    })?;
-    for entry in directory.into_iter().flatten() {
-      let path = entry.path();
-      if let Err(e) = read_resources_recursive(
+/// Reads down into directories.
+fn read_resources_directory(
+  root_path: &Path,
+  // relative to root path.
+  resource_path: &Path,
+  // relative to resource path. start as empty path
+  curr_path: &Path,
+  match_tags: &[String],
+  resources: &mut ResourcesToml,
+  log: &mut String,
+  files: &mut Vec<SyncFileContents>,
+  file_errors: &mut Vec<SyncFileContents>,
+) -> anyhow::Result<()> {
+  let full_resource_path = root_path.join(resource_path);
+  let full_path = full_resource_path.join(&curr_path);
+  let directory = fs::read_dir(&full_path).with_context(|| {
+    format!("Failed to read directory contents at {full_path:?}")
+  })?;
+  for entry in directory.into_iter().flatten() {
+    let path = entry.path();
+    let curr_path =
+      path.strip_prefix(&full_resource_path).unwrap_or(&path);
+    if path.is_file() {
+      if let Err(e) = read_resource_file(
         root_path,
-        &path,
+        Some(resource_path),
+        curr_path,
+        match_tags,
+        resources,
+        log,
+        files,
+      )
+      .with_context(|| {
+        format!("failed to read resources from {full_path:?}")
+      }) {
+        file_errors.push(SyncFileContents {
+          resource_path: String::new(),
+          path: resource_path.display().to_string(),
+          contents: format_serror(&e.into()),
+        });
+      };
+    } else if path.is_dir() {
+      if let Err(e) = read_resources_directory(
+        root_path,
+        resource_path,
+        curr_path,
         match_tags,
         resources,
         log,
@@ -116,8 +205,9 @@ fn read_resources_recursive(
       .with_context(|| {
         format!("failed to read resources from {path:?}")
       }) {
-        file_errors.push(FileContents {
-          path: resource_path.display().to_string(),
+        file_errors.push(SyncFileContents {
+          resource_path: resource_path.display().to_string(),
+          path: curr_path.display().to_string(),
           contents: format_serror(&e.into()),
         });
         log.push('\n');
@@ -129,10 +219,8 @@ fn read_resources_recursive(
         ));
       }
     }
-    Ok(())
-  } else {
-    Err(anyhow!("resources path is neither file nor directory"))
   }
+  Ok(())
 }
 
 pub fn extend_resources(

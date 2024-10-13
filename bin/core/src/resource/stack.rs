@@ -307,7 +307,7 @@ async fn validate_config(
         PermissionLevel::Write,
       )
       .await
-      .context("Cannot attach stack to this Server.")?;
+      .context("Cannot attach stack to this Server")?;
       // in case it comes in as name
       config.server_id = Some(server.id);
     }

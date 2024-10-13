@@ -191,7 +191,7 @@ export const StackInfo = ({
           <Card key={content.path} className="flex flex-col gap-4">
             <CardHeader className="flex flex-row justify-between items-center pb-0">
               <div className="font-mono flex gap-2">
-                <div className="text-muted-foreground">Path:</div>
+                <div className="text-muted-foreground">File:</div>
                 {content.path}
               </div>
               {canEdit && (

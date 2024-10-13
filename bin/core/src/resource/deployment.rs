@@ -268,7 +268,7 @@ async fn validate_config(
         PermissionLevel::Write,
       )
       .await
-      .context("Cannot attach Deployment to this Server.")?;
+      .context("Cannot attach Deployment to this Server")?;
       config.server_id = Some(server.id);
     }
   }
