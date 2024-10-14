@@ -12,6 +12,9 @@
 //!   - X-Api-Secret: `your_api_secret`
 //!   - Use either Authorization *or* X-Api-Key and X-Api-Secret to authenticate requests.
 //! - Body: JSON specifying the request type (`type`) and the parameters (`params`).
+//! 
+//! You can create API keys for your user, or for a Service User with limited permissions,
+//! from the Komodo UI Settings page.
 //!
 //! To call the api, construct JSON bodies following
 //! the schemas given in [read], [mod@write], [execute], and so on.
@@ -28,6 +31,18 @@
 //!
 //! The request's parent module (eg. [read], [mod@write]) determines the http path which
 //! must be used for the requests. For example, requests under [read] are made using http path `/read`.
+//! 
+//! ## Curl Example
+//! 
+//! Putting it all together, here is an example `curl` for [write::UpdateBuild], to update the version:
+//! 
+//! ```text
+//! curl --header "Content-Type: application/json" \
+//! 	--header "X-Api-Key: your_api_key" \
+//! 	--header "X-Api-Secret: your_api_secret" \
+//! 	--data '{ "type": "UpdateBuild", "params": { "id": "67076689ed600cfdd52ac637", "config": { "version": "1.15.9" } } }' \
+//! 	https://komodo.example.com/write
+//! ```
 //!
 //! ## Modules
 //!

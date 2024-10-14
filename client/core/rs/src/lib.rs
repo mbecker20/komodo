@@ -35,9 +35,9 @@ use serde::Deserialize;
 pub mod api;
 pub mod busy;
 pub mod entities;
+pub mod parser;
 pub mod ws;
 
-mod parser;
 mod request;
 
 #[derive(Deserialize)]

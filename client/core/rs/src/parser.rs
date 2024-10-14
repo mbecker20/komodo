@@ -55,3 +55,44 @@ pub fn parse_key_value_list(
     })
     .collect::<anyhow::Result<Vec<_>>>()
 }
+
+/// Parses commands out of multiline string
+/// and chains them together with '&&'
+///
+/// Supports full line and end of line comments, and escaped newlines.
+///
+/// ## Example:
+/// ```sh
+/// # comments supported
+/// sh ./shell1.sh # end of line supported
+/// sh ./shell2.sh
+/// 
+/// # escaped newlines supported
+/// curl --header "Content-Type: application/json" \
+///   --request POST \
+///   --data '{"key": "value"}' \
+///   https://destination.com
+/// 
+/// # print done
+/// echo done
+/// ```
+/// becomes
+/// ```sh
+/// sh ./shell1.sh && sh ./shell2.sh && {long curl command} && echo done
+/// ```
+pub fn parse_multiline_command(command: impl AsRef<str>) -> String {
+  command
+    .as_ref()
+    // First remove escaped newlines
+    .split("\\n")
+    .map(str::trim)
+    .fold(String::new(), |acc, el| acc + " " + el)
+    // Then split by newlines
+    .split('\n')
+    .map(str::trim)
+    .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    .filter_map(|line| line.split(" #").next())
+    .map(str::trim)
+    .collect::<Vec<_>>()
+    .join(" && ")
+}
