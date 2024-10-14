@@ -7,7 +7,7 @@
 //! - Path: `/auth`, `/user`, `/read`, `/write`, `/execute`
 //! - Headers:
 //!   - Content-Type: `application/json`
-//!   - Authorication: `your_jwt`
+//!   - Authorization: `your_jwt`
 //!   - X-Api-Key: `your_api_key`
 //!   - X-Api-Secret: `your_api_secret`
 //!   - Use either Authorization *or* X-Api-Key and X-Api-Secret to authenticate requests.
