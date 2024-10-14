@@ -6,7 +6,10 @@ use komodo_client::entities::{
     network::NetworkListItem, volume::VolumeListItem,
   },
   repo::Repo,
-  server::{Server, ServerConfig, ServerHealth, ServerState},
+  server::{
+    Server, ServerConfig, ServerHealth, ServerHealthState,
+    ServerState,
+  },
   stack::{ComposeProject, Stack, StackState},
   stats::{SingleDiskUsage, SystemStats},
 };
@@ -126,6 +129,8 @@ pub async fn insert_server_status(
     .await;
 }
 
+const ALERT_PERCENTAGE_THRESHOLD: f32 = 5.0;
+
 fn get_server_health(
   server: &Server,
   SystemStats {
@@ -148,16 +153,22 @@ fn get_server_health(
   let mut health = ServerHealth::default();
 
   if cpu_perc >= cpu_critical {
-    health.cpu = SeverityLevel::Critical
+    health.cpu.level = SeverityLevel::Critical;
   } else if cpu_perc >= cpu_warning {
-    health.cpu = SeverityLevel::Warning
+    health.cpu.level = SeverityLevel::Warning
+  } else if *cpu_perc < cpu_warning - ALERT_PERCENTAGE_THRESHOLD {
+    health.cpu.should_close_alert = true
   }
 
   let mem_perc = 100.0 * mem_used_gb / mem_total_gb;
   if mem_perc >= *mem_critical {
-    health.mem = SeverityLevel::Critical
+    health.mem.level = SeverityLevel::Critical
   } else if mem_perc >= *mem_warning {
-    health.mem = SeverityLevel::Warning
+    health.mem.level = SeverityLevel::Warning
+  } else if mem_perc
+    < mem_warning - (ALERT_PERCENTAGE_THRESHOLD as f64)
+  {
+    health.mem.should_close_alert = true
   }
 
   for SingleDiskUsage {
@@ -168,14 +179,17 @@ fn get_server_health(
   } in disks
   {
     let perc = 100.0 * used_gb / total_gb;
-    let stats_state = if perc >= *disk_critical {
-      SeverityLevel::Critical
+    let mut state = ServerHealthState::default();
+    if perc >= *disk_critical {
+      state.level = SeverityLevel::Critical;
     } else if perc >= *disk_warning {
-      SeverityLevel::Warning
-    } else {
-      SeverityLevel::Ok
+      state.level = SeverityLevel::Warning;
+    } else if perc
+      < disk_warning - (ALERT_PERCENTAGE_THRESHOLD as f64)
+    {
+      state.should_close_alert = true;
     };
-    health.disks.insert(mount.clone(), stats_state);
+    health.disks.insert(mount.clone(), state);
   }
 
   health
