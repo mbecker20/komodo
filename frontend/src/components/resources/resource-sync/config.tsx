@@ -148,6 +148,22 @@ export const ResourceSyncConfig = ({
     },
   };
 
+  const general_common: ConfigComponent<Types.ResourceSyncConfig> = {
+    label: "General",
+    components: {
+      delete: !managed && {
+        label: "Delete Unmatched Resources",
+        description:
+          "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
+      },
+      managed: {
+        label: "Managed",
+        description:
+          "Enabled managed mode / the 'Commit' button. Commit is the 'reverse' of Execute, and will update the sync file with your configs updated in the UI.",
+      },
+    },
+  };
+
   const match_tags: ConfigComponent<Types.ResourceSyncConfig> = {
     label: "Match Tags",
     description: "Only sync resources matching all of these tags.",
@@ -178,16 +194,7 @@ export const ResourceSyncConfig = ({
                 placeholder="Input resource path"
               />
             ),
-            delete: !managed && {
-              label: "Delete Unmatched Resources",
-              description:
-                "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
-            },
-            managed: {
-              label: "Managed",
-              description:
-                "Enabled managed mode / the 'Commit' button. Commit is the 'reverse' of Execute, and will update the sync file with your configs updated in the UI.",
-            },
+            ...general_common.components,
           },
         },
         match_tags,
@@ -264,16 +271,7 @@ export const ResourceSyncConfig = ({
                 placeholder="Input resource path"
               />
             ),
-            delete: !managed && {
-              label: "Delete Unmatched Resources",
-              description:
-                "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
-            },
-            managed: {
-              label: "Managed",
-              description:
-                "Enabled managed mode / the 'Commit' button. Commit is the 'reverse' of Execute, and will update the sync file with your configs updated in the UI.",
-            },
+            ...general_common.components,
           },
         },
         match_tags,
@@ -471,21 +469,7 @@ export const ResourceSyncConfig = ({
             },
           },
         },
-        {
-          label: "General",
-          components: {
-            delete: !managed && {
-              label: "Delete Unmatched Resources",
-              description:
-                "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
-            },
-            managed: {
-              label: "Managed",
-              description:
-                "Enabled managed mode / the 'Commit' button. Commit is the 'reverse' of Execute, and will update the sync file with your configs updated in the UI.",
-            },
-          },
-        },
+        general_common,
         match_tags,
       ],
     };
