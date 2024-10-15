@@ -2,7 +2,7 @@
 
 These scripts will set up Komodo Periphery on your hosts, managed by systemd.
 
-*Note*. This script can be run multiple times without issue, and it won't change existing config after the first run. Just run it again after a Komodo version release, and it will update the periphery version.
+*Note*. This script can be **run multiple times without issue**, and it won't change existing config after the first run. Just run it again after a Komodo version release, and it will update the periphery version.
 
 *Note*. The script can usually detect aarch64 system and use the periphery-aarch64 binary.
 
@@ -45,4 +45,21 @@ stack_dir = "/home/ubuntu/.komodo/stacks"
 ssl_enabled = true
 ssl_key_file = "/home/ubuntu/.komodo/ssl/key.pem"
 ssl_cert_file = "/home/ubuntu/.komodo/ssl/cert.pem"
+```
+
+For additional information on configuring the systemd service, see the systemd service file documentation here:
+[https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html).
+
+## Force Service File Recreation
+
+Usually the installer will only create the systemd service files (`periphery.service`) if one doesn't already exist.
+This means the user is free to customize it to fit their needs, such as changing the `User=` running the binary.
+
+You can change this behavior by passing `--force-service-file`, which will restore the service file
+to the current default.
+
+Example:
+
+```sh
+curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3 --force-service-file
 ```
