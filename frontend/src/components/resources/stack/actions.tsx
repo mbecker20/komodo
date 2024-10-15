@@ -148,7 +148,7 @@ export const StartStopStack = ({
   service?: string;
 }) => {
   const stack = useStack(id);
-  const state = stack?.info.state;
+  const state = stack?.info.state ?? Types.StackState.Unknown;
   const { mutate: start, isPending: startPending } = useExecute("StartStack");
   const { mutate: stop, isPending: stopPending } = useExecute("StopStack");
   const action_state = useRead(
@@ -162,18 +162,23 @@ export const StartStopStack = ({
       services?.find((s) => s.service === service)?.container?.state) ??
     Types.DeploymentState.Unknown;
 
-  if (!stack || stack?.info.project_missing) {
+  if (
+    !stack ||
+    [Types.StackState.Down, Types.StackState.Unknown].includes(state)
+  ) {
     return null;
   }
 
-  const showStart =
-    (service && container_state === Types.ContainerStateStatusEnum.Exited) ||
-    state === Types.StackState.Stopped ||
-    state === Types.StackState.Unhealthy;
-  const showStop =
-    (service && container_state === Types.ContainerStateStatusEnum.Running) ||
-    state === Types.StackState.Running ||
-    state === Types.StackState.Unhealthy;
+  const showStart = service
+    ? (container_state &&
+        container_state !== Types.ContainerStateStatusEnum.Running) ??
+      false
+    : state !== Types.StackState.Running;
+  const showStop = service
+    ? (container_state &&
+        container_state !== Types.ContainerStateStatusEnum.Exited) ??
+      false
+    : state !== Types.StackState.Stopped;
 
   return (
     <>

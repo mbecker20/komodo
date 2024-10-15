@@ -203,7 +203,7 @@ export const StartStopDeployment = ({ id }: DeploymentId) => {
       />
     );
   }
-  if (state === Types.DeploymentState.Running) {
+  if (state !== Types.DeploymentState.NotDeployed) {
     return <StopDeployment id={id} />;
   }
 };
