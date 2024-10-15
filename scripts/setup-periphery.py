@@ -22,12 +22,14 @@ def uses_systemd():
 	return shutil.which("systemctl") is not None and os.path.exists("/run/systemd/system/")
 
 def load_paths():
+	home_dir = os.environ['HOME']
 	# Checks if setup.py is passed --user arg
 	user_install = sys.argv.count("--user") > 0
 	if user_install:
-		home_dir = os.environ['HOME']
 		return [
 			True,
+			# home_dir
+			home_dir,
 			# binary location
 			f'{home_dir}/.local/bin',
 			# config location
@@ -38,6 +40,8 @@ def load_paths():
 	else:
 		return [
 			False,
+			# home_dir
+			home_dir,
 			# binary location
 			"/usr/local/bin",
 			# config location
@@ -90,7 +94,7 @@ def copy_config(config_dir):
 
 	print(os.popen(f'curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/config/periphery.config.toml > {config_dir}/periphery.config.toml').read())
 
-def copy_service_file(bin_dir, config_dir, service_dir, user_install):
+def copy_service_file(home_dir, bin_dir, config_dir, service_dir, user_install):
 	service_file = f'{service_dir}/periphery.service'
 
 	force_service_recopy = sys.argv.count("--force-service-file") > 0
@@ -116,10 +120,11 @@ def copy_service_file(bin_dir, config_dir, service_dir, user_install):
 	f = open(service_file, "x")
 	f.write((
 		"[Unit]\n"
-		"Description=agent to connect with Komodo Core\n"
+		"Description=Agent to connect with Komodo Core\n"
 		"\n"
 		"[Service]\n"
-		f'ExecStart={bin_dir}/periphery --config-path {config_dir}/periphery.config.toml\n'
+		f'Environment="HOME={home_dir}"\n',
+		f'ExecStart=/bin/sh -lc "{bin_dir}/periphery --config-path {config_dir}/periphery.config.toml"\n'
 		"Restart=on-failure\n"
 		"TimeoutStartSec=0\n"
 		"\n"
@@ -142,10 +147,11 @@ def main():
 		sys.exit(1)
 
 	version = load_version()
-	[user_install, bin_dir, config_dir, service_dir] = load_paths()
+	[user_install, home_dir, bin_dir, config_dir, service_dir] = load_paths()
  
 	print(f'version: {version}')
 	print(f'user install: {user_install}')
+	print(f'home dir: {home_dir}')
 	print(f'bin dir: {bin_dir}')
 	print(f'config dir: {config_dir}')
 	print(f'service file dir: {service_dir}')
@@ -156,7 +162,7 @@ def main():
 
 	copy_binary(user_install, bin_dir, version)
 	copy_config(config_dir)
-	copy_service_file(bin_dir, config_dir, service_dir, user_install)
+	copy_service_file(home_dir, bin_dir, config_dir, service_dir, user_install)
 
 	user = ""
 	if user_install:
