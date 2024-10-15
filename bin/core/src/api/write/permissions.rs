@@ -387,6 +387,20 @@ async fn extract_resource_target_with_validation(
         .id;
       Ok((ResourceTargetVariant::Procedure, id))
     }
+    ResourceTarget::Action(ident) => {
+      let filter = match ObjectId::from_str(ident) {
+        Ok(id) => doc! { "_id": id },
+        Err(_) => doc! { "name": ident },
+      };
+      let id = db_client()
+        .actions
+        .find_one(filter)
+        .await
+        .context("failed to query db for actions")?
+        .context("no matching action found")?
+        .id;
+      Ok((ResourceTargetVariant::Action, id))
+    }
     ResourceTarget::ServerTemplate(ident) => {
       let filter = match ObjectId::from_str(ident) {
         Ok(id) => doc! { "_id": id },

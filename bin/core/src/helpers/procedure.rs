@@ -146,6 +146,22 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::RunAction(req) => {
+      let req = ExecuteRequest::RunAction(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::RunAction(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("Failed at RunAction"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::RunBuild(req) => {
       let req = ExecuteRequest::RunBuild(req);
       let update = init_execution_update(&req, &user).await?;

@@ -201,6 +201,9 @@ fn resource_link(
     ResourceTargetVariant::Procedure => {
       format!("/procedures/{id}")
     }
+    ResourceTargetVariant::Action => {
+      format!("/actions/{id}")
+    }
     ResourceTargetVariant::ServerTemplate => {
       format!("/server-templates/{id}")
     }

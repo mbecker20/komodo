@@ -45,6 +45,7 @@ use crate::{
   state::{db_client, State},
 };
 
+mod action;
 mod alerter;
 mod build;
 mod builder;
@@ -687,6 +688,7 @@ fn resource_target<T: KomodoResource>(id: String) -> ResourceTarget {
       ResourceTarget::ResourceSync(id)
     }
     ResourceTargetVariant::Stack => ResourceTarget::Stack(id),
+    ResourceTargetVariant::Action => ResourceTarget::Action(id),
   }
 }
 
@@ -860,6 +862,7 @@ where
     ResourceTarget::Build(id) => ("recents.Build", id),
     ResourceTarget::Repo(id) => ("recents.Repo", id),
     ResourceTarget::Procedure(id) => ("recents.Procedure", id),
+    ResourceTarget::Action(id) => ("recents.Action", id),
     ResourceTarget::Stack(id) => ("recents.Stack", id),
     ResourceTarget::Builder(id) => ("recents.Builder", id),
     ResourceTarget::Alerter(id) => ("recents.Alerter", id),

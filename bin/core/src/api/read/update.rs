@@ -4,6 +4,7 @@ use anyhow::{anyhow, Context};
 use komodo_client::{
   api::read::{GetUpdate, ListUpdates, ListUpdatesResponse},
   entities::{
+    action::Action,
     alerter::Alerter,
     build::Build,
     builder::Builder,
@@ -297,6 +298,14 @@ impl Resolve<GetUpdate, User> for State {
       }
       ResourceTarget::Procedure(id) => {
         resource::get_check_permissions::<Procedure>(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
+      }
+      ResourceTarget::Action(id) => {
+        resource::get_check_permissions::<Action>(
           id,
           &user,
           PermissionLevel::Read,

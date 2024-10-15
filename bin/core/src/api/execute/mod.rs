@@ -24,6 +24,7 @@ use crate::{
   state::{db_client, State},
 };
 
+mod action;
 mod build;
 mod deployment;
 mod procedure;
@@ -96,6 +97,9 @@ pub enum ExecuteRequest {
 
   // ==== PROCEDURE ====
   RunProcedure(RunProcedure),
+
+  // ==== ACTION ====
+  RunAction(RunAction),
 
   // ==== SERVER TEMPLATE ====
   LaunchServer(LaunchServer),

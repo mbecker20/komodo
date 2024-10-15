@@ -121,7 +121,7 @@ pub struct CreateRepoWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub repo: String,
-  /// "Clone" or "Pull"
+  /// "Clone" or "Pull" or "Build"
   pub action: RepoWebhookAction,
 }
 
@@ -142,7 +142,7 @@ pub struct DeleteRepoWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub repo: String,
-  /// "Clone" or "Pull"
+  /// "Clone" or "Pull" or "Build"
   pub action: RepoWebhookAction,
 }
 

@@ -6,11 +6,21 @@ use komodo_client::{
     ListUserGroups,
   },
   entities::{
-    alerter::Alerter, build::Build, builder::Builder,
-    deployment::Deployment, permission::PermissionLevel,
-    procedure::Procedure, repo::Repo, resource::ResourceQuery,
-    server::Server, server_template::ServerTemplate, stack::Stack,
-    sync::ResourceSync, toml::ResourcesToml, user::User,
+    action::Action,
+    alerter::Alerter,
+    build::Build,
+    builder::Builder,
+    deployment::Deployment,
+    permission::{PermissionLevel, UserTarget},
+    procedure::Procedure,
+    repo::Repo,
+    resource::ResourceQuery,
+    server::Server,
+    server_template::ServerTemplate,
+    stack::Stack,
+    sync::ResourceSync,
+    toml::{PermissionToml, ResourcesToml, UserGroupToml},
+    user::User,
     ResourceTarget,
   },
 };
@@ -334,6 +344,21 @@ impl Resolve<ExportResourcesToToml, User> for State {
           Procedure::replace_ids(&mut procedure, &all);
           res.procedures.push(convert_resource::<Procedure>(
             procedure,
+            false,
+            vec![],
+            &id_to_tags,
+          ));
+        }
+        ResourceTarget::Action(id) => {
+          let mut action = resource::get_check_permissions::<Action>(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          Action::replace_ids(&mut action, &all);
+          res.actions.push(convert_resource::<Action>(
+            action,
             false,
             vec![],
             &id_to_tags,

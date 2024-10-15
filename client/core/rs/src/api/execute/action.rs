@@ -8,7 +8,7 @@ use crate::entities::update::Update;
 
 use super::KomodoExecuteRequest;
 
-/// Runs the target Procedure. Response: [Update]
+/// Runs the target Action. Response: [Update]
 #[typeshare]
 #[derive(
   Debug,
@@ -22,7 +22,7 @@ use super::KomodoExecuteRequest;
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-pub struct RunProcedure {
+pub struct RunAction {
   /// Id or name
-  pub procedure: String,
+  pub action: String,
 }

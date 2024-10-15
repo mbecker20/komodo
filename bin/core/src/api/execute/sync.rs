@@ -126,6 +126,10 @@ impl Resolve<RunSync, (User, Update)> for State {
                 .procedures
                 .get(&name_or_id)
                 .map(|p| p.name.clone()),
+              ResourceTargetVariant::Action => all_resources
+                .actions
+                .get(&name_or_id)
+                .map(|p| p.name.clone()),
               ResourceTargetVariant::Repo => all_resources
                 .repos
                 .get(&name_or_id)
