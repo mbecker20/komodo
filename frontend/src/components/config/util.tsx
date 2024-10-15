@@ -594,7 +594,7 @@ export function ConfirmUpdate<T>({
   file_contents_language,
 }: ConfirmUpdateProps<T>) {
   const [open, set] = useState(false);
-  useCtrlKeyListener("s", () => {
+  useCtrlKeyListener("Enter", () => {
     if (open) {
       onConfirm();
     } else {
