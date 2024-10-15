@@ -6,7 +6,12 @@ use serde::{Deserialize, Serialize};
 use strum::AsRefStr;
 use typeshare::typeshare;
 
-use crate::entities::I64;
+use crate::{
+  deserializers::{
+    option_string_list_deserializer, string_list_deserializer,
+  },
+  entities::I64,
+};
 
 #[typeshare(serialized_as = "Partial<HetznerServerTemplateConfig>")]
 pub type _PartialHetznerServerTemplateConfig =
@@ -37,7 +42,11 @@ pub struct HetznerServerTemplateConfig {
   #[builder(default)]
   pub server_type: HetznerServerType,
   /// SSH key IDs ( integer ) or names ( string ) which should be injected into the Server at creation time
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub ssh_keys: Vec<String>,
   /// Network IDs which should be attached to the Server private network interface at the creation time

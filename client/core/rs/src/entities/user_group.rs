@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+use crate::deserializers::string_list_deserializer;
+
 use super::{
   permission::PermissionLevel, MongoId, ResourceTargetVariant, I64,
 };
@@ -37,6 +39,7 @@ pub struct UserGroup {
 
   /// User ids of group members
   #[cfg_attr(feature = "mongo", index)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
   pub users: Vec<String>,
 
   /// Give the user group elevated permissions on all resources of a certain type

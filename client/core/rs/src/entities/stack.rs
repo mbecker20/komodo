@@ -11,6 +11,7 @@ use typeshare::typeshare;
 use crate::deserializers::{
   env_vars_deserializer, file_contents_deserializer,
   option_env_vars_deserializer, option_file_contents_deserializer,
+  option_string_list_deserializer, string_list_deserializer,
 };
 
 use super::{
@@ -191,7 +192,11 @@ pub struct StackConfig {
   pub server_id: String,
 
   /// Configure quick links that are displayed in the resource header
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub links: Vec<String>,
 
@@ -243,7 +248,11 @@ pub struct StackConfig {
 
   /// Add paths to compose files, relative to the run path.
   /// If this is empty, will use file `compose.yaml`.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub file_paths: Vec<String>,
 
@@ -341,21 +350,33 @@ pub struct StackConfig {
 
   /// The extra arguments to pass after `docker compose up -d`.
   /// If empty, no extra arguments will be passed.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub extra_args: Vec<String>,
 
   /// The extra arguments to pass after `docker compose build`.
   /// If empty, no extra build arguments will be passed.
   /// Only used if `run_build: true`
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub build_extra_args: Vec<String>,
 
   /// Ignore certain services declared in the compose file when checking
   /// the stack status. For example, an init service might be exited, but the
   /// stack should be healthy. This init service should be in `ignore_services`
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub ignore_services: Vec<String>,
 

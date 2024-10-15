@@ -10,6 +10,7 @@ use typeshare::typeshare;
 use crate::{
   deserializers::{
     env_vars_deserializer, option_env_vars_deserializer,
+    option_string_list_deserializer, string_list_deserializer,
   },
   entities::I64,
 };
@@ -183,7 +184,11 @@ pub struct RepoConfig {
   pub on_pull: SystemCommand,
 
   /// Configure quick links that are displayed in the resource header
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub links: Vec<String>,
 
