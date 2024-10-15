@@ -39,10 +39,11 @@ pub fn router() -> Router {
 			"/build/:id",
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let build = build::auth_build_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
             let span = info_span!("build_webhook", id);
             async {
-              let res = build::handle_build_webhook(id.clone(), headers, body).await;
+              let res = build::handle_build_webhook(build, body).await;
               if let Err(e) = res {
                 warn!("failed to run build webook for build {id} | {e:#}");
               }
@@ -50,6 +51,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			),
 		)
@@ -57,10 +59,11 @@ pub fn router() -> Router {
 			"/repo/:id/clone", 
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let repo = repo::auth_repo_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
 						let span = info_span!("repo_clone_webhook", id);
             async {
-              let res = repo::handle_repo_clone_webhook(id.clone(), headers, body).await;
+              let res = repo::handle_repo_clone_webhook(repo, body).await;
               if let Err(e) = res {
                 warn!("failed to run repo clone webook for repo {id} | {e:#}");
               }
@@ -68,6 +71,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
@@ -75,10 +79,11 @@ pub fn router() -> Router {
 			"/repo/:id/pull", 
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let repo = repo::auth_repo_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
             let span = info_span!("repo_pull_webhook", id);
             async {
-              let res = repo::handle_repo_pull_webhook(id.clone(), headers, body).await;
+              let res = repo::handle_repo_pull_webhook(repo, body).await;
               if let Err(e) = res {
                 warn!("failed to run repo pull webook for repo {id} | {e:#}");
               }
@@ -86,6 +91,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
@@ -93,10 +99,11 @@ pub fn router() -> Router {
 			"/repo/:id/build", 
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let repo = repo::auth_repo_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
             let span = info_span!("repo_build_webhook", id);
             async {
-              let res = repo::handle_repo_build_webhook(id.clone(), headers, body).await;
+              let res = repo::handle_repo_build_webhook(repo, body).await;
               if let Err(e) = res {
                 warn!("failed to run repo build webook for repo {id} | {e:#}");
               }
@@ -104,6 +111,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
@@ -111,10 +119,11 @@ pub fn router() -> Router {
 			"/stack/:id/refresh", 
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let stack = stack::auth_stack_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
 						let span = info_span!("stack_clone_webhook", id);
             async {
-              let res = stack::handle_stack_refresh_webhook(id.clone(), headers, body).await;
+              let res = stack::handle_stack_refresh_webhook(stack, body).await;
               if let Err(e) = res {
                 warn!("failed to run stack clone webook for stack {id} | {e:#}");
               }
@@ -122,6 +131,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
@@ -129,10 +139,11 @@ pub fn router() -> Router {
 			"/stack/:id/deploy", 
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let stack = stack::auth_stack_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
             let span = info_span!("stack_pull_webhook", id);
             async {
-              let res = stack::handle_stack_deploy_webhook(id.clone(), headers, body).await;
+              let res = stack::handle_stack_deploy_webhook(stack, body).await;
               if let Err(e) = res {
                 warn!("failed to run stack pull webook for stack {id} | {e:#}");
               }
@@ -140,6 +151,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
@@ -147,13 +159,13 @@ pub fn router() -> Router {
 			"/procedure/:id/:branch", 
 			post(
 				|Path(IdBranch { id, branch }), headers: HeaderMap, body: String| async move {
+          let procedure = procedure::auth_procedure_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
             let span = info_span!("procedure_webhook", id, branch);
             async {
               let res = procedure::handle_procedure_webhook(
-                id.clone(),
+                procedure,
                 branch.unwrap_or_else(|| String::from("main")),
-                headers,
                 body
               ).await;
               if let Err(e) = res {
@@ -163,6 +175,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
@@ -170,12 +183,12 @@ pub fn router() -> Router {
 			"/sync/:id/refresh", 
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let sync = sync::auth_sync_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
             let span = info_span!("sync_refresh_webhook", id);
             async {
               let res = sync::handle_sync_refresh_webhook(
-                id.clone(),
-                headers,
+                sync,
                 body
               ).await;
               if let Err(e) = res {
@@ -185,6 +198,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
@@ -192,12 +206,12 @@ pub fn router() -> Router {
 			"/sync/:id/sync", 
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
+          let sync = sync::auth_sync_webhook(&id, headers, &body).await?;
 					tokio::spawn(async move {
             let span = info_span!("sync_execute_webhook", id);
             async {
               let res = sync::handle_sync_execute_webhook(
-                id.clone(),
-                headers,
+                sync,
                 body
               ).await;
               if let Err(e) = res {
@@ -207,6 +221,7 @@ pub fn router() -> Router {
               .instrument(span)
               .await
 					});
+          serror::Result::Ok(())
 				},
 			)
 		)
