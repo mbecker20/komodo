@@ -9,7 +9,13 @@ use serde::{
 use strum::Display;
 use typeshare::typeshare;
 
-use crate::entities::I64;
+use crate::{
+  deserializers::{
+    env_vars_deserializer, labels_deserializer,
+    option_env_vars_deserializer, option_labels_deserializer,
+  },
+  entities::I64,
+};
 
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
@@ -226,13 +232,10 @@ pub struct BuildConfig {
   /// Docker build arguments.
   ///
   /// These values are visible in the final image by running `docker inspect`.
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
+  #[serde(default, deserialize_with = "env_vars_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_env_vars_deserializer"
+    deserialize_with = "option_env_vars_deserializer"
   ))]
   #[builder(default)]
   pub build_args: String,
@@ -247,22 +250,19 @@ pub struct BuildConfig {
   /// RUN --mount=type=secret,id=SECRET_KEY \
   ///   SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
   /// ```
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
+  #[serde(default, deserialize_with = "env_vars_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_env_vars_deserializer"
+    deserialize_with = "option_env_vars_deserializer"
   ))]
   #[builder(default)]
   pub secret_args: String,
 
   /// Docker labels
-  #[serde(default, deserialize_with = "super::labels_deserializer")]
+  #[serde(default, deserialize_with = "labels_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_labels_deserializer"
+    deserialize_with = "option_labels_deserializer"
   ))]
   #[builder(default)]
   pub labels: String,

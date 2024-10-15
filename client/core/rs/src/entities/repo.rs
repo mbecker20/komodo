@@ -7,7 +7,12 @@ use serde::{Deserialize, Serialize};
 use strum::Display;
 use typeshare::typeshare;
 
-use crate::entities::I64;
+use crate::{
+  deserializers::{
+    env_vars_deserializer, option_env_vars_deserializer,
+  },
+  entities::I64,
+};
 
 use super::{
   environment_vars_from_str,
@@ -187,13 +192,10 @@ pub struct RepoConfig {
   /// which is given relative to the run directory.
   ///
   /// If it is empty, no file will be written.
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
+  #[serde(default, deserialize_with = "env_vars_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_env_vars_deserializer"
+    deserialize_with = "option_env_vars_deserializer"
   ))]
   #[builder(default)]
   pub environment: String,

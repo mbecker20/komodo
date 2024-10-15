@@ -35,8 +35,9 @@ use serde::Deserialize;
 pub mod api;
 pub mod busy;
 pub mod entities;
-pub mod parser;
+pub mod parsers;
 pub mod ws;
+pub mod deserializers;
 
 mod request;
 
