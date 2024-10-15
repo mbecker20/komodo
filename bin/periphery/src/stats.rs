@@ -91,10 +91,13 @@ impl StatsClient {
   }
 
   pub fn get_system_stats(&self) -> SystemStats {
+    let total_mem = self.system.total_memory();
+    let available_mem = self.system.available_memory();
     SystemStats {
       cpu_perc: self.system.global_cpu_usage(),
-      mem_used_gb: self.system.used_memory() as f64 / BYTES_PER_GB,
-      mem_total_gb: self.system.total_memory() as f64 / BYTES_PER_GB,
+      mem_free_gb: self.system.free_memory() as f64 / BYTES_PER_GB,
+      mem_used_gb: (total_mem - available_mem) as f64 / BYTES_PER_GB,
+      mem_total_gb: total_mem as f64 / BYTES_PER_GB,
       disks: self.get_disks(),
       polling_rate: self.stats.polling_rate,
       refresh_ts: self.stats.refresh_ts,

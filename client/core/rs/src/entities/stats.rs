@@ -59,7 +59,13 @@ pub struct SystemStatsRecord {
 pub struct SystemStats {
   /// Cpu usage percentage
   pub cpu_perc: f32,
-  /// Memory used in GB
+  /// [1.15.9+]
+  /// Free memory in GB.
+  /// This is really the 'Free' memory, not the 'Available' memory.
+  /// It may be different than mem_total_gb - mem_used_gb.
+  #[serde(default)]
+  pub mem_free_gb: f64,
+  /// Used memory in GB. 'Total' - 'Available' (not free) memory.
   pub mem_used_gb: f64,
   /// Total memory in GB
   pub mem_total_gb: f64,
