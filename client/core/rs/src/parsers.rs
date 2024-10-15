@@ -1,5 +1,25 @@
 use anyhow::Context;
 
+/// Parses a list of key value pairs from a multiline string
+///
+/// Example source:
+/// ```text
+/// # Supports comments
+/// KEY_1 = value_1 # end of line comments
+/// 
+/// # Supports string wrapped values
+/// KEY_2="value_2"
+/// 'KEY_3 = value_3'
+/// 
+/// # Also supports yaml list formats
+/// - KEY_4: 'value_4'
+/// - "KEY_5=value_5"
+/// ```
+///
+/// Returns:
+/// ```text
+/// [("KEY_1", "value_1"), ("KEY_2", "value_2"), ("KEY_3", "value_3"), ("KEY_4", "value_4"), ("KEY_5", "value_5")]
+/// ```
 pub fn parse_key_value_list(
   input: &str,
 ) -> anyhow::Result<Vec<(String, String)>> {
@@ -102,4 +122,34 @@ pub fn parse_multiline_command(command: impl AsRef<str>) -> String {
     .map(str::trim)
     .collect::<Vec<_>>()
     .join(" && ")
+}
+
+/// Parses a list of strings from a comment seperated and multiline string
+///
+/// Example source:
+/// ```text
+/// # supports comments
+/// path/to/file1 # comment1
+/// path/to/file2
+///
+/// # also supports comma seperated values
+/// path/to/file3,path/to/file4
+/// ```
+///
+/// Returns:
+/// ```text
+/// ["path/to/file1", "path/to/file2", "path/to/file3", "path/to/file4"]
+/// ```
+pub fn parse_string_list(source: impl AsRef<str>) -> Vec<String> {
+  source
+    .as_ref()
+    .split('\n')
+    .map(str::trim)
+    .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    .filter_map(|line| line.split(" #").next())
+    .flat_map(|line| line.split(','))
+    .map(str::trim)
+    .filter(|entry| !entry.is_empty())
+    .map(str::to_string)
+    .collect()
 }
