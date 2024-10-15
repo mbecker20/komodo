@@ -8,6 +8,11 @@ use serde::{Deserialize, Serialize};
 use strum::Display;
 use typeshare::typeshare;
 
+use crate::deserializers::{
+  env_vars_deserializer, file_contents_deserializer,
+  option_env_vars_deserializer, option_file_contents_deserializer,
+};
+
 use super::{
   docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
@@ -357,13 +362,10 @@ pub struct StackConfig {
   /// The contents of the file directly, for management in the UI.
   /// If this is empty, it will fall back to checking git config for
   /// repo based compose file.
-  #[serde(
-    default,
-    deserialize_with = "super::file_contents_deserializer"
-  )]
+  #[serde(default, deserialize_with = "file_contents_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_file_contents_deserializer"
+    deserialize_with = "option_file_contents_deserializer"
   ))]
   #[builder(default)]
   pub file_contents: String,
@@ -373,13 +375,10 @@ pub struct StackConfig {
   /// which is given relative to the run directory.
   ///
   /// If it is empty, no file will be written.
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
+  #[serde(default, deserialize_with = "env_vars_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_env_vars_deserializer"
+    deserialize_with = "option_env_vars_deserializer"
   ))]
   #[builder(default)]
   pub environment: String,

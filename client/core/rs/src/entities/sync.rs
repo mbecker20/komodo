@@ -9,6 +9,10 @@ use serde::{
 use strum::Display;
 use typeshare::typeshare;
 
+use crate::deserializers::{
+  file_contents_deserializer, option_file_contents_deserializer,
+};
+
 use super::{
   resource::{Resource, ResourceListItem, ResourceQuery},
   ResourceTarget, I64,
@@ -249,13 +253,10 @@ pub struct ResourceSyncConfig {
   pub match_tags: Vec<String>,
 
   /// Manage the file contents in the UI.
-  #[serde(
-    default,
-    deserialize_with = "super::file_contents_deserializer"
-  )]
+  #[serde(default, deserialize_with = "file_contents_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_file_contents_deserializer"
+    deserialize_with = "option_file_contents_deserializer"
   ))]
   #[builder(default)]
   pub file_contents: String,

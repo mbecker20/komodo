@@ -2,7 +2,7 @@ use std::path::Path;
 
 use komodo_client::{
   entities::{komodo_timestamp, update::Log},
-  parser::parse_multiline_command,
+  parsers::parse_multiline_command,
 };
 use run_command::{async_run_command, CommandOutput};
 

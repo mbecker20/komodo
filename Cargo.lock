@@ -41,7 +41,15 @@ dependencies = [
 
 [[package]]
 name = "alerter"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "axum",
@@ -943,7 +951,15 @@ dependencies = [
 
 [[package]]
 name = "command"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "komodo_client",
  "run_command",
@@ -1355,7 +1371,15 @@ dependencies = [
 
 [[package]]
 name = "environment_file"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "thiserror",
 ]
@@ -1439,7 +1463,15 @@ dependencies = [
 
 [[package]]
 name = "formatting"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "serror",
 ]
@@ -1571,7 +1603,15 @@ checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
 name = "git"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "command",
@@ -2192,7 +2232,15 @@ dependencies = [
 
 [[package]]
 name = "komodo_cli"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "clap",
@@ -2208,7 +2256,15 @@ dependencies = [
 
 [[package]]
 name = "komodo_client"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2239,7 +2295,15 @@ dependencies = [
 
 [[package]]
 name = "komodo_core"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2296,7 +2360,15 @@ dependencies = [
 
 [[package]]
 name = "komodo_periphery"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2383,7 +2455,15 @@ dependencies = [
 
 [[package]]
 name = "logger"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "komodo_client",
@@ -3089,7 +3169,15 @@ checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "periphery_client"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "komodo_client",
@@ -4867,7 +4955,15 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "update_logger"
+<<<<<<< HEAD
 version = "1.15.12"
+=======
+<<<<<<< HEAD
+version = "1.15.10"
+=======
+version = "1.16.0"
+>>>>>>> 2a7889d3 (consolidate deserializers)
+>>>>>>> 9b5b91fd (consolidate deserializers)
 dependencies = [
  "anyhow",
  "komodo_client",
