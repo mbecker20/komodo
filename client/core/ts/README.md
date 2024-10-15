@@ -24,14 +24,14 @@ const komodo = KomodoClient("https://demo.komo.do", {
 });
 
 const stacks: Types.StackListItem[] = await komodo.read({
-	type: "ListStacks",
-	params: {},
+  type: "ListStacks",
+  params: {},
 });
 
 const stack: Types.Stack = await komodo.read({
-	type: "GetStack",
-	params: {
-		stack: stacks[0].name,
-	}
+  type: "GetStack",
+  params: {
+    stack: stacks[0].name,
+  }
 });
 ```
