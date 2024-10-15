@@ -198,10 +198,22 @@ export const StackConfig = ({
         ),
         env_file_path: {
           description:
-            "The path to write the file to, relative to the run directory",
+            "The path to write the file to, relative to the 'Run Directory'.",
           placeholder: ".env",
         },
-        // skip_secret_interp: true,
+        additional_env_files: (values, set) => (
+          <ConfigList
+            label="Additional Env Files"
+            boldLabel
+            addLabel="Add Env File"
+            description="Add additional env files to pass with '--env-file', relative to the 'Run Directory'."
+            field="additional_env_files"
+            values={values ?? []}
+            set={set}
+            disabled={disabled}
+            placeholder="Input File Path"
+          />
+        ),
       },
     },
     {

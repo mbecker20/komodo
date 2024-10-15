@@ -2362,10 +2362,15 @@ export interface StackConfig {
 	file_paths?: string[];
 	/**
 	 * The name of the written environment file before `docker compose up`.
-	 * Relative to the repo root.
+	 * Relative to the run directory root.
 	 * Default: .env
 	 */
 	env_file_path: string;
+	/**
+	 * Add additional env files to attach with `--env-file`.
+	 * Relative to the run directory root.
+	 */
+	additional_env_files?: string[];
 	/** The git provider domain. Default: github.com */
 	git_provider: string;
 	/**
@@ -3037,7 +3042,7 @@ export interface UserGroup {
 	/** A name for the user group */
 	name: string;
 	/** User ids of group members */
-	users: string[];
+	users?: string[];
 	/** Give the user group elevated permissions on all resources of a certain type */
 	all?: Record<ResourceTarget["type"], PermissionLevel>;
 	/** Unix time (ms) when user group last updated */
