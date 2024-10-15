@@ -83,23 +83,18 @@ pub fn parse_key_value_list(
 pub fn parse_multiline_command(command: impl AsRef<str>) -> String {
   command
     .as_ref()
-    // First remove escaped newlines
+    // Remove comments and join back
+    .split('\n')
+    .map(str::trim)
+    .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    .filter_map(|line| line.split(" #").next())
+    .collect::<Vec<_>>()
+    .join("\n")
+    // Remove escaped newlines
     .split(" \\")
     .map(str::trim)
-    .map(|line| {
-      if line.starts_with('#') {
-        line
-          .split('\n')
-          .map(str::trim)
-          .filter(|line| !line.is_empty() && !line.starts_with('#'))
-          .fold(String::new(), |acc, el| acc + "\n" + el)
-      } else {
-        line.to_string()
-      }
-    })
-    .filter(|line| !line.is_empty())
-    .fold(String::new(), |acc, el| acc + " " + &el)
-    // Then split by newlines
+    .fold(String::new(), |acc, el| acc + " " + el)
+    // Then final split by newlines and join with &&
     .split('\n')
     .map(str::trim)
     .filter(|line| !line.is_empty() && !line.starts_with('#'))
