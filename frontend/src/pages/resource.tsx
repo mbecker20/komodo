@@ -23,8 +23,9 @@ import {
   Clapperboard,
   LinkIcon,
 } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ResourceNotifications } from "./resource-notifications";
+import { NotFound } from "@components/util";
 
 export const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
   const user = useUser().data;
@@ -214,32 +215,6 @@ export const ResourceHeader = ({
         </div>
       </div>
       <ResourceDescription type={type} id={id} disabled={!canWrite} />
-    </div>
-  );
-};
-
-const NotFound = ({ type }: { type: UsableResource | undefined }) => {
-  const nav = useNavigate();
-  const Components = type && ResourceComponents[type];
-  return (
-    <div className="flex flex-col gap-4">
-      {type && (
-        <div className="flex items-center justify-between mb-4">
-          <Button
-            className="gap-2"
-            variant="secondary"
-            onClick={() => nav("/" + usableResourcePath(type))}
-          >
-            <ChevronLeft className="w-4" /> Back
-          </Button>
-        </div>
-      )}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="mt-1">{Components && <Components.BigIcon />}</div>
-          <h1 className="text-3xl">{type ?? "??"} not found</h1>
-        </div>
-      </div>
     </div>
   );
 };

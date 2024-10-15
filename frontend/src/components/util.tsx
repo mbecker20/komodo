@@ -12,6 +12,7 @@ import {
   Check,
   CheckCircle,
   ChevronDown,
+  ChevronLeft,
   ChevronUp,
   Copy,
   Database,
@@ -19,6 +20,7 @@ import {
   Loader2,
   LogOut,
   Network,
+  SearchX,
   Settings,
   Tags,
   User,
@@ -33,8 +35,8 @@ import {
   DialogFooter,
 } from "@ui/dialog";
 import { toast, useToast } from "@ui/use-toast";
-import { cn } from "@lib/utils";
-import { Link } from "react-router-dom";
+import { cn, usableResourcePath } from "@lib/utils";
+import { Link, useNavigate } from "react-router-dom";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 import { Textarea } from "@ui/textarea";
 import { Card } from "@ui/card";
@@ -53,6 +55,8 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { useRead, useUser } from "@lib/hooks";
 import { Prune } from "./resources/server/actions";
 import { MonacoEditor } from "./monaco";
+import { UsableResource } from "@types";
+import { ResourceComponents } from "./resources";
 
 export const WithLoading = ({
   children,
@@ -427,7 +431,7 @@ export const TextUpdateMenu = ({
           onValueChange={setValue}
           readOnly={disabled}
         />
-        
+
         {!disabled && (
           <DialogFooter>
             {confirmButton ? (
@@ -918,5 +922,39 @@ export const TextUpdateMenu2 = ({
         )}
       </DialogContent>
     </Dialog>
+  );
+};
+
+export const NotFound = ({ type }: { type: UsableResource | undefined }) => {
+  const nav = useNavigate();
+  const Components = type && ResourceComponents[type];
+  return (
+    <div className="flex flex-col gap-4">
+      {type && (
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            className="gap-2"
+            variant="secondary"
+            onClick={() => nav("/" + usableResourcePath(type))}
+          >
+            <ChevronLeft className="w-4" /> Back
+          </Button>
+        </div>
+      )}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="flex items-center gap-4">
+          <div className="mt-1">
+            {Components ? (
+              <Components.BigIcon />
+            ) : (
+              <SearchX className="w-8 h-8" />
+            )}
+          </div>
+          <h1 className="text-3xl font-mono">
+            {type} {type && " - "} 404 Not Found
+          </h1>
+        </div>
+      </div>
+    </div>
   );
 };
