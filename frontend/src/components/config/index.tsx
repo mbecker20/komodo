@@ -5,7 +5,7 @@ import {
 } from "@components/config/util";
 import { Section } from "@components/layouts";
 import { MonacoLanguage } from "@components/monaco";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { cn } from "@lib/utils";
 import { Button } from "@ui/button";
 import {

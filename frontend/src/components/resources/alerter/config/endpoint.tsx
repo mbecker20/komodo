@@ -1,6 +1,6 @@
 import { ConfigItem } from "@components/config/util";
 import { MonacoEditor } from "@components/monaco";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import {
   Select,
   SelectContent,

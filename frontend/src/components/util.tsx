@@ -48,7 +48,7 @@ import {
   stroke_color_class_by_intention,
   text_color_class_by_intention,
 } from "@lib/color";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Badge } from "@ui/badge";
 import { Section } from "./layouts";
 import { DataTable, SortableHeader } from "@ui/data-table";

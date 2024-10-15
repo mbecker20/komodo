@@ -15,7 +15,7 @@ import {
 } from "@ui/dialog";
 import { useWebsocketMessages } from "@lib/socket";
 import { useNavigate } from "react-router-dom";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 
 export const LaunchServer = ({ id }: { id: string }) => {
   const nav = useNavigate();

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCtrlKeyListener, useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import {
   Select,
   SelectTrigger,

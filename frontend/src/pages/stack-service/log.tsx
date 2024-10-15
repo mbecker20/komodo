@@ -1,6 +1,6 @@
 import { Section } from "@components/layouts";
 import { useLocalStorage, useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { RefreshCw, X, AlertOctagon, ScrollText } from "lucide-react";
 import { useEffect, useState } from "react";

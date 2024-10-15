@@ -12,7 +12,7 @@ import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { useEffect, useState } from "react";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import {
   Select,
   SelectContent,

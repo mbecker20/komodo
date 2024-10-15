@@ -3,7 +3,7 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { fmt_version } from "@lib/formatting";
 import { ResourceLink } from "../common";
 import { BuildComponents } from ".";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 
 export const BuildTable = ({ builds }: { builds: Types.BuildListItem[] }) => {
   return (

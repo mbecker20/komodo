@@ -1,7 +1,7 @@
 import { PermissionLevelSelector } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RESOURCE_TARGETS } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useToast } from "@ui/use-toast";
 import { Card, CardContent, CardHeader } from "@ui/card";
 

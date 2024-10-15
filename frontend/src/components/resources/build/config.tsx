@@ -10,7 +10,7 @@ import {
   SystemCommand,
 } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";

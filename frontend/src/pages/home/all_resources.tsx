@@ -11,7 +11,7 @@ import {
   useUser,
 } from "@lib/hooks";
 import { cn } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { RequiredResourceComponents, UsableResource } from "@types";
 import { Input } from "@ui/input";
 import { AlertTriangle } from "lucide-react";

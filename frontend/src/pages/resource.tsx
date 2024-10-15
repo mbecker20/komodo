@@ -14,7 +14,7 @@ import {
   useUser,
 } from "@lib/hooks";
 import { has_minimum_permissions, usableResourcePath } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
 import {

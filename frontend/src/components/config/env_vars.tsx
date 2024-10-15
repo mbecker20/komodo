@@ -1,6 +1,6 @@
 import { SecretSelector } from "@components/config/util";
 import { useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useToast } from "@ui/use-toast";
 
 export const SecretsSearch = ({

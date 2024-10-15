@@ -1,6 +1,6 @@
 import { hex_color_by_intention } from "@lib/color";
 import { useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useMemo } from "react";
 import { useStatsGranularity } from "./hooks";
 import { Loader2 } from "lucide-react";

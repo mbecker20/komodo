@@ -1,6 +1,6 @@
 import { AlertLevel } from "@components/alert";
 import { UpdateDetails } from "@components/updates/details";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ColorIntention, text_color_class_by_intention } from "@lib/color";
 import { fmt_operation, fmt_version, fmt_date } from "@lib/formatting";
 import { useRead } from "@lib/hooks";

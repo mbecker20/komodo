@@ -8,7 +8,7 @@ import {
   ProviderSelectorConfig,
   SystemCommand,
 } from "@components/config/util";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { ReactNode, useState } from "react";
 import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";

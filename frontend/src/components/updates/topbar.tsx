@@ -11,7 +11,7 @@ import { Calendar } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
 import { ResourceComponents } from "@components/resources";
 import { cn, version_is_none } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { fmt_date, fmt_operation, fmt_version } from "@lib/formatting";
 import { ResourceName } from "@components/resources/common";
 import { UsableResource } from "@types";

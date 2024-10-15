@@ -1,5 +1,5 @@
 import { ConfigItem } from "@components/config/util";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Badge } from "@ui/badge";
 import {
   Select,

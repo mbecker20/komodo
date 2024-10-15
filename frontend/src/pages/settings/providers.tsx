@@ -6,7 +6,7 @@ import {
   useUser,
   useWrite,
 } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { Card } from "@ui/card";
 import { DataTable, SortableHeader } from "@ui/data-table";

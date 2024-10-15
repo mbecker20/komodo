@@ -1,16 +1,21 @@
 {
-  "name": "@komodo/client",
-  "version": "1.0.0",
+  "name": "komodo_client",
+  "version": "1.15.9",
+  "description": "Komodo client package",
+  "homepage": "https://komo.do",
   "main": "dist/lib.js",
-  "license": "MIT",
+  "license": "GPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc"
   },
   "dependencies": {
-    "axios": "^1.4.0"
+    "axios": "^1.7.7"
   },
   "devDependencies": {
-    "typescript": "^5.1.6"
+    "typescript": "^5.6.3"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

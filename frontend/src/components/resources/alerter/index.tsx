@@ -6,7 +6,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
 import { DeleteResource, NewResource } from "../common";
 import { AlerterTable } from "./table";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ResourcePageHeader } from "@components/util";
 
 const useAlerter = (id?: string) =>

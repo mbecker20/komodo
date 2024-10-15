@@ -9,7 +9,7 @@ import {
 import { Progress } from "@ui/progress";
 import { Cpu, Database, Loader2, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ReactNode, useMemo, useState } from "react";
 import { Input } from "@ui/input";

@@ -1,7 +1,7 @@
 import { Config } from "@components/config";
 import { ConfigList } from "@components/config/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ReactNode, useState } from "react";
 
 export const ServerConfig = ({

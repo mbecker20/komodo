@@ -15,7 +15,7 @@ import {
 } from "@lib/color";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { cn, has_minimum_permissions } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ChevronLeft, Clapperboard, Layers2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { StackServiceLogs } from "./log";

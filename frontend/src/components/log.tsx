@@ -1,5 +1,5 @@
 import { logToHtml } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@ui/select";
 import { ChevronDown } from "lucide-react";

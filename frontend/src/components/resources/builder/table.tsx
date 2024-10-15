@@ -2,7 +2,7 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { BuilderInstanceType } from ".";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 
 export const BuilderTable = ({
   builders,

@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@ui/dialog";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ResourceComponents } from "./resources";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@ui/card";
 import { ResourceTags } from "./tags";

@@ -14,7 +14,7 @@ import {
 } from "@lib/color";
 import { useNoResources, useRead, useUser } from "@lib/hooks";
 import { cn, usableResourcePath } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { UsableResource } from "@types";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { AlertTriangle, Box, Circle, History } from "lucide-react";

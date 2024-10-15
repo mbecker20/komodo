@@ -5,25 +5,25 @@ import {
   ReadResponses,
   UserResponses,
   WriteResponses,
-} from "./responses";
+} from "./responses.js";
 import {
   AuthRequest,
   ExecuteRequest,
   ReadRequest,
   UserRequest,
   WriteRequest,
-} from "./types";
+} from "./types.js";
 
-export * as Types from "./types";
+export * as Types from "./types.js";
 
 type InitOptions =
   | { type: "jwt"; params: { jwt: string } }
-  | { type: "api-key"; params: { api_key: string; secret: string } };
+  | { type: "api-key"; params: { key: string; secret: string } };
 
 export function KomodoClient(url: string, options: InitOptions) {
   const state = {
     jwt: options.type === "jwt" ? options.params.jwt : undefined,
-    api_key: options.type === "api-key" ? options.params.api_key : undefined,
+    key: options.type === "api-key" ? options.params.key : undefined,
     secret: options.type === "api-key" ? options.params.secret : undefined,
   };
 
@@ -32,7 +32,7 @@ export function KomodoClient(url: string, options: InitOptions) {
       .post<Res>(url + path, request, {
         headers: {
           Authorization: state.jwt,
-          "X-API-KEY": state.api_key,
+          "X-API-KEY": state.key,
           "X-API-SECRET": state.secret,
         },
       })

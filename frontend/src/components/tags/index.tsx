@@ -6,7 +6,7 @@ import {
   useWrite,
 } from "@lib/hooks";
 import { cn, filterBySplit } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import {

@@ -9,7 +9,7 @@ ARG VITE_KOMODO_HOST
 ENV VITE_KOMODO_HOST ${VITE_KOMODO_HOST}
 
 RUN cd client && yarn && yarn build && yarn link
-RUN cd frontend && yarn link @komodo/client && yarn && yarn build
+RUN cd frontend && yarn link komodo_client && yarn && yarn build
 
 ENV PORT 4174
 

@@ -15,6 +15,10 @@ cmd = "yarn dev"
 path = "frontend"
 cmd = "yarn build"
 
+[publish-typescript]
+path = "client/core/ts"
+cmd = "npm publish"
+
 [test-compose]
 description = "deploys test.compose.yaml"
 cmd = """

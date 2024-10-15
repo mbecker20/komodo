@@ -6,7 +6,7 @@ import {
   ProviderSelectorConfig,
 } from "@components/config/util";
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ReactNode, useState } from "react";
 import { CopyGithubWebhook } from "../common";
 import { useToast } from "@ui/use-toast";

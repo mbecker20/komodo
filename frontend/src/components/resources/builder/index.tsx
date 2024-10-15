@@ -1,6 +1,6 @@
 import { NewLayout } from "@components/layouts";
 import { useRead, useUser, useWrite } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { Input } from "@ui/input";

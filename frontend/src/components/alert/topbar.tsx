@@ -11,7 +11,7 @@ import { AlertLevel } from ".";
 import { ResourceLink } from "@components/resources/common";
 import { UsableResource } from "@types";
 import { Dialog } from "@ui/dialog";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useState } from "react";
 import { AlertDetailsDialogContent } from "./details";
 

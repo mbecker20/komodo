@@ -10,10 +10,10 @@ import {
   Milestone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Section } from "@components/layouts";
 import { UpdateDetails, UpdateUser } from "./details";
-import { UpdateStatus } from "@komodo/client/dist/types";
+import { UpdateStatus } from "komodo_client/dist/types";
 import { fmt_date, fmt_operation, fmt_version } from "@lib/formatting";
 import {
   getUpdateQuery,

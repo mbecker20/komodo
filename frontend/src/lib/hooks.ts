@@ -1,12 +1,12 @@
 import { AUTH_TOKEN_STORAGE_KEY, KOMODO_BASE_URL } from "@main";
-import { KomodoClient as Client, Types } from "@komodo/client";
+import { KomodoClient as Client, Types } from "komodo_client";
 import {
   AuthResponses,
   ExecuteResponses,
   ReadResponses,
   UserResponses,
   WriteResponses,
-} from "@komodo/client/dist/responses";
+} from "komodo_client/dist/responses";
 import {
   UseMutationOptions,
   UseQueryOptions,
