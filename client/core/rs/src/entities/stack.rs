@@ -257,12 +257,22 @@ pub struct StackConfig {
   pub file_paths: Vec<String>,
 
   /// The name of the written environment file before `docker compose up`.
-  /// Relative to the repo root.
+  /// Relative to the run directory root.
   /// Default: .env
   #[serde(default = "default_env_file_path")]
   #[builder(default = "default_env_file_path()")]
   #[partial_default(default_env_file_path())]
   pub env_file_path: String,
+
+  /// Add additional env files to attach with `--env-file`.
+  /// Relative to the run directory root.
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
+  #[builder(default)]
+  pub additional_env_files: Vec<String>,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -456,6 +466,7 @@ impl Default for StackConfig {
       extra_args: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),
+      additional_env_files: Default::default(),
       run_build: Default::default(),
       destroy_before_deploy: Default::default(),
       build_extra_args: Default::default(),

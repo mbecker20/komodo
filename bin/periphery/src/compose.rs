@@ -141,13 +141,20 @@ pub async fn compose_up(
     .map(|path| format!(" --env-file {path}"))
     .unwrap_or_default();
 
+  let additional_env_files = stack
+    .config
+    .additional_env_files
+    .iter()
+    .map(|file| format!(" --env-file {file}"))
+    .collect::<String>();
+
   // Build images before destroying to minimize downtime.
   // If this fails, do not continue.
   if stack.config.run_build {
     let build_extra_args =
       parse_extra_args(&stack.config.build_extra_args);
     let command = format!(
-      "{docker_compose} -p {project_name} -f {file_args}{env_file} build{build_extra_args}{service_arg}",
+      "{docker_compose} -p {project_name} -f {file_args}{env_file}{additional_env_files} build{build_extra_args}{service_arg}",
     );
     if stack.config.skip_secret_interp {
       let log = run_komodo_command(
