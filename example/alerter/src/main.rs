@@ -8,6 +8,23 @@ use axum::{routing::post, Json, Router};
 use komodo_client::entities::alert::{Alert, SeverityLevel};
 use serde::Deserialize;
 
+/// Entrypoint for handling each incoming alert.
+async fn handle_incoming_alert(Json(alert): Json<Alert>) {
+  if alert.resolved {
+    info!("Alert Resolved!: {alert:?}");
+    return;
+  }
+  match alert.level {
+    SeverityLevel::Ok => info!("{alert:?}"),
+    SeverityLevel::Warning => warn!("{alert:?}"),
+    SeverityLevel::Critical => error!("{alert:?}"),
+  }
+}
+
+/// ========================
+/// Http server boilerplate.
+/// ========================
+
 #[derive(Deserialize)]
 struct Env {
   #[serde(default = "default_port")]
@@ -30,20 +47,7 @@ async fn app() -> anyhow::Result<()> {
 
   info!("v {} | {socket_addr}", env!("CARGO_PKG_VERSION"));
 
-  let app = Router::new().route(
-    "/",
-    post(|Json(alert): Json<Alert>| async move {
-      if alert.resolved {
-        info!("Alert Resolved!: {alert:?}");
-        return;
-      }
-      match alert.level {
-        SeverityLevel::Ok => info!("{alert:?}"),
-        SeverityLevel::Warning => warn!("{alert:?}"),
-        SeverityLevel::Critical => error!("{alert:?}"),
-      }
-    }),
-  );
+  let app = Router::new().route("/", post(handle_incoming_alert));
 
   let listener = tokio::net::TcpListener::bind(socket_addr)
     .await
