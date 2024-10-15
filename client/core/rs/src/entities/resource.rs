@@ -4,7 +4,10 @@ use derive_default_builder::DefaultBuilder;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{MongoId, I64};
+use crate::{
+  deserializers::string_list_deserializer,
+  entities::{MongoId, I64},
+};
 
 use super::{permission::PermissionLevel, ResourceTargetVariant};
 
@@ -38,7 +41,7 @@ pub struct Resource<Config: Default, Info: Default = ()> {
   pub updated_at: I64,
 
   /// Tag Ids
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
   #[builder(default)]
   pub tags: Vec<String>,
 
@@ -84,7 +87,7 @@ pub struct ResourceQuery<T: Default> {
   #[serde(default)]
   pub names: Vec<String>,
   /// Pass Vec of tag ids or tag names
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
   pub tags: Vec<String>,
   #[serde(default)]
   pub tag_behavior: TagBehavior,

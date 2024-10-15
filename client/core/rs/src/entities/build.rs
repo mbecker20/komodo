@@ -13,6 +13,7 @@ use crate::{
   deserializers::{
     env_vars_deserializer, labels_deserializer,
     option_env_vars_deserializer, option_labels_deserializer,
+    option_string_list_deserializer, string_list_deserializer,
   },
   entities::I64,
 };
@@ -132,7 +133,11 @@ pub struct BuildConfig {
   pub image_tag: String,
 
   /// Configure quick links that are displayed in the resource header
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub links: Vec<String>,
 
@@ -225,7 +230,11 @@ pub struct BuildConfig {
   pub use_buildx: bool,
 
   /// Any extra docker cli arguments to be included in the build command
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub extra_args: Vec<String>,
 

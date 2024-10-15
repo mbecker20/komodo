@@ -5,6 +5,10 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+use crate::deserializers::{
+  option_string_list_deserializer, string_list_deserializer,
+};
+
 use super::{
   alert::SeverityLevel,
   resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
@@ -65,7 +69,11 @@ pub struct ServerConfig {
 
   /// Sometimes the system stats reports a mount path that is not desired.
   /// Use this field to filter it out from the report.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub ignore_mounts: Vec<String>,
 
@@ -84,7 +92,11 @@ pub struct ServerConfig {
   pub auto_prune: bool,
 
   /// Configure quick links that are displayed in the resource header
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub links: Vec<String>,
 

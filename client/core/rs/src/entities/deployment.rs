@@ -13,7 +13,8 @@ use crate::{
     conversions_deserializer, env_vars_deserializer,
     labels_deserializer, option_conversions_deserializer,
     option_env_vars_deserializer, option_labels_deserializer,
-    option_term_labels_deserializer, term_labels_deserializer,
+    option_string_list_deserializer, option_term_labels_deserializer,
+    string_list_deserializer, term_labels_deserializer,
   },
   parsers::parse_key_value_list,
 };
@@ -130,7 +131,11 @@ pub struct DeploymentConfig {
 
   /// Extra args which are interpolated into the `docker run` command,
   /// and affect the container configuration.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub extra_args: Vec<String>,
 

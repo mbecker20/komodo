@@ -2,15 +2,13 @@ use bson::{doc, Document};
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use partial_derive2::Partial;
-use serde::{
-  de::{value::SeqAccessDeserializer, Visitor},
-  Deserialize, Deserializer, Serialize,
-};
+use serde::{Deserialize, Serialize};
 use strum::Display;
 use typeshare::typeshare;
 
 use crate::deserializers::{
   file_contents_deserializer, option_file_contents_deserializer,
+  option_string_list_deserializer, string_list_deserializer,
 };
 
 use super::{
@@ -223,10 +221,10 @@ pub struct ResourceSyncConfig {
   ///  - If Git Repo based, this is relative to the root of the repo.
   /// Can be a specific file, or a directory containing multiple files / folders.
   /// See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
-  #[serde(default, deserialize_with = "resource_path_deserializer")]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "option_resource_path_deserializer"
+    deserialize_with = "option_string_list_deserializer"
   ))]
   #[builder(default)]
   pub resource_path: Vec<String>,
@@ -248,7 +246,11 @@ pub struct ResourceSyncConfig {
 
   /// When using `managed` resource sync, will only export resources
   /// matching all of the given tags. If none, will match all resources.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub match_tags: Vec<String>,
 
@@ -326,94 +328,6 @@ pub struct SyncFileContents {
   pub path: String,
   /// The contents of the file
   pub contents: String,
-}
-
-/// Using this ensures the resource path deserialized to Vec<String>
-pub fn resource_path_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<Vec<String>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(ResourcePathVisitor)
-}
-
-/// Using this ensures the resource path deserialized to Vec<String>
-pub fn option_resource_path_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<Option<Vec<String>>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(OptionResourcePathVisitor)
-}
-
-struct ResourcePathVisitor;
-
-impl<'de> Visitor<'de> for ResourcePathVisitor {
-  type Value = Vec<String>;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "string")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(vec![v.to_string()])
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    Vec::deserialize(SeqAccessDeserializer::new(seq))
-  }
-}
-
-struct OptionResourcePathVisitor;
-
-impl<'de> Visitor<'de> for OptionResourcePathVisitor {
-  type Value = Option<Vec<String>>;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "null or string")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    ResourcePathVisitor.visit_str(v).map(Some)
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    ResourcePathVisitor.visit_seq(seq).map(Some)
-  }
-
-  fn visit_none<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
-
-  fn visit_unit<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
 }
 
 #[typeshare]
