@@ -21,6 +21,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::None(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::RunAction(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::RunProcedure(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -168,6 +171,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
   info!("Running Execution...");
 
   let res = match execution {
+    Execution::RunAction(request) => {
+      komodo_client().execute(request).await
+    }
     Execution::RunProcedure(request) => {
       komodo_client().execute(request).await
     }

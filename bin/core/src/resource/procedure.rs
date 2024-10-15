@@ -4,6 +4,7 @@ use anyhow::{anyhow, Context};
 use komodo_client::{
   api::execute::Execution,
   entities::{
+    action::Action,
     build::Build,
     deployment::Deployment,
     permission::PermissionLevel,
@@ -171,6 +172,15 @@ async fn validate_config(
             _ => {}
           }
           params.procedure = procedure.id;
+        }
+        Execution::RunAction(params) => {
+          let action = super::get_check_permissions::<Action>(
+            &params.action,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.action = action.id;
         }
         Execution::RunBuild(params) => {
           let build = super::get_check_permissions::<Build>(

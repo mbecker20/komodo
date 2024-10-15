@@ -3,10 +3,11 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::{
-  alerter::PartialAlerterConfig, build::PartialBuildConfig,
-  builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
-  permission::PermissionLevel, procedure::PartialProcedureConfig,
-  repo::PartialRepoConfig, server::PartialServerConfig,
+  action::PartialActionConfig, alerter::PartialAlerterConfig,
+  build::PartialBuildConfig, builder::PartialBuilderConfig,
+  deployment::PartialDeploymentConfig, permission::PermissionLevel,
+  procedure::PartialProcedureConfig, repo::PartialRepoConfig,
+  server::PartialServerConfig,
   server_template::PartialServerTemplateConfig,
   stack::PartialStackConfig, sync::PartialResourceSyncConfig,
   variable::Variable, ResourceTarget, ResourceTargetVariant,
@@ -56,6 +57,13 @@ pub struct ResourcesToml {
     skip_serializing_if = "Vec::is_empty"
   )]
   pub procedures: Vec<ResourceToml<PartialProcedureConfig>>,
+
+  #[serde(
+    default,
+    rename = "action",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub actions: Vec<ResourceToml<PartialActionConfig>>,
 
   #[serde(
     default,

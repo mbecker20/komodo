@@ -3,6 +3,7 @@ use resolver_api::{derive::Request, HasResponse};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+mod action;
 mod alert;
 mod alerter;
 mod build;
@@ -24,6 +25,7 @@ mod user;
 mod user_group;
 mod variable;
 
+pub use action::*;
 pub use alert::*;
 pub use alerter::*;
 pub use build::*;

@@ -7,7 +7,7 @@ use komodo_client::{
     UpdateTagsOnResourceResponse,
   },
   entities::{
-    alerter::Alerter, build::Build, builder::Builder,
+    action::Action, alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, permission::PermissionLevel,
     procedure::Procedure, repo::Repo, server::Server,
     server_template::ServerTemplate, stack::Stack,
@@ -181,6 +181,15 @@ impl Resolve<UpdateTagsOnResource, User> for State {
         )
         .await?;
         resource::update_tags::<Procedure>(&id, tags, user).await?
+      }
+      ResourceTarget::Action(id) => {
+        resource::get_check_permissions::<Action>(
+          &id,
+          &user,
+          PermissionLevel::Write,
+        )
+        .await?;
+        resource::update_tags::<Action>(&id, tags, user).await?
       }
       ResourceTarget::ServerTemplate(id) => {
         resource::get_check_permissions::<ServerTemplate>(

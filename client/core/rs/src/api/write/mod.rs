@@ -1,3 +1,4 @@
+mod action;
 mod alerter;
 mod api_key;
 mod build;
@@ -17,6 +18,7 @@ mod user;
 mod user_group;
 mod variable;
 
+pub use action::*;
 pub use alerter::*;
 pub use api_key::*;
 pub use build::*;

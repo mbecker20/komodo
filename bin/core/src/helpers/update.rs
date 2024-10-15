@@ -1,5 +1,6 @@
 use anyhow::Context;
 use komodo_client::entities::{
+  action::Action,
   build::Build,
   deployment::Deployment,
   komodo_timestamp,
@@ -342,6 +343,14 @@ pub async fn init_execution_update(
       Operation::RunProcedure,
       ResourceTarget::Procedure(
         resource::get::<Procedure>(&data.procedure).await?.id,
+      ),
+    ),
+
+    // Action
+    ExecuteRequest::RunAction(data) => (
+      Operation::RunAction,
+      ResourceTarget::Action(
+        resource::get::<Action>(&data.action).await?.id,
       ),
     ),
 

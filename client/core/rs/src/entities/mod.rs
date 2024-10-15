@@ -22,6 +22,8 @@ use crate::{
   parsers::parse_key_value_list,
 };
 
+/// Subtypes of [Action][action::Action].
+pub mod action;
 /// Subtypes of [Alert][alert::Alert].
 pub mod alert;
 /// Subtypes of [Alerter][alerter::Alerter].
@@ -725,6 +727,12 @@ pub enum Operation {
   DeleteProcedure,
   RunProcedure,
 
+  // action
+  CreateAction,
+  UpdateAction,
+  DeleteAction,
+  RunAction,
+
   // builder
   CreateBuilder,
   UpdateBuilder,
@@ -849,6 +857,7 @@ pub enum ResourceTarget {
   Build(String),
   Repo(String),
   Procedure(String),
+  Action(String),
   Builder(String),
   Alerter(String),
   ServerTemplate(String),
@@ -869,6 +878,7 @@ impl ResourceTarget {
       ResourceTarget::Repo(id) => id,
       ResourceTarget::Alerter(id) => id,
       ResourceTarget::Procedure(id) => id,
+      ResourceTarget::Action(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
       ResourceTarget::ResourceSync(id) => id,
     };
@@ -941,8 +951,14 @@ impl From<&sync::ResourceSync> for ResourceTarget {
 }
 
 impl From<&stack::Stack> for ResourceTarget {
-  fn from(resource_sync: &stack::Stack) -> Self {
-    Self::Stack(resource_sync.id.clone())
+  fn from(stack: &stack::Stack) -> Self {
+    Self::Stack(stack.id.clone())
+  }
+}
+
+impl From<&action::Action> for ResourceTarget {
+  fn from(action: &action::Action) -> Self {
+    Self::Action(action.id.clone())
   }
 }
 
@@ -961,6 +977,7 @@ impl ResourceTargetVariant {
       ResourceTargetVariant::ServerTemplate => "server_template",
       ResourceTargetVariant::ResourceSync => "resource_sync",
       ResourceTargetVariant::Stack => "stack",
+      ResourceTargetVariant::Action => "action",
     }
   }
 }

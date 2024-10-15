@@ -4,7 +4,8 @@ use anyhow::anyhow;
 use komodo_client::{
   busy::Busy,
   entities::{
-    build::BuildActionState, deployment::DeploymentActionState,
+    action::ActionActionState, build::BuildActionState,
+    deployment::DeploymentActionState,
     procedure::ProcedureActionState, repo::RepoActionState,
     server::ServerActionState, stack::StackActionState,
     sync::ResourceSyncActionState,
@@ -22,6 +23,7 @@ pub struct ActionStates {
   pub repo: Cache<String, Arc<ActionState<RepoActionState>>>,
   pub procedure:
     Cache<String, Arc<ActionState<ProcedureActionState>>>,
+  pub action: Cache<String, Arc<ActionState<ActionActionState>>>,
   pub resource_sync:
     Cache<String, Arc<ActionState<ResourceSyncActionState>>>,
   pub stack: Cache<String, Arc<ActionState<StackActionState>>>,

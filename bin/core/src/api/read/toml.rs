@@ -8,6 +8,7 @@ use komodo_client::{
     GetUserGroup, ListUserTargetPermissions,
   },
   entities::{
+    action::Action,
     alerter::Alerter,
     build::Build,
     builder::Builder,
@@ -349,6 +350,21 @@ impl Resolve<ExportResourcesToToml, User> for State {
             &id_to_tags,
           ));
         }
+        ResourceTarget::Action(id) => {
+          let mut action = resource::get_check_permissions::<Action>(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          Action::replace_ids(&mut action, &all);
+          res.actions.push(convert_resource::<Action>(
+            action,
+            false,
+            vec![],
+            &id_to_tags,
+          ));
+        }
         ResourceTarget::System(_) => continue,
       };
     }
@@ -457,6 +473,13 @@ async fn add_user_groups(
           ResourceTarget::Procedure(id) => {
             *id = all
               .procedures
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Action(id) => {
+            *id = all
+              .actions
               .get(id)
               .map(|r| r.name.clone())
               .unwrap_or_default()
