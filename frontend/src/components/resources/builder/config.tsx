@@ -1,7 +1,7 @@
 import { Config } from "@components/config";
 import { ConfigItem, ConfigList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useState } from "react";
 import { ResourceLink, ResourceSelector } from "../common";
 import { Button } from "@ui/button";

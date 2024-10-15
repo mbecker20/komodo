@@ -12,7 +12,7 @@ const FeatureList: FeatureItem[] = [
     title: "Automated builds 🛠️",
     description: (
       <>
-        Build auto versioned docker images from github repos, trigger builds on
+        Build auto versioned docker images from git repos, trigger builds on
         git push
       </>
     ),

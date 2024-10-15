@@ -44,9 +44,3 @@ Just like all other resources with Environments (Deployments, Repos, Builds),
 Stack Environments support **Variable and Secret interpolation**. Define global variables
 in the UI and share the values across environments.
 :::
-
-## Using bind mounts
-
-Repo-based stacks must delete the stack folder before it is able to reclone for the latest repo contents.
-Because of this, users should **avoid using relative file paths that are placed inside the repo directory**.
-Or better yet, make things simple and use **absolute file paths** or **docker volumes** instead.

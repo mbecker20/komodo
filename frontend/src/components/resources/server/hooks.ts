@@ -1,5 +1,5 @@
 import { atomWithStorage } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useAtom } from "jotai";
 
 const statsGranularityAtom = atomWithStorage<Types.Timelength>(

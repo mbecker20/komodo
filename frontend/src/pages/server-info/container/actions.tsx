@@ -1,6 +1,6 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Pause, Play, RefreshCcw, Square, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

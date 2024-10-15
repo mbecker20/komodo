@@ -3,7 +3,7 @@ import { ResourceComponents } from "@components/resources";
 import { UpdatesTable } from "@components/updates/table";
 import { useRead, useResourceParamType, useSetTitle } from "@lib/hooks";
 import { filterBySplit, RESOURCE_TARGETS } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";

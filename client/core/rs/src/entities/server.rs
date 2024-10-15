@@ -223,13 +223,22 @@ impl Default for ServerConfig {
   }
 }
 
+/// The health of a part of the server.
+#[typeshare]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct ServerHealthState {
+  pub level: SeverityLevel,
+  /// Whether the health is good enough to close an open alert.
+  pub should_close_alert: bool,
+}
+
 /// Summary of the health of the server.
 #[typeshare]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct ServerHealth {
-  pub cpu: SeverityLevel,
-  pub mem: SeverityLevel,
-  pub disks: HashMap<PathBuf, SeverityLevel>,
+  pub cpu: ServerHealthState,
+  pub mem: ServerHealthState,
+  pub disks: HashMap<PathBuf, ServerHealthState>,
 }
 
 /// Current pending actions on the server.

@@ -5,7 +5,7 @@ use derive_variants::ExtractVariant;
 use komodo_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant, SeverityLevel},
   komodo_timestamp, optional_string,
-  server::{ServerListItem, ServerState},
+  server::{Server, ServerState},
   ResourceTarget,
 };
 use mongo_indexed::Indexed;
@@ -28,7 +28,7 @@ type OpenDiskAlertMap = OpenAlertMap<PathBuf>;
 #[instrument(level = "debug")]
 pub async fn alert_servers(
   ts: i64,
-  mut servers: HashMap<String, ServerListItem>,
+  mut servers: HashMap<String, Server>,
 ) {
   let server_statuses = server_status_cache().get_list().await;
 
@@ -70,12 +70,12 @@ pub async fn alert_servers(
           data: AlertData::ServerUnreachable {
             id: server_status.id.clone(),
             name: server.name.clone(),
-            region: optional_string(&server.info.region),
+            region: optional_string(&server.config.region),
             err: server_status.err.clone(),
           },
         };
         alerts_to_open
-          .push((alert, server.info.send_unreachable_alerts))
+          .push((alert, server.config.send_unreachable_alerts))
       }
       (ServerState::NotOk, Some(alert)) => {
         // update alert err
@@ -102,8 +102,10 @@ pub async fn alert_servers(
 
       // Close an open alert
       (ServerState::Ok | ServerState::Disabled, Some(alert)) => {
-        alert_ids_to_close
-          .push((alert.clone(), server.info.send_unreachable_alerts));
+        alert_ids_to_close.push((
+          alert.clone(),
+          server.config.send_unreachable_alerts,
+        ));
       }
       _ => {}
     }
@@ -119,20 +121,21 @@ pub async fn alert_servers(
       .as_ref()
       .and_then(|alerts| alerts.get(&AlertDataVariant::ServerCpu))
       .cloned();
-    match (health.cpu, cpu_alert) {
-      (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
+    match (health.cpu.level, cpu_alert, health.cpu.should_close_alert)
+    {
+      (SeverityLevel::Warning | SeverityLevel::Critical, None, _) => {
         // open alert
         let alert = Alert {
           id: Default::default(),
           ts,
           resolved: false,
           resolved_ts: None,
-          level: health.cpu,
+          level: health.cpu.level,
           target: ResourceTarget::Server(server_status.id.clone()),
           data: AlertData::ServerCpu {
             id: server_status.id.clone(),
             name: server.name.clone(),
-            region: optional_string(&server.info.region),
+            region: optional_string(&server.config.region),
             percentage: server_status
               .stats
               .as_ref()
@@ -140,41 +143,44 @@ pub async fn alert_servers(
               .unwrap_or(0.0),
           },
         };
-        alerts_to_open.push((alert, server.info.send_cpu_alerts));
+        alerts_to_open.push((alert, server.config.send_cpu_alerts));
       }
       (
         SeverityLevel::Warning | SeverityLevel::Critical,
         Some(mut alert),
+        _,
       ) => {
         // modify alert level only if it has increased
-        if alert.level < health.cpu {
-          alert.level = health.cpu;
+        if alert.level < health.cpu.level {
+          alert.level = health.cpu.level;
           alert.data = AlertData::ServerCpu {
             id: server_status.id.clone(),
             name: server.name.clone(),
-            region: optional_string(&server.info.region),
+            region: optional_string(&server.config.region),
             percentage: server_status
               .stats
               .as_ref()
               .map(|s| s.cpu_perc as f64)
               .unwrap_or(0.0),
           };
-          alerts_to_update.push((alert, server.info.send_cpu_alerts));
+          alerts_to_update
+            .push((alert, server.config.send_cpu_alerts));
         }
       }
-      (SeverityLevel::Ok, Some(alert)) => {
+      (SeverityLevel::Ok, Some(alert), true) => {
         let mut alert = alert.clone();
         alert.data = AlertData::ServerCpu {
           id: server_status.id.clone(),
           name: server.name.clone(),
-          region: optional_string(&server.info.region),
+          region: optional_string(&server.config.region),
           percentage: server_status
             .stats
             .as_ref()
             .map(|s| s.cpu_perc as f64)
             .unwrap_or(0.0),
         };
-        alert_ids_to_close.push((alert, server.info.send_cpu_alerts))
+        alert_ids_to_close
+          .push((alert, server.config.send_cpu_alerts))
       }
       _ => {}
     }
@@ -186,20 +192,21 @@ pub async fn alert_servers(
       .as_ref()
       .and_then(|alerts| alerts.get(&AlertDataVariant::ServerMem))
       .cloned();
-    match (health.mem, mem_alert) {
-      (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
+    match (health.mem.level, mem_alert, health.mem.should_close_alert)
+    {
+      (SeverityLevel::Warning | SeverityLevel::Critical, None, _) => {
         // open alert
         let alert = Alert {
           id: Default::default(),
           ts,
           resolved: false,
           resolved_ts: None,
-          level: health.mem,
+          level: health.mem.level,
           target: ResourceTarget::Server(server_status.id.clone()),
           data: AlertData::ServerMem {
             id: server_status.id.clone(),
             name: server.name.clone(),
-            region: optional_string(&server.info.region),
+            region: optional_string(&server.config.region),
             total_gb: server_status
               .stats
               .as_ref()
@@ -212,19 +219,20 @@ pub async fn alert_servers(
               .unwrap_or(0.0),
           },
         };
-        alerts_to_open.push((alert, server.info.send_mem_alerts));
+        alerts_to_open.push((alert, server.config.send_mem_alerts));
       }
       (
         SeverityLevel::Warning | SeverityLevel::Critical,
         Some(mut alert),
+        _,
       ) => {
         // modify alert level only if it has increased
-        if alert.level < health.mem {
-          alert.level = health.mem;
+        if alert.level < health.mem.level {
+          alert.level = health.mem.level;
           alert.data = AlertData::ServerMem {
             id: server_status.id.clone(),
             name: server.name.clone(),
-            region: optional_string(&server.info.region),
+            region: optional_string(&server.config.region),
             total_gb: server_status
               .stats
               .as_ref()
@@ -236,15 +244,16 @@ pub async fn alert_servers(
               .map(|s| s.mem_used_gb)
               .unwrap_or(0.0),
           };
-          alerts_to_update.push((alert, server.info.send_mem_alerts));
+          alerts_to_update
+            .push((alert, server.config.send_mem_alerts));
         }
       }
-      (SeverityLevel::Ok, Some(alert)) => {
+      (SeverityLevel::Ok, Some(alert), true) => {
         let mut alert = alert.clone();
         alert.data = AlertData::ServerMem {
           id: server_status.id.clone(),
           name: server.name.clone(),
-          region: optional_string(&server.info.region),
+          region: optional_string(&server.config.region),
           total_gb: server_status
             .stats
             .as_ref()
@@ -256,7 +265,8 @@ pub async fn alert_servers(
             .map(|s| s.mem_used_gb)
             .unwrap_or(0.0),
         };
-        alert_ids_to_close.push((alert, server.info.send_mem_alerts))
+        alert_ids_to_close
+          .push((alert, server.config.send_mem_alerts))
       }
       _ => {}
     }
@@ -273,8 +283,12 @@ pub async fn alert_servers(
         .as_ref()
         .and_then(|alerts| alerts.get(path))
         .cloned();
-      match (*health, disk_alert) {
-        (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
+      match (health.level, disk_alert, health.should_close_alert) {
+        (
+          SeverityLevel::Warning | SeverityLevel::Critical,
+          None,
+          _,
+        ) => {
           let disk = server_status.stats.as_ref().and_then(|stats| {
             stats.disks.iter().find(|disk| disk.mount == *path)
           });
@@ -283,58 +297,60 @@ pub async fn alert_servers(
             ts,
             resolved: false,
             resolved_ts: None,
-            level: *health,
+            level: health.level,
             target: ResourceTarget::Server(server_status.id.clone()),
             data: AlertData::ServerDisk {
               id: server_status.id.clone(),
               name: server.name.clone(),
-              region: optional_string(&server.info.region),
+              region: optional_string(&server.config.region),
               path: path.to_owned(),
               total_gb: disk.map(|d| d.total_gb).unwrap_or_default(),
               used_gb: disk.map(|d| d.used_gb).unwrap_or_default(),
             },
           };
-          alerts_to_open.push((alert, server.info.send_disk_alerts));
+          alerts_to_open
+            .push((alert, server.config.send_disk_alerts));
         }
         (
           SeverityLevel::Warning | SeverityLevel::Critical,
           Some(mut alert),
+          _,
         ) => {
           // Disk is persistent, update alert if health changes regardless of direction
-          if *health != alert.level {
+          if health.level != alert.level {
             let disk =
               server_status.stats.as_ref().and_then(|stats| {
                 stats.disks.iter().find(|disk| disk.mount == *path)
               });
-            alert.level = *health;
+            alert.level = health.level;
             alert.data = AlertData::ServerDisk {
               id: server_status.id.clone(),
               name: server.name.clone(),
-              region: optional_string(&server.info.region),
+              region: optional_string(&server.config.region),
               path: path.to_owned(),
               total_gb: disk.map(|d| d.total_gb).unwrap_or_default(),
               used_gb: disk.map(|d| d.used_gb).unwrap_or_default(),
             };
             alerts_to_update
-              .push((alert, server.info.send_disk_alerts));
+              .push((alert, server.config.send_disk_alerts));
           }
         }
-        (SeverityLevel::Ok, Some(alert)) => {
+        (SeverityLevel::Ok, Some(alert), true) => {
           let mut alert = alert.clone();
           let disk = server_status.stats.as_ref().and_then(|stats| {
             stats.disks.iter().find(|disk| disk.mount == *path)
           });
-          alert.level = *health;
+          alert.level = health.level;
           alert.data = AlertData::ServerDisk {
             id: server_status.id.clone(),
             name: server.name.clone(),
-            region: optional_string(&server.info.region),
+            region: optional_string(&server.config.region),
             path: path.to_owned(),
             total_gb: disk.map(|d| d.total_gb).unwrap_or_default(),
             used_gb: disk.map(|d| d.used_gb).unwrap_or_default(),
           };
           alert_ids_to_close
-            .push((alert, server.info.send_disk_alerts))
+            .push((alert, server.config.send_disk_alerts))
         }
         _ => {}
       }
@@ -347,7 +363,7 @@ pub async fn alert_servers(
           let mut alert = alert.clone();
           alert.level = SeverityLevel::Ok;
           alert_ids_to_close
-            .push((alert, server.info.send_disk_alerts));
+            .push((alert, server.config.send_disk_alerts));
         }
       }
     }

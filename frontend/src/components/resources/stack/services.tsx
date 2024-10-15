@@ -7,7 +7,7 @@ import { useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useStack } from ".";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@ui/button";

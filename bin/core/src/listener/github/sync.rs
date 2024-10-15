@@ -6,7 +6,9 @@ use komodo_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
   entities::{sync::ResourceSync, user::git_webhook_user},
 };
+use reqwest::StatusCode;
 use resolver_api::Resolve;
+use serror::AddStatusCode;
 
 use crate::{
   api::execute::ExecuteRequest,
@@ -20,21 +22,29 @@ fn sync_locks() -> &'static ListenerLockCache {
   SYNC_LOCKS.get_or_init(Default::default)
 }
 
-pub async fn handle_sync_refresh_webhook(
-  sync_id: String,
+pub async fn auth_sync_webhook(
+  sync_id: &str,
   headers: HeaderMap,
+  body: &str,
+) -> serror::Result<ResourceSync> {
+  let sync = resource::get::<ResourceSync>(sync_id)
+    .await
+    .status_code(StatusCode::NOT_FOUND)?;
+  verify_gh_signature(headers, body, &sync.config.webhook_secret)
+    .await
+    .status_code(StatusCode::UNAUTHORIZED)?;
+  Ok(sync)
+}
+
+pub async fn handle_sync_refresh_webhook(
+  sync: ResourceSync,
   body: String,
 ) -> anyhow::Result<()> {
   // Acquire and hold lock to make a task queue for
   // subsequent listener calls on same resource.
   // It would fail if we let it go through from action state busy.
-  let lock = sync_locks().get_or_insert_default(&sync_id).await;
+  let lock = sync_locks().get_or_insert_default(&sync.id).await;
   let _lock = lock.lock().await;
-
-  let sync = resource::get::<ResourceSync>(&sync_id).await?;
-
-  verify_gh_signature(headers, &body, &sync.config.webhook_secret)
-    .await?;
 
   if !sync.config.webhook_enabled {
     return Err(anyhow!("sync does not have webhook enabled"));
@@ -47,26 +57,20 @@ pub async fn handle_sync_refresh_webhook(
 
   let user = git_webhook_user().to_owned();
   State
-    .resolve(RefreshResourceSyncPending { sync: sync_id }, user)
+    .resolve(RefreshResourceSyncPending { sync: sync.id }, user)
     .await?;
   Ok(())
 }
 
 pub async fn handle_sync_execute_webhook(
-  sync_id: String,
-  headers: HeaderMap,
+  sync: ResourceSync,
   body: String,
 ) -> anyhow::Result<()> {
   // Acquire and hold lock to make a task queue for
   // subsequent listener calls on same resource.
   // It would fail if we let it go through from action state busy.
-  let lock = sync_locks().get_or_insert_default(&sync_id).await;
+  let lock = sync_locks().get_or_insert_default(&sync.id).await;
   let _lock = lock.lock().await;
-
-  let sync = resource::get::<ResourceSync>(&sync_id).await?;
-
-  verify_gh_signature(headers, &body, &sync.config.webhook_secret)
-    .await?;
 
   if !sync.config.webhook_enabled {
     return Err(anyhow!("sync does not have webhook enabled"));
@@ -79,7 +83,7 @@ pub async fn handle_sync_execute_webhook(
 
   let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunSync(RunSync {
-    sync: sync_id,
+    sync: sync.id,
     resource_type: None,
     resources: None,
   });

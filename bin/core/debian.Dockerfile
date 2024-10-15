@@ -10,7 +10,7 @@ WORKDIR /builder
 COPY ./frontend ./frontend
 COPY ./client/core/ts ./client
 RUN cd client && yarn && yarn build && yarn link
-RUN cd frontend && yarn link @komodo/client && yarn && yarn build
+RUN cd frontend && yarn link komodo_client && yarn && yarn build
 
 # Final Image
 FROM debian:bullseye-slim

@@ -9,10 +9,11 @@ import {
   useSetTitle,
   useUser,
 } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Input } from "@ui/input";
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { NotFound } from "@components/util";
 
 export const Resources = () => {
   const is_admin = useUser().data?.admin ?? false;
@@ -26,12 +27,16 @@ export const Resources = () => {
       ? "Resource Sync"
       : type;
   useSetTitle(name + "s");
-  const Components = ResourceComponents[type];
   const [search, set] = useState("");
-
   const resources = useRead(`List${type}s`, {}).data;
-
   const filtered = useFilterResources(resources as any, search);
+
+  const Components = ResourceComponents[type];
+
+  if (!Components) {
+    return <NotFound type={undefined} />;
+  }
+
   const targets = filtered?.map(
     (resource): Types.ResourceTarget => ({
       type,

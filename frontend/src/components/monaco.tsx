@@ -31,17 +31,34 @@ export const MonacoEditor = ({
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
 
+  useEffect(() => {
+    if (!editor) return;
+
+    let node = editor.getDomNode();
+    if (!node) return;
+
+    const callback = (e: any) => {
+      if (e.key === "Escape") {
+        (document.activeElement as any)?.blur?.();
+      }
+    };
+
+    node.addEventListener("keydown", callback);
+    return () => node.removeEventListener("keydown", callback);
+  }, [editor]);
+
   const line_count = value?.split(/\r\n|\r|\n/).length ?? 0;
 
   useEffect(() => {
     if (!editor) return;
     const contentHeight = line_count * 18 + 30;
-    const node = editor.getContainerDomNode();
-    node.style.height = `${Math.max(
+    const containerNode = editor.getContainerDomNode();
+
+    containerNode.style.height = `${Math.max(
       Math.ceil(contentHeight),
       MIN_EDITOR_HEIGHT
     )}px`;
-    // node.style.height = `${Math.max(
+    // containerNode.style.height = `${Math.max(
     //   Math.min(Math.ceil(contentHeight), MAX_EDITOR_HEIGHT),
     //   MIN_EDITOR_HEIGHT
     // )}px`;

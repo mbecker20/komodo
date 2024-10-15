@@ -6,7 +6,7 @@ import { ServerTemplateConfig } from "./config";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { useState } from "react";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { NewLayout } from "@components/layouts";
 import { Input } from "@ui/input";
 import {

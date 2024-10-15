@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCtrlKeyListener, useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import {
   Select,
   SelectTrigger,
@@ -594,7 +594,7 @@ export function ConfirmUpdate<T>({
   file_contents_language,
 }: ConfirmUpdateProps<T>) {
   const [open, set] = useState(false);
-  useCtrlKeyListener("s", () => {
+  useCtrlKeyListener("Enter", () => {
     if (open) {
       onConfirm();
     } else {

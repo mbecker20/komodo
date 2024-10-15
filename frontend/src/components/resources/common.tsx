@@ -31,7 +31,7 @@ import { ResourceComponents } from ".";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { filterBySplit, usableResourcePath } from "@lib/utils";
 
 export const ResourceDescription = ({

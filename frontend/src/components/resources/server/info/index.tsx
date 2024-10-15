@@ -2,7 +2,7 @@ import { Section } from "@components/layouts";
 import { ReactNode } from "react";
 import { Networks } from "./networks";
 import { useServer } from "..";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { useLocalStorage } from "@lib/hooks";
 import { Images } from "./images";
 import { Containers } from "./containers";

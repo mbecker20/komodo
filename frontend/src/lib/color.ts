@@ -1,4 +1,4 @@
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 
 export type ColorIntention =
   | "Good"

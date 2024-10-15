@@ -1,7 +1,16 @@
 #[macro_use]
 extern crate tracing;
 
-use komodo_client::KomodoClient;
+use komodo_client::{ws::UpdateWsMessage, KomodoClient};
+
+/// Entrypoint for handling each incoming update.
+async fn handle_incoming_update(update: UpdateWsMessage) {
+  info!("{update:?}");
+}
+
+/// ========================
+/// Ws Listener boilerplate.
+/// ========================
 
 async fn app() -> anyhow::Result<()> {
   logger::init(&Default::default())?;
@@ -13,12 +22,14 @@ async fn app() -> anyhow::Result<()> {
   let (mut rx, _) = komodo.subscribe_to_updates(1000, 5)?;
 
   loop {
-    let msg = rx.recv().await;
-    if let Err(e) = msg {
-      error!("🚨 recv error | {e:?}");
-      break;
-    }
-    info!("{msg:?}");
+    let update = match rx.recv().await {
+      Ok(msg) => msg,
+      Err(e) => {
+        error!("🚨 recv error | {e:?}");
+        break;
+      }
+    };
+    handle_incoming_update(update).await
   }
 
   Ok(())

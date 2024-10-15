@@ -2243,7 +2243,14 @@ export enum Timelength {
 export interface SystemStats {
 	/** Cpu usage percentage */
 	cpu_perc: number;
-	/** Memory used in GB */
+	/**
+	 * [1.15.9+]
+	 * Free memory in GB.
+	 * This is really the 'Free' memory, not the 'Available' memory.
+	 * It may be different than mem_total_gb - mem_used_gb.
+	 */
+	mem_free_gb?: number;
+	/** Used memory in GB. 'Total' - 'Available' (not free) memory. */
 	mem_used_gb: number;
 	/** Total memory in GB */
 	mem_total_gb: number;
@@ -6435,11 +6442,18 @@ export interface CloneArgs {
 	account?: string;
 }
 
+/** The health of a part of the server. */
+export interface ServerHealthState {
+	level: SeverityLevel;
+	/** Whether the health is good enough to close an open alert. */
+	should_close_alert: boolean;
+}
+
 /** Summary of the health of the server. */
 export interface ServerHealth {
-	cpu: SeverityLevel;
-	mem: SeverityLevel;
-	disks: Record<string, SeverityLevel>;
+	cpu: ServerHealthState;
+	mem: ServerHealthState;
+	disks: Record<string, ServerHealthState>;
 }
 
 export enum AwsVolumeType {

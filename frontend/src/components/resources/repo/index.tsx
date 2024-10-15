@@ -18,7 +18,7 @@ import {
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { useServer } from "../server";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { Badge } from "@ui/badge";

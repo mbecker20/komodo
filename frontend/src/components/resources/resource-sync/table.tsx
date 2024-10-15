@@ -1,7 +1,7 @@
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { ResourceSyncComponents } from ".";
 
 export const ResourceSyncTable = ({

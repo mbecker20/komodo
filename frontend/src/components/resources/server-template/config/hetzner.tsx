@@ -2,7 +2,7 @@ import { Config } from "@components/config";
 import { ConfigItem, ConfigList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { cn, filterBySplit } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { Card } from "@ui/card";
 import {

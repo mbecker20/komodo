@@ -16,7 +16,7 @@ import { cn } from "@lib/utils";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ResourceComponents } from "..";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";

@@ -25,7 +25,6 @@ there are no warranties. Use at your own risk.
 
 - [periphery setup](https://github.com/mbecker20/komodo/blob/main/scripts/readme.md)
 - [roadmap](https://github.com/mbecker20/komodo/blob/main/roadmap.md)
-- [changelog](https://github.com/mbecker20/komodo/blob/main/changelog.md)
 - [migrator](https://github.com/mbecker20/komodo/blob/main/bin/migrator/README.md)
 
 ## Screenshots

@@ -3,7 +3,7 @@ import { ResourceSelector } from "@components/resources/common";
 import { fmt_date, fmt_version } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
 import { filterBySplit } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import {
   Command,

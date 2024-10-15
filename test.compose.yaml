@@ -14,6 +14,8 @@ services:
       KOMODO_ENABLE_NEW_USERS: true
       KOMODO_LOCAL_AUTH: true
       KOMODO_JWT_SECRET: a_random_secret
+    volumes:
+      - repo-cache:/repo-cache
 
   periphery:
     build:
@@ -48,6 +50,7 @@ networks:
   default: {}
 
 volumes:
+  data:
+  repo-cache:
   repos:
   stacks:
-  data:

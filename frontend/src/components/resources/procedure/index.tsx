@@ -14,7 +14,7 @@ import {
   stroke_color_class_by_intention,
 } from "@lib/color";
 import { cn } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 
 const useProcedure = (id?: string) =>

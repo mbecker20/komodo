@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 use command::run_komodo_command;
@@ -18,7 +18,8 @@ pub async fn write_commit_file(
   file: &Path,
   contents: &str,
 ) -> anyhow::Result<GitRes> {
-  let path = repo_dir.join(file);
+  // Clean up the path by stripping any redundant `/./`
+  let path = repo_dir.join(file).components().collect::<PathBuf>();
 
   if let Some(parent) = path.parent() {
     let _ = fs::create_dir_all(&parent).await;

@@ -6,7 +6,7 @@ import { UserTable } from "@components/users/table";
 import { ActionWithDialog } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { filterBySplit } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import {
   Command,

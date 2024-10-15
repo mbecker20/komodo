@@ -12,7 +12,7 @@ import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { useEffect, useState } from "react";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import {
   Select,
   SelectContent,
@@ -203,7 +203,7 @@ export const StartStopDeployment = ({ id }: DeploymentId) => {
       />
     );
   }
-  if (state === Types.DeploymentState.Running) {
+  if (state !== Types.DeploymentState.NotDeployed) {
     return <StopDeployment id={id} />;
   }
 };

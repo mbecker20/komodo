@@ -2,7 +2,7 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { RepoComponents } from ".";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 
 export const RepoTable = ({ repos }: { repos: Types.RepoListItem[] }) => {
   return (

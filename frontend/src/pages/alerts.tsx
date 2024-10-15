@@ -1,7 +1,7 @@
 import { AlertsTable } from "@components/alert/table";
 import { Page } from "@components/layouts";
 import { useRead } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import {
   Select,

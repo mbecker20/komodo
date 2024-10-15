@@ -1,5 +1,5 @@
 import { ResourceComponents } from "@components/resources";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { UsableResource } from "@types";
 import Convert from "ansi-to-html";
 import { type ClassValue, clsx } from "clsx";

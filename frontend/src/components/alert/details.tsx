@@ -17,7 +17,7 @@ import {
   text_color_class_by_intention,
 } from "@lib/color";
 import { MonacoEditor } from "@components/monaco";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 
 export const AlertDetailsDialog = ({ id }: { id: string }) => {
   const [open, set] = useState(false);

@@ -2,9 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use komodo_client::entities::{
-  resource::ResourceQuery,
-  server::{Server, ServerListItem},
-  user::User,
+  resource::ResourceQuery, server::Server, user::User,
 };
 
 use crate::resource;
@@ -32,11 +30,10 @@ pub async fn check_alerts(ts: i64) {
 }
 
 #[instrument(level = "debug")]
-async fn get_all_servers_map() -> anyhow::Result<(
-  HashMap<String, ServerListItem>,
-  HashMap<String, String>,
-)> {
-  let servers = resource::list_for_user::<Server>(
+async fn get_all_servers_map(
+) -> anyhow::Result<(HashMap<String, Server>, HashMap<String, String>)>
+{
+  let servers = resource::list_full_for_user::<Server>(
     ResourceQuery::default(),
     &User {
       admin: true,

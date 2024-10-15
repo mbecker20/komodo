@@ -1,6 +1,6 @@
 import { useExecute, useLocalStorage, useRead, useUser } from "@lib/hooks";
 import { cn } from "@lib/utils";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { RequiredResourceComponents } from "@types";
 import {
   Server,

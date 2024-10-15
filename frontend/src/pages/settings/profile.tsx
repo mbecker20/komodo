@@ -40,7 +40,7 @@ import {
 import { KeysTable } from "@components/keys/table";
 import { Section } from "@components/layouts";
 import { Card, CardHeader } from "@ui/card";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 
 export const Profile = () => {
   useSetTitle("Profile");

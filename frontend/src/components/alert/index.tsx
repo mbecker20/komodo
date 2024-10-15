@@ -1,7 +1,7 @@
 import { Section } from "@components/layouts";
 import { alert_level_intention } from "@lib/color";
 import { useRead, atomWithStorage } from "@lib/hooks";
-import { Types } from "@komodo/client";
+import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { useAtom } from "jotai";
 import { AlertTriangle } from "lucide-react";

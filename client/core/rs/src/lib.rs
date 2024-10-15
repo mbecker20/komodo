@@ -1,5 +1,5 @@
 //! # Komodo
-//! *A system to build and deploy software accross many servers*
+//! *A system to build and deploy software across many servers*
 //!
 //! This is a client library for the Komodo Core API.
 //! It contains:
@@ -35,9 +35,9 @@ use serde::Deserialize;
 pub mod api;
 pub mod busy;
 pub mod entities;
+pub mod parser;
 pub mod ws;
 
-mod parser;
 mod request;
 
 #[derive(Deserialize)]
