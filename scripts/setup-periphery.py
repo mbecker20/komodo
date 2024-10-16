@@ -123,7 +123,7 @@ def copy_service_file(home_dir, bin_dir, config_dir, service_dir, user_install):
 		"Description=Agent to connect with Komodo Core\n"
 		"\n"
 		"[Service]\n"
-		f'Environment="HOME={home_dir}"\n',
+		f'Environment="HOME={home_dir}"\n'
 		f'ExecStart=/bin/sh -lc "{bin_dir}/periphery --config-path {config_dir}/periphery.config.toml"\n'
 		"Restart=on-failure\n"
 		"TimeoutStartSec=0\n"
