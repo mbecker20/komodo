@@ -30,9 +30,8 @@ pub struct DockerClient {
 impl Default for DockerClient {
   fn default() -> DockerClient {
     DockerClient {
-      docker: Docker::connect_with_local_defaults()
-        .or_else(|_| Docker::connect_with_http_defaults())
-        .expect("failed to connect to docker daemon with either local or HTTP defaults"),
+      docker: Docker::connect_with_defaults()
+        .expect("failed to connect to docker daemon"),
     }
   }
 }
