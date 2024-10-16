@@ -31,7 +31,8 @@ impl Default for DockerClient {
   fn default() -> DockerClient {
     DockerClient {
       docker: Docker::connect_with_local_defaults()
-        .expect("failed to connect to docker daemon"),
+        .or_else(|_| Docker::connect_with_http_defaults())
+        .expect("failed to connect to docker daemon with either local or HTTP defaults"),
     }
   }
 }
