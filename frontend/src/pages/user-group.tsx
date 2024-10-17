@@ -130,7 +130,7 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
   const users = useRead("ListUsers", {}).data?.filter(
     (user) =>
       // Only show users not already in group
-      !group?.users.includes(user._id?.$oid!)
+      !group?.users?.includes(user._id?.$oid!)
   );
 
   const addUser = useWrite("AddUserToUserGroup", {

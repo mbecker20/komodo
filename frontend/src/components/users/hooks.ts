@@ -7,6 +7,7 @@ export const useUserTargetPermissions = (user_target: Types.UserTarget) => {
     user_target,
   }).data;
   const servers = useRead("ListServers", {}).data;
+  const stacks = useRead("ListStacks", {}).data;
   const deployments = useRead("ListDeployments", {}).data;
   const builds = useRead("ListBuilds", {}).data;
   const repos = useRead("ListRepos", {}).data;
@@ -17,6 +18,7 @@ export const useUserTargetPermissions = (user_target: Types.UserTarget) => {
   const syncs = useRead("ListResourceSyncs", {}).data;
   const perms: (Types.Permission & { name: string })[] = [];
   addPerms(user_target, permissions, "Server", servers, perms);
+  addPerms(user_target, permissions, "Stack", stacks, perms);
   addPerms(user_target, permissions, "Deployment", deployments, perms);
   addPerms(user_target, permissions, "Build", builds, perms);
   addPerms(user_target, permissions, "Repo", repos, perms);
