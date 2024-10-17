@@ -5,6 +5,7 @@ use std::{
 
 use anyhow::Context;
 use komodo_client::entities::{
+  action::ActionState,
   build::BuildState,
   config::core::{CoreConfig, GithubWebhookAppConfig},
   deployment::DeploymentState,
@@ -189,6 +190,14 @@ pub fn procedure_state_cache() -> &'static ProcedureStateCache {
   static PROCEDURE_STATE_CACHE: OnceLock<ProcedureStateCache> =
     OnceLock::new();
   PROCEDURE_STATE_CACHE.get_or_init(Default::default)
+}
+
+pub type ActionStateCache = Cache<String, ActionState>;
+
+pub fn action_state_cache() -> &'static ActionStateCache {
+  static ACTION_STATE_CACHE: OnceLock<ActionStateCache> =
+    OnceLock::new();
+  ACTION_STATE_CACHE.get_or_init(Default::default)
 }
 
 pub type ResourceSyncStateCache = Cache<String, ResourceSyncState>;

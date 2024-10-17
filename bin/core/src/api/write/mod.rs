@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::{auth::auth_request, state::State};
 
+mod action;
 mod alerter;
 mod build;
 mod builder;
@@ -124,6 +125,12 @@ pub enum WriteRequest {
   CopyProcedure(CopyProcedure),
   DeleteProcedure(DeleteProcedure),
   UpdateProcedure(UpdateProcedure),
+
+  // ==== ACTION ====
+  CreateAction(CreateAction),
+  CopyAction(CopyAction),
+  DeleteAction(DeleteAction),
+  UpdateAction(UpdateAction),
 
   // ==== SYNC ====
   CreateResourceSync(CreateResourceSync),
