@@ -41,6 +41,16 @@ import {
 import { Badge } from "@ui/badge";
 import { TopbarAlerts } from "./alert/topbar";
 
+const Docs = () => (<a
+  href="https://komo.do/docs/intro"
+  target="_blank"
+  className="hidden lg:block"
+>
+  <Button variant="link" size="sm">
+    <div>Docs</div>
+  </Button>
+</a>);
+
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
   useShiftKeyListener("S", () => setOmniOpen(true));
@@ -66,6 +76,7 @@ export const Topbar = () => {
         <div className="flex justify-end items-center gap-2">
           <MobileDropdown />
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
+          <Docs/>
           <Version />
           <WsStatusIndicator />
           <KeyboardShortcuts />
