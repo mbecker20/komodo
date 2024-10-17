@@ -1,3 +1,6 @@
+use std::time::Duration;
+
+use anyhow::Context;
 use komodo_client::entities::{
   action::{
     Action, ActionConfig, ActionConfigDiff, ActionInfo,
@@ -9,9 +12,12 @@ use komodo_client::entities::{
   user::User,
   Operation, ResourceTargetVariant,
 };
-use mungos::mongodb::Collection;
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOneOptions, Collection},
+};
 
-use crate::state::{action_states, db_client};
+use crate::state::{action_state_cache, action_states, db_client};
 
 impl super::KomodoResource for Action {
   type Config = ActionConfig;
@@ -33,15 +39,14 @@ impl super::KomodoResource for Action {
   async fn to_list_item(
     action: Resource<Self::Config, Self::Info>,
   ) -> Self::ListItem {
-    // let status = action_status_cache().get(&action.id).await;
+    let state = get_action_state(&action.id).await;
     ActionListItem {
       name: action.name,
       id: action.id,
       tags: action.tags,
       resource_type: ResourceTargetVariant::Action,
       info: ActionListItemInfo {
-        // state: status.map(|s| s.state).unwrap_or_default(),
-        state: ActionState::Unknown,
+        state,
         last_run_at: action.info.last_run_at,
       },
     }
@@ -77,6 +82,7 @@ impl super::KomodoResource for Action {
     _created: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_action_state_cache().await;
     Ok(())
   }
 
@@ -98,6 +104,7 @@ impl super::KomodoResource for Action {
     _updated: &Self,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
+    refresh_action_state_cache().await;
     Ok(())
   }
 
@@ -120,4 +127,79 @@ impl super::KomodoResource for Action {
   ) -> anyhow::Result<()> {
     Ok(())
   }
+}
+
+pub fn spawn_action_state_refresh_loop() {
+  tokio::spawn(async move {
+    loop {
+      refresh_action_state_cache().await;
+      tokio::time::sleep(Duration::from_secs(60)).await;
+    }
+  });
+}
+
+pub async fn refresh_action_state_cache() {
+  let _ = async {
+    let actions = find_collect(&db_client().actions, None, None)
+      .await
+      .context("Failed to get Actions from db")?;
+    let cache = action_state_cache();
+    for action in actions {
+      let state = get_action_state_from_db(&action.id).await;
+      cache.insert(action.id, state).await;
+    }
+    anyhow::Ok(())
+  }
+  .await
+  .inspect_err(|e| {
+    error!("Failed to refresh Action state cache | {e:#}")
+  });
+}
+
+async fn get_action_state(id: &String) -> ActionState {
+  if action_states()
+    .action
+    .get(id)
+    .await
+    .map(|s| s.get().map(|s| s.running))
+    .transpose()
+    .ok()
+    .flatten()
+    .unwrap_or_default()
+  {
+    return ActionState::Running;
+  }
+  action_state_cache().get(id).await.unwrap_or_default()
+}
+
+async fn get_action_state_from_db(id: &str) -> ActionState {
+  async {
+    let state = db_client()
+      .updates
+      .find_one(doc! {
+        "target.type": "Action",
+        "target.id": id,
+        "operation": "RunAction"
+      })
+      .with_options(
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
+      )
+      .await?
+      .map(|u| {
+        if u.success {
+          ActionState::Ok
+        } else {
+          ActionState::Failed
+        }
+      })
+      .unwrap_or(ActionState::Ok);
+    anyhow::Ok(state)
+  }
+  .await
+  .inspect_err(|e| {
+    warn!("Failed to get Action state for {id} | {e:#}")
+  })
+  .unwrap_or(ActionState::Unknown)
 }

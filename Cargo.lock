@@ -2345,6 +2345,7 @@ dependencies = [
  "axum-server",
  "base64 0.22.1",
  "bcrypt",
+ "command",
  "dashmap",
  "derive_variants",
  "dotenvy",

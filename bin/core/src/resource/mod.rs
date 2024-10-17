@@ -58,6 +58,9 @@ mod server_template;
 mod stack;
 mod sync;
 
+pub use action::{
+  refresh_action_state_cache, spawn_action_state_refresh_loop,
+};
 pub use build::{
   refresh_build_state_cache, spawn_build_state_refresh_loop,
 };

@@ -94,6 +94,95 @@ export interface User {
 
 export type GetUserResponse = User;
 
+export interface Resource<Config, Info> {
+	/**
+	 * The Mongo ID of the resource.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Resource<T>) }`
+	 */
+	_id?: MongoId;
+	/**
+	 * The resource name.
+	 * This is guaranteed unique among others of the same resource type.
+	 */
+	name: string;
+	/** A description for the resource */
+	description?: string;
+	/** When description last updated */
+	updated_at?: I64;
+	/** Tag Ids */
+	tags?: string[];
+	/** Resource-specific information (not user configurable). */
+	info?: Info;
+	/** Resource-specific configuration. */
+	config?: Config;
+	/**
+	 * Set a base permission level that all users will have on the
+	 * resource.
+	 */
+	base_permission?: PermissionLevel;
+}
+
+export interface ActionConfig {
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+	/** Typescript file contents using pre-initialized `komodo` client. */
+	file_contents?: string;
+}
+
+export interface ActionInfo {
+	/** When action was last run */
+	last_run_at?: I64;
+}
+
+export type Action = Resource<ActionConfig, ActionInfo>;
+
+export type GetActionResponse = Action;
+
+export interface ResourceListItem<Info> {
+	/** The resource id */
+	id: string;
+	/** The resource type, ie `Server` or `Deployment` */
+	type: ResourceTarget["type"];
+	/** The resource name */
+	name: string;
+	/** Tag Ids */
+	tags: string[];
+	/** Resource specific info */
+	info: Info;
+}
+
+export enum ActionState {
+	/** Unknown case */
+	Unknown = "Unknown",
+	/** Last clone / pull successful (or never cloned) */
+	Ok = "Ok",
+	/** Last clone / pull failed */
+	Failed = "Failed",
+	/** Currently running */
+	Running = "Running",
+}
+
+export interface ActionListItemInfo {
+	/** Action last run timestamp in ms. */
+	last_run_at: I64;
+	/** Whether last action run successful */
+	state: ActionState;
+}
+
+export type ActionListItem = ResourceListItem<ActionListItemInfo>;
+
+export type ListActionsResponse = ActionListItem[];
+
+export type ListFullActionsResponse = Action[];
+
+export interface ActionActionState {
+	/** Whether the action is currently running. */
+	running: boolean;
+}
+
+export type GetActionActionStateResponse = ActionActionState;
+
 /** Severity level of problem. */
 export enum SeverityLevel {
 	/** No problem. */
@@ -113,6 +202,7 @@ export type ResourceTarget =
 	| { type: "Build", id: string }
 	| { type: "Repo", id: string }
 	| { type: "Procedure", id: string }
+	| { type: "Action", id: string }
 	| { type: "Builder", id: string }
 	| { type: "Alerter", id: string }
 	| { type: "ServerTemplate", id: string }
@@ -258,35 +348,6 @@ export interface Alert {
 
 export type GetAlertResponse = Alert;
 
-export interface Resource<Config, Info> {
-	/**
-	 * The Mongo ID of the resource.
-	 * This field is de/serialized from/to JSON as
-	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Resource<T>) }`
-	 */
-	_id?: MongoId;
-	/**
-	 * The resource name.
-	 * This is guaranteed unique among others of the same resource type.
-	 */
-	name: string;
-	/** A description for the resource */
-	description?: string;
-	/** When description last updated */
-	updated_at?: I64;
-	/** Tag Ids */
-	tags?: string[];
-	/** Resource-specific information (not user configurable). */
-	info?: Info;
-	/** Resource-specific configuration. */
-	config?: Config;
-	/**
-	 * Set a base permission level that all users will have on the
-	 * resource.
-	 */
-	base_permission?: PermissionLevel;
-}
-
 export type AlerterEndpoint = 
 	/** Send alert serialized to JSON to an http endpoint. */
 	| { type: "Custom", params: CustomAlerterEndpoint }
@@ -321,19 +382,6 @@ export interface AlerterConfig {
 export type Alerter = Resource<AlerterConfig, undefined>;
 
 export type GetAlerterResponse = Alerter;
-
-export interface ResourceListItem<Info> {
-	/** The resource id */
-	id: string;
-	/** The resource type, ie `Server` or `Deployment` */
-	type: ResourceTarget["type"];
-	/** The resource name */
-	name: string;
-	/** Tag Ids */
-	tags: string[];
-	/** Resource specific info */
-	info: Info;
-}
 
 export interface AlerterListItemInfo {
 	/** Whether alerter is enabled for sending alerts */
@@ -828,6 +876,7 @@ export type ListUserTargetPermissionsResponse = Permission[];
 export type Execution = 
 	/** The "null" execution. Does nothing. */
 	| { type: "None", params: NoData }
+	| { type: "RunAction", params: RunAction }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "CancelBuild", params: CancelBuild }
@@ -2917,6 +2966,10 @@ export enum Operation {
 	UpdateProcedure = "UpdateProcedure",
 	DeleteProcedure = "DeleteProcedure",
 	RunProcedure = "RunProcedure",
+	CreateAction = "CreateAction",
+	UpdateAction = "UpdateAction",
+	DeleteAction = "DeleteAction",
+	RunAction = "RunAction",
 	CreateBuilder = "CreateBuilder",
 	UpdateBuilder = "UpdateBuilder",
 	DeleteBuilder = "DeleteBuilder",
@@ -3092,6 +3145,10 @@ export type SetLastSeenUpdateResponse = NoData;
 
 export type DeleteApiKeyResponse = NoData;
 
+export type CreateActionWebhookResponse = NoData;
+
+export type DeleteActionWebhookResponse = NoData;
+
 /** Response for [CreateApiKey]. */
 export interface CreateApiKeyResponse {
 	/** X-API-KEY */
@@ -3177,7 +3234,7 @@ export type UpdateVariableIsSecretResponse = Variable;
 
 export type DeleteVariableResponse = Variable;
 
-export type _PartialAlerterConfig = Partial<AlerterConfig>;
+export type _PartialActionConfig = Partial<ActionConfig>;
 
 export enum TagBehavior {
 	/** Returns resources which have strictly all the tags */
@@ -3194,6 +3251,13 @@ export interface ResourceQuery<T> {
 	tag_behavior?: TagBehavior;
 	specific?: T;
 }
+
+export interface ActionQuerySpecifics {
+}
+
+export type ActionQuery = ResourceQuery<ActionQuerySpecifics>;
+
+export type _PartialAlerterConfig = Partial<AlerterConfig>;
 
 export interface AlerterQuerySpecifics {
 	/**
@@ -3384,6 +3448,12 @@ export interface ExchangeForJwt {
 export interface GetUser {
 }
 
+/** Runs the target Action. Response: [Update] */
+export interface RunAction {
+	/** Id or name */
+	action: string;
+}
+
 /**
  * Runs the target build. Response: [Update].
  * 
@@ -3506,7 +3576,7 @@ export interface Sleep {
 	duration_ms?: I64;
 }
 
-/** Runs the target procedure. Response: [Update] */
+/** Runs the target Procedure. Response: [Update] */
 export interface RunProcedure {
 	/** Id or name */
 	procedure: string;
@@ -3892,6 +3962,51 @@ export interface RunSync {
 	 * Supports name or id.
 	 */
 	resources?: string[];
+}
+
+/** Get a specific action. Response: [Action]. */
+export interface GetAction {
+	/** Id or name */
+	action: string;
+}
+
+/** List actions matching optional query. Response: [ListActionsResponse]. */
+export interface ListActions {
+	/** optional structured query to filter actions. */
+	query?: ActionQuery;
+}
+
+/** List actions matching optional query. Response: [ListFullActionsResponse]. */
+export interface ListFullActions {
+	/** optional structured query to filter actions. */
+	query?: ActionQuery;
+}
+
+/** Get current action state for the action. Response: [ActionActionState]. */
+export interface GetActionActionState {
+	/** Id or name */
+	action: string;
+}
+
+/**
+ * Gets a summary of data relating to all actions.
+ * Response: [GetActionsSummaryResponse].
+ */
+export interface GetActionsSummary {
+}
+
+/** Response for [GetActionsSummary]. */
+export interface GetActionsSummaryResponse {
+	/** The total number of actions. */
+	total: number;
+	/** The number of actions with Ok state. */
+	ok: number;
+	/** The number of actions currently running. */
+	running: number;
+	/** The number of actions with failed state. */
+	failed: number;
+	/** The number of actions with unknown state. */
+	unknown: number;
 }
 
 /**
@@ -5321,6 +5436,69 @@ export interface DeleteApiKey {
 	key: string;
 }
 
+/** Create a action. Response: [Action]. */
+export interface CreateAction {
+	/** The name given to newly created action. */
+	name: string;
+	/** Optional partial config to initialize the action with. */
+	config: _PartialActionConfig;
+}
+
+/**
+ * Creates a new action with given `name` and the configuration
+ * of the action at the given `id`. Response: [Action].
+ */
+export interface CopyAction {
+	/** The name of the new action. */
+	name: string;
+	/** The id of the action to copy. */
+	id: string;
+}
+
+/**
+ * Deletes the action at the given id, and returns the deleted action.
+ * Response: [Action]
+ */
+export interface DeleteAction {
+	/** The id or name of the action to delete. */
+	id: string;
+}
+
+/**
+ * Update the action at the given id, and return the updated action.
+ * Response: [Action].
+ * 
+ * Note. This method updates only the fields which are set in the [_PartialActionConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateAction {
+	/** The id of the action to update. */
+	id: string;
+	/** The partial config update to apply. */
+	config: _PartialActionConfig;
+}
+
+/**
+ * Create a webhook on the github action attached to the Action resource.
+ * passed in request. Response: [CreateActionWebhookResponse]
+ */
+export interface CreateActionWebhook {
+	/** Id or name */
+	action: string;
+}
+
+/**
+ * Delete the webhook on the github action attached to the Action resource.
+ * passed in request. Response: [DeleteActionWebhookResponse]
+ */
+export interface DeleteActionWebhook {
+	/** Id or name */
+	action: string;
+}
+
 /** Create an alerter. Response: [Alerter]. */
 export interface CreateAlerter {
 	/** The name given to newly created alerter. */
@@ -5806,7 +5984,7 @@ export enum RepoWebhookAction {
 export interface CreateRepoWebhook {
 	/** Id or name */
 	repo: string;
-	/** "Clone" or "Pull" */
+	/** "Clone" or "Pull" or "Build" */
 	action: RepoWebhookAction;
 }
 
@@ -5817,7 +5995,7 @@ export interface CreateRepoWebhook {
 export interface DeleteRepoWebhook {
 	/** Id or name */
 	repo: string;
-	/** "Clone" or "Pull" */
+	/** "Clone" or "Pull" or "Build" */
 	action: RepoWebhookAction;
 }
 
@@ -6699,6 +6877,7 @@ export type ExecuteRequest =
 	| { type: "BuildRepo", params: BuildRepo }
 	| { type: "CancelRepoBuild", params: CancelRepoBuild }
 	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "RunAction", params: RunAction }
 	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "RunSync", params: RunSync };
 
@@ -6724,6 +6903,11 @@ export type ReadRequest =
 	| { type: "GetProcedureActionState", params: GetProcedureActionState }
 	| { type: "ListProcedures", params: ListProcedures }
 	| { type: "ListFullProcedures", params: ListFullProcedures }
+	| { type: "GetActionsSummary", params: GetActionsSummary }
+	| { type: "GetAction", params: GetAction }
+	| { type: "GetActionActionState", params: GetActionActionState }
+	| { type: "ListActions", params: ListActions }
+	| { type: "ListFullActions", params: ListFullActions }
 	| { type: "GetServerTemplate", params: GetServerTemplate }
 	| { type: "GetServerTemplatesSummary", params: GetServerTemplatesSummary }
 	| { type: "ListServerTemplates", params: ListServerTemplates }
@@ -6883,6 +7067,10 @@ export type WriteRequest =
 	| { type: "CopyProcedure", params: CopyProcedure }
 	| { type: "DeleteProcedure", params: DeleteProcedure }
 	| { type: "UpdateProcedure", params: UpdateProcedure }
+	| { type: "CreateAction", params: CreateAction }
+	| { type: "CopyAction", params: CopyAction }
+	| { type: "DeleteAction", params: DeleteAction }
+	| { type: "UpdateAction", params: UpdateAction }
 	| { type: "CreateResourceSync", params: CreateResourceSync }
 	| { type: "CopyResourceSync", params: CopyResourceSync }
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }

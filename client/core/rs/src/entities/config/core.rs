@@ -509,14 +509,14 @@ fn default_jwt_ttl() -> Timelength {
   Timelength::OneDay
 }
 
-fn default_repo_directory() -> PathBuf {
-  // unwrap ok: `/repo-cache` will always be valid path
-  PathBuf::from_str("/repo-cache").unwrap()
-}
-
 fn default_sync_directory() -> PathBuf {
   // unwrap ok: `/syncs` will always be valid path
   PathBuf::from_str("/syncs").unwrap()
+}
+
+fn default_repo_directory() -> PathBuf {
+  // unwrap ok: `/repo-cache` will always be valid path
+  PathBuf::from_str("/repo-cache").unwrap()
 }
 
 fn default_prune_days() -> u64 {
