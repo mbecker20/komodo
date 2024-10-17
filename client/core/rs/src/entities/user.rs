@@ -103,6 +103,7 @@ pub fn admin_service_user(user_id: &str) -> Option<User> {
   match user_id {
     "System" => system_user().to_owned().into(),
     "Procedure" => procedure_user().to_owned().into(),
+    "Action" => action_user().to_owned().into(),
     // Github should be removed later, replaced by Git Webhook, just keeping for backward compat.
     "Github" => git_webhook_user().to_owned().into(),
     "Git Webhook" => git_webhook_user().to_owned().into(),
@@ -132,6 +133,19 @@ pub fn procedure_user() -> &'static User {
   static PROCEDURE_USER: OnceLock<User> = OnceLock::new();
   PROCEDURE_USER.get_or_init(|| {
     let id_name = String::from("Procedure");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
+}
+
+pub fn action_user() -> &'static User {
+  static ACTION_USER: OnceLock<User> = OnceLock::new();
+  ACTION_USER.get_or_init(|| {
+    let id_name = String::from("Action");
     User {
       id: id_name.clone(),
       username: id_name,

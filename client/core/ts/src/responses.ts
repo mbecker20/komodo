@@ -46,6 +46,13 @@ export type ReadResponses = {
   ListProcedures: Types.ListProceduresResponse;
   ListFullProcedures: Types.ListFullProceduresResponse;
 
+  // ==== ACTION ====
+  GetActionsSummary: Types.GetActionsSummaryResponse;
+  GetAction: Types.GetActionResponse;
+  GetActionActionState: Types.GetActionActionStateResponse;
+  ListActions: Types.ListActionsResponse;
+  ListFullActions: Types.ListFullActionsResponse;
+
   // ==== SERVER TEMPLATE ====
   GetServerTemplate: Types.GetServerTemplateResponse;
   GetServerTemplatesSummary: Types.GetServerTemplatesSummaryResponse;
@@ -258,6 +265,12 @@ export type WriteResponses = {
   DeleteProcedure: Types.Procedure;
   UpdateProcedure: Types.Procedure;
 
+  // ==== ACTION ====
+  CreateAction: Types.Action;
+  CopyAction: Types.Action;
+  DeleteAction: Types.Action;
+  UpdateAction: Types.Action;
+
   // ==== SYNC ====
   CreateResourceSync: Types.ResourceSync;
   CopyResourceSync: Types.ResourceSync;
@@ -347,6 +360,9 @@ export type ExecuteResponses = {
 
   // ==== PROCEDURE ====
   RunProcedure: Types.Update;
+  
+  // ==== ACTION ====
+  RunAction: Types.Update;
 
   // ==== SERVER TEMPLATE ====
   LaunchServer: Types.Update;
