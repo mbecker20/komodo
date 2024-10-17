@@ -29,6 +29,7 @@ use crate::{
   resource, state::State,
 };
 
+mod action;
 mod alert;
 mod alerter;
 mod build;
@@ -87,6 +88,13 @@ enum ReadRequest {
   GetProcedureActionState(GetProcedureActionState),
   ListProcedures(ListProcedures),
   ListFullProcedures(ListFullProcedures),
+
+  // ==== ACTION ====
+  GetActionsSummary(GetActionsSummary),
+  GetAction(GetAction),
+  GetActionActionState(GetActionActionState),
+  ListActions(ListActions),
+  ListFullActions(ListFullActions),
 
   // ==== SERVER TEMPLATE ====
   GetServerTemplate(GetServerTemplate),
