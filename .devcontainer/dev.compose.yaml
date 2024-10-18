@@ -1,0 +1,33 @@
+services:
+  dev:
+    image: mcr.microsoft.com/devcontainers/rust:1-1-bullseye
+    volumes:
+      # Mount the root folder that contains .git
+      - ../:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc:/proc
+      - repos:/etc/komodo/repos
+      - stacks:/etc/komodo/stacks
+    command: sleep infinity
+    ports:
+      - "9121:9121"
+    environment:
+      KOMODO_FIRST_SERVER: http://localhost:8120
+      KOMODO_DATABASE_ADDRESS: db
+      KOMODO_ENABLE_NEW_USERS: true
+      KOMODO_LOCAL_AUTH: true
+      KOMODO_JWT_SECRET: a_random_secret
+    links:
+      - db
+    # ...
+
+  db:
+    extends:
+      file: ../test.compose.yaml
+      service: ferretdb
+
+volumes:
+  data:
+  repo-cache:
+  repos:
+  stacks:
