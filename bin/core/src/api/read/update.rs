@@ -104,6 +104,16 @@ impl Resolve<ListUpdates, User> for State {
           })
           .unwrap_or_else(|| doc! { "target.type": "Procedure" });
 
+      // let action_query =
+      //   resource::get_resource_ids_for_user::<Action>(&user)
+      //     .await?
+      //     .map(|ids| {
+      //       doc! {
+      //         "target.type": "Action", "target.id": { "$in": ids }
+      //       }
+      //     })
+      //     .unwrap_or_else(|| doc! { "target.type": "Action" });
+
       let builder_query =
         resource::get_resource_ids_for_user::<Builder>(&user)
           .await?
@@ -124,27 +134,27 @@ impl Resolve<ListUpdates, User> for State {
           })
           .unwrap_or_else(|| doc! { "target.type": "Alerter" });
 
-      let server_template_query = resource::get_resource_ids_for_user::<ServerTemplate>(
-        &user,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "ServerTemplate", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "ServerTemplate" });
+      let server_template_query =
+        resource::get_resource_ids_for_user::<ServerTemplate>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "ServerTemplate", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "ServerTemplate" });
 
-      let resource_sync_query = resource::get_resource_ids_for_user::<ResourceSync>(
-        &user,
-      )
-      .await?
-      .map(|ids| {
-        doc! {
-          "target.type": "ResourceSync", "target.id": { "$in": ids }
-        }
-      })
-      .unwrap_or_else(|| doc! { "target.type": "ResourceSync" });
+      let resource_sync_query =
+        resource::get_resource_ids_for_user::<ResourceSync>(
+          &user,
+        )
+        .await?
+        .map(|ids| {
+          doc! {
+            "target.type": "ResourceSync", "target.id": { "$in": ids }
+          }
+        })
+        .unwrap_or_else(|| doc! { "target.type": "ResourceSync" });
 
       let mut query = query.unwrap_or_default();
       query.extend(doc! {
@@ -155,6 +165,7 @@ impl Resolve<ListUpdates, User> for State {
           build_query,
           repo_query,
           procedure_query,
+          // action_query,
           alerter_query,
           builder_query,
           server_template_query,

@@ -71,7 +71,7 @@ impl Resolve<GetServerTemplatesSummary, User> for State {
     GetServerTemplatesSummary {}: GetServerTemplatesSummary,
     user: User,
   ) -> anyhow::Result<GetServerTemplatesSummaryResponse> {
-    let query = match resource::get_resource_ids_for_user::<
+    let query = match resource::get_resource_object_ids_for_user::<
       ServerTemplate,
     >(&user)
     .await?
