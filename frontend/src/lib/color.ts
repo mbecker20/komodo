@@ -256,6 +256,23 @@ export const procedure_state_intention = (status?: Types.ProcedureState) => {
   }
 };
 
+export const action_state_intention = (status?: Types.ActionState) => {
+  switch (status) {
+    case undefined:
+      return "None";
+    case Types.ActionState.Unknown:
+      return "Unknown";
+    case Types.ActionState.Ok:
+      return "Good";
+    case Types.ActionState.Running:
+      return "Warning";
+    case Types.ActionState.Failed:
+      return "Critical";
+    default:
+      return "None";
+  }
+};
+
 export const resource_sync_state_intention = (
   status?: Types.ResourceSyncState
 ) => {

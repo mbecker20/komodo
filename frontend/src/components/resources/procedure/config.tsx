@@ -612,6 +612,18 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  // Action
+  RunAction: {
+    params: { action: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Action"
+        selected={params.action}
+        onSelect={(action) => setParams({ action })}
+        disabled={disabled}
+      />
+    ),
+  },
   // Build
   RunBuild: {
     params: { build: "" },
