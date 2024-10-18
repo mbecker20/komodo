@@ -64,21 +64,34 @@ export const Topbar = () => {
 
         {/* Shortcuts */}
         <div className="flex justify-end items-center gap-2">
-          <MobileDropdown />
-          <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
-          <Version />
-          <WsStatusIndicator />
-          <KeyboardShortcuts />
-          <TopbarAlerts />
-          <TopbarUpdates />
-          <ThemeToggle />
-          <Logout />
+          <MobileDropdown/>
+          <OmniSearch setOpen={setOmniOpen} className="lg:hidden"/>
+          <div className="flex gap-0">
+            <Docs/>
+            <Version/>
+          </div>
+          <WsStatusIndicator/>
+          <KeyboardShortcuts/>
+          <TopbarAlerts/>
+          <TopbarUpdates/>
+          <ThemeToggle/>
+          <Logout/>
         </div>
       </div>
       <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
     </div>
   );
 };
+
+const Docs = () => (<a
+    href="https://komo.do/docs/intro"
+    target="_blank"
+    className="hidden lg:block"
+>
+  <Button variant="link" size="sm">
+    <div>Docs</div>
+  </Button>
+</a>);
 
 const Version = () => {
   const version = useRead("GetVersion", {}).data?.version;
