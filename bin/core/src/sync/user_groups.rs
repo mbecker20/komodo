@@ -893,6 +893,13 @@ pub async fn convert_user_groups(
               .map(|r| r.name.clone())
               .unwrap_or_default()
           }
+          ResourceTarget::Action(id) => {
+            *id = all
+              .actions
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
           ResourceTarget::ServerTemplate(id) => {
             *id = all
               .templates

@@ -6,21 +6,11 @@ use komodo_client::{
     ListUserGroups,
   },
   entities::{
-    action::Action,
-    alerter::Alerter,
-    build::Build,
-    builder::Builder,
-    deployment::Deployment,
-    permission::{PermissionLevel, UserTarget},
-    procedure::Procedure,
-    repo::Repo,
-    resource::ResourceQuery,
-    server::Server,
-    server_template::ServerTemplate,
-    stack::Stack,
-    sync::ResourceSync,
-    toml::{PermissionToml, ResourcesToml, UserGroupToml},
-    user::User,
+    action::Action, alerter::Alerter, build::Build, builder::Builder,
+    deployment::Deployment, permission::PermissionLevel,
+    procedure::Procedure, repo::Repo, resource::ResourceQuery,
+    server::Server, server_template::ServerTemplate, stack::Stack,
+    sync::ResourceSync, toml::ResourcesToml, user::User,
     ResourceTarget,
   },
 };
@@ -465,6 +455,14 @@ fn serialize_resources_toml(
     }
     toml.push_str("[[procedure]]\n");
     Procedure::push_to_toml_string(procedure, &mut toml)?;
+  }
+
+  for action in resources.actions {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
+    }
+    toml.push_str("[[action]]\n");
+    Action::push_to_toml_string(action, &mut toml)?;
   }
 
   for alerter in resources.alerters {

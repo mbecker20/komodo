@@ -105,15 +105,15 @@ impl Resolve<ListUpdates, User> for State {
           })
           .unwrap_or_else(|| doc! { "target.type": "Procedure" });
 
-      // let action_query =
-      //   resource::get_resource_ids_for_user::<Action>(&user)
-      //     .await?
-      //     .map(|ids| {
-      //       doc! {
-      //         "target.type": "Action", "target.id": { "$in": ids }
-      //       }
-      //     })
-      //     .unwrap_or_else(|| doc! { "target.type": "Action" });
+      let action_query =
+        resource::get_resource_ids_for_user::<Action>(&user)
+          .await?
+          .map(|ids| {
+            doc! {
+              "target.type": "Action", "target.id": { "$in": ids }
+            }
+          })
+          .unwrap_or_else(|| doc! { "target.type": "Action" });
 
       let builder_query =
         resource::get_resource_ids_for_user::<Builder>(&user)
@@ -166,7 +166,7 @@ impl Resolve<ListUpdates, User> for State {
           build_query,
           repo_query,
           procedure_query,
-          // action_query,
+          action_query,
           alerter_query,
           builder_query,
           server_template_query,
