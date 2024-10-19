@@ -85,6 +85,7 @@ export const MonacoEditor = ({
     readOnly,
     tabSize: 2,
     detectIndentation: true,
+    quickSuggestions: true,
     padding: {
       top: 15,
     },

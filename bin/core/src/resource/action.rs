@@ -228,8 +228,11 @@ const komodo = KomodoClient('{protocol}://localhost:{port}', {{
 async function main() {{
 
   // 🔴 Your action code here
+
   const version = await komodo.read('GetVersion', {{}});
   console.log('Komodo version:', version.version);
+
+  // 🔴 =====================
   
 }}
 
@@ -237,6 +240,6 @@ main().catch(error => {{
   console.error('Status:', error.response?.status);
   console.error(JSON.stringify(error.response?.data, null, 2));
   Deno.exit(1)
-}}).then(() => console.log('\n🦎 Action finished 🦎'));"
+}}).then(() => console.log('\\n🦎 Action finished 🦎'));"
   )
 }

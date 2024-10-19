@@ -74,7 +74,11 @@ impl Resolve<RunAction, (User, Update)> for State {
     let mut res = run_komodo_command(
       "Execute Action",
       None,
-      format!("deno eval \"{}\"", action.config.file_contents),
+      format!(
+        "deno eval \"{}\"",
+        // Escape double quotes in file contents.
+        action.config.file_contents.replace("\"", "\\\"")
+      ),
       false,
     )
     .await;
