@@ -8,6 +8,7 @@ use komodo_client::{
   },
   entities::{
     action::Action,
+    config::core::CoreConfig,
     permission::PermissionLevel,
     update::Update,
     user::{action_user, User},
@@ -17,6 +18,7 @@ use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
 
 use crate::{
+  config::core_config,
   helpers::{
     interpolate::{
       add_interp_update_log,
@@ -65,8 +67,13 @@ impl Resolve<RunAction, (User, Update)> for State {
       )
       .await?;
 
+    let contents = &mut action.config.file_contents;
+
+    // Wrap the file contents in the execution context.
+    *contents = full_contents(contents, &key, &secret);
+
     let replacers =
-      interpolate(&mut action, &mut update, key.clone(), secret)
+      interpolate(contents, &mut update, key.clone(), secret.clone())
         .await?
         .into_iter()
         .collect::<Vec<_>>();
@@ -74,18 +81,16 @@ impl Resolve<RunAction, (User, Update)> for State {
     let mut res = run_komodo_command(
       "Execute Action",
       None,
-      format!(
-        "deno eval \"{}\"",
-        // Escape double quotes in file contents.
-        action.config.file_contents.replace("\"", "\\\"")
-      ),
+      format!("deno eval \"{contents}\""),
       false,
     )
     .await;
 
     res.command = String::from("deno eval '<file_contents>'");
-    res.stdout = svi::replace_in_string(&res.stdout, &replacers);
-    res.stderr = svi::replace_in_string(&res.stderr, &replacers);
+    res.stdout = svi::replace_in_string(&res.stdout, &replacers)
+      .replace(&key, "<ACTION_API_KEY>");
+    res.stderr = svi::replace_in_string(&res.stderr, &replacers)
+      .replace(&secret, "<ACTION_API_SECRET>");
 
     if let Err(e) = State
       .resolve(DeleteApiKey { key }, action_user().to_owned())
@@ -121,7 +126,7 @@ impl Resolve<RunAction, (User, Update)> for State {
 }
 
 async fn interpolate(
-  action: &mut Action,
+  contents: &mut String,
   update: &mut Update,
   key: String,
   secret: String,
@@ -140,7 +145,7 @@ async fn interpolate(
 
   interpolate_variables_secrets_into_string(
     &vars_and_secrets,
-    &mut action.config.file_contents,
+    contents,
     &mut global_replacers,
     &mut secret_replacers,
   )?;
@@ -148,4 +153,28 @@ async fn interpolate(
   add_interp_update_log(update, &global_replacers, &secret_replacers);
 
   Ok(secret_replacers)
+}
+
+fn full_contents(contents: &str, key: &str, secret: &str) -> String {
+  let CoreConfig {
+    port, ssl_enabled, ..
+  } = core_config();
+  let protocol = if *ssl_enabled { "https" } else { "http" };
+  let contents = contents.replace("\"", "\\\"");
+  format!(
+    "import {{ KomodoClient }} from 'npm:komodo_client';
+
+const komodo = KomodoClient('{protocol}://localhost:{port}', {{
+  type: 'api-key',
+  params: {{ key: '{key}', secret: '{secret}' }}
+}});
+
+async function main() {{{contents}}}
+
+main().catch(error => {{
+  console.error('Status:', error.response?.status);
+  console.error(JSON.stringify(error.response?.data, null, 2));
+  Deno.exit(1)
+}}).then(() => console.log('\\n🦎 Action finished 🦎'));"
+  )
 }

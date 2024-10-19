@@ -43,33 +43,29 @@ export async function init_monaco() {
       .then((dts) =>
         monaco.languages.typescript.typescriptDefaults.addExtraLib(
           dts,
-          `file:///node_modules/@types/komodo_client/${
-            file === "lib" ? "index" : file
-          }.d.ts`
+          `file:///client/${file}.d.ts`
         )
       )
   );
   await Promise.all(promises);
 
-  fetch(`/deno.d.ts`)
+  fetch(`/action.d.ts`)
     .then((res) => res.text())
     .then((dts) =>
       monaco.languages.typescript.typescriptDefaults.addExtraLib(
         dts,
-        `file:///node_modules/@types/deno/index.d.ts`
+        `file:///index.d.ts`
       )
     );
 
   monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+    module: monaco.languages.typescript.ModuleKind.ESNext,
     target: monaco.languages.typescript.ScriptTarget.ESNext,
     allowNonTsExtensions: true,
     moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-    module: monaco.languages.typescript.ModuleKind.ESNext,
-    typeRoots: ["node_modules/@types/deno/index.d.ts"],
-    paths: {
-      "npm:komodo_client": [
-        "file:///node_modules/@types/komodo_client/index.d.ts",
-      ],
-    },
+    typeRoots: ["index.d.ts"],
+  });
+  monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+    diagnosticCodesToIgnore: [1375],
   });
 }

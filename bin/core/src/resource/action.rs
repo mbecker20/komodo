@@ -7,7 +7,6 @@ use komodo_client::entities::{
     ActionListItem, ActionListItemInfo, ActionQuerySpecifics,
     ActionState, PartialActionConfig,
   },
-  config::core::CoreConfig,
   resource::Resource,
   update::Update,
   user::User,
@@ -18,10 +17,7 @@ use mungos::{
   mongodb::{bson::doc, options::FindOneOptions, Collection},
 };
 
-use crate::{
-  config::core_config,
-  state::{action_state_cache, action_states, db_client},
-};
+use crate::state::{action_state_cache, action_states, db_client};
 
 impl super::KomodoResource for Action {
   type Config = ActionConfig;
@@ -80,7 +76,8 @@ impl super::KomodoResource for Action {
     _user: &User,
   ) -> anyhow::Result<()> {
     if config.file_contents.is_none() {
-      config.file_contents = Some(default_action_file_contents());
+      config.file_contents =
+        Some(DEFAULT_ACTION_FILE_CONTENTS.to_string());
     }
     Ok(())
   }
@@ -211,35 +208,7 @@ async fn get_action_state_from_db(id: &str) -> ActionState {
   .unwrap_or(ActionState::Unknown)
 }
 
-fn default_action_file_contents() -> String {
-  let CoreConfig {
-    port, ssl_enabled, ..
-  } = core_config();
-  let protocol = if *ssl_enabled { "https" } else { "http" };
-  format!(
-    "import {{ KomodoClient }} from 'npm:komodo_client';
-
-const komodo = KomodoClient('{protocol}://localhost:{port}', {{
-  type: 'api-key',
-  // Leave these as in, actual ones will be interpolated in.
-  params: {{ key: '[[ACTION_API_KEY]]', secret: '[[ACTION_API_SECRET]]' }}
-}});
-
-async function main() {{
-
-  // 🔴 Your action code here
-
-  const version = await komodo.read('GetVersion', {{}});
-  console.log('Komodo version:', version.version);
-
-  // 🔴 =====================
-  
-}}
-
-main().catch(error => {{
-  console.error('Status:', error.response?.status);
-  console.error(JSON.stringify(error.response?.data, null, 2));
-  Deno.exit(1)
-}}).then(() => console.log('\\n🦎 Action finished 🦎'));"
-  )
-}
+const DEFAULT_ACTION_FILE_CONTENTS: &str =
+  "// Run actions using the pre initialized 'komodo' client.
+const version = await komodo.read('GetVersion', {});
+console.log('🦎 Komodo version:', version.version, '🦎\n');";
