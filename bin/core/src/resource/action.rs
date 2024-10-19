@@ -219,25 +219,24 @@ fn default_action_file_contents() -> String {
   format!(
     "import {{ KomodoClient }} from 'npm:komodo_client';
 
+const komodo = KomodoClient('{protocol}://localhost:{port}', {{
+  type: 'api-key',
+  // Leave these as in, actual ones will be interpolated in.
+  params: {{ key: '[[ACTION_API_KEY]]', secret: '[[ACTION_API_SECRET]]' }}
+}});
+
 async function main() {{
-  const komodo = KomodoClient('{protocol}://localhost:{port}', {{
-    type: 'api-key',
-    // Leave these as in, actual ones will be interpolated in.
-    params: {{ key: '[[ACTION_API_KEY]]', secret: '[[ACTION_API_SECRET]]' }}
-  }});
 
-  try {{
-
-    // 🔴 Your action code here
-    const version = await komodo.read('GetVersion', {{}});
-    console.log('Komodo version:', version.version);
-
-  }} catch (error) {{
-		console.error('Status:', error.response?.status);
-		console.error(JSON.stringify(error.response?.data, null, 2));
-  }}
+  // 🔴 Your action code here
+  const version = await komodo.read('GetVersion', {{}});
+  console.log('Komodo version:', version.version);
+  
 }}
 
-main().then(() => console.log('🦎 Action finished 🦎'));"
+main().catch(error => {{
+  console.error('Status:', error.response?.status);
+  console.error(JSON.stringify(error.response?.data, null, 2));
+  Deno.exit(1)
+}}).then(() => console.log('\n🦎 Action finished 🦎'));"
   )
 }
