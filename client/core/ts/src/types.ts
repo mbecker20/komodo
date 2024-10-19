@@ -124,8 +124,6 @@ export interface Resource<Config, Info> {
 }
 
 export interface ActionConfig {
-	/** Whether incoming webhooks actually trigger action. */
-	webhook_enabled: boolean;
 	/** Typescript file contents using pre-initialized `komodo` client. */
 	file_contents?: string;
 }

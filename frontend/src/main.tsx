@@ -7,7 +7,8 @@ import { WebsocketProvider } from "@lib/socket";
 import { Toaster } from "@ui/toaster";
 import { atomWithStorage } from "@lib/hooks";
 // Run monaco setup
-import "./monaco"
+import "./monaco";
+import { init_monaco } from "./monaco";
 
 export const AUTH_TOKEN_STORAGE_KEY = "komodo-auth-token";
 
@@ -28,15 +29,17 @@ export const homeViewAtom = atomWithStorage<HomeView>(
   "Dashboard"
 );
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  // <React.StrictMode>
-  <QueryClientProvider client={query_client}>
-    <WebsocketProvider url={UPDATE_WS_URL}>
-      <ThemeProvider>
-        <Router />
-        <Toaster />
-      </ThemeProvider>
-    </WebsocketProvider>
-  </QueryClientProvider>
-  // </React.StrictMode>
+init_monaco().then(() =>
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    // <React.StrictMode>
+    <QueryClientProvider client={query_client}>
+      <WebsocketProvider url={UPDATE_WS_URL}>
+        <ThemeProvider>
+          <Router />
+          <Toaster />
+        </ThemeProvider>
+      </WebsocketProvider>
+    </QueryClientProvider>
+    // </React.StrictMode>
+  )
 );

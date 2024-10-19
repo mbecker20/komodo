@@ -5,7 +5,7 @@ cmd = "node ./client/core/ts/generate_types.mjs"
 
 [build-ts-client]
 path = "client/core/ts"
-cmd = "yarn build"
+cmd = "yarn build && cp -r dist/. ../../../frontend/public/client/."
 
 [start-frontend]
 path = "frontend"

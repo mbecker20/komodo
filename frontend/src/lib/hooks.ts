@@ -30,14 +30,14 @@ const client = () => Client(KOMODO_BASE_URL, { type: "jwt", params: token() });
 export const useLoginOptions = () =>
   useQuery({
     queryKey: ["GetLoginOptions"],
-    queryFn: () => client().auth({ type: "GetLoginOptions", params: {} }),
+    queryFn: () => client().auth("GetLoginOptions", {}),
   });
 
 export const useUser = () => {
   const userInvalidate = useUserInvalidate();
   const query = useQuery({
     queryKey: ["GetUser"],
-    queryFn: () => client().auth({ type: "GetUser", params: {} }),
+    queryFn: () => client().auth("GetUser", {}),
     refetchInterval: 30_000,
   });
   useEffect(() => {
@@ -75,7 +75,7 @@ export const useRead = <
 ) =>
   useQuery({
     queryKey: [type, params],
-    queryFn: () => client().read({ type, params } as R),
+    queryFn: () => client().read(type, params as any) as any,
     ...config,
   });
 
@@ -104,7 +104,7 @@ export const useManageUser = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().user({ type, params } as R),
+    mutationFn: (params: P) => client().user(type, params as any),
     onError: (e: { response: { data: any } }, v, c) => {
       console.log("Auth error:", e.response.data);
       const msg = e.response.data?.error as string;
@@ -128,7 +128,7 @@ export const useWrite = <
   R extends Extract<Types.WriteRequest, { type: T }>,
   P extends R["params"],
   C extends Omit<
-    UseMutationOptions<WriteResponses[T], unknown, P, unknown>,
+    UseMutationOptions<WriteResponses[R["type"]], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
   >
 >(
@@ -138,7 +138,7 @@ export const useWrite = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().write({ type, params } as R),
+    mutationFn: (params: P) => client().write(type, params as any) as any,
     onError: (e: { response: { data: any } }, v, c) => {
       console.log("Write error:", e.response.data);
       const msg = e.response.data?.error;
@@ -172,7 +172,7 @@ export const useExecute = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().execute({ type, params } as R),
+    mutationFn: (params: P) => client().execute(type, params as any),
     onError: (e: { response: { data: any } }, v, c) => {
       console.log("Execute error:", e.response.data);
       const msg = e.response.data?.error;
@@ -205,7 +205,7 @@ export const useAuth = <
 ) =>
   useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().auth({ type, params } as R),
+    mutationFn: (params: P) => client().auth(type, params as any),
     ...config,
   });
 

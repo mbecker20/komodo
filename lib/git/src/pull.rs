@@ -45,6 +45,7 @@ where
     "set git remote",
     path.as_ref(),
     format!("git remote set-url origin {repo_url}"),
+    false,
   )
   .await;
 
@@ -69,6 +70,7 @@ where
     "checkout branch",
     path.as_ref(),
     format!("git checkout -f {}", args.branch),
+    false,
   )
   .await;
 
@@ -85,6 +87,7 @@ where
     "git pull",
     path.as_ref(),
     format!("git pull --rebase --force origin {}", args.branch),
+    false,
   )
   .await;
 
@@ -104,6 +107,7 @@ where
       "set commit",
       path.as_ref(),
       format!("git reset --hard {commit}"),
+      false,
     )
     .await;
     logs.push(reset_log);
@@ -175,6 +179,7 @@ where
           "on pull",
           on_pull_path.as_ref(),
           &full_command,
+          true,
         )
         .await;
 
@@ -197,6 +202,7 @@ where
           "on pull",
           on_pull_path.as_ref(),
           &command.command,
+          true,
         )
         .await;
         tracing::debug!(

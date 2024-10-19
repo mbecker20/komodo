@@ -38,20 +38,68 @@ export function KomodoClient(url: string, options: InitOptions) {
       })
       .then(({ data }) => data);
 
-  const auth = async <Req extends AuthRequest>(req: Req) =>
-    await request<Req, AuthResponses[Req["type"]]>("/auth", req);
+  const auth = async <
+    T extends AuthRequest["type"],
+    Req extends Extract<AuthRequest, { type: T }>
+  >(
+    type: T,
+    params: Req["params"]
+  ) =>
+    await request<
+      { type: T; params: Req["params"] },
+      AuthResponses[Req["type"]]
+    >("/auth", {
+      type,
+      params,
+    });
 
-  const user = async <Req extends UserRequest>(req: Req) =>
-    await request<Req, UserResponses[Req["type"]]>("/user", req);
+  const user = async <
+    T extends UserRequest["type"],
+    Req extends Extract<UserRequest, { type: T }>
+  >(
+    type: T,
+    params: Req["params"]
+  ) =>
+    await request<
+      { type: T; params: Req["params"] },
+      UserResponses[Req["type"]]
+    >("/user", { type, params });
 
-  const read = async <Req extends ReadRequest>(req: Req) =>
-    await request<Req, ReadResponses[Req["type"]]>("/read", req);
+  const read = async <
+    T extends ReadRequest["type"],
+    Req extends Extract<ReadRequest, { type: T }>
+  >(
+    type: T,
+    params: Req["params"]
+  ) =>
+    await request<
+      { type: T; params: Req["params"] },
+      ReadResponses[Req["type"]]
+    >("/read", { type, params });
 
-  const write = async <Req extends WriteRequest>(req: Req) =>
-    await request<Req, WriteResponses[Req["type"]]>("/write", req);
+  const write = async <
+    T extends WriteRequest["type"],
+    Req extends Extract<WriteRequest, { type: T }>,
+  >(
+    type: T,
+    params: Req["params"]
+  ) =>
+    await request<
+      { type: T; params: Req["params"] },
+      WriteResponses[Req["type"]]
+    >("/write", { type, params });
 
-  const execute = async <Req extends ExecuteRequest>(req: Req) =>
-    await request<Req, ExecuteResponses[Req["type"]]>("/execute", req);
+  const execute = async <
+    T extends ExecuteRequest["type"],
+    Req extends Extract<ExecuteRequest, { type: T }>
+  >(
+    type: T,
+    params: Req["params"]
+  ) =>
+    await request<
+      { type: T; params: Req["params"] },
+      ExecuteResponses[Req["type"]]
+    >("/execute", { type, params });
 
   return { request, auth, user, read, write, execute };
 }

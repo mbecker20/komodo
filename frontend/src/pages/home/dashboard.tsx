@@ -51,6 +51,7 @@ export const Dashboard = () => {
           <ResourceRow type="Build" />
           <ResourceRow type="Repo" />
           <ResourceRow type="Procedure" />
+          <ResourceRow type="Action" />
           <ResourceRow type="ResourceSync" />
         </div>
       </Page>

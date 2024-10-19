@@ -14,8 +14,13 @@ pub async fn run_komodo_command(
   stage: &str,
   path: impl Into<Option<&Path>>,
   command: impl AsRef<str>,
+  parse_multiline: bool,
 ) -> Log {
-  let command = parse_multiline_command(command);
+  let command = if parse_multiline {
+    parse_multiline_command(command)
+  } else {
+    command.as_ref().to_string()
+  };
   let command = if let Some(path) = path.into() {
     format!("cd {} && {command}", path.display(),)
   } else {

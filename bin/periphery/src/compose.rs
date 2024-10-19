@@ -161,6 +161,7 @@ pub async fn compose_up(
         "compose build",
         run_directory.as_ref(),
         command,
+        false,
       )
       .await;
       res.logs.push(log);
@@ -177,6 +178,7 @@ pub async fn compose_up(
         "compose build",
         run_directory.as_ref(),
         command,
+        false,
       )
       .await;
 
@@ -204,6 +206,7 @@ pub async fn compose_up(
       format!(
         "{docker_compose} -p {project_name} -f {file_args}{env_file} pull{service_arg}",
       ),
+      false,
     )
     .await;
 
@@ -230,6 +233,7 @@ pub async fn compose_up(
         "pre deploy",
         pre_deploy_path.as_ref(),
         &full_command,
+        true,
       )
       .await;
 
@@ -252,6 +256,7 @@ pub async fn compose_up(
         "pre deploy",
         pre_deploy_path.as_ref(),
         &stack.config.pre_deploy.command,
+        true,
       )
       .await;
       tracing::debug!(
@@ -286,8 +291,13 @@ pub async fn compose_up(
   );
 
   let log = if stack.config.skip_secret_interp {
-    run_komodo_command("compose up", run_directory.as_ref(), command)
-      .await
+    run_komodo_command(
+      "compose up",
+      run_directory.as_ref(),
+      command,
+      false,
+    )
+    .await
   } else {
     let (command, mut replacers) = svi::interpolate_variables(
       &command,
@@ -301,6 +311,7 @@ pub async fn compose_up(
       "compose up",
       run_directory.as_ref(),
       command,
+      false,
     )
     .await;
 
@@ -552,6 +563,7 @@ async fn compose_down(
     "compose down",
     None,
     format!("{docker_compose} -p {project} down{service_arg}"),
+    false,
   )
   .await;
   let success = log.success;

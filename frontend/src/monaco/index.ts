@@ -35,3 +35,41 @@ import "./key_value";
 import "./shell";
 import "./dockerfile";
 import "./rust";
+
+export async function init_monaco() {
+  const promises = ["lib", "responses", "types"].map((file) =>
+    fetch(`/client/${file}.d.ts`)
+      .then((res) => res.text())
+      .then((dts) =>
+        monaco.languages.typescript.typescriptDefaults.addExtraLib(
+          dts,
+          `file:///node_modules/@types/komodo_client/${
+            file === "lib" ? "index" : file
+          }.d.ts`
+        )
+      )
+  );
+  await Promise.all(promises);
+
+  fetch(`/deno.d.ts`)
+    .then((res) => res.text())
+    .then((dts) =>
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(
+        dts,
+        `file:///node_modules/@types/deno/index.d.ts`
+      )
+    );
+
+  monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+    target: monaco.languages.typescript.ScriptTarget.ESNext,
+    allowNonTsExtensions: true,
+    moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+    module: monaco.languages.typescript.ModuleKind.ESNext,
+    typeRoots: ["node_modules/@types/deno/index.d.ts"],
+    paths: {
+      "npm:komodo_client": [
+        "file:///node_modules/@types/komodo_client/index.d.ts",
+      ],
+    },
+  });
+}

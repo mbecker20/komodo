@@ -15,6 +15,8 @@ export type MonacoLanguage =
   | "shell"
   | "dockerfile"
   | "rust"
+  | "javascript"
+  | "typescript"
   | undefined;
 
 export const MonacoEditor = ({

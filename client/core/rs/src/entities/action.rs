@@ -62,12 +62,6 @@ pub type _PartialActionConfig = PartialActionConfig;
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct ActionConfig {
-  /// Whether incoming webhooks actually trigger action.
-  #[serde(default = "default_webhook_enabled")]
-  #[builder(default = "default_webhook_enabled()")]
-  #[partial_default(default_webhook_enabled())]
-  pub webhook_enabled: bool,
-
   /// Typescript file contents using pre-initialized `komodo` client.
   #[serde(default, deserialize_with = "file_contents_deserializer")]
   #[partial_attr(serde(
@@ -84,15 +78,10 @@ impl ActionConfig {
   }
 }
 
-fn default_webhook_enabled() -> bool {
-  true
-}
-
 impl Default for ActionConfig {
   fn default() -> Self {
     Self {
       file_contents: Default::default(),
-      webhook_enabled: default_webhook_enabled(),
     }
   }
 }

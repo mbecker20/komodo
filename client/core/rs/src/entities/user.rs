@@ -123,6 +123,7 @@ pub fn system_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -136,6 +137,7 @@ pub fn procedure_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -149,6 +151,7 @@ pub fn action_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -162,6 +165,7 @@ pub fn git_webhook_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -175,6 +179,7 @@ pub fn auto_redeploy_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -188,6 +193,7 @@ pub fn sync_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -201,6 +207,7 @@ pub fn stack_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -214,6 +221,7 @@ pub fn build_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }
@@ -227,6 +235,7 @@ pub fn repo_user() -> &'static User {
     User {
       id: id_name.clone(),
       username: id_name,
+      enabled: true,
       admin: true,
       ..Default::default()
     }

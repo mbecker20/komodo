@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use command::run_komodo_command;
 use komodo_client::{
   api::{
@@ -6,7 +8,6 @@ use komodo_client::{
   },
   entities::{
     action::Action,
-    config::core::CoreConfig,
     permission::PermissionLevel,
     update::Update,
     user::{action_user, User},
@@ -16,8 +17,14 @@ use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use resolver_api::Resolve;
 
 use crate::{
-  config::core_config,
-  helpers::update::update_update,
+  helpers::{
+    interpolate::{
+      add_interp_update_log,
+      interpolate_variables_secrets_into_string,
+    },
+    query::get_variables_and_secrets,
+    update::update_update,
+  },
   resource::{self, refresh_action_state_cache},
   state::{action_states, db_client, State},
 };
@@ -28,7 +35,7 @@ impl Resolve<RunAction, (User, Update)> for State {
     RunAction { action }: RunAction,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let action = resource::get_check_permissions::<Action>(
+    let mut action = resource::get_check_permissions::<Action>(
       &action,
       &user,
       PermissionLevel::Execute,
@@ -58,28 +65,23 @@ impl Resolve<RunAction, (User, Update)> for State {
       )
       .await?;
 
-    let contents =
-      format_contents(&action.config.file_contents, &key, &secret);
+    let replacers =
+      interpolate(&mut action, &mut update, key.clone(), secret)
+        .await?
+        .into_iter()
+        .collect::<Vec<_>>();
 
     let mut res = run_komodo_command(
       "Execute Action",
       None,
-      format!("deno eval \"{contents}\""),
+      format!("deno eval \"{}\"", action.config.file_contents),
+      false,
     )
     .await;
 
-    res.command = res
-      .command
-      .replace(&key, "<API_KEY>")
-      .replace(&secret, "<API_SECRET>");
-    res.stdout = res
-      .stdout
-      .replace(&key, "<API_KEY>")
-      .replace(&secret, "<API_SECRET>");
-    res.stderr = res
-      .stderr
-      .replace(&key, "<API_KEY>")
-      .replace(&secret, "<API_SECRET>");
+    res.command = String::from("deno eval '<file_contents>'");
+    res.stdout = svi::replace_in_string(&res.stdout, &replacers);
+    res.stderr = svi::replace_in_string(&res.stderr, &replacers);
 
     if let Err(e) = State
       .resolve(DeleteApiKey { key }, action_user().to_owned())
@@ -114,37 +116,32 @@ impl Resolve<RunAction, (User, Update)> for State {
   }
 }
 
-fn format_contents(
-  contents: &str,
-  key: &str,
-  secret: &str,
-) -> String {
-  let CoreConfig {
-    port, ssl_enabled, ..
-  } = core_config();
+async fn interpolate(
+  action: &mut Action,
+  update: &mut Update,
+  key: String,
+  secret: String,
+) -> anyhow::Result<HashSet<(String, String)>> {
+  let mut vars_and_secrets = get_variables_and_secrets().await?;
 
-  let protocol = if *ssl_enabled { "https" } else { "http" };
+  vars_and_secrets
+    .secrets
+    .insert(String::from("ACTION_API_KEY"), key);
+  vars_and_secrets
+    .secrets
+    .insert(String::from("ACTION_API_SECRET"), secret);
 
-  format!(
-    "
-import {{ KomodoClient }} from 'npm:komodo_client';
+  let mut global_replacers = HashSet::new();
+  let mut secret_replacers = HashSet::new();
 
-async function main() {{
-  const komodo = KomodoClient('{protocol}://localhost:{port}', {{
-    type: 'api-key',
-    params: {{ key: '{key}', secret: '{secret}' }}
-  }});
+  interpolate_variables_secrets_into_string(
+    &vars_and_secrets,
+    &mut action.config.file_contents,
+    &mut global_replacers,
+    &mut secret_replacers,
+  )?;
 
-  try {{
-    {contents}
-  }} catch (error) {{
-		console.error('Status:', error.response?.status);
-		console.error(JSON.stringify(error.response?.data, null, 2));
-  }}
-}}
+  add_interp_update_log(update, &global_replacers, &secret_replacers);
 
-if (import.meta.main) {{
-  main().then(() => console.log('Action finished'));
-}}"
-  )
+  Ok(secret_replacers)
 }

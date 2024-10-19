@@ -126,6 +126,7 @@ impl Resolve<build::Build> for State {
         "docker build",
         build_dir.as_ref(),
         command,
+        false,
       )
       .await;
       logs.push(build_log);
@@ -146,6 +147,7 @@ impl Resolve<build::Build> for State {
         "docker build",
         build_dir.as_ref(),
         command,
+        false,
       )
       .await;
       build_log.command =
@@ -244,7 +246,10 @@ impl Resolve<PruneBuilders> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker builder prune -a -f");
-    Ok(run_komodo_command("prune builders", None, command).await)
+    Ok(
+      run_komodo_command("prune builders", None, command, false)
+        .await,
+    )
   }
 }
 
@@ -258,6 +263,6 @@ impl Resolve<PruneBuildx> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker buildx prune -a -f");
-    Ok(run_komodo_command("prune buildx", None, command).await)
+    Ok(run_komodo_command("prune buildx", None, command, false).await)
   }
 }

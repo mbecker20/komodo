@@ -61,12 +61,13 @@ export const UserGroupPage = () => {
       subtitle={
         <div className="text-sm text-muted-foreground flex gap-2">
           <div>User Group</div>|
-          {group.users.length > 0 && (
+          {(group.users ?? []).length > 0 && (
             <div>
-              {group.users.length} User{group.users.length > 1 ? "s" : ""}
+              {(group.users ?? []).length} User
+              {(group.users ?? []).length > 1 ? "s" : ""}
             </div>
           )}
-          {group.users.length === 0 && <div>No Users</div>}
+          {(group.users ?? []).length === 0 && <div>No Users</div>}
         </div>
       }
     >
@@ -78,7 +79,7 @@ export const UserGroupPage = () => {
         <UserTable
           users={
             users?.filter((user) =>
-              group ? group.users.includes(user._id?.$oid!) : false
+              group ? (group.users ?? []).includes(user._id?.$oid!) : false
             ) ?? []
           }
           onUserRemove={(user_id) =>
