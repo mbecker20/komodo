@@ -125,6 +125,16 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .map(|resource| ResourceTarget::Procedure(resource.id)),
     );
     targets.extend(
+      resource::list_for_user::<Action>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+        &all_tags,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Action(resource.id)),
+    );
+    targets.extend(
       resource::list_for_user::<ServerTemplate>(
         ResourceQuery::builder().tags(tags.clone()).build(),
         &user,

@@ -3,6 +3,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { Config } from "@components/config";
 import { MonacoEditor } from "@components/monaco";
+import { SecretsSearch } from "@components/config/env_vars";
 
 export const ActionConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -44,12 +45,15 @@ export const ActionConfig = ({ id }: { id: string }) => {
             components: {
               file_contents: (file_contents, set) => {
                 return (
-                  <MonacoEditor
-                    value={file_contents}
-                    onValueChange={(file_contents) => set({ file_contents })}
-                    language="typescript"
-                    readOnly={disabled}
-                  />
+                  <div className="flex flex-col gap-4">
+                    <SecretsSearch />
+                    <MonacoEditor
+                      value={file_contents}
+                      onValueChange={(file_contents) => set({ file_contents })}
+                      language="typescript"
+                      readOnly={disabled}
+                    />
+                  </div>
                 );
               },
             },
