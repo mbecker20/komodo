@@ -1,27 +1,16 @@
-use std::collections::HashMap;
-
 use anyhow::Context;
 use komodo_client::{
   api::read::{
     ExportAllResourcesToToml, ExportAllResourcesToTomlResponse,
     ExportResourcesToToml, ExportResourcesToTomlResponse,
-    GetUserGroup, ListUserTargetPermissions,
+    ListUserGroups,
   },
   entities::{
-    alerter::Alerter,
-    build::Build,
-    builder::Builder,
-    deployment::Deployment,
-    permission::{PermissionLevel, UserTarget},
-    procedure::Procedure,
-    repo::Repo,
-    resource::ResourceQuery,
-    server::Server,
-    server_template::ServerTemplate,
-    stack::Stack,
-    sync::ResourceSync,
-    toml::{PermissionToml, ResourcesToml, UserGroupToml},
-    user::User,
+    alerter::Alerter, build::Build, builder::Builder,
+    deployment::Deployment, permission::PermissionLevel,
+    procedure::Procedure, repo::Repo, resource::ResourceQuery,
+    server::Server, server_template::ServerTemplate, stack::Stack,
+    sync::ResourceSync, toml::ResourcesToml, user::User,
     ResourceTarget,
   },
 };
@@ -36,6 +25,7 @@ use crate::{
   state::{db_client, State},
   sync::{
     toml::{convert_resource, ToToml, TOML_PRETTY_OPTIONS},
+    user_groups::convert_user_groups,
     AllResourcesById,
   },
 };
@@ -385,122 +375,17 @@ async fn add_user_groups(
   all: &AllResourcesById,
   user: &User,
 ) -> anyhow::Result<()> {
-  let db = db_client();
-
-  let usernames = find_collect(&db.users, None, None)
+  let user_groups = State
+    .resolve(ListUserGroups {}, user.clone())
     .await?
     .into_iter()
-    .map(|user| (user.id, user.username))
-    .collect::<HashMap<_, _>>();
-
-  for user_group in user_groups {
-    let ug = State
-      .resolve(GetUserGroup { user_group }, user.clone())
-      .await?;
-    // this method is admin only, but we already know user can see user group if above does not return Err
-    let permissions = State
-      .resolve(
-        ListUserTargetPermissions {
-          user_target: UserTarget::UserGroup(ug.id),
-        },
-        User {
-          admin: true,
-          ..Default::default()
-        },
-      )
-      .await?
-      .into_iter()
-      .map(|mut permission| {
-        match &mut permission.resource_target {
-          ResourceTarget::Build(id) => {
-            *id = all
-              .builds
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Builder(id) => {
-            *id = all
-              .builders
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Deployment(id) => {
-            *id = all
-              .deployments
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Server(id) => {
-            *id = all
-              .servers
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Repo(id) => {
-            *id = all
-              .repos
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Alerter(id) => {
-            *id = all
-              .alerters
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Procedure(id) => {
-            *id = all
-              .procedures
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::ServerTemplate(id) => {
-            *id = all
-              .templates
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::ResourceSync(id) => {
-            *id = all
-              .syncs
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Stack(id) => {
-            *id = all
-              .stacks
-              .get(id)
-              .map(|r| r.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::System(_) => {}
-        }
-        PermissionToml {
-          target: permission.resource_target,
-          level: permission.level,
-        }
-      })
-      .collect();
-    res.user_groups.push(UserGroupToml {
-      name: ug.name,
-      users: ug
-        .users
-        .into_iter()
-        .filter_map(|user_id| usernames.get(&user_id).cloned())
-        .collect(),
-      all: ug.all,
-      permissions,
+    .filter(|ug| {
+      user_groups.contains(&ug.name) || user_groups.contains(&ug.id)
     });
-  }
+  let mut ug = Vec::with_capacity(user_groups.size_hint().0);
+  convert_user_groups(user_groups, all, &mut ug).await?;
+  res.user_groups = ug.into_iter().map(|ug| ug.1).collect();
+
   Ok(())
 }
 

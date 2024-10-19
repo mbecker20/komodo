@@ -15,7 +15,8 @@ use komodo_client::{
     sync::DiffData,
     toml::{PermissionToml, UserGroupToml},
     update::Log,
-    user::sync_user,
+    user::{sync_user, User},
+    user_group::UserGroup,
     ResourceTarget, ResourceTargetVariant,
   },
 };
@@ -43,17 +44,21 @@ pub async fn get_updates_for_view(
   delete: bool,
   all_resources: &AllResourcesById,
 ) -> anyhow::Result<Vec<DiffData>> {
-  let map = find_collect(&db_client().user_groups, None, None)
+  let _curr = find_collect(&db_client().user_groups, None, None)
     .await
-    .context("failed to query db for UserGroups")?
+    .context("failed to query db for UserGroups")?;
+  let mut curr = Vec::with_capacity(_curr.capacity());
+  convert_user_groups(_curr.into_iter(), all_resources, &mut curr)
+    .await?;
+  let map = curr
     .into_iter()
-    .map(|ug| (ug.name.clone(), ug))
+    .map(|ug| (ug.1.name.clone(), ug))
     .collect::<HashMap<_, _>>();
 
   let mut diffs = Vec::<DiffData>::new();
 
   if delete {
-    for user_group in map.values() {
+    for (_id, user_group) in map.values() {
       if !user_groups.iter().any(|ug| ug.name == user_group.name) {
         diffs.push(DiffData::Delete {
           current: format!(
@@ -65,13 +70,6 @@ pub async fn get_updates_for_view(
       }
     }
   }
-
-  let id_to_user = find_collect(&db_client().users, None, None)
-    .await
-    .context("failed to query db for Users")?
-    .into_iter()
-    .map(|user| (user.id.clone(), user))
-    .collect::<HashMap<_, _>>();
 
   for mut user_group in user_groups {
     user_group
@@ -90,7 +88,10 @@ pub async fn get_updates_for_view(
       )
     })?;
 
-    let original = match map.get(&user_group.name).cloned() {
+    let (_original_id, original) = match map
+      .get(&user_group.name)
+      .cloned()
+    {
       Some(original) => original,
       None => {
         diffs.push(DiffData::Create {
@@ -104,121 +105,16 @@ pub async fn get_updates_for_view(
         continue;
       }
     };
-
-    let mut original_users = original
-      .users
-      .clone()
-      .into_iter()
-      .filter_map(|user_id| {
-        id_to_user.get(&user_id).map(|u| u.username.clone())
-      })
-      .collect::<Vec<_>>();
-
-    let mut original_permissions = State
-      .resolve(
-        ListUserTargetPermissions {
-          user_target: UserTarget::UserGroup(original.id.clone()),
-        },
-        sync_user().to_owned(),
-      )
-      .await
-      .context("failed to query for existing UserGroup permissions")?
-      .into_iter()
-      .filter(|p| p.level > PermissionLevel::None)
-      .map(|mut p| {
-        // replace the ids with names
-        match &mut p.resource_target {
-          ResourceTarget::System(_) => {}
-          ResourceTarget::Build(id) => {
-            *id = all_resources
-              .builds
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Builder(id) => {
-            *id = all_resources
-              .builders
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Deployment(id) => {
-            *id = all_resources
-              .deployments
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Server(id) => {
-            *id = all_resources
-              .servers
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Repo(id) => {
-            *id = all_resources
-              .repos
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Alerter(id) => {
-            *id = all_resources
-              .alerters
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Procedure(id) => {
-            *id = all_resources
-              .procedures
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::ServerTemplate(id) => {
-            *id = all_resources
-              .templates
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::ResourceSync(id) => {
-            *id = all_resources
-              .syncs
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-          ResourceTarget::Stack(id) => {
-            *id = all_resources
-              .stacks
-              .get(id)
-              .map(|b| b.name.clone())
-              .unwrap_or_default()
-          }
-        }
-        PermissionToml {
-          target: p.resource_target,
-          level: p.level,
-        }
-      })
-      .collect::<Vec<_>>();
-
-    original_users.sort();
     user_group.users.sort();
 
     let all_diff = diff_group_all(&original.all, &user_group.all);
 
     user_group.permissions.sort_by(sort_permissions);
-    original_permissions.sort_by(sort_permissions);
 
-    let update_users = user_group.users != original_users;
+    let update_users = user_group.users != original.users;
     let update_all = !all_diff.is_empty();
     let update_permissions =
-      user_group.permissions != original_permissions;
+      user_group.permissions != original.permissions;
 
     // only add log after diff detected
     if update_users || update_all || update_permissions {
@@ -899,4 +795,133 @@ fn diff_group_all(
   }
 
   to_update
+}
+
+pub async fn convert_user_groups(
+  user_groups: impl Iterator<Item = UserGroup>,
+  all: &AllResourcesById,
+  res: &mut Vec<(String, UserGroupToml)>,
+) -> anyhow::Result<()> {
+  let db = db_client();
+
+  let usernames = find_collect(&db.users, None, None)
+    .await?
+    .into_iter()
+    .map(|user| (user.id, user.username))
+    .collect::<HashMap<_, _>>();
+
+  for user_group in user_groups {
+    // this method is admin only, but we already know user can see user group if above does not return Err
+    let mut permissions = State
+      .resolve(
+        ListUserTargetPermissions {
+          user_target: UserTarget::UserGroup(user_group.id.clone()),
+        },
+        User {
+          admin: true,
+          ..Default::default()
+        },
+      )
+      .await?
+      .into_iter()
+      .map(|mut permission| {
+        match &mut permission.resource_target {
+          ResourceTarget::Build(id) => {
+            *id = all
+              .builds
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Builder(id) => {
+            *id = all
+              .builders
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Deployment(id) => {
+            *id = all
+              .deployments
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Server(id) => {
+            *id = all
+              .servers
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Repo(id) => {
+            *id = all
+              .repos
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Alerter(id) => {
+            *id = all
+              .alerters
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Procedure(id) => {
+            *id = all
+              .procedures
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::ServerTemplate(id) => {
+            *id = all
+              .templates
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::ResourceSync(id) => {
+            *id = all
+              .syncs
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Stack(id) => {
+            *id = all
+              .stacks
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::System(_) => {}
+        }
+        PermissionToml {
+          target: permission.resource_target,
+          level: permission.level,
+        }
+      })
+      .collect::<Vec<_>>();
+    let mut users = user_group
+      .users
+      .into_iter()
+      .filter_map(|user_id| usernames.get(&user_id).cloned())
+      .collect::<Vec<_>>();
+
+    permissions.sort_by(sort_permissions);
+    users.sort();
+
+    res.push((
+      user_group.id,
+      UserGroupToml {
+        name: user_group.name,
+        users,
+        all: user_group.all,
+        permissions,
+      },
+    ));
+  }
+  Ok(())
 }

@@ -70,7 +70,7 @@ impl Resolve<GetAlertersSummary, User> for State {
     user: User,
   ) -> anyhow::Result<GetAlertersSummaryResponse> {
     let query =
-      match resource::get_resource_ids_for_user::<Alerter>(&user)
+      match resource::get_resource_object_ids_for_user::<Alerter>(&user)
         .await?
       {
         Some(ids) => doc! {

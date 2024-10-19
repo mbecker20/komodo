@@ -3,7 +3,10 @@ use komodo_client::{
   api::read::{
     GetAlert, GetAlertResponse, ListAlerts, ListAlertsResponse,
   },
-  entities::{deployment::Deployment, server::Server, user::User},
+  entities::{
+    deployment::Deployment, server::Server, stack::Stack,
+    sync::ResourceSync, user::User,
+  },
 };
 use mungos::{
   by_id::find_one_by_id,
@@ -30,12 +33,18 @@ impl Resolve<ListAlerts, User> for State {
     if !user.admin && !core_config().transparent_mode {
       let server_ids =
         get_resource_ids_for_user::<Server>(&user).await?;
+      let stack_ids =
+        get_resource_ids_for_user::<Stack>(&user).await?;
       let deployment_ids =
         get_resource_ids_for_user::<Deployment>(&user).await?;
+      let sync_ids =
+        get_resource_ids_for_user::<ResourceSync>(&user).await?;
       query.extend(doc! {
         "$or": [
           { "target.type": "Server", "target.id": { "$in": &server_ids } },
+          { "target.type": "Stack", "target.id": { "$in": &stack_ids } },
           { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
+          { "target.type": "ResourceSync", "target.id": { "$in": &sync_ids } },
         ]
       });
     }

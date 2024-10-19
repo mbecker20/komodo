@@ -316,8 +316,8 @@ pub async fn alert_servers(
           Some(mut alert),
           _,
         ) => {
-          // Disk is persistent, update alert if health changes regardless of direction
-          if health.level != alert.level {
+          // modify alert level only if it has increased
+          if health.level < alert.level {
             let disk =
               server_status.stats.as_ref().and_then(|stats| {
                 stats.disks.iter().find(|disk| disk.mount == *path)

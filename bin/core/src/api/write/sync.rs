@@ -584,8 +584,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       let variable_updates = if sync.config.match_tags.is_empty() {
         crate::sync::variables::get_updates_for_view(
           &resources.variables,
-          // Delete doesn't work with variables when match tags are set
-          sync.config.match_tags.is_empty() && delete,
+          delete,
         )
         .await?
       } else {
@@ -595,8 +594,7 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
       let user_group_updates = if sync.config.match_tags.is_empty() {
         crate::sync::user_groups::get_updates_for_view(
           resources.user_groups,
-          // Delete doesn't work with user groups when match tags are set
-          sync.config.match_tags.is_empty() && delete,
+          delete,
           &all_resources,
         )
         .await?

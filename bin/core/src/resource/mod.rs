@@ -240,9 +240,24 @@ pub async fn get_check_permissions<T: KomodoResource>(
 
 /// Returns None if still no need to filter by resource id (eg transparent mode, group membership with all access).
 #[instrument(level = "debug")]
-pub async fn get_resource_ids_for_user<T: KomodoResource>(
+pub async fn get_resource_object_ids_for_user<T: KomodoResource>(
   user: &User,
 ) -> anyhow::Result<Option<Vec<ObjectId>>> {
+  get_resource_ids_for_user::<T>(user).await.map(|ids| {
+    ids.map(|ids| {
+      ids
+        .into_iter()
+        .flat_map(|id| ObjectId::from_str(&id))
+        .collect()
+    })
+  })
+}
+
+/// Returns None if still no need to filter by resource id (eg transparent mode, group membership with all access).
+#[instrument(level = "debug")]
+pub async fn get_resource_ids_for_user<T: KomodoResource>(
+  user: &User,
+) -> anyhow::Result<Option<Vec<String>>> {
   // Check admin or transparent mode
   if user.admin || core_config().transparent_mode {
     return Ok(None);
@@ -271,7 +286,7 @@ pub async fn get_resource_ids_for_user<T: KomodoResource>(
     // Get any resources with non-none base permission,
     find_collect(
       T::coll().await,
-      doc! { "base_permission": { "$ne": "None" } },
+      doc! { "base_permission": { "$exists": true, "$ne": "None" } },
       None,
     )
     .map(|res| res.with_context(|| format!(
@@ -283,7 +298,7 @@ pub async fn get_resource_ids_for_user<T: KomodoResource>(
       doc! {
         "$or": user_target_query(&user.id, &groups)?,
         "resource_target.type": resource_type.as_ref(),
-        "level": { "$in": ["Read", "Execute", "Write"] }
+        "level": { "$exists": true, "$ne": "None" }
       },
       None,
     )
@@ -297,9 +312,6 @@ pub async fn get_resource_ids_for_user<T: KomodoResource>(
     // Chain in the ones with non-None base permissions
     .chain(base.into_iter().map(|res| res.id))
     // collect into hashset first to remove any duplicates
-    .collect::<HashSet<_>>()
-    .into_iter()
-    .flat_map(|id| ObjectId::from_str(&id))
     .collect::<HashSet<_>>();
 
   Ok(Some(ids.into_iter().collect()))
@@ -418,7 +430,9 @@ pub async fn list_full_for_user_using_document<T: KomodoResource>(
   mut filters: Document,
   user: &User,
 ) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
-  if let Some(ids) = get_resource_ids_for_user::<T>(user).await? {
+  if let Some(ids) =
+    get_resource_object_ids_for_user::<T>(user).await?
+  {
     filters.insert("_id", doc! { "$in": ids });
   }
   find_collect(

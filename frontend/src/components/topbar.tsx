@@ -8,6 +8,7 @@ import {
   FileQuestion,
   FolderTree,
   Keyboard,
+  LayoutDashboard,
   Settings,
   User,
   Users,
@@ -64,18 +65,18 @@ export const Topbar = () => {
 
         {/* Shortcuts */}
         <div className="flex justify-end items-center gap-2">
-          <MobileDropdown/>
-          <OmniSearch setOpen={setOmniOpen} className="lg:hidden"/>
+          <MobileDropdown />
+          <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <div className="flex gap-0">
-            <Docs/>
-            <Version/>
+            <Docs />
+            <Version />
           </div>
-          <WsStatusIndicator/>
-          <KeyboardShortcuts/>
-          <TopbarAlerts/>
-          <TopbarUpdates/>
-          <ThemeToggle/>
-          <Logout/>
+          <WsStatusIndicator />
+          <KeyboardShortcuts />
+          <TopbarAlerts />
+          <TopbarUpdates />
+          <ThemeToggle />
+          <Logout />
         </div>
       </div>
       <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
@@ -83,15 +84,17 @@ export const Topbar = () => {
   );
 };
 
-const Docs = () => (<a
+const Docs = () => (
+  <a
     href="https://komo.do/docs/intro"
     target="_blank"
     className="hidden lg:block"
->
-  <Button variant="link" size="sm">
-    <div>Docs</div>
-  </Button>
-</a>);
+  >
+    <Button variant="link" size="sm">
+      <div>Docs</div>
+    </Button>
+  </a>
+);
 
 const Version = () => {
   const version = useRead("GetVersion", {}).data?.version;
@@ -125,11 +128,13 @@ const MobileDropdown = () => {
           : type) + "s",
       ]
     : location.pathname === "/" && view === "Dashboard"
-    ? [<Box className="w-4 h-4" />, "Dashboard"]
+    ? [<LayoutDashboard className="w-4 h-4" />, "Dashboard"]
     : location.pathname === "/" && view === "Resources"
     ? [<Boxes className="w-4 h-4" />, "Resources"]
     : location.pathname === "/" && view === "Tree"
     ? [<FolderTree className="w-4 h-4" />, "Tree"]
+    : location.pathname === "/containers"
+    ? [<Box className="w-4 h-4" />, "Containers"]
     : location.pathname === "/settings"
     ? [<Settings className="w-4 h-4" />, "Settings"]
     : location.pathname === "/alerts"
@@ -157,7 +162,7 @@ const MobileDropdown = () => {
         <DropdownMenuGroup>
           <DropdownLinkItem
             label="Dashboard"
-            icon={<Box className="w-4 h-4" />}
+            icon={<LayoutDashboard className="w-4 h-4" />}
             to="/"
             onClick={() => setView("Dashboard")}
           />
@@ -167,12 +172,11 @@ const MobileDropdown = () => {
             to="/"
             onClick={() => setView("Resources")}
           />
-          {/* <DropdownLinkItem
-            label="Tree"
-            icon={<FolderTree className="w-4 h-4" />}
-            to="/"
-            onClick={() => setView("Tree")}
-          /> */}
+          <DropdownLinkItem
+            label="Containers"
+            icon={<Box className="w-4 h-4" />}
+            to="/containers"
+          />
 
           <DropdownMenuSeparator />
 
