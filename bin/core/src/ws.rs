@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use axum::{
   extract::{
     ws::{Message, WebSocket},
@@ -15,7 +15,6 @@ use komodo_client::{
   },
   ws::WsLoginMessage,
 };
-use mungos::by_id::find_one_by_id;
 use serde_json::json;
 use serror::serialize_error;
 use tokio::select;
@@ -23,11 +22,10 @@ use tokio_util::sync::CancellationToken;
 
 use crate::{
   auth::{auth_api_key_check_enabled, auth_jwt_check_enabled},
-  db::DbClient,
   helpers::{
-    channel::update_channel, query::get_user_permission_on_target,
+    channel::update_channel,
+    query::{get_user, get_user_permission_on_target},
   },
-  state::db_client,
 };
 
 pub fn router() -> Router {
@@ -51,7 +49,6 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
     let cancel_clone = cancel.clone();
 
     tokio::spawn(async move {
-      let db_client = db_client();
       loop {
         // poll for updates off the receiver / await cancel.
         let update = select! {
@@ -61,7 +58,7 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
 
         // before sending every update, verify user is still valid.
         // kill the connection is user if found to be invalid.
-        let user = check_user_valid(db_client, &user.id).await;
+        let user = check_user_valid(&user.id).await;
         let user = match user {
           Err(e) => {
             let _ = ws_sender
@@ -183,15 +180,9 @@ enum LoginMessage {
   Err(String),
 }
 
-#[instrument(level = "debug", skip(db_client))]
-async fn check_user_valid(
-  db_client: &DbClient,
-  user_id: &str,
-) -> anyhow::Result<User> {
-  let user = find_one_by_id(&db_client.users, user_id)
-    .await
-    .context("failed to query mongo for users")?
-    .context("user not found")?;
+#[instrument(level = "debug")]
+async fn check_user_valid(user_id: &str) -> anyhow::Result<User> {
+  let user = get_user(user_id).await?;
   if !user.enabled {
     return Err(anyhow!("user not enabled"));
   }

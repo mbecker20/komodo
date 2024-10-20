@@ -4,7 +4,12 @@ use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display};
 use typeshare::typeshare;
 
-use crate::entities::builder::AwsBuilderConfig;
+use crate::{
+  deserializers::{
+    option_string_list_deserializer, string_list_deserializer,
+  },
+  entities::builder::AwsBuilderConfig,
+};
 
 #[typeshare(serialized_as = "Partial<AwsServerTemplateConfig>")]
 pub type _PartialAwsServerTemplateConfig =
@@ -56,7 +61,11 @@ pub struct AwsServerTemplateConfig {
   #[partial_default(default_use_https())]
   pub use_https: bool,
   /// The security groups to give to the instance.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub security_group_ids: Vec<String>,
   /// Specify the EBS volumes to attach.

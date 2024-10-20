@@ -1,6 +1,6 @@
 import { Config } from "@components/config";
 import { ConfigItem, ConfigList } from "@components/config/util";
-import { useRead, useWrite } from "@lib/hooks";
+import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { cn, filterBySplit } from "@lib/utils";
 import { Types } from "komodo_client";
 import { Button } from "@ui/button";
@@ -42,9 +42,9 @@ export const HetznerServerTemplateConfig = ({
 }) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data
     ?.config?.params as Types.HetznerServerTemplateConfig;
-  const [update, set] = useState<Partial<Types.HetznerServerTemplateConfig>>(
-    {}
-  );
+  const [update, set] = useLocalStorage<
+    Partial<Types.HetznerServerTemplateConfig>
+  >(`hetzner-template-${id}-update-v1`, {});
   const { mutateAsync } = useWrite("UpdateServerTemplate");
   if (!config) return null;
 

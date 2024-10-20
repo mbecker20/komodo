@@ -64,7 +64,7 @@ export const Topbar = () => {
         </div>
 
         {/* Shortcuts */}
-        <div className="flex justify-end items-center gap-2">
+        <div className="flex justify-end items-center gap-1">
           <MobileDropdown />
           <OmniSearch setOpen={setOmniOpen} className="lg:hidden" />
           <div className="flex gap-0">
@@ -90,7 +90,7 @@ const Docs = () => (
     target="_blank"
     className="hidden lg:block"
   >
-    <Button variant="link" size="sm">
+    <Button variant="link" size="sm" className="px-2">
       <div>Docs</div>
     </Button>
   </a>
@@ -106,7 +106,7 @@ const Version = () => {
       target="_blank"
       className="hidden lg:block"
     >
-      <Button variant="link" size="sm">
+      <Button variant="link" size="sm" className="px-2">
         <div>v{version}</div>
       </Button>
     </a>

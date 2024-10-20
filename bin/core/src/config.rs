@@ -150,6 +150,9 @@ pub fn core_config() -> &'static CoreConfig {
       repo_directory: env
         .komodo_repo_directory
         .unwrap_or(config.repo_directory),
+      action_directory: env
+        .komodo_action_directory
+        .unwrap_or(config.action_directory),
       resource_poll_interval: env
         .komodo_resource_poll_interval
         .unwrap_or(config.resource_poll_interval),

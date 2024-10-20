@@ -2,7 +2,7 @@ use std::path::Path;
 
 use komodo_client::{
   entities::{komodo_timestamp, update::Log},
-  parser::parse_multiline_command,
+  parsers::parse_multiline_command,
 };
 use run_command::{async_run_command, CommandOutput};
 
@@ -14,8 +14,13 @@ pub async fn run_komodo_command(
   stage: &str,
   path: impl Into<Option<&Path>>,
   command: impl AsRef<str>,
+  parse_multiline: bool,
 ) -> Log {
-  let command = parse_multiline_command(command);
+  let command = if parse_multiline {
+    parse_multiline_command(command)
+  } else {
+    command.as_ref().to_string()
+  };
   let command = if let Some(path) = path.into() {
     format!("cd {} && {command}", path.display(),)
   } else {

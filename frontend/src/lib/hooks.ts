@@ -30,14 +30,14 @@ const client = () => Client(KOMODO_BASE_URL, { type: "jwt", params: token() });
 export const useLoginOptions = () =>
   useQuery({
     queryKey: ["GetLoginOptions"],
-    queryFn: () => client().auth({ type: "GetLoginOptions", params: {} }),
+    queryFn: () => client().auth("GetLoginOptions", {}),
   });
 
 export const useUser = () => {
   const userInvalidate = useUserInvalidate();
   const query = useQuery({
     queryKey: ["GetUser"],
-    queryFn: () => client().auth({ type: "GetUser", params: {} }),
+    queryFn: () => client().auth("GetUser", {}),
     refetchInterval: 30_000,
   });
   useEffect(() => {
@@ -75,7 +75,7 @@ export const useRead = <
 ) =>
   useQuery({
     queryKey: [type, params],
-    queryFn: () => client().read({ type, params } as R),
+    queryFn: () => client().read<T, R>(type, params),
     ...config,
   });
 
@@ -104,10 +104,10 @@ export const useManageUser = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().user({ type, params } as R),
-    onError: (e: { response: { data: any } }, v, c) => {
-      console.log("Auth error:", e.response.data);
-      const msg = e.response.data?.error as string;
+    mutationFn: (params: P) => client().user<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Auth error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
       let msg_log = msg ? msg + " | " : "";
       if (msg_log) {
         msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
@@ -128,7 +128,7 @@ export const useWrite = <
   R extends Extract<Types.WriteRequest, { type: T }>,
   P extends R["params"],
   C extends Omit<
-    UseMutationOptions<WriteResponses[T], unknown, P, unknown>,
+    UseMutationOptions<WriteResponses[R["type"]], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
   >
 >(
@@ -138,10 +138,10 @@ export const useWrite = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().write({ type, params } as R),
-    onError: (e: { response: { data: any } }, v, c) => {
-      console.log("Write error:", e.response.data);
-      const msg = e.response.data?.error;
+    mutationFn: (params: P) => client().write<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Write error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
       let msg_log = msg ? msg + " - " : "";
       if (msg_log) {
         msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
@@ -172,10 +172,10 @@ export const useExecute = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().execute({ type, params } as R),
-    onError: (e: { response: { data: any } }, v, c) => {
-      console.log("Execute error:", e.response.data);
-      const msg = e.response.data?.error;
+    mutationFn: (params: P) => client().execute<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Execute error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
       let msg_log = msg ? msg + " | " : "";
       if (msg_log) {
         msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
@@ -202,12 +202,28 @@ export const useAuth = <
 >(
   type: T,
   config?: C
-) =>
-  useMutation({
+) => {
+  const { toast } = useToast();
+  return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().auth({ type, params } as R),
+    mutationFn: (params: P) => client().auth<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Auth error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
+      let msg_log = msg ? msg + " | " : "";
+      if (msg_log) {
+        msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
+      }
+      toast({
+        title: `Auth request ${type} failed`,
+        description: `${msg_log}See console for details`,
+        variant: "destructive",
+      });
+      config?.onError && config.onError(e, v, c);
+    },
     ...config,
   });
+};
 
 // ============== UTILITY ==============
 

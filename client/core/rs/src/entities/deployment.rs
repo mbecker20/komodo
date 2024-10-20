@@ -4,14 +4,20 @@ use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
 use partial_derive2::Partial;
-use serde::{
-  de::{value::SeqAccessDeserializer, Visitor},
-  Deserialize, Deserializer, Serialize,
-};
+use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::parser::parse_key_value_list;
+use crate::{
+  deserializers::{
+    conversions_deserializer, env_vars_deserializer,
+    labels_deserializer, option_conversions_deserializer,
+    option_env_vars_deserializer, option_labels_deserializer,
+    option_string_list_deserializer, option_term_labels_deserializer,
+    string_list_deserializer, term_labels_deserializer,
+  },
+  parsers::parse_key_value_list,
+};
 
 use super::{
   docker::container::ContainerStateStatusEnum,
@@ -125,7 +131,11 @@ pub struct DeploymentConfig {
 
   /// Extra args which are interpolated into the `docker run` command,
   /// and affect the container configuration.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub extra_args: Vec<String>,
 
@@ -161,25 +171,19 @@ pub struct DeploymentConfig {
   pub volumes: String,
 
   /// The environment variables passed to the container.
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
+  #[serde(default, deserialize_with = "env_vars_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_env_vars_deserializer"
+    deserialize_with = "option_env_vars_deserializer"
   ))]
   #[builder(default)]
   pub environment: String,
 
   /// The docker labels given to the container.
-  #[serde(
-    default,
-    deserialize_with = "super::labels_deserializer"
-  )]
+  #[serde(default, deserialize_with = "labels_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_labels_deserializer"
+    deserialize_with = "option_labels_deserializer"
   ))]
   #[builder(default)]
   pub labels: String,
@@ -292,108 +296,6 @@ pub fn conversions_from_str(
       .map(|(local, container)| Conversion { local, container })
       .collect()
   })
-}
-
-pub fn conversions_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<String, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(ConversionVisitor)
-}
-
-pub fn option_conversions_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<Option<String>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(OptionConversionVisitor)
-}
-
-struct ConversionVisitor;
-
-impl<'de> Visitor<'de> for ConversionVisitor {
-  type Value = String;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "string or Vec<Conversion>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    let out = v.to_string();
-    if out.is_empty() || out.ends_with('\n') {
-      Ok(out)
-    } else {
-      Ok(out + "\n")
-    }
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    let res = Vec::<Conversion>::deserialize(
-      SeqAccessDeserializer::new(seq),
-    )?;
-    let res = res
-      .iter()
-      .map(|Conversion { local, container }| {
-        format!("  {local}: {container}")
-      })
-      .collect::<Vec<_>>()
-      .join("\n");
-    let extra = if res.is_empty() { "" } else { "\n" };
-    Ok(res + extra)
-  }
-}
-
-struct OptionConversionVisitor;
-
-impl<'de> Visitor<'de> for OptionConversionVisitor {
-  type Value = Option<String>;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "null or string or Vec<Conversion>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    ConversionVisitor.visit_str(v).map(Some)
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    ConversionVisitor.visit_seq(seq).map(Some)
-  }
-
-  fn visit_none<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
-
-  fn visit_unit<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
 }
 
 /// Variants de/serialized from/to snake_case.
@@ -510,107 +412,6 @@ pub fn term_signal_labels_from_str(
       })
       .collect()
   })
-}
-
-pub fn term_labels_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<String, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(TermSignalLabelVisitor)
-}
-
-pub fn option_term_labels_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<Option<String>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(OptionTermSignalLabelVisitor)
-}
-
-struct TermSignalLabelVisitor;
-
-impl<'de> Visitor<'de> for TermSignalLabelVisitor {
-  type Value = String;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "string or Vec<TerminationSignalLabel>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    let out = v.to_string();
-    if out.is_empty() || out.ends_with('\n') {
-      Ok(out)
-    } else {
-      Ok(out + "\n")
-    }
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    let res = Vec::<TerminationSignalLabel>::deserialize(
-      SeqAccessDeserializer::new(seq),
-    )?
-    .into_iter()
-    .map(|TerminationSignalLabel { signal, label }| {
-      format!("  {signal}: {label}")
-    })
-    .collect::<Vec<_>>()
-    .join("\n");
-    let extra = if res.is_empty() { "" } else { "\n" };
-    Ok(res + extra)
-  }
-}
-
-struct OptionTermSignalLabelVisitor;
-
-impl<'de> Visitor<'de> for OptionTermSignalLabelVisitor {
-  type Value = Option<String>;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "null or string or Vec<TerminationSignalLabel>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    TermSignalLabelVisitor.visit_str(v).map(Some)
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    TermSignalLabelVisitor.visit_seq(seq).map(Some)
-  }
-
-  fn visit_none<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
-
-  fn visit_unit<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
 }
 
 #[typeshare]

@@ -9,11 +9,11 @@ import {
   ProviderSelectorConfig,
   SystemCommand,
 } from "@components/config/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
@@ -36,7 +36,10 @@ export const BuildConfig = ({
   const webhook = useRead("GetBuildWebhookEnabled", { build: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.BuildConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.BuildConfig>>(
+    `build-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateBuild");
 
   if (!config) return null;

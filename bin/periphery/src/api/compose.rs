@@ -35,6 +35,7 @@ impl Resolve<ListComposeProjects, ()> for State {
       "list projects",
       None,
       format!("{docker_compose} ls --all --format json"),
+      false,
     )
     .await;
 
@@ -104,7 +105,9 @@ impl Resolve<GetComposeServiceLog> for State {
     let command = format!(
       "{docker_compose} -p {project} logs {service} --tail {tail}{timestamps}"
     );
-    Ok(run_komodo_command("get stack log", None, command).await)
+    Ok(
+      run_komodo_command("get stack log", None, command, false).await,
+    )
   }
 }
 
@@ -131,7 +134,10 @@ impl Resolve<GetComposeServiceLogSearch> for State {
     let timestamps =
       timestamps.then_some(" --timestamps").unwrap_or_default();
     let command = format!("{docker_compose} -p {project} logs {service} --tail 5000{timestamps} 2>&1 | {grep}");
-    Ok(run_komodo_command("get stack log grep", None, command).await)
+    Ok(
+      run_komodo_command("get stack log grep", None, command, false)
+        .await,
+    )
   }
 }
 
@@ -378,6 +384,7 @@ impl Resolve<ComposeExecution> for State {
       "compose command",
       None,
       format!("{docker_compose} -p {project} {command}"),
+      false,
     )
     .await;
     Ok(log)

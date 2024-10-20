@@ -10,7 +10,7 @@ import {
 } from "@components/config/util";
 import { Types } from "komodo_client";
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
 import {
   Select,
@@ -59,7 +59,10 @@ export const StackConfig = ({
   const webhooks = useRead("GetStackWebhooksEnabled", { stack: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.StackConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.StackConfig>>(
+    `stack-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateStack");
 
   if (!config) return null;
@@ -198,10 +201,22 @@ export const StackConfig = ({
         ),
         env_file_path: {
           description:
-            "The path to write the file to, relative to the run directory",
+            "The path to write the file to, relative to the 'Run Directory'.",
           placeholder: ".env",
         },
-        // skip_secret_interp: true,
+        additional_env_files: (values, set) => (
+          <ConfigList
+            label="Additional Env Files"
+            boldLabel
+            addLabel="Add Env File"
+            description="Add additional env files to pass with '--env-file', relative to the 'Run Directory'."
+            field="additional_env_files"
+            values={values ?? []}
+            set={set}
+            disabled={disabled}
+            placeholder="Input File Path"
+          />
+        ),
       },
     },
     {

@@ -263,6 +263,9 @@ pub fn extend_resources(
     .procedures
     .extend(filter_by_tag(more.procedures, match_tags));
   resources
+    .actions
+    .extend(filter_by_tag(more.actions, match_tags));
+  resources
     .alerters
     .extend(filter_by_tag(more.alerters, match_tags));
   resources

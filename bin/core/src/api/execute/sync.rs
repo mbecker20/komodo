@@ -6,6 +6,7 @@ use komodo_client::{
   api::{execute::RunSync, write::RefreshResourceSyncPending},
   entities::{
     self,
+    action::Action,
     alerter::Alerter,
     build::Build,
     builder::Builder,
@@ -124,6 +125,10 @@ impl Resolve<RunSync, (User, Update)> for State {
                 .map(|d| d.name.clone()),
               ResourceTargetVariant::Procedure => all_resources
                 .procedures
+                .get(&name_or_id)
+                .map(|p| p.name.clone()),
+              ResourceTargetVariant::Action => all_resources
+                .actions
                 .get(&name_or_id)
                 .map(|p| p.name.clone()),
               ResourceTargetVariant::Repo => all_resources
@@ -270,6 +275,17 @@ impl Resolve<RunSync, (User, Update)> for State {
       &sync.config.match_tags,
     )
     .await?;
+    let (actions_to_create, actions_to_update, actions_to_delete) =
+      get_updates_for_execution::<Action>(
+        resources.actions,
+        delete,
+        &all_resources,
+        match_resource_type,
+        match_resources.as_deref(),
+        &id_to_tags,
+        &sync.config.match_tags,
+      )
+      .await?;
     let (builders_to_create, builders_to_update, builders_to_delete) =
       get_updates_for_execution::<Builder>(
         resources.builders,
@@ -388,6 +404,9 @@ impl Resolve<RunSync, (User, Update)> for State {
       && procedures_to_create.is_empty()
       && procedures_to_update.is_empty()
       && procedures_to_delete.is_empty()
+      && actions_to_create.is_empty()
+      && actions_to_update.is_empty()
+      && actions_to_delete.is_empty()
       && user_groups_to_create.is_empty()
       && user_groups_to_update.is_empty()
       && user_groups_to_delete.is_empty()
@@ -461,6 +480,15 @@ impl Resolve<RunSync, (User, Update)> for State {
         alerters_to_create,
         alerters_to_update,
         alerters_to_delete,
+      )
+      .await,
+    );
+    maybe_extend(
+      &mut update.logs,
+      Action::execute_sync_updates(
+        actions_to_create,
+        actions_to_update,
+        actions_to_delete,
       )
       .await,
     );

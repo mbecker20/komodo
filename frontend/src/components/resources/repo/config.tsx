@@ -6,9 +6,8 @@ import {
   ProviderSelectorConfig,
   SystemCommand,
 } from "@components/config/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
-import { useState } from "react";
 import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
@@ -26,7 +25,10 @@ export const RepoConfig = ({ id }: { id: string }) => {
   const webhooks = useRead("GetRepoWebhooksEnabled", { repo: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.RepoConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.RepoConfig>>(
+    `repo-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateRepo");
   if (!config) return null;
 

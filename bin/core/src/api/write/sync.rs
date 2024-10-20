@@ -5,28 +5,9 @@ use formatting::format_serror;
 use komodo_client::{
   api::{read::ExportAllResourcesToToml, write::*},
   entities::{
-    self,
-    alert::{Alert, AlertData, SeverityLevel},
-    alerter::Alerter,
-    all_logs_success,
-    build::Build,
-    builder::Builder,
-    config::core::CoreConfig,
-    deployment::Deployment,
-    komodo_timestamp,
-    permission::PermissionLevel,
-    procedure::Procedure,
-    repo::Repo,
-    server::Server,
-    server_template::ServerTemplate,
-    stack::Stack,
-    sync::{
+    self, action::Action, alert::{Alert, AlertData, SeverityLevel}, alerter::Alerter, all_logs_success, build::Build, builder::Builder, config::core::CoreConfig, deployment::Deployment, komodo_timestamp, permission::PermissionLevel, procedure::Procedure, repo::Repo, server::Server, server_template::ServerTemplate, stack::Stack, sync::{
       PartialResourceSyncConfig, ResourceSync, ResourceSyncInfo,
-    },
-    to_komodo_name,
-    update::{Log, Update},
-    user::{sync_user, User},
-    CloneArgs, NoData, Operation, ResourceTarget,
+    }, to_komodo_name, update::{Log, Update}, user::{sync_user, User}, CloneArgs, NoData, Operation, ResourceTarget
   },
 };
 use mungos::{
@@ -526,6 +507,17 @@ impl Resolve<RefreshResourceSyncPending, User> for State {
         .await?;
         push_updates_for_view::<Procedure>(
           resources.procedures,
+          delete,
+          &all_resources,
+          None,
+          None,
+          &id_to_tags,
+          &sync.config.match_tags,
+          &mut diffs,
+        )
+        .await?;
+        push_updates_for_view::<Action>(
+          resources.actions,
           delete,
           &all_resources,
           None,

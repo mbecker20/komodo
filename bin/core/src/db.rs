@@ -1,4 +1,5 @@
 use komodo_client::entities::{
+  action::Action,
   alert::Alert,
   alerter::Alerter,
   api_key::ApiKey,
@@ -47,6 +48,7 @@ pub struct DbClient {
   pub builders: Collection<Builder>,
   pub repos: Collection<Repo>,
   pub procedures: Collection<Procedure>,
+  pub actions: Collection<Action>,
   pub alerters: Collection<Alerter>,
   pub server_templates: Collection<ServerTemplate>,
   pub resource_syncs: Collection<ResourceSync>,
@@ -115,6 +117,7 @@ impl DbClient {
       repos: resource_collection(&db, "Repo").await?,
       alerters: resource_collection(&db, "Alerter").await?,
       procedures: resource_collection(&db, "Procedure").await?,
+      actions: resource_collection(&db, "Action").await?,
       server_templates: resource_collection(&db, "ServerTemplate")
         .await?,
       resource_syncs: resource_collection(&db, "ResourceSync")

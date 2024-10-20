@@ -6,7 +6,7 @@ use komodo_client::{
     ListUserGroups,
   },
   entities::{
-    alerter::Alerter, build::Build, builder::Builder,
+    action::Action, alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, permission::PermissionLevel,
     procedure::Procedure, repo::Repo, resource::ResourceQuery,
     server::Server, server_template::ServerTemplate, stack::Stack,
@@ -123,6 +123,16 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .await?
       .into_iter()
       .map(|resource| ResourceTarget::Procedure(resource.id)),
+    );
+    targets.extend(
+      resource::list_for_user::<Action>(
+        ResourceQuery::builder().tags(tags.clone()).build(),
+        &user,
+        &all_tags,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Action(resource.id)),
     );
     targets.extend(
       resource::list_for_user::<ServerTemplate>(
@@ -339,6 +349,21 @@ impl Resolve<ExportResourcesToToml, User> for State {
             &id_to_tags,
           ));
         }
+        ResourceTarget::Action(id) => {
+          let mut action = resource::get_check_permissions::<Action>(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          Action::replace_ids(&mut action, &all);
+          res.actions.push(convert_resource::<Action>(
+            action,
+            false,
+            vec![],
+            &id_to_tags,
+          ));
+        }
         ResourceTarget::System(_) => continue,
       };
     }
@@ -440,6 +465,14 @@ fn serialize_resources_toml(
     }
     toml.push_str("[[procedure]]\n");
     Procedure::push_to_toml_string(procedure, &mut toml)?;
+  }
+
+  for action in resources.actions {
+    if !toml.is_empty() {
+      toml.push_str("\n\n##\n\n");
+    }
+    toml.push_str("[[action]]\n");
+    Action::push_to_toml_string(action, &mut toml)?;
   }
 
   for alerter in resources.alerters {

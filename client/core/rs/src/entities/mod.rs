@@ -10,18 +10,20 @@ use clap::Parser;
 use derive_empty_traits::EmptyTraits;
 use derive_variants::{EnumVariants, ExtractVariant};
 use serde::{
-  de::{
-    value::{MapAccessDeserializer, SeqAccessDeserializer},
-    Visitor,
-  },
-  Deserialize, Deserializer, Serialize,
+  de::{value::MapAccessDeserializer, Visitor},
+  Deserialize, Serialize,
 };
 use serror::Serror;
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
-use crate::parser::parse_key_value_list;
+use crate::{
+  deserializers::file_contents_deserializer,
+  parsers::parse_key_value_list,
+};
 
+/// Subtypes of [Action][action::Action].
+pub mod action;
 /// Subtypes of [Alert][alert::Alert].
 pub mod alert;
 /// Subtypes of [Alerter][alerter::Alerter].
@@ -363,210 +365,6 @@ pub fn environment_vars_from_str(
       .map(|(variable, value)| EnvironmentVar { variable, value })
       .collect()
   })
-}
-
-pub fn env_vars_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<String, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(EnvironmentVarVisitor)
-}
-
-pub fn option_env_vars_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<Option<String>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(OptionEnvVarVisitor)
-}
-
-struct EnvironmentVarVisitor;
-
-impl<'de> Visitor<'de> for EnvironmentVarVisitor {
-  type Value = String;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "string or Vec<EnvironmentVar>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    let out = v.to_string();
-    if out.is_empty() || out.ends_with('\n') {
-      Ok(out)
-    } else {
-      Ok(out + "\n")
-    }
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    let vars = Vec::<EnvironmentVar>::deserialize(
-      SeqAccessDeserializer::new(seq),
-    )?;
-    let vars = vars
-      .iter()
-      .map(|EnvironmentVar { variable, value }| {
-        format!("  {variable} = {value}")
-      })
-      .collect::<Vec<_>>()
-      .join("\n");
-    let extra = if vars.is_empty() { "" } else { "\n" };
-    Ok(vars + extra)
-  }
-}
-
-struct OptionEnvVarVisitor;
-
-impl<'de> Visitor<'de> for OptionEnvVarVisitor {
-  type Value = Option<String>;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "null or string or Vec<EnvironmentVar>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    EnvironmentVarVisitor.visit_str(v).map(Some)
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    EnvironmentVarVisitor.visit_seq(seq).map(Some)
-  }
-
-  fn visit_none<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
-
-  fn visit_unit<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
-}
-
-pub fn labels_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<String, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(LabelVisitor)
-}
-
-pub fn option_labels_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<Option<String>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(OptionLabelVisitor)
-}
-
-struct LabelVisitor;
-
-impl<'de> Visitor<'de> for LabelVisitor {
-  type Value = String;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "string or Vec<EnvironmentVar>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    let out = v.to_string();
-    if out.is_empty() || out.ends_with('\n') {
-      Ok(out)
-    } else {
-      Ok(out + "\n")
-    }
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    let vars = Vec::<EnvironmentVar>::deserialize(
-      SeqAccessDeserializer::new(seq),
-    )?;
-    let vars = vars
-      .iter()
-      .map(|EnvironmentVar { variable, value }| {
-        format!("  {variable}: {value}")
-      })
-      .collect::<Vec<_>>()
-      .join("\n");
-    let extra = if vars.is_empty() { "" } else { "\n" };
-    Ok(vars + extra)
-  }
-}
-
-struct OptionLabelVisitor;
-
-impl<'de> Visitor<'de> for OptionLabelVisitor {
-  type Value = Option<String>;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "null or string or Vec<EnvironmentVar>")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    LabelVisitor.visit_str(v).map(Some)
-  }
-
-  fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-  where
-    A: serde::de::SeqAccess<'de>,
-  {
-    LabelVisitor.visit_seq(seq).map(Some)
-  }
-
-  fn visit_none<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
-
-  fn visit_unit<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
 }
 
 #[typeshare]
@@ -929,6 +727,12 @@ pub enum Operation {
   DeleteProcedure,
   RunProcedure,
 
+  // action
+  CreateAction,
+  UpdateAction,
+  DeleteAction,
+  RunAction,
+
   // builder
   CreateBuilder,
   UpdateBuilder,
@@ -1053,6 +857,7 @@ pub enum ResourceTarget {
   Build(String),
   Repo(String),
   Procedure(String),
+  Action(String),
   Builder(String),
   Alerter(String),
   ServerTemplate(String),
@@ -1073,6 +878,7 @@ impl ResourceTarget {
       ResourceTarget::Repo(id) => id,
       ResourceTarget::Alerter(id) => id,
       ResourceTarget::Procedure(id) => id,
+      ResourceTarget::Action(id) => id,
       ResourceTarget::ServerTemplate(id) => id,
       ResourceTarget::ResourceSync(id) => id,
     };
@@ -1145,8 +951,14 @@ impl From<&sync::ResourceSync> for ResourceTarget {
 }
 
 impl From<&stack::Stack> for ResourceTarget {
-  fn from(resource_sync: &stack::Stack) -> Self {
-    Self::Stack(resource_sync.id.clone())
+  fn from(stack: &stack::Stack) -> Self {
+    Self::Stack(stack.id.clone())
+  }
+}
+
+impl From<&action::Action> for ResourceTarget {
+  fn from(action: &action::Action) -> Self {
+    Self::Action(action.id.clone())
   }
 }
 
@@ -1165,85 +977,7 @@ impl ResourceTargetVariant {
       ResourceTargetVariant::ServerTemplate => "server_template",
       ResourceTargetVariant::ResourceSync => "resource_sync",
       ResourceTargetVariant::Stack => "stack",
+      ResourceTargetVariant::Action => "action",
     }
-  }
-}
-
-/// Using this ensures the file contents end with trailing '\n'
-pub fn file_contents_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<String, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(FileContentsVisitor)
-}
-
-/// Using this ensures the file contents end with trailing '\n'
-pub fn option_file_contents_deserializer<'de, D>(
-  deserializer: D,
-) -> Result<Option<String>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  deserializer.deserialize_any(OptionFileContentsVisitor)
-}
-
-struct FileContentsVisitor;
-
-impl<'de> Visitor<'de> for FileContentsVisitor {
-  type Value = String;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "string")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    let out = v.trim_end().to_string();
-    if out.is_empty() {
-      Ok(out)
-    } else {
-      Ok(out + "\n")
-    }
-  }
-}
-
-struct OptionFileContentsVisitor;
-
-impl<'de> Visitor<'de> for OptionFileContentsVisitor {
-  type Value = Option<String>;
-
-  fn expecting(
-    &self,
-    formatter: &mut std::fmt::Formatter,
-  ) -> std::fmt::Result {
-    write!(formatter, "null or string")
-  }
-
-  fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    FileContentsVisitor.visit_str(v).map(Some)
-  }
-
-  fn visit_none<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
-  }
-
-  fn visit_unit<E>(self) -> Result<Self::Value, E>
-  where
-    E: serde::de::Error,
-  {
-    Ok(None)
   }
 }

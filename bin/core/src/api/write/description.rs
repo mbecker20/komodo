@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use komodo_client::{
   api::write::{UpdateDescription, UpdateDescriptionResponse},
   entities::{
-    alerter::Alerter, build::Build, builder::Builder,
+    action::Action, alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
     server::Server, server_template::ServerTemplate, stack::Stack,
     sync::ResourceSync, user::User, ResourceTarget,
@@ -78,6 +78,14 @@ impl Resolve<UpdateDescription, User> for State {
       }
       ResourceTarget::Procedure(id) => {
         resource::update_description::<Procedure>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
+      }
+      ResourceTarget::Action(id) => {
+        resource::update_description::<Action>(
           &id,
           &description,
           &user,

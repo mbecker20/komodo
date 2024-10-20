@@ -1,4 +1,4 @@
-import { useLocalStorage, useUser } from "@lib/hooks";
+import { atomWithStorage, useUser } from "@lib/hooks";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { Variables } from "./variables";
 import { Tags } from "./tags";
@@ -7,12 +7,17 @@ import { Profile } from "./profile";
 import { Page } from "@components/layouts";
 import { ProvidersPage } from "./providers";
 import { ExportButton } from "@components/export";
+import { useAtom } from "jotai";
+
+type SettingsView = "Variables" | "Tags" | "Providers" | "Users" | "Profile";
+
+const viewAtom = atomWithStorage<SettingsView>("settings-view-v2", "Variables");
+
+export const useSettingsView = () => useAtom<SettingsView>(viewAtom);
 
 export const Settings = () => {
   const user = useUser().data;
-  const [view, setView] = useLocalStorage<
-    "Variables" | "Tags" | "Providers" | "Users" | "Profile"
-  >("settings-view-v1", "Variables");
+  const [view, setView] = useSettingsView();
   const currentView =
     (view === "Users" || view === "Providers") && !user?.admin
       ? "Variables"

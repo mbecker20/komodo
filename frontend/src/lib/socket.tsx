@@ -74,6 +74,8 @@ const on_message = (
     invalidate(["GetRepoActionState", { repo: update.target.id }]);
   } else if (update.target.type === "Procedure") {
     invalidate(["GetProcedureActionState", { procedure: update.target.id }]);
+  } else if (update.target.type === "Action") {
+    invalidate(["GetActionActionState", { action: update.target.id }]);
   } else if (update.target.type === "ResourceSync") {
     invalidate(["GetResourceSyncActionState", { sync: update.target.id }]);
   }
@@ -91,6 +93,8 @@ const on_message = (
     invalidate(["ListRepos"]);
   } else if (update.operation === Types.Operation.RunProcedure) {
     invalidate(["ListProcedures"]);
+  } else if (update.operation === Types.Operation.RunAction) {
+    invalidate(["ListActions"]);
   }
 
   // Do invalidations of these only if update is completed
@@ -182,6 +186,15 @@ const on_message = (
         ["ListFullProcedures"],
         ["GetProceduresSummary"],
         ["GetProcedure"]
+      );
+    }
+
+    if (update.target.type === "Action") {
+      invalidate(
+        ["ListActions"],
+        ["ListFullActions"],
+        ["GetActionsSummary"],
+        ["GetAction"]
       );
     }
 

@@ -1,7 +1,6 @@
 import { Config } from "@components/config";
-import { useRead, useWrite } from "@lib/hooks";
+import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
-import { useState } from "react";
 import { EndpointConfig } from "./endpoint";
 import { AlertTypeConfig } from "./alert_types";
 import { ResourcesConfig } from "./resources";
@@ -14,7 +13,10 @@ export const AlerterConfig = ({ id }: { id: string }) => {
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const { mutateAsync } = useWrite("UpdateAlerter");
-  const [update, set] = useState<Partial<Types.AlerterConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.AlerterConfig>>(
+    `alerter-${id}-update-v1`,
+    {}
+  );
 
   if (!config) return null;
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;

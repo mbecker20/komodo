@@ -1,6 +1,6 @@
 {
   "name": "komodo_client",
-  "version": "1.15.9",
+  "version": "1.15.15",
   "description": "Komodo client package",
   "homepage": "https://komo.do",
   "main": "dist/lib.js",
@@ -11,9 +11,7 @@
   "scripts": {
     "build": "tsc"
   },
-  "dependencies": {
-    "axios": "^1.7.7"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^5.6.3"
   },

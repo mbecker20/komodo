@@ -8,7 +8,7 @@ use crate::entities::update::Update;
 
 use super::KomodoExecuteRequest;
 
-/// Runs the target procedure. Response: [Update]
+/// Runs the target Procedure. Response: [Update]
 #[typeshare]
 #[derive(
   Debug,

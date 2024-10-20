@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import monaco from "monaco-editor";
 import { DiffEditor, Editor } from "@monaco-editor/react";
 import { useTheme } from "@ui/theme";
 import { cn } from "@lib/utils";
+import * as monaco from "monaco-editor";
+import * as prettier from "prettier/standalone";
+import * as pluginTypescript from "prettier/plugins/typescript";
+import * as pluginEstree from "prettier/plugins/estree";
+import * as pluginYaml from "prettier/plugins/yaml";
 
 const MIN_EDITOR_HEIGHT = 56;
 // const MAX_EDITOR_HEIGHT = 500;
@@ -15,6 +19,8 @@ export type MonacoLanguage =
   | "shell"
   | "dockerfile"
   | "rust"
+  | "javascript"
+  | "typescript"
   | undefined;
 
 export const MonacoEditor = ({
@@ -45,6 +51,41 @@ export const MonacoEditor = ({
 
     node.addEventListener("keydown", callback);
     return () => node.removeEventListener("keydown", callback);
+  }, [editor]);
+
+  useEffect(() => {
+    if (
+      language !== "typescript" &&
+      language !== "javascript" &&
+      language !== "yaml"
+    )
+      return;
+    if (!editor) return;
+    editor.addCommand(
+      monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
+      async () => {
+        if (!editor) return;
+        const model = editor.getModel();
+        if (!model) return;
+        const position = editor.getPosition();
+        let beforeOffset = (position && model.getOffsetAt(position)) ?? 0;
+        const curr = editor.getValue();
+        const { formatted, cursorOffset } = await prettier.formatWithCursor(
+          curr,
+          {
+            cursorOffset: beforeOffset,
+            parser: language === "yaml" ? "yaml" : "typescript",
+            plugins:
+              language === "yaml"
+                ? [pluginYaml]
+                : [pluginTypescript, pluginEstree],
+            printWidth: 80, // Set the desired max line length
+          }
+        );
+        editor.setValue(formatted);
+        editor.setPosition(model.getPositionAt(cursorOffset));
+      }
+    );
   }, [editor]);
 
   const line_count = value?.split(/\r\n|\r|\n/).length ?? 0;
@@ -83,6 +124,7 @@ export const MonacoEditor = ({
     readOnly,
     tabSize: 2,
     detectIndentation: true,
+    quickSuggestions: true,
     padding: {
       top: 15,
     },

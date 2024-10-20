@@ -57,6 +57,7 @@ async fn app() -> anyhow::Result<()> {
   resource::spawn_build_state_refresh_loop();
   resource::spawn_repo_state_refresh_loop();
   resource::spawn_procedure_state_refresh_loop();
+  resource::spawn_action_state_refresh_loop();
   resource::spawn_resource_sync_state_refresh_loop();
   helpers::prune::spawn_prune_loop();
 

@@ -4,6 +4,7 @@ use anyhow::Context;
 use komodo_client::{
   api::execute::Execution,
   entities::{
+    action::Action,
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig, PartialBuilderConfig},
@@ -164,6 +165,7 @@ pub fn convert_resource<R: KomodoResource>(
 impl ToToml for Alerter {}
 impl ToToml for Server {}
 impl ToToml for ResourceSync {}
+impl ToToml for Action {}
 
 impl ToToml for Stack {
   fn replace_ids(
@@ -409,6 +411,13 @@ impl ToToml for Procedure {
             all
               .procedures
               .get(&exec.procedure)
+              .map(|r| &r.name)
+              .unwrap_or(&String::new()),
+          ),
+          Execution::RunAction(exec) => exec.action.clone_from(
+            all
+              .actions
+              .get(&exec.action)
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),

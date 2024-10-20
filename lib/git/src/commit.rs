@@ -66,6 +66,7 @@ pub async fn commit_file_inner(
     "add files",
     repo_dir,
     format!("git add {}", file.display()),
+    false,
   )
   .await;
   res.logs.push(add_log);
@@ -77,8 +78,9 @@ pub async fn commit_file_inner(
     "commit",
     repo_dir,
     format!(
-      "git commit -m \"[Komodo] {commit_msg}: update {file:?}\""
+      "git commit -m \"[Komodo] {commit_msg}: update {file:?}\"",
     ),
+    false,
   )
   .await;
   res.logs.push(commit_log);
@@ -102,7 +104,7 @@ pub async fn commit_file_inner(
   };
 
   let push_log =
-    run_komodo_command("push", repo_dir, "git push -f").await;
+    run_komodo_command("push", repo_dir, "git push -f", false).await;
   res.logs.push(push_log);
 }
 
@@ -114,7 +116,8 @@ pub async fn commit_all(repo_dir: &Path, message: &str) -> GitRes {
   let mut res = GitRes::default();
 
   let add_log =
-    run_komodo_command("add files", repo_dir, "git add -A").await;
+    run_komodo_command("add files", repo_dir, "git add -A", false)
+      .await;
   res.logs.push(add_log);
   if !all_logs_success(&res.logs) {
     return res;
@@ -124,6 +127,7 @@ pub async fn commit_all(repo_dir: &Path, message: &str) -> GitRes {
     "commit",
     repo_dir,
     format!("git commit -m \"[Komodo] {message}\""),
+    false,
   )
   .await;
   res.logs.push(commit_log);
@@ -147,7 +151,7 @@ pub async fn commit_all(repo_dir: &Path, message: &str) -> GitRes {
   };
 
   let push_log =
-    run_komodo_command("push", repo_dir, "git push -f").await;
+    run_komodo_command("push", repo_dir, "git push -f", false).await;
   res.logs.push(push_log);
 
   res

@@ -44,7 +44,7 @@ impl Resolve<DeleteImage> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = format!("docker image rm {name}");
-    Ok(run_komodo_command("delete image", None, command).await)
+    Ok(run_komodo_command("delete image", None, command, false).await)
   }
 }
 
@@ -58,6 +58,6 @@ impl Resolve<PruneImages> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker image prune -a -f");
-    Ok(run_komodo_command("prune images", None, command).await)
+    Ok(run_komodo_command("prune images", None, command, false).await)
   }
 }

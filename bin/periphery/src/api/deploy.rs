@@ -87,7 +87,7 @@ impl Resolve<Deploy> for State {
     debug!("docker run command: {command}");
 
     if deployment.config.skip_secret_interp {
-      Ok(run_komodo_command("docker run", None, command).await)
+      Ok(run_komodo_command("docker run", None, command, false).await)
     } else {
       let command = svi::interpolate_variables(
         &command,
@@ -108,7 +108,7 @@ impl Resolve<Deploy> for State {
 
       replacers.extend(core_replacers);
       let mut log =
-        run_komodo_command("docker run", None, command).await;
+        run_komodo_command("docker run", None, command, false).await;
       log.command = svi::replace_in_string(&log.command, &replacers);
       log.stdout = svi::replace_in_string(&log.stdout, &replacers);
       log.stderr = svi::replace_in_string(&log.stderr, &replacers);

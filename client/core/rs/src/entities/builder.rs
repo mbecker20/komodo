@@ -5,6 +5,10 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
+use crate::deserializers::{
+  option_string_list_deserializer, string_list_deserializer,
+};
+
 use super::{
   config::{DockerRegistry, GitProvider},
   resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
@@ -330,7 +334,11 @@ pub struct AwsBuilderConfig {
   pub use_public_ip: bool,
   /// The security group ids to attach to the instance.
   /// This should include a security group to allow core inbound access to the periphery port.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub security_group_ids: Vec<String>,
   /// The user data to deploy the instance with.
@@ -347,7 +355,11 @@ pub struct AwsBuilderConfig {
   #[builder(default)]
   pub docker_registries: Vec<DockerRegistry>,
   /// Which secrets are available on the AMI.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub secrets: Vec<String>,
 }

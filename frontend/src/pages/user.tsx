@@ -148,7 +148,7 @@ const ApiKeysTable = ({ user_id }: { user_id: string }) => {
 
 const Groups = ({ user_id }: { user_id: string }) => {
   const groups = useRead("ListUserGroups", {}).data?.filter((group) =>
-    group.users.includes(user_id)
+    group.users?.includes(user_id)
   );
   if (!groups || groups.length === 0) {
     return null;

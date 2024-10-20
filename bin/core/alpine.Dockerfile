@@ -4,7 +4,7 @@
 ## and may negatively affect runtime performance.
 
 # Build Core
-FROM rust:1.81.0-alpine AS core-builder
+FROM rust:1.82.0-alpine AS core-builder
 WORKDIR /builder
 RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
 COPY . .
@@ -23,7 +23,7 @@ FROM alpine:3.20
 
 # Install Deps
 RUN apk update && apk add --no-cache --virtual .build-deps \
-	openssl ca-certificates git git-lfs
+	openssl ca-certificates git git-lfs curl
 
 # Setup an application directory
 WORKDIR /app
@@ -32,6 +32,7 @@ WORKDIR /app
 COPY ./config/core.config.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /app
 COPY --from=frontend-builder /builder/frontend/dist /app/frontend
+COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # Hint at the port
 EXPOSE 9120 

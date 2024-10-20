@@ -4,6 +4,7 @@ use formatting::{bold, colored, muted, Color};
 use komodo_client::{
   api::execute::Execution,
   entities::{
+    action::Action,
     alerter::Alerter,
     build::Build,
     builder::{Builder, BuilderConfig},
@@ -233,6 +234,22 @@ impl ResourceSyncTrait for ServerTemplate {
 
 impl ExecuteResourceSync for ServerTemplate {}
 
+impl ResourceSyncTrait for Action {
+  fn resource_target(id: String) -> ResourceTarget {
+    ResourceTarget::Action(id)
+  }
+
+  fn get_diff(
+    original: Self::Config,
+    update: Self::PartialConfig,
+    _resources: &AllResourcesById,
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    Ok(original.partial_diff(update))
+  }
+}
+
+impl ExecuteResourceSync for Action {}
+
 impl ResourceSyncTrait for ResourceSync {
   fn resource_target(id: String) -> ResourceTarget {
     ResourceTarget::ResourceSync(id)
@@ -340,6 +357,13 @@ impl ResourceSyncTrait for Procedure {
             config.procedure = resources
               .procedures
               .get(&config.procedure)
+              .map(|p| p.name.clone())
+              .unwrap_or_default();
+          }
+          Execution::RunAction(config) => {
+            config.action = resources
+              .actions
+              .get(&config.action)
               .map(|p| p.name.clone())
               .unwrap_or_default();
           }

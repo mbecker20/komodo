@@ -45,6 +45,7 @@ use crate::{
   state::{db_client, State},
 };
 
+mod action;
 mod alerter;
 mod build;
 mod builder;
@@ -57,6 +58,9 @@ mod server_template;
 mod stack;
 mod sync;
 
+pub use action::{
+  refresh_action_state_cache, spawn_action_state_refresh_loop,
+};
 pub use build::{
   refresh_build_state_cache, spawn_build_state_refresh_loop,
 };
@@ -619,7 +623,7 @@ pub async fn update<T: KomodoResource>(
   let diff = resource.config.partial_diff(config);
 
   if diff.is_none() {
-    return Err(anyhow!("update has no changes"));
+    return Ok(resource);
   }
 
   let mut diff_log = String::from("diff");
@@ -687,6 +691,7 @@ fn resource_target<T: KomodoResource>(id: String) -> ResourceTarget {
       ResourceTarget::ResourceSync(id)
     }
     ResourceTargetVariant::Stack => ResourceTarget::Stack(id),
+    ResourceTargetVariant::Action => ResourceTarget::Action(id),
   }
 }
 
@@ -860,6 +865,7 @@ where
     ResourceTarget::Build(id) => ("recents.Build", id),
     ResourceTarget::Repo(id) => ("recents.Repo", id),
     ResourceTarget::Procedure(id) => ("recents.Procedure", id),
+    ResourceTarget::Action(id) => ("recents.Action", id),
     ResourceTarget::Stack(id) => ("recents.Stack", id),
     ResourceTarget::Builder(id) => ("recents.Builder", id),
     ResourceTarget::Alerter(id) => ("recents.Alerter", id),

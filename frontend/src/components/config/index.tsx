@@ -22,7 +22,7 @@ const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
 
 export const ConfigLayout = <
-  T extends Types.Resource<unknown, unknown>["config"]
+  T extends Types.Resource<unknown, unknown>["config"],
 >({
   original,
   config,
@@ -148,13 +148,13 @@ export const Config = <T,>({
   // );
   // const show = (components[_show] && _show) || component_keys[0];
 
-  // let activeCount = 0;
-  // for (const key in components) {
-  //   if (components[key] && components[key].length) {
-  //     activeCount++;
-  //   }
-  // }
-  // const showSidebar = activeCount > 1;
+  let activeCount = 0;
+  for (const key in components) {
+    if (components[key] && components[key].length) {
+      activeCount++;
+    }
+  }
+  const showSidebar = activeCount > 1;
 
   const sections = keys(components).filter((section) => !!components[section]);
 
@@ -173,39 +173,41 @@ export const Config = <T,>({
       file_contents_language={file_contents_language}
     >
       <div className="flex gap-6">
-        <div className="hidden xl:block relative pr-6 border-r">
-          <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
-            {sections.map((section) => (
-              <div key={section}>
-                {section && (
-                  <p className="text-muted-foreground uppercase text-right mb-2">
-                    {section}
-                  </p>
-                )}
-                <div className="flex flex-col gap-2">
-                  {components[section] &&
-                    components[section]
-                      .filter((item) => !item.hidden)
-                      .map((item) => (
-                        // uses a tags becasue react-router-dom Links don't reliably hash scroll
-                        <a
-                          href={"#" + section + item.label}
-                          key={section + item.label}
-                        >
-                          <Button
-                            variant="secondary"
-                            className="justify-end w-full"
-                            size="sm"
+        {showSidebar && (
+          <div className="hidden xl:block relative pr-6 border-r">
+            <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
+              {sections.map((section) => (
+                <div key={section}>
+                  {section && (
+                    <p className="text-muted-foreground uppercase text-right mb-2">
+                      {section}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    {components[section] &&
+                      components[section]
+                        .filter((item) => !item.hidden)
+                        .map((item) => (
+                          // uses a tags becasue react-router-dom Links don't reliably hash scroll
+                          <a
+                            href={"#" + section + item.label}
+                            key={section + item.label}
                           >
-                            {item.label}
-                          </Button>
-                        </a>
-                      ))}
+                            <Button
+                              variant="secondary"
+                              className="justify-end w-full"
+                              size="sm"
+                            >
+                              {item.label}
+                            </Button>
+                          </a>
+                        ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         <div className="w-full flex flex-col gap-12">
           {sections.map(
             (section) =>
@@ -255,48 +257,50 @@ export const Config = <T,>({
                         hidden,
                         contentHidden,
                         components,
-                      }) =>
-                        !hidden && (
-                          <div
-                            key={section + label}
-                            id={section + label}
-                            className="p-6 border rounded-md flex flex-col gap-6 scroll-mt-40 xl:scroll-mt-24"
-                          >
-                            {!labelHidden && (
-                              <div className="flex justify-between">
-                                <div>
-                                  <div className="flex items-center gap-4">
-                                    {icon}
-                                    <div
-                                      className={cn(
-                                        "text-lg",
-                                        boldLabel && "font-bold"
-                                      )}
-                                    >
-                                      {label}
-                                    </div>
-                                    {labelExtra}
+                      }) => (
+                        <div
+                          key={section + label}
+                          id={section + label}
+                          className={cn(
+                            "p-6 border rounded-md flex flex-col gap-6 scroll-mt-40 xl:scroll-mt-24",
+                            hidden && "hidden"
+                          )}
+                        >
+                          {!labelHidden && (
+                            <div className="flex justify-between">
+                              <div>
+                                <div className="flex items-center gap-4">
+                                  {icon}
+                                  <div
+                                    className={cn(
+                                      "text-lg",
+                                      boldLabel && "font-bold"
+                                    )}
+                                  >
+                                    {label}
                                   </div>
-                                  {description && (
-                                    <div className="text-sm text-muted-foreground">
-                                      {description}
-                                    </div>
-                                  )}
+                                  {labelExtra}
                                 </div>
-                                {actions}
+                                {description && (
+                                  <div className="text-sm text-muted-foreground">
+                                    {description}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {!contentHidden && (
-                              <ConfigAgain
-                                config={config}
-                                update={update}
-                                set={(u) => set((p) => ({ ...p, ...u }))}
-                                components={components}
-                                disabled={disabled}
-                              />
-                            )}
-                          </div>
-                        )
+                              {actions}
+                            </div>
+                          )}
+                          {!contentHidden && (
+                            <ConfigAgain
+                              config={config}
+                              update={update}
+                              set={(u) => set((p) => ({ ...p, ...u }))}
+                              components={components}
+                              disabled={disabled}
+                            />
+                          )}
+                        </div>
+                      )
                     )}
                   </div>
                 </div>
@@ -309,7 +313,7 @@ export const Config = <T,>({
 };
 
 export const ConfigAgain = <
-  T extends Types.Resource<unknown, unknown>["config"]
+  T extends Types.Resource<unknown, unknown>["config"],
 >({
   config,
   update,
@@ -384,9 +388,11 @@ export const ConfigAgain = <
                 />
               );
             default:
-              return <div>{args?.label ?? key.toString()}</div>;
+              return (
+                <div key={key.toString()}>{args?.label ?? key.toString()}</div>
+              );
           }
-        } else if (component === false) {
+        } else {
           return <Fragment key={key.toString()} />;
         }
       })}

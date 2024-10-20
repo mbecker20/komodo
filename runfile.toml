@@ -1,19 +1,18 @@
-[gen-ts-types]
-description = "generates typescript types for the ts client"
-path = "."
-cmd = "node ./client/core/ts/generate_types.mjs"
-
-[build-ts-client]
-path = "client/core/ts"
-cmd = "yarn build"
-
 [start-frontend]
 path = "frontend"
 cmd = "yarn dev"
 
+[gen-client]
+description = "generates typescript types and build the ts client"
+cmd = """
+node ./client/core/ts/generate_types.mjs && \
+cd ./client/core/ts && yarn build && \
+cp -r dist/. ../../../frontend/public/client/."""
+
 [build-frontend]
 path = "frontend"
 cmd = "yarn build"
+after = "gen-client"
 
 [publish-typescript]
 path = "client/core/ts"

@@ -4,6 +4,7 @@ use anyhow::{anyhow, Context};
 use komodo_client::{
   api::execute::Execution,
   entities::{
+    action::Action,
     build::Build,
     deployment::Deployment,
     permission::PermissionLevel,
@@ -171,6 +172,15 @@ async fn validate_config(
             _ => {}
           }
           params.procedure = procedure.id;
+        }
+        Execution::RunAction(params) => {
+          let action = super::get_check_permissions::<Action>(
+            &params.action,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.action = action.id;
         }
         Execution::RunBuild(params) => {
           let build = super::get_check_permissions::<Build>(
@@ -598,7 +608,7 @@ pub async fn refresh_procedure_state_cache() {
     let procedures =
       find_collect(&db_client().procedures, None, None)
         .await
-        .context("failed to get procedures from db")?;
+        .context("Failed to get Procedures from db")?;
     let cache = procedure_state_cache();
     for procedure in procedures {
       let state = get_procedure_state_from_db(&procedure.id).await;
@@ -608,7 +618,7 @@ pub async fn refresh_procedure_state_cache() {
   }
   .await
   .inspect_err(|e| {
-    error!("failed to refresh build state cache | {e:#}")
+    error!("Failed to refresh Procedure state cache | {e:#}")
   });
 }
 
@@ -655,7 +665,7 @@ async fn get_procedure_state_from_db(id: &str) -> ProcedureState {
   }
   .await
   .inspect_err(|e| {
-    warn!("failed to get procedure state for {id} | {e:#}")
+    warn!("Failed to get Procedure state for {id} | {e:#}")
   })
   .unwrap_or(ProcedureState::Unknown)
 }

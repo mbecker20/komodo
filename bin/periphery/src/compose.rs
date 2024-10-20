@@ -141,19 +141,27 @@ pub async fn compose_up(
     .map(|path| format!(" --env-file {path}"))
     .unwrap_or_default();
 
+  let additional_env_files = stack
+    .config
+    .additional_env_files
+    .iter()
+    .map(|file| format!(" --env-file {file}"))
+    .collect::<String>();
+
   // Build images before destroying to minimize downtime.
   // If this fails, do not continue.
   if stack.config.run_build {
     let build_extra_args =
       parse_extra_args(&stack.config.build_extra_args);
     let command = format!(
-      "{docker_compose} -p {project_name} -f {file_args}{env_file} build{build_extra_args}{service_arg}",
+      "{docker_compose} -p {project_name} -f {file_args}{env_file}{additional_env_files} build{build_extra_args}{service_arg}",
     );
     if stack.config.skip_secret_interp {
       let log = run_komodo_command(
         "compose build",
         run_directory.as_ref(),
         command,
+        false,
       )
       .await;
       res.logs.push(log);
@@ -170,6 +178,7 @@ pub async fn compose_up(
         "compose build",
         run_directory.as_ref(),
         command,
+        false,
       )
       .await;
 
@@ -197,6 +206,7 @@ pub async fn compose_up(
       format!(
         "{docker_compose} -p {project_name} -f {file_args}{env_file} pull{service_arg}",
       ),
+      false,
     )
     .await;
 
@@ -223,6 +233,7 @@ pub async fn compose_up(
         "pre deploy",
         pre_deploy_path.as_ref(),
         &full_command,
+        true,
       )
       .await;
 
@@ -245,6 +256,7 @@ pub async fn compose_up(
         "pre deploy",
         pre_deploy_path.as_ref(),
         &stack.config.pre_deploy.command,
+        true,
       )
       .await;
       tracing::debug!(
@@ -279,8 +291,13 @@ pub async fn compose_up(
   );
 
   let log = if stack.config.skip_secret_interp {
-    run_komodo_command("compose up", run_directory.as_ref(), command)
-      .await
+    run_komodo_command(
+      "compose up",
+      run_directory.as_ref(),
+      command,
+      false,
+    )
+    .await
   } else {
     let (command, mut replacers) = svi::interpolate_variables(
       &command,
@@ -294,6 +311,7 @@ pub async fn compose_up(
       "compose up",
       run_directory.as_ref(),
       command,
+      false,
     )
     .await;
 
@@ -545,6 +563,7 @@ async fn compose_down(
     "compose down",
     None,
     format!("{docker_compose} -p {project} down{service_arg}"),
+    false,
   )
   .await;
   let success = log.success;

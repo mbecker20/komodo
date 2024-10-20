@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
+mod action;
 mod build;
 mod deployment;
 mod procedure;
@@ -14,6 +15,7 @@ mod server_template;
 mod stack;
 mod sync;
 
+pub use action::*;
 pub use build::*;
 pub use deployment::*;
 pub use procedure::*;
@@ -54,6 +56,9 @@ pub trait KomodoExecuteRequest: HasResponse {}
 pub enum Execution {
   /// The "null" execution. Does nothing.
   None(NoData),
+
+  // ACTION
+  RunAction(RunAction),
 
   // PROCEDURE
   RunProcedure(RunProcedure),

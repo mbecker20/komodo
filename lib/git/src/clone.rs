@@ -117,6 +117,7 @@ where
           "on clone",
           on_clone_path.as_ref(),
           full_command,
+          true,
         )
         .await;
 
@@ -139,6 +140,7 @@ where
           "on clone",
           on_clone_path.as_ref(),
           &command.command,
+          true,
         )
         .await;
         tracing::debug!(
@@ -169,6 +171,7 @@ where
           "on pull",
           on_pull_path.as_ref(),
           &full_command,
+          true,
         )
         .await;
 
@@ -191,6 +194,7 @@ where
           "on pull",
           on_pull_path.as_ref(),
           &command.command,
+          true,
         )
         .await;
         tracing::debug!(
@@ -253,6 +257,7 @@ async fn clone_inner(
       "set commit",
       destination,
       format!("git reset --hard {commit}",),
+      false,
     )
     .await;
     logs.push(reset_log);

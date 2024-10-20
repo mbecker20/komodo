@@ -1,5 +1,5 @@
 # Build Periphery
-FROM rust:1.81.0-bullseye AS builder
+FROM rust:1.82.0-bullseye AS builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p komodo_periphery --release

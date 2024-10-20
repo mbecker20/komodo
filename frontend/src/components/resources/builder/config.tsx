@@ -1,6 +1,6 @@
 import { Config } from "@components/config";
 import { ConfigItem, ConfigList } from "@components/config/util";
-import { useRead, useWrite } from "@lib/hooks";
+import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { useState } from "react";
 import { ResourceLink, ResourceSelector } from "../common";
@@ -32,7 +32,10 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
     ?.params as Types.AwsBuilderConfig;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.AwsBuilderConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.AwsBuilderConfig>>(
+    `aws-builder-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateBuilder");
   if (!config) return null;
 
@@ -243,7 +246,10 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
     target: { type: "Builder", id },
   }).data;
   const config = useRead("GetBuilder", { builder: id }).data?.config;
-  const [update, set] = useState<Partial<Types.ServerBuilderConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.ServerBuilderConfig>>(
+    `server-builder-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateBuilder");
   if (!config) return null;
 

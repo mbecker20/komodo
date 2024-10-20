@@ -2,6 +2,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use komodo_client::entities::{
+  action::Action,
   alerter::Alerter,
   build::Build,
   builder::Builder,
@@ -290,6 +291,9 @@ pub async fn get_user_permission_on_target(
     }
     ResourceTarget::Procedure(id) => {
       get_user_permission_on_resource::<Procedure>(user, id).await
+    }
+    ResourceTarget::Action(id) => {
+      get_user_permission_on_resource::<Action>(user, id).await
     }
     ResourceTarget::ServerTemplate(id) => {
       get_user_permission_on_resource::<ServerTemplate>(user, id)

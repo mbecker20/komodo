@@ -275,6 +275,13 @@ pub async fn get_updates_for_execution(
               .map(|b| b.name.clone())
               .unwrap_or_default()
           }
+          ResourceTarget::Action(id) => {
+            *id = all_resources
+              .actions
+              .get(id)
+              .map(|b| b.name.clone())
+              .unwrap_or_default()
+          }
           ResourceTarget::ServerTemplate(id) => {
             *id = all_resources
               .templates
@@ -716,6 +723,17 @@ async fn expand_user_group_permissions(
             });
           expanded.extend(permissions);
         }
+        ResourceTargetVariant::Action => {
+          let permissions = all_resources
+            .actions
+            .values()
+            .filter(|resource| regex.is_match(&resource.name))
+            .map(|resource| PermissionToml {
+              target: ResourceTarget::Action(resource.name.clone()),
+              level: permission.level,
+            });
+          expanded.extend(permissions);
+        }
         ResourceTargetVariant::ServerTemplate => {
           let permissions = all_resources
             .templates
@@ -871,6 +889,13 @@ pub async fn convert_user_groups(
           ResourceTarget::Procedure(id) => {
             *id = all
               .procedures
+              .get(id)
+              .map(|r| r.name.clone())
+              .unwrap_or_default()
+          }
+          ResourceTarget::Action(id) => {
+            *id = all
+              .actions
               .get(id)
               .map(|r| r.name.clone())
               .unwrap_or_default()

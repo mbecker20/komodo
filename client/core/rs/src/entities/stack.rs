@@ -8,6 +8,12 @@ use serde::{Deserialize, Serialize};
 use strum::Display;
 use typeshare::typeshare;
 
+use crate::deserializers::{
+  env_vars_deserializer, file_contents_deserializer,
+  option_env_vars_deserializer, option_file_contents_deserializer,
+  option_string_list_deserializer, string_list_deserializer,
+};
+
 use super::{
   docker::container::ContainerListItem,
   resource::{Resource, ResourceListItem, ResourceQuery},
@@ -186,7 +192,11 @@ pub struct StackConfig {
   pub server_id: String,
 
   /// Configure quick links that are displayed in the resource header
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub links: Vec<String>,
 
@@ -238,17 +248,31 @@ pub struct StackConfig {
 
   /// Add paths to compose files, relative to the run path.
   /// If this is empty, will use file `compose.yaml`.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub file_paths: Vec<String>,
 
   /// The name of the written environment file before `docker compose up`.
-  /// Relative to the repo root.
+  /// Relative to the run directory root.
   /// Default: .env
   #[serde(default = "default_env_file_path")]
   #[builder(default = "default_env_file_path()")]
   #[partial_default(default_env_file_path())]
   pub env_file_path: String,
+
+  /// Add additional env files to attach with `--env-file`.
+  /// Relative to the run directory root.
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
+  #[builder(default)]
+  pub additional_env_files: Vec<String>,
 
   /// The git provider domain. Default: github.com
   #[serde(default = "default_git_provider")]
@@ -336,34 +360,43 @@ pub struct StackConfig {
 
   /// The extra arguments to pass after `docker compose up -d`.
   /// If empty, no extra arguments will be passed.
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub extra_args: Vec<String>,
 
   /// The extra arguments to pass after `docker compose build`.
   /// If empty, no extra build arguments will be passed.
   /// Only used if `run_build: true`
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub build_extra_args: Vec<String>,
 
   /// Ignore certain services declared in the compose file when checking
   /// the stack status. For example, an init service might be exited, but the
   /// stack should be healthy. This init service should be in `ignore_services`
-  #[serde(default)]
+  #[serde(default, deserialize_with = "string_list_deserializer")]
+  #[partial_attr(serde(
+    default,
+    deserialize_with = "option_string_list_deserializer"
+  ))]
   #[builder(default)]
   pub ignore_services: Vec<String>,
 
   /// The contents of the file directly, for management in the UI.
   /// If this is empty, it will fall back to checking git config for
   /// repo based compose file.
-  #[serde(
-    default,
-    deserialize_with = "super::file_contents_deserializer"
-  )]
+  #[serde(default, deserialize_with = "file_contents_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_file_contents_deserializer"
+    deserialize_with = "option_file_contents_deserializer"
   ))]
   #[builder(default)]
   pub file_contents: String,
@@ -373,13 +406,10 @@ pub struct StackConfig {
   /// which is given relative to the run directory.
   ///
   /// If it is empty, no file will be written.
-  #[serde(
-    default,
-    deserialize_with = "super::env_vars_deserializer"
-  )]
+  #[serde(default, deserialize_with = "env_vars_deserializer")]
   #[partial_attr(serde(
     default,
-    deserialize_with = "super::option_env_vars_deserializer"
+    deserialize_with = "option_env_vars_deserializer"
   ))]
   #[builder(default)]
   pub environment: String,
@@ -436,6 +466,7 @@ impl Default for StackConfig {
       extra_args: Default::default(),
       environment: Default::default(),
       env_file_path: default_env_file_path(),
+      additional_env_files: Default::default(),
       run_build: Default::default(),
       destroy_before_deploy: Default::default(),
       build_extra_args: Default::default(),

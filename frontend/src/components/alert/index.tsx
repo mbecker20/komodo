@@ -1,17 +1,14 @@
 import { Section } from "@components/layouts";
 import { alert_level_intention } from "@lib/color";
-import { useRead, atomWithStorage } from "@lib/hooks";
+import { useRead, useLocalStorage } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { Button } from "@ui/button";
-import { useAtom } from "jotai";
 import { AlertTriangle } from "lucide-react";
 import { AlertsTable } from "./table";
 import { StatusBadge } from "@components/util";
 
-const openAtom = atomWithStorage("show-alerts-v0", true);
-
 export const OpenAlerts = () => {
-  const [open, setOpen] = useAtom(openAtom);
+  const [open, setOpen] = useLocalStorage("open-alerts-v0", true);
   const alerts = useRead("ListAlerts", { query: { resolved: false } }).data
     ?.alerts;
   if (!alerts || alerts.length === 0) return null;

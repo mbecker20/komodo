@@ -256,7 +256,7 @@ impl Resolve<RunCommand> for State {
       } else {
         format!("cd {path} && {command}")
       };
-      run_komodo_command("run command", None, command).await
+      run_komodo_command("run command", None, command, false).await
     })
     .await
     .context("failure in spawned task")
@@ -271,6 +271,6 @@ impl Resolve<PruneSystem> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let command = String::from("docker system prune -a -f --volumes");
-    Ok(run_komodo_command("prune system", None, command).await)
+    Ok(run_komodo_command("prune system", None, command, false).await)
   }
 }
