@@ -4,8 +4,9 @@ import { useTheme } from "@ui/theme";
 import { cn } from "@lib/utils";
 import * as monaco from "monaco-editor";
 import * as prettier from "prettier/standalone";
-import * as parserTypescript from "prettier/plugins/typescript";
-import * as prettierPluginEstree from "prettier/plugins/estree";
+import * as pluginTypescript from "prettier/plugins/typescript";
+import * as pluginEstree from "prettier/plugins/estree";
+import * as pluginYaml from "prettier/plugins/yaml";
 
 const MIN_EDITOR_HEIGHT = 56;
 // const MAX_EDITOR_HEIGHT = 500;
@@ -53,7 +54,12 @@ export const MonacoEditor = ({
   }, [editor]);
 
   useEffect(() => {
-    if (language !== "typescript" && language !== "javascript") return;
+    if (
+      language !== "typescript" &&
+      language !== "javascript" &&
+      language !== "yaml"
+    )
+      return;
     if (!editor) return;
     editor.addCommand(
       monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
@@ -68,8 +74,11 @@ export const MonacoEditor = ({
           curr,
           {
             cursorOffset: beforeOffset,
-            parser: "typescript",
-            plugins: [parserTypescript, prettierPluginEstree],
+            parser: language === "yaml" ? "yaml" : "typescript",
+            plugins:
+              language === "yaml"
+                ? [pluginYaml]
+                : [pluginTypescript, pluginEstree],
             printWidth: 80, // Set the desired max line length
           }
         );
