@@ -18,6 +18,7 @@ import {
   Save,
   Search,
   SearchX,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { cn, env_to_text, filterBySplit } from "@lib/utils";
@@ -51,6 +52,8 @@ import {
   MonacoEditor,
   MonacoLanguage,
 } from "@components/monaco";
+import { useSettingsView } from "@pages/settings";
+import { useNavigate } from "react-router-dom";
 
 export const ConfigItem = ({
   label,
@@ -1023,6 +1026,8 @@ export const SecretSelector = ({
   align?: "start" | "center" | "end";
   side?: "bottom" | "right";
 }) => {
+  const nav = useNavigate();
+  const [_, setSettingsView] = useSettingsView();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const filtered = filterBySplit(keys, search, (item) => item).sort((a, b) => {
@@ -1073,6 +1078,17 @@ export const SecretSelector = ({
                   <div className="p-1">{key}</div>
                 </CommandItem>
               ))}
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  setSettingsView("Variables");
+                  nav("/settings");
+                }}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <div className="p-1">All</div>
+                <SquareArrowOutUpRight className="w-4 h-4" />
+              </CommandItem>
             </CommandGroup>
           </CommandList>
         </Command>

@@ -62,6 +62,8 @@ pub struct Env {
   pub komodo_sync_directory: Option<PathBuf>,
   /// Override `repo_directory`
   pub komodo_repo_directory: Option<PathBuf>,
+  /// Override `action_directory`
+  pub komodo_action_directory: Option<PathBuf>,
   /// Override `resource_poll_interval`
   pub komodo_resource_poll_interval: Option<Timelength>,
   /// Override `monitoring_interval`
@@ -491,6 +493,11 @@ pub struct CoreConfig {
   /// Default: `/repo-cache`
   #[serde(default = "default_repo_directory")]
   pub repo_directory: PathBuf,
+
+  /// Specify the directory used to temporarily write typescript files used with actions.
+  /// Default: `/action-cache`
+  #[serde(default = "default_action_directory")]
+  pub action_directory: PathBuf,
 }
 
 fn default_title() -> String {
@@ -517,6 +524,11 @@ fn default_sync_directory() -> PathBuf {
 fn default_repo_directory() -> PathBuf {
   // unwrap ok: `/repo-cache` will always be valid path
   PathBuf::from_str("/repo-cache").unwrap()
+}
+
+fn default_action_directory() -> PathBuf {
+  // unwrap ok: `/action-cache` will always be valid path
+  PathBuf::from_str("/action-cache").unwrap()
 }
 
 fn default_prune_days() -> u64 {
@@ -552,6 +564,7 @@ impl CoreConfig {
       jwt_secret: empty_or_redacted(&config.jwt_secret),
       jwt_ttl: config.jwt_ttl,
       repo_directory: config.repo_directory,
+      action_directory: config.action_directory,
       sync_directory: config.sync_directory,
       resource_poll_interval: config.resource_poll_interval,
       monitoring_interval: config.monitoring_interval,

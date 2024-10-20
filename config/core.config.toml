@@ -71,6 +71,12 @@ sync_directory = "/syncs"
 ## Default: /repo-cache
 repo_directory = "/repo-cache"
 
+## Configure the action directory (inside the container).
+## There shouldn't be a need to change this, or even mount a volume.
+## Env: KOMODO_ACTION_DIRECTORY
+## Default: /action-cache
+action_directory = "/action-cache"
+
 ################
 # AUTH / LOGIN #
 ################
