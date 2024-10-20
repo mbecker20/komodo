@@ -35,6 +35,11 @@ export async function init_monaco() {
   });
 
   monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-    diagnosticCodesToIgnore: [1375],
+    diagnosticCodesToIgnore: [
+      // Allows top level await
+      1375,
+      // Allows top level return
+      1108,
+    ],
   });
 }
