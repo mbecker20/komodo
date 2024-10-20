@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import monaco from "monaco-editor";
 import { DiffEditor, Editor } from "@monaco-editor/react";
 import { useTheme } from "@ui/theme";
 import { cn } from "@lib/utils";
+import * as monaco from "monaco-editor";
+import * as prettier from "prettier/standalone";
+import * as parserTypescript from "prettier/plugins/typescript";
+import * as prettierPluginEstree from "prettier/plugins/estree";
 
 const MIN_EDITOR_HEIGHT = 56;
 // const MAX_EDITOR_HEIGHT = 500;
@@ -47,6 +50,33 @@ export const MonacoEditor = ({
 
     node.addEventListener("keydown", callback);
     return () => node.removeEventListener("keydown", callback);
+  }, [editor]);
+
+  useEffect(() => {
+    if (language !== "typescript" && language !== "javascript") return;
+    if (!editor) return;
+    editor.addCommand(
+      monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
+      async () => {
+        if (!editor) return;
+        const model = editor.getModel();
+        if (!model) return;
+        const position = editor.getPosition();
+        let beforeOffset = (position && model.getOffsetAt(position)) ?? 0;
+        const curr = editor.getValue();
+        const { formatted, cursorOffset } = await prettier.formatWithCursor(
+          curr,
+          {
+            cursorOffset: beforeOffset,
+            parser: "typescript",
+            plugins: [parserTypescript, prettierPluginEstree],
+            printWidth: 80, // Set the desired max line length
+          }
+        );
+        editor.setValue(formatted);
+        editor.setPosition(model.getPositionAt(cursorOffset));
+      }
+    );
   }, [editor]);
 
   const line_count = value?.split(/\r\n|\r|\n/).length ?? 0;

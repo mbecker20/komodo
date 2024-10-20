@@ -33,6 +33,7 @@ export async function init_monaco() {
     moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
     typeRoots: ["index.d.ts"],
   });
+
   monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
     diagnosticCodesToIgnore: [1375],
   });

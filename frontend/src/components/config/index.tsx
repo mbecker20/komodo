@@ -22,7 +22,7 @@ const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
 
 export const ConfigLayout = <
-  T extends Types.Resource<unknown, unknown>["config"]
+  T extends Types.Resource<unknown, unknown>["config"],
 >({
   original,
   config,
@@ -257,48 +257,50 @@ export const Config = <T,>({
                         hidden,
                         contentHidden,
                         components,
-                      }) =>
-                        !hidden && (
-                          <div
-                            key={section + label}
-                            id={section + label}
-                            className="p-6 border rounded-md flex flex-col gap-6 scroll-mt-40 xl:scroll-mt-24"
-                          >
-                            {!labelHidden && (
-                              <div className="flex justify-between">
-                                <div>
-                                  <div className="flex items-center gap-4">
-                                    {icon}
-                                    <div
-                                      className={cn(
-                                        "text-lg",
-                                        boldLabel && "font-bold"
-                                      )}
-                                    >
-                                      {label}
-                                    </div>
-                                    {labelExtra}
+                      }) => (
+                        <div
+                          key={section + label}
+                          id={section + label}
+                          className={cn(
+                            "p-6 border rounded-md flex flex-col gap-6 scroll-mt-40 xl:scroll-mt-24",
+                            hidden && "hidden"
+                          )}
+                        >
+                          {!labelHidden && (
+                            <div className="flex justify-between">
+                              <div>
+                                <div className="flex items-center gap-4">
+                                  {icon}
+                                  <div
+                                    className={cn(
+                                      "text-lg",
+                                      boldLabel && "font-bold"
+                                    )}
+                                  >
+                                    {label}
                                   </div>
-                                  {description && (
-                                    <div className="text-sm text-muted-foreground">
-                                      {description}
-                                    </div>
-                                  )}
+                                  {labelExtra}
                                 </div>
-                                {actions}
+                                {description && (
+                                  <div className="text-sm text-muted-foreground">
+                                    {description}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {!contentHidden && (
-                              <ConfigAgain
-                                config={config}
-                                update={update}
-                                set={(u) => set((p) => ({ ...p, ...u }))}
-                                components={components}
-                                disabled={disabled}
-                              />
-                            )}
-                          </div>
-                        )
+                              {actions}
+                            </div>
+                          )}
+                          {!contentHidden && (
+                            <ConfigAgain
+                              config={config}
+                              update={update}
+                              set={(u) => set((p) => ({ ...p, ...u }))}
+                              components={components}
+                              disabled={disabled}
+                            />
+                          )}
+                        </div>
+                      )
                     )}
                   </div>
                 </div>
@@ -311,7 +313,7 @@ export const Config = <T,>({
 };
 
 export const ConfigAgain = <
-  T extends Types.Resource<unknown, unknown>["config"]
+  T extends Types.Resource<unknown, unknown>["config"],
 >({
   config,
   update,
@@ -386,9 +388,11 @@ export const ConfigAgain = <
                 />
               );
             default:
-              return <div>{args?.label ?? key.toString()}</div>;
+              return (
+                <div key={key.toString()}>{args?.label ?? key.toString()}</div>
+              );
           }
-        } else if (component === false) {
+        } else {
           return <Fragment key={key.toString()} />;
         }
       })}

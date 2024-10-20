@@ -59,6 +59,7 @@ export const ActionConfig = ({ id, titleOther }: { id: string; titleOther: React
                         </div>
                         {["read", "execute", "write"].map((api) => (
                           <a
+                            key={api}
                             href={`https://docs.rs/komodo_client/latest/komodo_client/api/${api}/index.html`}
                             target="_blank"
                           >
