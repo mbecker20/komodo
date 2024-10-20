@@ -4,7 +4,7 @@
 ## and may negatively affect runtime performance.
 
 # Build Core
-FROM rust:1.81.0-alpine AS core-builder
+FROM rust:1.82.0-alpine AS core-builder
 WORKDIR /builder
 RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
 COPY . .

@@ -1,5 +1,5 @@
 # Build Core
-FROM rust:1.81.0-bullseye AS core-builder
+FROM rust:1.82.0-bullseye AS core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p komodo_core --release
