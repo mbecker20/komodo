@@ -18,7 +18,6 @@ FROM debian:bullseye-slim
 # Install Deps
 RUN apt update && \
 	apt install -y git ca-certificates && \
-	curl -fsSL https://deno.land/install.sh | sh && \
 	rm -rf /var/lib/apt/lists/*
 
 # Setup an application directory
@@ -28,6 +27,7 @@ WORKDIR /app
 COPY ./config/core.config.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /app
 COPY --from=frontend-builder /builder/frontend/dist /app/frontend
+COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # Hint at the port
 EXPOSE 9120
