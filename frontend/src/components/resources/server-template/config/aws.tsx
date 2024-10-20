@@ -1,6 +1,6 @@
 import { Config } from "@components/config";
 import { ConfigList } from "@components/config/util";
-import { useRead, useWrite } from "@lib/hooks";
+import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { Button } from "@ui/button";
@@ -33,7 +33,10 @@ export const AwsServerTemplateConfig = ({
 }) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data
     ?.config?.params as Types.AwsServerTemplateConfig;
-  const [update, set] = useState<Partial<Types.AwsServerTemplateConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.AwsServerTemplateConfig>>(
+    `aws-template-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateServerTemplate");
   if (!config) return null;
 

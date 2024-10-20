@@ -1,6 +1,6 @@
 import { ConfigItem } from "@components/config/util";
 import { Section } from "@components/layouts";
-import { useRead, useWrite } from "@lib/hooks";
+import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { Card, CardHeader } from "@ui/card";
 import { Input } from "@ui/input";
@@ -56,7 +56,10 @@ const ProcedureConfigInner = ({
   procedure: Types.Procedure;
 }) => {
   const [branch, setBranch] = useState("main");
-  const [config, setConfig] = useState<Partial<Types.ProcedureConfig>>({});
+  const [config, setConfig] = useLocalStorage<Partial<Types.ProcedureConfig>>(
+    `procedure-${procedure._id?.$oid}-update-v1`,
+    {}
+  );
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Procedure", id: procedure._id?.$oid! },
   }).data;

@@ -75,7 +75,7 @@ export const useRead = <
 ) =>
   useQuery({
     queryKey: [type, params],
-    queryFn: () => client().read(type, params as any) as any,
+    queryFn: () => client().read<T, R>(type, params),
     ...config,
   });
 
@@ -104,10 +104,10 @@ export const useManageUser = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().user(type, params as any),
-    onError: (e: { response: { data: any } }, v, c) => {
-      console.log("Auth error:", e.response.data);
-      const msg = e.response.data?.error as string;
+    mutationFn: (params: P) => client().user<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Auth error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
       let msg_log = msg ? msg + " | " : "";
       if (msg_log) {
         msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
@@ -138,10 +138,10 @@ export const useWrite = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().write(type, params as any) as any,
-    onError: (e: { response: { data: any } }, v, c) => {
-      console.log("Write error:", e.response.data);
-      const msg = e.response.data?.error;
+    mutationFn: (params: P) => client().write<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Write error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
       let msg_log = msg ? msg + " - " : "";
       if (msg_log) {
         msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
@@ -172,10 +172,10 @@ export const useExecute = <
   const { toast } = useToast();
   return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().execute(type, params as any),
-    onError: (e: { response: { data: any } }, v, c) => {
-      console.log("Execute error:", e.response.data);
-      const msg = e.response.data?.error;
+    mutationFn: (params: P) => client().execute<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Execute error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
       let msg_log = msg ? msg + " | " : "";
       if (msg_log) {
         msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
@@ -202,12 +202,28 @@ export const useAuth = <
 >(
   type: T,
   config?: C
-) =>
-  useMutation({
+) => {
+  const { toast } = useToast();
+  return useMutation({
     mutationKey: [type],
-    mutationFn: (params: P) => client().auth(type, params as any),
+    mutationFn: (params: P) => client().auth<T, R>(type, params),
+    onError: (e: { result: { error?: string } }, v, c) => {
+      console.log("Auth error:", e);
+      const msg = e.result.error ?? "Unknown error. See console.";
+      let msg_log = msg ? msg + " | " : "";
+      if (msg_log) {
+        msg_log = msg_log[0].toUpperCase() + msg_log.slice(1);
+      }
+      toast({
+        title: `Auth request ${type} failed`,
+        description: `${msg_log}See console for details`,
+        variant: "destructive",
+      });
+      config?.onError && config.onError(e, v, c);
+    },
     ...config,
   });
+};
 
 // ============== UTILITY ==============
 

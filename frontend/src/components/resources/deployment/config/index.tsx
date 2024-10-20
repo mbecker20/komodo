@@ -1,6 +1,6 @@
-import { useRead, useWrite } from "@lib/hooks";
+import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import {
   AccountSelectorConfig,
   AddExtraArgMenu,
@@ -36,7 +36,10 @@ export const DeploymentConfig = ({
   const builds = useRead("ListBuilds", {}).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.DeploymentConfig>>(
+    `deployment-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateDeployment");
 
   if (!config) return null;

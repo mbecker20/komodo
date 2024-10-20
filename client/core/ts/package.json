@@ -11,9 +11,7 @@
   "scripts": {
     "build": "tsc"
   },
-  "dependencies": {
-    "axios": "^1.7.7"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^5.6.3"
   },

@@ -1,8 +1,8 @@
 import { Config } from "@components/config";
 import { ConfigList } from "@components/config/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
 import { Types } from "komodo_client";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 
 export const ServerConfig = ({
   id,
@@ -18,7 +18,10 @@ export const ServerConfig = ({
   const config = useRead("GetServer", { server: id }).data?.config;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.ServerConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.ServerConfig>>(
+    `server-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateServer", {
     onSuccess: () => {
       // In case of disabling to resolve unreachable alert

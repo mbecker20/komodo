@@ -79,6 +79,7 @@ impl Resolve<RunAction, (User, Update)> for State {
         .collect::<Vec<_>>();
 
     let mut res = run_komodo_command(
+      // Keep this as is, the UI will find the contents by matching the stage name
       "Execute Action",
       None,
       format!("deno eval \"{contents}\""),
@@ -160,11 +161,13 @@ fn full_contents(contents: &str, key: &str, secret: &str) -> String {
     port, ssl_enabled, ..
   } = core_config();
   let protocol = if *ssl_enabled { "https" } else { "http" };
+  let base_url = format!("{protocol}://localhost:{port}");
   let contents = contents.replace("\"", "\\\"");
-  format!(
-    "import {{ KomodoClient }} from 'npm:komodo_client';
 
-const komodo = KomodoClient('{protocol}://localhost:{port}', {{
+  format!(
+    "import {{ KomodoClient }} from '{base_url}/client/lib.js';
+
+const komodo = KomodoClient('{base_url}', {{
   type: 'api-key',
   params: {{ key: '{key}', secret: '{secret}' }}
 }});
@@ -172,8 +175,12 @@ const komodo = KomodoClient('{protocol}://localhost:{port}', {{
 async function main() {{{contents}}}
 
 main().catch(error => {{
-  console.error('Status:', error.response?.status);
-  console.error(JSON.stringify(error.response?.data, null, 2));
+  if (error.status !== undefined && error.result !== undefined) {{
+    console.error('Status:', error.status);
+    console.error(JSON.stringify(error.result, null, 2));
+  }} else {{
+    console.error(JSON.stringify(error, null, 2));
+  }}
   Deno.exit(1)
 }}).then(() => console.log('\\n🦎 Action finished 🦎'));"
   )

@@ -3,9 +3,9 @@ import {
   ResourcePageHeader,
   StatusBadge,
 } from "@components/util";
-import { useExecute, useRead } from "@lib/hooks";
+import { useExecute, useLocalStorage, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Route } from "lucide-react";
+import { Clapperboard } from "lucide-react";
 import { ActionConfig } from "./config";
 import { ActionTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
@@ -16,6 +16,8 @@ import {
 import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
+import { ActionInfo } from "./info";
 
 const useAction = (id?: string) =>
   useRead("ListActions", {}).data?.find((d) => d.id === id);
@@ -23,14 +25,42 @@ const useAction = (id?: string) =>
 const ActionIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useAction(id)?.info.state;
   const color = stroke_color_class_by_intention(action_state_intention(state));
-  return <Route className={cn(`w-${size} h-${size}`, state && color)} />;
+  return <Clapperboard className={cn(`w-${size} h-${size}`, state && color)} />;
+};
+
+const ConfigInfo = ({ id }: { id: string }) => {
+  const [view, setView] = useLocalStorage<"Config" | "Info">(
+    "action-tabs-v1",
+    "Config"
+  );
+
+  const title = (
+    <TabsList className="justify-start w-fit">
+      <TabsTrigger value="Config" className="w-[110px]">
+        Config
+      </TabsTrigger>
+      <TabsTrigger value="Info" className="w-[110px]">
+        Info
+      </TabsTrigger>
+    </TabsList>
+  );
+  return (
+    <Tabs value={view} onValueChange={setView as any} className="grid gap-4">
+      <TabsContent value="Config">
+        <ActionConfig id={id} titleOther={title} />
+      </TabsContent>
+      <TabsContent value="Info">
+        <ActionInfo id={id} titleOther={title} />
+      </TabsContent>
+    </Tabs>
+  );
 };
 
 export const ActionComponents: RequiredResourceComponents = {
   list_item: (id) => useAction(id),
   resource_links: () => undefined,
 
-  Description: () => <>Compose Komodo actions together.</>,
+  Description: () => <>Custom scripts using the Komodo client.</>,
 
   Dashboard: () => {
     const summary = useRead("GetActionsSummary", {}).data;
@@ -89,8 +119,8 @@ export const ActionComponents: RequiredResourceComponents = {
       return (
         <ActionWithDialog
           name={action.name}
-          title={running ? "Running" : "Run"}
-          icon={<Route className="h-4 w-4" />}
+          title={running ? "Running" : "Run Action"}
+          icon={<Clapperboard className="h-4 w-4" />}
           onClick={() => mutate({ action: id })}
           disabled={running || isPending}
           loading={running}
@@ -101,7 +131,7 @@ export const ActionComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: ActionConfig,
+  Config: ConfigInfo,
 
   DangerZone: ({ id }) => <DeleteResource type="Action" id={id} />,
 

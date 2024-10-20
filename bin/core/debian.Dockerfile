@@ -18,6 +18,7 @@ FROM debian:bullseye-slim
 # Install Deps
 RUN apt update && \
 	apt install -y git ca-certificates && \
+	curl -fsSL https://deno.land/install.sh | sh && \
 	rm -rf /var/lib/apt/lists/*
 
 # Setup an application directory

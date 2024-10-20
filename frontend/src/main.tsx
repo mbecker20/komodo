@@ -8,7 +8,7 @@ import { Toaster } from "@ui/toaster";
 import { atomWithStorage } from "@lib/hooks";
 // Run monaco setup
 import "./monaco";
-import { init_monaco } from "./monaco";
+import { init_monaco } from "./monaco/init";
 
 export const AUTH_TOKEN_STORAGE_KEY = "komodo-auth-token";
 

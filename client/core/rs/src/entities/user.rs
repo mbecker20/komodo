@@ -87,31 +87,56 @@ impl User {
     matches!(
       user_id,
       "System"
+        | "000000000000000000000000"
         | "Procedure"
-        | "Github" // Github can be removed later, just keeping for backward compat.
+        | "000000000000000000000001"
+        | "Action"
+        | "000000000000000000000002"
         | "Git Webhook"
+        | "000000000000000000000003"
         | "Auto Redeploy"
+        | "000000000000000000000004"
         | "Resource Sync"
+        | "000000000000000000000005"
         | "Stack Wizard"
+        | "000000000000000000000006"
         | "Build Manager"
+        | "000000000000000000000007"
         | "Repo Manager"
+        | "000000000000000000000008"
     )
   }
 }
 
 pub fn admin_service_user(user_id: &str) -> Option<User> {
   match user_id {
-    "System" => system_user().to_owned().into(),
-    "Procedure" => procedure_user().to_owned().into(),
-    "Action" => action_user().to_owned().into(),
-    // Github should be removed later, replaced by Git Webhook, just keeping for backward compat.
-    "Github" => git_webhook_user().to_owned().into(),
-    "Git Webhook" => git_webhook_user().to_owned().into(),
-    "Auto Redeploy" => auto_redeploy_user().to_owned().into(),
-    "Resource Sync" => sync_user().to_owned().into(),
-    "Stack Wizard" => stack_user().to_owned().into(),
-    "Build Manager" => build_user().to_owned().into(),
-    "Repo Manager" => repo_user().to_owned().into(),
+    "000000000000000000000000" | "System" => {
+      system_user().to_owned().into()
+    }
+    "000000000000000000000001" | "Procedure" => {
+      procedure_user().to_owned().into()
+    }
+    "000000000000000000000002" | "Action" => {
+      action_user().to_owned().into()
+    }
+    "000000000000000000000003" | "Git Webhook" => {
+      git_webhook_user().to_owned().into()
+    }
+    "000000000000000000000004" | "Auto Redeploy" => {
+      auto_redeploy_user().to_owned().into()
+    }
+    "000000000000000000000005" | "Resource Sync" => {
+      sync_user().to_owned().into()
+    }
+    "000000000000000000000006" | "Stack Wizard" => {
+      stack_user().to_owned().into()
+    }
+    "000000000000000000000007" | "Build Manager" => {
+      build_user().to_owned().into()
+    }
+    "000000000000000000000008" | "Repo Manager" => {
+      repo_user().to_owned().into()
+    }
     _ => None,
   }
 }
@@ -121,7 +146,7 @@ pub fn system_user() -> &'static User {
   SYSTEM_USER.get_or_init(|| {
     let id_name = String::from("System");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000000".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -135,7 +160,7 @@ pub fn procedure_user() -> &'static User {
   PROCEDURE_USER.get_or_init(|| {
     let id_name = String::from("Procedure");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000001".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -149,7 +174,7 @@ pub fn action_user() -> &'static User {
   ACTION_USER.get_or_init(|| {
     let id_name = String::from("Action");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000002".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -163,7 +188,7 @@ pub fn git_webhook_user() -> &'static User {
   GIT_WEBHOOK_USER.get_or_init(|| {
     let id_name = String::from("Git Webhook");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000003".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -177,7 +202,7 @@ pub fn auto_redeploy_user() -> &'static User {
   AUTO_REDEPLOY_USER.get_or_init(|| {
     let id_name = String::from("Auto Redeploy");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000004".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -191,7 +216,7 @@ pub fn sync_user() -> &'static User {
   SYNC_USER.get_or_init(|| {
     let id_name = String::from("Resource Sync");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000005".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -205,7 +230,7 @@ pub fn stack_user() -> &'static User {
   STACK_USER.get_or_init(|| {
     let id_name = String::from("Stack Wizard");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000006".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -219,7 +244,7 @@ pub fn build_user() -> &'static User {
   BUILD_USER.get_or_init(|| {
     let id_name = String::from("Build Manager");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000007".to_string(),
       username: id_name,
       enabled: true,
       admin: true,
@@ -233,7 +258,7 @@ pub fn repo_user() -> &'static User {
   REPO_USER.get_or_init(|| {
     let id_name = String::from("Repo Manager");
     User {
-      id: id_name.clone(),
+      id: "000000000000000000000008".to_string(),
       username: id_name,
       enabled: true,
       admin: true,

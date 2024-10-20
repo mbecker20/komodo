@@ -1,57 +1,7 @@
-/** JSON containing an authentication token. */
-export interface JwtResponse {
-    /** A token the user can use to authenticate their requests. */
-    jwt: string;
-}
-/** Response for [CreateLocalUser]. */
-export type CreateLocalUserResponse = JwtResponse;
-/** The response for [LoginLocalUser] */
-export type LoginLocalUserResponse = JwtResponse;
-/** Response for [ExchangeForJwt]. */
-export type ExchangeForJwtResponse = JwtResponse;
 export interface MongoIdObj {
     $oid: string;
 }
 export type MongoId = MongoIdObj;
-export type UserConfig = 
-/** User that logs in with username / password */
-{
-    type: "Local";
-    data: {
-        password: string;
-    };
-}
-/** User that logs in via Google Oauth */
- | {
-    type: "Google";
-    data: {
-        google_id: string;
-        avatar: string;
-    };
-}
-/** User that logs in via Github Oauth */
- | {
-    type: "Github";
-    data: {
-        github_id: string;
-        avatar: string;
-    };
-}
-/** User that logs in via Oidc provider */
- | {
-    type: "Oidc";
-    data: {
-        provider: string;
-        user_id: string;
-    };
-}
-/** Non-human managed user, can have it's own permissions / api keys */
- | {
-    type: "Service";
-    data: {
-        description: string;
-    };
-};
 export type I64 = number;
 /** The levels of permission that a User or UserGroup can have on a resource. */
 export declare enum PermissionLevel {
@@ -64,36 +14,6 @@ export declare enum PermissionLevel {
     /** Can update the resource configuration */
     Write = "Write"
 }
-export interface User {
-    /**
-     * The Mongo ID of the User.
-     * This field is de/serialized from/to JSON as
-     * `{ "_id": { "$oid": "..." }, ...(rest of User schema) }`
-     */
-    _id?: MongoId;
-    /** The globally unique username for the user. */
-    username: string;
-    /** Whether user is enabled / able to access the api. */
-    enabled?: boolean;
-    /** Can give / take other users admin priviledges. */
-    super_admin?: boolean;
-    /** Whether the user has global admin permissions. */
-    admin?: boolean;
-    /** Whether the user has permission to create servers. */
-    create_server_permissions?: boolean;
-    /** Whether the user has permission to create builds */
-    create_build_permissions?: boolean;
-    /** The user-type specific config. */
-    config: UserConfig;
-    /** When the user last opened updates dropdown. */
-    last_update_view?: I64;
-    /** Recently viewed ids */
-    recents?: Record<ResourceTarget["type"], string[]>;
-    /** Give the user elevated permissions on all resources of a certain type */
-    all?: Record<ResourceTarget["type"], PermissionLevel>;
-    updated_at?: I64;
-}
-export type GetUserResponse = User;
 export interface Resource<Config, Info> {
     /**
      * The Mongo ID of the resource.
@@ -131,7 +51,6 @@ export interface ActionInfo {
     last_run_at?: I64;
 }
 export type Action = Resource<ActionConfig, ActionInfo>;
-export type GetActionResponse = Action;
 export interface ResourceListItem<Info> {
     /** The resource id */
     id: string;
@@ -161,22 +80,39 @@ export interface ActionListItemInfo {
     state: ActionState;
 }
 export type ActionListItem = ResourceListItem<ActionListItemInfo>;
-export type ListActionsResponse = ActionListItem[];
-export type ListFullActionsResponse = Action[];
-export interface ActionActionState {
-    /** Whether the action is currently running. */
-    running: boolean;
+export declare enum TagBehavior {
+    /** Returns resources which have strictly all the tags */
+    All = "All",
+    /** Returns resources which have one or more of the tags */
+    Any = "Any"
 }
-export type GetActionActionStateResponse = ActionActionState;
-/** Severity level of problem. */
-export declare enum SeverityLevel {
-    /** No problem. */
-    Ok = "OK",
-    /** Problem is imminent. */
-    Warning = "WARNING",
-    /** Problem fully realized. */
-    Critical = "CRITICAL"
+/** Passing empty Vec is the same as not filtering by that field */
+export interface ResourceQuery<T> {
+    names?: string[];
+    /** Pass Vec of tag ids or tag names */
+    tags?: string[];
+    tag_behavior?: TagBehavior;
+    specific?: T;
 }
+export interface ActionQuerySpecifics {
+}
+export type ActionQuery = ResourceQuery<ActionQuerySpecifics>;
+export type AlerterEndpoint = 
+/** Send alert serialized to JSON to an http endpoint. */
+{
+    type: "Custom";
+    params: CustomAlerterEndpoint;
+}
+/** Send alert to a Slack app */
+ | {
+    type: "Slack";
+    params: SlackAlerterEndpoint;
+}
+/** Send alert to a Discord app */
+ | {
+    type: "Discord";
+    params: DiscordAlerterEndpoint;
+};
 /** Used to reference a specific resource across all resource types */
 export type ResourceTarget = {
     type: "System";
@@ -215,191 +151,6 @@ export type ResourceTarget = {
     type: "ResourceSync";
     id: string;
 };
-/** The variants of data related to the alert. */
-export type AlertData = 
-/** A null alert */
-{
-    type: "None";
-    data: {};
-}
-/** A server could not be reached. */
- | {
-    type: "ServerUnreachable";
-    data: {
-        /** The id of the server */
-        id: string;
-        /** The name of the server */
-        name: string;
-        /** The region of the server */
-        region?: string;
-        /** The error data */
-        err?: _Serror;
-    };
-}
-/** A server has high CPU usage. */
- | {
-    type: "ServerCpu";
-    data: {
-        /** The id of the server */
-        id: string;
-        /** The name of the server */
-        name: string;
-        /** The region of the server */
-        region?: string;
-        /** The cpu usage percentage */
-        percentage: number;
-    };
-}
-/** A server has high memory usage. */
- | {
-    type: "ServerMem";
-    data: {
-        /** The id of the server */
-        id: string;
-        /** The name of the server */
-        name: string;
-        /** The region of the server */
-        region?: string;
-        /** The used memory */
-        used_gb: number;
-        /** The total memory */
-        total_gb: number;
-    };
-}
-/** A server has high disk usage. */
- | {
-    type: "ServerDisk";
-    data: {
-        /** The id of the server */
-        id: string;
-        /** The name of the server */
-        name: string;
-        /** The region of the server */
-        region?: string;
-        /** The mount path of the disk */
-        path: string;
-        /** The used portion of the disk in GB */
-        used_gb: number;
-        /** The total size of the disk in GB */
-        total_gb: number;
-    };
-}
-/** A container's state has changed unexpectedly. */
- | {
-    type: "ContainerStateChange";
-    data: {
-        /** The id of the deployment */
-        id: string;
-        /** The name of the deployment */
-        name: string;
-        /** The server id of server that the deployment is on */
-        server_id: string;
-        /** The server name */
-        server_name: string;
-        /** The previous container state */
-        from: DeploymentState;
-        /** The current container state */
-        to: DeploymentState;
-    };
-}
-/** A stack's state has changed unexpectedly. */
- | {
-    type: "StackStateChange";
-    data: {
-        /** The id of the stack */
-        id: string;
-        /** The name of the stack */
-        name: string;
-        /** The server id of server that the stack is on */
-        server_id: string;
-        /** The server name */
-        server_name: string;
-        /** The previous stack state */
-        from: StackState;
-        /** The current stack state */
-        to: StackState;
-    };
-}
-/** An AWS builder failed to terminate. */
- | {
-    type: "AwsBuilderTerminationFailed";
-    data: {
-        /** The id of the aws instance which failed to terminate */
-        instance_id: string;
-        /** A reason for the failure */
-        message: string;
-    };
-}
-/** A resource sync has pending updates */
- | {
-    type: "ResourceSyncPendingUpdates";
-    data: {
-        /** The id of the resource sync */
-        id: string;
-        /** The name of the resource sync */
-        name: string;
-    };
-}
-/** A build has failed */
- | {
-    type: "BuildFailed";
-    data: {
-        /** The id of the build */
-        id: string;
-        /** The name of the build */
-        name: string;
-        /** The version that failed to build */
-        version: Version;
-    };
-}
-/** A repo has failed */
- | {
-    type: "RepoBuildFailed";
-    data: {
-        /** The id of the repo */
-        id: string;
-        /** The name of the repo */
-        name: string;
-    };
-};
-/** Representation of an alert in the system. */
-export interface Alert {
-    /**
-     * The Mongo ID of the alert.
-     * This field is de/serialized from/to JSON as
-     * `{ "_id": { "$oid": "..." }, ...(rest of serialized Alert) }`
-     */
-    _id?: MongoId;
-    /** Unix timestamp in milliseconds the alert was opened */
-    ts: I64;
-    /** Whether the alert is already resolved */
-    resolved: boolean;
-    /** The severity of the alert */
-    level: SeverityLevel;
-    /** The target of the alert */
-    target: ResourceTarget;
-    /** The data attached to the alert */
-    data: AlertData;
-    /** The timestamp of alert resolution */
-    resolved_ts?: I64;
-}
-export type GetAlertResponse = Alert;
-export type AlerterEndpoint = 
-/** Send alert serialized to JSON to an http endpoint. */
-{
-    type: "Custom";
-    params: CustomAlerterEndpoint;
-}
-/** Send alert to a Slack app */
- | {
-    type: "Slack";
-    params: SlackAlerterEndpoint;
-}
-/** Send alert to a Discord app */
- | {
-    type: "Discord";
-    params: DiscordAlerterEndpoint;
-};
 export interface AlerterConfig {
     /** Whether the alerter is enabled */
     enabled?: boolean;
@@ -423,7 +174,6 @@ export interface AlerterConfig {
     except_resources?: ResourceTarget[];
 }
 export type Alerter = Resource<AlerterConfig, undefined>;
-export type GetAlerterResponse = Alerter;
 export interface AlerterListItemInfo {
     /** Whether alerter is enabled for sending alerts */
     enabled: boolean;
@@ -431,8 +181,21 @@ export interface AlerterListItemInfo {
     endpoint_type: AlerterEndpoint["type"];
 }
 export type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
-export type ListAlertersResponse = AlerterListItem[];
-export type ListFullAlertersResponse = Alerter[];
+export interface AlerterQuerySpecifics {
+    /**
+     * Filter alerters by enabled.
+     * - `None`: Don't filter by enabled
+     * - `Some(true)`: Only include alerts with `enabled: true`
+     * - `Some(false)`: Only include alerts with `enabled: false`
+     */
+    enabled?: boolean;
+    /**
+     * Only include alerters with these endpoint types.
+     * If empty, don't filter by enpoint type.
+     */
+    types: AlerterEndpoint["type"][];
+}
+export type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
 export interface Version {
     major: number;
     minor: number;
@@ -569,7 +332,6 @@ export interface BuildInfo {
     latest_message?: string;
 }
 export type Build = Resource<BuildConfig, BuildInfo>;
-export type GetBuildResponse = Build;
 export declare enum BuildState {
     /** Last build successful (or never built) */
     Ok = "Ok",
@@ -603,18 +365,16 @@ export interface BuildListItemInfo {
     latest_hash?: string;
 }
 export type BuildListItem = ResourceListItem<BuildListItemInfo>;
-export type ListBuildsResponse = BuildListItem[];
-export type ListFullBuildsResponse = Build[];
-export interface BuildActionState {
-    building: boolean;
+export interface BuildQuerySpecifics {
+    builder_ids?: string[];
+    repos?: string[];
+    /**
+     * query for builds last built more recently than this timestamp
+     * defaults to 0 which is a no op
+     */
+    built_since?: I64;
 }
-export type GetBuildActionStateResponse = BuildActionState;
-export interface BuildVersionResponseItem {
-    version: Version;
-    ts: I64;
-}
-export type ListBuildVersionsResponse = BuildVersionResponseItem[];
-export type ListCommonBuildExtraArgsResponse = string[];
+export type BuildQuery = ResourceQuery<BuildQuerySpecifics>;
 export type BuilderConfig = 
 /** Use a connected server an image builder. */
 {
@@ -627,7 +387,6 @@ export type BuilderConfig =
     params: AwsBuilderConfig;
 };
 export type Builder = Resource<BuilderConfig, undefined>;
-export type GetBuilderResponse = Builder;
 export interface BuilderListItemInfo {
     /** 'Server' or 'Aws' */
     builder_type: string;
@@ -638,241 +397,9 @@ export interface BuilderListItemInfo {
     instance_type?: string;
 }
 export type BuilderListItem = ResourceListItem<BuilderListItemInfo>;
-export type ListBuildersResponse = BuilderListItem[];
-export type ListFullBuildersResponse = Builder[];
-export type DeploymentImage = 
-/** Deploy any external image. */
-{
-    type: "Image";
-    params: {
-        /** The docker image, can be from any registry that works with docker and that the host server can reach. */
-        image?: string;
-    };
+export interface BuilderQuerySpecifics {
 }
-/** Deploy a Komodo Build. */
- | {
-    type: "Build";
-    params: {
-        /** The id of the Build */
-        build_id?: string;
-        /**
-         * Use a custom / older version of the image produced by the build.
-         * if version is 0.0.0, this means `latest` image.
-         */
-        version?: Version;
-    };
-};
-export declare enum RestartMode {
-    NoRestart = "no",
-    OnFailure = "on-failure",
-    Always = "always",
-    UnlessStopped = "unless-stopped"
-}
-export declare enum TerminationSignal {
-    SigHup = "SIGHUP",
-    SigInt = "SIGINT",
-    SigQuit = "SIGQUIT",
-    SigTerm = "SIGTERM"
-}
-export interface DeploymentConfig {
-    /** The id of server the deployment is deployed on. */
-    server_id?: string;
-    /**
-     * The image which the deployment deploys.
-     * Can either be a user inputted image, or a Komodo Build.
-     */
-    image?: DeploymentImage;
-    /**
-     * Configure the account used to pull the image from the registry.
-     * Used with `docker login`.
-     *
-     * - If the field is empty string, will use the same account config as the build, or none at all if using image.
-     * - If the field contains an account, a token for the account must be available.
-     * - Will get the registry domain from the build / image
-     */
-    image_registry_account?: string;
-    /** Whether to skip secret interpolation into the deployment environment variables. */
-    skip_secret_interp?: boolean;
-    /** Whether to redeploy the deployment whenever the attached build finishes. */
-    redeploy_on_build?: boolean;
-    /** Whether to send ContainerStateChange alerts for this deployment. */
-    send_alerts: boolean;
-    /** Configure quick links that are displayed in the resource header */
-    links?: string[];
-    /**
-     * The network attached to the container.
-     * Default is `host`.
-     */
-    network: string;
-    /** The restart mode given to the container. */
-    restart?: RestartMode;
-    /**
-     * This is interpolated at the end of the `docker run` command,
-     * which means they are either passed to the containers inner process,
-     * or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
-     * Empty is no command.
-     */
-    command?: string;
-    /** The default termination signal to use to stop the deployment. Defaults to SigTerm (default docker signal). */
-    termination_signal?: TerminationSignal;
-    /** The termination timeout. */
-    termination_timeout: number;
-    /**
-     * Extra args which are interpolated into the `docker run` command,
-     * and affect the container configuration.
-     */
-    extra_args?: string[];
-    /**
-     * Labels attached to various termination signal options.
-     * Used to specify different shutdown functionality depending on the termination signal.
-     */
-    term_signal_labels?: string;
-    /**
-     * The container port mapping.
-     * Irrelevant if container network is `host`.
-     * Maps ports on host to ports on container.
-     */
-    ports?: string;
-    /**
-     * The container volume mapping.
-     * Maps files / folders on host to files / folders in container.
-     */
-    volumes?: string;
-    /** The environment variables passed to the container. */
-    environment?: string;
-    /** The docker labels given to the container. */
-    labels?: string;
-}
-export type Deployment = Resource<DeploymentConfig, undefined>;
-export type GetDeploymentResponse = Deployment;
-/**
- * Variants de/serialized from/to snake_case.
- *
- * Eg.
- * - NotDeployed -> not_deployed
- * - Restarting -> restarting
- * - Running -> running.
- */
-export declare enum DeploymentState {
-    Unknown = "unknown",
-    NotDeployed = "not_deployed",
-    Created = "created",
-    Restarting = "restarting",
-    Running = "running",
-    Removing = "removing",
-    Paused = "paused",
-    Exited = "exited",
-    Dead = "dead"
-}
-export interface DeploymentListItemInfo {
-    /** The state of the deployment / underlying docker container. */
-    state: DeploymentState;
-    /** The status of the docker container (eg. up 12 hours, exited 5 minutes ago.) */
-    status?: string;
-    /** The image attached to the deployment. */
-    image: string;
-    /** The server that deployment sits on. */
-    server_id: string;
-    /** An attached Komodo Build, if it exists. */
-    build_id?: string;
-}
-export type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
-export type ListDeploymentsResponse = DeploymentListItem[];
-export type ListFullDeploymentsResponse = Deployment[];
-/** Represents the output of some command being run */
-export interface Log {
-    /** A label for the log */
-    stage: string;
-    /** The command which was executed */
-    command: string;
-    /** The output of the command in the standard channel */
-    stdout: string;
-    /** The output of the command in the error channel */
-    stderr: string;
-    /** Whether the command run was successful */
-    success: boolean;
-    /** The start time of the command execution */
-    start_ts: I64;
-    /** The end time of the command execution */
-    end_ts: I64;
-}
-export type GetDeploymentLogResponse = Log;
-export type SearchDeploymentLogResponse = Log;
-export interface ContainerStats {
-    name: string;
-    cpu_perc: string;
-    mem_perc: string;
-    mem_usage: string;
-    net_io: string;
-    block_io: string;
-    pids: string;
-}
-export type GetDeploymentStatsResponse = ContainerStats;
-export interface DeploymentActionState {
-    deploying: boolean;
-    starting: boolean;
-    restarting: boolean;
-    pausing: boolean;
-    unpausing: boolean;
-    stopping: boolean;
-    destroying: boolean;
-    renaming: boolean;
-}
-export type GetDeploymentActionStateResponse = DeploymentActionState;
-export type ListCommonDeploymentExtraArgsResponse = string[];
-export interface ProviderAccount {
-    /** The account username. Required. */
-    username: string;
-    /** The account access token. Required. */
-    token?: string;
-}
-export interface GitProvider {
-    /** The git provider domain. Default: `github.com`. */
-    domain: string;
-    /** Whether to use https. Default: true. */
-    https: boolean;
-    /** The account username. Required. */
-    accounts: ProviderAccount[];
-}
-export type ListGitProvidersFromConfigResponse = GitProvider[];
-export interface DockerRegistry {
-    /** The docker provider domain. Default: `docker.io`. */
-    domain: string;
-    /** The account username. Required. */
-    accounts?: ProviderAccount[];
-    /**
-     * Available organizations on the registry provider.
-     * Used to push an image under an organization's repo rather than an account's repo.
-     */
-    organizations?: string[];
-}
-export type ListDockerRegistriesFromConfigResponse = DockerRegistry[];
-export type ListSecretsResponse = string[];
-export type UserTarget = 
-/** User Id */
-{
-    type: "User";
-    id: string;
-}
-/** UserGroup Id */
- | {
-    type: "UserGroup";
-    id: string;
-};
-/** Representation of a User or UserGroups permission on a resource. */
-export interface Permission {
-    /** The id of the permission document */
-    _id?: MongoId;
-    /** The target User / UserGroup */
-    user_target: UserTarget;
-    /** The target resource */
-    resource_target: ResourceTarget;
-    /** The permission level */
-    level?: PermissionLevel;
-}
-export type ListPermissionsResponse = Permission[];
-export type GetPermissionLevelResponse = PermissionLevel;
-export type ListUserTargetPermissionsResponse = Permission[];
+export type BuilderQuery = ResourceQuery<BuilderQuerySpecifics>;
 /** A wrapper for all Komodo exections. */
 export type Execution = 
 /** The "null" execution. Does nothing. */
@@ -1054,30 +581,50 @@ export interface ProcedureConfig {
  * each stage runs executions in parallel.
  */
 export type Procedure = Resource<ProcedureConfig, undefined>;
-export type GetProcedureResponse = Procedure;
-export declare enum ProcedureState {
-    /** Last run successful */
-    Ok = "Ok",
-    /** Last run failed */
-    Failed = "Failed",
-    /** Currently running */
-    Running = "Running",
-    /** Other case (never run) */
-    Unknown = "Unknown"
+export type CopyProcedureResponse = Procedure;
+/** Represents an empty json object: `{}` */
+export interface NoData {
 }
-export interface ProcedureListItemInfo {
-    /** Number of stages procedure has. */
-    stages: I64;
-    /** Reflect whether last run successful / currently running. */
-    state: ProcedureState;
+export type CreateActionWebhookResponse = NoData;
+/** Response for [CreateApiKey]. */
+export interface CreateApiKeyResponse {
+    /** X-API-KEY */
+    key: string;
+    /**
+     * X-API-SECRET
+     *
+     * Note.
+     * There is no way to get the secret again after it is distributed in this message
+     */
+    secret: string;
 }
-export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
-export type ListProceduresResponse = ProcedureListItem[];
-export type ListFullProceduresResponse = Procedure[];
-export interface ProcedureActionState {
-    running: boolean;
+export type CreateApiKeyForServiceUserResponse = CreateApiKeyResponse;
+export type CreateBuildWebhookResponse = NoData;
+/** Configuration to access private image repositories on various registries. */
+export interface DockerRegistryAccount {
+    /**
+     * The Mongo ID of the docker registry account.
+     * This field is de/serialized from/to JSON as
+     * `{ "_id": { "$oid": "..." }, ...(rest of DockerRegistryAccount) }`
+     */
+    _id?: MongoId;
+    /**
+     * The domain of the provider.
+     *
+     * For docker registry, this can include 'http://...',
+     * however this is not recommended and won't work unless "insecure registries" are enabled
+     * on your hosts. See [https://docs.docker.com/reference/cli/dockerd/#insecure-registries].
+     */
+    domain: string;
+    /** The account username */
+    username?: string;
+    /**
+     * The token in plain text on the db.
+     * If the database / host can be accessed this is insecure.
+     */
+    token?: string;
 }
-export type GetProcedureActionStateResponse = ProcedureActionState;
+export type CreateDockerRegistryAccountResponse = DockerRegistryAccount;
 /**
  * Configuration to access private git repos from various git providers.
  * Note. Cannot create two accounts with the same domain and username.
@@ -1106,34 +653,523 @@ export interface GitProviderAccount {
      */
     token?: string;
 }
-export type GetGitProviderAccountResponse = GitProviderAccount;
-export type ListGitProviderAccountsResponse = GitProviderAccount[];
-/** Configuration to access private image repositories on various registries. */
-export interface DockerRegistryAccount {
+export type CreateGitProviderAccountResponse = GitProviderAccount;
+/** JSON containing an authentication token. */
+export interface JwtResponse {
+    /** A token the user can use to authenticate their requests. */
+    jwt: string;
+}
+/** Response for [CreateLocalUser]. */
+export type CreateLocalUserResponse = JwtResponse;
+export type CreateProcedureResponse = Procedure;
+export type CreateRepoWebhookResponse = NoData;
+export type UserConfig = 
+/** User that logs in with username / password */
+{
+    type: "Local";
+    data: {
+        password: string;
+    };
+}
+/** User that logs in via Google Oauth */
+ | {
+    type: "Google";
+    data: {
+        google_id: string;
+        avatar: string;
+    };
+}
+/** User that logs in via Github Oauth */
+ | {
+    type: "Github";
+    data: {
+        github_id: string;
+        avatar: string;
+    };
+}
+/** User that logs in via Oidc provider */
+ | {
+    type: "Oidc";
+    data: {
+        provider: string;
+        user_id: string;
+    };
+}
+/** Non-human managed user, can have it's own permissions / api keys */
+ | {
+    type: "Service";
+    data: {
+        description: string;
+    };
+};
+export interface User {
     /**
-     * The Mongo ID of the docker registry account.
+     * The Mongo ID of the User.
      * This field is de/serialized from/to JSON as
-     * `{ "_id": { "$oid": "..." }, ...(rest of DockerRegistryAccount) }`
+     * `{ "_id": { "$oid": "..." }, ...(rest of User schema) }`
      */
     _id?: MongoId;
-    /**
-     * The domain of the provider.
-     *
-     * For docker registry, this can include 'http://...',
-     * however this is not recommended and won't work unless "insecure registries" are enabled
-     * on your hosts. See [https://docs.docker.com/reference/cli/dockerd/#insecure-registries].
-     */
-    domain: string;
-    /** The account username */
-    username?: string;
-    /**
-     * The token in plain text on the db.
-     * If the database / host can be accessed this is insecure.
-     */
-    token?: string;
+    /** The globally unique username for the user. */
+    username: string;
+    /** Whether user is enabled / able to access the api. */
+    enabled?: boolean;
+    /** Can give / take other users admin priviledges. */
+    super_admin?: boolean;
+    /** Whether the user has global admin permissions. */
+    admin?: boolean;
+    /** Whether the user has permission to create servers. */
+    create_server_permissions?: boolean;
+    /** Whether the user has permission to create builds */
+    create_build_permissions?: boolean;
+    /** The user-type specific config. */
+    config: UserConfig;
+    /** When the user last opened updates dropdown. */
+    last_update_view?: I64;
+    /** Recently viewed ids */
+    recents?: Record<ResourceTarget["type"], string[]>;
+    /** Give the user elevated permissions on all resources of a certain type */
+    all?: Record<ResourceTarget["type"], PermissionLevel>;
+    updated_at?: I64;
 }
+export type CreateServiceUserResponse = User;
+export type CreateStackWebhookResponse = NoData;
+export type CreateSyncWebhookResponse = NoData;
+/**
+ * A non-secret global variable which can be interpolated into deployment
+ * environment variable values and build argument values.
+ */
+export interface Variable {
+    /**
+     * Unique name associated with the variable.
+     * Instances of '[[variable.name]]' in value will be replaced with 'variable.value'.
+     */
+    name: string;
+    /** A description for the variable. */
+    description?: string;
+    /** The value associated with the variable. */
+    value?: string;
+    /**
+     * If marked as secret, the variable value will be hidden in updates / logs.
+     * Additionally the value will not be served in read requests by non admin users.
+     *
+     * Note that the value is NOT encrypted in the database, and will likely show up in database logs.
+     * The security of these variables comes down to the security
+     * of the database (system level encryption, network isolation, etc.)
+     */
+    is_secret?: boolean;
+}
+export type CreateVariableResponse = Variable;
+export type DeleteActionWebhookResponse = NoData;
+export type DeleteApiKeyForServiceUserResponse = NoData;
+export type DeleteApiKeyResponse = NoData;
+export type DeleteBuildWebhookResponse = NoData;
+export type DeleteDockerRegistryAccountResponse = DockerRegistryAccount;
+export type DeleteGitProviderAccountResponse = GitProviderAccount;
+export type DeleteProcedureResponse = Procedure;
+export type DeleteRepoWebhookResponse = NoData;
+export type DeleteStackWebhookResponse = NoData;
+export type DeleteSyncWebhookResponse = NoData;
+export type DeleteUserResponse = User;
+export type DeleteVariableResponse = Variable;
+export type DeploymentImage = 
+/** Deploy any external image. */
+{
+    type: "Image";
+    params: {
+        /** The docker image, can be from any registry that works with docker and that the host server can reach. */
+        image?: string;
+    };
+}
+/** Deploy a Komodo Build. */
+ | {
+    type: "Build";
+    params: {
+        /** The id of the Build */
+        build_id?: string;
+        /**
+         * Use a custom / older version of the image produced by the build.
+         * if version is 0.0.0, this means `latest` image.
+         */
+        version?: Version;
+    };
+};
+export declare enum RestartMode {
+    NoRestart = "no",
+    OnFailure = "on-failure",
+    Always = "always",
+    UnlessStopped = "unless-stopped"
+}
+export declare enum TerminationSignal {
+    SigHup = "SIGHUP",
+    SigInt = "SIGINT",
+    SigQuit = "SIGQUIT",
+    SigTerm = "SIGTERM"
+}
+export interface DeploymentConfig {
+    /** The id of server the deployment is deployed on. */
+    server_id?: string;
+    /**
+     * The image which the deployment deploys.
+     * Can either be a user inputted image, or a Komodo Build.
+     */
+    image?: DeploymentImage;
+    /**
+     * Configure the account used to pull the image from the registry.
+     * Used with `docker login`.
+     *
+     * - If the field is empty string, will use the same account config as the build, or none at all if using image.
+     * - If the field contains an account, a token for the account must be available.
+     * - Will get the registry domain from the build / image
+     */
+    image_registry_account?: string;
+    /** Whether to skip secret interpolation into the deployment environment variables. */
+    skip_secret_interp?: boolean;
+    /** Whether to redeploy the deployment whenever the attached build finishes. */
+    redeploy_on_build?: boolean;
+    /** Whether to send ContainerStateChange alerts for this deployment. */
+    send_alerts: boolean;
+    /** Configure quick links that are displayed in the resource header */
+    links?: string[];
+    /**
+     * The network attached to the container.
+     * Default is `host`.
+     */
+    network: string;
+    /** The restart mode given to the container. */
+    restart?: RestartMode;
+    /**
+     * This is interpolated at the end of the `docker run` command,
+     * which means they are either passed to the containers inner process,
+     * or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
+     * Empty is no command.
+     */
+    command?: string;
+    /** The default termination signal to use to stop the deployment. Defaults to SigTerm (default docker signal). */
+    termination_signal?: TerminationSignal;
+    /** The termination timeout. */
+    termination_timeout: number;
+    /**
+     * Extra args which are interpolated into the `docker run` command,
+     * and affect the container configuration.
+     */
+    extra_args?: string[];
+    /**
+     * Labels attached to various termination signal options.
+     * Used to specify different shutdown functionality depending on the termination signal.
+     */
+    term_signal_labels?: string;
+    /**
+     * The container port mapping.
+     * Irrelevant if container network is `host`.
+     * Maps ports on host to ports on container.
+     */
+    ports?: string;
+    /**
+     * The container volume mapping.
+     * Maps files / folders on host to files / folders in container.
+     */
+    volumes?: string;
+    /** The environment variables passed to the container. */
+    environment?: string;
+    /** The docker labels given to the container. */
+    labels?: string;
+}
+export type Deployment = Resource<DeploymentConfig, undefined>;
+/**
+ * Variants de/serialized from/to snake_case.
+ *
+ * Eg.
+ * - NotDeployed -> not_deployed
+ * - Restarting -> restarting
+ * - Running -> running.
+ */
+export declare enum DeploymentState {
+    Unknown = "unknown",
+    NotDeployed = "not_deployed",
+    Created = "created",
+    Restarting = "restarting",
+    Running = "running",
+    Removing = "removing",
+    Paused = "paused",
+    Exited = "exited",
+    Dead = "dead"
+}
+export interface DeploymentListItemInfo {
+    /** The state of the deployment / underlying docker container. */
+    state: DeploymentState;
+    /** The status of the docker container (eg. up 12 hours, exited 5 minutes ago.) */
+    status?: string;
+    /** The image attached to the deployment. */
+    image: string;
+    /** The server that deployment sits on. */
+    server_id: string;
+    /** An attached Komodo Build, if it exists. */
+    build_id?: string;
+}
+export type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
+export interface DeploymentQuerySpecifics {
+    server_ids?: string[];
+    build_ids?: string[];
+}
+export type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
+/** Response for [ExchangeForJwt]. */
+export type ExchangeForJwtResponse = JwtResponse;
+/** Response containing pretty formatted toml contents. */
+export interface TomlResponse {
+    toml: string;
+}
+export type ExportAllResourcesToTomlResponse = TomlResponse;
+export type ExportResourcesToTomlResponse = TomlResponse;
+export type FindUserResponse = User;
+export interface ActionActionState {
+    /** Whether the action is currently running. */
+    running: boolean;
+}
+export type GetActionActionStateResponse = ActionActionState;
+export type GetActionResponse = Action;
+/** Severity level of problem. */
+export declare enum SeverityLevel {
+    /** No problem. */
+    Ok = "OK",
+    /** Problem is imminent. */
+    Warning = "WARNING",
+    /** Problem fully realized. */
+    Critical = "CRITICAL"
+}
+/** The variants of data related to the alert. */
+export type AlertData = 
+/** A null alert */
+{
+    type: "None";
+    data: {};
+}
+/** A server could not be reached. */
+ | {
+    type: "ServerUnreachable";
+    data: {
+        /** The id of the server */
+        id: string;
+        /** The name of the server */
+        name: string;
+        /** The region of the server */
+        region?: string;
+        /** The error data */
+        err?: _Serror;
+    };
+}
+/** A server has high CPU usage. */
+ | {
+    type: "ServerCpu";
+    data: {
+        /** The id of the server */
+        id: string;
+        /** The name of the server */
+        name: string;
+        /** The region of the server */
+        region?: string;
+        /** The cpu usage percentage */
+        percentage: number;
+    };
+}
+/** A server has high memory usage. */
+ | {
+    type: "ServerMem";
+    data: {
+        /** The id of the server */
+        id: string;
+        /** The name of the server */
+        name: string;
+        /** The region of the server */
+        region?: string;
+        /** The used memory */
+        used_gb: number;
+        /** The total memory */
+        total_gb: number;
+    };
+}
+/** A server has high disk usage. */
+ | {
+    type: "ServerDisk";
+    data: {
+        /** The id of the server */
+        id: string;
+        /** The name of the server */
+        name: string;
+        /** The region of the server */
+        region?: string;
+        /** The mount path of the disk */
+        path: string;
+        /** The used portion of the disk in GB */
+        used_gb: number;
+        /** The total size of the disk in GB */
+        total_gb: number;
+    };
+}
+/** A container's state has changed unexpectedly. */
+ | {
+    type: "ContainerStateChange";
+    data: {
+        /** The id of the deployment */
+        id: string;
+        /** The name of the deployment */
+        name: string;
+        /** The server id of server that the deployment is on */
+        server_id: string;
+        /** The server name */
+        server_name: string;
+        /** The previous container state */
+        from: DeploymentState;
+        /** The current container state */
+        to: DeploymentState;
+    };
+}
+/** A stack's state has changed unexpectedly. */
+ | {
+    type: "StackStateChange";
+    data: {
+        /** The id of the stack */
+        id: string;
+        /** The name of the stack */
+        name: string;
+        /** The server id of server that the stack is on */
+        server_id: string;
+        /** The server name */
+        server_name: string;
+        /** The previous stack state */
+        from: StackState;
+        /** The current stack state */
+        to: StackState;
+    };
+}
+/** An AWS builder failed to terminate. */
+ | {
+    type: "AwsBuilderTerminationFailed";
+    data: {
+        /** The id of the aws instance which failed to terminate */
+        instance_id: string;
+        /** A reason for the failure */
+        message: string;
+    };
+}
+/** A resource sync has pending updates */
+ | {
+    type: "ResourceSyncPendingUpdates";
+    data: {
+        /** The id of the resource sync */
+        id: string;
+        /** The name of the resource sync */
+        name: string;
+    };
+}
+/** A build has failed */
+ | {
+    type: "BuildFailed";
+    data: {
+        /** The id of the build */
+        id: string;
+        /** The name of the build */
+        name: string;
+        /** The version that failed to build */
+        version: Version;
+    };
+}
+/** A repo has failed */
+ | {
+    type: "RepoBuildFailed";
+    data: {
+        /** The id of the repo */
+        id: string;
+        /** The name of the repo */
+        name: string;
+    };
+};
+/** Representation of an alert in the system. */
+export interface Alert {
+    /**
+     * The Mongo ID of the alert.
+     * This field is de/serialized from/to JSON as
+     * `{ "_id": { "$oid": "..." }, ...(rest of serialized Alert) }`
+     */
+    _id?: MongoId;
+    /** Unix timestamp in milliseconds the alert was opened */
+    ts: I64;
+    /** Whether the alert is already resolved */
+    resolved: boolean;
+    /** The severity of the alert */
+    level: SeverityLevel;
+    /** The target of the alert */
+    target: ResourceTarget;
+    /** The data attached to the alert */
+    data: AlertData;
+    /** The timestamp of alert resolution */
+    resolved_ts?: I64;
+}
+export type GetAlertResponse = Alert;
+export type GetAlerterResponse = Alerter;
+export interface BuildActionState {
+    building: boolean;
+}
+export type GetBuildActionStateResponse = BuildActionState;
+export type GetBuildResponse = Build;
+export type GetBuilderResponse = Builder;
+/** Represents the output of some command being run */
+export interface Log {
+    /** A label for the log */
+    stage: string;
+    /** The command which was executed */
+    command: string;
+    /** The output of the command in the standard channel */
+    stdout: string;
+    /** The output of the command in the error channel */
+    stderr: string;
+    /** Whether the command run was successful */
+    success: boolean;
+    /** The start time of the command execution */
+    start_ts: I64;
+    /** The end time of the command execution */
+    end_ts: I64;
+}
+export type GetContainerLogResponse = Log;
+export interface DeploymentActionState {
+    deploying: boolean;
+    starting: boolean;
+    restarting: boolean;
+    pausing: boolean;
+    unpausing: boolean;
+    stopping: boolean;
+    destroying: boolean;
+    renaming: boolean;
+}
+export type GetDeploymentActionStateResponse = DeploymentActionState;
+export type GetDeploymentLogResponse = Log;
+export type GetDeploymentResponse = Deployment;
+export interface ContainerStats {
+    name: string;
+    cpu_perc: string;
+    mem_perc: string;
+    mem_usage: string;
+    net_io: string;
+    block_io: string;
+    pids: string;
+}
+export type GetDeploymentStatsResponse = ContainerStats;
 export type GetDockerRegistryAccountResponse = DockerRegistryAccount;
-export type ListDockerRegistryAccountsResponse = DockerRegistryAccount[];
+export type GetGitProviderAccountResponse = GitProviderAccount;
+export type GetPermissionLevelResponse = PermissionLevel;
+export interface ProcedureActionState {
+    running: boolean;
+}
+export type GetProcedureActionStateResponse = ProcedureActionState;
+export type GetProcedureResponse = Procedure;
+export interface RepoActionState {
+    /** Whether repo currently cloning */
+    cloning: boolean;
+    /** Whether repo currently pulling */
+    pulling: boolean;
+    /** Whether repo currently building, using the attached builder. */
+    building: boolean;
+}
+export type GetRepoActionStateResponse = RepoActionState;
 export interface RepoConfig {
     /** The server to clone the repo on. */
     server_id?: string;
@@ -1215,58 +1251,180 @@ export interface RepoInfo {
 }
 export type Repo = Resource<RepoConfig, RepoInfo>;
 export type GetRepoResponse = Repo;
-export declare enum RepoState {
-    /** Unknown case */
-    Unknown = "Unknown",
-    /** Last clone / pull successful (or never cloned) */
-    Ok = "Ok",
-    /** Last clone / pull failed */
-    Failed = "Failed",
-    /** Currently cloning */
-    Cloning = "Cloning",
-    /** Currently pulling */
-    Pulling = "Pulling",
-    /** Currently building */
-    Building = "Building"
+export interface ResourceSyncActionState {
+    /** Whether sync currently syncing */
+    syncing: boolean;
 }
-export interface RepoListItemInfo {
-    /** The server that repo sits on. */
-    server_id: string;
-    /** The builder that builds the repo. */
-    builder_id: string;
-    /** Repo last cloned / pulled timestamp in ms. */
-    last_pulled_at: I64;
-    /** Repo last built timestamp in ms. */
-    last_built_at: I64;
-    /** The git provider domain */
+export type GetResourceSyncActionStateResponse = ResourceSyncActionState;
+/** The sync configuration. */
+export interface ResourceSyncConfig {
+    /** The git provider domain. Default: github.com */
     git_provider: string;
-    /** The configured repo */
-    repo: string;
-    /** The configured branch */
+    /**
+     * Whether to use https to clone the repo (versus http). Default: true
+     *
+     * Note. Komodo does not currently support cloning repos via ssh.
+     */
+    git_https: boolean;
+    /** The Github repo used as the source of the build. */
+    repo?: string;
+    /** The branch of the repo. */
     branch: string;
-    /** The repo state */
-    state: RepoState;
-    /** If the repo is cloned, will be the cloned short commit hash. */
-    cloned_hash?: string;
-    /** If the repo is cloned, will be the cloned commit message. */
-    cloned_message?: string;
-    /** If the repo is built, will be the latest built short commit hash. */
-    built_hash?: string;
-    /** Will be the latest remote short commit hash. */
-    latest_hash?: string;
+    /** Optionally set a specific commit hash. */
+    commit?: string;
+    /**
+     * The git account used to access private repos.
+     * Passing empty string can only clone public repos.
+     *
+     * Note. A token for the account must be available in the core config or the builder server's periphery config
+     * for the configured git provider.
+     */
+    git_account?: string;
+    /** Whether incoming webhooks actually trigger action. */
+    webhook_enabled: boolean;
+    /**
+     * Optionally provide an alternate webhook secret for this sync.
+     * If its an empty string, use the default secret from the config.
+     */
+    webhook_secret?: string;
+    /**
+     * Files are available on the Komodo Core host.
+     * Specify the file / folder with [ResourceSyncConfig::resource_path].
+     */
+    files_on_host?: boolean;
+    /**
+     * The path of the resource file(s) to sync.
+     * - If Files on Host, this is relative to the configured `sync_directory` in core config.
+     * - If Git Repo based, this is relative to the root of the repo.
+     * Can be a specific file, or a directory containing multiple files / folders.
+     * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
+     */
+    resource_path?: string[];
+    /**
+     * Enable "pushes" to the file,
+     * which exports resources matching tags to single file.
+     * - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
+     * - If using `file_contents`, it is stored in the database.
+     * When using this, "delete" mode is always enabled.
+     */
+    managed?: boolean;
+    /**
+     * Whether sync should delete resources
+     * not declared in the resource files
+     */
+    delete?: boolean;
+    /**
+     * When using `managed` resource sync, will only export resources
+     * matching all of the given tags. If none, will match all resources.
+     */
+    match_tags?: string[];
+    /** Manage the file contents in the UI. */
+    file_contents?: string;
 }
-export type RepoListItem = ResourceListItem<RepoListItemInfo>;
-export type ListReposResponse = RepoListItem[];
-export type ListFullReposResponse = Repo[];
-export interface RepoActionState {
-    /** Whether repo currently cloning */
-    cloning: boolean;
-    /** Whether repo currently pulling */
-    pulling: boolean;
-    /** Whether repo currently building, using the attached builder. */
-    building: boolean;
+export type DiffData = 
+/** Resource will be created */
+{
+    type: "Create";
+    data: {
+        /** The name of resource to create */
+        name?: string;
+        /** The proposed resource to create in TOML */
+        proposed: string;
+    };
+} | {
+    type: "Update";
+    data: {
+        /** The proposed TOML */
+        proposed: string;
+        /** The current TOML */
+        current: string;
+    };
+} | {
+    type: "Delete";
+    data: {
+        /** The current TOML of the resource to delete */
+        current: string;
+    };
+};
+export interface ResourceDiff {
+    /**
+     * The resource target.
+     * The target id will be empty if "Create" ResourceDiffType.
+     */
+    target: ResourceTarget;
+    /** The data associated with the diff. */
+    data: DiffData;
 }
-export type GetRepoActionStateResponse = RepoActionState;
+export interface SyncDeployUpdate {
+    /** Resources to deploy */
+    to_deploy: number;
+    /** A readable log of all the changes to be applied */
+    log: string;
+}
+export interface SyncFileContents {
+    /** The base resource path. */
+    resource_path?: string;
+    /** The path of the file / error path relative to the resource path. */
+    path: string;
+    /** The contents of the file */
+    contents: string;
+}
+export interface ResourceSyncInfo {
+    /** Unix timestamp of last applied sync */
+    last_sync_ts?: I64;
+    /** Short commit hash of last applied sync */
+    last_sync_hash?: string;
+    /** Commit message of last applied sync */
+    last_sync_message?: string;
+    /** The list of pending updates to resources */
+    resource_updates?: ResourceDiff[];
+    /** The list of pending updates to variables */
+    variable_updates?: DiffData[];
+    /** The list of pending updates to user groups */
+    user_group_updates?: DiffData[];
+    /** The list of pending deploys to resources. */
+    pending_deploy?: SyncDeployUpdate;
+    /** If there is an error, it will be stored here */
+    pending_error?: string;
+    /** The commit hash which produced these pending updates. */
+    pending_hash?: string;
+    /** The commit message which produced these pending updates. */
+    pending_message?: string;
+    /** The current sync files */
+    remote_contents?: SyncFileContents[];
+    /** Any read errors in files by path */
+    remote_errors?: SyncFileContents[];
+}
+export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
+export type GetResourceSyncResponse = ResourceSync;
+/** Current pending actions on the server. */
+export interface ServerActionState {
+    /** Server currently pruning networks */
+    pruning_networks: boolean;
+    /** Server currently pruning containers */
+    pruning_containers: boolean;
+    /** Server currently pruning images */
+    pruning_images: boolean;
+    /** Server currently pruning volumes */
+    pruning_volumes: boolean;
+    /** Server currently pruning docker builders */
+    pruning_builders: boolean;
+    /** Server currently pruning builx cache */
+    pruning_buildx: boolean;
+    /** Server currently pruning system */
+    pruning_system: boolean;
+    /** Server currently starting containers. */
+    starting_containers: boolean;
+    /** Server currently restarting containers. */
+    restarting_containers: boolean;
+    /** Server currently pausing containers. */
+    pausing_containers: boolean;
+    /** Server currently unpausing containers. */
+    unpausing_containers: boolean;
+    /** Server currently stopping containers. */
+    stopping_containers: boolean;
+}
+export type GetServerActionStateResponse = ServerActionState;
 /** Server configuration. */
 export interface ServerConfig {
     /**
@@ -1323,260 +1481,505 @@ export interface ServerConfig {
 }
 export type Server = Resource<ServerConfig, undefined>;
 export type GetServerResponse = Server;
-export declare enum ServerState {
-    /** Server is unreachable. */
-    NotOk = "NotOk",
-    /** Server health check passing. */
-    Ok = "Ok",
-    /** Server is disabled. */
-    Disabled = "Disabled"
+export type ServerTemplateConfig = 
+/** Template to launch an AWS EC2 instance */
+{
+    type: "Aws";
+    params: AwsServerTemplateConfig;
 }
-export interface ServerListItemInfo {
-    /** The server's state. */
-    state: ServerState;
-    /** Region of the server. */
-    region: string;
-    /** Whether server is configured to send unreachable alerts. */
-    send_unreachable_alerts: boolean;
-    /** Whether server is configured to send cpu alerts. */
-    send_cpu_alerts: boolean;
-    /** Whether server is configured to send mem alerts. */
-    send_mem_alerts: boolean;
-    /** Whether server is configured to send disk alerts. */
-    send_disk_alerts: boolean;
+/** Template to launch a Hetzner server */
+ | {
+    type: "Hetzner";
+    params: HetznerServerTemplateConfig;
+};
+export type ServerTemplate = Resource<ServerTemplateConfig, undefined>;
+export type GetServerTemplateResponse = ServerTemplate;
+export interface StackActionState {
+    deploying: boolean;
+    starting: boolean;
+    restarting: boolean;
+    pausing: boolean;
+    unpausing: boolean;
+    stopping: boolean;
+    destroying: boolean;
 }
-export type ServerListItem = ResourceListItem<ServerListItemInfo>;
-export type ListServersResponse = ServerListItem[];
-export type ListFullServersResponse = Server[];
-/** Current pending actions on the server. */
-export interface ServerActionState {
-    /** Server currently pruning networks */
-    pruning_networks: boolean;
-    /** Server currently pruning containers */
-    pruning_containers: boolean;
-    /** Server currently pruning images */
-    pruning_images: boolean;
-    /** Server currently pruning volumes */
-    pruning_volumes: boolean;
-    /** Server currently pruning docker builders */
-    pruning_builders: boolean;
-    /** Server currently pruning builx cache */
-    pruning_buildx: boolean;
-    /** Server currently pruning system */
-    pruning_system: boolean;
-    /** Server currently starting containers. */
-    starting_containers: boolean;
-    /** Server currently restarting containers. */
-    restarting_containers: boolean;
-    /** Server currently pausing containers. */
-    pausing_containers: boolean;
-    /** Server currently unpausing containers. */
-    unpausing_containers: boolean;
-    /** Server currently stopping containers. */
-    stopping_containers: boolean;
+export type GetStackActionStateResponse = StackActionState;
+/** The compose file configuration. */
+export interface StackConfig {
+    /** The server to deploy the stack on. */
+    server_id?: string;
+    /** Configure quick links that are displayed in the resource header */
+    links?: string[];
+    /**
+     * Optionally specify a custom project name for the stack.
+     * If this is empty string, it will default to the stack name.
+     * Used with `docker compose -p {project_name}`.
+     *
+     * Note. Can be used to import pre-existing stacks.
+     */
+    project_name?: string;
+    /**
+     * Whether to automatically `compose pull` before redeploying stack.
+     * Ensured latest images are deployed.
+     * Will fail if the compose file specifies a locally build image.
+     */
+    auto_pull: boolean;
+    /**
+     * Whether to `docker compose build` before `compose down` / `compose up`.
+     * Combine with build_extra_args for custom behaviors.
+     */
+    run_build?: boolean;
+    /** Whether to run `docker compose down` before `compose up`. */
+    destroy_before_deploy?: boolean;
+    /** Whether to skip secret interpolation into the stack environment variables. */
+    skip_secret_interp?: boolean;
+    /**
+     * If this is checked, the stack will source the files on the host.
+     * Use `run_directory` and `file_paths` to specify the path on the host.
+     * This is useful for those who wish to setup their files on the host using SSH or similar,
+     * rather than defining the contents in UI or in a git repo.
+     */
+    files_on_host?: boolean;
+    /** Directory to change to (`cd`) before running `docker compose up -d`. */
+    run_directory?: string;
+    /**
+     * Add paths to compose files, relative to the run path.
+     * If this is empty, will use file `compose.yaml`.
+     */
+    file_paths?: string[];
+    /**
+     * The name of the written environment file before `docker compose up`.
+     * Relative to the run directory root.
+     * Default: .env
+     */
+    env_file_path: string;
+    /**
+     * Add additional env files to attach with `--env-file`.
+     * Relative to the run directory root.
+     */
+    additional_env_files?: string[];
+    /** The git provider domain. Default: github.com */
+    git_provider: string;
+    /**
+     * Whether to use https to clone the repo (versus http). Default: true
+     *
+     * Note. Komodo does not currently support cloning repos via ssh.
+     */
+    git_https: boolean;
+    /**
+     * The git account used to access private repos.
+     * Passing empty string can only clone public repos.
+     *
+     * Note. A token for the account must be available in the core config or the builder server's periphery config
+     * for the configured git provider.
+     */
+    git_account?: string;
+    /** The Github repo used as the source of the build. */
+    repo?: string;
+    /** The branch of the repo. */
+    branch: string;
+    /** Optionally set a specific commit hash. */
+    commit?: string;
+    /**
+     * By default, the Stack will `git pull` the repo after it is first cloned.
+     * If this option is enabled, the repo folder will be deleted and recloned instead.
+     */
+    reclone?: boolean;
+    /** Whether incoming webhooks actually trigger action. */
+    webhook_enabled: boolean;
+    /**
+     * Optionally provide an alternate webhook secret for this stack.
+     * If its an empty string, use the default secret from the config.
+     */
+    webhook_secret?: string;
+    /**
+     * By default, the Stack will `DeployStackIfChanged`.
+     * If this option is enabled, will always run `DeployStack` without diffing.
+     */
+    webhook_force_deploy?: boolean;
+    /** Whether to send StackStateChange alerts for this stack. */
+    send_alerts: boolean;
+    /** Used with `registry_account` to login to a registry before docker compose up. */
+    registry_provider?: string;
+    /** Used with `registry_provider` to login to a registry before docker compose up. */
+    registry_account?: string;
+    /** The optional command to run before the Stack is deployed. */
+    pre_deploy?: SystemCommand;
+    /**
+     * The extra arguments to pass after `docker compose up -d`.
+     * If empty, no extra arguments will be passed.
+     */
+    extra_args?: string[];
+    /**
+     * The extra arguments to pass after `docker compose build`.
+     * If empty, no extra build arguments will be passed.
+     * Only used if `run_build: true`
+     */
+    build_extra_args?: string[];
+    /**
+     * Ignore certain services declared in the compose file when checking
+     * the stack status. For example, an init service might be exited, but the
+     * stack should be healthy. This init service should be in `ignore_services`
+     */
+    ignore_services?: string[];
+    /**
+     * The contents of the file directly, for management in the UI.
+     * If this is empty, it will fall back to checking git config for
+     * repo based compose file.
+     */
+    file_contents?: string;
+    /**
+     * The environment variables passed to the compose file.
+     * They will be written to path defined in env_file_path,
+     * which is given relative to the run directory.
+     *
+     * If it is empty, no file will be written.
+     */
+    environment?: string;
 }
-export type GetServerActionStateResponse = ServerActionState;
-export interface NetworkListItem {
+export interface FileContents {
+    /** The path of the file on the host */
+    path: string;
+    /** The contents of the file */
+    contents: string;
+}
+export interface StackServiceNames {
+    /** The name of the service */
+    service_name: string;
+    /**
+     * Will either be the declared container_name in the compose file,
+     * or a pattern to match auto named containers.
+     *
+     * Auto named containers are composed of three parts:
+     *
+     * 1. The name of the compose project (top level name field of compose file).
+     * This defaults to the name of the parent folder of the compose file.
+     * Komodo will always set it to be the name of the stack, but imported stacks
+     * will have a different name.
+     * 2. The service name
+     * 3. The replica number
+     *
+     * Example: stacko-mongo-1.
+     *
+     * This stores only 1. and 2., ie stacko-mongo.
+     * Containers will be matched via regex like `^container_name-?[0-9]*$``
+     */
+    container_name: string;
+}
+export interface StackInfo {
+    /**
+     * If any of the expected files are missing in the repo,
+     * they will be stored here.
+     */
+    missing_files?: string[];
+    /**
+     * The deployed project name.
+     * This is updated whenever Komodo successfully deploys the stack.
+     * If it is present, Komodo will use it for actions over other options,
+     * to ensure control is maintained after changing the project name (there is no rename compose project api).
+     */
+    deployed_project_name?: string;
+    /** Deployed short commit hash, or null. Only for repo based stacks. */
+    deployed_hash?: string;
+    /** Deployed commit message, or null. Only for repo based stacks */
+    deployed_message?: string;
+    /** The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack. */
+    deployed_contents?: FileContents[];
+    /**
+     * The deployed service names.
+     * This is updated whenever it is empty, or deployed contents is updated.
+     */
+    deployed_services?: StackServiceNames[];
+    /**
+     * The latest service names.
+     * This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).
+     */
+    latest_services?: StackServiceNames[];
+    /**
+     * The remote compose file contents, whether on host or in repo.
+     * This is updated whenever Komodo refreshes the stack cache.
+     * It will be empty if the file is defined directly in the stack config.
+     */
+    remote_contents?: FileContents[];
+    /** If there was an error in getting the remote contents, it will be here. */
+    remote_errors?: FileContents[];
+    /** Latest commit hash, or null */
+    latest_hash?: string;
+    /** Latest commit message, or null */
+    latest_message?: string;
+}
+export type Stack = Resource<StackConfig, StackInfo>;
+export type GetStackResponse = Stack;
+export type GetStackServiceLogResponse = Log;
+/** System information of a server */
+export interface SystemInformation {
+    /** The system name */
     name?: string;
-    id?: string;
-    created?: string;
-    scope?: string;
-    driver?: string;
-    enable_ipv6?: boolean;
-    ipam_driver?: string;
-    ipam_subnet?: string;
-    ipam_gateway?: string;
-    internal?: boolean;
-    attachable?: boolean;
-    ingress?: boolean;
-    /** Whether the network is attached to one or more containers */
-    in_use: boolean;
+    /** The system long os version */
+    os?: string;
+    /** System's kernel version */
+    kernel?: string;
+    /** Physical core count */
+    core_count?: number;
+    /** System hostname based off DNS */
+    host_name?: string;
+    /** The CPU's brand */
+    cpu_brand: string;
 }
-export type ListDockerNetworksResponse = NetworkListItem[];
-export interface IpamConfig {
-    Subnet?: string;
-    IPRange?: string;
-    Gateway?: string;
-    AuxiliaryAddresses: Record<string, string>;
+export type GetSystemInformationResponse = SystemInformation;
+/** Info for a single disk mounted on the system. */
+export interface SingleDiskUsage {
+    /** The mount point of the disk */
+    mount: string;
+    /** Detected file system */
+    file_system: string;
+    /** Used portion of the disk in GB */
+    used_gb: number;
+    /** Total size of the disk in GB */
+    total_gb: number;
 }
-export interface Ipam {
-    /** Name of the IPAM driver to use. */
-    Driver?: string;
-    /** List of IPAM configuration options, specified as a map:  ``` {\"Subnet\": <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\": <device_name:IP address>} ``` */
-    Config: IpamConfig[];
-    /** Driver-specific options, specified as a map. */
-    Options: Record<string, string>;
+export declare enum Timelength {
+    OneSecond = "1-sec",
+    FiveSeconds = "5-sec",
+    TenSeconds = "10-sec",
+    FifteenSeconds = "15-sec",
+    ThirtySeconds = "30-sec",
+    OneMinute = "1-min",
+    TwoMinutes = "2-min",
+    FiveMinutes = "5-min",
+    TenMinutes = "10-min",
+    FifteenMinutes = "15-min",
+    ThirtyMinutes = "30-min",
+    OneHour = "1-hr",
+    TwoHours = "2-hr",
+    SixHours = "6-hr",
+    EightHours = "8-hr",
+    TwelveHours = "12-hr",
+    OneDay = "1-day",
+    ThreeDay = "3-day",
+    OneWeek = "1-wk",
+    TwoWeeks = "2-wk",
+    ThirtyDays = "30-day"
 }
-export interface NetworkContainer {
-    /** This is the key on the incoming map of NetworkContainer */
-    ContainerID?: string;
-    Name?: string;
-    EndpointID?: string;
-    MacAddress?: string;
-    IPv4Address?: string;
-    IPv6Address?: string;
+/** Realtime system stats data. */
+export interface SystemStats {
+    /** Cpu usage percentage */
+    cpu_perc: number;
+    /**
+     * [1.15.9+]
+     * Free memory in GB.
+     * This is really the 'Free' memory, not the 'Available' memory.
+     * It may be different than mem_total_gb - mem_used_gb.
+     */
+    mem_free_gb?: number;
+    /** Used memory in GB. 'Total' - 'Available' (not free) memory. */
+    mem_used_gb: number;
+    /** Total memory in GB */
+    mem_total_gb: number;
+    /** Breakdown of individual disks, ie their usages, sizes, and mount points */
+    disks: SingleDiskUsage[];
+    /** The rate the system stats are being polled from the system */
+    polling_rate: Timelength;
+    /** Unix timestamp in milliseconds when stats were last polled */
+    refresh_ts: I64;
+    /** Unix timestamp in milliseconds when disk list was last refreshed */
+    refresh_list_ts: I64;
 }
-export interface Network {
-    Name?: string;
-    Id?: string;
-    Created?: string;
-    Scope?: string;
-    Driver?: string;
-    EnableIPv6?: boolean;
-    IPAM?: Ipam;
-    Internal?: boolean;
-    Attachable?: boolean;
-    Ingress?: boolean;
-    /** This field is turned from map into array for easier usability. */
-    Containers: NetworkContainer[];
-    Options?: Record<string, string>;
-    Labels?: Record<string, string>;
-}
-export type InspectDockerNetworkResponse = Network;
-export interface ImageListItem {
-    /** The first tag in `repo_tags`, or Id if no tags. */
+export type GetSystemStatsResponse = SystemStats;
+export interface Tag {
+    /**
+     * The Mongo ID of the tag.
+     * This field is de/serialized from/to JSON as
+     * `{ "_id": { "$oid": "..." }, ...(rest of serialized Tag) }`
+     */
+    _id?: MongoId;
     name: string;
-    /** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
-    id: string;
-    /** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
-    parent_id: string;
-    /** Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH). */
-    created: I64;
-    /** Total size of the image including all layers it is composed of. */
-    size: I64;
-    /** Whether the image is in use by any container */
-    in_use: boolean;
+    owner?: string;
 }
-export type ListDockerImagesResponse = ImageListItem[];
-/** A test to perform to check that the container is healthy. */
-export interface HealthConfig {
-    /** The test to perform. Possible values are:  - `[]` inherit healthcheck from image or parent image - `[\"NONE\"]` disable healthcheck - `[\"CMD\", args...]` exec arguments directly - `[\"CMD-SHELL\", command]` run command with system's default shell */
-    Test?: string[];
-    /** The time to wait between checks in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-    Interval?: I64;
-    /** The time to wait before considering the check to have hung. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-    Timeout?: I64;
-    /** The number of consecutive failures needed to consider a container as unhealthy. 0 means inherit. */
-    Retries?: I64;
-    /** Start period for the container to initialize before starting health-retries countdown in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-    StartPeriod?: I64;
-    /** The time to wait between checks in nanoseconds during the start period. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
-    StartInterval?: I64;
+export type GetTagResponse = Tag;
+export declare enum Operation {
+    None = "None",
+    CreateServer = "CreateServer",
+    UpdateServer = "UpdateServer",
+    DeleteServer = "DeleteServer",
+    RenameServer = "RenameServer",
+    StartContainer = "StartContainer",
+    RestartContainer = "RestartContainer",
+    PauseContainer = "PauseContainer",
+    UnpauseContainer = "UnpauseContainer",
+    StopContainer = "StopContainer",
+    DestroyContainer = "DestroyContainer",
+    StartAllContainers = "StartAllContainers",
+    RestartAllContainers = "RestartAllContainers",
+    PauseAllContainers = "PauseAllContainers",
+    UnpauseAllContainers = "UnpauseAllContainers",
+    StopAllContainers = "StopAllContainers",
+    PruneContainers = "PruneContainers",
+    CreateNetwork = "CreateNetwork",
+    DeleteNetwork = "DeleteNetwork",
+    PruneNetworks = "PruneNetworks",
+    DeleteImage = "DeleteImage",
+    PruneImages = "PruneImages",
+    DeleteVolume = "DeleteVolume",
+    PruneVolumes = "PruneVolumes",
+    PruneDockerBuilders = "PruneDockerBuilders",
+    PruneBuildx = "PruneBuildx",
+    PruneSystem = "PruneSystem",
+    CreateStack = "CreateStack",
+    UpdateStack = "UpdateStack",
+    RenameStack = "RenameStack",
+    DeleteStack = "DeleteStack",
+    WriteStackContents = "WriteStackContents",
+    RefreshStackCache = "RefreshStackCache",
+    DeployStack = "DeployStack",
+    StartStack = "StartStack",
+    RestartStack = "RestartStack",
+    PauseStack = "PauseStack",
+    UnpauseStack = "UnpauseStack",
+    StopStack = "StopStack",
+    DestroyStack = "DestroyStack",
+    StartStackService = "StartStackService",
+    RestartStackService = "RestartStackService",
+    PauseStackService = "PauseStackService",
+    UnpauseStackService = "UnpauseStackService",
+    StopStackService = "StopStackService",
+    CreateDeployment = "CreateDeployment",
+    UpdateDeployment = "UpdateDeployment",
+    DeleteDeployment = "DeleteDeployment",
+    Deploy = "Deploy",
+    StartDeployment = "StartDeployment",
+    RestartDeployment = "RestartDeployment",
+    PauseDeployment = "PauseDeployment",
+    UnpauseDeployment = "UnpauseDeployment",
+    StopDeployment = "StopDeployment",
+    DestroyDeployment = "DestroyDeployment",
+    RenameDeployment = "RenameDeployment",
+    CreateBuild = "CreateBuild",
+    UpdateBuild = "UpdateBuild",
+    DeleteBuild = "DeleteBuild",
+    RunBuild = "RunBuild",
+    CancelBuild = "CancelBuild",
+    CreateRepo = "CreateRepo",
+    UpdateRepo = "UpdateRepo",
+    DeleteRepo = "DeleteRepo",
+    CloneRepo = "CloneRepo",
+    PullRepo = "PullRepo",
+    BuildRepo = "BuildRepo",
+    CancelRepoBuild = "CancelRepoBuild",
+    CreateProcedure = "CreateProcedure",
+    UpdateProcedure = "UpdateProcedure",
+    DeleteProcedure = "DeleteProcedure",
+    RunProcedure = "RunProcedure",
+    CreateAction = "CreateAction",
+    UpdateAction = "UpdateAction",
+    DeleteAction = "DeleteAction",
+    RunAction = "RunAction",
+    CreateBuilder = "CreateBuilder",
+    UpdateBuilder = "UpdateBuilder",
+    DeleteBuilder = "DeleteBuilder",
+    CreateAlerter = "CreateAlerter",
+    UpdateAlerter = "UpdateAlerter",
+    DeleteAlerter = "DeleteAlerter",
+    CreateServerTemplate = "CreateServerTemplate",
+    UpdateServerTemplate = "UpdateServerTemplate",
+    DeleteServerTemplate = "DeleteServerTemplate",
+    LaunchServer = "LaunchServer",
+    CreateResourceSync = "CreateResourceSync",
+    UpdateResourceSync = "UpdateResourceSync",
+    DeleteResourceSync = "DeleteResourceSync",
+    WriteSyncContents = "WriteSyncContents",
+    CommitSync = "CommitSync",
+    RunSync = "RunSync",
+    CreateVariable = "CreateVariable",
+    UpdateVariableValue = "UpdateVariableValue",
+    DeleteVariable = "DeleteVariable",
+    CreateGitProviderAccount = "CreateGitProviderAccount",
+    UpdateGitProviderAccount = "UpdateGitProviderAccount",
+    DeleteGitProviderAccount = "DeleteGitProviderAccount",
+    CreateDockerRegistryAccount = "CreateDockerRegistryAccount",
+    UpdateDockerRegistryAccount = "UpdateDockerRegistryAccount",
+    DeleteDockerRegistryAccount = "DeleteDockerRegistryAccount"
 }
-/** Configuration for a container that is portable between hosts.  When used as `ContainerConfig` field in an image, `ContainerConfig` is an optional field containing the configuration of the container that was last committed when creating the image.  Previous versions of Docker builder used this field to store build cache, and it is not in active use anymore. */
-export interface ContainerConfig {
-    /** The hostname to use for the container, as a valid RFC 1123 hostname. */
-    Hostname?: string;
-    /** The domain name to use for the container. */
-    Domainname?: string;
-    /** The user that commands are run as inside the container. */
-    User?: string;
-    /** Whether to attach to `stdin`. */
-    AttachStdin?: boolean;
-    /** Whether to attach to `stdout`. */
-    AttachStdout?: boolean;
-    /** Whether to attach to `stderr`. */
-    AttachStderr?: boolean;
-    /** An object mapping ports to an empty object in the form:  `{\"<port>/<tcp|udp|sctp>\": {}}` */
-    ExposedPorts?: Record<string, Record<string, undefined>>;
-    /** Attach standard streams to a TTY, including `stdin` if it is not closed. */
-    Tty?: boolean;
-    /** Open `stdin` */
-    OpenStdin?: boolean;
-    /** Close `stdin` after one attached client disconnects */
-    StdinOnce?: boolean;
-    /** A list of environment variables to set inside the container in the form `[\"VAR=value\", ...]`. A variable without `=` is removed from the environment, rather than to have an empty value. */
-    Env?: string[];
-    /** Command to run specified as a string or an array of strings. */
-    Cmd?: string[];
-    Healthcheck?: HealthConfig;
-    /** Command is already escaped (Windows only) */
-    ArgsEscaped?: boolean;
-    /** The name (or reference) of the image to use when creating the container, or which was used when the container was created. */
-    Image?: string;
-    /** An object mapping mount point paths inside the container to empty objects. */
-    Volumes?: Record<string, Record<string, undefined>>;
-    /** The working directory for commands to run in. */
-    WorkingDir?: string;
-    /** The entry point for the container as a string or an array of strings.  If the array consists of exactly one empty string (`[\"\"]`) then the entry point is reset to system default (i.e., the entry point used by docker when there is no `ENTRYPOINT` instruction in the `Dockerfile`). */
-    Entrypoint?: string[];
-    /** Disable networking for the container. */
-    NetworkDisabled?: boolean;
-    /** MAC address of the container.  Deprecated: this field is deprecated in API v1.44 and up. Use EndpointSettings.MacAddress instead. */
-    MacAddress?: string;
-    /** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
-    OnBuild?: string[];
-    /** User-defined key/value metadata. */
-    Labels?: Record<string, string>;
-    /** Signal to stop a container as a string or unsigned integer. */
-    StopSignal?: string;
-    /** Timeout to stop a container in seconds. */
-    StopTimeout?: I64;
-    /** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
-    Shell?: string[];
+/** An update's status */
+export declare enum UpdateStatus {
+    /** The run is in the system but hasn't started yet */
+    Queued = "Queued",
+    /** The run is currently running */
+    InProgress = "InProgress",
+    /** The run is complete */
+    Complete = "Complete"
 }
-/** Information about the storage driver used to store the container's and image's filesystem. */
-export interface GraphDriverData {
-    /** Name of the storage driver. */
-    Name?: string;
-    /** Low-level storage metadata, provided as key/value pairs.  This information is driver-specific, and depends on the storage-driver in use, and should be used for informational purposes only. */
-    Data?: Record<string, string>;
+/** Represents an action performed by Komodo. */
+export interface Update {
+    /**
+     * The Mongo ID of the update.
+     * This field is de/serialized from/to JSON as
+     * `{ "_id": { "$oid": "..." }, ...(rest of serialized Update) }`
+     */
+    _id?: MongoId;
+    /** The operation performed */
+    operation: Operation;
+    /** The time the operation started */
+    start_ts: I64;
+    /** Whether the operation was successful */
+    success: boolean;
+    /**
+     * The user id that triggered the update.
+     *
+     * Also can take these values for operations triggered automatically:
+     * - `Procedure`: The operation was triggered as part of a procedure run
+     * - `Github`: The operation was triggered by a github webhook
+     * - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
+     */
+    operator: string;
+    /** The target resource to which this update refers */
+    target: ResourceTarget;
+    /** Logs produced as the operation is performed */
+    logs: Log[];
+    /** The time the operation completed. */
+    end_ts?: I64;
+    /**
+     * The status of the update
+     * - `Queued`
+     * - `InProgress`
+     * - `Complete`
+     */
+    status: UpdateStatus;
+    /** An optional version on the update, ie build version or deployed version. */
+    version?: Version;
+    /** An optional commit hash associated with the update, ie cloned hash or deployed hash. */
+    commit_hash?: string;
+    /** Some unstructured, operation specific data. Not for general usage. */
+    other_data?: string;
 }
-/** Information about the image's RootFS, including the layer IDs. */
-export interface ImageInspectRootFs {
-    Type?: string;
-    Layers?: string[];
+export type GetUpdateResponse = Update;
+/**
+ * Permission users at the group level.
+ *
+ * All users that are part of a group inherit the group's permissions.
+ * A user can be a part of multiple groups. A user's permission on a particular resource
+ * will be resolved to be the maximum permission level between the user's own permissions and
+ * any groups they are a part of.
+ */
+export interface UserGroup {
+    /**
+     * The Mongo ID of the UserGroup.
+     * This field is de/serialized from/to JSON as
+     * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
+     */
+    _id?: MongoId;
+    /** A name for the user group */
+    name: string;
+    /** User ids of group members */
+    users?: string[];
+    /** Give the user group elevated permissions on all resources of a certain type */
+    all?: Record<ResourceTarget["type"], PermissionLevel>;
+    /** Unix time (ms) when user group last updated */
+    updated_at?: I64;
 }
-/** Additional metadata of the image in the local cache. This information is local to the daemon, and not part of the image itself. */
-export interface ImageInspectMetadata {
-    /** Date and time at which the image was last tagged in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.  This information is only available if the image was tagged locally, and omitted otherwise. */
-    LastTagTime?: string;
-}
-/** Information about an image in the local image cache. */
-export interface Image {
-    /** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
-    Id?: string;
-    /** List of image names/tags in the local image cache that reference this image.  Multiple image tags can refer to the same image, and this list may be empty if no tags reference the image, in which case the image is \"untagged\", in which case it can still be referenced by its ID. */
-    RepoTags?: string[];
-    /** List of content-addressable digests of locally available image manifests that the image is referenced from. Multiple manifests can refer to the same image.  These digests are usually only available if the image was either pulled from a registry, or if the image was pushed to a registry, which is when the manifest is generated and its digest calculated. */
-    RepoDigests?: string[];
-    /** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
-    Parent?: string;
-    /** Optional message that was set when committing or importing the image. */
-    Comment?: string;
-    /** Date and time at which the image was created, formatted in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.  This information is only available if present in the image, and omitted otherwise. */
-    Created?: string;
-    /** The version of Docker that was used to build the image.  Depending on how the image was created, this field may be empty. */
-    DockerVersion?: string;
-    /** Name of the author that was specified when committing the image, or as specified through MAINTAINER (deprecated) in the Dockerfile. */
-    Author?: string;
-    /** Configuration for a container that is portable between hosts. */
-    Config?: ContainerConfig;
-    /** Hardware CPU architecture that the image runs on. */
-    Architecture?: string;
-    /** CPU architecture variant (presently ARM-only). */
-    Variant?: string;
-    /** Operating System the image is built to run on. */
-    Os?: string;
-    /** Operating System version the image is built to run on (especially for Windows). */
-    OsVersion?: string;
-    /** Total size of the image including all layers it is composed of. */
-    Size?: I64;
-    GraphDriver?: GraphDriverData;
-    RootFS?: ImageInspectRootFs;
-    Metadata?: ImageInspectMetadata;
-}
-export type InspectDockerImageResponse = Image;
-/** individual image layer information in response to ImageHistory operation */
-export interface ImageHistoryResponseItem {
-    Id: string;
-    Created: I64;
-    CreatedBy: string;
-    Tags?: string[];
-    Size: I64;
-    Comment: string;
-}
-export type ListDockerImageHistoryResponse = ImageHistoryResponseItem[];
+export type GetUserGroupResponse = UserGroup;
+export type GetUserResponse = User;
+export type GetVariableResponse = Variable;
 export declare enum ContainerStateStatusEnum {
     Empty = "",
     Created = "created",
@@ -1587,42 +1990,6 @@ export declare enum ContainerStateStatusEnum {
     Exited = "exited",
     Dead = "dead"
 }
-export interface ContainerListItem {
-    /** The Server which holds the container. */
-    server_id?: string;
-    /** The first name in Names, not including the initial '/' */
-    name: string;
-    /** The ID of this container */
-    id?: string;
-    /** The name of the image used when creating this container */
-    image?: string;
-    /** The ID of the image that this container was created from */
-    image_id?: string;
-    /** When the container was created */
-    created?: I64;
-    /** The size of files that have been created or changed by this container */
-    size_rw?: I64;
-    /** The total size of all the files in this container */
-    size_root_fs?: I64;
-    /** The state of this container (e.g. `exited`) */
-    state: ContainerStateStatusEnum;
-    /** Additional human-readable status of this container (e.g. `Exit 0`) */
-    status?: string;
-    /** The network mode */
-    network_mode?: string;
-    /** The network names attached to container */
-    networks: string[];
-    /** The volume names attached to container */
-    volumes: string[];
-    /**
-     * The labels attached to container.
-     * It's too big to send with container list,
-     * can get it using InspectContainer
-     */
-    labels?: Record<string, string>;
-}
-export type ListDockerContainersResponse = ContainerListItem[];
-export type ListAllDockerContainersResponse = ContainerListItem[];
 export declare enum HealthStatusEnum {
     Empty = "",
     None = "none",
@@ -1955,6 +2322,13 @@ export interface HostConfig {
     /** The list of paths to be set as read-only inside the container (this overrides the default set of paths). */
     ReadonlyPaths?: string[];
 }
+/** Information about the storage driver used to store the container's and image's filesystem. */
+export interface GraphDriverData {
+    /** Name of the storage driver. */
+    Name?: string;
+    /** Low-level storage metadata, provided as key/value pairs.  This information is driver-specific, and depends on the storage-driver in use, and should be used for informational purposes only. */
+    Data?: Record<string, string>;
+}
 /** MountPoint represents a mount point configuration inside the container. This is used for reporting the mountpoints in use by a container. */
 export interface MountPoint {
     /** The mount type:  - `bind` a mount of a file or directory from the host into the container. - `volume` a docker volume with the given `Name`. - `tmpfs` a `tmpfs`. - `npipe` a named pipe from the host into the container. - `cluster` a Swarm cluster volume */
@@ -1973,6 +2347,73 @@ export interface MountPoint {
     RW?: boolean;
     /** Propagation describes how mounts are propagated from the host into the mount point, and vice-versa. Refer to the [Linux kernel documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) for details. This field is not used on Windows. */
     Propagation?: string;
+}
+/** A test to perform to check that the container is healthy. */
+export interface HealthConfig {
+    /** The test to perform. Possible values are:  - `[]` inherit healthcheck from image or parent image - `[\"NONE\"]` disable healthcheck - `[\"CMD\", args...]` exec arguments directly - `[\"CMD-SHELL\", command]` run command with system's default shell */
+    Test?: string[];
+    /** The time to wait between checks in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+    Interval?: I64;
+    /** The time to wait before considering the check to have hung. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+    Timeout?: I64;
+    /** The number of consecutive failures needed to consider a container as unhealthy. 0 means inherit. */
+    Retries?: I64;
+    /** Start period for the container to initialize before starting health-retries countdown in nanoseconds. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+    StartPeriod?: I64;
+    /** The time to wait between checks in nanoseconds during the start period. It should be 0 or at least 1000000 (1 ms). 0 means inherit. */
+    StartInterval?: I64;
+}
+/** Configuration for a container that is portable between hosts.  When used as `ContainerConfig` field in an image, `ContainerConfig` is an optional field containing the configuration of the container that was last committed when creating the image.  Previous versions of Docker builder used this field to store build cache, and it is not in active use anymore. */
+export interface ContainerConfig {
+    /** The hostname to use for the container, as a valid RFC 1123 hostname. */
+    Hostname?: string;
+    /** The domain name to use for the container. */
+    Domainname?: string;
+    /** The user that commands are run as inside the container. */
+    User?: string;
+    /** Whether to attach to `stdin`. */
+    AttachStdin?: boolean;
+    /** Whether to attach to `stdout`. */
+    AttachStdout?: boolean;
+    /** Whether to attach to `stderr`. */
+    AttachStderr?: boolean;
+    /** An object mapping ports to an empty object in the form:  `{\"<port>/<tcp|udp|sctp>\": {}}` */
+    ExposedPorts?: Record<string, Record<string, undefined>>;
+    /** Attach standard streams to a TTY, including `stdin` if it is not closed. */
+    Tty?: boolean;
+    /** Open `stdin` */
+    OpenStdin?: boolean;
+    /** Close `stdin` after one attached client disconnects */
+    StdinOnce?: boolean;
+    /** A list of environment variables to set inside the container in the form `[\"VAR=value\", ...]`. A variable without `=` is removed from the environment, rather than to have an empty value. */
+    Env?: string[];
+    /** Command to run specified as a string or an array of strings. */
+    Cmd?: string[];
+    Healthcheck?: HealthConfig;
+    /** Command is already escaped (Windows only) */
+    ArgsEscaped?: boolean;
+    /** The name (or reference) of the image to use when creating the container, or which was used when the container was created. */
+    Image?: string;
+    /** An object mapping mount point paths inside the container to empty objects. */
+    Volumes?: Record<string, Record<string, undefined>>;
+    /** The working directory for commands to run in. */
+    WorkingDir?: string;
+    /** The entry point for the container as a string or an array of strings.  If the array consists of exactly one empty string (`[\"\"]`) then the entry point is reset to system default (i.e., the entry point used by docker when there is no `ENTRYPOINT` instruction in the `Dockerfile`). */
+    Entrypoint?: string[];
+    /** Disable networking for the container. */
+    NetworkDisabled?: boolean;
+    /** MAC address of the container.  Deprecated: this field is deprecated in API v1.44 and up. Use EndpointSettings.MacAddress instead. */
+    MacAddress?: string;
+    /** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
+    OnBuild?: string[];
+    /** User-defined key/value metadata. */
+    Labels?: Record<string, string>;
+    /** Signal to stop a container as a string or unsigned integer. */
+    StopSignal?: string;
+    /** Timeout to stop a container in seconds. */
+    StopTimeout?: I64;
+    /** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
+    Shell?: string[];
 }
 /** EndpointIPAMConfig represents an endpoint's IPAM configuration. */
 export interface EndpointIpamConfig {
@@ -2056,26 +2497,96 @@ export interface Container {
     NetworkSettings?: NetworkSettings;
 }
 export type InspectDockerContainerResponse = Container;
-export type GetContainerLogResponse = Log;
-export type SearchContainerLogResponse = Log;
+/** Information about the image's RootFS, including the layer IDs. */
+export interface ImageInspectRootFs {
+    Type?: string;
+    Layers?: string[];
+}
+/** Additional metadata of the image in the local cache. This information is local to the daemon, and not part of the image itself. */
+export interface ImageInspectMetadata {
+    /** Date and time at which the image was last tagged in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.  This information is only available if the image was tagged locally, and omitted otherwise. */
+    LastTagTime?: string;
+}
+/** Information about an image in the local image cache. */
+export interface Image {
+    /** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
+    Id?: string;
+    /** List of image names/tags in the local image cache that reference this image.  Multiple image tags can refer to the same image, and this list may be empty if no tags reference the image, in which case the image is \"untagged\", in which case it can still be referenced by its ID. */
+    RepoTags?: string[];
+    /** List of content-addressable digests of locally available image manifests that the image is referenced from. Multiple manifests can refer to the same image.  These digests are usually only available if the image was either pulled from a registry, or if the image was pushed to a registry, which is when the manifest is generated and its digest calculated. */
+    RepoDigests?: string[];
+    /** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
+    Parent?: string;
+    /** Optional message that was set when committing or importing the image. */
+    Comment?: string;
+    /** Date and time at which the image was created, formatted in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.  This information is only available if present in the image, and omitted otherwise. */
+    Created?: string;
+    /** The version of Docker that was used to build the image.  Depending on how the image was created, this field may be empty. */
+    DockerVersion?: string;
+    /** Name of the author that was specified when committing the image, or as specified through MAINTAINER (deprecated) in the Dockerfile. */
+    Author?: string;
+    /** Configuration for a container that is portable between hosts. */
+    Config?: ContainerConfig;
+    /** Hardware CPU architecture that the image runs on. */
+    Architecture?: string;
+    /** CPU architecture variant (presently ARM-only). */
+    Variant?: string;
+    /** Operating System the image is built to run on. */
+    Os?: string;
+    /** Operating System version the image is built to run on (especially for Windows). */
+    OsVersion?: string;
+    /** Total size of the image including all layers it is composed of. */
+    Size?: I64;
+    GraphDriver?: GraphDriverData;
+    RootFS?: ImageInspectRootFs;
+    Metadata?: ImageInspectMetadata;
+}
+export type InspectDockerImageResponse = Image;
+export interface IpamConfig {
+    Subnet?: string;
+    IPRange?: string;
+    Gateway?: string;
+    AuxiliaryAddresses: Record<string, string>;
+}
+export interface Ipam {
+    /** Name of the IPAM driver to use. */
+    Driver?: string;
+    /** List of IPAM configuration options, specified as a map:  ``` {\"Subnet\": <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\": <device_name:IP address>} ``` */
+    Config: IpamConfig[];
+    /** Driver-specific options, specified as a map. */
+    Options: Record<string, string>;
+}
+export interface NetworkContainer {
+    /** This is the key on the incoming map of NetworkContainer */
+    ContainerID?: string;
+    Name?: string;
+    EndpointID?: string;
+    MacAddress?: string;
+    IPv4Address?: string;
+    IPv6Address?: string;
+}
+export interface Network {
+    Name?: string;
+    Id?: string;
+    Created?: string;
+    Scope?: string;
+    Driver?: string;
+    EnableIPv6?: boolean;
+    IPAM?: Ipam;
+    Internal?: boolean;
+    Attachable?: boolean;
+    Ingress?: boolean;
+    /** This field is turned from map into array for easier usability. */
+    Containers: NetworkContainer[];
+    Options?: Record<string, string>;
+    Labels?: Record<string, string>;
+}
+export type InspectDockerNetworkResponse = Network;
 export declare enum VolumeScopeEnum {
     Empty = "",
     Local = "local",
     Global = "global"
 }
-export interface VolumeListItem {
-    /** The name of the volume */
-    name: string;
-    driver: string;
-    mountpoint: string;
-    created?: string;
-    scope: VolumeScopeEnum;
-    /** Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the `\"local\"` volume driver. For volumes created with other volume drivers, this field is set to `-1` (\"not available\") */
-    size?: I64;
-    /** Whether the volume is currently attached to any container */
-    in_use: boolean;
-}
-export type ListDockerVolumesResponse = VolumeListItem[];
 export type U64 = number;
 /** The version number of the object such as node, service, etc. This is needed to avoid conflicting writes. The client must send the version number along with the modified specification when updating these objects.  This approach ensures safe concurrency and determinism in that the change on the object may not be applied if the version number has changed from the last read. In other words, if two update requests specify the same base version, only one of the requests can succeed. As a result, two separate update requests that happen at the same time will not unintentionally overwrite each other. */
 export interface ObjectVersion {
@@ -2206,6 +2717,72 @@ export interface Volume {
     UsageData?: VolumeUsageData;
 }
 export type InspectDockerVolumeResponse = Volume;
+export type JsonValue = any;
+export type ListActionsResponse = ActionListItem[];
+export type ListAlertersResponse = AlerterListItem[];
+export interface ContainerListItem {
+    /** The Server which holds the container. */
+    server_id?: string;
+    /** The first name in Names, not including the initial '/' */
+    name: string;
+    /** The ID of this container */
+    id?: string;
+    /** The name of the image used when creating this container */
+    image?: string;
+    /** The ID of the image that this container was created from */
+    image_id?: string;
+    /** When the container was created */
+    created?: I64;
+    /** The size of files that have been created or changed by this container */
+    size_rw?: I64;
+    /** The total size of all the files in this container */
+    size_root_fs?: I64;
+    /** The state of this container (e.g. `exited`) */
+    state: ContainerStateStatusEnum;
+    /** Additional human-readable status of this container (e.g. `Exit 0`) */
+    status?: string;
+    /** The network mode */
+    network_mode?: string;
+    /** The network names attached to container */
+    networks: string[];
+    /** The volume names attached to container */
+    volumes: string[];
+    /**
+     * The labels attached to container.
+     * It's too big to send with container list,
+     * can get it using InspectContainer
+     */
+    labels?: Record<string, string>;
+}
+export type ListAllDockerContainersResponse = ContainerListItem[];
+/** An api key used to authenticate requests via request headers. */
+export interface ApiKey {
+    /** Unique key associated with secret */
+    key: string;
+    /** Hash of the secret */
+    secret: string;
+    /** User associated with the api key */
+    user_id: string;
+    /** Name associated with the api key for management */
+    name: string;
+    /** Timestamp of key creation */
+    created_at: I64;
+    /** Expiry of key, or 0 if never expires */
+    expires: I64;
+}
+export type ListApiKeysForServiceUserResponse = ApiKey[];
+export type ListApiKeysResponse = ApiKey[];
+export interface BuildVersionResponseItem {
+    version: Version;
+    ts: I64;
+}
+export type ListBuildVersionsResponse = BuildVersionResponseItem[];
+export type ListBuildersResponse = BuilderListItem[];
+export type ListBuildsResponse = BuildListItem[];
+export type ListCommonBuildExtraArgsResponse = string[];
+export type ListCommonDeploymentExtraArgsResponse = string[];
+export type ListCommonStackBuildExtraArgsResponse = string[];
+export type ListCommonStackExtraArgsResponse = string[];
 export interface ComposeProject {
     /** The compose project name. */
     name: string;
@@ -2215,120 +2792,225 @@ export interface ComposeProject {
     compose_files: string[];
 }
 export type ListComposeProjectsResponse = ComposeProject[];
-/** System information of a server */
-export interface SystemInformation {
-    /** The system name */
-    name?: string;
-    /** The system long os version */
-    os?: string;
-    /** System's kernel version */
-    kernel?: string;
-    /** Physical core count */
-    core_count?: number;
-    /** System hostname based off DNS */
-    host_name?: string;
-    /** The CPU's brand */
-    cpu_brand: string;
+export type ListDeploymentsResponse = DeploymentListItem[];
+export type ListDockerContainersResponse = ContainerListItem[];
+/** individual image layer information in response to ImageHistory operation */
+export interface ImageHistoryResponseItem {
+    Id: string;
+    Created: I64;
+    CreatedBy: string;
+    Tags?: string[];
+    Size: I64;
+    Comment: string;
 }
-export type GetSystemInformationResponse = SystemInformation;
-/** Info for a single disk mounted on the system. */
-export interface SingleDiskUsage {
-    /** The mount point of the disk */
-    mount: string;
-    /** Detected file system */
-    file_system: string;
-    /** Used portion of the disk in GB */
-    used_gb: number;
-    /** Total size of the disk in GB */
-    total_gb: number;
-}
-export declare enum Timelength {
-    OneSecond = "1-sec",
-    FiveSeconds = "5-sec",
-    TenSeconds = "10-sec",
-    FifteenSeconds = "15-sec",
-    ThirtySeconds = "30-sec",
-    OneMinute = "1-min",
-    TwoMinutes = "2-min",
-    FiveMinutes = "5-min",
-    TenMinutes = "10-min",
-    FifteenMinutes = "15-min",
-    ThirtyMinutes = "30-min",
-    OneHour = "1-hr",
-    TwoHours = "2-hr",
-    SixHours = "6-hr",
-    EightHours = "8-hr",
-    TwelveHours = "12-hr",
-    OneDay = "1-day",
-    ThreeDay = "3-day",
-    OneWeek = "1-wk",
-    TwoWeeks = "2-wk",
-    ThirtyDays = "30-day"
-}
-/** Realtime system stats data. */
-export interface SystemStats {
-    /** Cpu usage percentage */
-    cpu_perc: number;
-    /**
-     * [1.15.9+]
-     * Free memory in GB.
-     * This is really the 'Free' memory, not the 'Available' memory.
-     * It may be different than mem_total_gb - mem_used_gb.
-     */
-    mem_free_gb?: number;
-    /** Used memory in GB. 'Total' - 'Available' (not free) memory. */
-    mem_used_gb: number;
-    /** Total memory in GB */
-    mem_total_gb: number;
-    /** Breakdown of individual disks, ie their usages, sizes, and mount points */
-    disks: SingleDiskUsage[];
-    /** The rate the system stats are being polled from the system */
-    polling_rate: Timelength;
-    /** Unix timestamp in milliseconds when stats were last polled */
-    refresh_ts: I64;
-    /** Unix timestamp in milliseconds when disk list was last refreshed */
-    refresh_list_ts: I64;
-}
-export type GetSystemStatsResponse = SystemStats;
-/** Information about a process on the system. */
-export interface SystemProcess {
-    /** The process PID */
-    pid: number;
-    /** The process name */
+export type ListDockerImageHistoryResponse = ImageHistoryResponseItem[];
+export interface ImageListItem {
+    /** The first tag in `repo_tags`, or Id if no tags. */
     name: string;
-    /** The path to the process executable */
-    exe?: string;
-    /** The command used to start the process */
-    cmd: string[];
-    /** The time the process was started */
-    start_time?: number;
+    /** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
+    id: string;
+    /** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
+    parent_id: string;
+    /** Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH). */
+    created: I64;
+    /** Total size of the image including all layers it is composed of. */
+    size: I64;
+    /** Whether the image is in use by any container */
+    in_use: boolean;
+}
+export type ListDockerImagesResponse = ImageListItem[];
+export interface NetworkListItem {
+    name?: string;
+    id?: string;
+    created?: string;
+    scope?: string;
+    driver?: string;
+    enable_ipv6?: boolean;
+    ipam_driver?: string;
+    ipam_subnet?: string;
+    ipam_gateway?: string;
+    internal?: boolean;
+    attachable?: boolean;
+    ingress?: boolean;
+    /** Whether the network is attached to one or more containers */
+    in_use: boolean;
+}
+export type ListDockerNetworksResponse = NetworkListItem[];
+export interface ProviderAccount {
+    /** The account username. Required. */
+    username: string;
+    /** The account access token. Required. */
+    token?: string;
+}
+export interface DockerRegistry {
+    /** The docker provider domain. Default: `docker.io`. */
+    domain: string;
+    /** The account username. Required. */
+    accounts?: ProviderAccount[];
     /**
-     * The cpu usage percentage of the process.
-     * This is in core-percentage, eg 100% is 1 full core, and
-     * an 8 core machine would max at 800%.
+     * Available organizations on the registry provider.
+     * Used to push an image under an organization's repo rather than an account's repo.
      */
-    cpu_perc: number;
-    /** The memory usage of the process in MB */
-    mem_mb: number;
-    /** Process disk read in KB/s */
-    disk_read_kb: number;
-    /** Process disk write in KB/s */
-    disk_write_kb: number;
+    organizations?: string[];
 }
-export type ListSystemProcessesResponse = SystemProcess[];
-export type ServerTemplateConfig = 
-/** Template to launch an AWS EC2 instance */
+export type ListDockerRegistriesFromConfigResponse = DockerRegistry[];
+export type ListDockerRegistryAccountsResponse = DockerRegistryAccount[];
+export interface VolumeListItem {
+    /** The name of the volume */
+    name: string;
+    driver: string;
+    mountpoint: string;
+    created?: string;
+    scope: VolumeScopeEnum;
+    /** Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the `\"local\"` volume driver. For volumes created with other volume drivers, this field is set to `-1` (\"not available\") */
+    size?: I64;
+    /** Whether the volume is currently attached to any container */
+    in_use: boolean;
+}
+export type ListDockerVolumesResponse = VolumeListItem[];
+export type ListFullActionsResponse = Action[];
+export type ListFullAlertersResponse = Alerter[];
+export type ListFullBuildersResponse = Builder[];
+export type ListFullBuildsResponse = Build[];
+export type ListFullDeploymentsResponse = Deployment[];
+export type ListFullProceduresResponse = Procedure[];
+export type ListFullReposResponse = Repo[];
+export type ListFullResourceSyncsResponse = ResourceSync[];
+export type ListFullServerTemplatesResponse = ServerTemplate[];
+export type ListFullServersResponse = Server[];
+export type ListFullStacksResponse = Stack[];
+export type ListGitProviderAccountsResponse = GitProviderAccount[];
+export interface GitProvider {
+    /** The git provider domain. Default: `github.com`. */
+    domain: string;
+    /** Whether to use https. Default: true. */
+    https: boolean;
+    /** The account username. Required. */
+    accounts: ProviderAccount[];
+}
+export type ListGitProvidersFromConfigResponse = GitProvider[];
+export type UserTarget = 
+/** User Id */
 {
-    type: "Aws";
-    params: AwsServerTemplateConfig;
+    type: "User";
+    id: string;
 }
-/** Template to launch a Hetzner server */
+/** UserGroup Id */
  | {
-    type: "Hetzner";
-    params: HetznerServerTemplateConfig;
+    type: "UserGroup";
+    id: string;
 };
-export type ServerTemplate = Resource<ServerTemplateConfig, undefined>;
-export type GetServerTemplateResponse = ServerTemplate;
+/** Representation of a User or UserGroups permission on a resource. */
+export interface Permission {
+    /** The id of the permission document */
+    _id?: MongoId;
+    /** The target User / UserGroup */
+    user_target: UserTarget;
+    /** The target resource */
+    resource_target: ResourceTarget;
+    /** The permission level */
+    level?: PermissionLevel;
+}
+export type ListPermissionsResponse = Permission[];
+export declare enum ProcedureState {
+    /** Last run successful */
+    Ok = "Ok",
+    /** Last run failed */
+    Failed = "Failed",
+    /** Currently running */
+    Running = "Running",
+    /** Other case (never run) */
+    Unknown = "Unknown"
+}
+export interface ProcedureListItemInfo {
+    /** Number of stages procedure has. */
+    stages: I64;
+    /** Reflect whether last run successful / currently running. */
+    state: ProcedureState;
+}
+export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
+export type ListProceduresResponse = ProcedureListItem[];
+export declare enum RepoState {
+    /** Unknown case */
+    Unknown = "Unknown",
+    /** Last clone / pull successful (or never cloned) */
+    Ok = "Ok",
+    /** Last clone / pull failed */
+    Failed = "Failed",
+    /** Currently cloning */
+    Cloning = "Cloning",
+    /** Currently pulling */
+    Pulling = "Pulling",
+    /** Currently building */
+    Building = "Building"
+}
+export interface RepoListItemInfo {
+    /** The server that repo sits on. */
+    server_id: string;
+    /** The builder that builds the repo. */
+    builder_id: string;
+    /** Repo last cloned / pulled timestamp in ms. */
+    last_pulled_at: I64;
+    /** Repo last built timestamp in ms. */
+    last_built_at: I64;
+    /** The git provider domain */
+    git_provider: string;
+    /** The configured repo */
+    repo: string;
+    /** The configured branch */
+    branch: string;
+    /** The repo state */
+    state: RepoState;
+    /** If the repo is cloned, will be the cloned short commit hash. */
+    cloned_hash?: string;
+    /** If the repo is cloned, will be the cloned commit message. */
+    cloned_message?: string;
+    /** If the repo is built, will be the latest built short commit hash. */
+    built_hash?: string;
+    /** Will be the latest remote short commit hash. */
+    latest_hash?: string;
+}
+export type RepoListItem = ResourceListItem<RepoListItemInfo>;
+export type ListReposResponse = RepoListItem[];
+export declare enum ResourceSyncState {
+    /** Last sync successful (or never synced). No Changes pending */
+    Ok = "Ok",
+    /** Last sync failed */
+    Failed = "Failed",
+    /** Currently syncing */
+    Syncing = "Syncing",
+    /** Updates pending */
+    Pending = "Pending",
+    /** Other case */
+    Unknown = "Unknown"
+}
+export interface ResourceSyncListItemInfo {
+    /** Unix timestamp of last sync, or 0 */
+    last_sync_ts: I64;
+    /** Whether sync is `files_on_host` mode. */
+    files_on_host: boolean;
+    /** Whether sync has file contents defined. */
+    file_contents: boolean;
+    /** Whether sync has `managed` mode enabled. */
+    managed: boolean;
+    /** Resource paths to the files. */
+    resource_path: string[];
+    /** The git provider domain. */
+    git_provider: string;
+    /** The Github repo used as the source of the sync resources */
+    repo: string;
+    /** The branch of the repo */
+    branch: string;
+    /** Short commit hash of last sync, or empty string */
+    last_sync_hash?: string;
+    /** Commit message of last sync, or empty string */
+    last_sync_message?: string;
+    /** State of the sync. Reflects whether most recent sync successful. */
+    state: ResourceSyncState;
+}
+export type ResourceSyncListItem = ResourceListItem<ResourceSyncListItemInfo>;
+export type ListResourceSyncsResponse = ResourceSyncListItem[];
+export type ListSecretsResponse = string[];
 export interface ServerTemplateListItemInfo {
     /** The cloud provider */
     provider: string;
@@ -2337,213 +3019,30 @@ export interface ServerTemplateListItemInfo {
 }
 export type ServerTemplateListItem = ResourceListItem<ServerTemplateListItemInfo>;
 export type ListServerTemplatesResponse = ServerTemplateListItem[];
-export type ListFullServerTemplatesResponse = ServerTemplate[];
-/** The compose file configuration. */
-export interface StackConfig {
-    /** The server to deploy the stack on. */
-    server_id?: string;
-    /** Configure quick links that are displayed in the resource header */
-    links?: string[];
-    /**
-     * Optionally specify a custom project name for the stack.
-     * If this is empty string, it will default to the stack name.
-     * Used with `docker compose -p {project_name}`.
-     *
-     * Note. Can be used to import pre-existing stacks.
-     */
-    project_name?: string;
-    /**
-     * Whether to automatically `compose pull` before redeploying stack.
-     * Ensured latest images are deployed.
-     * Will fail if the compose file specifies a locally build image.
-     */
-    auto_pull: boolean;
-    /**
-     * Whether to `docker compose build` before `compose down` / `compose up`.
-     * Combine with build_extra_args for custom behaviors.
-     */
-    run_build?: boolean;
-    /** Whether to run `docker compose down` before `compose up`. */
-    destroy_before_deploy?: boolean;
-    /** Whether to skip secret interpolation into the stack environment variables. */
-    skip_secret_interp?: boolean;
-    /**
-     * If this is checked, the stack will source the files on the host.
-     * Use `run_directory` and `file_paths` to specify the path on the host.
-     * This is useful for those who wish to setup their files on the host using SSH or similar,
-     * rather than defining the contents in UI or in a git repo.
-     */
-    files_on_host?: boolean;
-    /** Directory to change to (`cd`) before running `docker compose up -d`. */
-    run_directory?: string;
-    /**
-     * Add paths to compose files, relative to the run path.
-     * If this is empty, will use file `compose.yaml`.
-     */
-    file_paths?: string[];
-    /**
-     * The name of the written environment file before `docker compose up`.
-     * Relative to the run directory root.
-     * Default: .env
-     */
-    env_file_path: string;
-    /**
-     * Add additional env files to attach with `--env-file`.
-     * Relative to the run directory root.
-     */
-    additional_env_files?: string[];
-    /** The git provider domain. Default: github.com */
-    git_provider: string;
-    /**
-     * Whether to use https to clone the repo (versus http). Default: true
-     *
-     * Note. Komodo does not currently support cloning repos via ssh.
-     */
-    git_https: boolean;
-    /**
-     * The git account used to access private repos.
-     * Passing empty string can only clone public repos.
-     *
-     * Note. A token for the account must be available in the core config or the builder server's periphery config
-     * for the configured git provider.
-     */
-    git_account?: string;
-    /** The Github repo used as the source of the build. */
-    repo?: string;
-    /** The branch of the repo. */
-    branch: string;
-    /** Optionally set a specific commit hash. */
-    commit?: string;
-    /**
-     * By default, the Stack will `git pull` the repo after it is first cloned.
-     * If this option is enabled, the repo folder will be deleted and recloned instead.
-     */
-    reclone?: boolean;
-    /** Whether incoming webhooks actually trigger action. */
-    webhook_enabled: boolean;
-    /**
-     * Optionally provide an alternate webhook secret for this stack.
-     * If its an empty string, use the default secret from the config.
-     */
-    webhook_secret?: string;
-    /**
-     * By default, the Stack will `DeployStackIfChanged`.
-     * If this option is enabled, will always run `DeployStack` without diffing.
-     */
-    webhook_force_deploy?: boolean;
-    /** Whether to send StackStateChange alerts for this stack. */
-    send_alerts: boolean;
-    /** Used with `registry_account` to login to a registry before docker compose up. */
-    registry_provider?: string;
-    /** Used with `registry_provider` to login to a registry before docker compose up. */
-    registry_account?: string;
-    /** The optional command to run before the Stack is deployed. */
-    pre_deploy?: SystemCommand;
-    /**
-     * The extra arguments to pass after `docker compose up -d`.
-     * If empty, no extra arguments will be passed.
-     */
-    extra_args?: string[];
-    /**
-     * The extra arguments to pass after `docker compose build`.
-     * If empty, no extra build arguments will be passed.
-     * Only used if `run_build: true`
-     */
-    build_extra_args?: string[];
-    /**
-     * Ignore certain services declared in the compose file when checking
-     * the stack status. For example, an init service might be exited, but the
-     * stack should be healthy. This init service should be in `ignore_services`
-     */
-    ignore_services?: string[];
-    /**
-     * The contents of the file directly, for management in the UI.
-     * If this is empty, it will fall back to checking git config for
-     * repo based compose file.
-     */
-    file_contents?: string;
-    /**
-     * The environment variables passed to the compose file.
-     * They will be written to path defined in env_file_path,
-     * which is given relative to the run directory.
-     *
-     * If it is empty, no file will be written.
-     */
-    environment?: string;
+export declare enum ServerState {
+    /** Server is unreachable. */
+    NotOk = "NotOk",
+    /** Server health check passing. */
+    Ok = "Ok",
+    /** Server is disabled. */
+    Disabled = "Disabled"
 }
-export interface FileContents {
-    /** The path of the file on the host */
-    path: string;
-    /** The contents of the file */
-    contents: string;
+export interface ServerListItemInfo {
+    /** The server's state. */
+    state: ServerState;
+    /** Region of the server. */
+    region: string;
+    /** Whether server is configured to send unreachable alerts. */
+    send_unreachable_alerts: boolean;
+    /** Whether server is configured to send cpu alerts. */
+    send_cpu_alerts: boolean;
+    /** Whether server is configured to send mem alerts. */
+    send_mem_alerts: boolean;
+    /** Whether server is configured to send disk alerts. */
+    send_disk_alerts: boolean;
 }
-export interface StackServiceNames {
-    /** The name of the service */
-    service_name: string;
-    /**
-     * Will either be the declared container_name in the compose file,
-     * or a pattern to match auto named containers.
-     *
-     * Auto named containers are composed of three parts:
-     *
-     * 1. The name of the compose project (top level name field of compose file).
-     * This defaults to the name of the parent folder of the compose file.
-     * Komodo will always set it to be the name of the stack, but imported stacks
-     * will have a different name.
-     * 2. The service name
-     * 3. The replica number
-     *
-     * Example: stacko-mongo-1.
-     *
-     * This stores only 1. and 2., ie stacko-mongo.
-     * Containers will be matched via regex like `^container_name-?[0-9]*$``
-     */
-    container_name: string;
-}
-export interface StackInfo {
-    /**
-     * If any of the expected files are missing in the repo,
-     * they will be stored here.
-     */
-    missing_files?: string[];
-    /**
-     * The deployed project name.
-     * This is updated whenever Komodo successfully deploys the stack.
-     * If it is present, Komodo will use it for actions over other options,
-     * to ensure control is maintained after changing the project name (there is no rename compose project api).
-     */
-    deployed_project_name?: string;
-    /** Deployed short commit hash, or null. Only for repo based stacks. */
-    deployed_hash?: string;
-    /** Deployed commit message, or null. Only for repo based stacks */
-    deployed_message?: string;
-    /** The deployed compose file contents. This is updated whenever Komodo successfully deploys the stack. */
-    deployed_contents?: FileContents[];
-    /**
-     * The deployed service names.
-     * This is updated whenever it is empty, or deployed contents is updated.
-     */
-    deployed_services?: StackServiceNames[];
-    /**
-     * The latest service names.
-     * This is updated whenever the stack cache refreshes, using the latest file contents (either db defined or remote).
-     */
-    latest_services?: StackServiceNames[];
-    /**
-     * The remote compose file contents, whether on host or in repo.
-     * This is updated whenever Komodo refreshes the stack cache.
-     * It will be empty if the file is defined directly in the stack config.
-     */
-    remote_contents?: FileContents[];
-    /** If there was an error in getting the remote contents, it will be here. */
-    remote_errors?: FileContents[];
-    /** Latest commit hash, or null */
-    latest_hash?: string;
-    /** Latest commit message, or null */
-    latest_message?: string;
-}
-export type Stack = Resource<StackConfig, StackInfo>;
-export type GetStackResponse = Stack;
+export type ServerListItem = ResourceListItem<ServerListItemInfo>;
+export type ListServersResponse = ServerListItem[];
 export interface StackService {
     /** The service name */
     service: string;
@@ -2551,10 +3050,6 @@ export interface StackService {
     container?: ContainerListItem;
 }
 export type ListStackServicesResponse = StackService[];
-export type GetStackServiceLogResponse = Log;
-export type SearchStackServiceLogResponse = Log;
-export type ListCommonStackExtraArgsResponse = string[];
-export type ListCommonStackBuildExtraArgsResponse = string[];
 export declare enum StackState {
     /** All containers are running. */
     Running = "running",
@@ -2618,3426 +3113,114 @@ export interface StackListItemInfo {
 }
 export type StackListItem = ResourceListItem<StackListItemInfo>;
 export type ListStacksResponse = StackListItem[];
-export type ListFullStacksResponse = Stack[];
-export interface StackActionState {
-    deploying: boolean;
-    starting: boolean;
-    restarting: boolean;
-    pausing: boolean;
-    unpausing: boolean;
-    stopping: boolean;
-    destroying: boolean;
-}
-export type GetStackActionStateResponse = StackActionState;
-/** The sync configuration. */
-export interface ResourceSyncConfig {
-    /** The git provider domain. Default: github.com */
-    git_provider: string;
-    /**
-     * Whether to use https to clone the repo (versus http). Default: true
-     *
-     * Note. Komodo does not currently support cloning repos via ssh.
-     */
-    git_https: boolean;
-    /** The Github repo used as the source of the build. */
-    repo?: string;
-    /** The branch of the repo. */
-    branch: string;
-    /** Optionally set a specific commit hash. */
-    commit?: string;
-    /**
-     * The git account used to access private repos.
-     * Passing empty string can only clone public repos.
-     *
-     * Note. A token for the account must be available in the core config or the builder server's periphery config
-     * for the configured git provider.
-     */
-    git_account?: string;
-    /** Whether incoming webhooks actually trigger action. */
-    webhook_enabled: boolean;
-    /**
-     * Optionally provide an alternate webhook secret for this sync.
-     * If its an empty string, use the default secret from the config.
-     */
-    webhook_secret?: string;
-    /**
-     * Files are available on the Komodo Core host.
-     * Specify the file / folder with [ResourceSyncConfig::resource_path].
-     */
-    files_on_host?: boolean;
-    /**
-     * The path of the resource file(s) to sync.
-     * - If Files on Host, this is relative to the configured `sync_directory` in core config.
-     * - If Git Repo based, this is relative to the root of the repo.
-     * Can be a specific file, or a directory containing multiple files / folders.
-     * See [https://komo.do/docs/sync-resources](https://komo.do/docs/sync-resources) for more information.
-     */
-    resource_path?: string[];
-    /**
-     * Enable "pushes" to the file,
-     * which exports resources matching tags to single file.
-     * - If using `files_on_host`, it is stored in the file_contents, which must point to a .toml file path (it will be created if it doesn't exist).
-     * - If using `file_contents`, it is stored in the database.
-     * When using this, "delete" mode is always enabled.
-     */
-    managed?: boolean;
-    /**
-     * Whether sync should delete resources
-     * not declared in the resource files
-     */
-    delete?: boolean;
-    /**
-     * When using `managed` resource sync, will only export resources
-     * matching all of the given tags. If none, will match all resources.
-     */
-    match_tags?: string[];
-    /** Manage the file contents in the UI. */
-    file_contents?: string;
-}
-export type DiffData = 
-/** Resource will be created */
-{
-    type: "Create";
-    data: {
-        /** The name of resource to create */
-        name?: string;
-        /** The proposed resource to create in TOML */
-        proposed: string;
-    };
-} | {
-    type: "Update";
-    data: {
-        /** The proposed TOML */
-        proposed: string;
-        /** The current TOML */
-        current: string;
-    };
-} | {
-    type: "Delete";
-    data: {
-        /** The current TOML of the resource to delete */
-        current: string;
-    };
-};
-export interface ResourceDiff {
-    /**
-     * The resource target.
-     * The target id will be empty if "Create" ResourceDiffType.
-     */
-    target: ResourceTarget;
-    /** The data associated with the diff. */
-    data: DiffData;
-}
-export interface SyncDeployUpdate {
-    /** Resources to deploy */
-    to_deploy: number;
-    /** A readable log of all the changes to be applied */
-    log: string;
-}
-export interface SyncFileContents {
-    /** The base resource path. */
-    resource_path?: string;
-    /** The path of the file / error path relative to the resource path. */
-    path: string;
-    /** The contents of the file */
-    contents: string;
-}
-export interface ResourceSyncInfo {
-    /** Unix timestamp of last applied sync */
-    last_sync_ts?: I64;
-    /** Short commit hash of last applied sync */
-    last_sync_hash?: string;
-    /** Commit message of last applied sync */
-    last_sync_message?: string;
-    /** The list of pending updates to resources */
-    resource_updates?: ResourceDiff[];
-    /** The list of pending updates to variables */
-    variable_updates?: DiffData[];
-    /** The list of pending updates to user groups */
-    user_group_updates?: DiffData[];
-    /** The list of pending deploys to resources. */
-    pending_deploy?: SyncDeployUpdate;
-    /** If there is an error, it will be stored here */
-    pending_error?: string;
-    /** The commit hash which produced these pending updates. */
-    pending_hash?: string;
-    /** The commit message which produced these pending updates. */
-    pending_message?: string;
-    /** The current sync files */
-    remote_contents?: SyncFileContents[];
-    /** Any read errors in files by path */
-    remote_errors?: SyncFileContents[];
-}
-export type ResourceSync = Resource<ResourceSyncConfig, ResourceSyncInfo>;
-export type GetResourceSyncResponse = ResourceSync;
-export declare enum ResourceSyncState {
-    /** Last sync successful (or never synced). No Changes pending */
-    Ok = "Ok",
-    /** Last sync failed */
-    Failed = "Failed",
-    /** Currently syncing */
-    Syncing = "Syncing",
-    /** Updates pending */
-    Pending = "Pending",
-    /** Other case */
-    Unknown = "Unknown"
-}
-export interface ResourceSyncListItemInfo {
-    /** Unix timestamp of last sync, or 0 */
-    last_sync_ts: I64;
-    /** Whether sync is `files_on_host` mode. */
-    files_on_host: boolean;
-    /** Whether sync has file contents defined. */
-    file_contents: boolean;
-    /** Whether sync has `managed` mode enabled. */
-    managed: boolean;
-    /** Resource paths to the files. */
-    resource_path: string[];
-    /** The git provider domain. */
-    git_provider: string;
-    /** The Github repo used as the source of the sync resources */
-    repo: string;
-    /** The branch of the repo */
-    branch: string;
-    /** Short commit hash of last sync, or empty string */
-    last_sync_hash?: string;
-    /** Commit message of last sync, or empty string */
-    last_sync_message?: string;
-    /** State of the sync. Reflects whether most recent sync successful. */
-    state: ResourceSyncState;
-}
-export type ResourceSyncListItem = ResourceListItem<ResourceSyncListItemInfo>;
-export type ListResourceSyncsResponse = ResourceSyncListItem[];
-export type ListFullResourceSyncsResponse = ResourceSync[];
-export interface ResourceSyncActionState {
-    /** Whether sync currently syncing */
-    syncing: boolean;
-}
-export type GetResourceSyncActionStateResponse = ResourceSyncActionState;
-export interface Tag {
-    /**
-     * The Mongo ID of the tag.
-     * This field is de/serialized from/to JSON as
-     * `{ "_id": { "$oid": "..." }, ...(rest of serialized Tag) }`
-     */
-    _id?: MongoId;
+/** Information about a process on the system. */
+export interface SystemProcess {
+    /** The process PID */
+    pid: number;
+    /** The process name */
     name: string;
-    owner?: string;
+    /** The path to the process executable */
+    exe?: string;
+    /** The command used to start the process */
+    cmd: string[];
+    /** The time the process was started */
+    start_time?: number;
+    /**
+     * The cpu usage percentage of the process.
+     * This is in core-percentage, eg 100% is 1 full core, and
+     * an 8 core machine would max at 800%.
+     */
+    cpu_perc: number;
+    /** The memory usage of the process in MB */
+    mem_mb: number;
+    /** Process disk read in KB/s */
+    disk_read_kb: number;
+    /** Process disk write in KB/s */
+    disk_write_kb: number;
 }
-export type GetTagResponse = Tag;
+export type ListSystemProcessesResponse = SystemProcess[];
 export type ListTagsResponse = Tag[];
-/** Response containing pretty formatted toml contents. */
-export interface TomlResponse {
-    toml: string;
-}
-export type ExportAllResourcesToTomlResponse = TomlResponse;
-export type ExportResourcesToTomlResponse = TomlResponse;
-export declare enum Operation {
-    None = "None",
-    CreateServer = "CreateServer",
-    UpdateServer = "UpdateServer",
-    DeleteServer = "DeleteServer",
-    RenameServer = "RenameServer",
-    StartContainer = "StartContainer",
-    RestartContainer = "RestartContainer",
-    PauseContainer = "PauseContainer",
-    UnpauseContainer = "UnpauseContainer",
-    StopContainer = "StopContainer",
-    DestroyContainer = "DestroyContainer",
-    StartAllContainers = "StartAllContainers",
-    RestartAllContainers = "RestartAllContainers",
-    PauseAllContainers = "PauseAllContainers",
-    UnpauseAllContainers = "UnpauseAllContainers",
-    StopAllContainers = "StopAllContainers",
-    PruneContainers = "PruneContainers",
-    CreateNetwork = "CreateNetwork",
-    DeleteNetwork = "DeleteNetwork",
-    PruneNetworks = "PruneNetworks",
-    DeleteImage = "DeleteImage",
-    PruneImages = "PruneImages",
-    DeleteVolume = "DeleteVolume",
-    PruneVolumes = "PruneVolumes",
-    PruneDockerBuilders = "PruneDockerBuilders",
-    PruneBuildx = "PruneBuildx",
-    PruneSystem = "PruneSystem",
-    CreateStack = "CreateStack",
-    UpdateStack = "UpdateStack",
-    RenameStack = "RenameStack",
-    DeleteStack = "DeleteStack",
-    WriteStackContents = "WriteStackContents",
-    RefreshStackCache = "RefreshStackCache",
-    DeployStack = "DeployStack",
-    StartStack = "StartStack",
-    RestartStack = "RestartStack",
-    PauseStack = "PauseStack",
-    UnpauseStack = "UnpauseStack",
-    StopStack = "StopStack",
-    DestroyStack = "DestroyStack",
-    StartStackService = "StartStackService",
-    RestartStackService = "RestartStackService",
-    PauseStackService = "PauseStackService",
-    UnpauseStackService = "UnpauseStackService",
-    StopStackService = "StopStackService",
-    CreateDeployment = "CreateDeployment",
-    UpdateDeployment = "UpdateDeployment",
-    DeleteDeployment = "DeleteDeployment",
-    Deploy = "Deploy",
-    StartDeployment = "StartDeployment",
-    RestartDeployment = "RestartDeployment",
-    PauseDeployment = "PauseDeployment",
-    UnpauseDeployment = "UnpauseDeployment",
-    StopDeployment = "StopDeployment",
-    DestroyDeployment = "DestroyDeployment",
-    RenameDeployment = "RenameDeployment",
-    CreateBuild = "CreateBuild",
-    UpdateBuild = "UpdateBuild",
-    DeleteBuild = "DeleteBuild",
-    RunBuild = "RunBuild",
-    CancelBuild = "CancelBuild",
-    CreateRepo = "CreateRepo",
-    UpdateRepo = "UpdateRepo",
-    DeleteRepo = "DeleteRepo",
-    CloneRepo = "CloneRepo",
-    PullRepo = "PullRepo",
-    BuildRepo = "BuildRepo",
-    CancelRepoBuild = "CancelRepoBuild",
-    CreateProcedure = "CreateProcedure",
-    UpdateProcedure = "UpdateProcedure",
-    DeleteProcedure = "DeleteProcedure",
-    RunProcedure = "RunProcedure",
-    CreateAction = "CreateAction",
-    UpdateAction = "UpdateAction",
-    DeleteAction = "DeleteAction",
-    RunAction = "RunAction",
-    CreateBuilder = "CreateBuilder",
-    UpdateBuilder = "UpdateBuilder",
-    DeleteBuilder = "DeleteBuilder",
-    CreateAlerter = "CreateAlerter",
-    UpdateAlerter = "UpdateAlerter",
-    DeleteAlerter = "DeleteAlerter",
-    CreateServerTemplate = "CreateServerTemplate",
-    UpdateServerTemplate = "UpdateServerTemplate",
-    DeleteServerTemplate = "DeleteServerTemplate",
-    LaunchServer = "LaunchServer",
-    CreateResourceSync = "CreateResourceSync",
-    UpdateResourceSync = "UpdateResourceSync",
-    DeleteResourceSync = "DeleteResourceSync",
-    WriteSyncContents = "WriteSyncContents",
-    CommitSync = "CommitSync",
-    RunSync = "RunSync",
-    CreateVariable = "CreateVariable",
-    UpdateVariableValue = "UpdateVariableValue",
-    DeleteVariable = "DeleteVariable",
-    CreateGitProviderAccount = "CreateGitProviderAccount",
-    UpdateGitProviderAccount = "UpdateGitProviderAccount",
-    DeleteGitProviderAccount = "DeleteGitProviderAccount",
-    CreateDockerRegistryAccount = "CreateDockerRegistryAccount",
-    UpdateDockerRegistryAccount = "UpdateDockerRegistryAccount",
-    DeleteDockerRegistryAccount = "DeleteDockerRegistryAccount"
-}
-/** An update's status */
-export declare enum UpdateStatus {
-    /** The run is in the system but hasn't started yet */
-    Queued = "Queued",
-    /** The run is currently running */
-    InProgress = "InProgress",
-    /** The run is complete */
-    Complete = "Complete"
-}
-/** Represents an action performed by Komodo. */
-export interface Update {
-    /**
-     * The Mongo ID of the update.
-     * This field is de/serialized from/to JSON as
-     * `{ "_id": { "$oid": "..." }, ...(rest of serialized Update) }`
-     */
-    _id?: MongoId;
-    /** The operation performed */
-    operation: Operation;
-    /** The time the operation started */
-    start_ts: I64;
-    /** Whether the operation was successful */
-    success: boolean;
-    /**
-     * The user id that triggered the update.
-     *
-     * Also can take these values for operations triggered automatically:
-     * - `Procedure`: The operation was triggered as part of a procedure run
-     * - `Github`: The operation was triggered by a github webhook
-     * - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
-     */
-    operator: string;
-    /** The target resource to which this update refers */
-    target: ResourceTarget;
-    /** Logs produced as the operation is performed */
-    logs: Log[];
-    /** The time the operation completed. */
-    end_ts?: I64;
-    /**
-     * The status of the update
-     * - `Queued`
-     * - `InProgress`
-     * - `Complete`
-     */
-    status: UpdateStatus;
-    /** An optional version on the update, ie build version or deployed version. */
-    version?: Version;
-    /** An optional commit hash associated with the update, ie cloned hash or deployed hash. */
-    commit_hash?: string;
-    /** Some unstructured, operation specific data. Not for general usage. */
-    other_data?: string;
-}
-export type GetUpdateResponse = Update;
-/** An api key used to authenticate requests via request headers. */
-export interface ApiKey {
-    /** Unique key associated with secret */
-    key: string;
-    /** Hash of the secret */
-    secret: string;
-    /** User associated with the api key */
-    user_id: string;
-    /** Name associated with the api key for management */
-    name: string;
-    /** Timestamp of key creation */
-    created_at: I64;
-    /** Expiry of key, or 0 if never expires */
-    expires: I64;
-}
-export type ListApiKeysResponse = ApiKey[];
-export type ListApiKeysForServiceUserResponse = ApiKey[];
-export type FindUserResponse = User;
-export type ListUsersResponse = User[];
-/**
- * Permission users at the group level.
- *
- * All users that are part of a group inherit the group's permissions.
- * A user can be a part of multiple groups. A user's permission on a particular resource
- * will be resolved to be the maximum permission level between the user's own permissions and
- * any groups they are a part of.
- */
-export interface UserGroup {
-    /**
-     * The Mongo ID of the UserGroup.
-     * This field is de/serialized from/to JSON as
-     * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
-     */
-    _id?: MongoId;
-    /** A name for the user group */
-    name: string;
-    /** User ids of group members */
-    users?: string[];
-    /** Give the user group elevated permissions on all resources of a certain type */
-    all?: Record<ResourceTarget["type"], PermissionLevel>;
-    /** Unix time (ms) when user group last updated */
-    updated_at?: I64;
-}
-export type GetUserGroupResponse = UserGroup;
 export type ListUserGroupsResponse = UserGroup[];
-/**
- * A non-secret global variable which can be interpolated into deployment
- * environment variable values and build argument values.
- */
-export interface Variable {
-    /**
-     * Unique name associated with the variable.
-     * Instances of '[[variable.name]]' in value will be replaced with 'variable.value'.
-     */
-    name: string;
-    /** A description for the variable. */
-    description?: string;
-    /** The value associated with the variable. */
-    value?: string;
-    /**
-     * If marked as secret, the variable value will be hidden in updates / logs.
-     * Additionally the value will not be served in read requests by non admin users.
-     *
-     * Note that the value is NOT encrypted in the database, and will likely show up in database logs.
-     * The security of these variables comes down to the security
-     * of the database (system level encryption, network isolation, etc.)
-     */
-    is_secret?: boolean;
-}
-export type GetVariableResponse = Variable;
+export type ListUserTargetPermissionsResponse = Permission[];
+export type ListUsersResponse = User[];
 export type ListVariablesResponse = Variable[];
-/** Represents an empty json object: `{}` */
-export interface NoData {
-}
-export type PushRecentlyViewedResponse = NoData;
-export type SetLastSeenUpdateResponse = NoData;
-export type DeleteApiKeyResponse = NoData;
-export type CreateActionWebhookResponse = NoData;
-export type DeleteActionWebhookResponse = NoData;
-/** Response for [CreateApiKey]. */
-export interface CreateApiKeyResponse {
-    /** X-API-KEY */
-    key: string;
-    /**
-     * X-API-SECRET
-     *
-     * Note.
-     * There is no way to get the secret again after it is distributed in this message
-     */
-    secret: string;
-}
-export type CreateApiKeyForServiceUserResponse = CreateApiKeyResponse;
-export type DeleteApiKeyForServiceUserResponse = NoData;
-export type CreateBuildWebhookResponse = NoData;
-export type DeleteBuildWebhookResponse = NoData;
-export type UpdateDescriptionResponse = NoData;
-export type UpdatePermissionOnTargetResponse = NoData;
-export type UpdatePermissionOnResourceTypeResponse = NoData;
-export type UpdateUserBasePermissionsResponse = NoData;
-export type UpdateUserAdminResponse = NoData;
-export type CreateProcedureResponse = Procedure;
-export type CopyProcedureResponse = Procedure;
-export type DeleteProcedureResponse = Procedure;
-export type UpdateProcedureResponse = Procedure;
-export type CreateGitProviderAccountResponse = GitProviderAccount;
-export type UpdateGitProviderAccountResponse = GitProviderAccount;
-export type DeleteGitProviderAccountResponse = GitProviderAccount;
-export type CreateDockerRegistryAccountResponse = DockerRegistryAccount;
-export type UpdateDockerRegistryAccountResponse = DockerRegistryAccount;
-export type DeleteDockerRegistryAccountResponse = DockerRegistryAccount;
-export type CreateRepoWebhookResponse = NoData;
-export type DeleteRepoWebhookResponse = NoData;
-export type CreateStackWebhookResponse = NoData;
-export type DeleteStackWebhookResponse = NoData;
-export type CreateSyncWebhookResponse = NoData;
-export type DeleteSyncWebhookResponse = NoData;
-export type UpdateTagsOnResourceResponse = NoData;
-export type UpdateUserUsernameResponse = NoData;
-export type UpdateUserPasswordResponse = NoData;
-export type DeleteUserResponse = User;
-export type CreateServiceUserResponse = User;
-export type UpdateServiceUserDescriptionResponse = User;
-export type CreateVariableResponse = Variable;
-export type UpdateVariableValueResponse = Variable;
-export type UpdateVariableDescriptionResponse = Variable;
-export type UpdateVariableIsSecretResponse = Variable;
-export type DeleteVariableResponse = Variable;
-export type _PartialActionConfig = Partial<ActionConfig>;
-export declare enum TagBehavior {
-    /** Returns resources which have strictly all the tags */
-    All = "All",
-    /** Returns resources which have one or more of the tags */
-    Any = "Any"
-}
-/** Passing empty Vec is the same as not filtering by that field */
-export interface ResourceQuery<T> {
-    names?: string[];
-    /** Pass Vec of tag ids or tag names */
-    tags?: string[];
-    tag_behavior?: TagBehavior;
-    specific?: T;
-}
-export interface ActionQuerySpecifics {
-}
-export type ActionQuery = ResourceQuery<ActionQuerySpecifics>;
-export type _PartialAlerterConfig = Partial<AlerterConfig>;
-export interface AlerterQuerySpecifics {
-    /**
-     * Filter alerters by enabled.
-     * - `None`: Don't filter by enabled
-     * - `Some(true)`: Only include alerts with `enabled: true`
-     * - `Some(false)`: Only include alerts with `enabled: false`
-     */
-    enabled?: boolean;
-    /**
-     * Only include alerters with these endpoint types.
-     * If empty, don't filter by enpoint type.
-     */
-    types: AlerterEndpoint["type"][];
-}
-export type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
-export type _PartialBuildConfig = Partial<BuildConfig>;
-export interface BuildQuerySpecifics {
-    builder_ids?: string[];
-    repos?: string[];
-    /**
-     * query for builds last built more recently than this timestamp
-     * defaults to 0 which is a no op
-     */
-    built_since?: I64;
-}
-export type BuildQuery = ResourceQuery<BuildQuerySpecifics>;
-export type _PartialBuilderConfig = Partial<BuilderConfig>;
-export type _PartialServerBuilderConfig = Partial<ServerBuilderConfig>;
-export type _PartialAwsBuilderConfig = Partial<AwsBuilderConfig>;
-export interface BuilderQuerySpecifics {
-}
-export type BuilderQuery = ResourceQuery<BuilderQuerySpecifics>;
-export type _PartialDeploymentConfig = Partial<DeploymentConfig>;
-export interface DeploymentQuerySpecifics {
-    server_ids?: string[];
-    build_ids?: string[];
-}
-export type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
+/** The response for [LoginLocalUser] */
+export type LoginLocalUserResponse = JwtResponse;
 export type MongoDocument = any;
-export type JsonValue = any;
-export interface __Serror {
-    error: string;
-    trace: string[];
-}
-export type _Serror = __Serror;
-export type _PartialProcedureConfig = Partial<ProcedureConfig>;
 export interface ProcedureQuerySpecifics {
 }
 export type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
-export type _PartialGitProviderAccount = Partial<GitProviderAccount>;
-export type _PartialDockerRegistryAccount = Partial<DockerRegistryAccount>;
-export type _PartialRepoConfig = Partial<RepoConfig>;
+export type PushRecentlyViewedResponse = NoData;
 export interface RepoQuerySpecifics {
     /** Filter repos by their repo. */
     repos: string[];
 }
 export type RepoQuery = ResourceQuery<RepoQuerySpecifics>;
-export type _PartialServerConfig = Partial<ServerConfig>;
-export interface ServerQuerySpecifics {
-}
-/** Server-specific query */
-export type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
-export type _PartialAwsServerTemplateConfig = Partial<AwsServerTemplateConfig>;
-export type _PartialHetznerServerTemplateConfig = Partial<HetznerServerTemplateConfig>;
-export interface ServerTemplateQuerySpecifics {
-    types: ServerTemplateConfig["type"][];
-}
-export type ServerTemplateQuery = ResourceQuery<ServerTemplateQuerySpecifics>;
-export type _PartialStackConfig = Partial<StackConfig>;
-export interface StackQuerySpecifics {
-    /** Filter syncs by their repo. */
-    repos: string[];
-}
-export type StackQuery = ResourceQuery<StackQuerySpecifics>;
-export type _PartialResourceSyncConfig = Partial<ResourceSyncConfig>;
 export interface ResourceSyncQuerySpecifics {
     /** Filter syncs by their repo. */
     repos: string[];
 }
 export type ResourceSyncQuery = ResourceQuery<ResourceSyncQuerySpecifics>;
+export type SearchContainerLogResponse = Log;
+export type SearchDeploymentLogResponse = Log;
+export type SearchStackServiceLogResponse = Log;
+export interface ServerQuerySpecifics {
+}
+/** Server-specific query */
+export type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
+export interface ServerTemplateQuerySpecifics {
+    types: ServerTemplateConfig["type"][];
+}
+export type ServerTemplateQuery = ResourceQuery<ServerTemplateQuerySpecifics>;
+export type SetLastSeenUpdateResponse = NoData;
+export interface StackQuerySpecifics {
+    /** Filter syncs by their repo. */
+    repos: string[];
+}
+export type StackQuery = ResourceQuery<StackQuerySpecifics>;
+export type UpdateDescriptionResponse = NoData;
+export type UpdateDockerRegistryAccountResponse = DockerRegistryAccount;
+export type UpdateGitProviderAccountResponse = GitProviderAccount;
+export type UpdatePermissionOnResourceTypeResponse = NoData;
+export type UpdatePermissionOnTargetResponse = NoData;
+export type UpdateProcedureResponse = Procedure;
+export type UpdateServiceUserDescriptionResponse = User;
+export type UpdateTagsOnResourceResponse = NoData;
+export type UpdateUserAdminResponse = NoData;
+export type UpdateUserBasePermissionsResponse = NoData;
+export type UpdateUserPasswordResponse = NoData;
+export type UpdateUserUsernameResponse = NoData;
+export type UpdateVariableDescriptionResponse = Variable;
+export type UpdateVariableIsSecretResponse = Variable;
+export type UpdateVariableValueResponse = Variable;
+export type _PartialActionConfig = Partial<ActionConfig>;
+export type _PartialAlerterConfig = Partial<AlerterConfig>;
+export type _PartialAwsBuilderConfig = Partial<AwsBuilderConfig>;
+export type _PartialAwsServerTemplateConfig = Partial<AwsServerTemplateConfig>;
+export type _PartialBuildConfig = Partial<BuildConfig>;
+export type _PartialBuilderConfig = Partial<BuilderConfig>;
+export type _PartialDeploymentConfig = Partial<DeploymentConfig>;
+export type _PartialDockerRegistryAccount = Partial<DockerRegistryAccount>;
+export type _PartialGitProviderAccount = Partial<GitProviderAccount>;
+export type _PartialHetznerServerTemplateConfig = Partial<HetznerServerTemplateConfig>;
+export type _PartialProcedureConfig = Partial<ProcedureConfig>;
+export type _PartialRepoConfig = Partial<RepoConfig>;
+export type _PartialResourceSyncConfig = Partial<ResourceSyncConfig>;
+export type _PartialServerBuilderConfig = Partial<ServerBuilderConfig>;
+export type _PartialServerConfig = Partial<ServerConfig>;
+export type _PartialStackConfig = Partial<StackConfig>;
 export type _PartialTag = Partial<Tag>;
-/**
- * Non authenticated route to see the available options
- * users have to login to Komodo, eg. local auth, github, google.
- * Response: [GetLoginOptionsResponse].
- */
-export interface GetLoginOptions {
-}
-/** The response for [GetLoginOptions]. */
-export interface GetLoginOptionsResponse {
-    /** Whether local auth is enabled. */
-    local: boolean;
-    /** Whether github login is enabled. */
-    github: boolean;
-    /** Whether google login is enabled. */
-    google: boolean;
-    /** Whether OIDC login is enabled. */
-    oidc: boolean;
-    /** Whether user registration (Sign Up) has been disabled */
-    registration_disabled: boolean;
-}
-/**
- * Create a new local user account. Will fail if a user with the
- * given username already exists.
- * Response: [CreateLocalUserResponse].
- *
- * Note. This method is only available if the core api has `local_auth` enabled.
- */
-export interface CreateLocalUser {
-    /** The username for the new user. */
-    username: string;
-    /**
-     * The password for the new user.
-     * This cannot be retreived later.
-     */
-    password: string;
-}
-/**
- * Login as a local user. Will fail if the users credentials don't match
- * any local user.
- *
- * Note. This method is only available if the core api has `local_auth` enabled.
- */
-export interface LoginLocalUser {
-    /** The user's username */
-    username: string;
-    /** The user's password */
-    password: string;
-}
-/**
- * Exchange a single use exchange token (safe for transport in url query)
- * for a jwt.
- * Response: [ExchangeForJwtResponse].
- */
-export interface ExchangeForJwt {
-    /** The 'exchange token' */
-    token: string;
-}
-/**
- * Get the user extracted from the request headers.
- * Response: [User].
- */
-export interface GetUser {
-}
-/** Runs the target Action. Response: [Update] */
-export interface RunAction {
-    /** Id or name */
-    action: string;
-}
-/**
- * Runs the target build. Response: [Update].
- *
- * 1. Get a handle to the builder. If using AWS builder, this means starting a builder ec2 instance.
- * 2. Clone the repo on the builder. If an `on_clone` commmand is given, it will be executed.
- * 3. Execute `docker build {...params}`, where params are determined using the builds configuration.
- * 4. If a dockerhub account is attached, the build will be pushed to that account.
- */
-export interface RunBuild {
-    /** Can be build id or name */
-    build: string;
-}
-/**
- * Cancels the target build.
- * Only does anything if the build is `building` when called.
- * Response: [Update]
- */
-export interface CancelBuild {
-    /** Can be id or name */
-    build: string;
-}
-/**
- * Deploys the container for the target deployment. Response: [Update].
- *
- * 1. Pulls the image onto the target server.
- * 2. If the container is already running,
- * it will be stopped and removed using `docker container rm ${container_name}`.
- * 3. The container will be run using `docker run {...params}`,
- * where params are determined by the deployment's configuration.
- */
-export interface Deploy {
-    /** Name or id */
-    deployment: string;
-    /**
-     * Override the default termination signal specified in the deployment.
-     * Only used when deployment needs to be taken down before redeploy.
-     */
-    stop_signal?: TerminationSignal;
-    /**
-     * Override the default termination max time.
-     * Only used when deployment needs to be taken down before redeploy.
-     */
-    stop_time?: number;
-}
-/**
- * Starts the container for the target deployment. Response: [Update]
- *
- * 1. Runs `docker start ${container_name}`.
- */
-export interface StartDeployment {
-    /** Name or id */
-    deployment: string;
-}
-/**
- * Restarts the container for the target deployment. Response: [Update]
- *
- * 1. Runs `docker restart ${container_name}`.
- */
-export interface RestartDeployment {
-    /** Name or id */
-    deployment: string;
-}
-/**
- * Pauses the container for the target deployment. Response: [Update]
- *
- * 1. Runs `docker pause ${container_name}`.
- */
-export interface PauseDeployment {
-    /** Name or id */
-    deployment: string;
-}
-/**
- * Unpauses the container for the target deployment. Response: [Update]
- *
- * 1. Runs `docker unpause ${container_name}`.
- *
- * Note. This is the only way to restart a paused container.
- */
-export interface UnpauseDeployment {
-    /** Name or id */
-    deployment: string;
-}
-/**
- * Stops the container for the target deployment. Response: [Update]
- *
- * 1. Runs `docker stop ${container_name}`.
- */
-export interface StopDeployment {
-    /** Name or id */
-    deployment: string;
-    /** Override the default termination signal specified in the deployment. */
-    signal?: TerminationSignal;
-    /** Override the default termination max time. */
-    time?: number;
-}
-/**
- * Stops and destroys the container for the target deployment.
- * Reponse: [Update].
- *
- * 1. The container is stopped and removed using `docker container rm ${container_name}`.
- */
-export interface DestroyDeployment {
-    /** Name or id. */
-    deployment: string;
-    /** Override the default termination signal specified in the deployment. */
-    signal?: TerminationSignal;
-    /** Override the default termination max time. */
-    time?: number;
-}
-export interface Sleep {
-    duration_ms?: I64;
-}
-/** Runs the target Procedure. Response: [Update] */
-export interface RunProcedure {
-    /** Id or name */
-    procedure: string;
-}
-/**
- * Clones the target repo. Response: [Update].
- *
- * Note. Repo must have server attached at `server_id`.
- *
- * 1. Clones the repo on the target server using `git clone https://{$token?}@github.com/${repo} -b ${branch}`.
- * The token will only be used if a github account is specified,
- * and must be declared in the periphery configuration on the target server.
- * 2. If `on_clone` and `on_pull` are specified, they will be executed.
- * `on_clone` will be executed before `on_pull`.
- */
-export interface CloneRepo {
-    /** Id or name */
-    repo: string;
-}
-/**
- * Pulls the target repo. Response: [Update].
- *
- * Note. Repo must have server attached at `server_id`.
- *
- * 1. Pulls the repo on the target server using `git pull`.
- * 2. If `on_pull` is specified, it will be executed after the pull is complete.
- */
-export interface PullRepo {
-    /** Id or name */
-    repo: string;
-}
-/**
- * Builds the target repo, using the attached builder. Response: [Update].
- *
- * Note. Repo must have builder attached at `builder_id`.
- *
- * 1. Spawns the target builder instance (For AWS type. For Server type, just use CloneRepo).
- * 2. Clones the repo on the builder using `git clone https://{$token?}@github.com/${repo} -b ${branch}`.
- * The token will only be used if a github account is specified,
- * and must be declared in the periphery configuration on the builder instance.
- * 3. If `on_clone` and `on_pull` are specified, they will be executed.
- * `on_clone` will be executed before `on_pull`.
- */
-export interface BuildRepo {
-    /** Id or name */
-    repo: string;
-}
-/**
- * Cancels the target repo build.
- * Only does anything if the repo build is `building` when called.
- * Response: [Update]
- */
-export interface CancelRepoBuild {
-    /** Can be id or name */
-    repo: string;
-}
-/**
- * Starts the container on the target server. Response: [Update]
- *
- * 1. Runs `docker start ${container_name}`.
- */
-export interface StartContainer {
-    /** Name or id */
-    server: string;
-    /** The container name */
-    container: string;
-}
-/**
- * Restarts the container on the target server. Response: [Update]
- *
- * 1. Runs `docker restart ${container_name}`.
- */
-export interface RestartContainer {
-    /** Name or id */
-    server: string;
-    /** The container name */
-    container: string;
-}
-/**
- * Pauses the container on the target server. Response: [Update]
- *
- * 1. Runs `docker pause ${container_name}`.
- */
-export interface PauseContainer {
-    /** Name or id */
-    server: string;
-    /** The container name */
-    container: string;
-}
-/**
- * Unpauses the container on the target server. Response: [Update]
- *
- * 1. Runs `docker unpause ${container_name}`.
- *
- * Note. This is the only way to restart a paused container.
- */
-export interface UnpauseContainer {
-    /** Name or id */
-    server: string;
-    /** The container name */
-    container: string;
-}
-/**
- * Stops the container on the target server. Response: [Update]
- *
- * 1. Runs `docker stop ${container_name}`.
- */
-export interface StopContainer {
-    /** Name or id */
-    server: string;
-    /** The container name */
-    container: string;
-    /** Override the default termination signal. */
-    signal?: TerminationSignal;
-    /** Override the default termination max time. */
-    time?: number;
-}
-/**
- * Stops and destroys the container on the target server.
- * Reponse: [Update].
- *
- * 1. The container is stopped and removed using `docker container rm ${container_name}`.
- */
-export interface DestroyContainer {
-    /** Name or id */
-    server: string;
-    /** The container name */
-    container: string;
-    /** Override the default termination signal. */
-    signal?: TerminationSignal;
-    /** Override the default termination max time. */
-    time?: number;
-}
-/** Starts all containers on the target server. Response: [Update] */
-export interface StartAllContainers {
-    /** Name or id */
-    server: string;
-}
-/** Restarts all containers on the target server. Response: [Update] */
-export interface RestartAllContainers {
-    /** Name or id */
-    server: string;
-}
-/** Pauses all containers on the target server. Response: [Update] */
-export interface PauseAllContainers {
-    /** Name or id */
-    server: string;
-}
-/** Unpauses all containers on the target server. Response: [Update] */
-export interface UnpauseAllContainers {
-    /** Name or id */
-    server: string;
-}
-/** Stops all containers on the target server. Response: [Update] */
-export interface StopAllContainers {
-    /** Name or id */
-    server: string;
-}
-/**
- * Prunes the docker containers on the target server. Response: [Update].
- *
- * 1. Runs `docker container prune -f`.
- */
-export interface PruneContainers {
-    /** Id or name */
-    server: string;
-}
-/**
- * Delete a docker network.
- * Response: [Update]
- */
-export interface DeleteNetwork {
-    /** Id or name. */
-    server: string;
-    /** The name of the network to delete. */
-    name: string;
-}
-/**
- * Prunes the docker networks on the target server. Response: [Update].
- *
- * 1. Runs `docker network prune -f`.
- */
-export interface PruneNetworks {
-    /** Id or name */
-    server: string;
-}
-/**
- * Delete a docker image.
- * Response: [Update]
- */
-export interface DeleteImage {
-    /** Id or name. */
-    server: string;
-    /** The name of the image to delete. */
-    name: string;
-}
-/**
- * Prunes the docker images on the target server. Response: [Update].
- *
- * 1. Runs `docker image prune -a -f`.
- */
-export interface PruneImages {
-    /** Id or name */
-    server: string;
-}
-/**
- * Delete a docker volume.
- * Response: [Update]
- */
-export interface DeleteVolume {
-    /** Id or name. */
-    server: string;
-    /** The name of the volume to delete. */
-    name: string;
-}
-/**
- * Prunes the docker volumes on the target server. Response: [Update].
- *
- * 1. Runs `docker volume prune -a -f`.
- */
-export interface PruneVolumes {
-    /** Id or name */
-    server: string;
-}
-/**
- * Prunes the docker builders (build cache) on the target server. Response: [Update].
- *
- * 1. Runs `docker builder prune -a -f`.
- */
-export interface PruneDockerBuilders {
-    /** Id or name */
-    server: string;
-}
-/**
- * Prunes the docker buildx cache on the target server. Response: [Update].
- *
- * 1. Runs `docker buildx prune -a -f`.
- */
-export interface PruneBuildx {
-    /** Id or name */
-    server: string;
-}
-/**
- * Prunes the docker system on the target server, including volumes. Response: [Update].
- *
- * 1. Runs `docker system prune -a -f --volumes`.
- */
-export interface PruneSystem {
-    /** Id or name */
-    server: string;
-}
-/**
- * Launch an EC2 instance with the specified config.
- * Response: [Update].
- */
-export interface LaunchServer {
-    /** The name of the created server. */
-    name: string;
-    /** The server template used to define the config. */
-    server_template: string;
-}
-/** Deploys the target stack. `docker compose up`. Response: [Update] */
-export interface DeployStack {
-    /** Id or name */
-    stack: string;
-    /**
-     * Override the default termination max time.
-     * Only used if the stack needs to be taken down first.
-     */
-    stop_time?: number;
-}
-/**
- * Checks deployed contents vs latest contents,
- * and only if any changes found
- * will `docker compose up`. Response: [Update]
- */
-export interface DeployStackIfChanged {
-    /** Id or name */
-    stack: string;
-    /**
-     * Override the default termination max time.
-     * Only used if the stack needs to be taken down first.
-     */
-    stop_time?: number;
-}
-/** Starts the target stack. `docker compose start`. Response: [Update] */
-export interface StartStack {
-    /** Id or name */
-    stack: string;
-    /** Optionally specify a specific service to start */
-    service?: string;
-}
-/** Restarts the target stack. `docker compose restart`. Response: [Update] */
-export interface RestartStack {
-    /** Id or name */
-    stack: string;
-    /** Optionally specify a specific service to restart */
-    service?: string;
-}
-/** Pauses the target stack. `docker compose pause`. Response: [Update] */
-export interface PauseStack {
-    /** Id or name */
-    stack: string;
-    /** Optionally specify a specific service to pause */
-    service?: string;
-}
-/**
- * Unpauses the target stack. `docker compose unpause`. Response: [Update].
- *
- * Note. This is the only way to restart a paused container.
- */
-export interface UnpauseStack {
-    /** Id or name */
-    stack: string;
-    /** Optionally specify a specific service to unpause */
-    service?: string;
-}
-/** Stops the target stack. `docker compose stop`. Response: [Update] */
-export interface StopStack {
-    /** Id or name */
-    stack: string;
-    /** Override the default termination max time. */
-    stop_time?: number;
-    /** Optionally specify a specific service to stop */
-    service?: string;
-}
-/** Destoys the target stack. `docker compose down`. Response: [Update] */
-export interface DestroyStack {
-    /** Id or name */
-    stack: string;
-    /** Pass `--remove-orphans` */
-    remove_orphans?: boolean;
-    /** Override the default termination max time. */
-    stop_time?: number;
-}
-/** Runs the target resource sync. Response: [Update] */
-export interface RunSync {
-    /** Id or name */
-    sync: string;
-    /**
-     * Only execute sync on a specific resource type.
-     * Combine with `resource_id` to specify resource.
-     */
-    resource_type?: ResourceTarget["type"];
-    /**
-     * Only execute sync on a specific resources.
-     * Combine with `resource_type` to specify resources.
-     * Supports name or id.
-     */
-    resources?: string[];
-}
-/** Get a specific action. Response: [Action]. */
-export interface GetAction {
-    /** Id or name */
-    action: string;
-}
-/** List actions matching optional query. Response: [ListActionsResponse]. */
-export interface ListActions {
-    /** optional structured query to filter actions. */
-    query?: ActionQuery;
-}
-/** List actions matching optional query. Response: [ListFullActionsResponse]. */
-export interface ListFullActions {
-    /** optional structured query to filter actions. */
-    query?: ActionQuery;
-}
-/** Get current action state for the action. Response: [ActionActionState]. */
-export interface GetActionActionState {
-    /** Id or name */
-    action: string;
-}
-/**
- * Gets a summary of data relating to all actions.
- * Response: [GetActionsSummaryResponse].
- */
-export interface GetActionsSummary {
-}
-/** Response for [GetActionsSummary]. */
-export interface GetActionsSummaryResponse {
-    /** The total number of actions. */
-    total: number;
-    /** The number of actions with Ok state. */
-    ok: number;
-    /** The number of actions currently running. */
-    running: number;
-    /** The number of actions with failed state. */
-    failed: number;
-    /** The number of actions with unknown state. */
-    unknown: number;
-}
-/**
- * Get a paginated list of alerts sorted by timestamp descending.
- * Response: [ListAlertsResponse].
- */
-export interface ListAlerts {
-    /**
-     * Pass a custom mongo query to filter the alerts.
-     *
-     * ## Example JSON
-     * ```
-     * {
-     * "resolved": "false",
-     * "level": "CRITICAL",
-     * "$or": [
-     * {
-     * "target": {
-     * "type": "Server",
-     * "id": "6608bf89cb2a12b257ab6c09"
-     * }
-     * },
-     * {
-     * "target": {
-     * "type": "Server",
-     * "id": "660a5f60b74f90d5dae45fa3"
-     * }
-     * }
-     * ]
-     * }
-     * ```
-     * This will filter to only include open alerts that have CRITICAL level on those two servers.
-     */
-    query?: MongoDocument;
-    /**
-     * Retrieve older results by incrementing the page.
-     * `page: 0` is default, and returns the most recent results.
-     */
-    page?: U64;
-}
-/** Response for [ListAlerts]. */
-export interface ListAlertsResponse {
-    alerts: Alert[];
-    /**
-     * If more alerts exist, the next page will be given here.
-     * Otherwise it will be `null`
-     */
-    next_page?: I64;
-}
-/** Get an alert: Response: [Alert]. */
-export interface GetAlert {
-    id: string;
-}
-/** Get a specific alerter. Response: [Alerter]. */
-export interface GetAlerter {
-    /** Id or name */
-    alerter: string;
-}
-/** List alerters matching optional query. Response: [ListAlertersResponse]. */
-export interface ListAlerters {
-    /** Structured query to filter alerters. */
-    query?: AlerterQuery;
-}
-/** List full alerters matching optional query. Response: [ListFullAlertersResponse]. */
-export interface ListFullAlerters {
-    /** Structured query to filter alerters. */
-    query?: AlerterQuery;
-}
-/**
- * Gets a summary of data relating to all alerters.
- * Response: [GetAlertersSummaryResponse].
- */
-export interface GetAlertersSummary {
-}
-/** Response for [GetAlertersSummary]. */
-export interface GetAlertersSummaryResponse {
-    total: number;
-}
-/** Get a specific build. Response: [Build]. */
-export interface GetBuild {
-    /** Id or name */
-    build: string;
-}
-/** List builds matching optional query. Response: [ListBuildsResponse]. */
-export interface ListBuilds {
-    /** optional structured query to filter builds. */
-    query?: BuildQuery;
-}
-/** List builds matching optional query. Response: [ListFullBuildsResponse]. */
-export interface ListFullBuilds {
-    /** optional structured query to filter builds. */
-    query?: BuildQuery;
-}
-/** Get current action state for the build. Response: [BuildActionState]. */
-export interface GetBuildActionState {
-    /** Id or name */
-    build: string;
-}
-/**
- * Gets a summary of data relating to all builds.
- * Response: [GetBuildsSummaryResponse].
- */
-export interface GetBuildsSummary {
-}
-/** Response for [GetBuildsSummary]. */
-export interface GetBuildsSummaryResponse {
-    /** The total number of builds in Komodo. */
-    total: number;
-    /** The number of builds with Ok state. */
-    ok: number;
-    /** The number of builds with Failed state. */
-    failed: number;
-    /** The number of builds currently building. */
-    building: number;
-    /** The number of builds with unknown state. */
-    unknown: number;
-}
-/**
- * Gets summary and timeseries breakdown of the last months build count / time for charting.
- * Response: [GetBuildMonthlyStatsResponse].
- *
- * Note. This method is paginated. One page is 30 days of data.
- * Query for older pages by incrementing the page, starting at 0.
- */
-export interface GetBuildMonthlyStats {
-    /**
-     * Query for older data by incrementing the page.
-     * `page: 0` is the default, and will return the most recent data.
-     */
-    page?: number;
-}
-/** Item in [GetBuildMonthlyStatsResponse] */
-export interface BuildStatsDay {
-    time: number;
-    count: number;
-    ts: number;
-}
-/** Response for [GetBuildMonthlyStats]. */
-export interface GetBuildMonthlyStatsResponse {
-    total_time: number;
-    total_count: number;
-    days: BuildStatsDay[];
-}
-/**
- * Retrieve versions of the build that were built in the past and available for deployment,
- * sorted by most recent first.
- * Response: [GetBuildVersionsResponse].
- */
-export interface ListBuildVersions {
-    /** Id or name */
-    build: string;
-    /** Filter to only include versions matching this major version. */
-    major?: number;
-    /** Filter to only include versions matching this minor version. */
-    minor?: number;
-    /** Filter to only include versions matching this patch version. */
-    patch?: number;
-    /** Limit the number of included results. Default is no limit. */
-    limit?: I64;
-}
-/**
- * Gets a list of existing values used as extra args across other builds.
- * Useful to offer suggestions. Response: [ListCommonBuildExtraArgsResponse]
- */
-export interface ListCommonBuildExtraArgs {
-    /** optional structured query to filter builds. */
-    query?: BuildQuery;
-}
-/** Get whether a Build's target repo has a webhook for the build configured. Response: [GetBuildWebhookEnabledResponse]. */
-export interface GetBuildWebhookEnabled {
-    /** Id or name */
-    build: string;
-}
-/** Response for [GetBuildWebhookEnabled] */
-export interface GetBuildWebhookEnabledResponse {
-    /**
-     * Whether the repo webhooks can even be managed.
-     * The repo owner must be in `github_webhook_app.owners` list to be managed.
-     */
-    managed: boolean;
-    /** Whether pushes to branch trigger build. Will always be false if managed is false. */
-    enabled: boolean;
-}
-/** Get a specific builder by id or name. Response: [Builder]. */
-export interface GetBuilder {
-    /** Id or name */
-    builder: string;
-}
-/** List builders matching structured query. Response: [ListBuildersResponse]. */
-export interface ListBuilders {
-    query?: BuilderQuery;
-}
-/** List builders matching structured query. Response: [ListFullBuildersResponse]. */
-export interface ListFullBuilders {
-    query?: BuilderQuery;
-}
-/**
- * Gets a summary of data relating to all builders.
- * Response: [GetBuildersSummaryResponse].
- */
-export interface GetBuildersSummary {
-}
-/** Response for [GetBuildersSummary]. */
-export interface GetBuildersSummaryResponse {
-    /** The total number of builders. */
-    total: number;
-}
-/** Get a specific deployment by name or id. Response: [Deployment]. */
-export interface GetDeployment {
-    /** Id or name */
-    deployment: string;
-}
-/**
- * List deployments matching optional query.
- * Response: [ListDeploymentsResponse].
- */
-export interface ListDeployments {
-    /** optional structured query to filter deployments. */
-    query?: DeploymentQuery;
-}
-/**
- * List deployments matching optional query.
- * Response: [ListFullDeploymentsResponse].
- */
-export interface ListFullDeployments {
-    /** optional structured query to filter deployments. */
-    query?: DeploymentQuery;
-}
-/**
- * Get the container, including image / status, of the target deployment.
- * Response: [GetDeploymentContainerResponse].
- *
- * Note. This does not hit the server directly. The status comes from an
- * in memory cache on the core, which hits the server periodically
- * to keep it up to date.
- */
-export interface GetDeploymentContainer {
-    /** Id or name */
-    deployment: string;
-}
-/** Response for [GetDeploymentContainer]. */
-export interface GetDeploymentContainerResponse {
-    state: DeploymentState;
-    container?: ContainerListItem;
-}
-/**
- * Get the deployment log's tail, split by stdout/stderr.
- * Response: [Log].
- *
- * Note. This call will hit the underlying server directly for most up to date log.
- */
-export interface GetDeploymentLog {
-    /** Id or name */
-    deployment: string;
-    /**
-     * The number of lines of the log tail to include.
-     * Default: 100.
-     * Max: 5000.
-     */
-    tail: U64;
-    /** Enable `--timestamps` */
-    timestamps?: boolean;
-}
-export declare enum SearchCombinator {
-    Or = "Or",
-    And = "And"
-}
-/**
- * Search the deployment log's tail using `grep`. All lines go to stdout.
- * Response: [Log].
- *
- * Note. This call will hit the underlying server directly for most up to date log.
- */
-export interface SearchDeploymentLog {
-    /** Id or name */
-    deployment: string;
-    /** The terms to search for. */
-    terms: string[];
-    /**
-     * When searching for multiple terms, can use `AND` or `OR` combinator.
-     *
-     * - `AND`: Only include lines with **all** terms present in that line.
-     * - `OR`: Include lines that have one or more matches in the terms.
-     */
-    combinator?: SearchCombinator;
-    /** Invert the results, ie return all lines that DON'T match the terms / combinator. */
-    invert?: boolean;
-    /** Enable `--timestamps` */
-    timestamps?: boolean;
-}
-/**
- * Get the deployment container's stats using `docker stats`.
- * Response: [DockerContainerStats].
- *
- * Note. This call will hit the underlying server directly for most up to date stats.
- */
-export interface GetDeploymentStats {
-    /** Id or name */
-    deployment: string;
-}
-/**
- * Get current action state for the deployment.
- * Response: [DeploymentActionState].
- */
-export interface GetDeploymentActionState {
-    /** Id or name */
-    deployment: string;
-}
-/**
- * Gets a summary of data relating to all deployments.
- * Response: [GetDeploymentsSummaryResponse].
- */
-export interface GetDeploymentsSummary {
-}
-/** Response for [GetDeploymentsSummary]. */
-export interface GetDeploymentsSummaryResponse {
-    /** The total number of Deployments */
-    total: I64;
-    /** The number of Deployments with Running state */
-    running: I64;
-    /** The number of Deployments with Stopped or Paused state */
-    stopped: I64;
-    /** The number of Deployments with NotDeployed state */
-    not_deployed: I64;
-    /** The number of Deployments with Restarting or Dead or Created (other) state */
-    unhealthy: I64;
-    /** The number of Deployments with Unknown state */
-    unknown: I64;
-}
-/**
- * Gets a list of existing values used as extra args across other deployments.
- * Useful to offer suggestions. Response: [ListCommonDeploymentExtraArgsResponse]
- */
-export interface ListCommonDeploymentExtraArgs {
-    /** optional structured query to filter deployments. */
-    query?: DeploymentQuery;
-}
-/**
- * Get the version of the Komodo Core api.
- * Response: [GetVersionResponse].
- */
-export interface GetVersion {
-}
-/** Response for [GetVersion]. */
-export interface GetVersionResponse {
-    /** The version of the core api. */
-    version: string;
-}
-/**
- * Get info about the core api configuration.
- * Response: [GetCoreInfoResponse].
- */
-export interface GetCoreInfo {
-}
-/** Response for [GetCoreInfo]. */
-export interface GetCoreInfoResponse {
-    /** The title assigned to this core api. */
-    title: string;
-    /** The monitoring interval of this core api. */
-    monitoring_interval: Timelength;
-    /** The webhook base url. */
-    webhook_base_url: string;
-    /** Whether transparent mode is enabled, which gives all users read access to all resources. */
-    transparent_mode: boolean;
-    /** Whether UI write access should be disabled */
-    ui_write_disabled: boolean;
-    /** Whether non admins can create resources */
-    disable_non_admin_create: boolean;
-    /** Whether confirm dialog should be disabled */
-    disable_confirm_dialog: boolean;
-    /** The repo owners for which github webhook management api is available */
-    github_webhook_owners: string[];
-}
-/**
- * List the git providers available in Core / Periphery config files.
- * Response: [ListGitProvidersFromConfigResponse].
- *
- * Includes:
- * - providers in core config
- * - providers configured on builds, repos, syncs
- * - providers on the optional Server or Builder
- */
-export interface ListGitProvidersFromConfig {
-    /**
-     * Accepts an optional Server or Builder target to expand the core list with
-     * providers available on that specific resource.
-     */
-    target?: ResourceTarget;
-}
-/**
- * List the docker registry providers available in Core / Periphery config files.
- * Response: [ListDockerRegistriesFromConfigResponse].
- *
- * Includes:
- * - registries in core config
- * - registries configured on builds, deployments
- * - registries on the optional Server or Builder
- */
-export interface ListDockerRegistriesFromConfig {
-    /**
-     * Accepts an optional Server or Builder target to expand the core list with
-     * providers available on that specific resource.
-     */
-    target?: ResourceTarget;
-}
-/**
- * List the available secrets from the core config.
- * Response: [ListSecretsResponse].
- */
-export interface ListSecrets {
-    /**
-     * Accepts an optional Server or Builder target to expand the core list with
-     * providers available on that specific resource.
-     */
-    target?: ResourceTarget;
-}
-/**
- * List permissions for the calling user.
- * Does not include any permissions on UserGroups they may be a part of.
- * Response: [ListPermissionsResponse]
- */
-export interface ListPermissions {
-}
-/**
- * Gets the calling user's permission level on a specific resource.
- * Factors in any UserGroup's permissions they may be a part of.
- * Response: [PermissionLevel]
- */
-export interface GetPermissionLevel {
-    /** The target to get user permission on. */
-    target: ResourceTarget;
-}
-/**
- * List permissions for a specific user. **Admin only**.
- * Response: [ListUserTargetPermissionsResponse]
- */
-export interface ListUserTargetPermissions {
-    /** Specify either a user or a user group. */
-    user_target: UserTarget;
-}
-/** Get a specific procedure. Response: [Procedure]. */
-export interface GetProcedure {
-    /** Id or name */
-    procedure: string;
-}
-/** List procedures matching optional query. Response: [ListProceduresResponse]. */
-export interface ListProcedures {
-    /** optional structured query to filter procedures. */
-    query?: ProcedureQuery;
-}
-/** List procedures matching optional query. Response: [ListFullProceduresResponse]. */
-export interface ListFullProcedures {
-    /** optional structured query to filter procedures. */
-    query?: ProcedureQuery;
-}
-/** Get current action state for the procedure. Response: [ProcedureActionState]. */
-export interface GetProcedureActionState {
-    /** Id or name */
-    procedure: string;
-}
-/**
- * Gets a summary of data relating to all procedures.
- * Response: [GetProceduresSummaryResponse].
- */
-export interface GetProceduresSummary {
-}
-/** Response for [GetProceduresSummary]. */
-export interface GetProceduresSummaryResponse {
-    /** The total number of procedures. */
-    total: number;
-    /** The number of procedures with Ok state. */
-    ok: number;
-    /** The number of procedures currently running. */
-    running: number;
-    /** The number of procedures with failed state. */
-    failed: number;
-    /** The number of procedures with unknown state. */
-    unknown: number;
-}
-/**
- * Get a specific git provider account.
- * Response: [GetGitProviderAccountResponse].
- */
-export interface GetGitProviderAccount {
-    id: string;
-}
-/**
- * List git provider accounts matching optional query.
- * Response: [ListGitProvidersResponse].
- */
-export interface ListGitProviderAccounts {
-    /** Optionally filter by accounts with a specific domain. */
-    domain?: string;
-    /** Optionally filter by accounts with a specific username. */
-    username?: string;
-}
-/**
- * Get a specific docker registry account.
- * Response: [GetDockerRegistryAccountResponse].
- */
-export interface GetDockerRegistryAccount {
-    id: string;
-}
-/**
- * List docker registry accounts matching optional query.
- * Response: [ListDockerRegistrysResponse].
- */
-export interface ListDockerRegistryAccounts {
-    /** Optionally filter by accounts with a specific domain. */
-    domain?: string;
-    /** Optionally filter by accounts with a specific username. */
-    username?: string;
-}
-/** Get a specific repo. Response: [Repo]. */
-export interface GetRepo {
-    /** Id or name */
-    repo: string;
-}
-/** List repos matching optional query. Response: [ListReposResponse]. */
-export interface ListRepos {
-    /** optional structured query to filter repos. */
-    query?: RepoQuery;
-}
-/** List repos matching optional query. Response: [ListFullReposResponse]. */
-export interface ListFullRepos {
-    /** optional structured query to filter repos. */
-    query?: RepoQuery;
-}
-/** Get current action state for the repo. Response: [RepoActionState]. */
-export interface GetRepoActionState {
-    /** Id or name */
-    repo: string;
-}
-/**
- * Gets a summary of data relating to all repos.
- * Response: [GetReposSummaryResponse].
- */
-export interface GetReposSummary {
-}
-/** Response for [GetReposSummary] */
-export interface GetReposSummaryResponse {
-    /** The total number of repos */
-    total: number;
-    /** The number of repos with Ok state. */
-    ok: number;
-    /** The number of repos currently cloning. */
-    cloning: number;
-    /** The number of repos currently pulling. */
-    pulling: number;
-    /** The number of repos currently building. */
-    building: number;
-    /** The number of repos with failed state. */
-    failed: number;
-    /** The number of repos with unknown state. */
-    unknown: number;
-}
-/** Get a target Repo's configured webhooks. Response: [GetRepoWebhooksEnabledResponse]. */
-export interface GetRepoWebhooksEnabled {
-    /** Id or name */
-    repo: string;
-}
-/** Response for [GetRepoWebhooksEnabled] */
-export interface GetRepoWebhooksEnabledResponse {
-    /**
-     * Whether the repo webhooks can even be managed.
-     * The repo owner must be in `github_webhook_app.owners` list to be managed.
-     */
-    managed: boolean;
-    /** Whether pushes to branch trigger clone. Will always be false if managed is false. */
-    clone_enabled: boolean;
-    /** Whether pushes to branch trigger pull. Will always be false if managed is false. */
-    pull_enabled: boolean;
-    /** Whether pushes to branch trigger build. Will always be false if managed is false. */
-    build_enabled: boolean;
-}
-/** Find resources matching a common query. Response: [FindResourcesResponse]. */
-export interface FindResources {
-    /** The mongo query as JSON */
-    query?: MongoDocument;
-    /** The resource variants to include in the response. */
-    resources?: ResourceTarget["type"][];
-}
-/** Response for [FindResources]. */
-export interface FindResourcesResponse {
-    /** The matching servers. */
-    servers: ServerListItem[];
-    /** The matching deployments. */
-    deployments: DeploymentListItem[];
-    /** The matching builds. */
-    builds: BuildListItem[];
-    /** The matching repos. */
-    repos: RepoListItem[];
-    /** The matching procedures. */
-    procedures: ProcedureListItem[];
-}
-/** Get a specific server. Response: [Server]. */
-export interface GetServer {
-    /** Id or name */
-    server: string;
-}
-/** List servers matching optional query. Response: [ListServersResponse]. */
-export interface ListServers {
-    /** optional structured query to filter servers. */
-    query?: ServerQuery;
-}
-/** List servers matching optional query. Response: [ListFullServersResponse]. */
-export interface ListFullServers {
-    /** optional structured query to filter servers. */
-    query?: ServerQuery;
-}
-/** Get the state of the target server. Response: [GetServerStateResponse]. */
-export interface GetServerState {
-    /** Id or name */
-    server: string;
-}
-/** The response for [GetServerState]. */
-export interface GetServerStateResponse {
-    /** The server status. */
-    status: ServerState;
-}
-/** Get current action state for the servers. Response: [ServerActionState]. */
-export interface GetServerActionState {
-    /** Id or name */
-    server: string;
-}
-/**
- * Get the version of the Komodo Periphery agent on the target server.
- * Response: [GetPeripheryVersionResponse].
- */
-export interface GetPeripheryVersion {
-    /** Id or name */
-    server: string;
-}
-/** Response for [GetPeripheryVersion]. */
-export interface GetPeripheryVersionResponse {
-    /** The version of periphery. */
-    version: string;
-}
-/** List the docker networks on the server. Response: [ListDockerNetworksResponse]. */
-export interface ListDockerNetworks {
-    /** Id or name */
-    server: string;
-}
-/** Inspect a docker network on the server. Response: [InspectDockerNetworkResponse]. */
-export interface InspectDockerNetwork {
-    /** Id or name */
-    server: string;
-    /** The network name */
-    network: string;
-}
-/**
- * List the docker images locally cached on the target server.
- * Response: [ListDockerImagesResponse].
- */
-export interface ListDockerImages {
-    /** Id or name */
-    server: string;
-}
-/** Inspect a docker image on the server. Response: [Image]. */
-export interface InspectDockerImage {
-    /** Id or name */
-    server: string;
-    /** The image name */
-    image: string;
-}
-/** Get image history from the server. Response: [ListDockerImageHistoryResponse]. */
-export interface ListDockerImageHistory {
-    /** Id or name */
-    server: string;
-    /** The image name */
-    image: string;
-}
-/**
- * List all docker containers on the target server.
- * Response: [ListDockerContainersResponse].
- */
-export interface ListDockerContainers {
-    /** Id or name */
-    server: string;
-}
-/**
- * List all docker containers on the target server.
- * Response: [ListDockerContainersResponse].
- */
-export interface ListAllDockerContainers {
-    /** Filter by server id or name. */
-    servers?: string[];
-}
-/** Inspect a docker container on the server. Response: [Container]. */
-export interface InspectDockerContainer {
-    /** Id or name */
-    server: string;
-    /** The container name */
-    container: string;
-}
-/**
- * Get the container log's tail, split by stdout/stderr.
- * Response: [Log].
- *
- * Note. This call will hit the underlying server directly for most up to date log.
- */
-export interface GetContainerLog {
-    /** Id or name */
-    server: string;
-    /** The container name */
-    container: string;
-    /**
-     * The number of lines of the log tail to include.
-     * Default: 100.
-     * Max: 5000.
-     */
-    tail: U64;
-    /** Enable `--timestamps` */
-    timestamps?: boolean;
-}
-/**
- * Search the container log's tail using `grep`. All lines go to stdout.
- * Response: [Log].
- *
- * Note. This call will hit the underlying server directly for most up to date log.
- */
-export interface SearchContainerLog {
-    /** Id or name */
-    server: string;
-    /** The container name */
-    container: string;
-    /** The terms to search for. */
-    terms: string[];
-    /**
-     * When searching for multiple terms, can use `AND` or `OR` combinator.
-     *
-     * - `AND`: Only include lines with **all** terms present in that line.
-     * - `OR`: Include lines that have one or more matches in the terms.
-     */
-    combinator?: SearchCombinator;
-    /** Invert the results, ie return all lines that DON'T match the terms / combinator. */
-    invert?: boolean;
-    /** Enable `--timestamps` */
-    timestamps?: boolean;
-}
-/** Inspect a docker container on the server. Response: [Container]. */
-export interface GetResourceMatchingContainer {
-    /** Id or name */
-    server: string;
-    /** The container name */
-    container: string;
-}
-export interface GetResourceMatchingContainerResponse {
-    resource?: ResourceTarget;
-}
-/**
- * List all docker volumes on the target server.
- * Response: [ListDockerVolumesResponse].
- */
-export interface ListDockerVolumes {
-    /** Id or name */
-    server: string;
-}
-/** Inspect a docker volume on the server. Response: [Volume]. */
-export interface InspectDockerVolume {
-    /** Id or name */
-    server: string;
-    /** The volume name */
-    volume: string;
-}
-/**
- * List all docker compose projects on the target server.
- * Response: [ListComposeProjectsResponse].
- */
-export interface ListComposeProjects {
-    /** Id or name */
-    server: string;
-}
-/**
- * Get the system information of the target server.
- * Response: [SystemInformation].
- */
-export interface GetSystemInformation {
-    /** Id or name */
-    server: string;
-}
-/**
- * Get the system stats on the target server. Response: [SystemStats].
- *
- * Note. This does not hit the server directly. The stats come from an
- * in memory cache on the core, which hits the server periodically
- * to keep it up to date.
- */
-export interface GetSystemStats {
-    /** Id or name */
-    server: string;
-}
-/**
- * List the processes running on the target server.
- * Response: [ListSystemProcessesResponse].
- *
- * Note. This does not hit the server directly. The procedures come from an
- * in memory cache on the core, which hits the server periodically
- * to keep it up to date.
- */
-export interface ListSystemProcesses {
-    /** Id or name */
-    server: string;
-}
-/**
- * Paginated endpoint serving historical (timeseries) server stats for graphing.
- * Response: [GetHistoricalServerStatsResponse].
- */
-export interface GetHistoricalServerStats {
-    /** Id or name */
-    server: string;
-    /** The granularity of the data. */
-    granularity: Timelength;
-    /**
-     * Page of historical data. Default is 0, which is the most recent data.
-     * Use with the `next_page` field of the response.
-     */
-    page?: number;
-}
-/** System stats stored on the database. */
-export interface SystemStatsRecord {
-    /** Unix timestamp in milliseconds */
-    ts: I64;
-    /** Server id */
-    sid: string;
-    /** Cpu usage percentage */
-    cpu_perc: number;
-    /** Memory used in GB */
-    mem_used_gb: number;
-    /** Total memory in GB */
-    mem_total_gb: number;
-    /** Disk used in GB */
-    disk_used_gb: number;
-    /** Total disk size in GB */
-    disk_total_gb: number;
-    /** Breakdown of individual disks, ie their usages, sizes, and mount points */
-    disks: SingleDiskUsage[];
-}
-/** Response to [GetHistoricalServerStats]. */
-export interface GetHistoricalServerStatsResponse {
-    /** The timeseries page of data. */
-    stats: SystemStatsRecord[];
-    /** If there is a next page of data, pass this to `page` to get it. */
-    next_page?: number;
-}
-/**
- * Gets a summary of data relating to all servers.
- * Response: [GetServersSummaryResponse].
- */
-export interface GetServersSummary {
-}
-/** Response for [GetServersSummary]. */
-export interface GetServersSummaryResponse {
-    /** The total number of servers. */
-    total: I64;
-    /** The number of healthy (`status: OK`) servers. */
-    healthy: I64;
-    /** The number of unhealthy servers. */
-    unhealthy: I64;
-    /** The number of disabled servers. */
-    disabled: I64;
-}
-/** Get a specific server template by id or name. Response: [ServerTemplate]. */
-export interface GetServerTemplate {
-    /** Id or name */
-    server_template: string;
-}
-/** List server templates matching structured query. Response: [ListServerTemplatesResponse]. */
-export interface ListServerTemplates {
-    query?: ServerTemplateQuery;
-}
-/** List server templates matching structured query. Response: [ListFullServerTemplatesResponse]. */
-export interface ListFullServerTemplates {
-    query?: ServerTemplateQuery;
-}
-/**
- * Gets a summary of data relating to all server templates.
- * Response: [GetServerTemplatesSummaryResponse].
- */
-export interface GetServerTemplatesSummary {
-}
-/** Response for [GetServerTemplatesSummary]. */
-export interface GetServerTemplatesSummaryResponse {
-    /** The total number of server templates. */
-    total: number;
-}
-/** Get a specific stack. Response: [Stack]. */
-export interface GetStack {
-    /** Id or name */
-    stack: string;
-}
-/** Lists a specific stacks services (the containers). Response: [ListStackServicesResponse]. */
-export interface ListStackServices {
-    /** Id or name */
-    stack: string;
-}
-/** Get a stack service's log. Response: [GetStackContainersResponse]. */
-export interface GetStackServiceLog {
-    /** Id or name */
-    stack: string;
-    /** The service to get the log for. */
-    service: string;
-    /**
-     * The number of lines of the log tail to include.
-     * Default: 100.
-     * Max: 5000.
-     */
-    tail: U64;
-    /** Enable `--timestamps` */
-    timestamps?: boolean;
-}
-/**
- * Search the deployment log's tail using `grep`. All lines go to stdout.
- * Response: [Log].
- *
- * Note. This call will hit the underlying server directly for most up to date log.
- */
-export interface SearchStackServiceLog {
-    /** Id or name */
-    stack: string;
-    /** The service to get the log for. */
-    service: string;
-    /** The terms to search for. */
-    terms: string[];
-    /**
-     * When searching for multiple terms, can use `AND` or `OR` combinator.
-     *
-     * - `AND`: Only include lines with **all** terms present in that line.
-     * - `OR`: Include lines that have one or more matches in the terms.
-     */
-    combinator?: SearchCombinator;
-    /** Invert the results, ie return all lines that DON'T match the terms / combinator. */
-    invert?: boolean;
-    /** Enable `--timestamps` */
-    timestamps?: boolean;
-}
-/**
- * Gets a list of existing values used as extra args across other stacks.
- * Useful to offer suggestions. Response: [ListCommonStackExtraArgsResponse]
- */
-export interface ListCommonStackExtraArgs {
-    /** optional structured query to filter stacks. */
-    query?: StackQuery;
-}
-/**
- * Gets a list of existing values used as build extra args across other stacks.
- * Useful to offer suggestions. Response: [ListCommonStackBuildExtraArgsResponse]
- */
-export interface ListCommonStackBuildExtraArgs {
-    /** optional structured query to filter stacks. */
-    query?: StackQuery;
-}
-/** List stacks matching optional query. Response: [ListStacksResponse]. */
-export interface ListStacks {
-    /** optional structured query to filter syncs. */
-    query?: StackQuery;
-}
-/** List stacks matching optional query. Response: [ListFullStacksResponse]. */
-export interface ListFullStacks {
-    /** optional structured query to filter stacks. */
-    query?: StackQuery;
-}
-/** Get current action state for the stack. Response: [StackActionState]. */
-export interface GetStackActionState {
-    /** Id or name */
-    stack: string;
-}
-/**
- * Gets a summary of data relating to all syncs.
- * Response: [GetStacksSummaryResponse].
- */
-export interface GetStacksSummary {
-}
-/** Response for [GetStacksSummary] */
-export interface GetStacksSummaryResponse {
-    /** The total number of stacks */
-    total: number;
-    /** The number of stacks with Running state. */
-    running: number;
-    /** The number of stacks with Stopped or Paused state. */
-    stopped: number;
-    /** The number of stacks with Down state. */
-    down: number;
-    /** The number of stacks with Unhealthy or Restarting or Dead or Created or Removing state. */
-    unhealthy: number;
-    /** The number of stacks with Unknown state. */
-    unknown: number;
-}
-/** Get a target stack's configured webhooks. Response: [GetStackWebhooksEnabledResponse]. */
-export interface GetStackWebhooksEnabled {
-    /** Id or name */
-    stack: string;
-}
-/** Response for [GetStackWebhooksEnabled] */
-export interface GetStackWebhooksEnabledResponse {
-    /**
-     * Whether the repo webhooks can even be managed.
-     * The repo owner must be in `github_webhook_app.owners` list to be managed.
-     */
-    managed: boolean;
-    /** Whether pushes to branch trigger refresh. Will always be false if managed is false. */
-    refresh_enabled: boolean;
-    /** Whether pushes to branch trigger stack execution. Will always be false if managed is false. */
-    deploy_enabled: boolean;
-}
-/** Get a specific sync. Response: [ResourceSync]. */
-export interface GetResourceSync {
-    /** Id or name */
-    sync: string;
-}
-/** List syncs matching optional query. Response: [ListResourceSyncsResponse]. */
-export interface ListResourceSyncs {
-    /** optional structured query to filter syncs. */
-    query?: ResourceSyncQuery;
-}
-/** List syncs matching optional query. Response: [ListFullResourceSyncsResponse]. */
-export interface ListFullResourceSyncs {
-    /** optional structured query to filter syncs. */
-    query?: ResourceSyncQuery;
-}
-/** Get current action state for the sync. Response: [ResourceSyncActionState]. */
-export interface GetResourceSyncActionState {
-    /** Id or name */
-    sync: string;
-}
-/**
- * Gets a summary of data relating to all syncs.
- * Response: [GetResourceSyncsSummaryResponse].
- */
-export interface GetResourceSyncsSummary {
-}
-/** Response for [GetResourceSyncsSummary] */
-export interface GetResourceSyncsSummaryResponse {
-    /** The total number of syncs */
-    total: number;
-    /** The number of syncs with Ok state. */
-    ok: number;
-    /** The number of syncs currently syncing. */
-    syncing: number;
-    /** The number of syncs with pending updates */
-    pending: number;
-    /** The number of syncs with failed state. */
-    failed: number;
-    /** The number of syncs with unknown state. */
-    unknown: number;
-}
-/** Get a target Sync's configured webhooks. Response: [GetSyncWebhooksEnabledResponse]. */
-export interface GetSyncWebhooksEnabled {
-    /** Id or name */
-    sync: string;
-}
-/** Response for [GetSyncWebhooksEnabled] */
-export interface GetSyncWebhooksEnabledResponse {
-    /**
-     * Whether the repo webhooks can even be managed.
-     * The repo owner must be in `github_webhook_app.owners` list to be managed.
-     */
-    managed: boolean;
-    /** Whether pushes to branch trigger refresh. Will always be false if managed is false. */
-    refresh_enabled: boolean;
-    /** Whether pushes to branch trigger sync execution. Will always be false if managed is false. */
-    sync_enabled: boolean;
-}
-/** Get data for a specific tag. Response [Tag]. */
-export interface GetTag {
-    /** Id or name */
-    tag: string;
-}
-/**
- * List data for tags matching optional mongo query.
- * Response: [ListTagsResponse].
- */
-export interface ListTags {
-    query?: MongoDocument;
-}
-/**
- * Get pretty formatted monrun sync toml for all resources
- * which the user has permissions to view.
- * Response: [TomlResponse].
- */
-export interface ExportAllResourcesToToml {
-    /** Tag name or id. Empty array will not filter by tag. */
-    tags?: string[];
-}
-/**
- * Get pretty formatted monrun sync toml for specific resources and user groups.
- * Response: [TomlResponse].
- */
-export interface ExportResourcesToToml {
-    /** The targets to include in the export. */
-    targets?: ResourceTarget[];
-    /** The user group names or ids to include in the export. */
-    user_groups?: string[];
-    /** Whether to include variables */
-    include_variables?: boolean;
-}
-/**
- * Get all data for the target update.
- * Response: [Update].
- */
-export interface GetUpdate {
-    /** The update id. */
-    id: string;
-}
-/**
- * Paginated endpoint for updates matching optional query.
- * More recent updates will be returned first.
- */
-export interface ListUpdates {
-    /** An optional mongo query to filter the updates. */
-    query?: MongoDocument;
-    /**
-     * Page of updates. Default is 0, which is the most recent data.
-     * Use with the `next_page` field of the response.
-     */
-    page?: number;
-}
-/** Minimal representation of an action performed by Komodo. */
-export interface UpdateListItem {
-    /** The id of the update */
-    id: string;
-    /** Which operation was run */
-    operation: Operation;
-    /** The starting time of the operation */
-    start_ts: I64;
-    /** Whether the operation was successful */
-    success: boolean;
-    /** The username of the user performing update */
-    username: string;
-    /**
-     * The user id that triggered the update.
-     *
-     * Also can take these values for operations triggered automatically:
-     * - `Procedure`: The operation was triggered as part of a procedure run
-     * - `Github`: The operation was triggered by a github webhook
-     * - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
-     */
-    operator: string;
-    /** The target resource to which this update refers */
-    target: ResourceTarget;
-    /**
-     * The status of the update
-     * - `Queued`
-     * - `InProgress`
-     * - `Complete`
-     */
-    status: UpdateStatus;
-    /** An optional version on the update, ie build version or deployed version. */
-    version?: Version;
-    /** Some unstructured, operation specific data. Not for general usage. */
-    other_data?: string;
-}
-/** Response for [ListUpdates]. */
-export interface ListUpdatesResponse {
-    /** The page of updates, sorted by timestamp descending. */
-    updates: UpdateListItem[];
-    /** If there is a next page of data, pass this to `page` to get it. */
-    next_page?: number;
-}
-/**
- * Gets list of api keys for the calling user.
- * Response: [ListApiKeysResponse]
- */
-export interface ListApiKeys {
-}
-/**
- * **Admin only.**
- * Gets list of api keys for the user.
- * Will still fail if you call for a user_id that isn't a service user.
- * Response: [ListApiKeysForServiceUserResponse]
- */
-export interface ListApiKeysForServiceUser {
-    /** Id or username */
-    user: string;
-}
-/**
- * **Admin only.**
- * Find a user.
- * Response: [FindUserResponse]
- */
-export interface FindUser {
-    /** Id or username */
-    user: string;
-}
-/**
- * **Admin only.**
- * Gets list of Komodo users.
- * Response: [ListUsersResponse]
- */
-export interface ListUsers {
-}
-/**
- * Gets the username of a specific user.
- * Response: [GetUsernameResponse]
- */
-export interface GetUsername {
-    /** The id of the user. */
-    user_id: string;
-}
-/** Response for [GetUsername]. */
-export interface GetUsernameResponse {
-    /** The username of the user. */
-    username: string;
-    /** An optional icon for the user. */
-    avatar?: string;
-}
-/**
- * Get a specific user group by name or id.
- * Response: [UserGroup].
- */
-export interface GetUserGroup {
-    /** Name or Id */
-    user_group: string;
-}
-/**
- * List all user groups which user can see. Response: [ListUserGroupsResponse].
- *
- * Admins can see all user groups,
- * and users can see user groups to which they belong.
- */
-export interface ListUserGroups {
-}
-/**
- * List all available global variables.
- * Response: [Variable]
- *
- * Note. For non admin users making this call,
- * secret variables will have their values obscured.
- */
-export interface GetVariable {
-    /** The name of the variable to get. */
-    name: string;
-}
-/**
- * List all available global variables.
- * Response: [ListVariablesResponse]
- *
- * Note. For non admin users making this call,
- * secret variables will have their values obscured.
- */
-export interface ListVariables {
-}
-/**
- * Push a resource to the front of the users 10 most recently viewed resources.
- * Response: [NoData].
- */
-export interface PushRecentlyViewed {
-    /** The target to push. */
-    resource: ResourceTarget;
-}
-/**
- * Set the time the user last opened the UI updates.
- * Used for unseen notification dot.
- * Response: [NoData]
- */
-export interface SetLastSeenUpdate {
-}
-/**
- * Create an api key for the calling user.
- * Response: [CreateApiKeyResponse].
- *
- * Note. After the response is served, there will be no way
- * to get the secret later.
- */
-export interface CreateApiKey {
-    /** The name for the api key. */
-    name: string;
-    /**
-     * A unix timestamp in millseconds specifying api key expire time.
-     * Default is 0, which means no expiry.
-     */
-    expires?: I64;
-}
-/**
- * Delete an api key for the calling user.
- * Response: [NoData]
- */
-export interface DeleteApiKey {
-    /** The key which the user intends to delete. */
-    key: string;
-}
-/** Create a action. Response: [Action]. */
-export interface CreateAction {
-    /** The name given to newly created action. */
-    name: string;
-    /** Optional partial config to initialize the action with. */
-    config: _PartialActionConfig;
-}
-/**
- * Creates a new action with given `name` and the configuration
- * of the action at the given `id`. Response: [Action].
- */
-export interface CopyAction {
-    /** The name of the new action. */
-    name: string;
-    /** The id of the action to copy. */
-    id: string;
-}
-/**
- * Deletes the action at the given id, and returns the deleted action.
- * Response: [Action]
- */
-export interface DeleteAction {
-    /** The id or name of the action to delete. */
-    id: string;
-}
-/**
- * Update the action at the given id, and return the updated action.
- * Response: [Action].
- *
- * Note. This method updates only the fields which are set in the [_PartialActionConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateAction {
-    /** The id of the action to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: _PartialActionConfig;
-}
-/**
- * Create a webhook on the github action attached to the Action resource.
- * passed in request. Response: [CreateActionWebhookResponse]
- */
-export interface CreateActionWebhook {
-    /** Id or name */
-    action: string;
-}
-/**
- * Delete the webhook on the github action attached to the Action resource.
- * passed in request. Response: [DeleteActionWebhookResponse]
- */
-export interface DeleteActionWebhook {
-    /** Id or name */
-    action: string;
-}
-/** Create an alerter. Response: [Alerter]. */
-export interface CreateAlerter {
-    /** The name given to newly created alerter. */
-    name: string;
-    /** Optional partial config to initialize the alerter with. */
-    config: _PartialAlerterConfig;
-}
-/**
- * Creates a new alerter with given `name` and the configuration
- * of the alerter at the given `id`. Response: [Alerter].
- */
-export interface CopyAlerter {
-    /** The name of the new alerter. */
-    name: string;
-    /** The id of the alerter to copy. */
-    id: string;
-}
-/**
- * Deletes the alerter at the given id, and returns the deleted alerter.
- * Response: [Alerter]
- */
-export interface DeleteAlerter {
-    /** The id or name of the alerter to delete. */
-    id: string;
-}
-/**
- * Update the alerter at the given id, and return the updated alerter. Response: [Alerter].
- *
- * Note. This method updates only the fields which are set in the [PartialAlerterConfig][crate::entities::alerter::PartialAlerterConfig],
- * effectively merging diffs into the final document. This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateAlerter {
-    /** The id of the alerter to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: _PartialAlerterConfig;
-}
-/**
- * Admin only method to create an api key for a service user.
- * Response: [CreateApiKeyResponse].
- */
-export interface CreateApiKeyForServiceUser {
-    /** Must be service user */
-    user_id: string;
-    /** The name for the api key */
-    name: string;
-    /**
-     * A unix timestamp in millseconds specifying api key expire time.
-     * Default is 0, which means no expiry.
-     */
-    expires?: I64;
-}
-/**
- * Admin only method to delete an api key for a service user.
- * Response: [NoData].
- */
-export interface DeleteApiKeyForServiceUser {
-    key: string;
-}
-/** Create a build. Response: [Build]. */
-export interface CreateBuild {
-    /** The name given to newly created build. */
-    name: string;
-    /** Optional partial config to initialize the build with. */
-    config: _PartialBuildConfig;
-}
-/**
- * Creates a new build with given `name` and the configuration
- * of the build at the given `id`. Response: [Build].
- */
-export interface CopyBuild {
-    /** The name of the new build. */
-    name: string;
-    /** The id of the build to copy. */
-    id: string;
-}
-/**
- * Deletes the build at the given id, and returns the deleted build.
- * Response: [Build]
- */
-export interface DeleteBuild {
-    /** The id or name of the build to delete. */
-    id: string;
-}
-/**
- * Update the build at the given id, and return the updated build.
- * Response: [Build].
- *
- * Note. This method updates only the fields which are set in the [_PartialBuildConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateBuild {
-    /** The id of the build to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: _PartialBuildConfig;
-}
-/** Trigger a refresh of the cached latest hash and message. */
-export interface RefreshBuildCache {
-    /** Id or name */
-    build: string;
-}
-/**
- * Create a webhook on the github repo attached to the build
- * passed in request. Response: [CreateBuildWebhookResponse]
- */
-export interface CreateBuildWebhook {
-    /** Id or name */
-    build: string;
-}
-/**
- * Delete a webhook on the github repo attached to the build
- * passed in request. Response: [CreateBuildWebhookResponse]
- */
-export interface DeleteBuildWebhook {
-    /** Id or name */
-    build: string;
-}
-/** Partial representation of [BuilderConfig] */
-export type PartialBuilderConfig = {
-    type: "Server";
-    params: _PartialServerBuilderConfig;
-} | {
-    type: "Aws";
-    params: _PartialAwsBuilderConfig;
-};
-/** Create a builder. Response: [Builder]. */
-export interface CreateBuilder {
-    /** The name given to newly created builder. */
-    name: string;
-    /** Optional partial config to initialize the builder with. */
-    config: PartialBuilderConfig;
-}
-/**
- * Creates a new builder with given `name` and the configuration
- * of the builder at the given `id`. Response: [Builder]
- */
-export interface CopyBuilder {
-    /** The name of the new builder. */
-    name: string;
-    /** The id of the builder to copy. */
-    id: string;
-}
-/**
- * Deletes the builder at the given id, and returns the deleted builder.
- * Response: [Builder]
- */
-export interface DeleteBuilder {
-    /** The id or name of the builder to delete. */
-    id: string;
-}
-/**
- * Update the builder at the given id, and return the updated builder.
- * Response: [Builder].
- *
- * Note. This method updates only the fields which are set in the [PartialBuilderConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateBuilder {
-    /** The id of the builder to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: PartialBuilderConfig;
-}
-/** Create a deployment. Response: [Deployment]. */
-export interface CreateDeployment {
-    /** The name given to newly created deployment. */
-    name: string;
-    /** Optional partial config to initialize the deployment with. */
-    config: _PartialDeploymentConfig;
-}
-/**
- * Creates a new deployment with given `name` and the configuration
- * of the deployment at the given `id`. Response: [Deployment]
- */
-export interface CopyDeployment {
-    /** The name of the new deployment. */
-    name: string;
-    /** The id of the deployment to copy. */
-    id: string;
-}
-/**
- * Deletes the deployment at the given id, and returns the deleted deployment.
- * Response: [Deployment].
- *
- * Note. If the associated container is running, it will be deleted as part of
- * the deployment clean up.
- */
-export interface DeleteDeployment {
-    /** The id or name of the deployment to delete. */
-    id: string;
-}
-/**
- * Update the deployment at the given id, and return the updated deployment.
- * Response: [Deployment].
- *
- * Note. If the attached server for the deployment changes,
- * the deployment will be deleted / cleaned up on the old server.
- *
- * Note. This method updates only the fields which are set in the [_PartialDeploymentConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateDeployment {
-    /** The deployment id to update. */
-    id: string;
-    /** The partial config update. */
-    config: _PartialDeploymentConfig;
-}
-/**
- * Rename the deployment at id to the given name. Response: [Update].
- *
- * Note. If a container is created for the deployment, it will be renamed using
- * `docker rename ...`.
- */
-export interface RenameDeployment {
-    /** The id of the deployment to rename. */
-    id: string;
-    /** The new name. */
-    name: string;
-}
-/**
- * Update a resources description.
- * Response: [NoData].
- */
-export interface UpdateDescription {
-    /** The target resource to set description for. */
-    target: ResourceTarget;
-    /** The new description. */
-    description: string;
-}
-/**
- * **Admin only.** Update a user or user groups permission on a resource.
- * Response: [NoData].
- */
-export interface UpdatePermissionOnTarget {
-    /** Specify the user or user group. */
-    user_target: UserTarget;
-    /** Specify the target resource. */
-    resource_target: ResourceTarget;
-    /** Specify the permission level. */
-    permission: PermissionLevel;
-}
-/**
- * **Admin only.** Update a user or user groups base permission level on a resource type.
- * Response: [NoData].
- */
-export interface UpdatePermissionOnResourceType {
-    /** Specify the user or user group. */
-    user_target: UserTarget;
-    /** The resource type: eg. Server, Build, Deployment, etc. */
-    resource_type: ResourceTarget["type"];
-    /** The base permission level. */
-    permission: PermissionLevel;
-}
-/**
- * **Admin only.** Update a user's "base" permissions, eg. "enabled".
- * Response: [NoData].
- */
-export interface UpdateUserBasePermissions {
-    /** The target user. */
-    user_id: string;
-    /** If specified, will update users enabled state. */
-    enabled?: boolean;
-    /** If specified, will update user's ability to create servers. */
-    create_servers?: boolean;
-    /** If specified, will update user's ability to create builds. */
-    create_builds?: boolean;
-}
-/**
- * **Super Admin only.** Update's whether a user is admin.
- * Response: [NoData].
- */
-export interface UpdateUserAdmin {
-    /** The target user. */
-    user_id: string;
-    /** Whether user should be admin. */
-    admin: boolean;
-}
-/** Create a procedure. Response: [Procedure]. */
-export interface CreateProcedure {
-    /** The name given to newly created build. */
-    name: string;
-    /** Optional partial config to initialize the procedure with. */
-    config: _PartialProcedureConfig;
-}
-/**
- * Creates a new procedure with given `name` and the configuration
- * of the procedure at the given `id`. Response: [Procedure].
- */
-export interface CopyProcedure {
-    /** The name of the new procedure. */
-    name: string;
-    /** The id of the procedure to copy. */
-    id: string;
-}
-/**
- * Deletes the procedure at the given id, and returns the deleted procedure.
- * Response: [Procedure]
- */
-export interface DeleteProcedure {
-    /** The id or name of the procedure to delete. */
-    id: string;
-}
-/**
- * Update the procedure at the given id, and return the updated procedure.
- * Response: [Procedure].
- *
- * Note. This method updates only the fields which are set in the [_PartialProcedureConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateProcedure {
-    /** The id of the procedure to update. */
-    id: string;
-    /** The partial config update. */
-    config: _PartialProcedureConfig;
-}
-/**
- * **Admin only.** Create a git provider account.
- * Response: [GitProviderAccount].
- */
-export interface CreateGitProviderAccount {
-    /**
-     * The initial account config. Anything in the _id field will be ignored,
-     * as this is generated on creation.
-     */
-    account: _PartialGitProviderAccount;
-}
-/**
- * **Admin only.** Update a git provider account.
- * Response: [GitProviderAccount].
- */
-export interface UpdateGitProviderAccount {
-    /** The id of the git provider account to update. */
-    id: string;
-    /** The partial git provider account. */
-    account: _PartialGitProviderAccount;
-}
-/**
- * **Admin only.** Delete a git provider account.
- * Response: [User].
- */
-export interface DeleteGitProviderAccount {
-    /** The id of the git provider to delete */
-    id: string;
-}
-/**
- * **Admin only.** Create a docker registry account.
- * Response: [DockerRegistryAccount].
- */
-export interface CreateDockerRegistryAccount {
-    account: _PartialDockerRegistryAccount;
-}
-/**
- * **Admin only.** Update a docker registry account.
- * Response: [DockerRegistryAccount].
- */
-export interface UpdateDockerRegistryAccount {
-    /** The id of the docker registry to update */
-    id: string;
-    /** The partial docker registry account. */
-    account: _PartialDockerRegistryAccount;
-}
-/**
- * **Admin only.** Delete a docker registry account.
- * Response: [DockerRegistryAccount].
- */
-export interface DeleteDockerRegistryAccount {
-    /** The id of the docker registry account to delete */
-    id: string;
-}
-/** Create a repo. Response: [Repo]. */
-export interface CreateRepo {
-    /** The name given to newly created repo. */
-    name: string;
-    /** Optional partial config to initialize the repo with. */
-    config: _PartialRepoConfig;
-}
-/**
- * Creates a new repo with given `name` and the configuration
- * of the repo at the given `id`. Response: [Repo].
- */
-export interface CopyRepo {
-    /** The name of the new repo. */
-    name: string;
-    /** The id of the repo to copy. */
-    id: string;
-}
-/**
- * Deletes the repo at the given id, and returns the deleted repo.
- * Response: [Repo]
- */
-export interface DeleteRepo {
-    /** The id or name of the repo to delete. */
-    id: string;
-}
-/**
- * Update the repo at the given id, and return the updated repo.
- * Response: [Repo].
- *
- * Note. If the attached server for the repo changes,
- * the repo will be deleted / cleaned up on the old server.
- *
- * Note. This method updates only the fields which are set in the [_PartialRepoConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateRepo {
-    /** The id of the repo to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: _PartialRepoConfig;
-}
-/** Trigger a refresh of the cached latest hash and message. */
-export interface RefreshRepoCache {
-    /** Id or name */
-    repo: string;
-}
-export declare enum RepoWebhookAction {
-    Clone = "Clone",
-    Pull = "Pull",
-    Build = "Build"
-}
-/**
- * Create a webhook on the github repo attached to the (Komodo) Repo resource.
- * passed in request. Response: [CreateRepoWebhookResponse]
- */
-export interface CreateRepoWebhook {
-    /** Id or name */
-    repo: string;
-    /** "Clone" or "Pull" or "Build" */
-    action: RepoWebhookAction;
-}
-/**
- * Delete the webhook on the github repo attached to the (Komodo) Repo resource.
- * passed in request. Response: [DeleteRepoWebhookResponse]
- */
-export interface DeleteRepoWebhook {
-    /** Id or name */
-    repo: string;
-    /** "Clone" or "Pull" or "Build" */
-    action: RepoWebhookAction;
-}
-/** Create a server. Response: [Server]. */
-export interface CreateServer {
-    /** The name given to newly created server. */
-    name: string;
-    /** Optional partial config to initialize the server with. */
-    config: _PartialServerConfig;
-}
-/**
- * Deletes the server at the given id, and returns the deleted server.
- * Response: [Server]
- */
-export interface DeleteServer {
-    /** The id or name of the server to delete. */
-    id: string;
-}
-/**
- * Update the server at the given id, and return the updated server.
- * Response: [Server].
- *
- * Note. This method updates only the fields which are set in the [_PartialServerConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateServer {
-    /** The id of the server to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: _PartialServerConfig;
-}
-/** Rename the server at id to the given name. Response: [Update]. */
-export interface RenameServer {
-    /** The id of the server to rename. */
-    id: string;
-    /** The new name. */
-    name: string;
-}
-/**
- * Create a docker network on the server.
- * Respone: [Update]
- */
-export interface CreateNetwork {
-    /** Id or name */
-    server: string;
-    /** The name of the network to create. */
-    name: string;
-}
-export type PartialServerTemplateConfig = {
-    type: "Aws";
-    params: _PartialAwsServerTemplateConfig;
-} | {
-    type: "Hetzner";
-    params: _PartialHetznerServerTemplateConfig;
-};
-/** Create a server template. Response: [ServerTemplate]. */
-export interface CreateServerTemplate {
-    /** The name given to newly created server template. */
-    name: string;
-    /** Optional partial config to initialize the server template with. */
-    config: PartialServerTemplateConfig;
-}
-/**
- * Creates a new server template with given `name` and the configuration
- * of the server template at the given `id`. Response: [ServerTemplate]
- */
-export interface CopyServerTemplate {
-    /** The name of the new server template. */
-    name: string;
-    /** The id of the server template to copy. */
-    id: string;
-}
-/**
- * Deletes the server template at the given id, and returns the deleted server template.
- * Response: [ServerTemplate]
- */
-export interface DeleteServerTemplate {
-    /** The id or name of the server template to delete. */
-    id: string;
-}
-/**
- * Update the server template at the given id, and return the updated server template.
- * Response: [ServerTemplate].
- *
- * Note. This method updates only the fields which are set in the [PartialServerTemplateConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateServerTemplate {
-    /** The id of the server template to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: PartialServerTemplateConfig;
-}
-/** Create a stack. Response: [Stack]. */
-export interface CreateStack {
-    /** The name given to newly created stack. */
-    name: string;
-    /** Optional partial config to initialize the stack with. */
-    config: _PartialStackConfig;
-}
-/**
- * Creates a new stack with given `name` and the configuration
- * of the stack at the given `id`. Response: [Stack].
- */
-export interface CopyStack {
-    /** The name of the new stack. */
-    name: string;
-    /** The id of the stack to copy. */
-    id: string;
-}
-/**
- * Deletes the stack at the given id, and returns the deleted stack.
- * Response: [Stack]
- */
-export interface DeleteStack {
-    /** The id or name of the stack to delete. */
-    id: string;
-}
-/**
- * Update the stack at the given id, and return the updated stack.
- * Response: [Stack].
- *
- * Note. If the attached server for the stack changes,
- * the stack will be deleted / cleaned up on the old server.
- *
- * Note. This method updates only the fields which are set in the [_PartialStackConfig],
- * merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateStack {
-    /** The id of the Stack to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: _PartialStackConfig;
-}
-/** Rename the stack at id to the given name. Response: [Update]. */
-export interface RenameStack {
-    /** The id of the stack to rename. */
-    id: string;
-    /** The new name. */
-    name: string;
-}
-/** Update file contents in Files on Server or Git Repo mode. Response: [Update]. */
-export interface WriteStackFileContents {
-    /** The name or id of the target Stack. */
-    stack: string;
-    /**
-     * The file path relative to the stack run directory,
-     * or absolute path.
-     */
-    file_path: string;
-    /** The contents to write. */
-    contents: string;
-}
-/**
- * Trigger a refresh of the cached compose file contents.
- * Refreshes:
- * - Whether the remote file is missing
- * - The latest json, and for repos, the remote contents, hash, and message.
- */
-export interface RefreshStackCache {
-    /** Id or name */
-    stack: string;
-}
-export declare enum StackWebhookAction {
-    Refresh = "Refresh",
-    Deploy = "Deploy"
-}
-/**
- * Create a webhook on the github repo attached to the stack
- * passed in request. Response: [CreateStackWebhookResponse]
- */
-export interface CreateStackWebhook {
-    /** Id or name */
-    stack: string;
-    /** "Refresh" or "Deploy" */
-    action: StackWebhookAction;
-}
-/**
- * Delete the webhook on the github repo attached to the stack
- * passed in request. Response: [DeleteStackWebhookResponse]
- */
-export interface DeleteStackWebhook {
-    /** Id or name */
-    stack: string;
-    /** "Refresh" or "Deploy" */
-    action: StackWebhookAction;
-}
-/** Create a sync. Response: [ResourceSync]. */
-export interface CreateResourceSync {
-    /** The name given to newly created sync. */
-    name: string;
-    /** Optional partial config to initialize the sync with. */
-    config: _PartialResourceSyncConfig;
-}
-/**
- * Creates a new sync with given `name` and the configuration
- * of the sync at the given `id`. Response: [ResourceSync].
- */
-export interface CopyResourceSync {
-    /** The name of the new sync. */
-    name: string;
-    /** The id of the sync to copy. */
-    id: string;
-}
-/**
- * Deletes the sync at the given id, and returns the deleted sync.
- * Response: [ResourceSync]
- */
-export interface DeleteResourceSync {
-    /** The id or name of the sync to delete. */
-    id: string;
-}
-/**
- * Update the sync at the given id, and return the updated sync.
- * Response: [ResourceSync].
- *
- * Note. This method updates only the fields which are set in the [_PartialResourceSyncConfig],
- * effectively merging diffs into the final document.
- * This is helpful when multiple users are using
- * the same resources concurrently by ensuring no unintentional
- * field changes occur from out of date local state.
- */
-export interface UpdateResourceSync {
-    /** The id of the sync to update. */
-    id: string;
-    /** The partial config update to apply. */
-    config: _PartialResourceSyncConfig;
-}
-/** Trigger a refresh of the computed diff logs for view. Response: [ResourceSync] */
-export interface RefreshResourceSyncPending {
-    /** Id or name */
-    sync: string;
-}
-/** Rename the stack at id to the given name. Response: [Update]. */
-export interface WriteSyncFileContents {
-    /** The name or id of the target Sync. */
-    sync: string;
-    /**
-     * If this file was under a resource folder, this will be the folder.
-     * Otherwise, it should be empty string.
-     */
-    resource_path: string;
-    /** The file path relative to the resource path. */
-    file_path: string;
-    /** The contents to write. */
-    contents: string;
-}
-/**
- * Exports matching resources, and writes to the target sync's resource file. Response: [Update]
- *
- * Note. Will fail if the Sync is not `managed`.
- */
-export interface CommitSync {
-    /** Id or name */
-    sync: string;
-}
-export declare enum SyncWebhookAction {
-    Refresh = "Refresh",
-    Sync = "Sync"
-}
-/**
- * Create a webhook on the github repo attached to the sync
- * passed in request. Response: [CreateSyncWebhookResponse]
- */
-export interface CreateSyncWebhook {
-    /** Id or name */
-    sync: string;
-    /** "Refresh" or "Sync" */
-    action: SyncWebhookAction;
-}
-/**
- * Delete the webhook on the github repo attached to the sync
- * passed in request. Response: [DeleteSyncWebhookResponse]
- */
-export interface DeleteSyncWebhook {
-    /** Id or name */
-    sync: string;
-    /** "Refresh" or "Sync" */
-    action: SyncWebhookAction;
-}
-/** Create a tag. Response: [Tag]. */
-export interface CreateTag {
-    /** The name of the tag. */
-    name: string;
-}
-/**
- * Delete a tag, and return the deleted tag. Response: [Tag].
- *
- * Note. Will also remove this tag from all attached resources.
- */
-export interface DeleteTag {
-    /** The id of the tag to delete. */
-    id: string;
-}
-/** Rename a tag at id. Response: [Tag]. */
-export interface RenameTag {
-    /** The id of the tag to rename. */
-    id: string;
-    /** The new name of the tag. */
-    name: string;
-}
-/**
- * Update the tags on a resource.
- * Response: [NoData]
- */
-export interface UpdateTagsOnResource {
-    target: ResourceTarget;
-    /** Tag Ids */
-    tags: string[];
-}
-/**
- * **Only for local users**. Update the calling users username.
- * Response: [NoData].
- */
-export interface UpdateUserUsername {
-    username: string;
-}
-/**
- * **Only for local users**. Update the calling users password.
- * Response: [NoData].
- */
-export interface UpdateUserPassword {
-    password: string;
-}
-/**
- * **Admin only**. Delete a user.
- * Admins can delete any non-admin user.
- * Only Super Admin can delete an admin.
- * No users can delete a Super Admin user.
- * User cannot delete themselves.
- * Response: [NoData].
- */
-export interface DeleteUser {
-    /** User id or username */
-    user: string;
-}
-/**
- * **Admin only.** Create a service user.
- * Response: [User].
- */
-export interface CreateServiceUser {
-    /** The username for the service user. */
-    username: string;
-    /** A description for the service user. */
-    description: string;
-}
-/**
- * **Admin only.** Update a service user's description.
- * Response: [User].
- */
-export interface UpdateServiceUserDescription {
-    /** The service user's username */
-    username: string;
-    /** A new description for the service user. */
-    description: string;
-}
-/** **Admin only.** Create a user group. Response: [UserGroup] */
-export interface CreateUserGroup {
-    /** The name to assign to the new UserGroup */
-    name: string;
-}
-/** **Admin only.** Rename a user group. Response: [UserGroup] */
-export interface RenameUserGroup {
-    /** The id of the UserGroup */
-    id: string;
-    /** The new name for the UserGroup */
-    name: string;
-}
-/** **Admin only.** Delete a user group. Response: [UserGroup] */
-export interface DeleteUserGroup {
-    /** The id of the UserGroup */
-    id: string;
-}
+export interface __Serror {
+    error: string;
+    trace: string[];
+}
+export type _Serror = __Serror;
 /** **Admin only.** Add a user to a user group. Response: [UserGroup] */
 export interface AddUserToUserGroup {
     /** The name or id of UserGroup that user should be added to. */
     user_group: string;
     /** The id or username of the user to add */
     user: string;
-}
-/** **Admin only.** Remove a user from a user group. Response: [UserGroup] */
-export interface RemoveUserFromUserGroup {
-    /** The name or id of UserGroup that user should be removed from. */
-    user_group: string;
-    /** The id or username of the user to remove */
-    user: string;
-}
-/**
- * **Admin only.** Completely override the user in the group.
- * Response: [UserGroup]
- */
-export interface SetUsersInUserGroup {
-    /** Id or name. */
-    user_group: string;
-    /** The user ids or usernames to hard set as the group's users. */
-    users: string[];
-}
-/** **Admin only.** Create variable. Response: [Variable]. */
-export interface CreateVariable {
-    /** The name of the variable to create. */
-    name: string;
-    /** The initial value of the variable. defualt: "". */
-    value?: string;
-    /** The initial value of the description. default: "". */
-    description?: string;
-    /** Whether to make this a secret variable. */
-    is_secret?: boolean;
-}
-/** **Admin only.** Update variable value. Response: [Variable]. */
-export interface UpdateVariableValue {
-    /** The name of the variable to update. */
-    name: string;
-    /** The value to set. */
-    value: string;
-}
-/** **Admin only.** Update variable description. Response: [Variable]. */
-export interface UpdateVariableDescription {
-    /** The name of the variable to update. */
-    name: string;
-    /** The description to set. */
-    description: string;
-}
-/** **Admin only.** Update whether variable is secret. Response: [Variable]. */
-export interface UpdateVariableIsSecret {
-    /** The name of the variable to update. */
-    name: string;
-    /** Whether variable is secret. */
-    is_secret: boolean;
-}
-/** **Admin only.** Delete a variable. Response: [Variable]. */
-export interface DeleteVariable {
-    name: string;
-}
-/** Configuration for a Custom alerter endpoint. */
-export interface CustomAlerterEndpoint {
-    /** The http/s endpoint to send the POST to */
-    url: string;
-}
-/** Configuration for a Slack alerter. */
-export interface SlackAlerterEndpoint {
-    /** The Slack app webhook url */
-    url: string;
-}
-/** Configuration for a Discord alerter. */
-export interface DiscordAlerterEndpoint {
-    /** The Discord webhook url */
-    url: string;
-}
-/** Configuration for a Komodo Server Builder. */
-export interface ServerBuilderConfig {
-    /** The server id of the builder */
-    server_id: string;
 }
 /** Configuration for an AWS builder. */
 export interface AwsBuilderConfig {
@@ -6086,78 +3269,6 @@ export interface AwsBuilderConfig {
     docker_registries?: DockerRegistry[];
     /** Which secrets are available on the AMI. */
     secrets?: string[];
-}
-export interface Conversion {
-    /** reference on the server. */
-    local: string;
-    /** reference in the container. */
-    container: string;
-}
-export interface TerminationSignalLabel {
-    signal: TerminationSignal;
-    label: string;
-}
-export interface NameAndId {
-    name: string;
-    id: string;
-}
-export declare enum PortTypeEnum {
-    EMPTY = "",
-    TCP = "tcp",
-    UDP = "udp",
-    SCTP = "sctp"
-}
-/** An open port on a container */
-export interface Port {
-    /** Host IP address that the container's port is mapped to */
-    IP?: string;
-    /** Port on the container */
-    PrivatePort?: number;
-    /** Port exposed on the host */
-    PublicPort?: number;
-    Type?: PortTypeEnum;
-}
-export interface EnvironmentVar {
-    variable: string;
-    value: string;
-}
-export interface LatestCommit {
-    hash: string;
-    message: string;
-}
-export interface CloneArgs {
-    /** Resource name (eg Build name, Repo name) */
-    name: string;
-    /** Git provider domain. Default: `github.com` */
-    provider: string;
-    /** Use https (vs http). */
-    https: boolean;
-    /** Full repo identifier. <namespace>/<repo_name> */
-    repo?: string;
-    /** Git Branch. Default: `main` */
-    branch: string;
-    /** Specific commit hash. Optional */
-    commit?: string;
-    /** The clone destination path */
-    destination?: string;
-    /** Command to run after the repo has been cloned */
-    on_clone?: SystemCommand;
-    /** Command to run after the repo has been pulled */
-    on_pull?: SystemCommand;
-    /** Configure the account used to access repo (if private) */
-    account?: string;
-}
-/** The health of a part of the server. */
-export interface ServerHealthState {
-    level: SeverityLevel;
-    /** Whether the health is good enough to close an open alert. */
-    should_close_alert: boolean;
-}
-/** Summary of the health of the server. */
-export interface ServerHealth {
-    cpu: ServerHealthState;
-    mem: ServerHealthState;
-    disks: Record<string, ServerHealthState>;
 }
 export declare enum AwsVolumeType {
     Gp2 = "gp2",
@@ -6216,6 +3327,1539 @@ export interface AwsServerTemplateConfig {
     volumes: AwsVolume[];
     /** The user data to deploy the instance with. */
     user_data: string;
+}
+/**
+ * Builds the target repo, using the attached builder. Response: [Update].
+ *
+ * Note. Repo must have builder attached at `builder_id`.
+ *
+ * 1. Spawns the target builder instance (For AWS type. For Server type, just use CloneRepo).
+ * 2. Clones the repo on the builder using `git clone https://{$token?}@github.com/${repo} -b ${branch}`.
+ * The token will only be used if a github account is specified,
+ * and must be declared in the periphery configuration on the builder instance.
+ * 3. If `on_clone` and `on_pull` are specified, they will be executed.
+ * `on_clone` will be executed before `on_pull`.
+ */
+export interface BuildRepo {
+    /** Id or name */
+    repo: string;
+}
+/** Item in [GetBuildMonthlyStatsResponse] */
+export interface BuildStatsDay {
+    time: number;
+    count: number;
+    ts: number;
+}
+/**
+ * Cancels the target build.
+ * Only does anything if the build is `building` when called.
+ * Response: [Update]
+ */
+export interface CancelBuild {
+    /** Can be id or name */
+    build: string;
+}
+/**
+ * Cancels the target repo build.
+ * Only does anything if the repo build is `building` when called.
+ * Response: [Update]
+ */
+export interface CancelRepoBuild {
+    /** Can be id or name */
+    repo: string;
+}
+export interface CloneArgs {
+    /** Resource name (eg Build name, Repo name) */
+    name: string;
+    /** Git provider domain. Default: `github.com` */
+    provider: string;
+    /** Use https (vs http). */
+    https: boolean;
+    /** Full repo identifier. <namespace>/<repo_name> */
+    repo?: string;
+    /** Git Branch. Default: `main` */
+    branch: string;
+    /** Specific commit hash. Optional */
+    commit?: string;
+    /** The clone destination path */
+    destination?: string;
+    /** Command to run after the repo has been cloned */
+    on_clone?: SystemCommand;
+    /** Command to run after the repo has been pulled */
+    on_pull?: SystemCommand;
+    /** Configure the account used to access repo (if private) */
+    account?: string;
+}
+/**
+ * Clones the target repo. Response: [Update].
+ *
+ * Note. Repo must have server attached at `server_id`.
+ *
+ * 1. Clones the repo on the target server using `git clone https://{$token?}@github.com/${repo} -b ${branch}`.
+ * The token will only be used if a github account is specified,
+ * and must be declared in the periphery configuration on the target server.
+ * 2. If `on_clone` and `on_pull` are specified, they will be executed.
+ * `on_clone` will be executed before `on_pull`.
+ */
+export interface CloneRepo {
+    /** Id or name */
+    repo: string;
+}
+/**
+ * Exports matching resources, and writes to the target sync's resource file. Response: [Update]
+ *
+ * Note. Will fail if the Sync is not `managed`.
+ */
+export interface CommitSync {
+    /** Id or name */
+    sync: string;
+}
+export interface ComposeService {
+    image?: string;
+    container_name?: string;
+}
+/** Keeping this minimal for now as its only needed to parse the service names / container names */
+export interface ComposeFile {
+    /** If not provided, will default to the parent folder holding the compose file. */
+    name?: string;
+    services?: Record<string, ComposeService>;
+}
+export interface Conversion {
+    /** reference on the server. */
+    local: string;
+    /** reference in the container. */
+    container: string;
+}
+/**
+ * Creates a new action with given `name` and the configuration
+ * of the action at the given `id`. Response: [Action].
+ */
+export interface CopyAction {
+    /** The name of the new action. */
+    name: string;
+    /** The id of the action to copy. */
+    id: string;
+}
+/**
+ * Creates a new alerter with given `name` and the configuration
+ * of the alerter at the given `id`. Response: [Alerter].
+ */
+export interface CopyAlerter {
+    /** The name of the new alerter. */
+    name: string;
+    /** The id of the alerter to copy. */
+    id: string;
+}
+/**
+ * Creates a new build with given `name` and the configuration
+ * of the build at the given `id`. Response: [Build].
+ */
+export interface CopyBuild {
+    /** The name of the new build. */
+    name: string;
+    /** The id of the build to copy. */
+    id: string;
+}
+/**
+ * Creates a new builder with given `name` and the configuration
+ * of the builder at the given `id`. Response: [Builder]
+ */
+export interface CopyBuilder {
+    /** The name of the new builder. */
+    name: string;
+    /** The id of the builder to copy. */
+    id: string;
+}
+/**
+ * Creates a new deployment with given `name` and the configuration
+ * of the deployment at the given `id`. Response: [Deployment]
+ */
+export interface CopyDeployment {
+    /** The name of the new deployment. */
+    name: string;
+    /** The id of the deployment to copy. */
+    id: string;
+}
+/**
+ * Creates a new procedure with given `name` and the configuration
+ * of the procedure at the given `id`. Response: [Procedure].
+ */
+export interface CopyProcedure {
+    /** The name of the new procedure. */
+    name: string;
+    /** The id of the procedure to copy. */
+    id: string;
+}
+/**
+ * Creates a new repo with given `name` and the configuration
+ * of the repo at the given `id`. Response: [Repo].
+ */
+export interface CopyRepo {
+    /** The name of the new repo. */
+    name: string;
+    /** The id of the repo to copy. */
+    id: string;
+}
+/**
+ * Creates a new sync with given `name` and the configuration
+ * of the sync at the given `id`. Response: [ResourceSync].
+ */
+export interface CopyResourceSync {
+    /** The name of the new sync. */
+    name: string;
+    /** The id of the sync to copy. */
+    id: string;
+}
+/**
+ * Creates a new server template with given `name` and the configuration
+ * of the server template at the given `id`. Response: [ServerTemplate]
+ */
+export interface CopyServerTemplate {
+    /** The name of the new server template. */
+    name: string;
+    /** The id of the server template to copy. */
+    id: string;
+}
+/**
+ * Creates a new stack with given `name` and the configuration
+ * of the stack at the given `id`. Response: [Stack].
+ */
+export interface CopyStack {
+    /** The name of the new stack. */
+    name: string;
+    /** The id of the stack to copy. */
+    id: string;
+}
+/** Create a action. Response: [Action]. */
+export interface CreateAction {
+    /** The name given to newly created action. */
+    name: string;
+    /** Optional partial config to initialize the action with. */
+    config: _PartialActionConfig;
+}
+/**
+ * Create a webhook on the github action attached to the Action resource.
+ * passed in request. Response: [CreateActionWebhookResponse]
+ */
+export interface CreateActionWebhook {
+    /** Id or name */
+    action: string;
+}
+/** Create an alerter. Response: [Alerter]. */
+export interface CreateAlerter {
+    /** The name given to newly created alerter. */
+    name: string;
+    /** Optional partial config to initialize the alerter with. */
+    config: _PartialAlerterConfig;
+}
+/**
+ * Create an api key for the calling user.
+ * Response: [CreateApiKeyResponse].
+ *
+ * Note. After the response is served, there will be no way
+ * to get the secret later.
+ */
+export interface CreateApiKey {
+    /** The name for the api key. */
+    name: string;
+    /**
+     * A unix timestamp in millseconds specifying api key expire time.
+     * Default is 0, which means no expiry.
+     */
+    expires?: I64;
+}
+/**
+ * Admin only method to create an api key for a service user.
+ * Response: [CreateApiKeyResponse].
+ */
+export interface CreateApiKeyForServiceUser {
+    /** Must be service user */
+    user_id: string;
+    /** The name for the api key */
+    name: string;
+    /**
+     * A unix timestamp in millseconds specifying api key expire time.
+     * Default is 0, which means no expiry.
+     */
+    expires?: I64;
+}
+/** Create a build. Response: [Build]. */
+export interface CreateBuild {
+    /** The name given to newly created build. */
+    name: string;
+    /** Optional partial config to initialize the build with. */
+    config: _PartialBuildConfig;
+}
+/**
+ * Create a webhook on the github repo attached to the build
+ * passed in request. Response: [CreateBuildWebhookResponse]
+ */
+export interface CreateBuildWebhook {
+    /** Id or name */
+    build: string;
+}
+/** Partial representation of [BuilderConfig] */
+export type PartialBuilderConfig = {
+    type: "Server";
+    params: _PartialServerBuilderConfig;
+} | {
+    type: "Aws";
+    params: _PartialAwsBuilderConfig;
+};
+/** Create a builder. Response: [Builder]. */
+export interface CreateBuilder {
+    /** The name given to newly created builder. */
+    name: string;
+    /** Optional partial config to initialize the builder with. */
+    config: PartialBuilderConfig;
+}
+/** Create a deployment. Response: [Deployment]. */
+export interface CreateDeployment {
+    /** The name given to newly created deployment. */
+    name: string;
+    /** Optional partial config to initialize the deployment with. */
+    config: _PartialDeploymentConfig;
+}
+/**
+ * **Admin only.** Create a docker registry account.
+ * Response: [DockerRegistryAccount].
+ */
+export interface CreateDockerRegistryAccount {
+    account: _PartialDockerRegistryAccount;
+}
+/**
+ * **Admin only.** Create a git provider account.
+ * Response: [GitProviderAccount].
+ */
+export interface CreateGitProviderAccount {
+    /**
+     * The initial account config. Anything in the _id field will be ignored,
+     * as this is generated on creation.
+     */
+    account: _PartialGitProviderAccount;
+}
+/**
+ * Create a new local user account. Will fail if a user with the
+ * given username already exists.
+ * Response: [CreateLocalUserResponse].
+ *
+ * Note. This method is only available if the core api has `local_auth` enabled.
+ */
+export interface CreateLocalUser {
+    /** The username for the new user. */
+    username: string;
+    /**
+     * The password for the new user.
+     * This cannot be retreived later.
+     */
+    password: string;
+}
+/**
+ * Create a docker network on the server.
+ * Respone: [Update]
+ */
+export interface CreateNetwork {
+    /** Id or name */
+    server: string;
+    /** The name of the network to create. */
+    name: string;
+}
+/** Create a procedure. Response: [Procedure]. */
+export interface CreateProcedure {
+    /** The name given to newly created build. */
+    name: string;
+    /** Optional partial config to initialize the procedure with. */
+    config: _PartialProcedureConfig;
+}
+/** Create a repo. Response: [Repo]. */
+export interface CreateRepo {
+    /** The name given to newly created repo. */
+    name: string;
+    /** Optional partial config to initialize the repo with. */
+    config: _PartialRepoConfig;
+}
+export declare enum RepoWebhookAction {
+    Clone = "Clone",
+    Pull = "Pull",
+    Build = "Build"
+}
+/**
+ * Create a webhook on the github repo attached to the (Komodo) Repo resource.
+ * passed in request. Response: [CreateRepoWebhookResponse]
+ */
+export interface CreateRepoWebhook {
+    /** Id or name */
+    repo: string;
+    /** "Clone" or "Pull" or "Build" */
+    action: RepoWebhookAction;
+}
+/** Create a sync. Response: [ResourceSync]. */
+export interface CreateResourceSync {
+    /** The name given to newly created sync. */
+    name: string;
+    /** Optional partial config to initialize the sync with. */
+    config: _PartialResourceSyncConfig;
+}
+/** Create a server. Response: [Server]. */
+export interface CreateServer {
+    /** The name given to newly created server. */
+    name: string;
+    /** Optional partial config to initialize the server with. */
+    config: _PartialServerConfig;
+}
+export type PartialServerTemplateConfig = {
+    type: "Aws";
+    params: _PartialAwsServerTemplateConfig;
+} | {
+    type: "Hetzner";
+    params: _PartialHetznerServerTemplateConfig;
+};
+/** Create a server template. Response: [ServerTemplate]. */
+export interface CreateServerTemplate {
+    /** The name given to newly created server template. */
+    name: string;
+    /** Optional partial config to initialize the server template with. */
+    config: PartialServerTemplateConfig;
+}
+/**
+ * **Admin only.** Create a service user.
+ * Response: [User].
+ */
+export interface CreateServiceUser {
+    /** The username for the service user. */
+    username: string;
+    /** A description for the service user. */
+    description: string;
+}
+/** Create a stack. Response: [Stack]. */
+export interface CreateStack {
+    /** The name given to newly created stack. */
+    name: string;
+    /** Optional partial config to initialize the stack with. */
+    config: _PartialStackConfig;
+}
+export declare enum StackWebhookAction {
+    Refresh = "Refresh",
+    Deploy = "Deploy"
+}
+/**
+ * Create a webhook on the github repo attached to the stack
+ * passed in request. Response: [CreateStackWebhookResponse]
+ */
+export interface CreateStackWebhook {
+    /** Id or name */
+    stack: string;
+    /** "Refresh" or "Deploy" */
+    action: StackWebhookAction;
+}
+export declare enum SyncWebhookAction {
+    Refresh = "Refresh",
+    Sync = "Sync"
+}
+/**
+ * Create a webhook on the github repo attached to the sync
+ * passed in request. Response: [CreateSyncWebhookResponse]
+ */
+export interface CreateSyncWebhook {
+    /** Id or name */
+    sync: string;
+    /** "Refresh" or "Sync" */
+    action: SyncWebhookAction;
+}
+/** Create a tag. Response: [Tag]. */
+export interface CreateTag {
+    /** The name of the tag. */
+    name: string;
+}
+/** **Admin only.** Create a user group. Response: [UserGroup] */
+export interface CreateUserGroup {
+    /** The name to assign to the new UserGroup */
+    name: string;
+}
+/** **Admin only.** Create variable. Response: [Variable]. */
+export interface CreateVariable {
+    /** The name of the variable to create. */
+    name: string;
+    /** The initial value of the variable. defualt: "". */
+    value?: string;
+    /** The initial value of the description. default: "". */
+    description?: string;
+    /** Whether to make this a secret variable. */
+    is_secret?: boolean;
+}
+/** Configuration for a Custom alerter endpoint. */
+export interface CustomAlerterEndpoint {
+    /** The http/s endpoint to send the POST to */
+    url: string;
+}
+/**
+ * Deletes the action at the given id, and returns the deleted action.
+ * Response: [Action]
+ */
+export interface DeleteAction {
+    /** The id or name of the action to delete. */
+    id: string;
+}
+/**
+ * Delete the webhook on the github action attached to the Action resource.
+ * passed in request. Response: [DeleteActionWebhookResponse]
+ */
+export interface DeleteActionWebhook {
+    /** Id or name */
+    action: string;
+}
+/**
+ * Deletes the alerter at the given id, and returns the deleted alerter.
+ * Response: [Alerter]
+ */
+export interface DeleteAlerter {
+    /** The id or name of the alerter to delete. */
+    id: string;
+}
+/**
+ * Delete an api key for the calling user.
+ * Response: [NoData]
+ */
+export interface DeleteApiKey {
+    /** The key which the user intends to delete. */
+    key: string;
+}
+/**
+ * Admin only method to delete an api key for a service user.
+ * Response: [NoData].
+ */
+export interface DeleteApiKeyForServiceUser {
+    key: string;
+}
+/**
+ * Deletes the build at the given id, and returns the deleted build.
+ * Response: [Build]
+ */
+export interface DeleteBuild {
+    /** The id or name of the build to delete. */
+    id: string;
+}
+/**
+ * Delete a webhook on the github repo attached to the build
+ * passed in request. Response: [CreateBuildWebhookResponse]
+ */
+export interface DeleteBuildWebhook {
+    /** Id or name */
+    build: string;
+}
+/**
+ * Deletes the builder at the given id, and returns the deleted builder.
+ * Response: [Builder]
+ */
+export interface DeleteBuilder {
+    /** The id or name of the builder to delete. */
+    id: string;
+}
+/**
+ * Deletes the deployment at the given id, and returns the deleted deployment.
+ * Response: [Deployment].
+ *
+ * Note. If the associated container is running, it will be deleted as part of
+ * the deployment clean up.
+ */
+export interface DeleteDeployment {
+    /** The id or name of the deployment to delete. */
+    id: string;
+}
+/**
+ * **Admin only.** Delete a docker registry account.
+ * Response: [DockerRegistryAccount].
+ */
+export interface DeleteDockerRegistryAccount {
+    /** The id of the docker registry account to delete */
+    id: string;
+}
+/**
+ * **Admin only.** Delete a git provider account.
+ * Response: [User].
+ */
+export interface DeleteGitProviderAccount {
+    /** The id of the git provider to delete */
+    id: string;
+}
+/**
+ * Delete a docker image.
+ * Response: [Update]
+ */
+export interface DeleteImage {
+    /** Id or name. */
+    server: string;
+    /** The name of the image to delete. */
+    name: string;
+}
+/**
+ * Delete a docker network.
+ * Response: [Update]
+ */
+export interface DeleteNetwork {
+    /** Id or name. */
+    server: string;
+    /** The name of the network to delete. */
+    name: string;
+}
+/**
+ * Deletes the procedure at the given id, and returns the deleted procedure.
+ * Response: [Procedure]
+ */
+export interface DeleteProcedure {
+    /** The id or name of the procedure to delete. */
+    id: string;
+}
+/**
+ * Deletes the repo at the given id, and returns the deleted repo.
+ * Response: [Repo]
+ */
+export interface DeleteRepo {
+    /** The id or name of the repo to delete. */
+    id: string;
+}
+/**
+ * Delete the webhook on the github repo attached to the (Komodo) Repo resource.
+ * passed in request. Response: [DeleteRepoWebhookResponse]
+ */
+export interface DeleteRepoWebhook {
+    /** Id or name */
+    repo: string;
+    /** "Clone" or "Pull" or "Build" */
+    action: RepoWebhookAction;
+}
+/**
+ * Deletes the sync at the given id, and returns the deleted sync.
+ * Response: [ResourceSync]
+ */
+export interface DeleteResourceSync {
+    /** The id or name of the sync to delete. */
+    id: string;
+}
+/**
+ * Deletes the server at the given id, and returns the deleted server.
+ * Response: [Server]
+ */
+export interface DeleteServer {
+    /** The id or name of the server to delete. */
+    id: string;
+}
+/**
+ * Deletes the server template at the given id, and returns the deleted server template.
+ * Response: [ServerTemplate]
+ */
+export interface DeleteServerTemplate {
+    /** The id or name of the server template to delete. */
+    id: string;
+}
+/**
+ * Deletes the stack at the given id, and returns the deleted stack.
+ * Response: [Stack]
+ */
+export interface DeleteStack {
+    /** The id or name of the stack to delete. */
+    id: string;
+}
+/**
+ * Delete the webhook on the github repo attached to the stack
+ * passed in request. Response: [DeleteStackWebhookResponse]
+ */
+export interface DeleteStackWebhook {
+    /** Id or name */
+    stack: string;
+    /** "Refresh" or "Deploy" */
+    action: StackWebhookAction;
+}
+/**
+ * Delete the webhook on the github repo attached to the sync
+ * passed in request. Response: [DeleteSyncWebhookResponse]
+ */
+export interface DeleteSyncWebhook {
+    /** Id or name */
+    sync: string;
+    /** "Refresh" or "Sync" */
+    action: SyncWebhookAction;
+}
+/**
+ * Delete a tag, and return the deleted tag. Response: [Tag].
+ *
+ * Note. Will also remove this tag from all attached resources.
+ */
+export interface DeleteTag {
+    /** The id of the tag to delete. */
+    id: string;
+}
+/**
+ * **Admin only**. Delete a user.
+ * Admins can delete any non-admin user.
+ * Only Super Admin can delete an admin.
+ * No users can delete a Super Admin user.
+ * User cannot delete themselves.
+ * Response: [NoData].
+ */
+export interface DeleteUser {
+    /** User id or username */
+    user: string;
+}
+/** **Admin only.** Delete a user group. Response: [UserGroup] */
+export interface DeleteUserGroup {
+    /** The id of the UserGroup */
+    id: string;
+}
+/** **Admin only.** Delete a variable. Response: [Variable]. */
+export interface DeleteVariable {
+    name: string;
+}
+/**
+ * Delete a docker volume.
+ * Response: [Update]
+ */
+export interface DeleteVolume {
+    /** Id or name. */
+    server: string;
+    /** The name of the volume to delete. */
+    name: string;
+}
+/**
+ * Deploys the container for the target deployment. Response: [Update].
+ *
+ * 1. Pulls the image onto the target server.
+ * 2. If the container is already running,
+ * it will be stopped and removed using `docker container rm ${container_name}`.
+ * 3. The container will be run using `docker run {...params}`,
+ * where params are determined by the deployment's configuration.
+ */
+export interface Deploy {
+    /** Name or id */
+    deployment: string;
+    /**
+     * Override the default termination signal specified in the deployment.
+     * Only used when deployment needs to be taken down before redeploy.
+     */
+    stop_signal?: TerminationSignal;
+    /**
+     * Override the default termination max time.
+     * Only used when deployment needs to be taken down before redeploy.
+     */
+    stop_time?: number;
+}
+/** Deploys the target stack. `docker compose up`. Response: [Update] */
+export interface DeployStack {
+    /** Id or name */
+    stack: string;
+    /**
+     * Override the default termination max time.
+     * Only used if the stack needs to be taken down first.
+     */
+    stop_time?: number;
+}
+/**
+ * Checks deployed contents vs latest contents,
+ * and only if any changes found
+ * will `docker compose up`. Response: [Update]
+ */
+export interface DeployStackIfChanged {
+    /** Id or name */
+    stack: string;
+    /**
+     * Override the default termination max time.
+     * Only used if the stack needs to be taken down first.
+     */
+    stop_time?: number;
+}
+/**
+ * Stops and destroys the container on the target server.
+ * Reponse: [Update].
+ *
+ * 1. The container is stopped and removed using `docker container rm ${container_name}`.
+ */
+export interface DestroyContainer {
+    /** Name or id */
+    server: string;
+    /** The container name */
+    container: string;
+    /** Override the default termination signal. */
+    signal?: TerminationSignal;
+    /** Override the default termination max time. */
+    time?: number;
+}
+/**
+ * Stops and destroys the container for the target deployment.
+ * Reponse: [Update].
+ *
+ * 1. The container is stopped and removed using `docker container rm ${container_name}`.
+ */
+export interface DestroyDeployment {
+    /** Name or id. */
+    deployment: string;
+    /** Override the default termination signal specified in the deployment. */
+    signal?: TerminationSignal;
+    /** Override the default termination max time. */
+    time?: number;
+}
+/** Destoys the target stack. `docker compose down`. Response: [Update] */
+export interface DestroyStack {
+    /** Id or name */
+    stack: string;
+    /** Pass `--remove-orphans` */
+    remove_orphans?: boolean;
+    /** Override the default termination max time. */
+    stop_time?: number;
+}
+/** Configuration for a Discord alerter. */
+export interface DiscordAlerterEndpoint {
+    /** The Discord webhook url */
+    url: string;
+}
+export interface EnvironmentVar {
+    variable: string;
+    value: string;
+}
+/**
+ * Exchange a single use exchange token (safe for transport in url query)
+ * for a jwt.
+ * Response: [ExchangeForJwtResponse].
+ */
+export interface ExchangeForJwt {
+    /** The 'exchange token' */
+    token: string;
+}
+/**
+ * Get pretty formatted monrun sync toml for all resources
+ * which the user has permissions to view.
+ * Response: [TomlResponse].
+ */
+export interface ExportAllResourcesToToml {
+    /** Tag name or id. Empty array will not filter by tag. */
+    tags?: string[];
+}
+/**
+ * Get pretty formatted monrun sync toml for specific resources and user groups.
+ * Response: [TomlResponse].
+ */
+export interface ExportResourcesToToml {
+    /** The targets to include in the export. */
+    targets?: ResourceTarget[];
+    /** The user group names or ids to include in the export. */
+    user_groups?: string[];
+    /** Whether to include variables */
+    include_variables?: boolean;
+}
+/** Find resources matching a common query. Response: [FindResourcesResponse]. */
+export interface FindResources {
+    /** The mongo query as JSON */
+    query?: MongoDocument;
+    /** The resource variants to include in the response. */
+    resources?: ResourceTarget["type"][];
+}
+/** Response for [FindResources]. */
+export interface FindResourcesResponse {
+    /** The matching servers. */
+    servers: ServerListItem[];
+    /** The matching deployments. */
+    deployments: DeploymentListItem[];
+    /** The matching builds. */
+    builds: BuildListItem[];
+    /** The matching repos. */
+    repos: RepoListItem[];
+    /** The matching procedures. */
+    procedures: ProcedureListItem[];
+}
+/**
+ * **Admin only.**
+ * Find a user.
+ * Response: [FindUserResponse]
+ */
+export interface FindUser {
+    /** Id or username */
+    user: string;
+}
+/** Get a specific action. Response: [Action]. */
+export interface GetAction {
+    /** Id or name */
+    action: string;
+}
+/** Get current action state for the action. Response: [ActionActionState]. */
+export interface GetActionActionState {
+    /** Id or name */
+    action: string;
+}
+/**
+ * Gets a summary of data relating to all actions.
+ * Response: [GetActionsSummaryResponse].
+ */
+export interface GetActionsSummary {
+}
+/** Response for [GetActionsSummary]. */
+export interface GetActionsSummaryResponse {
+    /** The total number of actions. */
+    total: number;
+    /** The number of actions with Ok state. */
+    ok: number;
+    /** The number of actions currently running. */
+    running: number;
+    /** The number of actions with failed state. */
+    failed: number;
+    /** The number of actions with unknown state. */
+    unknown: number;
+}
+/** Get an alert: Response: [Alert]. */
+export interface GetAlert {
+    id: string;
+}
+/** Get a specific alerter. Response: [Alerter]. */
+export interface GetAlerter {
+    /** Id or name */
+    alerter: string;
+}
+/**
+ * Gets a summary of data relating to all alerters.
+ * Response: [GetAlertersSummaryResponse].
+ */
+export interface GetAlertersSummary {
+}
+/** Response for [GetAlertersSummary]. */
+export interface GetAlertersSummaryResponse {
+    total: number;
+}
+/** Get a specific build. Response: [Build]. */
+export interface GetBuild {
+    /** Id or name */
+    build: string;
+}
+/** Get current action state for the build. Response: [BuildActionState]. */
+export interface GetBuildActionState {
+    /** Id or name */
+    build: string;
+}
+/**
+ * Gets summary and timeseries breakdown of the last months build count / time for charting.
+ * Response: [GetBuildMonthlyStatsResponse].
+ *
+ * Note. This method is paginated. One page is 30 days of data.
+ * Query for older pages by incrementing the page, starting at 0.
+ */
+export interface GetBuildMonthlyStats {
+    /**
+     * Query for older data by incrementing the page.
+     * `page: 0` is the default, and will return the most recent data.
+     */
+    page?: number;
+}
+/** Response for [GetBuildMonthlyStats]. */
+export interface GetBuildMonthlyStatsResponse {
+    total_time: number;
+    total_count: number;
+    days: BuildStatsDay[];
+}
+/** Get whether a Build's target repo has a webhook for the build configured. Response: [GetBuildWebhookEnabledResponse]. */
+export interface GetBuildWebhookEnabled {
+    /** Id or name */
+    build: string;
+}
+/** Response for [GetBuildWebhookEnabled] */
+export interface GetBuildWebhookEnabledResponse {
+    /**
+     * Whether the repo webhooks can even be managed.
+     * The repo owner must be in `github_webhook_app.owners` list to be managed.
+     */
+    managed: boolean;
+    /** Whether pushes to branch trigger build. Will always be false if managed is false. */
+    enabled: boolean;
+}
+/** Get a specific builder by id or name. Response: [Builder]. */
+export interface GetBuilder {
+    /** Id or name */
+    builder: string;
+}
+/**
+ * Gets a summary of data relating to all builders.
+ * Response: [GetBuildersSummaryResponse].
+ */
+export interface GetBuildersSummary {
+}
+/** Response for [GetBuildersSummary]. */
+export interface GetBuildersSummaryResponse {
+    /** The total number of builders. */
+    total: number;
+}
+/**
+ * Gets a summary of data relating to all builds.
+ * Response: [GetBuildsSummaryResponse].
+ */
+export interface GetBuildsSummary {
+}
+/** Response for [GetBuildsSummary]. */
+export interface GetBuildsSummaryResponse {
+    /** The total number of builds in Komodo. */
+    total: number;
+    /** The number of builds with Ok state. */
+    ok: number;
+    /** The number of builds with Failed state. */
+    failed: number;
+    /** The number of builds currently building. */
+    building: number;
+    /** The number of builds with unknown state. */
+    unknown: number;
+}
+/**
+ * Get the container log's tail, split by stdout/stderr.
+ * Response: [Log].
+ *
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface GetContainerLog {
+    /** Id or name */
+    server: string;
+    /** The container name */
+    container: string;
+    /**
+     * The number of lines of the log tail to include.
+     * Default: 100.
+     * Max: 5000.
+     */
+    tail: U64;
+    /** Enable `--timestamps` */
+    timestamps?: boolean;
+}
+/**
+ * Get info about the core api configuration.
+ * Response: [GetCoreInfoResponse].
+ */
+export interface GetCoreInfo {
+}
+/** Response for [GetCoreInfo]. */
+export interface GetCoreInfoResponse {
+    /** The title assigned to this core api. */
+    title: string;
+    /** The monitoring interval of this core api. */
+    monitoring_interval: Timelength;
+    /** The webhook base url. */
+    webhook_base_url: string;
+    /** Whether transparent mode is enabled, which gives all users read access to all resources. */
+    transparent_mode: boolean;
+    /** Whether UI write access should be disabled */
+    ui_write_disabled: boolean;
+    /** Whether non admins can create resources */
+    disable_non_admin_create: boolean;
+    /** Whether confirm dialog should be disabled */
+    disable_confirm_dialog: boolean;
+    /** The repo owners for which github webhook management api is available */
+    github_webhook_owners: string[];
+}
+/** Get a specific deployment by name or id. Response: [Deployment]. */
+export interface GetDeployment {
+    /** Id or name */
+    deployment: string;
+}
+/**
+ * Get current action state for the deployment.
+ * Response: [DeploymentActionState].
+ */
+export interface GetDeploymentActionState {
+    /** Id or name */
+    deployment: string;
+}
+/**
+ * Get the container, including image / status, of the target deployment.
+ * Response: [GetDeploymentContainerResponse].
+ *
+ * Note. This does not hit the server directly. The status comes from an
+ * in memory cache on the core, which hits the server periodically
+ * to keep it up to date.
+ */
+export interface GetDeploymentContainer {
+    /** Id or name */
+    deployment: string;
+}
+/** Response for [GetDeploymentContainer]. */
+export interface GetDeploymentContainerResponse {
+    state: DeploymentState;
+    container?: ContainerListItem;
+}
+/**
+ * Get the deployment log's tail, split by stdout/stderr.
+ * Response: [Log].
+ *
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface GetDeploymentLog {
+    /** Id or name */
+    deployment: string;
+    /**
+     * The number of lines of the log tail to include.
+     * Default: 100.
+     * Max: 5000.
+     */
+    tail: U64;
+    /** Enable `--timestamps` */
+    timestamps?: boolean;
+}
+/**
+ * Get the deployment container's stats using `docker stats`.
+ * Response: [DockerContainerStats].
+ *
+ * Note. This call will hit the underlying server directly for most up to date stats.
+ */
+export interface GetDeploymentStats {
+    /** Id or name */
+    deployment: string;
+}
+/**
+ * Gets a summary of data relating to all deployments.
+ * Response: [GetDeploymentsSummaryResponse].
+ */
+export interface GetDeploymentsSummary {
+}
+/** Response for [GetDeploymentsSummary]. */
+export interface GetDeploymentsSummaryResponse {
+    /** The total number of Deployments */
+    total: I64;
+    /** The number of Deployments with Running state */
+    running: I64;
+    /** The number of Deployments with Stopped or Paused state */
+    stopped: I64;
+    /** The number of Deployments with NotDeployed state */
+    not_deployed: I64;
+    /** The number of Deployments with Restarting or Dead or Created (other) state */
+    unhealthy: I64;
+    /** The number of Deployments with Unknown state */
+    unknown: I64;
+}
+/**
+ * Get a specific docker registry account.
+ * Response: [GetDockerRegistryAccountResponse].
+ */
+export interface GetDockerRegistryAccount {
+    id: string;
+}
+/**
+ * Get a specific git provider account.
+ * Response: [GetGitProviderAccountResponse].
+ */
+export interface GetGitProviderAccount {
+    id: string;
+}
+/**
+ * Paginated endpoint serving historical (timeseries) server stats for graphing.
+ * Response: [GetHistoricalServerStatsResponse].
+ */
+export interface GetHistoricalServerStats {
+    /** Id or name */
+    server: string;
+    /** The granularity of the data. */
+    granularity: Timelength;
+    /**
+     * Page of historical data. Default is 0, which is the most recent data.
+     * Use with the `next_page` field of the response.
+     */
+    page?: number;
+}
+/** System stats stored on the database. */
+export interface SystemStatsRecord {
+    /** Unix timestamp in milliseconds */
+    ts: I64;
+    /** Server id */
+    sid: string;
+    /** Cpu usage percentage */
+    cpu_perc: number;
+    /** Memory used in GB */
+    mem_used_gb: number;
+    /** Total memory in GB */
+    mem_total_gb: number;
+    /** Disk used in GB */
+    disk_used_gb: number;
+    /** Total disk size in GB */
+    disk_total_gb: number;
+    /** Breakdown of individual disks, ie their usages, sizes, and mount points */
+    disks: SingleDiskUsage[];
+}
+/** Response to [GetHistoricalServerStats]. */
+export interface GetHistoricalServerStatsResponse {
+    /** The timeseries page of data. */
+    stats: SystemStatsRecord[];
+    /** If there is a next page of data, pass this to `page` to get it. */
+    next_page?: number;
+}
+/**
+ * Non authenticated route to see the available options
+ * users have to login to Komodo, eg. local auth, github, google.
+ * Response: [GetLoginOptionsResponse].
+ */
+export interface GetLoginOptions {
+}
+/** The response for [GetLoginOptions]. */
+export interface GetLoginOptionsResponse {
+    /** Whether local auth is enabled. */
+    local: boolean;
+    /** Whether github login is enabled. */
+    github: boolean;
+    /** Whether google login is enabled. */
+    google: boolean;
+    /** Whether OIDC login is enabled. */
+    oidc: boolean;
+    /** Whether user registration (Sign Up) has been disabled */
+    registration_disabled: boolean;
+}
+/**
+ * Get the version of the Komodo Periphery agent on the target server.
+ * Response: [GetPeripheryVersionResponse].
+ */
+export interface GetPeripheryVersion {
+    /** Id or name */
+    server: string;
+}
+/** Response for [GetPeripheryVersion]. */
+export interface GetPeripheryVersionResponse {
+    /** The version of periphery. */
+    version: string;
+}
+/**
+ * Gets the calling user's permission level on a specific resource.
+ * Factors in any UserGroup's permissions they may be a part of.
+ * Response: [PermissionLevel]
+ */
+export interface GetPermissionLevel {
+    /** The target to get user permission on. */
+    target: ResourceTarget;
+}
+/** Get a specific procedure. Response: [Procedure]. */
+export interface GetProcedure {
+    /** Id or name */
+    procedure: string;
+}
+/** Get current action state for the procedure. Response: [ProcedureActionState]. */
+export interface GetProcedureActionState {
+    /** Id or name */
+    procedure: string;
+}
+/**
+ * Gets a summary of data relating to all procedures.
+ * Response: [GetProceduresSummaryResponse].
+ */
+export interface GetProceduresSummary {
+}
+/** Response for [GetProceduresSummary]. */
+export interface GetProceduresSummaryResponse {
+    /** The total number of procedures. */
+    total: number;
+    /** The number of procedures with Ok state. */
+    ok: number;
+    /** The number of procedures currently running. */
+    running: number;
+    /** The number of procedures with failed state. */
+    failed: number;
+    /** The number of procedures with unknown state. */
+    unknown: number;
+}
+/** Get a specific repo. Response: [Repo]. */
+export interface GetRepo {
+    /** Id or name */
+    repo: string;
+}
+/** Get current action state for the repo. Response: [RepoActionState]. */
+export interface GetRepoActionState {
+    /** Id or name */
+    repo: string;
+}
+/** Get a target Repo's configured webhooks. Response: [GetRepoWebhooksEnabledResponse]. */
+export interface GetRepoWebhooksEnabled {
+    /** Id or name */
+    repo: string;
+}
+/** Response for [GetRepoWebhooksEnabled] */
+export interface GetRepoWebhooksEnabledResponse {
+    /**
+     * Whether the repo webhooks can even be managed.
+     * The repo owner must be in `github_webhook_app.owners` list to be managed.
+     */
+    managed: boolean;
+    /** Whether pushes to branch trigger clone. Will always be false if managed is false. */
+    clone_enabled: boolean;
+    /** Whether pushes to branch trigger pull. Will always be false if managed is false. */
+    pull_enabled: boolean;
+    /** Whether pushes to branch trigger build. Will always be false if managed is false. */
+    build_enabled: boolean;
+}
+/**
+ * Gets a summary of data relating to all repos.
+ * Response: [GetReposSummaryResponse].
+ */
+export interface GetReposSummary {
+}
+/** Response for [GetReposSummary] */
+export interface GetReposSummaryResponse {
+    /** The total number of repos */
+    total: number;
+    /** The number of repos with Ok state. */
+    ok: number;
+    /** The number of repos currently cloning. */
+    cloning: number;
+    /** The number of repos currently pulling. */
+    pulling: number;
+    /** The number of repos currently building. */
+    building: number;
+    /** The number of repos with failed state. */
+    failed: number;
+    /** The number of repos with unknown state. */
+    unknown: number;
+}
+/** Inspect a docker container on the server. Response: [Container]. */
+export interface GetResourceMatchingContainer {
+    /** Id or name */
+    server: string;
+    /** The container name */
+    container: string;
+}
+export interface GetResourceMatchingContainerResponse {
+    resource?: ResourceTarget;
+}
+/** Get a specific sync. Response: [ResourceSync]. */
+export interface GetResourceSync {
+    /** Id or name */
+    sync: string;
+}
+/** Get current action state for the sync. Response: [ResourceSyncActionState]. */
+export interface GetResourceSyncActionState {
+    /** Id or name */
+    sync: string;
+}
+/**
+ * Gets a summary of data relating to all syncs.
+ * Response: [GetResourceSyncsSummaryResponse].
+ */
+export interface GetResourceSyncsSummary {
+}
+/** Response for [GetResourceSyncsSummary] */
+export interface GetResourceSyncsSummaryResponse {
+    /** The total number of syncs */
+    total: number;
+    /** The number of syncs with Ok state. */
+    ok: number;
+    /** The number of syncs currently syncing. */
+    syncing: number;
+    /** The number of syncs with pending updates */
+    pending: number;
+    /** The number of syncs with failed state. */
+    failed: number;
+    /** The number of syncs with unknown state. */
+    unknown: number;
+}
+/** Get a specific server. Response: [Server]. */
+export interface GetServer {
+    /** Id or name */
+    server: string;
+}
+/** Get current action state for the servers. Response: [ServerActionState]. */
+export interface GetServerActionState {
+    /** Id or name */
+    server: string;
+}
+/** Get the state of the target server. Response: [GetServerStateResponse]. */
+export interface GetServerState {
+    /** Id or name */
+    server: string;
+}
+/** The response for [GetServerState]. */
+export interface GetServerStateResponse {
+    /** The server status. */
+    status: ServerState;
+}
+/** Get a specific server template by id or name. Response: [ServerTemplate]. */
+export interface GetServerTemplate {
+    /** Id or name */
+    server_template: string;
+}
+/**
+ * Gets a summary of data relating to all server templates.
+ * Response: [GetServerTemplatesSummaryResponse].
+ */
+export interface GetServerTemplatesSummary {
+}
+/** Response for [GetServerTemplatesSummary]. */
+export interface GetServerTemplatesSummaryResponse {
+    /** The total number of server templates. */
+    total: number;
+}
+/**
+ * Gets a summary of data relating to all servers.
+ * Response: [GetServersSummaryResponse].
+ */
+export interface GetServersSummary {
+}
+/** Response for [GetServersSummary]. */
+export interface GetServersSummaryResponse {
+    /** The total number of servers. */
+    total: I64;
+    /** The number of healthy (`status: OK`) servers. */
+    healthy: I64;
+    /** The number of unhealthy servers. */
+    unhealthy: I64;
+    /** The number of disabled servers. */
+    disabled: I64;
+}
+/** Get a specific stack. Response: [Stack]. */
+export interface GetStack {
+    /** Id or name */
+    stack: string;
+}
+/** Get current action state for the stack. Response: [StackActionState]. */
+export interface GetStackActionState {
+    /** Id or name */
+    stack: string;
+}
+/** Get a stack service's log. Response: [GetStackContainersResponse]. */
+export interface GetStackServiceLog {
+    /** Id or name */
+    stack: string;
+    /** The service to get the log for. */
+    service: string;
+    /**
+     * The number of lines of the log tail to include.
+     * Default: 100.
+     * Max: 5000.
+     */
+    tail: U64;
+    /** Enable `--timestamps` */
+    timestamps?: boolean;
+}
+/** Get a target stack's configured webhooks. Response: [GetStackWebhooksEnabledResponse]. */
+export interface GetStackWebhooksEnabled {
+    /** Id or name */
+    stack: string;
+}
+/** Response for [GetStackWebhooksEnabled] */
+export interface GetStackWebhooksEnabledResponse {
+    /**
+     * Whether the repo webhooks can even be managed.
+     * The repo owner must be in `github_webhook_app.owners` list to be managed.
+     */
+    managed: boolean;
+    /** Whether pushes to branch trigger refresh. Will always be false if managed is false. */
+    refresh_enabled: boolean;
+    /** Whether pushes to branch trigger stack execution. Will always be false if managed is false. */
+    deploy_enabled: boolean;
+}
+/**
+ * Gets a summary of data relating to all syncs.
+ * Response: [GetStacksSummaryResponse].
+ */
+export interface GetStacksSummary {
+}
+/** Response for [GetStacksSummary] */
+export interface GetStacksSummaryResponse {
+    /** The total number of stacks */
+    total: number;
+    /** The number of stacks with Running state. */
+    running: number;
+    /** The number of stacks with Stopped or Paused state. */
+    stopped: number;
+    /** The number of stacks with Down state. */
+    down: number;
+    /** The number of stacks with Unhealthy or Restarting or Dead or Created or Removing state. */
+    unhealthy: number;
+    /** The number of stacks with Unknown state. */
+    unknown: number;
+}
+/** Get a target Sync's configured webhooks. Response: [GetSyncWebhooksEnabledResponse]. */
+export interface GetSyncWebhooksEnabled {
+    /** Id or name */
+    sync: string;
+}
+/** Response for [GetSyncWebhooksEnabled] */
+export interface GetSyncWebhooksEnabledResponse {
+    /**
+     * Whether the repo webhooks can even be managed.
+     * The repo owner must be in `github_webhook_app.owners` list to be managed.
+     */
+    managed: boolean;
+    /** Whether pushes to branch trigger refresh. Will always be false if managed is false. */
+    refresh_enabled: boolean;
+    /** Whether pushes to branch trigger sync execution. Will always be false if managed is false. */
+    sync_enabled: boolean;
+}
+/**
+ * Get the system information of the target server.
+ * Response: [SystemInformation].
+ */
+export interface GetSystemInformation {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Get the system stats on the target server. Response: [SystemStats].
+ *
+ * Note. This does not hit the server directly. The stats come from an
+ * in memory cache on the core, which hits the server periodically
+ * to keep it up to date.
+ */
+export interface GetSystemStats {
+    /** Id or name */
+    server: string;
+}
+/** Get data for a specific tag. Response [Tag]. */
+export interface GetTag {
+    /** Id or name */
+    tag: string;
+}
+/**
+ * Get all data for the target update.
+ * Response: [Update].
+ */
+export interface GetUpdate {
+    /** The update id. */
+    id: string;
+}
+/**
+ * Get the user extracted from the request headers.
+ * Response: [User].
+ */
+export interface GetUser {
+}
+/**
+ * Get a specific user group by name or id.
+ * Response: [UserGroup].
+ */
+export interface GetUserGroup {
+    /** Name or Id */
+    user_group: string;
+}
+/**
+ * Gets the username of a specific user.
+ * Response: [GetUsernameResponse]
+ */
+export interface GetUsername {
+    /** The id of the user. */
+    user_id: string;
+}
+/** Response for [GetUsername]. */
+export interface GetUsernameResponse {
+    /** The username of the user. */
+    username: string;
+    /** An optional icon for the user. */
+    avatar?: string;
+}
+/**
+ * List all available global variables.
+ * Response: [Variable]
+ *
+ * Note. For non admin users making this call,
+ * secret variables will have their values obscured.
+ */
+export interface GetVariable {
+    /** The name of the variable to get. */
+    name: string;
+}
+/**
+ * Get the version of the Komodo Core api.
+ * Response: [GetVersionResponse].
+ */
+export interface GetVersion {
+}
+/** Response for [GetVersion]. */
+export interface GetVersionResponse {
+    /** The version of the core api. */
+    version: string;
 }
 export declare enum HetznerDatacenter {
     Nuremberg1Dc3 = "Nuremberg1Dc3",
@@ -6318,15 +4962,990 @@ export interface HetznerServerTemplateConfig {
     /** Cloud-Init user data to use during Server creation. This field is limited to 32KiB. */
     user_data: string;
 }
-export interface ComposeService {
-    image?: string;
-    container_name?: string;
+/** Inspect a docker container on the server. Response: [Container]. */
+export interface InspectDockerContainer {
+    /** Id or name */
+    server: string;
+    /** The container name */
+    container: string;
 }
-/** Keeping this minimal for now as its only needed to parse the service names / container names */
-export interface ComposeFile {
-    /** If not provided, will default to the parent folder holding the compose file. */
-    name?: string;
-    services?: Record<string, ComposeService>;
+/** Inspect a docker image on the server. Response: [Image]. */
+export interface InspectDockerImage {
+    /** Id or name */
+    server: string;
+    /** The image name */
+    image: string;
+}
+/** Inspect a docker network on the server. Response: [InspectDockerNetworkResponse]. */
+export interface InspectDockerNetwork {
+    /** Id or name */
+    server: string;
+    /** The network name */
+    network: string;
+}
+/** Inspect a docker volume on the server. Response: [Volume]. */
+export interface InspectDockerVolume {
+    /** Id or name */
+    server: string;
+    /** The volume name */
+    volume: string;
+}
+export interface LatestCommit {
+    hash: string;
+    message: string;
+}
+/**
+ * Launch an EC2 instance with the specified config.
+ * Response: [Update].
+ */
+export interface LaunchServer {
+    /** The name of the created server. */
+    name: string;
+    /** The server template used to define the config. */
+    server_template: string;
+}
+/** List actions matching optional query. Response: [ListActionsResponse]. */
+export interface ListActions {
+    /** optional structured query to filter actions. */
+    query?: ActionQuery;
+}
+/** List alerters matching optional query. Response: [ListAlertersResponse]. */
+export interface ListAlerters {
+    /** Structured query to filter alerters. */
+    query?: AlerterQuery;
+}
+/**
+ * Get a paginated list of alerts sorted by timestamp descending.
+ * Response: [ListAlertsResponse].
+ */
+export interface ListAlerts {
+    /**
+     * Pass a custom mongo query to filter the alerts.
+     *
+     * ## Example JSON
+     * ```
+     * {
+     * "resolved": "false",
+     * "level": "CRITICAL",
+     * "$or": [
+     * {
+     * "target": {
+     * "type": "Server",
+     * "id": "6608bf89cb2a12b257ab6c09"
+     * }
+     * },
+     * {
+     * "target": {
+     * "type": "Server",
+     * "id": "660a5f60b74f90d5dae45fa3"
+     * }
+     * }
+     * ]
+     * }
+     * ```
+     * This will filter to only include open alerts that have CRITICAL level on those two servers.
+     */
+    query?: MongoDocument;
+    /**
+     * Retrieve older results by incrementing the page.
+     * `page: 0` is default, and returns the most recent results.
+     */
+    page?: U64;
+}
+/** Response for [ListAlerts]. */
+export interface ListAlertsResponse {
+    alerts: Alert[];
+    /**
+     * If more alerts exist, the next page will be given here.
+     * Otherwise it will be `null`
+     */
+    next_page?: I64;
+}
+/**
+ * List all docker containers on the target server.
+ * Response: [ListDockerContainersResponse].
+ */
+export interface ListAllDockerContainers {
+    /** Filter by server id or name. */
+    servers?: string[];
+}
+/**
+ * Gets list of api keys for the calling user.
+ * Response: [ListApiKeysResponse]
+ */
+export interface ListApiKeys {
+}
+/**
+ * **Admin only.**
+ * Gets list of api keys for the user.
+ * Will still fail if you call for a user_id that isn't a service user.
+ * Response: [ListApiKeysForServiceUserResponse]
+ */
+export interface ListApiKeysForServiceUser {
+    /** Id or username */
+    user: string;
+}
+/**
+ * Retrieve versions of the build that were built in the past and available for deployment,
+ * sorted by most recent first.
+ * Response: [GetBuildVersionsResponse].
+ */
+export interface ListBuildVersions {
+    /** Id or name */
+    build: string;
+    /** Filter to only include versions matching this major version. */
+    major?: number;
+    /** Filter to only include versions matching this minor version. */
+    minor?: number;
+    /** Filter to only include versions matching this patch version. */
+    patch?: number;
+    /** Limit the number of included results. Default is no limit. */
+    limit?: I64;
+}
+/** List builders matching structured query. Response: [ListBuildersResponse]. */
+export interface ListBuilders {
+    query?: BuilderQuery;
+}
+/** List builds matching optional query. Response: [ListBuildsResponse]. */
+export interface ListBuilds {
+    /** optional structured query to filter builds. */
+    query?: BuildQuery;
+}
+/**
+ * Gets a list of existing values used as extra args across other builds.
+ * Useful to offer suggestions. Response: [ListCommonBuildExtraArgsResponse]
+ */
+export interface ListCommonBuildExtraArgs {
+    /** optional structured query to filter builds. */
+    query?: BuildQuery;
+}
+/**
+ * Gets a list of existing values used as extra args across other deployments.
+ * Useful to offer suggestions. Response: [ListCommonDeploymentExtraArgsResponse]
+ */
+export interface ListCommonDeploymentExtraArgs {
+    /** optional structured query to filter deployments. */
+    query?: DeploymentQuery;
+}
+/**
+ * Gets a list of existing values used as build extra args across other stacks.
+ * Useful to offer suggestions. Response: [ListCommonStackBuildExtraArgsResponse]
+ */
+export interface ListCommonStackBuildExtraArgs {
+    /** optional structured query to filter stacks. */
+    query?: StackQuery;
+}
+/**
+ * Gets a list of existing values used as extra args across other stacks.
+ * Useful to offer suggestions. Response: [ListCommonStackExtraArgsResponse]
+ */
+export interface ListCommonStackExtraArgs {
+    /** optional structured query to filter stacks. */
+    query?: StackQuery;
+}
+/**
+ * List all docker compose projects on the target server.
+ * Response: [ListComposeProjectsResponse].
+ */
+export interface ListComposeProjects {
+    /** Id or name */
+    server: string;
+}
+/**
+ * List deployments matching optional query.
+ * Response: [ListDeploymentsResponse].
+ */
+export interface ListDeployments {
+    /** optional structured query to filter deployments. */
+    query?: DeploymentQuery;
+}
+/**
+ * List all docker containers on the target server.
+ * Response: [ListDockerContainersResponse].
+ */
+export interface ListDockerContainers {
+    /** Id or name */
+    server: string;
+}
+/** Get image history from the server. Response: [ListDockerImageHistoryResponse]. */
+export interface ListDockerImageHistory {
+    /** Id or name */
+    server: string;
+    /** The image name */
+    image: string;
+}
+/**
+ * List the docker images locally cached on the target server.
+ * Response: [ListDockerImagesResponse].
+ */
+export interface ListDockerImages {
+    /** Id or name */
+    server: string;
+}
+/** List the docker networks on the server. Response: [ListDockerNetworksResponse]. */
+export interface ListDockerNetworks {
+    /** Id or name */
+    server: string;
+}
+/**
+ * List the docker registry providers available in Core / Periphery config files.
+ * Response: [ListDockerRegistriesFromConfigResponse].
+ *
+ * Includes:
+ * - registries in core config
+ * - registries configured on builds, deployments
+ * - registries on the optional Server or Builder
+ */
+export interface ListDockerRegistriesFromConfig {
+    /**
+     * Accepts an optional Server or Builder target to expand the core list with
+     * providers available on that specific resource.
+     */
+    target?: ResourceTarget;
+}
+/**
+ * List docker registry accounts matching optional query.
+ * Response: [ListDockerRegistrysResponse].
+ */
+export interface ListDockerRegistryAccounts {
+    /** Optionally filter by accounts with a specific domain. */
+    domain?: string;
+    /** Optionally filter by accounts with a specific username. */
+    username?: string;
+}
+/**
+ * List all docker volumes on the target server.
+ * Response: [ListDockerVolumesResponse].
+ */
+export interface ListDockerVolumes {
+    /** Id or name */
+    server: string;
+}
+/** List actions matching optional query. Response: [ListFullActionsResponse]. */
+export interface ListFullActions {
+    /** optional structured query to filter actions. */
+    query?: ActionQuery;
+}
+/** List full alerters matching optional query. Response: [ListFullAlertersResponse]. */
+export interface ListFullAlerters {
+    /** Structured query to filter alerters. */
+    query?: AlerterQuery;
+}
+/** List builders matching structured query. Response: [ListFullBuildersResponse]. */
+export interface ListFullBuilders {
+    query?: BuilderQuery;
+}
+/** List builds matching optional query. Response: [ListFullBuildsResponse]. */
+export interface ListFullBuilds {
+    /** optional structured query to filter builds. */
+    query?: BuildQuery;
+}
+/**
+ * List deployments matching optional query.
+ * Response: [ListFullDeploymentsResponse].
+ */
+export interface ListFullDeployments {
+    /** optional structured query to filter deployments. */
+    query?: DeploymentQuery;
+}
+/** List procedures matching optional query. Response: [ListFullProceduresResponse]. */
+export interface ListFullProcedures {
+    /** optional structured query to filter procedures. */
+    query?: ProcedureQuery;
+}
+/** List repos matching optional query. Response: [ListFullReposResponse]. */
+export interface ListFullRepos {
+    /** optional structured query to filter repos. */
+    query?: RepoQuery;
+}
+/** List syncs matching optional query. Response: [ListFullResourceSyncsResponse]. */
+export interface ListFullResourceSyncs {
+    /** optional structured query to filter syncs. */
+    query?: ResourceSyncQuery;
+}
+/** List server templates matching structured query. Response: [ListFullServerTemplatesResponse]. */
+export interface ListFullServerTemplates {
+    query?: ServerTemplateQuery;
+}
+/** List servers matching optional query. Response: [ListFullServersResponse]. */
+export interface ListFullServers {
+    /** optional structured query to filter servers. */
+    query?: ServerQuery;
+}
+/** List stacks matching optional query. Response: [ListFullStacksResponse]. */
+export interface ListFullStacks {
+    /** optional structured query to filter stacks. */
+    query?: StackQuery;
+}
+/**
+ * List git provider accounts matching optional query.
+ * Response: [ListGitProvidersResponse].
+ */
+export interface ListGitProviderAccounts {
+    /** Optionally filter by accounts with a specific domain. */
+    domain?: string;
+    /** Optionally filter by accounts with a specific username. */
+    username?: string;
+}
+/**
+ * List the git providers available in Core / Periphery config files.
+ * Response: [ListGitProvidersFromConfigResponse].
+ *
+ * Includes:
+ * - providers in core config
+ * - providers configured on builds, repos, syncs
+ * - providers on the optional Server or Builder
+ */
+export interface ListGitProvidersFromConfig {
+    /**
+     * Accepts an optional Server or Builder target to expand the core list with
+     * providers available on that specific resource.
+     */
+    target?: ResourceTarget;
+}
+/**
+ * List permissions for the calling user.
+ * Does not include any permissions on UserGroups they may be a part of.
+ * Response: [ListPermissionsResponse]
+ */
+export interface ListPermissions {
+}
+/** List procedures matching optional query. Response: [ListProceduresResponse]. */
+export interface ListProcedures {
+    /** optional structured query to filter procedures. */
+    query?: ProcedureQuery;
+}
+/** List repos matching optional query. Response: [ListReposResponse]. */
+export interface ListRepos {
+    /** optional structured query to filter repos. */
+    query?: RepoQuery;
+}
+/** List syncs matching optional query. Response: [ListResourceSyncsResponse]. */
+export interface ListResourceSyncs {
+    /** optional structured query to filter syncs. */
+    query?: ResourceSyncQuery;
+}
+/**
+ * List the available secrets from the core config.
+ * Response: [ListSecretsResponse].
+ */
+export interface ListSecrets {
+    /**
+     * Accepts an optional Server or Builder target to expand the core list with
+     * providers available on that specific resource.
+     */
+    target?: ResourceTarget;
+}
+/** List server templates matching structured query. Response: [ListServerTemplatesResponse]. */
+export interface ListServerTemplates {
+    query?: ServerTemplateQuery;
+}
+/** List servers matching optional query. Response: [ListServersResponse]. */
+export interface ListServers {
+    /** optional structured query to filter servers. */
+    query?: ServerQuery;
+}
+/** Lists a specific stacks services (the containers). Response: [ListStackServicesResponse]. */
+export interface ListStackServices {
+    /** Id or name */
+    stack: string;
+}
+/** List stacks matching optional query. Response: [ListStacksResponse]. */
+export interface ListStacks {
+    /** optional structured query to filter syncs. */
+    query?: StackQuery;
+}
+/**
+ * List the processes running on the target server.
+ * Response: [ListSystemProcessesResponse].
+ *
+ * Note. This does not hit the server directly. The procedures come from an
+ * in memory cache on the core, which hits the server periodically
+ * to keep it up to date.
+ */
+export interface ListSystemProcesses {
+    /** Id or name */
+    server: string;
+}
+/**
+ * List data for tags matching optional mongo query.
+ * Response: [ListTagsResponse].
+ */
+export interface ListTags {
+    query?: MongoDocument;
+}
+/**
+ * Paginated endpoint for updates matching optional query.
+ * More recent updates will be returned first.
+ */
+export interface ListUpdates {
+    /** An optional mongo query to filter the updates. */
+    query?: MongoDocument;
+    /**
+     * Page of updates. Default is 0, which is the most recent data.
+     * Use with the `next_page` field of the response.
+     */
+    page?: number;
+}
+/** Minimal representation of an action performed by Komodo. */
+export interface UpdateListItem {
+    /** The id of the update */
+    id: string;
+    /** Which operation was run */
+    operation: Operation;
+    /** The starting time of the operation */
+    start_ts: I64;
+    /** Whether the operation was successful */
+    success: boolean;
+    /** The username of the user performing update */
+    username: string;
+    /**
+     * The user id that triggered the update.
+     *
+     * Also can take these values for operations triggered automatically:
+     * - `Procedure`: The operation was triggered as part of a procedure run
+     * - `Github`: The operation was triggered by a github webhook
+     * - `Auto Redeploy`: The operation (always `Deploy`) was triggered by an attached build finishing.
+     */
+    operator: string;
+    /** The target resource to which this update refers */
+    target: ResourceTarget;
+    /**
+     * The status of the update
+     * - `Queued`
+     * - `InProgress`
+     * - `Complete`
+     */
+    status: UpdateStatus;
+    /** An optional version on the update, ie build version or deployed version. */
+    version?: Version;
+    /** Some unstructured, operation specific data. Not for general usage. */
+    other_data?: string;
+}
+/** Response for [ListUpdates]. */
+export interface ListUpdatesResponse {
+    /** The page of updates, sorted by timestamp descending. */
+    updates: UpdateListItem[];
+    /** If there is a next page of data, pass this to `page` to get it. */
+    next_page?: number;
+}
+/**
+ * List all user groups which user can see. Response: [ListUserGroupsResponse].
+ *
+ * Admins can see all user groups,
+ * and users can see user groups to which they belong.
+ */
+export interface ListUserGroups {
+}
+/**
+ * List permissions for a specific user. **Admin only**.
+ * Response: [ListUserTargetPermissionsResponse]
+ */
+export interface ListUserTargetPermissions {
+    /** Specify either a user or a user group. */
+    user_target: UserTarget;
+}
+/**
+ * **Admin only.**
+ * Gets list of Komodo users.
+ * Response: [ListUsersResponse]
+ */
+export interface ListUsers {
+}
+/**
+ * List all available global variables.
+ * Response: [ListVariablesResponse]
+ *
+ * Note. For non admin users making this call,
+ * secret variables will have their values obscured.
+ */
+export interface ListVariables {
+}
+/**
+ * Login as a local user. Will fail if the users credentials don't match
+ * any local user.
+ *
+ * Note. This method is only available if the core api has `local_auth` enabled.
+ */
+export interface LoginLocalUser {
+    /** The user's username */
+    username: string;
+    /** The user's password */
+    password: string;
+}
+export interface NameAndId {
+    name: string;
+    id: string;
+}
+/** Pauses all containers on the target server. Response: [Update] */
+export interface PauseAllContainers {
+    /** Name or id */
+    server: string;
+}
+/**
+ * Pauses the container on the target server. Response: [Update]
+ *
+ * 1. Runs `docker pause ${container_name}`.
+ */
+export interface PauseContainer {
+    /** Name or id */
+    server: string;
+    /** The container name */
+    container: string;
+}
+/**
+ * Pauses the container for the target deployment. Response: [Update]
+ *
+ * 1. Runs `docker pause ${container_name}`.
+ */
+export interface PauseDeployment {
+    /** Name or id */
+    deployment: string;
+}
+/** Pauses the target stack. `docker compose pause`. Response: [Update] */
+export interface PauseStack {
+    /** Id or name */
+    stack: string;
+    /** Optionally specify a specific service to pause */
+    service?: string;
+}
+export declare enum PortTypeEnum {
+    EMPTY = "",
+    TCP = "tcp",
+    UDP = "udp",
+    SCTP = "sctp"
+}
+/** An open port on a container */
+export interface Port {
+    /** Host IP address that the container's port is mapped to */
+    IP?: string;
+    /** Port on the container */
+    PrivatePort?: number;
+    /** Port exposed on the host */
+    PublicPort?: number;
+    Type?: PortTypeEnum;
+}
+/**
+ * Prunes the docker buildx cache on the target server. Response: [Update].
+ *
+ * 1. Runs `docker buildx prune -a -f`.
+ */
+export interface PruneBuildx {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Prunes the docker containers on the target server. Response: [Update].
+ *
+ * 1. Runs `docker container prune -f`.
+ */
+export interface PruneContainers {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Prunes the docker builders (build cache) on the target server. Response: [Update].
+ *
+ * 1. Runs `docker builder prune -a -f`.
+ */
+export interface PruneDockerBuilders {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Prunes the docker images on the target server. Response: [Update].
+ *
+ * 1. Runs `docker image prune -a -f`.
+ */
+export interface PruneImages {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Prunes the docker networks on the target server. Response: [Update].
+ *
+ * 1. Runs `docker network prune -f`.
+ */
+export interface PruneNetworks {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Prunes the docker system on the target server, including volumes. Response: [Update].
+ *
+ * 1. Runs `docker system prune -a -f --volumes`.
+ */
+export interface PruneSystem {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Prunes the docker volumes on the target server. Response: [Update].
+ *
+ * 1. Runs `docker volume prune -a -f`.
+ */
+export interface PruneVolumes {
+    /** Id or name */
+    server: string;
+}
+/**
+ * Pulls the target repo. Response: [Update].
+ *
+ * Note. Repo must have server attached at `server_id`.
+ *
+ * 1. Pulls the repo on the target server using `git pull`.
+ * 2. If `on_pull` is specified, it will be executed after the pull is complete.
+ */
+export interface PullRepo {
+    /** Id or name */
+    repo: string;
+}
+/**
+ * Push a resource to the front of the users 10 most recently viewed resources.
+ * Response: [NoData].
+ */
+export interface PushRecentlyViewed {
+    /** The target to push. */
+    resource: ResourceTarget;
+}
+/** Trigger a refresh of the cached latest hash and message. */
+export interface RefreshBuildCache {
+    /** Id or name */
+    build: string;
+}
+/** Trigger a refresh of the cached latest hash and message. */
+export interface RefreshRepoCache {
+    /** Id or name */
+    repo: string;
+}
+/** Trigger a refresh of the computed diff logs for view. Response: [ResourceSync] */
+export interface RefreshResourceSyncPending {
+    /** Id or name */
+    sync: string;
+}
+/**
+ * Trigger a refresh of the cached compose file contents.
+ * Refreshes:
+ * - Whether the remote file is missing
+ * - The latest json, and for repos, the remote contents, hash, and message.
+ */
+export interface RefreshStackCache {
+    /** Id or name */
+    stack: string;
+}
+/** **Admin only.** Remove a user from a user group. Response: [UserGroup] */
+export interface RemoveUserFromUserGroup {
+    /** The name or id of UserGroup that user should be removed from. */
+    user_group: string;
+    /** The id or username of the user to remove */
+    user: string;
+}
+/**
+ * Rename the deployment at id to the given name. Response: [Update].
+ *
+ * Note. If a container is created for the deployment, it will be renamed using
+ * `docker rename ...`.
+ */
+export interface RenameDeployment {
+    /** The id of the deployment to rename. */
+    id: string;
+    /** The new name. */
+    name: string;
+}
+/** Rename the server at id to the given name. Response: [Update]. */
+export interface RenameServer {
+    /** The id of the server to rename. */
+    id: string;
+    /** The new name. */
+    name: string;
+}
+/** Rename the stack at id to the given name. Response: [Update]. */
+export interface RenameStack {
+    /** The id of the stack to rename. */
+    id: string;
+    /** The new name. */
+    name: string;
+}
+/** Rename a tag at id. Response: [Tag]. */
+export interface RenameTag {
+    /** The id of the tag to rename. */
+    id: string;
+    /** The new name of the tag. */
+    name: string;
+}
+/** **Admin only.** Rename a user group. Response: [UserGroup] */
+export interface RenameUserGroup {
+    /** The id of the UserGroup */
+    id: string;
+    /** The new name for the UserGroup */
+    name: string;
+}
+/** Restarts all containers on the target server. Response: [Update] */
+export interface RestartAllContainers {
+    /** Name or id */
+    server: string;
+}
+/**
+ * Restarts the container on the target server. Response: [Update]
+ *
+ * 1. Runs `docker restart ${container_name}`.
+ */
+export interface RestartContainer {
+    /** Name or id */
+    server: string;
+    /** The container name */
+    container: string;
+}
+/**
+ * Restarts the container for the target deployment. Response: [Update]
+ *
+ * 1. Runs `docker restart ${container_name}`.
+ */
+export interface RestartDeployment {
+    /** Name or id */
+    deployment: string;
+}
+/** Restarts the target stack. `docker compose restart`. Response: [Update] */
+export interface RestartStack {
+    /** Id or name */
+    stack: string;
+    /** Optionally specify a specific service to restart */
+    service?: string;
+}
+/** Runs the target Action. Response: [Update] */
+export interface RunAction {
+    /** Id or name */
+    action: string;
+}
+/**
+ * Runs the target build. Response: [Update].
+ *
+ * 1. Get a handle to the builder. If using AWS builder, this means starting a builder ec2 instance.
+ * 2. Clone the repo on the builder. If an `on_clone` commmand is given, it will be executed.
+ * 3. Execute `docker build {...params}`, where params are determined using the builds configuration.
+ * 4. If a dockerhub account is attached, the build will be pushed to that account.
+ */
+export interface RunBuild {
+    /** Can be build id or name */
+    build: string;
+}
+/** Runs the target Procedure. Response: [Update] */
+export interface RunProcedure {
+    /** Id or name */
+    procedure: string;
+}
+/** Runs the target resource sync. Response: [Update] */
+export interface RunSync {
+    /** Id or name */
+    sync: string;
+    /**
+     * Only execute sync on a specific resource type.
+     * Combine with `resource_id` to specify resource.
+     */
+    resource_type?: ResourceTarget["type"];
+    /**
+     * Only execute sync on a specific resources.
+     * Combine with `resource_type` to specify resources.
+     * Supports name or id.
+     */
+    resources?: string[];
+}
+export declare enum SearchCombinator {
+    Or = "Or",
+    And = "And"
+}
+/**
+ * Search the container log's tail using `grep`. All lines go to stdout.
+ * Response: [Log].
+ *
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface SearchContainerLog {
+    /** Id or name */
+    server: string;
+    /** The container name */
+    container: string;
+    /** The terms to search for. */
+    terms: string[];
+    /**
+     * When searching for multiple terms, can use `AND` or `OR` combinator.
+     *
+     * - `AND`: Only include lines with **all** terms present in that line.
+     * - `OR`: Include lines that have one or more matches in the terms.
+     */
+    combinator?: SearchCombinator;
+    /** Invert the results, ie return all lines that DON'T match the terms / combinator. */
+    invert?: boolean;
+    /** Enable `--timestamps` */
+    timestamps?: boolean;
+}
+/**
+ * Search the deployment log's tail using `grep`. All lines go to stdout.
+ * Response: [Log].
+ *
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface SearchDeploymentLog {
+    /** Id or name */
+    deployment: string;
+    /** The terms to search for. */
+    terms: string[];
+    /**
+     * When searching for multiple terms, can use `AND` or `OR` combinator.
+     *
+     * - `AND`: Only include lines with **all** terms present in that line.
+     * - `OR`: Include lines that have one or more matches in the terms.
+     */
+    combinator?: SearchCombinator;
+    /** Invert the results, ie return all lines that DON'T match the terms / combinator. */
+    invert?: boolean;
+    /** Enable `--timestamps` */
+    timestamps?: boolean;
+}
+/**
+ * Search the deployment log's tail using `grep`. All lines go to stdout.
+ * Response: [Log].
+ *
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
+export interface SearchStackServiceLog {
+    /** Id or name */
+    stack: string;
+    /** The service to get the log for. */
+    service: string;
+    /** The terms to search for. */
+    terms: string[];
+    /**
+     * When searching for multiple terms, can use `AND` or `OR` combinator.
+     *
+     * - `AND`: Only include lines with **all** terms present in that line.
+     * - `OR`: Include lines that have one or more matches in the terms.
+     */
+    combinator?: SearchCombinator;
+    /** Invert the results, ie return all lines that DON'T match the terms / combinator. */
+    invert?: boolean;
+    /** Enable `--timestamps` */
+    timestamps?: boolean;
+}
+/** Configuration for a Komodo Server Builder. */
+export interface ServerBuilderConfig {
+    /** The server id of the builder */
+    server_id: string;
+}
+/** The health of a part of the server. */
+export interface ServerHealthState {
+    level: SeverityLevel;
+    /** Whether the health is good enough to close an open alert. */
+    should_close_alert: boolean;
+}
+/** Summary of the health of the server. */
+export interface ServerHealth {
+    cpu: ServerHealthState;
+    mem: ServerHealthState;
+    disks: Record<string, ServerHealthState>;
+}
+/**
+ * Set the time the user last opened the UI updates.
+ * Used for unseen notification dot.
+ * Response: [NoData]
+ */
+export interface SetLastSeenUpdate {
+}
+/**
+ * **Admin only.** Completely override the user in the group.
+ * Response: [UserGroup]
+ */
+export interface SetUsersInUserGroup {
+    /** Id or name. */
+    user_group: string;
+    /** The user ids or usernames to hard set as the group's users. */
+    users: string[];
+}
+/** Configuration for a Slack alerter. */
+export interface SlackAlerterEndpoint {
+    /** The Slack app webhook url */
+    url: string;
+}
+export interface Sleep {
+    duration_ms?: I64;
+}
+/** Starts all containers on the target server. Response: [Update] */
+export interface StartAllContainers {
+    /** Name or id */
+    server: string;
+}
+/**
+ * Starts the container on the target server. Response: [Update]
+ *
+ * 1. Runs `docker start ${container_name}`.
+ */
+export interface StartContainer {
+    /** Name or id */
+    server: string;
+    /** The container name */
+    container: string;
+}
+/**
+ * Starts the container for the target deployment. Response: [Update]
+ *
+ * 1. Runs `docker start ${container_name}`.
+ */
+export interface StartDeployment {
+    /** Name or id */
+    deployment: string;
+}
+/** Starts the target stack. `docker compose start`. Response: [Update] */
+export interface StartStack {
+    /** Id or name */
+    stack: string;
+    /** Optionally specify a specific service to start */
+    service?: string;
+}
+/** Stops all containers on the target server. Response: [Update] */
+export interface StopAllContainers {
+    /** Name or id */
+    server: string;
+}
+/**
+ * Stops the container on the target server. Response: [Update]
+ *
+ * 1. Runs `docker stop ${container_name}`.
+ */
+export interface StopContainer {
+    /** Name or id */
+    server: string;
+    /** The container name */
+    container: string;
+    /** Override the default termination signal. */
+    signal?: TerminationSignal;
+    /** Override the default termination max time. */
+    time?: number;
+}
+/**
+ * Stops the container for the target deployment. Response: [Update]
+ *
+ * 1. Runs `docker stop ${container_name}`.
+ */
+export interface StopDeployment {
+    /** Name or id */
+    deployment: string;
+    /** Override the default termination signal specified in the deployment. */
+    signal?: TerminationSignal;
+    /** Override the default termination max time. */
+    time?: number;
+}
+/** Stops the target stack. `docker compose stop`. Response: [Update] */
+export interface StopStack {
+    /** Id or name */
+    stack: string;
+    /** Override the default termination max time. */
+    stop_time?: number;
+    /** Optionally specify a specific service to stop */
+    service?: string;
+}
+export interface TerminationSignalLabel {
+    signal: TerminationSignal;
+    label: string;
 }
 /** Info for the all system disks combined. */
 export interface TotalDiskUsage {
@@ -6334,6 +5953,387 @@ export interface TotalDiskUsage {
     used_gb: number;
     /** Total size in GB */
     total_gb: number;
+}
+/** Unpauses all containers on the target server. Response: [Update] */
+export interface UnpauseAllContainers {
+    /** Name or id */
+    server: string;
+}
+/**
+ * Unpauses the container on the target server. Response: [Update]
+ *
+ * 1. Runs `docker unpause ${container_name}`.
+ *
+ * Note. This is the only way to restart a paused container.
+ */
+export interface UnpauseContainer {
+    /** Name or id */
+    server: string;
+    /** The container name */
+    container: string;
+}
+/**
+ * Unpauses the container for the target deployment. Response: [Update]
+ *
+ * 1. Runs `docker unpause ${container_name}`.
+ *
+ * Note. This is the only way to restart a paused container.
+ */
+export interface UnpauseDeployment {
+    /** Name or id */
+    deployment: string;
+}
+/**
+ * Unpauses the target stack. `docker compose unpause`. Response: [Update].
+ *
+ * Note. This is the only way to restart a paused container.
+ */
+export interface UnpauseStack {
+    /** Id or name */
+    stack: string;
+    /** Optionally specify a specific service to unpause */
+    service?: string;
+}
+/**
+ * Update the action at the given id, and return the updated action.
+ * Response: [Action].
+ *
+ * Note. This method updates only the fields which are set in the [_PartialActionConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateAction {
+    /** The id of the action to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: _PartialActionConfig;
+}
+/**
+ * Update the alerter at the given id, and return the updated alerter. Response: [Alerter].
+ *
+ * Note. This method updates only the fields which are set in the [PartialAlerterConfig][crate::entities::alerter::PartialAlerterConfig],
+ * effectively merging diffs into the final document. This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateAlerter {
+    /** The id of the alerter to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: _PartialAlerterConfig;
+}
+/**
+ * Update the build at the given id, and return the updated build.
+ * Response: [Build].
+ *
+ * Note. This method updates only the fields which are set in the [_PartialBuildConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateBuild {
+    /** The id of the build to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: _PartialBuildConfig;
+}
+/**
+ * Update the builder at the given id, and return the updated builder.
+ * Response: [Builder].
+ *
+ * Note. This method updates only the fields which are set in the [PartialBuilderConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateBuilder {
+    /** The id of the builder to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: PartialBuilderConfig;
+}
+/**
+ * Update the deployment at the given id, and return the updated deployment.
+ * Response: [Deployment].
+ *
+ * Note. If the attached server for the deployment changes,
+ * the deployment will be deleted / cleaned up on the old server.
+ *
+ * Note. This method updates only the fields which are set in the [_PartialDeploymentConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateDeployment {
+    /** The deployment id to update. */
+    id: string;
+    /** The partial config update. */
+    config: _PartialDeploymentConfig;
+}
+/**
+ * Update a resources description.
+ * Response: [NoData].
+ */
+export interface UpdateDescription {
+    /** The target resource to set description for. */
+    target: ResourceTarget;
+    /** The new description. */
+    description: string;
+}
+/**
+ * **Admin only.** Update a docker registry account.
+ * Response: [DockerRegistryAccount].
+ */
+export interface UpdateDockerRegistryAccount {
+    /** The id of the docker registry to update */
+    id: string;
+    /** The partial docker registry account. */
+    account: _PartialDockerRegistryAccount;
+}
+/**
+ * **Admin only.** Update a git provider account.
+ * Response: [GitProviderAccount].
+ */
+export interface UpdateGitProviderAccount {
+    /** The id of the git provider account to update. */
+    id: string;
+    /** The partial git provider account. */
+    account: _PartialGitProviderAccount;
+}
+/**
+ * **Admin only.** Update a user or user groups base permission level on a resource type.
+ * Response: [NoData].
+ */
+export interface UpdatePermissionOnResourceType {
+    /** Specify the user or user group. */
+    user_target: UserTarget;
+    /** The resource type: eg. Server, Build, Deployment, etc. */
+    resource_type: ResourceTarget["type"];
+    /** The base permission level. */
+    permission: PermissionLevel;
+}
+/**
+ * **Admin only.** Update a user or user groups permission on a resource.
+ * Response: [NoData].
+ */
+export interface UpdatePermissionOnTarget {
+    /** Specify the user or user group. */
+    user_target: UserTarget;
+    /** Specify the target resource. */
+    resource_target: ResourceTarget;
+    /** Specify the permission level. */
+    permission: PermissionLevel;
+}
+/**
+ * Update the procedure at the given id, and return the updated procedure.
+ * Response: [Procedure].
+ *
+ * Note. This method updates only the fields which are set in the [_PartialProcedureConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateProcedure {
+    /** The id of the procedure to update. */
+    id: string;
+    /** The partial config update. */
+    config: _PartialProcedureConfig;
+}
+/**
+ * Update the repo at the given id, and return the updated repo.
+ * Response: [Repo].
+ *
+ * Note. If the attached server for the repo changes,
+ * the repo will be deleted / cleaned up on the old server.
+ *
+ * Note. This method updates only the fields which are set in the [_PartialRepoConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateRepo {
+    /** The id of the repo to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: _PartialRepoConfig;
+}
+/**
+ * Update the sync at the given id, and return the updated sync.
+ * Response: [ResourceSync].
+ *
+ * Note. This method updates only the fields which are set in the [_PartialResourceSyncConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateResourceSync {
+    /** The id of the sync to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: _PartialResourceSyncConfig;
+}
+/**
+ * Update the server at the given id, and return the updated server.
+ * Response: [Server].
+ *
+ * Note. This method updates only the fields which are set in the [_PartialServerConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateServer {
+    /** The id of the server to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: _PartialServerConfig;
+}
+/**
+ * Update the server template at the given id, and return the updated server template.
+ * Response: [ServerTemplate].
+ *
+ * Note. This method updates only the fields which are set in the [PartialServerTemplateConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateServerTemplate {
+    /** The id of the server template to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: PartialServerTemplateConfig;
+}
+/**
+ * **Admin only.** Update a service user's description.
+ * Response: [User].
+ */
+export interface UpdateServiceUserDescription {
+    /** The service user's username */
+    username: string;
+    /** A new description for the service user. */
+    description: string;
+}
+/**
+ * Update the stack at the given id, and return the updated stack.
+ * Response: [Stack].
+ *
+ * Note. If the attached server for the stack changes,
+ * the stack will be deleted / cleaned up on the old server.
+ *
+ * Note. This method updates only the fields which are set in the [_PartialStackConfig],
+ * merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateStack {
+    /** The id of the Stack to update. */
+    id: string;
+    /** The partial config update to apply. */
+    config: _PartialStackConfig;
+}
+/**
+ * Update the tags on a resource.
+ * Response: [NoData]
+ */
+export interface UpdateTagsOnResource {
+    target: ResourceTarget;
+    /** Tag Ids */
+    tags: string[];
+}
+/**
+ * **Super Admin only.** Update's whether a user is admin.
+ * Response: [NoData].
+ */
+export interface UpdateUserAdmin {
+    /** The target user. */
+    user_id: string;
+    /** Whether user should be admin. */
+    admin: boolean;
+}
+/**
+ * **Admin only.** Update a user's "base" permissions, eg. "enabled".
+ * Response: [NoData].
+ */
+export interface UpdateUserBasePermissions {
+    /** The target user. */
+    user_id: string;
+    /** If specified, will update users enabled state. */
+    enabled?: boolean;
+    /** If specified, will update user's ability to create servers. */
+    create_servers?: boolean;
+    /** If specified, will update user's ability to create builds. */
+    create_builds?: boolean;
+}
+/**
+ * **Only for local users**. Update the calling users password.
+ * Response: [NoData].
+ */
+export interface UpdateUserPassword {
+    password: string;
+}
+/**
+ * **Only for local users**. Update the calling users username.
+ * Response: [NoData].
+ */
+export interface UpdateUserUsername {
+    username: string;
+}
+/** **Admin only.** Update variable description. Response: [Variable]. */
+export interface UpdateVariableDescription {
+    /** The name of the variable to update. */
+    name: string;
+    /** The description to set. */
+    description: string;
+}
+/** **Admin only.** Update whether variable is secret. Response: [Variable]. */
+export interface UpdateVariableIsSecret {
+    /** The name of the variable to update. */
+    name: string;
+    /** Whether variable is secret. */
+    is_secret: boolean;
+}
+/** **Admin only.** Update variable value. Response: [Variable]. */
+export interface UpdateVariableValue {
+    /** The name of the variable to update. */
+    name: string;
+    /** The value to set. */
+    value: string;
+}
+/** Update file contents in Files on Server or Git Repo mode. Response: [Update]. */
+export interface WriteStackFileContents {
+    /** The name or id of the target Stack. */
+    stack: string;
+    /**
+     * The file path relative to the stack run directory,
+     * or absolute path.
+     */
+    file_path: string;
+    /** The contents to write. */
+    contents: string;
+}
+/** Rename the stack at id to the given name. Response: [Update]. */
+export interface WriteSyncFileContents {
+    /** The name or id of the target Sync. */
+    sync: string;
+    /**
+     * If this file was under a resource folder, this will be the folder.
+     * Otherwise, it should be empty string.
+     */
+    resource_path: string;
+    /** The file path relative to the resource path. */
+    file_path: string;
+    /** The contents to write. */
+    contents: string;
 }
 export type AuthRequest = {
     type: "GetLoginOptions";
@@ -6489,6 +6489,18 @@ export type ExecuteRequest = {
 } | {
     type: "RunSync";
     params: RunSync;
+};
+/** Configuration for the registry to push the built image to. */
+export type ImageRegistryLegacy1_14 = 
+/** Don't push the image to any registry */
+{
+    type: "None";
+    params: NoData;
+}
+/** Push the image to a standard image registry (any domain) */
+ | {
+    type: "Standard";
+    params: ImageRegistryConfig;
 };
 export type ReadRequest = {
     type: "GetVersion";
@@ -7146,18 +7158,6 @@ export type WriteRequest = {
 } | {
     type: "DeleteDockerRegistryAccount";
     params: DeleteDockerRegistryAccount;
-};
-/** Configuration for the registry to push the built image to. */
-export type ImageRegistryLegacy1_14 = 
-/** Don't push the image to any registry */
-{
-    type: "None";
-    params: NoData;
-}
-/** Push the image to a standard image registry (any domain) */
- | {
-    type: "Standard";
-    params: ImageRegistryConfig;
 };
 export type WsLoginMessage = {
     type: "Jwt";

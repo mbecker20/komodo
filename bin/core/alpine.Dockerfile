@@ -23,7 +23,8 @@ FROM alpine:3.20
 
 # Install Deps
 RUN apk update && apk add --no-cache --virtual .build-deps \
-	openssl ca-certificates git git-lfs
+	openssl ca-certificates git git-lfs curl && \
+	curl -fsSL https://deno.land/install.sh | sh
 
 # Setup an application directory
 WORKDIR /app

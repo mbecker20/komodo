@@ -20,8 +20,8 @@ import { Button } from "@ui/button";
 import {
   AlertTriangle,
   ChevronLeft,
-  Clapperboard,
   LinkIcon,
+  Zap,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { ResourceNotifications } from "./resource-notifications";
@@ -129,7 +129,7 @@ const ResourceInner = ({ type, id }: { type: UsableResource; id: string }) => {
       </div>
       <div className="mt-8 flex flex-col gap-12">
         {canExecute && Object.keys(Components.Actions).length > 0 && (
-          <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
+          <Section title="Execute" icon={<Zap className="w-4 h-4" />}>
             <div className="flex gap-4 items-center flex-wrap">
               {Object.entries(Components.Actions).map(([key, Action]) => (
                 <Action key={key} id={id} />
@@ -192,7 +192,7 @@ export const ResourceHeader = ({
           {links?.map((link) => (
             <a
               key={link}
-              target="__blank"
+              target="_blank"
               href={link}
               className="flex gap-2 items-center pr-4 text-sm border-r cursor-pointer hover:underline last:pr-0 last:border-none"
             >

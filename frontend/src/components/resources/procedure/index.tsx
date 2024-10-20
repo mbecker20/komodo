@@ -95,7 +95,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
       return (
         <ActionWithDialog
           name={procedure.name}
-          title={running ? "Running" : "Run"}
+          title={running ? "Running" : "Run Procedure"}
           icon={<Route className="h-4 w-4" />}
           onClick={() => mutate({ procedure: id })}
           disabled={running || isPending}

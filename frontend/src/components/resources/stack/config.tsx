@@ -10,7 +10,7 @@ import {
 } from "@components/config/util";
 import { Types } from "komodo_client";
 import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
 import {
   Select,
@@ -59,7 +59,10 @@ export const StackConfig = ({
   const webhooks = useRead("GetStackWebhooksEnabled", { stack: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.StackConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.StackConfig>>(
+    `stack-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateStack");
 
   if (!config) return null;

@@ -148,13 +148,13 @@ export const Config = <T,>({
   // );
   // const show = (components[_show] && _show) || component_keys[0];
 
-  // let activeCount = 0;
-  // for (const key in components) {
-  //   if (components[key] && components[key].length) {
-  //     activeCount++;
-  //   }
-  // }
-  // const showSidebar = activeCount > 1;
+  let activeCount = 0;
+  for (const key in components) {
+    if (components[key] && components[key].length) {
+      activeCount++;
+    }
+  }
+  const showSidebar = activeCount > 1;
 
   const sections = keys(components).filter((section) => !!components[section]);
 
@@ -173,39 +173,41 @@ export const Config = <T,>({
       file_contents_language={file_contents_language}
     >
       <div className="flex gap-6">
-        <div className="hidden xl:block relative pr-6 border-r">
-          <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
-            {sections.map((section) => (
-              <div key={section}>
-                {section && (
-                  <p className="text-muted-foreground uppercase text-right mb-2">
-                    {section}
-                  </p>
-                )}
-                <div className="flex flex-col gap-2">
-                  {components[section] &&
-                    components[section]
-                      .filter((item) => !item.hidden)
-                      .map((item) => (
-                        // uses a tags becasue react-router-dom Links don't reliably hash scroll
-                        <a
-                          href={"#" + section + item.label}
-                          key={section + item.label}
-                        >
-                          <Button
-                            variant="secondary"
-                            className="justify-end w-full"
-                            size="sm"
+        {showSidebar && (
+          <div className="hidden xl:block relative pr-6 border-r">
+            <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
+              {sections.map((section) => (
+                <div key={section}>
+                  {section && (
+                    <p className="text-muted-foreground uppercase text-right mb-2">
+                      {section}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    {components[section] &&
+                      components[section]
+                        .filter((item) => !item.hidden)
+                        .map((item) => (
+                          // uses a tags becasue react-router-dom Links don't reliably hash scroll
+                          <a
+                            href={"#" + section + item.label}
+                            key={section + item.label}
                           >
-                            {item.label}
-                          </Button>
-                        </a>
-                      ))}
+                            <Button
+                              variant="secondary"
+                              className="justify-end w-full"
+                              size="sm"
+                            >
+                              {item.label}
+                            </Button>
+                          </a>
+                        ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         <div className="w-full flex flex-col gap-12">
           {sections.map(
             (section) =>

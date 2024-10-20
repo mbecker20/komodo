@@ -65,7 +65,10 @@ export const ResourceSyncConfig = ({
   const webhooks = useRead("GetSyncWebhooksEnabled", { sync: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
-  const [update, set] = useState<Partial<Types.ResourceSyncConfig>>({});
+  const [update, set] = useLocalStorage<Partial<Types.ResourceSyncConfig>>(
+    `sync-${id}-update-v1`,
+    {}
+  );
   const { mutateAsync } = useWrite("UpdateResourceSync");
 
   if (!config) return null;
