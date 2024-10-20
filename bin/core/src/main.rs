@@ -26,6 +26,7 @@ mod resource;
 mod stack;
 mod state;
 mod sync;
+mod ts_client;
 mod ws;
 
 async fn app() -> anyhow::Result<()> {
@@ -76,6 +77,7 @@ async fn app() -> anyhow::Result<()> {
     .nest("/execute", api::execute::router())
     .nest("/listener", listener::router())
     .nest("/ws", ws::router())
+    .nest("/client", ts_client::router())
     .nest_service("/", serve_dir)
     .fallback_service(frontend_index)
     .layer(cors()?)
