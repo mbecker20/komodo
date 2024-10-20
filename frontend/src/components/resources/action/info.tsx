@@ -1,17 +1,10 @@
 import { Section } from "@components/layouts";
-import { ReactNode } from "react";
 import { Card, CardContent, CardHeader } from "@ui/card";
 import { cn, getUpdateQuery, updateLogToHtml } from "@lib/utils";
 import { useRead } from "@lib/hooks";
 import { text_color_class_by_intention } from "@lib/color";
 
-export const ActionInfo = ({
-  id,
-  titleOther,
-}: {
-  id: string;
-  titleOther: ReactNode;
-}) => {
+export const ActionInfo = ({ id }: { id: string }) => {
   const update = useRead("ListUpdates", {
     query: {
       ...getUpdateQuery({ type: "Action", id }, undefined),
@@ -28,7 +21,7 @@ export const ActionInfo = ({
   const log = full_update?.logs.find((log) => log.stage === "Execute Action");
 
   return (
-    <Section titleOther={titleOther}>
+    <Section>
       {!log?.stdout && !log?.stderr && (
         <Card className="flex flex-col gap-4">
           <CardHeader

@@ -3,7 +3,7 @@ import {
   ResourcePageHeader,
   StatusBadge,
 } from "@components/util";
-import { useExecute, useLocalStorage, useRead } from "@lib/hooks";
+import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Clapperboard } from "lucide-react";
 import { ActionConfig } from "./config";
@@ -16,7 +16,6 @@ import {
 import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { ActionInfo } from "./info";
 
 const useAction = (id?: string) =>
@@ -29,30 +28,11 @@ const ActionIcon = ({ id, size }: { id?: string; size: number }) => {
 };
 
 const ConfigInfo = ({ id }: { id: string }) => {
-  const [view, setView] = useLocalStorage<"Config" | "Info">(
-    "action-tabs-v1",
-    "Config"
-  );
-
-  const title = (
-    <TabsList className="justify-start w-fit">
-      <TabsTrigger value="Config" className="w-[110px]">
-        Config
-      </TabsTrigger>
-      <TabsTrigger value="Info" className="w-[110px]">
-        Info
-      </TabsTrigger>
-    </TabsList>
-  );
   return (
-    <Tabs value={view} onValueChange={setView as any} className="grid gap-4">
-      <TabsContent value="Config">
-        <ActionConfig id={id} titleOther={title} />
-      </TabsContent>
-      <TabsContent value="Info">
-        <ActionInfo id={id} titleOther={title} />
-      </TabsContent>
-    </Tabs>
+    <div className="flex flex-col gap-2">
+      <ActionConfig id={id} />
+      <ActionInfo id={id} />
+    </div>
   );
 };
 

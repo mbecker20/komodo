@@ -4,9 +4,8 @@ import { Config } from "@components/config";
 import { MonacoEditor } from "@components/monaco";
 import { SecretsSearch } from "@components/config/env_vars";
 import { Button } from "@ui/button";
-import { ReactNode } from "react";
 
-export const ActionConfig = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
+export const ActionConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Action", id },
   }).data;
@@ -25,7 +24,6 @@ export const ActionConfig = ({ id, titleOther }: { id: string; titleOther: React
 
   return (
     <Config
-      titleOther={titleOther}
       resource_id={id}
       resource_type="Action"
       disabled={disabled}
