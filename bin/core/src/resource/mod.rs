@@ -623,7 +623,7 @@ pub async fn update<T: KomodoResource>(
   let diff = resource.config.partial_diff(config);
 
   if diff.is_none() {
-    return Err(anyhow!("update has no changes"));
+    return Ok(resource);
   }
 
   let mut diff_log = String::from("diff");
