@@ -117,6 +117,7 @@ impl super::KomodoResource for ResourceSync {
         format_serror(&e.context("The sync pending cache has failed to refresh. This is likely due to a misconfiguration of the sync").into())
       );
     };
+    refresh_resource_sync_state_cache().await;
     Ok(())
   }
 
