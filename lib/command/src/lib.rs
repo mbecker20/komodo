@@ -6,10 +6,10 @@ use komodo_client::{
 };
 use run_command::{async_run_command, CommandOutput};
 
-/// Parses commands out of multiline string
-/// and chains them together with '&&'
-///
-/// Supports full line and end of line comments. See [parse_multiline_command].
+/// If `parse_multiline: true`, parses commands out of multiline string
+/// and chains them together with '&&'.
+/// Supports full line and end of line comments.
+/// See [parse_multiline_command].
 pub async fn run_komodo_command(
   stage: &str,
   path: impl Into<Option<&Path>>,
