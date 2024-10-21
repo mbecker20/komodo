@@ -5,6 +5,7 @@ import { ResourceLink, ResourceName } from "@components/resources/common";
 import { TagsWithBadge } from "@components/tags";
 import { StatusBadge } from "@components/util";
 import {
+  action_state_intention,
   build_state_intention,
   ColorIntention,
   hex_color_by_intention,
@@ -78,8 +79,8 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
     type === "ServerTemplate"
       ? "Server Template"
       : type === "ResourceSync"
-      ? "Resource Sync"
-      : type;
+        ? "Resource Sync"
+        : type;
   return (
     <div className="border rounded-md flex flex-col md:flex-row">
       <Link
@@ -107,8 +108,8 @@ const ResourceRow = ({ type }: { type: UsableResource }) => {
                 i > 3
                   ? "hidden 2xl:flex"
                   : i > 1
-                  ? "hidden sm:flex md:hidden xl:flex"
-                  : undefined
+                    ? "hidden sm:flex md:hidden xl:flex"
+                    : undefined
               }
             />
           ))}
@@ -215,6 +216,10 @@ const ActiveResources = () => {
     useRead("ListProcedures", {}).data?.filter(
       (procedure) => procedure.info.state === Types.ProcedureState.Running
     ) ?? [];
+  const actions =
+    useRead("ListActions", {}).data?.filter(
+      (action) => action.info.state === Types.ActionState.Running
+    ) ?? [];
 
   const resources = [
     ...(builds ?? []).map((build) => ({
@@ -244,6 +249,16 @@ const ActiveResources = () => {
         <StatusBadge
           text={procedure.info.state}
           intent={procedure_state_intention(procedure.info.state)}
+        />
+      ),
+    })),
+    ...(actions ?? []).map((action) => ({
+      type: "Action" as UsableResource,
+      id: action.id,
+      state: (
+        <StatusBadge
+          text={action.info.state}
+          intent={action_state_intention(action.info.state)}
         />
       ),
     })),
