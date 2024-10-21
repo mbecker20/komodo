@@ -172,7 +172,7 @@ impl super::KomodoResource for Stack {
       .await
       .inspect_err(|e| {
         warn!(
-          "Failed to get server for stack {} | {e:#}",
+          "Failed to get Server for Stack {} | {e:#}",
           created.name
         )
       })

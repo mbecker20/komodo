@@ -118,11 +118,10 @@ impl super::KomodoResource for Build {
   }
 
   async fn post_update(
-    _updated: &Self,
-    _update: &mut Update,
+    updated: &Self,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    refresh_build_state_cache().await;
-    Ok(())
+    Self::post_create(updated, update).await
   }
 
   // DELETE

@@ -105,11 +105,10 @@ impl super::KomodoResource for Action {
   }
 
   async fn post_update(
-    _updated: &Self,
-    _update: &mut Update,
+    updated: &Self,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    refresh_action_state_cache().await;
-    Ok(())
+    Self::post_create(updated, update).await
   }
 
   // DELETE
