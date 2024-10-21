@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { AlertTriangle, History, Settings } from "lucide-react";
-import { Fragment, ReactNode, SetStateAction } from "react";
+import { Fragment, ReactNode, SetStateAction, useMemo } from "react";
 
 const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
@@ -148,13 +148,19 @@ export const Config = <T,>({
   // );
   // const show = (components[_show] && _show) || component_keys[0];
 
-  let activeCount = 0;
-  for (const key in components) {
-    if (components[key] && components[key].length) {
-      activeCount++;
+  const showSidebar = useMemo(() => {
+    let activeCount = 0;
+    for (const key in components) {
+      for (const component of components[key] || []) {
+        for (const key in component.components || {}) {
+          if (component.components[key]) {
+            activeCount++;
+          }
+        }
+      }
     }
-  }
-  const showSidebar = activeCount > 1;
+    return activeCount > 1;
+  }, [components]);
 
   const sections = keys(components).filter((section) => !!components[section]);
 
