@@ -20,6 +20,7 @@ import {
 import { ServerTemplateTable } from "./table";
 import { LaunchServer } from "./actions";
 import { ResourcePageHeader } from "@components/util";
+import { RenameResource } from "@components/config/util";
 
 export const useServerTemplate = (id?: string) =>
   useRead("ListServerTemplates", {}).data?.find((d) => d.id === id);
@@ -137,7 +138,12 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
 
   Config: ServerTemplateConfig,
 
-  DangerZone: ({ id }) => <DeleteResource type="ServerTemplate" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="ServerTemplate" id={id} />
+      <DeleteResource type="ServerTemplate" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const template = useServerTemplate(id);

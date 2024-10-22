@@ -24,7 +24,6 @@ import {
   DeployStack,
   DestroyStack,
   PauseUnpauseStack,
-  RenameStack,
   RestartStack,
   StartStopStack,
 } from "./actions";
@@ -37,6 +36,7 @@ import { StackServices } from "./services";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { StackConfig } from "./config";
+import { RenameResource } from "@components/config/util";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 10_000 }).data?.find(
@@ -156,8 +156,8 @@ export const StackComponents: RequiredResourceComponents = {
     const server_id = _server_id
       ? _server_id
       : servers && servers.length === 1
-      ? servers[0].id
-      : undefined;
+        ? servers[0].id
+        : undefined;
     return <NewResource type="Stack" server_id={server_id} />;
   },
 
@@ -442,7 +442,7 @@ export const StackComponents: RequiredResourceComponents = {
 
   DangerZone: ({ id }) => (
     <>
-      <RenameStack id={id} />
+      <RenameResource type="Stack" id={id} />
       <DeleteResource type="Stack" id={id} />
     </>
   ),

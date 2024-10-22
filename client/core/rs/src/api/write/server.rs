@@ -23,6 +23,7 @@ pub struct CreateServer {
   /// The name given to newly created server.
   pub name: String,
   /// Optional partial config to initialize the server with.
+  #[serde(default)]
   pub config: _PartialServerConfig,
 }
 
@@ -58,7 +59,7 @@ pub struct DeleteServer {
 #[empty_traits(KomodoWriteRequest)]
 #[response(Server)]
 pub struct UpdateServer {
-  /// The id of the server to update.
+  /// The id or name of the server to update.
   pub id: String,
   /// The partial config update to apply.
   pub config: _PartialServerConfig,
@@ -66,7 +67,8 @@ pub struct UpdateServer {
 
 //
 
-/// Rename the server at id to the given name. Response: [Update].
+/// Rename an Server to the given name.
+/// Response: [Update].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -74,7 +76,7 @@ pub struct UpdateServer {
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
 pub struct RenameServer {
-  /// The id of the server to rename.
+  /// The id or name of the Server to rename.
   pub id: String,
   /// The new name.
   pub name: String,
@@ -83,7 +85,9 @@ pub struct RenameServer {
 //
 
 /// Create a docker network on the server.
-/// Respone: [Update]
+/// Response: [Update]
+///
+/// `docker network create {name}`
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -91,7 +95,7 @@ pub struct RenameServer {
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
 pub struct CreateNetwork {
-  /// Id or name
+  /// Server Id or name
   pub server: String,
   /// The name of the network to create.
   pub name: String,

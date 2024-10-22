@@ -1,16 +1,6 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import {
-  Play,
-  Trash,
-  Pause,
-  Rocket,
-  Pen,
-  RefreshCcw,
-  Square,
-} from "lucide-react";
-import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { Input } from "@ui/input";
-import { useToast } from "@ui/use-toast";
+import { Play, Trash, Pause, Rocket, RefreshCcw, Square } from "lucide-react";
+import { useExecute, useRead } from "@lib/hooks";
 import { useEffect, useState } from "react";
 import { Types } from "komodo_client";
 import {
@@ -58,7 +48,7 @@ export const DeployDeployment = ({ id }: DeploymentId) => {
   const term_signal_labels =
     deployed &&
     parse_key_value(deployment.config?.term_signal_labels ?? "").map(
-      (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
+      (s) => ({ signal: s.key, label: s.value }) as Types.TerminationSignalLabel
     );
 
   if (deployed) {
@@ -124,7 +114,7 @@ export const DestroyDeployment = ({ id }: DeploymentId) => {
   const term_signal_labels = parse_key_value(
     deployment.config?.term_signal_labels ?? ""
   ).map(
-    (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
+    (s) => ({ signal: s.key, label: s.value }) as Types.TerminationSignalLabel
   );
 
   return (
@@ -232,7 +222,7 @@ const StopDeployment = ({ id }: DeploymentId) => {
   const term_signal_labels = parse_key_value(
     deployment.config?.term_signal_labels ?? ""
   ).map(
-    (s) => ({ signal: s.key, label: s.value } as Types.TerminationSignalLabel)
+    (s) => ({ signal: s.key, label: s.value }) as Types.TerminationSignalLabel
   );
 
   return (
@@ -334,37 +324,4 @@ export const PauseUnpauseDeployment = ({ id }: DeploymentId) => {
       />
     );
   }
-};
-
-export const RenameDeployment = ({ id }: { id: string }) => {
-  const invalidate = useInvalidate();
-  const [name, set] = useState("");
-  const { toast } = useToast();
-  const { mutate, isPending } = useWrite("RenameDeployment", {
-    onSuccess: () => {
-      invalidate(["ListDeployments"]);
-      toast({ title: "Deployment renamed" });
-      set("");
-    },
-  });
-  return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Rename Deployment</div>
-      <div className="flex gap-4 w-full justify-end">
-        <Input
-          value={name}
-          onChange={(e) => set(e.target.value)}
-          className="w-96"
-          placeholder="Enter new name"
-        />
-        <ConfirmButton
-          title="Rename"
-          icon={<Pen className="w-4 h-4" />}
-          loading={isPending}
-          disabled={!name || isPending}
-          onClick={() => mutate({ id, name })}
-        />
-      </div>
-    </div>
-  );
 };

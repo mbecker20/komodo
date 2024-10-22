@@ -3,9 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::server_template::{
+use crate::entities::{server_template::{
   PartialServerTemplateConfig, ServerTemplate,
-};
+}, update::Update};
 
 use super::KomodoWriteRequest;
 
@@ -22,6 +22,7 @@ pub struct CreateServerTemplate {
   /// The name given to newly created server template.
   pub name: String,
   /// Optional partial config to initialize the server template with.
+  #[serde(default)]
   pub config: PartialServerTemplateConfig,
 }
 
@@ -78,4 +79,21 @@ pub struct UpdateServerTemplate {
   pub id: String,
   /// The partial config update to apply.
   pub config: PartialServerTemplateConfig,
+}
+
+//
+
+/// Rename the ServerTemplate at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameServerTemplate {
+  /// The id or name of the ServerTemplate to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }

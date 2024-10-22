@@ -23,6 +23,7 @@ pub struct CreateDeployment {
   /// The name given to newly created deployment.
   pub name: String,
   /// Optional partial config to initialize the deployment with.
+  #[serde(default)]
   pub config: _PartialDeploymentConfig,
 }
 

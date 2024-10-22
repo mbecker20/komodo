@@ -1,11 +1,11 @@
 use komodo_client::{
   api::write::{
     CopyServerTemplate, CreateServerTemplate, DeleteServerTemplate,
-    UpdateServerTemplate,
+    RenameServerTemplate, UpdateServerTemplate,
   },
   entities::{
     permission::PermissionLevel, server_template::ServerTemplate,
-    user::User,
+    update::Update, user::User,
   },
 };
 use resolver_api::Resolve;
@@ -61,5 +61,16 @@ impl Resolve<UpdateServerTemplate, User> for State {
     user: User,
   ) -> anyhow::Result<ServerTemplate> {
     resource::update::<ServerTemplate>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RenameServerTemplate, User> for State {
+  #[instrument(name = "RenameServerTemplate", skip(self, user))]
+  async fn resolve(
+    &self,
+    RenameServerTemplate { id, name }: RenameServerTemplate,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    resource::rename::<ServerTemplate>(&id, &name, &user).await
   }
 }

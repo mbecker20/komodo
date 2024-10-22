@@ -43,8 +43,8 @@ impl super::KomodoResource for Deployment {
     ResourceTargetVariant::Deployment
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().deployments
   }
 
@@ -168,6 +168,12 @@ impl super::KomodoResource for Deployment {
     update: &mut Update,
   ) -> anyhow::Result<()> {
     Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameDeployment
   }
 
   // DELETE

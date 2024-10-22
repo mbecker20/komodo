@@ -25,8 +25,8 @@ impl super::KomodoResource for Alerter {
     ResourceTargetVariant::Alerter
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().alerters
   }
 
@@ -92,6 +92,12 @@ impl super::KomodoResource for Alerter {
     _update: &mut Update,
   ) -> anyhow::Result<()> {
     Ok(())
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameAlerter
   }
 
   // DELETE

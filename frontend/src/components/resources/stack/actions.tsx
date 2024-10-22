@@ -1,19 +1,8 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import {
-  Pause,
-  Pen,
-  Play,
-  RefreshCcw,
-  Rocket,
-  Square,
-  Trash,
-} from "lucide-react";
+import { useExecute, useRead } from "@lib/hooks";
+import { Pause, Play, RefreshCcw, Rocket, Square, Trash } from "lucide-react";
 import { useStack } from ".";
 import { Types } from "komodo_client";
-import { useToast } from "@ui/use-toast";
-import { useState } from "react";
-import { Input } from "@ui/input";
 
 export const DeployStack = ({ id }: { id: string }) => {
   const stack = useStack(id);
@@ -170,14 +159,14 @@ export const StartStopStack = ({
   }
 
   const showStart = service
-    ? (container_state &&
+    ? ((container_state &&
         container_state !== Types.ContainerStateStatusEnum.Running) ??
-      false
+      false)
     : state !== Types.StackState.Running;
   const showStop = service
-    ? (container_state &&
+    ? ((container_state &&
         container_state !== Types.ContainerStateStatusEnum.Exited) ??
-      false
+      false)
     : state !== Types.StackState.Stopped;
 
   return (
@@ -261,34 +250,4 @@ export const PauseUnpauseStack = ({
       />
     );
   }
-};
-
-export const RenameStack = ({ id }: { id: string }) => {
-  const invalidate = useInvalidate();
-  const [name, set] = useState("");
-  const { toast } = useToast();
-  const { mutate, isPending } = useWrite("RenameStack", {
-    onSuccess: () => {
-      invalidate(["ListStacks"]);
-      toast({ title: "Stack renamed" });
-      set("");
-    },
-  });
-  return (
-    <div className="flex items-center justify-end gap-4 w-full">
-      <Input
-        value={name}
-        onChange={(e) => set(e.target.value)}
-        className="w-96"
-        placeholder="Enter new name"
-      />
-      <ConfirmButton
-        title="Rename"
-        icon={<Pen className="w-4 h-4" />}
-        loading={isPending}
-        disabled={!name || isPending}
-        onClick={() => mutate({ id, name })}
-      />
-    </div>
-  );
 };

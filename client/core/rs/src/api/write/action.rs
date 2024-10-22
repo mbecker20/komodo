@@ -5,6 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{
   action::{Action, _PartialActionConfig},
+  update::Update,
   NoData,
 };
 
@@ -23,6 +24,7 @@ pub struct CreateAction {
   /// The name given to newly created action.
   pub name: String,
   /// Optional partial config to initialize the action with.
+  #[serde(default)]
   pub config: _PartialActionConfig,
 }
 
@@ -79,6 +81,23 @@ pub struct UpdateAction {
   pub id: String,
   /// The partial config update to apply.
   pub config: _PartialActionConfig,
+}
+
+//
+
+/// Rename the Action at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameAction {
+  /// The id or name of the Action to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }
 
 /// Create a webhook on the github action attached to the Action resource.

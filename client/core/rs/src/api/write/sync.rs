@@ -25,6 +25,7 @@ pub struct CreateResourceSync {
   /// The name given to newly created sync.
   pub name: String,
   /// Optional partial config to initialize the sync with.
+  #[serde(default)]
   pub config: _PartialResourceSyncConfig,
 }
 
@@ -81,6 +82,23 @@ pub struct UpdateResourceSync {
   pub id: String,
   /// The partial config update to apply.
   pub config: _PartialResourceSyncConfig,
+}
+
+//
+
+/// Rename the ResourceSync at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameResourceSync {
+  /// The id or name of the ResourceSync to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }
 
 //

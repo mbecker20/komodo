@@ -29,8 +29,8 @@ impl super::KomodoResource for ServerTemplate {
     ResourceTargetVariant::ServerTemplate
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().server_templates
   }
 
@@ -115,6 +115,12 @@ impl super::KomodoResource for ServerTemplate {
     _update: &mut Update,
   ) -> anyhow::Result<()> {
     Ok(())
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameServerTemplate
   }
 
   // DELETE

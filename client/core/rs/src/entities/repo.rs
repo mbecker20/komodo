@@ -277,12 +277,14 @@ impl Default for RepoConfig {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct RepoActionState {
-  /// Whether repo currently cloning
+  /// Whether Repo currently cloning on the attached Server
   pub cloning: bool,
-  /// Whether repo currently pulling
+  /// Whether Repo currently pulling on the attached Server
   pub pulling: bool,
-  /// Whether repo currently building, using the attached builder.
+  /// Whether Repo currently building using the attached Builder.
   pub building: bool,
+  /// Whether Repo currently renaming.
+  pub renaming: bool,
 }
 
 #[typeshare]

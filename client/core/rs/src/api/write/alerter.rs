@@ -3,7 +3,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::alerter::{Alerter, _PartialAlerterConfig};
+use crate::entities::{
+  alerter::{Alerter, _PartialAlerterConfig},
+  update::Update,
+};
 
 use super::KomodoWriteRequest;
 
@@ -20,6 +23,7 @@ pub struct CreateAlerter {
   /// The name given to newly created alerter.
   pub name: String,
   /// Optional partial config to initialize the alerter with.
+  #[serde(default)]
   pub config: _PartialAlerterConfig,
 }
 
@@ -74,4 +78,21 @@ pub struct UpdateAlerter {
   pub id: String,
   /// The partial config update to apply.
   pub config: _PartialAlerterConfig,
+}
+
+//
+
+/// Rename the Alerter at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameAlerter {
+  /// The id or name of the Alerter to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }

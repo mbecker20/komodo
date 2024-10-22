@@ -4,7 +4,6 @@ use komodo_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
-    komodo_timestamp,
     permission::PermissionLevel,
     server::ServerState,
     stack::{PartialStackConfig, Stack, StackInfo},
@@ -13,10 +12,7 @@ use komodo_client::{
     FileContents, NoData, Operation,
   },
 };
-use mungos::{
-  by_id::update_one_by_id,
-  mongodb::bson::{doc, to_document},
-};
+use mungos::mongodb::bson::{doc, to_document};
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
@@ -100,36 +96,7 @@ impl Resolve<RenameStack, User> for State {
     RenameStack { id, name }: RenameStack,
     user: User,
   ) -> anyhow::Result<Update> {
-    let stack = resource::get_check_permissions::<Stack>(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-
-    let mut update =
-      make_update(&stack, Operation::RenameStack, &user);
-
-    update_one_by_id(
-      &db_client().stacks,
-      &stack.id,
-      mungos::update::Update::Set(
-        doc! { "name": &name, "updated_at": komodo_timestamp() },
-      ),
-      None,
-    )
-    .await
-    .context("failed to update stack name on db")?;
-
-    update.push_simple_log(
-      "rename stack",
-      format!("renamed stack from {} to {}", stack.name, name),
-    );
-    update.finalize();
-
-    add_update(update.clone()).await?;
-
-    Ok(update)
+    resource::rename::<Stack>(&id, &name, &user).await
   }
 }
 

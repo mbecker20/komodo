@@ -1,13 +1,12 @@
 use anyhow::{anyhow, Context};
 use git::GitRes;
-use komodo_client::entities::{
-  to_komodo_name, update::Log, CloneArgs, LatestCommit,
-};
+use komodo_client::entities::{update::Log, CloneArgs, LatestCommit};
 use periphery_client::api::git::{
   CloneRepo, DeleteRepo, GetLatestCommit, PullOrCloneRepo, PullRepo,
-  RepoActionResponse,
+  RenameRepo, RepoActionResponse,
 };
 use resolver_api::Resolve;
+use tokio::fs;
 
 use crate::{config::periphery_config, State};
 
@@ -207,6 +206,31 @@ impl Resolve<PullOrCloneRepo> for State {
 
 //
 
+impl Resolve<RenameRepo> for State {
+  #[instrument(name = "RenameRepo", skip(self))]
+  async fn resolve(
+    &self,
+    RenameRepo {
+      curr_name,
+      new_name,
+    }: RenameRepo,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    let renamed = fs::rename(
+      periphery_config().repo_dir.join(&curr_name),
+      periphery_config().repo_dir.join(&new_name),
+    )
+    .await;
+    let msg = match renamed {
+      Ok(_) => format!("Rename Repo from {curr_name} to {new_name}"),
+      Err(_) => format!("No Repo cloned at {curr_name} to Rename"),
+    };
+    Ok(Log::simple("Rename Repo", msg))
+  }
+}
+
+//
+
 impl Resolve<DeleteRepo> for State {
   #[instrument(name = "DeleteRepo", skip(self))]
   async fn resolve(
@@ -214,14 +238,15 @@ impl Resolve<DeleteRepo> for State {
     DeleteRepo { name }: DeleteRepo,
     _: (),
   ) -> anyhow::Result<Log> {
-    let name = to_komodo_name(&name);
-    let deleted = std::fs::remove_dir_all(
-      periphery_config().repo_dir.join(&name),
-    );
+    // If using custom clone path, it will be passed by core instead of name.
+    // So the join will resolve to just the absolute path.
+    let deleted =
+      fs::remove_dir_all(periphery_config().repo_dir.join(&name))
+        .await;
     let msg = match deleted {
-      Ok(_) => format!("deleted repo {name}"),
-      Err(_) => format!("no repo at {name} to delete"),
+      Ok(_) => format!("Deleted Repo {name}"),
+      Err(_) => format!("No Repo at {name} to delete"),
     };
-    Ok(Log::simple("delete repo", msg))
+    Ok(Log::simple("Delete Repo on Host", msg))
   }
 }

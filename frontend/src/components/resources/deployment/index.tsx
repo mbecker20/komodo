@@ -8,7 +8,6 @@ import {
   DeployDeployment,
   StartStopDeployment,
   DestroyDeployment,
-  RenameDeployment,
   RestartDeployment,
   PauseUnpauseDeployment,
 } from "./actions";
@@ -24,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
+import { RenameResource } from "@components/config/util";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -33,7 +33,8 @@ export const useDeployment = (id?: string) =>
   );
 
 export const useFullDeployment = (id: string) =>
-  useRead("GetDeployment", { deployment: id }, { refetchInterval: 10_000 }).data;
+  useRead("GetDeployment", { deployment: id }, { refetchInterval: 10_000 })
+    .data;
 
 const ConfigOrLog = ({ id }: { id: string }) => {
   // const [view, setView] = useAtom(configOrLog);
@@ -149,8 +150,8 @@ export const DeploymentComponents: RequiredResourceComponents = {
     const server_id = _server_id
       ? _server_id
       : servers && servers.length === 1
-      ? servers[0].id
-      : undefined;
+        ? servers[0].id
+        : undefined;
     return (
       <NewResource
         type="Deployment"
@@ -224,7 +225,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
 
   DangerZone: ({ id }) => (
     <>
-      <RenameDeployment id={id} />
+      <RenameResource type="Deployment" id={id} />
       <DeleteResource type="Deployment" id={id} />
     </>
   ),

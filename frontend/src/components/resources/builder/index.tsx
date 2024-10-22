@@ -19,6 +19,7 @@ import { BuilderConfig } from "./config";
 import { DeleteResource, ResourceLink } from "../common";
 import { BuilderTable } from "./table";
 import { ResourcePageHeader } from "@components/util";
+import { RenameResource } from "@components/config/util";
 
 export const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}, { refetchInterval: 10_000 }).data?.find(
@@ -142,7 +143,12 @@ export const BuilderComponents: RequiredResourceComponents = {
 
   Config: BuilderConfig,
 
-  DangerZone: ({ id }) => <DeleteResource type="Builder" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="Builder" id={id} />
+      <DeleteResource type="Builder" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const builder = useBuilder(id);

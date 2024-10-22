@@ -695,6 +695,7 @@ pub enum Operation {
   // deployment
   CreateDeployment,
   UpdateDeployment,
+  RenameDeployment,
   DeleteDeployment,
   Deploy,
   StartDeployment,
@@ -703,11 +704,11 @@ pub enum Operation {
   UnpauseDeployment,
   StopDeployment,
   DestroyDeployment,
-  RenameDeployment,
 
   // build
   CreateBuild,
   UpdateBuild,
+  RenameBuild,
   DeleteBuild,
   RunBuild,
   CancelBuild,
@@ -715,6 +716,7 @@ pub enum Operation {
   // repo
   CreateRepo,
   UpdateRepo,
+  RenameRepo,
   DeleteRepo,
   CloneRepo,
   PullRepo,
@@ -724,34 +726,40 @@ pub enum Operation {
   // procedure
   CreateProcedure,
   UpdateProcedure,
+  RenameProcedure,
   DeleteProcedure,
   RunProcedure,
 
   // action
   CreateAction,
   UpdateAction,
+  RenameAction,
   DeleteAction,
   RunAction,
 
   // builder
   CreateBuilder,
   UpdateBuilder,
+  RenameBuilder,
   DeleteBuilder,
 
   // alerter
   CreateAlerter,
   UpdateAlerter,
+  RenameAlerter,
   DeleteAlerter,
 
   // server template
   CreateServerTemplate,
   UpdateServerTemplate,
+  RenameServerTemplate,
   DeleteServerTemplate,
   LaunchServer,
 
   // sync
   CreateResourceSync,
   UpdateResourceSync,
+  RenameResourceSync,
   DeleteResourceSync,
   WriteSyncContents,
   CommitSync,

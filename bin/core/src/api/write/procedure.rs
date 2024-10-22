@@ -1,7 +1,8 @@
 use komodo_client::{
   api::write::*,
   entities::{
-    permission::PermissionLevel, procedure::Procedure, user::User,
+    permission::PermissionLevel, procedure::Procedure,
+    update::Update, user::User,
   },
 };
 use resolver_api::Resolve;
@@ -45,6 +46,17 @@ impl Resolve<UpdateProcedure, User> for State {
     user: User,
   ) -> anyhow::Result<UpdateProcedureResponse> {
     resource::update::<Procedure>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RenameProcedure, User> for State {
+  #[instrument(name = "RenameProcedure", skip(self, user))]
+  async fn resolve(
+    &self,
+    RenameProcedure { id, name }: RenameProcedure,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    resource::rename::<Procedure>(&id, &name, &user).await
   }
 }
 

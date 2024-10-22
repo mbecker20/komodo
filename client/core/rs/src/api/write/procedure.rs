@@ -3,9 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::procedure::{
+use crate::entities::{procedure::{
   Procedure, _PartialProcedureConfig,
-};
+}, update::Update};
 
 use super::KomodoWriteRequest;
 
@@ -22,6 +22,7 @@ pub struct CreateProcedure {
   /// The name given to newly created build.
   pub name: String,
   /// Optional partial config to initialize the procedure with.
+  #[serde(default)]
   pub config: _PartialProcedureConfig,
 }
 
@@ -91,3 +92,20 @@ pub struct UpdateProcedure {
 
 #[typeshare]
 pub type UpdateProcedureResponse = Procedure;
+
+//
+
+/// Rename the Procedure at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameProcedure {
+  /// The id or name of the Procedure to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
+}

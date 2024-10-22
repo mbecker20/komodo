@@ -1,9 +1,7 @@
-use anyhow::Context;
 use formatting::format_serror;
 use komodo_client::{
   api::write::*,
   entities::{
-    komodo_timestamp,
     permission::PermissionLevel,
     server::Server,
     update::{Update, UpdateStatus},
@@ -11,7 +9,6 @@ use komodo_client::{
     Operation,
   },
 };
-use mungos::{by_id::update_one_by_id, mongodb::bson::doc};
 use periphery_client::api;
 use resolver_api::Resolve;
 
@@ -21,7 +18,7 @@ use crate::{
     update::{add_update, make_update, update_update},
   },
   resource,
-  state::{db_client, State},
+  state::State,
 };
 
 impl Resolve<CreateServer, User> for State {
@@ -64,25 +61,7 @@ impl Resolve<RenameServer, User> for State {
     RenameServer { id, name }: RenameServer,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server = resource::get_check_permissions::<Server>(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-    let mut update =
-      make_update(&server, Operation::RenameServer, &user);
-
-    update_one_by_id(&db_client().servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": komodo_timestamp() }), None)
-      .await
-      .context("failed to update server on db. this name may already be taken.")?;
-    update.push_simple_log(
-      "rename server",
-      format!("renamed server {id} from {} to {name}", server.name),
-    );
-    update.finalize();
-    update.id = add_update(update.clone()).await?;
-    Ok(update)
+    resource::rename::<Server>(&id, &name, &user).await
   }
 }
 

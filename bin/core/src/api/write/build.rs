@@ -6,6 +6,7 @@ use komodo_client::{
     build::{Build, BuildInfo, PartialBuildConfig},
     config::core::CoreConfig,
     permission::PermissionLevel,
+    update::Update,
     user::User,
     CloneArgs, NoData,
   },
@@ -74,6 +75,17 @@ impl Resolve<UpdateBuild, User> for State {
     user: User,
   ) -> anyhow::Result<Build> {
     resource::update::<Build>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RenameBuild, User> for State {
+  #[instrument(name = "RenameBuild", skip(self, user))]
+  async fn resolve(
+    &self,
+    RenameBuild { id, name }: RenameBuild,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    resource::rename::<Build>(&id, &name, &user).await
   }
 }
 

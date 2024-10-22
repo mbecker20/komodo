@@ -45,8 +45,8 @@ impl super::KomodoResource for Procedure {
     ResourceTargetVariant::Procedure
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().procedures
   }
 
@@ -119,6 +119,12 @@ impl super::KomodoResource for Procedure {
     update: &mut Update,
   ) -> anyhow::Result<()> {
     Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameProcedure
   }
 
   // DELETE

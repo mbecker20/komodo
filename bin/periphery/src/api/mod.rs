@@ -66,6 +66,7 @@ pub enum PeripheryRequest {
   // Repo (Write)
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
+  RenameRepo(RenameRepo),
   DeleteRepo(DeleteRepo),
 
   // Build

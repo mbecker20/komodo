@@ -41,8 +41,8 @@ impl super::KomodoResource for ResourceSync {
     ResourceTargetVariant::ResourceSync
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().resource_syncs
   }
 
@@ -140,6 +140,12 @@ impl super::KomodoResource for ResourceSync {
     update: &mut Update,
   ) -> anyhow::Result<()> {
     Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameResourceSync
   }
 
   // DELETE

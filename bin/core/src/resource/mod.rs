@@ -110,8 +110,7 @@ pub trait KomodoResource {
 
   fn resource_type() -> ResourceTargetVariant;
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>>;
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>;
 
   async fn to_list_item(
     resource: Resource<Self::Config, Self::Info>,
@@ -170,6 +169,12 @@ pub trait KomodoResource {
   ) -> anyhow::Result<()>;
 
   // =======
+  // RENAME
+  // =======
+
+  fn rename_operation() -> Operation;
+
+  // =======
   // DELETE
   // =======
 
@@ -199,7 +204,6 @@ pub async fn get<T: KomodoResource>(
   id_or_name: &str,
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {
   T::coll()
-    .await
     .find_one(id_or_name_filter(id_or_name))
     .await
     .context("failed to query db for resource")?
@@ -289,7 +293,7 @@ pub async fn get_resource_ids_for_user<T: KomodoResource>(
   let (base, perms) = tokio::try_join!(
     // Get any resources with non-none base permission,
     find_collect(
-      T::coll().await,
+      T::coll(),
       doc! { "base_permission": { "$exists": true, "$ne": "None" } },
       None,
     )
@@ -440,7 +444,7 @@ pub async fn list_full_for_user_using_document<T: KomodoResource>(
     filters.insert("_id", doc! { "$in": ids });
   }
   find_collect(
-    T::coll().await,
+    T::coll(),
     filters,
     FindOptions::builder().sort(doc! { "name": 1 }).build(),
   )
@@ -463,7 +467,7 @@ pub async fn get_id_to_resource_map<T: KomodoResource>(
   id_to_tags: &HashMap<String, Tag>,
   match_tags: &[String],
 ) -> anyhow::Result<IdResourceMap<T>> {
-  let res = find_collect(T::coll().await, None, None)
+  let res = find_collect(T::coll(), None, None)
     .await
     .with_context(|| {
       format!("failed to pull {}s from mongo", T::resource_type())
@@ -555,7 +559,6 @@ pub async fn create<T: KomodoResource>(
   };
 
   let resource_id = T::coll()
-    .await
     .insert_one(&resource)
     .await
     .with_context(|| {
@@ -644,14 +647,9 @@ pub async fn update<T: KomodoResource>(
 
   let update_doc = flatten_document(doc! { "config": config_doc });
 
-  update_one_by_id(
-    T::coll().await,
-    &id,
-    doc! { "$set": update_doc },
-    None,
-  )
-  .await
-  .context("failed to update resource on database")?;
+  update_one_by_id(T::coll(), &id, doc! { "$set": update_doc }, None)
+    .await
+    .context("failed to update resource on database")?;
 
   let mut update = make_update(
     resource_target::<T>(id),
@@ -707,7 +705,6 @@ pub async fn update_description<T: KomodoResource>(
   )
   .await?;
   T::coll()
-    .await
     .update_one(
       id_or_name_filter(id_or_name),
       doc! { "$set": { "description": description } },
@@ -741,7 +738,6 @@ pub async fn update_tags<T: KomodoResource>(
     .flatten()
     .collect::<Vec<_>>();
   T::coll()
-    .await
     .update_one(
       id_or_name_filter(id_or_name),
       doc! { "$set": { "tags": tags } },
@@ -754,11 +750,65 @@ pub async fn remove_tag_from_all<T: KomodoResource>(
   tag_id: &str,
 ) -> anyhow::Result<()> {
   T::coll()
-    .await
     .update_many(doc! {}, doc! { "$pull": { "tags": tag_id } })
     .await
     .context("failed to remove tag from resources")?;
   Ok(())
+}
+
+// =======
+// RENAME
+// =======
+
+pub async fn rename<T: KomodoResource>(
+  id_or_name: &str,
+  name: &str,
+  user: &User,
+) -> anyhow::Result<Update> {
+  let resource = get_check_permissions::<T>(
+    id_or_name,
+    user,
+    PermissionLevel::Write,
+  )
+  .await?;
+
+  let mut update = make_update(
+    resource_target::<T>(resource.id.clone()),
+    T::rename_operation(),
+    user,
+  );
+
+  let name = to_komodo_name(name);
+
+  update_one_by_id(
+    T::coll(),
+    &resource.id,
+    mungos::update::Update::Set(
+      doc! { "name": &name, "updated_at": komodo_timestamp() },
+    ),
+    None,
+  )
+  .await
+  .with_context(|| {
+    format!(
+      "Failed to update {ty} on db. This name may already be taken.",
+      ty = T::resource_type()
+    )
+  })?;
+
+  update.push_simple_log(
+    &format!("Rename {}", T::resource_type()),
+    format!(
+      "Renamed {ty} {id} from {prev_name} to {name}",
+      ty = T::resource_type(),
+      id = resource.id,
+      prev_name = resource.name
+    ),
+  );
+
+  update.finalize();
+  update.id = add_update(update.clone()).await?;
+  Ok(update)
 }
 
 // =======
@@ -790,7 +840,7 @@ pub async fn delete<T: KomodoResource>(
   delete_all_permissions_on_resource(target.clone()).await;
   remove_from_recently_viewed(target.clone()).await;
 
-  delete_one_by_id(T::coll().await, &resource.id, None)
+  delete_one_by_id(T::coll(), &resource.id, None)
     .await
     .with_context(|| {
       format!("failed to delete {} from database", T::resource_type())

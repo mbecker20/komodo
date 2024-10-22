@@ -16,6 +16,7 @@ import {
 import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
+import { RenameResource } from "@components/config/util";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -75,7 +76,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
       <StatusBadge text={state} intent={procedure_state_intention(state)} />
     );
   },
-  
+
   Status: {},
 
   Info: {
@@ -109,7 +110,12 @@ export const ProcedureComponents: RequiredResourceComponents = {
 
   Config: ProcedureConfig,
 
-  DangerZone: ({ id }) => <DeleteResource type="Procedure" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="Procedure" id={id} />
+      <DeleteResource type="Procedure" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const procedure = useProcedure(id);

@@ -21,6 +21,7 @@ import { ResourceSyncConfig } from "./config";
 import { ResourceSyncInfo } from "./info";
 import { ResourceSyncPending } from "./pending";
 import { Badge } from "@ui/badge";
+import { RenameResource } from "@components/config/util";
 
 export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 10_000 }).data?.find(
@@ -233,7 +234,12 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
 
   Config: ConfigInfoPending,
 
-  DangerZone: ({ id }) => <DeleteResource type="ResourceSync" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="ResourceSync" id={id} />
+      <DeleteResource type="ResourceSync" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const sync = useResourceSync(id);

@@ -24,6 +24,7 @@ pub struct CreateStack {
   /// The name given to newly created stack.
   pub name: String,
   /// Optional partial config to initialize the stack with.
+  #[serde(default)]
   pub config: _PartialStackConfig,
 }
 

@@ -5,6 +5,7 @@ use typeshare::typeshare;
 
 use crate::entities::{
   build::{Build, _PartialBuildConfig},
+  update::Update,
   NoData,
 };
 
@@ -23,6 +24,7 @@ pub struct CreateBuild {
   /// The name given to newly created build.
   pub name: String,
   /// Optional partial config to initialize the build with.
+  #[serde(default)]
   pub config: _PartialBuildConfig,
 }
 
@@ -79,6 +81,23 @@ pub struct UpdateBuild {
   pub id: String,
   /// The partial config update to apply.
   pub config: _PartialBuildConfig,
+}
+
+//
+
+/// Rename the Build at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameBuild {
+  /// The id or name of the Build to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }
 
 //

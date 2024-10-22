@@ -89,6 +89,7 @@ pub enum WriteRequest {
   CopyBuild(CopyBuild),
   DeleteBuild(DeleteBuild),
   UpdateBuild(UpdateBuild),
+  RenameBuild(RenameBuild),
   RefreshBuildCache(RefreshBuildCache),
   CreateBuildWebhook(CreateBuildWebhook),
   DeleteBuildWebhook(DeleteBuildWebhook),
@@ -98,18 +99,21 @@ pub enum WriteRequest {
   CopyBuilder(CopyBuilder),
   DeleteBuilder(DeleteBuilder),
   UpdateBuilder(UpdateBuilder),
+  RenameBuilder(RenameBuilder),
 
   // ==== SERVER TEMPLATE ====
   CreateServerTemplate(CreateServerTemplate),
   CopyServerTemplate(CopyServerTemplate),
   DeleteServerTemplate(DeleteServerTemplate),
   UpdateServerTemplate(UpdateServerTemplate),
+  RenameServerTemplate(RenameServerTemplate),
 
   // ==== REPO ====
   CreateRepo(CreateRepo),
   CopyRepo(CopyRepo),
   DeleteRepo(DeleteRepo),
   UpdateRepo(UpdateRepo),
+  RenameRepo(RenameRepo),
   RefreshRepoCache(RefreshRepoCache),
   CreateRepoWebhook(CreateRepoWebhook),
   DeleteRepoWebhook(DeleteRepoWebhook),
@@ -119,24 +123,28 @@ pub enum WriteRequest {
   CopyAlerter(CopyAlerter),
   DeleteAlerter(DeleteAlerter),
   UpdateAlerter(UpdateAlerter),
+  RenameAlerter(RenameAlerter),
 
   // ==== PROCEDURE ====
   CreateProcedure(CreateProcedure),
   CopyProcedure(CopyProcedure),
   DeleteProcedure(DeleteProcedure),
   UpdateProcedure(UpdateProcedure),
+  RenameProcedure(RenameProcedure),
 
   // ==== ACTION ====
   CreateAction(CreateAction),
   CopyAction(CopyAction),
   DeleteAction(DeleteAction),
   UpdateAction(UpdateAction),
+  RenameAction(RenameAction),
 
   // ==== SYNC ====
   CreateResourceSync(CreateResourceSync),
   CopyResourceSync(CopyResourceSync),
   DeleteResourceSync(DeleteResourceSync),
   UpdateResourceSync(UpdateResourceSync),
+  RenameResourceSync(RenameResourceSync),
   WriteSyncFileContents(WriteSyncFileContents),
   CommitSync(CommitSync),
   RefreshResourceSyncPending(RefreshResourceSyncPending),
