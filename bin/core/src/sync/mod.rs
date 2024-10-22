@@ -182,11 +182,10 @@ impl AllResourcesById {
           id_to_tags, match_tags,
         )
         .await?,
-      actions:
-        crate::resource::get_id_to_resource_map::<Action>(
-          id_to_tags, match_tags,
-        )
-        .await?,
+      actions: crate::resource::get_id_to_resource_map::<Action>(
+        id_to_tags, match_tags,
+      )
+      .await?,
       builders: crate::resource::get_id_to_resource_map::<Builder>(
         id_to_tags, match_tags,
       )

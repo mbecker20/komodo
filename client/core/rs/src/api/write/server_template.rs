@@ -3,9 +3,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{server_template::{
-  PartialServerTemplateConfig, ServerTemplate,
-}, update::Update};
+use crate::entities::{
+  server_template::{PartialServerTemplateConfig, ServerTemplate},
+  update::Update,
+};
 
 use super::KomodoWriteRequest;
 

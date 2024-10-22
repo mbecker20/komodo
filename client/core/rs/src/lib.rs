@@ -34,10 +34,10 @@ use serde::Deserialize;
 
 pub mod api;
 pub mod busy;
+pub mod deserializers;
 pub mod entities;
 pub mod parsers;
 pub mod ws;
-pub mod deserializers;
 
 mod request;
 

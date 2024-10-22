@@ -69,15 +69,16 @@ impl Resolve<GetBuildersSummary, User> for State {
     GetBuildersSummary {}: GetBuildersSummary,
     user: User,
   ) -> anyhow::Result<GetBuildersSummaryResponse> {
-    let query =
-      match resource::get_resource_object_ids_for_user::<Builder>(&user)
-        .await?
-      {
-        Some(ids) => doc! {
-          "_id": { "$in": ids }
-        },
-        None => Document::new(),
-      };
+    let query = match resource::get_resource_object_ids_for_user::<
+      Builder,
+    >(&user)
+    .await?
+    {
+      Some(ids) => doc! {
+        "_id": { "$in": ids }
+      },
+      None => Document::new(),
+    };
     let total = db_client()
       .builders
       .count_documents(query)

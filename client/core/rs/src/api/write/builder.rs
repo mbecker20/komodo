@@ -3,7 +3,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{builder::{Builder, PartialBuilderConfig}, update::Update};
+use crate::entities::{
+  builder::{Builder, PartialBuilderConfig},
+  update::Update,
+};
 
 use super::KomodoWriteRequest;
 

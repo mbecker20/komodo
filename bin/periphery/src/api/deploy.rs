@@ -1,14 +1,17 @@
 use anyhow::Context;
 use command::run_komodo_command;
 use formatting::format_serror;
-use komodo_client::entities::{
-  deployment::{
-    conversions_from_str, extract_registry_domain, Conversion,
-    Deployment, DeploymentConfig, DeploymentImage, RestartMode,
+use komodo_client::{
+  entities::{
+    deployment::{
+      conversions_from_str, extract_registry_domain, Conversion,
+      Deployment, DeploymentConfig, DeploymentImage, RestartMode,
+    },
+    environment_vars_from_str, to_komodo_name,
+    update::Log,
+    EnvironmentVar,
   },
-  environment_vars_from_str, to_komodo_name,
-  update::Log,
-  EnvironmentVar,
+  parsers::QUOTE_PATTERN,
 };
 use periphery_client::api::container::{Deploy, RemoveContainer};
 use resolver_api::Resolve;
@@ -175,7 +178,16 @@ fn parse_conversions(
 fn parse_environment(environment: &[EnvironmentVar]) -> String {
   environment
     .iter()
-    .map(|p| format!(" --env {}=\"{}\"", p.variable, p.value))
+    .map(|p| {
+      if p.value.starts_with(QUOTE_PATTERN)
+        && p.value.ends_with(QUOTE_PATTERN)
+      {
+        // If the value already wrapped in quotes, don't wrap it again
+        format!(" --env {}={}", p.variable, p.value)
+      } else {
+        format!(" --env {}=\"{}\"", p.variable, p.value)
+      }
+    })
     .collect::<Vec<_>>()
     .join("")
 }

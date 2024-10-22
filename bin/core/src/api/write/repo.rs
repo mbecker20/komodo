@@ -130,7 +130,7 @@ impl Resolve<RenameRepo, User> for State {
 
     let server =
       resource::get::<Server>(&repo.config.server_id).await?;
-      
+
     let log = match periphery_client(&server)?
       .request(api::git::RenameRepo {
         curr_name: to_komodo_name(&repo.name),

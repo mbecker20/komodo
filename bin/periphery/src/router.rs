@@ -46,7 +46,7 @@ async fn task(
   request: crate::api::PeripheryRequest,
 ) -> anyhow::Result<String> {
   let variant = request.extract_variant();
-  
+
   let res =
     State
       .resolve_request(request, ())
