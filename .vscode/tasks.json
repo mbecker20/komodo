@@ -1,0 +1,165 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Core",
+            "command": "cargo",
+            "args": [
+                "run",
+                "-p",
+                "komodo_core",
+                "--release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "KOMODO_CONFIG_PATH": "test.core.config.toml"
+                }
+            },
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "Build Core",
+            "command": "cargo",
+            "args": [
+                "build",
+                "-p",
+                "komodo_core",
+                "--release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "KOMODO_CONFIG_PATH": "test.core.config.toml"
+                }
+            },
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "Run Periphery",
+            "command": "cargo",
+            "args": [
+                "run",
+                "-p",
+                "komodo_periphery",
+                "--release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "KOMODO_CONFIG_PATH": "test.periphery.config.toml"
+                }
+            },
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "Build Periphery",
+            "command": "cargo",
+            "args": [
+                "build",
+                "-p",
+                "komodo_periphery",
+                "--release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "KOMODO_CONFIG_PATH": "test.periphery.config.toml"
+                }
+            },
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "Run Backend",
+            "dependsOn": [
+                "Run Core",
+                "Run Periphery"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "Build TS Client Types",
+            "type": "process",
+            "command": "node",
+            "args": [
+                "./client/core/ts/generate_types.mjs"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Init TS Client",
+            "type": "shell",
+            "command": "yarn && yarn build && yarn link",
+            "options": {
+                "cwd": "${workspaceFolder}/client/core/ts",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Init Frontend Client",
+            "type": "shell",
+            "command": "yarn link komodo_client && yarn install",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Init Frontend",
+            "dependsOn": [
+                "Build TS Client Types",
+                "Init TS Client",
+                "Init Frontend Client"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Frontend",
+            "type": "shell",
+            "command": "yarn build",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Frontend",
+            "type": "shell",
+            "command": "yarn dev",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend",
+            },
+            "dependsOn": ["Build Frontend"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Init",
+            "dependsOn": [
+                "Build Core",
+                "Build Periphery",
+                "Init Frontend"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Komodo",
+            "dependsOn": [
+                "Run Core",
+                "Run Periphery",
+                "Run Frontend"
+            ],
+            "problemMatcher": []
+        },
+    ]
+  }
