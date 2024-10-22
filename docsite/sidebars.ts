@@ -63,6 +63,7 @@ const sidebars: SidebarsConfig = {
     "permissioning",
     "version-upgrades",
     "api",
+    "development"
   ],
 };
 

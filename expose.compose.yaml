@@ -1,0 +1,6 @@
+services:
+  core:
+    ports:
+      - 9120:9120
+    environment:
+      KOMODO_FIRST_SERVER: http://periphery:8120
