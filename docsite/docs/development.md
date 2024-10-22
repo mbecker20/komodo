@@ -35,10 +35,10 @@ To run a full Komodo instance from a non-container environment run commands in t
 * Ensure dependencies are up to date
     * `rustup update` -- ensure rust toolchain is up to date
 * Build and Run backend
-    * `run test-core` -- builds core binary
-    * `run test-periphery` -- builds periphery binary
+    * `run -r test-core` -- builds core binary
+    * `run -r test-periphery` -- builds periphery binary
 * Build Frontend
-    * `run gen-client` -- generates TS client and adds to the frontend
+    * `run -r gen-client` -- generates TS client and adds to the frontend
     * Prepare API Client
         * `cd client/core/ts && yarn && yarn build && yarn link`
             * After running once client can be rebuilt with `run build-ts-client`
@@ -48,4 +48,4 @@ To run a full Komodo instance from a non-container environment run commands in t
 
 ## Docsite Development
 
-Use `run docsite-start` to start the [Docusaurus](https://docusaurus.io/) Komodo docs site in development mode. Changes made to files in `/docsite` will be automatically reloaded by the server.
+Use `run -r docsite-start` to start the [Docusaurus](https://docusaurus.io/) Komodo docs site in development mode. Changes made to files in `/docsite` will be automatically reloaded by the server.
