@@ -20,7 +20,6 @@ export const Sidebar = () => {
   return (
     <div className="fixed top-0 pt-24 w-64 border-r hidden lg:block pr-8 pb-8 h-screen overflow-y-auto">
       <div className="flex flex-col gap-1">
-        <p className="pl-4 pb-1 text-xs text-muted-foreground">Overviews</p>
         <SidebarLink
           label="Dashboard"
           to="/"
