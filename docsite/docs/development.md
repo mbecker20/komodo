@@ -42,10 +42,10 @@ To run a full Komodo instance from a non-container environment run commands in t
     * Prepare API Client
         * `cd client/core/ts && yarn && yarn build && yarn link`
             * After running once client can be rebuilt with `run build-ts-client`
-    * [Prepare Frontend](/frontend//README.md)
+    * [Prepare Frontend](https://github.com/mbecker20/komodo/frontend/README.md)
         * `cd frontend && yarn link komodo_client && yarn install`
             * After running once client can be built with `run build-frontend` or started in dev (watch) mode with `run start-frontend`
 
-### Docs
+## Docsite Development
 
 Use `run docsite-start` to start the [Docusaurus](https://docusaurus.io/) Komodo docs site in development mode. Changes made to files in `/docsite` will be automatically reloaded by the server.
