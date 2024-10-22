@@ -61,5 +61,5 @@ to the current default.
 Example:
 
 ```sh
-curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3 --force-service-file
+curl -sSL https://raw.githubusercontent.com/mbecker20/komodo/main/scripts/setup-periphery.py | python3 - --force-service-file
 ```
