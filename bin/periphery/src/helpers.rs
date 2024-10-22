@@ -1,5 +1,8 @@
 use anyhow::Context;
-use komodo_client::{entities::{EnvironmentVar, SearchCombinator}, parsers::QUOTE_PATTERN};
+use komodo_client::{
+  entities::{EnvironmentVar, SearchCombinator},
+  parsers::QUOTE_PATTERN,
+};
 
 use crate::config::periphery_config;
 

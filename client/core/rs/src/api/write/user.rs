@@ -46,7 +46,7 @@ pub type UpdateUserPasswordResponse = NoData;
 /// **Admin only**. Delete a user.
 /// Admins can delete any non-admin user.
 /// Only Super Admin can delete an admin.
-/// No users can delete a Super Admin user. 
+/// No users can delete a Super Admin user.
 /// User cannot delete themselves.
 /// Response: [NoData].
 #[typeshare]

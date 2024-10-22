@@ -97,7 +97,10 @@ impl Resolve<RunAction, (User, Update)> for State {
       // Keep this stage name as is, the UI will find the latest update log by matching the stage name
       "Execute Action",
       None,
-      format!("deno run --allow-read --allow-net --allow-import {}", path.display()),
+      format!(
+        "deno run --allow-read --allow-net --allow-import {}",
+        path.display()
+      ),
       false,
     )
     .await;

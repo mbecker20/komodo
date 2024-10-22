@@ -69,15 +69,16 @@ impl Resolve<GetAlertersSummary, User> for State {
     GetAlertersSummary {}: GetAlertersSummary,
     user: User,
   ) -> anyhow::Result<GetAlertersSummaryResponse> {
-    let query =
-      match resource::get_resource_object_ids_for_user::<Alerter>(&user)
-        .await?
-      {
-        Some(ids) => doc! {
-          "_id": { "$in": ids }
-        },
-        None => Document::new(),
-      };
+    let query = match resource::get_resource_object_ids_for_user::<
+      Alerter,
+    >(&user)
+    .await?
+    {
+      Some(ids) => doc! {
+        "_id": { "$in": ids }
+      },
+      None => Document::new(),
+    };
     let total = db_client()
       .alerters
       .count_documents(query)
