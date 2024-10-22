@@ -1,24 +1,40 @@
 use anyhow::Context;
 
+pub const QUOTE_PATTERN: &[char] = &['"', '\''];
+
 /// Parses a list of key value pairs from a multiline string
 ///
 /// Example source:
 /// ```text
 /// # Supports comments
 /// KEY_1 = value_1 # end of line comments
-/// 
+///
 /// # Supports string wrapped values
 /// KEY_2="value_2"
 /// 'KEY_3 = value_3'
-/// 
+///
 /// # Also supports yaml list formats
 /// - KEY_4: 'value_4'
 /// - "KEY_5=value_5"
+///
+/// # Wrapping outer quotes are removed while inner quotes are preserved
+/// "KEY_6 = 'value_6'"
 /// ```
+///
+/// Note this preserves the wrapping string around value.
+/// Writing environment file should format the value exactly as it comes in,
+/// including the given wrapping quotes.
 ///
 /// Returns:
 /// ```text
-/// [("KEY_1", "value_1"), ("KEY_2", "value_2"), ("KEY_3", "value_3"), ("KEY_4", "value_4"), ("KEY_5", "value_5")]
+/// [
+///   ("KEY_1", "value_1"),
+///   ("KEY_2", "\"value_2\""),
+///   ("KEY_3", "value_3"),
+///   ("KEY_4", "'value_4'"),
+///   ("KEY_5", "value_5"),
+///   ("KEY_6", "'value_6'"),
+/// ]
 /// ```
 pub fn parse_key_value_list(
   input: &str,
@@ -44,15 +60,8 @@ pub fn parse_key_value_list(
         .0
         .trim()
         // Remove preceding '-' (yaml list)
-        .trim_start_matches('-')
+        .trim_start_matches("- ")
         .trim();
-      // Remove wrapping quotes (from yaml list)
-      let line = if let Some(line) = line.strip_prefix(['"', '\'']) {
-        line.strip_suffix(['"', '\'']).unwrap_or(line)
-      } else {
-        line
-      };
-      // Remove any preceding '"' (from yaml list) (wrapping quotes open)
       let (key, value) = line
         .split_once(['=', ':'])
         .with_context(|| {
@@ -61,15 +70,23 @@ pub fn parse_key_value_list(
           )
         })
         .map(|(key, value)| {
+          let key = key.trim();
           let value = value.trim();
-          // Remove wrapping quotes around value
-          let value =
-            if let Some(value) = value.strip_prefix(['"', '\'']) {
-              value.strip_suffix(['"', '\'']).unwrap_or(value)
-            } else {
-              value
-            };
-          (key.trim().to_string(), value.trim().to_string())
+
+          // Remove wrapping quotes when around key AND value
+          let (key, value) = if key.starts_with(QUOTE_PATTERN)
+            && !key.ends_with(QUOTE_PATTERN)
+            && value.ends_with(QUOTE_PATTERN)
+          {
+            (
+              key.strip_prefix(QUOTE_PATTERN).unwrap().trim(),
+              value.strip_suffix(QUOTE_PATTERN).unwrap().trim(),
+            )
+          } else {
+            (key, value)
+          };
+
+          (key.to_string(), value.to_string())
         })?;
       anyhow::Ok((key, value))
     })

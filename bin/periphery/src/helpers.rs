@@ -1,5 +1,5 @@
 use anyhow::Context;
-use komodo_client::entities::{EnvironmentVar, SearchCombinator};
+use komodo_client::{entities::{EnvironmentVar, SearchCombinator}, parsers::QUOTE_PATTERN};
 
 use crate::config::periphery_config;
 
@@ -43,7 +43,16 @@ pub fn parse_extra_args(extra_args: &[String]) -> String {
 pub fn parse_labels(labels: &[EnvironmentVar]) -> String {
   labels
     .iter()
-    .map(|p| format!(" --label {}=\"{}\"", p.variable, p.value))
+    .map(|p| {
+      if p.value.starts_with(QUOTE_PATTERN)
+        && p.value.ends_with(QUOTE_PATTERN)
+      {
+        // If the value already wrapped in quotes, don't wrap it again
+        format!(" --label {}={}", p.variable, p.value)
+      } else {
+        format!(" --label {}=\"{}\"", p.variable, p.value)
+      }
+    })
     .collect::<Vec<_>>()
     .join("")
 }

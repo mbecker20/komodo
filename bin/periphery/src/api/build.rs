@@ -1,12 +1,15 @@
 use anyhow::{anyhow, Context};
 use command::run_komodo_command;
 use formatting::format_serror;
-use komodo_client::entities::{
-  build::{Build, BuildConfig},
-  environment_vars_from_str, get_image_name, optional_string,
-  to_komodo_name,
-  update::Log,
-  EnvironmentVar, Version,
+use komodo_client::{
+  entities::{
+    build::{Build, BuildConfig},
+    environment_vars_from_str, get_image_name, optional_string,
+    to_komodo_name,
+    update::Log,
+    EnvironmentVar, Version,
+  },
+  parsers::QUOTE_PATTERN,
 };
 use periphery_client::api::build::{
   self, PruneBuilders, PruneBuildx,
@@ -101,8 +104,9 @@ impl Resolve<build::Build> for State {
 
     let secret_args = environment_vars_from_str(secret_args)
       .context("Invalid secret_args")?;
-    let _secret_args =
+    let command_secret_args =
       parse_secret_args(&secret_args, *skip_secret_interp)?;
+
     let labels = parse_labels(
       &environment_vars_from_str(labels).context("Invalid labels")?,
     );
@@ -118,7 +122,7 @@ impl Resolve<build::Build> for State {
 
     // Construct command
     let command = format!(
-      "docker{buildx} build{build_args}{_secret_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
+      "docker{buildx} build{build_args}{command_secret_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
     );
 
     if *skip_secret_interp {
@@ -190,7 +194,16 @@ fn image_tags(
 fn parse_build_args(build_args: &[EnvironmentVar]) -> String {
   build_args
     .iter()
-    .map(|p| format!(" --build-arg {}=\"{}\"", p.variable, p.value))
+    .map(|p| {
+      if p.value.starts_with(QUOTE_PATTERN)
+        && p.value.ends_with(QUOTE_PATTERN)
+      {
+        // If the value already wrapped in quotes, don't wrap it again
+        format!(" --build-arg {}={}", p.variable, p.value)
+      } else {
+        format!(" --build-arg {}=\"{}\"", p.variable, p.value)
+      }
+    })
     .collect::<Vec<_>>()
     .join("")
 }
