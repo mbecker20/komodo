@@ -1,4 +1,5 @@
 [start-frontend]
+description = "starts the frontend in dev mode"
 path = "frontend"
 cmd = "yarn dev"
 
@@ -9,7 +10,16 @@ node ./client/core/ts/generate_types.mjs && \
 cd ./client/core/ts && yarn build && \
 cp -r dist/. ../../../frontend/public/client/."""
 
+[link-client]
+description = "yarn links the ts client to the frontend"
+after = "gen-client"
+cmd = """
+cd ./client/core/ts && yarn link && \
+cd ../../../frontend && yarn link komodo_client && yarn
+"""
+
 [build-frontend]
+description = "generates fresh ts client and builds the frontend"
 path = "frontend"
 cmd = "yarn build"
 after = "gen-client"

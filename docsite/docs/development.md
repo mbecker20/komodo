@@ -1,51 +1,54 @@
 # Development
 
+If you are looking to contribute to Komodo, this page is a launching point for setting up your Komodo development environment.
+
 ## Dependencies
 
 Running Komodo from [source](https://github.com/mbecker20/komodo) requires either [Docker](https://www.docker.com/) (and can use the included [devcontainer](https://code.visualstudio.com/docs/devcontainers/containers)), or can have the development dependencies installed locally:
 
-* For backend (Komodo core server, periphery, API)
+* Backend (Core / Periphery APIs)
     * [Rust](https://www.rust-lang.org/) stable via [rustup installer](https://rustup.rs/)
     * [MongoDB](https://www.mongodb.com/) or [FerretDB](https://www.ferretdb.com/) available locally.
-    * On Debian: `apt install build-essential pkg-config libssl-dev` required to build the rust source.
-* For frontend (Web UI)
+    * On Debian/Ubuntu: `apt install build-essential pkg-config libssl-dev` required to build the rust source.
+* Frontend (Web UI)
     * [Node](https://nodejs.org/en) >= 18.18 + NPM
         * [Yarn](https://yarnpkg.com/) - (Tip: use `corepack enable` after installing `node` to use `yarn`)
     * [typeshare](https://github.com/1password/typeshare)
     * [Deno](https://deno.com/) >= 2.0.2
 
+### runnables-cli
+
+[mbecker20/runnables-cli](https://github.com/mbecker20/runnables-cli) can be used as a convience CLI for running common project tasks found in `runfile.toml`. Otherwise, you can create your own project tasks by references the `cmd`s found in `runfile.toml`. All instructions below will use runnables-cli v1.3.7+.
+
 ## Docker
 
-After making changes to the project, run `run test-compose-build` to rebuild Komodo and then `run test-compose-exposed` to start a Komodo container with the UI accessible at `localhost:9120`. Any changes made to source files will require re-running the build and exposed commands.
+After making changes to the project, run `run -r test-compose-build` to rebuild Komodo and then `run -r test-compose-exposed` to start a Komodo container with the UI accessible at `localhost:9120`. Any changes made to source files will require re-running the `test-compose-build` and `test-compose-exposed` commands.
 
 ## Devcontainer
 
 Use the included `.devcontainer.json` with VSCode or other compatible IDE to stand-up a full environment, including database, with one click.
 
-[VSCode Tasks](https://code.visualstudio.com/Docs/editor/tasks) are provded for building and running Komodo. 
+[VSCode Tasks](https://code.visualstudio.com/Docs/editor/tasks) are provided for building and running Komodo. 
 
-After opening the repository with the devcontainer run the task `Init` to build the frontend/backend. Then, the task `Run Komodo` can be used to run frontend/backend. Other tasks for rebuilding/running only parts of the application are also provided.
+After opening the repository with the devcontainer run the task `Init` to build the frontend/backend. Then, the task `Run Komodo` can be used to run frontend/backend. Other tasks for rebuilding/running just one component of the stack (Core API, Periphery API, Frontend) are also provided.
 
 ## Local
-
-[runnables-cli](https://github.com/mbecker20/runnables-cli) can be used as a convience for running common project tasks (like a Makefile) found in `runfile.toml`. Otherwise, you can create your own project tasks by references the `cmd`s found in `runfile.toml`. All instructions below will use runnables-cli.
 
 To run a full Komodo instance from a non-container environment run commands in this order:
 
 * Ensure dependencies are up to date
     * `rustup update` -- ensure rust toolchain is up to date
 * Build and Run backend
-    * `run -r test-core` -- builds core binary
-    * `run -r test-periphery` -- builds periphery binary
+    * `run -r test-core` -- Build and run Core API
+    * `run -r test-periphery` -- Build and run Periphery API
 * Build Frontend
-    * `run -r gen-client` -- generates TS client and adds to the frontend
-    * Prepare API Client
-        * `cd client/core/ts && yarn && yarn build && yarn link`
-            * After running once client can be rebuilt with `run build-ts-client`
-    * [Prepare Frontend](https://github.com/mbecker20/komodo/frontend/README.md)
-        * `cd frontend && yarn link komodo_client && yarn install`
-            * After running once client can be built with `run build-frontend` or started in dev (watch) mode with `run start-frontend`
+    * **Run this once** -- `run -r link-client` -- generates TS client and links to the frontend
+    * After running the above once:
+        * `run -r gen-client` -- Rebuild client 
+        * `run -r start-frontend` -- Start in dev (watch) mode
+        * `run -r build-frontend` -- Typecheck and build
+            
 
 ## Docsite Development
 
-Use `run -r docsite-start` to start the [Docusaurus](https://docusaurus.io/) Komodo docs site in development mode. Changes made to files in `/docsite` will be automatically reloaded by the server.
+Use `run -r docsite-start` to start the [Docusaurus](https://docusaurus.io/) Komodo docs site in development mode. Changes made to files in `./docsite` will be automatically reloaded by the server.
