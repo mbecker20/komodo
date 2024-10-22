@@ -60,7 +60,7 @@ pub fn parse_key_value_list(
         .0
         .trim()
         // Remove preceding '-' (yaml list)
-        .trim_start_matches("- ")
+        .trim_start_matches('-')
         .trim();
       let (key, value) = line
         .split_once(['=', ':'])
