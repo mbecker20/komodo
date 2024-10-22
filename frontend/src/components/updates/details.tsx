@@ -28,7 +28,6 @@ import { Link } from "react-router-dom";
 import { fmt_duration, fmt_operation, fmt_version } from "@lib/formatting";
 import {
   cn,
-  is_service_user,
   updateLogToHtml,
   usableResourcePath,
   version_is_none,
@@ -39,44 +38,6 @@ import { ResourceName } from "@components/resources/common";
 import { useWebsocketMessages } from "@lib/socket";
 
 export const UpdateUser = ({
-  user_id,
-  className,
-  iconSize = 4,
-  defaultAvatar,
-  muted,
-}: {
-  user_id: string;
-  className?: string;
-  iconSize?: number;
-  defaultAvatar?: boolean;
-  muted?: boolean;
-}) => {
-  if (is_service_user(user_id)) {
-    return (
-      <div
-        className={cn(
-          "flex items-center gap-2 text-nowrap",
-          muted && "text-muted-foreground",
-          className
-        )}
-      >
-        <User className={`w-${iconSize} h-${iconSize}`} />
-        {user_id}
-      </div>
-    );
-  }
-  return (
-    <RealUpdateUser
-      user_id={user_id}
-      className={className}
-      iconSize={iconSize}
-      defaultAvatar={defaultAvatar}
-      muted={muted}
-    />
-  );
-};
-
-const RealUpdateUser = ({
   user_id,
   className,
   iconSize = 4,

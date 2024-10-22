@@ -6,7 +6,7 @@ use komodo_client::{
     ListApiKeysForServiceUserResponse, ListApiKeysResponse,
     ListUsers, ListUsersResponse,
   },
-  entities::user::{User, UserConfig},
+  entities::user::{admin_service_user, User, UserConfig},
 };
 use mungos::{
   by_id::find_one_by_id,
@@ -26,6 +26,13 @@ impl Resolve<GetUsername, User> for State {
     GetUsername { user_id }: GetUsername,
     _: User,
   ) -> anyhow::Result<GetUsernameResponse> {
+    if let Some(user) = admin_service_user(&user_id) {
+      return Ok(GetUsernameResponse {
+        username: user.username,
+        avatar: None,
+      });
+    }
+
     let user = find_one_by_id(&db_client().users, &user_id)
       .await
       .context("failed at mongo query for user")?
