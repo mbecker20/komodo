@@ -7,9 +7,13 @@
 	"dockerComposeFile": ["dev.compose.yaml"],
 	"workspaceFolder": "/workspace",
   	"service": "dev",
+	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "18.18.0"
+		},
+		"ghcr.io/devcontainers-community/features/deno:1": {
+
 		}
 	},
 
@@ -21,9 +25,6 @@
 			"type": "volume"
 		}
 	],
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
