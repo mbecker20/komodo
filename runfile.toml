@@ -24,6 +24,12 @@ cmd = """
 docker compose -p komodo-dev -f test.compose.yaml down --remove-orphans && \
 docker compose -p komodo-dev -f test.compose.yaml up -d"""
 
+[test-compose-exposed]
+description = "deploys test.compose.yaml with exposed port and non-ssl periphery"
+cmd = """
+docker compose -p komodo-dev -f test.compose.yaml -f expose.compose.yaml down --remove-orphans && \
+docker compose -p komodo-dev -f test.compose.yaml -f expose.compose.yaml up -d"""
+
 [test-compose-build]
 description = "builds and deploys test.compose.yaml"
 cmd = """

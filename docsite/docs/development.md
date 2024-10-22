@@ -17,9 +17,7 @@ Optionally, [runnables-cli](https://github.com/mbecker20/runnables-cli) can be u
 
 ## Docker
 
-(TBD adding a port to `test.compose.yaml`)
-
-After making changes to the project simply run `run test-compose-build` to rebuild Komodo and then `run test-compose` to start a Komodo container with the UI accessible at `localhost:9120`.
+After making changes to the project simply run `run test-compose-build` to rebuild Komodo and then `run test-compose-exposed` to start a Komodo container with the UI accessible at `localhost:9120`.
 
 ## Local and Docs
 
