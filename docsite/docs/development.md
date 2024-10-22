@@ -12,6 +12,7 @@ Running Komodo from [source](https://github.com/mbecker20/komodo) requires eithe
     * [Node](https://nodejs.org/en) >= 18.18 + NPM
         * [Yarn](https://yarnpkg.com/)
     * [typeshare](https://github.com/1password/typeshare)
+    * [Deno](https://deno.com/) >= 2.0.2
 
 ## Docker
 
@@ -37,7 +38,7 @@ To run a full Komodo instance from a non-container environment run commands in t
     * `run test-core` -- builds core binary
     * `run test-periphery` -- builds periphery binary
 * Build Frontend
-    * `run gen-ts-types` -- generates types for use with building typescript client
+    * `run gen-client` -- generates TS client and adds to the frontend
     * Prepare API Client
         * `cd client/core/ts && yarn && yarn build && yarn link`
             * After running once client can be rebuilt with `run build-ts-client`
