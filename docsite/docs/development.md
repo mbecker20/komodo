@@ -2,21 +2,21 @@
 
 ## Dependencies
 
-Running Komodo from [source](https://github.com/mbecker20/komodo) requires either [Docker](https://www.docker.com/), use of the included [devcontainer](https://code.visualstudio.com/docs/devcontainers/containers) or these dependencies installed:
+Running Komodo from [source](https://github.com/mbecker20/komodo) requires either [Docker](https://www.docker.com/) (and can use the included [devcontainer](https://code.visualstudio.com/docs/devcontainers/containers)), or can have the development dependencies installed locally:
 
 * For backend (Komodo core server, periphery, API)
-    * [Rust](https://www.rust-lang.org/) stable 1.81
-    * [rustup](https://rustup.rs/)
-    * [MongoDB](https://www.mongodb.com/) compatible database
+    * [Rust](https://www.rust-lang.org/) stable via [rustup installer](https://rustup.rs/)
+    * [MongoDB](https://www.mongodb.com/) or [FerretDB](https://www.ferretdb.com/) available locally.
+    * On Debian: `apt install build-essential pkg-config libssl-dev` required to build the rust source.
 * For frontend (Web UI)
     * [Node](https://nodejs.org/en) >= 18.18 + NPM
-        * [Yarn](https://yarnpkg.com/)
+        * [Yarn](https://yarnpkg.com/) - (Tip: use `corepack enable` after installing `node` to use `yarn`)
     * [typeshare](https://github.com/1password/typeshare)
     * [Deno](https://deno.com/) >= 2.0.2
 
 ## Docker
 
-After making changes to the project simply run `run test-compose-build` to rebuild Komodo and then `run test-compose-exposed` to start a Komodo container with the UI accessible at `localhost:9120`. Any changes made to source files will require re-running the build and exposed commands.
+After making changes to the project, run `run test-compose-build` to rebuild Komodo and then `run test-compose-exposed` to start a Komodo container with the UI accessible at `localhost:9120`. Any changes made to source files will require re-running the build and exposed commands.
 
 ## Devcontainer
 
