@@ -134,22 +134,36 @@
             "problemMatcher": []
         },
         {
+            "label": "Prepare Frontend For Run",
+            "type": "shell",
+            "command": "cp -r ./client/core/ts/dist/. frontend/public/client/.",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "dependsOn": [
+                "Build TS Client Types",
+                "Build Frontend"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
             "label": "Run Frontend",
             "type": "shell",
             "command": "yarn dev",
             "options": {
                 "cwd": "${workspaceFolder}/frontend",
             },
-            "dependsOn": ["Build Frontend"],
+            "dependsOn": ["Prepare Frontend For Run"],
             "problemMatcher": []
         },
         {
             "label": "Init",
             "dependsOn": [
-                "Build Core",
-                "Build Periphery",
+                "Build Backend",
                 "Init Frontend"
             ],
+            "dependsOrder": "sequence",
             "problemMatcher": []
         },
         {
