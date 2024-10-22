@@ -31,8 +31,8 @@ impl super::KomodoResource for Action {
     ResourceTargetVariant::Action
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().actions
   }
 
@@ -105,11 +105,16 @@ impl super::KomodoResource for Action {
   }
 
   async fn post_update(
-    _updated: &Self,
-    _update: &mut Update,
+    updated: &Self,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    refresh_action_state_cache().await;
-    Ok(())
+    Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameAction
   }
 
   // DELETE

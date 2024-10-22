@@ -22,7 +22,7 @@ pub async fn push_updates_for_view<Resource: ResourceSyncTrait>(
   match_tags: &[String],
   diffs: &mut Vec<ResourceDiff>,
 ) -> anyhow::Result<()> {
-  let current_map = find_collect(Resource::coll().await, None, None)
+  let current_map = find_collect(Resource::coll(), None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()

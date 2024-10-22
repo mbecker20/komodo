@@ -14,7 +14,7 @@ import {
   Square,
 } from "lucide-react";
 import { Section } from "@components/layouts";
-import { Prune, RenameServer } from "./actions";
+import { Prune } from "./actions";
 import {
   server_state_intention,
   stroke_color_class_by_intention,
@@ -36,6 +36,7 @@ import { StackTable } from "../stack/table";
 import { ResourceComponents } from "..";
 import { ServerInfo } from "./info";
 import { ServerStats } from "./stats";
+import { RenameResource } from "@components/config/util";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 10_000 }).data?.find(
@@ -438,7 +439,7 @@ export const ServerComponents: RequiredResourceComponents = {
 
   DangerZone: ({ id }) => (
     <>
-      <RenameServer id={id} />
+      <RenameResource type="Server" id={id} />
       <DeleteResource type="Server" id={id} />
     </>
   ),

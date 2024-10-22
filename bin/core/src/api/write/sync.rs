@@ -5,9 +5,29 @@ use formatting::format_serror;
 use komodo_client::{
   api::{read::ExportAllResourcesToToml, write::*},
   entities::{
-    self, action::Action, alert::{Alert, AlertData, SeverityLevel}, alerter::Alerter, all_logs_success, build::Build, builder::Builder, config::core::CoreConfig, deployment::Deployment, komodo_timestamp, permission::PermissionLevel, procedure::Procedure, repo::Repo, server::Server, server_template::ServerTemplate, stack::Stack, sync::{
+    self,
+    action::Action,
+    alert::{Alert, AlertData, SeverityLevel},
+    alerter::Alerter,
+    all_logs_success,
+    build::Build,
+    builder::Builder,
+    config::core::CoreConfig,
+    deployment::Deployment,
+    komodo_timestamp,
+    permission::PermissionLevel,
+    procedure::Procedure,
+    repo::Repo,
+    server::Server,
+    server_template::ServerTemplate,
+    stack::Stack,
+    sync::{
       PartialResourceSyncConfig, ResourceSync, ResourceSyncInfo,
-    }, to_komodo_name, update::{Log, Update}, user::{sync_user, User}, CloneArgs, NoData, Operation, ResourceTarget
+    },
+    to_komodo_name,
+    update::{Log, Update},
+    user::{sync_user, User},
+    CloneArgs, NoData, Operation, ResourceTarget,
   },
 };
 use mungos::{
@@ -84,6 +104,17 @@ impl Resolve<UpdateResourceSync, User> for State {
     user: User,
   ) -> anyhow::Result<ResourceSync> {
     resource::update::<ResourceSync>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RenameResourceSync, User> for State {
+  #[instrument(name = "RenameResourceSync", skip(self, user))]
+  async fn resolve(
+    &self,
+    RenameResourceSync { id, name }: RenameResourceSync,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    resource::rename::<ResourceSync>(&id, &name, &user).await
   }
 }
 

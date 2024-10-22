@@ -11,6 +11,7 @@ use komodo_client::entities::{
   },
   resource::Resource,
   server::Server,
+  to_komodo_name,
   update::Update,
   user::User,
   Operation, ResourceTargetVariant,
@@ -43,8 +44,8 @@ impl super::KomodoResource for Repo {
     ResourceTargetVariant::Repo
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().repos
   }
 
@@ -132,6 +133,12 @@ impl super::KomodoResource for Repo {
     Ok(())
   }
 
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameRepo
+  }
+
   // DELETE
 
   fn delete_operation() -> Operation {
@@ -158,7 +165,11 @@ impl super::KomodoResource for Repo {
 
     match periphery
       .request(DeleteRepo {
-        name: repo.name.clone(),
+        name: if repo.config.path.is_empty() {
+          to_komodo_name(&repo.name)
+        } else {
+          repo.config.path.clone()
+        },
       })
       .await
     {

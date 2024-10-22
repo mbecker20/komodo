@@ -3,7 +3,7 @@ use std::{collections::HashSet, future::IntoFuture, time::Duration};
 use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use komodo_client::{
-  api::execute::*,
+  api::{execute::*, write::RefreshRepoCache},
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
     builder::{Builder, BuilderConfig},
@@ -123,6 +123,17 @@ impl Resolve<CloneRepo, (User, Update)> for State {
       update_last_pulled_time(&repo.name).await;
     }
 
+    if let Err(e) = State
+      .resolve(RefreshRepoCache { repo: repo.id }, user)
+      .await
+      .context("Failed to refresh repo cache")
+    {
+      update.push_error_log(
+        "Refresh Repo cache",
+        format_serror(&e.into()),
+      );
+    };
+
     handle_server_update_return(update).await
   }
 }
@@ -206,6 +217,17 @@ impl Resolve<PullRepo, (User, Update)> for State {
     if update.success {
       update_last_pulled_time(&repo.name).await;
     }
+
+    if let Err(e) = State
+      .resolve(RefreshRepoCache { repo: repo.id }, user)
+      .await
+      .context("Failed to refresh repo cache")
+    {
+      update.push_error_log(
+        "Refresh Repo cache",
+        format_serror(&e.into()),
+      );
+    };
 
     handle_server_update_return(update).await
   }

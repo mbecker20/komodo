@@ -1,27 +1,36 @@
 use anyhow::{anyhow, Context};
+use formatting::format_serror;
 use git::GitRes;
 use komodo_client::{
   api::write::*,
   entities::{
     config::core::CoreConfig,
+    komodo_timestamp,
     permission::PermissionLevel,
     repo::{PartialRepoConfig, Repo, RepoInfo},
+    server::Server,
+    to_komodo_name,
+    update::{Log, Update},
     user::User,
-    CloneArgs, NoData,
+    CloneArgs, NoData, Operation,
   },
 };
 use mongo_indexed::doc;
-use mungos::mongodb::bson::to_document;
+use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
 use octorust::types::{
   ReposCreateWebhookRequest, ReposCreateWebhookRequestConfig,
 };
+use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::git_token,
+  helpers::{
+    git_token, periphery_client,
+    update::{add_update, make_update},
+  },
   resource,
-  state::{db_client, github_client, State},
+  state::{action_states, db_client, github_client, State},
 };
 
 impl Resolve<CreateRepo, User> for State {
@@ -72,6 +81,81 @@ impl Resolve<UpdateRepo, User> for State {
     user: User,
   ) -> anyhow::Result<Repo> {
     resource::update::<Repo>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RenameRepo, User> for State {
+  #[instrument(name = "RenameRepo", skip(self, user))]
+  async fn resolve(
+    &self,
+    RenameRepo { id, name }: RenameRepo,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    let repo = resource::get_check_permissions::<Repo>(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
+
+    if repo.config.server_id.is_empty()
+      || !repo.config.path.is_empty()
+    {
+      return resource::rename::<Repo>(&repo.id, &name, &user).await;
+    }
+
+    // get the action state for the repo (or insert default).
+    let action_state =
+      action_states().repo.get_or_insert_default(&repo.id).await;
+
+    // Will check to ensure repo not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.renaming = true)?;
+
+    let name = to_komodo_name(&name);
+
+    let mut update = make_update(&repo, Operation::RenameRepo, &user);
+
+    update_one_by_id(
+      &db_client().repos,
+      &repo.id,
+      mungos::update::Update::Set(
+        doc! { "name": &name, "updated_at": komodo_timestamp() },
+      ),
+      None,
+    )
+    .await
+    .context("Failed to update Repo name on db")?;
+
+    let server =
+      resource::get::<Server>(&repo.config.server_id).await?;
+      
+    let log = match periphery_client(&server)?
+      .request(api::git::RenameRepo {
+        curr_name: to_komodo_name(&repo.name),
+        new_name: name.clone(),
+      })
+      .await
+      .context("Failed to rename Repo directory on Server")
+    {
+      Ok(log) => log,
+      Err(e) => Log::error(
+        "Rename Repo directory failure",
+        format_serror(&e.into()),
+      ),
+    };
+
+    update.logs.push(log);
+
+    update.push_simple_log(
+      "Rename Repo",
+      format!("Renamed Repo from {} to {}", repo.name, name),
+    );
+    update.finalize();
+    update.id = add_update(update.clone()).await?;
+
+    Ok(update)
   }
 }
 

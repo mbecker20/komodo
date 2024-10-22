@@ -88,6 +88,15 @@ pub struct RepoActionResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
+pub struct RenameRepo {
+  pub curr_name: String,
+  pub new_name: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
 pub struct DeleteRepo {
   pub name: String,
 }

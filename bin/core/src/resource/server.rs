@@ -30,8 +30,8 @@ impl super::KomodoResource for Server {
     ResourceTargetVariant::Server
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().servers
   }
 
@@ -113,6 +113,12 @@ impl super::KomodoResource for Server {
   ) -> anyhow::Result<()> {
     update_cache_for_server(updated).await;
     Ok(())
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameServer
   }
 
   // DELETE

@@ -44,8 +44,8 @@ impl super::KomodoResource for Stack {
     ResourceTargetVariant::Stack
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().stacks
   }
 
@@ -172,7 +172,7 @@ impl super::KomodoResource for Stack {
       .await
       .inspect_err(|e| {
         warn!(
-          "Failed to get server for stack {} | {e:#}",
+          "Failed to get Server for Stack {} | {e:#}",
           created.name
         )
       })
@@ -202,6 +202,12 @@ impl super::KomodoResource for Stack {
     update: &mut Update,
   ) -> anyhow::Result<()> {
     Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameStack
   }
 
   // DELETE

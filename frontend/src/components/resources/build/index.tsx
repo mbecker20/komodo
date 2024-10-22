@@ -25,6 +25,7 @@ import { Badge } from "@ui/badge";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
 import { useBuilder } from "../builder";
+import { RenameResource } from "@components/config/util";
 
 export const useBuild = (id?: string) =>
   useRead("ListBuilds", {}, { refetchInterval: 10_000 }).data?.find(
@@ -263,7 +264,12 @@ export const BuildComponents: RequiredResourceComponents = {
 
   Config: ConfigOrDeployments,
 
-  DangerZone: ({ id }) => <DeleteResource type="Build" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="Build" id={id} />
+      <DeleteResource type="Build" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const build = useBuild(id);

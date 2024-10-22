@@ -3,7 +3,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::builder::{Builder, PartialBuilderConfig};
+use crate::entities::{builder::{Builder, PartialBuilderConfig}, update::Update};
 
 use super::KomodoWriteRequest;
 
@@ -20,6 +20,7 @@ pub struct CreateBuilder {
   /// The name given to newly created builder.
   pub name: String,
   /// Optional partial config to initialize the builder with.
+  #[serde(default)]
   pub config: PartialBuilderConfig,
 }
 
@@ -76,4 +77,21 @@ pub struct UpdateBuilder {
   pub id: String,
   /// The partial config update to apply.
   pub config: PartialBuilderConfig,
+}
+
+//
+
+/// Rename the Builder at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameBuilder {
+  /// The id or name of the Builder to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }

@@ -1097,12 +1097,14 @@ export type GetProcedureActionStateResponse = ProcedureActionState;
 export type GetProcedureResponse = Procedure;
 
 export interface RepoActionState {
-	/** Whether repo currently cloning */
+	/** Whether Repo currently cloning on the attached Server */
 	cloning: boolean;
-	/** Whether repo currently pulling */
+	/** Whether Repo currently pulling on the attached Server */
 	pulling: boolean;
-	/** Whether repo currently building, using the attached builder. */
+	/** Whether Repo currently building using the attached Builder. */
 	building: boolean;
+	/** Whether Repo currently renaming. */
+	renaming: boolean;
 }
 
 export type GetRepoActionStateResponse = RepoActionState;
@@ -1808,6 +1810,7 @@ export enum Operation {
 	StopStackService = "StopStackService",
 	CreateDeployment = "CreateDeployment",
 	UpdateDeployment = "UpdateDeployment",
+	RenameDeployment = "RenameDeployment",
 	DeleteDeployment = "DeleteDeployment",
 	Deploy = "Deploy",
 	StartDeployment = "StartDeployment",
@@ -1816,14 +1819,15 @@ export enum Operation {
 	UnpauseDeployment = "UnpauseDeployment",
 	StopDeployment = "StopDeployment",
 	DestroyDeployment = "DestroyDeployment",
-	RenameDeployment = "RenameDeployment",
 	CreateBuild = "CreateBuild",
 	UpdateBuild = "UpdateBuild",
+	RenameBuild = "RenameBuild",
 	DeleteBuild = "DeleteBuild",
 	RunBuild = "RunBuild",
 	CancelBuild = "CancelBuild",
 	CreateRepo = "CreateRepo",
 	UpdateRepo = "UpdateRepo",
+	RenameRepo = "RenameRepo",
 	DeleteRepo = "DeleteRepo",
 	CloneRepo = "CloneRepo",
 	PullRepo = "PullRepo",
@@ -1831,24 +1835,30 @@ export enum Operation {
 	CancelRepoBuild = "CancelRepoBuild",
 	CreateProcedure = "CreateProcedure",
 	UpdateProcedure = "UpdateProcedure",
+	RenameProcedure = "RenameProcedure",
 	DeleteProcedure = "DeleteProcedure",
 	RunProcedure = "RunProcedure",
 	CreateAction = "CreateAction",
 	UpdateAction = "UpdateAction",
+	RenameAction = "RenameAction",
 	DeleteAction = "DeleteAction",
 	RunAction = "RunAction",
 	CreateBuilder = "CreateBuilder",
 	UpdateBuilder = "UpdateBuilder",
+	RenameBuilder = "RenameBuilder",
 	DeleteBuilder = "DeleteBuilder",
 	CreateAlerter = "CreateAlerter",
 	UpdateAlerter = "UpdateAlerter",
+	RenameAlerter = "RenameAlerter",
 	DeleteAlerter = "DeleteAlerter",
 	CreateServerTemplate = "CreateServerTemplate",
 	UpdateServerTemplate = "UpdateServerTemplate",
+	RenameServerTemplate = "RenameServerTemplate",
 	DeleteServerTemplate = "DeleteServerTemplate",
 	LaunchServer = "LaunchServer",
 	CreateResourceSync = "CreateResourceSync",
 	UpdateResourceSync = "UpdateResourceSync",
+	RenameResourceSync = "RenameResourceSync",
 	DeleteResourceSync = "DeleteResourceSync",
 	WriteSyncContents = "WriteSyncContents",
 	CommitSync = "CommitSync",
@@ -3722,7 +3732,7 @@ export interface CreateAction {
 	/** The name given to newly created action. */
 	name: string;
 	/** Optional partial config to initialize the action with. */
-	config: _PartialActionConfig;
+	config?: _PartialActionConfig;
 }
 
 /**
@@ -3739,7 +3749,7 @@ export interface CreateAlerter {
 	/** The name given to newly created alerter. */
 	name: string;
 	/** Optional partial config to initialize the alerter with. */
-	config: _PartialAlerterConfig;
+	config?: _PartialAlerterConfig;
 }
 
 /**
@@ -3780,7 +3790,7 @@ export interface CreateBuild {
 	/** The name given to newly created build. */
 	name: string;
 	/** Optional partial config to initialize the build with. */
-	config: _PartialBuildConfig;
+	config?: _PartialBuildConfig;
 }
 
 /**
@@ -3802,7 +3812,7 @@ export interface CreateBuilder {
 	/** The name given to newly created builder. */
 	name: string;
 	/** Optional partial config to initialize the builder with. */
-	config: PartialBuilderConfig;
+	config?: PartialBuilderConfig;
 }
 
 /** Create a deployment. Response: [Deployment]. */
@@ -3810,7 +3820,7 @@ export interface CreateDeployment {
 	/** The name given to newly created deployment. */
 	name: string;
 	/** Optional partial config to initialize the deployment with. */
-	config: _PartialDeploymentConfig;
+	config?: _PartialDeploymentConfig;
 }
 
 /**
@@ -3852,10 +3862,12 @@ export interface CreateLocalUser {
 
 /**
  * Create a docker network on the server.
- * Respone: [Update]
+ * Response: [Update]
+ * 
+ * `docker network create {name}`
  */
 export interface CreateNetwork {
-	/** Id or name */
+	/** Server Id or name */
 	server: string;
 	/** The name of the network to create. */
 	name: string;
@@ -3866,7 +3878,7 @@ export interface CreateProcedure {
 	/** The name given to newly created build. */
 	name: string;
 	/** Optional partial config to initialize the procedure with. */
-	config: _PartialProcedureConfig;
+	config?: _PartialProcedureConfig;
 }
 
 /** Create a repo. Response: [Repo]. */
@@ -3874,7 +3886,7 @@ export interface CreateRepo {
 	/** The name given to newly created repo. */
 	name: string;
 	/** Optional partial config to initialize the repo with. */
-	config: _PartialRepoConfig;
+	config?: _PartialRepoConfig;
 }
 
 export enum RepoWebhookAction {
@@ -3899,7 +3911,7 @@ export interface CreateResourceSync {
 	/** The name given to newly created sync. */
 	name: string;
 	/** Optional partial config to initialize the sync with. */
-	config: _PartialResourceSyncConfig;
+	config?: _PartialResourceSyncConfig;
 }
 
 /** Create a server. Response: [Server]. */
@@ -3907,7 +3919,7 @@ export interface CreateServer {
 	/** The name given to newly created server. */
 	name: string;
 	/** Optional partial config to initialize the server with. */
-	config: _PartialServerConfig;
+	config?: _PartialServerConfig;
 }
 
 export type PartialServerTemplateConfig = 
@@ -3919,7 +3931,7 @@ export interface CreateServerTemplate {
 	/** The name given to newly created server template. */
 	name: string;
 	/** Optional partial config to initialize the server template with. */
-	config: PartialServerTemplateConfig;
+	config?: PartialServerTemplateConfig;
 }
 
 /**
@@ -3938,7 +3950,7 @@ export interface CreateStack {
 	/** The name given to newly created stack. */
 	name: string;
 	/** Optional partial config to initialize the stack with. */
-	config: _PartialStackConfig;
+	config?: _PartialStackConfig;
 }
 
 export enum StackWebhookAction {
@@ -6065,6 +6077,50 @@ export interface RemoveUserFromUserGroup {
 }
 
 /**
+ * Rename the Action at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameAction {
+	/** The id or name of the Action to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
+ * Rename the Alerter at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameAlerter {
+	/** The id or name of the Alerter to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
+ * Rename the Build at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameBuild {
+	/** The id or name of the Build to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
+ * Rename the Builder at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameBuilder {
+	/** The id or name of the Builder to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
  * Rename the deployment at id to the given name. Response: [Update].
  * 
  * Note. If a container is created for the deployment, it will be renamed using
@@ -6077,9 +6133,56 @@ export interface RenameDeployment {
 	name: string;
 }
 
-/** Rename the server at id to the given name. Response: [Update]. */
+/**
+ * Rename the Procedure at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameProcedure {
+	/** The id or name of the Procedure to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
+ * Rename the Repo at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameRepo {
+	/** The id or name of the Repo to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
+ * Rename the ResourceSync at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameResourceSync {
+	/** The id or name of the ResourceSync to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
+ * Rename an Server to the given name.
+ * Response: [Update].
+ */
 export interface RenameServer {
-	/** The id of the server to rename. */
+	/** The id or name of the Server to rename. */
+	id: string;
+	/** The new name. */
+	name: string;
+}
+
+/**
+ * Rename the ServerTemplate at id to the given name.
+ * Response: [Update].
+ */
+export interface RenameServerTemplate {
+	/** The id or name of the ServerTemplate to rename. */
 	id: string;
 	/** The new name. */
 	name: string;
@@ -6666,7 +6769,7 @@ export interface UpdateResourceSync {
  * field changes occur from out of date local state.
  */
 export interface UpdateServer {
-	/** The id of the server to update. */
+	/** The id or name of the server to update. */
 	id: string;
 	/** The partial config update to apply. */
 	config: _PartialServerConfig;
@@ -7046,6 +7149,7 @@ export type WriteRequest =
 	| { type: "CopyBuild", params: CopyBuild }
 	| { type: "DeleteBuild", params: DeleteBuild }
 	| { type: "UpdateBuild", params: UpdateBuild }
+	| { type: "RenameBuild", params: RenameBuild }
 	| { type: "RefreshBuildCache", params: RefreshBuildCache }
 	| { type: "CreateBuildWebhook", params: CreateBuildWebhook }
 	| { type: "DeleteBuildWebhook", params: DeleteBuildWebhook }
@@ -7053,14 +7157,17 @@ export type WriteRequest =
 	| { type: "CopyBuilder", params: CopyBuilder }
 	| { type: "DeleteBuilder", params: DeleteBuilder }
 	| { type: "UpdateBuilder", params: UpdateBuilder }
+	| { type: "RenameBuilder", params: RenameBuilder }
 	| { type: "CreateServerTemplate", params: CreateServerTemplate }
 	| { type: "CopyServerTemplate", params: CopyServerTemplate }
 	| { type: "DeleteServerTemplate", params: DeleteServerTemplate }
 	| { type: "UpdateServerTemplate", params: UpdateServerTemplate }
+	| { type: "RenameServerTemplate", params: RenameServerTemplate }
 	| { type: "CreateRepo", params: CreateRepo }
 	| { type: "CopyRepo", params: CopyRepo }
 	| { type: "DeleteRepo", params: DeleteRepo }
 	| { type: "UpdateRepo", params: UpdateRepo }
+	| { type: "RenameRepo", params: RenameRepo }
 	| { type: "RefreshRepoCache", params: RefreshRepoCache }
 	| { type: "CreateRepoWebhook", params: CreateRepoWebhook }
 	| { type: "DeleteRepoWebhook", params: DeleteRepoWebhook }
@@ -7068,18 +7175,22 @@ export type WriteRequest =
 	| { type: "CopyAlerter", params: CopyAlerter }
 	| { type: "DeleteAlerter", params: DeleteAlerter }
 	| { type: "UpdateAlerter", params: UpdateAlerter }
+	| { type: "RenameAlerter", params: RenameAlerter }
 	| { type: "CreateProcedure", params: CreateProcedure }
 	| { type: "CopyProcedure", params: CopyProcedure }
 	| { type: "DeleteProcedure", params: DeleteProcedure }
 	| { type: "UpdateProcedure", params: UpdateProcedure }
+	| { type: "RenameProcedure", params: RenameProcedure }
 	| { type: "CreateAction", params: CreateAction }
 	| { type: "CopyAction", params: CopyAction }
 	| { type: "DeleteAction", params: DeleteAction }
 	| { type: "UpdateAction", params: UpdateAction }
+	| { type: "RenameAction", params: RenameAction }
 	| { type: "CreateResourceSync", params: CreateResourceSync }
 	| { type: "CopyResourceSync", params: CopyResourceSync }
 	| { type: "DeleteResourceSync", params: DeleteResourceSync }
 	| { type: "UpdateResourceSync", params: UpdateResourceSync }
+	| { type: "RenameResourceSync", params: RenameResourceSync }
 	| { type: "WriteSyncFileContents", params: WriteSyncFileContents }
 	| { type: "CommitSync", params: CommitSync }
 	| { type: "RefreshResourceSyncPending", params: RefreshResourceSyncPending }

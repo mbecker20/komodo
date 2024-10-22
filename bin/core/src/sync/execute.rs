@@ -32,7 +32,7 @@ pub async fn get_updates_for_execution<
   id_to_tags: &HashMap<String, Tag>,
   match_tags: &[String],
 ) -> anyhow::Result<UpdatesResult<Resource::PartialConfig>> {
-  let map = find_collect(Resource::coll().await, None, None)
+  let map = find_collect(Resource::coll(), None, None)
     .await
     .context("failed to get resources from db")?
     .into_iter()

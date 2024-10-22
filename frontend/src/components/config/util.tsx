@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCtrlKeyListener, useRead } from "@lib/hooks";
+import {
+  useCtrlKeyListener,
+  useInvalidate,
+  useRead,
+  useWrite,
+} from "@lib/hooks";
 import { Types } from "komodo_client";
 import {
   Select,
@@ -14,6 +19,7 @@ import { Switch } from "@ui/switch";
 import {
   CheckCircle,
   MinusCircle,
+  Pen,
   PlusCircle,
   Save,
   Search,
@@ -54,6 +60,8 @@ import {
 } from "@components/monaco";
 import { useSettingsView } from "@pages/settings";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@ui/use-toast";
+import { UsableResource } from "@types";
 
 export const ConfigItem = ({
   label,
@@ -197,7 +205,7 @@ export const DoubleInput = <
   T extends object,
   K extends keyof T,
   L extends T[K] extends string | number | undefined ? K : never,
-  R extends T[K] extends string | number | undefined ? K : never
+  R extends T[K] extends string | number | undefined ? K : never,
 >({
   disabled,
   values,
@@ -518,7 +526,7 @@ export const ConfigList = <T extends { [key: string]: unknown }>(
           className="flex items-center gap-2 w-[200px]"
         >
           <PlusCircle className="w-4 h-4" />
-          {props.addLabel ?? "Add " + props.label?.endsWith("s")
+          {(props.addLabel ?? "Add " + props.label?.endsWith("s"))
             ? props.label?.slice(0, -1)
             : props.label}
         </Button>
@@ -665,24 +673,24 @@ function ConfirmUpdateItem<T>({
     typeof _val === "string"
       ? _val
       : Array.isArray(_val)
-      ? _val.length > 0 &&
-        ["string", "number", "boolean"].includes(typeof _val[0])
-        ? JSON.stringify(_val)
-        : JSON.stringify(_val, null, 2)
-      : JSON.stringify(_val, null, 2);
+        ? _val.length > 0 &&
+          ["string", "number", "boolean"].includes(typeof _val[0])
+          ? JSON.stringify(_val)
+          : JSON.stringify(_val, null, 2)
+        : JSON.stringify(_val, null, 2);
   const prev_val =
     typeof previous[_key] === "string"
       ? previous[_key]
       : _key === "environment" ||
-        _key === "build_args" ||
-        _key === "secret_args"
-      ? env_to_text(previous[_key] as any) ?? "" // For backward compat with 1.14
-      : Array.isArray(previous[_key])
-      ? previous[_key].length > 0 &&
-        ["string", "number", "boolean"].includes(typeof previous[_key][0])
-        ? JSON.stringify(previous[_key])
-        : JSON.stringify(previous[_key], null, 2)
-      : JSON.stringify(previous[_key], null, 2);
+          _key === "build_args" ||
+          _key === "secret_args"
+        ? (env_to_text(previous[_key] as any) ?? "") // For backward compat with 1.14
+        : Array.isArray(previous[_key])
+          ? previous[_key].length > 0 &&
+            ["string", "number", "boolean"].includes(typeof previous[_key][0])
+            ? JSON.stringify(previous[_key])
+            : JSON.stringify(previous[_key], null, 2)
+          : JSON.stringify(previous[_key], null, 2);
   const showDiff =
     val?.includes("\n") ||
     prev_val?.includes("\n") ||
@@ -711,8 +719,8 @@ function ConfirmUpdateItem<T>({
                   )
                     ? "key_value"
                     : _key === "file_contents"
-                    ? file_contents_language
-                    : "json")
+                      ? file_contents_language
+                      : "json")
                 }
               />
             ) : (
@@ -1124,5 +1132,54 @@ export const PermissionLevelSelector = ({
         ))}
       </SelectContent>
     </Select>
+  );
+};
+
+export const RenameResource = ({
+  type,
+  id,
+}: {
+  type: UsableResource;
+  id: string;
+}) => {
+  const invalidate = useInvalidate();
+
+  const { toast } = useToast();
+  const { mutate, isPending } = useWrite(`Rename${type}`, {
+    onSuccess: () => {
+      invalidate([`List${type}s`]);
+      toast({ title: `${type} Renamed` });
+      set("");
+    },
+  });
+
+  const [name, set] = useState("");
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="w-full">
+        Rename{" "}
+        {type === "ServerTemplate"
+          ? "Template"
+          : type === "ResourceSync"
+            ? "Sync"
+            : type}
+      </div>
+      <div className="flex gap-4 w-full justify-end">
+        <Input
+          value={name}
+          onChange={(e) => set(e.target.value)}
+          className="w-96"
+          placeholder="Enter new name"
+        />
+        <ConfirmButton
+          title="Rename"
+          icon={<Pen className="w-4 h-4" />}
+          disabled={!name || isPending}
+          loading={isPending}
+          onClick={() => mutate({ id, name })}
+        />
+      </div>
+    </div>
   );
 };

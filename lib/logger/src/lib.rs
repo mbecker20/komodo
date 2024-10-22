@@ -14,7 +14,9 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
   let registry =
     Registry::default().with(LevelFilter::from(log_level));
 
-  match (config.stdio, !config.otlp_endpoint.is_empty()) {
+  let use_otel = !config.otlp_endpoint.is_empty();
+
+  match (config.stdio, use_otel) {
     (StdioLogMode::Standard, true) => {
       let tracer = otel::tracer(
         &config.otlp_endpoint,

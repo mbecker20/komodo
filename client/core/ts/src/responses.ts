@@ -228,6 +228,7 @@ export type WriteResponses = {
   CopyBuild: Types.Build;
   DeleteBuild: Types.Build;
   UpdateBuild: Types.Build;
+  RenameBuild: Types.Update;
   RefreshBuildCache: Types.NoData;
   CreateBuildWebhook: Types.CreateBuildWebhookResponse;
   DeleteBuildWebhook: Types.DeleteBuildWebhookResponse;
@@ -237,18 +238,21 @@ export type WriteResponses = {
   CopyBuilder: Types.Builder;
   DeleteBuilder: Types.Builder;
   UpdateBuilder: Types.Builder;
+  RenameBuilder: Types.Update;
 
   // ==== SERVER TEMPLATE ====
   CreateServerTemplate: Types.ServerTemplate;
   CopyServerTemplate: Types.ServerTemplate;
   DeleteServerTemplate: Types.ServerTemplate;
   UpdateServerTemplate: Types.ServerTemplate;
+  RenameServerTemplate: Types.Update;
 
   // ==== REPO ====
   CreateRepo: Types.Repo;
   CopyRepo: Types.Repo;
   DeleteRepo: Types.Repo;
   UpdateRepo: Types.Repo;
+  RenameRepo: Types.Update;
   RefreshRepoCache: Types.NoData;
   CreateRepoWebhook: Types.CreateRepoWebhookResponse;
   DeleteRepoWebhook: Types.DeleteRepoWebhookResponse;
@@ -258,24 +262,28 @@ export type WriteResponses = {
   CopyAlerter: Types.Alerter;
   DeleteAlerter: Types.Alerter;
   UpdateAlerter: Types.Alerter;
+  RenameAlerter: Types.Update;
 
   // ==== PROCEDURE ====
   CreateProcedure: Types.Procedure;
   CopyProcedure: Types.Procedure;
   DeleteProcedure: Types.Procedure;
   UpdateProcedure: Types.Procedure;
+  RenameProcedure: Types.Update;
 
   // ==== ACTION ====
   CreateAction: Types.Action;
   CopyAction: Types.Action;
   DeleteAction: Types.Action;
   UpdateAction: Types.Action;
+  RenameAction: Types.Update;
 
   // ==== SYNC ====
   CreateResourceSync: Types.ResourceSync;
   CopyResourceSync: Types.ResourceSync;
   DeleteResourceSync: Types.ResourceSync;
   UpdateResourceSync: Types.ResourceSync;
+  RenameResourceSync: Types.Update;
   CommitSync: Types.ResourceSync;
   WriteSyncFileContents: Types.Update;
   RefreshResourceSyncPending: Types.ResourceSync;

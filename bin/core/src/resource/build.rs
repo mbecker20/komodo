@@ -38,8 +38,8 @@ impl super::KomodoResource for Build {
     ResourceTargetVariant::Build
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().builds
   }
 
@@ -118,11 +118,16 @@ impl super::KomodoResource for Build {
   }
 
   async fn post_update(
-    _updated: &Self,
-    _update: &mut Update,
+    updated: &Self,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    refresh_build_state_cache().await;
-    Ok(())
+    Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameBuild
   }
 
   // DELETE

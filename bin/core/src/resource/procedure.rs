@@ -45,8 +45,8 @@ impl super::KomodoResource for Procedure {
     ResourceTargetVariant::Procedure
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().procedures
   }
 
@@ -115,11 +115,16 @@ impl super::KomodoResource for Procedure {
   }
 
   async fn post_update(
-    _updated: &Self,
-    _update: &mut Update,
+    updated: &Self,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    refresh_procedure_state_cache().await;
-    Ok(())
+    Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameProcedure
   }
 
   // DELETE

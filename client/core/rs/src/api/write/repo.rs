@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  repo::{Repo, _PartialRepoConfig},
-  NoData,
+  repo::{Repo, _PartialRepoConfig}, update::Update, NoData
 };
 
 use super::KomodoWriteRequest;
@@ -23,6 +22,7 @@ pub struct CreateRepo {
   /// The name given to newly created repo.
   pub name: String,
   /// Optional partial config to initialize the repo with.
+  #[serde(default)]
   pub config: _PartialRepoConfig,
 }
 
@@ -82,6 +82,23 @@ pub struct UpdateRepo {
   pub id: String,
   /// The partial config update to apply.
   pub config: _PartialRepoConfig,
+}
+
+//
+
+/// Rename the Repo at id to the given name.
+/// Response: [Update].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Update)]
+pub struct RenameRepo {
+  /// The id or name of the Repo to rename.
+  pub id: String,
+  /// The new name.
+  pub name: String,
 }
 
 //

@@ -8,6 +8,7 @@ import { DeleteResource, NewResource } from "../common";
 import { AlerterTable } from "./table";
 import { Types } from "komodo_client";
 import { ResourcePageHeader } from "@components/util";
+import { RenameResource } from "@components/config/util";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -67,7 +68,12 @@ export const AlerterComponents: RequiredResourceComponents = {
 
   Config: AlerterConfig,
 
-  DangerZone: ({ id }) => <DeleteResource type="Alerter" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="Alerter" id={id} />
+      <DeleteResource type="Alerter" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const alerter = useAlerter(id);

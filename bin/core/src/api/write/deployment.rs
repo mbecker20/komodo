@@ -108,7 +108,7 @@ impl Resolve<RenameDeployment, User> for State {
 
     if container_state == DeploymentState::Unknown {
       return Err(anyhow!(
-        "cannot rename deployment when container status is unknown"
+        "Cannot rename Deployment when container status is unknown"
       ));
     }
 
@@ -124,7 +124,7 @@ impl Resolve<RenameDeployment, User> for State {
       None,
     )
     .await
-    .context("failed to update deployment name on db")?;
+    .context("Failed to update Deployment name on db")?;
 
     if container_state != DeploymentState::NotDeployed {
       let server =
@@ -135,20 +135,19 @@ impl Resolve<RenameDeployment, User> for State {
           new_name: name.clone(),
         })
         .await
-        .context("failed to rename container on server")?;
+        .context("Failed to rename container on server")?;
       update.logs.push(log);
     }
 
     update.push_simple_log(
-      "rename deployment",
+      "Rename Deployment",
       format!(
-        "renamed deployment from {} to {}",
+        "Renamed Deployment from {} to {}",
         deployment.name, name
       ),
     );
     update.finalize();
-
-    add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
 
     Ok(update)
   }

@@ -1,12 +1,7 @@
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card } from "@ui/card";
-import {
-  FolderGit,
-  GitBranch,
-  Loader2,
-  RefreshCcw,
-} from "lucide-react";
+import { FolderGit, GitBranch, Loader2, RefreshCcw } from "lucide-react";
 import { RepoConfig } from "./config";
 import { BuildRepo, CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
@@ -25,6 +20,7 @@ import { Badge } from "@ui/badge";
 import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
 import { useBuilder } from "../builder";
+import { RenameResource } from "@components/config/util";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 10_000 }).data?.find(
@@ -241,7 +237,12 @@ export const RepoComponents: RequiredResourceComponents = {
 
   Config: RepoConfig,
 
-  DangerZone: ({ id }) => <DeleteResource type="Repo" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="Repo" id={id} />
+      <DeleteResource type="Repo" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const repo = useRepo(id);

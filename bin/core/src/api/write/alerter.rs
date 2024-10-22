@@ -1,9 +1,8 @@
 use komodo_client::{
-  api::write::{
-    CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter,
-  },
+  api::write::*,
   entities::{
-    alerter::Alerter, permission::PermissionLevel, user::User,
+    alerter::Alerter, permission::PermissionLevel, update::Update,
+    user::User,
   },
 };
 use resolver_api::Resolve;
@@ -57,5 +56,16 @@ impl Resolve<UpdateAlerter, User> for State {
     user: User,
   ) -> anyhow::Result<Alerter> {
     resource::update::<Alerter>(&id, config, &user).await
+  }
+}
+
+impl Resolve<RenameAlerter, User> for State {
+  #[instrument(name = "RenameAlerter", skip(self, user))]
+  async fn resolve(
+    &self,
+    RenameAlerter { id, name }: RenameAlerter,
+    user: User,
+  ) -> anyhow::Result<Update> {
+    resource::rename::<Alerter>(&id, &name, &user).await
   }
 }

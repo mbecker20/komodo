@@ -31,8 +31,8 @@ impl super::KomodoResource for Builder {
     ResourceTargetVariant::Builder
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().builders
   }
 
@@ -116,6 +116,12 @@ impl super::KomodoResource for Builder {
     _update: &mut Update,
   ) -> anyhow::Result<()> {
     Ok(())
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameBuilder
   }
 
   // DELETE

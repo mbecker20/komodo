@@ -17,6 +17,7 @@ import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { ActionInfo } from "./info";
+import { RenameResource } from "@components/config/util";
 
 const useAction = (id?: string) =>
   useRead("ListActions", {}).data?.find((d) => d.id === id);
@@ -113,7 +114,12 @@ export const ActionComponents: RequiredResourceComponents = {
 
   Config: ConfigInfo,
 
-  DangerZone: ({ id }) => <DeleteResource type="Action" id={id} />,
+  DangerZone: ({ id }) => (
+    <>
+      <RenameResource type="Action" id={id} />
+      <DeleteResource type="Action" id={id} />
+    </>
+  ),
 
   ResourcePageHeader: ({ id }) => {
     const action = useAction(id);

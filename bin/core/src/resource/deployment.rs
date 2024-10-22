@@ -26,7 +26,6 @@ use crate::{
     query::get_deployment_state,
   },
   monitor::update_cache_for_server,
-  resource,
   state::{action_states, db_client, deployment_status_cache},
 };
 
@@ -44,8 +43,8 @@ impl super::KomodoResource for Deployment {
     ResourceTargetVariant::Deployment
   }
 
-  async fn coll(
-  ) -> &'static Collection<Resource<Self::Config, Self::Info>> {
+  fn coll() -> &'static Collection<Resource<Self::Config, Self::Info>>
+  {
     &db_client().deployments
   }
 
@@ -132,11 +131,21 @@ impl super::KomodoResource for Deployment {
     created: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
-    if !created.config.server_id.is_empty() {
-      let server =
-        resource::get::<Server>(&created.config.server_id).await?;
-      update_cache_for_server(&server).await;
+    if created.config.server_id.is_empty() {
+      return Ok(());
     }
+    let Ok(server) = super::get::<Server>(&created.config.server_id)
+      .await
+      .inspect_err(|e| {
+        warn!(
+          "Failed to get Server for Deployment {} | {e:#}",
+          created.name
+        )
+      })
+    else {
+      return Ok(());
+    };
+    update_cache_for_server(&server).await;
     Ok(())
   }
 
@@ -156,14 +165,15 @@ impl super::KomodoResource for Deployment {
 
   async fn post_update(
     updated: &Self,
-    _update: &mut Update,
+    update: &mut Update,
   ) -> anyhow::Result<()> {
-    if !updated.config.server_id.is_empty() {
-      let server =
-        resource::get::<Server>(&updated.config.server_id).await?;
-      update_cache_for_server(&server).await;
-    }
-    Ok(())
+    Self::post_create(updated, update).await
+  }
+
+  // RENAME
+
+  fn rename_operation() -> Operation {
+    Operation::RenameDeployment
   }
 
   // DELETE
