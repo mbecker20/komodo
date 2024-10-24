@@ -581,32 +581,32 @@ export const StackConfig = ({
             ["Builder" as any]: () => (
               <WebhookBuilder git_provider={git_provider} />
             ),
-            ["Refresh" as any]: () =>
-              (update.branch ?? config.branch) && (
-                <ConfigItem label="Refresh Cache">
-                  <CopyWebhook
-                    integration={webhook_integration}
-                    path={`/stack/${id_or_name === "Id" ? id : name}/refresh`}
-                  />
-                </ConfigItem>
-              ),
+            // ["Refresh" as any]: () =>
+            //   (update.branch ?? config.branch) && (
+            //     <ConfigItem label="Refresh Cache">
+            //       <CopyWebhook
+            //         integration={webhook_integration}
+            //         path={`/stack/${id_or_name === "Id" ? id : name}/refresh`}
+            //       />
+            //     </ConfigItem>
+            //   ),
             ["Deploy" as any]: () =>
               (update.branch ?? config.branch) && (
-                <ConfigItem label="Auto Redeploy">
+                <ConfigItem label="Webhook Url - Deploy">
                   <CopyWebhook
                     integration={webhook_integration}
                     path={`/stack/${id_or_name === "Id" ? id : name}/deploy`}
                   />
                 </ConfigItem>
               ),
-            webhook_enabled:
-              !!(update.branch ?? config.branch) &&
-              webhooks !== undefined &&
-              !webhooks.managed,
             webhook_force_deploy: {
               description:
                 "Usually the Stack won't deploy unless there are changes to the files. Use this to force deploy.",
             },
+            webhook_enabled:
+              !!(update.branch ?? config.branch) &&
+              webhooks !== undefined &&
+              !webhooks.managed,
             webhook_secret: {
               description:
                 "Provide a custom webhook secret for this resource, or use the global default.",

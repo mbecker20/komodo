@@ -120,7 +120,7 @@ export const ActionConfig = ({ id }: { id: string }) => {
                 </WebhookBuilder>
               ),
               ["run" as any]: () => (
-                <ConfigItem label="Webhook Url">
+                <ConfigItem label="Webhook Url - Run">
                   <CopyWebhook
                     integration={webhook_integration}
                     path={`/action/${id_or_name === "Id" ? id : name}/${branch}`}

@@ -233,7 +233,7 @@ const ProcedureConfigInner = ({
                   />
                 </WebhookBuilder>
               </ConfigItem>
-              <ConfigItem label="Webhook Url">
+              <ConfigItem label="Webhook Url - Run">
                 <CopyWebhook
                   integration={webhook_integration}
                   path={`/procedure/${id_or_name === "Id" ? procedure._id?.$oid! : procedure.name}/${branch}`}

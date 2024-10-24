@@ -319,9 +319,9 @@ export const ResourceSyncConfig = ({
             ["Builder" as any]: () => (
               <WebhookBuilder git_provider={git_provider} />
             ),
-            ["refresh" as any]: () => (
+            ["Refresh" as any]: () => (
               <ConfigItem
-                label="Refresh Pending"
+                label="Webhook Url - Refresh Pending"
                 description="Trigger an update of the pending sync cache, to display the changes in the UI on push."
               >
                 <CopyWebhook
@@ -330,9 +330,9 @@ export const ResourceSyncConfig = ({
                 />
               </ConfigItem>
             ),
-            ["sync" as any]: () => (
+            ["Sync" as any]: () => (
               <ConfigItem
-                label="Execute Sync"
+                label="Webhook Url - Execute Sync"
                 description="Trigger an execution of the sync on push."
               >
                 <CopyWebhook

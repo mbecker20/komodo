@@ -390,7 +390,7 @@ export const BuildConfig = ({
                 <WebhookBuilder git_provider={git_provider} />
               ),
               ["build" as any]: () => (
-                <ConfigItem label="Webhook Url">
+                <ConfigItem label="Webhook Url - Build">
                   <CopyWebhook
                     integration={webhook_integration}
                     path={`/build/${id_or_name === "Id" ? id : name}`}

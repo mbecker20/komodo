@@ -255,7 +255,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 <WebhookBuilder git_provider={git_provider} />
               ),
               ["pull" as any]: () => (
-                <ConfigItem label="Pull">
+                <ConfigItem label="Webhook Url - Pull">
                   <CopyWebhook
                     integration={webhook_integration}
                     path={`/repo/${id_or_name === "Id" ? id : name}/pull`}
@@ -263,7 +263,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 </ConfigItem>
               ),
               ["clone" as any]: () => (
-                <ConfigItem label="Clone">
+                <ConfigItem label="Webhook Url - Clone">
                   <CopyWebhook
                     integration={webhook_integration}
                     path={`/repo/${id_or_name === "Id" ? id : name}/clone`}
@@ -271,7 +271,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 </ConfigItem>
               ),
               ["build" as any]: () => (
-                <ConfigItem label="Build">
+                <ConfigItem label="Webhook Url - Build">
                   <CopyWebhook
                     integration={webhook_integration}
                     path={`/repo/${id_or_name === "Id" ? id : name}/build`}
