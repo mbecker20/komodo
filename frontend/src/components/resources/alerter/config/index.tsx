@@ -23,8 +23,6 @@ export const AlerterConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
-      resource_id={id}
-      resource_type="Alerter"
       disabled={disabled}
       config={config}
       update={update}

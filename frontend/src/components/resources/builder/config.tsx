@@ -43,8 +43,6 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
-      resource_id={id}
-      resource_type="Builder"
       disabled={disabled}
       config={config}
       update={update}
@@ -257,8 +255,6 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
-      resource_id={id}
-      resource_type="Builder"
       disabled={disabled}
       config={config.params as Types.ServerBuilderConfig}
       update={update}

@@ -1,11 +1,22 @@
-import { ConfigItem } from "@components/config/util";
+import {
+  ConfigInput,
+  ConfigItem,
+  ConfigSwitch,
+  WebhookBuilder,
+} from "@components/config/util";
 import { Section } from "@components/layouts";
-import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
+import {
+  useLocalStorage,
+  useRead,
+  useWebhookIdOrName,
+  useWebhookIntegrations,
+  useWrite,
+} from "@lib/hooks";
 import { Types } from "komodo_client";
-import { Card, CardHeader } from "@ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { Input } from "@ui/input";
 import { useEffect, useState } from "react";
-import { CopyGithubWebhook, ResourceSelector } from "../common";
+import { CopyWebhook, ResourceSelector } from "../common";
 import { ConfigLayout } from "@components/config";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { Button } from "@ui/button";
@@ -50,6 +61,8 @@ export const ProcedureConfig = ({ id }: { id: string }) => {
   return <ProcedureConfigInner procedure={procedure} />;
 };
 
+const PROCEDURE_GIT_PROVIDER = "Procedure";
+
 const ProcedureConfigInner = ({
   procedure,
 }: {
@@ -66,8 +79,11 @@ const ProcedureConfigInner = ({
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const { mutateAsync } = useWrite("UpdateProcedure");
-  const stages = config.stages || procedure.config?.stages || [];
+  const { integrations } = useWebhookIntegrations();
+  const [id_or_name] = useWebhookIdOrName();
+  const webhook_integration = integrations[PROCEDURE_GIT_PROVIDER] ?? "Github";
 
+  const stages = config.stages || procedure.config?.stages || [];
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
   const add_stage = () =>
@@ -196,54 +212,57 @@ const ProcedureConfigInner = ({
       </ConfigLayout>
       <Section>
         <Card>
-          <CardHeader className="p-4">
-            <ConfigItem label="Git Webhook" className="items-start">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="text-nowrap text-muted-foreground">
-                      Listen on branch:
-                    </div>
-                    <Input
-                      placeholder="Branch"
-                      value={branch}
-                      onChange={(e) => setBranch(e.target.value)}
-                      className="w-[200px]"
-                    />
-                  </div>
-                  <CopyGithubWebhook
-                    path={`/procedure/${procedure._id?.$oid!}/${branch}`}
-                  />
-                </div>
-                <div className="flex items-center justify-end gap-4 w-full">
-                  <div className="text-muted-foreground">Enabled:</div>
-                  <Switch
-                    checked={
-                      config.webhook_enabled ??
-                      procedure.config?.webhook_enabled
-                    }
-                    onCheckedChange={(webhook_enabled) =>
-                      setConfig({ ...config, webhook_enabled })
-                    }
-                    disabled={disabled}
-                  />
-                </div>
-                <div className="flex items-center justify-end gap-4 w-full">
-                  <div className="text-muted-foreground">Custom Secret:</div>
-                  <Input
-                    value={
-                      config.webhook_secret ?? procedure.config?.webhook_secret
-                    }
-                    onChange={(e) =>
-                      setConfig({ ...config, webhook_secret: e.target.value })
-                    }
-                    disabled={disabled}
-                    className="w-[400px] max-w-full"
-                  />
-                </div>
-              </div>
-            </ConfigItem>
+          <CardHeader>
+            <CardTitle>Webhook</CardTitle>
+            <CardDescription>
+              Trigger this Procedure with a webhook.
+            </CardDescription>
           </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              <ConfigItem>
+                <WebhookBuilder git_provider={PROCEDURE_GIT_PROVIDER}>
+                  <div className="text-nowrap text-muted-foreground text-sm">
+                    Listen on branch:
+                  </div>
+                  <Input
+                    placeholder="Branch"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    className="w-[200px]"
+                  />
+                </WebhookBuilder>
+              </ConfigItem>
+              <ConfigItem label="Webhook Url">
+                <CopyWebhook
+                  integration={webhook_integration}
+                  path={`/procedure/${id_or_name === "Id" ? procedure._id?.$oid! : procedure.name}/${branch}`}
+                />
+              </ConfigItem>
+              <ConfigSwitch
+                label="Webhook Enabled"
+                value={
+                  config.webhook_enabled ?? procedure.config?.webhook_enabled
+                }
+                disabled={disabled}
+                onChange={(webhook_enabled) =>
+                  setConfig({ ...config, webhook_enabled })
+                }
+              />
+              <ConfigInput
+                label="Custom Secret"
+                description="Provide a custom webhook secret for this resource, or use the global default."
+                placeholder="Input custom secret"
+                value={
+                  config.webhook_secret ?? procedure.config?.webhook_secret
+                }
+                disabled={disabled}
+                onChange={(webhook_secret) =>
+                  setConfig({ ...config, webhook_secret })
+                }
+              />
+            </div>
+          </CardContent>
         </Card>
       </Section>
     </div>
@@ -566,7 +585,7 @@ type ExecutionType = Types.Execution["type"];
 
 type ExecutionConfigComponent<
   T extends ExecutionType,
-  P = Extract<Types.Execution, { type: T }>["params"]
+  P = Extract<Types.Execution, { type: T }>["params"],
 > = React.FC<{
   params: P;
   setParams: React.Dispatch<React.SetStateAction<P>>;

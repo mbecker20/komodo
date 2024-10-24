@@ -7,11 +7,20 @@ import {
   InputList,
   ProviderSelectorConfig,
   SystemCommand,
+  WebhookBuilder,
 } from "@components/config/util";
 import { Types } from "komodo_client";
-import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
+import {
+  getWebhookIntegration,
+  useInvalidate,
+  useLocalStorage,
+  useRead,
+  useWebhookIdOrName,
+  useWebhookIntegrations,
+  useWrite,
+} from "@lib/hooks";
 import { ReactNode } from "react";
-import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
+import { CopyWebhook, ResourceLink, ResourceSelector } from "../common";
 import {
   Select,
   SelectContent,
@@ -55,7 +64,9 @@ export const StackConfig = ({
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Stack", id },
   }).data;
-  const config = useRead("GetStack", { stack: id }).data?.config;
+  const stack = useRead("GetStack", { stack: id }).data;
+  const config = stack?.config;
+  const name = stack?.name;
   const webhooks = useRead("GetStackWebhooksEnabled", { stack: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
@@ -64,12 +75,18 @@ export const StackConfig = ({
     {}
   );
   const { mutateAsync } = useWrite("UpdateStack");
+  const { integrations } = useWebhookIntegrations();
+  const [id_or_name] = useWebhookIdOrName();
 
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
+
   const run_build = update.run_build ?? config.run_build;
   const mode = getStackMode(update, config);
+
+  const git_provider = update.git_provider ?? config.git_provider;
+  const webhook_integration = getWebhookIntegration(integrations, git_provider);
 
   const setMode = (mode: StackMode) => {
     if (mode === "Files On Server") {
@@ -561,16 +578,25 @@ export const StackConfig = ({
                 </ConfigItem>
               );
             },
+            ["Builder" as any]: () => (
+              <WebhookBuilder git_provider={git_provider} />
+            ),
             ["Refresh" as any]: () =>
               (update.branch ?? config.branch) && (
                 <ConfigItem label="Refresh Cache">
-                  <CopyGithubWebhook path={`/stack/${id}/refresh`} />
+                  <CopyWebhook
+                    integration={webhook_integration}
+                    path={`/stack/${id_or_name === "Id" ? id : name}/refresh`}
+                  />
                 </ConfigItem>
               ),
             ["Deploy" as any]: () =>
               (update.branch ?? config.branch) && (
                 <ConfigItem label="Auto Redeploy">
-                  <CopyGithubWebhook path={`/stack/${id}/deploy`} />
+                  <CopyWebhook
+                    integration={webhook_integration}
+                    path={`/stack/${id_or_name === "Id" ? id : name}/deploy`}
+                  />
                 </ConfigItem>
               ),
             webhook_enabled:
@@ -757,8 +783,6 @@ export const StackConfig = ({
 
   return (
     <Config
-      resource_id={id}
-      resource_type="Stack"
       titleOther={titleOther}
       disabled={disabled}
       config={config}

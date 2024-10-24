@@ -67,7 +67,7 @@ export const useRead = <
       (T | P)[]
     >,
     "queryFn" | "queryKey"
-  >
+  >,
 >(
   type: T,
   params: P,
@@ -83,7 +83,7 @@ export const useInvalidate = () => {
   const qc = useQueryClient();
   return <
     Type extends Types.ReadRequest["type"],
-    Params extends Extract<Types.ReadRequest, { type: Type }>["params"]
+    Params extends Extract<Types.ReadRequest, { type: Type }>["params"],
   >(
     ...keys: Array<[Type] | [Type, Params]>
   ) => keys.forEach((key) => qc.invalidateQueries({ queryKey: key }));
@@ -96,7 +96,7 @@ export const useManageUser = <
   C extends Omit<
     UseMutationOptions<UserResponses[T], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >
+  >,
 >(
   type: T,
   config?: C
@@ -130,7 +130,7 @@ export const useWrite = <
   C extends Omit<
     UseMutationOptions<WriteResponses[R["type"]], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >
+  >,
 >(
   type: T,
   config?: C
@@ -164,7 +164,7 @@ export const useExecute = <
   C extends Omit<
     UseMutationOptions<ExecuteResponses[T], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >
+  >,
 >(
   type: T,
   config?: C
@@ -198,7 +198,7 @@ export const useAuth = <
   C extends Omit<
     UseMutationOptions<AuthResponses[T], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >
+  >,
 >(
   type: T,
   config?: C
@@ -445,4 +445,50 @@ export const useNoResources = () => {
     templates === 0 &&
     syncs === 0
   );
+};
+
+export type WebhookIntegration = "Github" | "Gitlab";
+export type WebhookIntegrations = {
+  [key: string]: WebhookIntegration;
+};
+
+const WEBHOOK_INTEGRATIONS_ATOM = atomWithStorage<WebhookIntegrations>(
+  "webhook-integrations-v2",
+  {}
+);
+
+export const useWebhookIntegrations = () => {
+  const [integrations, setIntegrations] = useAtom<WebhookIntegrations>(
+    WEBHOOK_INTEGRATIONS_ATOM
+  );
+  return {
+    integrations,
+    setIntegration: (provider: string, integration: WebhookIntegration) =>
+      setIntegrations({
+        ...integrations,
+        [provider]: integration,
+      }),
+  };
+};
+
+export const getWebhookIntegration = (
+  integrations: WebhookIntegrations,
+  git_provider: string
+) => {
+  return integrations[git_provider]
+    ? integrations[git_provider]
+    : git_provider.includes("gitlab")
+      ? "Gitlab"
+      : "Github";
+};
+
+export type WebhookIdOrName = "Id" | "Name";
+
+const WEBHOOK_ID_OR_NAME_ATOM = atomWithStorage<WebhookIdOrName>(
+  "webhook-id-or-name-v1",
+  "Id"
+);
+
+export const useWebhookIdOrName = () => {
+  return useAtom<WebhookIdOrName>(WEBHOOK_ID_OR_NAME_ATOM);
 };

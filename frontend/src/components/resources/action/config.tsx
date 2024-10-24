@@ -1,15 +1,31 @@
-import { useLocalStorage, useRead, useWrite } from "@lib/hooks";
+import {
+  getWebhookIntegration,
+  useLocalStorage,
+  useRead,
+  useWebhookIdOrName,
+  useWebhookIntegrations,
+  useWrite,
+} from "@lib/hooks";
 import { Types } from "komodo_client";
 import { Config } from "@components/config";
 import { MonacoEditor } from "@components/monaco";
 import { SecretsSearch } from "@components/config/env_vars";
 import { Button } from "@ui/button";
+import { ConfigItem, WebhookBuilder } from "@components/config/util";
+import { Input } from "@ui/input";
+import { useState } from "react";
+import { CopyWebhook } from "../common";
+
+const ACTION_GIT_PROVIDER = "Action";
 
 export const ActionConfig = ({ id }: { id: string }) => {
+  const [branch, setBranch] = useState("main");
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Action", id },
   }).data;
-  const config = useRead("GetAction", { action: id }).data?.config;
+  const action = useRead("GetAction", { action: id }).data;
+  const config = action?.config;
+  const name = action?.name;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
   const [update, set] = useLocalStorage<Partial<Types.ActionConfig>>(
@@ -17,15 +33,16 @@ export const ActionConfig = ({ id }: { id: string }) => {
     {}
   );
   const { mutateAsync } = useWrite("UpdateAction");
+  const { integrations } = useWebhookIntegrations();
+  const [id_or_name] = useWebhookIdOrName();
 
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
+  const webhook_integration = integrations[ACTION_GIT_PROVIDER] ?? "Github";
 
   return (
     <Config
-      resource_id={id}
-      resource_type="Action"
       disabled={disabled}
       config={config}
       update={update}
@@ -80,6 +97,39 @@ export const ActionConfig = ({ id }: { id: string }) => {
                     />
                   </div>
                 );
+              },
+            },
+          },
+          {
+            label: "Webhook",
+            description: `Configure your ${webhook_integration}-style repo provider to send webhooks to Komodo`,
+            components: {
+              ["Builder" as any]: () => (
+                <WebhookBuilder git_provider={ACTION_GIT_PROVIDER}>
+                  <div className="text-nowrap text-muted-foreground text-sm">
+                    Listen on branch:
+                  </div>
+                  <Input
+                    placeholder="Branch"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    className="w-[200px]"
+                  />
+                </WebhookBuilder>
+              ),
+              ["run" as any]: () => (
+                <ConfigItem label="Webhook Url">
+                  <CopyWebhook
+                    integration={webhook_integration}
+                    path={`/action/${id_or_name === "Id" ? id : name}/${branch}`}
+                  />
+                </ConfigItem>
+              ),
+              webhook_enabled: true,
+              webhook_secret: {
+                description:
+                  "Provide a custom webhook secret for this resource, or use the global default.",
+                placeholder: "Input custom secret",
               },
             },
           },

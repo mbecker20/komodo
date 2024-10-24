@@ -54,6 +54,13 @@ export interface Resource<Config, Info> {
 export interface ActionConfig {
 	/** Typescript file contents using pre-initialized `komodo` client. */
 	file_contents?: string;
+	/** Whether incoming webhooks actually trigger action. */
+	webhook_enabled: boolean;
+	/**
+	 * Optionally provide an alternate webhook secret for this procedure.
+	 * If its an empty string, use the default secret from the config.
+	 */
+	webhook_secret?: string;
 }
 
 export interface ActionInfo {
