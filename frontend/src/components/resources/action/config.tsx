@@ -1,5 +1,4 @@
 import {
-  getWebhookIntegration,
   useLocalStorage,
   useRead,
   useWebhookIdOrName,
@@ -15,6 +14,7 @@ import { ConfigItem, WebhookBuilder } from "@components/config/util";
 import { Input } from "@ui/input";
 import { useState } from "react";
 import { CopyWebhook } from "../common";
+import { ActionInfo } from "./info";
 
 const ACTION_GIT_PROVIDER = "Action";
 
@@ -44,6 +44,7 @@ export const ActionConfig = ({ id }: { id: string }) => {
   return (
     <Config
       disabled={disabled}
+      disableSidebar
       config={config}
       update={update}
       set={set}
@@ -95,6 +96,7 @@ export const ActionConfig = ({ id }: { id: string }) => {
                       language="typescript"
                       readOnly={disabled}
                     />
+                    <ActionInfo id={id} />
                   </div>
                 );
               },

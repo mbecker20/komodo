@@ -16,7 +16,6 @@ import {
 import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { ActionInfo } from "./info";
 import { RenameResource } from "@components/config/util";
 
 const useAction = (id?: string) =>
@@ -26,15 +25,6 @@ const ActionIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useAction(id)?.info.state;
   const color = stroke_color_class_by_intention(action_state_intention(state));
   return <Clapperboard className={cn(`w-${size} h-${size}`, state && color)} />;
-};
-
-const ConfigInfo = ({ id }: { id: string }) => {
-  return (
-    <div className="flex flex-col gap-2">
-      <ActionConfig id={id} />
-      <ActionInfo id={id} />
-    </div>
-  );
 };
 
 export const ActionComponents: RequiredResourceComponents = {
@@ -112,7 +102,7 @@ export const ActionComponents: RequiredResourceComponents = {
 
   Page: {},
 
-  Config: ConfigInfo,
+  Config: ActionConfig,
 
   DangerZone: ({ id }) => (
     <>

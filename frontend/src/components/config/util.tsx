@@ -1196,15 +1196,19 @@ export const WebhookBuilder = ({
   children?: ReactNode;
 }) => {
   return (
-    <div className="grid items-center grid-cols-2 gap-2 w-fit">
-      <div className="text-muted-foreground text-sm">Auth style?</div>
-      <WebhookIntegrationSelector git_provider={git_provider} />
+    <ConfigItem>
+      <div className="grid items-center grid-cols-2 gap-2 w-fit">
+        <div className="text-muted-foreground text-sm">Auth style?</div>
+        <WebhookIntegrationSelector git_provider={git_provider} />
 
-      <div className="text-muted-foreground text-sm">Resource Id or Name?</div>
-      <WebhookIdOrNameSelector />
+        <div className="text-muted-foreground text-sm">
+          Resource Id or Name?
+        </div>
+        <WebhookIdOrNameSelector />
 
-      {children}
-    </div>
+        {children}
+      </div>
+    </ConfigItem>
   );
 };
 
