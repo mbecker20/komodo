@@ -1197,7 +1197,7 @@ export const WebhookBuilder = ({
 }) => {
   return (
     <ConfigItem>
-      <div className="grid items-center grid-cols-2 gap-2 w-fit">
+      <div className="grid items-center grid-cols-[auto_1fr] gap-x-6 gap-y-2 w-fit">
         <div className="text-muted-foreground text-sm">Auth style?</div>
         <WebhookIntegrationSelector git_provider={git_provider} />
 

@@ -225,12 +225,30 @@ const ProcedureConfigInner = ({
                   <div className="text-nowrap text-muted-foreground text-sm">
                     Listen on branch:
                   </div>
-                  <Input
-                    placeholder="Branch"
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    className="w-[200px]"
-                  />
+                  <div className="flex items-center gap-3">
+                    <Input
+                      placeholder="Branch"
+                      value={branch}
+                      onChange={(e) => setBranch(e.target.value)}
+                      className="w-[200px]"
+                      disabled={branch === "__ALL__"}
+                    />
+                    <div className="flex items-center gap-2">
+                      <div className="text-muted-foreground text-sm">
+                        All branches:
+                      </div>
+                      <Switch
+                        checked={branch === "__ALL__"}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setBranch("__ALL__");
+                          } else {
+                            setBranch("main");
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                 </WebhookBuilder>
               </ConfigItem>
               <ConfigItem label="Webhook Url - Run">
