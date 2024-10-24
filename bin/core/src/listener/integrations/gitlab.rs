@@ -1,12 +1,15 @@
 use anyhow::{anyhow, Context};
 use serde::Deserialize;
 
-use crate::config::core_config;
+use crate::{
+  config::core_config,
+  listener::{VerifyBranch, VerifySecret},
+};
 
 /// Listener implementation for Gitlab type API
 pub struct Gitlab;
 
-impl super::VerifySecret for Gitlab {
+impl VerifySecret for Gitlab {
   #[instrument("VerifyGitlabSecret", skip_all)]
   fn verify_secret(
     headers: axum::http::HeaderMap,
@@ -37,12 +40,19 @@ struct GitlabWebhookBody {
   branch: String,
 }
 
-impl super::ExtractBranch for Gitlab {
-  fn extract_branch(body: &str) -> anyhow::Result<String> {
+impl VerifyBranch for Gitlab {
+  fn verify_branch(
+    body: &str,
+    expected_branch: &str,
+  ) -> anyhow::Result<()> {
     let branch = serde_json::from_str::<GitlabWebhookBody>(body)
       .context("Failed to parse gitlab request body")?
       .branch
       .replace("refs/heads/", "");
-    Ok(branch)
+    if branch == expected_branch {
+      Ok(())
+    } else {
+      Err(anyhow!("request branch does not match expected"))
+    }
   }
 }

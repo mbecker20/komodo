@@ -19,7 +19,7 @@ use crate::{
   helpers::update::init_execution_update, state::State,
 };
 
-use super::ListenerLockCache;
+use super::{ListenerLockCache, ANY_BRANCH};
 
 // =======
 //  BUILD
@@ -36,7 +36,7 @@ fn build_locks() -> &'static ListenerLockCache {
   BUILD_LOCKS.get_or_init(Default::default)
 }
 
-pub async fn handle_build_webhook<B: super::ExtractBranch>(
+pub async fn handle_build_webhook<B: super::VerifyBranch>(
   build: Build,
   body: String,
 ) -> anyhow::Result<()> {
@@ -50,10 +50,7 @@ pub async fn handle_build_webhook<B: super::ExtractBranch>(
     return Err(anyhow!("build does not have webhook enabled"));
   }
 
-  let request_branch = B::extract_branch(&body)?;
-  if request_branch != build.config.branch {
-    return Err(anyhow!("request branch does not match expected"));
-  }
+  B::verify_branch(&body, &build.config.branch)?;
 
   let user = git_webhook_user().to_owned();
   let req = ExecuteRequest::RunBuild(RunBuild { build: build.id });
@@ -148,7 +145,7 @@ pub enum RepoWebhookOption {
   Build,
 }
 
-pub async fn handle_repo_webhook<B: super::ExtractBranch>(
+pub async fn handle_repo_webhook<B: super::VerifyBranch>(
   option: RepoWebhookOption,
   repo: Repo,
   body: String,
@@ -167,7 +164,7 @@ pub async fn handle_repo_webhook<B: super::ExtractBranch>(
 }
 
 async fn handle_repo_webhook_inner<
-  B: super::ExtractBranch,
+  B: super::VerifyBranch,
   E: RepoExecution,
 >(
   repo: Repo,
@@ -183,10 +180,7 @@ async fn handle_repo_webhook_inner<
     return Err(anyhow!("repo does not have webhook enabled"));
   }
 
-  let request_branch = B::extract_branch(&body)?;
-  if request_branch != repo.config.branch {
-    return Err(anyhow!("request branch does not match expected"));
-  }
+  B::verify_branch(&body, &repo.config.branch)?;
 
   E::resolve(repo).await
 }
@@ -262,7 +256,7 @@ pub enum StackWebhookOption {
   Deploy,
 }
 
-pub async fn handle_stack_webhook<B: super::ExtractBranch>(
+pub async fn handle_stack_webhook<B: super::VerifyBranch>(
   option: StackWebhookOption,
   stack: Stack,
   body: String,
@@ -279,7 +273,7 @@ pub async fn handle_stack_webhook<B: super::ExtractBranch>(
 }
 
 pub async fn handle_stack_webhook_inner<
-  B: super::ExtractBranch,
+  B: super::VerifyBranch,
   E: StackExecution,
 >(
   stack: Stack,
@@ -295,10 +289,7 @@ pub async fn handle_stack_webhook_inner<
     return Err(anyhow!("stack does not have webhook enabled"));
   }
 
-  let request_branch = B::extract_branch(&body)?;
-  if request_branch != stack.config.branch {
-    return Err(anyhow!("request branch does not match expected"));
-  }
+  B::verify_branch(&body, &stack.config.branch)?;
 
   E::resolve(stack).await
 }
@@ -361,7 +352,7 @@ pub enum SyncWebhookOption {
   Sync,
 }
 
-pub async fn handle_sync_webhook<B: super::ExtractBranch>(
+pub async fn handle_sync_webhook<B: super::VerifyBranch>(
   option: SyncWebhookOption,
   sync: ResourceSync,
   body: String,
@@ -380,7 +371,7 @@ pub async fn handle_sync_webhook<B: super::ExtractBranch>(
 }
 
 async fn handle_sync_webhook_inner<
-  B: super::ExtractBranch,
+  B: super::VerifyBranch,
   E: SyncExecution,
 >(
   sync: ResourceSync,
@@ -396,10 +387,7 @@ async fn handle_sync_webhook_inner<
     return Err(anyhow!("sync does not have webhook enabled"));
   }
 
-  let request_branch = B::extract_branch(&body)?;
-  if request_branch != sync.config.branch {
-    return Err(anyhow!("request branch does not match expected"));
-  }
+  B::verify_branch(&body, &sync.config.branch)?;
 
   E::resolve(sync).await
 }
@@ -420,7 +408,7 @@ fn procedure_locks() -> &'static ListenerLockCache {
   PROCEDURE_LOCKS.get_or_init(Default::default)
 }
 
-pub async fn handle_procedure_webhook<B: super::ExtractBranch>(
+pub async fn handle_procedure_webhook<B: super::VerifyBranch>(
   procedure: Procedure,
   target_branch: String,
   body: String,
@@ -436,9 +424,8 @@ pub async fn handle_procedure_webhook<B: super::ExtractBranch>(
     return Err(anyhow!("procedure does not have webhook enabled"));
   }
 
-  let request_branch = B::extract_branch(&body)?;
-  if request_branch != target_branch {
-    return Err(anyhow!("request branch does not match expected"));
+  if target_branch != ANY_BRANCH {
+    B::verify_branch(&body, &target_branch)?;
   }
 
   let user = git_webhook_user().to_owned();
@@ -468,7 +455,7 @@ fn action_locks() -> &'static ListenerLockCache {
   ACTION_LOCKS.get_or_init(Default::default)
 }
 
-pub async fn handle_action_webhook<B: super::ExtractBranch>(
+pub async fn handle_action_webhook<B: super::VerifyBranch>(
   action: Action,
   target_branch: String,
   body: String,
@@ -483,9 +470,8 @@ pub async fn handle_action_webhook<B: super::ExtractBranch>(
     return Err(anyhow!("action does not have webhook enabled"));
   }
 
-  let request_branch = B::extract_branch(&body)?;
-  if request_branch != target_branch {
-    return Err(anyhow!("request branch does not match expected"));
+  if target_branch != ANY_BRANCH {
+    B::verify_branch(&body, &target_branch)?;
   }
 
   let user = git_webhook_user().to_owned();

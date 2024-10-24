@@ -38,10 +38,10 @@
 //!
 //! ```text
 //! curl --header "Content-Type: application/json" \
-//! 	  --header "X-Api-Key: your_api_key" \
-//! 	  --header "X-Api-Secret: your_api_secret" \
-//! 	  --data '{ "type": "UpdateBuild", "params": { "id": "67076689ed600cfdd52ac637", "config": { "version": "1.15.9" } } }' \
-//! 	  https://komodo.example.com/write
+//!     --header "X-Api-Key: your_api_key" \
+//!     --header "X-Api-Secret: your_api_secret" \
+//!     --data '{ "type": "UpdateBuild", "params": { "id": "67076689ed600cfdd52ac637", "config": { "version": "1.15.9" } } }' \
+//!     https://komodo.example.com/write
 //! ```
 //!
 //! ## Modules

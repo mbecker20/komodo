@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fmt::Write, path::PathBuf};
 
 use anyhow::{anyhow, Context};
 use command::run_komodo_command;
@@ -145,8 +145,10 @@ pub async fn compose_up(
     .config
     .additional_env_files
     .iter()
-    .map(|file| format!(" --env-file {file}"))
-    .collect::<String>();
+    .fold(String::new(), |mut output, file| {
+      let _ = write!(output, " --env-file {file}");
+      output
+    });
 
   // Build images before destroying to minimize downtime.
   // If this fails, do not continue.

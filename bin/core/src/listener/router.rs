@@ -15,7 +15,7 @@ use super::{
     handle_stack_webhook, handle_sync_webhook, RepoWebhookPath,
     StackWebhookPath, SyncWebhookPath,
   },
-  CustomSecret, ExtractBranch, VerifySecret,
+  CustomSecret, VerifyBranch, VerifySecret,
 };
 
 #[derive(Deserialize)]
@@ -33,7 +33,7 @@ fn default_branch() -> String {
   String::from("main")
 }
 
-pub fn router<P: VerifySecret + ExtractBranch>() -> Router {
+pub fn router<P: VerifySecret + VerifyBranch>() -> Router {
   Router::new()
   .route(
     "/build/:id",
@@ -202,7 +202,7 @@ where
   P: VerifySecret,
   R: KomodoResource + CustomSecret,
 {
-  let resource = crate::resource::get::<R>(&id).await?;
+  let resource = crate::resource::get::<R>(id).await?;
   P::verify_secret(headers, body, R::custom_secret(&resource))?;
   Ok(resource)
 }

@@ -5,14 +5,17 @@ use hmac::{Hmac, Mac};
 use serde::Deserialize;
 use sha2::Sha256;
 
-use crate::config::core_config;
+use crate::{
+  config::core_config,
+  listener::{VerifyBranch, VerifySecret},
+};
 
 type HmacSha256 = Hmac<Sha256>;
 
 /// Listener implementation for Github type API, including Gitea
 pub struct Github;
 
-impl super::VerifySecret for Github {
+impl VerifySecret for Github {
   #[instrument("VerifyGithubSecret", skip_all)]
   fn verify_secret(
     headers: HeaderMap,
@@ -50,12 +53,19 @@ struct GithubWebhookBody {
   branch: String,
 }
 
-impl super::ExtractBranch for Github {
-  fn extract_branch(body: &str) -> anyhow::Result<String> {
+impl VerifyBranch for Github {
+  fn verify_branch(
+    body: &str,
+    expected_branch: &str,
+  ) -> anyhow::Result<()> {
     let branch = serde_json::from_str::<GithubWebhookBody>(body)
       .context("Failed to parse github request body")?
       .branch
       .replace("refs/heads/", "");
-    Ok(branch)
+    if branch == expected_branch {
+      Ok(())
+    } else {
+      Err(anyhow!("request branch does not match expected"))
+    }
   }
 }
