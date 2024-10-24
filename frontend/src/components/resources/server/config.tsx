@@ -34,8 +34,6 @@ export const ServerConfig = ({
 
   return (
     <Config
-      resource_id={id}
-      resource_type="Server"
       titleOther={titleOther}
       disabled={disabled}
       config={config}

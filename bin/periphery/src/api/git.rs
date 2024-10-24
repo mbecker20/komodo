@@ -222,7 +222,7 @@ impl Resolve<RenameRepo> for State {
     )
     .await;
     let msg = match renamed {
-      Ok(_) => format!("Renamed Repo directory on Server"),
+      Ok(_) => String::from("Renamed Repo directory on Server"),
       Err(_) => format!("No Repo cloned at {curr_name} to rename"),
     };
     Ok(Log::simple("Rename Repo on Server", msg))

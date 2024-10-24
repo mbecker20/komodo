@@ -8,13 +8,22 @@ import {
   InputList,
   ProviderSelectorConfig,
   SystemCommand,
+  WebhookBuilder,
 } from "@components/config/util";
-import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
+import {
+  getWebhookIntegration,
+  useInvalidate,
+  useLocalStorage,
+  useRead,
+  useWebhookIdOrName,
+  useWebhookIntegrations,
+  useWrite,
+} from "@lib/hooks";
 import { Types } from "komodo_client";
 import { Button } from "@ui/button";
 import { Ban, CirclePlus, PlusCircle } from "lucide-react";
 import { ReactNode } from "react";
-import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
+import { CopyWebhook, ResourceLink, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
@@ -32,7 +41,9 @@ export const BuildConfig = ({
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Build", id },
   }).data;
-  const config = useRead("GetBuild", { build: id }).data?.config;
+  const build = useRead("GetBuild", { build: id }).data;
+  const config = build?.config;
+  const name = build?.name;
   const webhook = useRead("GetBuildWebhookEnabled", { build: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
@@ -41,15 +52,18 @@ export const BuildConfig = ({
     {}
   );
   const { mutateAsync } = useWrite("UpdateBuild");
+  const { integrations } = useWebhookIntegrations();
+  const [id_or_name] = useWebhookIdOrName();
 
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
+  const git_provider = update.git_provider ?? config.git_provider;
+  const webhook_integration = getWebhookIntegration(integrations, git_provider);
+
   return (
     <Config
-      resource_id={id}
-      resource_type="Build"
       titleOther={titleOther}
       disabled={disabled}
       config={config}
@@ -360,8 +374,7 @@ export const BuildConfig = ({
           },
           {
             label: "Webhook",
-            description:
-              "Configure your repo provider to send webhooks to Komodo",
+            description: `Configure your ${webhook_integration}-style repo provider to send webhooks to Komodo`,
             components: {
               ["Guard" as any]: () => {
                 if (update.branch ?? config.branch) {
@@ -373,9 +386,15 @@ export const BuildConfig = ({
                   </ConfigItem>
                 );
               },
+              ["Builder" as any]: () => (
+                <WebhookBuilder git_provider={git_provider} />
+              ),
               ["build" as any]: () => (
-                <ConfigItem label="Webhook Url">
-                  <CopyGithubWebhook path={`/build/${id}`} />
+                <ConfigItem label="Webhook Url - Build">
+                  <CopyWebhook
+                    integration={webhook_integration}
+                    path={`/build/${id_or_name === "Id" ? id : name}`}
+                  />
                 </ConfigItem>
               ),
               webhook_enabled: webhook !== undefined && !webhook.managed,

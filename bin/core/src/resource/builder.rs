@@ -134,17 +134,22 @@ impl super::KomodoResource for Builder {
     resource: &Resource<Self::Config, Self::Info>,
     _update: &mut Update,
   ) -> anyhow::Result<()> {
-    // remove the builder from any attached builds
     db_client()
       .builds
       .update_many(
-        doc! { "config.builder.params.builder_id": &resource.id },
-        mungos::update::Update::Set(
-          doc! { "config.builder.params.builder_id": "" },
-        ),
+        doc! { "config.builder_id": &resource.id },
+        mungos::update::Update::Set(doc! { "config.builder_id": "" }),
       )
       .await
       .context("failed to update_many builds on database")?;
+    db_client()
+      .repos
+      .update_many(
+        doc! { "config.builder_id": &resource.id },
+        mungos::update::Update::Set(doc! { "config.builder_id": "" }),
+      )
+      .await
+      .context("failed to update_many repos on database")?;
     Ok(())
   }
 

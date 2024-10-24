@@ -4,11 +4,20 @@ import {
   ConfigItem,
   ConfigList,
   ProviderSelectorConfig,
+  WebhookBuilder,
 } from "@components/config/util";
-import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
+import {
+  getWebhookIntegration,
+  useInvalidate,
+  useLocalStorage,
+  useRead,
+  useWebhookIdOrName,
+  useWebhookIntegrations,
+  useWrite,
+} from "@lib/hooks";
 import { Types } from "komodo_client";
 import { ReactNode, useState } from "react";
-import { CopyGithubWebhook } from "../common";
+import { CopyWebhook } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton, ShowHideButton } from "@components/util";
@@ -61,7 +70,9 @@ export const ResourceSyncConfig = ({
   const perms = useRead("GetPermissionLevel", {
     target: { type: "ResourceSync", id },
   }).data;
-  const config = useRead("GetResourceSync", { sync: id }).data?.config;
+  const sync = useRead("GetResourceSync", { sync: id }).data;
+  const config = sync?.config;
+  const name = sync?.name;
   const webhooks = useRead("GetSyncWebhooksEnabled", { sync: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
@@ -70,10 +81,15 @@ export const ResourceSyncConfig = ({
     {}
   );
   const { mutateAsync } = useWrite("UpdateResourceSync");
+  const { integrations } = useWebhookIntegrations();
+  const [id_or_name] = useWebhookIdOrName();
 
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
+
+  const git_provider = update.git_provider ?? config.git_provider;
+  const integration = getWebhookIntegration(integrations, git_provider);
 
   const mode = getSyncMode(update, config);
   const managed = update.managed ?? config.managed;
@@ -300,20 +316,29 @@ export const ResourceSyncConfig = ({
                 </ConfigItem>
               );
             },
-            ["refresh" as any]: () => (
+            ["Builder" as any]: () => (
+              <WebhookBuilder git_provider={git_provider} />
+            ),
+            ["Refresh" as any]: () => (
               <ConfigItem
-                label="Refresh Pending"
+                label="Webhook Url - Refresh Pending"
                 description="Trigger an update of the pending sync cache, to display the changes in the UI on push."
               >
-                <CopyGithubWebhook path={`/sync/${id}/refresh`} />
+                <CopyWebhook
+                  integration={integration}
+                  path={`/sync/${id_or_name === "Id" ? id : name}/refresh`}
+                />
               </ConfigItem>
             ),
-            ["sync" as any]: () => (
+            ["Sync" as any]: () => (
               <ConfigItem
-                label="Execute Sync"
+                label="Webhook Url - Execute Sync"
                 description="Trigger an execution of the sync on push."
               >
-                <CopyGithubWebhook path={`/sync/${id}/sync`} />
+                <CopyWebhook
+                  integration={integration}
+                  path={`/sync/${id_or_name === "Id" ? id : name}/sync`}
+                />
               </ConfigItem>
             ),
             webhook_enabled: webhooks !== undefined && !webhooks.managed,
@@ -480,8 +505,6 @@ export const ResourceSyncConfig = ({
 
   return (
     <Config
-      resource_id={id}
-      resource_type="ResourceSync"
       titleOther={titleOther}
       disabled={disabled}
       config={config}

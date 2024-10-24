@@ -70,6 +70,22 @@ pub struct ActionConfig {
   ))]
   #[builder(default)]
   pub file_contents: String,
+
+  /// Whether incoming webhooks actually trigger action.
+  #[serde(default = "default_webhook_enabled")]
+  #[builder(default = "default_webhook_enabled()")]
+  #[partial_default(default_webhook_enabled())]
+  pub webhook_enabled: bool,
+
+  /// Optionally provide an alternate webhook secret for this procedure.
+  /// If its an empty string, use the default secret from the config.
+  #[serde(default)]
+  #[builder(default)]
+  pub webhook_secret: String,
+}
+
+fn default_webhook_enabled() -> bool {
+  true
 }
 
 impl ActionConfig {
@@ -82,6 +98,8 @@ impl Default for ActionConfig {
   fn default() -> Self {
     Self {
       file_contents: Default::default(),
+      webhook_enabled: default_webhook_enabled(),
+      webhook_secret: Default::default(),
     }
   }
 }

@@ -50,8 +50,6 @@ export const HetznerServerTemplateConfig = ({
 
   return (
     <Config
-      resource_id={id}
-      resource_type="ServerTemplate"
       disabled={disabled}
       config={config}
       update={update}

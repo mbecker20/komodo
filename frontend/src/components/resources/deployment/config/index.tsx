@@ -51,8 +51,6 @@ export const DeploymentConfig = ({
 
   return (
     <Config
-      resource_id={id}
-      resource_type="Deployment"
       titleOther={titleOther}
       disabled={disabled}
       config={config}
@@ -112,9 +110,9 @@ export const DeploymentConfig = ({
                   image?.type === "Image" && image.params.image
                     ? extract_registry_domain(image.params.image)
                     : image?.type === "Build" && image.params.build_id
-                    ? builds?.find((b) => b.id === image.params.build_id)?.info
-                        .image_registry_domain
-                    : undefined;
+                      ? builds?.find((b) => b.id === image.params.build_id)
+                          ?.info.image_registry_domain
+                      : undefined;
                 return (
                   <AccountSelectorConfig
                     id={update.server_id ?? config.server_id ?? undefined}

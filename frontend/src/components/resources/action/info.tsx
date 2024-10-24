@@ -20,9 +20,9 @@ export const ActionInfo = ({ id }: { id: string }) => {
 
   const log = full_update?.logs.find((log) => log.stage === "Execute Action");
 
-  return (
-    <Section>
-      {!log?.stdout && !log?.stderr && (
+  if (!log?.stdout && !log?.stderr) {
+    return (
+      <Section>
         <Card className="flex flex-col gap-4">
           <CardHeader
             className={cn(
@@ -33,17 +33,18 @@ export const ActionInfo = ({ id }: { id: string }) => {
             Never run
           </CardHeader>
         </Card>
-      )}
+      </Section>
+    );
+  }
+
+  return (
+    <Section>
       {/* Last run */}
       {log?.stdout && (
         <Card className="flex flex-col gap-4">
-          <CardHeader
-            className={cn(
-              "flex flex-row justify-between items-center pb-0",
-              text_color_class_by_intention("Good")
-            )}
-          >
-            Stdout
+          <CardHeader className="flex flex-row items-center gap-1 pb-0">
+            Last run -
+            <div className={text_color_class_by_intention("Good")}>Stdout</div>
           </CardHeader>
           <CardContent className="pr-8">
             <pre
@@ -57,13 +58,11 @@ export const ActionInfo = ({ id }: { id: string }) => {
       )}
       {log?.stderr && (
         <Card className="flex flex-col gap-4">
-          <CardHeader
-            className={cn(
-              "flex flex-row justify-between items-center pb-0",
-              text_color_class_by_intention("Critical")
-            )}
-          >
-            Stderr
+          <CardHeader className="flex flex-row items-center gap-1 pb-0">
+            Last run -
+            <div className={text_color_class_by_intention("Critical")}>
+              Stderr
+            </div>
           </CardHeader>
           <CardContent className="pr-8">
             <pre

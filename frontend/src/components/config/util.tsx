@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  WebhookIdOrName,
   useCtrlKeyListener,
   useInvalidate,
   useRead,
+  useWebhookIdOrName,
   useWrite,
+  WebhookIntegration,
+  useWebhookIntegrations,
 } from "@lib/hooks";
 import { Types } from "komodo_client";
 import {
@@ -1181,5 +1185,84 @@ export const RenameResource = ({
         />
       </div>
     </div>
+  );
+};
+
+export const WebhookBuilder = ({
+  git_provider,
+  children,
+}: {
+  git_provider: string;
+  children?: ReactNode;
+}) => {
+  return (
+    <ConfigItem>
+      <div className="grid items-center grid-cols-[auto_1fr] gap-x-6 gap-y-2 w-fit">
+        <div className="text-muted-foreground text-sm">Auth style?</div>
+        <WebhookIntegrationSelector git_provider={git_provider} />
+
+        <div className="text-muted-foreground text-sm">
+          Resource Id or Name?
+        </div>
+        <WebhookIdOrNameSelector />
+
+        {children}
+      </div>
+    </ConfigItem>
+  );
+};
+
+/** Should call `useWebhookIntegrations` in util/hooks to get the current value */
+export const WebhookIntegrationSelector = ({
+  git_provider,
+}: {
+  git_provider: string;
+}) => {
+  const { integrations, setIntegration } = useWebhookIntegrations();
+  const integration = integrations[git_provider]
+    ? integrations[git_provider]
+    : git_provider === "gitlab.com"
+      ? "Gitlab"
+      : "Github";
+  return (
+    <Select
+      value={integration}
+      onValueChange={(integration) =>
+        setIntegration(git_provider, integration as WebhookIntegration)
+      }
+    >
+      <SelectTrigger className="w-[200px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {["Github", "Gitlab"].map((integration) => (
+          <SelectItem key={integration} value={integration}>
+            {integration}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+/** Should call `useWebhookIdOrName` in util/hooks to get the current value */
+export const WebhookIdOrNameSelector = () => {
+  const [idOrName, setIdOrName] = useWebhookIdOrName();
+  return (
+    <Select
+      value={idOrName}
+      onValueChange={(idOrName) => setIdOrName(idOrName as WebhookIdOrName)}
+    >
+      <SelectTrigger className="w-[200px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {["Id", "Name"].map((idOrName) => (
+          <SelectItem key={idOrName} value={idOrName}>
+            {idOrName}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };

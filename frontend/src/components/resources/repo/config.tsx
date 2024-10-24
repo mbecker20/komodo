@@ -5,10 +5,19 @@ import {
   InputList,
   ProviderSelectorConfig,
   SystemCommand,
+  WebhookBuilder,
 } from "@components/config/util";
-import { useInvalidate, useLocalStorage, useRead, useWrite } from "@lib/hooks";
+import {
+  getWebhookIntegration,
+  useInvalidate,
+  useLocalStorage,
+  useRead,
+  useWebhookIdOrName,
+  useWebhookIntegrations,
+  useWrite,
+} from "@lib/hooks";
 import { Types } from "komodo_client";
-import { CopyGithubWebhook, ResourceLink, ResourceSelector } from "../common";
+import { CopyWebhook, ResourceLink, ResourceSelector } from "../common";
 import { useToast } from "@ui/use-toast";
 import { text_color_class_by_intention } from "@lib/color";
 import { ConfirmButton } from "@components/util";
@@ -21,7 +30,9 @@ export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Repo", id },
   }).data;
-  const config = useRead("GetRepo", { repo: id }).data?.config;
+  const repo = useRead("GetRepo", { repo: id }).data;
+  const config = repo?.config;
+  const name = repo?.name;
   const webhooks = useRead("GetRepoWebhooksEnabled", { repo: id }).data;
   const global_disabled =
     useRead("GetCoreInfo", {}).data?.ui_write_disabled ?? false;
@@ -30,14 +41,18 @@ export const RepoConfig = ({ id }: { id: string }) => {
     {}
   );
   const { mutateAsync } = useWrite("UpdateRepo");
+  const { integrations } = useWebhookIntegrations();
+  const [id_or_name] = useWebhookIdOrName();
+
   if (!config) return null;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
+  const git_provider = update.git_provider ?? config.git_provider;
+  const webhook_integration = getWebhookIntegration(integrations, git_provider);
+
   return (
     <Config
-      resource_id={id}
-      resource_type="Repo"
       disabled={disabled}
       config={config}
       update={update}
@@ -222,7 +237,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
             },
           },
           {
-            label: "Git Webhooks",
+            label: "Webhooks",
             description:
               "Configure your repo provider to send webhooks to Komodo",
             components: {
@@ -236,19 +251,31 @@ export const RepoConfig = ({ id }: { id: string }) => {
                   </ConfigItem>
                 );
               },
+              ["Builder" as any]: () => (
+                <WebhookBuilder git_provider={git_provider} />
+              ),
               ["pull" as any]: () => (
-                <ConfigItem label="Pull">
-                  <CopyGithubWebhook path={`/repo/${id}/pull`} />
+                <ConfigItem label="Webhook Url - Pull">
+                  <CopyWebhook
+                    integration={webhook_integration}
+                    path={`/repo/${id_or_name === "Id" ? id : name}/pull`}
+                  />
                 </ConfigItem>
               ),
               ["clone" as any]: () => (
-                <ConfigItem label="Clone">
-                  <CopyGithubWebhook path={`/repo/${id}/clone`} />
+                <ConfigItem label="Webhook Url - Clone">
+                  <CopyWebhook
+                    integration={webhook_integration}
+                    path={`/repo/${id_or_name === "Id" ? id : name}/clone`}
+                  />
                 </ConfigItem>
               ),
               ["build" as any]: () => (
-                <ConfigItem label="Build">
-                  <CopyGithubWebhook path={`/repo/${id}/build`} />
+                <ConfigItem label="Webhook Url - Build">
+                  <CopyWebhook
+                    integration={webhook_integration}
+                    path={`/repo/${id_or_name === "Id" ? id : name}/build`}
+                  />
                 </ConfigItem>
               ),
               webhook_enabled: webhooks !== undefined && !webhooks.managed,

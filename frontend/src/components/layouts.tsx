@@ -181,23 +181,25 @@ export const Section = ({
   itemsCenterTitleRow,
 }: SectionProps) => (
   <div className="flex flex-col gap-4">
-    <div
-      className={cn(
-        "flex flex-wrap gap-2 justify-between py-1",
-        itemsCenterTitleRow ? "items-center" : "items-start"
-      )}
-    >
-      {title || icon ? (
-        <div className="px-2 flex items-center gap-2 text-muted-foreground">
-          {icon}
-          {title && <h2 className="text-xl">{title}</h2>}
-          {titleRight}
-        </div>
-      ) : (
-        titleOther
-      )}
-      {actions}
-    </div>
+    {(title || icon || titleRight || titleOther || actions) && (
+      <div
+        className={cn(
+          "flex flex-wrap gap-2 justify-between py-1",
+          itemsCenterTitleRow ? "items-center" : "items-start"
+        )}
+      >
+        {title || icon ? (
+          <div className="px-2 flex items-center gap-2 text-muted-foreground">
+            {icon}
+            {title && <h2 className="text-xl">{title}</h2>}
+            {titleRight}
+          </div>
+        ) : (
+          titleOther
+        )}
+        {actions}
+      </div>
+    )}
     {children}
   </div>
 );

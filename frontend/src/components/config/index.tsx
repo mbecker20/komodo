@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { AlertTriangle, History, Settings } from "lucide-react";
-import { Fragment, ReactNode, SetStateAction, useMemo } from "react";
+import { Fragment, ReactNode, SetStateAction } from "react";
 
 const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
@@ -114,11 +114,10 @@ export type ConfigComponent<T> = {
 };
 
 export const Config = <T,>({
-  // resource_id,
-  // resource_type,
   config,
   update,
   disabled,
+  disableSidebar,
   set,
   onSave,
   components,
@@ -126,11 +125,10 @@ export const Config = <T,>({
   titleOther,
   file_contents_language,
 }: {
-  resource_id: string;
-  resource_type: Types.ResourceTarget["type"];
   config: T;
   update: Partial<T>;
   disabled: boolean;
+  disableSidebar?: boolean;
   set: React.Dispatch<SetStateAction<Partial<T>>>;
   onSave: () => Promise<void>;
   selector?: ReactNode;
@@ -141,27 +139,6 @@ export const Config = <T,>({
   >;
   file_contents_language?: MonacoLanguage;
 }) => {
-  // let component_keys = keys(components);
-  // const [_show, setShow] = useLocalStorage(
-  //   `config-${resource_type}-${resource_id}`,
-  //   component_keys[0]
-  // );
-  // const show = (components[_show] && _show) || component_keys[0];
-
-  const showSidebar = useMemo(() => {
-    let activeCount = 0;
-    for (const key in components) {
-      for (const component of components[key] || []) {
-        for (const key in component.components || {}) {
-          if (component.components[key]) {
-            activeCount++;
-          }
-        }
-      }
-    }
-    return activeCount > 1;
-  }, [components]);
-
   const sections = keys(components).filter((section) => !!components[section]);
 
   return (
@@ -179,7 +156,7 @@ export const Config = <T,>({
       file_contents_language={file_contents_language}
     >
       <div className="flex gap-6">
-        {showSidebar && (
+        {!disableSidebar && (
           <div className="hidden xl:block relative pr-6 border-r">
             <div className="sticky top-24 hidden xl:flex flex-col gap-8 w-[140px] h-fit pb-24">
               {sections.map((section) => (

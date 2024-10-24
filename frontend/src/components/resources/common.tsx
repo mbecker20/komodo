@@ -4,7 +4,12 @@ import {
   CopyButton,
   TextUpdateMenu2,
 } from "@components/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import {
+  useInvalidate,
+  useRead,
+  useWrite,
+  WebhookIntegration,
+} from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
 import {
@@ -50,8 +55,8 @@ export const ResourceDescription = ({
     type === "ServerTemplate"
       ? "server_template"
       : type === "ResourceSync"
-      ? "sync"
-      : type.toLowerCase();
+        ? "sync"
+        : type.toLowerCase();
 
   const resource = useRead(`Get${type}`, {
     [key]: id,
@@ -281,8 +286,8 @@ export const NewResource = ({
     type === "ServerTemplate"
       ? "server-template"
       : type === "ResourceSync"
-      ? "resource-sync"
-      : type.toLowerCase();
+        ? "resource-sync"
+        : type.toLowerCase();
   const config: Types._PartialDeploymentConfig | Types._PartialRepoConfig =
     type === "Deployment"
       ? {
@@ -292,12 +297,12 @@ export const NewResource = ({
             : { type: "Image", params: { image: "" } },
         }
       : type === "Stack"
-      ? { server_id }
-      : type === "Repo"
-      ? { server_id, builder_id }
-      : type === "Build"
-      ? { builder_id }
-      : {};
+        ? { server_id }
+        : type === "Repo"
+          ? { server_id, builder_id }
+          : type === "Build"
+            ? { builder_id }
+            : {};
   const onConfirm = async () => {
     if (!name) toast({ title: "Name cannot be empty" });
     const id = (await mutateAsync({ name, config }))._id?.$oid!;
@@ -340,8 +345,8 @@ export const DeleteResource = ({
     type === "ServerTemplate"
       ? "server_template"
       : type === "ResourceSync"
-      ? "sync"
-      : type.toLowerCase();
+        ? "sync"
+        : type.toLowerCase();
   const resource = useRead(`Get${type}`, {
     [key]: id,
   } as any).data;
@@ -367,9 +372,15 @@ export const DeleteResource = ({
   );
 };
 
-export const CopyGithubWebhook = ({ path }: { path: string }) => {
+export const CopyWebhook = ({
+  integration,
+  path,
+}: {
+  integration: WebhookIntegration;
+  path: string;
+}) => {
   const base_url = useRead("GetCoreInfo", {}).data?.webhook_base_url;
-  const url = base_url + "/listener/github" + path;
+  const url = base_url + "/listener/" + integration.toLowerCase() + path;
   return (
     <div className="flex gap-2 items-center">
       <Input className="w-[400px] max-w-[70vw]" value={url} readOnly />
