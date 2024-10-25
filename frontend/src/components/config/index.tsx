@@ -199,7 +199,7 @@ export const Config = <T,>({
                   key={section}
                   className="relative pb-12 border-b last:pb-0 last:border-b-0 "
                 >
-                  <div className="xl:hidden sticky top-16 h-24 flex items-center justify-between bg-background z-10">
+                  <div className="xl:hidden sticky top-16 h-16 flex items-center justify-between bg-background z-10">
                     {section && <p className="uppercase text-2xl">{section}</p>}
                     <Select
                       onValueChange={(value) => (window.location.hash = value)}

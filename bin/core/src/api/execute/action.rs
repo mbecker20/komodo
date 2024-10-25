@@ -98,7 +98,7 @@ impl Resolve<RunAction, (User, Update)> for State {
       "Execute Action",
       None,
       format!(
-        "deno run --allow-read --allow-net --allow-import {}",
+        "deno run --allow-all {}",
         path.display()
       ),
       false,
@@ -187,6 +187,8 @@ fn full_contents(contents: &str, key: &str, secret: &str) -> String {
   let base_url = format!("{protocol}://localhost:{port}");
   format!(
     "import {{ KomodoClient }} from '{base_url}/client/lib.js';
+import * as YAML from 'jsr:@std/yaml';
+import * as TOML from 'jsr:@std/toml';
 
 const komodo = KomodoClient('{base_url}', {{
   type: 'api-key',
