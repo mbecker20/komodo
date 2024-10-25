@@ -17,7 +17,8 @@ async fn app() -> anyhow::Result<()> {
 
   info!("v {}", env!("CARGO_PKG_VERSION"));
 
-  let komodo = KomodoClient::new_from_env().await?;
+  let komodo =
+    KomodoClient::new_from_env()?.with_healthcheck().await?;
 
   let (mut rx, _) = komodo.subscribe_to_updates(1000, 5)?;
 

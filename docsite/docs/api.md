@@ -1,6 +1,50 @@
-# API
+# API and Clients
 
-Komodo Core exposes an http API to read data, write configuration, and execute actions. The API documentation is generated from the code and is [available here](https://docs.rs/komodo_client/latest/komodo_client/api/index.html).
+Komodo Core exposes an RPC-like HTTP API to read data, write configuration, and execute actions.
+There are typesafe clients available in
+[**Rust**](/docs/api#rust-client) and [**Typescript**](/docs/api#typescript-client).
 
-You can also install the [Komodo CLI](https://crates.io/crates/komodo_cli) to execute actions like RunBuild or DeployStack from the command line.
-This can be coupled with scripts in Komodo Repos to achieve unlimited automation.
+The full API documentation is [**available here**](https://docs.rs/komodo_client/latest/komodo_client/api/index.html).
+
+## Rust Client
+
+The Rust client is published to crates.io at [komodo_client](https://crates.io/crates/komodo_client).
+
+```rust
+let komodo = KomodoClient::new("https://demo.komo.do", "your_key", "your_secret")
+  .with_healthcheck()
+  .await?;
+
+let stacks = komodo.read(ListStacks::default()).await?;
+
+let update = komodo
+  .execute(DeployStack {
+    stack: stacks[0].name.clone(),
+    stop_time: None
+  })
+  .await?;
+```
+
+## Typescript Client
+
+The Typescript client is published to NPM at [komodo_client](https://www.npmjs.com/package/komodo_client).
+
+```ts
+import { KomodoClient, Types } from "komodo_client";
+
+const komodo = KomodoClient("https://demo.komo.do", {
+  type: "api-key",
+  params: {
+    api_key: "your_key",
+    secret: "your secret",
+  },
+});
+
+// Inferred as Types.StackListItem[]
+const stacks = await komodo.read("ListStacks", {});
+
+// Inferred as Types.Update
+const update = await komodo.execute("DeployStack", {
+  stack: stacks[0].name,
+});
+```
