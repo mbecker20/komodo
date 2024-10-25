@@ -8,7 +8,7 @@ use thiserror::Error;
 use tokio::sync::broadcast;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tokio_util::sync::CancellationToken;
-use tracing::{info, info_span, warn, Instrument};
+use tracing::{debug, info, info_span, warn, Instrument};
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -92,7 +92,7 @@ impl KomodoClient {
         );
 
         async {
-          info!("Entering inner (connection) loop | outer uuid {outer_uuid} | master uuid {master_uuid}");
+          debug!("Entering inner (connection) loop | outer uuid {outer_uuid} | master uuid {master_uuid}");
           let mut retry = 0;
           loop {
             // INNER LOOP (SHORT RECONNECT)
@@ -112,7 +112,7 @@ impl KomodoClient {
             );
 
             async {
-              info!("Connecting to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+              debug!("Connecting to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
 
               let mut ws =
                 match connect_async(&address).await.with_context(|| {
@@ -131,7 +131,7 @@ impl KomodoClient {
                   }
                 };
 
-              info!("Connected to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+              debug!("Connected to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
 
               // ==================
               // SEND LOGIN MSG
@@ -200,7 +200,7 @@ impl KomodoClient {
 
               let _ = tx.send(UpdateWsMessage::Reconnected);
 
-              info!("logged into websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+              info!("Logged into websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
 
               // If we get to this point (connected / logged in) reset the short retry counter
               retry = 0;
@@ -217,13 +217,13 @@ impl KomodoClient {
                   Ok(Some(Message::Text(msg))) => {
                     match serde_json::from_str::<UpdateListItem>(&msg) {
                       Ok(msg) => {
-                        tracing::debug!(
+                        debug!(
                           "got recognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
                         );
                         let _ = tx.send(UpdateWsMessage::Update(msg));
                       }
                       Err(_) => {
-                        tracing::warn!(
+                        warn!(
                           "got unrecognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
                         );
                         let _ = tx.send(UpdateWsMessage::Error(
@@ -235,7 +235,7 @@ impl KomodoClient {
                   Ok(Some(Message::Close(_))) => {
                     let _ = tx.send(UpdateWsMessage::Disconnected);
                     let _ = ws.close(None).await;
-                    tracing::warn!(
+                    warn!(
                       "breaking inner loop | got close message | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
                     );
                     break;
@@ -246,7 +246,7 @@ impl KomodoClient {
                     ));
                     let _ = tx.send(UpdateWsMessage::Disconnected);
                     let _ = ws.close(None).await;
-                    tracing::warn!(
+                    warn!(
                       "breaking inner loop | got error message | {e:#} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
                     );
                     break;

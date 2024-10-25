@@ -43,8 +43,7 @@ pub mod ws;
 
 mod request;
 
-/// &'static KomodoClient initialized from environment
-/// without health check.
+/// &'static KomodoClient initialized from environment.
 pub fn komodo_client() -> &'static KomodoClient {
   static KOMODO_CLIENT: OnceLock<KomodoClient> = OnceLock::new();
   KOMODO_CLIENT.get_or_init(|| {
@@ -68,7 +67,10 @@ struct KomodoEnv {
 /// Client to interface with [Komodo](https://komo.do/docs/api#rust-client)
 #[derive(Clone)]
 pub struct KomodoClient {
+  #[cfg(not(feature = "blocking"))]
   reqwest: reqwest::Client,
+  #[cfg(feature = "blocking")]
+  reqwest: reqwest::blocking::Client,
   address: String,
   key: String,
   secret: String,
@@ -110,23 +112,61 @@ impl KomodoClient {
   /// let komodo = KomodoClient::new_from_env()?
   ///   .with_healthcheck().await?;
   /// ```
+  #[cfg(not(feature = "blocking"))]
   pub async fn with_healthcheck(self) -> anyhow::Result<Self> {
     self.health_check().await?;
     Ok(self)
   }
 
+  /// Add a healthcheck in the initialization pipeline:
+  ///
+  /// ```rust
+  /// let komodo = KomodoClient::new_from_env()?
+  ///   .with_healthcheck().await?;
+  /// ```
+  #[cfg(feature = "blocking")]
+  pub fn with_healthcheck(self) -> anyhow::Result<Self> {
+    self.health_check()?;
+    Ok(self)
+  }
+
   /// Get the Core version.
+  #[cfg(not(feature = "blocking"))]
   pub async fn core_version(&self) -> anyhow::Result<String> {
     self.read(GetVersion {}).await.map(|r| r.version)
   }
 
+  /// Get the Core version.
+  #[cfg(feature = "blocking")]
+  pub fn core_version(&self) -> anyhow::Result<String> {
+    self.read(GetVersion {}).map(|r| r.version)
+  }
+
   /// Send a health check.
+  #[cfg(not(feature = "blocking"))]
   pub async fn health_check(&self) -> anyhow::Result<()> {
     self.read(GetVersion {}).await.map(|_| ())
   }
 
+  /// Send a health check.
+  #[cfg(feature = "blocking")]
+  pub fn health_check(&self) -> anyhow::Result<()> {
+    self.read(GetVersion {}).map(|_| ())
+  }
+
   /// Use a custom reqwest client.
+  #[cfg(not(feature = "blocking"))]
   pub fn set_reqwest(mut self, reqwest: reqwest::Client) -> Self {
+    self.reqwest = reqwest;
+    self
+  }
+
+  /// Use a custom reqwest client.
+  #[cfg(feature = "blocking")]
+  pub fn set_reqwest(
+    mut self,
+    reqwest: reqwest::blocking::Client,
+  ) -> Self {
     self.reqwest = reqwest;
     self
   }
