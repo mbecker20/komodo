@@ -15,16 +15,22 @@ export async function init_monaco() {
       )
     )
   );
-  await Promise.all(promises);
-
-  fetch(`/index.d.ts`)
-    .then((res) => res.text())
-    .then((dts) =>
-      monaco.languages.typescript.typescriptDefaults.addExtraLib(
-        dts,
-        `file:///index.d.ts`
+  promises.push(
+    Promise.all(
+      ["index.d.ts", "deno.d.ts"].map((file) =>
+        fetch(`/${file}`)
+          .then((res) => res.text())
+          .then((dts) =>
+            monaco.languages.typescript.typescriptDefaults.addExtraLib(
+              dts,
+              `file:///${file}`
+            )
+          )
       )
-    );
+    )
+  );
+
+  await Promise.all(promises);
 
   monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
     module: monaco.languages.typescript.ModuleKind.ESNext,

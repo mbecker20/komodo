@@ -11,7 +11,9 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
+# default = ["blocking"] # use to dev client blocking mode
 mongo = ["dep:mongo_indexed"]
+blocking = ["reqwest/blocking"]
 
 [dependencies]
 # mogh

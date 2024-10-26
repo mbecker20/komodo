@@ -40,7 +40,9 @@ pub fn komodo_client() -> &'static KomodoClient {
           creds
         }
       };
-    futures::executor::block_on(KomodoClient::new(url, key, secret))
-      .expect("failed to initialize Komodo client")
+    futures::executor::block_on(
+      KomodoClient::new(url, key, secret).with_healthcheck(),
+    )
+    .expect("failed to initialize Komodo client")
   })
 }

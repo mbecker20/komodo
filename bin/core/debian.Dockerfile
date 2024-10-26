@@ -29,6 +29,12 @@ COPY --from=core-builder /builder/target/release/core /app
 COPY --from=frontend-builder /builder/frontend/dist /app/frontend
 COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
+# Set $DENO_DIR and preload external Deno deps
+ENV DENO_DIR=/action-cache/deno
+RUN mkdir /action-cache && \
+	cd /action-cache && \
+	deno install jsr:@std/yaml jsr:@std/toml
+
 # Hint at the port
 EXPOSE 9120
 

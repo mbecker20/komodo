@@ -5936,6 +5936,23 @@ export interface PauseStack {
 	service?: string;
 }
 
+export interface PermissionToml {
+	/**
+	 * Id can be:
+	 * - resource name. `id = "abcd-build"`
+	 * - regex matching resource names. `id = "\^(.+)-build-([0-9]+)$\"`
+	 */
+	target: ResourceTarget;
+	/**
+	 * The permission level:
+	 * - None
+	 * - Read
+	 * - Execute
+	 * - Write
+	 */
+	level: PermissionLevel;
+}
+
 export enum PortTypeEnum {
 	EMPTY = "",
 	TCP = "tcp",
@@ -6217,6 +6234,60 @@ export interface RenameUserGroup {
 	id: string;
 	/** The new name for the UserGroup */
 	name: string;
+}
+
+export interface ResourceToml<PartialConfig> {
+	/** The resource name. Required */
+	name: string;
+	/** The resource description. Optional. */
+	description?: string;
+	/** Tag ids or names. Optional */
+	tags?: string[];
+	/**
+	 * Optional. Only relevant for deployments / stacks.
+	 * 
+	 * Will ensure deployment / stack is running with the latest configuration.
+	 * Deploy actions to achieve this will be included in the sync.
+	 * Default is false.
+	 */
+	deploy?: boolean;
+	/**
+	 * Optional. Only relevant for deployments / stacks using the 'deploy' sync feature.
+	 * 
+	 * Specify other deployments / stacks by name as dependencies.
+	 * The sync will ensure the deployment / stack will only be deployed 'after' its dependencies.
+	 */
+	after?: string[];
+	/** Resource specific configuration. */
+	config?: PartialConfig;
+}
+
+export interface UserGroupToml {
+	/** User group name */
+	name: string;
+	/** Users in the group */
+	users?: string[];
+	/** Give the user group elevated permissions on all resources of a certain type */
+	all?: Record<ResourceTarget["type"], PermissionLevel>;
+	/** Permissions given to the group */
+	permissions?: PermissionToml[];
+}
+
+/** Specifies resources to sync on Komodo */
+export interface ResourcesToml {
+	servers?: ResourceToml<_PartialServerConfig>[];
+	deployments?: ResourceToml<_PartialDeploymentConfig>[];
+	stacks?: ResourceToml<_PartialStackConfig>[];
+	builds?: ResourceToml<_PartialBuildConfig>[];
+	repos?: ResourceToml<_PartialRepoConfig>[];
+	procedures?: ResourceToml<_PartialProcedureConfig>[];
+	actions?: ResourceToml<_PartialActionConfig>[];
+	alerters?: ResourceToml<_PartialAlerterConfig>[];
+	builders?: ResourceToml<_PartialBuilderConfig>[];
+	server_templates?: ResourceToml<PartialServerTemplateConfig>[];
+	resource_syncs?: ResourceToml<_PartialResourceSyncConfig>[];
+	user_groups?: UserGroupToml[];
+	variables?: Variable[];
 }
 
 /** Restarts all containers on the target server. Response: [Update] */

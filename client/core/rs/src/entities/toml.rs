@@ -1,87 +1,89 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use super::{
-  action::PartialActionConfig, alerter::PartialAlerterConfig,
-  build::PartialBuildConfig, builder::PartialBuilderConfig,
-  deployment::PartialDeploymentConfig, permission::PermissionLevel,
-  procedure::PartialProcedureConfig, repo::PartialRepoConfig,
-  server::PartialServerConfig,
+  action::_PartialActionConfig, alerter::_PartialAlerterConfig,
+  build::_PartialBuildConfig, builder::_PartialBuilderConfig,
+  deployment::_PartialDeploymentConfig, permission::PermissionLevel,
+  procedure::_PartialProcedureConfig, repo::_PartialRepoConfig,
+  server::_PartialServerConfig,
   server_template::PartialServerTemplateConfig,
-  stack::PartialStackConfig, sync::PartialResourceSyncConfig,
+  stack::_PartialStackConfig, sync::_PartialResourceSyncConfig,
   variable::Variable, ResourceTarget, ResourceTargetVariant,
 };
 
 /// Specifies resources to sync on Komodo
+#[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ResourcesToml {
   #[serde(
     default,
-    rename = "server",
+    alias = "server",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub servers: Vec<ResourceToml<PartialServerConfig>>,
+  pub servers: Vec<ResourceToml<_PartialServerConfig>>,
 
   #[serde(
     default,
-    rename = "deployment",
+    alias = "deployment",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub deployments: Vec<ResourceToml<PartialDeploymentConfig>>,
+  pub deployments: Vec<ResourceToml<_PartialDeploymentConfig>>,
 
   #[serde(
     default,
-    rename = "stack",
+    alias = "stack",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub stacks: Vec<ResourceToml<PartialStackConfig>>,
+  pub stacks: Vec<ResourceToml<_PartialStackConfig>>,
 
   #[serde(
     default,
-    rename = "build",
+    alias = "build",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub builds: Vec<ResourceToml<PartialBuildConfig>>,
+  pub builds: Vec<ResourceToml<_PartialBuildConfig>>,
 
   #[serde(
     default,
-    rename = "repo",
+    alias = "repo",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub repos: Vec<ResourceToml<PartialRepoConfig>>,
+  pub repos: Vec<ResourceToml<_PartialRepoConfig>>,
 
   #[serde(
     default,
-    rename = "procedure",
+    alias = "procedure",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub procedures: Vec<ResourceToml<PartialProcedureConfig>>,
+  pub procedures: Vec<ResourceToml<_PartialProcedureConfig>>,
 
   #[serde(
     default,
-    rename = "action",
+    alias = "action",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub actions: Vec<ResourceToml<PartialActionConfig>>,
+  pub actions: Vec<ResourceToml<_PartialActionConfig>>,
 
   #[serde(
     default,
-    rename = "alerter",
+    alias = "alerter",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub alerters: Vec<ResourceToml<PartialAlerterConfig>>,
+  pub alerters: Vec<ResourceToml<_PartialAlerterConfig>>,
 
   #[serde(
     default,
-    rename = "builder",
+    alias = "builder",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub builders: Vec<ResourceToml<PartialBuilderConfig>>,
+  pub builders: Vec<ResourceToml<_PartialBuilderConfig>>,
 
   #[serde(
     default,
-    rename = "server_template",
+    alias = "server_template",
     skip_serializing_if = "Vec::is_empty"
   )]
   pub server_templates:
@@ -89,26 +91,27 @@ pub struct ResourcesToml {
 
   #[serde(
     default,
-    rename = "resource_sync",
+    alias = "resource_sync",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub resource_syncs: Vec<ResourceToml<PartialResourceSyncConfig>>,
+  pub resource_syncs: Vec<ResourceToml<_PartialResourceSyncConfig>>,
 
   #[serde(
     default,
-    rename = "user_group",
+    alias = "user_group",
     skip_serializing_if = "Vec::is_empty"
   )]
   pub user_groups: Vec<UserGroupToml>,
 
   #[serde(
     default,
-    rename = "variable",
+    alias = "variable",
     skip_serializing_if = "Vec::is_empty"
   )]
   pub variables: Vec<Variable>,
 }
 
+#[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResourceToml<PartialConfig: Default> {
   /// The resource name. Required
@@ -146,6 +149,7 @@ fn is_false(b: &bool) -> bool {
   !b
 }
 
+#[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserGroupToml {
   /// User group name
@@ -164,6 +168,7 @@ pub struct UserGroupToml {
   pub permissions: Vec<PermissionToml>,
 }
 
+#[typeshare]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PermissionToml {
   /// Id can be:

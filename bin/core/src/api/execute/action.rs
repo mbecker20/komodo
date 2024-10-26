@@ -1,4 +1,9 @@
-use std::collections::HashSet;
+use std::{
+  collections::HashSet,
+  path::{Path, PathBuf},
+  str::FromStr,
+  sync::OnceLock,
+};
 
 use anyhow::Context;
 use command::run_komodo_command;
@@ -81,26 +86,22 @@ impl Resolve<RunAction, (User, Update)> for State {
         .into_iter()
         .collect::<Vec<_>>();
 
-    let path = core_config()
-      .action_directory
-      .join(format!("{}.ts", random_string(10)));
+    let file = format!("{}.ts", random_string(10));
+    let path = core_config().action_directory.join(&file);
 
     if let Some(parent) = path.parent() {
       let _ = fs::create_dir_all(parent).await;
     }
 
     fs::write(&path, contents).await.with_context(|| {
-      format!("Faild to write action file to {path:?}")
+      format!("Failed to write action file to {path:?}")
     })?;
 
     let mut res = run_komodo_command(
       // Keep this stage name as is, the UI will find the latest update log by matching the stage name
       "Execute Action",
       None,
-      format!(
-        "deno run --allow-read --allow-net --allow-import {}",
-        path.display()
-      ),
+      format!("deno run --allow-all {}", path.display()),
       false,
     )
     .await;
@@ -110,11 +111,7 @@ impl Resolve<RunAction, (User, Update)> for State {
     res.stderr = svi::replace_in_string(&res.stderr, &replacers)
       .replace(&secret, "<ACTION_API_SECRET>");
 
-    if let Err(e) = fs::remove_file(path).await {
-      warn!(
-        "Failed to delete action file after action execution | {e:#}"
-      );
-    }
+    cleanup_run(file + ".js", &path).await;
 
     if let Err(e) = State
       .resolve(DeleteApiKey { key }, action_user().to_owned())
@@ -187,6 +184,22 @@ fn full_contents(contents: &str, key: &str, secret: &str) -> String {
   let base_url = format!("{protocol}://localhost:{port}");
   format!(
     "import {{ KomodoClient }} from '{base_url}/client/lib.js';
+import * as __YAML__ from 'jsr:@std/yaml';
+import * as __TOML__ from 'jsr:@std/toml';
+
+const YAML = {{
+  stringify: __YAML__.stringify,
+  parse: __YAML__.parse,
+  parseAll: __YAML__.parseAll,
+  parseDockerCompose: __YAML__.parse,
+}}
+
+const TOML = {{
+  stringify: __TOML__.stringify,
+  parse: __TOML__.parse,
+  parseResourceToml: __TOML__.parse,
+  parseCargoToml: __TOML__.parse,
+}}
 
 const komodo = KomodoClient('{base_url}', {{
   type: 'api-key',
@@ -206,4 +219,85 @@ main().catch(error => {{
   Deno.exit(1)
 }}).then(() => console.log('🦎 Action completed successfully 🦎'));"
   )
+}
+
+/// Cleans up file at given path.
+/// ALSO if $DENO_DIR is set,
+/// will clean up the generated file matching "file"
+async fn cleanup_run(file: String, path: &Path) {
+  if let Err(e) = fs::remove_file(path).await {
+    warn!(
+      "Failed to delete action file after action execution | {e:#}"
+    );
+  }
+  // If $DENO_DIR is set (will be in container),
+  // will clean up the generated file matching "file" (NOT under path)
+  let Some(deno_dir) = deno_dir() else {
+    return;
+  };
+  delete_file(deno_dir.join("gen/file"), file).await;
+}
+
+fn deno_dir() -> Option<&'static Path> {
+  static DENO_DIR: OnceLock<Option<PathBuf>> = OnceLock::new();
+  DENO_DIR
+    .get_or_init(|| {
+      let deno_dir = std::env::var("DENO_DIR").ok()?;
+      PathBuf::from_str(&deno_dir).ok()
+    })
+    .as_deref()
+}
+
+/// file is just the terminating file path,
+/// it may be nested multiple folder under path,
+/// this will find the nested file and delete it.
+/// Assumes the file is only there once.
+fn delete_file(
+  dir: PathBuf,
+  file: String,
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = bool> + Send>>
+{
+  Box::pin(async move {
+    let Ok(mut dir) = fs::read_dir(dir).await else {
+      return false;
+    };
+    // Collect the nested folders for recursing
+    // only after checking all the files in directory.
+    let mut folders = Vec::<PathBuf>::new();
+
+    while let Ok(Some(entry)) = dir.next_entry().await {
+      let Ok(meta) = entry.metadata().await else {
+        continue;
+      };
+      if meta.is_file() {
+        let Ok(name) = entry.file_name().into_string() else {
+          continue;
+        };
+        if name == file {
+          if let Err(e) = fs::remove_file(entry.path()).await {
+            warn!(
+            "Failed to clean up generated file after action execution | {e:#}"
+          );
+          };
+          return true;
+        }
+      } else {
+        folders.push(entry.path());
+      }
+    }
+
+    if folders.len() == 1 {
+      // unwrap ok, folders definitely is not empty
+      let folder = folders.pop().unwrap();
+      delete_file(folder, file).await
+    } else {
+      // Check folders with file.clone
+      for folder in folders {
+        if delete_file(folder, file.clone()).await {
+          return true;
+        }
+      }
+      false
+    }
+  })
 }
