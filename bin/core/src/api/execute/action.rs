@@ -187,8 +187,22 @@ fn full_contents(contents: &str, key: &str, secret: &str) -> String {
   let base_url = format!("{protocol}://localhost:{port}");
   format!(
     "import {{ KomodoClient }} from '{base_url}/client/lib.js';
-import * as YAML from 'jsr:@std/yaml';
-import * as TOML from 'jsr:@std/toml';
+import * as __YAML__ from 'jsr:@std/yaml';
+import * as __TOML__ from 'jsr:@std/toml';
+
+const YAML = {{
+  stringify: __YAML__.stringify,
+  parse: __YAML__.parse,
+  parseAll: __YAML__.parseAll,
+  parseDockerCompose: __YAML__.parse,
+}}
+
+const TOML = {{
+  stringify: __TOML__.stringify,
+  parse: __TOML__.parse,
+  parseResourceToml: __TOML__.parse,
+  parseCargoToml: __TOML__.parse,
+}}
 
 const komodo = KomodoClient('{base_url}', {{
   type: 'api-key',
