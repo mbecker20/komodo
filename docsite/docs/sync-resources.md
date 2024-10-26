@@ -23,9 +23,10 @@ automatically execute syncs upon pushes to the configured branch.
 name = "server-prod"
 description = "the prod server"
 tags = ["prod"]
-config.address = "http://localhost:8120"
-config.region = "AshburnDc1"
-config.enabled = true # default: false
+[server.config]
+address = "http://localhost:8120"
+region = "AshburnDc1"
+enabled = true # default: false
 ```
 
 ### Builder and build
@@ -38,14 +39,15 @@ config.enabled = true # default: false
 name = "builder-01"
 tags = []
 config.type = "Aws"
-config.params.region = "us-east-2"
-config.params.ami_id = "ami-0e9bd154667944680"
+[builder.config.params]
+region = "us-east-2"
+ami_id = "ami-0e9bd154667944680"
 # These things come from your specific setup
-config.params.subnet_id = "subnet-xxxxxxxxxxxxxxxxxx"
-config.params.key_pair_name = "xxxxxxxx"
-config.params.assign_public_ip = true
-config.params.use_public_ip = true
-config.params.security_group_ids = [
+subnet_id = "subnet-xxxxxxxxxxxxxxxxxx"
+key_pair_name = "xxxxxxxx"
+assign_public_ip = true
+use_public_ip = true
+security_group_ids = [
   "sg-xxxxxxxxxxxxxxxxxx",
   "sg-xxxxxxxxxxxxxxxxxx"
 ]
@@ -56,19 +58,21 @@ config.params.security_group_ids = [
 name = "test_logger"
 description = "Logs randomly at INFO, WARN, ERROR levels to test logging setups"
 tags = ["test"]
-config.builder_id = "builder-01"
-config.repo = "mbecker20/test_logger"
-config.branch = "master"
-config.git_account = "mbecker20"
-config.image_registry.type = "Standard"
-config.image_registry.params.domain = "github.com" # or your custom domain
-config.image_registry.params.account = "your_username"
-config.image_registry.params.organization = "your_organization" # optinoal
+[build.config]
+builder_id = "builder-01"
+repo = "mbecker20/test_logger"
+branch = "master"
+git_account = "mbecker20"
+image_registry.type = "Standard"
+image_registry.params.domain = "github.com" # or your custom domain
+image_registry.params.account = "your_username"
+image_registry.params.organization = "your_organization" # optinoal
 # Set docker labels
-config.labels = """
+labels = """
 org.opencontainers.image.source = https://github.com/mbecker20/test_logger
 org.opencontainers.image.description = Logs randomly at INFO, WARN, ERROR levels to test logging setups
-org.opencontainers.image.licenses = GPL-3.0"""
+org.opencontainers.image.licenses = GPL-3.0
+"""
 ```
 
 ### Deployments
@@ -76,7 +80,8 @@ org.opencontainers.image.licenses = GPL-3.0"""
 - [Deployment config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/deployment/struct.DeploymentConfig.html)
 
 ```toml
-[[variable]] # Declare variables
+# Declare variables
+[[variable]]
 name = "OTLP_ENDPOINT"
 value = "http://localhost:4317"
 
@@ -91,20 +96,26 @@ tags = ["test"]
 #  - has relevant config updates.
 #  - the attached build has new version.
 deploy = true
-config.server_id = "server-01"
-config.image.type = "Build"
-config.image.params.build = "test_logger"
+[deployment.config]
+server_id = "server-01"
+image.type = "Build"
+image.params.build = "test_logger"
 # set the volumes / bind mounts
-config.volumes = """
+volumes = """
+# Supports comments
 /data/logs = /etc/logs
-/data/config = /etc/config"""
+# And other formats (eg yaml list)
+- "/data/config:/etc/config"
+"""
 # Set the environment variables
-config.environment = """
-OTLP_ENDPOINT = [[OTLP_ENDPOINT]] # interpolate variables into the envs. (they also support comments using '#')
+environment = """
+# Comments supported
+OTLP_ENDPOINT = [[OTLP_ENDPOINT]] # interpolate variables into the envs.
 VARIABLE_1 = value_1
-VARIABLE_2 = value_2"""
+VARIABLE_2 = value_2
+"""
 # Set Docker labels
-config.labels = "deployment.type = logger"
+labels = "deployment.type = logger"
 
 ##
 
@@ -116,17 +127,19 @@ deploy = true
 # Create a dependency on test-logger-01. This deployment will only be deployed after test-logger-01 is deployed.
 # Additionally, any sync deploy of test-logger-01 will also trigger sync deploy of this deployment.
 after = ["test-logger-01"]
-config.server_id = "server-01"
-config.image.type = "Build"
-config.image.params.build = "test_logger"
-config.volumes = """
+[deployment.config]
+server_id = "server-01"
+image.type = "Build"
+image.params.build = "test_logger"
+volumes = """
 /data/logs = /etc/logs
 /data/config = /etc/config"""
-config.environment = """
+environment = """
 VARIABLE_1 = value_1
-VARIABLE_2 = value_2"""
+VARIABLE_2 = value_2
+"""
 # Set Docker labels
-config.labels = "deployment.type = logger"
+labels = "deployment.type = logger"
 ```
 
 ### Stack
@@ -140,11 +153,12 @@ description = "stack test"
 deploy = true
 after = ["test-logger-01"] # Stacks can depend on deployments, and vice versa.
 tags = ["test"]
-config.server_id = "server-prod"
-config.file_paths = ["mongo.yaml", "redis.yaml"]
-config.git_provider = "git.mogh.tech"
-config.git_account = "mbecker20" # clone private repo by specifying account
-config.repo = "mbecker20/stack_test"
+[stack.config]
+server_id = "server-prod"
+file_paths = ["mongo.yaml", "redis.yaml"]
+git_provider = "git.mogh.tech"
+git_account = "mbecker20" # clone private repo by specifying account
+repo = "mbecker20/stack_test"
 ```
 
 ### Procedure
@@ -191,15 +205,19 @@ executions = [
 name = "komodo-periphery"
 description = "Builds new versions of the periphery binary. Requires Rust installed on the host."
 tags = ["komodo"]
-config.server_id = "server-01"
-config.git_provider = "git.mogh.tech" # use an alternate git provider (default is github.com)
-config.git_account = "mbecker20"
-config.repo = "mbecker20/komodo"
+[repo.config]
+server_id = "server-01"
+git_provider = "git.mogh.tech" # use an alternate git provider (default is github.com)
+git_account = "mbecker20"
+repo = "mbecker20/komodo"
 # Run an action after the repo is pulled
-config.on_pull.path = "."
-config.on_pull.command = """
-/root/.cargo/bin/cargo build -p komodo_periphery --release && \
-cp ./target/release/periphery /root/periphery"""
+on_pull.path = "."
+on_pull.command = """
+# Supports comments
+/root/.cargo/bin/cargo build -p komodo_periphery --release
+# Multiple lines will be combined together using '&&'
+cp ./target/release/periphery /root/periphery
+"""
 ```
 
 ### User Group:
