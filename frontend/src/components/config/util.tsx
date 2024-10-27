@@ -340,6 +340,8 @@ export const ProviderSelector = ({
         if (value === "Custom") {
           onSelect("");
           setCustomMode(true);
+        } else if (value === "None") {
+          onSelect("");
         } else {
           onSelect(value);
         }
@@ -365,7 +367,8 @@ export const ProviderSelector = ({
           !providers.includes(selected) && (
             <SelectItem value={selected}>{selected}</SelectItem>
           )}
-        {showCustom && <SelectItem value={"Custom"}>Custom</SelectItem>}
+        {showCustom && <SelectItem value="Custom">Custom</SelectItem>}
+        {!showCustom && <SelectItem value="None">None</SelectItem>}
       </SelectContent>
     </Select>
   );
@@ -908,44 +911,45 @@ export const ImageRegistryConfig = ({
           />
         </div>
       </ConfigItem>
-      {organizations.length > 0 && (
-        <ConfigItem
-          label="Organization"
-          description="Push the build under an organization namespace, rather than the account namespace."
-        >
-          <OrganizationSelector
-            organizations={organizations}
-            selected={registry?.organization!}
-            set={(organization) =>
-              setRegistry({
-                ...registry,
-                organization,
-              })
-            }
-            disabled={disabled}
-          />
-        </ConfigItem>
-      )}
-      {registry && (
-        <ConfigItem
-          label="Account"
-          description="Select the account used to authenticate against the registry."
-        >
-          <AccountSelector
-            id={resource_id}
-            type="Builder"
-            account_type="docker"
-            provider={registry.domain!}
-            selected={registry.account}
-            onSelect={(account) =>
-              setRegistry({
-                ...registry,
-                account,
-              })
-            }
-            disabled={disabled}
-          />
-        </ConfigItem>
+
+      {registry?.domain && (
+        <>
+          <ConfigItem
+            label="Account"
+            description="Select the account used to authenticate against the registry."
+          >
+            <AccountSelector
+              id={resource_id}
+              type="Builder"
+              account_type="docker"
+              provider={registry.domain!}
+              selected={registry.account}
+              onSelect={(account) =>
+                setRegistry({
+                  ...registry,
+                  account,
+                })
+              }
+              disabled={disabled}
+            />
+          </ConfigItem>
+          <ConfigItem
+            label="Organization"
+            description="Push the build under an organization / project namespace, rather than the account namespace."
+          >
+            <OrganizationSelector
+              organizations={organizations}
+              selected={registry?.organization!}
+              set={(organization) =>
+                setRegistry({
+                  ...registry,
+                  organization,
+                })
+              }
+              disabled={disabled}
+            />
+          </ConfigItem>
+        </>
       )}
     </>
   );
@@ -963,7 +967,7 @@ const OrganizationSelector = ({
   disabled: boolean;
 }) => {
   const [customMode, setCustomMode] = useState(false);
-  if (customMode || organizations.length === 0) {
+  if (customMode) {
     return (
       <Input
         placeholder="Input custom organization name"
