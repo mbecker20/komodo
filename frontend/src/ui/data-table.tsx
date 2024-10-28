@@ -35,7 +35,7 @@ interface DataTableProps<TData, TValue> {
   selectOptions?: {
     selectKey: (row: TData) => string;
     onSelect: (selected: string[]) => void;
-    allowSelectionIf: (row: Row<TData>) => boolean;
+    isSelectable: boolean | ((row: Row<TData>) => boolean);
   };
 }
 
@@ -65,7 +65,7 @@ export function DataTable<TData, TValue>({
     sortDescFirst,
     onRowSelectionChange: setRowSelection,
     getRowId: selectOptions?.selectKey,
-    enableRowSelection: selectOptions?.allowSelectionIf,
+    enableRowSelection: selectOptions?.isSelectable,
   });
 
   useEffect(() => {
@@ -95,6 +95,7 @@ export function DataTable<TData, TValue>({
                 <TableHead className="w-8">
                   <Checkbox
                     className="ml-2"
+                    disabled={selectOptions.isSelectable === false}
                     checked={table.getIsSomeRowsSelected()
                       ? "indeterminate"
                       : table.getIsAllRowsSelected()}
@@ -137,6 +138,7 @@ export function DataTable<TData, TValue>({
                   {selectOptions && (
                     <TableCell>
                       <Checkbox
+                        disabled={row.getCanSelect()}
                         className="ml-2"
                         checked={row.getIsSelected()}
                         onCheckedChange={(c) =>
