@@ -349,28 +349,36 @@ export type ExecuteResponses = {
 
   // ==== DEPLOYMENT ====
   Deploy: Types.Update;
+  BatchDeploy: Types.BatchExecutionResponse;
   StartDeployment: Types.Update;
   RestartDeployment: Types.Update;
   PauseDeployment: Types.Update;
   UnpauseDeployment: Types.Update;
   StopDeployment: Types.Update;
   DestroyDeployment: Types.Update;
+  BatchDestroyDeployment: Types.BatchExecutionResponse;
 
   // ==== BUILD ====
   RunBuild: Types.Update;
+  BatchRunBuild: Types.BatchExecutionResponse;
   CancelBuild: Types.Update;
 
   // ==== REPO ====
   CloneRepo: Types.Update;
+  BatchCloneRepo: Types.BatchExecutionResponse;
   PullRepo: Types.Update;
+  BatchPullRepo: Types.BatchExecutionResponse;
   BuildRepo: Types.Update;
+  BatchBuildRepo: Types.BatchExecutionResponse;
   CancelRepoBuild: Types.Update;
 
   // ==== PROCEDURE ====
   RunProcedure: Types.Update;
-  
+  BatchRunProcedure: Types.BatchExecutionResponse;
+
   // ==== ACTION ====
   RunAction: Types.Update;
+  BatchRunAction: Types.BatchExecutionResponse;
 
   // ==== SERVER TEMPLATE ====
   LaunchServer: Types.Update;
@@ -380,13 +388,16 @@ export type ExecuteResponses = {
 
   // ==== STACK ====
   DeployStack: Types.Update;
+  BatchDeployStack: Types.BatchExecutionResponse;
   DeployStackIfChanged: Types.Update;
+  BatchDeployStackIfChanged: Types.BatchExecutionResponse;
   StartStack: Types.Update;
   RestartStack: Types.Update;
   StopStack: Types.Update;
   PauseStack: Types.Update;
   UnpauseStack: Types.Update;
   DestroyStack: Types.Update;
+  BatchDestroyStack: Types.BatchExecutionResponse;
 
   // ==== STACK Service ====
   DeployStackService: Types.Update;

@@ -27,7 +27,7 @@ pub use sync::*;
 
 use crate::{
   api::write::CommitSync,
-  entities::{NoData, I64},
+  entities::{update::Update, NoData, _Serror, I64},
 };
 
 pub trait KomodoExecuteRequest: HasResponse {}
@@ -59,27 +59,35 @@ pub enum Execution {
 
   // ACTION
   RunAction(RunAction),
+  BatchRunAction(BatchRunAction),
 
   // PROCEDURE
   RunProcedure(RunProcedure),
+  BatchRunProcedure(BatchRunProcedure),
 
   // BUILD
   RunBuild(RunBuild),
+  BatchRunBuild(BatchRunBuild),
   CancelBuild(CancelBuild),
 
   // DEPLOYMENT
   Deploy(Deploy),
+  BatchDeploy(BatchDeploy),
   StartDeployment(StartDeployment),
   RestartDeployment(RestartDeployment),
   PauseDeployment(PauseDeployment),
   UnpauseDeployment(UnpauseDeployment),
   StopDeployment(StopDeployment),
   DestroyDeployment(DestroyDeployment),
+  BatchDestroyDeployment(BatchDestroyDeployment),
 
   // REPO
   CloneRepo(CloneRepo),
+  BatchCloneRepo(BatchCloneRepo),
   PullRepo(PullRepo),
+  BatchPullRepo(BatchPullRepo),
   BuildRepo(BuildRepo),
+  BatchBuildRepo(BatchBuildRepo),
   CancelRepoBuild(CancelRepoBuild),
 
   // SERVER (Container)
@@ -113,13 +121,16 @@ pub enum Execution {
 
   // STACK
   DeployStack(DeployStack),
+  BatchDeployStack(BatchDeployStack),
   DeployStackIfChanged(DeployStackIfChanged),
+  BatchDeployStackIfChanged(BatchDeployStackIfChanged),
   StartStack(StartStack),
   RestartStack(RestartStack),
   PauseStack(PauseStack),
   UnpauseStack(UnpauseStack),
   StopStack(StopStack),
   DestroyStack(DestroyStack),
+  BatchDestroyStack(BatchDestroyStack),
 
   // SLEEP
   Sleep(Sleep),
@@ -130,4 +141,35 @@ pub enum Execution {
 pub struct Sleep {
   #[serde(default)]
   pub duration_ms: I64,
+}
+
+#[typeshare]
+pub type BatchExecutionResponse = Vec<BatchExecutionResponseItem>;
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "status", content = "data")]
+pub enum BatchExecutionResponseItem {
+  Ok(Update),
+  Err(BatchExecutionResponseItemErr),
+}
+
+impl From<Result<Update, BatchExecutionResponseItemErr>>
+  for BatchExecutionResponseItem
+{
+  fn from(
+    value: Result<Update, BatchExecutionResponseItemErr>,
+  ) -> Self {
+    match value {
+      Ok(update) => Self::Ok(update),
+      Err(e) => Self::Err(e),
+    }
+  }
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BatchExecutionResponseItemErr {
+  pub name: String,
+  pub error: _Serror,
 }

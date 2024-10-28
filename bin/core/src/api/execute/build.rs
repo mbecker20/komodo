@@ -4,7 +4,10 @@ use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use futures::future::join_all;
 use komodo_client::{
-  api::execute::{CancelBuild, Deploy, RunBuild},
+  api::execute::{
+    BatchExecutionResponse, BatchRunBuild, CancelBuild, Deploy,
+    RunBuild,
+  },
   entities::{
     alert::{Alert, AlertData, SeverityLevel},
     all_logs_success,
@@ -50,6 +53,24 @@ use crate::{
 };
 
 use super::ExecuteRequest;
+
+impl super::BatchExecute for BatchRunBuild {
+  type Resource = Build;
+  fn single_request(build: String) -> ExecuteRequest {
+    ExecuteRequest::RunBuild(RunBuild { build })
+  }
+}
+
+impl Resolve<BatchRunBuild, (User, Update)> for State {
+  #[instrument(name = "BatchRunBuild", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchRunBuild { pattern }: BatchRunBuild,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchRunBuild>(&pattern, &user).await
+  }
+}
 
 impl Resolve<RunBuild, (User, Update)> for State {
   #[instrument(name = "RunBuild", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]

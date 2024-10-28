@@ -4,9 +4,14 @@ use anyhow::{anyhow, Context};
 use formatting::{bold, colored, format_serror, muted, Color};
 use futures::future::join_all;
 use komodo_client::{
-  api::execute::Execution,
+  api::execute::*,
   entities::{
+    action::Action,
+    build::Build,
+    deployment::Deployment,
     procedure::Procedure,
+    repo::Repo,
+    stack::Stack,
     update::{Log, Update},
     user::procedure_user,
   },
@@ -17,6 +22,7 @@ use tokio::sync::Mutex;
 
 use crate::{
   api::execute::ExecuteRequest,
+  resource::{list_full_for_user_using_pattern, KomodoResource},
   state::{db_client, State},
 };
 
@@ -79,11 +85,94 @@ pub async fn execute_procedure(
 #[allow(dependency_on_unit_never_type_fallback)]
 #[instrument(skip(update))]
 async fn execute_stage(
-  executions: Vec<Execution>,
+  _executions: Vec<Execution>,
   parent_id: &str,
   parent_name: &str,
   update: &Mutex<Update>,
 ) -> anyhow::Result<()> {
+  let mut executions = Vec::with_capacity(_executions.capacity());
+  for execution in _executions {
+    match execution {
+      Execution::BatchRunAction(exec) => {
+        extend_batch_exection::<BatchRunAction>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchRunProcedure(exec) => {
+        extend_batch_exection::<BatchRunProcedure>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchRunBuild(exec) => {
+        extend_batch_exection::<BatchRunBuild>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchCloneRepo(exec) => {
+        extend_batch_exection::<BatchCloneRepo>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchPullRepo(exec) => {
+        extend_batch_exection::<BatchPullRepo>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchBuildRepo(exec) => {
+        extend_batch_exection::<BatchBuildRepo>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchDeploy(exec) => {
+        extend_batch_exection::<BatchDeploy>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchDestroyDeployment(exec) => {
+        extend_batch_exection::<BatchDestroyDeployment>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchDeployStack(exec) => {
+        extend_batch_exection::<BatchDeployStack>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchDeployStackIfChanged(exec) => {
+        extend_batch_exection::<BatchDeployStackIfChanged>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      Execution::BatchDestroyStack(exec) => {
+        extend_batch_exection::<BatchDestroyStack>(
+          &exec.pattern,
+          &mut executions,
+        )
+        .await?;
+      }
+      execution => executions.push(execution),
+    }
+  }
   let futures = executions.into_iter().map(|execution| async move {
     let now = Instant::now();
     add_line_to_update(
@@ -146,6 +235,12 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::BatchRunProcedure(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchRunProcedure not implemented correctly"
+      ));
+    }
     Execution::RunAction(req) => {
       let req = ExecuteRequest::RunAction(req);
       let update = init_execution_update(&req, &user).await?;
@@ -162,6 +257,12 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::BatchRunAction(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchRunAction not implemented correctly"
+      ));
+    }
     Execution::RunBuild(req) => {
       let req = ExecuteRequest::RunBuild(req);
       let update = init_execution_update(&req, &user).await?;
@@ -177,6 +278,12 @@ async fn execute_execution(
         &update_id,
       )
       .await?
+    }
+    Execution::BatchRunBuild(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchRunBuild not implemented correctly"
+      ));
     }
     Execution::CancelBuild(req) => {
       let req = ExecuteRequest::CancelBuild(req);
@@ -209,6 +316,12 @@ async fn execute_execution(
         &update_id,
       )
       .await?
+    }
+    Execution::BatchDeploy(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchDeploy not implemented correctly"
+      ));
     }
     Execution::StartDeployment(req) => {
       let req = ExecuteRequest::StartDeployment(req);
@@ -306,6 +419,12 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::BatchDestroyDeployment(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchDestroyDeployment not implemented correctly"
+      ));
+    }
     Execution::CloneRepo(req) => {
       let req = ExecuteRequest::CloneRepo(req);
       let update = init_execution_update(&req, &user).await?;
@@ -321,6 +440,12 @@ async fn execute_execution(
         &update_id,
       )
       .await?
+    }
+    Execution::BatchCloneRepo(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchCloneRepo not implemented correctly"
+      ));
     }
     Execution::PullRepo(req) => {
       let req = ExecuteRequest::PullRepo(req);
@@ -338,6 +463,12 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::BatchPullRepo(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchPullRepo not implemented correctly"
+      ));
+    }
     Execution::BuildRepo(req) => {
       let req = ExecuteRequest::BuildRepo(req);
       let update = init_execution_update(&req, &user).await?;
@@ -353,6 +484,12 @@ async fn execute_execution(
         &update_id,
       )
       .await?
+    }
+    Execution::BatchBuildRepo(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchBuildRepo not implemented correctly"
+      ));
     }
     Execution::CancelRepoBuild(req) => {
       let req = ExecuteRequest::CancelRepoBuild(req);
@@ -743,6 +880,12 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::BatchDeployStack(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchDeployStack not implemented correctly"
+      ));
+    }
     Execution::DeployStackIfChanged(req) => {
       let req = ExecuteRequest::DeployStackIfChanged(req);
       let update = init_execution_update(&req, &user).await?;
@@ -758,6 +901,12 @@ async fn execute_execution(
         &update_id,
       )
       .await?
+    }
+    Execution::BatchDeployStackIfChanged(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchDeployStackIfChanged not implemented correctly"
+      ));
     }
     Execution::StartStack(req) => {
       let req = ExecuteRequest::StartStack(req);
@@ -855,6 +1004,12 @@ async fn execute_execution(
       )
       .await?
     }
+    Execution::BatchDestroyStack(_) => {
+      // All batch executions must be expanded in `execute_stage`
+      return Err(anyhow!(
+        "Batch method BatchDestroyStack not implemented correctly"
+      ));
+    }
     Execution::Sleep(req) => {
       let duration = Duration::from_millis(req.duration_ms as u64);
       tokio::time::sleep(duration).await;
@@ -911,4 +1066,121 @@ async fn add_line_to_update(update: &Mutex<Update>, line: &str) {
   if let Err(e) = update_update(update).await {
     error!("Failed to update an update during procedure | {e:#}");
   };
+}
+
+async fn extend_batch_exection<E: ExtendBatch>(
+  pattern: &str,
+  executions: &mut Vec<Execution>,
+) -> anyhow::Result<()> {
+  let more = list_full_for_user_using_pattern::<E::Resource>(
+    pattern,
+    Default::default(),
+    procedure_user(),
+    &[],
+  )
+  .await?
+  .into_iter()
+  .map(|resource| E::single_execution(resource.name));
+  executions.extend(more);
+  Ok(())
+}
+
+trait ExtendBatch {
+  type Resource: KomodoResource;
+  fn single_execution(name: String) -> Execution;
+}
+
+impl ExtendBatch for BatchRunProcedure {
+  type Resource = Procedure;
+  fn single_execution(procedure: String) -> Execution {
+    Execution::RunProcedure(RunProcedure { procedure })
+  }
+}
+
+impl ExtendBatch for BatchRunAction {
+  type Resource = Action;
+  fn single_execution(action: String) -> Execution {
+    Execution::RunAction(RunAction { action })
+  }
+}
+
+impl ExtendBatch for BatchRunBuild {
+  type Resource = Build;
+  fn single_execution(build: String) -> Execution {
+    Execution::RunBuild(RunBuild { build })
+  }
+}
+
+impl ExtendBatch for BatchCloneRepo {
+  type Resource = Repo;
+  fn single_execution(repo: String) -> Execution {
+    Execution::CloneRepo(CloneRepo { repo })
+  }
+}
+
+impl ExtendBatch for BatchPullRepo {
+  type Resource = Repo;
+  fn single_execution(repo: String) -> Execution {
+    Execution::PullRepo(PullRepo { repo })
+  }
+}
+
+impl ExtendBatch for BatchBuildRepo {
+  type Resource = Repo;
+  fn single_execution(repo: String) -> Execution {
+    Execution::BuildRepo(BuildRepo { repo })
+  }
+}
+
+impl ExtendBatch for BatchDeploy {
+  type Resource = Deployment;
+  fn single_execution(deployment: String) -> Execution {
+    Execution::Deploy(Deploy {
+      deployment,
+      stop_signal: None,
+      stop_time: None,
+    })
+  }
+}
+
+impl ExtendBatch for BatchDestroyDeployment {
+  type Resource = Deployment;
+  fn single_execution(deployment: String) -> Execution {
+    Execution::DestroyDeployment(DestroyDeployment {
+      deployment,
+      signal: None,
+      time: None,
+    })
+  }
+}
+
+impl ExtendBatch for BatchDeployStack {
+  type Resource = Stack;
+  fn single_execution(stack: String) -> Execution {
+    Execution::DeployStack(DeployStack {
+      stack,
+      stop_time: None,
+    })
+  }
+}
+
+impl ExtendBatch for BatchDeployStackIfChanged {
+  type Resource = Stack;
+  fn single_execution(stack: String) -> Execution {
+    Execution::DeployStackIfChanged(DeployStackIfChanged {
+      stack,
+      stop_time: None,
+    })
+  }
+}
+
+impl ExtendBatch for BatchDestroyStack {
+  type Resource = Stack;
+  fn single_execution(stack: String) -> Execution {
+    Execution::DestroyStack(DestroyStack {
+      stack,
+      remove_orphans: false,
+      stop_time: None,
+    })
+  }
 }

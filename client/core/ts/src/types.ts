@@ -198,6 +198,12 @@ export interface AlerterQuerySpecifics {
 
 export type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
 
+export type BatchExecutionResponseItem = 
+	| { status: "Ok", data: Update }
+	| { status: "Err", data: BatchExecutionResponseItemErr };
+
+export type BatchExecutionResponse = BatchExecutionResponseItem[];
+
 export interface Version {
 	major: number;
 	minor: number;
@@ -418,19 +424,27 @@ export type Execution =
 	/** The "null" execution. Does nothing. */
 	| { type: "None", params: NoData }
 	| { type: "RunAction", params: RunAction }
+	| { type: "BatchRunAction", params: BatchRunAction }
 	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "BatchRunProcedure", params: BatchRunProcedure }
 	| { type: "RunBuild", params: RunBuild }
+	| { type: "BatchRunBuild", params: BatchRunBuild }
 	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "Deploy", params: Deploy }
+	| { type: "BatchDeploy", params: BatchDeploy }
 	| { type: "StartDeployment", params: StartDeployment }
 	| { type: "RestartDeployment", params: RestartDeployment }
 	| { type: "PauseDeployment", params: PauseDeployment }
 	| { type: "UnpauseDeployment", params: UnpauseDeployment }
 	| { type: "StopDeployment", params: StopDeployment }
 	| { type: "DestroyDeployment", params: DestroyDeployment }
+	| { type: "BatchDestroyDeployment", params: BatchDestroyDeployment }
 	| { type: "CloneRepo", params: CloneRepo }
+	| { type: "BatchCloneRepo", params: BatchCloneRepo }
 	| { type: "PullRepo", params: PullRepo }
+	| { type: "BatchPullRepo", params: BatchPullRepo }
 	| { type: "BuildRepo", params: BuildRepo }
+	| { type: "BatchBuildRepo", params: BatchBuildRepo }
 	| { type: "CancelRepoBuild", params: CancelRepoBuild }
 	| { type: "StartContainer", params: StartContainer }
 	| { type: "RestartContainer", params: RestartContainer }
@@ -456,13 +470,16 @@ export type Execution =
 	| { type: "RunSync", params: RunSync }
 	| { type: "CommitSync", params: CommitSync }
 	| { type: "DeployStack", params: DeployStack }
+	| { type: "BatchDeployStack", params: BatchDeployStack }
 	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
+	| { type: "BatchDeployStackIfChanged", params: BatchDeployStackIfChanged }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "PauseStack", params: PauseStack }
 	| { type: "UnpauseStack", params: UnpauseStack }
 	| { type: "StopStack", params: StopStack }
 	| { type: "DestroyStack", params: DestroyStack }
+	| { type: "BatchDestroyStack", params: BatchDestroyStack }
 	| { type: "Sleep", params: Sleep };
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
@@ -3510,6 +3527,198 @@ export interface AwsServerTemplateConfig {
 	volumes: AwsVolume[];
 	/** The user data to deploy the instance with. */
 	user_data: string;
+}
+
+/** Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchBuildRepo {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* repos
+	 * foo-*
+	 * # add some more
+	 * extra-repo-1, extra-repo-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchCloneRepo {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* repos
+	 * foo-*
+	 * # add some more
+	 * extra-repo-1, extra-repo-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchDeploy {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* deployments
+	 * foo-*
+	 * # add some more
+	 * extra-deployment-1, extra-deployment-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchDeployStack {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* stacks
+	 * foo-*
+	 * # add some more
+	 * extra-stack-1, extra-stack-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchDeployStackIfChanged {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* stacks
+	 * foo-*
+	 * # add some more
+	 * extra-stack-1, extra-stack-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchDestroyDeployment {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* deployments
+	 * foo-*
+	 * # add some more
+	 * extra-deployment-1, extra-deployment-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchDestroyStack {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * d
+	 * Example:
+	 * ```
+	 * # match all foo-* stacks
+	 * foo-*
+	 * # add some more
+	 * extra-stack-1, extra-stack-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+export interface BatchExecutionResponseItemErr {
+	name: string;
+	error: _Serror;
+}
+
+/** Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchPullRepo {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* repos
+	 * foo-*
+	 * # add some more
+	 * extra-repo-1, extra-repo-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResult] */
+export interface BatchRunAction {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* actions
+	 * foo-*
+	 * # add some more
+	 * extra-action-1, extra-action-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchRunBuild {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* builds
+	 * foo-*
+	 * # add some more
+	 * extra-build-1, extra-build-2
+	 * ```
+	 */
+	pattern: string;
+}
+
+/** Runs multiple Procedures in parallel that match pattern. Response: [BatchExecutionResult]. */
+export interface BatchRunProcedure {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* procedures
+	 * foo-*
+	 * # add some more
+	 * extra-procedure-1, extra-procedure-2
+	 * ```
+	 */
+	pattern: string;
 }
 
 /**
@@ -7035,6 +7244,7 @@ export type ExecuteRequest =
 	| { type: "PruneBuildx", params: PruneBuildx }
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "Deploy", params: Deploy }
+	| { type: "BatchDeploy", params: BatchDeploy }
 	| { type: "StartDeployment", params: StartDeployment }
 	| { type: "RestartDeployment", params: RestartDeployment }
 	| { type: "PauseDeployment", params: PauseDeployment }
@@ -7042,21 +7252,30 @@ export type ExecuteRequest =
 	| { type: "StopDeployment", params: StopDeployment }
 	| { type: "DestroyDeployment", params: DestroyDeployment }
 	| { type: "DeployStack", params: DeployStack }
+	| { type: "BatchDeployStack", params: BatchDeployStack }
 	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
+	| { type: "BatchDeployStackIfChanged", params: BatchDeployStackIfChanged }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "StopStack", params: StopStack }
 	| { type: "PauseStack", params: PauseStack }
 	| { type: "UnpauseStack", params: UnpauseStack }
 	| { type: "DestroyStack", params: DestroyStack }
+	| { type: "BatchDestroyStack", params: BatchDestroyStack }
 	| { type: "RunBuild", params: RunBuild }
+	| { type: "BatchRunBuild", params: BatchRunBuild }
 	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "CloneRepo", params: CloneRepo }
+	| { type: "BatchCloneRepo", params: BatchCloneRepo }
 	| { type: "PullRepo", params: PullRepo }
+	| { type: "BatchPullRepo", params: BatchPullRepo }
 	| { type: "BuildRepo", params: BuildRepo }
+	| { type: "BatchBuildRepo", params: BatchBuildRepo }
 	| { type: "CancelRepoBuild", params: CancelRepoBuild }
 	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "BatchRunProcedure", params: BatchRunProcedure }
 	| { type: "RunAction", params: RunAction }
+	| { type: "BatchRunAction", params: BatchRunAction }
 	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "RunSync", params: RunSync };
 

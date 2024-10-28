@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::KomodoExecuteRequest;
+use super::{BatchExecutionResponse, KomodoExecuteRequest};
 
 //
 
@@ -32,6 +32,36 @@ use super::KomodoExecuteRequest;
 pub struct RunBuild {
   /// Can be build id or name
   pub build: String,
+}
+
+//
+
+/// Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchRunBuild {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* builds
+  /// foo-*
+  /// # add some more
+  /// extra-build-1, extra-build-2
+  /// ```
+  pub pattern: String,
 }
 
 //

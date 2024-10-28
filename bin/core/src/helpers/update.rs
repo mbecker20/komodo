@@ -261,6 +261,9 @@ pub async fn init_execution_update(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
+    ExecuteRequest::BatchDeploy(_data) => {
+      return Ok(Default::default())
+    }
     ExecuteRequest::StartDeployment(data) => (
       Operation::StartDeployment,
       ResourceTarget::Deployment(
@@ -305,6 +308,9 @@ pub async fn init_execution_update(
         resource::get::<Build>(&data.build).await?.id,
       ),
     ),
+    ExecuteRequest::BatchRunBuild(_data) => {
+      return Ok(Default::default())
+    }
     ExecuteRequest::CancelBuild(data) => (
       Operation::CancelBuild,
       ResourceTarget::Build(
@@ -319,18 +325,27 @@ pub async fn init_execution_update(
         resource::get::<Repo>(&data.repo).await?.id,
       ),
     ),
+    ExecuteRequest::BatchCloneRepo(_data) => {
+      return Ok(Default::default())
+    }
     ExecuteRequest::PullRepo(data) => (
       Operation::PullRepo,
       ResourceTarget::Repo(
         resource::get::<Repo>(&data.repo).await?.id,
       ),
     ),
+    ExecuteRequest::BatchPullRepo(_data) => {
+      return Ok(Default::default())
+    }
     ExecuteRequest::BuildRepo(data) => (
       Operation::BuildRepo,
       ResourceTarget::Repo(
         resource::get::<Repo>(&data.repo).await?.id,
       ),
     ),
+    ExecuteRequest::BatchBuildRepo(_data) => {
+      return Ok(Default::default())
+    }
     ExecuteRequest::CancelRepoBuild(data) => (
       Operation::CancelRepoBuild,
       ResourceTarget::Repo(
@@ -345,6 +360,9 @@ pub async fn init_execution_update(
         resource::get::<Procedure>(&data.procedure).await?.id,
       ),
     ),
+    ExecuteRequest::BatchRunProcedure(_) => {
+      return Ok(Default::default())
+    }
 
     // Action
     ExecuteRequest::RunAction(data) => (
@@ -353,6 +371,9 @@ pub async fn init_execution_update(
         resource::get::<Action>(&data.action).await?.id,
       ),
     ),
+    ExecuteRequest::BatchRunAction(_) => {
+      return Ok(Default::default())
+    }
 
     // Server template
     ExecuteRequest::LaunchServer(data) => (
@@ -379,12 +400,18 @@ pub async fn init_execution_update(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
+    ExecuteRequest::BatchDeployStack(_data) => {
+      return Ok(Default::default())
+    }
     ExecuteRequest::DeployStackIfChanged(data) => (
       Operation::DeployStack,
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
+    ExecuteRequest::BatchDeployStackIfChanged(_data) => {
+      return Ok(Default::default())
+    }
     ExecuteRequest::StartStack(data) => (
       if data.service.is_some() {
         Operation::StartStackService
@@ -441,6 +468,9 @@ pub async fn init_execution_update(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
     ),
+    ExecuteRequest::BatchDestroyStack(_data) => {
+      return Ok(Default::default())
+    }
   };
   let mut update = make_update(target, operation, user);
   update.in_progress();

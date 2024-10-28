@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::{update::Update, TerminationSignal};
 
-use super::KomodoExecuteRequest;
+use super::{BatchExecutionResponse, KomodoExecuteRequest};
 
 /// Deploys the container for the target deployment. Response: [Update].
 ///
@@ -37,6 +37,36 @@ pub struct Deploy {
   /// Override the default termination max time.
   /// Only used when deployment needs to be taken down before redeploy.
   pub stop_time: Option<i32>,
+}
+
+//
+
+/// Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchDeploy {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* deployments
+  /// foo-*
+  /// # add some more
+  /// extra-deployment-1, extra-deployment-2
+  /// ```
+  pub pattern: String,
 }
 
 //
@@ -186,4 +216,34 @@ pub struct DestroyDeployment {
   pub signal: Option<TerminationSignal>,
   /// Override the default termination max time.
   pub time: Option<i32>,
+}
+
+//
+
+/// Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchDestroyDeployment {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* deployments
+  /// foo-*
+  /// # add some more
+  /// extra-deployment-1, extra-deployment-2
+  /// ```
+  pub pattern: String,
 }

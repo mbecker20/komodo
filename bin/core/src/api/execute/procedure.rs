@@ -2,7 +2,9 @@ use std::pin::Pin;
 
 use formatting::{bold, colored, format_serror, muted, Color};
 use komodo_client::{
-  api::execute::RunProcedure,
+  api::execute::{
+    BatchExecutionResponse, BatchRunProcedure, RunProcedure,
+  },
   entities::{
     permission::PermissionLevel, procedure::Procedure,
     update::Update, user::User,
@@ -17,6 +19,26 @@ use crate::{
   resource::{self, refresh_procedure_state_cache},
   state::{action_states, db_client, State},
 };
+
+use super::ExecuteRequest;
+
+impl super::BatchExecute for BatchRunProcedure {
+  type Resource = Procedure;
+  fn single_request(procedure: String) -> ExecuteRequest {
+    ExecuteRequest::RunProcedure(RunProcedure { procedure })
+  }
+}
+
+impl Resolve<BatchRunProcedure, (User, Update)> for State {
+  #[instrument(name = "BatchRunProcedure", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchRunProcedure { pattern }: BatchRunProcedure,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchRunProcedure>(&pattern, &user).await
+  }
+}
 
 impl Resolve<RunProcedure, (User, Update)> for State {
   #[instrument(name = "RunProcedure", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]

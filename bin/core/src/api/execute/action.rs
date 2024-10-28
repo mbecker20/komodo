@@ -9,7 +9,7 @@ use anyhow::Context;
 use command::run_komodo_command;
 use komodo_client::{
   api::{
-    execute::RunAction,
+    execute::{BatchExecutionResponse, BatchRunAction, RunAction},
     user::{CreateApiKey, CreateApiKeyResponse, DeleteApiKey},
   },
   entities::{
@@ -25,6 +25,7 @@ use resolver_api::Resolve;
 use tokio::fs;
 
 use crate::{
+  api::execute::ExecuteRequest,
   config::core_config,
   helpers::{
     interpolate::{
@@ -39,7 +40,26 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
+impl super::BatchExecute for BatchRunAction {
+  type Resource = Action;
+  fn single_request(action: String) -> ExecuteRequest {
+    ExecuteRequest::RunAction(RunAction { action })
+  }
+}
+
+impl Resolve<BatchRunAction, (User, Update)> for State {
+  #[instrument(name = "BatchRunAction", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchRunAction { pattern }: BatchRunAction,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchRunAction>(&pattern, &user).await
+  }
+}
+
 impl Resolve<RunAction, (User, Update)> for State {
+  #[instrument(name = "RunAction", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     RunAction { action }: RunAction,

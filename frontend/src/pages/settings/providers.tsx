@@ -1,4 +1,4 @@
-import { ConfirmButton, CopyButton, TextUpdateMenu } from "@components/util";
+import { ConfirmButton, CopyButton, TextUpdateMenuMonaco } from "@components/util";
 import {
   useInvalidate,
   useRead,
@@ -233,7 +233,7 @@ const Providers = ({ type }: { type: "GitProvider" | "DockerRegistry" }) => {
         ]}
       />
       {updateMenuData && (
-        <TextUpdateMenu
+        <TextUpdateMenuMonaco
           title={updateMenuData.title}
           titleRight={updateMenuData.titleRight}
           placeholder={updateMenuData.placeholder}

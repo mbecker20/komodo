@@ -37,6 +37,30 @@ use crate::{
   state::{action_states, State},
 };
 
+use super::ExecuteRequest;
+
+impl super::BatchExecute for BatchDeploy {
+  type Resource = Deployment;
+  fn single_request(deployment: String) -> ExecuteRequest {
+    ExecuteRequest::Deploy(Deploy {
+      deployment,
+      stop_signal: None,
+      stop_time: None,
+    })
+  }
+}
+
+impl Resolve<BatchDeploy, (User, Update)> for State {
+  #[instrument(name = "BatchDeploy", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchDeploy { pattern }: BatchDeploy,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchDeploy>(&pattern, &user).await
+  }
+}
+
 async fn setup_deployment_execution(
   deployment: &str,
   user: &User,
