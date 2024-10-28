@@ -5,6 +5,7 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  Row,
   RowSelectionState,
   SortingState,
   useReactTable,
@@ -34,6 +35,7 @@ interface DataTableProps<TData, TValue> {
   selectOptions?: {
     selectKey: (row: TData) => string;
     onSelect: (selected: string[]) => void;
+    allowSelectionIf: (row: Row<TData>) => boolean;
   };
 }
 
@@ -63,6 +65,7 @@ export function DataTable<TData, TValue>({
     sortDescFirst,
     onRowSelectionChange: setRowSelection,
     getRowId: selectOptions?.selectKey,
+    enableRowSelection: selectOptions?.allowSelectionIf,
   });
 
   useEffect(() => {
