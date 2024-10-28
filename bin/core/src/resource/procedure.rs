@@ -187,6 +187,13 @@ async fn validate_config(
           .await?;
           params.action = action.id;
         }
+        Execution::BatchRunAction(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
+        }
         Execution::RunBuild(params) => {
           let build = super::get_check_permissions::<Build>(
             &params.build,

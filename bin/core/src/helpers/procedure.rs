@@ -4,8 +4,9 @@ use anyhow::{anyhow, Context};
 use formatting::{bold, colored, format_serror, muted, Color};
 use futures::future::join_all;
 use komodo_client::{
-  api::execute::Execution,
+  api::execute::{Execution, RunAction},
   entities::{
+    action::Action,
     procedure::Procedure,
     update::{Log, Update},
     user::procedure_user,
@@ -17,6 +18,7 @@ use tokio::sync::Mutex;
 
 use crate::{
   api::execute::ExecuteRequest,
+  resource::list_full_for_user_using_match_string,
   state::{db_client, State},
 };
 
@@ -79,11 +81,33 @@ pub async fn execute_procedure(
 #[allow(dependency_on_unit_never_type_fallback)]
 #[instrument(skip(update))]
 async fn execute_stage(
-  executions: Vec<Execution>,
+  _executions: Vec<Execution>,
   parent_id: &str,
   parent_name: &str,
   update: &Mutex<Update>,
 ) -> anyhow::Result<()> {
+  let mut executions = Vec::with_capacity(_executions.capacity());
+  for execution in _executions {
+    match execution {
+      Execution::BatchRunAction(exec) => {
+        let more = list_full_for_user_using_match_string::<Action>(
+          &exec.action,
+          Default::default(),
+          procedure_user(),
+          &[],
+        )
+        .await?
+        .into_iter()
+        .map(|action| {
+          Execution::RunAction(RunAction {
+            action: action.name,
+          })
+        });
+        executions.extend(more);
+      }
+      execution => executions.push(execution),
+    }
+  }
   let futures = executions.into_iter().map(|execution| async move {
     let now = Instant::now();
     add_line_to_update(
@@ -161,6 +185,11 @@ async fn execute_execution(
         &update_id,
       )
       .await?
+    }
+    Execution::BatchRunAction(_) => {
+      // All batch actions must be expanded in `execute_stage`,
+      // this method doesn't work for batch actions
+      unreachable!()
     }
     Execution::RunBuild(req) => {
       let req = ExecuteRequest::RunBuild(req);

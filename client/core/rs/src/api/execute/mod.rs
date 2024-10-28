@@ -27,7 +27,7 @@ pub use sync::*;
 
 use crate::{
   api::write::CommitSync,
-  entities::{NoData, I64},
+  entities::{update::Update, NoData, _Serror, I64},
 };
 
 pub trait KomodoExecuteRequest: HasResponse {}
@@ -59,6 +59,7 @@ pub enum Execution {
 
   // ACTION
   RunAction(RunAction),
+  BatchRunAction(BatchRunAction),
 
   // PROCEDURE
   RunProcedure(RunProcedure),
@@ -130,4 +131,35 @@ pub enum Execution {
 pub struct Sleep {
   #[serde(default)]
   pub duration_ms: I64,
+}
+
+#[typeshare]
+pub type BatchExecutionResult = Vec<BatchExecutionResultItem>;
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "status", content = "data")]
+pub enum BatchExecutionResultItem {
+  Ok(Update),
+  Err(BatchExecutionResultItemErr),
+}
+
+impl From<Result<Update, BatchExecutionResultItemErr>>
+  for BatchExecutionResultItem
+{
+  fn from(
+    value: Result<Update, BatchExecutionResultItemErr>,
+  ) -> Self {
+    match value {
+      Ok(update) => Self::Ok(update),
+      Err(e) => Self::Err(e),
+    }
+  }
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BatchExecutionResultItemErr {
+  pub name: String,
+  pub error: _Serror,
 }

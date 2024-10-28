@@ -1,4 +1,4 @@
-import { ConfirmButton, CopyButton, TextUpdateMenu } from "@components/util";
+import { ConfirmButton, CopyButton, TextUpdateMenuMonaco } from "@components/util";
 import {
   useInvalidate,
   useRead,
@@ -84,7 +84,7 @@ export const Variables = () => {
       </div>
 
       {updateMenuData && (
-        <TextUpdateMenu
+        <TextUpdateMenuMonaco
           title={updateMenuData.title}
           placeholder={updateMenuData.placeholder}
           value={updateMenuData.value}

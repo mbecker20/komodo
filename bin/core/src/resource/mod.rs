@@ -18,6 +18,7 @@ use komodo_client::{
     user::{system_user, User},
     Operation, ResourceTarget, ResourceTargetVariant,
   },
+  parsers::parse_string_list,
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
@@ -242,6 +243,79 @@ pub async fn get_check_permissions<T: KomodoResource>(
   }
 }
 
+#[instrument(level = "debug")]
+pub async fn get_user_permission_on_resource<T: KomodoResource>(
+  user: &User,
+  resource_id: &str,
+) -> anyhow::Result<PermissionLevel> {
+  if user.admin {
+    return Ok(PermissionLevel::Write);
+  }
+
+  let resource_type = T::resource_type();
+
+  // Start with base of Read or None
+  let mut base = if core_config().transparent_mode {
+    PermissionLevel::Read
+  } else {
+    PermissionLevel::None
+  };
+
+  // Add in the resource level global base permission
+  let resource_base = get::<T>(resource_id).await?.base_permission;
+  if resource_base > base {
+    base = resource_base;
+  }
+
+  // Overlay users base on resource variant
+  if let Some(level) = user.all.get(&resource_type).cloned() {
+    if level > base {
+      base = level;
+    }
+  }
+  if base == PermissionLevel::Write {
+    // No reason to keep going if already Write at this point.
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Overlay any user groups base on resource variant
+  let groups = get_user_user_groups(&user.id).await?;
+  for group in &groups {
+    if let Some(level) = group.all.get(&resource_type).cloned() {
+      if level > base {
+        base = level;
+      }
+    }
+  }
+  if base == PermissionLevel::Write {
+    // No reason to keep going if already Write at this point.
+    return Ok(PermissionLevel::Write);
+  }
+
+  // Overlay any specific permissions
+  let permission = find_collect(
+    &db_client().permissions,
+    doc! {
+      "$or": user_target_query(&user.id, &groups)?,
+      "resource_target.type": resource_type.as_ref(),
+      "resource_target.id": resource_id
+    },
+    None,
+  )
+  .await
+  .context("failed to query db for permissions")?
+  .into_iter()
+  // get the max permission user has between personal / any user groups
+  .fold(base, |level, permission| {
+    if permission.level > level {
+      permission.level
+    } else {
+      level
+    }
+  });
+  Ok(permission)
+}
+
 // ======
 // LIST
 // ======
@@ -326,79 +400,6 @@ pub async fn get_resource_ids_for_user<T: KomodoResource>(
 }
 
 #[instrument(level = "debug")]
-pub async fn get_user_permission_on_resource<T: KomodoResource>(
-  user: &User,
-  resource_id: &str,
-) -> anyhow::Result<PermissionLevel> {
-  if user.admin {
-    return Ok(PermissionLevel::Write);
-  }
-
-  let resource_type = T::resource_type();
-
-  // Start with base of Read or None
-  let mut base = if core_config().transparent_mode {
-    PermissionLevel::Read
-  } else {
-    PermissionLevel::None
-  };
-
-  // Add in the resource level global base permission
-  let resource_base = get::<T>(resource_id).await?.base_permission;
-  if resource_base > base {
-    base = resource_base;
-  }
-
-  // Overlay users base on resource variant
-  if let Some(level) = user.all.get(&resource_type).cloned() {
-    if level > base {
-      base = level;
-    }
-  }
-  if base == PermissionLevel::Write {
-    // No reason to keep going if already Write at this point.
-    return Ok(PermissionLevel::Write);
-  }
-
-  // Overlay any user groups base on resource variant
-  let groups = get_user_user_groups(&user.id).await?;
-  for group in &groups {
-    if let Some(level) = group.all.get(&resource_type).cloned() {
-      if level > base {
-        base = level;
-      }
-    }
-  }
-  if base == PermissionLevel::Write {
-    // No reason to keep going if already Write at this point.
-    return Ok(PermissionLevel::Write);
-  }
-
-  // Overlay any specific permissions
-  let permission = find_collect(
-    &db_client().permissions,
-    doc! {
-      "$or": user_target_query(&user.id, &groups)?,
-      "resource_target.type": resource_type.as_ref(),
-      "resource_target.id": resource_id
-    },
-    None,
-  )
-  .await
-  .context("failed to query db for permissions")?
-  .into_iter()
-  // get the max permission user has between personal / any user groups
-  .fold(base, |level, permission| {
-    if permission.level > level {
-      permission.level
-    } else {
-      level
-    }
-  });
-  Ok(permission)
-}
-
-#[instrument(level = "debug")]
 pub async fn list_for_user<T: KomodoResource>(
   mut query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
@@ -410,6 +411,26 @@ pub async fn list_for_user<T: KomodoResource>(
   list_for_user_using_document::<T>(filters, user).await
 }
 
+#[instrument(level = "debug")]
+pub async fn list_for_user_using_match_string<T: KomodoResource>(
+  match_string: &str,
+  query: ResourceQuery<T::QuerySpecifics>,
+  user: &User,
+  all_tags: &[Tag],
+) -> anyhow::Result<Vec<T::ListItem>> {
+  let list = list_full_for_user_using_match_string::<T>(
+    match_string,
+    query,
+    user,
+    all_tags,
+  )
+  .await?
+  .into_iter()
+  .map(|resource| T::to_list_item(resource));
+  Ok(join_all(list).await)
+}
+
+#[instrument(level = "debug")]
 pub async fn list_for_user_using_document<T: KomodoResource>(
   filters: Document,
   user: &User,
@@ -419,6 +440,59 @@ pub async fn list_for_user_using_document<T: KomodoResource>(
     .into_iter()
     .map(|resource| T::to_list_item(resource));
   Ok(join_all(list).await)
+}
+
+/// Lists full resource matching wildcard syntax,
+/// or regex if wrapped with "\\"
+///
+/// ## Example
+/// ```
+/// let items = list_full_for_user_using_match_string::<Build>("foo-*", Default::default(), user, all_tags).await?;
+/// let items = list_full_for_user_using_match_string::<Build>("\\^foo-.*$\\", Default::default(), user, all_tags).await?;
+/// ```
+#[instrument(level = "debug")]
+pub async fn list_full_for_user_using_match_string<
+  T: KomodoResource,
+>(
+  match_string: &str,
+  query: ResourceQuery<T::QuerySpecifics>,
+  user: &User,
+  all_tags: &[Tag],
+) -> anyhow::Result<Vec<Resource<T::Config, T::Info>>> {
+  let resources =
+    list_full_for_user::<T>(query, user, all_tags).await?;
+
+  let matches = parse_string_list(match_string);
+  let mut names = HashSet::<String>::new();
+
+  for match_string in matches {
+    if match_string.starts_with('\\') && match_string.ends_with('\\')
+    {
+      let regex =
+        regex::Regex::new(&match_string[1..(match_string.len() - 1)])
+          .context("Regex matching string invalid")?;
+      for resource in &resources {
+        if regex.is_match(&resource.name) {
+          names.insert(resource.name.clone());
+        }
+      }
+    } else {
+      let wildcard = wildcard::Wildcard::new(match_string.as_bytes())
+        .context("Wildcard matching string invalid")?;
+      for resource in &resources {
+        if wildcard.is_match(resource.name.as_bytes()) {
+          names.insert(resource.name.clone());
+        }
+      }
+    };
+  }
+
+  Ok(
+    resources
+      .into_iter()
+      .filter(|resource| names.contains(resource.name.as_str()))
+      .collect(),
+  )
 }
 
 #[instrument(level = "debug")]

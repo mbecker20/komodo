@@ -41,7 +41,7 @@ dependencies = [
 
 [[package]]
 name = "alerter"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "axum",
@@ -120,9 +120,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.90"
+version = "1.0.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37bf3594c4c988a53154954629820791dde498571819ae4ca50ca811e060cc95"
+checksum = "c042108f3ed77fd83760a5fd79b53be043192bb3b9dba91d8c574c0ada7850c8"
 
 [[package]]
 name = "arc-swap"
@@ -201,9 +201,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "aws-config"
-version = "1.5.8"
+version = "1.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7198e6f03240fdceba36656d8be440297b6b82270325908c7381f37d826a74f6"
+checksum = "2d6448cfb224dd6a9b9ac734f58622dd0d4751f3589f3b777345745f46b2eb14"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -268,9 +268,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ec2"
-version = "1.79.0"
+version = "1.83.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95559916ae9d6ef69b104546098a4b4c57082db5d11571917916e9a69234c6ea"
+checksum = "59ef9cdd731373735434b79a33fd1049525d78674c49b1e278d56544e388fe01"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -292,9 +292,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-sso"
-version = "1.46.0"
+version = "1.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dc2faec3205d496c7e57eff685dd944203df7ce16a4116d0281c44021788a7b"
+checksum = "a8776850becacbd3a82a4737a9375ddb5c6832a51379f24443a98e61513f852c"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -314,9 +314,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-ssooidc"
-version = "1.47.0"
+version = "1.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c93c241f52bc5e0476e259c953234dab7e2a35ee207ee202e86c0095ec4951dc"
+checksum = "0007b5b8004547133319b6c4e87193eee2a0bcb3e4c18c75d09febe9dab7b383"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -336,9 +336,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-sts"
-version = "1.46.0"
+version = "1.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b259429be94a3459fa1b00c5684faee118d74f9577cc50aebadc36e507c63b5f"
+checksum = "9fffaa356e7f1c725908b75136d53207fa714e348f365671df14e95a60530ad3"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -432,9 +432,9 @@ dependencies = [
 
 [[package]]
 name = "aws-smithy-runtime"
-version = "1.7.2"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a065c0fe6fdbdf9f11817eb68582b2ab4aff9e9c39e986ae48f7ec576c6322db"
+checksum = "be28bd063fa91fd871d131fc8b68d7cd4c5fa0869bea68daca50dcb1cbd76be2"
 dependencies = [
  "aws-smithy-async",
  "aws-smithy-http",
@@ -476,9 +476,9 @@ dependencies = [
 
 [[package]]
 name = "aws-smithy-types"
-version = "1.2.7"
+version = "1.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "147100a7bea70fa20ef224a6bad700358305f5dc0f84649c53769761395b355b"
+checksum = "07c9cdc179e6afbf5d391ab08c85eac817b51c87e1892a5edb5f7bbdc64314b4"
 dependencies = [
  "base64-simd",
  "bytes",
@@ -943,7 +943,7 @@ dependencies = [
 
 [[package]]
 name = "command"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "komodo_client",
  "run_command",
@@ -1355,7 +1355,7 @@ dependencies = [
 
 [[package]]
 name = "environment_file"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "thiserror",
 ]
@@ -1439,7 +1439,7 @@ dependencies = [
 
 [[package]]
 name = "formatting"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "serror",
 ]
@@ -1571,7 +1571,7 @@ checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
 
 [[package]]
 name = "git"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "command",
@@ -2191,7 +2191,7 @@ dependencies = [
 
 [[package]]
 name = "komodo_cli"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "clap",
@@ -2207,7 +2207,7 @@ dependencies = [
 
 [[package]]
 name = "komodo_client"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2238,7 +2238,7 @@ dependencies = [
 
 [[package]]
 name = "komodo_core"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2292,11 +2292,12 @@ dependencies = [
  "typeshare",
  "urlencoding",
  "uuid",
+ "wildcard",
 ]
 
 [[package]]
 name = "komodo_periphery"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2383,7 +2384,7 @@ dependencies = [
 
 [[package]]
 name = "logger"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "komodo_client",
@@ -3089,7 +3090,7 @@ checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "periphery_client"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "komodo_client",
@@ -3307,9 +3308,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.11.0"
+version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38200e5ee88914975b69f657f0801b6f6dccafd44fd9326302a4aaeecfacb1d8"
+checksum = "b544ef1b4eac5dc2db33ea63606ae9ffcfac26c1416a2806ae0bf5f56b201191"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -3993,9 +3994,9 @@ dependencies = [
 
 [[package]]
 name = "serror"
-version = "0.4.6"
+version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8f432d878d404110352cfbaa031d8a6878a166cb7f50e00ab87d0508f8f68a0"
+checksum = "715a997753611604c722411afbe11f83a89e00e39323dc9016db96a86cc04fc8"
 dependencies = [
  "anyhow",
  "axum",
@@ -4327,18 +4328,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.64"
+version = "1.0.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d50af8abc119fb8bb6dbabcfa89656f46f84aa0ac7688088608076ad2b459a84"
+checksum = "5d11abd9594d9b38965ef50805c5e469ca9cc6f197f883f717e0269a3057b3d5"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.64"
+version = "1.0.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08904e7672f5eb876eaaf87e0ce17857500934f4981c4a0ab2b4aa98baac7fc3"
+checksum = "ae71770322cbd277e69d762a16c444af02aa0575ac0d174f0b9562d3b37f8602"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4791,9 +4792,9 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "typeshare"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04f17399b76c2e743d58eac0635d7686e9c00f48cd4776f00695d9882a7d3187"
+checksum = "19be0f411120091e76e13e5a0186d8e2bcc3e7e244afdb70152197f1a8486ceb"
 dependencies = [
  "chrono",
  "serde",
@@ -4864,7 +4865,7 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "update_logger"
-version = "1.16.4"
+version = "1.16.5"
 dependencies = [
  "anyhow",
  "komodo_client",
@@ -5072,6 +5073,15 @@ name = "widestring"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7219d36b6eac893fa81e84ebe06485e7dcbb616177469b142df14f1f4deb1311"
+
+[[package]]
+name = "wildcard"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36241ad0795516b55e3b60e55c7f979d4f324e4aaea4c70d56b548b9164ee4d2"
+dependencies = [
+ "thiserror",
+]
 
 [[package]]
 name = "winapi"

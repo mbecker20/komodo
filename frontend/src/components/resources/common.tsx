@@ -2,7 +2,7 @@ import {
   ActionWithDialog,
   ConfirmButton,
   CopyButton,
-  TextUpdateMenu2,
+  TextUpdateMenuSimple,
 } from "@components/util";
 import {
   useInvalidate,
@@ -70,7 +70,7 @@ export const ResourceDescription = ({
   });
 
   return (
-    <TextUpdateMenu2
+    <TextUpdateMenuSimple
       title="Update Description"
       placeholder="Set Description"
       value={resource?.description}

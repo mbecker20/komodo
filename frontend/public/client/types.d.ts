@@ -203,6 +203,14 @@ export interface AlerterQuerySpecifics {
     types: AlerterEndpoint["type"][];
 }
 export type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
+export type BatchExecutionResultItem = {
+    status: "Ok";
+    data: Update;
+} | {
+    status: "Err";
+    data: BatchExecutionResultItemErr;
+};
+export type BatchExecutionResult = BatchExecutionResultItem[];
 export interface Version {
     major: number;
     minor: number;
@@ -416,6 +424,9 @@ export type Execution =
 } | {
     type: "RunAction";
     params: RunAction;
+} | {
+    type: "BatchRunAction";
+    params: BatchRunAction;
 } | {
     type: "RunProcedure";
     params: RunProcedure;
@@ -3344,6 +3355,26 @@ export interface AwsServerTemplateConfig {
     volumes: AwsVolume[];
     /** The user data to deploy the instance with. */
     user_data: string;
+}
+export interface BatchExecutionResultItemErr {
+    name: string;
+    error: _Serror;
+}
+/** Batch runs the target Action. Response: [`Vec<Update>`] */
+export interface BatchRunAction {
+    /**
+     * Id or name or wildcard pattern or regex.
+     * Supports multiline and comma delineated combinations of the above.
+     *
+     * Example:
+     * ```
+     * # match all foo-* actions
+     * foo-*
+     * # add some more
+     * extra-action-1, extra-action-2
+     * ```
+     */
+    action: string;
 }
 /**
  * Builds the target repo, using the attached builder. Response: [Update].
@@ -6652,6 +6683,9 @@ export type ExecuteRequest = {
 } | {
     type: "RunAction";
     params: RunAction;
+} | {
+    type: "BatchRunAction";
+    params: BatchRunAction;
 } | {
     type: "LaunchServer";
     params: LaunchServer;

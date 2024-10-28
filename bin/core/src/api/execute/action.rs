@@ -7,9 +7,13 @@ use std::{
 
 use anyhow::Context;
 use command::run_komodo_command;
+use futures::future::join_all;
 use komodo_client::{
   api::{
-    execute::RunAction,
+    execute::{
+      BatchExecutionResult, BatchExecutionResultItemErr,
+      BatchRunAction, RunAction,
+    },
     user::{CreateApiKey, CreateApiKeyResponse, DeleteApiKey},
   },
   entities::{
@@ -25,6 +29,7 @@ use resolver_api::Resolve;
 use tokio::fs;
 
 use crate::{
+  api::execute::ExecuteRequest,
   config::core_config,
   helpers::{
     interpolate::{
@@ -35,9 +40,52 @@ use crate::{
     random_string,
     update::update_update,
   },
-  resource::{self, refresh_action_state_cache},
+  resource::{
+    self, list_full_for_user_using_match_string,
+    refresh_action_state_cache,
+  },
   state::{action_states, db_client, State},
 };
+
+impl Resolve<BatchRunAction, (User, Update)> for State {
+  async fn resolve(
+    &self,
+    BatchRunAction { action }: BatchRunAction,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResult> {
+    let actions = list_full_for_user_using_match_string::<Action>(
+      &action,
+      Default::default(),
+      &user,
+      &[],
+    )
+    .await?;
+    let futures = actions.into_iter().map(|action| {
+      let user = user.clone();
+      async move {
+        super::inner_handler(
+          ExecuteRequest::RunAction(RunAction {
+            action: action.name.clone(),
+          }),
+          user,
+        )
+        .await
+        .map(|r| {
+          let super::ExecutionResult::Single(update) = r else {
+            unreachable!()
+          };
+          update
+        })
+        .map_err(|e| BatchExecutionResultItemErr {
+          name: action.name,
+          error: e.into(),
+        })
+        .into()
+      }
+    });
+    Ok(join_all(futures).await)
+  }
+}
 
 impl Resolve<RunAction, (User, Update)> for State {
   async fn resolve(

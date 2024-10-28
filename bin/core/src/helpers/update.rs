@@ -353,6 +353,9 @@ pub async fn init_execution_update(
         resource::get::<Action>(&data.action).await?.id,
       ),
     ),
+    ExecuteRequest::BatchRunAction(_) => {
+      return Ok(Default::default())
+    }
 
     // Server template
     ExecuteRequest::LaunchServer(data) => (

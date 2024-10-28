@@ -168,7 +168,7 @@ pub fn get_image_name(
 pub fn to_komodo_name(name: &str) -> String {
   name
     .to_lowercase()
-    .replace([' ', '.'], "_")
+    .replace([' ', '.', ',', '\n'], "_")
     .trim()
     .to_string()
 }

@@ -32,6 +32,7 @@ import "./theme";
 import "./yaml";
 import "./toml";
 import "./key_value";
+import "./string_list";
 import "./shell";
 import "./dockerfile";
 import "./rust";

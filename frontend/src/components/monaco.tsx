@@ -16,6 +16,7 @@ export type MonacoLanguage =
   | "toml"
   | "json"
   | "key_value"
+  | "string_list"
   | "shell"
   | "dockerfile"
   | "rust"

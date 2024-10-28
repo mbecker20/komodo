@@ -276,6 +276,7 @@ export type ExecuteResponses = {
     CancelRepoBuild: Types.Update;
     RunProcedure: Types.Update;
     RunAction: Types.Update;
+    BatchRunAction: Types.BatchExecutionResult;
     LaunchServer: Types.Update;
     RunSync: Types.Update;
     DeployStack: Types.Update;

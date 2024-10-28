@@ -198,6 +198,12 @@ export interface AlerterQuerySpecifics {
 
 export type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
 
+export type BatchExecutionResultItem = 
+	| { status: "Ok", data: Update }
+	| { status: "Err", data: BatchExecutionResultItemErr };
+
+export type BatchExecutionResult = BatchExecutionResultItem[];
+
 export interface Version {
 	major: number;
 	minor: number;
@@ -418,6 +424,7 @@ export type Execution =
 	/** The "null" execution. Does nothing. */
 	| { type: "None", params: NoData }
 	| { type: "RunAction", params: RunAction }
+	| { type: "BatchRunAction", params: BatchRunAction }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "CancelBuild", params: CancelBuild }
@@ -3510,6 +3517,28 @@ export interface AwsServerTemplateConfig {
 	volumes: AwsVolume[];
 	/** The user data to deploy the instance with. */
 	user_data: string;
+}
+
+export interface BatchExecutionResultItemErr {
+	name: string;
+	error: _Serror;
+}
+
+/** Batch runs the target Action. Response: [`Vec<Update>`] */
+export interface BatchRunAction {
+	/**
+	 * Id or name or wildcard pattern or regex.
+	 * Supports multiline and comma delineated combinations of the above.
+	 * 
+	 * Example:
+	 * ```
+	 * # match all foo-* actions
+	 * foo-*
+	 * # add some more
+	 * extra-action-1, extra-action-2
+	 * ```
+	 */
+	action: string;
 }
 
 /**
@@ -7057,6 +7086,7 @@ export type ExecuteRequest =
 	| { type: "CancelRepoBuild", params: CancelRepoBuild }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "RunAction", params: RunAction }
+	| { type: "BatchRunAction", params: BatchRunAction }
 	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "RunSync", params: RunSync };
 

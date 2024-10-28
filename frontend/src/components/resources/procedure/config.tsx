@@ -13,7 +13,13 @@ import {
   useWrite,
 } from "@lib/hooks";
 import { Types } from "komodo_client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { Input } from "@ui/input";
 import { useEffect, useState } from "react";
 import { CopyWebhook, ResourceSelector } from "../common";
@@ -54,6 +60,7 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { filterBySplit } from "@lib/utils";
 import { useToast } from "@ui/use-toast";
 import { fmt_upper_camelcase } from "@lib/formatting";
+import { TextUpdateMenuMonaco } from "@components/util";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
   const procedure = useRead("GetProcedure", { procedure: id }).data;
@@ -661,6 +668,21 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         selected={params.action}
         onSelect={(action) => setParams({ action })}
         disabled={disabled}
+      />
+    ),
+  },
+  BatchRunAction: {
+    params: { action: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match actions"
+        value={
+          params.action ||
+          "# Match actions by name, id, wildcard, regex.\n"
+        }
+        onUpdate={(action) => setParams({ action })}
+        disabled={disabled}
+        language="string_list"
       />
     ),
   },

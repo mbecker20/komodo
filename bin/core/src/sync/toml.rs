@@ -421,6 +421,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchRunAction(_exec) => {}
           Execution::RunBuild(exec) => exec.build.clone_from(
             all
               .builds

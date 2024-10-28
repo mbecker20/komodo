@@ -371,6 +371,7 @@ export type ExecuteResponses = {
   
   // ==== ACTION ====
   RunAction: Types.Update;
+  BatchRunAction: Types.BatchExecutionResult;
 
   // ==== SERVER TEMPLATE ====
   LaunchServer: Types.Update;

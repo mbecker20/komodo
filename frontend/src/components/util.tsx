@@ -54,7 +54,7 @@ import { Section } from "./layouts";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useRead, useUser } from "@lib/hooks";
 import { Prune } from "./resources/server/actions";
-import { MonacoEditor } from "./monaco";
+import { MonacoEditor, MonacoLanguage } from "./monaco";
 import { UsableResource } from "@types";
 import { ResourceComponents } from "./resources";
 
@@ -351,7 +351,7 @@ export const CopyButton = ({
   );
 };
 
-export const TextUpdateMenu = ({
+export const TextUpdateMenuMonaco = ({
   title,
   titleRight,
   value = "",
@@ -378,7 +378,7 @@ export const TextUpdateMenu = ({
   open?: boolean;
   setOpen?: (open: boolean) => void;
   triggerHidden?: boolean;
-  language?: "toml" | "yaml" | "json" | "key_value";
+  language?: MonacoLanguage;
 }) => {
   const [_open, _setOpen] = useState(false);
   const [__open, __setOpen] = [open ?? _open, setOpen ?? _setOpen];
@@ -406,7 +406,7 @@ export const TextUpdateMenu = ({
               triggerClassName
             )}
           >
-            {value || placeholder}
+            {value.split("\n")[0] || placeholder}
           </div>
         </Card>
       </DialogTrigger>
@@ -601,10 +601,10 @@ export const DOCKER_LINK_ICONS: {
             !name
               ? "Warning"
               : no_containers
-              ? ["none", "host", "bridge"].includes(name)
-                ? "None"
-                : "Critical"
-              : "Good"
+                ? ["none", "host", "bridge"].includes(name)
+                  ? "None"
+                  : "Critical"
+                : "Good"
           )
         )}
       />
@@ -833,7 +833,7 @@ export const ResourcePageHeader = ({
   );
 };
 
-export const TextUpdateMenu2 = ({
+export const TextUpdateMenuSimple = ({
   title,
   titleRight,
   value = "",

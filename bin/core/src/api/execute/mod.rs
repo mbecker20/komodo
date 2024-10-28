@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Router};
+use axum_extra::{headers::ContentType, TypedHeader};
 use derive_variants::{EnumVariants, ExtractVariant};
 use formatting::format_serror;
 use komodo_client::{
@@ -9,6 +10,7 @@ use komodo_client::{
   entities::{
     update::{Log, Update},
     user::User,
+    Operation,
   },
 };
 use mungos::by_id::find_one_by_id;
@@ -100,6 +102,7 @@ pub enum ExecuteRequest {
 
   // ==== ACTION ====
   RunAction(RunAction),
+  BatchRunAction(BatchRunAction),
 
   // ==== SERVER TEMPLATE ====
   LaunchServer(LaunchServer),
@@ -117,13 +120,42 @@ pub fn router() -> Router {
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<ExecuteRequest>,
-) -> serror::Result<Json<Update>> {
+) -> serror::Result<(TypedHeader<ContentType>, String)> {
+  let res = match inner_handler(request, user).await? {
+    ExecutionResult::Single(update) => serde_json::to_string(&update)
+      .context("Failed to serialize Update")?,
+    ExecutionResult::Batch(res) => res,
+  };
+  Ok((TypedHeader(ContentType::json()), res))
+}
+
+enum ExecutionResult {
+  Single(Update),
+  /// The batch contents will be pre serialized here
+  Batch(String),
+}
+
+async fn inner_handler(
+  request: ExecuteRequest,
+  user: User,
+) -> anyhow::Result<ExecutionResult> {
   let req_id = Uuid::new_v4();
 
   // need to validate no cancel is active before any update is created.
   build::validate_cancel_build(&request).await?;
 
   let update = init_execution_update(&request, &user).await?;
+
+  // This will be the case for the Batch exections,
+  // they don't have their own updates.
+  // The batch calls also call "inner_handler" themselves,
+  // and in their case will spawn tasks, so that isn't necessary
+  // here either.
+  if update.operation == Operation::None {
+    return Ok(ExecutionResult::Batch(
+      task(req_id, request, user, update).await?,
+    ));
+  }
 
   let handle =
     tokio::spawn(task(req_id, request, user, update.clone()));
@@ -160,7 +192,7 @@ async fn handler(
     }
   });
 
-  Ok(Json(update))
+  Ok(ExecutionResult::Single(update))
 }
 
 #[instrument(

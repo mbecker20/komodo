@@ -367,6 +367,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|p| p.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchRunAction(_config) => {}
           Execution::RunBuild(config) => {
             config.build = resources
               .builds
