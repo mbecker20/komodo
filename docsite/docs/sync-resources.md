@@ -171,28 +171,28 @@ name = "test-procedure"
 description = "Do some things in a specific order"
 tags = ["test"]
 
-# Each stage will be executed one after the other (in sequence)
 [[procedure.config.stage]]
 name = "Build stuff"
-enabled = true
-# The executions within a stage will be run in parallel. The stage completes when all executions finish.
 executions = [
-  { execution.type = "RunBuild", execution.params.build = "test_logger", enabled = true },
-  { execution.type = "PullRepo", execution.params.repo = "komodo-periphery", enabled = true },
+  { execution.type = "RunBuild", execution.params.build = "test_logger" },
+  # Uses the Batch version, witch matches many builds by pattern
+  # This one matches all builds prefixed with `foo-` (wildcard) and `bar-` (regex).
+  { execution.type = "BatchRunBuild", execution.params.pattern = "foo-* , \\^bar-.*$\\" },
+  { execution.type = "PullRepo", execution.params.repo = "komodo-periphery" },
 ]
 
 [[procedure.config.stage]]
 name = "Deploy test logger 1"
-enabled = true
 executions = [
-  { execution.type = "Deploy", execution.params.deployment = "test-logger-01", enabled = true }
+  { execution.type = "Deploy", execution.params.deployment = "test-logger-01" },
+  { execution.type = "Deploy", execution.params.deployment = "test-logger-03", enabled = false },
 ]
 
 [[procedure.config.stage]]
 name = "Deploy test logger 2"
-enabled = true
+enabled = false
 executions = [
-  { execution.type = "Deploy", execution.params.deployment = "test-logger-02", enabled = true }
+  { execution.type = "Deploy", execution.params.deployment = "test-logger-02" }
 ]
 ```
 

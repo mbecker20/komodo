@@ -59,6 +59,7 @@ const sidebars: SidebarsConfig = {
     },
     "docker-compose",
     "variables",
+    "procedures",
     "permissioning",
     "sync-resources",
     "webhooks",
