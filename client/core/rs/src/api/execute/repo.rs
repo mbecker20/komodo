@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::KomodoExecuteRequest;
+use super::{BatchExecutionResponse, KomodoExecuteRequest};
 
 //
 
@@ -39,6 +39,36 @@ pub struct CloneRepo {
 
 //
 
+/// Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchCloneRepo {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* repos
+  /// foo-*
+  /// # add some more
+  /// extra-repo-1, extra-repo-2
+  /// ```
+  pub pattern: String,
+}
+
+//
+
 /// Pulls the target repo. Response: [Update].
 ///
 /// Note. Repo must have server attached at `server_id`.
@@ -61,6 +91,36 @@ pub struct CloneRepo {
 pub struct PullRepo {
   /// Id or name
   pub repo: String,
+}
+
+//
+
+/// Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchPullRepo {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* repos
+  /// foo-*
+  /// # add some more
+  /// extra-repo-1, extra-repo-2
+  /// ```
+  pub pattern: String,
 }
 
 //
@@ -91,6 +151,36 @@ pub struct PullRepo {
 pub struct BuildRepo {
   /// Id or name
   pub repo: String,
+}
+
+//
+
+/// Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchBuildRepo {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* repos
+  /// foo-*
+  /// # add some more
+  /// extra-repo-1, extra-repo-2
+  /// ```
+  pub pattern: String,
 }
 
 //

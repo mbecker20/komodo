@@ -36,6 +36,29 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
+use super::ExecuteRequest;
+
+impl super::BatchExecute for BatchDeployStack {
+  type Resource = Stack;
+  fn single_request(stack: String) -> ExecuteRequest {
+    ExecuteRequest::DeployStack(DeployStack {
+      stack,
+      stop_time: None,
+    })
+  }
+}
+
+impl Resolve<BatchDeployStack, (User, Update)> for State {
+  #[instrument(name = "BatchDeployStack", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchDeployStack { pattern }: BatchDeployStack,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchDeployStack>(&pattern, &user).await
+  }
+}
+
 impl Resolve<DeployStack, (User, Update)> for State {
   #[instrument(name = "DeployStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -246,6 +269,28 @@ impl Resolve<DeployStack, (User, Update)> for State {
   }
 }
 
+impl super::BatchExecute for BatchDeployStackIfChanged {
+  type Resource = Stack;
+  fn single_request(stack: String) -> ExecuteRequest {
+    ExecuteRequest::DeployStackIfChanged(DeployStackIfChanged {
+      stack,
+      stop_time: None,
+    })
+  }
+}
+
+impl Resolve<BatchDeployStackIfChanged, (User, Update)> for State {
+  #[instrument(name = "BatchDeployStackIfChanged", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchDeployStackIfChanged { pattern }: BatchDeployStackIfChanged,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchDeployStackIfChanged>(&pattern, &user)
+      .await
+  }
+}
+
 impl Resolve<DeployStackIfChanged, (User, Update)> for State {
   async fn resolve(
     &self,
@@ -415,6 +460,28 @@ impl Resolve<StopStack, (User, Update)> for State {
       stop_time,
     )
     .await
+  }
+}
+
+impl super::BatchExecute for BatchDestroyStack {
+  type Resource = Stack;
+  fn single_request(stack: String) -> ExecuteRequest {
+    ExecuteRequest::DestroyStack(DestroyStack {
+      stack,
+      remove_orphans: false,
+      stop_time: None,
+    })
+  }
+}
+
+impl Resolve<BatchDestroyStack, (User, Update)> for State {
+  #[instrument(name = "BatchDestroyStack", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchDestroyStack { pattern }: BatchDestroyStack,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchDestroyStack>(&pattern, &user).await
   }
 }
 

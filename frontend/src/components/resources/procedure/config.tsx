@@ -411,6 +411,7 @@ const Stage = ({
         columns={[
           {
             header: "Execution",
+            size: 250,
             cell: ({ row: { original, index } }) => (
               <ExecutionTypeSelector
                 disabled={disabled}
@@ -439,6 +440,7 @@ const Stage = ({
           },
           {
             header: "Target",
+            size: 250,
             cell: ({
               row: {
                 original: {
@@ -471,6 +473,7 @@ const Stage = ({
           },
           {
             header: "Add / Remove",
+            size: 150,
             cell: ({ row: { index } }) => (
               <div className="flex items-center gap-2">
                 <Button
@@ -508,6 +511,7 @@ const Stage = ({
           },
           {
             header: "Enabled",
+            size: 100,
             cell: ({
               row: {
                 original: { enabled },
@@ -659,6 +663,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  BatchRunProcedure: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match procedures"
+        value={
+          params.pattern ||
+          "# Match procedures by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
+      />
+    ),
+  },
   // Action
   RunAction: {
     params: { action: "" },
@@ -672,17 +692,18 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
     ),
   },
   BatchRunAction: {
-    params: { action: "" },
+    params: { pattern: "" },
     Component: ({ params, setParams, disabled }) => (
       <TextUpdateMenuMonaco
         title="Match actions"
         value={
-          params.action ||
-          "# Match actions by name, id, wildcard, regex.\n"
+          params.pattern ||
+          "# Match actions by name, id, wildcard, or \\regex\\.\n"
         }
-        onUpdate={(action) => setParams({ action })}
+        onUpdate={(pattern) => setParams({ pattern })}
         disabled={disabled}
         language="string_list"
+        fullWidth
       />
     ),
   },
@@ -695,6 +716,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         selected={params.build}
         onSelect={(build) => setParams({ build })}
         disabled={disabled}
+      />
+    ),
+  },
+  BatchRunBuild: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match builds"
+        value={
+          params.pattern ||
+          "# Match builds by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
       />
     ),
   },
@@ -722,6 +759,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         />
       );
     },
+  },
+  BatchDeploy: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match deployments"
+        value={
+          params.pattern ||
+          "# Match deployments by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
+      />
+    ),
   },
   StartDeployment: {
     params: { deployment: "" },
@@ -789,6 +842,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  BatchDestroyDeployment: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match deployments"
+        value={
+          params.pattern ||
+          "# Match deployments by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
+      />
+    ),
+  },
   // Stack
   DeployStack: {
     params: { stack: "" },
@@ -801,6 +870,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  BatchDeployStack: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match stacks"
+        value={
+          params.pattern ||
+          "# Match stacks by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
+      />
+    ),
+  },
   DeployStackIfChanged: {
     params: { stack: "" },
     Component: ({ params, setParams, disabled }) => (
@@ -809,6 +894,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         selected={params.stack}
         onSelect={(id) => setParams({ stack: id })}
         disabled={disabled}
+      />
+    ),
+  },
+  BatchDeployStackIfChanged: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match stacks"
+        value={
+          params.pattern ||
+          "# Match stacks by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
       />
     ),
   },
@@ -878,6 +979,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  BatchDestroyStack: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match stacks"
+        value={
+          params.pattern ||
+          "# Match stacks by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
+      />
+    ),
+  },
   // Repo
   CloneRepo: {
     params: { repo: "" },
@@ -887,6 +1004,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         selected={params.repo}
         onSelect={(repo) => setParams({ repo })}
         disabled={disabled}
+      />
+    ),
+  },
+  BatchCloneRepo: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match repos"
+        value={
+          params.pattern ||
+          "# Match repos by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
       />
     ),
   },
@@ -901,6 +1034,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  BatchPullRepo: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match repos"
+        value={
+          params.pattern ||
+          "# Match repos by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
+      />
+    ),
+  },
   BuildRepo: {
     params: { repo: "" },
     Component: ({ params, setParams, disabled }) => (
@@ -909,6 +1058,22 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         selected={params.repo}
         onSelect={(repo) => setParams({ repo })}
         disabled={disabled}
+      />
+    ),
+  },
+  BatchBuildRepo: {
+    params: { pattern: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <TextUpdateMenuMonaco
+        title="Match repos"
+        value={
+          params.pattern ||
+          "# Match repos by name, id, wildcard, or \\regex\\.\n"
+        }
+        onUpdate={(pattern) => setParams({ pattern })}
+        disabled={disabled}
+        language="string_list"
+        fullWidth
       />
     ),
   },

@@ -47,6 +47,24 @@ use crate::{
 
 use super::ExecuteRequest;
 
+impl super::BatchExecute for BatchCloneRepo {
+  type Resource = Repo;
+  fn single_request(repo: String) -> ExecuteRequest {
+    ExecuteRequest::CloneRepo(CloneRepo { repo })
+  }
+}
+
+impl Resolve<BatchCloneRepo, (User, Update)> for State {
+  #[instrument(name = "BatchCloneRepo", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchCloneRepo { pattern }: BatchCloneRepo,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchCloneRepo>(&pattern, &user).await
+  }
+}
+
 impl Resolve<CloneRepo, (User, Update)> for State {
   #[instrument(name = "CloneRepo", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -135,6 +153,24 @@ impl Resolve<CloneRepo, (User, Update)> for State {
     };
 
     handle_server_update_return(update).await
+  }
+}
+
+impl super::BatchExecute for BatchPullRepo {
+  type Resource = Repo;
+  fn single_request(repo: String) -> ExecuteRequest {
+    ExecuteRequest::CloneRepo(CloneRepo { repo })
+  }
+}
+
+impl Resolve<BatchPullRepo, (User, Update)> for State {
+  #[instrument(name = "BatchPullRepo", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchPullRepo { pattern }: BatchPullRepo,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchPullRepo>(&pattern, &user).await
   }
 }
 
@@ -268,6 +304,24 @@ async fn update_last_pulled_time(repo_name: &str) {
     warn!(
       "failed to update repo last_pulled_at | repo: {repo_name} | {e:#}",
     );
+  }
+}
+
+impl super::BatchExecute for BatchBuildRepo {
+  type Resource = Repo;
+  fn single_request(repo: String) -> ExecuteRequest {
+    ExecuteRequest::CloneRepo(CloneRepo { repo })
+  }
+}
+
+impl Resolve<BatchBuildRepo, (User, Update)> for State {
+  #[instrument(name = "BatchBuildRepo", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchBuildRepo { pattern }: BatchBuildRepo,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchBuildRepo>(&pattern, &user).await
   }
 }
 

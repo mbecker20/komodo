@@ -29,11 +29,15 @@ export const MonacoEditor = ({
   onValueChange,
   language,
   readOnly,
+  minHeight,
+  className,
 }: {
   value: string | undefined;
   onValueChange?: (value: string) => void;
   language: MonacoLanguage;
   readOnly?: boolean;
+  minHeight?: number;
+  className?: string;
 }) => {
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -98,12 +102,8 @@ export const MonacoEditor = ({
 
     containerNode.style.height = `${Math.max(
       Math.ceil(contentHeight),
-      MIN_EDITOR_HEIGHT
+      minHeight ?? MIN_EDITOR_HEIGHT
     )}px`;
-    // containerNode.style.height = `${Math.max(
-    //   Math.min(Math.ceil(contentHeight), MAX_EDITOR_HEIGHT),
-    //   MIN_EDITOR_HEIGHT
-    // )}px`;
   }, [editor, line_count]);
 
   const { theme: _theme } = useTheme();
@@ -132,7 +132,7 @@ export const MonacoEditor = ({
   };
 
   return (
-    <div className="mx-2 my-1 w-full">
+    <div className={cn("mx-2 my-1 w-full", className)}>
       <Editor
         language={language}
         value={value}

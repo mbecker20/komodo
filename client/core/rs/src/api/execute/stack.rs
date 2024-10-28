@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::KomodoExecuteRequest;
+use super::{BatchExecutionResponse, KomodoExecuteRequest};
 
 /// Deploys the target stack. `docker compose up`. Response: [Update]
 #[typeshare]
@@ -30,6 +30,38 @@ pub struct DeployStack {
   pub stop_time: Option<i32>,
 }
 
+//
+
+/// Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchDeployStack {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* stacks
+  /// foo-*
+  /// # add some more
+  /// extra-stack-1, extra-stack-2
+  /// ```
+  pub pattern: String,
+}
+
+//
+
 /// Checks deployed contents vs latest contents,
 /// and only if any changes found
 /// will `docker compose up`. Response: [Update]
@@ -52,6 +84,36 @@ pub struct DeployStackIfChanged {
   /// Override the default termination max time.
   /// Only used if the stack needs to be taken down first.
   pub stop_time: Option<i32>,
+}
+
+//
+
+/// Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchDeployStackIfChanged {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///
+  /// Example:
+  /// ```
+  /// # match all foo-* stacks
+  /// foo-*
+  /// # add some more
+  /// extra-stack-1, extra-stack-2
+  /// ```
+  pub pattern: String,
 }
 
 //
@@ -197,4 +259,34 @@ pub struct DestroyStack {
   pub remove_orphans: bool,
   /// Override the default termination max time.
   pub stop_time: Option<i32>,
+}
+
+//
+
+/// Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult].
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(BatchExecutionResponse)]
+pub struct BatchDestroyStack {
+  /// Id or name or wildcard pattern or regex.
+  /// Supports multiline and comma delineated combinations of the above.
+  ///d
+  /// Example:
+  /// ```
+  /// # match all foo-* stacks
+  /// foo-*
+  /// # add some more
+  /// extra-stack-1, extra-stack-2
+  /// ```
+  pub pattern: String,
 }

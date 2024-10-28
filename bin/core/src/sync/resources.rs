@@ -360,6 +360,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|p| p.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchRunProcedure(_config) => {}
           Execution::RunAction(config) => {
             config.action = resources
               .actions
@@ -375,6 +376,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|b| b.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchRunBuild(_config) => {}
           Execution::CancelBuild(config) => {
             config.build = resources
               .builds
@@ -389,6 +391,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchDeploy(_config) => {}
           Execution::StartDeployment(config) => {
             config.deployment = resources
               .deployments
@@ -431,6 +434,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchDestroyDeployment(_config) => {}
           Execution::CloneRepo(config) => {
             config.repo = resources
               .repos
@@ -438,6 +442,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchCloneRepo(_config) => {}
           Execution::PullRepo(config) => {
             config.repo = resources
               .repos
@@ -445,6 +450,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchPullRepo(_config) => {}
           Execution::BuildRepo(config) => {
             config.repo = resources
               .repos
@@ -452,6 +458,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|d| d.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchBuildRepo(_config) => {}
           Execution::CancelRepoBuild(config) => {
             config.repo = resources
               .repos
@@ -627,6 +634,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchDeployStack(_config) => {}
           Execution::DeployStackIfChanged(config) => {
             config.stack = resources
               .stacks
@@ -634,6 +642,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchDeployStackIfChanged(_config) => {}
           Execution::StartStack(config) => {
             config.stack = resources
               .stacks
@@ -676,6 +685,7 @@ impl ResourceSyncTrait for Procedure {
               .map(|s| s.name.clone())
               .unwrap_or_default();
           }
+          Execution::BatchDestroyStack(_config) => {}
           Execution::Sleep(_) => {}
         }
       }

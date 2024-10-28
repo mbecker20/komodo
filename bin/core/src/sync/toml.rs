@@ -414,6 +414,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchRunProcedure(_exec) => {}
           Execution::RunAction(exec) => exec.action.clone_from(
             all
               .actions
@@ -429,6 +430,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchRunBuild(_exec) => {}
           Execution::CancelBuild(exec) => exec.build.clone_from(
             all
               .builds
@@ -443,6 +445,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchDeploy(_exec) => {}
           Execution::StartDeployment(exec) => {
             exec.deployment.clone_from(
               all
@@ -497,6 +500,7 @@ impl ToToml for Procedure {
                 .unwrap_or(&String::new()),
             )
           }
+          Execution::BatchDestroyDeployment(_exec) => {}
           Execution::CloneRepo(exec) => exec.repo.clone_from(
             all
               .repos
@@ -504,6 +508,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchCloneRepo(_exec) => {}
           Execution::PullRepo(exec) => exec.repo.clone_from(
             all
               .repos
@@ -511,6 +516,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchPullRepo(_exec) => {}
           Execution::BuildRepo(exec) => exec.repo.clone_from(
             all
               .repos
@@ -518,6 +524,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchBuildRepo(_exec) => {}
           Execution::CancelRepoBuild(exec) => exec.repo.clone_from(
             all
               .repos
@@ -711,6 +718,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchDeployStack(_exec) => {}
           Execution::DeployStackIfChanged(exec) => {
             exec.stack.clone_from(
               all
@@ -720,6 +728,7 @@ impl ToToml for Procedure {
                 .unwrap_or(&String::new()),
             )
           }
+          Execution::BatchDeployStackIfChanged(_exec) => {}
           Execution::StartStack(exec) => exec.stack.clone_from(
             all
               .stacks
@@ -762,6 +771,7 @@ impl ToToml for Procedure {
               .map(|r| &r.name)
               .unwrap_or(&String::new()),
           ),
+          Execution::BatchDestroyStack(_exec) => {}
           Execution::Sleep(_) | Execution::None(_) => {}
         }
       }

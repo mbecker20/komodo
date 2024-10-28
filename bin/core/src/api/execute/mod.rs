@@ -5,6 +5,7 @@ use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use derive_variants::{EnumVariants, ExtractVariant};
 use formatting::format_serror;
+use futures::future::join_all;
 use komodo_client::{
   api::execute::*,
   entities::{
@@ -23,6 +24,7 @@ use uuid::Uuid;
 use crate::{
   auth::auth_request,
   helpers::update::{init_execution_update, update_update},
+  resource::{list_full_for_user_using_pattern, KomodoResource},
   state::{db_client, State},
 };
 
@@ -70,6 +72,7 @@ pub enum ExecuteRequest {
 
   // ==== DEPLOYMENT ====
   Deploy(Deploy),
+  BatchDeploy(BatchDeploy),
   StartDeployment(StartDeployment),
   RestartDeployment(RestartDeployment),
   PauseDeployment(PauseDeployment),
@@ -79,26 +82,34 @@ pub enum ExecuteRequest {
 
   // ==== STACK ====
   DeployStack(DeployStack),
+  BatchDeployStack(BatchDeployStack),
   DeployStackIfChanged(DeployStackIfChanged),
+  BatchDeployStackIfChanged(BatchDeployStackIfChanged),
   StartStack(StartStack),
   RestartStack(RestartStack),
   StopStack(StopStack),
   PauseStack(PauseStack),
   UnpauseStack(UnpauseStack),
   DestroyStack(DestroyStack),
+  BatchDestroyStack(BatchDestroyStack),
 
   // ==== BUILD ====
   RunBuild(RunBuild),
+  BatchRunBuild(BatchRunBuild),
   CancelBuild(CancelBuild),
 
   // ==== REPO ====
   CloneRepo(CloneRepo),
+  BatchCloneRepo(BatchCloneRepo),
   PullRepo(PullRepo),
+  BatchPullRepo(BatchPullRepo),
   BuildRepo(BuildRepo),
+  BatchBuildRepo(BatchBuildRepo),
   CancelRepoBuild(CancelRepoBuild),
 
   // ==== PROCEDURE ====
   RunProcedure(RunProcedure),
+  BatchRunProcedure(BatchRunProcedure),
 
   // ==== ACTION ====
   RunAction(RunAction),
@@ -231,4 +242,41 @@ async fn task(
   debug!("/execute request {req_id} | resolve time: {elapsed:?}");
 
   res
+}
+
+trait BatchExecute {
+  type Resource: KomodoResource;
+  fn single_request(name: String) -> ExecuteRequest;
+}
+
+async fn batch_execute<E: BatchExecute>(
+  pattern: &str,
+  user: &User,
+) -> anyhow::Result<BatchExecutionResponse> {
+  let resources = list_full_for_user_using_pattern::<E::Resource>(
+    &pattern,
+    Default::default(),
+    &user,
+    &[],
+  )
+  .await?;
+  let futures = resources.into_iter().map(|resource| {
+    let user = user.clone();
+    async move {
+      inner_handler(E::single_request(resource.name.clone()), user)
+        .await
+        .map(|r| {
+          let ExecutionResult::Single(update) = r else {
+            unreachable!()
+          };
+          update
+        })
+        .map_err(|e| BatchExecutionResponseItemErr {
+          name: resource.name,
+          error: e.into(),
+        })
+        .into()
+    }
+  });
+  Ok(join_all(futures).await)
 }

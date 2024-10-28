@@ -178,6 +178,13 @@ async fn validate_config(
           }
           params.procedure = procedure.id;
         }
+        Execution::BatchRunProcedure(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
+        }
         Execution::RunAction(params) => {
           let action = super::get_check_permissions::<Action>(
             &params.action,
@@ -203,6 +210,13 @@ async fn validate_config(
           .await?;
           params.build = build.id;
         }
+        Execution::BatchRunBuild(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
+        }
         Execution::CancelBuild(params) => {
           let build = super::get_check_permissions::<Build>(
             &params.build,
@@ -221,6 +235,13 @@ async fn validate_config(
             )
             .await?;
           params.deployment = deployment.id;
+        }
+        Execution::BatchDeploy(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
         }
         Execution::StartDeployment(params) => {
           let deployment =
@@ -282,6 +303,13 @@ async fn validate_config(
             .await?;
           params.deployment = deployment.id;
         }
+        Execution::BatchDestroyDeployment(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
+        }
         Execution::CloneRepo(params) => {
           let repo = super::get_check_permissions::<Repo>(
             &params.repo,
@@ -290,6 +318,13 @@ async fn validate_config(
           )
           .await?;
           params.repo = repo.id;
+        }
+        Execution::BatchCloneRepo(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
         }
         Execution::PullRepo(params) => {
           let repo = super::get_check_permissions::<Repo>(
@@ -300,6 +335,13 @@ async fn validate_config(
           .await?;
           params.repo = repo.id;
         }
+        Execution::BatchPullRepo(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
+        }
         Execution::BuildRepo(params) => {
           let repo = super::get_check_permissions::<Repo>(
             &params.repo,
@@ -308,6 +350,13 @@ async fn validate_config(
           )
           .await?;
           params.repo = repo.id;
+        }
+        Execution::BatchBuildRepo(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
         }
         Execution::CancelRepoBuild(params) => {
           let repo = super::get_check_permissions::<Repo>(
@@ -535,6 +584,13 @@ async fn validate_config(
           .await?;
           params.stack = stack.id;
         }
+        Execution::BatchDeployStack(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
+        }
         Execution::DeployStackIfChanged(params) => {
           let stack = super::get_check_permissions::<Stack>(
             &params.stack,
@@ -543,6 +599,13 @@ async fn validate_config(
           )
           .await?;
           params.stack = stack.id;
+        }
+        Execution::BatchDeployStackIfChanged(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
         }
         Execution::StartStack(params) => {
           let stack = super::get_check_permissions::<Stack>(
@@ -597,6 +660,13 @@ async fn validate_config(
           )
           .await?;
           params.stack = stack.id;
+        }
+        Execution::BatchDestroyStack(_params) => {
+          if !user.admin {
+            return Err(anyhow!(
+              "Non admin user cannot configure Batch executions"
+            ));
+          }
         }
         Execution::Sleep(_) => {}
       }

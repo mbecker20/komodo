@@ -412,17 +412,14 @@ pub async fn list_for_user<T: KomodoResource>(
 }
 
 #[instrument(level = "debug")]
-pub async fn list_for_user_using_match_string<T: KomodoResource>(
-  match_string: &str,
+pub async fn list_for_user_using_pattern<T: KomodoResource>(
+  pattern: &str,
   query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
   all_tags: &[Tag],
 ) -> anyhow::Result<Vec<T::ListItem>> {
-  let list = list_full_for_user_using_match_string::<T>(
-    match_string,
-    query,
-    user,
-    all_tags,
+  let list = list_full_for_user_using_pattern::<T>(
+    pattern, query, user, all_tags,
   )
   .await?
   .into_iter()
@@ -451,10 +448,8 @@ pub async fn list_for_user_using_document<T: KomodoResource>(
 /// let items = list_full_for_user_using_match_string::<Build>("\\^foo-.*$\\", Default::default(), user, all_tags).await?;
 /// ```
 #[instrument(level = "debug")]
-pub async fn list_full_for_user_using_match_string<
-  T: KomodoResource,
->(
-  match_string: &str,
+pub async fn list_full_for_user_using_pattern<T: KomodoResource>(
+  pattern: &str,
   query: ResourceQuery<T::QuerySpecifics>,
   user: &User,
   all_tags: &[Tag],
@@ -462,22 +457,20 @@ pub async fn list_full_for_user_using_match_string<
   let resources =
     list_full_for_user::<T>(query, user, all_tags).await?;
 
-  let matches = parse_string_list(match_string);
+  let patterns = parse_string_list(pattern);
   let mut names = HashSet::<String>::new();
 
-  for match_string in matches {
-    if match_string.starts_with('\\') && match_string.ends_with('\\')
-    {
-      let regex =
-        regex::Regex::new(&match_string[1..(match_string.len() - 1)])
-          .context("Regex matching string invalid")?;
+  for pattern in patterns {
+    if pattern.starts_with('\\') && pattern.ends_with('\\') {
+      let regex = regex::Regex::new(&pattern[1..(pattern.len() - 1)])
+        .context("Regex matching string invalid")?;
       for resource in &resources {
         if regex.is_match(&resource.name) {
           names.insert(resource.name.clone());
         }
       }
     } else {
-      let wildcard = wildcard::Wildcard::new(match_string.as_bytes())
+      let wildcard = wildcard::Wildcard::new(pattern.as_bytes())
         .context("Wildcard matching string invalid")?;
       for resource in &resources {
         if wildcard.is_match(resource.name.as_bytes()) {

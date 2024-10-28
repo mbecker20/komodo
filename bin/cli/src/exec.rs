@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use colored::Colorize;
 use komodo_client::{
-  api::execute::{BatchExecutionResult, Execution},
+  api::execute::{BatchExecutionResponse, Execution},
   entities::update::Update,
 };
 
@@ -13,7 +13,7 @@ use crate::{
 
 pub enum ExecutionResult {
   Single(Update),
-  Batch(BatchExecutionResult),
+  Batch(BatchExecutionResponse),
 }
 
 pub async fn run(execution: Execution) -> anyhow::Result<()> {
@@ -38,13 +38,22 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunProcedure(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::BatchRunProcedure(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::RunBuild(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BatchRunBuild(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::CancelBuild(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::Deploy(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BatchDeploy(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::StartDeployment(data) => {
@@ -65,13 +74,25 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::DestroyDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::BatchDestroyDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::CloneRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BatchCloneRepo(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::PullRepo(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::BatchPullRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::BuildRepo(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BatchBuildRepo(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::CancelRepoBuild(data) => {
@@ -149,7 +170,13 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::DeployStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::BatchDeployStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::DeployStackIfChanged(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BatchDeployStackIfChanged(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::StartStack(data) => {
@@ -168,6 +195,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::DestroyStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
+    Execution::BatchDestroyStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
     Execution::Sleep(data) => {
@@ -194,10 +224,18 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchRunProcedure(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::RunBuild(request) => komodo_client()
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchRunBuild(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::CancelBuild(request) => komodo_client()
       .execute(request)
       .await
@@ -206,6 +244,10 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchDeploy(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::StartDeployment(request) => komodo_client()
       .execute(request)
       .await
@@ -230,18 +272,34 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchDestroyDeployment(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::CloneRepo(request) => komodo_client()
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchCloneRepo(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::PullRepo(request) => komodo_client()
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchPullRepo(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::BuildRepo(request) => komodo_client()
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchBuildRepo(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::CancelRepoBuild(request) => komodo_client()
       .execute(request)
       .await
@@ -342,10 +400,18 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchDeployStack(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::DeployStackIfChanged(request) => komodo_client()
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchDeployStackIfChanged(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::StartStack(request) => komodo_client()
       .execute(request)
       .await
@@ -370,6 +436,10 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       .execute(request)
       .await
       .map(|u| ExecutionResult::Single(u)),
+    Execution::BatchDestroyStack(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Batch(u)),
     Execution::Sleep(request) => {
       let duration =
         Duration::from_millis(request.duration_ms as u64);

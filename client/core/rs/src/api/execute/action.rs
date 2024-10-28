@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::entities::update::Update;
 
-use super::{BatchExecutionResult, KomodoExecuteRequest};
+use super::{BatchExecutionResponse, KomodoExecuteRequest};
 
 /// Runs the target Action. Response: [Update]
 #[typeshare]
@@ -27,7 +27,7 @@ pub struct RunAction {
   pub action: String,
 }
 
-/// Batch runs the target Action. Response: [`Vec<Update>`]
+/// Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResult]
 #[typeshare]
 #[derive(
   Debug,
@@ -40,7 +40,7 @@ pub struct RunAction {
   Parser,
 )]
 #[empty_traits(KomodoExecuteRequest)]
-#[response(BatchExecutionResult)]
+#[response(BatchExecutionResponse)]
 pub struct BatchRunAction {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.
@@ -52,5 +52,5 @@ pub struct BatchRunAction {
   /// # add some more
   /// extra-action-1, extra-action-2
   /// ```
-  pub action: String,
+  pub pattern: String,
 }

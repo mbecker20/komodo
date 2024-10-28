@@ -7,13 +7,9 @@ use std::{
 
 use anyhow::Context;
 use command::run_komodo_command;
-use futures::future::join_all;
 use komodo_client::{
   api::{
-    execute::{
-      BatchExecutionResult, BatchExecutionResultItemErr,
-      BatchRunAction, RunAction,
-    },
+    execute::{BatchExecutionResponse, BatchRunAction, RunAction},
     user::{CreateApiKey, CreateApiKeyResponse, DeleteApiKey},
   },
   entities::{
@@ -40,54 +36,30 @@ use crate::{
     random_string,
     update::update_update,
   },
-  resource::{
-    self, list_full_for_user_using_match_string,
-    refresh_action_state_cache,
-  },
+  resource::{self, refresh_action_state_cache},
   state::{action_states, db_client, State},
 };
 
+impl super::BatchExecute for BatchRunAction {
+  type Resource = Action;
+  fn single_request(action: String) -> ExecuteRequest {
+    ExecuteRequest::RunAction(RunAction { action })
+  }
+}
+
 impl Resolve<BatchRunAction, (User, Update)> for State {
+  #[instrument(name = "BatchRunAction", skip(self, user), fields(user_id = user.id))]
   async fn resolve(
     &self,
-    BatchRunAction { action }: BatchRunAction,
+    BatchRunAction { pattern }: BatchRunAction,
     (user, _): (User, Update),
-  ) -> anyhow::Result<BatchExecutionResult> {
-    let actions = list_full_for_user_using_match_string::<Action>(
-      &action,
-      Default::default(),
-      &user,
-      &[],
-    )
-    .await?;
-    let futures = actions.into_iter().map(|action| {
-      let user = user.clone();
-      async move {
-        super::inner_handler(
-          ExecuteRequest::RunAction(RunAction {
-            action: action.name.clone(),
-          }),
-          user,
-        )
-        .await
-        .map(|r| {
-          let super::ExecutionResult::Single(update) = r else {
-            unreachable!()
-          };
-          update
-        })
-        .map_err(|e| BatchExecutionResultItemErr {
-          name: action.name,
-          error: e.into(),
-        })
-        .into()
-      }
-    });
-    Ok(join_all(futures).await)
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchRunAction>(&pattern, &user).await
   }
 }
 
 impl Resolve<RunAction, (User, Update)> for State {
+  #[instrument(name = "RunAction", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     RunAction { action }: RunAction,
