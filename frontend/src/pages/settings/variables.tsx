@@ -1,4 +1,8 @@
-import { ConfirmButton, CopyButton, TextUpdateMenuMonaco } from "@components/util";
+import {
+  ConfirmButton,
+  CopyButton,
+  TextUpdateMenuMonaco,
+} from "@components/util";
 import {
   useInvalidate,
   useRead,
@@ -209,7 +213,7 @@ export const Variables = () => {
 
       {/** SECRETS */}
       {secrets.length ? (
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2 flex-wrap text-muted-foreground">
           <div>Core Secrets:</div>
           {secrets.map((secret) => (
             <Badge variant="secondary">{secret}</Badge>
