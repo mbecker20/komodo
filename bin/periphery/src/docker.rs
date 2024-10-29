@@ -1,4 +1,4 @@
-use std::sync::OnceLock;
+use std::{collections::HashMap, sync::OnceLock};
 
 use anyhow::{anyhow, Context};
 use bollard::{
@@ -40,7 +40,7 @@ impl DockerClient {
   pub async fn list_containers(
     &self,
   ) -> anyhow::Result<Vec<ContainerListItem>> {
-    self
+    let mut containers = self
       .docker
       .list_containers(Some(ListContainersOptions::<String> {
         all: true,
@@ -48,8 +48,8 @@ impl DockerClient {
       }))
       .await?
       .into_iter()
-      .map(|container| {
-        Ok(ContainerListItem {
+      .flat_map(|container| {
+        anyhow::Ok(ContainerListItem {
           server_id: None,
           name: container
             .names
@@ -92,7 +92,26 @@ impl DockerClient {
           labels: container.labels.unwrap_or_default(),
         })
       })
-      .collect()
+      .collect::<Vec<_>>();
+    let container_id_to_network = containers
+      .iter()
+      .filter_map(|c| Some((c.id.clone()?, c.network_mode.clone()?)))
+      .collect::<HashMap<_, _>>();
+    // Fix containers which use `container:container_id` network_mode,
+    // by replacing with the referenced network mode.
+    containers.iter_mut().for_each(|container| {
+      let Some(network_name) = &container.network_mode else {
+        return;
+      };
+      let Some(container_id) =
+        network_name.strip_prefix("container:")
+      else {
+        return;
+      };
+      container.network_mode =
+        container_id_to_network.get(container_id).cloned();
+    });
+    Ok(containers)
   }
 
   pub async fn inspect_container(
