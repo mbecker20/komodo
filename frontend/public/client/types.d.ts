@@ -3652,16 +3652,6 @@ export interface CommitSync {
     /** Id or name */
     sync: string;
 }
-export interface ComposeService {
-    image?: string;
-    container_name?: string;
-}
-/** Keeping this minimal for now as its only needed to parse the service names / container names */
-export interface ComposeFile {
-    /** If not provided, will default to the parent folder holding the compose file. */
-    name?: string;
-    services?: Record<string, ComposeService>;
-}
 export interface Conversion {
     /** reference on the server. */
     local: string;

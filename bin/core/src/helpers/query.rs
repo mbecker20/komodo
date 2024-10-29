@@ -118,7 +118,7 @@ pub fn get_stack_state_from_containers(
   if containers.is_empty() {
     return StackState::Down;
   }
-  if services.len() != containers.len() {
+  if services.len() > containers.len() {
     return StackState::Unhealthy;
   }
   let running = containers.iter().all(|container| {
