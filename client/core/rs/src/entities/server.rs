@@ -27,6 +27,8 @@ pub struct ServerListItemInfo {
   pub state: ServerState,
   /// Region of the server.
   pub region: String,
+  /// Address of the server.
+  pub address: String,
   /// Whether server is configured to send unreachable alerts.
   pub send_unreachable_alerts: bool,
   /// Whether server is configured to send cpu alerts.
