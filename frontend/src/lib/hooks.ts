@@ -259,7 +259,7 @@ export const useAllResources = (): ResourceMap => {
 // Returns true if Komodo has no resources.
 export const useNoResources = () => {
   const resources = useAllResources();
-  for (const target in RESOURCE_TARGETS) {
+  for (const target of RESOURCE_TARGETS) {
     if (resources[target] && resources[target].length) {
       return false;
     }

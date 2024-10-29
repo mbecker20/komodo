@@ -25,7 +25,6 @@ import { Link } from "react-router-dom";
 export const Dashboard = () => {
   const noResources = useNoResources();
   const user = useUser().data!;
-
   return (
     <>
       <ActiveResources />

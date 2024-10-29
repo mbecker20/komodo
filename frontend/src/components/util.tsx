@@ -705,12 +705,14 @@ export const DockerContainersSection = ({
   show = true,
   setShow,
   pruneButton,
+  titleOther,
 }: {
   server_id: string;
   containers: Types.ListDockerContainersResponse;
   show?: boolean;
   setShow?: (show: boolean) => void;
   pruneButton?: boolean;
+  titleOther?: ReactNode;
 }) => {
   const allRunning = useRead("ListDockerContainers", {
     server: server_id,
@@ -720,8 +722,9 @@ export const DockerContainersSection = ({
   return (
     <div className={cn(setShow && show && "mb-8")}>
       <Section
-        title="Containers"
-        icon={<Box className="w-4 h-4" />}
+        titleOther={titleOther}
+        title={!titleOther ? "Containers" : undefined}
+        icon={!titleOther ? <Box className="w-4 h-4" /> : undefined}
         actions={
           <div className="flex items-center gap-2">
             {pruneButton && !allRunning && (

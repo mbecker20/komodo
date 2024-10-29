@@ -7,7 +7,7 @@ import { useLocalStorage } from "@lib/hooks";
 import { Images } from "./images";
 import { Containers } from "./containers";
 import { Volumes } from "./volumes";
-import { Button } from "@ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 
 export const ServerInfo = ({
   id,
@@ -17,17 +17,9 @@ export const ServerInfo = ({
   titleOther: ReactNode;
 }) => {
   const state = useServer(id)?.info.state ?? Types.ServerState.NotOk;
-  const [show, setShow] = useLocalStorage<{
-    containers: boolean;
-    networks: boolean;
-    images: boolean;
-    volumes: boolean;
-  }>("server-info-show-config", {
-    containers: true,
-    networks: true,
-    images: true,
-    volumes: true,
-  });
+  const [show2, setShow2] = useLocalStorage<
+    "Containers" | "Networks" | "Volumes" | "Images"
+  >("server-info-show-config-v2", "Containers");
 
   if ([Types.ServerState.NotOk, Types.ServerState.Disabled].includes(state)) {
     return (
@@ -39,50 +31,39 @@ export const ServerInfo = ({
     );
   }
 
-  const anyOpen = !Object.values(show).every((val) => !val);
+  const tabsList = (
+    <TabsList className="justify-start w-fit">
+      <TabsTrigger value="Containers" className="w-[110px]">
+        Containers
+      </TabsTrigger>
+      <TabsTrigger value="Networks" className="w-[110px]">
+        Networks
+      </TabsTrigger>
+      <TabsTrigger value="Volumes" className="w-[110px]">
+        Volumes
+      </TabsTrigger>
+      <TabsTrigger value="Images" className="w-[110px]">
+        Images
+      </TabsTrigger>
+    </TabsList>
+  );
 
   return (
-    <Section
-      titleOther={titleOther}
-      actions={
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() =>
-            setShow({
-              containers: !anyOpen,
-              networks: !anyOpen,
-              images: !anyOpen,
-              volumes: !anyOpen,
-            })
-          }
-        >
-          {anyOpen ? "Hide All" : "Show All"}
-        </Button>
-      }
-    >
-      <div className="flex flex-col gap-4">
-        <Containers
-          id={id}
-          show={show.containers}
-          setShow={(containers) => setShow({ ...show, containers })}
-        />
-        <Networks
-          id={id}
-          show={show.networks}
-          setShow={(networks) => setShow({ ...show, networks })}
-        />
-        <Volumes
-          id={id}
-          show={show.volumes}
-          setShow={(volumes) => setShow({ ...show, volumes })}
-        />
-        <Images
-          id={id}
-          show={show.images}
-          setShow={(images) => setShow({ ...show, images })}
-        />
-      </div>
+    <Section titleOther={titleOther}>
+      <Tabs value={show2} onValueChange={setShow2 as any}>
+        <TabsContent value="Containers">
+          <Containers id={id} titleOther={tabsList} />
+        </TabsContent>
+        <TabsContent value="Networks">
+          <Networks id={id} titleOther={tabsList} />
+        </TabsContent>
+        <TabsContent value="Volumes">
+          <Volumes id={id} titleOther={tabsList} />
+        </TabsContent>
+        <TabsContent value="Images">
+          <Images id={id} titleOther={tabsList} />
+        </TabsContent>
+      </Tabs>
     </Section>
   );
 };
