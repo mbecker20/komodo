@@ -459,7 +459,6 @@ async fn handle_early_return(
   Ok(update)
 }
 
-#[instrument(skip_all)]
 pub async fn validate_cancel_build(
   request: &ExecuteRequest,
 ) -> anyhow::Result<()> {
