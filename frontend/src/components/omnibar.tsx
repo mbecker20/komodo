@@ -1,4 +1,4 @@
-import { useRead, useUser } from "@lib/hooks";
+import { useAllResources, useUser } from "@lib/hooks";
 import { Button } from "@ui/button";
 import {
   CommandDialog,
@@ -12,18 +12,9 @@ import {
 import { Home, Search, User } from "lucide-react";
 import { Fragment, ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@lib/utils";
-import { DeploymentComponents } from "./resources/deployment";
-import { BuildComponents } from "./resources/build";
-import { ServerComponents } from "./resources/server";
-import { ProcedureComponents } from "./resources/procedure";
-import { RepoComponents } from "./resources/repo";
-import { BuilderComponents } from "./resources/builder";
-import { AlerterComponents } from "./resources/alerter";
-import { ServerTemplateComponents } from "./resources/server-template";
+import { cn, RESOURCE_TARGETS, usableResourcePath } from "@lib/utils";
 import { Badge } from "@ui/badge";
-import { ResourceSyncComponents } from "./resources/resource-sync";
-import { StackComponents } from "./resources/stack";
+import { ResourceComponents } from "./resources";
 
 export const OmniSearch = ({
   className,
@@ -116,16 +107,7 @@ const useOmniItems = (
   search: string
 ): Record<string, OmniItem[]> => {
   const user = useUser().data;
-  const servers = useRead("ListServers", {}).data;
-  const deployments = useRead("ListDeployments", {}).data;
-  const stacks = useRead("ListStacks", {}).data;
-  const builds = useRead("ListBuilds", {}).data;
-  const repos = useRead("ListRepos", {}).data;
-  const procedures = useRead("ListProcedures", {}).data;
-  const builders = useRead("ListBuilders", {}).data;
-  const alerters = useRead("ListAlerters", {}).data;
-  const templates = useRead("ListServerTemplates", {}).data;
-  const syncs = useRead("ListResourceSyncs", {}).data;
+  const resources = useAllResources();
   const searchTerms = search
     .toLowerCase()
     .split(" ")
@@ -139,66 +121,21 @@ const useOmniItems = (
           icon: <Home className="w-4 h-4" />,
           onSelect: () => nav("/"),
         },
-        {
-          key: "Servers",
-          label: "Servers",
-          icon: <ServerComponents.Icon />,
-          onSelect: () => nav("/servers"),
-        },
-        {
-          key: "Deployments",
-          label: "Deployments",
-          icon: <DeploymentComponents.Icon />,
-          onSelect: () => nav("/deployments"),
-        },
-        {
-          key: "Stacks",
-          label: "Stacks",
-          icon: <StackComponents.Icon />,
-          onSelect: () => nav("/stacks"),
-        },
-        {
-          key: "Builds",
-          label: "Builds",
-          icon: <BuildComponents.Icon />,
-          onSelect: () => nav("/builds"),
-        },
-        {
-          key: "Repos",
-          label: "Repos",
-          icon: <RepoComponents.Icon />,
-          onSelect: () => nav("/repos"),
-        },
-        {
-          key: "Procedures",
-          label: "Procedures",
-          icon: <ProcedureComponents.Icon />,
-          onSelect: () => nav("/procedures"),
-        },
-        {
-          key: "Builders",
-          label: "Builders",
-          icon: <BuilderComponents.Icon />,
-          onSelect: () => nav("/builders"),
-        },
-        {
-          key: "Alerters",
-          label: "Alerters",
-          icon: <AlerterComponents.Icon />,
-          onSelect: () => nav("/alerters"),
-        },
-        {
-          key: "Templates",
-          label: "Templates",
-          icon: <ServerTemplateComponents.Icon />,
-          onSelect: () => nav("/server-templates"),
-        },
-        {
-          key: "Syncs",
-          label: "Syncs",
-          icon: <ResourceSyncComponents.Icon />,
-          onSelect: () => nav("/resource-syncs"),
-        },
+        ...RESOURCE_TARGETS.map((_type) => {
+          const type =
+            _type === "ResourceSync"
+              ? "Sync"
+              : _type === "ServerTemplate"
+                ? "Template"
+                : _type;
+          const Components = ResourceComponents[_type];
+          return {
+            key: type + "s",
+            label: type + "s",
+            icon: <Components.Icon />,
+            onSelect: () => nav(usableResourcePath(_type)),
+          };
+        }),
         (user?.admin && {
           key: "Users",
           label: "Users",
@@ -214,200 +151,39 @@ const useOmniItems = (
             searchTerms.every((term) => label.includes(term))
           );
         }),
-
-      Servers:
-        servers
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "server".includes(term)
+      ...Object.fromEntries(
+        RESOURCE_TARGETS.map((_type) => {
+          const type =
+            _type === "ResourceSync"
+              ? "Sync"
+              : _type === "ServerTemplate"
+                ? "Template"
+                : _type;
+          const lower = type.toLowerCase();
+          const Components = ResourceComponents[_type];
+          return [
+            type + "s",
+            resources[_type]
+              ?.filter(
+                (item) =>
+                  searchTerms.length === 0 ||
+                  searchTerms.every(
+                    (term) =>
+                      item.name.toLowerCase().includes(term) ||
+                      lower.includes(term)
+                  )
               )
-          )
-          .map((server) => ({
-            key: "server-" + server.name,
-            label: server.name,
-            icon: <ServerComponents.Icon id={server.id} />,
-            onSelect: () => nav(`/servers/${server.id}`),
-          })) || [],
-
-      Deployments:
-        deployments
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "deployment".includes(term)
-              )
-          )
-          .map((deployment) => ({
-            key: "deployment-" + deployment.name,
-            label: deployment.name,
-            icon: <DeploymentComponents.Icon id={deployment.id} />,
-            onSelect: () => nav(`/deployments/${deployment.id}`),
-          })) || [],
-
-      Stacks:
-        stacks
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "stack".includes(term)
-              )
-          )
-          .map((stack) => ({
-            key: "stack-" + stack.name,
-            label: stack.name,
-            icon: <StackComponents.Icon id={stack.id} />,
-            onSelect: () => nav(`/stacks/${stack.id}`),
-          })) || [],
-
-      Build:
-        builds
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "build".includes(term)
-              )
-          )
-          .map((build) => ({
-            key: "build-" + build.name,
-            label: build.name,
-            icon: <BuildComponents.Icon id={build.id} />,
-            onSelect: () => nav(`/builds/${build.id}`),
-          })) || [],
-
-      Repos:
-        repos
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "repo".includes(term)
-              )
-          )
-          .map((repo) => ({
-            key: "repo-" + repo.name,
-            label: repo.name,
-            icon: <RepoComponents.Icon id={repo.id} />,
-            onSelect: () => nav(`/repos/${repo.id}`),
-          })) || [],
-
-      Procedures:
-        procedures
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "procedure".includes(term)
-              )
-          )
-          .map((procedure) => ({
-            key: "procedure-" + procedure.name,
-            label: procedure.name,
-            icon: <ProcedureComponents.Icon id={procedure.id} />,
-            onSelect: () => nav(`/procedures/${procedure.id}`),
-          })) || [],
-
-      Builders:
-        builders
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "builder".includes(term)
-              )
-          )
-          .map((builder) => ({
-            key: "builder-" + builder.name,
-            label: builder.name,
-            icon: <BuilderComponents.Icon id={builder.id} />,
-            onSelect: () => nav(`/builders/${builder.id}`),
-          })) || [],
-
-      Alerters:
-        alerters
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "alerter".includes(term)
-              )
-          )
-          .map((alerter) => ({
-            key: "alerter-" + alerter.name,
-            label: alerter.name,
-            icon: <AlerterComponents.Icon id={alerter.id} />,
-            onSelect: () => nav(`/alerters/${alerter.id}`),
-          })) || [],
-
-      Templates:
-        templates
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "template".includes(term)
-              )
-          )
-          .map((template) => ({
-            key: "template-" + template.name,
-            label: template.name,
-            icon: <ServerTemplateComponents.Icon id={template.id} />,
-            onSelect: () => nav(`/server-templates/${template.id}`),
-          })) || [],
-
-      Syncs:
-        syncs
-          ?.filter(
-            (item) =>
-              searchTerms.length === 0 ||
-              searchTerms.every(
-                (term) =>
-                  item.name.toLowerCase().includes(term) ||
-                  "sync".includes(term)
-              )
-          )
-          .map((sync) => ({
-            key: "sync-" + sync.name,
-            label: sync.name,
-            icon: <ResourceSyncComponents.Icon id={sync.id} />,
-            onSelect: () => nav(`/resource-syncs/${sync.id}`),
-          })) || [],
+              .map((server) => ({
+                key: type + "-" + server.name,
+                label: server.name,
+                icon: <Components.Icon id={server.id} />,
+                onSelect: () =>
+                  nav(`/${usableResourcePath(_type)}/${server.id}`),
+              })) || [],
+          ];
+        })
+      ),
     }),
-    [
-      user,
-      servers,
-      deployments,
-      stacks,
-      builds,
-      repos,
-      procedures,
-      alerters,
-      builders,
-      templates,
-      syncs,
-      search,
-    ]
+    [user, resources, search]
   );
 };
