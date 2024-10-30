@@ -4,6 +4,7 @@ import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ReactNode } from "react";
+import { Prune } from "../actions";
 
 export const Networks = ({
   id,
@@ -16,17 +17,20 @@ export const Networks = ({
     useRead("ListDockerNetworks", { server: id }, { refetchInterval: 10_000 })
       .data ?? [];
 
-  // const allInUse = networks.every((network) =>
-  //   // this ignores networks that come in with no name, but they should all come in with name
-  //   !network.name
-  //     ? true
-  //     : ["none", "host", "bridge"].includes(network.name)
-  //       ? true
-  //       : network.in_use
-  // );
+  const allInUse = networks.every((network) =>
+    // this ignores networks that come in with no name, but they should all come in with name
+    !network.name
+      ? true
+      : ["none", "host", "bridge"].includes(network.name)
+        ? true
+        : network.in_use
+  );
 
   return (
-    <Section titleOther={titleOther}>
+    <Section
+      titleOther={titleOther}
+      actions={!allInUse && <Prune server_id={id} type="Networks" />}
+    >
       <DataTable
         tableKey="server-networks"
         data={networks}

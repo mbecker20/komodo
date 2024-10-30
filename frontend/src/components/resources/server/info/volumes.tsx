@@ -4,6 +4,7 @@ import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ReactNode } from "react";
+import { Prune } from "../actions";
 
 export const Volumes = ({
   id,
@@ -16,8 +17,13 @@ export const Volumes = ({
     useRead("ListDockerVolumes", { server: id }, { refetchInterval: 10_000 })
       .data ?? [];
 
+  const allInUse = volumes.every((volume) => volume.in_use);
+
   return (
-    <Section titleOther={titleOther}>
+    <Section
+      titleOther={titleOther}
+      actions={!allInUse && <Prune server_id={id} type="Volumes" />}
+    >
       <DataTable
         tableKey="server-volumes"
         data={volumes}

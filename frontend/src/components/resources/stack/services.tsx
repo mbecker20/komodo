@@ -8,11 +8,11 @@ import { cn } from "@lib/utils";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { useStack } from ".";
 import { Types } from "komodo_client";
-import { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@ui/button";
 import { Layers2 } from "lucide-react";
-import { StatusBadge } from "@components/util";
+import { DockerResourceLink, StatusBadge } from "@components/util";
 
 export const StackServices = ({
   id,
@@ -21,7 +21,9 @@ export const StackServices = ({
   id: string;
   titleOther: ReactNode;
 }) => {
-  const state = useStack(id)?.info.state ?? Types.StackState.Unknown;
+  const info = useStack(id)?.info;
+  const server_id = info?.server_id;
+  const state = info?.state ?? Types.StackState.Unknown;
   const services = useRead(
     "ListStackServices",
     { stack: id },
@@ -43,6 +45,7 @@ export const StackServices = ({
           columns={[
             {
               accessorKey: "service",
+              size: 200,
               header: ({ column }) => (
                 <SortableHeader column={column} title="Service" />
               ),
@@ -70,14 +73,49 @@ export const StackServices = ({
             },
             {
               accessorKey: "container.image",
+              size: 300,
               header: ({ column }) => (
                 <SortableHeader column={column} title="Image" />
               ),
-              cell: ({ row }) => <>{row.original.container?.image}</>,
+              cell: ({ row }) =>
+                server_id && (
+                  <DockerResourceLink
+                    type="image"
+                    server_id={server_id}
+                    name={row.original.container?.image}
+                    id={row.original.container?.image_id}
+                  />
+                ),
+              // size: 200,
+            },
+            {
+              accessorKey: "container.networks.0",
+              size: 300,
+              header: ({ column }) => (
+                <SortableHeader column={column} title="Networks" />
+              ),
+              cell: ({ row }) => (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {server_id &&
+                    row.original.container?.networks.map((network, i) => (
+                      <Fragment key={network}>
+                        <DockerResourceLink
+                          type="network"
+                          server_id={server_id}
+                          name={network}
+                        />
+                        {i !== row.original.container!.networks.length - 1 && (
+                          <div className="text-muted-foreground">|</div>
+                        )}
+                      </Fragment>
+                    ))}
+                </div>
+              ),
               // size: 200,
             },
             {
               accessorKey: "container.state",
+              size: 160,
               header: ({ column }) => (
                 <SortableHeader column={column} title="State" />
               ),

@@ -5,6 +5,7 @@ import { useRead } from "@lib/hooks";
 import { Badge } from "@ui/badge";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ReactNode } from "react";
+import { Prune } from "../actions";
 
 export const Images = ({
   id,
@@ -17,8 +18,13 @@ export const Images = ({
     useRead("ListDockerImages", { server: id }, { refetchInterval: 10_000 })
       .data ?? [];
 
+  const allInUse = images.every((image) => image.in_use);
+
   return (
-    <Section titleOther={titleOther}>
+    <Section
+      titleOther={titleOther}
+      actions={!allInUse && <Prune server_id={id} type="Images" />}
+    >
       <DataTable
         tableKey="server-images"
         data={images}

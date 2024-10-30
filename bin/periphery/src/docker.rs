@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::sync::OnceLock;
 
 use anyhow::{anyhow, Context};
 use bollard::{
@@ -40,7 +40,7 @@ impl DockerClient {
   pub async fn list_containers(
     &self,
   ) -> anyhow::Result<Vec<ContainerListItem>> {
-    let mut containers = self
+    let containers = self
       .docker
       .list_containers(Some(ListContainersOptions::<String> {
         all: true,
@@ -75,9 +75,12 @@ impl DockerClient {
           networks: container
             .network_settings
             .and_then(|settings| {
-              settings
-                .networks
-                .map(|networks| networks.into_keys().collect())
+              settings.networks.map(|networks| {
+                let mut keys =
+                  networks.into_keys().collect::<Vec<_>>();
+                keys.sort();
+                keys
+              })
             })
             .unwrap_or_default(),
           volumes: container
@@ -93,24 +96,6 @@ impl DockerClient {
         })
       })
       .collect::<Vec<_>>();
-    let container_id_to_network = containers
-      .iter()
-      .filter_map(|c| Some((c.id.clone()?, c.network_mode.clone()?)))
-      .collect::<HashMap<_, _>>();
-    // Fix containers which use `container:container_id` network_mode,
-    // by replacing with the referenced network mode.
-    containers.iter_mut().for_each(|container| {
-      let Some(network_name) = &container.network_mode else {
-        return;
-      };
-      let Some(container_id) =
-        network_name.strip_prefix("container:")
-      else {
-        return;
-      };
-      container.network_mode =
-        container_id_to_network.get(container_id).cloned();
-    });
     Ok(containers)
   }
 
@@ -538,7 +523,7 @@ impl DockerClient {
     &self,
     containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<NetworkListItem>> {
-    self
+    let networks = self
       .docker
       .list_networks::<String>(None)
       .await?
@@ -564,7 +549,7 @@ impl DockerClient {
           }),
           None => false,
         };
-        Ok(NetworkListItem {
+        NetworkListItem {
           name: network.name,
           id: network.id,
           created: network.created,
@@ -578,9 +563,10 @@ impl DockerClient {
           attachable: network.attachable,
           ingress: network.ingress,
           in_use,
-        })
+        }
       })
-      .collect()
+      .collect();
+    Ok(networks)
   }
 
   pub async fn inspect_network(
@@ -647,7 +633,7 @@ impl DockerClient {
     &self,
     containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<ImageListItem>> {
-    self
+    let images = self
       .docker
       .list_images::<String>(None)
       .await?
@@ -660,7 +646,7 @@ impl DockerClient {
             .map(|id| id == &image.id)
             .unwrap_or_default()
         });
-        Ok(ImageListItem {
+        ImageListItem {
           name: image
             .repo_tags
             .into_iter()
@@ -671,9 +657,10 @@ impl DockerClient {
           created: image.created,
           size: image.size,
           in_use,
-        })
+        }
       })
-      .collect()
+      .collect();
+    Ok(images)
   }
 
   pub async fn inspect_image(
@@ -780,7 +767,7 @@ impl DockerClient {
     &self,
     containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<VolumeListItem>> {
-    self
+    let volumes = self
       .docker
       .list_volumes::<String>(None)
       .await?
@@ -805,7 +792,7 @@ impl DockerClient {
         let in_use = containers.iter().any(|container| {
           container.volumes.iter().any(|name| &volume.name == name)
         });
-        Ok(VolumeListItem {
+        VolumeListItem {
           name: volume.name,
           driver: volume.driver,
           mountpoint: volume.mountpoint,
@@ -813,9 +800,10 @@ impl DockerClient {
           size: volume.usage_data.map(|data| data.size),
           scope,
           in_use,
-        })
+        }
       })
-      .collect()
+      .collect();
+    Ok(volumes)
   }
 
   pub async fn inspect_volume(

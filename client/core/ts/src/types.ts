@@ -3159,6 +3159,8 @@ export interface ServerListItemInfo {
 	state: ServerState;
 	/** Region of the server. */
 	region: string;
+	/** Address of the server. */
+	address: string;
 	/** Whether server is configured to send unreachable alerts. */
 	send_unreachable_alerts: boolean;
 	/** Whether server is configured to send cpu alerts. */
