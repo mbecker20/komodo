@@ -791,22 +791,31 @@ export const DockerContainersSection = ({
                 header: ({ column }) => (
                   <SortableHeader column={column} title="Networks" />
                 ),
-                cell: ({ row }) => (
-                  <div className="flex items-center gap-x-2 flex-wrap">
-                    {row.original.networks.map((network, i) => (
-                      <Fragment key={network}>
-                        <DockerResourceLink
-                          type="network"
-                          server_id={server_id}
-                          name={network}
-                        />
-                        {i !== row.original.networks.length - 1 && (
-                          <div className="text-muted-foreground">|</div>
-                        )}
-                      </Fragment>
-                    ))}
-                  </div>
-                ),
+                cell: ({ row }) =>
+                  row.original.networks.length > 0 ? (
+                    <div className="flex items-center gap-x-2 flex-wrap">
+                      {row.original.networks.map((network, i) => (
+                        <Fragment key={network}>
+                          <DockerResourceLink
+                            type="network"
+                            server_id={server_id}
+                            name={network}
+                          />
+                          {i !== row.original.networks.length - 1 && (
+                            <div className="text-muted-foreground">|</div>
+                          )}
+                        </Fragment>
+                      ))}
+                    </div>
+                  ) : (
+                    row.original.network_mode && (
+                      <DockerResourceLink
+                        type="network"
+                        server_id={server_id}
+                        name={row.original.network_mode}
+                      />
+                    )
+                  ),
               },
             ]}
           />

@@ -1,4 +1,4 @@
-use std::sync::OnceLock;
+use std::{collections::HashMap, sync::OnceLock};
 
 use anyhow::{anyhow, Context};
 use bollard::{
@@ -40,7 +40,7 @@ impl DockerClient {
   pub async fn list_containers(
     &self,
   ) -> anyhow::Result<Vec<ContainerListItem>> {
-    let containers = self
+    let mut containers = self
       .docker
       .list_containers(Some(ListContainersOptions::<String> {
         all: true,
@@ -96,6 +96,24 @@ impl DockerClient {
         })
       })
       .collect::<Vec<_>>();
+    let container_id_to_network = containers
+      .iter()
+      .filter_map(|c| Some((c.id.clone()?, c.network_mode.clone()?)))
+      .collect::<HashMap<_, _>>();
+    // Fix containers which use `container:container_id` network_mode,
+    // by replacing with the referenced network mode.
+    containers.iter_mut().for_each(|container| {
+      let Some(network_name) = &container.network_mode else {
+        return;
+      };
+      let Some(container_id) =
+        network_name.strip_prefix("container:")
+      else {
+        return;
+      };
+      container.network_mode =
+        container_id_to_network.get(container_id).cloned();
+    });
     Ok(containers)
   }
 
