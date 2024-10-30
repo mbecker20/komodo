@@ -4,21 +4,31 @@ import { useServer } from "@components/resources/server";
 import {
   DOCKER_LINK_ICONS,
   DockerLabelsSection,
-  DockerResourcePageName,
-  StatusBadge,
+  DockerResourceLink,
+  ResourcePageHeader,
+  ShowHideButton,
 } from "@components/util";
 import { useRead, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { ChevronLeft, Clapperboard, Info, Loader2 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  ChevronLeft,
+  Clapperboard,
+  Info,
+  Loader2,
+  SearchCode,
+} from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import { ContainerLogs } from "./log";
 import { Actions } from "./actions";
-import { has_minimum_permissions } from "@lib/utils";
 import { Types } from "komodo_client";
-import { ResourceUpdates } from "@components/updates/resource";
 import { container_state_intention } from "@lib/color";
 import { UsableResource } from "@types";
+import { Fragment } from "react/jsx-runtime";
+import { useEditPermissions } from "@pages/resource";
+import { ResourceNotifications } from "@pages/resource-notifications";
+import { MonacoEditor } from "@components/monaco";
+import { useState } from "react";
 
 export const ContainerPage = () => {
   const { type, id, container } = useParams() as {
@@ -41,12 +51,10 @@ const ContainerPageInner = ({
   id: string;
   container: string;
 }) => {
+  const [showInspect, setShowInspect] = useState(false);
   const server = useServer(id);
   useSetTitle(`${server?.name} | container | ${container_name}`);
-  const nav = useNavigate();
-  const perms = useRead("GetPermissionLevel", {
-    target: { type: "Server", id },
-  }).data;
+  const { canExecute } = useEditPermissions({ type: "Server", id });
   const {
     data: container,
     isPending,
@@ -81,100 +89,231 @@ const ContainerPageInner = ({
     );
   }
 
-  const canExecute = has_minimum_permissions(
-    perms,
-    Types.PermissionLevel.Execute
-  );
-
   const state = list_container?.state ?? Types.ContainerStateStatusEnum.Empty;
-  const status = list_container?.status;
+  const intention = container_state_intention(state);
 
   return (
-    <div className="flex flex-col gap-16 mb-24">
-      {/* HEADER */}
-      <div className="flex flex-col gap-4">
-        {/* BACK */}
-        <div className="flex items-center justify-between mb-4">
-          <Button
-            className="gap-2"
-            variant="secondary"
-            onClick={() => nav("/servers/" + id)}
-          >
-            <ChevronLeft className="w-4" /> Back
+    <div>
+      <div className="w-full flex items-center justify-between mb-12">
+        <Link to={"/servers/" + id}>
+          <Button className="gap-2" variant="secondary">
+            <ChevronLeft className="w-4" />
+            Back
           </Button>
-
-          <NewDeployment id={id} container={container_name} />
-        </div>
-
-        {/* TITLE */}
-        <div className="flex items-center gap-4">
-          <div className="mt-1">
-            <DOCKER_LINK_ICONS.container
-              server_id={id}
+        </Link>
+        <NewDeployment id={id} container={container_name} />
+      </div>
+      <div className="flex flex-col xl:flex-row gap-4">
+        {/** HEADER */}
+        <div className="w-full flex flex-col gap-4">
+          <div className="flex flex-col gap-2 border rounded-md">
+            {/* <Components.ResourcePageHeader id={id} /> */}
+            <ResourcePageHeader
+              intent={intention}
+              icon={
+                <DOCKER_LINK_ICONS.container
+                  server_id={id}
+                  name={container_name}
+                  size={8}
+                />
+              }
               name={container_name}
-              size={8}
+              state={state}
+              status={list_container?.status}
             />
+            <div className="flex flex-col pb-2 px-4">
+              <div className="flex items-center gap-x-4 gap-y-1 flex-wrap text-muted-foreground">
+                <ResourceLink type="Server" id={id} />
+                <AttachedResource id={id} container={container_name} />
+                {list_container?.image && (
+                  <>
+                    |
+                    <DockerResourceLink
+                      type="image"
+                      server_id={id}
+                      name={list_container.image}
+                      id={list_container.image_id}
+                      muted
+                    />
+                  </>
+                )}
+                {list_container?.networks.map((network) => (
+                  <Fragment key={network}>
+                    |
+                    <DockerResourceLink
+                      type="network"
+                      server_id={id}
+                      name={network}
+                      muted
+                    />
+                  </Fragment>
+                ))}
+                {list_container?.volumes.map((volume) => (
+                  <Fragment key={volume}>
+                    |
+                    <DockerResourceLink
+                      type="volume"
+                      server_id={id}
+                      name={volume}
+                      muted
+                    />
+                  </Fragment>
+                ))}
+              </div>
+            </div>
           </div>
-          <DockerResourcePageName name={container_name} />
-          <div className="flex items-center gap-4 flex-wrap">
-            <StatusBadge
-              text={state}
-              intent={container_state_intention(state)}
-            />
-            {status && (
-              <p className="text-sm text-muted-foreground">{status}</p>
-            )}
-          </div>
+          {/* <ResourceDescription type="Server" id={id} disabled={!canWrite} /> */}
         </div>
-
-        {/* INFO */}
-        <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
-          <ResourceLink type="Server" id={id} />
-          <AttachedResource id={id} container={container_name} />
-        </div>
+        {/** NOTIFICATIONS */}
+        <ResourceNotifications type="Server" id={id} />
       </div>
 
-      {/* Actions */}
-      {canExecute && (
-        <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
-          <div className="flex gap-4 items-center flex-wrap">
-            {Object.entries(Actions).map(([key, Action]) => (
-              <Action key={key} id={id} container={container_name} />
-            ))}
-          </div>
+      <div className="mt-8 flex flex-col gap-12">
+        {/* Actions */}
+        {canExecute && (
+          <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
+            <div className="flex gap-4 items-center flex-wrap">
+              {Object.entries(Actions).map(([key, Action]) => (
+                <Action key={key} id={id} container={container_name} />
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Logs */}
+        <ContainerLogs id={id} container_name={container_name} />
+
+        {/* TOP LEVEL CONTAINER INFO */}
+        <Section title="Details" icon={<Info className="w-4 h-4" />}>
+          <DataTable
+            tableKey="container-info"
+            data={[container]}
+            columns={[
+              {
+                accessorKey: "Id",
+                header: "Id",
+              },
+              {
+                accessorKey: "Image",
+                header: "Image",
+              },
+              {
+                accessorKey: "Driver",
+                header: "Driver",
+              },
+            ]}
+          />
         </Section>
-      )}
 
-      {/* Updates */}
-      <ResourceUpdates type="Server" id={id} />
+        <DockerLabelsSection labels={container.Config?.Labels} />
 
-      <ContainerLogs id={id} container_name={container_name} />
-
-      {/* TOP LEVEL CONTAINER INFO */}
-      <Section title="Details" icon={<Info className="w-4 h-4" />}>
-        <DataTable
-          tableKey="container-info"
-          data={[container]}
-          columns={[
-            {
-              accessorKey: "Id",
-              header: "Id",
-            },
-            {
-              accessorKey: "Image",
-              header: "Image",
-            },
-            {
-              accessorKey: "Driver",
-              header: "Driver",
-            },
-          ]}
-        />
-      </Section>
-
-      <DockerLabelsSection labels={container.Config?.Labels} />
+        <Section
+          title="Inspect"
+          icon={<SearchCode className="w-4 h-4" />}
+          titleRight={
+            <div className="pl-2">
+              <ShowHideButton show={showInspect} setShow={setShowInspect} />
+            </div>
+          }
+        >
+          {showInspect && (
+            <MonacoEditor
+              value={JSON.stringify(container, null, 2)}
+              language="json"
+              readOnly
+            />
+          )}
+        </Section>
+      </div>
     </div>
   );
+
+  // return (
+  //   <div className="flex flex-col gap-16 mb-24">
+  //     {/* HEADER */}
+  //     <div className="flex flex-col gap-4">
+  //       {/* BACK */}
+  //       <div className="flex items-center justify-between mb-4">
+  //         <Button
+  //           className="gap-2"
+  //           variant="secondary"
+  //           onClick={() => nav("/servers/" + id)}
+  //         >
+  //           <ChevronLeft className="w-4" /> Back
+  //         </Button>
+
+  //         <NewDeployment id={id} container={container_name} />
+  //       </div>
+
+  //       {/* TITLE */}
+  //       <div className="flex items-center gap-4">
+  //         <div className="mt-1">
+  //           <DOCKER_LINK_ICONS.container
+  //             server_id={id}
+  //             name={container_name}
+  //             size={8}
+  //           />
+  //         </div>
+  //         <DockerResourcePageName name={container_name} />
+  //         <div className="flex items-center gap-4 flex-wrap">
+  //           <StatusBadge
+  //             text={state}
+  //             intent={container_state_intention(state)}
+  //           />
+  //           {status && (
+  //             <p className="text-sm text-muted-foreground">{status}</p>
+  //           )}
+  //         </div>
+  //       </div>
+
+  //       {/* INFO */}
+  //       <div className="flex flex-wrap gap-4 items-center text-muted-foreground">
+  //         <ResourceLink type="Server" id={id} />
+  //         <AttachedResource id={id} container={container_name} />
+  //       </div>
+  //     </div>
+
+  //     {/* Actions */}
+  //     {canExecute && (
+  //       <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
+  //         <div className="flex gap-4 items-center flex-wrap">
+  //           {Object.entries(Actions).map(([key, Action]) => (
+  //             <Action key={key} id={id} container={container_name} />
+  //           ))}
+  //         </div>
+  //       </Section>
+  //     )}
+
+  //     {/* Updates */}
+  //     <ResourceUpdates type="Server" id={id} />
+
+  //     <ContainerLogs id={id} container_name={container_name} />
+
+  //     {/* TOP LEVEL CONTAINER INFO */}
+  //     <Section title="Details" icon={<Info className="w-4 h-4" />}>
+  //       <DataTable
+  //         tableKey="container-info"
+  //         data={[container]}
+  //         columns={[
+  //           {
+  //             accessorKey: "Id",
+  //             header: "Id",
+  //           },
+  //           {
+  //             accessorKey: "Image",
+  //             header: "Image",
+  //           },
+  //           {
+  //             accessorKey: "Driver",
+  //             header: "Driver",
+  //           },
+  //         ]}
+  //       />
+  //     </Section>
+
+  //     <DockerLabelsSection labels={container.Config?.Labels} />
+  //   </div>
+  // );
 };
 
 const AttachedResource = ({
@@ -201,13 +340,10 @@ const AttachedResource = ({
   return (
     <>
       |
-      <div className="flex gap-2">
-        <div>{attached.resource.type}:</div>
-        <ResourceLink
-          type={attached.resource.type as UsableResource}
-          id={attached.resource.id}
-        />
-      </div>
+      <ResourceLink
+        type={attached.resource.type as UsableResource}
+        id={attached.resource.id}
+      />
     </>
   );
 };

@@ -7,6 +7,7 @@ import {
   DockerContainersSection,
   DockerLabelsSection,
   DockerResourcePageName,
+  ShowHideButton,
 } from "@components/util";
 import { fmt_date_with_minutes, format_size_bytes } from "@lib/formatting";
 import { useExecute, useRead, useSetTitle } from "@lib/hooks";
@@ -15,8 +16,17 @@ import { Types } from "komodo_client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { ChevronLeft, HistoryIcon, Info, Loader2, Trash } from "lucide-react";
+import {
+  ChevronLeft,
+  HistoryIcon,
+  Info,
+  Loader2,
+  SearchCode,
+  Trash,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { MonacoEditor } from "@components/monaco";
 
 export const ImagePage = () => {
   const { type, id, image } = useParams() as {
@@ -37,6 +47,7 @@ const ImagePageInner = ({
   id: string;
   image: string;
 }) => {
+  const [showInspect, setShowInspect] = useState(false);
   const server = useServer(id);
   useSetTitle(`${server?.name} | image | ${image_name}`);
   const nav = useNavigate();
@@ -212,6 +223,24 @@ const ImagePageInner = ({
       )}
 
       <DockerLabelsSection labels={image?.Config?.Labels} />
+
+      <Section
+        title="Inspect"
+        icon={<SearchCode className="w-4 h-4" />}
+        titleRight={
+          <div className="pl-2">
+            <ShowHideButton show={showInspect} setShow={setShowInspect} />
+          </div>
+        }
+      >
+        {showInspect && (
+          <MonacoEditor
+            value={JSON.stringify(image, null, 2)}
+            language="json"
+            readOnly
+          />
+        )}
+      </Section>
     </div>
   );
 };

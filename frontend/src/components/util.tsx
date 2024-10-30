@@ -891,7 +891,7 @@ export const TextUpdateMenuSimple = ({
             triggerClassName
           )}
         >
-          {value || placeholder}
+          {value.split("\n")[0] || placeholder}
         </div>
       </DialogTrigger>
       <DialogContent className="min-w-[50vw]">

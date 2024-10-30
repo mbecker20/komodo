@@ -8,6 +8,7 @@ import {
   DockerOptions,
   DockerResourceLink,
   DockerResourcePageName,
+  ShowHideButton,
 } from "@components/util";
 import { useExecute, useRead, useSetTitle } from "@lib/hooks";
 import { has_minimum_permissions } from "@lib/utils";
@@ -20,10 +21,13 @@ import {
   ChevronLeft,
   Info,
   Loader2,
+  SearchCode,
   Trash,
   Waypoints,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { MonacoEditor } from "@components/monaco";
 
 export const NetworkPage = () => {
   const { type, id, network } = useParams() as {
@@ -44,6 +48,7 @@ const NetworkPageInner = ({
   id: string;
   network: string;
 }) => {
+  const [showInspect, setShowInspect] = useState(false);
   const server = useServer(id);
   useSetTitle(`${server?.name} | network | ${network_name}`);
   const nav = useNavigate();
@@ -277,6 +282,24 @@ const NetworkPageInner = ({
       )}
 
       <DockerLabelsSection labels={network.Labels} />
+
+      <Section
+        title="Inspect"
+        icon={<SearchCode className="w-4 h-4" />}
+        titleRight={
+          <div className="pl-2">
+            <ShowHideButton show={showInspect} setShow={setShowInspect} />
+          </div>
+        }
+      >
+        {showInspect && (
+          <MonacoEditor
+            value={JSON.stringify(network, null, 2)}
+            language="json"
+            readOnly
+          />
+        )}
+      </Section>
     </div>
   );
 };
