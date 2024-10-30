@@ -174,6 +174,8 @@ export const DeploymentComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
   BigIcon: ({ id }) => <DeploymentIcon id={id} size={8} />,
 

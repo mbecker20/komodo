@@ -1,7 +1,7 @@
 import { TableTags } from "@components/tags";
 import { Types } from "komodo_client";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { useRead } from "@lib/hooks";
+import { useRead, useSelectedResources } from "@lib/hooks";
 import { ResourceLink } from "../common";
 import { DeploymentComponents } from ".";
 import { HardDrive } from "lucide-react";
@@ -17,10 +17,19 @@ export const DeploymentTable = ({
     (id: string) => servers?.find((server) => server.id === id)?.name,
     [servers]
   );
+
+  const [_, setSelectedResources] = useSelectedResources("Deployment");
+
   return (
     <DataTable
       tableKey="deployments"
       data={deployments}
+      selectOptions={{
+        selectKey: ({ id }) => id,
+        onSelect: setSelectedResources,
+        disableRow: (row) =>
+          row.original.info.state === Types.DeploymentState.Running,
+      }}
       columns={[
         {
           accessorKey: "name",
