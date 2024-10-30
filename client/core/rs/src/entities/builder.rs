@@ -48,10 +48,13 @@ pub struct BuilderListItemInfo {
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::large_enum_variant)]
 pub enum BuilderConfig {
-  /// Use a connected server an image builder.
+  /// Use a Periphery address as a Builder.
+  Url(UrlBuilderConfig),
+
+  /// Use a connected server as a Builder.
   Server(ServerBuilderConfig),
 
-  /// Use EC2 instances spawned on demand as an image builder.
+  /// Use EC2 instances spawned on demand as a Builder.
   Aws(AwsBuilderConfig),
 }
 
@@ -76,19 +79,21 @@ impl Default for BuilderConfig {
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::large_enum_variant)]
 pub enum PartialBuilderConfig {
+  Url(#[serde(default)] _PartialUrlBuilderConfig),
   Server(#[serde(default)] _PartialServerBuilderConfig),
   Aws(#[serde(default)] _PartialAwsBuilderConfig),
 }
 
 impl Default for PartialBuilderConfig {
   fn default() -> Self {
-    Self::Aws(Default::default())
+    Self::Url(Default::default())
   }
 }
 
 impl MaybeNone for PartialBuilderConfig {
   fn is_none(&self) -> bool {
     match self {
+      PartialBuilderConfig::Url(config) => config.is_none(),
       PartialBuilderConfig::Server(config) => config.is_none(),
       PartialBuilderConfig::Aws(config) => config.is_none(),
     }
@@ -98,6 +103,7 @@ impl MaybeNone for PartialBuilderConfig {
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BuilderConfigDiff {
+  Url(UrlBuilderConfigDiff),
   Server(ServerBuilderConfigDiff),
   Aws(AwsBuilderConfigDiff),
 }
@@ -105,6 +111,9 @@ pub enum BuilderConfigDiff {
 impl From<BuilderConfigDiff> for PartialBuilderConfig {
   fn from(value: BuilderConfigDiff) -> Self {
     match value {
+      BuilderConfigDiff::Url(diff) => {
+        PartialBuilderConfig::Url(diff.into())
+      }
       BuilderConfigDiff::Server(diff) => {
         PartialBuilderConfig::Server(diff.into())
       }
@@ -120,6 +129,9 @@ impl Diff for BuilderConfigDiff {
     &self,
   ) -> impl Iterator<Item = partial_derive2::FieldDiff> {
     match self {
+      BuilderConfigDiff::Url(diff) => {
+        diff.iter_field_diffs().collect::<Vec<_>>().into_iter()
+      }
       BuilderConfigDiff::Server(diff) => {
         diff.iter_field_diffs().collect::<Vec<_>>().into_iter()
       }
@@ -138,9 +150,26 @@ impl PartialDiff<PartialBuilderConfig, BuilderConfigDiff>
     partial: PartialBuilderConfig,
   ) -> BuilderConfigDiff {
     match self {
+      BuilderConfig::Url(original) => match partial {
+        PartialBuilderConfig::Url(partial) => {
+          BuilderConfigDiff::Url(original.partial_diff(partial))
+        }
+        PartialBuilderConfig::Server(partial) => {
+          let default = ServerBuilderConfig::default();
+          BuilderConfigDiff::Server(default.partial_diff(partial))
+        }
+        PartialBuilderConfig::Aws(partial) => {
+          let default = AwsBuilderConfig::default();
+          BuilderConfigDiff::Aws(default.partial_diff(partial))
+        }
+      },
       BuilderConfig::Server(original) => match partial {
         PartialBuilderConfig::Server(partial) => {
           BuilderConfigDiff::Server(original.partial_diff(partial))
+        }
+        PartialBuilderConfig::Url(partial) => {
+          let default = UrlBuilderConfig::default();
+          BuilderConfigDiff::Url(default.partial_diff(partial))
         }
         PartialBuilderConfig::Aws(partial) => {
           let default = AwsBuilderConfig::default();
@@ -150,6 +179,10 @@ impl PartialDiff<PartialBuilderConfig, BuilderConfigDiff>
       BuilderConfig::Aws(original) => match partial {
         PartialBuilderConfig::Aws(partial) => {
           BuilderConfigDiff::Aws(original.partial_diff(partial))
+        }
+        PartialBuilderConfig::Url(partial) => {
+          let default = UrlBuilderConfig::default();
+          BuilderConfigDiff::Url(default.partial_diff(partial))
         }
         PartialBuilderConfig::Server(partial) => {
           let default = ServerBuilderConfig::default();
@@ -163,6 +196,7 @@ impl PartialDiff<PartialBuilderConfig, BuilderConfigDiff>
 impl MaybeNone for BuilderConfigDiff {
   fn is_none(&self) -> bool {
     match self {
+      BuilderConfigDiff::Url(config) => config.is_none(),
       BuilderConfigDiff::Server(config) => config.is_none(),
       BuilderConfigDiff::Aws(config) => config.is_none(),
     }
@@ -172,6 +206,9 @@ impl MaybeNone for BuilderConfigDiff {
 impl From<PartialBuilderConfig> for BuilderConfig {
   fn from(value: PartialBuilderConfig) -> BuilderConfig {
     match value {
+      PartialBuilderConfig::Url(server) => {
+        BuilderConfig::Url(server.into())
+      }
       PartialBuilderConfig::Server(server) => {
         BuilderConfig::Server(server.into())
       }
@@ -185,6 +222,9 @@ impl From<PartialBuilderConfig> for BuilderConfig {
 impl From<BuilderConfig> for PartialBuilderConfig {
   fn from(value: BuilderConfig) -> Self {
     match value {
+      BuilderConfig::Url(config) => {
+        PartialBuilderConfig::Url(config.into())
+      }
       BuilderConfig::Server(config) => {
         PartialBuilderConfig::Server(config.into())
       }
@@ -202,6 +242,16 @@ impl MergePartial for BuilderConfig {
     partial: PartialBuilderConfig,
   ) -> BuilderConfig {
     match partial {
+      PartialBuilderConfig::Url(partial) => match self {
+        BuilderConfig::Url(config) => {
+          let config = UrlBuilderConfig {
+            address: partial.address.unwrap_or(config.address),
+            passkey: partial.passkey.unwrap_or(config.passkey),
+          };
+          BuilderConfig::Url(config)
+        }
+        _ => BuilderConfig::Url(partial.into()),
+      },
       PartialBuilderConfig::Server(partial) => match self {
         BuilderConfig::Server(config) => {
           let config = ServerBuilderConfig {
@@ -252,6 +302,42 @@ impl MergePartial for BuilderConfig {
   }
 }
 
+#[typeshare(serialized_as = "Partial<UrlBuilderConfig>")]
+pub type _PartialUrlBuilderConfig = PartialUrlBuilderConfig;
+
+/// Configuration for a Komodo Url Builder.
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[partial(skip_serializing_none, from, diff)]
+pub struct UrlBuilderConfig {
+  /// The address of the Periphery agent
+  #[serde(default = "default_address")]
+  pub address: String,
+  /// A custom passkey to use. Otherwise, use the default passkey.
+  #[serde(default)]
+  pub passkey: String,
+}
+
+fn default_address() -> String {
+  String::from("https://periphery:8120")
+}
+
+impl Default for UrlBuilderConfig {
+  fn default() -> Self {
+    Self {
+      address: default_address(),
+      passkey: Default::default(),
+    }
+  }
+}
+
+impl UrlBuilderConfig {
+  pub fn builder() -> UrlBuilderConfigBuilder {
+    UrlBuilderConfigBuilder::default()
+  }
+}
+
 #[typeshare(serialized_as = "Partial<ServerBuilderConfig>")]
 pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 
@@ -264,9 +350,15 @@ pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 #[partial(skip_serializing_none, from, diff)]
 pub struct ServerBuilderConfig {
   /// The server id of the builder
-  #[serde(alias = "server")]
+  #[serde(default, alias = "server")]
   #[partial_attr(serde(alias = "server"))]
   pub server_id: String,
+}
+
+impl ServerBuilderConfig {
+  pub fn builder() -> ServerBuilderConfigBuilder {
+    ServerBuilderConfigBuilder::default()
+  }
 }
 
 #[typeshare(serialized_as = "Partial<AwsBuilderConfig>")]

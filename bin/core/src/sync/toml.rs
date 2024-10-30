@@ -390,6 +390,7 @@ impl ToToml for Builder {
     let empty_params = match resource.config {
       PartialBuilderConfig::Aws(config) => config.is_none(),
       PartialBuilderConfig::Server(config) => config.is_none(),
+      PartialBuilderConfig::Url(config) => config.is_none(),
     };
     if empty_params {
       // toml_pretty will remove empty map
