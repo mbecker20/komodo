@@ -391,12 +391,17 @@ export interface BuildQuerySpecifics {
 }
 export type BuildQuery = ResourceQuery<BuildQuerySpecifics>;
 export type BuilderConfig = 
-/** Use a connected server an image builder. */
+/** Use a Periphery address as a Builder. */
 {
+    type: "Url";
+    params: UrlBuilderConfig;
+}
+/** Use a connected server as a Builder. */
+ | {
     type: "Server";
     params: ServerBuilderConfig;
 }
-/** Use EC2 instances spawned on demand as an image builder. */
+/** Use EC2 instances spawned on demand as a Builder. */
  | {
     type: "Aws";
     params: AwsBuilderConfig;
@@ -3090,6 +3095,8 @@ export interface ServerListItemInfo {
     state: ServerState;
     /** Region of the server. */
     region: string;
+    /** Address of the server. */
+    address: string;
     /** Whether server is configured to send unreachable alerts. */
     send_unreachable_alerts: boolean;
     /** Whether server is configured to send cpu alerts. */
@@ -3268,6 +3275,7 @@ export type _PartialServerBuilderConfig = Partial<ServerBuilderConfig>;
 export type _PartialServerConfig = Partial<ServerConfig>;
 export type _PartialStackConfig = Partial<StackConfig>;
 export type _PartialTag = Partial<Tag>;
+export type _PartialUrlBuilderConfig = Partial<UrlBuilderConfig>;
 export interface __Serror {
     error: string;
     trace: string[];
@@ -3652,16 +3660,6 @@ export interface CommitSync {
     /** Id or name */
     sync: string;
 }
-export interface ComposeService {
-    image?: string;
-    container_name?: string;
-}
-/** Keeping this minimal for now as its only needed to parse the service names / container names */
-export interface ComposeFile {
-    /** If not provided, will default to the parent folder holding the compose file. */
-    name?: string;
-    services?: Record<string, ComposeService>;
-}
 export interface Conversion {
     /** reference on the server. */
     local: string;
@@ -3838,6 +3836,9 @@ export interface CreateBuildWebhook {
 }
 /** Partial representation of [BuilderConfig] */
 export type PartialBuilderConfig = {
+    type: "Url";
+    params: _PartialUrlBuilderConfig;
+} | {
     type: "Server";
     params: _PartialServerBuilderConfig;
 } | {
@@ -6698,6 +6699,13 @@ export interface UpdateVariableValue {
     name: string;
     /** The value to set. */
     value: string;
+}
+/** Configuration for a Komodo Url Builder. */
+export interface UrlBuilderConfig {
+    /** The address of Periphery */
+    address: string;
+    /** A custom passkey to use. Otherwise, use the default passkey. */
+    passkey: string;
 }
 /** Update file contents in Files on Server or Git Repo mode. Response: [Update]. */
 export interface WriteStackFileContents {

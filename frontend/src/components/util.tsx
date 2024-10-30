@@ -1,5 +1,6 @@
 import {
   FocusEventHandler,
+  Fragment,
   MouseEventHandler,
   ReactNode,
   forwardRef,
@@ -677,7 +678,7 @@ export const DockerResourceLink = ({
         <Icon server_id={server_id} name={type === "image" ? id : name} />
         <div
           title={name}
-          className="max-w-[200px] lg:max-w-[300px] overflow-hidden overflow-ellipsis"
+          className="max-w-[200px] lg:max-w-[250px] overflow-hidden overflow-ellipsis"
         >
           {name}
         </div>
@@ -705,12 +706,14 @@ export const DockerContainersSection = ({
   show = true,
   setShow,
   pruneButton,
+  titleOther,
 }: {
   server_id: string;
   containers: Types.ListDockerContainersResponse;
   show?: boolean;
   setShow?: (show: boolean) => void;
   pruneButton?: boolean;
+  titleOther?: ReactNode;
 }) => {
   const allRunning = useRead("ListDockerContainers", {
     server: server_id,
@@ -720,8 +723,9 @@ export const DockerContainersSection = ({
   return (
     <div className={cn(setShow && show && "mb-8")}>
       <Section
-        title="Containers"
-        icon={<Box className="w-4 h-4" />}
+        titleOther={titleOther}
+        title={!titleOther ? "Containers" : undefined}
+        icon={!titleOther ? <Box className="w-4 h-4" /> : undefined}
         actions={
           <div className="flex items-center gap-2">
             {pruneButton && !allRunning && (
@@ -738,6 +742,7 @@ export const DockerContainersSection = ({
             columns={[
               {
                 accessorKey: "name",
+                size: 260,
                 header: ({ column }) => (
                   <SortableHeader column={column} title="Name" />
                 ),
@@ -748,10 +753,26 @@ export const DockerContainersSection = ({
                     name={row.original.name}
                   />
                 ),
-                size: 200,
+              },
+              {
+                accessorKey: "state",
+                size: 160,
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="State" />
+                ),
+                cell: ({ row }) => {
+                  const state = row.original?.state;
+                  return (
+                    <StatusBadge
+                      text={state}
+                      intent={container_state_intention(state)}
+                    />
+                  );
+                },
               },
               {
                 accessorKey: "image",
+                size: 300,
                 header: ({ column }) => (
                   <SortableHeader column={column} title="Image" />
                 ),
@@ -765,32 +786,27 @@ export const DockerContainersSection = ({
                 ),
               },
               {
-                accessorKey: "network_mode",
+                accessorKey: "networks.0",
+                size: 300,
                 header: ({ column }) => (
-                  <SortableHeader column={column} title="Network" />
+                  <SortableHeader column={column} title="Networks" />
                 ),
                 cell: ({ row }) => (
-                  <DockerResourceLink
-                    type="network"
-                    server_id={server_id}
-                    name={row.original.network_mode}
-                  />
+                  <div className="flex items-center gap-x-2 flex-wrap">
+                    {row.original.networks.map((network, i) => (
+                      <Fragment key={network}>
+                        <DockerResourceLink
+                          type="network"
+                          server_id={server_id}
+                          name={network}
+                        />
+                        {i !== row.original.networks.length - 1 && (
+                          <div className="text-muted-foreground">|</div>
+                        )}
+                      </Fragment>
+                    ))}
+                  </div>
                 ),
-              },
-              {
-                accessorKey: "state",
-                header: ({ column }) => (
-                  <SortableHeader column={column} title="State" />
-                ),
-                cell: ({ row }) => {
-                  const state = row.original?.state;
-                  return (
-                    <StatusBadge
-                      text={state}
-                      intent={container_state_intention(state)}
-                    />
-                  );
-                },
               },
             ]}
           />
@@ -875,7 +891,7 @@ export const TextUpdateMenuSimple = ({
             triggerClassName
           )}
         >
-          {value || placeholder}
+          {value.split("\n")[0] || placeholder}
         </div>
       </DialogTrigger>
       <DialogContent className="min-w-[50vw]">

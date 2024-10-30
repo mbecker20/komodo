@@ -18,7 +18,7 @@ import { homeViewAtom } from "@main";
 export const Sidebar = () => {
   const [view, setView] = useAtom(homeViewAtom);
   return (
-    <div className="fixed top-0 pt-24 w-64 border-r hidden lg:block pr-8 pb-8 h-screen overflow-y-auto">
+    <div className="fixed top-0 pt-[84px] w-[200px] border-r hidden lg:block pr-8 pb-8 h-screen overflow-y-auto">
       <div className="flex flex-col gap-1">
         <SidebarLink
           label="Dashboard"

@@ -40,7 +40,7 @@ impl DockerClient {
   pub async fn list_containers(
     &self,
   ) -> anyhow::Result<Vec<ContainerListItem>> {
-    self
+    let containers = self
       .docker
       .list_containers(Some(ListContainersOptions::<String> {
         all: true,
@@ -48,8 +48,8 @@ impl DockerClient {
       }))
       .await?
       .into_iter()
-      .map(|container| {
-        Ok(ContainerListItem {
+      .flat_map(|container| {
+        anyhow::Ok(ContainerListItem {
           server_id: None,
           name: container
             .names
@@ -75,9 +75,12 @@ impl DockerClient {
           networks: container
             .network_settings
             .and_then(|settings| {
-              settings
-                .networks
-                .map(|networks| networks.into_keys().collect())
+              settings.networks.map(|networks| {
+                let mut keys =
+                  networks.into_keys().collect::<Vec<_>>();
+                keys.sort();
+                keys
+              })
             })
             .unwrap_or_default(),
           volumes: container
@@ -92,7 +95,8 @@ impl DockerClient {
           labels: container.labels.unwrap_or_default(),
         })
       })
-      .collect()
+      .collect::<Vec<_>>();
+    Ok(containers)
   }
 
   pub async fn inspect_container(
@@ -519,7 +523,7 @@ impl DockerClient {
     &self,
     containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<NetworkListItem>> {
-    self
+    let networks = self
       .docker
       .list_networks::<String>(None)
       .await?
@@ -545,7 +549,7 @@ impl DockerClient {
           }),
           None => false,
         };
-        Ok(NetworkListItem {
+        NetworkListItem {
           name: network.name,
           id: network.id,
           created: network.created,
@@ -559,9 +563,10 @@ impl DockerClient {
           attachable: network.attachable,
           ingress: network.ingress,
           in_use,
-        })
+        }
       })
-      .collect()
+      .collect();
+    Ok(networks)
   }
 
   pub async fn inspect_network(
@@ -628,7 +633,7 @@ impl DockerClient {
     &self,
     containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<ImageListItem>> {
-    self
+    let images = self
       .docker
       .list_images::<String>(None)
       .await?
@@ -641,7 +646,7 @@ impl DockerClient {
             .map(|id| id == &image.id)
             .unwrap_or_default()
         });
-        Ok(ImageListItem {
+        ImageListItem {
           name: image
             .repo_tags
             .into_iter()
@@ -652,9 +657,10 @@ impl DockerClient {
           created: image.created,
           size: image.size,
           in_use,
-        })
+        }
       })
-      .collect()
+      .collect();
+    Ok(images)
   }
 
   pub async fn inspect_image(
@@ -761,7 +767,7 @@ impl DockerClient {
     &self,
     containers: &[ContainerListItem],
   ) -> anyhow::Result<Vec<VolumeListItem>> {
-    self
+    let volumes = self
       .docker
       .list_volumes::<String>(None)
       .await?
@@ -786,7 +792,7 @@ impl DockerClient {
         let in_use = containers.iter().any(|container| {
           container.volumes.iter().any(|name| &volume.name == name)
         });
-        Ok(VolumeListItem {
+        VolumeListItem {
           name: volume.name,
           driver: volume.driver,
           mountpoint: volume.mountpoint,
@@ -794,9 +800,10 @@ impl DockerClient {
           size: volume.usage_data.map(|data| data.size),
           scope,
           in_use,
-        })
+        }
       })
-      .collect()
+      .collect();
+    Ok(volumes)
   }
 
   pub async fn inspect_volume(

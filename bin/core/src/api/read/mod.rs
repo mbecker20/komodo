@@ -339,6 +339,7 @@ impl Resolve<ListSecrets, User> for State {
         ResourceTarget::Server(id) => Some(id),
         ResourceTarget::Builder(id) => {
           match resource::get::<Builder>(&id).await?.config {
+            BuilderConfig::Url(_) => None,
             BuilderConfig::Server(config) => Some(config.server_id),
             BuilderConfig::Aws(config) => {
               secrets.extend(config.secrets);
@@ -387,6 +388,7 @@ impl Resolve<ListGitProvidersFromConfig, User> for State {
         }
         ResourceTarget::Builder(id) => {
           match resource::get::<Builder>(&id).await?.config {
+            BuilderConfig::Url(_) => {}
             BuilderConfig::Server(config) => {
               merge_git_providers_for_server(
                 &mut providers,
@@ -485,6 +487,7 @@ impl Resolve<ListDockerRegistriesFromConfig, User> for State {
         }
         ResourceTarget::Builder(id) => {
           match resource::get::<Builder>(&id).await?.config {
+            BuilderConfig::Url(_) => {}
             BuilderConfig::Server(config) => {
               merge_docker_registries_for_server(
                 &mut registries,

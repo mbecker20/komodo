@@ -22,6 +22,7 @@ export const BuilderConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuilder", { builder: id }).data?.config;
   if (config?.type === "Aws") return <AwsBuilderConfig id={id} />;
   if (config?.type === "Server") return <ServerBuilderConfig id={id} />;
+  if (config?.type === "Url") return <UrlBuilderConfig id={id} />;
 };
 
 const AwsBuilderConfig = ({ id }: { id: string }) => {
@@ -292,6 +293,51 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
                     />
                   </ConfigItem>
                 );
+              },
+            },
+          },
+        ],
+      }}
+    />
+  );
+};
+
+const UrlBuilderConfig = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Builder", id },
+  }).data;
+  const config = useRead("GetBuilder", { builder: id }).data?.config;
+  const [update, set] = useLocalStorage<Partial<Types.UrlBuilderConfig>>(
+    `url-builder-${id}-update-v1`,
+    {}
+  );
+  const { mutateAsync } = useWrite("UpdateBuilder");
+  if (!config) return null;
+
+  const disabled = perms !== Types.PermissionLevel.Write;
+
+  return (
+    <Config
+      disabled={disabled}
+      config={config.params as Types.UrlBuilderConfig}
+      update={update}
+      set={set}
+      onSave={async () => {
+        await mutateAsync({ id, config: { type: "Url", params: update } });
+      }}
+      components={{
+        "": [
+          {
+            label: "General",
+            labelHidden: true,
+            components: {
+              address: {
+                description: "The address of the Periphery agent",
+                placeholder: "https://periphery:8120",
+              },
+              passkey: {
+                description: "Use a custom passkey to authenticate with Periphery",
+                placeholder: "Custom passkey",
               },
             },
           },

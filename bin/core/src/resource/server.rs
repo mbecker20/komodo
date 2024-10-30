@@ -47,6 +47,7 @@ impl super::KomodoResource for Server {
       info: ServerListItemInfo {
         state: status.map(|s| s.state).unwrap_or_default(),
         region: server.config.region,
+        address: server.config.address,
         send_unreachable_alerts: server
           .config
           .send_unreachable_alerts,

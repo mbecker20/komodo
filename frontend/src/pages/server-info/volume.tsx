@@ -8,6 +8,7 @@ import {
   DockerLabelsSection,
   DockerOptions,
   DockerResourcePageName,
+  ShowHideButton,
 } from "@components/util";
 import { useExecute, useRead, useSetTitle } from "@lib/hooks";
 import { has_minimum_permissions } from "@lib/utils";
@@ -15,8 +16,10 @@ import { Types } from "komodo_client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { ChevronLeft, Info, Loader2, Trash } from "lucide-react";
+import { ChevronLeft, Info, Loader2, SearchCode, Trash } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { MonacoEditor } from "@components/monaco";
 
 export const VolumePage = () => {
   const { type, id, volume } = useParams() as {
@@ -37,6 +40,7 @@ const VolumePageInner = ({
   id: string;
   volume: string;
 }) => {
+  const [showInspect, setShowInspect] = useState(false);
   const server = useServer(id);
   useSetTitle(`${server?.name} | volume | ${volume_name}`);
   const nav = useNavigate();
@@ -114,7 +118,7 @@ const VolumePageInner = ({
         {/* TITLE */}
         <div className="flex items-center gap-4">
           <div className="mt-1">
-            <DOCKER_LINK_ICONS.container
+            <DOCKER_LINK_ICONS.volume
               server_id={id}
               name={volume_name}
               size={8}
@@ -175,6 +179,24 @@ const VolumePageInner = ({
       </Section>
 
       <DockerLabelsSection labels={volume.Labels} />
+
+      <Section
+        title="Inspect"
+        icon={<SearchCode className="w-4 h-4" />}
+        titleRight={
+          <div className="pl-2">
+            <ShowHideButton show={showInspect} setShow={setShowInspect} />
+          </div>
+        }
+      >
+        {showInspect && (
+          <MonacoEditor
+            value={JSON.stringify(volume, null, 2)}
+            language="json"
+            readOnly
+          />
+        )}
+      </Section>
     </div>
   );
 };

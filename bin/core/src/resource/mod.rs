@@ -7,7 +7,7 @@ use anyhow::{anyhow, Context};
 use formatting::format_serror;
 use futures::{future::join_all, FutureExt};
 use komodo_client::{
-  api::write::CreateTag,
+  api::{read::ExportResourcesToToml, write::CreateTag},
   entities::{
     komodo_timestamp,
     permission::PermissionLevel,
@@ -898,6 +898,16 @@ pub async fn delete<T: KomodoResource>(
   }
 
   let target = resource_target::<T>(resource.id.clone());
+  let toml = State
+    .resolve(
+      ExportResourcesToToml {
+        targets: vec![target.clone()],
+        ..Default::default()
+      },
+      user.clone(),
+    )
+    .await?
+    .toml;
 
   let mut update =
     make_update(target.clone(), T::delete_operation(), user);
@@ -910,13 +920,14 @@ pub async fn delete<T: KomodoResource>(
   delete_one_by_id(T::coll(), &resource.id, None)
     .await
     .with_context(|| {
-      format!("failed to delete {} from database", T::resource_type())
+      format!("Failed to delete {} from database", T::resource_type())
     })?;
 
   update.push_simple_log(
-    &format!("delete {}", T::resource_type()),
-    format!("deleted {} {}", T::resource_type(), resource.name),
+    &format!("Delete {}", T::resource_type()),
+    format!("Deleted {} {}", T::resource_type(), resource.name),
   );
+  update.push_simple_log("Deleted Toml", toml);
 
   if let Err(e) = T::post_delete(&resource, &mut update).await {
     update.push_error_log("post delete", format_serror(&e.into()));

@@ -6,7 +6,7 @@ import { useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { Input } from "@ui/input";
 import { Box, Search } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { Fragment, useCallback, useMemo, useState } from "react";
 
 export const ContainersPage = () => {
   const [search, setSearch] = useState("");
@@ -54,6 +54,7 @@ export const ContainersPage = () => {
           columns={[
             {
               accessorKey: "name",
+              size: 260,
               header: ({ column }) => (
                 <SortableHeader column={column} title="Name" />
               ),
@@ -64,10 +65,26 @@ export const ContainersPage = () => {
                   name={row.original.name}
                 />
               ),
-              size: 200,
+            },
+            {
+              accessorKey: "state",
+              size: 160,
+              header: ({ column }) => (
+                <SortableHeader column={column} title="State" />
+              ),
+              cell: ({ row }) => {
+                const state = row.original?.state;
+                return (
+                  <StatusBadge
+                    text={state}
+                    intent={container_state_intention(state)}
+                  />
+                );
+              },
             },
             {
               accessorKey: "server_id",
+              size: 200,
               sortingFn: (a, b) => {
                 const sa = serverName(a.original.server_id!);
                 const sb = serverName(b.original.server_id!);
@@ -89,6 +106,7 @@ export const ContainersPage = () => {
             },
             {
               accessorKey: "image",
+              size: 300,
               header: ({ column }) => (
                 <SortableHeader column={column} title="Image" />
               ),
@@ -102,33 +120,51 @@ export const ContainersPage = () => {
               ),
             },
             {
-              accessorKey: "network_mode",
+              accessorKey: "networks.0",
+              size: 300,
               header: ({ column }) => (
-                <SortableHeader column={column} title="Network" />
+                <SortableHeader column={column} title="Networks" />
               ),
               cell: ({ row }) => (
-                <DockerResourceLink
-                  type="network"
-                  server_id={row.original.server_id!}
-                  name={row.original.network_mode}
-                />
+                <div className="flex items-center gap-x-2 flex-wrap">
+                  {row.original.networks.map((network, i) => (
+                    <Fragment key={network}>
+                      <DockerResourceLink
+                        type="network"
+                        server_id={row.original.server_id!}
+                        name={network}
+                      />
+                      {i !== row.original.networks.length - 1 && (
+                        <div className="text-muted-foreground">|</div>
+                      )}
+                    </Fragment>
+                  ))}
+                </div>
               ),
             },
-            {
-              accessorKey: "state",
-              header: ({ column }) => (
-                <SortableHeader column={column} title="State" />
-              ),
-              cell: ({ row }) => {
-                const state = row.original?.state;
-                return (
-                  <StatusBadge
-                    text={state}
-                    intent={container_state_intention(state)}
-                  />
-                );
-              },
-            },
+            // {
+            //   accessorKey: "volumes.0",
+            //   minSize: 300,
+            //   header: ({ column }) => (
+            //     <SortableHeader column={column} title="Volumes" />
+            //   ),
+            //   cell: ({ row }) => (
+            //     <div className="flex items-center gap-x-2 flex-wrap">
+            //       {row.original.volumes.map((volume, i) => (
+            //         <Fragment key={volume}>
+            //           <DockerResourceLink
+            //             type="volume"
+            //             server_id={row.original.server_id!}
+            //             name={volume}
+            //           />
+            //           {i !== row.original.volumes.length - 1 && (
+            //             <div className="text-muted-foreground">|</div>
+            //           )}
+            //         </Fragment>
+            //       ))}
+            //     </div>
+            //   ),
+            // },
           ]}
         />
       </div>

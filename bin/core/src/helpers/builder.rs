@@ -42,9 +42,32 @@ pub async fn get_builder_periphery(
   update: &mut Update,
 ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
   match builder.config {
+    BuilderConfig::Url(config) => {
+      if config.address.is_empty() {
+        return Err(anyhow!("Builder has not yet configured an address"));
+      }
+      let periphery = PeripheryClient::new(
+        config.address,
+        if config.passkey.is_empty() {
+          core_config().passkey.clone()
+        } else {
+          config.passkey
+        },
+      );
+      periphery
+        .health_check()
+        .await
+        .context("Url Builder failed health check")?;
+      Ok((
+        periphery,
+        BuildCleanupData::Server {
+          repo_name: resource_name,
+        },
+      ))
+    }
     BuilderConfig::Server(config) => {
       if config.server_id.is_empty() {
-        return Err(anyhow!("builder has not configured a server"));
+        return Err(anyhow!("Builder has not configured a server"));
       }
       let server = resource::get::<Server>(&config.server_id).await?;
       let periphery = periphery_client(&server)?;

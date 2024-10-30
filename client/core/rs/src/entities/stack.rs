@@ -11,6 +11,7 @@ use typeshare::typeshare;
 use crate::deserializers::{
   env_vars_deserializer, file_contents_deserializer,
   option_env_vars_deserializer, option_file_contents_deserializer,
+  option_maybe_string_i64_deserializer,
   option_string_list_deserializer, string_list_deserializer,
 };
 
@@ -563,8 +564,8 @@ impl super::resource::AddFilters for StackQuerySpecifics {
   }
 }
 
-/// Keeping this minimal for now as its only needed to parse the service names / container names
-#[typeshare]
+/// Keeping this minimal for now as its only needed to parse the service names / container names,
+/// and replica count. Not a typeshared type.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ComposeFile {
   /// If not provided, will default to the parent folder holding the compose file.
@@ -573,9 +574,18 @@ pub struct ComposeFile {
   pub services: HashMap<String, ComposeService>,
 }
 
-#[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ComposeService {
   pub image: Option<String>,
   pub container_name: Option<String>,
+  pub deploy: Option<ComposeServiceDeploy>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposeServiceDeploy {
+  #[serde(
+    default,
+    deserialize_with = "option_maybe_string_i64_deserializer"
+  )]
+  pub replicas: Option<i64>,
 }

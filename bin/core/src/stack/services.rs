@@ -1,6 +1,9 @@
 use anyhow::Context;
 use komodo_client::entities::{
-  stack::{ComposeFile, ComposeService, Stack, StackServiceNames},
+  stack::{
+    ComposeFile, ComposeService, ComposeServiceDeploy, Stack,
+    StackServiceNames,
+  },
   FileContents,
 };
 
@@ -69,16 +72,40 @@ pub fn extract_services_into_res(
   let compose = serde_yaml::from_str::<ComposeFile>(compose_contents)
     .context("failed to parse service names from compose contents")?;
 
-  let services = compose.services.into_iter().map(
-    |(service_name, ComposeService { container_name, .. })| {
-      StackServiceNames {
-        container_name: container_name.unwrap_or_else(|| {
-          format!("{project_name}-{service_name}")
-        }),
-        service_name,
-      }
+  let mut services = Vec::with_capacity(compose.services.capacity());
+
+  for (
+    service_name,
+    ComposeService {
+      container_name,
+      deploy,
+      ..
     },
-  );
+  ) in compose.services
+  {
+    match deploy {
+      Some(ComposeServiceDeploy {
+        replicas: Some(replicas),
+      }) if replicas > 1 => {
+        for i in 1..1 + replicas {
+          services.push(StackServiceNames {
+            container_name: format!(
+              "{project_name}-{service_name}-{i}"
+            ),
+            service_name: format!("{service_name}-{i}"),
+          });
+        }
+      }
+      _ => {
+        services.push(StackServiceNames {
+          container_name: container_name.unwrap_or_else(|| {
+            format!("{project_name}-{service_name}")
+          }),
+          service_name,
+        });
+      }
+    }
+  }
 
   res.extend(services);
 

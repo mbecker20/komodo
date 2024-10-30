@@ -104,6 +104,7 @@ export const BuilderComponents: RequiredResourceComponents = {
               <SelectGroup>
                 <SelectItem value="Aws">Aws</SelectItem>
                 <SelectItem value="Server">Server</SelectItem>
+                <SelectItem value="Url">Url</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

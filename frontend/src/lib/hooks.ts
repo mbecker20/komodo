@@ -19,6 +19,7 @@ import { useToast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { RESOURCE_TARGETS } from "./utils";
 
 // ============== RESOLVER ==============
 
@@ -235,6 +236,68 @@ export const useResourceParamType = () => {
   return (type[0].toUpperCase() + type.slice(1, -1)) as UsableResource;
 };
 
+type ResourceMap = {
+  [Resource in UsableResource]: Types.ResourceListItem<unknown>[] | undefined;
+};
+
+export const useAllResources = (): ResourceMap => {
+  return {
+    Server: useRead("ListServers", {}).data,
+    Stack: useRead("ListStacks", {}).data,
+    Deployment: useRead("ListDeployments", {}).data,
+    Build: useRead("ListBuilds", {}).data,
+    Repo: useRead("ListRepos", {}).data,
+    Procedure: useRead("ListProcedures", {}).data,
+    Action: useRead("ListActions", {}).data,
+    Builder: useRead("ListBuilders", {}).data,
+    Alerter: useRead("ListAlerters", {}).data,
+    ServerTemplate: useRead("ListServerTemplates", {}).data,
+    ResourceSync: useRead("ListResourceSyncs", {}).data,
+  };
+};
+
+// Returns true if Komodo has no resources.
+export const useNoResources = () => {
+  const resources = useAllResources();
+  for (const target of RESOURCE_TARGETS) {
+    if (resources[target] && resources[target].length) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/** returns function that takes a resource target and checks if it exists */
+export const useCheckResourceExists = () => {
+  const resources = useAllResources();
+  return (target: Types.ResourceTarget) => {
+    return (
+      resources[target.type as UsableResource]?.some(
+        (resource) => resource.id === target.id
+      ) || false
+    );
+  };
+};
+
+export const useFilterResources = <Info>(
+  resources?: Types.ResourceListItem<Info>[],
+  search?: string
+) => {
+  const tags = useTagsFilter();
+  const searchSplit = search?.toLowerCase()?.split(" ") || [];
+  return (
+    resources?.filter(
+      (resource) =>
+        tags.every((tag: string) => resource.tags.includes(tag)) &&
+        (searchSplit.length > 0
+          ? searchSplit.every((search) =>
+              resource.name.toLowerCase().includes(search)
+            )
+          : true)
+    ) ?? []
+  );
+};
+
 export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
   const userInvalidate = useUserInvalidate();
 
@@ -283,60 +346,6 @@ export const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
 export const useTagsFilter = () => {
   const [tags] = useAtom<string[]>(tagsAtom);
   return tags;
-};
-
-/** returns function that takes a resource target and checks if it exists */
-export const useCheckResourceExists = () => {
-  const servers = useRead("ListServers", {}).data;
-  const deployments = useRead("ListDeployments", {}).data;
-  const builds = useRead("ListBuilds", {}).data;
-  const repos = useRead("ListRepos", {}).data;
-  const procedures = useRead("ListProcedures", {}).data;
-  const builders = useRead("ListBuilders", {}).data;
-  const alerters = useRead("ListAlerters", {}).data;
-  return (target: Types.ResourceTarget) => {
-    switch (target.type) {
-      case "Server":
-        return servers?.some((resource) => resource.id === target.id) || false;
-      case "Deployment":
-        return (
-          deployments?.some((resource) => resource.id === target.id) || false
-        );
-      case "Build":
-        return builds?.some((resource) => resource.id === target.id) || false;
-      case "Repo":
-        return repos?.some((resource) => resource.id === target.id) || false;
-      case "Procedure":
-        return (
-          procedures?.some((resource) => resource.id === target.id) || false
-        );
-      case "Builder":
-        return builders?.some((resource) => resource.id === target.id) || false;
-      case "Alerter":
-        return alerters?.some((resource) => resource.id === target.id) || false;
-      default:
-        return false;
-    }
-  };
-};
-
-export const useFilterResources = <Info>(
-  resources?: Types.ResourceListItem<Info>[],
-  search?: string
-) => {
-  const tags = useTagsFilter();
-  const searchSplit = search?.toLowerCase()?.split(" ") || [];
-  return (
-    resources?.filter(
-      (resource) =>
-        tags.every((tag: string) => resource.tags.includes(tag)) &&
-        (searchSplit.length > 0
-          ? searchSplit.every((search) =>
-              resource.name.toLowerCase().includes(search)
-            )
-          : true)
-    ) ?? []
-  );
 };
 
 export type LocalStorageSetter<T> = (state: T) => T;
@@ -407,44 +416,6 @@ export const useCtrlKeyListener = (listenKey: string, onPress: () => void) => {
     document.addEventListener("keydown", keydown);
     return () => document.removeEventListener("keydown", keydown);
   });
-};
-
-// Returns true if Komodo has no resources.
-export const useNoResources = () => {
-  const servers =
-    useRead("ListServers", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const deployments =
-    useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const stacks =
-    useRead("ListStacks", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const builds =
-    useRead("ListBuilds", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const repos =
-    useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const procedures =
-    useRead("ListProcedures", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const builders =
-    useRead("ListBuilders", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const alerters =
-    useRead("ListAlerters", {}, { refetchInterval: 5000 }).data?.length ?? 0;
-  const templates =
-    useRead("ListServerTemplates", {}, { refetchInterval: 5000 }).data
-      ?.length ?? 0;
-  const syncs =
-    useRead("ListResourceSyncs", {}, { refetchInterval: 5000 }).data?.length ??
-    0;
-  return (
-    servers === 0 &&
-    deployments === 0 &&
-    stacks === 0 &&
-    builds === 0 &&
-    repos === 0 &&
-    procedures === 0 &&
-    builders === 0 &&
-    alerters === 0 &&
-    templates === 0 &&
-    syncs === 0
-  );
 };
 
 export type WebhookIntegration = "Github" | "Gitlab";

@@ -40,6 +40,9 @@ impl super::KomodoResource for Builder {
     builder: Resource<Self::Config, Self::Info>,
   ) -> Self::ListItem {
     let (builder_type, instance_type) = match builder.config {
+      BuilderConfig::Url(_) => {
+        (BuilderConfigVariant::Url.to_string(), None)
+      }
       BuilderConfig::Server(config) => (
         BuilderConfigVariant::Server.to_string(),
         Some(config.server_id),
