@@ -6221,7 +6221,7 @@ export interface SearchStackServiceLog {
 /** Configuration for a Komodo Server Builder. */
 export interface ServerBuilderConfig {
     /** The server id of the builder */
-    server_id: string;
+    server_id?: string;
 }
 /** The health of a part of the server. */
 export interface ServerHealthState {
@@ -6702,10 +6702,10 @@ export interface UpdateVariableValue {
 }
 /** Configuration for a Komodo Url Builder. */
 export interface UrlBuilderConfig {
-    /** The address of Periphery */
+    /** The address of the Periphery agent */
     address: string;
     /** A custom passkey to use. Otherwise, use the default passkey. */
-    passkey: string;
+    passkey?: string;
 }
 /** Update file contents in Files on Server or Git Repo mode. Response: [Update]. */
 export interface WriteStackFileContents {
