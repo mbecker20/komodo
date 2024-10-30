@@ -36,7 +36,7 @@ export const Layout = () => {
       <div className="h-screen overflow-y-scroll">
         <div className="container">
           <Sidebar />
-          <div className="lg:ml-64 lg:pl-8 py-24">
+          <div className="lg:ml-[200px] lg:pl-8 py-[88px]">
             <Outlet />
           </div>
         </div>
