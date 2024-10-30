@@ -69,7 +69,22 @@ export const StackServices = ({
                   </Link>
                 );
               },
-              // size: 200,
+            },
+            {
+              accessorKey: "container.state",
+              size: 160,
+              header: ({ column }) => (
+                <SortableHeader column={column} title="State" />
+              ),
+              cell: ({ row }) => {
+                const state = row.original.container?.state;
+                return (
+                  <StatusBadge
+                    text={state}
+                    intent={container_state_intention(state)}
+                  />
+                );
+              },
             },
             {
               accessorKey: "container.image",
@@ -111,24 +126,6 @@ export const StackServices = ({
                     ))}
                 </div>
               ),
-              // size: 200,
-            },
-            {
-              accessorKey: "container.state",
-              size: 160,
-              header: ({ column }) => (
-                <SortableHeader column={column} title="State" />
-              ),
-              cell: ({ row }) => {
-                const state = row.original.container?.state;
-                return (
-                  <StatusBadge
-                    text={state}
-                    intent={container_state_intention(state)}
-                  />
-                );
-              },
-              // size: 120,
             },
           ]}
         />

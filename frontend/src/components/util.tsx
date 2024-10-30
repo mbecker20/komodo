@@ -755,6 +755,22 @@ export const DockerContainersSection = ({
                 ),
               },
               {
+                accessorKey: "state",
+                size: 160,
+                header: ({ column }) => (
+                  <SortableHeader column={column} title="State" />
+                ),
+                cell: ({ row }) => {
+                  const state = row.original?.state;
+                  return (
+                    <StatusBadge
+                      text={state}
+                      intent={container_state_intention(state)}
+                    />
+                  );
+                },
+              },
+              {
                 accessorKey: "image",
                 size: 300,
                 header: ({ column }) => (
@@ -791,22 +807,6 @@ export const DockerContainersSection = ({
                     ))}
                   </div>
                 ),
-              },
-              {
-                accessorKey: "state",
-                size: 160,
-                header: ({ column }) => (
-                  <SortableHeader column={column} title="State" />
-                ),
-                cell: ({ row }) => {
-                  const state = row.original?.state;
-                  return (
-                    <StatusBadge
-                      text={state}
-                      intent={container_state_intention(state)}
-                    />
-                  );
-                },
               },
             ]}
           />
