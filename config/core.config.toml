@@ -152,15 +152,18 @@ oidc_enabled = false
 ## Optional, no default.
 oidc_provider = "https://oidc.provider.internal/application/o/komodo"
 
-## Configure OIDC user redirect address.
+## Configure OIDC user redirect host.
 ##
-## This is the address users are redirected to in their browser,
-## and may be different from `oidc_provider` depending on your networking.
+## This is the host address users are redirected to in their browser,
+## and may be different from `oidc_provider` host depending on your networking.
 ## If not provided (or empty string ""), the `oidc_provider` will be used.
 ##
-## Env: KOMODO_OIDC_REDIRECT
+## Note. DO NOT include the `path` part of the URL.
+## Example: `https://oidc.provider.external`
+##
+## Env: KOMODO_OIDC_REDIRECT_HOST
 ## Optional, no default.
-oidc_redirect = ""
+oidc_redirect_host = ""
 
 ## Give the OIDC Client ID.
 ## Env: KOMODO_OIDC_CLIENT_ID or KOMODO_OIDC_CLIENT_ID_FILE

@@ -92,13 +92,19 @@ async fn login(
   );
 
   let config = core_config();
-  let redirect = if !config.oidc_redirect.is_empty() {
-    Redirect::to(
-      auth_url
-        .as_str()
-        .replace(&config.oidc_provider, &config.oidc_redirect)
-        .as_str(),
-    )
+  let redirect = if !config.oidc_redirect_host.is_empty() {
+    let auth_url = auth_url.as_str();
+    let (protocol, rest) = auth_url
+      .split_once("://")
+      .context("Invalid URL: Missing protocol (eg 'https://')")?;
+    let host = rest
+      .split_once(['/', '?'])
+      .map(|(host, _)| host)
+      .unwrap_or(rest);
+    Redirect::to(&auth_url.replace(
+      &format!("{protocol}://{host}"),
+      &config.oidc_redirect_host,
+    ))
   } else {
     Redirect::to(auth_url.as_str())
   };

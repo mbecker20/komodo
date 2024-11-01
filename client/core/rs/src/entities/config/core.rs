@@ -108,8 +108,8 @@ pub struct Env {
   pub komodo_oidc_enabled: Option<bool>,
   /// Override `oidc_provider`
   pub komodo_oidc_provider: Option<String>,
-  /// Override `oidc_redirect`
-  pub komodo_oidc_redirect: Option<String>,
+  /// Override `oidc_redirect_host`
+  pub komodo_oidc_redirect_host: Option<String>,
   /// Override `oidc_client_id`
   pub komodo_oidc_client_id: Option<String>,
   /// Override `oidc_client_id` from file
@@ -325,18 +325,22 @@ pub struct CoreConfig {
 
   /// Configure OIDC provider address for
   /// communcation directly with Komodo Core.
+  ///
   /// Note. Needs to be reachable from Komodo Core.
-  /// Eg. `https://accounts.example.internal/application/o/komodo`
+  ///
+  /// `https://accounts.example.internal/application/o/komodo`
   #[serde(default)]
   pub oidc_provider: String,
 
-  /// Configure OIDC user redirect address.
-  /// This is the address users are redirected to in their browser,
-  /// and may be different from `oidc_provider`.
-  /// If not provided, the `oidc_provider` will be used.
-  /// Eg. `https://accounts.example.external/application/o/komodo`
+  /// Configure OIDC user redirect host.
+  ///
+  /// This is the host address users are redirected to in their browser,
+  /// and may be different from `oidc_provider` host.
+  /// DO NOT include the `path` part, this must be inferred.
+  /// If not provided, the host will be the same as `oidc_provider`.
+  /// Eg. `https://accounts.example.external`
   #[serde(default)]
-  pub oidc_redirect: String,
+  pub oidc_redirect_host: String,
 
   /// Set OIDC client id
   #[serde(default)]
@@ -580,7 +584,7 @@ impl CoreConfig {
       local_auth: config.local_auth,
       oidc_enabled: config.oidc_enabled,
       oidc_provider: config.oidc_provider,
-      oidc_redirect: config.oidc_redirect,
+      oidc_redirect_host: config.oidc_redirect_host,
       oidc_client_id: empty_or_redacted(&config.oidc_client_id),
       oidc_client_secret: empty_or_redacted(
         &config.oidc_client_secret,
