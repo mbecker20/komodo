@@ -14,8 +14,8 @@ use super::{
   resources::{
     handle_action_webhook, handle_build_webhook,
     handle_procedure_webhook, handle_repo_webhook,
-    handle_stack_webhook, handle_sync_webhook, RepoWebhookPath,
-    StackWebhookPath, SyncWebhookPath,
+    handle_stack_webhook, handle_sync_webhook, RepoWebhookOption,
+    StackWebhookOption, SyncWebhookOption,
   },
   CustomSecret, VerifyBranch, VerifySecret,
 };
@@ -26,7 +26,14 @@ struct Id {
 }
 
 #[derive(Deserialize)]
-struct Branch {
+struct IdAndOption<T> {
+  id: String,
+  option: T,
+}
+
+#[derive(Deserialize)]
+struct IdAndBranch {
+  id: String,
   #[serde(default = "default_branch")]
   branch: String,
 }
@@ -66,7 +73,7 @@ pub fn router<P: VerifySecret + VerifyBranch>() -> Router {
   .route(
     "/repo/:id/:option",
     post(
-      |Path(Id { id }), Path(RepoWebhookPath { option }), headers: HeaderMap, body: String| async move {
+      |Path(IdAndOption::<RepoWebhookOption> { id, option }), headers: HeaderMap, body: String| async move {
         let repo =
           auth_webhook::<P, Repo>(&id, headers, &body).await?;
         tokio::spawn(async move {
@@ -92,7 +99,7 @@ pub fn router<P: VerifySecret + VerifyBranch>() -> Router {
   .route(
     "/stack/:id/:option",
     post(
-      |Path(Id { id }), Path(StackWebhookPath { option }), headers: HeaderMap, body: String| async move {
+      |Path(IdAndOption::<StackWebhookOption> { id, option }), headers: HeaderMap, body: String| async move {
         let stack =
           auth_webhook::<P, Stack>(&id, headers, &body).await?;
         tokio::spawn(async move {
@@ -118,7 +125,7 @@ pub fn router<P: VerifySecret + VerifyBranch>() -> Router {
   .route(
     "/sync/:id/:option",
     post(
-      |Path(Id { id }), Path(SyncWebhookPath { option }), headers: HeaderMap, body: String| async move {
+      |Path(IdAndOption::<SyncWebhookOption> { id, option }), headers: HeaderMap, body: String| async move {
         let sync =
           auth_webhook::<P, ResourceSync>(&id, headers, &body).await?;
         tokio::spawn(async move {
@@ -144,19 +151,19 @@ pub fn router<P: VerifySecret + VerifyBranch>() -> Router {
   .route(
     "/procedure/:id/:branch",
     post(
-      |Path(Id { id }), Path(Branch { branch }), headers: HeaderMap, body: String| async move {
+      |Path(IdAndBranch { id, branch }), headers: HeaderMap, body: String| async move {
         let procedure =
           auth_webhook::<P, Procedure>(&id, headers, &body).await?;
         tokio::spawn(async move {
           let span = info_span!("ProcedureWebhook", id);
           async {
             let res = handle_procedure_webhook::<P>(
-              procedure, branch, body,
+              procedure, &branch, body,
             )
             .await;
             if let Err(e) = res {
               warn!(
-                "Failed at running webhook for procedure {id} | {e:#}"
+                "Failed at running webhook for procedure {id} | target branch: {branch} | {e:#}"
               );
             }
           }
@@ -170,19 +177,19 @@ pub fn router<P: VerifySecret + VerifyBranch>() -> Router {
   .route(
     "/action/:id/:branch",
     post(
-      |Path(Id { id }), Path(Branch { branch }), headers: HeaderMap, body: String| async move {
+      |Path(IdAndBranch { id, branch }), headers: HeaderMap, body: String| async move {
         let action =
           auth_webhook::<P, Action>(&id, headers, &body).await?;
         tokio::spawn(async move {
           let span = info_span!("ActionWebhook", id);
           async {
             let res = handle_action_webhook::<P>(
-              action, branch, body,
+              action, &branch, body,
             )
             .await;
             if let Err(e) = res {
               warn!(
-                "Failed at running webhook for action {id} | {e:#}"
+                "Failed at running webhook for action {id} | target branch: {branch} | {e:#}"
               );
             }
           }
