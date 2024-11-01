@@ -3,7 +3,9 @@ use komodo_client::entities::{
   action::Action, build::Build, procedure::Procedure, repo::Repo,
   resource::Resource, stack::Stack, sync::ResourceSync,
 };
+use reqwest::StatusCode;
 use serde::Deserialize;
+use serror::AddStatusCode;
 use tracing::Instrument;
 
 use crate::resource::KomodoResource;
@@ -202,7 +204,10 @@ where
   P: VerifySecret,
   R: KomodoResource + CustomSecret,
 {
-  let resource = crate::resource::get::<R>(id).await?;
-  P::verify_secret(headers, body, R::custom_secret(&resource))?;
+  let resource = crate::resource::get::<R>(id)
+    .await
+    .status_code(StatusCode::BAD_REQUEST)?;
+  P::verify_secret(headers, body, R::custom_secret(&resource))
+    .status_code(StatusCode::UNAUTHORIZED)?;
   Ok(resource)
 }
