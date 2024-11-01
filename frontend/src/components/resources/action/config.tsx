@@ -118,17 +118,17 @@ export const ActionConfig = ({ id }: { id: string }) => {
                       value={branch}
                       onChange={(e) => setBranch(e.target.value)}
                       className="w-[200px]"
-                      disabled={branch === "__ALL__"}
+                      disabled={branch === "__ANY__"}
                     />
                     <div className="flex items-center gap-2">
                       <div className="text-muted-foreground text-sm">
                         All branches:
                       </div>
                       <Switch
-                        checked={branch === "__ALL__"}
+                        checked={branch === "__ANY__"}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setBranch("__ALL__");
+                            setBranch("__ANY__");
                           } else {
                             setBranch("main");
                           }

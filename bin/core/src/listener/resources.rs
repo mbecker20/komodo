@@ -133,11 +133,6 @@ impl RepoExecution for BuildRepo {
 }
 
 #[derive(Deserialize)]
-pub struct RepoWebhookPath {
-  pub option: RepoWebhookOption,
-}
-
-#[derive(Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RepoWebhookOption {
   Clone,
@@ -245,11 +240,6 @@ impl StackExecution for DeployStack {
 }
 
 #[derive(Deserialize)]
-pub struct StackWebhookPath {
-  pub option: StackWebhookOption,
-}
-
-#[derive(Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum StackWebhookOption {
   Refresh,
@@ -341,11 +331,6 @@ impl SyncExecution for RunSync {
 }
 
 #[derive(Deserialize)]
-pub struct SyncWebhookPath {
-  pub option: SyncWebhookOption,
-}
-
-#[derive(Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SyncWebhookOption {
   Refresh,
@@ -410,7 +395,7 @@ fn procedure_locks() -> &'static ListenerLockCache {
 
 pub async fn handle_procedure_webhook<B: super::VerifyBranch>(
   procedure: Procedure,
-  target_branch: String,
+  target_branch: &str,
   body: String,
 ) -> anyhow::Result<()> {
   // Acquire and hold lock to make a task queue for
@@ -457,7 +442,7 @@ fn action_locks() -> &'static ListenerLockCache {
 
 pub async fn handle_action_webhook<B: super::VerifyBranch>(
   action: Action,
-  target_branch: String,
+  target_branch: &str,
   body: String,
 ) -> anyhow::Result<()> {
   // Acquire and hold lock to make a task queue for

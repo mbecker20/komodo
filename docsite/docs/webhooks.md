@@ -30,7 +30,7 @@ https://${HOST}/listener/${AUTH_TYPE}/${RESOURCE_TYPE}/${ID_OR_NAME}/${EXECUTION
 - **`EXECUTION`**:
 	- Which executions are available depends on the `RESOURCE_TYPE`. Builds only have the `/build` action.
 		Repos can select between `/pull`, `/clone`, or `/build`. Stacks have `/deploy` and `/refresh`, and Resource Syncs have `/sync` and `/refresh`.
-	- For **Procedures and Actions**, this will be the **branch to listen to for pushes**, or `__ALL__` to trigger
+	- For **Procedures and Actions**, this will be the **branch to listen to for pushes**, or `__ANY__` to trigger
 		on pushes to any branch.
 
 ## Create the webhook on the Git Provider
