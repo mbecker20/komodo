@@ -242,7 +242,7 @@ const ProcedureConfigInner = ({
                     />
                     <div className="flex items-center gap-2">
                       <div className="text-muted-foreground text-sm">
-                        All branches:
+                        No branch check:
                       </div>
                       <Switch
                         checked={branch === "__ANY__"}
