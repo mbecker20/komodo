@@ -31,7 +31,7 @@ use crate::{
 use super::periphery_client;
 
 const BUILDER_POLL_RATE_SECS: u64 = 2;
-const BUILDER_POLL_MAX_TRIES: usize = 30;
+const BUILDER_POLL_MAX_TRIES: usize = 60;
 
 #[instrument(skip_all, fields(builder_id = builder.id, update_id = update.id))]
 pub async fn get_builder_periphery(
