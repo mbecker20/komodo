@@ -31,6 +31,7 @@ import {
 import { RenameResource } from "@components/config/util";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 import { Card } from "@ui/card";
+import { DeploymentGroupActions } from "./deployment-group-actions";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -174,7 +175,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
     );
   },
 
-  GroupActions: () => <></>,
+  GroupActions: () => <DeploymentGroupActions />,
 
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
   BigIcon: ({ id }) => <DeploymentIcon id={id} size={8} />,
