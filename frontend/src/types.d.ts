@@ -26,7 +26,7 @@ export interface RequiredResourceComponents {
   Table: React.FC<{ resources: Types.ResourceListItem<unknown>[] }>;
 
   /** Dropdown menu to trigger group actions for selected resources */
-  GroupActions: IdComponent;
+  GroupActions: React.FC;
 
   /** Icon for the component */
   Icon: OptionalIdComponent;
