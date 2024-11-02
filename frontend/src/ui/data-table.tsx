@@ -92,13 +92,15 @@ export function DataTable<TData, TValue>({
             <TableRow key={headerGroup.id}>
               {/* placeholder header */}
               {i === 0 && selectOptions && (
-                <TableHead className="w-8">
+                <TableHead className="w-8 relative whitespace-nowrap bg-background border-b border-r last:border-r-0">
                   <Checkbox
                     className="ml-2"
                     disabled={selectOptions.disableRow === true}
-                    checked={table.getIsSomeRowsSelected()
-                      ? "indeterminate"
-                      : table.getIsAllRowsSelected()}
+                    checked={
+                      table.getIsSomeRowsSelected()
+                        ? "indeterminate"
+                        : table.getIsAllRowsSelected()
+                    }
                     onCheckedChange={() => table.toggleAllRowsSelected()}
                   />
                 </TableHead>
@@ -112,10 +114,12 @@ export function DataTable<TData, TValue>({
                     className="relative whitespace-nowrap bg-background border-b border-r last:border-r-0"
                     style={{ width: `${size}px` }}
                   >
-                    {header.isPlaceholder ? null : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 );
               })}
@@ -123,55 +127,53 @@ export function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length
-            ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={() => onRowClick && onRowClick(row.original)}
-                  className={cn(
-                    "even:bg-accent/25",
-                    onRowClick && "cursor-pointer",
-                  )}
-                >
-                  {selectOptions && (
-                    <TableCell>
-                      <Checkbox
-                        disabled={row.getCanSelect()}
-                        className="ml-2"
-                        checked={row.getIsSelected()}
-                        onCheckedChange={(c) =>
-                          c !== "indeterminate" &&
-                          row.toggleSelected()}
-                      />
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                onClick={() => onRowClick && onRowClick(row.original)}
+                className={cn(
+                  "even:bg-accent/25",
+                  onRowClick && "cursor-pointer"
+                )}
+              >
+                {selectOptions && (
+                  <TableCell>
+                    <Checkbox
+                      disabled={row.getCanSelect()}
+                      className="ml-2"
+                      checked={row.getIsSelected()}
+                      onCheckedChange={(c) =>
+                        c !== "indeterminate" && row.toggleSelected()
+                      }
+                    />
+                  </TableCell>
+                )}
+                {row.getVisibleCells().map((cell) => {
+                  const size = cell.column.getSize();
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      className="p-4 overflow-hidden overflow-ellipsis"
+                      style={{ width: `${size}px` }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
-                  )}
-                  {row.getVisibleCells().map((cell) => {
-                    const size = cell.column.getSize();
-                    return (
-                      <TableCell
-                        key={cell.id}
-                        className="p-4 overflow-hidden overflow-ellipsis"
-                        style={{ width: `${size}px` }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))
-            )
-            : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="p-4 text-center">
-                  {noResults ?? "No results."}
-                </TableCell>
+                  );
+                })}
               </TableRow>
-            )}
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="p-4 text-center">
+                {noResults ?? "No results."}
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
@@ -192,18 +194,20 @@ export const SortableHeader = <T, V>({
     onClick={() => column.toggleSorting()}
   >
     {title}
-    {column.getIsSorted() === "asc"
-      ? (
-        sortDescFirst
-          ? <ArrowUp className="w-4" />
-          : <ArrowDown className="w-4" />
+    {column.getIsSorted() === "asc" ? (
+      sortDescFirst ? (
+        <ArrowUp className="w-4" />
+      ) : (
+        <ArrowDown className="w-4" />
       )
-      : column.getIsSorted() === "desc"
-      ? (
-        sortDescFirst
-          ? <ArrowDown className="w-4" />
-          : <ArrowUp className="w-4" />
+    ) : column.getIsSorted() === "desc" ? (
+      sortDescFirst ? (
+        <ArrowDown className="w-4" />
+      ) : (
+        <ArrowUp className="w-4" />
       )
-      : <Minus className="w-4" />}
+    ) : (
+      <Minus className="w-4" />
+    )}
   </div>
 );
