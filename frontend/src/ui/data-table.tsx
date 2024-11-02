@@ -65,10 +65,7 @@ export function DataTable<TData, TValue>({
     sortDescFirst,
     onRowSelectionChange: setRowSelection,
     getRowId: selectOptions?.selectKey,
-    enableRowSelection:
-      selectOptions?.disableRow === undefined
-        ? false
-        : selectOptions?.disableRow,
+    enableRowSelection: selectOptions?.disableRow,
   });
 
   useEffect(() => {
@@ -144,7 +141,7 @@ export function DataTable<TData, TValue>({
                 {selectOptions && (
                   <TableCell>
                     <Checkbox
-                      disabled={row.getCanSelect()}
+                      disabled={!row.getCanSelect()}
                       className="ml-2"
                       checked={row.getIsSelected()}
                       onCheckedChange={(c) =>
