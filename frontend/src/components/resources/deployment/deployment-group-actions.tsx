@@ -1,13 +1,7 @@
 import { useExecute, useRead, useSelectedResources } from "@lib/hooks";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Button } from "@ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  //   DialogTrigger,
-} from "@ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@ui/dialog";
 import {
   Select,
   SelectContent,
@@ -15,55 +9,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-// import { Types } from "komodo_client";
 import { useState } from "react";
 
+const DEPLOYMENT_ACTIONS = ["Deploy"] as const;
 type DeploymentActions = (typeof DEPLOYMENT_ACTIONS)[number];
-const DEPLOYMENT_ACTIONS = [
-  "Deploy",
-  "DestroyDeployment",
-  "StopDeployment",
-  "PauseDeployment",
-  "StartDeployment",
-  "RestartDeployment",
-  "UnpauseDeployment",
-] as const;
 
 export const DeploymentGroupActions = () => {
   const [action, setAction] = useState<DeploymentActions>();
 
   return (
-    <Select
-      key={action}
-      value={action}
-      onValueChange={(action) => setAction(action as DeploymentActions)}
-    >
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {DEPLOYMENT_ACTIONS.map((action) => (
-          <SelectItem key={action} value={action}>
-            {action}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <>
+      <Select
+        key={action}
+        value={action}
+        onValueChange={(action) => setAction(action as DeploymentActions)}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {DEPLOYMENT_ACTIONS.map((action) => (
+            <SelectItem key={action} value={action}>
+              {action}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {action && (
+        <DeploymentGroupActionDialog
+          action={action}
+          onClose={() => setAction(undefined)}
+        />
+      )}
+    </>
   );
 };
 
-export const DeploymentGroupActionDialog = ({
+const DeploymentGroupActionDialog = ({
   action,
+  onClose,
 }: {
   action: DeploymentActions;
+  onClose: () => void;
 }) => {
   const deployments = useRead("ListDeployments", {}).data;
   const [selected] = useSelectedResources("Deployment");
 
-  const { mutate } = useExecute(action);
+  const { mutate } = useExecute(`Batch${action}`);
 
   return (
-    <Dialog>
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Group Execute - {action}</DialogTitle>
@@ -80,7 +75,9 @@ export const DeploymentGroupActionDialog = ({
           </ul>
         </div>
         <DialogFooter>
-          <Button onClick={() => mutate({ deployment })}>Confirm</Button>
+          <Button onClick={() => mutate({ pattern: selected.join(",") })}>
+            Confirm
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
