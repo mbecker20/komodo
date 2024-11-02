@@ -1,14 +1,20 @@
 import { useExecute, useRead, useSelectedResources } from "@lib/hooks";
-import { DialogTitle } from "@radix-ui/react-dialog";
 import { Button } from "@ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ui/select";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@ui/dropdown-menu";
+import { Input } from "@ui/input";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 const DEPLOYMENT_ACTIONS = ["Deploy"] as const;
@@ -19,22 +25,20 @@ export const DeploymentGroupActions = () => {
 
   return (
     <>
-      <Select
-        key={action}
-        value={action}
-        onValueChange={(action) => setAction(action as DeploymentActions)}
-      >
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="w-40 justify-between">
+            Group Actions <ChevronDown className="w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-40">
           {DEPLOYMENT_ACTIONS.map((action) => (
-            <SelectItem key={action} value={action}>
+            <DropdownMenuItem key={action} onClick={() => setAction(action)}>
               {action}
-            </SelectItem>
+            </DropdownMenuItem>
           ))}
-        </SelectContent>
-      </Select>
+        </DropdownMenuContent>
+      </DropdownMenu>
       {action && (
         <DeploymentGroupActionDialog
           action={action}
@@ -57,25 +61,34 @@ const DeploymentGroupActionDialog = ({
 
   const { mutate } = useExecute(`Batch${action}`);
 
+  const [text, setText] = useState("");
+
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Group Execute - {action}</DialogTitle>
         </DialogHeader>
-        <div className="py-8">
+        <div className="py-8 flex flex-col gap-4">
           <p>
             Are you sure you wish to execute <b>{action}</b> for the selected
-            Deployments?
+            resources?
           </p>
-          <ul>
+          <ul className="p-4 bg-accent text-sm list-disc list-inside">
             {selected.map((s, i) => (
-              <li key={i}>{deployments?.find((d) => d.name === s)?.name}</li>
+              <li key={i}>{deployments?.find((d) => d.id === s)?.name}</li>
             ))}
           </ul>
+          <p>
+            Please enter <b>{action}</b> in the input below to confirm.
+          </p>
+          <Input value={text} onChange={(e) => setText(e.target.value)} />
         </div>
         <DialogFooter>
-          <Button onClick={() => mutate({ pattern: selected.join(",") })}>
+          <Button
+            disabled={text !== action}
+            onClick={() => mutate({ pattern: selected.join(",") })}
+          >
             Confirm
           </Button>
         </DialogFooter>
