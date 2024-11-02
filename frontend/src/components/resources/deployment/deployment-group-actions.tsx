@@ -22,11 +22,12 @@ type DeploymentActions = (typeof DEPLOYMENT_ACTIONS)[number];
 
 export const DeploymentGroupActions = () => {
   const [action, setAction] = useState<DeploymentActions>();
+  const [selected] = useSelectedResources("Deployment");
 
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild disabled={!selected.length}>
           <Button variant="outline" className="w-40 justify-between">
             Group Actions <ChevronDown className="w-4" />
           </Button>
