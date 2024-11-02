@@ -49,8 +49,8 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
   const hideInfo = sync?.config?.files_on_host
     ? false
     : sync?.config?.file_contents
-    ? true
-    : false;
+      ? true
+      : false;
 
   const showPending =
     sync && (!sync_no_changes(sync) || sync.info?.pending_error);
@@ -59,10 +59,10 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
     _view === "Info" && hideInfo
       ? "Config"
       : _view === "Pending" && !showPending
-      ? sync?.config?.files_on_host || sync?.config?.repo
-        ? "Info"
-        : "Config"
-      : _view;
+        ? sync?.config?.files_on_host || sync?.config?.repo
+          ? "Info"
+          : "Config"
+        : _view;
 
   const title = (
     <TabsList className="justify-start w-fit">
@@ -136,6 +136,8 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
       />
     );
   },
+
+  GroupActions: () => <></>,
 
   New: () => {
     const admin = useUser().data?.admin;

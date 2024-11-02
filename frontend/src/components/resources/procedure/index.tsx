@@ -61,6 +61,8 @@ export const ProcedureComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   New: () => <NewResource type="Procedure" />,
 
   Table: ({ resources }) => (

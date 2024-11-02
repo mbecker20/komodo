@@ -114,6 +114,8 @@ export const BuildComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   New: () => {
     const user = useUser().data;
     const builders = useRead("ListBuilders", {}).data;

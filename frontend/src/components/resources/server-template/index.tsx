@@ -50,6 +50,8 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   New: () => {
     const nav = useNavigate();
     const { mutateAsync } = useWrite("CreateServerTemplate");
