@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { Input } from "@ui/input";
-import { ChevronDown } from "lucide-react";
+import { CheckCircle, ChevronDown, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 const DEPLOYMENT_ACTIONS = ["Deploy"] as const;
@@ -60,7 +60,9 @@ const DeploymentGroupActionDialog = ({
   const deployments = useRead("ListDeployments", {}).data;
   const [selected] = useSelectedResources("Deployment");
 
-  const { mutate } = useExecute(`Batch${action}`);
+  const { mutate, isPending } = useExecute(`Batch${action}`, {
+    onSuccess: onClose,
+  });
 
   const [text, setText] = useState("");
 
@@ -89,8 +91,14 @@ const DeploymentGroupActionDialog = ({
           <Button
             disabled={text !== action}
             onClick={() => mutate({ pattern: selected.join(",") })}
+            className="gap-4"
           >
             Confirm
+            {isPending ? (
+              <Loader2 className="w-4 aspect-auto" />
+            ) : (
+              <CheckCircle className="w-4" />
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
