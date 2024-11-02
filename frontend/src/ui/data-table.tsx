@@ -35,7 +35,7 @@ interface DataTableProps<TData, TValue> {
   selectOptions?: {
     selectKey: (row: TData) => string;
     onSelect: (selected: string[]) => void;
-    disableRow: boolean | ((row: Row<TData>) => boolean);
+    disableRow?: boolean | ((row: Row<TData>) => boolean);
   };
 }
 
@@ -65,7 +65,10 @@ export function DataTable<TData, TValue>({
     sortDescFirst,
     onRowSelectionChange: setRowSelection,
     getRowId: selectOptions?.selectKey,
-    enableRowSelection: selectOptions?.disableRow,
+    enableRowSelection:
+      selectOptions?.disableRow === undefined
+        ? false
+        : selectOptions?.disableRow,
   });
 
   useEffect(() => {
