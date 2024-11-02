@@ -152,6 +152,8 @@ export const StackComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   New: ({ server_id: _server_id }) => {
     const servers = useRead("ListServers", {}).data;
     const server_id = _server_id

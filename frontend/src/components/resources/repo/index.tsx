@@ -77,6 +77,8 @@ export const RepoComponents: RequiredResourceComponents = {
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,
 
+  GroupActions: () => <></>,
+
   State: ({ id }) => {
     const state = useRepo(id)?.info.state;
     return <StatusBadge text={state} intent={repo_state_intention(state)} />;

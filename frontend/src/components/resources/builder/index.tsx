@@ -63,6 +63,9 @@ export const BuilderComponents: RequiredResourceComponents = {
       </Link>
     );
   },
+
+  GroupActions: () => <></>,
+
   New: () => {
     const is_admin = useUser().data?.admin;
     const nav = useNavigate();

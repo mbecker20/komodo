@@ -38,6 +38,8 @@ export const AlerterComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   New: () => {
     const is_admin = useUser().data?.admin;
     return is_admin && <NewResource type="Alerter" />;

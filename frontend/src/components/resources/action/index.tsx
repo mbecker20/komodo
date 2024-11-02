@@ -59,6 +59,8 @@ export const ActionComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   New: () => <NewResource type="Action" />,
 
   Table: ({ resources }) => (

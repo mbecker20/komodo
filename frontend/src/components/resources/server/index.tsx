@@ -195,6 +195,8 @@ export const ServerComponents: RequiredResourceComponents = {
     );
   },
 
+  GroupActions: () => <></>,
+
   New: () => {
     const user = useUser().data;
     if (!user) return null;
