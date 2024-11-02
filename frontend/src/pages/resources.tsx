@@ -57,7 +57,7 @@ export const Resources = () => {
     >
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex gap-4">
             {(is_admin || !disable_non_admin_create) && <Components.New />}
             <Components.GroupActions />
           </div>
