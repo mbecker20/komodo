@@ -26,6 +26,7 @@ import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
 import { useBuilder } from "../builder";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 export const useBuild = (id?: string) =>
   useRead("ListBuilds", {}, { refetchInterval: 10_000 }).data?.find(
@@ -114,7 +115,7 @@ export const BuildComponents: RequiredResourceComponents = {
     );
   },
 
-  GroupActions: () => <></>,
+  GroupActions: () => <GroupActions type="Build" actions={["BatchRunBuild"]} />,
 
   New: () => {
     const user = useUser().data;
