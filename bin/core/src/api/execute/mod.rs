@@ -79,6 +79,7 @@ pub enum ExecuteRequest {
   UnpauseDeployment(UnpauseDeployment),
   StopDeployment(StopDeployment),
   DestroyDeployment(DestroyDeployment),
+  BatchDestroyDeployment(BatchDestroyDeployment),
 
   // ==== STACK ====
   DeployStack(DeployStack),

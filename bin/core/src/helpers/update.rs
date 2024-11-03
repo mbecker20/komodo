@@ -300,6 +300,9 @@ pub async fn init_execution_update(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
+    ExecuteRequest::BatchDestroyDeployment(_data) => {
+      return Ok(Default::default())
+    }
 
     // Build
     ExecuteRequest::RunBuild(data) => (

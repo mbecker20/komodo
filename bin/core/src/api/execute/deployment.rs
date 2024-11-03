@@ -525,6 +525,29 @@ impl Resolve<StopDeployment, (User, Update)> for State {
   }
 }
 
+impl super::BatchExecute for BatchDestroyDeployment {
+  type Resource = Deployment;
+  fn single_request(deployment: String) -> ExecuteRequest {
+    ExecuteRequest::DestroyDeployment(DestroyDeployment {
+      deployment,
+      signal: None,
+      time: None,
+    })
+  }
+}
+
+impl Resolve<BatchDestroyDeployment, (User, Update)> for State {
+  #[instrument(name = "BatchDestroyDeployment", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchDestroyDeployment { pattern }: BatchDestroyDeployment,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchDestroyDeployment>(&pattern, &user)
+      .await
+  }
+}
+
 impl Resolve<DestroyDeployment, (User, Update)> for State {
   #[instrument(name = "DestroyDeployment", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
