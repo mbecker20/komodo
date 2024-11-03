@@ -243,6 +243,16 @@ async fn validate_config(
             ));
           }
         }
+        Execution::PullDeployment(params) => {
+          let deployment =
+            super::get_check_permissions::<Deployment>(
+              &params.deployment,
+              user,
+              PermissionLevel::Execute,
+            )
+            .await?;
+          params.deployment = deployment.id;
+        }
         Execution::StartDeployment(params) => {
           let deployment =
             super::get_check_permissions::<Deployment>(
@@ -606,6 +616,15 @@ async fn validate_config(
               "Non admin user cannot configure Batch executions"
             ));
           }
+        }
+        Execution::PullStack(params) => {
+          let stack = super::get_check_permissions::<Stack>(
+            &params.stack,
+            user,
+            PermissionLevel::Execute,
+          )
+          .await?;
+          params.stack = stack.id;
         }
         Execution::StartStack(params) => {
           let stack = super::get_check_permissions::<Stack>(

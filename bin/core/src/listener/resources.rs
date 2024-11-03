@@ -215,6 +215,7 @@ impl StackExecution for DeployStack {
     if stack.config.webhook_force_deploy {
       let req = ExecuteRequest::DeployStack(DeployStack {
         stack: stack.id,
+        service: None,
         stop_time: None,
       });
       let update = init_execution_update(&req, &user).await?;

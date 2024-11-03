@@ -264,6 +264,12 @@ pub async fn init_execution_update(
     ExecuteRequest::BatchDeploy(_data) => {
       return Ok(Default::default())
     }
+    ExecuteRequest::PullDeployment(data) => (
+      Operation::PullDeployment,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
     ExecuteRequest::StartDeployment(data) => (
       Operation::StartDeployment,
       ResourceTarget::Deployment(
@@ -420,6 +426,16 @@ pub async fn init_execution_update(
         Operation::StartStackService
       } else {
         Operation::StartStack
+      },
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::PullStack(data) => (
+      if data.service.is_some() {
+        Operation::PullStackService
+      } else {
+        Operation::PullStack
       },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,

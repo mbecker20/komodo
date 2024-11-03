@@ -5,7 +5,10 @@ import {
 } from "@components/resources/common";
 import { useStack } from "@components/resources/stack";
 import {
+  DeployStack,
+  DestroyStack,
   PauseUnpauseStack,
+  PullStack,
   RestartStack,
   StartStopStack,
 } from "@components/resources/stack/actions";
@@ -29,9 +32,12 @@ import { Fragment } from "react/jsx-runtime";
 type IdServiceComponent = React.FC<{ id: string; service?: string }>;
 
 const Actions: { [action: string]: IdServiceComponent } = {
+  DeployStack,
+  PullStack,
   RestartStack,
   PauseUnpauseStack,
   StartStopStack,
+  DestroyStack,
 };
 
 export const StackServicePage = () => {

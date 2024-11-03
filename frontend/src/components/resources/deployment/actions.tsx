@@ -1,5 +1,13 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { Play, Trash, Pause, Rocket, RefreshCcw, Square } from "lucide-react";
+import {
+  Play,
+  Trash,
+  Pause,
+  Rocket,
+  RefreshCcw,
+  Square,
+  Download,
+} from "lucide-react";
 import { useExecute, useRead } from "@lib/hooks";
 import { useEffect, useState } from "react";
 import { Types } from "komodo_client";
@@ -134,6 +142,30 @@ export const DestroyDeployment = ({ id }: DeploymentId) => {
           />
         ) : undefined
       }
+    />
+  );
+};
+
+export const PullDeployment = ({ id }: DeploymentId) => {
+  const deployment = useDeployment(id);
+  const { mutate: pull, isPending: pullPending } = useExecute("PullDeployment");
+  const action_state = useRead(
+    "GetDeploymentActionState",
+    {
+      deployment: id,
+    },
+    { refetchInterval: 5000 }
+  ).data;
+  if (!deployment) return null;
+
+  return (
+    <ActionWithDialog
+      name={deployment.name}
+      title="Pull Image"
+      icon={<Download className="h-4 w-4" />}
+      onClick={() => pull({ deployment: id })}
+      disabled={pullPending}
+      loading={pullPending || action_state?.pulling}
     />
   );
 };

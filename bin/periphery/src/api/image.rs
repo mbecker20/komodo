@@ -50,22 +50,22 @@ impl Resolve<PullImage> for State {
       token,
     }: PullImage,
     _: (),
-  ) -> anyhow::Result<PullImageResponse> {
+  ) -> anyhow::Result<Log> {
     docker_login(
       &extract_registry_domain(&name)?,
       account.as_deref().unwrap_or_default(),
       token.as_deref(),
     )
     .await?;
-    let log = run_komodo_command(
-      "docker pull",
-      None,
-      format!("docker pull {name}"),
-      false,
+    Ok(
+      run_komodo_command(
+        "docker pull",
+        None,
+        format!("docker pull {name}"),
+        false,
+      )
+      .await,
     )
-    .await;
-    let image_id = docker_client().inspect_image(&name).await?.id;
-    Ok(PullImageResponse { image_id, log })
   }
 }
 

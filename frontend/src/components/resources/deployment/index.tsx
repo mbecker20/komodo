@@ -10,6 +10,7 @@ import {
   DestroyDeployment,
   RestartDeployment,
   PauseUnpauseDeployment,
+  PullDeployment,
 } from "./actions";
 import { DeploymentLogs } from "./log";
 import {
@@ -213,6 +214,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return <RunBuild id={build_id} />;
     },
     DeployDeployment,
+    PullDeployment,
     RestartDeployment,
     PauseUnpauseDeployment,
     StartStopDeployment,

@@ -24,6 +24,7 @@ import {
   DeployStack,
   DestroyStack,
   PauseUnpauseStack,
+  PullStack,
   RestartStack,
   StartStopStack,
 } from "./actions";
@@ -430,6 +431,7 @@ export const StackComponents: RequiredResourceComponents = {
 
   Actions: {
     DeployStack,
+    PullStack,
     RestartStack,
     PauseUnpauseStack,
     StartStopStack,

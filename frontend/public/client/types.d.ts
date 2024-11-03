@@ -454,6 +454,9 @@ export type Execution =
     type: "BatchDeploy";
     params: BatchDeploy;
 } | {
+    type: "PullDeployment";
+    params: PullDeployment;
+} | {
     type: "StartDeployment";
     params: StartDeployment;
 } | {
@@ -576,6 +579,9 @@ export type Execution =
 } | {
     type: "BatchDeployStackIfChanged";
     params: BatchDeployStackIfChanged;
+} | {
+    type: "PullStack";
+    params: PullStack;
 } | {
     type: "StartStack";
     params: StartStack;
@@ -1184,6 +1190,7 @@ export interface Log {
 }
 export type GetContainerLogResponse = Log;
 export interface DeploymentActionState {
+    pulling: boolean;
     deploying: boolean;
     starting: boolean;
     restarting: boolean;
@@ -1550,6 +1557,7 @@ export type ServerTemplateConfig =
 export type ServerTemplate = Resource<ServerTemplateConfig, undefined>;
 export type GetServerTemplateResponse = ServerTemplate;
 export interface StackActionState {
+    pulling: boolean;
     deploying: boolean;
     starting: boolean;
     restarting: boolean;
@@ -1886,6 +1894,7 @@ export declare enum Operation {
     DeleteStack = "DeleteStack",
     WriteStackContents = "WriteStackContents",
     RefreshStackCache = "RefreshStackCache",
+    PullStack = "PullStack",
     DeployStack = "DeployStack",
     StartStack = "StartStack",
     RestartStack = "RestartStack",
@@ -1893,6 +1902,7 @@ export declare enum Operation {
     UnpauseStack = "UnpauseStack",
     StopStack = "StopStack",
     DestroyStack = "DestroyStack",
+    PullStackService = "PullStackService",
     StartStackService = "StartStackService",
     RestartStackService = "RestartStackService",
     PauseStackService = "PauseStackService",
@@ -1903,6 +1913,7 @@ export declare enum Operation {
     RenameDeployment = "RenameDeployment",
     DeleteDeployment = "DeleteDeployment",
     Deploy = "Deploy",
+    PullDeployment = "PullDeployment",
     StartDeployment = "StartDeployment",
     RestartDeployment = "RestartDeployment",
     PauseDeployment = "PauseDeployment",
@@ -4288,6 +4299,8 @@ export interface Deploy {
 export interface DeployStack {
     /** Id or name */
     stack: string;
+    /** Optionally specify a specific service to "compose up" */
+    service?: string;
     /**
      * Override the default termination max time.
      * Only used if the stack needs to be taken down first.
@@ -4342,6 +4355,8 @@ export interface DestroyDeployment {
 export interface DestroyStack {
     /** Id or name */
     stack: string;
+    /** Optionally specify a specific service to destroy */
+    service?: string;
     /** Pass `--remove-orphans` */
     remove_orphans?: boolean;
     /** Override the default termination max time. */
@@ -5845,6 +5860,11 @@ export interface PruneVolumes {
     /** Id or name */
     server: string;
 }
+/** Pulls the image for the target deployment. Response: [Update] */
+export interface PullDeployment {
+    /** Name or id */
+    deployment: string;
+}
 /**
  * Pulls the target repo. Response: [Update].
  *
@@ -5856,6 +5876,13 @@ export interface PruneVolumes {
 export interface PullRepo {
     /** Id or name */
     repo: string;
+}
+/** Pulls images for the target stack. `docker compose pull`. Response: [Update] */
+export interface PullStack {
+    /** Id or name */
+    stack: string;
+    /** Optionally specify a specific service to start */
+    service?: string;
 }
 /**
  * Push a resource to the front of the users 10 most recently viewed resources.
@@ -6819,6 +6846,9 @@ export type ExecuteRequest = {
     type: "BatchDeploy";
     params: BatchDeploy;
 } | {
+    type: "PullDeployment";
+    params: PullDeployment;
+} | {
     type: "StartDeployment";
     params: StartDeployment;
 } | {
@@ -6837,6 +6867,9 @@ export type ExecuteRequest = {
     type: "DestroyDeployment";
     params: DestroyDeployment;
 } | {
+    type: "BatchDestroyDeployment";
+    params: BatchDestroyDeployment;
+} | {
     type: "DeployStack";
     params: DeployStack;
 } | {
@@ -6848,6 +6881,9 @@ export type ExecuteRequest = {
 } | {
     type: "BatchDeployStackIfChanged";
     params: BatchDeployStackIfChanged;
+} | {
+    type: "PullStack";
+    params: PullStack;
 } | {
     type: "StartStack";
     params: StartStack;

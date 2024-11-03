@@ -25,6 +25,8 @@ use super::{BatchExecutionResponse, KomodoExecuteRequest};
 pub struct DeployStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service to "compose up"
+  pub service: Option<String>,
   /// Override the default termination max time.
   /// Only used if the stack needs to be taken down first.
   pub stop_time: Option<i32>,
@@ -277,6 +279,8 @@ pub struct StopStack {
 pub struct DestroyStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service to destroy
+  pub service: Option<String>,
   /// Pass `--remove-orphans`
   #[serde(default)]
   pub remove_orphans: bool,

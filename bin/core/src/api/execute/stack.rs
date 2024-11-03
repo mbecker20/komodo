@@ -43,6 +43,7 @@ impl super::BatchExecute for BatchDeployStack {
   fn single_request(stack: String) -> ExecuteRequest {
     ExecuteRequest::DeployStack(DeployStack {
       stack,
+      service: None,
       stop_time: None,
     })
   }
@@ -63,7 +64,11 @@ impl Resolve<DeployStack, (User, Update)> for State {
   #[instrument(name = "DeployStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
-    DeployStack { stack, stop_time }: DeployStack,
+    DeployStack {
+      stack,
+      stop_time,
+      service,
+    }: DeployStack,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
     let (mut stack, server) = get_stack_and_server(
@@ -292,6 +297,7 @@ impl Resolve<BatchDeployStackIfChanged, (User, Update)> for State {
 }
 
 impl Resolve<DeployStackIfChanged, (User, Update)> for State {
+  #[instrument(name = "DeployStackIfChanged", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     DeployStackIfChanged { stack, stop_time }: DeployStackIfChanged,
@@ -354,11 +360,74 @@ impl Resolve<DeployStackIfChanged, (User, Update)> for State {
       .resolve(
         DeployStack {
           stack: stack.name,
+          service: None,
           stop_time,
         },
         (user, update),
       )
       .await
+  }
+}
+
+impl Resolve<PullStack, (User, Update)> for State {
+  #[instrument(name = "PullStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+  async fn resolve(
+    &self,
+    PullStack { stack, service }: PullStack,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let (mut stack, server) = get_stack_and_server(
+      &stack,
+      &user,
+      PermissionLevel::Execute,
+      true,
+    )
+    .await?;
+
+    // get the action state for the stack (or insert default).
+    let action_state =
+      action_states().stack.get_or_insert_default(&stack.id).await;
+
+    // Will check to ensure stack not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.deploying = true)?;
+
+    update_update(update.clone()).await?;
+
+    let git_token = crate::helpers::git_token(
+      &stack.config.git_provider,
+      &stack.config.git_account,
+      |https| stack.config.git_https = https,
+    ).await.with_context(
+      || format!("Failed to get git token in call to db. Stopping run. | {} | {}", stack.config.git_provider, stack.config.git_account),
+    )?;
+
+    let registry_token = crate::helpers::registry_token(
+      &stack.config.registry_provider,
+      &stack.config.registry_account,
+    ).await.with_context(
+      || format!("Failed to get registry token in call to db. Stopping run. | {} | {}", stack.config.registry_provider, stack.config.registry_account),
+    )?;
+
+    let res = periphery_client(&server)?
+      .request(ComposePull {
+        stack,
+        service,
+        git_token,
+        registry_token,
+      })
+      .await?;
+
+    update.logs.extend(res.logs);
+
+    // Ensure cached stack state up to date by updating server cache
+    update_cache_for_server(&server).await;
+
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
   }
 }
 
@@ -468,6 +537,7 @@ impl super::BatchExecute for BatchDestroyStack {
   fn single_request(stack: String) -> ExecuteRequest {
     ExecuteRequest::DestroyStack(DestroyStack {
       stack,
+      service: None,
       remove_orphans: false,
       stop_time: None,
     })
@@ -491,6 +561,7 @@ impl Resolve<DestroyStack, (User, Update)> for State {
     &self,
     DestroyStack {
       stack,
+      service,
       remove_orphans,
       stop_time,
     }: DestroyStack,
@@ -498,7 +569,7 @@ impl Resolve<DestroyStack, (User, Update)> for State {
   ) -> anyhow::Result<Update> {
     execute_compose::<DestroyStack>(
       &stack,
-      None,
+      service,
       &user,
       |state| state.destroying = true,
       update,

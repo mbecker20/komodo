@@ -73,6 +73,7 @@ pub enum ExecuteRequest {
   // ==== DEPLOYMENT ====
   Deploy(Deploy),
   BatchDeploy(BatchDeploy),
+  PullDeployment(PullDeployment),
   StartDeployment(StartDeployment),
   RestartDeployment(RestartDeployment),
   PauseDeployment(PauseDeployment),
@@ -86,6 +87,7 @@ pub enum ExecuteRequest {
   BatchDeployStack(BatchDeployStack),
   DeployStackIfChanged(DeployStackIfChanged),
   BatchDeployStackIfChanged(BatchDeployStackIfChanged),
+  PullStack(PullStack),
   StartStack(StartStack),
   RestartStack(RestartStack),
   StopStack(StopStack),

@@ -56,6 +56,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::BatchDeploy(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::PullDeployment(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::StartDeployment(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -179,6 +182,9 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::BatchDeployStackIfChanged(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
+    Execution::PullStack(data) => {
+      println!("{}: {data:?}", "Data".dimmed())
+    }
     Execution::StartStack(data) => {
       println!("{}: {data:?}", "Data".dimmed())
     }
@@ -248,6 +254,10 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       .execute(request)
       .await
       .map(|u| ExecutionResult::Batch(u)),
+    Execution::PullDeployment(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Single(u)),
     Execution::StartDeployment(request) => komodo_client()
       .execute(request)
       .await
@@ -412,6 +422,10 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
       .execute(request)
       .await
       .map(|u| ExecutionResult::Batch(u)),
+    Execution::PullStack(request) => komodo_client()
+      .execute(request)
+      .await
+      .map(|u| ExecutionResult::Single(u)),
     Execution::StartStack(request) => komodo_client()
       .execute(request)
       .await

@@ -447,6 +447,15 @@ impl ToToml for Procedure {
               .unwrap_or(&String::new()),
           ),
           Execution::BatchDeploy(_exec) => {}
+          Execution::PullDeployment(exec) => {
+            exec.deployment.clone_from(
+              all
+                .deployments
+                .get(&exec.deployment)
+                .map(|r| &r.name)
+                .unwrap_or(&String::new()),
+            )
+          }
           Execution::StartDeployment(exec) => {
             exec.deployment.clone_from(
               all
@@ -730,6 +739,13 @@ impl ToToml for Procedure {
             )
           }
           Execution::BatchDeployStackIfChanged(_exec) => {}
+          Execution::PullStack(exec) => exec.stack.clone_from(
+            all
+              .stacks
+              .get(&exec.stack)
+              .map(|r| &r.name)
+              .unwrap_or(&String::new()),
+          ),
           Execution::StartStack(exec) => exec.stack.clone_from(
             all
               .stacks

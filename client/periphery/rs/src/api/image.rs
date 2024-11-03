@@ -24,7 +24,7 @@ pub struct ImageHistory {
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
-#[response(PullImageResponse)]
+#[response(Log)]
 pub struct PullImage {
   /// The name of the image.
   pub name: String,
@@ -32,15 +32,6 @@ pub struct PullImage {
   pub account: Option<String>,
   /// Override registry token for account with one sent from core.
   pub token: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PullImageResponse {
-  /// The latest image id pulled to the system matching name,
-  /// whether or not it was pulled by this call.
-  pub image_id: Option<String>,
-  /// The log associated with the pull.
-  pub log: Log,
 }
 
 //

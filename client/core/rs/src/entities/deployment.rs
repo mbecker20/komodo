@@ -417,6 +417,7 @@ pub fn term_signal_labels_from_str(
 #[typeshare]
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct DeploymentActionState {
+  pub pulling: bool,
   pub deploying: bool,
   pub starting: bool,
   pub restarting: bool,

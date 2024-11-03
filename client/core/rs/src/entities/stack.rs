@@ -535,6 +535,7 @@ pub struct StackService {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct StackActionState {
+  pub pulling: bool,
   pub deploying: bool,
   pub starting: bool,
   pub restarting: bool,

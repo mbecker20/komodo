@@ -263,6 +263,7 @@ export type ExecuteResponses = {
     PruneSystem: Types.Update;
     Deploy: Types.Update;
     BatchDeploy: Types.BatchExecutionResponse;
+    PullDeployment: Types.Update;
     StartDeployment: Types.Update;
     RestartDeployment: Types.Update;
     PauseDeployment: Types.Update;
@@ -290,6 +291,7 @@ export type ExecuteResponses = {
     BatchDeployStack: Types.BatchExecutionResponse;
     DeployStackIfChanged: Types.Update;
     BatchDeployStackIfChanged: Types.BatchExecutionResponse;
+    PullStack: Types.Update;
     StartStack: Types.Update;
     RestartStack: Types.Update;
     StopStack: Types.Update;
