@@ -63,7 +63,7 @@ const GroupActionDropdownMenu = <T extends Types.ExecuteRequest["type"]>({
     <DropdownMenuContent align="start" className="w-40">
       {actions.map((action) => (
         <DropdownMenuItem key={action} onClick={() => onSelect(action)}>
-          {action}
+          {action.replaceAll("Batch", "")}
         </DropdownMenuItem>
       ))}
     </DropdownMenuContent>
@@ -86,15 +86,17 @@ const GroupActionDialog = ({
 
   const { mutate, isPending } = useExecute(action!, { onSuccess: onClose });
 
+  const formatted = action?.replaceAll("Batch", "");
+
   return (
     <Dialog open={!!action} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Group Execute</DialogTitle>
+          <DialogTitle>Group Execute - {formatted}</DialogTitle>
         </DialogHeader>
         <div className="py-8 flex flex-col gap-4">
           <p>
-            Are you sure you wish to execute <b>{action}</b> for the selected
+            Are you sure you wish to execute <b>{formatted}</b> for the selected
             resources?
           </p>
           <ul className="p-4 bg-accent text-sm list-disc list-inside">
@@ -103,13 +105,13 @@ const GroupActionDialog = ({
             ))}
           </ul>
           <p>
-            Please enter <b>{action}</b> in the input below to confirm.
+            Please enter <b>{formatted}</b> in the input below to confirm.
           </p>
           <Input value={text} onChange={(e) => setText(e.target.value)} />
         </div>
         <DialogFooter>
           <Button
-            disabled={text !== action}
+            disabled={text !== formatted}
             onClick={() => mutate({ pattern: selected.join(",") })}
             className="gap-4"
           >
