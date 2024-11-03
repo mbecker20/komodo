@@ -87,7 +87,7 @@ pub struct DockerRegistryAccount {
   ///
   /// For docker registry, this can include 'http://...',
   /// however this is not recommended and won't work unless "insecure registries" are enabled
-  /// on your hosts. See [https://docs.docker.com/reference/cli/dockerd/#insecure-registries].
+  /// on your hosts. See <https://docs.docker.com/reference/cli/dockerd/#insecure-registries>.
   #[cfg_attr(feature = "mongo", index)]
   #[serde(default = "default_registry_domain")]
   #[partial_default(default_registry_domain())]

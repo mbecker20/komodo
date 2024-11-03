@@ -41,7 +41,7 @@ pub struct Deploy {
 
 //
 
-/// Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult].
+/// Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,
@@ -241,7 +241,7 @@ pub struct DestroyDeployment {
 
 //
 
-/// Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult].
+/// Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,

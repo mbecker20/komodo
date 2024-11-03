@@ -39,7 +39,7 @@ pub struct CloneRepo {
 
 //
 
-/// Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResult].
+/// Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Debug,
@@ -95,7 +95,7 @@ pub struct PullRepo {
 
 //
 
-/// Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResult].
+/// Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Debug,
@@ -155,7 +155,7 @@ pub struct BuildRepo {
 
 //
 
-/// Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResult].
+/// Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Debug,

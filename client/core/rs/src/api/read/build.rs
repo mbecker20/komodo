@@ -179,7 +179,7 @@ impl GetBuildMonthlyStatsResponse {
 
 /// Retrieve versions of the build that were built in the past and available for deployment,
 /// sorted by most recent first.
-/// Response: [GetBuildVersionsResponse].
+/// Response: [ListBuildVersionsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,

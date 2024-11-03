@@ -46,7 +46,7 @@ pub mod logger;
 pub mod permission;
 /// Subtypes of [Procedure][procedure::Procedure].
 pub mod procedure;
-/// Subtypes of [ProviderAccount][provider::ProviderAccount]
+/// Subtypes of [GitProviderAccount][provider::GitProviderAccount] and [DockerRegistryAccount][provider::DockerRegistryAccount]
 pub mod provider;
 /// Subtypes of [Repo][repo::Repo].
 pub mod repo;
@@ -392,7 +392,7 @@ pub struct CloneArgs {
   pub provider: String,
   /// Use https (vs http).
   pub https: bool,
-  /// Full repo identifier. <namespace>/<repo_name>
+  /// Full repo identifier. {namespace}/{repo_name}
   pub repo: Option<String>,
   /// Git Branch. Default: `main`
   pub branch: String,

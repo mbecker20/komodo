@@ -170,7 +170,7 @@ pub type SearchDeploymentLogResponse = Log;
 //
 
 /// Get the deployment container's stats using `docker stats`.
-/// Response: [DockerContainerStats].
+/// Response: [GetDeploymentStatsResponse].
 ///
 /// Note. This call will hit the underlying server directly for most up to date stats.
 #[typeshare]

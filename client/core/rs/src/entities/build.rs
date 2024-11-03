@@ -252,10 +252,10 @@ pub struct BuildConfig {
   /// Secret arguments.
   ///
   /// These values remain hidden in the final image by using
-  /// docker secret mounts. See [https://docs.docker.com/build/building/secrets].
+  /// docker secret mounts. See <https://docs.docker.com/build/building/secrets>.
   ///
   /// The values can be used in RUN commands:
-  /// ```
+  /// ```sh
   /// RUN --mount=type=secret,id=SECRET_KEY \
   ///   SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
   /// ```

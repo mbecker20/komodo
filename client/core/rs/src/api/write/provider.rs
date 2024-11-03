@@ -47,7 +47,7 @@ pub type UpdateGitProviderAccountResponse = GitProviderAccount;
 //
 
 /// **Admin only.** Delete a git provider account.
-/// Response: [User].
+/// Response: [DeleteGitProviderAccountResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

@@ -34,7 +34,7 @@ pub struct DeployStack {
 
 //
 
-/// Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult].
+/// Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,
@@ -90,7 +90,7 @@ pub struct DeployStackIfChanged {
 
 //
 
-/// Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResult].
+/// Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,
@@ -290,7 +290,7 @@ pub struct DestroyStack {
 
 //
 
-/// Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult].
+/// Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,

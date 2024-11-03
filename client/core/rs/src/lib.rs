@@ -55,13 +55,13 @@ pub fn komodo_client() -> &'static KomodoClient {
 
 /// Default environment variables for the [KomodoClient].
 #[derive(Deserialize)]
-struct KomodoEnv {
+pub struct KomodoEnv {
   /// KOMODO_ADDRESS
-  komodo_address: String,
+  pub komodo_address: String,
   /// KOMODO_API_KEY
-  komodo_api_key: String,
+  pub komodo_api_key: String,
   /// KOMODO_API_SECRET
-  komodo_api_secret: String,
+  pub komodo_api_secret: String,
 }
 
 /// Client to interface with [Komodo](https://komo.do/docs/api#rust-client)
