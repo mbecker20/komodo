@@ -677,6 +677,7 @@ pub enum Operation {
   DeleteStack,
   WriteStackContents,
   RefreshStackCache,
+  PullStack,
   DeployStack,
   StartStack,
   RestartStack,
@@ -686,6 +687,7 @@ pub enum Operation {
   DestroyStack,
 
   // stack (service)
+  PullStackService,
   StartStackService,
   RestartStackService,
   PauseStackService,
@@ -698,6 +700,7 @@ pub enum Operation {
   RenameDeployment,
   DeleteDeployment,
   Deploy,
+  PullDeployment,
   StartDeployment,
   RestartDeployment,
   PauseDeployment,

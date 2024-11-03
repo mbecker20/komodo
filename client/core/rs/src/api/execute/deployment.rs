@@ -71,6 +71,27 @@ pub struct BatchDeploy {
 
 //
 
+/// Pulls the image for the target deployment. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PullDeployment {
+  /// Name or id
+  pub deployment: String,
+}
+
+//
+
 /// Starts the container for the target deployment. Response: [Update]
 ///
 /// 1. Runs `docker start ${container_name}`.

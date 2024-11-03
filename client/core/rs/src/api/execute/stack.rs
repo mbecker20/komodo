@@ -118,6 +118,29 @@ pub struct BatchDeployStackIfChanged {
 
 //
 
+/// Pulls images for the target stack. `docker compose pull`. Response: [Update]
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PullStack {
+  /// Id or name
+  pub stack: String,
+  /// Optionally specify a specific service to start
+  pub service: Option<String>,
+}
+
+//
+
 /// Starts the target stack. `docker compose start`. Response: [Update]
 #[typeshare]
 #[derive(
