@@ -32,8 +32,10 @@ export const ResourcesConfig = ({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const servers = useRead("ListServers", {}).data ?? [];
+  const stacks = useRead("ListStacks", {}).data ?? [];
   const deployments = useRead("ListDeployments", {}).data ?? [];
   const builds = useRead("ListBuilds", {}).data ?? [];
+  const repos = useRead("ListRepos", {}).data ?? [];
   const syncs = useRead("ListResourceSyncs", {}).data ?? [];
   const all_resources = [
     ...servers.map((server) => {
@@ -44,6 +46,16 @@ export const ResourcesConfig = ({
         enabled: resources.find(
           (r) => r.type === "Server" && r.id === server.id
         )
+          ? true
+          : false,
+      };
+    }),
+    ...stacks.map((stack) => {
+      return {
+        type: "Stack",
+        id: stack.id,
+        name: stack.name.toLowerCase(),
+        enabled: resources.find((r) => r.type === "Stack" && r.id === stack.id)
           ? true
           : false,
       };
@@ -63,6 +75,14 @@ export const ResourcesConfig = ({
       id: build.id,
       name: build.name.toLowerCase(),
       enabled: resources.find((r) => r.type === "Build" && r.id === build.id)
+        ? true
+        : false,
+    })),
+    ...repos.map((repo) => ({
+      type: "Repo",
+      id: repo.id,
+      name: repo.name.toLowerCase(),
+      enabled: resources.find((r) => r.type === "Repo" && r.id === repo.id)
         ? true
         : false,
     })),

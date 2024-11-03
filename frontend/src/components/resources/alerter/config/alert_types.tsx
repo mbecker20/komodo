@@ -10,14 +10,19 @@ import {
 import { MinusCircle } from "lucide-react";
 
 const ALERT_TYPES: Types.AlertData["type"][] = [
+  // Server
   "ServerUnreachable",
   "ServerCpu",
   "ServerMem",
   "ServerDisk",
+  // State change
   "ContainerStateChange",
+  "StackStateChange",
+  // Misc
+  "AwsBuilderTerminationFailed",
   "ResourceSyncPendingUpdates",
   "BuildFailed",
-  "AwsBuilderTerminationFailed",
+  "RepoBuildFailed",
 ];
 
 export const AlertTypeConfig = ({
