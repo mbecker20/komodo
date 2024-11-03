@@ -1,12 +1,16 @@
 use command::run_komodo_command;
 use komodo_client::entities::{
+  deployment::extract_registry_domain,
   docker::image::{Image, ImageHistoryResponseItem},
   update::Log,
 };
 use periphery_client::api::image::*;
 use resolver_api::Resolve;
 
-use crate::{docker::docker_client, State};
+use crate::{
+  docker::{docker_client, docker_login},
+  State,
+};
 
 //
 
@@ -31,6 +35,37 @@ impl Resolve<ImageHistory> for State {
     _: (),
   ) -> anyhow::Result<Vec<ImageHistoryResponseItem>> {
     docker_client().image_history(&name).await
+  }
+}
+
+//
+
+impl Resolve<PullImage> for State {
+  #[instrument(name = "PullImage", skip(self))]
+  async fn resolve(
+    &self,
+    PullImage {
+      name,
+      account,
+      token,
+    }: PullImage,
+    _: (),
+  ) -> anyhow::Result<PullImageResponse> {
+    docker_login(
+      &extract_registry_domain(&name)?,
+      account.as_deref().unwrap_or_default(),
+      token.as_deref(),
+    )
+    .await?;
+    let log = run_komodo_command(
+      "docker pull",
+      None,
+      format!("docker pull {name}"),
+      false,
+    )
+    .await;
+    let image_id = docker_client().inspect_image(&name).await?.id;
+    Ok(PullImageResponse { image_id, log })
   }
 }
 

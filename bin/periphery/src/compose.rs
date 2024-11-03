@@ -43,7 +43,7 @@ pub async fn compose_up(
   // Will also set additional fields on the reponse.
   // Use the env_file_path in the compose command.
   let (run_directory, env_file_path) =
-    write_stack(&stack, git_token, res)
+    write_stack(&stack, git_token, &mut *res)
       .await
       .context("Failed to write / clone compose file")?;
 
@@ -206,7 +206,7 @@ pub async fn compose_up(
       "compose pull",
       run_directory.as_ref(),
       format!(
-        "{docker_compose} -p {project_name} -f {file_args}{env_file} pull{service_arg}",
+        "{docker_compose} -p {project_name} -f {file_args}{env_file}{additional_env_files} pull{service_arg}",
       ),
       false,
     )
@@ -289,7 +289,7 @@ pub async fn compose_up(
   // Run compose up
   let extra_args = parse_extra_args(&stack.config.extra_args);
   let command = format!(
-    "{docker_compose} -p {project_name} -f {file_args}{env_file} up -d{extra_args}{service_arg}",
+    "{docker_compose} -p {project_name} -f {file_args}{env_file}{additional_env_files} up -d{extra_args}{service_arg}",
   );
 
   let log = if stack.config.skip_secret_interp {
@@ -330,12 +330,34 @@ pub async fn compose_up(
   Ok(())
 }
 
+pub trait WriteStackRes {
+  fn logs(&mut self) -> &mut Vec<Log>;
+  fn add_remote_error(&mut self, _contents: FileContents) {}
+  fn set_commit_hash(&mut self, _hash: Option<String>) {}
+  fn set_commit_message(&mut self, _message: Option<String>) {}
+}
+
+impl<'a> WriteStackRes for &'a mut ComposeUpResponse {
+  fn logs(&mut self) -> &mut Vec<Log> {
+    &mut self.logs
+  }
+  fn add_remote_error(&mut self, contents: FileContents) {
+    self.remote_errors.push(contents);
+  }
+  fn set_commit_hash(&mut self, hash: Option<String>) {
+    self.commit_hash = hash;
+  }
+  fn set_commit_message(&mut self, message: Option<String>) {
+    self.commit_message = message;
+  }
+}
+
 /// Either writes the stack file_contents to a file, or clones the repo.
 /// Returns (run_directory, env_file_path)
-async fn write_stack<'a>(
+pub async fn write_stack<'a>(
   stack: &'a Stack,
   git_token: Option<String>,
-  res: &mut ComposeUpResponse,
+  mut res: impl WriteStackRes,
 ) -> anyhow::Result<(PathBuf, Option<&'a str>)> {
   let root = periphery_config()
     .stack_dir
@@ -361,7 +383,7 @@ async fn write_stack<'a>(
         .skip_secret_interp
         .then_some(&periphery_config().secrets),
       run_directory.as_ref(),
-      &mut res.logs,
+      res.logs(),
     )
     .await
     {
@@ -399,7 +421,7 @@ async fn write_stack<'a>(
         .skip_secret_interp
         .then_some(&periphery_config().secrets),
       run_directory.as_ref(),
-      &mut res.logs,
+      res.logs(),
     )
     .await
     {
@@ -452,9 +474,9 @@ async fn write_stack<'a>(
             Err(e) => {
               let error = format_serror(&e.into());
               res
-                .logs
+                .logs()
                 .push(Log::error("no git token", error.clone()));
-              res.remote_errors.push(FileContents {
+              res.add_remote_error(FileContents {
                 path: Default::default(),
                 contents: error,
               });
@@ -523,8 +545,10 @@ async fn write_stack<'a>(
         let error = format_serror(
           &e.context("failed to pull stack repo").into(),
         );
-        res.logs.push(Log::error("pull stack repo", error.clone()));
-        res.remote_errors.push(FileContents {
+        res
+          .logs()
+          .push(Log::error("pull stack repo", error.clone()));
+        res.add_remote_error(FileContents {
           path: Default::default(),
           contents: error,
         });
@@ -534,11 +558,11 @@ async fn write_stack<'a>(
       }
     };
 
-    res.logs.extend(logs);
-    res.commit_hash = commit_hash;
-    res.commit_message = commit_message;
+    res.logs().extend(logs);
+    res.set_commit_hash(commit_hash);
+    res.set_commit_message(commit_message);
 
-    if !all_logs_success(&res.logs) {
+    if !all_logs_success(&res.logs()) {
       return Err(anyhow!("Stopped after repo pull failure"));
     }
 
