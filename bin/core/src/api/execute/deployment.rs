@@ -1,6 +1,7 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::OnceLock};
 
 use anyhow::{anyhow, Context};
+use cache::TimeoutCache;
 use formatting::format_serror;
 use komodo_client::{
   api::execute::*,
@@ -9,7 +10,7 @@ use komodo_client::{
     deployment::{
       extract_registry_domain, Deployment, DeploymentImage,
     },
-    get_image_name, optional_string,
+    get_image_name, komodo_timestamp, optional_string,
     permission::PermissionLevel,
     server::Server,
     update::{Log, Update},
@@ -261,6 +262,122 @@ impl Resolve<Deploy, (User, Update)> for State {
   }
 }
 
+/// Wait this long after a pull to allow another pull through
+const PULL_TIMEOUT: i64 = 5_000;
+type ServerId = String;
+type Image = String;
+type PullCache = TimeoutCache<(ServerId, Image), Log>;
+
+fn pull_cache() -> &'static PullCache {
+  static PULL_CACHE: OnceLock<PullCache> = OnceLock::new();
+  PULL_CACHE.get_or_init(|| Default::default())
+}
+
+pub async fn pull_deployment_inner(
+  deployment: Deployment,
+  server: &Server,
+) -> anyhow::Result<Log> {
+  let (image, account, token) = match deployment.config.image {
+    DeploymentImage::Build { build_id, version } => {
+      let build = resource::get::<Build>(&build_id).await?;
+      let image_name = get_image_name(&build)
+        .context("failed to create image name")?;
+      let version = if version.is_none() {
+        build.config.version.to_string()
+      } else {
+        version.to_string()
+      };
+      // Potentially add the build image_tag postfix
+      let version = if build.config.image_tag.is_empty() {
+        version
+      } else {
+        format!("{version}-{}", build.config.image_tag)
+      };
+      // replace image with corresponding build image.
+      let image = format!("{image_name}:{version}");
+      if build.config.image_registry.domain.is_empty() {
+        (image, None, None)
+      } else {
+        let ImageRegistryConfig {
+          domain, account, ..
+        } = build.config.image_registry;
+        let account =
+          if deployment.config.image_registry_account.is_empty() {
+            account
+          } else {
+            deployment.config.image_registry_account
+          };
+        let token = if !account.is_empty() {
+          registry_token(&domain, &account).await.with_context(
+              || format!("Failed to get git token in call to db. Stopping run. | {domain} | {account}"),
+            )?
+        } else {
+          None
+        };
+        (image, optional_string(&account), token)
+      }
+    }
+    DeploymentImage::Image { image } => {
+      let domain = extract_registry_domain(&image)?;
+      let token = if !deployment
+        .config
+        .image_registry_account
+        .is_empty()
+      {
+        registry_token(&domain, &deployment.config.image_registry_account).await.with_context(
+            || format!("Failed to get git token in call to db. Stopping run. | {domain} | {}", deployment.config.image_registry_account),
+          )?
+      } else {
+        None
+      };
+      (
+        image,
+        optional_string(&deployment.config.image_registry_account),
+        token,
+      )
+    }
+  };
+
+  // Acquire the pull lock for this image on the server
+  let lock = pull_cache()
+    .get_lock((server.id.clone(), image.clone()))
+    .await;
+
+  // Lock the path lock, prevents simultaneous pulls by
+  // ensuring simultaneous pulls will wait for first to finish
+  // and checking cached results.
+  let mut locked = lock.lock().await;
+
+  // Early return from cache if lasted pulled with PULL_TIMEOUT
+  if locked.last_ts + PULL_TIMEOUT > komodo_timestamp() {
+    return locked.clone_res();
+  }
+
+  let res = async {
+    let log = match periphery_client(server)?
+      .request(api::image::PullImage {
+        name: image,
+        account,
+        token,
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error("Pull image", format_serror(&e.into())),
+    };
+
+    update_cache_for_server(server).await;
+    anyhow::Ok(log)
+  }
+  .await;
+
+  // Set the cache with results. Any other calls waiting on the lock will
+  // then immediately also use this same result.
+  locked.set(&res, komodo_timestamp());
+
+  res
+}
+
 impl Resolve<PullDeployment, (User, Update)> for State {
   async fn resolve(
     &self,
@@ -284,81 +401,9 @@ impl Resolve<PullDeployment, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let (image, account, token) = match deployment.config.image {
-      DeploymentImage::Build { build_id, version } => {
-        let build = resource::get::<Build>(&build_id).await?;
-        let image_name = get_image_name(&build)
-          .context("failed to create image name")?;
-        let version = if version.is_none() {
-          build.config.version.to_string()
-        } else {
-          version.to_string()
-        };
-        // Potentially add the build image_tag postfix
-        let version = if build.config.image_tag.is_empty() {
-          version
-        } else {
-          format!("{version}-{}", build.config.image_tag)
-        };
-        // replace image with corresponding build image.
-        let image = format!("{image_name}:{version}");
-        if build.config.image_registry.domain.is_empty() {
-          (image, None, None)
-        } else {
-          let ImageRegistryConfig {
-            domain, account, ..
-          } = build.config.image_registry;
-          let account =
-            if deployment.config.image_registry_account.is_empty() {
-              account
-            } else {
-              deployment.config.image_registry_account
-            };
-          let token = if !account.is_empty() {
-            registry_token(&domain, &account).await.with_context(
-              || format!("Failed to get git token in call to db. Stopping run. | {domain} | {account}"),
-            )?
-          } else {
-            None
-          };
-          (image, optional_string(&account), token)
-        }
-      }
-      DeploymentImage::Image { image } => {
-        let domain = extract_registry_domain(&image)?;
-        let token = if !deployment
-          .config
-          .image_registry_account
-          .is_empty()
-        {
-          registry_token(&domain, &deployment.config.image_registry_account).await.with_context(
-            || format!("Failed to get git token in call to db. Stopping run. | {domain} | {}", deployment.config.image_registry_account),
-          )?
-        } else {
-          None
-        };
-        (
-          image,
-          optional_string(&deployment.config.image_registry_account),
-          token,
-        )
-      }
-    };
-
-    let log = match periphery_client(&server)?
-      .request(api::image::PullImage {
-        name: image,
-        account,
-        token,
-      })
-      .await
-    {
-      Ok(log) => log,
-      Err(e) => Log::error("Pull image", format_serror(&e.into())),
-    };
+    let log = pull_deployment_inner(deployment, &server).await?;
 
     update.logs.push(log);
-    update_cache_for_server(&server).await;
     update.finalize();
     update_update(update.clone()).await?;
 

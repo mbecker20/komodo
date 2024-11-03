@@ -1,12 +1,17 @@
 use anyhow::Context;
-use komodo_client::entities::{
-  build::Build,
-  deployment::{Deployment, DeploymentImage, DeploymentState},
-  docker::{container::ContainerListItem, image::ImageListItem},
-  stack::{Stack, StackService, StackServiceNames},
+use komodo_client::{
+  api::execute::{Deploy, DeployStack},
+  entities::{
+    build::Build,
+    deployment::{Deployment, DeploymentImage, DeploymentState},
+    docker::{container::ContainerListItem, image::ImageListItem},
+    stack::{Stack, StackService, StackServiceNames},
+    user::auto_redeploy_user,
+  },
 };
 
 use crate::{
+  api::execute::{self, ExecuteRequest},
   helpers::query::get_stack_state_from_containers,
   stack::{
     compose_container_match_regex,
@@ -66,6 +71,23 @@ pub async fn update_deployment_cache(
     } else {
       false
     };
+    if deployment.config.auto_update {
+      let deployment = deployment.name.clone();
+      tokio::spawn(async move {
+        if let Err(e) = execute::inner_handler(
+          ExecuteRequest::Deploy(Deploy {
+            deployment: deployment.clone(),
+            stop_time: None,
+            stop_signal: None,
+          }),
+          auto_redeploy_user().to_owned(),
+        )
+        .await
+        {
+          warn!("Failed auto update Deployment {deployment} | {e:#}")
+        }
+      });
+    }
     deployment_status_cache
       .insert(
         deployment.id.clone(),
@@ -113,6 +135,18 @@ pub async fn update_stack_cache(
       } else {
         false
       };
+      if stack.config.auto_update && update_available {
+        let stack = stack.name.clone();
+        let service = service_name.clone();
+        tokio::spawn(async move {
+          if let Err(e) = execute::inner_handler(
+            ExecuteRequest::DeployStack(DeployStack { stack: stack.clone(), service: Some(service.clone()), stop_time: None }),
+            auto_redeploy_user().to_owned()
+          ).await {
+            warn!("Failed auto update Stack {stack} | service: {service} | {e:#}")
+          }
+        });
+      }
 			StackService {
 				service: service_name.clone(),
         image: image.to_string(),

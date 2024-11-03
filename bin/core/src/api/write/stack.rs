@@ -23,6 +23,7 @@ use periphery_client::api::compose::{
 use resolver_api::Resolve;
 
 use crate::{
+  api::execute::pull_stack_inner,
   config::core_config,
   helpers::{
     git_token, periphery_client,
@@ -258,54 +259,56 @@ impl Resolve<RefreshStackCache, User> for State {
       // =============
       // FILES ON HOST
       // =============
-      if stack.config.server_id.is_empty() {
-        (vec![], None, None, None, None)
+      let (server, state) = if stack.config.server_id.is_empty() {
+        (None, ServerState::Disabled)
       } else {
-        let (server, status) =
+        let (server, state) =
           get_server_with_state(&stack.config.server_id).await?;
-        if status != ServerState::Ok {
-          (vec![], None, None, None, None)
-        } else {
-          let GetComposeContentsOnHostResponse { contents, errors } =
-            match periphery_client(&server)?
-              .request(GetComposeContentsOnHost {
-                file_paths: stack.file_paths().to_vec(),
-                name: stack.name.clone(),
-                run_directory: stack.config.run_directory.clone(),
-              })
-              .await
-              .context(
-                "failed to get compose file contents from host",
-              ) {
-              Ok(res) => res,
-              Err(e) => GetComposeContentsOnHostResponse {
-                contents: Default::default(),
-                errors: vec![FileContents {
-                  path: stack.config.run_directory.clone(),
-                  contents: format_serror(&e.into()),
-                }],
-              },
-            };
+        (Some(server), state)
+      };
+      if state != ServerState::Ok {
+        (vec![], None, None, None, None)
+      } else if let Some(server) = server {
+        let GetComposeContentsOnHostResponse { contents, errors } =
+          match periphery_client(&server)?
+            .request(GetComposeContentsOnHost {
+              file_paths: stack.file_paths().to_vec(),
+              name: stack.name.clone(),
+              run_directory: stack.config.run_directory.clone(),
+            })
+            .await
+            .context("failed to get compose file contents from host")
+          {
+            Ok(res) => res,
+            Err(e) => GetComposeContentsOnHostResponse {
+              contents: Default::default(),
+              errors: vec![FileContents {
+                path: stack.config.run_directory.clone(),
+                contents: format_serror(&e.into()),
+              }],
+            },
+          };
 
-          let project_name = stack.project_name(true);
+        let project_name = stack.project_name(true);
 
-          let mut services = Vec::new();
+        let mut services = Vec::new();
 
-          for contents in &contents {
-            if let Err(e) = extract_services_into_res(
-              &project_name,
-              &contents.contents,
-              &mut services,
-            ) {
-              warn!(
+        for contents in &contents {
+          if let Err(e) = extract_services_into_res(
+            &project_name,
+            &contents.contents,
+            &mut services,
+          ) {
+            warn!(
                 "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
                 stack.name
               );
-            }
           }
-
-          (services, Some(contents), Some(errors), None, None)
         }
+
+        (services, Some(contents), Some(errors), None, None)
+      } else {
+        (vec![], None, None, None, None)
       }
     } else if !repo_empty {
       // ================
@@ -356,21 +359,21 @@ impl Resolve<RefreshStackCache, User> for State {
         &mut services,
       ) {
         warn!(
-          "failed to extract stack services, things won't works correctly. stack: {} | {e:#}",
+          "Failed to extract Stack services for {}, things may not work correctly. | {e:#}",
           stack.name
         );
-        services.extend(stack.info.latest_services);
+        services.extend(stack.info.latest_services.clone());
       };
       (services, None, None, None, None)
     };
 
     let info = StackInfo {
       missing_files,
-      deployed_services: stack.info.deployed_services,
-      deployed_project_name: stack.info.deployed_project_name,
-      deployed_contents: stack.info.deployed_contents,
-      deployed_hash: stack.info.deployed_hash,
-      deployed_message: stack.info.deployed_message,
+      deployed_services: stack.info.deployed_services.clone(),
+      deployed_project_name: stack.info.deployed_project_name.clone(),
+      deployed_contents: stack.info.deployed_contents.clone(),
+      deployed_hash: stack.info.deployed_hash.clone(),
+      deployed_message: stack.info.deployed_message.clone(),
       latest_services,
       remote_contents,
       remote_errors,
@@ -389,6 +392,23 @@ impl Resolve<RefreshStackCache, User> for State {
       )
       .await
       .context("failed to update stack info on db")?;
+
+    if stack.config.poll_for_updates {
+      if !stack.config.server_id.is_empty() {
+        let (server, state) =
+          get_server_with_state(&stack.config.server_id).await?;
+        if state == ServerState::Ok {
+          let name = stack.name.clone();
+          if let Err(e) =
+            pull_stack_inner(stack, None, &server, None).await
+          {
+            warn!(
+              "Failed to pull latest images for Stack {name} | {e:#}",
+            );
+          }
+        }
+      }
+    }
 
     Ok(NoData {})
   }

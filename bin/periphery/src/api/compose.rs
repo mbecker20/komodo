@@ -306,8 +306,8 @@ impl Resolve<ComposePull> for State {
 
     // Canonicalize the path to ensure it exists, and is the cleanest path to the run directory.
     let run_directory = run_directory.canonicalize().context(
-    "Failed to validate run directory on host after stack write (canonicalize error)",
-  )?;
+      "Failed to validate run directory on host after stack write (canonicalize error)",
+    )?;
 
     let file_paths = stack
       .file_paths()

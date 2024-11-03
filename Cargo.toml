@@ -9,7 +9,7 @@ members = [
 ]
 
 [workspace.package]
-version = "1.16.8"
+version = "1.16.9"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
@@ -28,6 +28,7 @@ environment_file = { path = "lib/environment_file" }
 formatting = { path = "lib/formatting" }
 command = { path = "lib/command" }
 logger = { path = "lib/logger" }
+cache = { path = "lib/cache" }
 git = { path = "lib/git" }
 
 # MOGH

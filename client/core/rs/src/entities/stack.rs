@@ -234,6 +234,17 @@ pub struct StackConfig {
   #[builder(default)]
   pub run_build: bool,
 
+  /// Whether to poll for any updates to the images.
+  #[serde(default)]
+  #[builder(default)]
+  pub poll_for_updates: bool,
+
+  /// Whether to automatically redeploy when a
+  /// newer images are found.
+  #[serde(default)]
+  #[builder(default)]
+  pub auto_update: bool,
+
   /// Whether to run `docker compose down` before `compose up`.
   #[serde(default)]
   #[builder(default)]
@@ -472,6 +483,8 @@ impl Default for StackConfig {
       registry_account: Default::default(),
       file_contents: Default::default(),
       auto_pull: default_auto_pull(),
+      poll_for_updates: Default::default(),
+      auto_update: Default::default(),
       ignore_services: Default::default(),
       pre_deploy: Default::default(),
       extra_args: Default::default(),

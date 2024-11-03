@@ -6,6 +6,7 @@ use komodo_client::{
   api::{execute::*, write::RefreshStackCache},
   entities::{
     permission::PermissionLevel,
+    server::Server,
     stack::{Stack, StackInfo},
     update::{Log, Update},
     user::User,
@@ -376,6 +377,49 @@ impl Resolve<DeployStackIfChanged, (User, Update)> for State {
   }
 }
 
+pub async fn pull_stack_inner(
+  mut stack: Stack,
+  service: Option<String>,
+  server: &Server,
+  update: Option<&mut Update>,
+) -> anyhow::Result<ComposePullResponse> {
+  if let (Some(service), Some(update)) = (&service, update) {
+    update.logs.push(Log::simple(
+      &format!("Service: {service}"),
+      format!("Execution requested for Stack service {service}"),
+    ))
+  }
+
+  let git_token = crate::helpers::git_token(
+      &stack.config.git_provider,
+      &stack.config.git_account,
+      |https| stack.config.git_https = https,
+    ).await.with_context(
+      || format!("Failed to get git token in call to db. Stopping run. | {} | {}", stack.config.git_provider, stack.config.git_account),
+    )?;
+
+  let registry_token = crate::helpers::registry_token(
+      &stack.config.registry_provider,
+      &stack.config.registry_account,
+    ).await.with_context(
+      || format!("Failed to get registry token in call to db. Stopping run. | {} | {}", stack.config.registry_provider, stack.config.registry_account),
+    )?;
+
+  let res = periphery_client(&server)?
+    .request(ComposePull {
+      stack,
+      service,
+      git_token,
+      registry_token,
+    })
+    .await?;
+
+  // Ensure cached stack state up to date by updating server cache
+  update_cache_for_server(&server).await;
+
+  Ok(res)
+}
+
 impl Resolve<PullStack, (User, Update)> for State {
   #[instrument(name = "PullStack", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
@@ -402,42 +446,11 @@ impl Resolve<PullStack, (User, Update)> for State {
 
     update_update(update.clone()).await?;
 
-    if let Some(service) = &service {
-      update.logs.push(Log::simple(
-        &format!("Service: {service}"),
-        format!("Execution requested for Stack service {service}"),
-      ))
-    }
-
-    let git_token = crate::helpers::git_token(
-      &stack.config.git_provider,
-      &stack.config.git_account,
-      |https| stack.config.git_https = https,
-    ).await.with_context(
-      || format!("Failed to get git token in call to db. Stopping run. | {} | {}", stack.config.git_provider, stack.config.git_account),
-    )?;
-
-    let registry_token = crate::helpers::registry_token(
-      &stack.config.registry_provider,
-      &stack.config.registry_account,
-    ).await.with_context(
-      || format!("Failed to get registry token in call to db. Stopping run. | {} | {}", stack.config.registry_provider, stack.config.registry_account),
-    )?;
-
-    let res = periphery_client(&server)?
-      .request(ComposePull {
-        stack,
-        service,
-        git_token,
-        registry_token,
-      })
-      .await?;
+    let res =
+      pull_stack_inner(stack, service, &server, Some(&mut update))
+        .await?;
 
     update.logs.extend(res.logs);
-
-    // Ensure cached stack state up to date by updating server cache
-    update_cache_for_server(&server).await;
-
     update.finalize();
     update_update(update.clone()).await?;
 

@@ -89,6 +89,17 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub redeploy_on_build: bool,
 
+  /// Whether to poll for any updates to the image.
+  #[serde(default)]
+  #[builder(default)]
+  pub poll_for_updates: bool,
+
+  /// Whether to automatically redeploy when a
+  /// newer image is found.
+  #[serde(default)]
+  #[builder(default)]
+  pub auto_update: bool,
+
   /// Whether to send ContainerStateChange alerts for this deployment.
   #[serde(default = "default_send_alerts")]
   #[builder(default = "default_send_alerts()")]
@@ -219,6 +230,8 @@ impl Default for DeploymentConfig {
       image_registry_account: Default::default(),
       skip_secret_interp: Default::default(),
       redeploy_on_build: Default::default(),
+      poll_for_updates: Default::default(),
+      auto_update: Default::default(),
       term_signal_labels: Default::default(),
       termination_signal: Default::default(),
       termination_timeout: default_termination_timeout(),

@@ -38,6 +38,10 @@ mod server_template;
 mod stack;
 mod sync;
 
+pub use {
+  deployment::pull_deployment_inner, stack::pull_stack_inner,
+};
+
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
@@ -143,13 +147,13 @@ async fn handler(
   Ok((TypedHeader(ContentType::json()), res))
 }
 
-enum ExecutionResult {
+pub enum ExecutionResult {
   Single(Update),
   /// The batch contents will be pre serialized here
   Batch(String),
 }
 
-async fn inner_handler(
+pub async fn inner_handler(
   request: ExecuteRequest,
   user: User,
 ) -> anyhow::Result<ExecutionResult> {

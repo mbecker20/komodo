@@ -885,6 +885,13 @@ export interface DeploymentConfig {
     skip_secret_interp?: boolean;
     /** Whether to redeploy the deployment whenever the attached build finishes. */
     redeploy_on_build?: boolean;
+    /** Whether to poll for any updates to the image. */
+    poll_for_updates?: boolean;
+    /**
+     * Whether to automatically redeploy when a
+     * newer image is found.
+     */
+    auto_update?: boolean;
     /** Whether to send ContainerStateChange alerts for this deployment. */
     send_alerts: boolean;
     /** Configure quick links that are displayed in the resource header */
@@ -1594,6 +1601,13 @@ export interface StackConfig {
      * Combine with build_extra_args for custom behaviors.
      */
     run_build?: boolean;
+    /** Whether to poll for any updates to the images. */
+    poll_for_updates?: boolean;
+    /**
+     * Whether to automatically redeploy when a
+     * newer images are found.
+     */
+    auto_update?: boolean;
     /** Whether to run `docker compose down` before `compose up`. */
     destroy_before_deploy?: boolean;
     /** Whether to skip secret interpolation into the stack environment variables. */

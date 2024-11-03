@@ -20,7 +20,11 @@ export const RestartModeSelector = ({
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem label="Restart Mode" description="Configure the --restart behavior.">
+  <ConfigItem
+    label="Restart Mode"
+    boldLabel
+    description="Configure the --restart behavior."
+  >
     <Select
       value={selected || undefined}
       onValueChange={(restart: Types.RestartMode) => set({ restart })}
