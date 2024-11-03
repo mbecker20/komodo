@@ -427,7 +427,7 @@ impl Resolve<PullStack, (User, Update)> for State {
     PullStack { stack, service }: PullStack,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
-    let (mut stack, server) = get_stack_and_server(
+    let (stack, server) = get_stack_and_server(
       &stack,
       &user,
       PermissionLevel::Execute,

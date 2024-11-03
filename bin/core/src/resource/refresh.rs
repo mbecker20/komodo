@@ -1,13 +1,14 @@
-use async_timing_util::{wait_until_timelength, Timelength};
+use std::time::Duration;
+
+use async_timing_util::{
+  get_timelength_in_ms, wait_until_timelength, Timelength,
+};
 use komodo_client::{
   api::write::{
     RefreshBuildCache, RefreshRepoCache, RefreshResourceSyncPending,
     RefreshStackCache,
   },
-  entities::{
-    server::Server,
-    user::{build_user, repo_user, stack_user, sync_user},
-  },
+  entities::user::{build_user, repo_user, stack_user, sync_user},
 };
 use mungos::find::find_collect;
 use resolver_api::Resolve;
@@ -24,9 +25,11 @@ pub fn spawn_resource_refresh_loop() {
     .try_into()
     .expect("Invalid resource poll interval");
   tokio::spawn(async move {
-    refresh_all().await;
+    let mut interval = tokio::time::interval(Duration::from_millis(
+      get_timelength_in_ms(interval) as u64,
+    ));
     loop {
-      wait_until_timelength(interval, 3000).await;
+      interval.tick().await;
       refresh_all().await;
     }
   });
