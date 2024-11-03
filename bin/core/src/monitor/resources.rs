@@ -121,17 +121,17 @@ pub async fn update_stack_cache(
   for stack in stacks {
     let services = extract_services_from_stack(&stack);
     let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name, image }| {
-			let container = containers.iter().find(|container| {
-				match compose_container_match_regex(container_name)
-					.with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
-				{
-					Ok(regex) => regex,
-					Err(e) => {
-						warn!("{e:#}");
-						return false
-					}
-				}.is_match(&container.name)
-			}).cloned();
+      let container = containers.iter().find(|container| {
+        match compose_container_match_regex(container_name)
+          .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+        {
+          Ok(regex) => regex,
+          Err(e) => {
+            warn!("{e:#}");
+            return false
+          }
+        }.is_match(&container.name)
+      }).cloned();
       let update_available = if let Some(ContainerListItem { image_id: Some(curr_image_id), .. }) = &container {
         images
         .iter()
@@ -141,13 +141,13 @@ pub async fn update_stack_cache(
       } else {
         false
       };
-			StackService {
-				service: service_name.clone(),
+      StackService {
+        service: service_name.clone(),
         image: image.to_string(),
-				container,
+        container,
         update_available,
-			}
-		}).collect::<Vec<_>>();
+      }
+    }).collect::<Vec<_>>();
     if stack.config.auto_update
       && services_with_containers.iter().any(|service| {
         service.update_available
