@@ -4,7 +4,10 @@ use komodo_client::{
   entities::{
     build::Build,
     deployment::{Deployment, DeploymentImage, DeploymentState},
-    docker::{container::ContainerListItem, image::ImageListItem},
+    docker::{
+      container::{ContainerListItem, ContainerStateStatusEnum},
+      image::ImageListItem,
+    },
     stack::{Stack, StackService, StackServiceNames},
     user::auto_redeploy_user,
   },
@@ -71,7 +74,10 @@ pub async fn update_deployment_cache(
     } else {
       false
     };
-    if deployment.config.auto_update {
+    if deployment.config.auto_update
+      // Only redeploy currently running containers, don't change the current state.
+      && state == DeploymentState::Running
+    {
       let deployment = deployment.name.clone();
       tokio::spawn(async move {
         if let Err(e) = execute::inner_handler(
@@ -135,18 +141,6 @@ pub async fn update_stack_cache(
       } else {
         false
       };
-      if stack.config.auto_update && update_available {
-        let stack = stack.name.clone();
-        let service = service_name.clone();
-        tokio::spawn(async move {
-          if let Err(e) = execute::inner_handler(
-            ExecuteRequest::DeployStack(DeployStack { stack: stack.clone(), service: Some(service.clone()), stop_time: None }),
-            auto_redeploy_user().to_owned()
-          ).await {
-            warn!("Failed auto update Stack {stack} | service: {service} | {e:#}")
-          }
-        });
-      }
 			StackService {
 				service: service_name.clone(),
         image: image.to_string(),
@@ -154,6 +148,33 @@ pub async fn update_stack_cache(
         update_available,
 			}
 		}).collect::<Vec<_>>();
+    if stack.config.auto_update
+      && services_with_containers.iter().any(|service| {
+        service.update_available
+          // Only consider running services with available updates
+          && service
+            .container
+            .as_ref()
+            .map(|c| c.state == ContainerStateStatusEnum::Running)
+            .unwrap_or_default()
+      })
+    {
+      let stack = stack.name.clone();
+      tokio::spawn(async move {
+        if let Err(e) = execute::inner_handler(
+          ExecuteRequest::DeployStack(DeployStack {
+            stack: stack.clone(),
+            service: None,
+            stop_time: None,
+          }),
+          auto_redeploy_user().to_owned(),
+        )
+        .await
+        {
+          warn!("Failed auto update Stack {stack} | {e:#}")
+        }
+      });
+    }
     services_with_containers
       .sort_by(|a, b| a.service.cmp(&b.service));
     let prev = stack_status_cache
