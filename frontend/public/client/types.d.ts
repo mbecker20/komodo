@@ -1731,7 +1731,7 @@ export interface StackServiceNames {
      */
     container_name: string;
     /** The services image. */
-    image: string;
+    image?: string;
 }
 export interface StackInfo {
     /**
@@ -1906,12 +1906,14 @@ export declare enum Operation {
     UnpauseStack = "UnpauseStack",
     StopStack = "StopStack",
     DestroyStack = "DestroyStack",
+    DeployStackService = "DeployStackService",
     PullStackService = "PullStackService",
     StartStackService = "StartStackService",
     RestartStackService = "RestartStackService",
     PauseStackService = "PauseStackService",
     UnpauseStackService = "UnpauseStackService",
     StopStackService = "StopStackService",
+    DestroyStackService = "DestroyStackService",
     CreateDeployment = "CreateDeployment",
     UpdateDeployment = "UpdateDeployment",
     RenameDeployment = "RenameDeployment",
@@ -3126,6 +3128,8 @@ export type ListServersResponse = ServerListItem[];
 export interface StackService {
     /** The service name */
     service: string;
+    /** The service image */
+    image: string;
     /** The container */
     container?: ContainerListItem;
     /** Whether there is an update available for this services image. */
@@ -3154,6 +3158,13 @@ export declare enum StackState {
     /** Server not reachable */
     Unknown = "unknown"
 }
+export interface StackServiceWithUpdate {
+    service: string;
+    /** The service's image */
+    image: string;
+    /** Whether there is a newer image available for this service */
+    update_available: boolean;
+}
 export interface StackListItemInfo {
     /** The server that stack is deployed on. */
     server_id: string;
@@ -3172,11 +3183,11 @@ export interface StackListItemInfo {
     /** A string given by docker conveying the status of the stack. */
     status?: string;
     /**
-     * The service names that are part of the stack.
+     * The services that are part of the stack.
      * If deployed, will be `deployed_services`.
      * Otherwise, its `latest_services`
      */
-    services: string[];
+    services: StackServiceWithUpdate[];
     /**
      * Whether the compose project is missing on the host.
      * Ie, it does not show up in `docker compose ls`.

@@ -32,7 +32,7 @@ use crate::{
   resource,
   stack::{
     get_stack_and_server,
-    remote::{get_remote_compose_contents, RemoteComposeContents},
+    remote::{get_repo_compose_contents, RemoteComposeContents},
     services::extract_services_into_res,
   },
   state::{db_client, github_client, State},
@@ -317,9 +317,8 @@ impl Resolve<RefreshStackCache, User> for State {
         hash: latest_hash,
         message: latest_message,
         ..
-      } =
-        get_remote_compose_contents(&stack, Some(&mut missing_files))
-          .await?;
+      } = get_repo_compose_contents(&stack, Some(&mut missing_files))
+        .await?;
 
       let project_name = stack.project_name(true);
 

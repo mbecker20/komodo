@@ -91,15 +91,7 @@ pub async fn update_stack_cache(
 ) {
   let stack_status_cache = stack_status_cache();
   for stack in stacks {
-    let services = match extract_services_from_stack(&stack, false)
-      .await
-    {
-      Ok(services) => services,
-      Err(e) => {
-        warn!("failed to extract services for stack {}. cannot match services to containers. (update status cache) | {e:?}", stack.name);
-        continue;
-      }
-    };
+    let services = extract_services_from_stack(&stack);
     let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name, image }| {
 			let container = containers.iter().find(|container| {
 				match compose_container_match_regex(container_name)
@@ -123,6 +115,7 @@ pub async fn update_stack_cache(
       };
 			StackService {
 				service: service_name.clone(),
+        image: image.to_string(),
 				container,
         update_available,
 			}

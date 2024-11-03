@@ -17,7 +17,7 @@ pub struct RemoteComposeContents {
 }
 
 /// Returns Result<(read paths, error paths, logs, short hash, commit message)>
-pub async fn get_remote_compose_contents(
+pub async fn get_repo_compose_contents(
   stack: &Stack,
   // Collect any files which are missing in the repo.
   mut missing_files: Option<&mut Vec<String>>,

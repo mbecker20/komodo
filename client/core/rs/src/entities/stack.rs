@@ -78,10 +78,10 @@ pub struct StackListItemInfo {
   pub state: StackState,
   /// A string given by docker conveying the status of the stack.
   pub status: Option<String>,
-  /// The service names that are part of the stack.
+  /// The services that are part of the stack.
   /// If deployed, will be `deployed_services`.
   /// Otherwise, its `latest_services`
-  pub services: Vec<String>,
+  pub services: Vec<StackServiceWithUpdate>,
   /// Whether the compose project is missing on the host.
   /// Ie, it does not show up in `docker compose ls`.
   /// If true, and the stack is not Down, this is an unhealthy state.
@@ -93,6 +93,16 @@ pub struct StackListItemInfo {
   pub deployed_hash: Option<String>,
   /// Latest short commit hash, or null. Only for repo based stacks
   pub latest_hash: Option<String>,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StackServiceWithUpdate {
+  pub service: String,
+  /// The service's image
+  pub image: String,
+  /// Whether there is a newer image available for this service
+  pub update_available: bool,
 }
 
 #[typeshare]
@@ -522,6 +532,7 @@ pub struct StackServiceNames {
   /// Containers will be matched via regex like `^container_name-?[0-9]*$``
   pub container_name: String,
   /// The services image.
+  #[serde(default)]
   pub image: String,
 }
 
@@ -530,6 +541,8 @@ pub struct StackServiceNames {
 pub struct StackService {
   /// The service name
   pub service: String,
+  /// The service image
+  pub image: String,
   /// The container
   pub container: Option<ContainerListItem>,
   /// Whether there is an update available for this services image.
