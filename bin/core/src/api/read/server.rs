@@ -539,6 +539,7 @@ impl Resolve<GetResourceMatchingContainer, User> for State {
       for StackServiceNames {
         service_name,
         container_name,
+        ..
       } in stack
         .info
         .deployed_services

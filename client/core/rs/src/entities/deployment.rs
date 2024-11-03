@@ -41,6 +41,8 @@ pub struct DeploymentListItemInfo {
   pub status: Option<String>,
   /// The image attached to the deployment.
   pub image: String,
+  /// Whether there is a newer image available at the same tag.
+  pub update_available: bool,
   /// The server that deployment sits on.
   pub server_id: String,
   /// An attached Komodo Build, if it exists.

@@ -79,10 +79,11 @@ pub fn extract_services_into_res(
     ComposeService {
       container_name,
       deploy,
-      ..
+      image,
     },
   ) in compose.services
   {
+    let image = image.unwrap_or_default();
     match deploy {
       Some(ComposeServiceDeploy {
         replicas: Some(replicas),
@@ -93,6 +94,7 @@ pub fn extract_services_into_res(
               "{project_name}-{service_name}-{i}"
             ),
             service_name: format!("{service_name}-{i}"),
+            image: image.clone(),
           });
         }
       }
@@ -102,6 +104,7 @@ pub fn extract_services_into_res(
             format!("{project_name}-{service_name}")
           }),
           service_name,
+          image,
         });
       }
     }

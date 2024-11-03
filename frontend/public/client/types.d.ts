@@ -960,6 +960,8 @@ export interface DeploymentListItemInfo {
     status?: string;
     /** The image attached to the deployment. */
     image: string;
+    /** Whether there is a newer image available at the same tag. */
+    update_available: boolean;
     /** The server that deployment sits on. */
     server_id: string;
     /** An attached Komodo Build, if it exists. */
@@ -1728,6 +1730,8 @@ export interface StackServiceNames {
      * Containers will be matched via regex like `^container_name-?[0-9]*$``
      */
     container_name: string;
+    /** The services image. */
+    image: string;
 }
 export interface StackInfo {
     /**
@@ -3124,6 +3128,8 @@ export interface StackService {
     service: string;
     /** The container */
     container?: ContainerListItem;
+    /** Whether there is an update available for this services image. */
+    update_available: boolean;
 }
 export type ListStackServicesResponse = StackService[];
 export declare enum StackState {

@@ -1,7 +1,8 @@
 use anyhow::Context;
 use komodo_client::entities::{
-  deployment::{Deployment, DeploymentState},
-  docker::container::ContainerListItem,
+  build::Build,
+  deployment::{Deployment, DeploymentImage, DeploymentState},
+  docker::{container::ContainerListItem, image::ImageListItem},
   stack::{Stack, StackService, StackServiceNames},
 };
 
@@ -19,6 +20,8 @@ use super::{CachedDeploymentStatus, CachedStackStatus, History};
 pub async fn update_deployment_cache(
   deployments: Vec<Deployment>,
   containers: &[ContainerListItem],
+  images: &[ImageListItem],
+  builds: &[Build],
 ) {
   let deployment_status_cache = deployment_status_cache();
   for deployment in deployments {
@@ -34,6 +37,35 @@ pub async fn update_deployment_cache(
       .as_ref()
       .map(|c| c.state.into())
       .unwrap_or(DeploymentState::NotDeployed);
+    let update_available = if let Some(ContainerListItem {
+      image_id: Some(curr_image_id),
+      ..
+    }) = &container
+    {
+      let source_image = match deployment.config.image {
+        DeploymentImage::Build { build_id, version } => {
+          let (build_name, build_version) = builds
+            .iter()
+            .find(|build| build.id == build_id)
+            .map(|b| (b.name.as_ref(), b.config.version))
+            .unwrap_or(("Unknown", Default::default()));
+          let version = if version.is_none() {
+            build_version.to_string()
+          } else {
+            version.to_string()
+          };
+          format!("{build_name}:{version}")
+        }
+        DeploymentImage::Image { image } => image,
+      };
+      images
+        .iter()
+        .find(|i| i.name == source_image)
+        .map(|i| &i.id != curr_image_id)
+        .unwrap_or_default()
+    } else {
+      false
+    };
     deployment_status_cache
       .insert(
         deployment.id.clone(),
@@ -42,6 +74,7 @@ pub async fn update_deployment_cache(
             id: deployment.id,
             state,
             container,
+            update_available,
           },
           prev,
         }
@@ -54,6 +87,7 @@ pub async fn update_deployment_cache(
 pub async fn update_stack_cache(
   stacks: Vec<Stack>,
   containers: &[ContainerListItem],
+  images: &[ImageListItem],
 ) {
   let stack_status_cache = stack_status_cache();
   for stack in stacks {
@@ -66,7 +100,7 @@ pub async fn update_stack_cache(
         continue;
       }
     };
-    let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name }| {
+    let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name, image }| {
 			let container = containers.iter().find(|container| {
 				match compose_container_match_regex(container_name)
 					.with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
@@ -78,9 +112,19 @@ pub async fn update_stack_cache(
 					}
 				}.is_match(&container.name)
 			}).cloned();
+      let update_available = if let Some(ContainerListItem { image_id: Some(curr_image_id), .. }) = &container {
+        images
+        .iter()
+        .find(|i| &i.name == image)
+        .map(|i| &i.id != curr_image_id)
+        .unwrap_or_default()
+      } else {
+        false
+      };
 			StackService {
 				service: service_name.clone(),
 				container,
+        update_available,
 			}
 		}).collect::<Vec<_>>();
     services_with_containers

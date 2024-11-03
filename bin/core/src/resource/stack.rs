@@ -98,6 +98,7 @@ impl super::KomodoResource for Stack {
       } else {
         (false, None)
       };
+    
     StackListItem {
       id: stack.id,
       name: stack.name,

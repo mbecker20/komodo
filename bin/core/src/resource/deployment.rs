@@ -72,6 +72,19 @@ impl super::KomodoResource for Deployment {
       }
       DeploymentImage::Image { image } => (image, None),
     };
+    let (image, update_available) = status
+      .as_ref()
+      .and_then(|s| {
+        s.curr.container.as_ref().map(|c| {
+          (
+            c.image
+              .clone()
+              .unwrap_or_else(|| String::from("Unknown")),
+            s.curr.update_available,
+          )
+        })
+      })
+      .unwrap_or((build_image, false));
     DeploymentListItem {
       name: deployment.name,
       id: deployment.id,
@@ -85,16 +98,8 @@ impl super::KomodoResource for Deployment {
         status: status.as_ref().and_then(|s| {
           s.curr.container.as_ref().and_then(|c| c.status.to_owned())
         }),
-        image: status
-          .as_ref()
-          .and_then(|s| {
-            s.curr.container.as_ref().map(|c| {
-              c.image
-                .clone()
-                .unwrap_or_else(|| String::from("Unknown"))
-            })
-          })
-          .unwrap_or(build_image),
+        image,
+        update_available,
         server_id: deployment.config.server_id,
         build_id,
       },

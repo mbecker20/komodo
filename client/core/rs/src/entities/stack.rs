@@ -521,6 +521,8 @@ pub struct StackServiceNames {
   /// This stores only 1. and 2., ie stacko-mongo.
   /// Containers will be matched via regex like `^container_name-?[0-9]*$``
   pub container_name: String,
+  /// The services image.
+  pub image: String,
 }
 
 #[typeshare]
@@ -530,6 +532,8 @@ pub struct StackService {
   pub service: String,
   /// The container
   pub container: Option<ContainerListItem>,
+  /// Whether there is an update available for this services image.
+  pub update_available: bool,
 }
 
 #[typeshare]
