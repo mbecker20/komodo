@@ -56,7 +56,7 @@ pub async fn execute_compose<T: ExecuteCompose>(
   if let Some(service) = &service {
     update.logs.push(Log::simple(
       &format!("Service: {service}"),
-      format!("Execution requested for service stack {service}"),
+      format!("Execution requested for Stack service {service}"),
     ))
   }
 

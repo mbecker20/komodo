@@ -687,12 +687,14 @@ pub enum Operation {
   DestroyStack,
 
   // stack (service)
+  DeployStackService,
   PullStackService,
   StartStackService,
   RestartStackService,
   PauseStackService,
   UnpauseStackService,
   StopStackService,
+  DestroyStackService,
 
   // deployment
   CreateDeployment,

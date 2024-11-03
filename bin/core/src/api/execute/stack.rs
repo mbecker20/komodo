@@ -7,7 +7,7 @@ use komodo_client::{
   entities::{
     permission::PermissionLevel,
     stack::{Stack, StackInfo},
-    update::Update,
+    update::{Log, Update},
     user::User,
   },
 };
@@ -66,8 +66,8 @@ impl Resolve<DeployStack, (User, Update)> for State {
     &self,
     DeployStack {
       stack,
-      stop_time,
       service,
+      stop_time,
     }: DeployStack,
     (user, mut update): (User, Update),
   ) -> anyhow::Result<Update> {
@@ -89,6 +89,13 @@ impl Resolve<DeployStack, (User, Update)> for State {
       action_state.update(|state| state.deploying = true)?;
 
     update_update(update.clone()).await?;
+
+    if let Some(service) = &service {
+      update.logs.push(Log::simple(
+        &format!("Service: {service}"),
+        format!("Execution requested for Stack service {service}"),
+      ))
+    }
 
     let git_token = crate::helpers::git_token(
       &stack.config.git_provider,
@@ -163,7 +170,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
     } = periphery_client(&server)?
       .request(ComposeUp {
         stack: stack.clone(),
-        service: None,
+        service,
         git_token,
         registry_token,
         replacers: secret_replacers.into_iter().collect(),
@@ -394,6 +401,13 @@ impl Resolve<PullStack, (User, Update)> for State {
       action_state.update(|state| state.pulling = true)?;
 
     update_update(update.clone()).await?;
+
+    if let Some(service) = &service {
+      update.logs.push(Log::simple(
+        &format!("Service: {service}"),
+        format!("Execution requested for Stack service {service}"),
+      ))
+    }
 
     let git_token = crate::helpers::git_token(
       &stack.config.git_provider,

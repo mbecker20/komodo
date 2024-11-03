@@ -404,7 +404,11 @@ pub async fn init_execution_update(
 
     // Stack
     ExecuteRequest::DeployStack(data) => (
-      Operation::DeployStack,
+      if data.service.is_some() {
+        Operation::DeployStackService
+      } else {
+        Operation::DeployStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
@@ -482,7 +486,11 @@ pub async fn init_execution_update(
       ),
     ),
     ExecuteRequest::DestroyStack(data) => (
-      Operation::DestroyStack,
+      if data.service.is_some() {
+        Operation::DestroyStackService
+      } else {
+        Operation::DestroyStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
