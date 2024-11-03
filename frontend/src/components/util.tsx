@@ -669,21 +669,19 @@ export const DockerResourceLink = ({
   return (
     <Link
       to={`/servers/${server_id}/${type}/${encodeURIComponent(name)}`}
-      className="px-0"
+      className={cn(
+        "flex items-center gap-2 text-sm hover:underline py-1",
+        muted && "text-muted-foreground"
+      )}
     >
-      <Button
-        variant="link"
-        className={cn("px-0 gap-2", muted && "text-muted-foreground")}
+      <Icon server_id={server_id} name={type === "image" ? id : name} />
+      <div
+        title={name}
+        className="max-w-[200px] lg:max-w-[250px] overflow-hidden overflow-ellipsis"
       >
-        <Icon server_id={server_id} name={type === "image" ? id : name} />
-        <div
-          title={name}
-          className="max-w-[200px] lg:max-w-[250px] overflow-hidden overflow-ellipsis"
-        >
-          {name}
-        </div>
-        {extra && <div className="no-underline">{extra}</div>}
-      </Button>
+        {name}
+      </div>
+      {extra && <div className="no-underline">{extra}</div>}
     </Link>
   );
 };

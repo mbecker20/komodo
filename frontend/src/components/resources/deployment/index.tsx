@@ -23,7 +23,11 @@ import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { ResourcePageHeader, StatusBadge } from "@components/util";
+import {
+  DockerResourceLink,
+  ResourcePageHeader,
+  StatusBadge,
+} from "@components/util";
 import { RenameResource } from "@components/config/util";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
@@ -203,6 +207,24 @@ export const DeploymentComponents: RequiredResourceComponents = {
           <Server className="w-4 h-4" />
           <div>Unknown Server</div>
         </div>
+      );
+    },
+    Container: ({ id }) => {
+      const deployment = useDeployment(id);
+      if (
+        !deployment ||
+        [
+          Types.DeploymentState.Unknown,
+          Types.DeploymentState.NotDeployed,
+        ].includes(deployment.info.state)
+      )
+        return null;
+      return (
+        <DockerResourceLink
+          type="container"
+          name={deployment.name}
+          server_id={deployment.info.server_id}
+        />
       );
     },
   },

@@ -4041,6 +4041,14 @@ export interface CreateDeployment {
 	config?: _PartialDeploymentConfig;
 }
 
+/** Create a Deployment from an existing container. Response: [Deployment]. */
+export interface CreateDeploymentFromContainer {
+	/** The name or id of the existing container. */
+	name: string;
+	/** The server id or name on which container exists. */
+	server: string;
+}
+
 /**
  * **Admin only.** Create a docker registry account.
  * Response: [DockerRegistryAccount].
@@ -5140,7 +5148,7 @@ export interface GetReposSummaryResponse {
 	unknown: number;
 }
 
-/** Inspect a docker container on the server. Response: [Container]. */
+/** Find the attached resource for a container. Either Deployment or Stack. Response: [GetResourceMatchingContainerResponse]. */
 export interface GetResourceMatchingContainer {
 	/** Id or name */
 	server: string;
@@ -5148,6 +5156,7 @@ export interface GetResourceMatchingContainer {
 	container: string;
 }
 
+/** Response for [GetResourceMatchingContainer]. Resource is either Deployment, Stack, or None. */
 export interface GetResourceMatchingContainerResponse {
 	resource?: ResourceTarget;
 }
@@ -7470,6 +7479,7 @@ export type WriteRequest =
 	| { type: "CreateNetwork", params: CreateNetwork }
 	| { type: "CreateDeployment", params: CreateDeployment }
 	| { type: "CopyDeployment", params: CopyDeployment }
+	| { type: "CreateDeploymentFromContainer", params: CreateDeploymentFromContainer }
 	| { type: "DeleteDeployment", params: DeleteDeployment }
 	| { type: "UpdateDeployment", params: UpdateDeployment }
 	| { type: "RenameDeployment", params: RenameDeployment }

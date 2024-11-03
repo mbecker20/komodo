@@ -46,6 +46,22 @@ pub struct CopyDeployment {
 
 //
 
+/// Create a Deployment from an existing container. Response: [Deployment].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(KomodoWriteRequest)]
+#[response(Deployment)]
+pub struct CreateDeploymentFromContainer {
+  /// The name or id of the existing container.
+  pub name: String,
+  /// The server id or name on which container exists.
+  pub server: String,
+}
+
+//
+
 /// Deletes the deployment at the given id, and returns the deleted deployment.
 /// Response: [Deployment].
 ///

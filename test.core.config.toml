@@ -39,5 +39,5 @@ resource_poll_interval = "1-min"
 ###########
 logging.level = "info"
 logging.stdio = "standard"
-logging.otlp_endpoint = "http://grafana.orb.local:4317"
+# logging.otlp_endpoint = "http://grafana.orb.local:4317"
 logging.opentelemetry_service_name = "Komodo"

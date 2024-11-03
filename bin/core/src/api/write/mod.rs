@@ -80,6 +80,7 @@ pub enum WriteRequest {
   // ==== DEPLOYMENT ====
   CreateDeployment(CreateDeployment),
   CopyDeployment(CopyDeployment),
+  CreateDeploymentFromContainer(CreateDeploymentFromContainer),
   DeleteDeployment(DeleteDeployment),
   UpdateDeployment(UpdateDeployment),
   RenameDeployment(RenameDeployment),

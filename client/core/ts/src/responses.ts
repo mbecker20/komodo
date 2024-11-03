@@ -219,6 +219,7 @@ export type WriteResponses = {
   // ==== DEPLOYMENT ====
   CreateDeployment: Types.Deployment;
   CopyDeployment: Types.Deployment;
+  CreateDeploymentFromContainer: Types.Deployment;
   DeleteDeployment: Types.Deployment;
   UpdateDeployment: Types.Deployment;
   RenameDeployment: Types.Update;

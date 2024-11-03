@@ -1,14 +1,15 @@
 import { Section } from "@components/layouts";
-import { NewResource, ResourceLink } from "@components/resources/common";
+import { ResourceLink } from "@components/resources/common";
 import { useServer } from "@components/resources/server";
 import {
+  ConfirmButton,
   DOCKER_LINK_ICONS,
   DockerLabelsSection,
   DockerResourceLink,
   ResourcePageHeader,
   ShowHideButton,
 } from "@components/util";
-import { useRead, useSetTitle } from "@lib/hooks";
+import { useRead, useSetTitle, useWrite } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
 import {
@@ -16,9 +17,10 @@ import {
   Clapperboard,
   Info,
   Loader2,
+  PlusCircle,
   SearchCode,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ContainerLogs } from "./log";
 import { Actions } from "./actions";
 import { Types } from "komodo_client";
@@ -101,7 +103,7 @@ const ContainerPageInner = ({
             Back
           </Button>
         </Link>
-        <NewDeployment id={id} container={container_name} />
+        <NewDeployment id={id} name={container_name} />
       </div>
       <div className="flex flex-col xl:flex-row gap-4">
         {/** HEADER */}
@@ -348,16 +350,10 @@ const AttachedResource = ({
   );
 };
 
-const NewDeployment = ({
-  id,
-  container,
-}: {
-  id: string;
-  container: string;
-}) => {
+const NewDeployment = ({ id, name }: { id: string; name: string }) => {
   const { data: attached, isPending } = useRead(
     "GetResourceMatchingContainer",
-    { server: id, container }
+    { server: id, container: name }
   );
 
   if (isPending) {
@@ -369,6 +365,28 @@ const NewDeployment = ({
   }
 
   if (!attached?.resource) {
-    return <NewResource type="Deployment" server_id={id} name={container} />;
+    return <NewDeploymentInner name={name} server_id={id} />;
   }
+};
+
+const NewDeploymentInner = ({
+  server_id,
+  name,
+}: {
+  name: string;
+  server_id: string;
+}) => {
+  const nav = useNavigate();
+  const { mutateAsync, isPending } = useWrite("CreateDeploymentFromContainer");
+  return (
+    <ConfirmButton
+      title="New Deployment"
+      icon={<PlusCircle className="w-4 h-4" />}
+      onClick={async () => {
+        const id = (await mutateAsync({ name, server: server_id }))._id?.$oid!;
+        nav(`/deployments/${id}`);
+      }}
+      loading={isPending}
+    />
+  );
 };
