@@ -17,6 +17,7 @@ import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -61,7 +62,9 @@ export const ProcedureComponents: RequiredResourceComponents = {
     );
   },
 
-  GroupActions: () => <></>,
+  GroupActions: () => (
+    <GroupActions type="Procedure" actions={["BatchRunProcedure"]} />
+  ),
 
   New: () => <NewResource type="Procedure" />,
 
