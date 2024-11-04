@@ -1,12 +1,7 @@
 import { ConfigItem } from "@components/config/util";
 import { Types } from "komodo_client";
 import { Badge } from "@ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@ui/select";
 import { MinusCircle } from "lucide-react";
 
 const ALERT_TYPES: Types.AlertData["type"][] = [
@@ -18,6 +13,9 @@ const ALERT_TYPES: Types.AlertData["type"][] = [
   // State change
   "ContainerStateChange",
   "StackStateChange",
+  // Updates
+  "DeploymentImageUpdateAvailable",
+  "StackImageUpdateAvailable",
   // Misc
   "AwsBuilderTerminationFailed",
   "ResourceSyncPendingUpdates",
@@ -38,7 +36,11 @@ export const AlertTypeConfig = ({
     (alert_type) => !alert_types.includes(alert_type)
   );
   return (
-    <ConfigItem label="Alert Types" description="Only send alerts of certain types." boldLabel>
+    <ConfigItem
+      label="Alert Types"
+      description="Only send alerts of certain types."
+      boldLabel
+    >
       <div className="flex items-center gap-4">
         {at.length ? (
           <Select

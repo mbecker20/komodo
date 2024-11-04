@@ -90,6 +90,16 @@ pub async fn send_alert(
       let to = fmt_docker_container_state(to);
       format!("📦 Deployment *{name}* is now {to}\nserver: {server_name}\nprevious: {from}\n{link}")
     }
+    AlertData::DeploymentImageUpdateAvailable {
+      id,
+      name,
+      server_id: _server_id,
+      server_name,
+      image,
+    } => {
+      let link = resource_link(ResourceTargetVariant::Deployment, id);
+      format!("⬆ Deployment *{name}* has an update available\nserver: {server_name}\nimage: {image}\n{link}")
+    }
     AlertData::StackStateChange {
       id,
       name,
@@ -101,6 +111,17 @@ pub async fn send_alert(
       let link = resource_link(ResourceTargetVariant::Stack, id);
       let to = fmt_stack_state(to);
       format!("🥞 Stack *{name}* is now {to}\nserver: {server_name}\nprevious: {from}\n{link}")
+    }
+    AlertData::StackImageUpdateAvailable {
+      id,
+      name,
+      server_id: _server_id,
+      server_name,
+      service,
+      image,
+    } => {
+      let link = resource_link(ResourceTargetVariant::Stack, id);
+      format!("⬆ Stack *{name}* has an update available\nserver: {server_name}\nservice: {service}\nimage: {image}\n{link}")
     }
     AlertData::AwsBuilderTerminationFailed {
       instance_id,

@@ -144,6 +144,20 @@ pub enum AlertData {
     to: DeploymentState,
   },
 
+  /// A Deployment has an image update available
+  DeploymentImageUpdateAvailable {
+    /// The id of the deployment
+    id: String,
+    /// The name of the deployment
+    name: String,
+    /// The server id of server that the deployment is on
+    server_id: String,
+    /// The server name
+    server_name: String,
+    /// The image with update
+    image: String,
+  },
+
   /// A stack's state has changed unexpectedly.
   StackStateChange {
     /// The id of the stack
@@ -158,6 +172,22 @@ pub enum AlertData {
     from: StackState,
     /// The current stack state
     to: StackState,
+  },
+
+  /// A Stack has an image update available
+  StackImageUpdateAvailable {
+    /// The id of the stack
+    id: String,
+    /// The name of the stack
+    name: String,
+    /// The server id of server that the stack is on
+    server_id: String,
+    /// The server name
+    server_name: String,
+    /// The service name to update
+    service: String,
+    /// The image with update
+    image: String,
   },
 
   /// An AWS builder failed to terminate.

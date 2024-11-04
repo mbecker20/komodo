@@ -231,10 +231,12 @@ export const DeploymentConfig = ({
             label: "Auto Update",
             components: {
               poll_for_updates: {
-                description: "Check for updates to the image on an interval.",
+                description:
+                  "Check for updates to the image on an interval.",
               },
               auto_update: {
-                description: "Trigger a redeploy if a newer image is found.",
+                description:
+                  "Trigger a redeploy if a newer image is found.",
               },
             },
           },

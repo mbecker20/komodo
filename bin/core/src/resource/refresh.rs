@@ -1,8 +1,6 @@
 use std::time::Duration;
 
-use async_timing_util::{
-  get_timelength_in_ms, wait_until_timelength, Timelength,
-};
+use async_timing_util::{get_timelength_in_ms, Timelength};
 use komodo_client::{
   api::write::{
     RefreshBuildCache, RefreshRepoCache, RefreshResourceSyncPending,

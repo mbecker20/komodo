@@ -319,10 +319,10 @@ export interface BuildConfig {
 	 * Secret arguments.
 	 * 
 	 * These values remain hidden in the final image by using
-	 * docker secret mounts. See [https://docs.docker.com/build/building/secrets].
+	 * docker secret mounts. See <https://docs.docker.com/build/building/secrets>.
 	 * 
 	 * The values can be used in RUN commands:
-	 * ```
+	 * ```sh
 	 * RUN --mount=type=secret,id=SECRET_KEY \
 	 * SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
 	 * ```
@@ -561,7 +561,7 @@ export interface DockerRegistryAccount {
 	 * 
 	 * For docker registry, this can include 'http://...',
 	 * however this is not recommended and won't work unless "insecure registries" are enabled
-	 * on your hosts. See [https://docs.docker.com/reference/cli/dockerd/#insecure-registries].
+	 * on your hosts. See <https://docs.docker.com/reference/cli/dockerd/#insecure-registries>.
 	 */
 	domain: string;
 	/** The account username */
@@ -988,6 +988,19 @@ export type AlertData =
 	/** The current container state */
 	to: DeploymentState;
 }}
+	/** A Deployment has an image update available */
+	| { type: "DeploymentImageUpdateAvailable", data: {
+	/** The id of the deployment */
+	id: string;
+	/** The name of the deployment */
+	name: string;
+	/** The server id of server that the deployment is on */
+	server_id: string;
+	/** The server name */
+	server_name: string;
+	/** The image with update */
+	image: string;
+}}
 	/** A stack's state has changed unexpectedly. */
 	| { type: "StackStateChange", data: {
 	/** The id of the stack */
@@ -1002,6 +1015,21 @@ export type AlertData =
 	from: StackState;
 	/** The current stack state */
 	to: StackState;
+}}
+	/** A Stack has an image update available */
+	| { type: "StackImageUpdateAvailable", data: {
+	/** The id of the stack */
+	id: string;
+	/** The name of the stack */
+	name: string;
+	/** The server id of server that the stack is on */
+	server_id: string;
+	/** The server name */
+	server_name: string;
+	/** The service name to update */
+	service: string;
+	/** The image with update */
+	image: string;
 }}
 	/** An AWS builder failed to terminate. */
 	| { type: "AwsBuilderTerminationFailed", data: {
@@ -3574,7 +3602,7 @@ export interface AwsServerTemplateConfig {
 	user_data: string;
 }
 
-/** Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchBuildRepo {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3591,7 +3619,7 @@ export interface BatchBuildRepo {
 	pattern: string;
 }
 
-/** Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchCloneRepo {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3608,7 +3636,7 @@ export interface BatchCloneRepo {
 	pattern: string;
 }
 
-/** Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDeploy {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3625,7 +3653,7 @@ export interface BatchDeploy {
 	pattern: string;
 }
 
-/** Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDeployStack {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3642,7 +3670,7 @@ export interface BatchDeployStack {
 	pattern: string;
 }
 
-/** Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDeployStackIfChanged {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3659,7 +3687,7 @@ export interface BatchDeployStackIfChanged {
 	pattern: string;
 }
 
-/** Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDestroyDeployment {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3676,7 +3704,7 @@ export interface BatchDestroyDeployment {
 	pattern: string;
 }
 
-/** Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDestroyStack {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3698,7 +3726,7 @@ export interface BatchExecutionResponseItemErr {
 	error: _Serror;
 }
 
-/** Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchPullRepo {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3715,7 +3743,7 @@ export interface BatchPullRepo {
 	pattern: string;
 }
 
-/** Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResult] */
+/** Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResponse] */
 export interface BatchRunAction {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3732,7 +3760,7 @@ export interface BatchRunAction {
 	pattern: string;
 }
 
-/** Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchRunBuild {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3749,7 +3777,7 @@ export interface BatchRunBuild {
 	pattern: string;
 }
 
-/** Runs multiple Procedures in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Runs multiple Procedures in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchRunProcedure {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3817,7 +3845,7 @@ export interface CloneArgs {
 	provider: string;
 	/** Use https (vs http). */
 	https: boolean;
-	/** Full repo identifier. <namespace>/<repo_name> */
+	/** Full repo identifier. {namespace}/{repo_name} */
 	repo?: string;
 	/** Git Branch. Default: `main` */
 	branch: string;
@@ -4367,7 +4395,7 @@ export interface DeleteDockerRegistryAccount {
 
 /**
  * **Admin only.** Delete a git provider account.
- * Response: [User].
+ * Response: [DeleteGitProviderAccountResponse].
  */
 export interface DeleteGitProviderAccount {
 	/** The id of the git provider to delete */
@@ -4950,7 +4978,7 @@ export interface GetDeploymentLog {
 
 /**
  * Get the deployment container's stats using `docker stats`.
- * Response: [DockerContainerStats].
+ * Response: [GetDeploymentStatsResponse].
  * 
  * Note. This call will hit the underlying server directly for most up to date stats.
  */
@@ -5302,7 +5330,7 @@ export interface GetStackActionState {
 	stack: string;
 }
 
-/** Get a stack service's log. Response: [GetStackContainersResponse]. */
+/** Get a stack service's log. Response: [GetStackServiceLogResponse]. */
 export interface GetStackServiceLog {
 	/** Id or name */
 	stack: string;
@@ -5718,7 +5746,7 @@ export interface ListApiKeysForServiceUser {
 /**
  * Retrieve versions of the build that were built in the past and available for deployment,
  * sorted by most recent first.
- * Response: [GetBuildVersionsResponse].
+ * Response: [ListBuildVersionsResponse].
  */
 export interface ListBuildVersions {
 	/** Id or name */
@@ -5849,7 +5877,7 @@ export interface ListDockerRegistriesFromConfig {
 
 /**
  * List docker registry accounts matching optional query.
- * Response: [ListDockerRegistrysResponse].
+ * Response: [ListDockerRegistryAccountsResponse].
  */
 export interface ListDockerRegistryAccounts {
 	/** Optionally filter by accounts with a specific domain. */
@@ -5936,7 +5964,7 @@ export interface ListFullStacks {
 
 /**
  * List git provider accounts matching optional query.
- * Response: [ListGitProvidersResponse].
+ * Response: [ListGitProviderAccountsResponse].
  */
 export interface ListGitProviderAccounts {
 	/** Optionally filter by accounts with a specific domain. */

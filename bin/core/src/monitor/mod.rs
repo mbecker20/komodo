@@ -215,12 +215,18 @@ pub async fn update_cache_for_server(server: &Server) {
       });
       tokio::join!(
         resources::update_deployment_cache(
+          server.name.clone(),
           deployments,
           &containers,
           &images,
           &builds,
         ),
-        resources::update_stack_cache(stacks, &containers, &images),
+        resources::update_stack_cache(
+          server.name.clone(),
+          stacks,
+          &containers,
+          &images
+        ),
       );
       insert_server_status(
         server,

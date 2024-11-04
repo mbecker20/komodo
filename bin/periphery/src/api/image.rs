@@ -1,9 +1,5 @@
-use std::{
-  collections::HashMap,
-  sync::{Arc, OnceLock},
-};
+use std::sync::OnceLock;
 
-use anyhow::anyhow;
 use cache::TimeoutCache;
 use command::run_komodo_command;
 use komodo_client::entities::{
@@ -14,7 +10,6 @@ use komodo_client::entities::{
 };
 use periphery_client::api::image::*;
 use resolver_api::Resolve;
-use tokio::sync::Mutex;
 
 use crate::{
   docker::{docker_client, docker_login},

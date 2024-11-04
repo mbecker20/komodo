@@ -195,6 +195,27 @@ pub async fn send_alert(
       ];
       (text, blocks.into())
     }
+    AlertData::DeploymentImageUpdateAvailable {
+      id,
+      name,
+      server_name,
+      server_id: _server_id,
+      image,
+    } => {
+      let text =
+        format!("⬆ Deployment *{name}* has an update available");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server: {server_name}\nimage: {image}",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Deployment,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
     AlertData::StackStateChange {
       name,
       server_name,
@@ -209,6 +230,27 @@ pub async fn send_alert(
         Block::header(text.clone()),
         Block::section(format!(
           "server: {server_name}\nprevious: {from}",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Stack,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
+    AlertData::StackImageUpdateAvailable {
+      id,
+      name,
+      server_name,
+      server_id: _server_id,
+      service,
+      image,
+    } => {
+      let text = format!("⬆ Stack *{name}* has an update available");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server: **{server_name}**\nservice: **{service}**\nimage: **{image}**",
         )),
         Block::section(resource_link(
           ResourceTargetVariant::Stack,
