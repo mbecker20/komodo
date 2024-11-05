@@ -392,6 +392,13 @@ impl ResourceSyncTrait for Procedure {
               .unwrap_or_default();
           }
           Execution::BatchDeploy(_config) => {}
+          Execution::PullDeployment(config) => {
+            config.deployment = resources
+              .deployments
+              .get(&config.deployment)
+              .map(|d| d.name.clone())
+              .unwrap_or_default();
+          }
           Execution::StartDeployment(config) => {
             config.deployment = resources
               .deployments
@@ -643,6 +650,13 @@ impl ResourceSyncTrait for Procedure {
               .unwrap_or_default();
           }
           Execution::BatchDeployStackIfChanged(_config) => {}
+          Execution::PullStack(config) => {
+            config.stack = resources
+              .stacks
+              .get(&config.stack)
+              .map(|s| s.name.clone())
+              .unwrap_or_default();
+          }
           Execution::StartStack(config) => {
             config.stack = resources
               .stacks

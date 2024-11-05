@@ -185,7 +185,7 @@ export const ResourceLink = ({
         e.stopPropagation();
         onClick?.();
       }}
-      className="flex items-center gap-2 text-sm"
+      className="flex items-center gap-2 text-sm hover:underline"
     >
       <Components.Icon id={id} />
       <ResourceName type={type} id={id} />
@@ -313,7 +313,7 @@ export const NewResource = ({
       entityType={readable_type ?? type}
       onConfirm={onConfirm}
       enabled={!!name}
-      onOpenChange={() => setName("")}
+      onOpenChange={() => setName(_name)}
     >
       <div className="grid md:grid-cols-2 items-center">
         {readable_type ?? type} Name

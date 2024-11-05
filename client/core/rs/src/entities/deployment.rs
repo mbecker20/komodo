@@ -41,6 +41,8 @@ pub struct DeploymentListItemInfo {
   pub status: Option<String>,
   /// The image attached to the deployment.
   pub image: String,
+  /// Whether there is a newer image available at the same tag.
+  pub update_available: bool,
   /// The server that deployment sits on.
   pub server_id: String,
   /// An attached Komodo Build, if it exists.
@@ -86,6 +88,19 @@ pub struct DeploymentConfig {
   #[serde(default)]
   #[builder(default)]
   pub redeploy_on_build: bool,
+
+  /// Whether to poll for any updates to the image.
+  #[serde(default)]
+  #[builder(default)]
+  pub poll_for_updates: bool,
+
+  /// Whether to automatically redeploy when
+  /// newer a image is found. Will implicitly
+  /// enable `poll_for_updates`, you don't need to
+  /// enable both.
+  #[serde(default)]
+  #[builder(default)]
+  pub auto_update: bool,
 
   /// Whether to send ContainerStateChange alerts for this deployment.
   #[serde(default = "default_send_alerts")]
@@ -217,6 +232,8 @@ impl Default for DeploymentConfig {
       image_registry_account: Default::default(),
       skip_secret_interp: Default::default(),
       redeploy_on_build: Default::default(),
+      poll_for_updates: Default::default(),
+      auto_update: Default::default(),
       term_signal_labels: Default::default(),
       termination_signal: Default::default(),
       termination_timeout: default_termination_timeout(),
@@ -417,6 +434,7 @@ pub fn term_signal_labels_from_str(
 #[typeshare]
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct DeploymentActionState {
+  pub pulling: bool,
   pub deploying: bool,
   pub starting: bool,
   pub restarting: bool,

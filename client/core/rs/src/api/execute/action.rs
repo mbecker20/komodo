@@ -27,7 +27,7 @@ pub struct RunAction {
   pub action: String,
 }
 
-/// Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResult]
+/// Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResponse]
 #[typeshare]
 #[derive(
   Debug,

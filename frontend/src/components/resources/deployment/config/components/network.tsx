@@ -39,6 +39,7 @@ export const NetworkModeSelector = ({
   return (
     <ConfigItem
       label="Network Mode"
+      boldLabel
       description="Choose the --network attached to container"
     >
       {customMode ? (

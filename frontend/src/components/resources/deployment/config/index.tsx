@@ -70,7 +70,7 @@ export const DeploymentConfig = ({
                   <ConfigItem
                     label={
                       server_id ? (
-                        <div className="flex gap-3 text-lg">
+                        <div className="flex gap-3 text-lg font-bold">
                           Server:
                           <ResourceLink type="Server" id={server_id} />
                         </div>
@@ -99,7 +99,6 @@ export const DeploymentConfig = ({
                 : "Image",
             description:
               "Either pass a docker image directly, or choose a Build to deploy",
-            boldLabel: false,
             components: {
               image: (value, set) => (
                 <ImageConfig image={value} set={set} disabled={disabled} />
@@ -183,7 +182,6 @@ export const DeploymentConfig = ({
           },
           {
             label: "Environment",
-            boldLabel: false,
             description: "Pass these variables to the container",
             components: {
               environment: (env, set) => (
@@ -205,7 +203,6 @@ export const DeploymentConfig = ({
           {
             label: "Volumes",
             description: "Configure the volume bindings.",
-            boldLabel: false,
             components: {
               volumes: (volumes, set) => (
                 <MonacoEditor
@@ -230,6 +227,17 @@ export const DeploymentConfig = ({
               ),
             },
           },
+          {
+            label: "Auto Update",
+            components: {
+              poll_for_updates: !(update.auto_update ?? config.auto_update) && {
+                description: "Check for updates to the image on an interval.",
+              },
+              auto_update: {
+                description: "Trigger a redeploy if a newer image is found.",
+              },
+            },
+          },
         ],
         advanced: [
           {
@@ -239,6 +247,7 @@ export const DeploymentConfig = ({
               command: (value, set) => (
                 <ConfigItem
                   label="Command"
+                  boldLabel
                   description={
                     <div className="flex flex-row flex-wrap gap-2">
                       <div>Replace the CMD, or extend the ENTRYPOINT.</div>
@@ -267,7 +276,6 @@ export const DeploymentConfig = ({
           {
             label: "Labels",
             description: "Attach --labels to the container.",
-            boldLabel: false,
             components: {
               labels: (labels, set) => (
                 <MonacoEditor
@@ -286,6 +294,7 @@ export const DeploymentConfig = ({
               extra_args: (value, set) => (
                 <ConfigItem
                   label="Extra Args"
+                  boldLabel
                   description={
                     <div className="flex flex-row flex-wrap gap-2">
                       <div>Pass extra arguments to 'docker run'.</div>
@@ -326,7 +335,6 @@ export const DeploymentConfig = ({
           },
           {
             label: "Termination",
-            boldLabel: false,
             description:
               "Configure the signals used to 'docker stop' the container. Options are SIGTERM, SIGQUIT, SIGINT, and SIGHUP.",
             components: {

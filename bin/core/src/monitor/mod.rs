@@ -62,6 +62,7 @@ pub struct CachedDeploymentStatus {
   pub id: String,
   pub state: DeploymentState,
   pub container: Option<ContainerListItem>,
+  pub update_available: bool,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -117,12 +118,13 @@ async fn refresh_server_cache(ts: i64) {
 
 #[instrument(level = "debug")]
 pub async fn update_cache_for_server(server: &Server) {
-  let (deployments, repos, stacks) = tokio::join!(
+  let (deployments, builds, repos, stacks) = tokio::join!(
     find_collect(
       &db_client().deployments,
       doc! { "config.server_id": &server.id },
       None,
     ),
+    find_collect(&db_client().builds, doc! {}, None,),
     find_collect(
       &db_client().repos,
       doc! { "config.server_id": &server.id },
@@ -136,6 +138,7 @@ pub async fn update_cache_for_server(server: &Server) {
   );
 
   let deployments =  deployments.inspect_err(|e| error!("failed to get deployments list from db (update status cache) | server : {} | {e:#}", server.name)).unwrap_or_default();
+  let builds =  builds.inspect_err(|e| error!("failed to get builds list from db (update status cache) | server : {} | {e:#}", server.name)).unwrap_or_default();
   let repos = repos.inspect_err(|e|  error!("failed to get repos list from db (update status cache) | server: {} | {e:#}", server.name)).unwrap_or_default();
   let stacks = stacks.inspect_err(|e|  error!("failed to get stacks list from db (update status cache) | server: {} | {e:#}", server.name)).unwrap_or_default();
 
@@ -211,8 +214,19 @@ pub async fn update_cache_for_server(server: &Server) {
         container.server_id = Some(server.id.clone())
       });
       tokio::join!(
-        resources::update_deployment_cache(deployments, &containers),
-        resources::update_stack_cache(stacks, &containers),
+        resources::update_deployment_cache(
+          server.name.clone(),
+          deployments,
+          &containers,
+          &images,
+          &builds,
+        ),
+        resources::update_stack_cache(
+          server.name.clone(),
+          stacks,
+          &containers,
+          &images
+        ),
       );
       insert_server_status(
         server,

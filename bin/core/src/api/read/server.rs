@@ -539,20 +539,21 @@ impl Resolve<GetResourceMatchingContainer, User> for State {
       for StackServiceNames {
         service_name,
         container_name,
+        ..
       } in stack
         .info
         .deployed_services
         .unwrap_or(stack.info.latest_services)
       {
         let is_match = match compose_container_match_regex(&container_name)
-					.with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
-				{
-					Ok(regex) => regex,
-					Err(e) => {
-						warn!("{e:#}");
-						continue;
-					}
-				}.is_match(&container);
+          .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+        {
+          Ok(regex) => regex,
+          Err(e) => {
+            warn!("{e:#}");
+            continue;
+          }
+        }.is_match(&container);
 
         if is_match {
           return Ok(GetResourceMatchingContainerResponse {

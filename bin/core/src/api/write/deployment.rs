@@ -2,10 +2,14 @@ use anyhow::{anyhow, Context};
 use komodo_client::{
   api::write::*,
   entities::{
-    deployment::{Deployment, DeploymentState},
+    deployment::{
+      Deployment, DeploymentImage, DeploymentState,
+      PartialDeploymentConfig, RestartMode,
+    },
+    docker::container::RestartPolicyNameEnum,
     komodo_timestamp,
     permission::PermissionLevel,
-    server::Server,
+    server::{Server, ServerState},
     to_komodo_name,
     update::Update,
     user::User,
@@ -13,7 +17,7 @@ use komodo_client::{
   },
 };
 use mungos::{by_id::update_one_by_id, mongodb::bson::doc};
-use periphery_client::api;
+use periphery_client::api::{self, container::InspectContainer};
 use resolver_api::Resolve;
 
 use crate::{
@@ -23,7 +27,7 @@ use crate::{
     update::{add_update, make_update},
   },
   resource,
-  state::{action_states, db_client, State},
+  state::{action_states, db_client, server_status_cache, State},
 };
 
 impl Resolve<CreateDeployment, User> for State {
@@ -52,6 +56,97 @@ impl Resolve<CopyDeployment, User> for State {
       )
       .await?;
     resource::create::<Deployment>(&name, config.into(), &user).await
+  }
+}
+
+impl Resolve<CreateDeploymentFromContainer, User> for State {
+  #[instrument(
+    name = "CreateDeploymentFromContainer",
+    skip(self, user)
+  )]
+  async fn resolve(
+    &self,
+    CreateDeploymentFromContainer { name, server }: CreateDeploymentFromContainer,
+    user: User,
+  ) -> anyhow::Result<Deployment> {
+    let server = resource::get_check_permissions::<Server>(
+      &server,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
+    let cache = server_status_cache()
+      .get_or_insert_default(&server.id)
+      .await;
+    if cache.state != ServerState::Ok {
+      return Err(anyhow!(
+        "Cannot inspect container: server is {:?}",
+        cache.state
+      ));
+    }
+    let container = periphery_client(&server)?
+      .request(InspectContainer { name: name.clone() })
+      .await
+      .context("Failed to inspect container")?;
+
+    let mut config = PartialDeploymentConfig {
+      server_id: server.id.into(),
+      ..Default::default()
+    };
+
+    if let Some(container_config) = container.config {
+      config.image = container_config
+        .image
+        .map(|image| DeploymentImage::Image { image });
+      config.command = container_config.cmd.join(" ").into();
+      config.environment = container_config
+        .env
+        .into_iter()
+        .map(|env| format!("  {env}"))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .into();
+      config.labels = container_config
+        .labels
+        .into_iter()
+        .map(|(key, val)| format!("  {key}: {val}"))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .into();
+    }
+    if let Some(host_config) = container.host_config {
+      config.volumes = host_config
+        .binds
+        .into_iter()
+        .map(|bind| format!("  {bind}"))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .into();
+      config.network = host_config.network_mode;
+      config.ports = host_config
+        .port_bindings
+        .into_iter()
+        .filter_map(|(container, mut host)| {
+          let host = host.pop()?.host_port?;
+          Some(format!("  {host}:{}", container.replace("/tcp", "")))
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+        .into();
+      config.restart = host_config.restart_policy.map(|restart| {
+        match restart.name {
+          RestartPolicyNameEnum::Always => RestartMode::Always,
+          RestartPolicyNameEnum::No
+          | RestartPolicyNameEnum::Empty => RestartMode::NoRestart,
+          RestartPolicyNameEnum::UnlessStopped => {
+            RestartMode::UnlessStopped
+          }
+          RestartPolicyNameEnum::OnFailure => RestartMode::OnFailure,
+        }
+      });
+    }
+
+    resource::create::<Deployment>(&name, config, &user).await
   }
 }
 

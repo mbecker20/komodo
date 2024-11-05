@@ -27,7 +27,7 @@ pub struct RunProcedure {
   pub procedure: String,
 }
 
-/// Runs multiple Procedures in parallel that match pattern. Response: [BatchExecutionResult].
+/// Runs multiple Procedures in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Debug,

@@ -44,7 +44,9 @@ pub async fn get_builder_periphery(
   match builder.config {
     BuilderConfig::Url(config) => {
       if config.address.is_empty() {
-        return Err(anyhow!("Builder has not yet configured an address"));
+        return Err(anyhow!(
+          "Builder has not yet configured an address"
+        ));
       }
       let periphery = PeripheryClient::new(
         config.address,

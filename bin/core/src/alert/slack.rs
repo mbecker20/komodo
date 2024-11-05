@@ -182,11 +182,32 @@ pub async fn send_alert(
       ..
     } => {
       let to = fmt_docker_container_state(to);
-      let text = format!("📦 Container *{name}* is now {to}");
+      let text = format!("📦 Container *{name}* is now *{to}*");
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
           "server: {server_name}\nprevious: {from}",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Deployment,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
+    AlertData::DeploymentImageUpdateAvailable {
+      id,
+      name,
+      server_name,
+      server_id: _server_id,
+      image,
+    } => {
+      let text =
+        format!("⬆ Deployment *{name}* has an update available");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server: *{server_name}*\nimage: *{image}*",
         )),
         Block::section(resource_link(
           ResourceTargetVariant::Deployment,
@@ -204,11 +225,32 @@ pub async fn send_alert(
       ..
     } => {
       let to = fmt_stack_state(to);
-      let text = format!("🥞 Stack *{name}* is now {to}");
+      let text = format!("🥞 Stack *{name}* is now *{to}*");
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "server: {server_name}\nprevious: {from}",
+          "server: *{server_name}*\nprevious: *{from}*",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Stack,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
+    AlertData::StackImageUpdateAvailable {
+      id,
+      name,
+      server_name,
+      server_id: _server_id,
+      service,
+      image,
+    } => {
+      let text = format!("⬆ Stack *{name}* has an update available");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server: *{server_name}*\nservice: *{service}*\nimage: *{image}*",
         )),
         Block::section(resource_link(
           ResourceTargetVariant::Stack,
@@ -233,8 +275,9 @@ pub async fn send_alert(
       (text, blocks.into())
     }
     AlertData::ResourceSyncPendingUpdates { id, name } => {
-      let text =
-        format!("{level} | Pending resource sync updates on {name}");
+      let text = format!(
+        "{level} | Pending resource sync updates on *{name}*"
+      );
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
@@ -252,20 +295,21 @@ pub async fn send_alert(
       let blocks = vec![
         Block::header(text.clone()),
         Block::section(format!(
-          "build id: *{id}*\nbuild name: *{name}*\nversion: v{version}",
+          "build name: *{name}*\nversion: *v{version}*",
         )),
-        Block::section(resource_link(ResourceTargetVariant::Build, id))
+        Block::section(resource_link(
+          ResourceTargetVariant::Build,
+          id,
+        )),
       ];
       (text, blocks.into())
     }
     AlertData::RepoBuildFailed { id, name } => {
       let text =
-        format!("{level} | Repo build for {name} has failed");
+        format!("{level} | Repo build for *{name}* has *failed*");
       let blocks = vec![
         Block::header(text.clone()),
-        Block::section(format!(
-          "repo id: *{id}*\nrepo name: *{name}*",
-        )),
+        Block::section(format!("repo name: *{name}*",)),
         Block::section(resource_link(
           ResourceTargetVariant::Repo,
           id,

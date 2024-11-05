@@ -27,7 +27,7 @@ pub type GetGitProviderAccountResponse = GitProviderAccount;
 //
 
 /// List git provider accounts matching optional query.
-/// Response: [ListGitProvidersResponse].
+/// Response: [ListGitProviderAccountsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -64,7 +64,7 @@ pub type GetDockerRegistryAccountResponse = DockerRegistryAccount;
 //
 
 /// List docker registry accounts matching optional query.
-/// Response: [ListDockerRegistrysResponse].
+/// Response: [ListDockerRegistryAccountsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,

@@ -122,7 +122,29 @@ pub struct WriteCommitComposeContents {
 //
 
 /// Rewrites the compose directory, pulls any images, takes down existing containers,
-/// and runs docker compose up.
+/// and runs docker compose up. Response: [ComposePullResponse]
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(ComposePullResponse)]
+pub struct ComposePull {
+  /// The stack to deploy
+  pub stack: Stack,
+  /// Only deploy one service
+  pub service: Option<String>,
+  /// If provided, use it to login in. Otherwise check periphery local registries.
+  pub git_token: Option<String>,
+  /// If provided, use it to login in. Otherwise check periphery local git providers.
+  pub registry_token: Option<String>,
+}
+
+/// Response for [ComposePull]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ComposePullResponse {
+  pub logs: Vec<Log>,
+}
+
+//
+
+/// docker compose up.
 #[derive(Debug, Clone, Serialize, Deserialize, Request)]
 #[response(ComposeUpResponse)]
 pub struct ComposeUp {

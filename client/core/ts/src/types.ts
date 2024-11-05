@@ -319,10 +319,10 @@ export interface BuildConfig {
 	 * Secret arguments.
 	 * 
 	 * These values remain hidden in the final image by using
-	 * docker secret mounts. See [https://docs.docker.com/build/building/secrets].
+	 * docker secret mounts. See <https://docs.docker.com/build/building/secrets>.
 	 * 
 	 * The values can be used in RUN commands:
-	 * ```
+	 * ```sh
 	 * RUN --mount=type=secret,id=SECRET_KEY \
 	 * SECRET_KEY=$(cat /run/secrets/SECRET_KEY) ...
 	 * ```
@@ -434,6 +434,7 @@ export type Execution =
 	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "Deploy", params: Deploy }
 	| { type: "BatchDeploy", params: BatchDeploy }
+	| { type: "PullDeployment", params: PullDeployment }
 	| { type: "StartDeployment", params: StartDeployment }
 	| { type: "RestartDeployment", params: RestartDeployment }
 	| { type: "PauseDeployment", params: PauseDeployment }
@@ -475,6 +476,7 @@ export type Execution =
 	| { type: "BatchDeployStack", params: BatchDeployStack }
 	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
 	| { type: "BatchDeployStackIfChanged", params: BatchDeployStackIfChanged }
+	| { type: "PullStack", params: PullStack }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "PauseStack", params: PauseStack }
@@ -559,7 +561,7 @@ export interface DockerRegistryAccount {
 	 * 
 	 * For docker registry, this can include 'http://...',
 	 * however this is not recommended and won't work unless "insecure registries" are enabled
-	 * on your hosts. See [https://docs.docker.com/reference/cli/dockerd/#insecure-registries].
+	 * on your hosts. See <https://docs.docker.com/reference/cli/dockerd/#insecure-registries>.
 	 */
 	domain: string;
 	/** The account username */
@@ -781,6 +783,13 @@ export interface DeploymentConfig {
 	skip_secret_interp?: boolean;
 	/** Whether to redeploy the deployment whenever the attached build finishes. */
 	redeploy_on_build?: boolean;
+	/** Whether to poll for any updates to the image. */
+	poll_for_updates?: boolean;
+	/**
+	 * Whether to automatically redeploy when a
+	 * newer image is found.
+	 */
+	auto_update?: boolean;
 	/** Whether to send ContainerStateChange alerts for this deployment. */
 	send_alerts: boolean;
 	/** Configure quick links that are displayed in the resource header */
@@ -859,6 +868,8 @@ export interface DeploymentListItemInfo {
 	status?: string;
 	/** The image attached to the deployment. */
 	image: string;
+	/** Whether there is a newer image available at the same tag. */
+	update_available: boolean;
 	/** The server that deployment sits on. */
 	server_id: string;
 	/** An attached Komodo Build, if it exists. */
@@ -977,6 +988,19 @@ export type AlertData =
 	/** The current container state */
 	to: DeploymentState;
 }}
+	/** A Deployment has an image update available */
+	| { type: "DeploymentImageUpdateAvailable", data: {
+	/** The id of the deployment */
+	id: string;
+	/** The name of the deployment */
+	name: string;
+	/** The server id of server that the deployment is on */
+	server_id: string;
+	/** The server name */
+	server_name: string;
+	/** The image with update */
+	image: string;
+}}
 	/** A stack's state has changed unexpectedly. */
 	| { type: "StackStateChange", data: {
 	/** The id of the stack */
@@ -991,6 +1015,21 @@ export type AlertData =
 	from: StackState;
 	/** The current stack state */
 	to: StackState;
+}}
+	/** A Stack has an image update available */
+	| { type: "StackImageUpdateAvailable", data: {
+	/** The id of the stack */
+	id: string;
+	/** The name of the stack */
+	name: string;
+	/** The server id of server that the stack is on */
+	server_id: string;
+	/** The server name */
+	server_name: string;
+	/** The service name to update */
+	service: string;
+	/** The image with update */
+	image: string;
 }}
 	/** An AWS builder failed to terminate. */
 	| { type: "AwsBuilderTerminationFailed", data: {
@@ -1080,6 +1119,7 @@ export interface Log {
 export type GetContainerLogResponse = Log;
 
 export interface DeploymentActionState {
+	pulling: boolean;
 	deploying: boolean;
 	starting: boolean;
 	restarting: boolean;
@@ -1469,6 +1509,7 @@ export type ServerTemplate = Resource<ServerTemplateConfig, undefined>;
 export type GetServerTemplateResponse = ServerTemplate;
 
 export interface StackActionState {
+	pulling: boolean;
 	deploying: boolean;
 	starting: boolean;
 	restarting: boolean;
@@ -1505,6 +1546,13 @@ export interface StackConfig {
 	 * Combine with build_extra_args for custom behaviors.
 	 */
 	run_build?: boolean;
+	/** Whether to poll for any updates to the images. */
+	poll_for_updates?: boolean;
+	/**
+	 * Whether to automatically redeploy when a
+	 * newer images are found.
+	 */
+	auto_update?: boolean;
 	/** Whether to run `docker compose down` before `compose up`. */
 	destroy_before_deploy?: boolean;
 	/** Whether to skip secret interpolation into the stack environment variables. */
@@ -1643,6 +1691,8 @@ export interface StackServiceNames {
 	 * Containers will be matched via regex like `^container_name-?[0-9]*$``
 	 */
 	container_name: string;
+	/** The services image. */
+	image?: string;
 }
 
 export interface StackInfo {
@@ -1822,6 +1872,7 @@ export enum Operation {
 	DeleteStack = "DeleteStack",
 	WriteStackContents = "WriteStackContents",
 	RefreshStackCache = "RefreshStackCache",
+	PullStack = "PullStack",
 	DeployStack = "DeployStack",
 	StartStack = "StartStack",
 	RestartStack = "RestartStack",
@@ -1829,16 +1880,20 @@ export enum Operation {
 	UnpauseStack = "UnpauseStack",
 	StopStack = "StopStack",
 	DestroyStack = "DestroyStack",
+	DeployStackService = "DeployStackService",
+	PullStackService = "PullStackService",
 	StartStackService = "StartStackService",
 	RestartStackService = "RestartStackService",
 	PauseStackService = "PauseStackService",
 	UnpauseStackService = "UnpauseStackService",
 	StopStackService = "StopStackService",
+	DestroyStackService = "DestroyStackService",
 	CreateDeployment = "CreateDeployment",
 	UpdateDeployment = "UpdateDeployment",
 	RenameDeployment = "RenameDeployment",
 	DeleteDeployment = "DeleteDeployment",
 	Deploy = "Deploy",
+	PullDeployment = "PullDeployment",
 	StartDeployment = "StartDeployment",
 	RestartDeployment = "RestartDeployment",
 	PauseDeployment = "PauseDeployment",
@@ -3180,8 +3235,12 @@ export type ListServersResponse = ServerListItem[];
 export interface StackService {
 	/** The service name */
 	service: string;
+	/** The service image */
+	image: string;
 	/** The container */
 	container?: ContainerListItem;
+	/** Whether there is an update available for this services image. */
+	update_available: boolean;
 }
 
 export type ListStackServicesResponse = StackService[];
@@ -3209,6 +3268,14 @@ export enum StackState {
 	Unknown = "unknown",
 }
 
+export interface StackServiceWithUpdate {
+	service: string;
+	/** The service's image */
+	image: string;
+	/** Whether there is a newer image available for this service */
+	update_available: boolean;
+}
+
 export interface StackListItemInfo {
 	/** The server that stack is deployed on. */
 	server_id: string;
@@ -3227,11 +3294,11 @@ export interface StackListItemInfo {
 	/** A string given by docker conveying the status of the stack. */
 	status?: string;
 	/**
-	 * The service names that are part of the stack.
+	 * The services that are part of the stack.
 	 * If deployed, will be `deployed_services`.
 	 * Otherwise, its `latest_services`
 	 */
-	services: string[];
+	services: StackServiceWithUpdate[];
 	/**
 	 * Whether the compose project is missing on the host.
 	 * Ie, it does not show up in `docker compose ls`.
@@ -3535,7 +3602,7 @@ export interface AwsServerTemplateConfig {
 	user_data: string;
 }
 
-/** Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Builds multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchBuildRepo {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3552,7 +3619,7 @@ export interface BatchBuildRepo {
 	pattern: string;
 }
 
-/** Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Clones multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchCloneRepo {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3569,7 +3636,7 @@ export interface BatchCloneRepo {
 	pattern: string;
 }
 
-/** Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDeploy {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3586,7 +3653,7 @@ export interface BatchDeploy {
 	pattern: string;
 }
 
-/** Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDeployStack {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3603,7 +3670,7 @@ export interface BatchDeployStack {
 	pattern: string;
 }
 
-/** Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDeployStackIfChanged {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3620,7 +3687,7 @@ export interface BatchDeployStackIfChanged {
 	pattern: string;
 }
 
-/** Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDestroyDeployment {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3637,7 +3704,7 @@ export interface BatchDestroyDeployment {
 	pattern: string;
 }
 
-/** Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchDestroyStack {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3659,7 +3726,7 @@ export interface BatchExecutionResponseItemErr {
 	error: _Serror;
 }
 
-/** Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Pulls multiple Repos in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchPullRepo {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3676,7 +3743,7 @@ export interface BatchPullRepo {
 	pattern: string;
 }
 
-/** Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResult] */
+/** Runs multiple Actions in parallel that match pattern. Response: [BatchExecutionResponse] */
 export interface BatchRunAction {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3693,7 +3760,7 @@ export interface BatchRunAction {
 	pattern: string;
 }
 
-/** Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchRunBuild {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3710,7 +3777,7 @@ export interface BatchRunBuild {
 	pattern: string;
 }
 
-/** Runs multiple Procedures in parallel that match pattern. Response: [BatchExecutionResult]. */
+/** Runs multiple Procedures in parallel that match pattern. Response: [BatchExecutionResponse]. */
 export interface BatchRunProcedure {
 	/**
 	 * Id or name or wildcard pattern or regex.
@@ -3778,7 +3845,7 @@ export interface CloneArgs {
 	provider: string;
 	/** Use https (vs http). */
 	https: boolean;
-	/** Full repo identifier. <namespace>/<repo_name> */
+	/** Full repo identifier. {namespace}/{repo_name} */
 	repo?: string;
 	/** Git Branch. Default: `main` */
 	branch: string;
@@ -4032,6 +4099,14 @@ export interface CreateDeployment {
 	name: string;
 	/** Optional partial config to initialize the deployment with. */
 	config?: _PartialDeploymentConfig;
+}
+
+/** Create a Deployment from an existing container. Response: [Deployment]. */
+export interface CreateDeploymentFromContainer {
+	/** The name or id of the existing container. */
+	name: string;
+	/** The server id or name on which container exists. */
+	server: string;
 }
 
 /**
@@ -4320,7 +4395,7 @@ export interface DeleteDockerRegistryAccount {
 
 /**
  * **Admin only.** Delete a git provider account.
- * Response: [User].
+ * Response: [DeleteGitProviderAccountResponse].
  */
 export interface DeleteGitProviderAccount {
 	/** The id of the git provider to delete */
@@ -4509,6 +4584,8 @@ export interface Deploy {
 export interface DeployStack {
 	/** Id or name */
 	stack: string;
+	/** Optionally specify a specific service to "compose up" */
+	service?: string;
 	/**
 	 * Override the default termination max time.
 	 * Only used if the stack needs to be taken down first.
@@ -4567,6 +4644,8 @@ export interface DestroyDeployment {
 export interface DestroyStack {
 	/** Id or name */
 	stack: string;
+	/** Optionally specify a specific service to destroy */
+	service?: string;
 	/** Pass `--remove-orphans` */
 	remove_orphans?: boolean;
 	/** Override the default termination max time. */
@@ -4899,7 +4978,7 @@ export interface GetDeploymentLog {
 
 /**
  * Get the deployment container's stats using `docker stats`.
- * Response: [DockerContainerStats].
+ * Response: [GetDeploymentStatsResponse].
  * 
  * Note. This call will hit the underlying server directly for most up to date stats.
  */
@@ -5129,7 +5208,7 @@ export interface GetReposSummaryResponse {
 	unknown: number;
 }
 
-/** Inspect a docker container on the server. Response: [Container]. */
+/** Find the attached resource for a container. Either Deployment or Stack. Response: [GetResourceMatchingContainerResponse]. */
 export interface GetResourceMatchingContainer {
 	/** Id or name */
 	server: string;
@@ -5137,6 +5216,7 @@ export interface GetResourceMatchingContainer {
 	container: string;
 }
 
+/** Response for [GetResourceMatchingContainer]. Resource is either Deployment, Stack, or None. */
 export interface GetResourceMatchingContainerResponse {
 	resource?: ResourceTarget;
 }
@@ -5250,7 +5330,7 @@ export interface GetStackActionState {
 	stack: string;
 }
 
-/** Get a stack service's log. Response: [GetStackContainersResponse]. */
+/** Get a stack service's log. Response: [GetStackServiceLogResponse]. */
 export interface GetStackServiceLog {
 	/** Id or name */
 	stack: string;
@@ -5666,7 +5746,7 @@ export interface ListApiKeysForServiceUser {
 /**
  * Retrieve versions of the build that were built in the past and available for deployment,
  * sorted by most recent first.
- * Response: [GetBuildVersionsResponse].
+ * Response: [ListBuildVersionsResponse].
  */
 export interface ListBuildVersions {
 	/** Id or name */
@@ -5797,7 +5877,7 @@ export interface ListDockerRegistriesFromConfig {
 
 /**
  * List docker registry accounts matching optional query.
- * Response: [ListDockerRegistrysResponse].
+ * Response: [ListDockerRegistryAccountsResponse].
  */
 export interface ListDockerRegistryAccounts {
 	/** Optionally filter by accounts with a specific domain. */
@@ -5884,7 +5964,7 @@ export interface ListFullStacks {
 
 /**
  * List git provider accounts matching optional query.
- * Response: [ListGitProvidersResponse].
+ * Response: [ListGitProviderAccountsResponse].
  */
 export interface ListGitProviderAccounts {
 	/** Optionally filter by accounts with a specific domain. */
@@ -6245,6 +6325,12 @@ export interface PruneVolumes {
 	server: string;
 }
 
+/** Pulls the image for the target deployment. Response: [Update] */
+export interface PullDeployment {
+	/** Name or id */
+	deployment: string;
+}
+
 /**
  * Pulls the target repo. Response: [Update].
  * 
@@ -6256,6 +6342,14 @@ export interface PruneVolumes {
 export interface PullRepo {
 	/** Id or name */
 	repo: string;
+}
+
+/** Pulls images for the target stack. `docker compose pull`. Response: [Update] */
+export interface PullStack {
+	/** Id or name */
+	stack: string;
+	/** Optionally specify a specific service to start */
+	service?: string;
 }
 
 /**
@@ -7248,16 +7342,19 @@ export type ExecuteRequest =
 	| { type: "PruneSystem", params: PruneSystem }
 	| { type: "Deploy", params: Deploy }
 	| { type: "BatchDeploy", params: BatchDeploy }
+	| { type: "PullDeployment", params: PullDeployment }
 	| { type: "StartDeployment", params: StartDeployment }
 	| { type: "RestartDeployment", params: RestartDeployment }
 	| { type: "PauseDeployment", params: PauseDeployment }
 	| { type: "UnpauseDeployment", params: UnpauseDeployment }
 	| { type: "StopDeployment", params: StopDeployment }
 	| { type: "DestroyDeployment", params: DestroyDeployment }
+	| { type: "BatchDestroyDeployment", params: BatchDestroyDeployment }
 	| { type: "DeployStack", params: DeployStack }
 	| { type: "BatchDeployStack", params: BatchDeployStack }
 	| { type: "DeployStackIfChanged", params: DeployStackIfChanged }
 	| { type: "BatchDeployStackIfChanged", params: BatchDeployStackIfChanged }
+	| { type: "PullStack", params: PullStack }
 	| { type: "StartStack", params: StartStack }
 	| { type: "RestartStack", params: RestartStack }
 	| { type: "StopStack", params: StopStack }
@@ -7442,6 +7539,7 @@ export type WriteRequest =
 	| { type: "CreateNetwork", params: CreateNetwork }
 	| { type: "CreateDeployment", params: CreateDeployment }
 	| { type: "CopyDeployment", params: CopyDeployment }
+	| { type: "CreateDeploymentFromContainer", params: CreateDeploymentFromContainer }
 	| { type: "DeleteDeployment", params: DeleteDeployment }
 	| { type: "UpdateDeployment", params: UpdateDeployment }
 	| { type: "RenameDeployment", params: RenameDeployment }

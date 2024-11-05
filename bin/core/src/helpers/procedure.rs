@@ -323,6 +323,22 @@ async fn execute_execution(
         "Batch method BatchDeploy not implemented correctly"
       ));
     }
+    Execution::PullDeployment(req) => {
+      let req = ExecuteRequest::PullDeployment(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PullDeployment(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("Failed at PullDeployment"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::StartDeployment(req) => {
       let req = ExecuteRequest::StartDeployment(req);
       let update = init_execution_update(&req, &user).await?;
@@ -908,6 +924,22 @@ async fn execute_execution(
         "Batch method BatchDeployStackIfChanged not implemented correctly"
       ));
     }
+    Execution::PullStack(req) => {
+      let req = ExecuteRequest::PullStack(req);
+      let update = init_execution_update(&req, &user).await?;
+      let ExecuteRequest::PullStack(req) = req else {
+        unreachable!()
+      };
+      let update_id = update.id.clone();
+      handle_resolve_result(
+        State
+          .resolve(req, (user, update))
+          .await
+          .context("Failed at PullStack"),
+        &update_id,
+      )
+      .await?
+    }
     Execution::StartStack(req) => {
       let req = ExecuteRequest::StartStack(req);
       let update = init_execution_update(&req, &user).await?;
@@ -1159,6 +1191,7 @@ impl ExtendBatch for BatchDeployStack {
   fn single_execution(stack: String) -> Execution {
     Execution::DeployStack(DeployStack {
       stack,
+      service: None,
       stop_time: None,
     })
   }
@@ -1179,6 +1212,7 @@ impl ExtendBatch for BatchDestroyStack {
   fn single_execution(stack: String) -> Execution {
     Execution::DestroyStack(DestroyStack {
       stack,
+      service: None,
       remove_orphans: false,
       stop_time: None,
     })

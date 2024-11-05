@@ -38,6 +38,10 @@ mod server_template;
 mod stack;
 mod sync;
 
+pub use {
+  deployment::pull_deployment_inner, stack::pull_stack_inner,
+};
+
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
@@ -73,18 +77,21 @@ pub enum ExecuteRequest {
   // ==== DEPLOYMENT ====
   Deploy(Deploy),
   BatchDeploy(BatchDeploy),
+  PullDeployment(PullDeployment),
   StartDeployment(StartDeployment),
   RestartDeployment(RestartDeployment),
   PauseDeployment(PauseDeployment),
   UnpauseDeployment(UnpauseDeployment),
   StopDeployment(StopDeployment),
   DestroyDeployment(DestroyDeployment),
+  BatchDestroyDeployment(BatchDestroyDeployment),
 
   // ==== STACK ====
   DeployStack(DeployStack),
   BatchDeployStack(BatchDeployStack),
   DeployStackIfChanged(DeployStackIfChanged),
   BatchDeployStackIfChanged(BatchDeployStackIfChanged),
+  PullStack(PullStack),
   StartStack(StartStack),
   RestartStack(RestartStack),
   StopStack(StopStack),
@@ -140,13 +147,13 @@ async fn handler(
   Ok((TypedHeader(ContentType::json()), res))
 }
 
-enum ExecutionResult {
+pub enum ExecutionResult {
   Single(Update),
   /// The batch contents will be pre serialized here
   Batch(String),
 }
 
-async fn inner_handler(
+pub async fn inner_handler(
   request: ExecuteRequest,
   user: User,
 ) -> anyhow::Result<ExecutionResult> {
@@ -254,9 +261,9 @@ async fn batch_execute<E: BatchExecute>(
   user: &User,
 ) -> anyhow::Result<BatchExecutionResponse> {
   let resources = list_full_for_user_using_pattern::<E::Resource>(
-    &pattern,
+    pattern,
     Default::default(),
-    &user,
+    user,
     &[],
   )
   .await?;

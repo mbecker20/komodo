@@ -1,4 +1,6 @@
-use async_timing_util::{wait_until_timelength, Timelength};
+use std::time::Duration;
+
+use async_timing_util::{get_timelength_in_ms, Timelength};
 use komodo_client::{
   api::write::{
     RefreshBuildCache, RefreshRepoCache, RefreshResourceSyncPending,
@@ -10,6 +12,7 @@ use mungos::find::find_collect;
 use resolver_api::Resolve;
 
 use crate::{
+  api::execute::pull_deployment_inner,
   config::core_config,
   state::{db_client, State},
 };
@@ -20,9 +23,11 @@ pub fn spawn_resource_refresh_loop() {
     .try_into()
     .expect("Invalid resource poll interval");
   tokio::spawn(async move {
-    refresh_all().await;
+    let mut interval = tokio::time::interval(Duration::from_millis(
+      get_timelength_in_ms(interval) as u64,
+    ));
     loop {
-      wait_until_timelength(interval, 3000).await;
+      interval.tick().await;
       refresh_all().await;
     }
   });
@@ -30,6 +35,7 @@ pub fn spawn_resource_refresh_loop() {
 
 async fn refresh_all() {
   refresh_stacks().await;
+  refresh_deployments().await;
   refresh_builds().await;
   refresh_repos().await;
   refresh_syncs().await;
@@ -57,6 +63,43 @@ async fn refresh_stacks() {
         warn!("Failed to refresh Stack cache in refresh task | Stack: {} | {e:#}", stack.name)
       })
       .ok();
+  }
+}
+
+async fn refresh_deployments() {
+  let servers = find_collect(&db_client().servers, None, None)
+    .await
+    .inspect_err(|e| {
+      warn!(
+        "Failed to get Servers from database in refresh task | {e:#}"
+      )
+    })
+    .unwrap_or_default();
+  let Ok(deployments) = find_collect(&db_client().deployments, None, None)
+    .await
+    .inspect_err(|e| {
+      warn!(
+        "Failed to get Deployments from database in refresh task | {e:#}"
+      )
+    })
+  else {
+    return;
+  };
+  for deployment in deployments {
+    if deployment.config.poll_for_updates
+      || deployment.config.auto_update
+    {
+      if let Some(server) =
+        servers.iter().find(|s| s.id == deployment.config.server_id)
+      {
+        let name = deployment.name.clone();
+        if let Err(e) =
+          pull_deployment_inner(deployment, server).await
+        {
+          warn!("Failed to pull latest image for Deployment {name} | {e:#}");
+        }
+      }
+    }
   }
 }
 

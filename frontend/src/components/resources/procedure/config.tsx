@@ -776,6 +776,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
       />
     ),
   },
+  PullDeployment: {
+    params: { deployment: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Deployment"
+        selected={params.deployment}
+        onSelect={(deployment) => setParams({ deployment })}
+        disabled={disabled}
+      />
+    ),
+  },
   StartDeployment: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => (
@@ -910,6 +921,17 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
         disabled={disabled}
         language="string_list"
         fullWidth
+      />
+    ),
+  },
+  PullStack: {
+    params: { stack: "" },
+    Component: ({ params, setParams, disabled }) => (
+      <ResourceSelector
+        type="Stack"
+        selected={params.stack}
+        onSelect={(id) => setParams({ stack: id })}
+        disabled={disabled}
       />
     ),
   },

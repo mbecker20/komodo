@@ -1,6 +1,7 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::OnceLock};
 
 use anyhow::{anyhow, Context};
+use cache::TimeoutCache;
 use formatting::format_serror;
 use komodo_client::{
   api::execute::*,
@@ -9,7 +10,7 @@ use komodo_client::{
     deployment::{
       extract_registry_domain, Deployment, DeploymentImage,
     },
-    get_image_name,
+    get_image_name, komodo_timestamp, optional_string,
     permission::PermissionLevel,
     server::Server,
     update::{Log, Update},
@@ -73,11 +74,15 @@ async fn setup_deployment_execution(
   .await?;
 
   if deployment.config.server_id.is_empty() {
-    return Err(anyhow!("deployment has no server configured"));
+    return Err(anyhow!("Deployment has no Server configured"));
   }
 
   let server =
     resource::get::<Server>(&deployment.config.server_id).await?;
+
+  if !server.config.enabled {
+    return Err(anyhow!("Attached Server is not enabled"));
+  }
 
   Ok((deployment, server))
 }
@@ -110,13 +115,6 @@ impl Resolve<Deploy, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let periphery = periphery_client(&server)?;
-
-    periphery
-      .health_check()
-      .await
-      .context("Failed server health check, stopping run.")?;
-
     // This block resolves the attached Build to an actual versioned image
     let (version, registry_token) = match &deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
@@ -128,12 +126,7 @@ impl Resolve<Deploy, (User, Update)> for State {
         } else {
           *version
         };
-        // Remove ending patch if it is 0, this means use latest patch.
-        let version_str = if version.patch == 0 {
-          format!("{}.{}", version.major, version.minor)
-        } else {
-          version.to_string()
-        };
+        let version_str = version.to_string();
         // Potentially add the build image_tag postfix
         let version_str = if build.config.image_tag.is_empty() {
           version_str
@@ -241,7 +234,7 @@ impl Resolve<Deploy, (User, Update)> for State {
     update.version = version;
     update_update(update.clone()).await?;
 
-    match periphery
+    match periphery_client(&server)?
       .request(api::container::Deploy {
         deployment,
         stop_signal,
@@ -254,16 +247,163 @@ impl Resolve<Deploy, (User, Update)> for State {
       Ok(log) => update.logs.push(log),
       Err(e) => {
         update.push_error_log(
-          "deploy container",
-          format_serror(
-            &e.context("failed to deploy container").into(),
-          ),
+          "Deploy Container",
+          format_serror(&e.into()),
         );
       }
     };
 
     update_cache_for_server(&server).await;
 
+    update.finalize();
+    update_update(update.clone()).await?;
+
+    Ok(update)
+  }
+}
+
+/// Wait this long after a pull to allow another pull through
+const PULL_TIMEOUT: i64 = 5_000;
+type ServerId = String;
+type Image = String;
+type PullCache = TimeoutCache<(ServerId, Image), Log>;
+
+fn pull_cache() -> &'static PullCache {
+  static PULL_CACHE: OnceLock<PullCache> = OnceLock::new();
+  PULL_CACHE.get_or_init(Default::default)
+}
+
+pub async fn pull_deployment_inner(
+  deployment: Deployment,
+  server: &Server,
+) -> anyhow::Result<Log> {
+  let (image, account, token) = match deployment.config.image {
+    DeploymentImage::Build { build_id, version } => {
+      let build = resource::get::<Build>(&build_id).await?;
+      let image_name = get_image_name(&build)
+        .context("failed to create image name")?;
+      let version = if version.is_none() {
+        build.config.version.to_string()
+      } else {
+        version.to_string()
+      };
+      // Potentially add the build image_tag postfix
+      let version = if build.config.image_tag.is_empty() {
+        version
+      } else {
+        format!("{version}-{}", build.config.image_tag)
+      };
+      // replace image with corresponding build image.
+      let image = format!("{image_name}:{version}");
+      if build.config.image_registry.domain.is_empty() {
+        (image, None, None)
+      } else {
+        let ImageRegistryConfig {
+          domain, account, ..
+        } = build.config.image_registry;
+        let account =
+          if deployment.config.image_registry_account.is_empty() {
+            account
+          } else {
+            deployment.config.image_registry_account
+          };
+        let token = if !account.is_empty() {
+          registry_token(&domain, &account).await.with_context(
+              || format!("Failed to get git token in call to db. Stopping run. | {domain} | {account}"),
+            )?
+        } else {
+          None
+        };
+        (image, optional_string(&account), token)
+      }
+    }
+    DeploymentImage::Image { image } => {
+      let domain = extract_registry_domain(&image)?;
+      let token = if !deployment
+        .config
+        .image_registry_account
+        .is_empty()
+      {
+        registry_token(&domain, &deployment.config.image_registry_account).await.with_context(
+            || format!("Failed to get git token in call to db. Stopping run. | {domain} | {}", deployment.config.image_registry_account),
+          )?
+      } else {
+        None
+      };
+      (
+        image,
+        optional_string(&deployment.config.image_registry_account),
+        token,
+      )
+    }
+  };
+
+  // Acquire the pull lock for this image on the server
+  let lock = pull_cache()
+    .get_lock((server.id.clone(), image.clone()))
+    .await;
+
+  // Lock the path lock, prevents simultaneous pulls by
+  // ensuring simultaneous pulls will wait for first to finish
+  // and checking cached results.
+  let mut locked = lock.lock().await;
+
+  // Early return from cache if lasted pulled with PULL_TIMEOUT
+  if locked.last_ts + PULL_TIMEOUT > komodo_timestamp() {
+    return locked.clone_res();
+  }
+
+  let res = async {
+    let log = match periphery_client(server)?
+      .request(api::image::PullImage {
+        name: image,
+        account,
+        token,
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => Log::error("Pull image", format_serror(&e.into())),
+    };
+
+    update_cache_for_server(server).await;
+    anyhow::Ok(log)
+  }
+  .await;
+
+  // Set the cache with results. Any other calls waiting on the lock will
+  // then immediately also use this same result.
+  locked.set(&res, komodo_timestamp());
+
+  res
+}
+
+impl Resolve<PullDeployment, (User, Update)> for State {
+  async fn resolve(
+    &self,
+    PullDeployment { deployment }: PullDeployment,
+    (user, mut update): (User, Update),
+  ) -> anyhow::Result<Update> {
+    let (deployment, server) =
+      setup_deployment_execution(&deployment, &user).await?;
+
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.pulling = true)?;
+
+    // Send update after setting action state, this way frontend gets correct state.
+    update_update(update.clone()).await?;
+
+    let log = pull_deployment_inner(deployment, &server).await?;
+
+    update.logs.push(log);
     update.finalize();
     update_update(update.clone()).await?;
 
@@ -295,9 +435,7 @@ impl Resolve<StartDeployment, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let periphery = periphery_client(&server)?;
-
-    let log = match periphery
+    let log = match periphery_client(&server)?
       .request(api::container::StartContainer {
         name: deployment.name,
       })
@@ -343,9 +481,7 @@ impl Resolve<RestartDeployment, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let periphery = periphery_client(&server)?;
-
-    let log = match periphery
+    let log = match periphery_client(&server)?
       .request(api::container::RestartContainer {
         name: deployment.name,
       })
@@ -393,9 +529,7 @@ impl Resolve<PauseDeployment, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let periphery = periphery_client(&server)?;
-
-    let log = match periphery
+    let log = match periphery_client(&server)?
       .request(api::container::PauseContainer {
         name: deployment.name,
       })
@@ -441,9 +575,7 @@ impl Resolve<UnpauseDeployment, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let periphery = periphery_client(&server)?;
-
-    let log = match periphery
+    let log = match periphery_client(&server)?
       .request(api::container::UnpauseContainer {
         name: deployment.name,
       })
@@ -495,9 +627,7 @@ impl Resolve<StopDeployment, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let periphery = periphery_client(&server)?;
-
-    let log = match periphery
+    let log = match periphery_client(&server)?
       .request(api::container::StopContainer {
         name: deployment.name,
         signal: signal
@@ -522,6 +652,29 @@ impl Resolve<StopDeployment, (User, Update)> for State {
     update_update(update.clone()).await?;
 
     Ok(update)
+  }
+}
+
+impl super::BatchExecute for BatchDestroyDeployment {
+  type Resource = Deployment;
+  fn single_request(deployment: String) -> ExecuteRequest {
+    ExecuteRequest::DestroyDeployment(DestroyDeployment {
+      deployment,
+      signal: None,
+      time: None,
+    })
+  }
+}
+
+impl Resolve<BatchDestroyDeployment, (User, Update)> for State {
+  #[instrument(name = "BatchDestroyDeployment", skip(self, user), fields(user_id = user.id))]
+  async fn resolve(
+    &self,
+    BatchDestroyDeployment { pattern }: BatchDestroyDeployment,
+    (user, _): (User, Update),
+  ) -> anyhow::Result<BatchExecutionResponse> {
+    super::batch_execute::<BatchDestroyDeployment>(&pattern, &user)
+      .await
   }
 }
 
@@ -553,9 +706,7 @@ impl Resolve<DestroyDeployment, (User, Update)> for State {
     // Send update after setting action state, this way frontend gets correct state.
     update_update(update.clone()).await?;
 
-    let periphery = periphery_client(&server)?;
-
-    let log = match periphery
+    let log = match periphery_client(&server)?
       .request(api::container::RemoveContainer {
         name: deployment.name,
         signal: signal

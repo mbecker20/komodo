@@ -10,6 +10,7 @@ import {
   DestroyDeployment,
   RestartDeployment,
   PauseUnpauseDeployment,
+  PullDeployment,
 } from "./actions";
 import { DeploymentLogs } from "./log";
 import {
@@ -22,8 +23,14 @@ import { RunBuild } from "../build/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
 import { DeploymentConfig } from "./config";
 import { DashboardPieChart } from "@pages/home/dashboard";
-import { ResourcePageHeader, StatusBadge } from "@components/util";
+import {
+  DockerResourceLink,
+  ResourcePageHeader,
+  StatusBadge,
+} from "@components/util";
 import { RenameResource } from "@components/config/util";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
+import { Card } from "@ui/card";
 
 // const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
@@ -178,17 +185,56 @@ export const DeploymentComponents: RequiredResourceComponents = {
     );
   },
 
-  Status: {},
+  Status: {
+    UpdateAvailable: ({ id }) => {
+      const info = useDeployment(id)?.info;
+      const state = info?.state ?? Types.DeploymentState.Unknown;
+      if (
+        !info ||
+        !info?.update_available ||
+        [
+          Types.DeploymentState.NotDeployed,
+          Types.DeploymentState.Unknown,
+        ].includes(state)
+      ) {
+        return null;
+      }
+      return (
+        <HoverCard openDelay={200}>
+          <HoverCardTrigger asChild>
+            <Card className="px-3 py-2 border-blue-400 hover:border-blue-500 transition-colors cursor-pointer">
+              <div className="text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                Update Available
+              </div>
+            </Card>
+          </HoverCardTrigger>
+          <HoverCardContent align="start" className="w-fit text-sm">
+            There is a newer image available
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+  },
 
   Info: {
     Image: ({ id }) => {
+      const config = useFullDeployment(id)?.config;
       const info = useDeployment(id)?.info;
       return info?.build_id ? (
         <ResourceLink type="Build" id={info.build_id} />
       ) : (
         <div className="flex gap-2 items-center text-sm">
           <HardDrive className="w-4 h-4" />
-          <div>{info?.image || "N/A"}</div>
+          <div>
+            {info?.image.startsWith("sha256:")
+              ? (
+                  config?.image as Extract<
+                    Types.DeploymentImage,
+                    { type: "Image" }
+                  >
+                )?.params.image
+              : info?.image || "N/A"}
+          </div>
         </div>
       );
     },
@@ -204,6 +250,24 @@ export const DeploymentComponents: RequiredResourceComponents = {
         </div>
       );
     },
+    Container: ({ id }) => {
+      const deployment = useDeployment(id);
+      if (
+        !deployment ||
+        [
+          Types.DeploymentState.Unknown,
+          Types.DeploymentState.NotDeployed,
+        ].includes(deployment.info.state)
+      )
+        return null;
+      return (
+        <DockerResourceLink
+          type="container"
+          name={deployment.name}
+          server_id={deployment.info.server_id}
+        />
+      );
+    },
   },
 
   Actions: {
@@ -213,6 +277,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       return <RunBuild id={build_id} />;
     },
     DeployDeployment,
+    PullDeployment,
     RestartDeployment,
     PauseUnpauseDeployment,
     StartStopDeployment,

@@ -1,10 +1,24 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
-import { Pause, Play, RefreshCcw, Rocket, Square, Trash } from "lucide-react";
+import {
+  Download,
+  Pause,
+  Play,
+  RefreshCcw,
+  Rocket,
+  Square,
+  Trash,
+} from "lucide-react";
 import { useStack } from ".";
 import { Types } from "komodo_client";
 
-export const DeployStack = ({ id }: { id: string }) => {
+export const DeployStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: deploy, isPending } = useExecute("DeployStack");
@@ -13,27 +27,34 @@ export const DeployStack = ({ id }: { id: string }) => {
     { stack: id },
     { refetchInterval: 5000 }
   ).data?.deploying;
+  const services = useRead("ListStackServices", { stack: id }).data;
+  const container_state =
+    (service
+      ? services?.find((s) => s.service === service)?.container?.state
+      : undefined) ?? Types.ContainerStateStatusEnum.Empty;
 
   if (!stack || state === Types.StackState.Unknown) {
     return null;
   }
   const deployed =
     state !== undefined &&
-    [
-      Types.StackState.Running,
-      Types.StackState.Paused,
-      Types.StackState.Stopped,
-      Types.StackState.Restarting,
-      Types.StackState.Unhealthy,
-    ].includes(state);
+    (service !== undefined
+      ? container_state !== Types.ContainerStateStatusEnum.Empty
+      : [
+          Types.StackState.Running,
+          Types.StackState.Paused,
+          Types.StackState.Stopped,
+          Types.StackState.Restarting,
+          Types.StackState.Unhealthy,
+        ].includes(state));
 
   if (deployed) {
     return (
       <ActionWithDialog
-        name={stack.name}
+        name={`${stack?.name}${service ? ` - ${service}` : ""}`}
         title="Redeploy"
         icon={<Rocket className="h-4 w-4" />}
-        onClick={() => deploy({ stack: id })}
+        onClick={() => deploy({ stack: id, service })}
         disabled={isPending}
         loading={isPending || deploying}
       />
@@ -44,14 +65,20 @@ export const DeployStack = ({ id }: { id: string }) => {
     <ConfirmButton
       title="Deploy"
       icon={<Rocket className="w-4 h-4" />}
-      onClick={() => deploy({ stack: id })}
+      onClick={() => deploy({ stack: id, service })}
       disabled={isPending}
       loading={isPending || deploying}
     />
   );
 };
 
-export const DestroyStack = ({ id }: { id: string }) => {
+export const DestroyStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
   const stack = useStack(id);
   const state = stack?.info.state;
   const { mutate: destroy, isPending } = useExecute("DestroyStack");
@@ -60,27 +87,60 @@ export const DestroyStack = ({ id }: { id: string }) => {
     { stack: id },
     { refetchInterval: 5000 }
   ).data?.destroying;
+  const services = useRead("ListStackServices", { stack: id }).data;
+  const container_state =
+    (service
+      ? services?.find((s) => s.service === service)?.container?.state
+      : undefined) ?? Types.ContainerStateStatusEnum.Empty;
 
   if (
-    !stack ||
-    state === undefined ||
-    [Types.StackState.Unknown, Types.StackState.Down].includes(state)
+    !stack || service !== undefined
+      ? container_state === Types.ContainerStateStatusEnum.Empty
+      : state === undefined ||
+        [Types.StackState.Unknown, Types.StackState.Down].includes(state!)
   ) {
-    return null;
-  }
-
-  if (!stack) {
     return null;
   }
 
   return (
     <ActionWithDialog
-      name={stack.name}
+      name={`${stack?.name}${service ? ` - ${service}` : ""}`}
       title="Destroy"
       icon={<Trash className="h-4 w-4" />}
-      onClick={() => destroy({ stack: id })}
+      onClick={() => destroy({ stack: id, service })}
       disabled={isPending}
       loading={isPending || destroying}
+    />
+  );
+};
+
+export const PullStack = ({
+  id,
+  service,
+}: {
+  id: string;
+  service?: string;
+}) => {
+  const stack = useStack(id);
+  const { mutate: pull, isPending: pullPending } = useExecute("PullStack");
+  const action_state = useRead(
+    "GetStackActionState",
+    { stack: id },
+    { refetchInterval: 5000 }
+  ).data;
+
+  if (!stack || (stack?.info.missing_files.length ?? 0) > 0) {
+    return null;
+  }
+
+  return (
+    <ActionWithDialog
+      name={`${stack?.name}${service ? ` - ${service}` : ""}`}
+      title={`Pull Image${service ? "" : "s"}`}
+      icon={<Download className="h-4 w-4" />}
+      onClick={() => pull({ stack: id, service })}
+      disabled={pullPending}
+      loading={pullPending || action_state?.pulling}
     />
   );
 };
@@ -103,9 +163,9 @@ export const RestartStack = ({
   ).data;
   const services = useRead("ListStackServices", { stack: id }).data;
   const container_state =
-    (service &&
-      services?.find((s) => s.service === service)?.container?.state) ??
-    Types.ContainerStateStatusEnum.Empty;
+    (service
+      ? services?.find((s) => s.service === service)?.container?.state
+      : undefined) ?? Types.ContainerStateStatusEnum.Empty;
 
   if (
     !stack ||
@@ -147,9 +207,9 @@ export const StartStopStack = ({
   ).data;
   const services = useRead("ListStackServices", { stack: id }).data;
   const container_state =
-    (service &&
-      services?.find((s) => s.service === service)?.container?.state) ??
-    Types.DeploymentState.Unknown;
+    (service
+      ? services?.find((s) => s.service === service)?.container?.state
+      : undefined) ?? Types.ContainerStateStatusEnum.Empty;
 
   if (
     !stack ||
@@ -213,9 +273,9 @@ export const PauseUnpauseStack = ({
   ).data;
   const services = useRead("ListStackServices", { stack: id }).data;
   const container_state =
-    (service &&
-      services?.find((s) => s.service === service)?.container?.state) ??
-    Types.DeploymentState.Unknown;
+    (service
+      ? services?.find((s) => s.service === service)?.container?.state
+      : undefined) ?? Types.ContainerStateStatusEnum.Empty;
 
   if (!stack || stack?.info.project_missing) {
     return null;

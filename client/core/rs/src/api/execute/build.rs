@@ -36,7 +36,7 @@ pub struct RunBuild {
 
 //
 
-/// Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResult].
+/// Runs multiple builds in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Debug,

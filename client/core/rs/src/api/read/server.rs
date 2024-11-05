@@ -373,7 +373,7 @@ pub type SearchContainerLogResponse = Log;
 
 //
 
-/// Inspect a docker container on the server. Response: [Container].
+/// Find the attached resource for a container. Either Deployment or Stack. Response: [GetResourceMatchingContainerResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -388,6 +388,7 @@ pub struct GetResourceMatchingContainer {
   pub container: String,
 }
 
+/// Response for [GetResourceMatchingContainer]. Resource is either Deployment, Stack, or None.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetResourceMatchingContainerResponse {

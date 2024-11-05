@@ -9,7 +9,7 @@ use komodo_client::{
     stack::{
       PartialStackConfig, Stack, StackConfig, StackConfigDiff,
       StackInfo, StackListItem, StackListItemInfo,
-      StackQuerySpecifics, StackState,
+      StackQuerySpecifics, StackServiceWithUpdate, StackState,
     },
     update::Update,
     user::{stack_user, User},
@@ -56,21 +56,21 @@ impl super::KomodoResource for Stack {
     let state =
       status.as_ref().map(|s| s.curr.state).unwrap_or_default();
     let project_name = stack.project_name(false);
-    let services = match (
-      state,
-      stack.info.deployed_services,
-      stack.info.latest_services,
-    ) {
-      // Always use latest if its down.
-      (StackState::Down, _, latest_services) => latest_services,
-      // Also use latest if deployed services is empty.
-      (_, Some(deployed_services), _) => deployed_services,
-      // Otherwise use deployed services
-      (_, _, latest_services) => latest_services,
-    }
-    .into_iter()
-    .map(|service| service.service_name)
-    .collect();
+    let services = status
+      .as_ref()
+      .map(|s| {
+        s.curr
+          .services
+          .iter()
+          .map(|service| StackServiceWithUpdate {
+            service: service.service.clone(),
+            image: service.image.clone(),
+            update_available: service.update_available,
+          })
+          .collect::<Vec<_>>()
+      })
+      .unwrap_or_default();
+
     // This is only true if it is KNOWN to be true. so other cases are false.
     let (project_missing, status) =
       if stack.config.server_id.is_empty()
@@ -98,6 +98,7 @@ impl super::KomodoResource for Stack {
       } else {
         (false, None)
       };
+
     StackListItem {
       id: stack.id,
       name: stack.name,

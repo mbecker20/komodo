@@ -5,6 +5,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -235,6 +236,7 @@ export const NewLayout = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>New {entityType}</DialogTitle>
+          <DialogDescription>Enter a unique name for the new {entityType}.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-8">{children}</div>
         <DialogFooter>

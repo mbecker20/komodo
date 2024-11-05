@@ -237,6 +237,17 @@ export const StackConfig = ({
       },
     },
     {
+      label: "Auto Update",
+      components: {
+        poll_for_updates: !(update.auto_update ?? config.auto_update) && {
+          description: "Check for updates to the image on an interval.",
+        },
+        auto_update: {
+          description: "Trigger a redeploy if a newer image is found.",
+        },
+      },
+    },
+    {
       label: "Links",
       labelHidden: true,
       components: {

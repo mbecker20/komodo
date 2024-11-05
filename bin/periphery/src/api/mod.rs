@@ -82,6 +82,7 @@ pub enum PeripheryRequest {
   // Compose (Write)
   WriteComposeContentsToHost(WriteComposeContentsToHost),
   WriteCommitComposeContents(WriteCommitComposeContents),
+  ComposePull(ComposePull),
   ComposeUp(ComposeUp),
   ComposeExecution(ComposeExecution),
 
@@ -121,6 +122,7 @@ pub enum PeripheryRequest {
   ImageHistory(ImageHistory),
 
   // Image (Write)
+  PullImage(PullImage),
   DeleteImage(DeleteImage),
   PruneImages(PruneImages),
 

@@ -5,10 +5,10 @@ use komodo_client::entities::{CloneArgs, EnvironmentVar};
 use crate::GitRes;
 
 /// This is a mix of clone / pull.
-/// 	- If the folder doesn't exist, it will clone the repo.
-/// 	- If it does, it will ensure the remote is correct,
-/// 		ensure the correct branch is (force) checked out,
-/// 		force pull the repo, and switch to specified hash if provided.
+///   - If the folder doesn't exist, it will clone the repo.
+///   - If it does, it will ensure the remote is correct,
+///     ensure the correct branch is (force) checked out,
+///     force pull the repo, and switch to specified hash if provided.
 #[tracing::instrument(
   level = "debug",
   skip(

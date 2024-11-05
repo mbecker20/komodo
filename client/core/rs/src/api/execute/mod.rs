@@ -73,6 +73,7 @@ pub enum Execution {
   // DEPLOYMENT
   Deploy(Deploy),
   BatchDeploy(BatchDeploy),
+  PullDeployment(PullDeployment),
   StartDeployment(StartDeployment),
   RestartDeployment(RestartDeployment),
   PauseDeployment(PauseDeployment),
@@ -124,6 +125,7 @@ pub enum Execution {
   BatchDeployStack(BatchDeployStack),
   DeployStackIfChanged(DeployStackIfChanged),
   BatchDeployStackIfChanged(BatchDeployStackIfChanged),
+  PullStack(PullStack),
   StartStack(StartStack),
   RestartStack(RestartStack),
   PauseStack(PauseStack),

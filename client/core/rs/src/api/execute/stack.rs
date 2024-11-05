@@ -25,6 +25,8 @@ use super::{BatchExecutionResponse, KomodoExecuteRequest};
 pub struct DeployStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service to "compose up"
+  pub service: Option<String>,
   /// Override the default termination max time.
   /// Only used if the stack needs to be taken down first.
   pub stop_time: Option<i32>,
@@ -32,7 +34,7 @@ pub struct DeployStack {
 
 //
 
-/// Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult].
+/// Deploys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,
@@ -88,7 +90,7 @@ pub struct DeployStackIfChanged {
 
 //
 
-/// Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResult].
+/// Deploys multiple Stacks if changed in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,
@@ -114,6 +116,29 @@ pub struct BatchDeployStackIfChanged {
   /// extra-stack-1, extra-stack-2
   /// ```
   pub pattern: String,
+}
+
+//
+
+/// Pulls images for the target stack. `docker compose pull`. Response: [Update]
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  PartialEq,
+  Serialize,
+  Deserialize,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PullStack {
+  /// Id or name
+  pub stack: String,
+  /// Optionally specify a specific service to start
+  pub service: Option<String>,
 }
 
 //
@@ -254,6 +279,8 @@ pub struct StopStack {
 pub struct DestroyStack {
   /// Id or name
   pub stack: String,
+  /// Optionally specify a specific service to destroy
+  pub service: Option<String>,
   /// Pass `--remove-orphans`
   #[serde(default)]
   pub remove_orphans: bool,
@@ -263,7 +290,7 @@ pub struct DestroyStack {
 
 //
 
-/// Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResult].
+/// Destroys multiple Stacks in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,

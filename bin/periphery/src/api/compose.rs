@@ -1,25 +1,22 @@
-use std::path::PathBuf;
+use std::{fmt::Write, path::PathBuf};
 
 use anyhow::{anyhow, Context};
 use command::run_komodo_command;
 use formatting::format_serror;
 use git::{write_commit_file, GitRes};
 use komodo_client::entities::{
-  stack::ComposeProject, to_komodo_name, update::Log, CloneArgs,
-  FileContents,
+  stack::ComposeProject, to_komodo_name, update::Log, FileContents,
 };
-use periphery_client::api::{
-  compose::*,
-  git::{PullOrCloneRepo, RepoActionResponse},
-};
+use periphery_client::api::{compose::*, git::RepoActionResponse};
 use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 use tokio::fs;
 
 use crate::{
-  compose::{compose_up, docker_compose},
+  compose::{compose_up, docker_compose, write_stack, WriteStackRes},
   config::periphery_config,
-  helpers::log_grep,
+  docker::docker_login,
+  helpers::{log_grep, pull_or_clone_stack},
   State,
 };
 
@@ -249,59 +246,7 @@ impl Resolve<WriteCommitComposeContents> for State {
     }: WriteCommitComposeContents,
     _: (),
   ) -> anyhow::Result<RepoActionResponse> {
-    if stack.config.files_on_host {
-      return Err(anyhow!(
-        "Wrong method called for files on host stack"
-      ));
-    }
-    if stack.config.repo.is_empty() {
-      return Err(anyhow!("Repo is not configured"));
-    }
-
-    let root = periphery_config()
-      .stack_dir
-      .join(to_komodo_name(&stack.name));
-
-    let mut args: CloneArgs = (&stack).into();
-    // Set the clone destination to the one created for this run
-    args.destination = Some(root.display().to_string());
-
-    let git_token = match git_token {
-      Some(token) => Some(token),
-      None => {
-        if !stack.config.git_account.is_empty() {
-          match crate::helpers::git_token(
-            &stack.config.git_provider,
-            &stack.config.git_account,
-          ) {
-            Ok(token) => Some(token.to_string()),
-            Err(e) => {
-              return Err(
-                e.context("Failed to find required git token"),
-              );
-            }
-          }
-        } else {
-          None
-        }
-      }
-    };
-
-    State
-      .resolve(
-        PullOrCloneRepo {
-          args,
-          git_token,
-          environment: vec![],
-          env_file_path: stack.config.env_file_path.clone(),
-          skip_secret_interp: stack.config.skip_secret_interp,
-          // repo replacer only needed for on_clone / on_pull,
-          // which aren't available for stacks
-          replacers: Default::default(),
-        },
-        (),
-      )
-      .await?;
+    let root = pull_or_clone_stack(&stack, git_token).await?;
 
     let file_path = stack
       .config
@@ -329,6 +274,119 @@ impl Resolve<WriteCommitComposeContents> for State {
       commit_message: message,
       env_file_path: None,
     })
+  }
+}
+
+//
+
+impl<'a> WriteStackRes for &'a mut ComposePullResponse {
+  fn logs(&mut self) -> &mut Vec<Log> {
+    &mut self.logs
+  }
+}
+
+impl Resolve<ComposePull> for State {
+  #[instrument(
+    name = "ComposePull",
+    skip(self, git_token, registry_token)
+  )]
+  async fn resolve(
+    &self,
+    ComposePull {
+      stack,
+      service,
+      git_token,
+      registry_token,
+    }: ComposePull,
+    _: (),
+  ) -> anyhow::Result<ComposePullResponse> {
+    let mut res = ComposePullResponse::default();
+    let (run_directory, env_file_path) =
+      write_stack(&stack, git_token, &mut res).await?;
+
+    // Canonicalize the path to ensure it exists, and is the cleanest path to the run directory.
+    let run_directory = run_directory.canonicalize().context(
+      "Failed to validate run directory on host after stack write (canonicalize error)",
+    )?;
+
+    let file_paths = stack
+      .file_paths()
+      .iter()
+      .map(|path| {
+        (
+          path,
+          // This will remove any intermediate uneeded '/./' in the path
+          run_directory.join(path).components().collect::<PathBuf>(),
+        )
+      })
+      .collect::<Vec<_>>();
+
+    for (path, full_path) in &file_paths {
+      if !full_path.exists() {
+        return Err(anyhow!("Missing compose file at {path}"));
+      }
+    }
+
+    let docker_compose = docker_compose();
+    let service_arg = service
+      .as_ref()
+      .map(|service| format!(" {service}"))
+      .unwrap_or_default();
+
+    let file_args = if stack.config.file_paths.is_empty() {
+      String::from("compose.yaml")
+    } else {
+      stack.config.file_paths.join(" -f ")
+    };
+
+    // Login to the registry to pull private images, if provider / account are set
+    if !stack.config.registry_provider.is_empty()
+      && !stack.config.registry_account.is_empty()
+    {
+      docker_login(
+        &stack.config.registry_provider,
+        &stack.config.registry_account,
+        registry_token.as_deref(),
+      )
+      .await
+      .with_context(|| {
+        format!(
+          "domain: {} | account: {}",
+          stack.config.registry_provider,
+          stack.config.registry_account
+        )
+      })
+      .context("failed to login to image registry")?;
+    }
+
+    let env_file = env_file_path
+      .map(|path| format!(" --env-file {path}"))
+      .unwrap_or_default();
+
+    let additional_env_files = stack
+      .config
+      .additional_env_files
+      .iter()
+      .fold(String::new(), |mut output, file| {
+        let _ = write!(output, " --env-file {file}");
+        output
+      });
+
+    let project_name = stack.project_name(false);
+
+    let log = run_komodo_command(
+      "compose pull",
+      run_directory.as_ref(),
+      format!(
+        "{docker_compose} -p {project_name} -f {file_args}{env_file}{additional_env_files} pull{service_arg}",
+      ),
+      false,
+    )
+    .await;
+
+    res.logs.push(log);
+
+    Ok(res)
   }
 }
 

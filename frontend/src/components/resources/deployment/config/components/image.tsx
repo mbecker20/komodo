@@ -199,7 +199,7 @@ export const ImageConfig = ({
             },
           })
         }
-        className="w-full lg:w-[300px]"
+        className="w-full"
         placeholder="image name"
         disabled={disabled}
       />

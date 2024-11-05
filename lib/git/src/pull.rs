@@ -1,21 +1,27 @@
 use std::{
   collections::HashMap,
   path::{Path, PathBuf},
-  sync::{Arc, OnceLock},
+  sync::OnceLock,
 };
 
 use anyhow::Context;
+use cache::TimeoutCache;
 use command::run_komodo_command;
 use formatting::format_serror;
 use komodo_client::entities::{
   komodo_timestamp, update::Log, CloneArgs, EnvironmentVar,
 };
-use tokio::sync::Mutex;
 
 use crate::{get_commit_hash_log, GitRes};
 
 /// Wait this long after a pull to allow another pull through
 const PULL_TIMEOUT: i64 = 5_000;
+
+fn pull_cache() -> &'static TimeoutCache<PathBuf, GitRes> {
+  static PULL_CACHE: OnceLock<TimeoutCache<PathBuf, GitRes>> =
+    OnceLock::new();
+  PULL_CACHE.get_or_init(Default::default)
+}
 
 /// This will pull in a way that handles edge cases
 /// from possible state of the repo. For example, the user
@@ -56,8 +62,8 @@ where
   let mut locked = lock.lock().await;
 
   // Early return from cache if lasted pulled with PULL_TIMEOUT
-  if locked.last_pulled + PULL_TIMEOUT > komodo_timestamp() {
-    return clone_entry_res(&locked.res);
+  if locked.last_ts + PULL_TIMEOUT > komodo_timestamp() {
+    return locked.clone_res();
   }
 
   let res = async {
@@ -247,65 +253,9 @@ where
   }
   .await;
 
-  // Set the cache with results
-  locked.last_pulled = komodo_timestamp();
-  locked.res = clone_entry_res(&res);
+  // Set the cache with results. Any other calls waiting on the lock will
+  // then immediately also use this same result.
+  locked.set(&res, komodo_timestamp());
 
   res
-}
-
-fn pull_cache() -> &'static PullCache {
-  static LAST_PULLED_MAP: OnceLock<PullCache> = OnceLock::new();
-  LAST_PULLED_MAP.get_or_init(|| Default::default())
-}
-
-struct PullCacheEntry {
-  last_pulled: i64,
-  res: anyhow::Result<GitRes>,
-}
-
-fn clone_entry_res(
-  res: &anyhow::Result<GitRes>,
-) -> anyhow::Result<GitRes> {
-  match res {
-    Ok(res) => Ok(res.clone()),
-    Err(e) => Err(clone_anyhow_error(e)),
-  }
-}
-
-impl Default for PullCacheEntry {
-  fn default() -> Self {
-    PullCacheEntry {
-      last_pulled: 0,
-      res: Ok(GitRes::default()),
-    }
-  }
-}
-
-/// Prevents simulataneous pulls on the same repo,
-/// as well as prevents redudant pulls within [PULL_TIMEOUT] milliseconds.
-#[derive(Default)]
-struct PullCache(Mutex<HashMap<PathBuf, Arc<Mutex<PullCacheEntry>>>>);
-
-impl PullCache {
-  async fn get_lock(
-    &self,
-    path: PathBuf,
-  ) -> Arc<Mutex<PullCacheEntry>> {
-    let mut lock = self.0.lock().await;
-    lock.entry(path).or_default().clone()
-  }
-}
-
-fn clone_anyhow_error(e: &anyhow::Error) -> anyhow::Error {
-  let mut reasons =
-    e.chain().map(|e| e.to_string()).collect::<Vec<_>>();
-  // Always guaranteed to be at least one reason
-  // Need to start the chain with the last reason
-  let mut e = anyhow::Error::msg(reasons.pop().unwrap());
-  // Need to reverse reason application from lowest context to highest context.
-  for reason in reasons.into_iter().rev() {
-    e = e.context(reason)
-  }
-  e
 }

@@ -1,24 +1,53 @@
+use std::{
+  collections::HashSet,
+  sync::{Mutex, OnceLock},
+};
+
 use anyhow::Context;
-use komodo_client::entities::{
-  deployment::{Deployment, DeploymentState},
-  docker::container::ContainerListItem,
-  stack::{Stack, StackService, StackServiceNames},
+use komodo_client::{
+  api::execute::{Deploy, DeployStack},
+  entities::{
+    alert::{Alert, AlertData, SeverityLevel},
+    build::Build,
+    deployment::{Deployment, DeploymentImage, DeploymentState},
+    docker::{
+      container::{ContainerListItem, ContainerStateStatusEnum},
+      image::ImageListItem,
+    },
+    komodo_timestamp,
+    stack::{Stack, StackService, StackServiceNames, StackState},
+    user::auto_redeploy_user,
+    ResourceTarget,
+  },
 };
 
 use crate::{
+  alert::send_alerts,
+  api::execute::{self, ExecuteRequest},
   helpers::query::get_stack_state_from_containers,
   stack::{
     compose_container_match_regex,
     services::extract_services_from_stack,
   },
-  state::{deployment_status_cache, stack_status_cache},
+  state::{
+    action_states, db_client, deployment_status_cache,
+    stack_status_cache,
+  },
 };
 
 use super::{CachedDeploymentStatus, CachedStackStatus, History};
 
+fn deployment_alert_sent_cache() -> &'static Mutex<HashSet<String>> {
+  static CACHE: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
+  CACHE.get_or_init(Default::default)
+}
+
 pub async fn update_deployment_cache(
+  server_name: String,
   deployments: Vec<Deployment>,
   containers: &[ContainerListItem],
+  images: &[ImageListItem],
+  builds: &[Build],
 ) {
   let deployment_status_cache = deployment_status_cache();
   for deployment in deployments {
@@ -34,6 +63,109 @@ pub async fn update_deployment_cache(
       .as_ref()
       .map(|c| c.state.into())
       .unwrap_or(DeploymentState::NotDeployed);
+    let image = match deployment.config.image {
+      DeploymentImage::Build { build_id, version } => {
+        let (build_name, build_version) = builds
+          .iter()
+          .find(|build| build.id == build_id)
+          .map(|b| (b.name.as_ref(), b.config.version))
+          .unwrap_or(("Unknown", Default::default()));
+        let version = if version.is_none() {
+          build_version.to_string()
+        } else {
+          version.to_string()
+        };
+        format!("{build_name}:{version}")
+      }
+      DeploymentImage::Image { image } => image,
+    };
+    let update_available = if let Some(ContainerListItem {
+      image_id: Some(curr_image_id),
+      ..
+    }) = &container
+    {
+      images
+        .iter()
+        .find(|i| i.name == image)
+        .map(|i| &i.id != curr_image_id)
+        .unwrap_or_default()
+    } else {
+      false
+    };
+
+    if update_available {
+      if deployment.config.auto_update {
+        if state == DeploymentState::Running
+          && !action_states()
+            .deployment
+            .get_or_insert_default(&deployment.id)
+            .await
+            .busy()
+            .unwrap_or(true)
+        {
+          let deployment = deployment.name.clone();
+          tokio::spawn(async move {
+            if let Err(e) = execute::inner_handler(
+              ExecuteRequest::Deploy(Deploy {
+                deployment: deployment.clone(),
+                stop_time: None,
+                stop_signal: None,
+              }),
+              auto_redeploy_user().to_owned(),
+            )
+            .await
+            {
+              warn!(
+                "Failed to auto update Deployment {deployment} | {e:#}"
+              )
+            }
+          });
+        }
+      } else if state == DeploymentState::Running
+        && deployment.config.send_alerts
+        && !deployment_alert_sent_cache()
+          .lock()
+          .unwrap()
+          .contains(&deployment.id)
+      {
+        // Add that it is already sent to the cache, so another alert won't be sent.
+        deployment_alert_sent_cache()
+          .lock()
+          .unwrap()
+          .insert(deployment.id.clone());
+        let ts = komodo_timestamp();
+        let alert = Alert {
+          id: Default::default(),
+          ts,
+          resolved: true,
+          resolved_ts: ts.into(),
+          level: SeverityLevel::Ok,
+          target: ResourceTarget::Deployment(deployment.id.clone()),
+          data: AlertData::DeploymentImageUpdateAvailable {
+            id: deployment.id.clone(),
+            name: deployment.name,
+            server_name: server_name.clone(),
+            server_id: deployment.config.server_id,
+            image,
+          },
+        };
+        let res = db_client().alerts.insert_one(&alert).await;
+        if let Err(e) = res {
+          error!(
+            "Failed to record Deployment update avaialable to db | {e:#}"
+          );
+        }
+        send_alerts(&[alert]).await;
+      }
+    } else {
+      // If it sees there is no longer update available, remove
+      // from the sent cache, so on next `update_available = true`
+      // the cache is empty and a fresh alert will be sent.
+      deployment_alert_sent_cache()
+        .lock()
+        .unwrap()
+        .remove(&deployment.id);
+    }
     deployment_status_cache
       .insert(
         deployment.id.clone(),
@@ -42,6 +174,7 @@ pub async fn update_deployment_cache(
             id: deployment.id,
             state,
             container,
+            update_available,
           },
           prev,
         }
@@ -51,38 +184,139 @@ pub async fn update_deployment_cache(
   }
 }
 
+/// (StackId, Service)
+fn stack_alert_sent_cache(
+) -> &'static Mutex<HashSet<(String, String)>> {
+  static CACHE: OnceLock<Mutex<HashSet<(String, String)>>> =
+    OnceLock::new();
+  CACHE.get_or_init(Default::default)
+}
+
 pub async fn update_stack_cache(
+  server_name: String,
   stacks: Vec<Stack>,
   containers: &[ContainerListItem],
+  images: &[ImageListItem],
 ) {
   let stack_status_cache = stack_status_cache();
   for stack in stacks {
-    let services = match extract_services_from_stack(&stack, false)
-      .await
-    {
-      Ok(services) => services,
-      Err(e) => {
-        warn!("failed to extract services for stack {}. cannot match services to containers. (update status cache) | {e:?}", stack.name);
-        continue;
+    let services = extract_services_from_stack(&stack);
+    let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name, image }| {
+      let container = containers.iter().find(|container| {
+        match compose_container_match_regex(container_name)
+          .with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
+        {
+          Ok(regex) => regex,
+          Err(e) => {
+            warn!("{e:#}");
+            return false
+          }
+        }.is_match(&container.name)
+      }).cloned();
+      let update_available = if let Some(ContainerListItem { image_id: Some(curr_image_id), .. }) = &container {
+        images
+        .iter()
+        .find(|i| &i.name == image)
+        .map(|i| &i.id != curr_image_id)
+        .unwrap_or_default()
+      } else {
+        false
+      };
+      if update_available {
+        if !stack.config.auto_update
+          && stack.config.send_alerts
+          && container.is_some()
+          && container.as_ref().unwrap().state == ContainerStateStatusEnum::Running
+          && !stack_alert_sent_cache()
+            .lock()
+            .unwrap()
+            .contains(&(stack.id.clone(), service_name.clone()))
+        {
+          stack_alert_sent_cache()
+            .lock()
+            .unwrap()
+            .insert((stack.id.clone(), service_name.clone()));
+          let ts = komodo_timestamp();
+          let alert = Alert {
+            id: Default::default(),
+            ts,
+            resolved: true,
+            resolved_ts: ts.into(),
+            level: SeverityLevel::Ok,
+            target: ResourceTarget::Stack(stack.id.clone()),
+            data: AlertData::StackImageUpdateAvailable {
+              id: stack.id.clone(),
+              name: stack.name.clone(),
+              server_name: server_name.clone(),
+              server_id: stack.config.server_id.clone(),
+              service: service_name.clone(),
+              image: image.clone(),
+            },
+          };
+          tokio::spawn(async move {
+            let res = db_client().alerts.insert_one(&alert).await;
+            if let Err(e) = res {
+              error!(
+                "Failed to record Stack update avaialable to db | {e:#}"
+              );
+            }
+            send_alerts(&[alert]).await;
+          });
+        }
+      } else {
+        stack_alert_sent_cache()
+          .lock()
+          .unwrap()
+          .remove(&(stack.id.clone(), service_name.clone()));
       }
-    };
-    let mut services_with_containers = services.iter().map(|StackServiceNames { service_name, container_name }| {
-			let container = containers.iter().find(|container| {
-				match compose_container_match_regex(container_name)
-					.with_context(|| format!("failed to construct container name matching regex for service {service_name}")) 
-				{
-					Ok(regex) => regex,
-					Err(e) => {
-						warn!("{e:#}");
-						return false
-					}
-				}.is_match(&container.name)
-			}).cloned();
-			StackService {
-				service: service_name.clone(),
-				container,
-			}
-		}).collect::<Vec<_>>();
+      StackService {
+        service: service_name.clone(),
+        image: image.to_string(),
+        container,
+        update_available,
+      }
+    }).collect::<Vec<_>>();
+    let update_available =
+      services_with_containers.iter().any(|service| {
+        service.update_available
+          // Only consider running services with available updates
+          && service
+            .container
+            .as_ref()
+            .map(|c| c.state == ContainerStateStatusEnum::Running)
+            .unwrap_or_default()
+      });
+    let state = get_stack_state_from_containers(
+      &stack.config.ignore_services,
+      &services,
+      containers,
+    );
+    if update_available
+      && stack.config.auto_update
+      && state == StackState::Running
+      && !action_states()
+        .stack
+        .get_or_insert_default(&stack.id)
+        .await
+        .busy()
+        .unwrap_or(true)
+    {
+      let stack = stack.name.clone();
+      tokio::spawn(async move {
+        if let Err(e) = execute::inner_handler(
+          ExecuteRequest::DeployStack(DeployStack {
+            stack: stack.clone(),
+            service: None,
+            stop_time: None,
+          }),
+          auto_redeploy_user().to_owned(),
+        )
+        .await
+        {
+          warn!("Failed auto update Stack {stack} | {e:#}")
+        }
+      });
+    }
     services_with_containers
       .sort_by(|a, b| a.service.cmp(&b.service));
     let prev = stack_status_cache
@@ -91,11 +325,7 @@ pub async fn update_stack_cache(
       .map(|s| s.curr.state);
     let status = CachedStackStatus {
       id: stack.id.clone(),
-      state: get_stack_state_from_containers(
-        &stack.config.ignore_services,
-        &services,
-        containers,
-      ),
+      state,
       services: services_with_containers,
     };
     stack_status_cache

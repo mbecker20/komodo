@@ -1,5 +1,5 @@
 [package]
-name = "git"
+name = "cache"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -8,14 +8,5 @@ repository.workspace = true
 homepage.workspace = true
 
 [dependencies]
-komodo_client.workspace = true
-formatting.workspace = true
-command.workspace = true
-cache.workspace = true
-#
-run_command.workspace = true
-svi.workspace = true
-#
-tracing.workspace = true
 anyhow.workspace = true
 tokio.workspace = true

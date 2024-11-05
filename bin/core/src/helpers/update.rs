@@ -264,6 +264,12 @@ pub async fn init_execution_update(
     ExecuteRequest::BatchDeploy(_data) => {
       return Ok(Default::default())
     }
+    ExecuteRequest::PullDeployment(data) => (
+      Operation::PullDeployment,
+      ResourceTarget::Deployment(
+        resource::get::<Deployment>(&data.deployment).await?.id,
+      ),
+    ),
     ExecuteRequest::StartDeployment(data) => (
       Operation::StartDeployment,
       ResourceTarget::Deployment(
@@ -300,6 +306,9 @@ pub async fn init_execution_update(
         resource::get::<Deployment>(&data.deployment).await?.id,
       ),
     ),
+    ExecuteRequest::BatchDestroyDeployment(_data) => {
+      return Ok(Default::default())
+    }
 
     // Build
     ExecuteRequest::RunBuild(data) => (
@@ -395,7 +404,11 @@ pub async fn init_execution_update(
 
     // Stack
     ExecuteRequest::DeployStack(data) => (
-      Operation::DeployStack,
+      if data.service.is_some() {
+        Operation::DeployStackService
+      } else {
+        Operation::DeployStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),
@@ -417,6 +430,16 @@ pub async fn init_execution_update(
         Operation::StartStackService
       } else {
         Operation::StartStack
+      },
+      ResourceTarget::Stack(
+        resource::get::<Stack>(&data.stack).await?.id,
+      ),
+    ),
+    ExecuteRequest::PullStack(data) => (
+      if data.service.is_some() {
+        Operation::PullStackService
+      } else {
+        Operation::PullStack
       },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
@@ -463,7 +486,11 @@ pub async fn init_execution_update(
       ),
     ),
     ExecuteRequest::DestroyStack(data) => (
-      Operation::DestroyStack,
+      if data.service.is_some() {
+        Operation::DestroyStackService
+      } else {
+        Operation::DestroyStack
+      },
       ResourceTarget::Stack(
         resource::get::<Stack>(&data.stack).await?.id,
       ),

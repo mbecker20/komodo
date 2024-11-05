@@ -51,7 +51,7 @@ pub type ListStackServicesResponse = Vec<StackService>;
 
 //
 
-/// Get a stack service's log. Response: [GetStackContainersResponse].
+/// Get a stack service's log. Response: [GetStackServiceLogResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

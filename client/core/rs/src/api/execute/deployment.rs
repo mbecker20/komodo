@@ -41,7 +41,7 @@ pub struct Deploy {
 
 //
 
-/// Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult].
+/// Deploys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,
@@ -67,6 +67,27 @@ pub struct BatchDeploy {
   /// extra-deployment-1, extra-deployment-2
   /// ```
   pub pattern: String,
+}
+
+//
+
+/// Pulls the image for the target deployment. Response: [Update]
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
+  Parser,
+)]
+#[empty_traits(KomodoExecuteRequest)]
+#[response(Update)]
+pub struct PullDeployment {
+  /// Name or id
+  pub deployment: String,
 }
 
 //
@@ -220,7 +241,7 @@ pub struct DestroyDeployment {
 
 //
 
-/// Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResult].
+/// Destroys multiple Deployments in parallel that match pattern. Response: [BatchExecutionResponse].
 #[typeshare]
 #[derive(
   Serialize,
