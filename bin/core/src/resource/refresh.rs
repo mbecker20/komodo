@@ -86,7 +86,9 @@ async fn refresh_deployments() {
     return;
   };
   for deployment in deployments {
-    if deployment.config.poll_for_updates {
+    if deployment.config.poll_for_updates
+      || deployment.config.auto_update
+    {
       if let Some(server) =
         servers.iter().find(|s| s.id == deployment.config.server_id)
       {

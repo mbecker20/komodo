@@ -393,7 +393,7 @@ impl Resolve<RefreshStackCache, User> for State {
       .await
       .context("failed to update stack info on db")?;
 
-    if stack.config.poll_for_updates {
+    if stack.config.poll_for_updates || stack.config.auto_update {
       if !stack.config.server_id.is_empty() {
         let (server, state) =
           get_server_with_state(&stack.config.server_id).await?;

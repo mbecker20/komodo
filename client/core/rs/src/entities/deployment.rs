@@ -94,8 +94,10 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub poll_for_updates: bool,
 
-  /// Whether to automatically redeploy when a
-  /// newer image is found.
+  /// Whether to automatically redeploy when
+  /// newer a image is found. Will implicitly
+  /// enable `poll_for_updates`, you don't need to
+  /// enable both.
   #[serde(default)]
   #[builder(default)]
   pub auto_update: bool,
