@@ -27,8 +27,8 @@ import { ResourceSelector } from "@components/resources/common";
 
 const ALERT_TYPES_BY_RESOURCE: { [key: string]: Types.AlertData["type"][] } = {
   Server: ["ServerUnreachable", "ServerCpu", "ServerMem", "ServerDisk"],
-  Stack: ["StackStateChange"],
-  Deployment: ["ContainerStateChange"],
+  Stack: ["StackStateChange", "StackImageUpdateAvailable"],
+  Deployment: ["ContainerStateChange", "DeploymentImageUpdateAvailable"],
   Build: ["BuildFailed"],
   Repo: ["RepoBuildFailed"],
   ResourceSync: ["ResourceSyncPendingUpdates"],
@@ -64,7 +64,7 @@ export const AlertsPage = () => {
   });
 
   const alert_types: string[] = type
-    ? ALERT_TYPES_BY_RESOURCE[type] ?? FALLBACK_ALERT_TYPES
+    ? (ALERT_TYPES_BY_RESOURCE[type] ?? FALLBACK_ALERT_TYPES)
     : FALLBACK_ALERT_TYPES;
 
   return (
