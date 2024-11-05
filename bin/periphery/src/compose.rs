@@ -354,11 +354,11 @@ impl<'a> WriteStackRes for &'a mut ComposeUpResponse {
 
 /// Either writes the stack file_contents to a file, or clones the repo.
 /// Returns (run_directory, env_file_path)
-pub async fn write_stack<'a>(
-  stack: &'a Stack,
+pub async fn write_stack(
+  stack: &Stack,
   git_token: Option<String>,
   mut res: impl WriteStackRes,
-) -> anyhow::Result<(PathBuf, Option<&'a str>)> {
+) -> anyhow::Result<(PathBuf, Option<&str>)> {
   let root = periphery_config()
     .stack_dir
     .join(to_komodo_name(&stack.name));
@@ -562,7 +562,7 @@ pub async fn write_stack<'a>(
     res.set_commit_hash(commit_hash);
     res.set_commit_message(commit_message);
 
-    if !all_logs_success(&res.logs()) {
+    if !all_logs_success(res.logs()) {
       return Err(anyhow!("Stopped after repo pull failure"));
     }
 

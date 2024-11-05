@@ -411,7 +411,7 @@ pub async fn handle_procedure_webhook<B: super::VerifyBranch>(
   }
 
   if target_branch != ANY_BRANCH {
-    B::verify_branch(&body, &target_branch)?;
+    B::verify_branch(&body, target_branch)?;
   }
 
   let user = git_webhook_user().to_owned();
@@ -457,7 +457,7 @@ pub async fn handle_action_webhook<B: super::VerifyBranch>(
   }
 
   if target_branch != ANY_BRANCH {
-    B::verify_branch(&body, &target_branch)?;
+    B::verify_branch(&body, target_branch)?;
   }
 
   let user = git_webhook_user().to_owned();

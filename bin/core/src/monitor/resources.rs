@@ -269,13 +269,6 @@ pub async fn update_stack_cache(
           .unwrap()
           .remove(&(stack.id.clone(), service_name.clone()));
       }
-      if update_available && !stack.config.auto_update
-        && stack.config.send_alerts
-        && container.is_some()
-        && container.as_ref().unwrap().state == ContainerStateStatusEnum::Running
-      {
-
-      }
       StackService {
         service: service_name.clone(),
         image: image.to_string(),

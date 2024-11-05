@@ -221,239 +221,239 @@ pub async fn run(execution: Execution) -> anyhow::Result<()> {
     Execution::RunAction(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchRunAction(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::RunProcedure(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchRunProcedure(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::RunBuild(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchRunBuild(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::CancelBuild(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::Deploy(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchDeploy(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::PullDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StartDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::RestartDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PauseDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::UnpauseDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StopDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::DestroyDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchDestroyDeployment(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::CloneRepo(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchCloneRepo(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::PullRepo(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchPullRepo(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::BuildRepo(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchBuildRepo(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::CancelRepoBuild(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StartContainer(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::RestartContainer(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PauseContainer(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::UnpauseContainer(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StopContainer(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::DestroyContainer(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StartAllContainers(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::RestartAllContainers(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PauseAllContainers(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::UnpauseAllContainers(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StopAllContainers(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PruneContainers(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::DeleteNetwork(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PruneNetworks(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::DeleteImage(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PruneImages(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::DeleteVolume(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PruneVolumes(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PruneDockerBuilders(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PruneBuildx(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PruneSystem(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::RunSync(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::CommitSync(request) => komodo_client()
       .write(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::DeployStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchDeployStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::DeployStackIfChanged(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchDeployStackIfChanged(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::PullStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StartStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::RestartStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::PauseStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::UnpauseStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::StopStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::DestroyStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Single(u)),
+      .map(ExecutionResult::Single),
     Execution::BatchDestroyStack(request) => komodo_client()
       .execute(request)
       .await
-      .map(|u| ExecutionResult::Batch(u)),
+      .map(ExecutionResult::Batch),
     Execution::Sleep(request) => {
       let duration =
         Duration::from_millis(request.duration_ms as u64);

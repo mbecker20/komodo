@@ -261,9 +261,9 @@ async fn batch_execute<E: BatchExecute>(
   user: &User,
 ) -> anyhow::Result<BatchExecutionResponse> {
   let resources = list_full_for_user_using_pattern::<E::Resource>(
-    &pattern,
+    pattern,
     Default::default(),
-    &user,
+    user,
     &[],
   )
   .await?;

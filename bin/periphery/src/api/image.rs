@@ -50,7 +50,7 @@ const PULL_TIMEOUT: i64 = 5_000;
 fn pull_cache() -> &'static TimeoutCache<String, Log> {
   static PULL_CACHE: OnceLock<TimeoutCache<String, Log>> =
     OnceLock::new();
-  PULL_CACHE.get_or_init(|| Default::default())
+  PULL_CACHE.get_or_init(Default::default)
 }
 
 impl Resolve<PullImage> for State {

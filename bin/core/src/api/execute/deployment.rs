@@ -270,7 +270,7 @@ type PullCache = TimeoutCache<(ServerId, Image), Log>;
 
 fn pull_cache() -> &'static PullCache {
   static PULL_CACHE: OnceLock<PullCache> = OnceLock::new();
-  PULL_CACHE.get_or_init(|| Default::default())
+  PULL_CACHE.get_or_init(Default::default)
 }
 
 pub async fn pull_deployment_inner(

@@ -20,7 +20,7 @@ const PULL_TIMEOUT: i64 = 5_000;
 fn pull_cache() -> &'static TimeoutCache<PathBuf, GitRes> {
   static PULL_CACHE: OnceLock<TimeoutCache<PathBuf, GitRes>> =
     OnceLock::new();
-  PULL_CACHE.get_or_init(|| Default::default())
+  PULL_CACHE.get_or_init(Default::default)
 }
 
 /// This will pull in a way that handles edge cases

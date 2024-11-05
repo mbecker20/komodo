@@ -40,7 +40,7 @@ impl<Res: Clone> CacheEntry<Res> {
     self.res = res
       .as_ref()
       .map(|res| res.clone())
-      .map_err(|e| clone_anyhow_error(e));
+      .map_err(clone_anyhow_error);
     self.last_ts = timestamp;
   }
 
@@ -49,7 +49,7 @@ impl<Res: Clone> CacheEntry<Res> {
       .res
       .as_ref()
       .map(|res| res.clone())
-      .map_err(|e| clone_anyhow_error(e))
+      .map_err(clone_anyhow_error)
   }
 }
 

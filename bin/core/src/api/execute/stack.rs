@@ -405,7 +405,7 @@ pub async fn pull_stack_inner(
       || format!("Failed to get registry token in call to db. Stopping run. | {} | {}", stack.config.registry_provider, stack.config.registry_account),
     )?;
 
-  let res = periphery_client(&server)?
+  let res = periphery_client(server)?
     .request(ComposePull {
       stack,
       service,
@@ -415,7 +415,7 @@ pub async fn pull_stack_inner(
     .await?;
 
   // Ensure cached stack state up to date by updating server cache
-  update_cache_for_server(&server).await;
+  update_cache_for_server(server).await;
 
   Ok(res)
 }
