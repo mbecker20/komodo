@@ -4,12 +4,19 @@ import { fmt_version } from "@lib/formatting";
 import { ResourceLink } from "../common";
 import { BuildComponents } from ".";
 import { Types } from "komodo_client";
+import { useSelectedResources } from "@lib/hooks";
 
 export const BuildTable = ({ builds }: { builds: Types.BuildListItem[] }) => {
+  const [_, setSelectedResources] = useSelectedResources("Build");
+
   return (
     <DataTable
       tableKey="builds"
       data={builds}
+      selectOptions={{
+        selectKey: ({ id }) => id,
+        onSelect: setSelectedResources,
+      }}
       columns={[
         {
           accessorKey: "name",
@@ -36,9 +43,7 @@ export const BuildTable = ({ builds }: { builds: Types.BuildListItem[] }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="State" />
           ),
-          cell: ({ row }) => (
-            <BuildComponents.State id={row.original.id} />
-          ),
+          cell: ({ row }) => <BuildComponents.State id={row.original.id} />,
           size: 120,
         },
         {
