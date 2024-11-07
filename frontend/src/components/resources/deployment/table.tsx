@@ -25,7 +25,7 @@ export const DeploymentTable = ({
       tableKey="deployments"
       data={deployments}
       selectOptions={{
-        selectKey: ({ id }) => id,
+        selectKey: ({ name }) => name,
         onSelect: setSelectedResources,
       }}
       columns={[
