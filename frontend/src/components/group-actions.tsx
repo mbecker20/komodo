@@ -1,4 +1,4 @@
-import { useRead, useSelectedResources, useExecute } from "@lib/hooks";
+import { useSelectedResources, useExecute } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
 import {
@@ -79,8 +79,6 @@ const GroupActionDialog = ({
   action: Types.ExecuteRequest["type"] | undefined;
   onClose: () => void;
 }) => {
-  const resources = useRead(`List${type}s`, {}).data;
-
   const [selected] = useSelectedResources(type);
   const [text, setText] = useState("");
 
@@ -100,8 +98,8 @@ const GroupActionDialog = ({
             resources?
           </p>
           <ul className="p-4 bg-accent text-sm list-disc list-inside">
-            {selected.map((s) => (
-              <li key={s}>{resources?.find((r) => r.id === s)?.name}</li>
+            {selected.map((resource) => (
+              <li key={resource}>{resource}</li>
             ))}
           </ul>
           <p>
