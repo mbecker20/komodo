@@ -27,8 +27,6 @@ export const DeploymentTable = ({
       selectOptions={{
         selectKey: ({ id }) => id,
         onSelect: setSelectedResources,
-        // disableRow: (row) =>
-        //   row.original.info.state === Types.DeploymentState.Running,
       }}
       columns={[
         {

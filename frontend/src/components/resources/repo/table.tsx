@@ -3,12 +3,19 @@ import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { RepoComponents } from ".";
 import { Types } from "komodo_client";
+import { useSelectedResources } from "@lib/hooks";
 
 export const RepoTable = ({ repos }: { repos: Types.RepoListItem[] }) => {
+  const [_, setSelectedResources] = useSelectedResources("Repo");
+
   return (
     <DataTable
       tableKey="repos"
       data={repos}
+      selectOptions={{
+        selectKey: ({ id }) => id,
+        onSelect: setSelectedResources,
+      }}
       columns={[
         {
           accessorKey: "name",
@@ -37,9 +44,7 @@ export const RepoTable = ({ repos }: { repos: Types.RepoListItem[] }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="State" />
           ),
-          cell: ({ row }) => (
-            <RepoComponents.State id={row.original.id} />
-          ),
+          cell: ({ row }) => <RepoComponents.State id={row.original.id} />,
           size: 120,
         },
         {
