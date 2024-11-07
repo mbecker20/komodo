@@ -27,7 +27,7 @@ export const GroupActions = <T extends Types.ExecuteRequest["type"]>({
   actions: T[];
 }) => {
   const [action, setAction] = useState<T>();
-  const [selected] = useSelectedResources("Action");
+  const [selected] = useSelectedResources(type);
 
   return (
     <>
