@@ -13,7 +13,7 @@ export const RepoTable = ({ repos }: { repos: Types.RepoListItem[] }) => {
       tableKey="repos"
       data={repos}
       selectOptions={{
-        selectKey: ({ id }) => id,
+        selectKey: ({ name }) => name,
         onSelect: setSelectedResources,
       }}
       columns={[

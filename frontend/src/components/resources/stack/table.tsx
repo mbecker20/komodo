@@ -20,7 +20,7 @@ export const StackTable = ({ stacks }: { stacks: Types.StackListItem[] }) => {
       tableKey="Stacks"
       data={stacks}
       selectOptions={{
-        selectKey: ({ id }) => id,
+        selectKey: ({ name }) => name,
         onSelect: setSelectedResources,
       }}
       columns={[

@@ -14,7 +14,7 @@ export const BuildTable = ({ builds }: { builds: Types.BuildListItem[] }) => {
       tableKey="builds"
       data={builds}
       selectOptions={{
-        selectKey: ({ id }) => id,
+        selectKey: ({ name }) => name,
         onSelect: setSelectedResources,
       }}
       columns={[

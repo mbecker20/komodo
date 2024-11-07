@@ -17,7 +17,7 @@ export const ActionTable = ({
       tableKey="actions"
       data={actions}
       selectOptions={{
-        selectKey: ({ id }) => id,
+        selectKey: ({ name }) => name,
         onSelect: setSelectedResources,
       }}
       columns={[
