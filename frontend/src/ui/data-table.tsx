@@ -50,6 +50,9 @@ export function DataTable<TData, TValue>({
   selectOptions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(defaultSort);
+
+  // intentionally not initialized to clear selected values on table mount
+  // could add some prop for adding default selected state to preserve between mounts
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const table = useReactTable({
