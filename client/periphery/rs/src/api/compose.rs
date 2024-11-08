@@ -172,6 +172,7 @@ pub struct ComposeUpResponse {
   /// The stack services.
   /// 
   /// Note. The "image" is after interpolation.
+  #[serde(default)]
   pub services: Vec<StackServiceNames>,
   /// The deploy compose file contents if they could be acquired, or empty vec.
   pub file_contents: Vec<FileContents>,
