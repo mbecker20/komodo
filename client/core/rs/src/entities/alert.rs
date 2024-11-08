@@ -158,6 +158,20 @@ pub enum AlertData {
     image: String,
   },
 
+  /// A Deployment has an image update available
+  DeploymentAutoUpdated {
+    /// The id of the deployment
+    id: String,
+    /// The name of the deployment
+    name: String,
+    /// The server id of server that the deployment is on
+    server_id: String,
+    /// The server name
+    server_name: String,
+    /// The updated image
+    image: String,
+  },
+
   /// A stack's state has changed unexpectedly.
   StackStateChange {
     /// The id of the stack
@@ -188,6 +202,20 @@ pub enum AlertData {
     service: String,
     /// The image with update
     image: String,
+  },
+
+  /// A Stack was auto updated
+  StackAutoUpdated {
+    /// The id of the stack
+    id: String,
+    /// The name of the stack
+    name: String,
+    /// The server id of server that the stack is on
+    server_id: String,
+    /// The server name
+    server_name: String,
+    /// One or more images that were updated
+    images: Vec<String>,
   },
 
   /// An AWS builder failed to terminate.

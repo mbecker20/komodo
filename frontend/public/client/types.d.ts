@@ -888,8 +888,10 @@ export interface DeploymentConfig {
     /** Whether to poll for any updates to the image. */
     poll_for_updates?: boolean;
     /**
-     * Whether to automatically redeploy when a
-     * newer image is found.
+     * Whether to automatically redeploy when
+     * newer a image is found. Will implicitly
+     * enable `poll_for_updates`, you don't need to
+     * enable both.
      */
     auto_update?: boolean;
     /** Whether to send ContainerStateChange alerts for this deployment. */
@@ -1107,6 +1109,22 @@ export type AlertData =
         image: string;
     };
 }
+/** A Deployment has an image update available */
+ | {
+    type: "DeploymentAutoUpdated";
+    data: {
+        /** The id of the deployment */
+        id: string;
+        /** The name of the deployment */
+        name: string;
+        /** The server id of server that the deployment is on */
+        server_id: string;
+        /** The server name */
+        server_name: string;
+        /** The updated image */
+        image: string;
+    };
+}
 /** A stack's state has changed unexpectedly. */
  | {
     type: "StackStateChange";
@@ -1141,6 +1159,22 @@ export type AlertData =
         service: string;
         /** The image with update */
         image: string;
+    };
+}
+/** A Stack was auto updated */
+ | {
+    type: "StackAutoUpdated";
+    data: {
+        /** The id of the stack */
+        id: string;
+        /** The name of the stack */
+        name: string;
+        /** The server id of server that the stack is on */
+        server_id: string;
+        /** The server name */
+        server_name: string;
+        /** One or more images that were updated */
+        images: string[];
     };
 }
 /** An AWS builder failed to terminate. */
@@ -1638,8 +1672,10 @@ export interface StackConfig {
     /** Whether to poll for any updates to the images. */
     poll_for_updates?: boolean;
     /**
-     * Whether to automatically redeploy when a
-     * newer images are found.
+     * Whether to automatically redeploy when
+     * newer images are found. Will implicitly
+     * enable `poll_for_updates`, you don't need to
+     * enable both.
      */
     auto_update?: boolean;
     /** Whether to run `docker compose down` before `compose up`. */

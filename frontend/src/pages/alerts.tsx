@@ -27,8 +27,12 @@ import { ResourceSelector } from "@components/resources/common";
 
 const ALERT_TYPES_BY_RESOURCE: { [key: string]: Types.AlertData["type"][] } = {
   Server: ["ServerUnreachable", "ServerCpu", "ServerMem", "ServerDisk"],
-  Stack: ["StackStateChange", "StackImageUpdateAvailable"],
-  Deployment: ["ContainerStateChange", "DeploymentImageUpdateAvailable"],
+  Stack: ["StackStateChange", "StackImageUpdateAvailable", "StackAutoUpdated"],
+  Deployment: [
+    "ContainerStateChange",
+    "DeploymentImageUpdateAvailable",
+    "DeploymentAutoUpdated",
+  ],
   Build: ["BuildFailed"],
   Repo: ["RepoBuildFailed"],
   ResourceSync: ["ResourceSyncPendingUpdates"],

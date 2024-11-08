@@ -100,6 +100,16 @@ pub async fn send_alert(
       let link = resource_link(ResourceTargetVariant::Deployment, id);
       format!("⬆ Deployment **{name}** has an update available\nserver: **{server_name}**\nimage: **{image}**\n{link}")
     }
+    AlertData::DeploymentAutoUpdated {
+      id,
+      name,
+      server_id: _server_id,
+      server_name,
+      image,
+    } => {
+      let link = resource_link(ResourceTargetVariant::Deployment, id);
+      format!("⬆ Deployment **{name}** was updated automatically ⏫\nserver: **{server_name}**\nimage: **{image}**\n{link}")
+    }
     AlertData::StackStateChange {
       id,
       name,
@@ -122,6 +132,19 @@ pub async fn send_alert(
     } => {
       let link = resource_link(ResourceTargetVariant::Stack, id);
       format!("⬆ Stack **{name}** has an update available\nserver: **{server_name}**\nservice: **{service}**\nimage: **{image}**\n{link}")
+    }
+    AlertData::StackAutoUpdated {
+      id,
+      name,
+      server_id: _server_id,
+      server_name,
+      images,
+    } => {
+      let link = resource_link(ResourceTargetVariant::Deployment, id);
+      let images_label =
+        if images.len() > 1 { "images" } else { "image" };
+      let images = images.join(", ");
+      format!("⬆ Stack **{name}** was updated automatically ⏫\nserver: **{server_name}**\n{images_label}: **{images}**\n{link}")
     }
     AlertData::AwsBuilderTerminationFailed {
       instance_id,
