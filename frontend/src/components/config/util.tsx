@@ -1164,30 +1164,20 @@ export const RenameResource = ({
   const [name, set] = useState("");
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">
-        Rename{" "}
-        {type === "ServerTemplate"
-          ? "Template"
-          : type === "ResourceSync"
-            ? "Sync"
-            : type}
-      </div>
-      <div className="flex gap-4 w-full justify-end">
-        <Input
-          value={name}
-          onChange={(e) => set(e.target.value)}
-          className="w-96"
-          placeholder="Enter new name"
-        />
-        <ConfirmButton
-          title="Rename"
-          icon={<Pen className="w-4 h-4" />}
-          disabled={!name || isPending}
-          loading={isPending}
-          onClick={() => mutate({ id, name })}
-        />
-      </div>
+    <div className="flex gap-4 w-full justify-end flex-wrap">
+      <Input
+        value={name}
+        onChange={(e) => set(e.target.value)}
+        className="w-96"
+        placeholder="Enter new name"
+      />
+      <ConfirmButton
+        title="Rename"
+        icon={<Pen className="w-4 h-4" />}
+        disabled={!name || isPending}
+        loading={isPending}
+        onClick={() => mutate({ id, name })}
+      />
     </div>
   );
 };

@@ -463,3 +463,22 @@ const WEBHOOK_ID_OR_NAME_ATOM = atomWithStorage<WebhookIdOrName>(
 export const useWebhookIdOrName = () => {
   return useAtom<WebhookIdOrName>(WEBHOOK_ID_OR_NAME_ATOM);
 };
+
+export type Dimensions = { width: number; height: number };
+export const useWindowDimensions = () => {
+  const [dimensions, setDimensions] = useState<Dimensions>({ width: 0, height: 0 });
+  useEffect(() => {
+    const callback = () => {
+      setDimensions({
+        width: window.screen.availWidth,
+        height: window.screen.availHeight,
+      });
+    }
+    callback();
+    window.addEventListener("resize", callback);
+    return () => {
+      window.removeEventListener("resize", callback);
+    }
+  }, []);
+  return dimensions;
+}

@@ -7,6 +7,7 @@ import * as prettier from "prettier/standalone";
 import * as pluginTypescript from "prettier/plugins/typescript";
 import * as pluginEstree from "prettier/plugins/estree";
 import * as pluginYaml from "prettier/plugins/yaml";
+import { useWindowDimensions } from "@lib/hooks";
 
 const MIN_EDITOR_HEIGHT = 56;
 // const MAX_EDITOR_HEIGHT = 500;
@@ -39,6 +40,7 @@ export const MonacoEditor = ({
   minHeight?: number;
   className?: string;
 }) => {
+  const dimensions = useWindowDimensions();
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
 
@@ -100,9 +102,13 @@ export const MonacoEditor = ({
     const contentHeight = line_count * 18 + 30;
     const containerNode = editor.getContainerDomNode();
 
-    containerNode.style.height = `${Math.max(
-      Math.ceil(contentHeight),
-      minHeight ?? MIN_EDITOR_HEIGHT
+    // containerNode.style.height = `${Math.max(
+    //   Math.ceil(contentHeight),
+    //   minHeight ?? MIN_EDITOR_HEIGHT
+    // )}px`;
+    containerNode.style.height = `${Math.min(
+      Math.max(Math.ceil(contentHeight), minHeight ?? MIN_EDITOR_HEIGHT),
+      Math.floor(dimensions.height * (3 / 5))
     )}px`;
   }, [editor, line_count]);
 
@@ -116,7 +122,7 @@ export const MonacoEditor = ({
 
   const options: monaco.editor.IStandaloneEditorConstructionOptions = {
     minimap: { enabled: false },
-    scrollbar: { alwaysConsumeMouseWheel: false },
+    // scrollbar: { alwaysConsumeMouseWheel: false },
     scrollBeyondLastLine: false,
     folding: false,
     automaticLayout: true,
