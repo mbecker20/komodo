@@ -6,6 +6,7 @@ import {
   AddExtraArgMenu,
   ConfigItem,
   ConfigList,
+  ConfigSwitch,
   InputList,
 } from "@components/config/util";
 import { ImageConfig } from "./components/image";
@@ -46,6 +47,7 @@ export const DeploymentConfig = ({
 
   const network = update.network ?? config.network;
   const hide_ports = network === "host" || network === "none";
+  const auto_update = update.auto_update ?? config.auto_update ?? false;
 
   const disabled = global_disabled || perms !== Types.PermissionLevel.Write;
 
@@ -229,9 +231,18 @@ export const DeploymentConfig = ({
           },
           {
             label: "Auto Update",
+            hidden: (update.image ?? config.image)?.type === "Build",
             components: {
-              poll_for_updates: !(update.auto_update ?? config.auto_update) && {
-                description: "Check for updates to the image on an interval.",
+              poll_for_updates: (poll, set) => {
+                return (
+                  <ConfigSwitch
+                    label="Poll for Updates"
+                    description="Check for updates to the image on an interval."
+                    value={auto_update || poll}
+                    onChange={(poll_for_updates) => set({ poll_for_updates })}
+                    disabled={disabled || auto_update}
+                  />
+                );
               },
               auto_update: {
                 description: "Trigger a redeploy if a newer image is found.",

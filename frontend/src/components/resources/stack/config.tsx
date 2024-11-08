@@ -4,6 +4,7 @@ import {
   AddExtraArgMenu,
   ConfigItem,
   ConfigList,
+  ConfigSwitch,
   InputList,
   ProviderSelectorConfig,
   SystemCommand,
@@ -193,6 +194,8 @@ export const StackConfig = ({
     },
   };
 
+  const auto_update = update.auto_update ?? config.auto_update ?? false;
+
   const general_common: ConfigComponent<Types.StackConfig>[] = [
     {
       label: "Environment",
@@ -239,8 +242,16 @@ export const StackConfig = ({
     {
       label: "Auto Update",
       components: {
-        poll_for_updates: !(update.auto_update ?? config.auto_update) && {
-          description: "Check for updates to the image on an interval.",
+        poll_for_updates: (poll, set) => {
+          return (
+            <ConfigSwitch
+              label="Poll for Updates"
+              description="Check for updates to the image on an interval."
+              value={auto_update || poll}
+              onChange={(poll_for_updates) => set({ poll_for_updates })}
+              disabled={disabled || auto_update}
+            />
+          );
         },
         auto_update: {
           description: "Trigger a redeploy if a newer image is found.",

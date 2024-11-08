@@ -3,6 +3,7 @@ import {
   AccountSelectorConfig,
   ConfigItem,
   ConfigList,
+  ConfigSwitch,
   ProviderSelectorConfig,
   WebhookBuilder,
 } from "@components/config/util";
@@ -92,7 +93,7 @@ export const ResourceSyncConfig = ({
   const integration = getWebhookIntegration(integrations, git_provider);
 
   const mode = getSyncMode(update, config);
-  const managed = update.managed ?? config.managed;
+  const managed = update.managed ?? config.managed ?? false;
 
   const setMode = (mode: SyncMode) => {
     if (mode === "Files On Server") {
@@ -170,10 +171,16 @@ export const ResourceSyncConfig = ({
   const general_common: ConfigComponent<Types.ResourceSyncConfig> = {
     label: "General",
     components: {
-      delete: !managed && {
-        label: "Delete Unmatched Resources",
-        description:
-          "Executions will delete any resources not found in the resource files. Only use this when using one sync for everything.",
+      delete: (delete_mode, set) => {
+        return (
+          <ConfigSwitch
+            label="Delete Unmatched Resources"
+            description="Executions will delete any resources not found in the resource files. Only use this when using one sync for everything."
+            value={managed || delete_mode}
+            onChange={(delete_mode) => set({ delete: delete_mode })}
+            disabled={disabled || managed}
+          />
+        );
       },
       managed: {
         label: "Managed",
