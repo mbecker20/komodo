@@ -216,6 +216,27 @@ pub async fn send_alert(
       ];
       (text, blocks.into())
     }
+    AlertData::DeploymentAutoUpdated {
+      id,
+      name,
+      server_name,
+      server_id: _server_id,
+      image,
+    } => {
+      let text =
+        format!("⬆ Deployment *{name}* was updated automatically ⏫");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server: *{server_name}*\nimage: *{image}*",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Deployment,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
     AlertData::StackStateChange {
       name,
       server_name,
@@ -251,6 +272,30 @@ pub async fn send_alert(
         Block::header(text.clone()),
         Block::section(format!(
           "server: *{server_name}*\nservice: *{service}*\nimage: *{image}*",
+        )),
+        Block::section(resource_link(
+          ResourceTargetVariant::Stack,
+          id,
+        )),
+      ];
+      (text, blocks.into())
+    }
+    AlertData::StackAutoUpdated {
+      id,
+      name,
+      server_name,
+      server_id: _server_id,
+      images,
+    } => {
+      let text =
+        format!("⬆ Stack *{name}* was updated automatically ⏫");
+      let images_label =
+        if images.len() > 1 { "images" } else { "image" };
+      let images = images.join(", ");
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!(
+          "server: *{server_name}*\n{images_label}: *{images}*",
         )),
         Block::section(resource_link(
           ResourceTargetVariant::Stack,

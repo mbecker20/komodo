@@ -30,10 +30,7 @@ use crate::{
   },
   monitor::update_cache_for_server,
   resource,
-  stack::{
-    execute::execute_compose, get_stack_and_server,
-    services::extract_services_into_res,
-  },
+  stack::{execute::execute_compose, get_stack_and_server},
   state::{action_states, db_client, State},
 };
 
@@ -163,6 +160,7 @@ impl Resolve<DeployStack, (User, Update)> for State {
     let ComposeUpResponse {
       logs,
       deployed,
+      services,
       file_contents,
       missing_files,
       remote_errors,
@@ -181,24 +179,11 @@ impl Resolve<DeployStack, (User, Update)> for State {
     update.logs.extend(logs);
 
     let update_info = async {
-      let latest_services = if !file_contents.is_empty() {
-        let mut services = Vec::new();
-        for contents in &file_contents {
-          if let Err(e) = extract_services_into_res(
-            &stack.project_name(true),
-            &contents.contents,
-            &mut services,
-          ) {
-            update.push_error_log(
-              "extract services",
-              format_serror(&e.context(format!("Failed to extract stack services for compose file path {}. Things probably won't work correctly", contents.path)).into())
-            );
-          }
-        }
-        services
-      } else {
+      let latest_services = if services.is_empty() {
         // maybe better to do something else here for services.
         stack.info.latest_services.clone()
+      } else {
+        services
       };
 
       // This ensures to get the latest project name,

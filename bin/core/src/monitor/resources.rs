@@ -103,11 +103,12 @@ pub async fn update_deployment_cache(
             .busy()
             .unwrap_or(true)
         {
-          let deployment = deployment.name.clone();
+          let id = deployment.id.clone();
+          let server_name = server_name.clone();
           tokio::spawn(async move {
-            if let Err(e) = execute::inner_handler(
+            match execute::inner_handler(
               ExecuteRequest::Deploy(Deploy {
-                deployment: deployment.clone(),
+                deployment: deployment.name.clone(),
                 stop_time: None,
                 stop_signal: None,
               }),
@@ -115,9 +116,37 @@ pub async fn update_deployment_cache(
             )
             .await
             {
-              warn!(
-                "Failed to auto update Deployment {deployment} | {e:#}"
-              )
+              Ok(_) => {
+                let ts = komodo_timestamp();
+                let alert = Alert {
+                  id: Default::default(),
+                  ts,
+                  resolved: true,
+                  resolved_ts: ts.into(),
+                  level: SeverityLevel::Ok,
+                  target: ResourceTarget::Deployment(id.clone()),
+                  data: AlertData::DeploymentAutoUpdated {
+                    id,
+                    name: deployment.name,
+                    server_name,
+                    server_id: deployment.config.server_id,
+                    image,
+                  },
+                };
+                let res = db_client().alerts.insert_one(&alert).await;
+                if let Err(e) = res {
+                  error!(
+                    "Failed to record DeploymentAutoUpdated to db | {e:#}"
+                  );
+                }
+                send_alerts(&[alert]).await;
+              }
+              Err(e) => {
+                warn!(
+                  "Failed to auto update Deployment {} | {e:#}",
+                  deployment.name
+                )
+              }
             }
           });
         }
@@ -152,7 +181,7 @@ pub async fn update_deployment_cache(
         let res = db_client().alerts.insert_one(&alert).await;
         if let Err(e) = res {
           error!(
-            "Failed to record Deployment update avaialable to db | {e:#}"
+            "Failed to record DeploymentImageUpdateAvailable to db | {e:#}"
           );
         }
         send_alerts(&[alert]).await;
@@ -257,7 +286,7 @@ pub async fn update_stack_cache(
             let res = db_client().alerts.insert_one(&alert).await;
             if let Err(e) = res {
               error!(
-                "Failed to record Stack update avaialable to db | {e:#}"
+                "Failed to record StackImageUpdateAvailable to db | {e:#}"
               );
             }
             send_alerts(&[alert]).await;
@@ -271,21 +300,31 @@ pub async fn update_stack_cache(
       }
       StackService {
         service: service_name.clone(),
-        image: image.to_string(),
+        image: image.clone(),
         container,
         update_available,
       }
     }).collect::<Vec<_>>();
-    let update_available =
-      services_with_containers.iter().any(|service| {
-        service.update_available
-          // Only consider running services with available updates
-          && service
-            .container
-            .as_ref()
-            .map(|c| c.state == ContainerStateStatusEnum::Running)
-            .unwrap_or_default()
-      });
+
+    let mut update_available = false;
+    let mut images_with_update = Vec::new();
+
+    for service in services_with_containers.iter() {
+      if service.update_available {
+        images_with_update.push(service.image.clone());
+        // Only allow it to actually trigger an auto update deploy
+        // if the service is running.
+        if service
+          .container
+          .as_ref()
+          .map(|c| c.state == ContainerStateStatusEnum::Running)
+          .unwrap_or_default()
+        {
+          update_available = true
+        }
+      }
+    }
+
     let state = get_stack_state_from_containers(
       &stack.config.ignore_services,
       &services,
@@ -301,11 +340,12 @@ pub async fn update_stack_cache(
         .busy()
         .unwrap_or(true)
     {
-      let stack = stack.name.clone();
+      let id = stack.id.clone();
+      let server_name = server_name.clone();
       tokio::spawn(async move {
-        if let Err(e) = execute::inner_handler(
+        match execute::inner_handler(
           ExecuteRequest::DeployStack(DeployStack {
-            stack: stack.clone(),
+            stack: stack.name.clone(),
             service: None,
             stop_time: None,
           }),
@@ -313,7 +353,34 @@ pub async fn update_stack_cache(
         )
         .await
         {
-          warn!("Failed auto update Stack {stack} | {e:#}")
+          Ok(_) => {
+            let ts = komodo_timestamp();
+            let alert = Alert {
+              id: Default::default(),
+              ts,
+              resolved: true,
+              resolved_ts: ts.into(),
+              level: SeverityLevel::Ok,
+              target: ResourceTarget::Stack(id.clone()),
+              data: AlertData::StackAutoUpdated {
+                id,
+                name: stack.name.clone(),
+                server_name,
+                server_id: stack.config.server_id,
+                images: images_with_update,
+              },
+            };
+            let res = db_client().alerts.insert_one(&alert).await;
+            if let Err(e) = res {
+              error!(
+                "Failed to record StackAutoUpdated to db | {e:#}"
+              );
+            }
+            send_alerts(&[alert]).await;
+          }
+          Err(e) => {
+            warn!("Failed auto update Stack {} | {e:#}", stack.name)
+          }
         }
       });
     }

@@ -10,12 +10,14 @@ const ALERT_TYPES: Types.AlertData["type"][] = [
   "ServerCpu",
   "ServerMem",
   "ServerDisk",
-  // State change
-  "ContainerStateChange",
+  // Stack
   "StackStateChange",
-  // Updates
-  "DeploymentImageUpdateAvailable",
   "StackImageUpdateAvailable",
+  "StackAutoUpdated",
+  // Deployment
+  "ContainerStateChange",
+  "DeploymentImageUpdateAvailable",
+  "DeploymentAutoUpdated",
   // Misc
   "AwsBuilderTerminationFailed",
   "ResourceSyncPendingUpdates",
