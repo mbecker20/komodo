@@ -5,8 +5,14 @@ use command::run_komodo_command;
 use formatting::format_serror;
 use git::environment;
 use komodo_client::entities::{
-  all_logs_success, environment_vars_from_str, stack::Stack,
-  to_komodo_name, update::Log, CloneArgs, FileContents,
+  all_logs_success, environment_vars_from_str,
+  stack::{
+    ComposeFile, ComposeService, ComposeServiceDeploy, Stack,
+    StackServiceNames,
+  },
+  to_komodo_name,
+  update::Log,
+  CloneArgs, FileContents,
 };
 use periphery_client::api::{
   compose::ComposeUpResponse,
@@ -150,7 +156,66 @@ pub async fn compose_up(
       output
     });
 
-  // Build images before destroying to minimize downtime.
+  // Uses 'docker compose config' command to extract services (including image)
+  // after performing interpolation
+  {
+    let command = format!(
+    "{docker_compose} -p {project_name} -f {file_args}{env_file}{additional_env_files} config --format json",
+  );
+    let config_log = run_komodo_command(
+      "compose build",
+      run_directory.as_ref(),
+      command,
+      false,
+    )
+    .await;
+    if !config_log.success {
+      res.logs.push(config_log);
+      return Err(anyhow!(
+        "Failed to validate compose files, stopping the run."
+      ));
+    }
+    let compose =
+      serde_json::from_str::<ComposeFile>(&config_log.stdout)
+        .context("Failed to parse compose contents")?;
+    for (
+      service_name,
+      ComposeService {
+        container_name,
+        deploy,
+        image,
+      },
+    ) in compose.services
+    {
+      let image = image.unwrap_or_default();
+      match deploy {
+        Some(ComposeServiceDeploy {
+          replicas: Some(replicas),
+        }) if replicas > 1 => {
+          for i in 1..1 + replicas {
+            res.services.push(StackServiceNames {
+              container_name: format!(
+                "{project_name}-{service_name}-{i}"
+              ),
+              service_name: format!("{service_name}-{i}"),
+              image: image.clone(),
+            });
+          }
+        }
+        _ => {
+          res.services.push(StackServiceNames {
+            container_name: container_name.unwrap_or_else(|| {
+              format!("{project_name}-{service_name}")
+            }),
+            service_name,
+            image,
+          });
+        }
+      }
+    }
+  }
+
+  // Build images before deploying.
   // If this fails, do not continue.
   if stack.config.run_build {
     let build_extra_args =
@@ -198,7 +263,7 @@ pub async fn compose_up(
     }
   }
 
-  //
+  // Pull images before deploying
   if stack.config.auto_pull {
     // Pull images before destroying to minimize downtime.
     // If this fails, do not continue.

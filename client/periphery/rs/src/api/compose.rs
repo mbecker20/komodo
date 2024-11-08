@@ -1,5 +1,5 @@
 use komodo_client::entities::{
-  stack::{ComposeProject, Stack},
+  stack::{ComposeProject, Stack, StackServiceNames},
   update::Log,
   FileContents, SearchCombinator,
 };
@@ -167,8 +167,12 @@ pub struct ComposeUpResponse {
   pub missing_files: Vec<String>,
   /// The logs produced by the deploy
   pub logs: Vec<Log>,
-  /// whether stack was successfully deployed
+  /// Whether stack was successfully deployed
   pub deployed: bool,
+  /// The stack services.
+  /// 
+  /// Note. The "image" is after interpolation.
+  pub services: Vec<StackServiceNames>,
   /// The deploy compose file contents if they could be acquired, or empty vec.
   pub file_contents: Vec<FileContents>,
   /// The error in getting remote file contents at the path, or null
