@@ -123,7 +123,7 @@ export const MonacoEditor = ({
   const options: monaco.editor.IStandaloneEditorConstructionOptions = {
     minimap: { enabled: false },
     // scrollbar: { alwaysConsumeMouseWheel: false },
-    scrollBeyondLastLine: true,
+    scrollBeyondLastLine: false,
     folding: false,
     automaticLayout: true,
     renderValidationDecorations: "on",
