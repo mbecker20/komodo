@@ -14,7 +14,7 @@ import {
 import { Types } from "komodo_client";
 import { ResourceComponents } from "./resources";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@ui/card";
-import { ResourceTags } from "./tags";
+import { ResourceTagsV2 } from "./tags/tags-2";
 import { Topbar } from "./topbar";
 import { cn, usableResourcePath } from "@lib/utils";
 import { Sidebar } from "./sidebar";
@@ -236,7 +236,9 @@ export const NewLayout = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>New {entityType}</DialogTitle>
-          <DialogDescription>Enter a unique name for the new {entityType}.</DialogDescription>
+          <DialogDescription>
+            Enter a unique name for the new {entityType}.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-8">{children}</div>
         <DialogFooter>
@@ -288,7 +290,7 @@ export const ResourceCard = ({
           ))}
         </CardContent>
         <CardFooter className="flex items-center gap-2">
-          <ResourceTags target={{ type, id }} />
+          <ResourceTagsV2 target={{ type, id }} />
         </CardFooter>
       </Card>
     </Link>
