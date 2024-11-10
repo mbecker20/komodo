@@ -19,7 +19,7 @@ import { useToast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { RESOURCE_TARGETS } from "./utils";
 
 // ============== RESOLVER ==============
@@ -284,19 +284,40 @@ export const useFilterResources = <Info>(
   resources?: Types.ResourceListItem<Info>[],
   search?: string
 ) => {
-  const tags = useTagsFilter();
-  const searchSplit = search?.toLowerCase()?.split(" ") || [];
-  return (
-    resources?.filter(
-      (resource) =>
-        tags.every((tag: string) => resource.tags.includes(tag)) &&
-        (searchSplit.length > 0
-          ? searchSplit.every((search) =>
-              resource.name.toLowerCase().includes(search)
-            )
-          : true)
-    ) ?? []
-  );
+  // map selected tags to their Ids for easy comparison
+  const allTags = useRead("ListTags", {}).data;
+  const selectedTagIds = useSearchParams()[0]
+    .getAll("tag")
+    .map((sel) => allTags?.find((t) => t.name === sel)?._id?.$oid)
+    .filter((t) => t !== undefined);
+
+  // split search into space delimited terms
+  const searchTerms = search?.toLowerCase()?.split(" ") || [];
+
+  if (!resources) return [];
+  return resources
+    ?.filter((resource) =>
+      // ensure every selected tag is in the resource's tags
+      selectedTagIds.every((tagId) => resource.tags.includes(tagId))
+    )
+    .filter((resource) =>
+      // ensure every search term is included in the resources's name
+      searchTerms.every((term) => resource.name.toLowerCase().includes(term))
+    );
+
+  // const tags = useTagsFilter();
+  // const searchSplit = search?.toLowerCase()?.split(" ") || [];
+  // return (
+  //   resources?.filter(
+  //     (resource) =>
+  //       tags.every((tag: string) => resource.tags.includes(tag)) &&
+  //       (searchSplit.length > 0
+  //         ? searchSplit.every((search) =>
+  //             resource.name.toLowerCase().includes(search)
+  //           )
+  //         : true)
+  //   ) ?? []
+  // );
 };
 
 export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
