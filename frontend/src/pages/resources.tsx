@@ -1,7 +1,7 @@
 import { ExportButton } from "@components/export";
 import { Page } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
-import { TagsFilter } from "@components/tags";
+// import { TagsFilter } from "@components/tags";
 import {
   useFilterResources,
   useRead,
@@ -14,6 +14,7 @@ import { Input } from "@ui/input";
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { NotFound } from "@components/util";
+import { TagSelector } from "@components/tags/tags-2";
 
 export const Resources = () => {
   const is_admin = useUser().data?.admin ?? false;
@@ -62,7 +63,8 @@ export const Resources = () => {
             <Components.GroupActions />
           </div>
           <div className="flex items-center gap-4">
-            <TagsFilter />
+            {/* <TagsFilter /> */}
+            <TagSelector />
             <div className="relative">
               <Search className="w-4 absolute top-[50%] left-3 -translate-y-[50%] text-muted-foreground" />
               <Input
