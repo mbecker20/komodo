@@ -5,7 +5,7 @@ import {
   CopyResource,
   ResourceDescription,
 } from "@components/resources/common";
-import { AddTags, ResourceTags } from "@components/tags";
+import { AddTags } from "@components/tags";
 import {
   usePushRecentlyViewed,
   useRead,
@@ -17,15 +17,11 @@ import { has_minimum_permissions, usableResourcePath } from "@lib/utils";
 import { Types } from "komodo_client";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
-import {
-  AlertTriangle,
-  ChevronLeft,
-  LinkIcon,
-  Zap,
-} from "lucide-react";
+import { AlertTriangle, ChevronLeft, LinkIcon, Zap } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { ResourceNotifications } from "./resource-notifications";
 import { NotFound } from "@components/util";
+import { ResourceTagsV2 } from "@components/tags/tags-2";
 
 export const useEditPermissions = ({ type, id }: Types.ResourceTarget) => {
   const user = useUser().data;
@@ -205,12 +201,13 @@ export const ResourceHeader = ({
         </div>
         <div className="flex items-center gap-2 flex-wrap p-4 pt-0">
           <p className="text-sm text-muted-foreground">Tags:</p>
-          <ResourceTags
+          <ResourceTagsV2 target={{ type, id }} clickHandler="remove" />
+          {/* <ResourceTags
             target={{ id, type }}
             className="text-sm"
             disabled={!canWrite}
             click_to_delete
-          />
+          /> */}
           {canWrite && <AddTags target={{ id, type }} />}
         </div>
       </div>
