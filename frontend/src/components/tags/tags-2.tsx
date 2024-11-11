@@ -135,6 +135,8 @@ export const ResourceTagsV2 = ({
           )}
           variant={active ? "default" : "secondary"}
           onClick={(e) => {
+            if (!clickHandler) return;
+
             e.preventDefault();
             e.stopPropagation();
 
