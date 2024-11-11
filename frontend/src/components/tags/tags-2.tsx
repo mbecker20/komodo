@@ -150,7 +150,7 @@ export const ResourceTagsV2 = ({
     <div className="relative w-full overflow-hidden">
       <div
         className={cn(
-          "invisible absolute right-0 top-0 w-7 h-7 bg-gradient-to-r from-transparent to-transparent/80 opacity-0 transition-all",
+          "invisible absolute right-0 top-0 w-7 h-7 bg-gradient-to-r from-transparent to-background/80 opacity-0 transition-all",
           showShadow && "visible opacity-100"
         )}
       />
