@@ -52,6 +52,7 @@ const useResourceTableColums = <T extends UsableResource>(
   return useMemo(
     () => [
       {
+        size: 200,
         accessorKey: "name",
         header: (h) => <SortableHeader column={h.column} title="Name" />,
         cell: ({ row: { original } }) => (
@@ -60,12 +61,13 @@ const useResourceTableColums = <T extends UsableResource>(
       },
       ...RESOURCE_SPECIFIC_COLUMNS,
       {
+        size: 100,
         accessorKey: "info.state",
         header: (h) => <SortableHeader column={h.column} title="State" />,
         cell: ({ row }) => <Components.State id={row.original.id} />,
-        size: 120,
       },
       {
+        size: 200,
         accessorKey: "tags",
         header: (h) => <SortableHeader column={h.column} title="Tags" />,
         cell: ({ row }) => (
@@ -98,6 +100,7 @@ const useResourceSpecificColumns = <T extends UsableResource>(
     } = {
       Action: [
         {
+          size: 200,
           id: "last-run-at",
           header: (h) => <SortableHeader column={h.column} title="Repo" />,
           cell: ({ row }) =>
@@ -113,16 +116,18 @@ const useResourceSpecificColumns = <T extends UsableResource>(
         },
         {
           header: "Version",
-          size: 120,
+          size: 200,
           accessorFn: ({ info }) => fmt_version(info.version),
         },
       ],
       Builder: [
         {
+          size: 200,
           accessorKey: "info.builder_type",
           header: (h) => <SortableHeader column={h.column} title="Provider" />,
         },
         {
+          size: 200,
           accessorKey: "info.instance_type",
           header: (h) => (
             <SortableHeader column={h.column} title="Instance Type" />
@@ -198,10 +203,12 @@ const useResourceSpecificColumns = <T extends UsableResource>(
       ],
       ServerTemplate: [
         {
+          size: 200,
           accessorKey: "info.provider",
           header: (h) => <SortableHeader column={h.column} title="Provider" />,
         },
         {
+          size: 200,
           accessorKey: "info.instance_type",
           header: (h) => (
             <SortableHeader column={h.column} title="Instance Type" />
@@ -301,7 +308,7 @@ const DeploymentImage = ({
   } else {
     const [img] = image.split(":");
     return (
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center whitespace-nowrap">
         <HardDrive className="w-4 h-4" />
         {img}
       </div>
