@@ -233,7 +233,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   const { mutate: update } = useWrite("UpdateTagsOnResource", {
     onSuccess: () => {
       inv([`List${type}s`]);
-      toast({ title: `Added tag ${search}` });
+      // toast({ title: `Added tag ${search}` });
       setOpen(false);
     },
   });
@@ -310,10 +310,19 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
                     key={tag._id?.$oid}
                     value={tag.name}
                     onSelect={() =>
-                      update({
-                        target,
-                        tags: [...(resource?.tags ?? []), tag._id!.$oid],
-                      })
+                      update(
+                        {
+                          target,
+                          tags: [...(resource?.tags ?? []), tag._id!.$oid],
+                        },
+                        {
+                          onSuccess: () =>
+                            toast({
+                              title: "Added Tag",
+                              description: `Added tag - ${tag.name} - to resource - ${resource.name}`,
+                            }),
+                        }
+                      )
                     }
                     className="cursor-pointer"
                   >
