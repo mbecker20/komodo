@@ -21,6 +21,7 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { AlertTriangle, Box, Circle, History } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
+import { ResourceTagsV2 } from "@components/tags/tags-2";
 
 export const Dashboard = () => {
   const noResources = useNoResources();
@@ -149,7 +150,8 @@ const RecentCard = ({
         </div>
       </div>
       <div className="flex gap-2 w-full">
-        <TagsWithBadge tag_ids={tags} />
+        <ResourceTagsV2 target={{ type, id }} />
+        {/* <TagsWithBadge tag_ids={tags} /> */}
       </div>
     </Link>
   );

@@ -201,7 +201,9 @@ export const ResourceHeader = ({
         </div>
         <div className="flex items-center gap-2 flex-wrap p-4 pt-0">
           <p className="text-sm text-muted-foreground">Tags:</p>
-          <ResourceTagsV2 target={{ type, id }} clickHandler="remove" />
+          <div>
+            <ResourceTagsV2 target={{ type, id }} clickHandler="remove" />
+          </div>
           {/* <ResourceTags
             target={{ id, type }}
             className="text-sm"

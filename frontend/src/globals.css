@@ -34,8 +34,8 @@
     @apply rounded-lg bg-muted-foreground;
   }
 
-  .accent-scrollbar::-webkit-scrollbar {
-    @apply w-1 h-1 bg-transparent;
+  .no-scroll::-webkit-scrollbar {
+    @apply hidden;
   }
 }
 

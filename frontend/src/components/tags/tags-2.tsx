@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { Types } from "komodo_client";
 import { Check, MinusCircle, SearchX, Tag } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
@@ -85,11 +85,9 @@ export const ResourceTagsV2 = ({
   target,
   className,
   clickHandler,
-  //   onClick,
 }: {
   target: TargetExcludingSystem;
   className?: string;
-  //   onClick?: (tagId: string) => void;
   clickHandler?: "toggle" | "remove";
 }) => {
   const all_tags = useRead("ListTags", {}).data;
@@ -123,53 +121,86 @@ export const ResourceTagsV2 = ({
     [all_tags, resource, selected]
   );
 
+  const [showShadow, setShowShadow] = useState(true);
+  useEffect(() => {
+    const container = document.getElementById(id);
+    if (container) {
+      const handler = () => {
+        if (
+          container.scrollLeft + container.clientWidth >=
+          container.scrollWidth
+        ) {
+          setShowShadow(false);
+        } else {
+          setShowShadow(true);
+        }
+      };
+
+      console.log(id, container.clientWidth, container.scrollWidth);
+
+      handler();
+      container.addEventListener("scroll", handler);
+      return () => {
+        window.removeEventListener("scroll", handler);
+      };
+    }
+  }, [id]);
+
   return (
-    <div className="flex gap-1 overflow-x-auto accent-scrollbar">
-      {resourceTags?.map(({ tagId, name, active }) => (
-        <Badge
-          key={tagId}
-          className={cn(
-            "h-7 p-0 whitespace-nowrap flex items-center justify-between",
-            clickHandler && "cursor-pointer ",
-            className
-          )}
-          variant={active ? "default" : "secondary"}
-          onClick={(e) => {
-            if (!clickHandler) return;
+    <div className="relative w-full overflow-hidden">
+      <div
+        className={cn(
+          "invisible absolute right-0 top-0 w-7 h-7 bg-gradient-to-r from-transparent to-transparent/80 opacity-0 transition-all",
+          showShadow && "visible opacity-100"
+        )}
+      />
+      <div id={id} className="flex gap-1 overflow-x-auto no-scroll z-10">
+        {resourceTags?.map(({ tagId, name, active }) => (
+          <Badge
+            key={tagId}
+            className={cn(
+              "h-7 p-0 whitespace-nowrap flex items-center justify-between",
+              clickHandler && "cursor-pointer ",
+              className
+            )}
+            variant={active ? "default" : "secondary"}
+            onClick={(e) => {
+              if (!clickHandler) return;
 
-            e.preventDefault();
-            e.stopPropagation();
+              e.preventDefault();
+              e.stopPropagation();
 
-            // toggle tags in and out of url params when clicked
-            if (clickHandler === "toggle") {
-              if (active) params.delete("tag", name);
-              else params.append("tag", name);
-              setParams(params);
-            }
+              // toggle tags in and out of url params when clicked
+              if (clickHandler === "toggle") {
+                if (active) params.delete("tag", name);
+                else params.append("tag", name);
+                setParams(params);
+              }
 
-            // remove tag from resource when clicked
-            if (clickHandler === "remove") {
-              mutate(
-                { target, tags: resource?.tags.filter((t) => t !== tagId)! },
-                {
-                  onSuccess: () =>
-                    toast({
-                      title: "Tag Removed",
-                      description: `Removed tag - ${name} - from ${resource?.name}`,
-                    }),
-                }
-              );
-            }
-          }}
-        >
-          <p className="px-2">{name}</p>
-          {clickHandler === "remove" && (
-            <p className="w-7 h-full grid place-items-center rounded-r-md hover:bg-red-700">
-              <MinusCircle className="w-3" />
-            </p>
-          )}
-        </Badge>
-      ))}
+              // remove tag from resource when clicked
+              if (clickHandler === "remove") {
+                mutate(
+                  { target, tags: resource?.tags.filter((t) => t !== tagId)! },
+                  {
+                    onSuccess: () =>
+                      toast({
+                        title: "Tag Removed",
+                        description: `Removed tag - ${name} - from ${resource?.name}`,
+                      }),
+                  }
+                );
+              }
+            }}
+          >
+            <p className="px-2">{name}</p>
+            {clickHandler === "remove" && (
+              <p className="w-7 h-full grid place-items-center rounded-r-md hover:bg-red-700">
+                <MinusCircle className="w-3" />
+              </p>
+            )}
+          </Badge>
+        ))}
+      </div>
     </div>
   );
 };

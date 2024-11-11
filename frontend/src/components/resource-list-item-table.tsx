@@ -9,7 +9,7 @@ import { ResourceLink } from "./resources/common";
 import { HardDrive } from "lucide-react";
 import { fmt_version } from "@lib/formatting";
 import { BuilderInstanceType } from "./resources/builder";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type ListItemInfoMap = {
   Deployment: Types.DeploymentListItem;
