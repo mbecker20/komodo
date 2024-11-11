@@ -90,8 +90,8 @@ export function DataTable<TData, TValue>({
   return (
     <div className="rounded-md border bg-card text-card-foreground shadow py-1 px-1">
       <Table className="xl:table-fixed border-separate border-spacing-0">
-        <TableHeader className="sticky top-0">
-          {table.getHeaderGroups().map((headerGroup, i) => (
+        <TableHeader className="sticky top-0 z-30">
+          {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {/* placeholder header */}
               {i === 0 && selectOptions && (
