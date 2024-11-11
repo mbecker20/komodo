@@ -1,7 +1,7 @@
 import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
-import { TagsFilter } from "@components/tags";
+// import { TagsFilter } from "@components/tags";
 import { ShowHideButton } from "@components/util";
 import {
   useFilterResources,
@@ -11,11 +11,13 @@ import {
   useUser,
 } from "@lib/hooks";
 import { cn } from "@lib/utils";
-import { Types } from "komodo_client";
+
 import { RequiredResourceComponents, UsableResource } from "@types";
 import { Input } from "@ui/input";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { TagSelector } from "@components/tags/tags-2";
+import { ResourceListItemTable } from "@components/resource-list-item-table";
 
 export const AllResources = () => {
   const [search, setSearch] = useState("");
@@ -34,7 +36,8 @@ export const AllResources = () => {
           />
 
           <div className="flex items-center gap-2">
-            <TagsFilter />
+            {/* <TagsFilter /> */}
+            <TagSelector />
             <ExportButton tags={tags} />
           </div>
         </div>
@@ -55,7 +58,7 @@ export const AllResources = () => {
         {Object.entries(ResourceComponents).map(([type, Components]) => (
           <TableSection
             key={type}
-            type={type}
+            type={type as UsableResource}
             Components={Components}
             search={search}
           />
@@ -70,22 +73,15 @@ const TableSection = ({
   Components,
   search,
 }: {
-  type: string;
+  type: UsableResource;
   Components: RequiredResourceComponents;
   search?: string;
 }) => {
-  const resources = useRead(`List${type as UsableResource}s`, {}).data;
-
-  const filtered = useFilterResources(
-    resources as Types.ResourceListItem<unknown>[],
-    search
-  );
-
-  let count = filtered.length;
-
+  const resources = useRead(`List${type}s`, {}).data;
   const [show, setShow] = useState(true);
 
-  if (!count) return;
+  const filtered = useFilterResources(resources as any, search);
+  if (!filtered.length) return;
 
   return (
     <Section
@@ -95,7 +91,13 @@ const TableSection = ({
       actions={<ShowHideButton show={show} setShow={setShow} />}
     >
       <div className={cn("border-b", show && "pb-8")}>
-        {show && <Components.Table resources={filtered ?? []} />}
+        {/* {show && <Components.Table resources={filtered ?? []} />} */}
+        {show && (
+          <ResourceListItemTable
+            type={type as UsableResource}
+            data={filtered as any}
+          />
+        )}
       </div>
     </Section>
   );
