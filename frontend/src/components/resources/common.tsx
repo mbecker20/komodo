@@ -185,7 +185,7 @@ export const ResourceLink = ({
         e.stopPropagation();
         onClick?.();
       }}
-      className="flex items-center gap-2 text-sm hover:underline"
+      className="flex items-center gap-2 text-sm hover:underline whitespace-nowrap"
     >
       <Components.Icon id={id} />
       <ResourceName type={type} id={id} />
