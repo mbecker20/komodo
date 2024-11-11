@@ -1,16 +1,13 @@
 import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
-// import { TagsFilter } from "@components/tags";
 import { ShowHideButton } from "@components/util";
 import {
   useFilterResources,
   useNoResources,
   useRead,
-  // useTagsFilter,
   useUser,
 } from "@lib/hooks";
-import { cn } from "@lib/utils";
 
 import { RequiredResourceComponents, UsableResource } from "@types";
 import { Input } from "@ui/input";
@@ -22,7 +19,6 @@ import { useSearchParams } from "react-router-dom";
 
 export const AllResources = () => {
   const [search, setSearch] = useState("");
-  // const tags = useTagsFilter();
   const noResources = useNoResources();
   const user = useUser().data!;
 
@@ -88,21 +84,19 @@ const TableSection = ({
   if (!filtered.length) return;
 
   return (
-    <Section
-      key={type}
-      title={type + "s"}
-      icon={<Components.Icon />}
-      actions={<ShowHideButton show={show} setShow={setShow} />}
-    >
-      <div className={cn("border-b", show && "pb-8")}>
-        {/* {show && <Components.Table resources={filtered ?? []} />} */}
+    <div className="p-4 border rounded-md bg-accent/25">
+      <Section
+        title={type + "s"}
+        icon={<Components.Icon />}
+        actions={<ShowHideButton show={show} setShow={setShow} />}
+      >
         {show && (
           <ResourceListItemTable
             type={type as UsableResource}
             data={filtered as any}
           />
         )}
-      </div>
-    </Section>
+      </Section>
+    </div>
   );
 };

@@ -10,6 +10,7 @@ import { HardDrive } from "lucide-react";
 import { fmt_version } from "@lib/formatting";
 import { BuilderInstanceType } from "./resources/builder";
 import { StackComponents } from "./resources/stack";
+import { useMemo } from "react";
 
 export type ListItemInfoMap = {
   Deployment: Types.DeploymentListItem;
@@ -32,39 +33,48 @@ export const ResourceListItemTable = <T extends keyof ListItemInfoMap>({
   type: UsableResource;
   data: ListItemInfoMap[T][];
 }) => {
-  const Components = ResourceComponents[type];
-
+  const colums = useResourceTableColums(type);
   return (
     <DataTable
       tableKey={type + "-resources-table"}
-      data={data as ListItemInfoMap[typeof type][]}
-      columns={[
-        {
-          accessorKey: "name",
-          header: (h) => <SortableHeader column={h.column} title="Name" />,
-          cell: ({ row: { original } }) => (
-            <ResourceLink type={type} id={original.id} />
-          ),
-        },
-        ...(ExtraColumns[type] as any),
-        {
-          accessorKey: "info.state",
-          header: (h) => <SortableHeader column={h.column} title="State" />,
-          cell: ({ row }) => <Components.State id={row.original.id} />,
-          size: 120,
-        },
-        {
-          accessorKey: "tags",
-          header: (h) => <SortableHeader column={h.column} title="Tags" />,
-          cell: ({ row }) => (
-            <ResourceTagsV2
-              target={{ type, id: row.original.id }}
-              clickHandler="toggle"
-            />
-          ),
-        },
-      ]}
+      data={data}
+      columns={colums}
     />
+  );
+};
+
+const useResourceTableColums = <T extends UsableResource>(
+  type: T
+): ColumnDef<ListItemInfoMap[T]>[] => {
+  const Components = ResourceComponents[type];
+  return useMemo(
+    () => [
+      {
+        accessorKey: "name",
+        header: (h) => <SortableHeader column={h.column} title="Name" />,
+        cell: ({ row: { original } }) => (
+          <ResourceLink type={type} id={original.id} />
+        ),
+      },
+      ...ExtraColumns[type],
+      {
+        accessorKey: "info.state",
+        header: (h) => <SortableHeader column={h.column} title="State" />,
+        cell: ({ row }) => <Components.State id={row.original.id} />,
+        size: 120,
+      },
+      {
+        accessorKey: "tags",
+        header: (h) => <SortableHeader column={h.column} title="Tags" />,
+        cell: ({ row }) => (
+          <ResourceTagsV2
+            target={{ type, id: row.original.id }}
+            clickHandler="toggle"
+          />
+        ),
+      },
+    ],
+    [type]
   );
 };
 

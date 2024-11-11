@@ -21,6 +21,7 @@ import { atomFamily } from "jotai/utils";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { RESOURCE_TARGETS } from "./utils";
+import { ListItemInfoMap } from "@components/resource-list-item-table";
 
 // ============== RESOLVER ==============
 
@@ -280,8 +281,8 @@ export const useCheckResourceExists = () => {
   };
 };
 
-export const useFilterResources = <Info>(
-  resources?: Types.ResourceListItem<Info>[],
+export const useFilterResources = <T extends UsableResource>(
+  resources?: ListItemInfoMap[T][],
   search?: string
 ) => {
   // map selected tags to their Ids for easy comparison

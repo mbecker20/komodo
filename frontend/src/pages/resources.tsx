@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { NotFound } from "@components/util";
 import { TagSelector } from "@components/tags/tags-2";
+import { ResourceListItemTable } from "@components/resource-list-item-table";
 
 export const Resources = () => {
   const is_admin = useUser().data?.admin ?? false;
@@ -30,7 +31,7 @@ export const Resources = () => {
   useSetTitle(name + "s");
   const [search, set] = useState("");
   const resources = useRead(`List${type}s`, {}).data;
-  const filtered = useFilterResources(resources as any, search);
+  const filtered = useFilterResources(resources, search);
 
   const Components = ResourceComponents[type];
 
@@ -76,7 +77,8 @@ export const Resources = () => {
             </div>
           </div>
         </div>
-        <Components.Table resources={filtered ?? []} />
+        <ResourceListItemTable type={type} data={filtered} />
+        {/* <Components.Table resources={filtered ?? []} /> */}
       </div>
     </Page>
   );
