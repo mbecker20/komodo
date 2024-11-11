@@ -7,7 +7,7 @@ import {
   useFilterResources,
   useNoResources,
   useRead,
-  useTagsFilter,
+  // useTagsFilter,
   useUser,
 } from "@lib/hooks";
 import { cn } from "@lib/utils";
@@ -18,12 +18,16 @@ import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { TagSelector } from "@components/tags/tags-2";
 import { ResourceListItemTable } from "@components/resource-list-item-table";
+import { useSearchParams } from "react-router-dom";
 
 export const AllResources = () => {
   const [search, setSearch] = useState("");
-  const tags = useTagsFilter();
+  // const tags = useTagsFilter();
   const noResources = useNoResources();
   const user = useUser().data!;
+
+  const tags = useSearchParams()[0].getAll("tag");
+
   return (
     <Page
       titleOther={
