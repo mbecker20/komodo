@@ -158,6 +158,7 @@ const useResourceSpecificColumns = <T extends UsableResource>(
       ],
       Procedure: [
         {
+          size: 200,
           accessorKey: "info.stages",
           header: (h) => <SortableHeader column={h.column} title="Stages" />,
         },
@@ -188,6 +189,7 @@ const useResourceSpecificColumns = <T extends UsableResource>(
       ],
       Server: [
         {
+          size: 200,
           id: "count",
           header: (h) => <SortableHeader column={h.column} title="Resources" />,
           cell: ({ row }) => <>{countResources(row.original.id)}</>,
@@ -195,6 +197,7 @@ const useResourceSpecificColumns = <T extends UsableResource>(
             sortServerIdsByResourceCount(a.original.id, b.original.id),
         },
         {
+          size: 200,
           accessorKey: "info.region",
           header: ({ column }) => (
             <SortableHeader column={column} title="Region" />
@@ -217,12 +220,12 @@ const useResourceSpecificColumns = <T extends UsableResource>(
       ],
       Stack: [
         {
+          size: 200,
           accessorKey: "info.server_id",
           header: (h) => <SortableHeader column={h.column} title="Server" />,
           cell: ({ row: { original } }) => (
             <ResourceLink type="Server" id={original.info.server_id} />
           ),
-          size: 200,
           sortingFn: (a, b) =>
             sortServerIdsByName(
               a.original.info.server_id,
