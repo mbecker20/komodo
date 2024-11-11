@@ -7,7 +7,7 @@
     @apply border-border scroll-smooth;
   }
   *::-webkit-scrollbar {
-    @apply w-1 h-1 bg-background;
+    @apply w-1 h-1 bg-transparent;
   }
   *::-webkit-scrollbar-thumb {
     @apply rounded-lg bg-primary;
@@ -28,6 +28,10 @@
   code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
       monospace;
+  }
+
+  .accent-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-lg bg-muted-foreground;
   }
 }
 
@@ -93,5 +97,5 @@
 }
 
 .asdfa {
-  color: #151b25
+  color: #151b25;
 }

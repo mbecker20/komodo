@@ -124,7 +124,7 @@ export const ResourceTagsV2 = ({
   );
 
   return (
-    <div className="flex gap-1 flex-wrap">
+    <div className="flex gap-1 overflow-x-auto accent-scrollbar">
       {resourceTags?.map(({ tagId, name, active }) => (
         <Badge
           key={tagId}
