@@ -226,10 +226,13 @@ const komodo = KomodoClient('{base_url}', {{
   params: {{ key: '{key}', secret: '{secret}' }}
 }});
 
-async function main() {{{contents}}}
+async function main() {{
+{contents}
+
+console.log('🦎 Action completed successfully 🦎');
+}}
 
 main()
-.then(() => console.log('🦎 Action completed successfully 🦎'))
 .catch(error => {{
   console.error('🚨 Action exited early with errors 🚨')
   if (error.status !== undefined && error.result !== undefined) {{

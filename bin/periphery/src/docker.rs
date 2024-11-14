@@ -945,17 +945,24 @@ pub async fn docker_login(
     None => crate::helpers::registry_token(domain, account)?,
   };
   let log = async_run_command(&format!(
-    "docker login {domain} -u {account} -p {registry_token}",
+    "echo {registry_token} | docker login {domain} --username {account} --password-stdin",
   ))
   .await;
   if log.success() {
     Ok(true)
   } else {
-    Err(anyhow!(
-      "{domain} login error: stdout: {} | stderr: {}",
-      log.stdout,
-      log.stderr
-    ))
+    let mut e = anyhow!("End of trace");
+    for line in
+      log.stderr.split('\n').filter(|line| !line.is_empty()).rev()
+    {
+      e = e.context(line.to_string());
+    }
+    for line in
+      log.stdout.split('\n').filter(|line| !line.is_empty()).rev()
+    {
+      e = e.context(line.to_string());
+    }
+    Err(e.context(format!("Registry {domain} login error")))
   }
 }
 

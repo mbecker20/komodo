@@ -114,15 +114,11 @@ impl Resolve<build::Build> for State {
     let buildx = if *use_buildx { " buildx" } else { "" };
     let image_tags =
       image_tags(&image_name, image_tag, version, &additional_tags);
-    let push_command = should_push
-      .then(|| {
-        format!(" && docker image push --all-tags {image_name}")
-      })
-      .unwrap_or_default();
+    let maybe_push = if should_push { " --push" } else { "" };
 
     // Construct command
     let command = format!(
-      "docker{buildx} build{build_args}{command_secret_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{push_command}",
+      "docker{buildx} build{build_args}{command_secret_args}{extra_args}{labels}{image_tags}{maybe_push} -f {dockerfile_path} .",
     );
 
     if *skip_secret_interp {
