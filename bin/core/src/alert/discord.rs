@@ -140,7 +140,7 @@ pub async fn send_alert(
       server_name,
       images,
     } => {
-      let link = resource_link(ResourceTargetVariant::Deployment, id);
+      let link = resource_link(ResourceTargetVariant::Stack, id);
       let images_label =
         if images.len() > 1 { "images" } else { "image" };
       let images = images.join(", ");
