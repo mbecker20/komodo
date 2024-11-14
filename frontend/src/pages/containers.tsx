@@ -10,7 +10,10 @@ import { Fragment, useCallback, useMemo, useState } from "react";
 
 export const ContainersPage = () => {
   const [search, setSearch] = useState("");
-  const searchSplit = search.toLowerCase().split(" ");
+  const searchSplit = search
+    .toLowerCase()
+    .split(" ")
+    .filter((term) => term);
   const servers = useRead("ListServers", {}).data;
   const serverName = useCallback(
     (id: string) => servers?.find((server) => server.id === id)?.name,
@@ -21,7 +24,8 @@ export const ContainersPage = () => {
     () =>
       _containers?.filter((c) => {
         if (searchSplit.length === 0) return true;
-        return searchSplit.every((search) => c.name.includes(search));
+        const lower = c.name.toLowerCase();
+        return searchSplit.every((search) => lower.includes(search));
       }),
     [_containers, searchSplit]
   );
