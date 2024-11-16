@@ -507,11 +507,33 @@ pub async fn write_stack(
       )
       .components()
       .collect::<PathBuf>();
-    fs::write(&file_path, &stack.config.file_contents)
-      .await
-      .with_context(|| {
-        format!("failed to write compose file to {file_path:?}")
-      })?;
+
+    let file_contents = if !stack.config.skip_secret_interp {
+      let (contents, replacers) = svi::interpolate_variables(
+        &stack.config.file_contents,
+        &periphery_config().secrets,
+        svi::Interpolator::DoubleBrackets,
+        true,
+      )
+      .context("failed to interpolate secrets into file contents")?;
+      if !replacers.is_empty() {
+        res.logs().push(Log::simple(
+        "Interpolate - Compose file",
+        replacers
+            .iter()
+            .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        ));
+      }
+      contents
+    } else {
+      stack.config.file_contents.clone()
+    };
+
+    fs::write(&file_path, &file_contents).await.with_context(
+      || format!("failed to write compose file to {file_path:?}"),
+    )?;
 
     Ok((
       run_directory,
