@@ -134,8 +134,7 @@ export const PullStack = ({
   }
 
   return (
-    <ActionWithDialog
-      name={`${stack?.name}${service ? ` - ${service}` : ""}`}
+    <ConfirmButton
       title={`Pull Image${service ? "" : "s"}`}
       icon={<Download className="h-4 w-4" />}
       onClick={() => pull({ stack: id, service })}
