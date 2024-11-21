@@ -42,4 +42,4 @@ LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
 LABEL org.opencontainers.image.description="Komodo Periphery"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
-ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
+ENTRYPOINT [ "entrypoint.sh" ]
