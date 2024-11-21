@@ -2,7 +2,8 @@
 FROM rust:1.82.0-bullseye AS builder
 
 # Install cross-compilation tools
-RUN apt-get update && apt-get install -y gcc-aarch64-linux-gnu
+RUN apt-get update && apt-get install -y \
+  pkg-config pkg-config-multiarch gcc-aarch64-linux-gnu
 
 # Set environment for cross-compilation
 ENV CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
@@ -15,11 +16,14 @@ COPY ./bin/periphery ./bin/periphery
 COPY ./client/core/rs ./client/core/rs
 COPY ./client/periphery ./client/periphery
 
-# Build binaries for both architectures
+# Build x86_64
 RUN rustup target add x86_64-unknown-linux-gnu && \
   cargo build -p komodo_periphery --release --target x86_64-unknown-linux-gnu
+
+# Build aarch64
 RUN rustup target add aarch64-unknown-linux-gnu && \
-  cargo build -p komodo_periphery --release --target aarch64-unknown-linux-gnu
+  PKG_CONFIG=aarch64-linux-gnu-pkg-config cargo \
+  build -p komodo_periphery --release --target aarch64-unknown-linux-gnu
 
 # Final Image
 FROM debian:bullseye-slim
