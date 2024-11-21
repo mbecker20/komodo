@@ -9,10 +9,11 @@ ENV CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
 ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
 
 WORKDIR /builder
+COPY Cargo.toml Cargo.lock ./
 COPY ./lib ./lib
 COPY ./bin/periphery ./bin/periphery
-COPY ./client/rs ./client/rs
-COPY Cargo.toml Cargo.lock ./
+COPY ./client/core/rs ./client/core/rs
+COPY ./client/periphery ./client/periphery
 
 # Build binaries for both architectures
 RUN cargo build -p komodo_periphery --release --target x86_64-unknown-linux-gnu
