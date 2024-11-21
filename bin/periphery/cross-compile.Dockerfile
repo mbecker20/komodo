@@ -16,8 +16,10 @@ COPY ./client/core/rs ./client/core/rs
 COPY ./client/periphery ./client/periphery
 
 # Build binaries for both architectures
-RUN cargo build -p komodo_periphery --release --target x86_64-unknown-linux-gnu
-RUN cargo build -p komodo_periphery --release --target aarch64-unknown-linux-gnu
+RUN rustup target add x86_64-unknown-linux-gnu && \
+  cargo build -p komodo_periphery --release --target x86_64-unknown-linux-gnu
+RUN rustup target add aarch64-unknown-linux-gnu && \
+  cargo build -p komodo_periphery --release --target aarch64-unknown-linux-gnu
 
 # Final Image
 FROM debian:bullseye-slim
