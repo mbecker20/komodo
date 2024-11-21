@@ -5,8 +5,14 @@
 
 # Build Periphery
 FROM rust:1.82.0-alpine AS builder
+
 WORKDIR /builder
-COPY . .
+COPY Cargo.toml Cargo.lock ./
+COPY ./lib ./lib
+COPY ./bin/periphery ./bin/periphery
+COPY ./client/core/rs ./client/core/rs
+COPY ./client/periphery ./client/periphery
+
 RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
 RUN cargo build -p komodo_periphery --release
 

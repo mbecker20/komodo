@@ -5,9 +5,13 @@
 
 # Build Core
 FROM rust:1.82.0-alpine AS core-builder
-WORKDIR /builder
 RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
-COPY . .
+WORKDIR /builder
+COPY Cargo.toml Cargo.lock ./
+COPY ./lib ./lib
+COPY ./bin/core ./bin/core
+COPY ./client/core/rs ./client/core/rs
+COPY ./client/periphery ./client/periphery
 RUN cargo build -p komodo_core --release
 
 # Build Frontend
