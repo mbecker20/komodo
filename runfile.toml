@@ -53,6 +53,18 @@ cmd = "KOMODO_CONFIG_PATH=test.core.config.toml cargo run -p komodo_core --relea
 description = "runs periphery --release pointing to test.periphery.config.toml"
 cmd = "PERIPHERY_CONFIG_PATH=test.periphery.config.toml cargo run -p komodo_periphery --release"
 
+[create-multiarch-builder]
+cmd = "docker buildx create --name builder --use --bootstrap"
+
+[build-multiarch-periphery]
+cmd = """
+docker build \
+  --platform linux/amd64,linux/arm64 \
+  --builder builder \
+  -f bin/periphery/debian.Dockerfile \
+  .
+"""
+
 [docsite-start]
 path = "docsite"
 cmd = "yarn start"
