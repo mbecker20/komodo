@@ -3,6 +3,7 @@ ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
 ARG X86_64_IMAGE=${REGISTRY_AND_NAMESPACE}/periphery:latest-x86_64 
 ARG AARCH64_IMAGE=${REGISTRY_AND_NAMESPACE}/periphery:latest-aarch64
 
+# This is required to work with COPY --from
 FROM ${X86_64_IMAGE} AS x86_64
 FROM ${AARCH64_IMAGE} AS aarch64
 
