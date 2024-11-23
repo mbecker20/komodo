@@ -27,9 +27,10 @@ RUN case "$TARGETPLATFORM" in \
   esac
 
 
-# Copy default config / static frontend
+# Copy default config / static frontend / deno binary
 COPY ./config/core.config.toml /config/config.toml
 COPY --from=x86_64 /app/frontend /app/frontend
+COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # Set $DENO_DIR and preload external Deno deps
 ENV DENO_DIR=/action-cache/deno
