@@ -60,8 +60,7 @@ cmd = "docker buildx create --name builder --use --bootstrap"
 cmd = """
 docker build \
   --platform linux/amd64,linux/arm64 \
-  --builder builder \
-  -f bin/periphery/debian.Dockerfile \
+  -f bin/periphery/cross-compile.Dockerfile \
   .
 """
 
