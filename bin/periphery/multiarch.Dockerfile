@@ -3,8 +3,8 @@ ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
 ARG X86_64_IMAGE=${REGISTRY_AND_NAMESPACE}/periphery:x86_64-latest 
 ARG AARCH64_IMAGE=${REGISTRY_AND_NAMESPACE}/periphery:aarch64-latest 
 
-FROM ${X86_64_IMAGE} as x86_64
-FROM ${AARCH64_IMAGE} as aarch64
+FROM ${X86_64_IMAGE} AS x86_64
+FROM ${AARCH64_IMAGE} AS aarch64
 
 FROM debian:bullseye-slim
 
