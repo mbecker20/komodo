@@ -14,12 +14,11 @@ RUN sh ./debian-deps.sh && rm ./debian-deps.sh
 
 WORKDIR /app
 
-## Copy both binaries initially, but only keep appropriate one for the TARGETPLATFORM.
-COPY --from=x86_64 /app/periphery /usr/local/bin/periphery-x86_64
-COPY --from=aarch64 /app/periphery /usr/local/bin/periphery-aarch64
+COPY --from=x86_64 /app/peripher[y] /usr/local/bin/periphery-x86_64
+COPY --from=aarch64 /app/peripher[y] /usr/local/bin/periphery-aarch64
 RUN case "$TARGETPLATFORM" in \
-  "linux/amd64") mv /usr/local/bin/periphery-x86_64 /usr/local/bin/periphery && rm /usr/local/bin/periphery-aarch64;; \
-  "linux/arm64") mv /usr/local/bin/periphery-aarch64 /usr/local/bin/periphery && rm /usr/local/bin/periphery-x86_64;; \
+  "linux/amd64") mv /usr/local/bin/periphery-x86_64 /usr/local/bin/periphery;; \
+  "linux/arm64") mv /usr/local/bin/periphery-aarch64 /usr/local/bin/periphery;; \
   *) echo "Unsupported TARGETPLATFORM=$TARGETPLATFORM" && exit 1;; \
   esac
 
