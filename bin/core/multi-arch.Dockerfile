@@ -17,15 +17,10 @@ RUN apt update && \
 WORKDIR /app
 
 ## Copy both binaries initially, but only keep appropriate one for the TARGETPLATFORM.
-COPY --from=x86_64 /app/core /app/core-x86_64
-COPY --from=aarch64 /app/core /app/core-aarch64
+COPY --from=x86_64 /app/core /app/arch/linux/amd64
+COPY --from=aarch64 /app/core /app/arch/linux/arm64
 ARG TARGETPLATFORM
-RUN case "$TARGETPLATFORM" in \
-  "linux/amd64") mv /app/core-x86_64 /app/core && rm /app/core-aarch64;; \
-  "linux/arm64") mv /app/core-aarch64 /app/core && rm /app/core-x86_64;; \
-  *) echo "Unsupported TARGETPLATFORM=$TARGETPLATFORM" && exit 1;; \
-  esac
-
+RUN mv /app/arch/${TARGETPLATFORM} /app/core && rm -r /app/arch
 
 # Copy default config / static frontend / deno binary
 COPY ./config/core.config.toml /config/config.toml

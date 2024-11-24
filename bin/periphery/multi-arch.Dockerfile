@@ -16,14 +16,10 @@ RUN sh ./debian-deps.sh && rm ./debian-deps.sh
 WORKDIR /app
 
 ## Copy both binaries initially, but only keep appropriate one for the TARGETPLATFORM.
-COPY --from=x86_64 /app/periphery /app/periphery-x86_64
-COPY --from=aarch64 /app/periphery /app/periphery-aarch64
+COPY --from=x86_64 /app/periphery /app/arch/linux/amd64
+COPY --from=aarch64 /app/periphery /app/arch/linux/arm64
 ARG TARGETPLATFORM
-RUN case "$TARGETPLATFORM" in \
-  "linux/amd64") mv /app/periphery-x86_64 /app/periphery && rm /app/periphery-aarch64;; \
-  "linux/arm64") mv /app/periphery-aarch64 /app/periphery && rm /app/periphery-x86_64;; \
-  *) echo "Unsupported TARGETPLATFORM=$TARGETPLATFORM" && exit 1;; \
-  esac
+RUN mv /app/arch/${TARGETPLATFORM} /app/periphery && rm -r /app/arch
 
 # Hint at the port
 EXPOSE 8120
