@@ -42,6 +42,7 @@ To run a full Komodo instance from a non-container environment run commands in t
     * `run -r test-core` -- Build and run Core API
     * `run -r test-periphery` -- Build and run Periphery API
 * Build Frontend
+    * Install **typeshare-cli**: `cargo install typeshare-cli`
     * **Run this once** -- `run -r link-client` -- generates TS client and links to the frontend
     * After running the above once:
         * `run -r gen-client` -- Rebuild client 
