@@ -46,8 +46,8 @@ cmd = """
 docker compose -p komodo-dev -f test.compose.yaml build"""
 
 [test-core]
-description = "runs core --release pointing to test.core.config.toml"
-cmd = "KOMODO_CONFIG_PATH=test.core.config.toml cargo run -p komodo_core --release"
+description = "runs core --release pointing to .komodo/core.config.toml"
+cmd = "KOMODO_CONFIG_PATH=.komodo/core.config.toml cargo run -p komodo_core --release"
 
 [test-periphery]
 description = "runs periphery --release pointing to test.periphery.config.toml"
