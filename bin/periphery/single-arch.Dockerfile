@@ -1,4 +1,5 @@
-# Build Periphery for a specific architecture
+## All in one, multi stage compile + runtime Docker build for your architecture.
+
 FROM rust:1.82.0-bullseye AS builder
 
 WORKDIR /builder

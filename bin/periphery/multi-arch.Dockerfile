@@ -1,11 +1,15 @@
+## Assumes the latest binaries for multiple x86_64 and aarch64 are already built (by binaries.Dockerfile).
+## Sets up the necessary runtime container dependencies for Komodo Periphery.
+## Since theres no heavy build here, QEMU multi-arch builds are fine for this image.
+
 ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
 
-ARG X86_64_IMAGE=${REGISTRY_AND_NAMESPACE}/periphery:latest-x86_64 
-ARG AARCH64_IMAGE=${REGISTRY_AND_NAMESPACE}/periphery:latest-aarch64
+ARG X86_64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:latest-x86_64 
+ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:latest-aarch64
 
 # This is required to work with COPY --from
-FROM ${X86_64_IMAGE} AS x86_64
-FROM ${AARCH64_IMAGE} AS aarch64
+FROM ${X86_64_BINARIES} AS x86_64
+FROM ${AARCH64_BINARIES} AS aarch64
 
 FROM debian:bullseye-slim
 

@@ -1,3 +1,5 @@
+## All in one, multi stage compile + runtime Docker build for your architecture.
+
 # Build Core
 FROM rust:1.82.0-bullseye AS core-builder
 
