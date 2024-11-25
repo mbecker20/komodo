@@ -22,7 +22,7 @@ COPY ./bin/core ./bin/core
 COPY ./bin/periphery ./bin/periphery
 
 # Compile bin
-RUN cargo build -p komodo_core --release
+RUN cargo build --release
 
 # Copy just the binaries to scratch image
 FROM scratch
