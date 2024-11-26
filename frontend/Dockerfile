@@ -5,13 +5,14 @@ WORKDIR /builder
 COPY ./frontend ./frontend
 COPY ./client/core/ts ./client
 
-# Optionally specify a specific host.
-ARG VITE_KOMODO_HOST
+# Optionally specify a specific Komodo host.
+ARG VITE_KOMODO_HOST=""
 ENV VITE_KOMODO_HOST=${VITE_KOMODO_HOST}
 
+# Build and link the client
 RUN cd client && yarn && yarn build && yarn link
 RUN cd frontend && yarn link komodo_client && yarn && yarn build
 
-ENV PORT=4174
-
-CMD cd frontend && yarn preview --host --port ${PORT}
+# Copy just the static frontend to scratch image
+FROM scratch
+COPY --from=builder /builder/frontend/dist /frontend
