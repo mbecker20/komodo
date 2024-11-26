@@ -237,9 +237,11 @@ async fn get_ec2_instance_status(
     {
       Ok(res) => return Ok(res),
       Err(e) if try_count > 4 => return Err(e),
-      Err(_) => tokio::time::sleep(Duration::from_secs(2)).await,
+      Err(_) => {
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        try_count += 1;
+      }
     }
-    try_count += 1;
   }
 }
 
@@ -293,9 +295,11 @@ async fn get_ec2_instance_public_ip(
     {
       Ok(res) => return Ok(res),
       Err(e) if try_count > 4 => return Err(e),
-      Err(_) => tokio::time::sleep(Duration::from_secs(2)).await,
+      Err(_) => {
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        try_count += 1;
+      }
     }
-    try_count += 1;
   }
 }
 
