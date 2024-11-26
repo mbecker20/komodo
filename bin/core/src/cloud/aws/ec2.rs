@@ -212,13 +212,13 @@ async fn terminate_ec2_instance_inner(
   Ok(res)
 }
 
-/// Automatically retries 3 times, waiting 2 sec in between
+/// Automatically retries 5 times, waiting 2 sec in between
 #[instrument(level = "debug")]
 async fn get_ec2_instance_status(
   client: &Client,
   instance_id: &str,
 ) -> anyhow::Result<Option<InstanceStatus>> {
-  let mut count = 0;
+  let mut try_count = 1;
   loop {
     match async {
       anyhow::Ok(
@@ -236,10 +236,10 @@ async fn get_ec2_instance_status(
     .await
     {
       Ok(res) => return Ok(res),
-      Err(e) if count > 1 => return Err(e),
+      Err(e) if try_count > 4 => return Err(e),
       Err(_) => tokio::time::sleep(Duration::from_secs(2)).await,
     }
-    count += 1;
+    try_count += 1;
   }
 }
 
@@ -262,12 +262,13 @@ async fn get_ec2_instance_state_name(
   Ok(Some(state))
 }
 
+/// Automatically retries 5 times, waiting 2 sec in between
 #[instrument(level = "debug")]
 async fn get_ec2_instance_public_ip(
   client: &Client,
   instance_id: &str,
 ) -> anyhow::Result<String> {
-  let mut count = 0;
+  let mut try_count = 1;
   loop {
     match async {
       anyhow::Ok(
@@ -291,10 +292,10 @@ async fn get_ec2_instance_public_ip(
     .await
     {
       Ok(res) => return Ok(res),
-      Err(e) if count > 1 => return Err(e),
+      Err(e) if try_count > 4 => return Err(e),
       Err(_) => tokio::time::sleep(Duration::from_secs(2)).await,
     }
-    count += 1;
+    try_count += 1;
   }
 }
 
