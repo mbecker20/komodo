@@ -30,8 +30,8 @@ RUN apt update && \
 WORKDIR /app
 
 # Copy both binaries initially, but only keep appropriate one for the TARGETPLATFORM.
-COPY --from=x86_64 /app/cor[e] /app/arch/linux/amd64
-COPY --from=aarch64 /app/cor[e] /app/arch/linux/arm64
+COPY --from=x86_64 /core /app/arch/linux/amd64
+COPY --from=aarch64 /core /app/arch/linux/arm64
 ARG TARGETPLATFORM
 RUN mv /app/arch/${TARGETPLATFORM} /app/core && rm -r /app/arch
 

@@ -29,5 +29,5 @@ RUN \
 # Copy just the binaries to scratch image
 FROM scratch
 
-COPY --from=builder /builder/target/release/core /app
-COPY --from=builder /builder/target/release/periphery /app
+COPY --from=builder /builder/target/release/core /core
+COPY --from=builder /builder/target/release/periphery /periphery

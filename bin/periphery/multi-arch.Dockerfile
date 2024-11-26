@@ -20,8 +20,8 @@ RUN sh ./debian-deps.sh && rm ./debian-deps.sh
 WORKDIR /app
 
 ## Copy both binaries initially, but only keep appropriate one for the TARGETPLATFORM.
-COPY --from=x86_64 /app/peripher[y] /app/arch/linux/amd64
-COPY --from=aarch64 /app/peripher[y] /app/arch/linux/arm64
+COPY --from=x86_64 /periphery /app/arch/linux/amd64
+COPY --from=aarch64 /periphery /app/arch/linux/arm64
 ARG TARGETPLATFORM
 RUN mv /app/arch/${TARGETPLATFORM} /app/periphery && rm -r /app/arch
 
