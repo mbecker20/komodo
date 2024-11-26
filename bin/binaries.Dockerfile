@@ -17,7 +17,7 @@ RUN \
   cargo build --release && \
   rm -r ./bin/core && \
   rm -r ./bin/periphery
-  
+
 COPY ./bin/core ./bin/core
 COPY ./bin/periphery ./bin/periphery
 

@@ -4,7 +4,6 @@
 
 ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
 ARG BINARIES_TAG=latest
-
 ARG X86_64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${BINARIES_TAG}-x86_64
 ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${BINARIES_TAG}-aarch64
 
@@ -12,6 +11,15 @@ ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${BINARIES_TAG}-aarch64
 FROM ${X86_64_BINARIES} AS x86_64
 FROM ${AARCH64_BINARIES} AS aarch64
 
+# Build Frontend
+FROM node:20.12-alpine AS frontend
+WORKDIR /builder
+COPY ./frontend ./frontend
+COPY ./client/core/ts ./client
+RUN cd client && yarn && yarn build && yarn link
+RUN cd frontend && yarn link komodo_client && yarn && yarn build
+
+# Final Image
 FROM debian:bullseye-slim
 
 # Install Deps
@@ -21,7 +29,7 @@ RUN apt update && \
 
 WORKDIR /app
 
-## Copy both binaries initially, but only keep appropriate one for the TARGETPLATFORM.
+# Copy both binaries initially, but only keep appropriate one for the TARGETPLATFORM.
 COPY --from=x86_64 /app/core /app/arch/linux/amd64
 COPY --from=aarch64 /app/core /app/arch/linux/arm64
 ARG TARGETPLATFORM
@@ -29,7 +37,7 @@ RUN mv /app/arch/${TARGETPLATFORM} /app/core && rm -r /app/arch
 
 # Copy default config / static frontend / deno binary
 COPY ./config/core.config.toml /config/config.toml
-COPY --from=x86_64 /app/frontend /app/frontend
+COPY --from=frontend /builder/frontend/dist /app/frontend
 COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # Set $DENO_DIR and preload external Deno deps
