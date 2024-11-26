@@ -3,21 +3,15 @@
 ## Since theres no heavy build here, QEMU multi-arch builds are fine for this image.
 
 ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
-ARG BINARIES_TAG=latest
-ARG X86_64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${BINARIES_TAG}-x86_64
-ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${BINARIES_TAG}-aarch64
+ARG IMAGE_TAG=latest
+ARG X86_64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}-x86_64
+ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}-aarch64
+ARG FRONTEND=${REGISTRY_AND_NAMESPACE}/frontend:${IMAGE_TAG}
 
 # This is required to work with COPY --from
 FROM ${X86_64_BINARIES} AS x86_64
 FROM ${AARCH64_BINARIES} AS aarch64
-
-# Build Frontend
-FROM node:20.12-alpine AS frontend
-WORKDIR /builder
-COPY ./frontend ./frontend
-COPY ./client/core/ts ./client
-RUN cd client && yarn && yarn build && yarn link
-RUN cd frontend && yarn link komodo_client && yarn && yarn build
+FROM ${FRONTEND} AS frontend
 
 # Final Image
 FROM debian:bullseye-slim
@@ -37,7 +31,7 @@ RUN mv /app/arch/${TARGETPLATFORM} /app/core && rm -r /app/arch
 
 # Copy default config / static frontend / deno binary
 COPY ./config/core.config.toml /config/config.toml
-COPY --from=frontend /builder/frontend/dist /app/frontend
+COPY --from=frontend /frontend /app/frontend
 COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # Set $DENO_DIR and preload external Deno deps

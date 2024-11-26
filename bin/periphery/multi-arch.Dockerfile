@@ -3,9 +3,9 @@
 ## Since theres no heavy build here, QEMU multi-arch builds are fine for this image.
 
 ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
-ARG BINARIES_TAG=latest
-ARG X86_64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${BINARIES_TAG}-x86_64 
-ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${BINARIES_TAG}-aarch64
+ARG IMAGE_TAG=latest
+ARG X86_64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}-x86_64 
+ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}-aarch64
 
 # This is required to work with COPY --from
 FROM ${X86_64_BINARIES} AS x86_64
