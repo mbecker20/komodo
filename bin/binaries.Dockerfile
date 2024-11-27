@@ -3,6 +3,8 @@
 
 # FROM rust:1.82.0-bullseye AS builder
 FROM rust:1.82.0-alpine AS builder
+RUN apk update && apk --no-cache add \
+  musl-dev openssl-dev openssl-libs-static
 
 WORKDIR /builder
 COPY Cargo.toml Cargo.lock ./
