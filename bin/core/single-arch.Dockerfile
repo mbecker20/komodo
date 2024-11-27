@@ -5,6 +5,14 @@ ARG BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}
 # This is required to work with COPY --from
 FROM ${BINARIES} AS binaries
 
+# Build Frontend
+FROM node:20.12-alpine AS frontend-builder
+WORKDIR /builder
+COPY ./frontend ./frontend
+COPY ./client/core/ts ./client
+RUN cd client && yarn && yarn build && yarn link
+RUN cd frontend && yarn link komodo_client && yarn && yarn build
+
 FROM debian:bullseye-slim
 
 # Install Deps
