@@ -5,7 +5,7 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
-use axum_server::tls_openssl::OpenSSLConfig;
+use axum_server::tls_rustls::RustlsConfig;
 use tower_http::{
   cors::{Any, CorsLayer},
   services::{ServeDir, ServeFile},
@@ -90,12 +90,13 @@ async fn app() -> anyhow::Result<()> {
   if config.ssl_enabled {
     info!("🔒 Core SSL Enabled");
     info!("Komodo Core starting on https://{socket_addr}");
-    let ssl_config = OpenSSLConfig::from_pem_file(
+    let ssl_config = RustlsConfig::from_pem_file(
       &config.ssl_cert_file,
       &config.ssl_key_file,
     )
+    .await
     .context("Failed to parse ssl ")?;
-    axum_server::bind_openssl(socket_addr, ssl_config)
+    axum_server::bind_rustls(socket_addr, ssl_config)
       .serve(app)
       .await?
   } else {

@@ -1,34 +1,10 @@
-## All in one, multi stage compile + runtime Docker build for your architecture.
+ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
+ARG IMAGE_TAG=latest
+ARG BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}
 
-# Build Core
-FROM rust:1.82.0-bullseye AS core-builder
+# This is required to work with COPY --from
+FROM ${BINARIES} AS binaries
 
-WORKDIR /builder
-COPY Cargo.toml Cargo.lock ./
-COPY ./lib ./lib
-COPY ./client/core/rs ./client/core/rs
-COPY ./client/periphery ./client/periphery
-
-# Pre compile dependencies
-COPY ./bin/core/Cargo.toml ./bin/core/Cargo.toml
-RUN mkdir ./bin/core/src && \
-	echo "fn main() {}" >> ./bin/core/src/main.rs && \
-	cargo build -p komodo_core --release && \
-	rm -r ./bin/core
-COPY ./bin/core ./bin/core
-
-# Compile app
-RUN cargo build -p komodo_core --release
-
-# Build Frontend
-FROM node:20.12-alpine AS frontend-builder
-WORKDIR /builder
-COPY ./frontend ./frontend
-COPY ./client/core/ts ./client
-RUN cd client && yarn && yarn build && yarn link
-RUN cd frontend && yarn link komodo_client && yarn && yarn build
-
-# Final Image
 FROM debian:bullseye-slim
 
 # Install Deps
