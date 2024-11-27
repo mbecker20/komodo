@@ -1,6 +1,5 @@
-# Image tag is required here to specify the arch
-ARG IMAGE_TAG
 ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
+ARG IMAGE_TAG=latest
 ARG BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}
 
 # This is required to work with COPY --from
