@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=x86_64 /core /app/arch/linux/amd64
 COPY --from=aarch64 /core /app/arch/linux/arm64
 ARG TARGETPLATFORM
-RUN mv /app/arch/${TARGETPLATFORM} /app/core && rm -r /app/arch
+RUN mv /app/arch/${TARGETPLATFORM} /usr/local/bin/core && rm -r /app/arch
 
 # Copy default config / static frontend / deno binary
 COPY ./config/core.config.toml /config/config.toml
@@ -48,4 +48,4 @@ LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
 LABEL org.opencontainers.image.description="Komodo Core"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
-ENTRYPOINT [ "/app/core" ]
+ENTRYPOINT [ "core" ]

@@ -1,5 +1,6 @@
+# Image tag is required here to specify the arch
+ARG IMAGE_TAG
 ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
-ARG IMAGE_TAG=latest
 ARG BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}
 
 # This is required to work with COPY --from
@@ -11,14 +12,11 @@ FROM debian:bullseye-slim
 RUN apt update && \
 	apt install -y git ca-certificates && \
 	rm -rf /var/lib/apt/lists/*
-
-# Setup an application directory
-WORKDIR /app
 	
 # Copy
 COPY ./config/core.config.toml /config/config.toml
-COPY --from=core-builder /builder/target/release/core /app
 COPY --from=frontend-builder /builder/frontend/dist /app/frontend
+COPY --from=binaries /core /usr/local/bin/core
 COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # Set $DENO_DIR and preload external Deno deps
@@ -35,4 +33,4 @@ LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
 LABEL org.opencontainers.image.description="Komodo Core"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
-ENTRYPOINT [ "/app/core" ]
+ENTRYPOINT [ "core" ]
