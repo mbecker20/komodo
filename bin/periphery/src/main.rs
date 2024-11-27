@@ -37,6 +37,9 @@ async fn app() -> anyhow::Result<()> {
 
   if config.ssl_enabled {
     info!("🔒 Periphery SSL Enabled");
+    rustls::crypto::ring::default_provider()
+      .install_default()
+      .expect("failed to install default rustls CryptoProvider");
     ssl::ensure_certs().await;
     info!("Komodo Periphery starting on https://{}", socket_addr);
     let ssl_config = RustlsConfig::from_pem_file(
