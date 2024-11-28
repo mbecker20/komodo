@@ -1,3 +1,6 @@
+## Assumes the latest binaries for the required arch are already built (by binaries.Dockerfile).
+## Sets up the necessary runtime container dependencies for Komodo Periphery.
+
 ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
 ARG IMAGE_TAG=latest
 ARG BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}

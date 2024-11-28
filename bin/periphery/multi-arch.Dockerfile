@@ -1,4 +1,4 @@
-## Assumes the latest binaries for multiple x86_64 and aarch64 are already built (by binaries.Dockerfile).
+## Assumes the latest binaries for x86_64 and aarch64 are already built (by binaries.Dockerfile).
 ## Sets up the necessary runtime container dependencies for Komodo Periphery.
 ## Since theres no heavy build here, QEMU multi-arch builds are fine for this image.
 
