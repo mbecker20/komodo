@@ -3,16 +3,22 @@ import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { Types } from "komodo_client";
 import { ResourceSyncComponents } from ".";
+import { useSelectedResources } from "@lib/hooks";
 
 export const ResourceSyncTable = ({
   syncs,
 }: {
   syncs: Types.ResourceSyncListItem[];
 }) => {
+  const [_, setSelectedResources] = useSelectedResources("ResourceSync");
   return (
     <DataTable
       tableKey="syncs"
       data={syncs}
+      selectOptions={{
+        selectKey: ({ name }) => name,
+        onSelect: setSelectedResources,
+      }}
       columns={[
         {
           accessorKey: "name",

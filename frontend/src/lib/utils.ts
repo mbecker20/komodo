@@ -138,6 +138,12 @@ export const usableResourcePath = (resource: UsableResource) => {
   return `${resource.toLowerCase()}s`;
 };
 
+export const usableResourceExecuteKey = (resource: UsableResource) => {
+  if (resource === "ServerTemplate") return "template";
+  if (resource === "ResourceSync") return "sync";
+  return `${resource.toLowerCase()}`;
+};
+
 export const sanitizeOnlySpan = (log: string) => {
   return sanitizeHtml(log, {
     allowedTags: ["span"],

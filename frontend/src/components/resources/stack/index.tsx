@@ -157,9 +157,11 @@ export const StackComponents: RequiredResourceComponents = {
     <GroupActions
       type="Stack"
       actions={[
-        "BatchDeployStack",
-        "BatchDeployStackIfChanged",
-        "BatchDestroyStack",
+        "PullStack",
+        "DeployStack",
+        "RestartStack",
+        "StopStack",
+        "DestroyStack",
       ]}
     />
   ),

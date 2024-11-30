@@ -71,19 +71,19 @@ export const RepoComponents: RequiredResourceComponents = {
 
   New: ({ server_id }) => <NewResource type="Repo" server_id={server_id} />,
 
+  GroupActions: () => (
+    <GroupActions
+      type="Repo"
+      actions={["PullRepo", "CloneRepo", "BuildRepo"]}
+    />
+  ),
+
   Table: ({ resources }) => (
     <RepoTable repos={resources as Types.RepoListItem[]} />
   ),
 
   Icon: ({ id }) => <RepoIcon id={id} size={4} />,
   BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,
-
-  GroupActions: () => (
-    <GroupActions
-      type="Repo"
-      actions={["BatchPullRepo", "BatchBuildRepo", "BatchCloneRepo"]}
-    />
-  ),
 
   State: ({ id }) => {
     const state = useRepo(id)?.info.state;

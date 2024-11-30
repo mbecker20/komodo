@@ -22,6 +22,7 @@ import { ResourceSyncInfo } from "./info";
 import { ResourceSyncPending } from "./pending";
 import { Badge } from "@ui/badge";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 10_000 }).data?.find(
@@ -137,14 +138,16 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
     );
   },
 
-  GroupActions: () => <></>,
-
   New: () => {
     const admin = useUser().data?.admin;
     return (
       admin && <NewResource type="ResourceSync" readable_type="Resource Sync" />
     );
   },
+
+  GroupActions: () => (
+    <GroupActions type="ResourceSync" actions={["RunSync"]} />
+  ),
 
   Table: ({ resources }) => (
     <ResourceSyncTable syncs={resources as Types.ResourceSyncListItem[]} />

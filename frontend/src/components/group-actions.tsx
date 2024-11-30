@@ -1,4 +1,4 @@
-import { useSelectedResources, useExecute } from "@lib/hooks";
+import { useSelectedResources, useExecute, useWrite } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
 import {
@@ -16,10 +16,15 @@ import {
 } from "@ui/dropdown-menu";
 import { Input } from "@ui/input";
 import { Types } from "komodo_client";
-import { ChevronDown, Loader2, CheckCircle } from "lucide-react";
+import { ChevronDown, CheckCircle } from "lucide-react";
 import { useState } from "react";
+import { ConfirmButton } from "./util";
+import { useToast } from "@ui/use-toast";
+import { usableResourceExecuteKey } from "@lib/utils";
 
-export const GroupActions = <T extends Types.ExecuteRequest["type"]>({
+export const GroupActions = <
+  T extends Types.ExecuteRequest["type"] | Types.WriteRequest["type"],
+>({
   type,
   actions,
 }: {
@@ -32,6 +37,7 @@ export const GroupActions = <T extends Types.ExecuteRequest["type"]>({
   return (
     <>
       <GroupActionDropdownMenu
+        type={type}
         actions={actions}
         onSelect={setAction}
         disabled={!selected.length}
@@ -45,11 +51,15 @@ export const GroupActions = <T extends Types.ExecuteRequest["type"]>({
   );
 };
 
-const GroupActionDropdownMenu = <T extends Types.ExecuteRequest["type"]>({
+const GroupActionDropdownMenu = <
+  T extends Types.ExecuteRequest["type"] | Types.WriteRequest["type"],
+>({
+  type,
   actions,
   onSelect,
   disabled,
 }: {
+  type: UsableResource;
   actions: T[];
   onSelect: (item: T) => void;
   disabled: boolean;
@@ -60,12 +70,31 @@ const GroupActionDropdownMenu = <T extends Types.ExecuteRequest["type"]>({
         Group Actions <ChevronDown className="w-4" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="start" className="w-40">
+    <DropdownMenuContent
+      align="start"
+      className={type === "Server" ? "w-56" : "w-40"}
+    >
+      {type === "ResourceSync" && (
+        <DropdownMenuItem
+          onClick={() => onSelect("RefreshResourceSyncPending" as any)}
+        >
+          <Button variant="secondary" className="w-full">
+            Refresh
+          </Button>
+        </DropdownMenuItem>
+      )}
       {actions.map((action) => (
         <DropdownMenuItem key={action} onClick={() => onSelect(action)}>
-          {action.replaceAll("Batch", "")}
+          <Button variant="secondary" className="w-full">
+            {action.replaceAll("Batch", "").replaceAll(type, "")}
+          </Button>
         </DropdownMenuItem>
       ))}
+      <DropdownMenuItem onClick={() => onSelect(`Delete${type}` as any)}>
+        <Button variant="destructive" className="w-full">
+          Delete
+        </Button>
+      </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 );
@@ -76,15 +105,32 @@ const GroupActionDialog = ({
   onClose,
 }: {
   type: UsableResource;
-  action: Types.ExecuteRequest["type"] | undefined;
+  action:
+    | (Types.ExecuteRequest["type"] | Types.WriteRequest["type"])
+    | undefined;
   onClose: () => void;
 }) => {
-  const [selected] = useSelectedResources(type);
+  const { toast } = useToast();
+  const [selected, setSelected] = useSelectedResources(type);
   const [text, setText] = useState("");
 
-  const { mutate, isPending } = useExecute(action!, { onSuccess: onClose });
+  const { mutate: execute, isPending: executePending } = useExecute(
+    action! as Types.ExecuteRequest["type"],
+    {
+      onSuccess: onClose,
+    }
+  );
+  const { mutate: write, isPending: writePending } = useWrite(
+    action! as Types.WriteRequest["type"],
+    {
+      onSuccess: onClose,
+    }
+  );
 
-  const formatted = action?.replaceAll("Batch", "");
+  if (!action) return;
+
+  const formatted = action.replaceAll("Batch", "").replaceAll(type, "");
+  const isPending = executePending || writePending;
 
   return (
     <Dialog open={!!action} onOpenChange={(o) => !o && onClose()}>
@@ -93,33 +139,53 @@ const GroupActionDialog = ({
           <DialogTitle>Group Execute - {formatted}</DialogTitle>
         </DialogHeader>
         <div className="py-8 flex flex-col gap-4">
-          <p>
-            Are you sure you wish to execute <b>{formatted}</b> for the selected
-            resources?
-          </p>
           <ul className="p-4 bg-accent text-sm list-disc list-inside">
             {selected.map((resource) => (
               <li key={resource}>{resource}</li>
             ))}
           </ul>
-          <p>
-            Please enter <b>{formatted}</b> in the input below to confirm.
-          </p>
-          <Input value={text} onChange={(e) => setText(e.target.value)} />
+          {!action.startsWith("Refresh") && (
+            <>
+              <p
+                onClick={() => {
+                  navigator.clipboard.writeText(formatted);
+                  toast({ title: `Copied "${formatted}" to clipboard!` });
+                }}
+                className="cursor-pointer"
+              >
+                Please enter <b>{formatted}</b> below to confirm this action.
+                <br />
+                <span className="text-xs text-muted-foreground">
+                  You may click the action in bold to copy it
+                </span>
+              </p>
+              <Input value={text} onChange={(e) => setText(e.target.value)} />
+            </>
+          )}
         </div>
         <DialogFooter>
-          <Button
-            disabled={text !== formatted}
-            onClick={() => mutate({ pattern: selected.join(",") })}
-            className="gap-4"
-          >
-            Confirm
-            {isPending ? (
-              <Loader2 className="w-4 aspect-auto" />
-            ) : (
-              <CheckCircle className="w-4" />
-            )}
-          </Button>
+          <ConfirmButton
+            title="Confirm"
+            icon={<CheckCircle className="w-4 h-4" />}
+            onClick={() => {
+              for (const resource of selected) {
+                if (action.startsWith("Delete")) {
+                  write({ id: resource } as any);
+                } else if (action.startsWith("Refresh")) {
+                  write({ [usableResourceExecuteKey(type)]: resource } as any);
+                } else {
+                  execute({
+                    [usableResourceExecuteKey(type)]: resource,
+                  } as any);
+                }
+              }
+              if (action.startsWith("Delete")) {
+                setSelected([]);
+              }
+            }}
+            disabled={action.startsWith("Refresh") ? false : text !== formatted}
+            loading={isPending}
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

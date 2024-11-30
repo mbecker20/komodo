@@ -20,6 +20,7 @@ import { DeleteResource, ResourceLink } from "../common";
 import { BuilderTable } from "./table";
 import { ResourcePageHeader } from "@components/util";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 export const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}, { refetchInterval: 10_000 }).data?.find(
@@ -63,8 +64,6 @@ export const BuilderComponents: RequiredResourceComponents = {
       </Link>
     );
   },
-
-  GroupActions: () => <></>,
 
   New: () => {
     const is_admin = useUser().data?.admin;
@@ -115,6 +114,8 @@ export const BuilderComponents: RequiredResourceComponents = {
       </NewLayout>
     );
   },
+
+  GroupActions: () => <GroupActions type="Builder" actions={[]} />,
 
   Table: ({ resources }) => (
     <BuilderTable builders={resources as Types.BuilderListItem[]} />
