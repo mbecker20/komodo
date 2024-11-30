@@ -62,11 +62,9 @@ export const ProcedureComponents: RequiredResourceComponents = {
     );
   },
 
-  GroupActions: () => (
-    <GroupActions type="Procedure" actions={["BatchRunProcedure"]} />
-  ),
-
   New: () => <NewResource type="Procedure" />,
+
+  GroupActions: () => <GroupActions type="Procedure" actions={["RunProcedure"]} />,
 
   Table: ({ resources }) => (
     <ProcedureTable procedures={resources as Types.ProcedureListItem[]} />

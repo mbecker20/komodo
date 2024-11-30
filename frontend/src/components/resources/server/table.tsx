@@ -1,5 +1,5 @@
 import { TableTags } from "@components/tags";
-import { useRead } from "@lib/hooks";
+import { useRead, useSelectedResources } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceLink } from "../common";
@@ -11,6 +11,7 @@ export const ServerTable = ({
 }: {
   servers: Types.ServerListItem[];
 }) => {
+  const [_, setSelectedResources] = useSelectedResources("Server");
   const deployments = useRead("ListDeployments", {}).data;
   const stacks = useRead("ListStacks", {}).data;
   const repos = useRead("ListRepos", {}).data;
@@ -28,6 +29,10 @@ export const ServerTable = ({
     <DataTable
       tableKey="servers"
       data={servers}
+      selectOptions={{
+        selectKey: ({ name }) => name,
+        onSelect: setSelectedResources,
+      }}
       columns={[
         {
           accessorKey: "name",
@@ -71,9 +76,7 @@ export const ServerTable = ({
           header: ({ column }) => (
             <SortableHeader column={column} title="State" />
           ),
-          cell: ({ row }) => (
-            <ServerComponents.State id={row.original.id} />
-          ),
+          cell: ({ row }) => <ServerComponents.State id={row.original.id} />,
         },
         {
           header: "Tags",

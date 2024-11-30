@@ -13,7 +13,7 @@ export const StackTable = ({ stacks }: { stacks: Types.StackListItem[] }) => {
     [servers]
   );
 
-  const [_, setSelectedResources] = useSelectedResources("Procedure");
+  const [_, setSelectedResources] = useSelectedResources("Stack");
 
   return (
     <DataTable

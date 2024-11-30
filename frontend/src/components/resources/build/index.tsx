@@ -115,8 +115,6 @@ export const BuildComponents: RequiredResourceComponents = {
     );
   },
 
-  GroupActions: () => <GroupActions type="Build" actions={["BatchRunBuild"]} />,
-
   New: () => {
     const user = useUser().data;
     const builders = useRead("ListBuilders", {}).data;
@@ -131,6 +129,8 @@ export const BuildComponents: RequiredResourceComponents = {
       />
     );
   },
+
+  GroupActions: () => <GroupActions type="Build" actions={["RunBuild"]} />,
 
   Table: ({ resources }) => (
     <BuildTable builds={resources as Types.BuildListItem[]} />

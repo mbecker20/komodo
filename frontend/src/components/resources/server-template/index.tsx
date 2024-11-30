@@ -21,6 +21,7 @@ import { ServerTemplateTable } from "./table";
 import { LaunchServer } from "./actions";
 import { ResourcePageHeader } from "@components/util";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 export const useServerTemplate = (id?: string) =>
   useRead("ListServerTemplates", {}).data?.find((d) => d.id === id);
@@ -49,8 +50,6 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
       </Link>
     );
   },
-
-  GroupActions: () => <></>,
 
   New: () => {
     const nav = useNavigate();
@@ -97,6 +96,8 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
       </NewLayout>
     );
   },
+
+  GroupActions: () => <GroupActions type="ServerTemplate" actions={[]} />,
 
   Table: ({ resources }) => (
     <ServerTemplateTable

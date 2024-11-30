@@ -60,11 +60,9 @@ export const ActionComponents: RequiredResourceComponents = {
     );
   },
 
-  GroupActions: () => (
-    <GroupActions type="Action" actions={["BatchRunAction"]} />
-  ),
-
   New: () => <NewResource type="Action" />,
+
+  GroupActions: () => <GroupActions type="Action" actions={["RunAction"]} />,
 
   Table: ({ resources }) => (
     <ActionTable actions={resources as Types.ActionListItem[]} />

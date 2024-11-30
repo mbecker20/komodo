@@ -176,7 +176,16 @@ export const DeploymentComponents: RequiredResourceComponents = {
   },
 
   GroupActions: () => (
-    <GroupActions type="Deployment" actions={["BatchDeploy"]} />
+    <GroupActions
+      type="Deployment"
+      actions={[
+        "PullDeployment",
+        "Deploy",
+        "RestartDeployment",
+        "StopDeployment",
+        "DestroyDeployment",
+      ]}
+    />
   ),
 
   Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
