@@ -88,7 +88,12 @@ const TableSection = ({
       <Section
         title={type + "s"}
         icon={<Components.Icon />}
-        actions={<ShowHideButton show={show} setShow={setShow} />}
+        actions={
+          <div className="flex gap-4">
+            <Components.GroupActions />
+            <ShowHideButton show={show} setShow={setShow} />
+          </div>
+        }
       >
         {show && (
           <ResourceListItemTable
