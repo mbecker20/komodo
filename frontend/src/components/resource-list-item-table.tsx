@@ -109,7 +109,9 @@ const useResourceSpecificColumns = <T extends UsableResource>(
         {
           size: 200,
           id: "last-run-at",
-          header: (h) => <SortableHeader column={h.column} title="Repo" />,
+          header: (h) => (
+            <SortableHeader column={h.column} title="Last Run At" />
+          ),
           cell: ({ row }) =>
             new Date(row.original.info.last_run_at).toLocaleString(),
         },
