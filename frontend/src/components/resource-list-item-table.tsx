@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useRead, useSelectedResources } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { Types } from "komodo_client";
@@ -9,7 +9,7 @@ import { ResourceLink } from "./resources/common";
 import { HardDrive } from "lucide-react";
 import { fmt_version } from "@lib/formatting";
 import { BuilderInstanceType } from "./resources/builder";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 export type ListItemInfoMap = {
   Deployment: Types.DeploymentListItem;
@@ -33,11 +33,18 @@ export const ResourceListItemTable = <T extends keyof ListItemInfoMap>({
   data: ListItemInfoMap[T][];
 }) => {
   const colums = useResourceTableColums(type);
+
+  const [_, setSelectedResources] = useSelectedResources(type);
+
   return (
     <DataTable
       tableKey={type + "-resources-table"}
       data={data}
       columns={colums}
+      selectOptions={{
+        selectKey: ({ name }) => name,
+        onSelect: setSelectedResources,
+      }}
     />
   );
 };
