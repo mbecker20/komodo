@@ -67,7 +67,8 @@ const GroupActionDropdownMenu = <
   <DropdownMenu>
     <DropdownMenuTrigger asChild disabled={disabled}>
       <Button variant="outline" className="w-40 justify-between">
-        Group Actions <ChevronDown className="w-4" />
+        Execute
+        <ChevronDown className="w-4" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent
@@ -77,21 +78,33 @@ const GroupActionDropdownMenu = <
       {type === "ResourceSync" && (
         <DropdownMenuItem
           onClick={() => onSelect("RefreshResourceSyncPending" as any)}
+          className="focus:bg-secondary"
         >
-          <Button variant="secondary" className="w-full">
+          <Button variant="secondary" size="sm" className="w-full">
             Refresh
           </Button>
         </DropdownMenuItem>
       )}
       {actions.map((action) => (
-        <DropdownMenuItem key={action} onClick={() => onSelect(action)}>
-          <Button variant="secondary" className="w-full">
-            {action.replaceAll("Batch", "").replaceAll(type, "")}
+        <DropdownMenuItem
+          key={action}
+          onClick={() => onSelect(action)}
+          className="focus:bg-secondary"
+        >
+          <Button variant="secondary" size="sm" className="w-full ">
+            {action
+              .replaceAll("Batch", "")
+              .replaceAll(type, "")
+              .match(/[A-Z][a-z]+/g)
+              ?.join(" ")}
           </Button>
         </DropdownMenuItem>
       ))}
-      <DropdownMenuItem onClick={() => onSelect(`Delete${type}` as any)}>
-        <Button variant="destructive" className="w-full">
+      <DropdownMenuItem
+        onClick={() => onSelect(`Delete${type}` as any)}
+        className="focus:bg-destructive"
+      >
+        <Button variant="destructive" size="sm" className="w-full">
           Delete
         </Button>
       </DropdownMenuItem>
@@ -116,14 +129,15 @@ const GroupActionDialog = ({
 
   const { mutate: execute, isPending: executePending } = useExecute(
     action! as Types.ExecuteRequest["type"],
-    {
-      onSuccess: onClose,
-    }
+    { onSuccess: onClose }
   );
   const { mutate: write, isPending: writePending } = useWrite(
     action! as Types.WriteRequest["type"],
     {
-      onSuccess: onClose,
+      onSuccess: () => {
+        if (action?.includes("Delete")) setSelected([]);
+        onClose();
+      },
     }
   );
 
@@ -136,10 +150,10 @@ const GroupActionDialog = ({
     <Dialog open={!!action} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Group Execute - {formatted}</DialogTitle>
+          <DialogTitle>Execute Action - {formatted}</DialogTitle>
         </DialogHeader>
         <div className="py-8 flex flex-col gap-4">
-          <ul className="p-4 bg-accent text-sm list-disc list-inside">
+          <ul className="mb-8 p-4 bg-accent text-sm list-disc list-inside rounded-md">
             {selected.map((resource) => (
               <li key={resource}>{resource}</li>
             ))}
