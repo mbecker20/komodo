@@ -9,6 +9,7 @@ import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle } from "@ui/card";
 import { Input } from "@ui/input";
 import { atom, useAtom } from "jotai";
+import { Types } from "komodo_client";
 import { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -37,9 +38,7 @@ export const Tree = () => {
     >
       <Section>
         <div className="grid gap-6">
-          {servers?.map((server) => (
-            <Server key={server.id} id={server.id} />
-          ))}
+          {servers?.map((server) => <Server key={server.id} id={server.id} />)}
         </div>
       </Section>
     </Page>
@@ -84,7 +83,11 @@ const Server = ({ id }: { id: string }) => {
           </div>
         </CardHeader>
       </Card>
-      {open && <DeploymentTable deployments={filtered ?? []} />}
+      {open && (
+        <DeploymentTable
+          deployments={(filtered as Types.DeploymentListItem[]) ?? []}
+        />
+      )}
     </div>
   );
 };

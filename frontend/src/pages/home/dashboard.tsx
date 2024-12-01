@@ -2,7 +2,6 @@ import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { ResourceLink, ResourceName } from "@components/resources/common";
-import { TagsWithBadge } from "@components/tags";
 import { StatusBadge } from "@components/util";
 import {
   action_state_intention,
@@ -132,8 +131,6 @@ const RecentCard = ({
   const resource = Components.list_item(id);
 
   if (!resource) return null;
-
-  const tags = resource?.tags;
 
   return (
     <Link
