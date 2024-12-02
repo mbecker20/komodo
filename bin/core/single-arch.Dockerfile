@@ -1,12 +1,10 @@
 ## Assumes the latest binaries for the required arch are already built (by binaries.Dockerfile).
 ## Sets up the necessary runtime container dependencies for Komodo Core.
 
-ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
-ARG IMAGE_TAG=latest
-ARG BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}
+ARG BINARIES_IMAGE=ghcr.io/mbecker20/komodo-binaries:latest
 
 # This is required to work with COPY --from
-FROM ${BINARIES} AS binaries
+FROM ${BINARIES_IMAGE} AS binaries
 
 # Build Frontend
 FROM node:20.12-alpine AS frontend-builder

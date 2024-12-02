@@ -2,10 +2,9 @@
 ## Sets up the necessary runtime container dependencies for Komodo Periphery.
 ## Since theres no heavy build here, QEMU multi-arch builds are fine for this image.
 
-ARG REGISTRY_AND_NAMESPACE=ghcr.io/mbecker20
-ARG IMAGE_TAG=latest
-ARG X86_64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}-x86_64 
-ARG AARCH64_BINARIES=${REGISTRY_AND_NAMESPACE}/binaries:${IMAGE_TAG}-aarch64
+ARG BINARIES_IMAGE=ghcr.io/mbecker20/komodo-binaries:latest
+ARG X86_64_BINARIES=${BINARY_IMAGE}-x86_64
+ARG AARCH64_BINARIES=${BINARY_IMAGE}-aarch64
 
 # This is required to work with COPY --from
 FROM ${X86_64_BINARIES} AS x86_64
