@@ -15,4 +15,9 @@ RUN cd frontend && yarn link komodo_client && yarn && yarn build
 
 # Copy just the static frontend to scratch image
 FROM scratch
+
 COPY --from=builder /builder/frontend/dist /frontend
+
+LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
+LABEL org.opencontainers.image.description="Komodo Periphery"
+LABEL org.opencontainers.image.licenses=GPL-3.0
