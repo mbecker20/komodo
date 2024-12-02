@@ -186,7 +186,7 @@ fn default_enabled() -> bool {
 }
 
 fn default_timeout_seconds() -> i64 {
-  2
+  3
 }
 
 fn default_stats_monitoring() -> bool {
