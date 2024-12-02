@@ -212,21 +212,37 @@ async fn terminate_ec2_instance_inner(
   Ok(res)
 }
 
+/// Automatically retries 5 times, waiting 2 sec in between
 #[instrument(level = "debug")]
 async fn get_ec2_instance_status(
   client: &Client,
   instance_id: &str,
 ) -> anyhow::Result<Option<InstanceStatus>> {
-  let status = client
-    .describe_instance_status()
-    .instance_ids(instance_id)
-    .send()
+  let mut try_count = 1;
+  loop {
+    match async {
+      anyhow::Ok(
+        client
+          .describe_instance_status()
+          .instance_ids(instance_id)
+          .send()
+          .await
+          .context("failed to describe instance status from aws")?
+          .instance_statuses()
+          .first()
+          .cloned(),
+      )
+    }
     .await
-    .context("failed to get instance status from aws")?
-    .instance_statuses()
-    .first()
-    .cloned();
-  Ok(status)
+    {
+      Ok(res) => return Ok(res),
+      Err(e) if try_count > 4 => return Err(e),
+      Err(_) => {
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        try_count += 1;
+      }
+    }
+  }
 }
 
 #[instrument(level = "debug")]
@@ -248,28 +264,43 @@ async fn get_ec2_instance_state_name(
   Ok(Some(state))
 }
 
+/// Automatically retries 5 times, waiting 2 sec in between
 #[instrument(level = "debug")]
 async fn get_ec2_instance_public_ip(
   client: &Client,
   instance_id: &str,
 ) -> anyhow::Result<String> {
-  let ip = client
-    .describe_instances()
-    .instance_ids(instance_id)
-    .send()
+  let mut try_count = 1;
+  loop {
+    match async {
+      anyhow::Ok(
+        client
+          .describe_instances()
+          .instance_ids(instance_id)
+          .send()
+          .await
+          .context("failed to describe instances from aws")?
+          .reservations()
+          .first()
+          .context("instance reservations is empty")?
+          .instances()
+          .first()
+          .context("instances is empty")?
+          .public_ip_address()
+          .context("instance has no public ip")?
+          .to_string(),
+      )
+    }
     .await
-    .context("failed to get instance status from aws")?
-    .reservations()
-    .first()
-    .context("instance reservations is empty")?
-    .instances()
-    .first()
-    .context("instances is empty")?
-    .public_ip_address()
-    .context("instance has no public ip")?
-    .to_string();
-
-  Ok(ip)
+    {
+      Ok(res) => return Ok(res),
+      Err(e) if try_count > 4 => return Err(e),
+      Err(_) => {
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        try_count += 1;
+      }
+    }
+  }
 }
 
 fn handle_unknown_instance_type(

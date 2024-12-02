@@ -55,6 +55,7 @@ pub async fn get_builder_periphery(
         } else {
           config.passkey
         },
+        Duration::from_secs(3),
       );
       periphery
         .health_check()
@@ -122,7 +123,7 @@ async fn get_aws_builder(
   let periphery_address =
     format!("{protocol}://{ip}:{}", config.port);
   let periphery =
-    PeripheryClient::new(&periphery_address, &core_config().passkey);
+    PeripheryClient::new(&periphery_address, &core_config().passkey, Duration::from_secs(3));
 
   let start_connect_ts = komodo_timestamp();
   let mut res = Ok(GetVersionResponse {

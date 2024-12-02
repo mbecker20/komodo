@@ -4,7 +4,7 @@ use async_timing_util::wait_until_timelength;
 use komodo_client::entities::stats::{
   SingleDiskUsage, SystemInformation, SystemProcess, SystemStats,
 };
-use sysinfo::System;
+use sysinfo::{ProcessesToUpdate, System};
 use tokio::sync::RwLock;
 
 use crate::config::periphery_config;
@@ -82,7 +82,9 @@ impl Default for StatsClient {
 
 impl StatsClient {
   fn refresh(&mut self) {
-    self.system.refresh_all();
+    self.system.refresh_cpu_all();
+    self.system.refresh_memory();
+    self.system.refresh_processes(ProcessesToUpdate::All, true);
     self.disks.refresh();
   }
 

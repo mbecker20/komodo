@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useRead, useSelectedResources } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
@@ -12,10 +12,17 @@ export const StackTable = ({ stacks }: { stacks: Types.StackListItem[] }) => {
     (id: string) => servers?.find((server) => server.id === id)?.name,
     [servers]
   );
+
+  const [_, setSelectedResources] = useSelectedResources("Stack");
+
   return (
     <DataTable
       tableKey="Stacks"
       data={stacks}
+      selectOptions={{
+        selectKey: ({ name }) => name,
+        onSelect: setSelectedResources,
+      }}
       columns={[
         {
           accessorKey: "name",

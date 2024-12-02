@@ -245,9 +245,6 @@ pub async fn update_cache_for_server(server: &Server) {
       .await;
     }
     Err(e) => {
-      warn!(
-        "could not get docker lists | (update status cache) | {e:#}"
-      );
       insert_deployments_status_unknown(deployments).await;
       insert_stacks_status_unknown(stacks).await;
       insert_server_status(

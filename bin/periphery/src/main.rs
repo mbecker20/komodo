@@ -1,10 +1,11 @@
 #[macro_use]
 extern crate tracing;
 
+//
 use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
-use axum_server::tls_openssl::OpenSSLConfig;
+use axum_server::tls_rustls::RustlsConfig;
 
 mod api;
 mod compose;
@@ -36,14 +37,18 @@ async fn app() -> anyhow::Result<()> {
 
   if config.ssl_enabled {
     info!("🔒 Periphery SSL Enabled");
+    rustls::crypto::ring::default_provider()
+      .install_default()
+      .expect("failed to install default rustls CryptoProvider");
     ssl::ensure_certs().await;
     info!("Komodo Periphery starting on https://{}", socket_addr);
-    let ssl_config = OpenSSLConfig::from_pem_file(
+    let ssl_config = RustlsConfig::from_pem_file(
       &config.ssl_cert_file,
       &config.ssl_key_file,
     )
+    .await
     .context("Invalid ssl cert / key")?;
-    axum_server::bind_openssl(socket_addr, ssl_config)
+    axum_server::bind_rustls(socket_addr, ssl_config)
       .serve(app)
       .await?
   } else {

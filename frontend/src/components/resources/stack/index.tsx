@@ -38,6 +38,7 @@ import { DashboardPieChart } from "@pages/home/dashboard";
 import { ResourcePageHeader, StatusBadge } from "@components/util";
 import { StackConfig } from "./config";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 export const useStack = (id?: string) =>
   useRead("ListStacks", {}, { refetchInterval: 10_000 }).data?.find(
@@ -151,6 +152,19 @@ export const StackComponents: RequiredResourceComponents = {
       />
     );
   },
+
+  GroupActions: () => (
+    <GroupActions
+      type="Stack"
+      actions={[
+        "PullStack",
+        "DeployStack",
+        "RestartStack",
+        "StopStack",
+        "DestroyStack",
+      ]}
+    />
+  ),
 
   New: ({ server_id: _server_id }) => {
     const servers = useRead("ListServers", {}).data;

@@ -21,6 +21,7 @@ import { useToast } from "@ui/use-toast";
 import { Button } from "@ui/button";
 import { useBuilder } from "../builder";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 export const useRepo = (id?: string) =>
   useRead("ListRepos", {}, { refetchInterval: 10_000 }).data?.find(
@@ -69,6 +70,13 @@ export const RepoComponents: RequiredResourceComponents = {
   },
 
   New: ({ server_id }) => <NewResource type="Repo" server_id={server_id} />,
+
+  GroupActions: () => (
+    <GroupActions
+      type="Repo"
+      actions={["PullRepo", "CloneRepo", "BuildRepo"]}
+    />
+  ),
 
   Table: ({ resources }) => (
     <RepoTable repos={resources as Types.RepoListItem[]} />
