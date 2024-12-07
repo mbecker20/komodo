@@ -2541,6 +2541,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "komodo_core2"
+version = "1.16.12"
+dependencies = [
+ "cache",
+ "command",
+ "environment_file",
+ "formatting",
+ "git",
+ "komodo_client",
+ "logger",
+ "periphery_client",
+]
+
+[[package]]
 name = "komodo_periphery"
 version = "1.16.12"
 dependencies = [
