@@ -8,4 +8,4 @@ dist
 .DS_Store
 
 creds.toml
-.komodo
+.dev
