@@ -12,7 +12,6 @@ use resolver_api::Resolve;
 use crate::{
   docker::{container_stats, docker_client, stop_container_command},
   helpers::log_grep,
-  State,
 };
 
 // ======
@@ -21,16 +20,11 @@ use crate::{
 
 //
 
-impl Resolve<InspectContainer> for State {
-  #[instrument(
-    name = "InspectContainer",
-    level = "debug",
-    skip(self)
-  )]
+impl Resolve<super::Args> for InspectContainer {
+  #[instrument(name = "InspectContainer", level = "debug")]
   async fn resolve(
-    &self,
     InspectContainer { name }: InspectContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Container> {
     docker_client().inspect_container(&name).await
   }
@@ -38,17 +32,16 @@ impl Resolve<InspectContainer> for State {
 
 //
 
-impl Resolve<GetContainerLog> for State {
-  #[instrument(name = "GetContainerLog", level = "debug", skip(self))]
+impl Resolve<super::Args> for GetContainerLog {
+  #[instrument(name = "GetContainerLog", level = "debug")]
   async fn resolve(
-    &self,
     GetContainerLog {
       name,
       tail,
       timestamps,
     }: GetContainerLog,
-    _: (),
-  ) -> anyhow::Result<Log> {
+    _: &super::Args,
+  ) -> Result<Log, std::convert::Infallible> {
     let timestamps =
       timestamps.then_some(" --timestamps").unwrap_or_default();
     let command =
@@ -62,14 +55,9 @@ impl Resolve<GetContainerLog> for State {
 
 //
 
-impl Resolve<GetContainerLogSearch> for State {
-  #[instrument(
-    name = "GetContainerLogSearch",
-    level = "debug",
-    skip(self)
-  )]
+impl Resolve<super::Args> for GetContainerLogSearch {
+  #[instrument(name = "GetContainerLogSearch", level = "debug")]
   async fn resolve(
-    &self,
     GetContainerLogSearch {
       name,
       terms,
@@ -77,7 +65,7 @@ impl Resolve<GetContainerLogSearch> for State {
       invert,
       timestamps,
     }: GetContainerLogSearch,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     let grep = log_grep(&terms, combinator, invert);
     let timestamps =
@@ -99,16 +87,11 @@ impl Resolve<GetContainerLogSearch> for State {
 
 //
 
-impl Resolve<GetContainerStats> for State {
-  #[instrument(
-    name = "GetContainerStats",
-    level = "debug",
-    skip(self)
-  )]
+impl Resolve<super::Args> for GetContainerStats {
+  #[instrument(name = "GetContainerStats", level = "debug")]
   async fn resolve(
-    &self,
     req: GetContainerStats,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<ContainerStats> {
     let error = anyhow!("no stats matching {}", req.name);
     let mut stats = container_stats(Some(req.name)).await?;
@@ -119,16 +102,11 @@ impl Resolve<GetContainerStats> for State {
 
 //
 
-impl Resolve<GetContainerStatsList> for State {
-  #[instrument(
-    name = "GetContainerStatsList",
-    level = "debug",
-    skip(self)
-  )]
+impl Resolve<super::Args> for GetContainerStatsList {
+  #[instrument(name = "GetContainerStatsList", level = "debug")]
   async fn resolve(
-    &self,
     _: GetContainerStatsList,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Vec<ContainerStats>> {
     container_stats(None).await
   }
@@ -138,12 +116,11 @@ impl Resolve<GetContainerStatsList> for State {
 //  ACTIONS
 // =========
 
-impl Resolve<StartContainer> for State {
-  #[instrument(name = "StartContainer", skip(self))]
+impl Resolve<super::Args> for StartContainer {
+  #[instrument(name = "StartContainer")]
   async fn resolve(
-    &self,
     StartContainer { name }: StartContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     Ok(
       run_komodo_command(
@@ -159,12 +136,11 @@ impl Resolve<StartContainer> for State {
 
 //
 
-impl Resolve<RestartContainer> for State {
-  #[instrument(name = "RestartContainer", skip(self))]
+impl Resolve<super::Args> for RestartContainer {
+  #[instrument(name = "RestartContainer")]
   async fn resolve(
-    &self,
     RestartContainer { name }: RestartContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     Ok(
       run_komodo_command(
@@ -180,12 +156,11 @@ impl Resolve<RestartContainer> for State {
 
 //
 
-impl Resolve<PauseContainer> for State {
-  #[instrument(name = "PauseContainer", skip(self))]
+impl Resolve<super::Args> for PauseContainer {
+  #[instrument(name = "PauseContainer")]
   async fn resolve(
-    &self,
     PauseContainer { name }: PauseContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     Ok(
       run_komodo_command(
@@ -199,12 +174,11 @@ impl Resolve<PauseContainer> for State {
   }
 }
 
-impl Resolve<UnpauseContainer> for State {
-  #[instrument(name = "UnpauseContainer", skip(self))]
+impl Resolve<super::Args> for UnpauseContainer {
+  #[instrument(name = "UnpauseContainer")]
   async fn resolve(
-    &self,
     UnpauseContainer { name }: UnpauseContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     Ok(
       run_komodo_command(
@@ -220,12 +194,11 @@ impl Resolve<UnpauseContainer> for State {
 
 //
 
-impl Resolve<StopContainer> for State {
-  #[instrument(name = "StopContainer", skip(self))]
+impl Resolve<super::Args> for StopContainer {
+  #[instrument(name = "StopContainer")]
   async fn resolve(
-    &self,
     StopContainer { name, signal, time }: StopContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     let command = stop_container_command(&name, signal, time);
     let log =
@@ -251,12 +224,11 @@ impl Resolve<StopContainer> for State {
 
 //
 
-impl Resolve<RemoveContainer> for State {
-  #[instrument(name = "RemoveContainer", skip(self))]
+impl Resolve<super::Args> for RemoveContainer {
+  #[instrument(name = "RemoveContainer")]
   async fn resolve(
-    &self,
     RemoveContainer { name, signal, time }: RemoveContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     let stop_command = stop_container_command(&name, signal, time);
     let command =
@@ -291,15 +263,14 @@ impl Resolve<RemoveContainer> for State {
 
 //
 
-impl Resolve<RenameContainer> for State {
-  #[instrument(name = "RenameContainer", skip(self))]
+impl Resolve<super::Args> for RenameContainer {
+  #[instrument(name = "RenameContainer")]
   async fn resolve(
-    &self,
     RenameContainer {
       curr_name,
       new_name,
     }: RenameContainer,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     let new = to_komodo_name(&new_name);
     let command = format!("docker rename {curr_name} {new}");
@@ -311,12 +282,11 @@ impl Resolve<RenameContainer> for State {
 
 //
 
-impl Resolve<PruneContainers> for State {
-  #[instrument(name = "PruneContainers", skip(self))]
+impl Resolve<super::Args> for PruneContainers {
+  #[instrument(name = "PruneContainers")]
   async fn resolve(
-    &self,
     _: PruneContainers,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     let command = String::from("docker container prune -f");
     Ok(
@@ -328,12 +298,11 @@ impl Resolve<PruneContainers> for State {
 
 //
 
-impl Resolve<StartAllContainers> for State {
-  #[instrument(name = "StartAllContainers", skip(self))]
+impl Resolve<super::Args> for StartAllContainers {
+  #[instrument(name = "StartAllContainers")]
   async fn resolve(
-    &self,
     StartAllContainers {}: StartAllContainers,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
@@ -357,12 +326,11 @@ impl Resolve<StartAllContainers> for State {
 
 //
 
-impl Resolve<RestartAllContainers> for State {
-  #[instrument(name = "RestartAllContainers", skip(self))]
+impl Resolve<super::Args> for RestartAllContainers {
+  #[instrument(name = "RestartAllContainers")]
   async fn resolve(
-    &self,
     RestartAllContainers {}: RestartAllContainers,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
@@ -386,12 +354,11 @@ impl Resolve<RestartAllContainers> for State {
 
 //
 
-impl Resolve<PauseAllContainers> for State {
-  #[instrument(name = "PauseAllContainers", skip(self))]
+impl Resolve<super::Args> for PauseAllContainers {
+  #[instrument(name = "PauseAllContainers")]
   async fn resolve(
-    &self,
     PauseAllContainers {}: PauseAllContainers,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
@@ -415,12 +382,11 @@ impl Resolve<PauseAllContainers> for State {
 
 //
 
-impl Resolve<UnpauseAllContainers> for State {
-  #[instrument(name = "UnpauseAllContainers", skip(self))]
+impl Resolve<super::Args> for UnpauseAllContainers {
+  #[instrument(name = "UnpauseAllContainers")]
   async fn resolve(
-    &self,
     UnpauseAllContainers {}: UnpauseAllContainers,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
@@ -444,12 +410,11 @@ impl Resolve<UnpauseAllContainers> for State {
 
 //
 
-impl Resolve<StopAllContainers> for State {
-  #[instrument(name = "StopAllContainers", skip(self))]
+impl Resolve<super::Args> for StopAllContainers {
+  #[instrument(name = "StopAllContainers")]
   async fn resolve(
-    &self,
     StopAllContainers {}: StopAllContainers,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()

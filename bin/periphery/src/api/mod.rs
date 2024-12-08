@@ -31,6 +31,8 @@ mod network;
 mod stats;
 mod volume;
 
+struct Args;
+
 #[derive(
   Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
 )]

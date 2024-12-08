@@ -17,15 +17,13 @@ use crate::{
   config::periphery_config,
   docker::docker_login,
   helpers::{log_grep, pull_or_clone_stack},
-  State,
 };
 
-impl Resolve<ListComposeProjects, ()> for State {
+impl Resolve<super::Args> for ListComposeProjects {
   #[instrument(name = "ComposeInfo", level = "debug", skip(self))]
   async fn resolve(
-    &self,
-    ListComposeProjects {}: ListComposeProjects,
-    _: (),
+    self,
+    _: &super::Args,
   ) -> anyhow::Result<Vec<ComposeProject>> {
     let docker_compose = docker_compose();
     let res = run_komodo_command(
@@ -80,20 +78,15 @@ pub struct DockerComposeLsItem {
 
 //
 
-impl Resolve<GetComposeServiceLog> for State {
-  #[instrument(
-    name = "GetComposeServiceLog",
-    level = "debug",
-    skip(self)
-  )]
+impl Resolve<super::Args> for GetComposeServiceLog {
+  #[instrument(name = "GetComposeServiceLog", level = "debug")]
   async fn resolve(
-    &self,
     GetComposeServiceLog {
       project,
       service,
       tail,
       timestamps,
-    }: GetComposeServiceLog,
+    }: Self,
     _: (),
   ) -> anyhow::Result<Log> {
     let docker_compose = docker_compose();
@@ -108,14 +101,9 @@ impl Resolve<GetComposeServiceLog> for State {
   }
 }
 
-impl Resolve<GetComposeServiceLogSearch> for State {
-  #[instrument(
-    name = "GetComposeServiceLogSearch",
-    level = "debug",
-    skip(self)
-  )]
+impl Resolve<super::Args> for GetComposeServiceLogSearch {
+  #[instrument(name = "GetComposeServiceLogSearch", level = "debug")]
   async fn resolve(
-    &self,
     GetComposeServiceLogSearch {
       project,
       service,
@@ -123,9 +111,9 @@ impl Resolve<GetComposeServiceLogSearch> for State {
       combinator,
       invert,
       timestamps,
-    }: GetComposeServiceLogSearch,
-    _: (),
-  ) -> anyhow::Result<Log> {
+    }: Self,
+    _: &super::Args,
+  ) -> Result<Log, std::convert::Infallible> {
     let docker_compose = docker_compose();
     let grep = log_grep(&terms, combinator, invert);
     let timestamps =
@@ -140,20 +128,15 @@ impl Resolve<GetComposeServiceLogSearch> for State {
 
 //
 
-impl Resolve<GetComposeContentsOnHost, ()> for State {
-  #[instrument(
-    name = "GetComposeContentsOnHost",
-    level = "debug",
-    skip(self)
-  )]
+impl Resolve<super::Args> for GetComposeContentsOnHost {
+  #[instrument(name = "GetComposeContentsOnHost", level = "debug")]
   async fn resolve(
-    &self,
     GetComposeContentsOnHost {
       name,
       run_directory,
       file_paths,
-    }: GetComposeContentsOnHost,
-    _: (),
+    }: Self,
+    _: &super::Args,
   ) -> anyhow::Result<GetComposeContentsOnHostResponse> {
     let root =
       periphery_config().stack_dir.join(to_komodo_name(&name));
@@ -196,17 +179,16 @@ impl Resolve<GetComposeContentsOnHost, ()> for State {
 
 //
 
-impl Resolve<WriteComposeContentsToHost> for State {
-  #[instrument(name = "WriteComposeContentsToHost", skip(self))]
+impl Resolve<super::Args> for WriteComposeContentsToHost {
+  #[instrument(name = "WriteComposeContentsToHost")]
   async fn resolve(
-    &self,
     WriteComposeContentsToHost {
       name,
       run_directory,
       file_path,
       contents,
-    }: WriteComposeContentsToHost,
-    _: (),
+    }: Self,
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     let file_path = periphery_config()
       .stack_dir
@@ -233,18 +215,17 @@ impl Resolve<WriteComposeContentsToHost> for State {
 
 //
 
-impl Resolve<WriteCommitComposeContents> for State {
-  #[instrument(name = "WriteCommitComposeContents", skip(self))]
+impl Resolve<super::Args> for WriteCommitComposeContents {
+  #[instrument(name = "WriteCommitComposeContents")]
   async fn resolve(
-    &self,
     WriteCommitComposeContents {
       stack,
       username,
       file_path,
       contents,
       git_token,
-    }: WriteCommitComposeContents,
-    _: (),
+    }: Self,
+    _: &super::Args,
   ) -> anyhow::Result<RepoActionResponse> {
     let root = pull_or_clone_stack(&stack, git_token).await?;
 
@@ -285,20 +266,16 @@ impl<'a> WriteStackRes for &'a mut ComposePullResponse {
   }
 }
 
-impl Resolve<ComposePull> for State {
-  #[instrument(
-    name = "ComposePull",
-    skip(self, git_token, registry_token)
-  )]
+impl Resolve<super::Args> for ComposePull {
+  #[instrument(name = "ComposePull", skip(git_token, registry_token))]
   async fn resolve(
-    &self,
     ComposePull {
       stack,
       service,
       git_token,
       registry_token,
-    }: ComposePull,
-    _: (),
+    }: Self,
+    _: &super::Args,
   ) -> anyhow::Result<ComposePullResponse> {
     let mut res = ComposePullResponse::default();
     let (run_directory, env_file_path) =
@@ -392,21 +369,17 @@ impl Resolve<ComposePull> for State {
 
 //
 
-impl Resolve<ComposeUp> for State {
-  #[instrument(
-    name = "ComposeUp",
-    skip(self, git_token, registry_token)
-  )]
+impl Resolve<super::Args> for ComposeUp {
+  #[instrument(name = "ComposeUp", skip(git_token, registry_token))]
   async fn resolve(
-    &self,
     ComposeUp {
       stack,
       service,
       git_token,
       registry_token,
       replacers,
-    }: ComposeUp,
-    _: (),
+    }: Self,
+    _: &super::Args,
   ) -> anyhow::Result<ComposeUpResponse> {
     let mut res = ComposeUpResponse::default();
     if let Err(e) = compose_up(
@@ -430,13 +403,12 @@ impl Resolve<ComposeUp> for State {
 
 //
 
-impl Resolve<ComposeExecution> for State {
-  #[instrument(name = "ComposeExecution", skip(self))]
+impl Resolve<super::Args> for ComposeExecution {
+  #[instrument(name = "ComposeExecution")]
   async fn resolve(
-    &self,
-    ComposeExecution { project, command }: ComposeExecution,
-    _: (),
-  ) -> anyhow::Result<Log> {
+    ComposeExecution { project, command }: Self,
+    _: &super::Args,
+  ) -> Result<Log, std::convert::Infallible> {
     let docker_compose = docker_compose();
     let log = run_komodo_command(
       "compose command",

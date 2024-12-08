@@ -44,6 +44,7 @@ pub struct GetVersionResponse {
 /// Returns all containers, networks, images, compose projects
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(GetDockerListsResponse)]
+#[error(anyhow::Error)]
 pub struct GetDockerLists {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
