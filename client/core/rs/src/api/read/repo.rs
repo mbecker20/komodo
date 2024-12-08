@@ -18,7 +18,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(Repo)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetRepo {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -37,7 +37,7 @@ pub type GetRepoResponse = Repo;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListReposResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListRepos {
   /// optional structured query to filter repos.
   #[serde(default)]
@@ -56,7 +56,7 @@ pub type ListReposResponse = Vec<RepoListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullReposResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullRepos {
   /// optional structured query to filter repos.
   #[serde(default)]
@@ -75,7 +75,7 @@ pub type ListFullReposResponse = Vec<Repo>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetRepoActionStateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetRepoActionState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -95,7 +95,7 @@ pub type GetRepoActionStateResponse = RepoActionState;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetReposSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetReposSummary {}
 
 /// Response for [GetReposSummary]
@@ -127,7 +127,7 @@ pub struct GetReposSummaryResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetRepoWebhooksEnabledResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetRepoWebhooksEnabled {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

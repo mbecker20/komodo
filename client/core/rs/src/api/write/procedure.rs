@@ -19,7 +19,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateProcedureResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateProcedure {
   /// The name given to newly created build.
   pub name: String,
@@ -41,7 +41,7 @@ pub type CreateProcedureResponse = Procedure;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CopyProcedureResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyProcedure {
   /// The name of the new procedure.
   pub name: String,
@@ -62,7 +62,7 @@ pub type CopyProcedureResponse = Procedure;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteProcedureResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteProcedure {
   /// The id or name of the procedure to delete.
   pub id: String,
@@ -87,7 +87,7 @@ pub type DeleteProcedureResponse = Procedure;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateProcedureResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateProcedure {
   /// The id of the procedure to update.
   pub id: String,
@@ -108,8 +108,8 @@ pub type UpdateProcedureResponse = Procedure;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameProcedure {
   /// The id or name of the Procedure to rename.
   pub id: String,

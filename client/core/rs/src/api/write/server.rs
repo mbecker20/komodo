@@ -19,7 +19,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Server)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateServer {
   /// The name given to newly created server.
   pub name: String,
@@ -38,7 +38,7 @@ pub struct CreateServer {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Server)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteServer {
   /// The id or name of the server to delete.
   pub id: String,
@@ -60,7 +60,7 @@ pub struct DeleteServer {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Server)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateServer {
   /// The id or name of the server to update.
   pub id: String,
@@ -78,8 +78,8 @@ pub struct UpdateServer {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameServer {
   /// The id or name of the Server to rename.
   pub id: String,
@@ -99,8 +99,8 @@ pub struct RenameServer {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct CreateNetwork {
   /// Server Id or name
   pub server: String,

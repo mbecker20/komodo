@@ -18,7 +18,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetVariableResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetVariable {
   /// The name of the variable to get.
   pub name: String,
@@ -40,7 +40,7 @@ pub type GetVariableResponse = Variable;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListVariablesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListVariables {}
 
 #[typeshare]

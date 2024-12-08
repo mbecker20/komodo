@@ -22,7 +22,7 @@ use super::{BatchExecutionResponse, KomodoExecuteRequest};
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RunAction {
   /// Id or name
   pub action: String,
@@ -42,7 +42,7 @@ pub struct RunAction {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchRunAction {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.

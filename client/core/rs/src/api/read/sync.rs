@@ -19,7 +19,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ResourceSync)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetResourceSync {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -38,7 +38,7 @@ pub type GetResourceSyncResponse = ResourceSync;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListResourceSyncsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListResourceSyncs {
   /// optional structured query to filter syncs.
   #[serde(default)]
@@ -57,7 +57,7 @@ pub type ListResourceSyncsResponse = Vec<ResourceSyncListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullResourceSyncsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullResourceSyncs {
   /// optional structured query to filter syncs.
   #[serde(default)]
@@ -76,7 +76,7 @@ pub type ListFullResourceSyncsResponse = Vec<ResourceSync>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetResourceSyncActionStateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetResourceSyncActionState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -96,7 +96,7 @@ pub type GetResourceSyncActionStateResponse = ResourceSyncActionState;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetResourceSyncsSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetResourceSyncsSummary {}
 
 /// Response for [GetResourceSyncsSummary]
@@ -126,7 +126,7 @@ pub struct GetResourceSyncsSummaryResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetSyncWebhooksEnabledResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetSyncWebhooksEnabled {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

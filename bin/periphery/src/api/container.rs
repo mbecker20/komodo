@@ -23,10 +23,10 @@ use crate::{
 impl Resolve<super::Args> for InspectContainer {
   #[instrument(name = "InspectContainer", level = "debug")]
   async fn resolve(
-    InspectContainer { name }: InspectContainer,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<Container> {
-    docker_client().inspect_container(&name).await
+  ) -> serror::Result<Container> {
+    Ok(docker_client().inspect_container(&self.name).await?)
   }
 }
 
@@ -34,14 +34,12 @@ impl Resolve<super::Args> for InspectContainer {
 
 impl Resolve<super::Args> for GetContainerLog {
   #[instrument(name = "GetContainerLog", level = "debug")]
-  async fn resolve(
-    GetContainerLog {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let GetContainerLog {
       name,
       tail,
       timestamps,
-    }: GetContainerLog,
-    _: &super::Args,
-  ) -> Result<Log, std::convert::Infallible> {
+    } = self;
     let timestamps =
       timestamps.then_some(" --timestamps").unwrap_or_default();
     let command =
@@ -57,16 +55,14 @@ impl Resolve<super::Args> for GetContainerLog {
 
 impl Resolve<super::Args> for GetContainerLogSearch {
   #[instrument(name = "GetContainerLogSearch", level = "debug")]
-  async fn resolve(
-    GetContainerLogSearch {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let GetContainerLogSearch {
       name,
       terms,
       combinator,
       invert,
       timestamps,
-    }: GetContainerLogSearch,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+    } = self;
     let grep = log_grep(&terms, combinator, invert);
     let timestamps =
       timestamps.then_some(" --timestamps").unwrap_or_default();
@@ -90,11 +86,11 @@ impl Resolve<super::Args> for GetContainerLogSearch {
 impl Resolve<super::Args> for GetContainerStats {
   #[instrument(name = "GetContainerStats", level = "debug")]
   async fn resolve(
-    req: GetContainerStats,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<ContainerStats> {
-    let error = anyhow!("no stats matching {}", req.name);
-    let mut stats = container_stats(Some(req.name)).await?;
+  ) -> serror::Result<ContainerStats> {
+    let error = anyhow!("no stats matching {}", self.name);
+    let mut stats = container_stats(Some(self.name)).await?;
     let stats = stats.pop().ok_or(error)?;
     Ok(stats)
   }
@@ -105,10 +101,10 @@ impl Resolve<super::Args> for GetContainerStats {
 impl Resolve<super::Args> for GetContainerStatsList {
   #[instrument(name = "GetContainerStatsList", level = "debug")]
   async fn resolve(
-    _: GetContainerStatsList,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<ContainerStats>> {
-    container_stats(None).await
+  ) -> serror::Result<Vec<ContainerStats>> {
+    Ok(container_stats(None).await?)
   }
 }
 
@@ -118,15 +114,12 @@ impl Resolve<super::Args> for GetContainerStatsList {
 
 impl Resolve<super::Args> for StartContainer {
   #[instrument(name = "StartContainer")]
-  async fn resolve(
-    StartContainer { name }: StartContainer,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
     Ok(
       run_komodo_command(
         "docker start",
         None,
-        format!("docker start {name}"),
+        format!("docker start {}", self.name),
         false,
       )
       .await,
@@ -138,15 +131,12 @@ impl Resolve<super::Args> for StartContainer {
 
 impl Resolve<super::Args> for RestartContainer {
   #[instrument(name = "RestartContainer")]
-  async fn resolve(
-    RestartContainer { name }: RestartContainer,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
     Ok(
       run_komodo_command(
         "docker restart",
         None,
-        format!("docker restart {name}"),
+        format!("docker restart {}", self.name),
         false,
       )
       .await,
@@ -158,15 +148,12 @@ impl Resolve<super::Args> for RestartContainer {
 
 impl Resolve<super::Args> for PauseContainer {
   #[instrument(name = "PauseContainer")]
-  async fn resolve(
-    PauseContainer { name }: PauseContainer,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
     Ok(
       run_komodo_command(
         "docker pause",
         None,
-        format!("docker pause {name}"),
+        format!("docker pause {}", self.name),
         false,
       )
       .await,
@@ -176,15 +163,12 @@ impl Resolve<super::Args> for PauseContainer {
 
 impl Resolve<super::Args> for UnpauseContainer {
   #[instrument(name = "UnpauseContainer")]
-  async fn resolve(
-    UnpauseContainer { name }: UnpauseContainer,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
     Ok(
       run_komodo_command(
         "docker unpause",
         None,
-        format!("docker unpause {name}"),
+        format!("docker unpause {}", self.name),
         false,
       )
       .await,
@@ -196,10 +180,8 @@ impl Resolve<super::Args> for UnpauseContainer {
 
 impl Resolve<super::Args> for StopContainer {
   #[instrument(name = "StopContainer")]
-  async fn resolve(
-    StopContainer { name, signal, time }: StopContainer,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let StopContainer { name, signal, time } = self;
     let command = stop_container_command(&name, signal, time);
     let log =
       run_komodo_command("docker stop", None, command, false).await;
@@ -226,10 +208,8 @@ impl Resolve<super::Args> for StopContainer {
 
 impl Resolve<super::Args> for RemoveContainer {
   #[instrument(name = "RemoveContainer")]
-  async fn resolve(
-    RemoveContainer { name, signal, time }: RemoveContainer,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let RemoveContainer { name, signal, time } = self;
     let stop_command = stop_container_command(&name, signal, time);
     let command =
       format!("{stop_command} && docker container rm {name}");
@@ -265,13 +245,11 @@ impl Resolve<super::Args> for RemoveContainer {
 
 impl Resolve<super::Args> for RenameContainer {
   #[instrument(name = "RenameContainer")]
-  async fn resolve(
-    RenameContainer {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let RenameContainer {
       curr_name,
       new_name,
-    }: RenameContainer,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+    } = self;
     let new = to_komodo_name(&new_name);
     let command = format!("docker rename {curr_name} {new}");
     Ok(
@@ -283,11 +261,8 @@ impl Resolve<super::Args> for RenameContainer {
 //
 
 impl Resolve<super::Args> for PruneContainers {
-  #[instrument(name = "PruneContainers")]
-  async fn resolve(
-    _: PruneContainers,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+  #[instrument(name = "PruneContainers", skip_all)]
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
     let command = String::from("docker container prune -f");
     Ok(
       run_komodo_command("prune containers", None, command, false)
@@ -299,11 +274,11 @@ impl Resolve<super::Args> for PruneContainers {
 //
 
 impl Resolve<super::Args> for StartAllContainers {
-  #[instrument(name = "StartAllContainers")]
+  #[instrument(name = "StartAllContainers", skip_all)]
   async fn resolve(
-    StartAllContainers {}: StartAllContainers,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> serror::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
       .await
@@ -327,11 +302,11 @@ impl Resolve<super::Args> for StartAllContainers {
 //
 
 impl Resolve<super::Args> for RestartAllContainers {
-  #[instrument(name = "RestartAllContainers")]
+  #[instrument(name = "RestartAllContainers", skip_all)]
   async fn resolve(
-    RestartAllContainers {}: RestartAllContainers,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> serror::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
       .await
@@ -355,11 +330,11 @@ impl Resolve<super::Args> for RestartAllContainers {
 //
 
 impl Resolve<super::Args> for PauseAllContainers {
-  #[instrument(name = "PauseAllContainers")]
+  #[instrument(name = "PauseAllContainers", skip_all)]
   async fn resolve(
-    PauseAllContainers {}: PauseAllContainers,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> serror::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
       .await
@@ -383,11 +358,11 @@ impl Resolve<super::Args> for PauseAllContainers {
 //
 
 impl Resolve<super::Args> for UnpauseAllContainers {
-  #[instrument(name = "UnpauseAllContainers")]
+  #[instrument(name = "UnpauseAllContainers", skip_all)]
   async fn resolve(
-    UnpauseAllContainers {}: UnpauseAllContainers,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> serror::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
       .await
@@ -411,11 +386,11 @@ impl Resolve<super::Args> for UnpauseAllContainers {
 //
 
 impl Resolve<super::Args> for StopAllContainers {
-  #[instrument(name = "StopAllContainers")]
+  #[instrument(name = "StopAllContainers", skip_all)]
   async fn resolve(
-    StopAllContainers {}: StopAllContainers,
+    self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> serror::Result<Vec<Log>> {
     let containers = docker_client()
       .list_containers()
       .await

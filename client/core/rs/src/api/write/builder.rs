@@ -19,7 +19,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateBuilder {
   /// The name given to newly created builder.
   pub name: String,
@@ -38,7 +38,7 @@ pub struct CreateBuilder {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyBuilder {
   /// The name of the new builder.
   pub name: String,
@@ -56,7 +56,7 @@ pub struct CopyBuilder {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteBuilder {
   /// The id or name of the builder to delete.
   pub id: String,
@@ -78,7 +78,7 @@ pub struct DeleteBuilder {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Builder)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateBuilder {
   /// The id of the builder to update.
   pub id: String,
@@ -96,8 +96,8 @@ pub struct UpdateBuilder {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameBuilder {
   /// The id or name of the Builder to rename.
   pub id: String,

@@ -20,7 +20,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateStack {
   /// The name given to newly created stack.
   pub name: String,
@@ -39,7 +39,7 @@ pub struct CreateStack {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyStack {
   /// The name of the new stack.
   pub name: String,
@@ -57,7 +57,7 @@ pub struct CopyStack {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteStack {
   /// The id or name of the stack to delete.
   pub id: String,
@@ -82,7 +82,7 @@ pub struct DeleteStack {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Stack)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateStack {
   /// The id of the Stack to update.
   pub id: String,
@@ -99,8 +99,8 @@ pub struct UpdateStack {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameStack {
   /// The id of the stack to rename.
   pub id: String,
@@ -117,8 +117,8 @@ pub struct RenameStack {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct WriteStackFileContents {
   /// The name or id of the target Stack.
   #[serde(alias = "id", alias = "name")]
@@ -142,7 +142,7 @@ pub struct WriteStackFileContents {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(NoData)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RefreshStackCache {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -166,7 +166,7 @@ pub enum StackWebhookAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateStackWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateStackWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -188,7 +188,7 @@ pub type CreateStackWebhookResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteStackWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteStackWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

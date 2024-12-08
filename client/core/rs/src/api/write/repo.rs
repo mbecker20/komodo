@@ -20,7 +20,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateRepo {
   /// The name given to newly created repo.
   pub name: String,
@@ -39,7 +39,7 @@ pub struct CreateRepo {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyRepo {
   /// The name of the new repo.
   pub name: String,
@@ -57,7 +57,7 @@ pub struct CopyRepo {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteRepo {
   /// The id or name of the repo to delete.
   pub id: String,
@@ -82,7 +82,7 @@ pub struct DeleteRepo {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Repo)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateRepo {
   /// The id of the repo to update.
   pub id: String,
@@ -100,8 +100,8 @@ pub struct UpdateRepo {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameRepo {
   /// The id or name of the Repo to rename.
   pub id: String,
@@ -118,7 +118,7 @@ pub struct RenameRepo {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(NoData)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RefreshRepoCache {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -143,7 +143,7 @@ pub enum RepoWebhookAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateRepoWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateRepoWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -165,7 +165,7 @@ pub type CreateRepoWebhookResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteRepoWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteRepoWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

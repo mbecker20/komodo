@@ -33,7 +33,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(Server)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetServer {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -52,7 +52,7 @@ pub type GetServerResponse = Server;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListServersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListServers {
   /// optional structured query to filter servers.
   #[serde(default)]
@@ -71,7 +71,7 @@ pub type ListServersResponse = Vec<ServerListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullServersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullServers {
   /// optional structured query to filter servers.
   #[serde(default)]
@@ -90,7 +90,7 @@ pub type ListFullServersResponse = Vec<Server>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetServerStateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetServerState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -114,7 +114,7 @@ pub struct GetServerStateResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ServerActionState)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetServerActionState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -134,7 +134,7 @@ pub type GetServerActionStateResponse = ServerActionState;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetPeripheryVersionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetPeripheryVersion {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -158,7 +158,7 @@ pub struct GetPeripheryVersionResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDockerNetworksResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListDockerNetworks {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -177,7 +177,7 @@ pub type ListDockerNetworksResponse = Vec<NetworkListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerNetworkResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct InspectDockerNetwork {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -199,7 +199,7 @@ pub type InspectDockerNetworkResponse = Network;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDockerImagesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListDockerImages {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -218,7 +218,7 @@ pub type ListDockerImagesResponse = Vec<ImageListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerImageResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct InspectDockerImage {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -239,7 +239,7 @@ pub type InspectDockerImageResponse = Image;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDockerImageHistoryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListDockerImageHistory {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -262,7 +262,7 @@ pub type ListDockerImageHistoryResponse =
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDockerContainersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListDockerContainers {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -282,7 +282,7 @@ pub type ListDockerContainersResponse = Vec<ContainerListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListAllDockerContainersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListAllDockerContainers {
   /// Filter by server id or name.
   #[serde(default)]
@@ -301,7 +301,7 @@ pub type ListAllDockerContainersResponse = Vec<ContainerListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerContainerResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct InspectDockerContainer {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -325,7 +325,7 @@ pub type InspectDockerContainerResponse = Container;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetContainerLogResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetContainerLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -361,7 +361,7 @@ pub type GetContainerLogResponse = Log;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(SearchContainerLogResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct SearchContainerLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -396,7 +396,7 @@ pub type SearchContainerLogResponse = Log;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetResourceMatchingContainerResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetResourceMatchingContainer {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -422,7 +422,7 @@ pub struct GetResourceMatchingContainerResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDockerVolumesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListDockerVolumes {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -441,7 +441,7 @@ pub type ListDockerVolumesResponse = Vec<VolumeListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(InspectDockerVolumeResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct InspectDockerVolume {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -463,7 +463,7 @@ pub type InspectDockerVolumeResponse = Volume;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListComposeProjectsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListComposeProjects {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -483,7 +483,7 @@ pub type ListComposeProjectsResponse = Vec<ComposeProject>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetSystemInformationResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetSystemInformation {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -506,7 +506,7 @@ pub type GetSystemInformationResponse = SystemInformation;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetSystemStatsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetSystemStats {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -530,7 +530,7 @@ pub type GetSystemStatsResponse = SystemStats;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListSystemProcessesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListSystemProcesses {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -550,7 +550,7 @@ pub type ListSystemProcessesResponse = Vec<SystemProcess>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetHistoricalServerStatsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetHistoricalServerStats {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -583,7 +583,7 @@ pub struct GetHistoricalServerStatsResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetServersSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetServersSummary {}
 
 /// Response for [GetServersSummary].

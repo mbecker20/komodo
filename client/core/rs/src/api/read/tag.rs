@@ -16,7 +16,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetTagResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetTag {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -36,7 +36,7 @@ pub type GetTagResponse = Tag;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListTagsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListTags {
   pub query: Option<MongoDocument>,
 }

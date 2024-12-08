@@ -15,7 +15,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateDescriptionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateDescription {
   /// The target resource to set description for.
   pub target: ResourceTarget,

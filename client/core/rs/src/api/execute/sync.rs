@@ -22,7 +22,7 @@ use super::KomodoExecuteRequest;
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RunSync {
   /// Id or name
   pub sync: String,

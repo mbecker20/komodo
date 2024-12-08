@@ -18,7 +18,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetBuilderResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetBuilder {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -37,7 +37,7 @@ pub type GetBuilderResponse = Builder;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListBuildersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListBuilders {
   #[serde(default)]
   pub query: BuilderQuery,
@@ -55,7 +55,7 @@ pub type ListBuildersResponse = Vec<BuilderListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullBuildersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullBuilders {
   #[serde(default)]
   pub query: BuilderQuery,
@@ -74,7 +74,7 @@ pub type ListFullBuildersResponse = Vec<Builder>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetBuildersSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetBuildersSummary {}
 
 /// Response for [GetBuildersSummary].

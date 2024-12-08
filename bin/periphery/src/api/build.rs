@@ -23,11 +23,11 @@ use crate::{
 };
 
 impl Resolve<super::Args> for build::Build {
-  #[instrument(name = "Build", skip_all)]
+  #[instrument(name = "Build", skip_all, fields(build = self.build.name.to_string()))]
   async fn resolve(
     self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<Log>> {
+  ) -> serror::Result<Vec<Log>> {
     let build::Build {
       build,
       registry_token,
@@ -247,11 +247,8 @@ fn cleanup_secret_env_vars(secret_args: &[EnvironmentVar]) {
 //
 
 impl Resolve<super::Args> for PruneBuilders {
-  #[instrument(name = "PruneBuilders", skip(self))]
-  async fn resolve(
-    self,
-    _: &super::Args,
-  ) -> Result<Log, std::convert::Infallible> {
+  #[instrument(name = "PruneBuilders", skip_all)]
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
     let command = String::from("docker builder prune -a -f");
     Ok(
       run_komodo_command("prune builders", None, command, false)
@@ -263,11 +260,8 @@ impl Resolve<super::Args> for PruneBuilders {
 //
 
 impl Resolve<super::Args> for PruneBuildx {
-  #[instrument(name = "PruneBuildx", skip(self))]
-  async fn resolve(
-    self,
-    _: &super::Args,
-  ) -> Result<Log, std::convert::Infallible> {
+  #[instrument(name = "PruneBuildx", skip_all)]
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
     let command = String::from("docker buildx prune -a -f");
     Ok(run_komodo_command("prune buildx", None, command, false).await)
   }

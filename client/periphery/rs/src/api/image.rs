@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Image)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct InspectImage {
   pub name: String,
 }
@@ -18,7 +18,7 @@ pub struct InspectImage {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Vec<ImageHistoryResponseItem>)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ImageHistory {
   pub name: String,
 }
@@ -27,7 +27,7 @@ pub struct ImageHistory {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PullImage {
   /// The name of the image.
   pub name: String,
@@ -41,7 +41,7 @@ pub struct PullImage {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteImage {
   /// Id or name
   pub name: String,
@@ -51,5 +51,5 @@ pub struct DeleteImage {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneImages {}

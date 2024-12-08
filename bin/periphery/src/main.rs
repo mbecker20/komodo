@@ -16,8 +16,6 @@ mod router;
 mod ssl;
 mod stats;
 
-struct State;
-
 async fn app() -> anyhow::Result<()> {
   dotenvy::dotenv().ok();
   let config = config::periphery_config();

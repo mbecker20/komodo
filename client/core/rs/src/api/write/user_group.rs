@@ -14,7 +14,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateUserGroup {
   /// The name to assign to the new UserGroup
   pub name: String,
@@ -29,7 +29,7 @@ pub struct CreateUserGroup {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RenameUserGroup {
   /// The id of the UserGroup
   pub id: String,
@@ -46,7 +46,7 @@ pub struct RenameUserGroup {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteUserGroup {
   /// The id of the UserGroup
   pub id: String,
@@ -61,7 +61,7 @@ pub struct DeleteUserGroup {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct AddUserToUserGroup {
   /// The name or id of UserGroup that user should be added to.
   pub user_group: String,
@@ -78,7 +78,7 @@ pub struct AddUserToUserGroup {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RemoveUserFromUserGroup {
   /// The name or id of UserGroup that user should be removed from.
   pub user_group: String,
@@ -96,7 +96,7 @@ pub struct RemoveUserFromUserGroup {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UserGroup)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct SetUsersInUserGroup {
   /// Id or name.
   pub user_group: String,

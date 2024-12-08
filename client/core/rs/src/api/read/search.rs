@@ -20,7 +20,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(FindResourcesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct FindResources {
   /// The mongo query as JSON
   #[serde(default)]

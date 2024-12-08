@@ -18,7 +18,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetAlerterResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetAlerter {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -37,7 +37,7 @@ pub type GetAlerterResponse = Alerter;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListAlertersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListAlerters {
   /// Structured query to filter alerters.
   #[serde(default)]
@@ -54,7 +54,7 @@ pub type ListAlertersResponse = Vec<AlerterListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullAlertersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullAlerters {
   /// Structured query to filter alerters.
   #[serde(default)]
@@ -74,7 +74,7 @@ pub type ListFullAlertersResponse = Vec<Alerter>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetAlertersSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetAlertersSummary {}
 
 /// Response for [GetAlertersSummary].

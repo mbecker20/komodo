@@ -15,7 +15,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListAlertsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListAlerts {
   /// Pass a custom mongo query to filter the alerts.
   ///
@@ -67,7 +67,7 @@ pub struct ListAlertsResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetAlertResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetAlert {
   pub id: String,
 }

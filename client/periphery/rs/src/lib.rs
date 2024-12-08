@@ -5,7 +5,6 @@ use reqwest::StatusCode;
 use resolver_api::HasResponse;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::json;
-use serror::deserialize_error;
 
 pub mod api;
 
@@ -113,7 +112,7 @@ impl PeripheryClient {
 
       tracing::debug!("got response text, deserializing error");
 
-      let error = deserialize_error(text)
+      let error = serror::deserialize_error(text)
         .context(format!("request to periphery failed | {status}"));
 
       Err(error)

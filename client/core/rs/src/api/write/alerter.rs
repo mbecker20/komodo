@@ -19,7 +19,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateAlerter {
   /// The name given to newly created alerter.
   pub name: String,
@@ -38,7 +38,7 @@ pub struct CreateAlerter {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyAlerter {
   /// The name of the new alerter.
   pub name: String,
@@ -56,7 +56,7 @@ pub struct CopyAlerter {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteAlerter {
   /// The id or name of the alerter to delete.
   pub id: String,
@@ -76,7 +76,7 @@ pub struct DeleteAlerter {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Alerter)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateAlerter {
   /// The id of the alerter to update.
   pub id: String,
@@ -94,8 +94,8 @@ pub struct UpdateAlerter {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameAlerter {
   /// The id or name of the Alerter to rename.
   pub id: String,

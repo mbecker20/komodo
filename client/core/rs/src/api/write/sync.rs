@@ -21,7 +21,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateResourceSync {
   /// The name given to newly created sync.
   pub name: String,
@@ -40,7 +40,7 @@ pub struct CreateResourceSync {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyResourceSync {
   /// The name of the new sync.
   pub name: String,
@@ -58,7 +58,7 @@ pub struct CopyResourceSync {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteResourceSync {
   /// The id or name of the sync to delete.
   pub id: String,
@@ -80,7 +80,7 @@ pub struct DeleteResourceSync {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateResourceSync {
   /// The id of the sync to update.
   pub id: String,
@@ -98,8 +98,8 @@ pub struct UpdateResourceSync {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameResourceSync {
   /// The id or name of the ResourceSync to rename.
   pub id: String,
@@ -116,7 +116,7 @@ pub struct RenameResourceSync {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ResourceSync)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RefreshResourceSyncPending {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -132,8 +132,8 @@ pub struct RefreshResourceSyncPending {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct WriteSyncFileContents {
   /// The name or id of the target Sync.
   #[serde(alias = "id", alias = "name")]
@@ -165,8 +165,8 @@ pub struct WriteSyncFileContents {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct CommitSync {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -190,7 +190,7 @@ pub enum SyncWebhookAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateSyncWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateSyncWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -212,7 +212,7 @@ pub type CreateSyncWebhookResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteSyncWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteSyncWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

@@ -25,7 +25,7 @@ pub struct TomlResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ExportAllResourcesToTomlResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ExportAllResourcesToToml {
   /// Tag name or id. Empty array will not filter by tag.
   #[serde(default)]
@@ -45,7 +45,7 @@ pub type ExportAllResourcesToTomlResponse = TomlResponse;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ExportResourcesToTomlResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ExportResourcesToToml {
   /// The targets to include in the export.
   #[serde(default)]

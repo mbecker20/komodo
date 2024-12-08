@@ -20,7 +20,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateApiKeyForServiceUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateApiKeyForServiceUser {
   /// Must be service user
   pub user_id: String,
@@ -45,7 +45,7 @@ pub type CreateApiKeyForServiceUserResponse = CreateApiKeyResponse;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteApiKeyForServiceUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteApiKeyForServiceUser {
   pub key: String,
 }
