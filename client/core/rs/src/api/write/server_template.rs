@@ -19,7 +19,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateServerTemplate {
   /// The name given to newly created server template.
   pub name: String,
@@ -38,7 +38,7 @@ pub struct CreateServerTemplate {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyServerTemplate {
   /// The name of the new server template.
   pub name: String,
@@ -56,7 +56,7 @@ pub struct CopyServerTemplate {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteServerTemplate {
   /// The id or name of the server template to delete.
   pub id: String,
@@ -78,7 +78,7 @@ pub struct DeleteServerTemplate {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(ServerTemplate)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateServerTemplate {
   /// The id of the server template to update.
   pub id: String,
@@ -96,8 +96,8 @@ pub struct UpdateServerTemplate {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameServerTemplate {
   /// The id or name of the ServerTemplate to rename.
   pub id: String,

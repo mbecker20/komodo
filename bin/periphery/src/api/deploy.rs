@@ -23,17 +23,23 @@ use crate::{
 };
 
 impl Resolve<super::Args> for Deploy {
-  #[instrument(name = "Deploy", skip(core_replacers, registry_token))]
-  async fn resolve(
-    Deploy {
+  #[instrument(
+    name = "Deploy",
+    skip_all,
+    fields(
+      stack = &self.deployment.name,
+      stop_signal = format!("{:?}", self.stop_signal),
+      stop_time = self.stop_time,
+    )
+  )]
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let Deploy {
       deployment,
       stop_signal,
       stop_time,
       registry_token,
       replacers: core_replacers,
-    }: Deploy,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+    } = self;
     let image = if let DeploymentImage::Image { image } =
       &deployment.config.image
     {

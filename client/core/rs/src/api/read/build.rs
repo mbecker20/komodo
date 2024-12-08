@@ -21,7 +21,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetBuildResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetBuild {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -40,7 +40,7 @@ pub type GetBuildResponse = Build;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListBuildsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListBuilds {
   /// optional structured query to filter builds.
   #[serde(default)]
@@ -59,7 +59,7 @@ pub type ListBuildsResponse = Vec<BuildListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullBuildsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullBuilds {
   /// optional structured query to filter builds.
   #[serde(default)]
@@ -78,7 +78,7 @@ pub type ListFullBuildsResponse = Vec<Build>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetBuildActionStateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetBuildActionState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -98,7 +98,7 @@ pub type GetBuildActionStateResponse = BuildActionState;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetBuildsSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetBuildsSummary {}
 
 /// Response for [GetBuildsSummary].
@@ -130,7 +130,7 @@ pub struct GetBuildsSummaryResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetBuildMonthlyStatsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetBuildMonthlyStats {
   /// Query for older data by incrementing the page.
   /// `page: 0` is the default, and will return the most recent data.
@@ -192,7 +192,7 @@ impl GetBuildMonthlyStatsResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListBuildVersionsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListBuildVersions {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -227,7 +227,7 @@ pub struct BuildVersionResponseItem {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListCommonBuildExtraArgsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListCommonBuildExtraArgs {
   /// optional structured query to filter builds.
   #[serde(default)]
@@ -246,7 +246,7 @@ pub type ListCommonBuildExtraArgsResponse = Vec<String>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetBuildWebhookEnabledResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetBuildWebhookEnabled {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

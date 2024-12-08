@@ -14,7 +14,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateVariableResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateVariable {
   /// The name of the variable to create.
   pub name: String,
@@ -41,7 +41,7 @@ pub type CreateVariableResponse = Variable;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateVariableValueResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateVariableValue {
   /// The name of the variable to update.
   pub name: String,
@@ -61,7 +61,7 @@ pub type UpdateVariableValueResponse = Variable;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateVariableDescriptionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateVariableDescription {
   /// The name of the variable to update.
   pub name: String,
@@ -81,7 +81,7 @@ pub type UpdateVariableDescriptionResponse = Variable;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateVariableIsSecretResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateVariableIsSecret {
   /// The name of the variable to update.
   pub name: String,
@@ -101,7 +101,7 @@ pub type UpdateVariableIsSecretResponse = Variable;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteVariableResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteVariable {
   pub name: String,
 }

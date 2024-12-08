@@ -18,7 +18,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetServerTemplateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetServerTemplate {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -37,7 +37,7 @@ pub type GetServerTemplateResponse = ServerTemplate;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListServerTemplatesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListServerTemplates {
   #[serde(default)]
   pub query: ServerTemplateQuery,
@@ -55,7 +55,7 @@ pub type ListServerTemplatesResponse = Vec<ServerTemplateListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullServerTemplatesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullServerTemplates {
   #[serde(default)]
   pub query: ServerTemplateQuery,
@@ -74,7 +74,7 @@ pub type ListFullServerTemplatesResponse = Vec<ServerTemplate>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetServerTemplatesSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetServerTemplatesSummary {}
 
 /// Response for [GetServerTemplatesSummary].

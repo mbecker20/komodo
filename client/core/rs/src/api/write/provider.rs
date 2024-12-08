@@ -15,7 +15,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateGitProviderAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateGitProviderAccount {
   /// The initial account config. Anything in the _id field will be ignored,
   /// as this is generated on creation.
@@ -35,7 +35,7 @@ pub type CreateGitProviderAccountResponse = GitProviderAccount;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateGitProviderAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateGitProviderAccount {
   /// The id of the git provider account to update.
   pub id: String,
@@ -56,7 +56,7 @@ pub type UpdateGitProviderAccountResponse = GitProviderAccount;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteGitProviderAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteGitProviderAccount {
   /// The id of the git provider to delete
   pub id: String,
@@ -75,7 +75,7 @@ pub type DeleteGitProviderAccountResponse = GitProviderAccount;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateDockerRegistryAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateDockerRegistryAccount {
   pub account: _PartialDockerRegistryAccount,
 }
@@ -93,7 +93,7 @@ pub type CreateDockerRegistryAccountResponse = DockerRegistryAccount;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateDockerRegistryAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateDockerRegistryAccount {
   /// The id of the docker registry to update
   pub id: String,
@@ -114,7 +114,7 @@ pub type UpdateDockerRegistryAccountResponse = DockerRegistryAccount;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteDockerRegistryAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteDockerRegistryAccount {
   /// The id of the docker registry account to delete
   pub id: String,

@@ -22,7 +22,7 @@ use super::{BatchExecutionResponse, KomodoExecuteRequest};
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeployStack {
   /// Id or name
   pub stack: String,
@@ -49,7 +49,7 @@ pub struct DeployStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchDeployStack {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.
@@ -82,7 +82,7 @@ pub struct BatchDeployStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeployStackIfChanged {
   /// Id or name
   pub stack: String,
@@ -107,7 +107,7 @@ pub struct DeployStackIfChanged {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchDeployStackIfChanged {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.
@@ -138,7 +138,7 @@ pub struct BatchDeployStackIfChanged {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PullStack {
   /// Id or name
   pub stack: String,
@@ -162,7 +162,7 @@ pub struct PullStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StartStack {
   /// Id or name
   pub stack: String,
@@ -186,7 +186,7 @@ pub struct StartStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RestartStack {
   /// Id or name
   pub stack: String,
@@ -210,7 +210,7 @@ pub struct RestartStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PauseStack {
   /// Id or name
   pub stack: String,
@@ -236,7 +236,7 @@ pub struct PauseStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UnpauseStack {
   /// Id or name
   pub stack: String,
@@ -260,7 +260,7 @@ pub struct UnpauseStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StopStack {
   /// Id or name
   pub stack: String,
@@ -286,7 +286,7 @@ pub struct StopStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DestroyStack {
   /// Id or name
   pub stack: String,
@@ -315,7 +315,7 @@ pub struct DestroyStack {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchDestroyStack {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.

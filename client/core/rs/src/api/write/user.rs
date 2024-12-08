@@ -17,7 +17,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateUserUsernameResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateUserUsername {
   pub username: String,
 }
@@ -35,7 +35,7 @@ pub type UpdateUserUsernameResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateUserPasswordResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateUserPassword {
   pub password: String,
 }
@@ -57,7 +57,7 @@ pub type UpdateUserPasswordResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteUser {
   /// User id or username
   #[serde(alias = "username", alias = "id")]
@@ -77,7 +77,7 @@ pub type DeleteUserResponse = User;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateServiceUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateServiceUser {
   /// The username for the service user.
   pub username: String,
@@ -98,7 +98,7 @@ pub type CreateServiceUserResponse = User;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateServiceUserDescriptionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateServiceUserDescription {
   /// The service user's username
   pub username: String,

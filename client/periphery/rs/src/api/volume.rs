@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Volume)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct InspectVolume {
   pub name: String,
 }
@@ -15,6 +15,7 @@ pub struct InspectVolume {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
+#[error(serror::Error)]
 pub struct DeleteVolume {
   /// Id or name
   pub name: String,
@@ -24,4 +25,5 @@ pub struct DeleteVolume {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
+#[error(serror::Error)]
 pub struct PruneVolumes {}

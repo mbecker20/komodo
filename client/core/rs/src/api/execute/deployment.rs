@@ -28,7 +28,7 @@ use super::{BatchExecutionResponse, KomodoExecuteRequest};
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct Deploy {
   /// Name or id
   pub deployment: String,
@@ -56,7 +56,7 @@ pub struct Deploy {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchDeploy {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.
@@ -87,7 +87,7 @@ pub struct BatchDeploy {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PullDeployment {
   /// Name or id
   pub deployment: String,
@@ -111,7 +111,7 @@ pub struct PullDeployment {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StartDeployment {
   /// Name or id
   pub deployment: String,
@@ -135,7 +135,7 @@ pub struct StartDeployment {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RestartDeployment {
   /// Name or id
   pub deployment: String,
@@ -159,7 +159,7 @@ pub struct RestartDeployment {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PauseDeployment {
   /// Name or id
   pub deployment: String,
@@ -185,7 +185,7 @@ pub struct PauseDeployment {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UnpauseDeployment {
   /// Name or id
   pub deployment: String,
@@ -209,7 +209,7 @@ pub struct UnpauseDeployment {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StopDeployment {
   /// Name or id
   pub deployment: String,
@@ -238,7 +238,7 @@ pub struct StopDeployment {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DestroyDeployment {
   /// Name or id.
   pub deployment: String,
@@ -264,7 +264,7 @@ pub struct DestroyDeployment {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchDestroyDeployment {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.

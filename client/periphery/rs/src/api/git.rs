@@ -8,14 +8,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(LatestCommit)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetLatestCommit {
   pub name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(RepoActionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CloneRepo {
   pub args: CloneArgs,
   #[serde(default)]
@@ -39,7 +39,7 @@ fn default_env_file_path() -> String {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(RepoActionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PullRepo {
   pub args: CloneArgs,
   #[serde(default)]
@@ -60,7 +60,7 @@ pub struct PullRepo {
 /// Either pull or clone depending on whether it exists.
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(RepoActionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PullOrCloneRepo {
   pub args: CloneArgs,
   #[serde(default)]
@@ -92,7 +92,7 @@ pub struct RepoActionResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RenameRepo {
   pub curr_name: String,
   pub new_name: String,
@@ -102,7 +102,7 @@ pub struct RenameRepo {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteRepo {
   pub name: String,
 }

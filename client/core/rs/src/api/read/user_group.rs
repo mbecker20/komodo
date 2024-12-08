@@ -15,7 +15,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetUserGroupResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetUserGroup {
   /// Name or Id
   pub user_group: String,
@@ -36,7 +36,7 @@ pub type GetUserGroupResponse = UserGroup;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListUserGroupsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListUserGroups {}
 
 #[typeshare]

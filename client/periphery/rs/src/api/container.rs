@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Container)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct InspectContainer {
   pub name: String,
 }
@@ -20,6 +20,7 @@ pub struct InspectContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
+#[error(serror::Error)]
 pub struct GetContainerLog {
   pub name: String,
   #[serde(default = "default_tail")]
@@ -37,6 +38,7 @@ fn default_tail() -> u64 {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
+#[error(serror::Error)]
 pub struct GetContainerLogSearch {
   pub name: String,
   pub terms: Vec<String>,
@@ -53,7 +55,7 @@ pub struct GetContainerLogSearch {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(ContainerStats)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetContainerStats {
   pub name: String,
 }
@@ -62,7 +64,7 @@ pub struct GetContainerStats {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<ContainerStats>)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetContainerStatsList {}
 
 //
@@ -73,7 +75,7 @@ pub struct GetContainerStatsList {}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct Deploy {
   pub deployment: Deployment,
   pub stop_signal: Option<TerminationSignal>,
@@ -89,7 +91,7 @@ pub struct Deploy {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StartContainer {
   pub name: String,
 }
@@ -98,7 +100,7 @@ pub struct StartContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RestartContainer {
   pub name: String,
 }
@@ -107,7 +109,7 @@ pub struct RestartContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PauseContainer {
   pub name: String,
 }
@@ -116,7 +118,7 @@ pub struct PauseContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UnpauseContainer {
   pub name: String,
 }
@@ -125,7 +127,7 @@ pub struct UnpauseContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StopContainer {
   pub name: String,
   pub signal: Option<TerminationSignal>,
@@ -136,7 +138,7 @@ pub struct StopContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RemoveContainer {
   pub name: String,
   pub signal: Option<TerminationSignal>,
@@ -147,7 +149,7 @@ pub struct RemoveContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RenameContainer {
   pub curr_name: String,
   pub new_name: String,
@@ -157,40 +159,40 @@ pub struct RenameContainer {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneContainers {}
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StartAllContainers {}
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RestartAllContainers {}
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PauseAllContainers {}
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UnpauseAllContainers {}
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StopAllContainers {}

@@ -20,11 +20,11 @@ use crate::{
 };
 
 impl Resolve<super::Args> for ListComposeProjects {
-  #[instrument(name = "ComposeInfo", level = "debug", skip(self))]
+  #[instrument(name = "ComposeInfo", level = "debug", skip_all)]
   async fn resolve(
     self,
     _: &super::Args,
-  ) -> anyhow::Result<Vec<ComposeProject>> {
+  ) -> serror::Result<Vec<ComposeProject>> {
     let docker_compose = docker_compose();
     let res = run_komodo_command(
       "list projects",
@@ -35,9 +35,13 @@ impl Resolve<super::Args> for ListComposeProjects {
     .await;
 
     if !res.success {
-      return Err(anyhow!("{}", res.combined()).context(format!(
+      return Err(
+        anyhow!("{}", res.combined())
+          .context(format!(
         "failed to list compose projects using {docker_compose} ls"
-      )));
+      ))
+          .into(),
+      );
     }
 
     let res =
@@ -80,15 +84,13 @@ pub struct DockerComposeLsItem {
 
 impl Resolve<super::Args> for GetComposeServiceLog {
   #[instrument(name = "GetComposeServiceLog", level = "debug")]
-  async fn resolve(
-    GetComposeServiceLog {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let GetComposeServiceLog {
       project,
       service,
       tail,
       timestamps,
-    }: Self,
-    _: (),
-  ) -> anyhow::Result<Log> {
+    } = self;
     let docker_compose = docker_compose();
     let timestamps =
       timestamps.then_some(" --timestamps").unwrap_or_default();
@@ -103,17 +105,15 @@ impl Resolve<super::Args> for GetComposeServiceLog {
 
 impl Resolve<super::Args> for GetComposeServiceLogSearch {
   #[instrument(name = "GetComposeServiceLogSearch", level = "debug")]
-  async fn resolve(
-    GetComposeServiceLogSearch {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let GetComposeServiceLogSearch {
       project,
       service,
       terms,
       combinator,
       invert,
       timestamps,
-    }: Self,
-    _: &super::Args,
-  ) -> Result<Log, std::convert::Infallible> {
+    } = self;
     let docker_compose = docker_compose();
     let grep = log_grep(&terms, combinator, invert);
     let timestamps =
@@ -131,13 +131,14 @@ impl Resolve<super::Args> for GetComposeServiceLogSearch {
 impl Resolve<super::Args> for GetComposeContentsOnHost {
   #[instrument(name = "GetComposeContentsOnHost", level = "debug")]
   async fn resolve(
-    GetComposeContentsOnHost {
+    self,
+    _: &super::Args,
+  ) -> serror::Result<GetComposeContentsOnHostResponse> {
+    let GetComposeContentsOnHost {
       name,
       run_directory,
       file_paths,
-    }: Self,
-    _: &super::Args,
-  ) -> anyhow::Result<GetComposeContentsOnHostResponse> {
+    } = self;
     let root =
       periphery_config().stack_dir.join(to_komodo_name(&name));
     let run_directory =
@@ -181,15 +182,13 @@ impl Resolve<super::Args> for GetComposeContentsOnHost {
 
 impl Resolve<super::Args> for WriteComposeContentsToHost {
   #[instrument(name = "WriteComposeContentsToHost")]
-  async fn resolve(
-    WriteComposeContentsToHost {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let WriteComposeContentsToHost {
       name,
       run_directory,
       file_path,
       contents,
-    }: Self,
-    _: &super::Args,
-  ) -> anyhow::Result<Log> {
+    } = self;
     let file_path = periphery_config()
       .stack_dir
       .join(to_komodo_name(&name))
@@ -216,17 +215,27 @@ impl Resolve<super::Args> for WriteComposeContentsToHost {
 //
 
 impl Resolve<super::Args> for WriteCommitComposeContents {
-  #[instrument(name = "WriteCommitComposeContents")]
+  #[instrument(
+    name = "WriteCommitComposeContents",
+    skip_all,
+    fields(
+      stack = &self.stack.name,
+      username = &self.username,
+      file_path = &self.file_path,
+    )
+  )]
   async fn resolve(
-    WriteCommitComposeContents {
+    self,
+    _: &super::Args,
+  ) -> serror::Result<RepoActionResponse> {
+    let WriteCommitComposeContents {
       stack,
       username,
       file_path,
       contents,
       git_token,
-    }: Self,
-    _: &super::Args,
-  ) -> anyhow::Result<RepoActionResponse> {
+    } = self;
+
     let root = pull_or_clone_stack(&stack, git_token).await?;
 
     let file_path = stack
@@ -267,16 +276,24 @@ impl<'a> WriteStackRes for &'a mut ComposePullResponse {
 }
 
 impl Resolve<super::Args> for ComposePull {
-  #[instrument(name = "ComposePull", skip(git_token, registry_token))]
+  #[instrument(
+    name = "ComposePull",
+    skip_all,
+    fields(
+      stack = &self.stack.name,
+      service = &self.service,
+    )
+  )]
   async fn resolve(
-    ComposePull {
+    self,
+    _: &super::Args,
+  ) -> serror::Result<ComposePullResponse> {
+    let ComposePull {
       stack,
       service,
       git_token,
       registry_token,
-    }: Self,
-    _: &super::Args,
-  ) -> anyhow::Result<ComposePullResponse> {
+    } = self;
     let mut res = ComposePullResponse::default();
     let (run_directory, env_file_path) =
       write_stack(&stack, git_token, &mut res).await?;
@@ -300,7 +317,7 @@ impl Resolve<super::Args> for ComposePull {
 
     for (path, full_path) in &file_paths {
       if !full_path.exists() {
-        return Err(anyhow!("Missing compose file at {path}"));
+        return Err(anyhow!("Missing compose file at {path}").into());
       }
     }
 
@@ -370,17 +387,25 @@ impl Resolve<super::Args> for ComposePull {
 //
 
 impl Resolve<super::Args> for ComposeUp {
-  #[instrument(name = "ComposeUp", skip(git_token, registry_token))]
+  #[instrument(
+    name = "ComposeUp",
+    skip_all,
+    fields(
+      stack = &self.stack.name,
+      service = &self.service,
+    )
+  )]
   async fn resolve(
-    ComposeUp {
+    self,
+    _: &super::Args,
+  ) -> serror::Result<ComposeUpResponse> {
+    let ComposeUp {
       stack,
       service,
       git_token,
       registry_token,
       replacers,
-    }: Self,
-    _: &super::Args,
-  ) -> anyhow::Result<ComposeUpResponse> {
+    } = self;
     let mut res = ComposeUpResponse::default();
     if let Err(e) = compose_up(
       stack,
@@ -405,10 +430,8 @@ impl Resolve<super::Args> for ComposeUp {
 
 impl Resolve<super::Args> for ComposeExecution {
   #[instrument(name = "ComposeExecution")]
-  async fn resolve(
-    ComposeExecution { project, command }: Self,
-    _: &super::Args,
-  ) -> Result<Log, std::convert::Infallible> {
+  async fn resolve(self, _: &super::Args) -> serror::Result<Log> {
+    let ComposeExecution { project, command } = self;
     let docker_compose = docker_compose();
     let log = run_komodo_command(
       "compose command",

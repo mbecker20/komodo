@@ -57,7 +57,7 @@ pub struct GetLoginOptionsResponse {
 )]
 #[empty_traits(KomodoAuthRequest)]
 #[response(CreateLocalUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateLocalUser {
   /// The username for the new user.
   pub username: String,
@@ -82,7 +82,7 @@ pub type CreateLocalUserResponse = JwtResponse;
 )]
 #[empty_traits(KomodoAuthRequest)]
 #[response(LoginLocalUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct LoginLocalUser {
   /// The user's username
   pub username: String,
@@ -105,7 +105,7 @@ pub type LoginLocalUserResponse = JwtResponse;
 )]
 #[empty_traits(KomodoAuthRequest)]
 #[response(ExchangeForJwtResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ExchangeForJwt {
   /// The 'exchange token'
   pub token: String,
@@ -125,7 +125,7 @@ pub type ExchangeForJwtResponse = JwtResponse;
 )]
 #[empty_traits(KomodoAuthRequest)]
 #[response(GetUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetUser {}
 
 #[typeshare]

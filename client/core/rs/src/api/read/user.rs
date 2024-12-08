@@ -15,7 +15,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListApiKeysResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListApiKeys {}
 
 #[typeshare]
@@ -33,7 +33,7 @@ pub type ListApiKeysResponse = Vec<ApiKey>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListApiKeysForServiceUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListApiKeysForServiceUser {
   /// Id or username
   #[serde(alias = "id", alias = "username")]
@@ -54,7 +54,7 @@ pub type ListApiKeysForServiceUserResponse = Vec<ApiKey>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(FindUserResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct FindUser {
   /// Id or username
   #[serde(alias = "id", alias = "username")]
@@ -75,7 +75,7 @@ pub type FindUserResponse = User;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListUsersResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListUsers {}
 
 #[typeshare]
@@ -91,7 +91,7 @@ pub type ListUsersResponse = Vec<User>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetUsernameResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetUsername {
   /// The id of the user.
   pub user_id: String,

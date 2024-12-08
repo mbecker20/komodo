@@ -18,7 +18,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetActionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetAction {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -37,7 +37,7 @@ pub type GetActionResponse = Action;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListActionsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListActions {
   /// optional structured query to filter actions.
   #[serde(default)]
@@ -56,7 +56,7 @@ pub type ListActionsResponse = Vec<ActionListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullActionsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullActions {
   /// optional structured query to filter actions.
   #[serde(default)]
@@ -75,7 +75,7 @@ pub type ListFullActionsResponse = Vec<Action>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetActionActionStateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetActionActionState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -95,7 +95,7 @@ pub type GetActionActionStateResponse = ActionActionState;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetActionsSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetActionsSummary {}
 
 /// Response for [GetActionsSummary].

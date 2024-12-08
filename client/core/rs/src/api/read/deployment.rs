@@ -24,7 +24,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDeployment {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -44,7 +44,7 @@ pub type GetDeploymentResponse = Deployment;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDeploymentsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListDeployments {
   /// optional structured query to filter deployments.
   #[serde(default)]
@@ -64,7 +64,7 @@ pub type ListDeploymentsResponse = Vec<DeploymentListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullDeploymentsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullDeployments {
   /// optional structured query to filter deployments.
   #[serde(default)]
@@ -88,7 +88,7 @@ pub type ListFullDeploymentsResponse = Vec<Deployment>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentContainerResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDeploymentContainer {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -115,7 +115,7 @@ pub struct GetDeploymentContainerResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentLogResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDeploymentLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -149,7 +149,7 @@ pub type GetDeploymentLogResponse = Log;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(SearchDeploymentLogResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct SearchDeploymentLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -185,7 +185,7 @@ pub type SearchDeploymentLogResponse = Log;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentStatsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDeploymentStats {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -205,7 +205,7 @@ pub type GetDeploymentStatsResponse = ContainerStats;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(DeploymentActionState)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDeploymentActionState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -225,7 +225,7 @@ pub type GetDeploymentActionStateResponse = DeploymentActionState;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetDeploymentsSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDeploymentsSummary {}
 
 /// Response for [GetDeploymentsSummary].
@@ -256,7 +256,7 @@ pub struct GetDeploymentsSummaryResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListCommonDeploymentExtraArgsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListCommonDeploymentExtraArgs {
   /// optional structured query to filter deployments.
   #[serde(default)]

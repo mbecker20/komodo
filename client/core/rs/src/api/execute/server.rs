@@ -28,7 +28,7 @@ use super::KomodoExecuteRequest;
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StartContainer {
   /// Name or id
   pub server: String,
@@ -54,7 +54,7 @@ pub struct StartContainer {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RestartContainer {
   /// Name or id
   pub server: String,
@@ -80,7 +80,7 @@ pub struct RestartContainer {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PauseContainer {
   /// Name or id
   pub server: String,
@@ -108,7 +108,7 @@ pub struct PauseContainer {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UnpauseContainer {
   /// Name or id
   pub server: String,
@@ -134,7 +134,7 @@ pub struct UnpauseContainer {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StopContainer {
   /// Name or id
   pub server: String,
@@ -165,7 +165,7 @@ pub struct StopContainer {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DestroyContainer {
   /// Name or id
   pub server: String,
@@ -193,7 +193,7 @@ pub struct DestroyContainer {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StartAllContainers {
   /// Name or id
   pub server: String,
@@ -215,7 +215,7 @@ pub struct StartAllContainers {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RestartAllContainers {
   /// Name or id
   pub server: String,
@@ -237,7 +237,7 @@ pub struct RestartAllContainers {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PauseAllContainers {
   /// Name or id
   pub server: String,
@@ -259,7 +259,7 @@ pub struct PauseAllContainers {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UnpauseAllContainers {
   /// Name or id
   pub server: String,
@@ -281,7 +281,7 @@ pub struct UnpauseAllContainers {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct StopAllContainers {
   /// Name or id
   pub server: String,
@@ -305,7 +305,7 @@ pub struct StopAllContainers {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneContainers {
   /// Id or name
   pub server: String,
@@ -330,7 +330,7 @@ pub struct PruneContainers {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteNetwork {
   /// Id or name.
   pub server: String,
@@ -356,7 +356,7 @@ pub struct DeleteNetwork {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneNetworks {
   /// Id or name
   pub server: String,
@@ -379,7 +379,7 @@ pub struct PruneNetworks {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteImage {
   /// Id or name.
   pub server: String,
@@ -405,7 +405,7 @@ pub struct DeleteImage {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneImages {
   /// Id or name
   pub server: String,
@@ -428,7 +428,7 @@ pub struct PruneImages {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteVolume {
   /// Id or name.
   pub server: String,
@@ -454,7 +454,7 @@ pub struct DeleteVolume {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneVolumes {
   /// Id or name
   pub server: String,
@@ -478,7 +478,7 @@ pub struct PruneVolumes {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneDockerBuilders {
   /// Id or name
   pub server: String,
@@ -502,7 +502,7 @@ pub struct PruneDockerBuilders {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneBuildx {
   /// Id or name
   pub server: String,
@@ -526,7 +526,7 @@ pub struct PruneBuildx {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PruneSystem {
   /// Id or name
   pub server: String,

@@ -22,7 +22,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetStackResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetStack {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -41,7 +41,7 @@ pub type GetStackResponse = Stack;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListStackServicesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListStackServices {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -60,7 +60,7 @@ pub type ListStackServicesResponse = Vec<StackService>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetStackServiceLogResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetStackServiceLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -96,7 +96,7 @@ pub type GetStackServiceLogResponse = Log;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(SearchStackServiceLogResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct SearchStackServiceLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -132,7 +132,7 @@ pub type SearchStackServiceLogResponse = Log;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListCommonStackExtraArgsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListCommonStackExtraArgs {
   /// optional structured query to filter stacks.
   #[serde(default)]
@@ -152,7 +152,7 @@ pub type ListCommonStackExtraArgsResponse = Vec<String>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListCommonStackBuildExtraArgsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListCommonStackBuildExtraArgs {
   /// optional structured query to filter stacks.
   #[serde(default)]
@@ -171,7 +171,7 @@ pub type ListCommonStackBuildExtraArgsResponse = Vec<String>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListStacksResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListStacks {
   /// optional structured query to filter syncs.
   #[serde(default)]
@@ -190,7 +190,7 @@ pub type ListStacksResponse = Vec<StackListItem>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListFullStacksResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListFullStacks {
   /// optional structured query to filter stacks.
   #[serde(default)]
@@ -209,7 +209,7 @@ pub type ListFullStacksResponse = Vec<Stack>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetStackActionStateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetStackActionState {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -229,7 +229,7 @@ pub type GetStackActionStateResponse = StackActionState;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetStacksSummaryResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetStacksSummary {}
 
 /// Response for [GetStacksSummary]
@@ -259,7 +259,7 @@ pub struct GetStacksSummaryResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetStackWebhooksEnabledResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetStackWebhooksEnabled {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

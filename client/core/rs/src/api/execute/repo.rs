@@ -32,7 +32,7 @@ use super::{BatchExecutionResponse, KomodoExecuteRequest};
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CloneRepo {
   /// Id or name
   pub repo: String,
@@ -54,7 +54,7 @@ pub struct CloneRepo {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchCloneRepo {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.
@@ -90,7 +90,7 @@ pub struct BatchCloneRepo {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct PullRepo {
   /// Id or name
   pub repo: String,
@@ -112,7 +112,7 @@ pub struct PullRepo {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchPullRepo {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.
@@ -152,7 +152,7 @@ pub struct BatchPullRepo {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BuildRepo {
   /// Id or name
   pub repo: String,
@@ -174,7 +174,7 @@ pub struct BuildRepo {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(BatchExecutionResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct BatchBuildRepo {
   /// Id or name or wildcard pattern or regex.
   /// Supports multiline and comma delineated combinations of the above.
@@ -207,7 +207,7 @@ pub struct BatchBuildRepo {
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CancelRepoBuild {
   /// Can be id or name
   pub repo: String,

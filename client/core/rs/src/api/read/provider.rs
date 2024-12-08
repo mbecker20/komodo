@@ -17,7 +17,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetGitProviderAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetGitProviderAccount {
   pub id: String,
 }
@@ -35,7 +35,7 @@ pub type GetGitProviderAccountResponse = GitProviderAccount;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListGitProviderAccountsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListGitProviderAccounts {
   /// Optionally filter by accounts with a specific domain.
   pub domain: Option<String>,
@@ -56,7 +56,7 @@ pub type ListGitProviderAccountsResponse = Vec<GitProviderAccount>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetDockerRegistryAccountResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDockerRegistryAccount {
   pub id: String,
 }
@@ -74,7 +74,7 @@ pub type GetDockerRegistryAccountResponse = DockerRegistryAccount;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDockerRegistryAccountsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListDockerRegistryAccounts {
   /// Optionally filter by accounts with a specific domain.
   pub domain: Option<String>,

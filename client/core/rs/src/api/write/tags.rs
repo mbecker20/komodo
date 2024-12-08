@@ -16,7 +16,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Tag)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateTag {
   /// The name of the tag.
   pub name: String,
@@ -33,7 +33,7 @@ pub struct CreateTag {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Tag)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteTag {
   /// The id of the tag to delete.
   pub id: String,
@@ -48,7 +48,7 @@ pub struct DeleteTag {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Tag)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RenameTag {
   /// The id of the tag to rename.
   pub id: String,
@@ -66,7 +66,7 @@ pub struct RenameTag {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateTagsOnResourceResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateTagsOnResource {
   pub target: ResourceTarget,
   /// Tag Ids

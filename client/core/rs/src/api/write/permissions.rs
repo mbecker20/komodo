@@ -18,7 +18,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdatePermissionOnTargetResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdatePermissionOnTarget {
   /// Specify the user or user group.
   pub user_target: UserTarget,
@@ -41,7 +41,7 @@ pub type UpdatePermissionOnTargetResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdatePermissionOnResourceTypeResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdatePermissionOnResourceType {
   /// Specify the user or user group.
   pub user_target: UserTarget,
@@ -64,7 +64,7 @@ pub type UpdatePermissionOnResourceTypeResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateUserBasePermissionsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateUserBasePermissions {
   /// The target user.
   pub user_id: String,
@@ -87,7 +87,7 @@ pub type UpdateUserBasePermissionsResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(UpdateUserAdminResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateUserAdmin {
   /// The target user.
   pub user_id: String,

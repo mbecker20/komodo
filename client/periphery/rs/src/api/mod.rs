@@ -25,6 +25,7 @@ pub mod volume;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(GetHealthResponse)]
+#[error(serror::Error)]
 pub struct GetHealth {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -34,6 +35,7 @@ pub struct GetHealthResponse {}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(GetVersionResponse)]
+#[error(serror::Error)]
 pub struct GetVersion {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -44,7 +46,7 @@ pub struct GetVersionResponse {
 /// Returns all containers, networks, images, compose projects
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(GetDockerListsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetDockerLists {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -60,6 +62,7 @@ pub struct GetDockerListsResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(ListGitProvidersResponse)]
+#[error(serror::Error)]
 pub struct ListGitProviders {}
 
 pub type ListGitProvidersResponse = Vec<GitProvider>;
@@ -68,6 +71,7 @@ pub type ListGitProvidersResponse = Vec<GitProvider>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(ListDockerRegistriesResponse)]
+#[error(serror::Error)]
 pub struct ListDockerRegistries {}
 
 pub type ListDockerRegistriesResponse = Vec<DockerRegistry>;
@@ -76,18 +80,21 @@ pub type ListDockerRegistriesResponse = Vec<DockerRegistry>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<String>)]
+#[error(serror::Error)]
 pub struct ListSecrets {}
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
+#[error(serror::Error)]
 pub struct PruneSystem {}
 
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
+#[error(serror::Error)]
 pub struct RunCommand {
   pub command: SystemCommand,
 }

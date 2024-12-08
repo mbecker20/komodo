@@ -15,7 +15,7 @@ use super::KomodoExecuteRequest;
 )]
 #[empty_traits(KomodoExecuteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct LaunchServer {
   /// The name of the created server.
   pub name: String,

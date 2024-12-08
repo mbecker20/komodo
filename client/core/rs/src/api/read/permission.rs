@@ -19,7 +19,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListPermissionsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListPermissions {}
 
 #[typeshare]
@@ -36,7 +36,7 @@ pub type ListPermissionsResponse = Vec<Permission>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetPermissionLevelResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetPermissionLevel {
   /// The target to get user permission on.
   pub target: ResourceTarget,
@@ -55,7 +55,7 @@ pub type GetPermissionLevelResponse = PermissionLevel;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListUserTargetPermissionsResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListUserTargetPermissions {
   /// Specify either a user or a user group.
   pub user_target: UserTarget,

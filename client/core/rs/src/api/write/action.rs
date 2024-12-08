@@ -20,7 +20,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Action)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateAction {
   /// The name given to newly created action.
   pub name: String,
@@ -39,7 +39,7 @@ pub struct CreateAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Action)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyAction {
   /// The name of the new action.
   pub name: String,
@@ -57,7 +57,7 @@ pub struct CopyAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Action)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteAction {
   /// The id or name of the action to delete.
   pub id: String,
@@ -79,7 +79,7 @@ pub struct DeleteAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Action)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateAction {
   /// The id of the action to update.
   pub id: String,
@@ -97,8 +97,8 @@ pub struct UpdateAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameAction {
   /// The id or name of the Action to rename.
   pub id: String,
@@ -114,7 +114,7 @@ pub struct RenameAction {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateActionWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateActionWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -134,7 +134,7 @@ pub type CreateActionWebhookResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteActionWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteActionWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

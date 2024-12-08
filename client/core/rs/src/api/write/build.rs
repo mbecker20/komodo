@@ -20,7 +20,7 @@ use super::KomodoWriteRequest;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateBuild {
   /// The name given to newly created build.
   pub name: String,
@@ -39,7 +39,7 @@ pub struct CreateBuild {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CopyBuild {
   /// The name of the new build.
   pub name: String,
@@ -57,7 +57,7 @@ pub struct CopyBuild {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteBuild {
   /// The id or name of the build to delete.
   pub id: String,
@@ -79,7 +79,7 @@ pub struct DeleteBuild {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Build)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct UpdateBuild {
   /// The id of the build to update.
   pub id: String,
@@ -97,8 +97,8 @@ pub struct UpdateBuild {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(Update)]
-#[error(anyhow::Error)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
+#[error(serror::Error)]
 pub struct RenameBuild {
   /// The id or name of the Build to rename.
   pub id: String,
@@ -115,7 +115,7 @@ pub struct RenameBuild {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(NoData)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct RefreshBuildCache {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -132,7 +132,7 @@ pub struct RefreshBuildCache {
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(CreateBuildWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct CreateBuildWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
@@ -152,7 +152,7 @@ pub type CreateBuildWebhookResponse = NoData;
 )]
 #[empty_traits(KomodoWriteRequest)]
 #[response(DeleteBuildWebhookResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct DeleteBuildWebhook {
   /// Id or name
   #[serde(alias = "id", alias = "name")]

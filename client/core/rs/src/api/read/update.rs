@@ -18,7 +18,7 @@ use super::KomodoReadRequest;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetUpdateResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct GetUpdate {
   /// The update id.
   pub id: String,
@@ -37,7 +37,7 @@ pub type GetUpdateResponse = Update;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListUpdatesResponse)]
-#[error(anyhow::Error)]
+#[error(serror::Error)]
 pub struct ListUpdates {
   /// An optional mongo query to filter the updates.
   pub query: Option<MongoDocument>,
