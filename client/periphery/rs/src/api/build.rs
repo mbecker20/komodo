@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(BuildResponse)]
+#[error(anyhow::Error)]
 pub struct Build {
   pub build: komodo_client::entities::build::Build,
   /// Override registry token with one sent from core.

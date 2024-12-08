@@ -8,13 +8,12 @@ use periphery_client::api::git::{
 use resolver_api::Resolve;
 use tokio::fs;
 
-use crate::{config::periphery_config, State};
+use crate::config::periphery_config;
 
-impl Resolve<GetLatestCommit, ()> for State {
+impl Resolve<super::Args> for GetLatestCommit {
   async fn resolve(
-    &self,
     GetLatestCommit { name }: GetLatestCommit,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<LatestCommit> {
     let repo_path = periphery_config().repo_dir.join(name);
     if !repo_path.is_dir() {
@@ -26,13 +25,12 @@ impl Resolve<GetLatestCommit, ()> for State {
   }
 }
 
-impl Resolve<CloneRepo> for State {
+impl Resolve<super::Args> for CloneRepo {
   #[instrument(
     name = "CloneRepo",
-    skip(self, git_token, environment, replacers)
+    skip(git_token, environment, replacers)
   )]
   async fn resolve(
-    &self,
     CloneRepo {
       args,
       git_token,
@@ -40,8 +38,8 @@ impl Resolve<CloneRepo> for State {
       env_file_path,
       skip_secret_interp,
       replacers,
-    }: CloneRepo,
-    _: (),
+    }: Self,
+    _: &super::Args,
   ) -> anyhow::Result<RepoActionResponse> {
     let CloneArgs {
       provider, account, ..
@@ -86,13 +84,12 @@ impl Resolve<CloneRepo> for State {
 
 //
 
-impl Resolve<PullRepo> for State {
+impl Resolve<super::Args> for PullRepo {
   #[instrument(
     name = "PullRepo",
     skip(self, git_token, environment, replacers)
   )]
   async fn resolve(
-    &self,
     PullRepo {
       args,
       git_token,
@@ -101,7 +98,7 @@ impl Resolve<PullRepo> for State {
       skip_secret_interp,
       replacers,
     }: PullRepo,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<RepoActionResponse> {
     let CloneArgs {
       provider, account, ..
@@ -146,13 +143,12 @@ impl Resolve<PullRepo> for State {
 
 //
 
-impl Resolve<PullOrCloneRepo> for State {
+impl Resolve<super::Args> for PullOrCloneRepo {
   #[instrument(
     name = "PullOrCloneRepo",
     skip(self, git_token, environment, replacers)
   )]
   async fn resolve(
-    &self,
     PullOrCloneRepo {
       args,
       git_token,
@@ -161,7 +157,7 @@ impl Resolve<PullOrCloneRepo> for State {
       skip_secret_interp,
       replacers,
     }: PullOrCloneRepo,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<RepoActionResponse> {
     let CloneArgs {
       provider, account, ..
@@ -206,15 +202,14 @@ impl Resolve<PullOrCloneRepo> for State {
 
 //
 
-impl Resolve<RenameRepo> for State {
+impl Resolve<super::Args> for RenameRepo {
   #[instrument(name = "RenameRepo", skip(self))]
   async fn resolve(
-    &self,
     RenameRepo {
       curr_name,
       new_name,
     }: RenameRepo,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     let renamed = fs::rename(
       periphery_config().repo_dir.join(&curr_name),
@@ -231,12 +226,11 @@ impl Resolve<RenameRepo> for State {
 
 //
 
-impl Resolve<DeleteRepo> for State {
+impl Resolve<super::Args> for DeleteRepo {
   #[instrument(name = "DeleteRepo", skip(self))]
   async fn resolve(
-    &self,
     DeleteRepo { name }: DeleteRepo,
-    _: (),
+    _: &super::Args,
   ) -> anyhow::Result<Log> {
     // If using custom clone path, it will be passed by core instead of name.
     // So the join will resolve to just the absolute path.

@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Volume)]
+#[error(anyhow::Error)]
 pub struct InspectVolume {
   pub name: String,
 }
