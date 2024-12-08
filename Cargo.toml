@@ -15,12 +15,8 @@ license = "GPL-3.0-or-later"
 repository = "https://github.com/mbecker20/komodo"
 homepage = "https://komo.do"
 
-[patch.crates-io]
-# komodo_client = { path = "client/core/rs" }
-
 [workspace.dependencies]
 # LOCAL
-# komodo_client = "1.15.6"
 komodo_client = { path = "client/core/rs" }
 periphery_client = { path = "client/periphery/rs" }
 environment_file = { path = "lib/environment_file" }
@@ -41,7 +37,7 @@ async_timing_util = "1.0.0"
 partial_derive2 = "0.4.3"
 derive_variants = "1.0.0"
 mongo_indexed = "2.0.1"
-resolver_api = "1.1.1"
+resolver_api = "3.0.0"
 toml_pretty = "1.1.2"
 mungos = "1.1.0"
 svi = "1.0.1"

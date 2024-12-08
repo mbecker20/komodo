@@ -1,5 +1,5 @@
 use derive_empty_traits::EmptyTraits;
-use resolver_api::{derive::Request, HasResponse};
+use resolver_api::{HasResponse, Resolve};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -13,7 +13,7 @@ pub trait KomodoUserRequest: HasResponse {}
 /// Response: [NoData].
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Resolve, EmptyTraits,
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(PushRecentlyViewedResponse)]
@@ -32,7 +32,7 @@ pub type PushRecentlyViewedResponse = NoData;
 /// Response: [NoData]
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Resolve, EmptyTraits,
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(SetLastSeenUpdateResponse)]
@@ -50,7 +50,7 @@ pub type SetLastSeenUpdateResponse = NoData;
 /// to get the secret later.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Resolve, EmptyTraits,
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(CreateApiKeyResponse)]
@@ -84,7 +84,7 @@ pub struct CreateApiKeyResponse {
 /// Response: [NoData]
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Resolve, EmptyTraits,
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(DeleteApiKeyResponse)]

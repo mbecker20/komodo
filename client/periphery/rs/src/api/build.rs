@@ -1,8 +1,8 @@
 use komodo_client::entities::update::Log;
-use resolver_api::derive::Request;
+use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(BuildResponse)]
 pub struct Build {
   pub build: komodo_client::entities::build::Build,
@@ -20,12 +20,12 @@ pub type BuildResponse = Vec<Log>;
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PruneBuilders {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PruneBuildx {}

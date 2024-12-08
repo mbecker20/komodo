@@ -1,12 +1,12 @@
 use komodo_client::entities::{
   docker::network::Network, update::Log,
 };
-use resolver_api::derive::Request;
+use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Network)]
 pub struct InspectNetwork {
   pub name: String,
@@ -14,7 +14,7 @@ pub struct InspectNetwork {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct CreateNetwork {
   pub name: String,
@@ -23,7 +23,7 @@ pub struct CreateNetwork {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct DeleteNetwork {
   /// Id or name
@@ -32,6 +32,6 @@ pub struct DeleteNetwork {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PruneNetworks {}

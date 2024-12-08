@@ -3833,22 +3833,18 @@ dependencies = [
 
 [[package]]
 name = "resolver_api"
-version = "1.1.1"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e86d2e3a6e01f92f8f964bc16a5e579028c02fa625612e5e1f159a6474e47969"
+checksum = "3faf1143e798058d8287e5a019fc8a46542c1ef152a29bc3b3d9bf886363016b"
 dependencies = [
- "anyhow",
  "resolver_api_derive",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
 ]
 
 [[package]]
 name = "resolver_api_derive"
-version = "1.1.0"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e35ef0d79735ffcdf944895605c107b7f04ea097ce5a39d3191f9b2d82f73f7b"
+checksum = "e45ff368040e7f3787e97e6f3a97718ca08e0553587747bd4d0bf3ca2b899963"
 dependencies = [
  "proc-macro2",
  "quote",
