@@ -8,7 +8,7 @@ use komodo_client::entities::{
   update::Log,
   SystemCommand,
 };
-use resolver_api::derive::Request;
+use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 use serror::Serror;
 
@@ -23,7 +23,7 @@ pub mod volume;
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(GetHealthResponse)]
 pub struct GetHealth {}
 
@@ -32,7 +32,7 @@ pub struct GetHealthResponse {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(GetVersionResponse)]
 pub struct GetVersion {}
 
@@ -42,7 +42,7 @@ pub struct GetVersionResponse {
 }
 
 /// Returns all containers, networks, images, compose projects
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(GetDockerListsResponse)]
 pub struct GetDockerLists {}
 
@@ -57,7 +57,7 @@ pub struct GetDockerListsResponse {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(ListGitProvidersResponse)]
 pub struct ListGitProviders {}
 
@@ -65,7 +65,7 @@ pub type ListGitProvidersResponse = Vec<GitProvider>;
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(ListDockerRegistriesResponse)]
 pub struct ListDockerRegistries {}
 
@@ -73,19 +73,19 @@ pub type ListDockerRegistriesResponse = Vec<DockerRegistry>;
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<String>)]
 pub struct ListSecrets {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PruneSystem {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct RunCommand {
   pub command: SystemCommand,

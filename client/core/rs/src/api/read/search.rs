@@ -1,5 +1,5 @@
 use derive_empty_traits::EmptyTraits;
-use resolver_api::derive::Request;
+use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -16,10 +16,11 @@ use super::KomodoReadRequest;
 /// Find resources matching a common query. Response: [FindResourcesResponse].
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Resolve, EmptyTraits,
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(FindResourcesResponse)]
+#[error(anyhow::Error)]
 pub struct FindResources {
   /// The mongo query as JSON
   #[serde(default)]

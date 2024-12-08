@@ -4,12 +4,12 @@ use komodo_client::entities::{
   update::Log,
   SearchCombinator, TerminationSignal,
 };
-use resolver_api::derive::Request;
+use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Container)]
 pub struct InspectContainer {
   pub name: String,
@@ -17,7 +17,7 @@ pub struct InspectContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct GetContainerLog {
   pub name: String,
@@ -34,7 +34,7 @@ fn default_tail() -> u64 {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct GetContainerLogSearch {
   pub name: String,
@@ -50,7 +50,7 @@ pub struct GetContainerLogSearch {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(ContainerStats)]
 pub struct GetContainerStats {
   pub name: String,
@@ -58,7 +58,7 @@ pub struct GetContainerStats {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<ContainerStats>)]
 pub struct GetContainerStatsList {}
 
@@ -68,7 +68,7 @@ pub struct GetContainerStatsList {}
 // ACTIONS
 // =======
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct Deploy {
   pub deployment: Deployment,
@@ -83,7 +83,7 @@ pub struct Deploy {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct StartContainer {
   pub name: String,
@@ -91,7 +91,7 @@ pub struct StartContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct RestartContainer {
   pub name: String,
@@ -99,7 +99,7 @@ pub struct RestartContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PauseContainer {
   pub name: String,
@@ -107,7 +107,7 @@ pub struct PauseContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct UnpauseContainer {
   pub name: String,
@@ -115,7 +115,7 @@ pub struct UnpauseContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct StopContainer {
   pub name: String,
@@ -125,7 +125,7 @@ pub struct StopContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct RemoveContainer {
   pub name: String,
@@ -135,7 +135,7 @@ pub struct RemoveContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct RenameContainer {
   pub curr_name: String,
@@ -144,36 +144,36 @@ pub struct RenameContainer {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PruneContainers {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
 pub struct StartAllContainers {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
 pub struct RestartAllContainers {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
 pub struct PauseAllContainers {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
 pub struct UnpauseAllContainers {}
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Vec<Log>)]
 pub struct StopAllContainers {}

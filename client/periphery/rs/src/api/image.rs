@@ -2,12 +2,12 @@ use komodo_client::entities::{
   docker::image::{Image, ImageHistoryResponseItem},
   update::Log,
 };
-use resolver_api::derive::Request;
+use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 
 //
 
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Image)]
 pub struct InspectImage {
   pub name: String,
@@ -15,7 +15,7 @@ pub struct InspectImage {
 
 //
 
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Vec<ImageHistoryResponseItem>)]
 pub struct ImageHistory {
   pub name: String,
@@ -23,7 +23,7 @@ pub struct ImageHistory {
 
 //
 
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Log)]
 pub struct PullImage {
   /// The name of the image.
@@ -36,7 +36,7 @@ pub struct PullImage {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct DeleteImage {
   /// Id or name
@@ -45,6 +45,6 @@ pub struct DeleteImage {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PruneImages {}

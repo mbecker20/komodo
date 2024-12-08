@@ -1,10 +1,10 @@
 use komodo_client::entities::{docker::volume::Volume, update::Log};
-use resolver_api::derive::Request;
+use resolver_api::Resolve;
 use serde::{Deserialize, Serialize};
 
 //
 
-#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[derive(Debug, Clone, Serialize, Deserialize, Resolve)]
 #[response(Volume)]
 pub struct InspectVolume {
   pub name: String,
@@ -12,7 +12,7 @@ pub struct InspectVolume {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct DeleteVolume {
   /// Id or name
@@ -21,6 +21,6 @@ pub struct DeleteVolume {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resolve)]
 #[response(Log)]
 pub struct PruneVolumes {}
