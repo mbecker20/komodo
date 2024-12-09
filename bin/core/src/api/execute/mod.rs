@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use derive_variants::{EnumVariants, ExtractVariant};
@@ -15,7 +15,8 @@ use komodo_client::{
   },
 };
 use mungos::by_id::find_one_by_id;
-use resolver_api::{derive::Resolver, Resolver};
+use resolver_api::Resolve;
+use response::Response;
 use serde::{Deserialize, Serialize};
 use serror::Json;
 use typeshare::typeshare;
@@ -25,7 +26,7 @@ use crate::{
   auth::auth_request,
   helpers::update::{init_execution_update, update_update},
   resource::{list_full_for_user_using_pattern, KomodoResource},
-  state::{db_client, State},
+  state::db_client,
 };
 
 mod action;
@@ -42,13 +43,19 @@ pub use {
   deployment::pull_deployment_inner, stack::pull_stack_inner,
 };
 
+pub struct ExecuteArgs {
+  pub user: User,
+  pub update: Update,
+}
+
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
+  Serialize, Deserialize, Debug, Clone, Resolve, EnumVariants,
 )]
 #[variant_derive(Debug)]
-#[resolver_target(State)]
-#[resolver_args((User, Update))]
+#[args(ExecuteArgs)]
+#[response(Response)]
+#[error(serror::Error)]
 #[serde(tag = "type", content = "params")]
 pub enum ExecuteRequest {
   // ==== SERVER ====
@@ -156,7 +163,7 @@ pub enum ExecutionResult {
 pub async fn inner_handler(
   request: ExecuteRequest,
   user: User,
-) -> anyhow::Result<ExecutionResult> {
+) -> serror::Result<ExecutionResult> {
   let req_id = Uuid::new_v4();
 
   // need to validate no cancel is active before any update is created.
@@ -227,28 +234,25 @@ async fn task(
   request: ExecuteRequest,
   user: User,
   update: Update,
-) -> anyhow::Result<String> {
+) -> serror::Result<axum::response::Response> {
   info!("/execute request {req_id} | user: {}", user.username);
   let timer = Instant::now();
 
-  let res = State
-    .resolve_request(request, (user, update))
-    .await
-    .map_err(|e| match e {
-      resolver_api::Error::Serialization(e) => {
-        anyhow!("{e:?}").context("response serialization error")
-      }
-      resolver_api::Error::Inner(e) => e,
-    });
+  let res = request
+    .resolve(&ExecuteArgs {
+      user,
+      update: Mutex::new(update),
+    })
+    .await;
 
   if let Err(e) = &res {
-    warn!("/execute request {req_id} error: {e:#}");
+    warn!("/execute request {req_id} error: {:#}", e.error);
   }
 
   let elapsed = timer.elapsed();
   debug!("/execute request {req_id} | resolve time: {elapsed:?}");
 
-  res
+  res.map(|res| res.0)
 }
 
 trait BatchExecute {

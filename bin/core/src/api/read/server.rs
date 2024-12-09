@@ -23,8 +23,8 @@ use komodo_client::{
       Server, ServerActionState, ServerListItem, ServerState,
     },
     stack::{Stack, StackServiceNames},
+    stats::SystemInformation,
     update::Log,
-    user::User,
     ResourceTarget,
   },
 };
@@ -39,25 +39,26 @@ use periphery_client::api::{
   network::InspectNetwork,
   volume::InspectVolume,
 };
-use resolver_api::{Resolve, ResolveToString};
+use resolver_api::Resolve;
 use tokio::sync::Mutex;
 
 use crate::{
   helpers::{periphery_client, query::get_all_tags},
   resource,
   stack::compose_container_match_regex,
-  state::{action_states, db_client, server_status_cache, State},
+  state::{action_states, db_client, server_status_cache},
 };
 
-impl Resolve<GetServersSummary, User> for State {
+use super::ReadArgs;
+
+impl Resolve<ReadArgs> for GetServersSummary {
   async fn resolve(
-    &self,
-    GetServersSummary {}: GetServersSummary,
-    user: User,
-  ) -> anyhow::Result<GetServersSummaryResponse> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<GetServersSummaryResponse> {
     let servers = resource::list_for_user::<Server>(
       Default::default(),
-      &user,
+      user,
       &[],
     )
     .await?;
@@ -80,15 +81,14 @@ impl Resolve<GetServersSummary, User> for State {
   }
 }
 
-impl Resolve<GetPeripheryVersion, User> for State {
+impl Resolve<ReadArgs> for GetPeripheryVersion {
   async fn resolve(
-    &self,
-    req: GetPeripheryVersion,
-    user: User,
-  ) -> anyhow::Result<GetPeripheryVersionResponse> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<GetPeripheryVersionResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &req.server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -101,58 +101,64 @@ impl Resolve<GetPeripheryVersion, User> for State {
   }
 }
 
-impl Resolve<GetServer, User> for State {
+impl Resolve<ReadArgs> for GetServer {
   async fn resolve(
-    &self,
-    req: GetServer,
-    user: User,
-  ) -> anyhow::Result<Server> {
-    resource::get_check_permissions::<Server>(
-      &req.server,
-      &user,
-      PermissionLevel::Read,
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Server> {
+    Ok(
+      resource::get_check_permissions::<Server>(
+        &self.server,
+        user,
+        PermissionLevel::Read,
+      )
+      .await?,
     )
-    .await
   }
 }
 
-impl Resolve<ListServers, User> for State {
+impl Resolve<ReadArgs> for ListServers {
   async fn resolve(
-    &self,
-    ListServers { query }: ListServers,
-    user: User,
-  ) -> anyhow::Result<Vec<ServerListItem>> {
-    let all_tags = if query.tags.is_empty() {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Vec<ServerListItem>> {
+    let all_tags = if self.query.tags.is_empty() {
       vec![]
     } else {
       get_all_tags(None).await?
     };
-    resource::list_for_user::<Server>(query, &user, &all_tags).await
+    Ok(
+      resource::list_for_user::<Server>(self.query, &user, &all_tags)
+        .await?,
+    )
   }
 }
 
-impl Resolve<ListFullServers, User> for State {
+impl Resolve<ReadArgs> for ListFullServers {
   async fn resolve(
-    &self,
-    ListFullServers { query }: ListFullServers,
-    user: User,
-  ) -> anyhow::Result<ListFullServersResponse> {
-    let all_tags = if query.tags.is_empty() {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ListFullServersResponse> {
+    let all_tags = if self.query.tags.is_empty() {
       vec![]
     } else {
       get_all_tags(None).await?
     };
-    resource::list_full_for_user::<Server>(query, &user, &all_tags)
-      .await
+    Ok(
+      resource::list_full_for_user::<Server>(
+        self.query, &user, &all_tags,
+      )
+      .await?,
+    )
   }
 }
 
-impl Resolve<GetServerState, User> for State {
+impl Resolve<ReadArgs> for GetServerState {
   async fn resolve(
     &self,
     GetServerState { server }: GetServerState,
-    user: User,
-  ) -> anyhow::Result<GetServerStateResponse> {
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<GetServerStateResponse> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
@@ -170,12 +176,12 @@ impl Resolve<GetServerState, User> for State {
   }
 }
 
-impl Resolve<GetServerActionState, User> for State {
+impl Resolve<ReadArgs> for GetServerActionState {
   async fn resolve(
     &self,
     GetServerActionState { server }: GetServerActionState,
-    user: User,
-  ) -> anyhow::Result<ServerActionState> {
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ServerActionState> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
@@ -194,22 +200,22 @@ impl Resolve<GetServerActionState, User> for State {
 
 // This protects the peripheries from spam requests
 const SYSTEM_INFO_EXPIRY: u128 = FIFTEEN_SECONDS_MS;
-type SystemInfoCache = Mutex<HashMap<String, Arc<(String, u128)>>>;
+type SystemInfoCache =
+  Mutex<HashMap<String, Arc<(SystemInformation, u128)>>>;
 fn system_info_cache() -> &'static SystemInfoCache {
   static SYSTEM_INFO_CACHE: OnceLock<SystemInfoCache> =
     OnceLock::new();
   SYSTEM_INFO_CACHE.get_or_init(Default::default)
 }
 
-impl ResolveToString<GetSystemInformation, User> for State {
-  async fn resolve_to_string(
-    &self,
-    GetSystemInformation { server }: GetSystemInformation,
-    user: User,
-  ) -> anyhow::Result<String> {
+impl Resolve<ReadArgs> for GetSystemInformation {
+  async fn resolve(
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<SystemInformation> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -223,25 +229,24 @@ impl ResolveToString<GetSystemInformation, User> for State {
         let stats = periphery_client(&server)?
           .request(periphery::stats::GetSystemInformation {})
           .await?;
-        let res = serde_json::to_string(&stats)?;
         lock.insert(
           server.id,
-          (res.clone(), unix_timestamp_ms() + SYSTEM_INFO_EXPIRY)
+          (stats.clone(), unix_timestamp_ms() + SYSTEM_INFO_EXPIRY)
             .into(),
         );
-        res
+        stats
       }
     };
     Ok(res)
   }
 }
 
-impl ResolveToString<GetSystemStats, User> for State {
-  async fn resolve_to_string(
+impl Resolve<ReadArgs> for GetSystemStats {
+  async fn resolve(
     &self,
     GetSystemStats { server }: GetSystemStats,
-    user: User,
-  ) -> anyhow::Result<String> {
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<String> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
@@ -269,12 +274,12 @@ fn processes_cache() -> &'static ProcessesCache {
   PROCESSES_CACHE.get_or_init(Default::default)
 }
 
-impl ResolveToString<ListSystemProcesses, User> for State {
-  async fn resolve_to_string(
+impl Resolve<ReadArgs> for ListSystemProcesses {
+  async fn resolve(
     &self,
     ListSystemProcesses { server }: ListSystemProcesses,
-    user: User,
-  ) -> anyhow::Result<String> {
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<String> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
@@ -305,7 +310,7 @@ impl ResolveToString<ListSystemProcesses, User> for State {
 
 const STATS_PER_PAGE: i64 = 200;
 
-impl Resolve<GetHistoricalServerStats, User> for State {
+impl Resolve<ReadArgs> for GetHistoricalServerStats {
   async fn resolve(
     &self,
     GetHistoricalServerStats {
@@ -313,8 +318,8 @@ impl Resolve<GetHistoricalServerStats, User> for State {
       granularity,
       page,
     }: GetHistoricalServerStats,
-    user: User,
-  ) -> anyhow::Result<GetHistoricalServerStatsResponse> {
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<GetHistoricalServerStatsResponse> {
     let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
@@ -358,15 +363,14 @@ impl Resolve<GetHistoricalServerStats, User> for State {
   }
 }
 
-impl ResolveToString<ListDockerContainers, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListDockerContainers { server }: ListDockerContainers,
-    user: User,
-  ) -> anyhow::Result<String> {
+impl Resolve<ReadArgs> for ListDockerContainers {
+  async fn resolve(
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ListDockerContainersResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -374,20 +378,19 @@ impl ResolveToString<ListDockerContainers, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if let Some(containers) = &cache.containers {
-      serde_json::to_string(containers)
-        .context("failed to serialize response")
+      Ok(containers.clone())
     } else {
-      Ok(String::from("[]"))
+      Ok(Vec::new())
     }
   }
 }
 
-impl Resolve<ListAllDockerContainers, User> for State {
+impl Resolve<ReadArgs> for ListAllDockerContainers {
   async fn resolve(
     &self,
     ListAllDockerContainers { servers }: ListAllDockerContainers,
-    user: User,
-  ) -> anyhow::Result<Vec<ContainerListItem>> {
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ListAllDockerContainersResponse> {
     let servers = resource::list_for_user::<Server>(
       Default::default(),
       &user,
@@ -416,15 +419,14 @@ impl Resolve<ListAllDockerContainers, User> for State {
   }
 }
 
-impl Resolve<InspectDockerContainer, User> for State {
+impl Resolve<ReadArgs> for InspectDockerContainer {
   async fn resolve(
-    &self,
-    InspectDockerContainer { server, container }: InspectDockerContainer,
-    user: User,
-  ) -> anyhow::Result<Container> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Container> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -432,67 +434,74 @@ impl Resolve<InspectDockerContainer, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if cache.state != ServerState::Ok {
-      return Err(anyhow!(
-        "Cannot inspect container: server is {:?}",
-        cache.state
-      ));
+      return Err(
+        anyhow!(
+          "Cannot inspect container: server is {:?}",
+          cache.state
+        )
+        .into(),
+      );
     }
-    periphery_client(&server)?
-      .request(InspectContainer { name: container })
-      .await
+    let res = periphery_client(&server)?
+      .request(InspectContainer {
+        name: self.container,
+      })
+      .await?;
+    Ok(res)
   }
 }
 
 const MAX_LOG_LENGTH: u64 = 5000;
 
-impl Resolve<GetContainerLog, User> for State {
+impl Resolve<ReadArgs> for GetContainerLog {
   async fn resolve(
-    &self,
-    GetContainerLog {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Log> {
+    let GetContainerLog {
       server,
       container,
       tail,
       timestamps,
-    }: GetContainerLog,
-    user: User,
-  ) -> anyhow::Result<Log> {
+    } = self;
     let server = resource::get_check_permissions::<Server>(
       &server,
-      &user,
+      user,
       PermissionLevel::Read,
     )
     .await?;
-    periphery_client(&server)?
+    let res = periphery_client(&server)?
       .request(periphery::container::GetContainerLog {
         name: container,
         tail: cmp::min(tail, MAX_LOG_LENGTH),
         timestamps,
       })
       .await
-      .context("failed at call to periphery")
+      .context("failed at call to periphery")?;
+    Ok(res)
   }
 }
 
-impl Resolve<SearchContainerLog, User> for State {
+impl Resolve<ReadArgs> for SearchContainerLog {
   async fn resolve(
-    &self,
-    SearchContainerLog {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Log> {
+    let SearchContainerLog {
       server,
       container,
       terms,
       combinator,
       invert,
       timestamps,
-    }: SearchContainerLog,
-    user: User,
-  ) -> anyhow::Result<Log> {
+    } = self;
     let server = resource::get_check_permissions::<Server>(
       &server,
-      &user,
+      user,
       PermissionLevel::Read,
     )
     .await?;
-    periphery_client(&server)?
+    let res = periphery_client(&server)?
       .request(periphery::container::GetContainerLogSearch {
         name: container,
         terms,
@@ -501,25 +510,25 @@ impl Resolve<SearchContainerLog, User> for State {
         timestamps,
       })
       .await
-      .context("failed at call to periphery")
+      .context("failed at call to periphery")?;
+    Ok(res)
   }
 }
 
-impl Resolve<GetResourceMatchingContainer, User> for State {
+impl Resolve<ReadArgs> for GetResourceMatchingContainer {
   async fn resolve(
-    &self,
-    GetResourceMatchingContainer { server, container }: GetResourceMatchingContainer,
-    user: User,
-  ) -> anyhow::Result<GetResourceMatchingContainerResponse> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<GetResourceMatchingContainerResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
     // first check deployments
     if let Ok(deployment) =
-      resource::get::<Deployment>(&container).await
+      resource::get::<Deployment>(&self.container).await
     {
       return Ok(GetResourceMatchingContainerResponse {
         resource: ResourceTarget::Deployment(deployment.id).into(),
@@ -553,7 +562,7 @@ impl Resolve<GetResourceMatchingContainer, User> for State {
             warn!("{e:#}");
             continue;
           }
-        }.is_match(&container);
+        }.is_match(&self.container);
 
         if is_match {
           return Ok(GetResourceMatchingContainerResponse {
@@ -567,15 +576,14 @@ impl Resolve<GetResourceMatchingContainer, User> for State {
   }
 }
 
-impl ResolveToString<ListDockerNetworks, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListDockerNetworks { server }: ListDockerNetworks,
-    user: User,
-  ) -> anyhow::Result<String> {
+impl Resolve<ReadArgs> for ListDockerNetworks {
+  async fn resolve(
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ListDockerNetworksResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -583,23 +591,21 @@ impl ResolveToString<ListDockerNetworks, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if let Some(networks) = &cache.networks {
-      serde_json::to_string(networks)
-        .context("failed to serialize response")
+      Ok(networks.clone())
     } else {
-      Ok(String::from("[]"))
+      Ok(Vec::new())
     }
   }
 }
 
-impl Resolve<InspectDockerNetwork, User> for State {
+impl Resolve<ReadArgs> for InspectDockerNetwork {
   async fn resolve(
-    &self,
-    InspectDockerNetwork { server, network }: InspectDockerNetwork,
-    user: User,
-  ) -> anyhow::Result<Network> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Network> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -607,26 +613,29 @@ impl Resolve<InspectDockerNetwork, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if cache.state != ServerState::Ok {
-      return Err(anyhow!(
-        "Cannot inspect network: server is {:?}",
-        cache.state
-      ));
+      return Err(
+        anyhow!(
+          "Cannot inspect network: server is {:?}",
+          cache.state
+        )
+        .into(),
+      );
     }
-    periphery_client(&server)?
-      .request(InspectNetwork { name: network })
-      .await
+    let res = periphery_client(&server)?
+      .request(InspectNetwork { name: self.network })
+      .await?;
+    Ok(res)
   }
 }
 
-impl ResolveToString<ListDockerImages, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListDockerImages { server }: ListDockerImages,
-    user: User,
-  ) -> anyhow::Result<String> {
+impl Resolve<ReadArgs> for ListDockerImages {
+  async fn resolve(
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ListDockerImagesResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -634,23 +643,21 @@ impl ResolveToString<ListDockerImages, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if let Some(images) = &cache.images {
-      serde_json::to_string(images)
-        .context("failed to serialize response")
+      Ok(images.clone())
     } else {
-      Ok(String::from("[]"))
+      Ok(Vec::new())
     }
   }
 }
 
-impl Resolve<InspectDockerImage, User> for State {
+impl Resolve<ReadArgs> for InspectDockerImage {
   async fn resolve(
-    &self,
-    InspectDockerImage { server, image }: InspectDockerImage,
-    user: User,
-  ) -> anyhow::Result<Image> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Image> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -658,26 +665,26 @@ impl Resolve<InspectDockerImage, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if cache.state != ServerState::Ok {
-      return Err(anyhow!(
-        "Cannot inspect image: server is {:?}",
-        cache.state
-      ));
+      return Err(
+        anyhow!("Cannot inspect image: server is {:?}", cache.state)
+          .into(),
+      );
     }
-    periphery_client(&server)?
-      .request(InspectImage { name: image })
-      .await
+    let res = periphery_client(&server)?
+      .request(InspectImage { name: self.image })
+      .await?;
+    Ok(res)
   }
 }
 
-impl Resolve<ListDockerImageHistory, User> for State {
+impl Resolve<ReadArgs> for ListDockerImageHistory {
   async fn resolve(
-    &self,
-    ListDockerImageHistory { server, image }: ListDockerImageHistory,
-    user: User,
-  ) -> anyhow::Result<Vec<ImageHistoryResponseItem>> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Vec<ImageHistoryResponseItem>> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -685,26 +692,29 @@ impl Resolve<ListDockerImageHistory, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if cache.state != ServerState::Ok {
-      return Err(anyhow!(
-        "Cannot get image history: server is {:?}",
-        cache.state
-      ));
+      return Err(
+        anyhow!(
+          "Cannot get image history: server is {:?}",
+          cache.state
+        )
+        .into(),
+      );
     }
-    periphery_client(&server)?
-      .request(ImageHistory { name: image })
-      .await
+    let res = periphery_client(&server)?
+      .request(ImageHistory { name: self.image })
+      .await?;
+    Ok(res)
   }
 }
 
-impl ResolveToString<ListDockerVolumes, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListDockerVolumes { server }: ListDockerVolumes,
-    user: User,
-  ) -> anyhow::Result<String> {
+impl Resolve<ReadArgs> for ListDockerVolumes {
+  async fn resolve(
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ListDockerVolumesResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -712,23 +722,21 @@ impl ResolveToString<ListDockerVolumes, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if let Some(volumes) = &cache.volumes {
-      serde_json::to_string(volumes)
-        .context("failed to serialize response")
+      Ok(volumes.clone())
     } else {
-      Ok(String::from("[]"))
+      Ok(Vec::new())
     }
   }
 }
 
-impl Resolve<InspectDockerVolume, User> for State {
+impl Resolve<ReadArgs> for InspectDockerVolume {
   async fn resolve(
-    &self,
-    InspectDockerVolume { server, volume }: InspectDockerVolume,
-    user: User,
-  ) -> anyhow::Result<Volume> {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<Volume> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -736,26 +744,26 @@ impl Resolve<InspectDockerVolume, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if cache.state != ServerState::Ok {
-      return Err(anyhow!(
-        "Cannot inspect volume: server is {:?}",
-        cache.state
-      ));
+      return Err(
+        anyhow!("Cannot inspect volume: server is {:?}", cache.state)
+          .into(),
+      );
     }
-    periphery_client(&server)?
-      .request(InspectVolume { name: volume })
-      .await
+    let res = periphery_client(&server)?
+      .request(InspectVolume { name: self.volume })
+      .await?;
+    Ok(res)
   }
 }
 
-impl ResolveToString<ListComposeProjects, User> for State {
-  async fn resolve_to_string(
-    &self,
-    ListComposeProjects { server }: ListComposeProjects,
-    user: User,
-  ) -> anyhow::Result<String> {
+impl Resolve<ReadArgs> for ListComposeProjects {
+  async fn resolve(
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<ListComposeProjectsResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -763,10 +771,9 @@ impl ResolveToString<ListComposeProjects, User> for State {
       .get_or_insert_default(&server.id)
       .await;
     if let Some(projects) = &cache.projects {
-      serde_json::to_string(projects)
-        .context("failed to serialize response")
+      Ok(projects.clone())
     } else {
-      Ok(String::from("[]"))
+      Ok(Vec::new())
     }
   }
 }
