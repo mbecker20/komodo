@@ -17,6 +17,7 @@ pub trait KomodoUserRequest: HasResponse {}
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(PushRecentlyViewedResponse)]
+#[error(serror::Error)]
 pub struct PushRecentlyViewed {
   /// The target to push.
   pub resource: ResourceTarget,
@@ -36,6 +37,7 @@ pub type PushRecentlyViewedResponse = NoData;
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(SetLastSeenUpdateResponse)]
+#[error(serror::Error)]
 pub struct SetLastSeenUpdate {}
 
 #[typeshare]
@@ -54,6 +56,7 @@ pub type SetLastSeenUpdateResponse = NoData;
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(CreateApiKeyResponse)]
+#[error(serror::Error)]
 pub struct CreateApiKey {
   /// The name for the api key.
   pub name: String,
@@ -88,6 +91,7 @@ pub struct CreateApiKeyResponse {
 )]
 #[empty_traits(KomodoUserRequest)]
 #[response(DeleteApiKeyResponse)]
+#[error(serror::Error)]
 pub struct DeleteApiKey {
   /// The key which the user intends to delete.
   pub key: String,

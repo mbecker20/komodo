@@ -13,11 +13,8 @@ use komodo_client::{
     user::{CreateApiKey, CreateApiKeyResponse, DeleteApiKey},
   },
   entities::{
-    action::Action,
-    config::core::CoreConfig,
-    permission::PermissionLevel,
-    update::Update,
-    user::{action_user, User},
+    action::Action, config::core::CoreConfig,
+    permission::PermissionLevel, update::Update, user::action_user,
   },
 };
 use mungos::{by_id::update_one_by_id, mongodb::bson::to_document};
@@ -25,7 +22,7 @@ use resolver_api::Resolve;
 use tokio::fs;
 
 use crate::{
-  api::execute::ExecuteRequest,
+  api::{execute::ExecuteRequest, user::UserArgs},
   config::core_config,
   helpers::{
     interpolate::{
@@ -37,7 +34,7 @@ use crate::{
     update::update_update,
   },
   resource::{self, refresh_action_state_cache},
-  state::{action_states, db_client, State},
+  state::{action_states, db_client},
 };
 
 use super::ExecuteArgs;
@@ -49,11 +46,11 @@ impl super::BatchExecute for BatchRunAction {
   }
 }
 
-impl<'a> Resolve<ExecuteArgs<'a>> for BatchRunAction {
+impl Resolve<ExecuteArgs> for BatchRunAction {
   #[instrument(name = "BatchRunAction", skip(self, user), fields(user_id = user.id))]
   async fn resolve(
     self,
-    ExecuteArgs { user, .. }: &ExecuteArgs<'a>,
+    ExecuteArgs { user, .. }: &ExecuteArgs,
   ) -> serror::Result<BatchExecutionResponse> {
     Ok(
       super::batch_execute::<BatchRunAction>(&self.pattern, user)
@@ -62,15 +59,14 @@ impl<'a> Resolve<ExecuteArgs<'a>> for BatchRunAction {
   }
 }
 
-impl<'a> Resolve<ExecuteArgs> for RunAction {
-  #[instrument(name = "RunAction", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<ExecuteArgs> for RunAction {
+  #[instrument(name = "RunAction", skip(user, update), fields(user_id = user.id))]
   async fn resolve(
-    &self,
-    RunAction { action }: RunAction,
-    (user, mut update): &ExecuteArgs,
+    self,
+    ExecuteArgs { user, update }: &ExecuteArgs,
   ) -> serror::Result<Update> {
     let mut action = resource::get_check_permissions::<Action>(
-      &action,
+      &self.action,
       &user,
       PermissionLevel::Execute,
     )
@@ -87,17 +83,18 @@ impl<'a> Resolve<ExecuteArgs> for RunAction {
     let _action_guard =
       action_state.update(|state| state.running = true)?;
 
+    let mut update = update.clone();
+
     update_update(update.clone()).await?;
 
-    let CreateApiKeyResponse { key, secret } = State
-      .resolve(
-        CreateApiKey {
-          name: update.id.clone(),
-          expires: 0,
-        },
-        action_user().to_owned(),
-      )
-      .await?;
+    let CreateApiKeyResponse { key, secret } = CreateApiKey {
+      name: update.id.clone(),
+      expires: 0,
+    }
+    .resolve(&UserArgs {
+      user: action_user().to_owned(),
+    })
+    .await?;
 
     let contents = &mut action.config.file_contents;
 
@@ -137,12 +134,15 @@ impl<'a> Resolve<ExecuteArgs> for RunAction {
 
     cleanup_run(file + ".js", &path).await;
 
-    if let Err(e) = State
-      .resolve(DeleteApiKey { key }, action_user().to_owned())
+    if let Err(e) = (DeleteApiKey { key })
+      .resolve(&UserArgs {
+        user: action_user().to_owned(),
+      })
       .await
     {
       warn!(
-        "Failed to delete API key after action execution | {e:#}"
+        "Failed to delete API key after action execution | {:#}",
+        e.error
       );
     };
 

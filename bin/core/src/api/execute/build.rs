@@ -17,7 +17,7 @@ use komodo_client::{
     komodo_timestamp,
     permission::PermissionLevel,
     update::{Log, Update},
-    user::{auto_redeploy_user, User},
+    user::auto_redeploy_user,
   },
 };
 use mungos::{
@@ -49,7 +49,7 @@ use crate::{
     update::{init_execution_update, update_update},
   },
   resource::{self, refresh_build_state_cache},
-  state::{action_states, db_client, State},
+  state::{action_states, db_client},
 };
 
 use super::{ExecuteArgs, ExecuteRequest};
@@ -61,11 +61,11 @@ impl super::BatchExecute for BatchRunBuild {
   }
 }
 
-impl<'a> Resolve<ExecuteArgs<'a>> for BatchRunBuild {
+impl Resolve<ExecuteArgs> for BatchRunBuild {
   #[instrument(name = "BatchRunBuild", skip(user), fields(user_id = user.id))]
   async fn resolve(
     self,
-    ExecuteArgs { user, .. }: &ExecuteArgs<'a>,
+    ExecuteArgs { user, .. }: &ExecuteArgs,
   ) -> serror::Result<BatchExecutionResponse> {
     Ok(
       super::batch_execute::<BatchRunBuild>(&self.pattern, user)
@@ -74,11 +74,11 @@ impl<'a> Resolve<ExecuteArgs<'a>> for BatchRunBuild {
   }
 }
 
-impl<'a> Resolve<ExecuteArgs<'a>> for RunBuild {
-  #[instrument(name = "RunBuild", skip(user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<ExecuteArgs> for RunBuild {
+  #[instrument(name = "RunBuild", skip(user, update), fields(user_id = user.id))]
   async fn resolve(
     self,
-    ExecuteArgs { user, update }: &ExecuteArgs<'a>,
+    ExecuteArgs { user, update }: &ExecuteArgs,
   ) -> serror::Result<Update> {
     let mut build = resource::get_check_permissions::<Build>(
       &self.build,
@@ -87,7 +87,6 @@ impl<'a> Resolve<ExecuteArgs<'a>> for RunBuild {
     )
     .await?;
     let mut vars_and_secrets = get_variables_and_secrets().await?;
-    let update = *update;
 
     if build.config.builder_id.is_empty() {
       return Err(anyhow!("Must attach builder to RunBuild").into());
@@ -105,6 +104,9 @@ impl<'a> Resolve<ExecuteArgs<'a>> for RunBuild {
     if build.config.auto_increment_version {
       build.config.version.increment();
     }
+
+    let mut update = update.clone();
+
     update.version = build.config.version;
     update_update(update.clone()).await?;
 
@@ -416,7 +418,7 @@ impl<'a> Resolve<ExecuteArgs<'a>> for RunBuild {
 
 #[instrument(skip(update))]
 async fn handle_early_return(
-  update: &mut Update,
+  mut update: Update,
   build_id: String,
   build_name: String,
   is_cancel: bool,
@@ -511,11 +513,11 @@ pub async fn validate_cancel_build(
   Ok(())
 }
 
-impl<'a> Resolve<ExecuteArgs<'a>> for CancelBuild {
-  #[instrument(name = "CancelBuild", skip(user, update), fields(user_id = user.id, update_id = update.id))]
+impl Resolve<ExecuteArgs> for CancelBuild {
+  #[instrument(name = "CancelBuild", skip(user, update), fields(user_id = user.id))]
   async fn resolve(
     self,
-    ExecuteArgs { user, update }: &ExecuteArgs<'a>,
+    ExecuteArgs { user, update }: &ExecuteArgs,
   ) -> serror::Result<Update> {
     let build = resource::get_check_permissions::<Build>(
       &self.build,
@@ -523,7 +525,6 @@ impl<'a> Resolve<ExecuteArgs<'a>> for CancelBuild {
       PermissionLevel::Execute,
     )
     .await?;
-    let update = *update;
 
     // make sure the build is building
     if !action_states()
@@ -535,6 +536,8 @@ impl<'a> Resolve<ExecuteArgs<'a>> for CancelBuild {
     {
       return Err(anyhow!("Build is not building.").into());
     }
+
+    let mut update = update.clone();
 
     update.push_simple_log(
       "cancel triggered",
@@ -565,7 +568,7 @@ impl<'a> Resolve<ExecuteArgs<'a>> for CancelBuild {
       }
     });
 
-    Ok(update.clone())
+    Ok(update)
   }
 }
 
@@ -604,10 +607,7 @@ async fn handle_post_build_redeploy(build_id: &str) {
               stop_signal: None,
               stop_time: None,
             }
-            .resolve(&ExecuteArgs {
-              user,
-              update: &mut update,
-            })
+            .resolve(&ExecuteArgs { user, update })
             .await
           }
           .await;
@@ -622,7 +622,10 @@ async fn handle_post_build_redeploy(build_id: &str) {
       continue;
     };
     if let Err(e) = res {
-      warn!("failed post build redeploy for deployment {id}: {e:#}");
+      warn!(
+        "failed post build redeploy for deployment {id}: {:#}",
+        e.error
+      );
     }
   }
 }
