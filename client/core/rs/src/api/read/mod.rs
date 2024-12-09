@@ -13,7 +13,6 @@ mod permission;
 mod procedure;
 mod provider;
 mod repo;
-mod search;
 mod server;
 mod server_template;
 mod stack;
@@ -35,7 +34,6 @@ pub use permission::*;
 pub use procedure::*;
 pub use provider::*;
 pub use repo::*;
-pub use search::*;
 pub use server::*;
 pub use server_template::*;
 pub use stack::*;
@@ -64,6 +62,7 @@ pub trait KomodoReadRequest: HasResponse {}
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetVersionResponse)]
+#[error(serror::Error)]
 pub struct GetVersion {}
 
 /// Response for [GetVersion].
@@ -84,6 +83,7 @@ pub struct GetVersionResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(GetCoreInfoResponse)]
+#[error(serror::Error)]
 pub struct GetCoreInfo {}
 
 /// Response for [GetCoreInfo].
@@ -123,6 +123,7 @@ pub struct GetCoreInfoResponse {
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListGitProvidersFromConfigResponse)]
+#[error(serror::Error)]
 pub struct ListGitProvidersFromConfig {
   /// Accepts an optional Server or Builder target to expand the core list with
   /// providers available on that specific resource.
@@ -147,6 +148,7 @@ pub type ListGitProvidersFromConfigResponse = Vec<GitProvider>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListDockerRegistriesFromConfigResponse)]
+#[error(serror::Error)]
 pub struct ListDockerRegistriesFromConfig {
   /// Accepts an optional Server or Builder target to expand the core list with
   /// providers available on that specific resource.
@@ -166,6 +168,7 @@ pub type ListDockerRegistriesFromConfigResponse = Vec<DockerRegistry>;
 )]
 #[empty_traits(KomodoReadRequest)]
 #[response(ListSecretsResponse)]
+#[error(serror::Error)]
 pub struct ListSecrets {
   /// Accepts an optional Server or Builder target to expand the core list with
   /// providers available on that specific resource.

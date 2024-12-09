@@ -112,8 +112,7 @@ impl PeripheryClient {
 
       tracing::debug!("got response text, deserializing error");
 
-      let error = serror::deserialize_error(text)
-        .context(format!("request to periphery failed | {status}"));
+      let error = serror::deserialize_error(text).context(status);
 
       Err(error)
     }

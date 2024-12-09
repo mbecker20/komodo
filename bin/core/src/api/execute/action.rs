@@ -40,6 +40,8 @@ use crate::{
   state::{action_states, db_client, State},
 };
 
+use super::ExecuteArgs;
+
 impl super::BatchExecute for BatchRunAction {
   type Resource = Action;
   fn single_request(action: String) -> ExecuteRequest {
@@ -47,24 +49,26 @@ impl super::BatchExecute for BatchRunAction {
   }
 }
 
-impl Resolve<BatchRunAction, (User, Update)> for State {
+impl<'a> Resolve<ExecuteArgs<'a>> for BatchRunAction {
   #[instrument(name = "BatchRunAction", skip(self, user), fields(user_id = user.id))]
   async fn resolve(
-    &self,
-    BatchRunAction { pattern }: BatchRunAction,
-    (user, _): (User, Update),
-  ) -> anyhow::Result<BatchExecutionResponse> {
-    super::batch_execute::<BatchRunAction>(&pattern, &user).await
+    self,
+    ExecuteArgs { user, .. }: &ExecuteArgs<'a>,
+  ) -> serror::Result<BatchExecutionResponse> {
+    Ok(
+      super::batch_execute::<BatchRunAction>(&self.pattern, user)
+        .await?,
+    )
   }
 }
 
-impl Resolve<RunAction, (User, Update)> for State {
+impl<'a> Resolve<ExecuteArgs> for RunAction {
   #[instrument(name = "RunAction", skip(self, user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     &self,
     RunAction { action }: RunAction,
-    (user, mut update): (User, Update),
-  ) -> anyhow::Result<Update> {
+    (user, mut update): &ExecuteArgs,
+  ) -> serror::Result<Update> {
     let mut action = resource::get_check_permissions::<Action>(
       &action,
       &user,
@@ -171,7 +175,7 @@ async fn interpolate(
   update: &mut Update,
   key: String,
   secret: String,
-) -> anyhow::Result<HashSet<(String, String)>> {
+) -> serror::Result<HashSet<(String, String)>> {
   let mut vars_and_secrets = get_variables_and_secrets().await?;
 
   vars_and_secrets
