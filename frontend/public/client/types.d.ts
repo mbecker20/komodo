@@ -4837,6 +4837,10 @@ export interface SystemStatsRecord {
     disk_total_gb: number;
     /** Breakdown of individual disks, ie their usages, sizes, and mount points */
     disks: SingleDiskUsage[];
+    /** Total network ingess in MB */
+    net_ingress_mb: number;
+    /** Total network egess in MB */
+    net_egress_mb: number;
 }
 /** Response to [GetHistoricalServerStats]. */
 export interface GetHistoricalServerStatsResponse {

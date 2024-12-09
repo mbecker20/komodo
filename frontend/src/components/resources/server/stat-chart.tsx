@@ -9,7 +9,7 @@ import { convertTsMsToLocalUnixTsInMs } from "@lib/utils";
 import { useTheme } from "@ui/theme";
 import { fmt_utc_date } from "@lib/formatting";
 
-type StatType = "cpu" | "mem" | "disk";
+type StatType = "cpu" | "mem" | "disk" | "network_ingress" | "network_egress";
 
 type StatDatapoint = { date: number; value: number };
 
@@ -70,6 +70,9 @@ export const InnerStatChart = ({
         ? "dark"
         : "light"
       : _theme;
+  const BYTES_PER_GB = 1073741824.0;
+  const BYTES_PER_MB = 1048576.0;
+  const BYTES_PER_KB = 1024.0;
   const min = stats?.[0]?.date ?? 0;
   const max = stats?.[stats.length - 1]?.date ?? 0;
   const diff = max - min;
@@ -90,25 +93,65 @@ export const InnerStatChart = ({
       },
     };
   }, []);
+
+  // Determine the dynamic scaling for network-related types
+  const maxStatValue = Math.max(...(stats?.map((d) => d.value) ?? [0]));
+
+  const { unit, maxUnitValue } = useMemo(() => {
+    if (type === "network_ingress" || type === "network_egress") {
+      if (maxStatValue <= BYTES_PER_KB) {
+        return { unit: "KB", maxUnitValue: BYTES_PER_KB };
+      } else if (maxStatValue <= BYTES_PER_MB) {
+        return { unit: "MB", maxUnitValue: BYTES_PER_MB };
+      } else if (maxStatValue <= BYTES_PER_GB) {
+        return { unit: "GB", maxUnitValue: BYTES_PER_GB };
+      } else {
+        return { unit: "TB", maxUnitValue: BYTES_PER_GB * 1024 }; // Larger scale for high values
+      }
+    }
+    return { unit: "", maxUnitValue: 100 }; // Default for CPU, memory, disk
+  }, [type, maxStatValue]);
+
   const valueAxis = useMemo(
     (): AxisOptions<StatDatapoint>[] => [
       {
         getValue: (datum) => datum.value,
         elementType: "area",
         min: 0,
-        max: 100,
+        max: maxUnitValue,
         formatters: {
           tooltip: (value?: number) => (
             <div className="text-lg font-mono">
-              {(value ?? 0) >= 10 ? value?.toFixed(2) : "0" + value?.toFixed(2)}
-              %
+              {(type === "network_ingress" || type === "network_egress") && unit
+                ? `${(value ?? 0) / (maxUnitValue / 1024)} ${unit}`
+                : `${value?.toFixed(2)}%`}
             </div>
           ),
         },
       },
     ],
-    []
+    [type, maxUnitValue, unit]
   );
+
+  // const valueAxis = useMemo(
+  //   (): AxisOptions<StatDatapoint>[] => [
+  //     {
+  //       getValue: (datum) => datum.value,
+  //       elementType: "area",
+  //       min: 0,
+  //       max: 100,
+  //       formatters: {
+  //         tooltip: (value?: number) => (
+  //           <div className="text-lg font-mono">
+  //             {(value ?? 0) >= 10 ? value?.toFixed(2) : "0" + value?.toFixed(2)}
+  //             %
+  //           </div>
+  //         ),
+  //       },
+  //     },
+  //   ],
+  //   []
+  // );
   return (
     <Chart
       options={{
@@ -195,6 +238,8 @@ const getStat = (stat: Types.SystemStatsRecord, type: StatType) => {
   if (type === "cpu") return stat.cpu_perc || 0;
   if (type === "mem") return (100 * stat.mem_used_gb) / stat.mem_total_gb;
   if (type === "disk") return (100 * stat.disk_used_gb) / stat.disk_total_gb;
+  if (type === "network_ingress") return stat.net_ingress_mb || 0;
+  if (type === "network_egress") return stat.net_egress_mb || 0;
   return 0;
 };
 
@@ -202,5 +247,7 @@ const getColor = (type: StatType) => {
   if (type === "cpu") return hex_color_by_intention("Good");
   if (type === "mem") return hex_color_by_intention("Warning");
   if (type === "disk") return hex_color_by_intention("Neutral");
+  if (type === "network_ingress") return hex_color_by_intention("Critical");
+  if (type === "network_egress") return hex_color_by_intention("Unknown");
   return hex_color_by_intention("Unknown");
 };

@@ -94,6 +94,7 @@ export const ServerStats = ({
           <div className="flex flex-col lg:flex-row gap-4">
             <CPU stats={stats} />
             <RAM stats={stats} />
+            <NETWORK stats={stats} />
             <DISK stats={stats} />
           </div>
         </Section>
@@ -141,6 +142,8 @@ export const ServerStats = ({
               type="disk"
               className="w-full h-[250px]"
             />
+            <StatChart server_id={id} type="network_ingress" className="w-full h-[250px]" />
+            <StatChart server_id={id} type="network_egress" className="w-full h-[250px]" />
           </div>
         </Section>
 
@@ -346,6 +349,49 @@ const RAM = ({ stats }: { stats: Types.SystemStats | undefined }) => {
     </Card>
   );
 };
+
+const formatBytes = (bytes: number) => {
+  const BYTES_PER_KB = 1024;
+  const BYTES_PER_MB = 1024 * BYTES_PER_KB;
+  const BYTES_PER_GB = 1024 * BYTES_PER_MB;
+
+  if (bytes >= BYTES_PER_GB) {
+    return { value: bytes / BYTES_PER_GB, unit: "GB" };
+  } else if (bytes >= BYTES_PER_MB) {
+    return { value: bytes / BYTES_PER_MB, unit: "MB" };
+  } else if (bytes >= BYTES_PER_KB) {
+    return { value: bytes / BYTES_PER_KB, unit: "KB" };
+  } else {
+    return { value: bytes, unit: "bytes" };
+  }
+};
+
+const NETWORK = ({ stats }: { stats: Types.SystemStats | undefined }) => {
+  const ingress = stats?.net_ingress_mb ?? 0;
+  const egress = stats?.net_egress_mb ?? 0;
+
+  const formattedIngress = formatBytes(ingress);
+  const formattedEgress = formatBytes(egress);
+
+  return (
+    <Card className="w-full">
+      <CardHeader className="flex-row justify-between">
+        <CardTitle>Network Usage</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-between items-center mb-4">
+          <p className="font-medium">Ingress</p>
+          <span className="text-sm text-gray-600">{formattedIngress.value.toFixed(2)} {formattedIngress.unit}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <p className="font-medium">Egress</p>
+          <span className="text-sm text-gray-600">{formattedEgress.value.toFixed(2)} {formattedEgress.unit}</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 const DISK = ({ stats }: { stats: Types.SystemStats | undefined }) => {
   const used = stats?.disks.reduce((acc, curr) => (acc += curr.used_gb), 0);

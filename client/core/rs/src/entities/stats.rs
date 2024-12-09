@@ -51,6 +51,12 @@ pub struct SystemStatsRecord {
   pub disk_total_gb: f64,
   /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
+   /// Network ingress usage in MB
+   #[serde(default)]
+   pub net_ingress_mb: f64,
+   /// Network egress usage in MB
+   #[serde(default)]
+   pub net_egress_mb: f64,
 }
 
 /// Realtime system stats data.
@@ -71,6 +77,12 @@ pub struct SystemStats {
   pub mem_total_gb: f64,
   /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
+  /// Network ingress usage in MB
+  #[serde(default)]
+  pub net_ingress_mb: f64,
+  /// Network egress usage in MB
+  #[serde(default)]
+  pub net_egress_mb: f64,
 
   // metadata
   /// The rate the system stats are being polled from the system
