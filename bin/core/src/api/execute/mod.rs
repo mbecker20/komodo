@@ -42,6 +42,11 @@ pub use {
   deployment::pull_deployment_inner, stack::pull_stack_inner,
 };
 
+pub struct ExecuteArgs<'a> {
+  pub user: User,
+  pub update: &'a mut Update,
+}
+
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Resolver, EnumVariants,
