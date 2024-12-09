@@ -26,6 +26,7 @@ pub struct JwtResponse {
 )]
 #[empty_traits(KomodoAuthRequest)]
 #[response(GetLoginOptionsResponse)]
+#[error(serror::Error)]
 pub struct GetLoginOptions {}
 
 /// The response for [GetLoginOptions].
