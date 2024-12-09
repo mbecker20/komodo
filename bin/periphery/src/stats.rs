@@ -1,5 +1,8 @@
 use std::{cmp::Ordering, sync::OnceLock};
 
+
+use std::collections::HashMap;
+
 use async_timing_util::wait_until_timelength;
 use komodo_client::entities::stats::{
   SingleDiskUsage, SystemInformation, SystemProcess, SystemStats,
@@ -48,6 +51,29 @@ pub fn spawn_system_stats_polling_threads() {
   });
 }
 
+/// Function to get the total network ingress and egress data for all interfaces.
+// pub fn get_total_network_usage(system: &System) -> (f64, f64) {
+//   let networks = system.networks();
+//   let mut total_ingress = 0;
+//   let mut total_egress = 0;
+
+//   for (_, network_data) in networks.iter() {
+//       total_ingress += network_data.received();
+//       total_egress += network_data.transmitted();
+//   }
+
+//   (total_ingress, total_egress)
+// }
+
+// /// Function to get the network ingress and egress data for a specific interface.
+// pub fn get_interface_network_usage(system: &System, interface_name: &str) -> Option<(f64, f64)> {
+//   let networks = system.networks();
+//   // Find the specified network interface and return its data
+//   networks.get(interface_name).map(|network_data| {
+//     (network_data.received(), network_data.transmitted())
+//   })
+// }
+
 pub struct StatsClient {
   /// Cached system stats
   pub stats: SystemStats,
@@ -57,6 +83,7 @@ pub struct StatsClient {
   // the handles used to get the stats
   system: sysinfo::System,
   disks: sysinfo::Disks,
+  network: sysinfo::Networks,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
@@ -67,6 +94,7 @@ impl Default for StatsClient {
   fn default() -> Self {
     let system = sysinfo::System::new_all();
     let disks = sysinfo::Disks::new_with_refreshed_list();
+    let network = sysinfo::Networks::new_with_refreshed_list();
     let stats = SystemStats {
       polling_rate: periphery_config().stats_polling_rate,
       ..Default::default()
@@ -75,6 +103,7 @@ impl Default for StatsClient {
       info: get_system_information(&system),
       system,
       disks,
+      network,
       stats,
     }
   }
@@ -86,20 +115,50 @@ impl StatsClient {
     self.system.refresh_memory();
     self.system.refresh_processes(ProcessesToUpdate::All, true);
     self.disks.refresh();
+    self.network.refresh();
   }
 
   fn refresh_lists(&mut self) {
     self.disks.refresh_list();
+    self.network.refresh_list();
   }
 
   pub fn get_system_stats(&self) -> SystemStats {
     let total_mem = self.system.total_memory();
     let available_mem = self.system.available_memory();
+
+    let mut total_ingress: f64 = 0.0;
+    let mut total_egress: f64 = 0.0; 
+
+    // Fetch network data (Ingress and Egress)
+    let network_usage: HashMap<String, (f64, f64)> = self.network
+      .iter()
+      .map(|(interface_name, stats)| {
+          let ingress = stats.received() as f64;
+          let egress = stats.transmitted() as f64;
+          
+          // Update total ingress and egress
+          total_ingress += ingress;
+          total_egress += egress;
+
+          // Return per-interface stats
+          (interface_name.clone(), (ingress, egress))
+      })
+      .collect();
+
+    // Debug Log the network usage interface to see if it's populated correctly
+    // println!("Network usage hash map: {:?}", network_usage);
+
     SystemStats {
       cpu_perc: self.system.global_cpu_usage(),
       mem_free_gb: self.system.free_memory() as f64 / BYTES_PER_GB,
       mem_used_gb: (total_mem - available_mem) as f64 / BYTES_PER_GB,
       mem_total_gb: total_mem as f64 / BYTES_PER_GB,
+      // Added total ingress and egress
+      net_ingress_bytes: total_ingress as f64,
+      net_egress_bytes: total_egress as f64,
+      network_usage_interface: network_usage as HashMap<String, (f64, f64)>,
+
       disks: self.get_disks(),
       polling_rate: self.stats.polling_rate,
       refresh_ts: self.stats.refresh_ts,
@@ -147,6 +206,23 @@ impl StatsClient {
       })
       .collect()
   }
+
+  // pub fn get_network_stats(&self) -> (f64, f64) {
+  //   let (ingress, egress) = get_total_network_usage(&self.system);
+  //   (
+  //     ingress as f64 / BYTES_PER_MB, // Convert to MB
+  //     egress as f64 / BYTES_PER_MB, // Convert to MB
+  //   )
+  // }
+
+  // pub fn get_network_stats_by_interface(&self, interface_name: &str) -> Option<(f64, f64)> {
+  //   get_interface_network_usage(&self.system, interface_name).map(|(ingress, egress)| {
+  //     (
+  //         ingress as f64 / BYTES_PER_MB, // Convert to MB
+  //         egress as f64 / BYTES_PER_MB, // Convert to MB
+  //     )
+  //   })
+  // }
 
   pub fn get_processes(&self) -> Vec<SystemProcess> {
     let mut procs: Vec<_> = self

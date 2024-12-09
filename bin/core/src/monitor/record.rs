@@ -26,6 +26,9 @@ pub async fn record_server_stats(ts: i64) {
         disk_total_gb,
         disk_used_gb,
         disks: stats.disks.clone(),
+        net_ingress_bytes: stats.net_ingress_bytes,
+        net_egress_bytes: stats.net_egress_bytes,
+        network_usage_interface: stats.network_usage_interface.clone(),
       })
     })
     .collect::<Vec<_>>();

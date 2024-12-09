@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -51,6 +52,15 @@ pub struct SystemStatsRecord {
   pub disk_total_gb: f64,
   /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
+   /// Network ingress usage in bytes
+   #[serde(default)]
+   pub net_ingress_bytes: f64,
+   /// Network egress usage in bytes
+   #[serde(default)]
+   pub net_egress_bytes: f64,
+   /// Network usage by interface name (ingress, egress in bytes)
+   #[serde(default)]
+   pub network_usage_interface: HashMap<String, (f64, f64)>, // interface -> (ingress, egress)
 }
 
 /// Realtime system stats data.
@@ -71,7 +81,15 @@ pub struct SystemStats {
   pub mem_total_gb: f64,
   /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
-
+  /// Network ingress usage in MB
+  #[serde(default)]
+  pub net_ingress_bytes: f64,
+  /// Network egress usage in MB
+  #[serde(default)]
+  pub net_egress_bytes: f64,
+  /// Network usage by interface name (ingress, egress in bytes)
+  #[serde(default)]
+  pub network_usage_interface: HashMap<String, (f64, f64)>, // interface -> (ingress, egress)
   // metadata
   /// The rate the system stats are being polled from the system
   pub polling_rate: Timelength,

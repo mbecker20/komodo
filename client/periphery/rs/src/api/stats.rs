@@ -18,8 +18,18 @@ pub struct GetSystemStats {}
 
 //
 
+// #[derive(Serialize, Deserialize, Debug, Clone, Request)]
+// #[response(NetworkStatsByInterface)]
+// pub struct GetNetworkStatsByInterface {}
+
+// //
+
+// #[derive(Serialize, Deserialize, Debug, Clone, Request)]
+// #[response(TotalNetworkStats)]
+// pub struct GetTotalNetworkStats {}
+
+//
+
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<SystemProcess>)]
 pub struct GetSystemProcesses {}
-
-//
