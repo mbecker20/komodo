@@ -73,6 +73,17 @@ export const ServerConfig = ({
             },
           },
           {
+            label: "Timeout",
+            labelHidden: true,
+            components: {
+              timeout_seconds: {
+                // boldLabel: true,
+                description:
+                  "The timeout used with the server health check, in seconds.",
+              },
+            },
+          },
+          {
             label: "Disks",
             labelHidden: true,
             components: {

@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
@@ -145,6 +145,7 @@ pub fn periphery_client(
   let client = PeripheryClient::new(
     &server.config.address,
     &core_config().passkey,
+    Duration::from_secs(server.config.timeout_seconds as u64),
   );
 
   Ok(client)

@@ -17,6 +17,7 @@ import {
 import { UsableResource } from "@types";
 import { useToast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
+import { atomFamily } from "jotai/utils";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RESOURCE_TARGETS } from "./utils";
@@ -466,19 +467,28 @@ export const useWebhookIdOrName = () => {
 
 export type Dimensions = { width: number; height: number };
 export const useWindowDimensions = () => {
-  const [dimensions, setDimensions] = useState<Dimensions>({ width: 0, height: 0 });
+  const [dimensions, setDimensions] = useState<Dimensions>({
+    width: 0,
+    height: 0,
+  });
   useEffect(() => {
     const callback = () => {
       setDimensions({
         width: window.screen.availWidth,
         height: window.screen.availHeight,
       });
-    }
+    };
     callback();
     window.addEventListener("resize", callback);
     return () => {
       window.removeEventListener("resize", callback);
-    }
+    };
   }, []);
   return dimensions;
-}
+};
+
+const selected_resources = atomFamily((_: UsableResource) =>
+  atom<string[]>([])
+);
+export const useSelectedResources = (type: UsableResource) =>
+  useAtom(selected_resources(type));

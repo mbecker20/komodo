@@ -1,16 +1,23 @@
-FROM node:20.12-alpine
+FROM node:20.12-alpine as builder
 
-WORKDIR /app
+WORKDIR /builder
 
 COPY ./frontend ./frontend
 COPY ./client/core/ts ./client
 
-ARG VITE_KOMODO_HOST
-ENV VITE_KOMODO_HOST ${VITE_KOMODO_HOST}
+# Optionally specify a specific Komodo host.
+ARG VITE_KOMODO_HOST=""
+ENV VITE_KOMODO_HOST=${VITE_KOMODO_HOST}
 
+# Build and link the client
 RUN cd client && yarn && yarn build && yarn link
 RUN cd frontend && yarn link komodo_client && yarn && yarn build
 
-ENV PORT 4174
+# Copy just the static frontend to scratch image
+FROM scratch
 
-CMD cd frontend && yarn preview --host --port ${PORT}
+COPY --from=builder /builder/frontend/dist /frontend
+
+LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
+LABEL org.opencontainers.image.description="Komodo Periphery"
+LABEL org.opencontainers.image.licenses=GPL-3.0

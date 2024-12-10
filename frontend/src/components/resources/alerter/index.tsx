@@ -9,6 +9,7 @@ import { AlerterTable } from "./table";
 import { Types } from "komodo_client";
 import { ResourcePageHeader } from "@components/util";
 import { RenameResource } from "@components/config/util";
+import { GroupActions } from "@components/group-actions";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -42,6 +43,8 @@ export const AlerterComponents: RequiredResourceComponents = {
     const is_admin = useUser().data?.admin;
     return is_admin && <NewResource type="Alerter" />;
   },
+
+  GroupActions: () => <GroupActions type="Alerter" actions={[]} />,
 
   Table: ({ resources }) => (
     <AlerterTable alerters={resources as Types.AlerterListItem[]} />
