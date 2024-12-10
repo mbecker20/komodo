@@ -126,11 +126,7 @@ impl StatsClient {
     let available_mem = self.system.available_memory();
 
     let mut total_ingress: f64 = 0.0;
-    let mut total_egress: f64 = 0.0;
-
-    for (interface, stats) in self.network.iter() {
-      println!(" FORA do Map - Interface: {}, received: {}, transmitted: {}", interface, stats.received(), stats.transmitted());
-  }  
+    let mut total_egress: f64 = 0.0; 
 
     // Fetch network data (Ingress and Egress)
     let network_usage: HashMap<String, (f64, f64)> = self.network
@@ -138,13 +134,10 @@ impl StatsClient {
       .map(|(interface_name, stats)| {
           let ingress = stats.received() as f64;
           let egress = stats.transmitted() as f64;
-          // Debug log to check individual network interface stats
-          println!("DENTRO do map - Interface: {}, received: {}, transmitted: {}", interface_name, ingress, egress);
-
+          
           // Update total ingress and egress
           total_ingress += ingress;
           total_egress += egress;
-          println!("AFTER SUM Total ingress: {}, Total egress: {}", total_ingress, total_egress);
 
           // Return per-interface stats
           (interface_name.clone(), (ingress, egress))
@@ -157,8 +150,8 @@ impl StatsClient {
       mem_used_gb: (total_mem - available_mem) as f64 / BYTES_PER_GB,
       mem_total_gb: total_mem as f64 / BYTES_PER_GB,
       // Added total ingress and egress
-      net_ingress_mb: total_ingress as f64, /// BYTES_PER_MB,
-      net_egress_mb: total_egress as f64, /// BYTES_PER_MB,
+      net_ingress_bytes: total_ingress as f64,
+      net_egress_bytes: total_egress as f64,
 
       disks: self.get_disks(),
       polling_rate: self.stats.polling_rate,

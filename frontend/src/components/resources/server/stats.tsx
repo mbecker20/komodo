@@ -367,8 +367,8 @@ const formatBytes = (bytes: number) => {
 };
 
 const NETWORK = ({ stats }: { stats: Types.SystemStats | undefined }) => {
-  const ingress = stats?.net_ingress_mb ?? 0;
-  const egress = stats?.net_egress_mb ?? 0;
+  const ingress = stats?.net_ingress_bytes ?? 0;
+  const egress = stats?.net_egress_bytes ?? 0;
 
   const formattedIngress = formatBytes(ingress);
   const formattedEgress = formatBytes(egress);

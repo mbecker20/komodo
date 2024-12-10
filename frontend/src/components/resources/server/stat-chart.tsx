@@ -238,8 +238,8 @@ const getStat = (stat: Types.SystemStatsRecord, type: StatType) => {
   if (type === "cpu") return stat.cpu_perc || 0;
   if (type === "mem") return (100 * stat.mem_used_gb) / stat.mem_total_gb;
   if (type === "disk") return (100 * stat.disk_used_gb) / stat.disk_total_gb;
-  if (type === "network_ingress") return stat.net_ingress_mb || 0;
-  if (type === "network_egress") return stat.net_egress_mb || 0;
+  if (type === "network_ingress") return stat.net_ingress_bytes || 0;
+  if (type === "network_egress") return stat.net_egress_bytes || 0;
   return 0;
 };
 
