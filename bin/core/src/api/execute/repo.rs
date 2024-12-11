@@ -68,7 +68,7 @@ impl Resolve<ExecuteArgs> for BatchCloneRepo {
 }
 
 impl Resolve<ExecuteArgs> for CloneRepo {
-  #[instrument(name = "CloneRepo", skip( user, update), fields(user_id = user.id))]
+  #[instrument(name = "CloneRepo", skip( user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
@@ -180,7 +180,7 @@ impl Resolve<ExecuteArgs> for BatchPullRepo {
 }
 
 impl Resolve<ExecuteArgs> for PullRepo {
-  #[instrument(name = "PullRepo", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "PullRepo", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
@@ -335,7 +335,7 @@ impl Resolve<ExecuteArgs> for BatchBuildRepo {
 }
 
 impl Resolve<ExecuteArgs> for BuildRepo {
-  #[instrument(name = "BuildRepo", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "BuildRepo", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
@@ -646,7 +646,7 @@ pub async fn validate_cancel_repo_build(
 }
 
 impl Resolve<ExecuteArgs> for CancelRepoBuild {
-  #[instrument(name = "CancelRepoBuild", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "CancelRepoBuild", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,

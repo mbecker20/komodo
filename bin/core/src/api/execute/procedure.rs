@@ -43,7 +43,7 @@ impl Resolve<ExecuteArgs> for BatchRunProcedure {
 }
 
 impl Resolve<ExecuteArgs> for RunProcedure {
-  #[instrument(name = "RunProcedure", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "RunProcedure", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,

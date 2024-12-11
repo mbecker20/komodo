@@ -60,7 +60,7 @@ impl Resolve<ExecuteArgs> for BatchRunAction {
 }
 
 impl Resolve<ExecuteArgs> for RunAction {
-  #[instrument(name = "RunAction", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "RunAction", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,

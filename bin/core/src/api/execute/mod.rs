@@ -16,7 +16,7 @@ use komodo_client::{
 };
 use mungos::by_id::find_one_by_id;
 use resolver_api::Resolve;
-use response::Response;
+use response::JsonString;
 use serde::{Deserialize, Serialize};
 use serror::Json;
 use typeshare::typeshare;
@@ -54,7 +54,7 @@ pub struct ExecuteArgs {
 )]
 #[variant_derive(Debug)]
 #[args(ExecuteArgs)]
-#[response(Response)]
+#[response(JsonString)]
 #[error(serror::Error)]
 #[serde(tag = "type", content = "params")]
 pub enum ExecuteRequest {
@@ -190,8 +190,11 @@ pub async fn inner_handler(
     async move {
       let log = match handle.await {
         Ok(Err(e)) => {
-          warn!("/execute request {req_id} task error: {e:#}",);
-          Log::error("task error", format_serror(&e.into()))
+          warn!(
+            "/execute request {req_id} task error: {:#}",
+            e.error
+          );
+          Log::error("task error", format_serror(&e.error.into()))
         }
         Err(e) => {
           warn!("/execute request {req_id} spawn error: {e:?}",);
@@ -234,16 +237,20 @@ async fn task(
   request: ExecuteRequest,
   user: User,
   update: Update,
-) -> serror::Result<axum::response::Response> {
+) -> serror::Result<String> {
   info!("/execute request {req_id} | user: {}", user.username);
   let timer = Instant::now();
 
-  let res = request
-    .resolve(&ExecuteArgs {
-      user,
-      update: Mutex::new(update),
-    })
-    .await;
+  let res = match request.resolve(&ExecuteArgs { user, update }).await
+  {
+    Err(e) => Err(e),
+    Ok(JsonString::Err(e)) => Err(
+      anyhow::Error::from(e)
+        .context("failed to serialize response")
+        .into(),
+    ),
+    Ok(JsonString::Ok(res)) => Ok(res),
+  };
 
   if let Err(e) = &res {
     warn!("/execute request {req_id} error: {:#}", e.error);
@@ -252,7 +259,7 @@ async fn task(
   let elapsed = timer.elapsed();
   debug!("/execute request {req_id} | resolve time: {elapsed:?}");
 
-  res.map(|res| res.0)
+  res
 }
 
 trait BatchExecute {
@@ -284,7 +291,7 @@ async fn batch_execute<E: BatchExecute>(
         })
         .map_err(|e| BatchExecutionResponseItemErr {
           name: resource.name,
-          error: e.into(),
+          error: e.error.into(),
         })
         .into()
     }

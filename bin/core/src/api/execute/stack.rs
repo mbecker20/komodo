@@ -61,7 +61,7 @@ impl Resolve<ExecuteArgs> for BatchDeployStack {
 }
 
 impl Resolve<ExecuteArgs> for DeployStack {
-  #[instrument(name = "DeployStack", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "DeployStack", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
@@ -515,7 +515,7 @@ impl Resolve<ExecuteArgs> for PauseStack {
 }
 
 impl Resolve<ExecuteArgs> for UnpauseStack {
-  #[instrument(name = "UnpauseStack", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "UnpauseStack", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
@@ -534,23 +534,18 @@ impl Resolve<ExecuteArgs> for UnpauseStack {
 }
 
 impl Resolve<ExecuteArgs> for StopStack {
-  #[instrument(name = "StopStack", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "StopStack", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
-    &self,
-    StopStack {
-      stack,
-      stop_time,
-      service,
-    }: StopStack,
+    self,
     ExecuteArgs { user, update }: &ExecuteArgs,
   ) -> serror::Result<Update> {
     execute_compose::<StopStack>(
-      &stack,
-      service,
+      &self.stack,
+      self.service,
       user,
       |state| state.stopping = true,
       update.clone(),
-      stop_time,
+      self.stop_time,
     )
     .await
     .map_err(Into::into)
@@ -582,7 +577,7 @@ impl Resolve<ExecuteArgs> for BatchDestroyStack {
 }
 
 impl Resolve<ExecuteArgs> for DestroyStack {
-  #[instrument(name = "DestroyStack", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "DestroyStack", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,

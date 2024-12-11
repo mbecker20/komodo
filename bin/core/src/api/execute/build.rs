@@ -75,7 +75,7 @@ impl Resolve<ExecuteArgs> for BatchRunBuild {
 }
 
 impl Resolve<ExecuteArgs> for RunBuild {
-  #[instrument(name = "RunBuild", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "RunBuild", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
@@ -514,7 +514,7 @@ pub async fn validate_cancel_build(
 }
 
 impl Resolve<ExecuteArgs> for CancelBuild {
-  #[instrument(name = "CancelBuild", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "CancelBuild", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
