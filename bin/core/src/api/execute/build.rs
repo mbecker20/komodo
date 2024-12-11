@@ -465,7 +465,7 @@ async fn handle_early_return(
 
 pub async fn validate_cancel_build(
   request: &ExecuteRequest,
-) -> serror::Result<()> {
+) -> anyhow::Result<()> {
   if let ExecuteRequest::CancelBuild(req) = request {
     let build = resource::get::<Build>(&req.build).await?;
 
@@ -500,12 +500,12 @@ pub async fn validate_cancel_build(
       (Some(build), Some(cancel)) => {
         if cancel.start_ts > build.start_ts {
           return Err(
-            anyhow!("Build has already been cancelled").into(),
+            anyhow!("Build has already been cancelled"),
           );
         }
       }
       (None, _) => {
-        return Err(anyhow!("No build in progress").into())
+        return Err(anyhow!("No build in progress"))
       }
       _ => {}
     };
