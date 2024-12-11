@@ -49,7 +49,7 @@ use crate::{
 use super::ExecuteArgs;
 
 impl Resolve<ExecuteArgs> for RunSync {
-  #[instrument(name = "RunSync", skip(user, update), fields(user_id = user.id))]
+  #[instrument(name = "RunSync", skip(user, update), fields(user_id = user.id, update_id = update.id))]
   async fn resolve(
     self,
     ExecuteArgs { user, update }: &ExecuteArgs,
