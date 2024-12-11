@@ -140,8 +140,7 @@ impl Resolve<WriteArgs> for UpdateVariableDescription {
 impl Resolve<WriteArgs> for UpdateVariableIsSecret {
   #[instrument(name = "UpdateVariableIsSecret", skip(user))]
   async fn resolve(
-    &self,
-    UpdateVariableIsSecret { name, is_secret }: UpdateVariableIsSecret,
+    self,
     WriteArgs { user }: &WriteArgs,
   ) -> serror::Result<UpdateVariableIsSecretResponse> {
     if !user.admin {
@@ -150,12 +149,12 @@ impl Resolve<WriteArgs> for UpdateVariableIsSecret {
     db_client()
       .variables
       .update_one(
-        doc! { "name": &name },
-        doc! { "$set": { "is_secret": is_secret } },
+        doc! { "name": &self.name },
+        doc! { "$set": { "is_secret": self.is_secret } },
       )
       .await
       .context("failed to update variable is secret on db")?;
-    Ok(get_variable(&name).await?)
+    Ok(get_variable(&self.name).await?)
   }
 }
 

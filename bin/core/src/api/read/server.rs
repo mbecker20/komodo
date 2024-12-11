@@ -23,7 +23,7 @@ use komodo_client::{
       Server, ServerActionState, ServerListItem, ServerState,
     },
     stack::{Stack, StackServiceNames},
-    stats::SystemInformation,
+    stats::{SystemInformation, SystemProcess},
     update::Log,
     ResourceTarget,
   },
@@ -155,13 +155,12 @@ impl Resolve<ReadArgs> for ListFullServers {
 
 impl Resolve<ReadArgs> for GetServerState {
   async fn resolve(
-    &self,
-    GetServerState { server }: GetServerState,
+    self,
     ReadArgs { user }: &ReadArgs,
   ) -> serror::Result<GetServerStateResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -178,13 +177,12 @@ impl Resolve<ReadArgs> for GetServerState {
 
 impl Resolve<ReadArgs> for GetServerActionState {
   async fn resolve(
-    &self,
-    GetServerActionState { server }: GetServerActionState,
+    self,
     ReadArgs { user }: &ReadArgs,
   ) -> serror::Result<ServerActionState> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -243,13 +241,12 @@ impl Resolve<ReadArgs> for GetSystemInformation {
 
 impl Resolve<ReadArgs> for GetSystemStats {
   async fn resolve(
-    &self,
-    GetSystemStats { server }: GetSystemStats,
+    self,
     ReadArgs { user }: &ReadArgs,
-  ) -> serror::Result<String> {
+  ) -> serror::Result<GetSystemStatsResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -261,14 +258,14 @@ impl Resolve<ReadArgs> for GetSystemStats {
       .stats
       .as_ref()
       .context("server stats not available")?;
-    let stats = serde_json::to_string(&stats)?;
-    Ok(stats)
+    Ok(stats.clone())
   }
 }
 
 // This protects the peripheries from spam requests
 const PROCESSES_EXPIRY: u128 = FIFTEEN_SECONDS_MS;
-type ProcessesCache = Mutex<HashMap<String, Arc<(String, u128)>>>;
+type ProcessesCache =
+  Mutex<HashMap<String, Arc<(Vec<SystemProcess>, u128)>>>;
 fn processes_cache() -> &'static ProcessesCache {
   static PROCESSES_CACHE: OnceLock<ProcessesCache> = OnceLock::new();
   PROCESSES_CACHE.get_or_init(Default::default)
@@ -276,13 +273,12 @@ fn processes_cache() -> &'static ProcessesCache {
 
 impl Resolve<ReadArgs> for ListSystemProcesses {
   async fn resolve(
-    &self,
-    ListSystemProcesses { server }: ListSystemProcesses,
+    self,
     ReadArgs { user }: &ReadArgs,
-  ) -> serror::Result<String> {
+  ) -> serror::Result<ListSystemProcessesResponse> {
     let server = resource::get_check_permissions::<Server>(
-      &server,
-      &user,
+      &self.server,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -295,13 +291,12 @@ impl Resolve<ReadArgs> for ListSystemProcesses {
         let stats = periphery_client(&server)?
           .request(periphery::stats::GetSystemProcesses {})
           .await?;
-        let res = serde_json::to_string(&stats)?;
         lock.insert(
           server.id,
-          (res.clone(), unix_timestamp_ms() + PROCESSES_EXPIRY)
+          (stats.clone(), unix_timestamp_ms() + PROCESSES_EXPIRY)
             .into(),
         );
-        res
+        stats
       }
     };
     Ok(res)
@@ -312,17 +307,17 @@ const STATS_PER_PAGE: i64 = 200;
 
 impl Resolve<ReadArgs> for GetHistoricalServerStats {
   async fn resolve(
-    &self,
-    GetHistoricalServerStats {
+    self,
+    ReadArgs { user }: &ReadArgs,
+  ) -> serror::Result<GetHistoricalServerStatsResponse> {
+    let GetHistoricalServerStats {
       server,
       granularity,
       page,
-    }: GetHistoricalServerStats,
-    ReadArgs { user }: &ReadArgs,
-  ) -> serror::Result<GetHistoricalServerStatsResponse> {
+    } = self;
     let server = resource::get_check_permissions::<Server>(
       &server,
-      &user,
+      user,
       PermissionLevel::Read,
     )
     .await?;
@@ -387,8 +382,7 @@ impl Resolve<ReadArgs> for ListDockerContainers {
 
 impl Resolve<ReadArgs> for ListAllDockerContainers {
   async fn resolve(
-    &self,
-    ListAllDockerContainers { servers }: ListAllDockerContainers,
+    self,
     ReadArgs { user }: &ReadArgs,
   ) -> serror::Result<ListAllDockerContainersResponse> {
     let servers = resource::list_for_user::<Server>(
@@ -399,9 +393,9 @@ impl Resolve<ReadArgs> for ListAllDockerContainers {
     .await?
     .into_iter()
     .filter(|server| {
-      servers.is_empty()
-        || servers.contains(&server.id)
-        || servers.contains(&server.name)
+      self.servers.is_empty()
+        || self.servers.contains(&server.id)
+        || self.servers.contains(&server.name)
     });
 
     let mut containers = Vec::<ContainerListItem>::new();

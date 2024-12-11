@@ -75,12 +75,11 @@ impl Resolve<ReadArgs> for ListAlerts {
 
 impl Resolve<ReadArgs> for GetAlert {
   async fn resolve(
-    &self,
-    GetAlert { id }: GetAlert,
+    self,
     _: &ReadArgs,
   ) -> serror::Result<GetAlertResponse> {
     Ok(
-      find_one_by_id(&db_client().alerts, &id)
+      find_one_by_id(&db_client().alerts, &self.id)
         .await
         .context("failed to query db for alert")?
         .context("no alert found with given id")?,

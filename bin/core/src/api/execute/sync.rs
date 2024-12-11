@@ -594,7 +594,10 @@ impl Resolve<ExecuteArgs> for RunSync {
       })
       .await
     {
-      warn!("failed to refresh sync {} after run | {e:#}", sync.name);
+      warn!(
+        "failed to refresh sync {} after run | {:#}",
+        sync.name, e.error
+      );
       update.push_error_log(
         "refresh sync",
         format_serror(
