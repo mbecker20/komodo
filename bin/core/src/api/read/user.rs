@@ -51,14 +51,13 @@ impl Resolve<ReadArgs> for GetUsername {
 
 impl Resolve<ReadArgs> for FindUser {
   async fn resolve(
-    &self,
-    FindUser { user }: FindUser,
+    self,
     ReadArgs { user: admin }: &ReadArgs,
   ) -> serror::Result<FindUserResponse> {
     if !admin.admin {
       return Err(anyhow!("This method is admin only.").into());
     }
-    Ok(get_user(&user).await?)
+    Ok(get_user(&self.user).await?)
   }
 }
 

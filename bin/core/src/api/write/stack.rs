@@ -173,7 +173,7 @@ impl Resolve<WriteArgs> for WriteStackFileContents {
       match periphery_client(&server)?
         .request(WriteCommitComposeContents {
           stack,
-          username: Some(user.username),
+          username: Some(user.username.clone()),
           file_path,
           contents,
           git_token,
@@ -416,8 +416,7 @@ impl Resolve<WriteArgs> for RefreshStackCache {
 impl Resolve<WriteArgs> for CreateStackWebhook {
   #[instrument(name = "CreateStackWebhook", skip(args))]
   async fn resolve(
-    &self,
-    CreateStackWebhook { stack, action }: CreateStackWebhook,
+    self,
     args: &WriteArgs,
   ) -> serror::Result<CreateStackWebhookResponse> {
     let WriteArgs { user } = args;
@@ -432,8 +431,8 @@ impl Resolve<WriteArgs> for CreateStackWebhook {
     };
 
     let stack = resource::get_check_permissions::<Stack>(
-      &stack,
-      &user,
+      &self.stack,
+      user,
       PermissionLevel::Write,
     )
     .await?;
@@ -484,7 +483,7 @@ impl Resolve<WriteArgs> for CreateStackWebhook {
     } else {
       webhook_base_url
     };
-    let url = match action {
+    let url = match self.action {
       StackWebhookAction::Refresh => {
         format!("{host}/listener/github/stack/{}/refresh", stack.id)
       }

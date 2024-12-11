@@ -210,8 +210,10 @@ impl Resolve<WriteArgs> for WriteSyncFileContents {
         .resolve(args)
         .await
       {
-        update
-          .push_error_log("Refresh failed", format_serror(&e.into()));
+        update.push_error_log(
+          "Refresh failed",
+          format_serror(&e.error.into()),
+        );
       }
 
       update.finalize();
@@ -233,8 +235,10 @@ impl Resolve<WriteArgs> for WriteSyncFileContents {
       .resolve(args)
       .await
     {
-      update
-        .push_error_log("Refresh failed", format_serror(&e.into()));
+      update.push_error_log(
+        "Refresh failed",
+        format_serror(&e.error.into()),
+      );
     }
 
     update.finalize();
@@ -387,8 +391,10 @@ impl Resolve<WriteArgs> for CommitSync {
       .resolve(args)
       .await
     {
-      update
-        .push_error_log("Refresh sync pending", format_serror(&e));
+      update.push_error_log(
+        "Refresh sync pending",
+        format_serror(&e.error.into()),
+      );
     };
 
     update.finalize();
@@ -420,15 +426,14 @@ impl Resolve<WriteArgs> for RefreshResourceSyncPending {
     skip(user)
   )]
   async fn resolve(
-    &self,
-    RefreshResourceSyncPending { sync }: RefreshResourceSyncPending,
+    self,
     WriteArgs { user }: &WriteArgs,
   ) -> serror::Result<ResourceSync> {
     // Even though this is a write request, this doesn't change any config. Anyone that can execute the
     // sync should be able to do this.
     let mut sync = resource::get_check_permissions::<
       entities::sync::ResourceSync,
-    >(&sync, &user, PermissionLevel::Execute)
+    >(&self.sync, user, PermissionLevel::Execute)
     .await?;
 
     if !sync.config.managed
@@ -458,9 +463,12 @@ impl Resolve<WriteArgs> for RefreshResourceSyncPending {
       sync.info.pending_message = message;
 
       if !sync.info.remote_errors.is_empty() {
-        return Err(anyhow!(
-          "Remote resources have errors. Cannot compute diffs."
-        ));
+        return Err(
+          anyhow!(
+            "Remote resources have errors. Cannot compute diffs."
+          )
+          .into(),
+        );
       }
 
       let resources = resources?;
