@@ -2,7 +2,7 @@ import { hex_color_by_intention } from "@lib/color";
 import { useRead } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { useMemo } from "react";
-import { useStatsGranularity } from "./hooks";
+import { useStatsGranularity, useSelectedNetworkInterface } from "./hooks";
 import { Loader2 } from "lucide-react";
 import { AxisOptions, Chart } from "react-charts";
 import { convertTsMsToLocalUnixTsInMs } from "@lib/utils";
@@ -22,20 +22,23 @@ export const StatChart = ({
   type: StatType;
   className?: string;
 }) => {
+  const [selectedInterface] = useSelectedNetworkInterface();
   const [granularity] = useStatsGranularity();
 
   const { data, isPending } = useRead("GetHistoricalServerStats", {
     server: server_id,
     granularity,
+    selectedInterface,
   });
 
   const stats = useMemo(
     () =>
       data?.stats
         .map((stat) => {
+          console.log("Stat in stat-chart:", stat);
           return {
             date: convertTsMsToLocalUnixTsInMs(stat.ts),
-            value: getStat(stat, type),
+            value: getStat(stat, type, selectedInterface),
           };
         })
         .reverse(),
@@ -176,70 +179,23 @@ export const InnerStatChart = ({
     />
   );
 
-  // const container_ref = useRef<HTMLDivElement>(null);
-  // const line_ref = useRef<IChartApi>();
-  // const series_ref = useRef<ISeriesApi<"Area">>();
-  // const lineColor = getColor(type);
-
-  // const handleResize = () =>
-  //   line_ref.current?.applyOptions({
-  //     width: container_ref.current?.clientWidth,
-  //   });
-
-  // useEffect(() => {
-  //   if (!stats) return;
-  //   if (line_ref.current) line_ref.current.remove();
-
-  //   const init = () => {
-  //     if (!container_ref.current) return;
-
-  //     // INIT LINE
-  //     line_ref.current = createChart(container_ref.current, {
-  //       width: container_ref.current.clientWidth,
-  //       height: container_ref.current.clientHeight,
-  //       layout: {
-  //         background: { type: ColorType.Solid, color: "transparent" },
-  //         // textColor: "grey",
-  //         fontSize: 12,
-  //       },
-  //       grid: {
-  //         horzLines: { color: "#3f454d25" },
-  //         vertLines: { color: "#3f454d25" },
-  //       },
-  //       timeScale: { timeVisible: true },
-  //       handleScale: false,
-  //       handleScroll: false,
-  //     });
-  //     line_ref.current.timeScale().fitContent();
-
-  //     // INIT SERIES
-  //     series_ref.current = line_ref.current.addAreaSeries({
-  //       priceLineVisible: false,
-  //       title: `${type} %`,
-  //       lineColor,
-  //       topColor: `${lineColor}B3`,
-  //       bottomColor: `${lineColor}0D`,
-  //     });
-  //     series_ref.current.setData(stats);
-  //   };
-
-  //   // Run the effect
-  //   init();
-  //   window.addEventListener("resize", handleResize);
-  //   return () => {
-  //     window.removeEventListener("resize", handleResize);
-  //   };
-  // }, [stats]);
-
-  // return <div className="w-full max-w-full h-full" ref={container_ref} />;
 };
 
-const getStat = (stat: Types.SystemStatsRecord, type: StatType) => {
+const getStat = (stat: Types.SystemStatsRecord, type: StatType, selectedInterface?: string) => {
   if (type === "cpu") return stat.cpu_perc || 0;
   if (type === "mem") return (100 * stat.mem_used_gb) / stat.mem_total_gb;
   if (type === "disk") return (100 * stat.disk_used_gb) / stat.disk_total_gb;
-  if (type === "network_ingress") return stat.net_ingress_bytes || 0;
-  if (type === "network_egress") return stat.net_egress_bytes || 0;
+  // UNCOMMENT TO USE ONLY GLOBAL NETWORK INGRESS/EGRESS VALUES
+  // if (type === "network_ingress") return stat.net_ingress_bytes || 0;
+  // if (type === "network_egress") return stat.net_egress_bytes || 0;
+  if (type === "network_ingress")
+    return selectedInterface
+      ? stat.network_usage_interface?.[selectedInterface]?.[0] || 0
+      : stat.net_ingress_bytes || 0;
+  if (type === "network_egress")
+    return selectedInterface
+      ? stat.network_usage_interface?.[selectedInterface]?.[1] || 0
+      : stat.net_egress_bytes || 0;
   return 0;
 };
 

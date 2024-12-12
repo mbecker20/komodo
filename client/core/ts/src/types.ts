@@ -1850,10 +1850,12 @@ export interface SystemStats {
 	mem_total_gb: number;
 	/** Breakdown of individual disks, ie their usages, sizes, and mount points */
 	disks: SingleDiskUsage[];
-	/** Network ingress usage in MB */
+	/** Network ingress usage in bytes */
 	net_ingress_bytes?: number;
-	/** Network egress usage in MB */
+	/** Network egress usage in bytes */
 	net_egress_bytes?: number;
+	/** Network usage per interface (ingress, egress) in bytes */
+    network_usage_interface: Record<string, [number, number]>; // Map of interface name to [ingress, egress]
 	/** The rate the system stats are being polled from the system */
 	polling_rate: Timelength;
 	/** Unix timestamp in milliseconds when stats were last polled */
@@ -5103,6 +5105,8 @@ export interface SystemStatsRecord {
 	net_ingress_bytes?: number;
 	/** Network egress usage in MB */
 	net_egress_bytes?: number;
+	/** Network usage per interface (ingress, egress) in bytes */
+    network_usage_interface: Record<string, [number, number]>; // Map of interface name to [ingress, egress]
 }
 
 /** Response to [GetHistoricalServerStats]. */

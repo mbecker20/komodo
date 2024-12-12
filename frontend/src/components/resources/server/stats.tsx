@@ -11,10 +11,10 @@ import { Cpu, Database, Loader2, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useMemo, useState, useEffect } from "react";
 import { Input } from "@ui/input";
 import { StatChart } from "./stat-chart";
-import { useStatsGranularity } from "./hooks";
+import { useStatsGranularity, useSelectedNetworkInterface } from "./hooks";
 import {
   Select,
   SelectContent,
@@ -32,11 +32,14 @@ export const ServerStats = ({
   titleOther?: ReactNode;
 }) => {
   const [interval, setInterval] = useStatsGranularity();
+  const [networkInterface, setNetworkInterface] = useSelectedNetworkInterface();
+
   const stats = useRead(
     "GetSystemStats",
     { server: id },
     { refetchInterval: 10_000 }
   ).data;
+  console.log("Stats:", stats);
   const info = useRead("GetSystemInformation", { server: id }).data;
 
   const disk_used = stats?.disks.reduce(
@@ -47,6 +50,20 @@ export const ServerStats = ({
     (acc, curr) => (acc += curr.total_gb),
     0
   );
+
+  const logNetworkUsageInterface = () => {
+    console.log("Network usage interface:", stats?.network_usage_interface);
+    if (stats?.network_usage_interface) {
+      console.log("Inside condition, network usage interface exists");
+    }
+  };
+
+  // Make sure the log happens after stats is available
+  useEffect(() => {
+    if (stats?.network_usage_interface) {
+      logNetworkUsageInterface();
+    }
+  }, [stats]);  // Depend on stats to log whenever it's updated
 
   return (
     <Section titleOther={titleOther}>
@@ -102,7 +119,9 @@ export const ServerStats = ({
         <Section
           title="Historical"
           actions={
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-4 items-center">
+            {/* Granularity Dropdown */}
+              <div className="flex items-center gap-2">
               <div className="text-muted-foreground">Interval:</div>
               <Select
                 value={interval}
@@ -132,6 +151,36 @@ export const ServerStats = ({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Network Interface Dropdown */}
+            <div className="flex items-center gap-2">
+            <div className="text-muted-foreground">Interface:</div>
+            <Select
+              value={networkInterface ?? "all"} // Show "all" if networkInterface is undefined
+              onValueChange={(interfaceName) => {
+                console.log("Interface name onValueChange: ", interfaceName)
+                if (interfaceName === "all") {
+                  setNetworkInterface(undefined); // Set undefined for "All" option
+                } else {
+                  setNetworkInterface(interfaceName);
+                }
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                {Object.keys(stats?.network_usage_interface ?? {}).map((interfaceName) => (
+                  <SelectItem key={interfaceName} value={interfaceName}>
+                    {interfaceName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
           }
         >
           <div className="flex flex-col gap-8">
