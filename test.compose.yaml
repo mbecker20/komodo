@@ -2,7 +2,7 @@ services:
   core:
     build:
       context: .
-      dockerfile: bin/core/single-arch.Dockerfile
+      dockerfile: bin/core/debian.Dockerfile
     restart: unless-stopped
     logging:
       driver: local
@@ -20,7 +20,7 @@ services:
   periphery:
     build:
       context: .
-      dockerfile: bin/periphery/single-arch.Dockerfile
+      dockerfile: bin/periphery/debian.Dockerfile
     restart: unless-stopped
     logging:
       driver: local

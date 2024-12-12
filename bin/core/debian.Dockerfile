@@ -1,18 +1,8 @@
-<<<<<<< HEAD:bin/core/single-arch.Dockerfile
-## Assumes the latest binaries for the required arch are already built (by binaries.Dockerfile).
-## Sets up the necessary runtime container dependencies for Komodo Core.
-
-ARG BINARIES_IMAGE=ghcr.io/mbecker20/komodo-binaries:latest-x86_64
-
-# This is required to work with COPY --from
-FROM ${BINARIES_IMAGE} AS binaries
-=======
 # Build Core
 FROM rust:1.82.0-bullseye AS core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p komodo_core --release
->>>>>>> parent of d5c9a85b (Merge main into network_dash):bin/core/debian.Dockerfile
 
 # Build Frontend
 FROM node:20.12-alpine AS frontend-builder

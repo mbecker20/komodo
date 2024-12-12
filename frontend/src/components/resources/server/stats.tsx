@@ -39,7 +39,6 @@ export const ServerStats = ({
     { server: id },
     { refetchInterval: 10_000 }
   ).data;
-  console.log("Stats:", stats);
   const info = useRead("GetSystemInformation", { server: id }).data;
 
   const disk_used = stats?.disks.reduce(
@@ -50,20 +49,6 @@ export const ServerStats = ({
     (acc, curr) => (acc += curr.total_gb),
     0
   );
-
-  const logNetworkUsageInterface = () => {
-    console.log("Network usage interface:", stats?.network_usage_interface);
-    if (stats?.network_usage_interface) {
-      console.log("Inside condition, network usage interface exists");
-    }
-  };
-
-  // Make sure the log happens after stats is available
-  useEffect(() => {
-    if (stats?.network_usage_interface) {
-      logNetworkUsageInterface();
-    }
-  }, [stats]);  // Depend on stats to log whenever it's updated
 
   return (
     <Section titleOther={titleOther}>
@@ -158,7 +143,6 @@ export const ServerStats = ({
             <Select
               value={networkInterface ?? "all"} // Show "all" if networkInterface is undefined
               onValueChange={(interfaceName) => {
-                console.log("Interface name onValueChange: ", interfaceName)
                 if (interfaceName === "all") {
                   setNetworkInterface(undefined); // Set undefined for "All" option
                 } else {

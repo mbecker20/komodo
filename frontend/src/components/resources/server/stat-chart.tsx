@@ -35,7 +35,6 @@ export const StatChart = ({
     () =>
       data?.stats
         .map((stat) => {
-          console.log("Stat in stat-chart:", stat);
           return {
             date: convertTsMsToLocalUnixTsInMs(stat.ts),
             value: getStat(stat, type, selectedInterface),

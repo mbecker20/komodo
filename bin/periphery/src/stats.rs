@@ -144,8 +144,8 @@ impl StatsClient {
       })
       .collect();
 
-    // Log the network usage interface to see if it's populated correctly
-    println!("Network usage hash map: {:?}", network_usage);
+    // Debug Log the network usage interface to see if it's populated correctly
+    // println!("Network usage hash map: {:?}", network_usage);
 
     SystemStats {
       cpu_perc: self.system.global_cpu_usage(),
