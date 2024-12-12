@@ -9,7 +9,7 @@ import { convertTsMsToLocalUnixTsInMs } from "@lib/utils";
 import { useTheme } from "@ui/theme";
 import { fmt_utc_date } from "@lib/formatting";
 
-type StatType = "cpu" | "mem" | "disk" | "network_ingress" | "network_egress";
+type StatType = "cpu" | "mem" | "disk" | "network_ingress" | "network_egress" | "network_interface_ingress" | "network_interface_egress";
 
 type StatDatapoint = { date: number; value: number };
 
@@ -185,14 +185,13 @@ const getStat = (stat: Types.SystemStatsRecord, type: StatType, selectedInterfac
   if (type === "cpu") return stat.cpu_perc || 0;
   if (type === "mem") return (100 * stat.mem_used_gb) / stat.mem_total_gb;
   if (type === "disk") return (100 * stat.disk_used_gb) / stat.disk_total_gb;
-  // UNCOMMENT TO USE ONLY GLOBAL NETWORK INGRESS/EGRESS VALUES
-  // if (type === "network_ingress") return stat.net_ingress_bytes || 0;
-  // if (type === "network_egress") return stat.net_egress_bytes || 0;
-  if (type === "network_ingress")
+  if (type === "network_ingress") return stat.net_ingress_bytes || 0;
+  if (type === "network_egress") return stat.net_egress_bytes || 0;
+  if (type === "network_interface_ingress")
     return selectedInterface
       ? stat.network_usage_interface?.[selectedInterface]?.[0] || 0
       : stat.net_ingress_bytes || 0;
-  if (type === "network_egress")
+  if (type === "network_interface_egress")
     return selectedInterface
       ? stat.network_usage_interface?.[selectedInterface]?.[1] || 0
       : stat.net_egress_bytes || 0;
@@ -203,7 +202,7 @@ const getColor = (type: StatType) => {
   if (type === "cpu") return hex_color_by_intention("Good");
   if (type === "mem") return hex_color_by_intention("Warning");
   if (type === "disk") return hex_color_by_intention("Neutral");
-  if (type === "network_ingress") return hex_color_by_intention("Critical");
-  if (type === "network_egress") return hex_color_by_intention("Unknown");
+  if (type === "network_interface_ingress") return hex_color_by_intention("Critical");
+  if (type === "network_interface_egress") return hex_color_by_intention("Unknown");
   return hex_color_by_intention("Unknown");
 };
