@@ -56,7 +56,7 @@ pub async fn write_file(
 
     if !replacers.is_empty() {
       logs.push(Log::simple(
-        "Interpolate - Environment",
+        "interpolate periphery secrets",
         replacers
             .iter()
             .map(|(_, variable)| format!("<span class=\"text-muted-foreground\">replaced:</span> {variable}"))

@@ -66,13 +66,11 @@ def copy_binary(user_install, bin_dir, version):
 	if os.path.isfile(bin_path):
 		os.remove(bin_path)
 
-	periphery_bin = "periphery-x86_64"
+	periphery_bin = "periphery"
 	arch = platform.machine().lower()
 	if arch == "aarch64" or arch == "amd64":
 		print("aarch64 detected")
 		periphery_bin = "periphery-aarch64"
-	else:
-		print("using x86_64 binary")
 
 	# download the binary to bin path
 	print(os.popen(f'curl -sSL https://github.com/mbecker20/komodo/releases/download/{version}/{periphery_bin} > {bin_path}').read())

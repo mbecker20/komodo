@@ -1581,11 +1581,6 @@ export interface ServerConfig {
      */
     enabled: boolean;
     /**
-     * The timeout used to reach the server in seconds.
-     * default: 2
-     */
-    timeout_seconds: I64;
-    /**
      * Sometimes the system stats reports a mount path that is not desired.
      * Use this field to filter it out from the report.
      */

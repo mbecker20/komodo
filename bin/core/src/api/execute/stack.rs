@@ -120,13 +120,6 @@ impl Resolve<DeployStack, (User, Update)> for State {
 
       interpolate_variables_secrets_into_string(
         &vars_and_secrets,
-        &mut stack.config.file_contents,
-        &mut global_replacers,
-        &mut secret_replacers,
-      )?;
-
-      interpolate_variables_secrets_into_string(
-        &vars_and_secrets,
         &mut stack.config.environment,
         &mut global_replacers,
         &mut secret_replacers,

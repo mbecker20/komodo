@@ -77,15 +77,7 @@ pub async fn update_deployment_cache(
         };
         format!("{build_name}:{version}")
       }
-      DeploymentImage::Image { image } => {
-        // If image already has tag, leave it,
-        // otherwise default the tag to latest
-        if image.contains(':') {
-          image
-        } else {
-          format!("{image}:latest")
-        }
-      }
+      DeploymentImage::Image { image } => image,
     };
     let update_available = if let Some(ContainerListItem {
       image_id: Some(curr_image_id),
@@ -250,18 +242,10 @@ pub async fn update_stack_cache(
           }
         }.is_match(&container.name)
       }).cloned();
-      // If image already has tag, leave it,
-      // otherwise default the tag to latest
-      let image = image.clone();
-      let image = if image.contains(':') {
-        image
-      } else {
-        image + ":latest"
-      };
       let update_available = if let Some(ContainerListItem { image_id: Some(curr_image_id), .. }) = &container {
         images
         .iter()
-        .find(|i| i.name == image)
+        .find(|i| &i.name == image)
         .map(|i| &i.id != curr_image_id)
         .unwrap_or_default()
       } else {

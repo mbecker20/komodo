@@ -1,6 +1,6 @@
-#################################
+################################
 # 🦎 KOMODO PERIPHERY CONFIG 🦎 #
-#################################
+################################
 port = 8121
 repo_dir = ".komodo/repos"
 stack_dir = ".komodo/stacks"
@@ -11,7 +11,7 @@ include_disk_mounts = []
 ############
 # Security #
 ############
-ssl_enabled = true
+ssl_enabled = false
 ssl_key_file = ".komodo/ssl/key.pem"
 ssl_cert_file = ".komodo/ssl/cert.pem"
 

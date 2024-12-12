@@ -37,7 +37,6 @@ import { ResourceComponents } from "..";
 import { ServerInfo } from "./info";
 import { ServerStats } from "./stats";
 import { RenameResource } from "@components/config/util";
-import { GroupActions } from "@components/group-actions";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}, { refetchInterval: 10_000 }).data?.find(
@@ -202,21 +201,6 @@ export const ServerComponents: RequiredResourceComponents = {
     if (!user.admin && !user.create_server_permissions) return null;
     return <NewResource type="Server" />;
   },
-
-  GroupActions: () => (
-    <GroupActions
-      type="Server"
-      actions={[
-        "PruneContainers",
-        "PruneNetworks",
-        "PruneVolumes",
-        "PruneImages",
-        "PruneSystem",
-        "RestartAllContainers",
-        "StopAllContainers",
-      ]}
-    />
-  ),
 
   Table: ({ resources }) => (
     <ServerTable servers={resources as Types.ServerListItem[]} />

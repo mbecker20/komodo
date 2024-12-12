@@ -2,22 +2,16 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { Types } from "komodo_client";
-import { useSelectedResources } from "@lib/hooks";
 
 export const AlerterTable = ({
   alerters,
 }: {
   alerters: Types.AlerterListItem[];
 }) => {
-  const [_, setSelectedResources] = useSelectedResources("Alerter");
   return (
     <DataTable
       tableKey="alerters"
       data={alerters}
-      selectOptions={{
-        selectKey: ({ name }) => name,
-        onSelect: setSelectedResources,
-      }}
       columns={[
         {
           accessorKey: "name",

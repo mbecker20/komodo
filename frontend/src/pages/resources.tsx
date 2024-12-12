@@ -24,8 +24,8 @@ export const Resources = () => {
     type === "ServerTemplate"
       ? "Server Template"
       : type === "ResourceSync"
-        ? "Resource Sync"
-        : type;
+      ? "Resource Sync"
+      : type;
   useSetTitle(name + "s");
   const [search, set] = useState("");
   const resources = useRead(`List${type}s`, {}).data;
@@ -57,10 +57,11 @@ export const Resources = () => {
     >
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <div className="flex gap-4">
-            {(is_admin || !disable_non_admin_create) && <Components.New />}
-            <Components.GroupActions />
-          </div>
+          {is_admin || !disable_non_admin_create ? (
+            <Components.New />
+          ) : (
+            <div></div>
+          )}
           <div className="flex items-center gap-4">
             <TagsFilter />
             <div className="relative">

@@ -170,7 +170,7 @@ pub struct ComposeUpResponse {
   /// Whether stack was successfully deployed
   pub deployed: bool,
   /// The stack services.
-  ///
+  /// 
   /// Note. The "image" is after interpolation.
   #[serde(default)]
   pub services: Vec<StackServiceNames>,

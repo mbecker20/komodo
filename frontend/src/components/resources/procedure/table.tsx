@@ -3,23 +3,16 @@ import { TableTags } from "@components/tags";
 import { ResourceLink } from "../common";
 import { ProcedureComponents } from ".";
 import { Types } from "komodo_client";
-import { useSelectedResources } from "@lib/hooks";
 
 export const ProcedureTable = ({
   procedures,
 }: {
   procedures: Types.ProcedureListItem[];
 }) => {
-  const [_, setSelectedResources] = useSelectedResources("Procedure");
-
   return (
     <DataTable
       tableKey="procedures"
       data={procedures}
-      selectOptions={{
-        selectKey: ({ name }) => name,
-        onSelect: setSelectedResources,
-      }}
       columns={[
         {
           accessorKey: "name",

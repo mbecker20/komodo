@@ -37,8 +37,6 @@ Will install to paths:
 *Note*. Ensure the user running periphery has write permissions to the configured folders `repo_dir`, `stack_dir`, and `ssl_key_file` / `ssl_cert_file` parent folder.
 This allows periphery to clone repos, write compose files, and generate ssl certs.
 
-*Note*. To ensure periphery stays running when your user logs out, use `sudo loginctl enable-linger $USER`.
-
 For example in `periphery.config.toml`, running under `ubuntu` user:
 ```toml
 repo_dir = "/home/ubuntu/.komodo/repos"

@@ -3,22 +3,16 @@ import { ResourceLink } from "../common";
 import { TableTags } from "@components/tags";
 import { BuilderInstanceType } from ".";
 import { Types } from "komodo_client";
-import { useSelectedResources } from "@lib/hooks";
 
 export const BuilderTable = ({
   builders,
 }: {
   builders: Types.BuilderListItem[];
 }) => {
-  const [_, setSelectedResources] = useSelectedResources("Builder");
   return (
     <DataTable
       tableKey="builders"
       data={builders}
-      selectOptions={{
-        selectKey: ({ name }) => name,
-        onSelect: setSelectedResources,
-      }}
       columns={[
         {
           accessorKey: "name",

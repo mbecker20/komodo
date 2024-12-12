@@ -2,12 +2,10 @@ import { cn } from "@lib/utils";
 import {
   Column,
   ColumnDef,
+  SortingState,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  Row,
-  RowSelectionState,
-  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -21,7 +19,6 @@ import {
 } from "@ui/table";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
-import { Checkbox } from "./checkbox";
 
 interface DataTableProps<TData, TValue> {
   /** Unique key given to table so sorting can be remembered on local storage */
@@ -32,11 +29,6 @@ interface DataTableProps<TData, TValue> {
   noResults?: ReactNode;
   defaultSort?: SortingState;
   sortDescFirst?: boolean;
-  selectOptions?: {
-    selectKey: (row: TData) => string;
-    onSelect: (selected: string[]) => void;
-    disableRow?: boolean | ((row: Row<TData>) => boolean);
-  };
 }
 
 export function DataTable<TData, TValue>({
@@ -47,13 +39,8 @@ export function DataTable<TData, TValue>({
   noResults,
   sortDescFirst = false,
   defaultSort = [],
-  selectOptions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(defaultSort);
-
-  // intentionally not initialized to clear selected values on table mount
-  // could add some prop for adding default selected state to preserve between mounts
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const table = useReactTable({
     data,
@@ -63,12 +50,8 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     state: {
       sorting,
-      rowSelection,
     },
     sortDescFirst,
-    onRowSelectionChange: setRowSelection,
-    getRowId: selectOptions?.selectKey,
-    enableRowSelection: selectOptions?.disableRow,
   });
 
   useEffect(() => {
@@ -83,31 +66,12 @@ export function DataTable<TData, TValue>({
     }
   }, [tableKey, sorting]);
 
-  useEffect(() => {
-    selectOptions?.onSelect(Object.keys(rowSelection));
-  }, [rowSelection]);
-
   return (
     <div className="rounded-md border bg-card text-card-foreground shadow py-1 px-1">
       <Table className="xl:table-fixed border-separate border-spacing-0">
         <TableHeader className="sticky top-0">
-          {table.getHeaderGroups().map((headerGroup, i) => (
+          {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {/* placeholder header */}
-              {i === 0 && selectOptions && (
-                <TableHead className="w-8 relative whitespace-nowrap bg-background border-b border-r last:border-r-0">
-                  <Checkbox
-                    className="ml-2"
-                    disabled={selectOptions.disableRow === true}
-                    checked={
-                      table.getIsSomeRowsSelected()
-                        ? "indeterminate"
-                        : table.getIsAllRowsSelected()
-                    }
-                    onCheckedChange={() => table.toggleAllRowsSelected()}
-                  />
-                </TableHead>
-              )}
               {headerGroup.headers.map((header) => {
                 const size = header.column.getSize();
                 return (
@@ -141,18 +105,6 @@ export function DataTable<TData, TValue>({
                   onRowClick && "cursor-pointer"
                 )}
               >
-                {selectOptions && (
-                  <TableCell>
-                    <Checkbox
-                      disabled={!row.getCanSelect()}
-                      className="ml-2"
-                      checked={row.getIsSelected()}
-                      onCheckedChange={(c) =>
-                        c !== "indeterminate" && row.toggleSelected()
-                      }
-                    />
-                  </TableCell>
-                )}
                 {row.getVisibleCells().map((cell) => {
                   const size = cell.column.getSize();
                   return (

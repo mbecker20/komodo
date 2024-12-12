@@ -12,7 +12,6 @@ use crate::deserializers::{
 use super::{
   alert::SeverityLevel,
   resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
-  I64,
 };
 
 #[typeshare]
@@ -69,13 +68,6 @@ pub struct ServerConfig {
   #[builder(default = "default_enabled()")]
   #[partial_default(default_enabled())]
   pub enabled: bool,
-
-  /// The timeout used to reach the server in seconds.
-  /// default: 2
-  #[serde(default = "default_timeout_seconds")]
-  #[builder(default = "default_timeout_seconds()")]
-  #[partial_default(default_timeout_seconds())]
-  pub timeout_seconds: I64,
 
   /// Sometimes the system stats reports a mount path that is not desired.
   /// Use this field to filter it out from the report.
@@ -185,10 +177,6 @@ fn default_enabled() -> bool {
   false
 }
 
-fn default_timeout_seconds() -> i64 {
-  3
-}
-
 fn default_stats_monitoring() -> bool {
   true
 }
@@ -230,7 +218,6 @@ impl Default for ServerConfig {
     Self {
       address: Default::default(),
       enabled: default_enabled(),
-      timeout_seconds: default_timeout_seconds(),
       ignore_mounts: Default::default(),
       stats_monitoring: default_stats_monitoring(),
       auto_prune: default_auto_prune(),

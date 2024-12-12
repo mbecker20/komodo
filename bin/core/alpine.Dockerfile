@@ -1,10 +1,14 @@
-## Assumes the latest binaries for the required arch are already built (by binaries.Dockerfile).
-## Sets up the necessary runtime container dependencies for Komodo Core.
+## This one produces smaller images,
+## but alpine uses `musl` instead of `glibc`.
+## This makes it take longer / more resources to build,
+## and may negatively affect runtime performance.
 
-ARG BINARIES_IMAGE=ghcr.io/mbecker20/komodo-binaries:latest-x86_64
-
-# This is required to work with COPY --from
-FROM ${BINARIES_IMAGE} AS binaries
+# Build Core
+FROM rust:1.82.0-alpine AS core-builder
+WORKDIR /builder
+RUN apk update && apk --no-cache add musl-dev openssl-dev openssl-libs-static
+COPY . .
+RUN cargo build -p komodo_core --release
 
 # Build Frontend
 FROM node:20.12-alpine AS frontend-builder
@@ -14,17 +18,20 @@ COPY ./client/core/ts ./client
 RUN cd client && yarn && yarn build && yarn link
 RUN cd frontend && yarn link komodo_client && yarn && yarn build
 
-FROM debian:bullseye-slim
+# Final Image
+FROM alpine:3.20
 
 # Install Deps
-RUN apt update && \
-	apt install -y git ca-certificates && \
-	rm -rf /var/lib/apt/lists/*
-	
+RUN apk update && apk add --no-cache --virtual .build-deps \
+	openssl ca-certificates git git-lfs curl
+
+# Setup an application directory
+WORKDIR /app
+
 # Copy
 COPY ./config/core.config.toml /config/config.toml
+COPY --from=core-builder /builder/target/release/core /app
 COPY --from=frontend-builder /builder/frontend/dist /app/frontend
-COPY --from=binaries /core /usr/local/bin/core
 COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # Set $DENO_DIR and preload external Deno deps
@@ -34,11 +41,12 @@ RUN mkdir /action-cache && \
 	deno install jsr:@std/yaml jsr:@std/toml
 
 # Hint at the port
-EXPOSE 9120
+EXPOSE 9120 
 
 # Label for Ghcr
 LABEL org.opencontainers.image.source=https://github.com/mbecker20/komodo
 LABEL org.opencontainers.image.description="Komodo Core"
 LABEL org.opencontainers.image.licenses=GPL-3.0
 
-ENTRYPOINT [ "core" ]
+# Using ENTRYPOINT allows cli args to be passed, eg using "command" in docker compose.
+ENTRYPOINT [ "/app/core" ]

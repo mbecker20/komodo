@@ -23,19 +23,16 @@ fn periphery_http_client() -> &'static reqwest::Client {
 pub struct PeripheryClient {
   address: String,
   passkey: String,
-  timeout: Duration,
 }
 
 impl PeripheryClient {
   pub fn new(
     address: impl Into<String>,
     passkey: impl Into<String>,
-    timeout: impl Into<Duration>,
   ) -> PeripheryClient {
     PeripheryClient {
       address: address.into(),
       passkey: passkey.into(),
-      timeout: timeout.into(),
     }
   }
 
@@ -58,7 +55,7 @@ impl PeripheryClient {
   #[tracing::instrument(level = "debug", skip(self))]
   pub async fn health_check(&self) -> anyhow::Result<()> {
     self
-      .request_inner(api::GetHealth {}, Some(self.timeout))
+      .request_inner(api::GetHealth {}, Some(Duration::from_secs(1)))
       .await?;
     Ok(())
   }

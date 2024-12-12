@@ -3,7 +3,8 @@ use std::time::Duration;
 use opentelemetry::{global, trace::TracerProvider, KeyValue};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
-  trace::{Sampler, Tracer},
+  runtime,
+  trace::{BatchConfig, Sampler, Tracer},
   Resource,
 };
 use opentelemetry_semantic_conventions::{
@@ -22,22 +23,22 @@ fn resource(service_name: String) -> Resource {
 }
 
 pub fn tracer(endpoint: &str, service_name: String) -> Tracer {
-  let provider = opentelemetry_sdk::trace::TracerProvider::builder()
-    .with_config(
+  let provider = opentelemetry_otlp::new_pipeline()
+    .tracing()
+    .with_trace_config(
       opentelemetry_sdk::trace::Config::default()
         .with_sampler(Sampler::AlwaysOn)
         .with_resource(resource(service_name.clone())),
     )
-    .with_batch_exporter(
-      opentelemetry_otlp::SpanExporter::builder()
-        .with_tonic()
+    .with_batch_config(BatchConfig::default())
+    .with_exporter(
+      opentelemetry_otlp::new_exporter()
+        .tonic()
         .with_endpoint(endpoint)
-        .with_timeout(Duration::from_secs(3))
-        .build()
-        .unwrap(),
-      opentelemetry_sdk::runtime::Tokio,
+        .with_timeout(Duration::from_secs(3)),
     )
-    .build();
+    .install_batch(runtime::Tokio)
+    .unwrap();
   global::set_tracer_provider(provider.clone());
   provider.tracer(service_name)
 }

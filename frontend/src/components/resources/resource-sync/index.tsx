@@ -22,7 +22,6 @@ import { ResourceSyncInfo } from "./info";
 import { ResourceSyncPending } from "./pending";
 import { Badge } from "@ui/badge";
 import { RenameResource } from "@components/config/util";
-import { GroupActions } from "@components/group-actions";
 
 export const useResourceSync = (id?: string) =>
   useRead("ListResourceSyncs", {}, { refetchInterval: 10_000 }).data?.find(
@@ -50,8 +49,8 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
   const hideInfo = sync?.config?.files_on_host
     ? false
     : sync?.config?.file_contents
-      ? true
-      : false;
+    ? true
+    : false;
 
   const showPending =
     sync && (!sync_no_changes(sync) || sync.info?.pending_error);
@@ -60,10 +59,10 @@ const ConfigInfoPending = ({ id }: { id: string }) => {
     _view === "Info" && hideInfo
       ? "Config"
       : _view === "Pending" && !showPending
-        ? sync?.config?.files_on_host || sync?.config?.repo
-          ? "Info"
-          : "Config"
-        : _view;
+      ? sync?.config?.files_on_host || sync?.config?.repo
+        ? "Info"
+        : "Config"
+      : _view;
 
   const title = (
     <TabsList className="justify-start w-fit">
@@ -144,10 +143,6 @@ export const ResourceSyncComponents: RequiredResourceComponents = {
       admin && <NewResource type="ResourceSync" readable_type="Resource Sync" />
     );
   },
-
-  GroupActions: () => (
-    <GroupActions type="ResourceSync" actions={["RunSync"]} />
-  ),
 
   Table: ({ resources }) => (
     <ResourceSyncTable syncs={resources as Types.ResourceSyncListItem[]} />

@@ -17,7 +17,6 @@ import { cn } from "@lib/utils";
 import { Types } from "komodo_client";
 import { DashboardPieChart } from "@pages/home/dashboard";
 import { RenameResource } from "@components/config/util";
-import { GroupActions } from "@components/group-actions";
 
 const useAction = (id?: string) =>
   useRead("ListActions", {}).data?.find((d) => d.id === id);
@@ -61,8 +60,6 @@ export const ActionComponents: RequiredResourceComponents = {
   },
 
   New: () => <NewResource type="Action" />,
-
-  GroupActions: () => <GroupActions type="Action" actions={["RunAction"]} />,
 
   Table: ({ resources }) => (
     <ActionTable actions={resources as Types.ActionListItem[]} />

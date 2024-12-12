@@ -159,7 +159,8 @@ export const PullDeployment = ({ id }: DeploymentId) => {
   if (!deployment) return null;
 
   return (
-    <ConfirmButton
+    <ActionWithDialog
+      name={deployment.name}
       title="Pull Image"
       icon={<Download className="h-4 w-4" />}
       onClick={() => pull({ deployment: id })}
