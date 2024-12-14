@@ -7,13 +7,6 @@ COPY Cargo.toml Cargo.lock ./
 COPY ./lib ./lib
 COPY ./client/core/rs ./client/core/rs
 COPY ./client/periphery ./client/periphery
-
-# Pre compile dependencies
-COPY ./bin/periphery/Cargo.toml ./bin/periphery/Cargo.toml
-RUN mkdir ./bin/periphery/src && \
-  echo "fn main() {}" >> ./bin/periphery/src/main.rs && \
-  cargo build -p komodo_periphery --release && \
-  rm -r ./bin/periphery
 COPY ./bin/periphery ./bin/periphery
 
 # Compile app
