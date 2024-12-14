@@ -2,7 +2,7 @@ services:
   core:
     build:
       context: .
-      dockerfile: bin/core/debian.Dockerfile
+      dockerfile: bin/core/aio.Dockerfile
     restart: unless-stopped
     logging:
       driver: local
@@ -20,7 +20,7 @@ services:
   periphery:
     build:
       context: .
-      dockerfile: bin/periphery/debian.Dockerfile
+      dockerfile: bin/periphery/aio.Dockerfile
     restart: unless-stopped
     logging:
       driver: local
