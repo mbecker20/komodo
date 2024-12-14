@@ -8,13 +8,6 @@ COPY Cargo.toml Cargo.lock ./
 COPY ./lib ./lib
 COPY ./client/core/rs ./client/core/rs
 COPY ./client/periphery ./client/periphery
-
-# Pre compile dependencies
-COPY ./bin/core/Cargo.toml ./bin/core/Cargo.toml
-RUN mkdir ./bin/core/src && \
-  echo "fn main() {}" >> ./bin/core/src/main.rs && \
-  cargo build -p komodo_core --release && \
-  rm -r ./bin/core
 COPY ./bin/core ./bin/core
 
 # Compile app
