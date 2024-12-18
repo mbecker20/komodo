@@ -188,11 +188,15 @@ const getStat = (stat: Types.SystemStatsRecord, type: StatType, selectedInterfac
   if (type === "network_egress") return stat.net_egress_bytes || 0;
   if (type === "network_interface_ingress")
     return selectedInterface
-      ? stat.network_usage_interface?.[selectedInterface]?.[0] || 0
+      ? stat.network_usage_interface?.find(
+        (networkInterface) => networkInterface.name === selectedInterface
+      )?.ingress_bytes || 0
       : stat.net_ingress_bytes || 0;
   if (type === "network_interface_egress")
     return selectedInterface
-      ? stat.network_usage_interface?.[selectedInterface]?.[1] || 0
+      ? stat.network_usage_interface?.find(
+        (networkInterface) => networkInterface.name === selectedInterface
+      )?.egress_bytes || 0
       : stat.net_egress_bytes || 0;
   return 0;
 };

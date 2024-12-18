@@ -11,7 +11,7 @@ import { Cpu, Database, Loader2, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "komodo_client";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { ReactNode, useMemo, useState, useEffect } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { Input } from "@ui/input";
 import { StatChart } from "./stat-chart";
 import { useStatsGranularity, useSelectedNetworkInterface } from "./hooks";
@@ -155,9 +155,10 @@ export const ServerStats = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {Object.keys(stats?.network_usage_interface ?? {}).map((interfaceName) => (
-                  <SelectItem key={interfaceName} value={interfaceName}>
-                    {interfaceName}
+                {/* Iterate over the vector and access the `name` property */}
+                {(stats?.network_usage_interface ?? []).map((networkInterface) => (
+                  <SelectItem key={networkInterface.name} value={networkInterface.name}>
+                    {networkInterface.name}
                   </SelectItem>
                 ))}
               </SelectContent>

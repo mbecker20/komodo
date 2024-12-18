@@ -1,11 +1,8 @@
 use std::{cmp::Ordering, sync::OnceLock};
 
-
-use std::collections::HashMap;
-
 use async_timing_util::wait_until_timelength;
 use komodo_client::entities::stats::{
-  SingleDiskUsage, SystemInformation, SystemProcess, SystemStats,
+  SingleDiskUsage, SystemInformation, SystemProcess, SystemStats, SingleNetworkInterfaceUsage,
 };
 use sysinfo::{ProcessesToUpdate, System};
 use tokio::sync::RwLock;
@@ -131,20 +128,24 @@ impl StatsClient {
     let mut total_egress: f64 = 0.0; 
 
     // Fetch network data (Ingress and Egress)
-    let network_usage: HashMap<String, (f64, f64)> = self.network
-      .iter()
-      .map(|(interface_name, stats)| {
-          let ingress = stats.received() as f64;
-          let egress = stats.transmitted() as f64;
-          
-          // Update total ingress and egress
-          total_ingress += ingress;
-          total_egress += egress;
+    let network_usage: Vec<SingleNetworkInterfaceUsage> = self.network
+        .iter()
+        .map(|(interface_name, stats)| {
+            let ingress = stats.received() as f64;
+            let egress = stats.transmitted() as f64;
 
-          // Return per-interface stats
-          (interface_name.clone(), (ingress, egress))
-      })
-      .collect();
+            // Update total ingress and egress
+            total_ingress += ingress;
+            total_egress += egress;
+
+            // Return per-interface stats
+            SingleNetworkInterfaceUsage {
+                name: interface_name.clone(),
+                ingress_bytes: ingress,
+                egress_bytes: egress,
+            }
+        })
+        .collect();
 
     // Debug Log the network usage interface to see if it's populated correctly
     // println!("Network usage hash map: {:?}", network_usage);
@@ -157,7 +158,7 @@ impl StatsClient {
       // Added total ingress and egress
       net_ingress_bytes: total_ingress as f64,
       net_egress_bytes: total_egress as f64,
-      network_usage_interface: network_usage as HashMap<String, (f64, f64)>,
+      network_usage_interface: network_usage,
 
       disks: self.get_disks(),
       polling_rate: self.stats.polling_rate,
