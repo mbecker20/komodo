@@ -51,6 +51,15 @@ pub struct SystemStatsRecord {
   pub disk_total_gb: f64,
   /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
+   /// Network ingress usage in bytes
+   #[serde(default)]
+   pub network_ingress_bytes: f64,
+   /// Network egress usage in bytes
+   #[serde(default)]
+   pub network_egress_bytes: f64,
+   /// Network usage by interface name (ingress, egress in bytes)
+   #[serde(default)]
+   pub network_usage_interface: Vec<SingleNetworkInterfaceUsage>, // interface -> (ingress, egress)
 }
 
 /// Realtime system stats data.
@@ -71,7 +80,15 @@ pub struct SystemStats {
   pub mem_total_gb: f64,
   /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
-
+  /// Network ingress usage in MB
+  #[serde(default)]
+  pub network_ingress_bytes: f64,
+  /// Network egress usage in MB
+  #[serde(default)]
+  pub network_egress_bytes: f64,
+  /// Network usage by interface name (ingress, egress in bytes)
+  #[serde(default)]
+  pub network_usage_interface: Vec<SingleNetworkInterfaceUsage>, // interface -> (ingress, egress)
   // metadata
   /// The rate the system stats are being polled from the system
   pub polling_rate: Timelength,
@@ -93,6 +110,18 @@ pub struct SingleDiskUsage {
   pub used_gb: f64,
   /// Total size of the disk in GB
   pub total_gb: f64,
+}
+
+/// Info for network interface usage.
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SingleNetworkInterfaceUsage {
+  /// The network interface name
+  pub name: String,
+  /// The ingress in bytes
+  pub ingress_bytes: f64,
+  /// The egress in bytes
+  pub egress_bytes: f64,
 }
 
 pub fn sum_disk_usage(disks: &[SingleDiskUsage]) -> TotalDiskUsage {
