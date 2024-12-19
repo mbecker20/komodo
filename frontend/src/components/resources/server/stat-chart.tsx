@@ -184,20 +184,20 @@ const getStat = (stat: Types.SystemStatsRecord, type: StatType, selectedInterfac
   if (type === "cpu") return stat.cpu_perc || 0;
   if (type === "mem") return (100 * stat.mem_used_gb) / stat.mem_total_gb;
   if (type === "disk") return (100 * stat.disk_used_gb) / stat.disk_total_gb;
-  if (type === "network_ingress") return stat.net_ingress_bytes || 0;
-  if (type === "network_egress") return stat.net_egress_bytes || 0;
+  if (type === "network_ingress") return stat.network_ingress_bytes || 0;
+  if (type === "network_egress") return stat.network_egress_bytes || 0;
   if (type === "network_interface_ingress")
     return selectedInterface
       ? stat.network_usage_interface?.find(
         (networkInterface) => networkInterface.name === selectedInterface
       )?.ingress_bytes || 0
-      : stat.net_ingress_bytes || 0;
+      : stat.network_ingress_bytes || 0;
   if (type === "network_interface_egress")
     return selectedInterface
       ? stat.network_usage_interface?.find(
         (networkInterface) => networkInterface.name === selectedInterface
       )?.egress_bytes || 0
-      : stat.net_egress_bytes || 0;
+      : stat.network_egress_bytes || 0;
   return 0;
 };
 

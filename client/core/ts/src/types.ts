@@ -1861,9 +1861,9 @@ export interface SystemStats {
 	/** Breakdown of individual disks, ie their usages, sizes, and mount points */
 	disks: SingleDiskUsage[];
 	/** Network ingress usage in MB */
-	net_ingress_bytes?: number;
+	network_ingress_bytes?: number;
 	/** Network egress usage in MB */
-	net_egress_bytes?: number;
+	network_egress_bytes?: number;
 	/** Network usage by interface name (ingress, egress in bytes) */
 	network_usage_interface?: SingleNetworkInterfaceUsage[];
 	/** The rate the system stats are being polled from the system */
@@ -5112,9 +5112,9 @@ export interface SystemStatsRecord {
 	/** Breakdown of individual disks, ie their usages, sizes, and mount points */
 	disks: SingleDiskUsage[];
 	/** Network ingress usage in bytes */
-	net_ingress_bytes?: number;
+	network_ingress_bytes?: number;
 	/** Network egress usage in bytes */
-	net_egress_bytes?: number;
+	network_egress_bytes?: number;
 	/** Network usage by interface name (ingress, egress in bytes) */
 	network_usage_interface?: SingleNetworkInterfaceUsage[];
 }

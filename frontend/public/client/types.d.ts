@@ -4843,9 +4843,9 @@ export interface SystemStatsRecord {
     /** Breakdown of individual disks, ie their usages, sizes, and mount points */
     disks: SingleDiskUsage[];
     /** Total network ingess in bytes */
-    net_ingress_bytes: number;
+    network_ingress_bytes: number;
     /** Total network egess in bytes */
-    net_egress_bytes: number;
+    network_egress_bytes: number;
     /** Network usage per interface (ingress, egress) in bytes */
     network_usage_interface: Record<string, [number, number]>; // Map of interface name to [ingress, egress]
 }

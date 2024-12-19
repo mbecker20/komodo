@@ -131,8 +131,8 @@ impl StatsClient {
       mem_used_gb: (total_mem - available_mem) as f64 / BYTES_PER_GB,
       mem_total_gb: total_mem as f64 / BYTES_PER_GB,
       // Added total ingress and egress
-      net_ingress_bytes: total_ingress as f64,
-      net_egress_bytes: total_egress as f64,
+      network_ingress_bytes: total_ingress as f64,
+      network_egress_bytes: total_egress as f64,
       network_usage_interface: network_usage,
 
       disks: self.get_disks(),

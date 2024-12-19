@@ -53,10 +53,10 @@ pub struct SystemStatsRecord {
   pub disks: Vec<SingleDiskUsage>,
    /// Network ingress usage in bytes
    #[serde(default)]
-   pub net_ingress_bytes: f64,
+   pub network_ingress_bytes: f64,
    /// Network egress usage in bytes
    #[serde(default)]
-   pub net_egress_bytes: f64,
+   pub network_egress_bytes: f64,
    /// Network usage by interface name (ingress, egress in bytes)
    #[serde(default)]
    pub network_usage_interface: Vec<SingleNetworkInterfaceUsage>, // interface -> (ingress, egress)
@@ -82,10 +82,10 @@ pub struct SystemStats {
   pub disks: Vec<SingleDiskUsage>,
   /// Network ingress usage in MB
   #[serde(default)]
-  pub net_ingress_bytes: f64,
+  pub network_ingress_bytes: f64,
   /// Network egress usage in MB
   #[serde(default)]
-  pub net_egress_bytes: f64,
+  pub network_egress_bytes: f64,
   /// Network usage by interface name (ingress, egress in bytes)
   #[serde(default)]
   pub network_usage_interface: Vec<SingleNetworkInterfaceUsage>, // interface -> (ingress, egress)
