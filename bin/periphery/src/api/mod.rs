@@ -59,11 +59,6 @@ pub enum PeripheryRequest {
   #[to_string_resolver]
   GetSystemProcesses(GetSystemProcesses),
   GetLatestCommit(GetLatestCommit),
-  // Networks Stats (Read)
-  // #[to_string_resolver]
-  // GetNetworkStatsByInterface(GetNetworkStatsByInterface),
-  // #[to_string_resolver]
-  // GetTotalNetworkStats(GetTotalNetworkStats),
 
   // Generic shell execution
   RunCommand(RunCommand),
