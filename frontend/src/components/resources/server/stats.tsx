@@ -14,7 +14,7 @@ import { DataTable, SortableHeader } from "@ui/data-table";
 import { ReactNode, useMemo, useState } from "react";
 import { Input } from "@ui/input";
 import { StatChart } from "./stat-chart";
-import { useStatsGranularity } from "./hooks";
+import { useStatsGranularity, useSelectedNetworkInterface } from "./hooks";
 import {
   Select,
   SelectContent,
@@ -32,6 +32,8 @@ export const ServerStats = ({
   titleOther?: ReactNode;
 }) => {
   const [interval, setInterval] = useStatsGranularity();
+  const [networkInterface, setNetworkInterface] = useSelectedNetworkInterface();
+
   const stats = useRead(
     "GetSystemStats",
     { server: id },
@@ -94,6 +96,7 @@ export const ServerStats = ({
           <div className="flex flex-col lg:flex-row gap-4">
             <CPU stats={stats} />
             <RAM stats={stats} />
+            <NETWORK stats={stats} />
             <DISK stats={stats} />
           </div>
         </Section>
@@ -101,7 +104,9 @@ export const ServerStats = ({
         <Section
           title="Historical"
           actions={
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-4 items-center">
+            {/* Granularity Dropdown */}
+              <div className="flex items-center gap-2">
               <div className="text-muted-foreground">Interval:</div>
               <Select
                 value={interval}
@@ -131,6 +136,36 @@ export const ServerStats = ({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Network Interface Dropdown */}
+            <div className="flex items-center gap-2">
+            <div className="text-muted-foreground">Interface:</div>
+            <Select
+              value={networkInterface ?? "all"} // Show "all" if networkInterface is undefined
+              onValueChange={(interfaceName) => {
+                if (interfaceName === "all") {
+                  setNetworkInterface(undefined); // Set undefined for "All" option
+                } else {
+                  setNetworkInterface(interfaceName);
+                }
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                {/* Iterate over the vector and access the `name` property */}
+                {(stats?.network_usage_interface ?? []).map((networkInterface) => (
+                  <SelectItem key={networkInterface.name} value={networkInterface.name}>
+                    {networkInterface.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
           }
         >
           <div className="flex flex-col gap-8">
@@ -141,6 +176,8 @@ export const ServerStats = ({
               type="disk"
               className="w-full h-[250px]"
             />
+            <StatChart server_id={id} type="network_ingress" className="w-full h-[250px]" />
+            <StatChart server_id={id} type="network_egress" className="w-full h-[250px]" />
           </div>
         </Section>
 
@@ -346,6 +383,49 @@ const RAM = ({ stats }: { stats: Types.SystemStats | undefined }) => {
     </Card>
   );
 };
+
+const formatBytes = (bytes: number) => {
+  const BYTES_PER_KB = 1024;
+  const BYTES_PER_MB = 1024 * BYTES_PER_KB;
+  const BYTES_PER_GB = 1024 * BYTES_PER_MB;
+
+  if (bytes >= BYTES_PER_GB) {
+    return { value: bytes / BYTES_PER_GB, unit: "GB" };
+  } else if (bytes >= BYTES_PER_MB) {
+    return { value: bytes / BYTES_PER_MB, unit: "MB" };
+  } else if (bytes >= BYTES_PER_KB) {
+    return { value: bytes / BYTES_PER_KB, unit: "KB" };
+  } else {
+    return { value: bytes, unit: "bytes" };
+  }
+};
+
+const NETWORK = ({ stats }: { stats: Types.SystemStats | undefined }) => {
+  const ingress = stats?.network_ingress_bytes ?? 0;
+  const egress = stats?.network_egress_bytes ?? 0;
+
+  const formattedIngress = formatBytes(ingress);
+  const formattedEgress = formatBytes(egress);
+
+  return (
+    <Card className="w-full">
+      <CardHeader className="flex-row justify-between">
+        <CardTitle>Network Usage</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-between items-center mb-4">
+          <p className="font-medium">Ingress</p>
+          <span className="text-sm text-gray-600">{formattedIngress.value.toFixed(2)} {formattedIngress.unit}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <p className="font-medium">Egress</p>
+          <span className="text-sm text-gray-600">{formattedEgress.value.toFixed(2)} {formattedEgress.unit}</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 const DISK = ({ stats }: { stats: Types.SystemStats | undefined }) => {
   const used = stats?.disks.reduce((acc, curr) => (acc += curr.used_gb), 0);

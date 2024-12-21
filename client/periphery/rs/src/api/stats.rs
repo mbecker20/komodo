@@ -21,5 +21,3 @@ pub struct GetSystemStats {}
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<SystemProcess>)]
 pub struct GetSystemProcesses {}
-
-//

@@ -1809,6 +1809,16 @@ export interface SingleDiskUsage {
 	total_gb: number;
 }
 
+/** Info for network interface usage. */
+export interface SingleNetworkInterfaceUsage {
+	/** The network interface name */
+	name: string;
+	/** The ingress in bytes */
+	ingress_bytes: number;
+	/** The egress in bytes */
+	egress_bytes: number;
+}
+
 export enum Timelength {
 	OneSecond = "1-sec",
 	FiveSeconds = "5-sec",
@@ -1850,6 +1860,12 @@ export interface SystemStats {
 	mem_total_gb: number;
 	/** Breakdown of individual disks, ie their usages, sizes, and mount points */
 	disks: SingleDiskUsage[];
+	/** Network ingress usage in MB */
+	network_ingress_bytes?: number;
+	/** Network egress usage in MB */
+	network_egress_bytes?: number;
+	/** Network usage by interface name (ingress, egress in bytes) */
+	network_usage_interface?: SingleNetworkInterfaceUsage[];
 	/** The rate the system stats are being polled from the system */
 	polling_rate: Timelength;
 	/** Unix timestamp in milliseconds when stats were last polled */
@@ -5095,6 +5111,12 @@ export interface SystemStatsRecord {
 	disk_total_gb: number;
 	/** Breakdown of individual disks, ie their usages, sizes, and mount points */
 	disks: SingleDiskUsage[];
+	/** Network ingress usage in bytes */
+	network_ingress_bytes?: number;
+	/** Network egress usage in bytes */
+	network_egress_bytes?: number;
+	/** Network usage by interface name (ingress, egress in bytes) */
+	network_usage_interface?: SingleNetworkInterfaceUsage[];
 }
 
 /** Response to [GetHistoricalServerStats]. */
