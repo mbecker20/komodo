@@ -220,6 +220,20 @@ cp ./target/release/periphery /root/periphery
 """
 ```
 
+### Resource sync
+
+- [Resource sync config schema](https://docs.rs/komodo_client/latest/komodo_client/entities/sync/type.ResourceSync.html)
+
+```toml
+[[resource_sync]]
+name = "resource-sync"
+[resource_sync.config]
+git_provider = "git.mogh.tech" # use an alternate git provider (default is github.com)
+git_account = "mbecker20"
+repo = "mbecker20/komodo"
+resource_path = ["stacks.toml", "repos.toml"]
+```
+
 ### User Group:
 
 - [UserGroup schema](https://docs.rs/komodo_client/latest/komodo_client/entities/toml/struct.UserGroupToml.html)
