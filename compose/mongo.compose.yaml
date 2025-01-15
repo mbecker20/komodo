@@ -70,22 +70,21 @@ services:
     networks:
       - default
     env_file: ./compose.env
+    environment:
+      PERIPHERY_REPO_DIR: ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}/repos
+      PERIPHERY_STACK_DIR: ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}/stacks
+      PERIPHERY_SSL_KEY_FILE: ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}/ssl/key.pem
+      PERIPHERY_SSL_CERT_FILE: ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}/ssl/cert.pem
     volumes:
       ## Mount external docker socket
       - /var/run/docker.sock:/var/run/docker.sock
       ## Allow Periphery to see processes outside of container
       - /proc:/proc
-      ## use self signed certs in docker volume, 
-      ## or mount your own signed certs.
-      - ssl-certs:/etc/komodo/ssl
-      ## manage repos in a docker volume, 
-      ## or change it to an accessible host directory.
-      - repos:/etc/komodo/repos
-      ## manage stack files in a docker volume, 
-      ## or change it to an accessible host directory.
-      - stacks:/etc/komodo/stacks
-      ## Optionally mount a path to store compose files
-      # - /path/to/compose:/host/compose
+      ## Specify the Periphery agent root directory.
+      ## Must be the same inside and outside the container,
+      ## or docker will get confused. See https://github.com/mbecker20/komodo/discussions/180.
+      ## Default: /etc/komodo.
+      - ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}:${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}
 
 volumes:
   # Mongo
@@ -93,10 +92,6 @@ volumes:
   mongo-config:
   # Core
   repo-cache:
-  # Periphery
-  ssl-certs:
-  repos:
-  stacks:
 
 networks:
   default: {}

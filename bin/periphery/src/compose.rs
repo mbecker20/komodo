@@ -25,7 +25,6 @@ use crate::{
   config::periphery_config,
   docker::docker_login,
   helpers::{interpolate_variables, parse_extra_args},
-  State,
 };
 
 pub fn docker_compose() -> &'static str {
@@ -160,8 +159,8 @@ pub async fn compose_up(
   // after performing interpolation
   {
     let command = format!(
-    "{docker_compose} -p {project_name} -f {file_args}{env_file}{additional_env_files} config --format json",
-  );
+      "{docker_compose} -p {project_name} -f {file_args}{additional_env_files}{env_file} config --format json",
+    );
     let config_log = run_komodo_command(
       "compose build",
       run_directory.as_ref(),
@@ -588,37 +587,31 @@ pub async fn write_stack(
       .to_string();
 
     let clone_or_pull_res = if stack.config.reclone {
-      State
-        .resolve(
-          CloneRepo {
-            args,
-            git_token,
-            environment: env_vars,
-            env_file_path,
-            skip_secret_interp: stack.config.skip_secret_interp,
-            // repo replacer only needed for on_clone / on_pull,
-            // which aren't available for stacks
-            replacers: Default::default(),
-          },
-          (),
-        )
-        .await
+      CloneRepo {
+        args,
+        git_token,
+        environment: env_vars,
+        env_file_path,
+        skip_secret_interp: stack.config.skip_secret_interp,
+        // repo replacer only needed for on_clone / on_pull,
+        // which aren't available for stacks
+        replacers: Default::default(),
+      }
+      .resolve(&crate::api::Args)
+      .await
     } else {
-      State
-        .resolve(
-          PullOrCloneRepo {
-            args,
-            git_token,
-            environment: env_vars,
-            env_file_path,
-            skip_secret_interp: stack.config.skip_secret_interp,
-            // repo replacer only needed for on_clone / on_pull,
-            // which aren't available for stacks
-            replacers: Default::default(),
-          },
-          (),
-        )
-        .await
+      PullOrCloneRepo {
+        args,
+        git_token,
+        environment: env_vars,
+        env_file_path,
+        skip_secret_interp: stack.config.skip_secret_interp,
+        // repo replacer only needed for on_clone / on_pull,
+        // which aren't available for stacks
+        replacers: Default::default(),
+      }
+      .resolve(&crate::api::Args)
+      .await
     };
 
     let RepoActionResponse {
@@ -630,7 +623,7 @@ pub async fn write_stack(
       Ok(res) => res,
       Err(e) => {
         let error = format_serror(
-          &e.context("failed to pull stack repo").into(),
+          &e.error.context("failed to pull stack repo").into(),
         );
         res
           .logs()
