@@ -191,12 +191,6 @@ impl ReplaceIds for Procedure {
 /// Replaces the inner ids of [ResourceTarget] variants with the
 /// referenced resource's name, looking each up in [AllResourcesById].
 /// The `System` variant carries no id and is a no-op.
-///
-/// A failed lookup leaves the id UNCHANGED, and must not blank it.
-/// [ResourceTarget] is adjacently tagged (`tag = "type", content = "id"`) and
-/// `TOML_PRETTY_OPTIONS` sets `skip_empty_string`, so an empty id is omitted
-/// from the emitted table entirely, producing `{ type = "Stack" }`. That cannot
-/// be deserialized back, so every later sync of the file fails to parse.
 macro_rules! replace_resource_target_ids {
   ($target:expr, $all:expr, { $( $variant:ident => $field:ident ),* $(,)? }) => {
     match $target {
