@@ -116,13 +116,9 @@ impl ReplaceIds for Deployment {
 
     if let DeploymentImage::Build { build_id, .. } = &mut config.image
     {
-      build_id.clone_from(
-        all
-          .builds
-          .get(build_id)
-          .map(|b| &b.name)
-          .unwrap_or(&String::new()),
-      );
+      if let Some(build) = all.builds.get(build_id) {
+        build_id.clone_from(&build.name);
+      }
     }
   }
 }

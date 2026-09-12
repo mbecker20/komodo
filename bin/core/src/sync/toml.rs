@@ -199,6 +199,19 @@ impl ToToml for Stack {
 }
 
 impl ToToml for Deployment {
+  fn push_additional(
+    resource: ResourceToml<Self::PartialConfig>,
+    toml: &mut String,
+  ) {
+    if matches!(
+      &resource.config.image,
+      Some(DeploymentImage::Build { build_id, version })
+        if build_id.is_empty() && version.is_none()
+    ) {
+      toml.push_str("\nimage.params = {}");
+    }
+  }
+
   fn edit_config_object(
     resource: &ResourceToml<Self::PartialConfig>,
     config: IndexMap<String, serde_json::Value>,
