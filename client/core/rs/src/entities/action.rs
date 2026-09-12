@@ -162,8 +162,7 @@ pub struct ActionConfig {
   #[builder(default)]
   pub reload_deno_deps: bool,
 
-  /// Maximum seconds the Action may run before its process group is
-  /// killed and the run failed. 0 or below means no timeout.
+  /// Seconds before a running Action is killed. 0 or below means no timeout.
   #[serde(default = "default_execution_timeout")]
   #[builder(default = "default_execution_timeout()")]
   #[partial_default(default_execution_timeout())]

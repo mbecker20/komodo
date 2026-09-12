@@ -325,7 +325,6 @@ function ExecutionTimeout({
   useEffect(() => {
     setInput(arg.toString());
   }, [arg]);
-  // Integral and within i32, matching the server field.
   const valid = (value: string) => {
     const num = Number(value);
     return Number.isInteger(num) && num >= -2147483648 && num <= 2147483647;
