@@ -6,13 +6,17 @@ if /I not "%~1"=="__KCC_RUN" (
 setlocal EnableExtensions EnableDelayedExpansion
 
 rem ============================================================================
-rem  KOMODO CONTROL CENTER V18 - WINDOWS
+rem  KOMODO CONTROL CENTER V20 - WINDOWS
 rem  ASCII ONLY / NO BOM / CMD-SAFE
 rem  Target repository:
 rem  H:\REPOSITORIOS GITHUB\komodo-main
 rem ============================================================================
 
-set "KOMODO_ROOT=H:\REPOSITORIOS GITHUB\komodo-main"
+set "KOMODO_ROOT=%~dp0"
+if "%KOMODO_ROOT:~-1%"=="\" set "KOMODO_ROOT=%KOMODO_ROOT:~0,-1%"
+if not exist "%KOMODO_ROOT%\compose\mongo.compose.yaml" (
+    if exist "H:\REPOSITORIOS GITHUB\komodo-main\compose\mongo.compose.yaml" set "KOMODO_ROOT=H:\REPOSITORIOS GITHUB\komodo-main"
+)
 set "INSTALL_BAT=%KOMODO_ROOT%\KOMODO_CONTROL_CENTER.bat"
 set "PROJECT_NAME=komodo"
 set "DASHBOARD_URL=http://localhost:9120"
@@ -25,7 +29,7 @@ set "CONTROL_ICON=%LOG_DIR%\komodo-control-center.ico"
 set "NOTIFY_PS1=%LOG_DIR%\notify-error.ps1"
 
 rem --- CMD appearance ----------------------------------------------------------
-title KOMODO CONTROL CENTER V18 - WINDOWS
+title KOMODO CONTROL CENTER V20 - WINDOWS
 mode con: cols=118 lines=64 >nul 2>&1
 chcp 65001 >nul 2>&1
 
@@ -67,6 +71,28 @@ call :Log "Control Center started"
 
 goto MAIN
 
+
+:ApplySavedLanguageOnStartup
+@echo off
+if defined KCC_LOCALIZED exit /b 0
+set "CC_LANG=EN"
+if exist "%STATE_DIR%\control-center.language" set /P CC_LANG=<"%STATE_DIR%\control-center.language"
+if /I "%CC_LANG%"=="EN" exit /b 0
+call :ApplyControlCenterLanguage
+exit /b %ERRORLEVEL%
+
+:ApplyControlCenterLanguage
+@echo off
+set "CC_LANG=EN"
+if exist "%STATE_DIR%\control-center.language" set /P CC_LANG=<"%STATE_DIR%\control-center.language"
+if /I "%CC_LANG%"=="EN" exit /b 0
+set "CC_RUNTIME=%STATE_DIR%\KOMODO_CONTROL_CENTER_%CC_LANG%.bat"
+powershell.exe -NoProfile -Command "$src='%~f0';$dst='%CC_RUNTIME%';$lang='%CC_LANG%';$t=[IO.File]::ReadAllText($src);$maps=@{}; if($lang -eq 'PT-BR'){$maps=@{'Select an option:'='Selecione uma opcao:';'Start Komodo'='Iniciar Komodo';'Stop Komodo'='Parar Komodo';'Restart Komodo'='Reiniciar Komodo';'Service status'='Status dos servicos';'Intelligent diagnostics'='Diagnostico inteligente';'Quick help'='Ajuda rapida';'Back'='Voltar';'Main menu'='Menu principal';'Cancel'='Cancelar';'Documentation'='Documentacao';'Control Center language'='Idioma do Control Center';'Existing Komodo users'='Usuarios existentes do Komodo';'Real Komodo users'='Usuarios reais do Komodo';'Security audit'='Auditoria de seguranca';'Update Git repository'='Atualizar repositorio Git';'Open dashboard in browser'='Abrir painel no navegador'}} elseif($lang -eq 'ES'){$maps=@{'Select an option:'='Seleccione una opcion:';'Start Komodo'='Iniciar Komodo';'Stop Komodo'='Detener Komodo';'Restart Komodo'='Reiniciar Komodo';'Back'='Volver';'Main menu'='Menu principal';'Cancel'='Cancelar';'Quick help'='Ayuda rapida';'Documentation'='Documentacion'}} elseif($lang -eq 'DE'){$maps=@{'Select an option:'='Option auswahlen:';'Start Komodo'='Komodo starten';'Stop Komodo'='Komodo stoppen';'Restart Komodo'='Komodo neu starten';'Back'='Zuruck';'Main menu'='Hauptmenu';'Cancel'='Abbrechen';'Quick help'='Schnellhilfe';'Documentation'='Dokumentation'}} elseif($lang -eq 'FR'){$maps=@{'Select an option:'='Choisissez une option:';'Start Komodo'='Demarrer Komodo';'Stop Komodo'='Arreter Komodo';'Restart Komodo'='Redemarrer Komodo';'Back'='Retour';'Main menu'='Menu principal';'Cancel'='Annuler';'Quick help'='Aide rapide';'Documentation'='Documentation'}} elseif($lang -eq 'JA'){$maps=@{'Select an option:'='Select option:';'Start Komodo'='Start Komodo';'Stop Komodo'='Stop Komodo';'Restart Komodo'='Restart Komodo';'Back'='Back';'Main menu'='Main menu';'Cancel'='Cancel'}}; foreach($k in $maps.Keys){$t=$t.Replace($k,$maps[$k])};$t=$t.Replace('setlocal EnableExtensions DisableDelayedExpansion','setlocal EnableExtensions DisableDelayedExpansion'+[Environment]::NewLine+'set KCC_LOCALIZED=1'); [IO.File]::WriteAllText($dst,$t,(New-Object Text.UTF8Encoding($false)))" >nul 2>&1
+if errorlevel 1 exit /b 0
+start "Komodo Control Center %CC_LANG%" cmd.exe /D /K call "%CC_RUNTIME%" __KCC_RUN
+exit /b 99
+
+
 :MAIN
 @echo off
 call :DetectCompose
@@ -74,59 +100,59 @@ call :QuickState
 cls
 call :Header
 @echo off
-echo %CYAN%%BOLD%   KOMODO CONTROL CENTER V18 - COMPLETE VERTICAL MENU%RESET%
+echo %CYAN%%BOLD%   KOMODO CONTROL CENTER V20 - COMPLETE VERTICAL MENU%RESET%
 echo.
-echo    %GREEN%[ 1 ]%RESET%  Start Komodo
-echo    %YELLOW%[ 2 ]%RESET%  Stop Komodo
-echo    %YELLOW%[ 3 ]%RESET%  Restart Komodo
-echo    %CYAN%[ 4 ]%RESET%  Open dashboard in browser
-echo    %BLUE%[ 5 ]%RESET%  Service status
-echo    %BLUE%[ 6 ]%RESET%  Live Core logs
-echo    %BLUE%[ 7 ]%RESET%  All service logs
-echo    %BLUE%[ 8 ]%RESET%  Intelligent diagnostics
-echo    %BLUE%[ 9 ]%RESET%  HTTP health check
-echo    %BLUE%[10 ]%RESET%  Port 9120 and processes
-echo    %MAGENTA%[11 ]%RESET%  Update Docker images
-echo    %MAGENTA%[12 ]%RESET%  Update Git repository
-echo    %MAGENTA%[13 ]%RESET%  Edit environment file
-echo    %MAGENTA%[14 ]%RESET%  Security audit
-echo    %CYAN%[15 ]%RESET%  Open repository folder
-echo    %CYAN%[16 ]%RESET%  Open PowerShell in repository
-echo    %CYAN%[17 ]%RESET%  Open VS Code
-echo    %CYAN%[18 ]%RESET%  Environment information
-echo    %CYAN%[19 ]%RESET%  Open official Komodo GitHub
-echo    %CYAN%[20 ]%RESET%  Quick help
-echo    %GREEN%[21 ]%RESET%  Create / repair Desktop shortcut
-echo    %GREEN%[22 ]%RESET%  Start Control Center with Windows
-echo    %GREEN%[23 ]%RESET%  Remove Windows startup
-echo    %GREEN%[24 ]%RESET%  View initial login / admin
-echo    %GREEN%[25 ]%RESET%  Change initial admin / password
-echo    %GREEN%[26 ]%RESET%  Download official Komodo update
-echo    %GREEN%[27 ]%RESET%  Reset existing Komodo user password
-echo    %GREEN%[28 ]%RESET%  Promote user to Super Admin
-echo    %GREEN%[29 ]%RESET%  List real Komodo users
-echo    %GREEN%[30 ]%RESET%  Enable local registration
-echo    %MAGENTA%[31 ]%RESET%  TRANSLATE KOMODO LANGUAGES - LIVE
-echo    %MAGENTA%[32 ]%RESET%  Restore original English Komodo interface
-echo    %BLUE%[33 ]%RESET%  Logs / reports / notifications center
-echo    %CYAN%[34 ]%RESET%  Complete Komodo guide - course 0 to 23
-echo    %MAGENTA%[35 ]%RESET%  Publish Control Center via Fork + Pull Request
-echo    %CYAN%[36 ]%RESET%  Control Center language
-echo    %CYAN%[37 ]%RESET%  Documentation inside the menu
-echo    %CYAN%[38 ]%RESET%  Export safe Support Bundle
-echo    %CYAN%[39 ]%RESET%  Safe configuration backup
-echo    %CYAN%[40 ]%RESET%  Quick assistant - What do you want to do?
-echo    %GREEN%[41 ]%RESET%  KOMODO AUTONOMOUS CENTER - manage Komodo from this menu
-echo    %GREEN%[42 ]%RESET%  Komodo API credentials / autonomous connection
-echo    %GREEN%[43 ]%RESET%  Universal Komodo API runner - read / write / execute
-echo    %GREEN%[44 ]%RESET%  Complete resource overview
-echo    %RED%[90 ]%RESET%  Remove containers - preserve volumes
-echo    %RED%[91 ]%RESET%  TOTAL reset including volumes
+echo    %GREEN%[ 1 ][CORE]%RESET%  Start Komodo
+echo    %YELLOW%[ 2 ][CORE]%RESET%  Stop Komodo
+echo    %YELLOW%[ 3 ][CORE]%RESET%  Restart Komodo
+echo    %CYAN%[ 4 ][CORE]%RESET%  Open dashboard in browser
+echo    %BLUE%[ 5 ][MONITOR]%RESET%  Service status
+echo    %BLUE%[ 6 ][MONITOR]%RESET%  Live Core logs
+echo    %BLUE%[ 7 ][MONITOR]%RESET%  All service logs
+echo    %BLUE%[ 8 ][MONITOR]%RESET%  Intelligent diagnostics
+echo    %BLUE%[ 9 ][MONITOR]%RESET%  HTTP health check
+echo    %BLUE%[10 ][MONITOR]%RESET%  Port 9120 and processes
+echo    %MAGENTA%[11 ][UPDATE]%RESET%  Update Docker images
+echo    %MAGENTA%[12 ][UPDATE]%RESET%  Update Git repository
+echo    %MAGENTA%[13 ][CONFIG]%RESET%  Edit environment file
+echo    %MAGENTA%[14 ][SECURITY]%RESET%  Security audit
+echo    %CYAN%[15 ][TOOLS]%RESET%  Open repository folder
+echo    %CYAN%[16 ][TOOLS]%RESET%  Open PowerShell in repository
+echo    %CYAN%[17 ][TOOLS]%RESET%  Open VS Code
+echo    %CYAN%[18 ][INFO]%RESET%  Environment information
+echo    %CYAN%[19 ][INFO]%RESET%  Open official Komodo GitHub
+echo    %CYAN%[20 ][HELP]%RESET%  Quick help
+echo    %GREEN%[21 ][WINDOWS]%RESET%  Create / repair Desktop shortcut
+echo    %GREEN%[22 ][WINDOWS]%RESET%  Start Control Center with Windows
+echo    %GREEN%[23 ][WINDOWS]%RESET%  Remove Windows startup
+echo    %GREEN%[24 ][USERS]%RESET%  View initial login / admin
+echo    %GREEN%[25 ][USERS]%RESET%  Change initial admin / password
+echo    %GREEN%[26 ][UPDATE]%RESET%  Download official Komodo update
+echo    %GREEN%[27 ][USERS]%RESET%  Reset existing Komodo user password
+echo    %GREEN%[28 ][USERS]%RESET%  Promote user to Super Admin
+echo    %GREEN%[29 ][USERS]%RESET%  List real Komodo users
+echo    %GREEN%[30 ][USERS]%RESET%  Enable local registration
+echo    %MAGENTA%[31 ][LANG]%RESET%  TRANSLATE KOMODO LANGUAGES - LIVE
+echo    %MAGENTA%[32 ][LANG]%RESET%  Restore original English Komodo interface
+echo    %BLUE%[33 ][LOGS]%RESET%  Logs / reports / notifications center
+echo    %CYAN%[34 ][GUIDE]%RESET%  Complete Komodo guide - course 0 to 23 (V19 updated)
+echo    %MAGENTA%[35 ][GITHUB]%RESET%  Publish Control Center via Fork + Pull Request
+echo    %CYAN%[36 ][LANG]%RESET%  Control Center language
+echo    %CYAN%[37 ][DOCS]%RESET%  Documentation KOMODO CONTROL CENTER
+echo    %CYAN%[38 ][SUPPORT]%RESET%  Export safe Support Bundle
+echo    %CYAN%[39 ][BACKUP]%RESET%  Safe configuration backup
+echo    %CYAN%[40 ][HELP]%RESET%  Quick assistant - What do you want to do?
+echo    %GREEN%[41 ][AUTOMATION]%RESET%  KOMODO AUTONOMOUS CENTER - manage Komodo from this menu
+echo    %GREEN%[42 ][API]%RESET%  Komodo API credentials / autonomous connection
+echo    %GREEN%[43 ][API]%RESET%  Universal Komodo API runner - read / write / execute
+echo    %GREEN%[44 ][RESOURCES]%RESET%  Complete resource overview
+echo    %RED%[90 ][DANGER]%RESET%  Remove containers - preserve volumes
+echo    %RED%[91 ][DANGER]%RESET%  TOTAL reset including volumes
 echo.
 echo %GRAY%   [R] Refresh   [B] Back   [C] Cancel   [D] Docker Desktop   [0] Exit%RESET%
 echo.
 set "OP="
-set /p "OP=%WHITE%%BOLD%   Select an option: %RESET%"
+set /p "OP=   Select an option: "
 call :LogAction "MENU selected: %OP%"
 
 if /I "%OP%"=="R" goto MAIN
@@ -181,6 +207,7 @@ if "%OP%"=="44" goto RESOURCE_OVERVIEW
 if "%OP%"=="90" goto REMOVE_CONTAINERS
 if "%OP%"=="91" goto FACTORY_RESET
 
+if not defined OP goto MAIN
 call :MsgError "Invalid option: %OP%"
 goto MAIN
 
@@ -206,9 +233,9 @@ echo.
 echo %GRAY%Iniciando containers...%RESET%
 call :Compose up -d
 if errorlevel 1 (
-    call :MsgError "Failed to start o stack."
+call :MsgError "Failed to start o stack."
     echo.
-    echo run a option 8 for diagnose.
+echo run a option 8 for diagnose.
     goto PAUSE_MAIN
 )
 
@@ -240,10 +267,10 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :Compose stop
 if errorlevel 1 (
-    call :MsgError "Could not stop all os services."
+call :MsgError "Could not stop all os services."
 ) else (
     call :Log "Komodo stopped"
-    call :MsgOk "services parados. volumes preservados."
+call :MsgOk "services parados. volumes preservados."
 )
 goto PAUSE_MAIN
 
@@ -259,12 +286,12 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :Compose restart
 if errorlevel 1 (
-    call :MsgError "Failed to restart."
+call :MsgError "Failed to restart."
 ) else (
     call :WaitHttp 20
     call :Log "Komodo restarted"
     call :ApplyPtBrSilent
-    call :MsgOk "restart completed."
+call :MsgOk "restart completed."
 )
 goto PAUSE_MAIN
 
@@ -299,6 +326,9 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :Compose logs --tail=150 -f core
 goto MAIN
+echo.
+choice /C BMC /N /M "[B] Back  [M] Main menu  [C] Cancel: "
+goto MAIN
 
 :LOG_ALL
 cls
@@ -312,114 +342,122 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :Compose logs --tail=120 -f
 goto MAIN
+echo.
+choice /C BMC /N /M "[B] Back  [M] Main menu  [C] Cancel: "
+goto MAIN
 
 :DIAG
 @echo off
 cls
 call :Header
-echo %BLUE%%BOLD%   [+] diagnostics intelligent - mode safe%RESET%
+echo %BLUE%%BOLD%   INTELLIGENT DIAGNOSTICS - SAFE MODE%RESET%
 echo.
 set /A ERRORS=0
 set /A WARNINGS=0
 
 if exist "%KOMODO_ROOT%\" (
-    call :DiagOk "folder of the repository found."
+    call :DiagOk "Repository folder found."
 ) else (
-    call :DiagFail "folder of the repository not found."
+    call :DiagFail "Repository folder not found."
 )
 
 if defined COMPOSE_FILE (
-    call :DiagOk "Compose detected: %COMPOSE_FILE%"
+    call :DiagOk "Compose file detected: %COMPOSE_FILE%"
 ) else (
-    call :DiagFail "in the compose suportado was detected."
+    call :DiagFail "Supported Compose file was not detected."
 )
 
 if defined ENV_FILE (
-    call :DiagOk "File of environment: %ENV_FILE%"
+    call :DiagOk "Environment file: %ENV_FILE%"
 ) else (
-    call :DiagWarn "in the compose.env/.env detected. may be normal for this stack."
+    call :DiagWarn "No compose.env/.env detected. This may be normal for some setups."
 )
 
 where docker >nul 2>&1
 if errorlevel 1 (
-    call :DiagFail "Docker CLI not found in the PATH."
+    call :DiagFail "Docker CLI was not found in PATH."
 ) else (
-    for /F "delims=" %%V in ('docker --version 2^>nul') of the call :DiagOk "%%V"
+    for /F "delims=" %%V in ('docker --version 2^>nul') do call :DiagOk "%%V"
 )
 
 docker info >nul 2>&1
 if errorlevel 1 (
-    call :DiagFail "Docker Engine not is respondendo."
+    call :DiagFail "Docker Engine is not responding."
 ) else (
-    call :DiagOk "Docker Engine online."
+    call :DiagOk "Docker Engine is online."
 )
 
 docker compose version >nul 2>&1
 if errorlevel 1 (
-    call :DiagFail "Docker Compose v2 not found."
+    call :DiagFail "Docker Compose v2 was not found."
 ) else (
-    for /F "delims=" %%V in ('docker compose version 2^>nul') of the call :DiagOk "%%V"
+    for /F "delims=" %%V in ('docker compose version 2^>nul') do call :DiagOk "%%V"
 )
 
 where git >nul 2>&1
 if errorlevel 1 (
-    call :DiagWarn "Git not found in the PATH."
+    call :DiagWarn "Git was not found in PATH."
 ) else (
-    for /F "delims=" %%V in ('git --version 2^>nul') of the call :DiagOk "%%V"
+    for /F "delims=" %%V in ('git --version 2^>nul') do call :DiagOk "%%V"
 )
 
 if exist "%KOMODO_ROOT%\.git\" (
-    call :DiagOk "Repository possui .git and accepted Git Pull."
+    call :DiagOk "Repository contains .git and supports Git operations."
 ) else (
-    call :DiagWarn "folder without .git. probably was downloaded how ZIP."
+    call :DiagWarn "Repository has no .git metadata. It may have been downloaded as ZIP."
 )
 
 netstat -ano 2>nul | findstr /R /C:":9120 .*LISTENING" >nul 2>&1
 if errorlevel 1 (
-    call :DiagWarn "port 9120 not is in LISTENING."
+    call :DiagWarn "Port 9120 is not LISTENING."
 ) else (
-    call :DiagOk "port 9120 in LISTENING."
+    call :DiagOk "Port 9120 is LISTENING."
 )
 
 where curl >nul 2>&1
 if errorlevel 1 (
-    call :DiagWarn "curl.exe not found; health HTTP not testado."
+    call :DiagWarn "curl.exe was not found; HTTP health check skipped."
 ) else (
     curl.exe -fsS --max-time 3 "%DASHBOARD_URL%" >nul 2>&1
     if errorlevel 1 (
-        call :DiagWarn "dashboard HTTP not respondeu in %DASHBOARD_URL%."
+        call :DiagWarn "Dashboard did not respond at %DASHBOARD_URL%."
     ) else (
-        call :DiagOk "dashboard HTTP respondeu in %DASHBOARD_URL%."
+        call :DiagOk "Dashboard responded at %DASHBOARD_URL%."
     )
 )
 
 where rustc >nul 2>&1
 if errorlevel 1 (
-    call :DiagWarn "Rust not installed. required only for development/build local."
+    call :DiagWarn "Rust is not installed. It is required only for local development/builds."
 ) else (
-    for /F "delims=" %%V in ('rustc --version 2^>nul') of the call :DiagOk "%%V"
+    for /F "delims=" %%V in ('rustc --version 2^>nul') do call :DiagOk "%%V"
 )
 
 where node >nul 2>&1
 if errorlevel 1 (
-    call :DiagWarn "Node.js not installed. may be required for development of the UI."
+    call :DiagWarn "Node.js is not installed. It may be required for UI development."
 ) else (
-    for /F "delims=" %%V in ('node --version 2^>nul') of the call :DiagOk "Node.js %%V"
+    for /F "delims=" %%V in ('node --version 2^>nul') do call :DiagOk "Node.js %%V"
 )
 
 echo.
-echo %WHITE%%BOLD%   RESULTADO%RESET%
+echo %WHITE%%BOLD%   RESULT%RESET%
 echo %GRAY%   ------------------------------------------------------------------------%RESET%
-echo    Errors  : %RED%!ERRORRS!%RESET%
-echo    warnings : %YELLOW%!WARNINGS!%RESET%
+echo    Errors   : %RED%!ERRORS!%RESET%
+echo    Warnings : %YELLOW%!WARNINGS!%RESET%
 echo.
 if !ERRORS! EQU 0 (
-    call :MsgOk "Base operacional aprovada."
+call :MsgOk "Operational base approved."
 ) else (
-    call :MsgError "Existem problems bloqueando o environment."
+call :MsgError "Blocking problems were detected."
 )
-call :Log "Diagnosis: !ERRORS! errors / !WARNINGS! warnings"
-goto PAUSE_MAIN
+call :Log "Diagnostics: !ERRORS! errors / !WARNINGS! warnings"
+echo.
+choice /C RBMC /N /M "[R] Run again  [B] Back  [M] Main menu  [C] Cancel: "
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto MAIN
+if errorlevel 2 goto MAIN
+goto DIAG
 
 :HEALTH
 cls
@@ -428,7 +466,7 @@ echo %BLUE%%BOLD%   [+] HEALTH CHECK HTTP%RESET%
 echo.
 where curl >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "curl.exe not found."
+call :MsgError "curl.exe not found."
     goto PAUSE_MAIN
 )
 set "HTTP_CODE="
@@ -439,10 +477,10 @@ for /F "tokens=1,2" %%A in ('curl.exe -sS -o NUL -w "%%{http_code} %%{time_total
 )
 if not defined HTTP_CODE set "HTTP_CODE=000"
 if "%HTTP_CODE%"=="000" (
-    call :MsgError "dashboard HTTP not respondeu."
-    echo %YELLOW%use a option 8 for diagnostics and a option 7 for logs.%RESET%
+call :MsgError "dashboard HTTP not respondeu."
+echo %YELLOW%use a option 8 for diagnostics and a option 7 for logs.%RESET%
 ) else (
-    echo %GREEN%[OK] HTTP %HTTP_CODE%  Tempo: %HTTP_TIME%s  %DASHBOARD_URL%%RESET%
+echo %GREEN%[OK] HTTP %HTTP_CODE%  Tempo: %HTTP_TIME%s  %DASHBOARD_URL%%RESET%
 )
 goto PAUSE_MAIN
 
@@ -469,7 +507,7 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :Compose pull
 if errorlevel 1 (
-    call :MsgError "Failed to download images."
+call :MsgError "Failed to download images."
     goto PAUSE_MAIN
 )
 echo.
@@ -478,43 +516,83 @@ if errorlevel 3 goto MAIN
 if errorlevel 2 goto MAIN
 call :Compose up -d
 if errorlevel 1 (
-    call :MsgError "Failed to recriar containers."
+call :MsgError "Failed to recriar containers."
 ) else (
     call :Log "Docker images updated"
-    call :MsgOk "update completed."
+call :MsgOk "update completed."
 )
 goto PAUSE_MAIN
 
 :GIT_PULL
+@echo off
 cls
 call :Header
-echo %MAGENTA%%BOLD%   [v] update repository GIT%RESET%
+echo %MAGENTA%%BOLD%   UPDATE GIT REPOSITORY%RESET%
 echo.
-where git >nul 2>&1
+if exist "%KOMODO_ROOT%\.git\" goto GIT_PULL_EXISTING
+
+echo %YELLOW%This folder is not a Git checkout.%RESET%
+echo It was probably downloaded as ZIP.
+echo.
+echo   [1] Convert this folder safely to a Git-aware checkout
+echo   [2] Download/update official source into a separate clean folder
+echo   [3] Open official GitHub
+echo   [B] Back   [M] Main menu   [C] Cancel
+echo.
+choice /C 123BMC /N /M "Choose: "
+if errorlevel 6 goto MAIN
+if errorlevel 5 goto MAIN
+if errorlevel 4 goto MAIN
+if errorlevel 3 (
+    start "" "https://github.com/moghtech/komodo"
+    goto GIT_PULL
+)
+if errorlevel 2 goto GIT_CLONE_CLEAN
+
+git -C "%KOMODO_ROOT%" init
 if errorlevel 1 (
-    call :MsgError "Git not found."
-    goto PAUSE_MAIN
+call :MsgError "Git init failed."
+    goto GIT_PULL_PAUSE
 )
-if not exist "%KOMODO_ROOT%\.git\" (
-    call :MsgError "is folder not possui .git."
-    echo.
-    echo %YELLOW%it probably was downloaded how ZIP. Git Pull not works in ZIP.%RESET%
-    echo O menu continues funcionando normalmente.
-    goto PAUSE_MAIN
-)
-pushd "%KOMODO_ROOT%"
-git status --short --branch
-echo.
-git pull --ff-only
-set "RC=!errorlevel!"
-popd
-if not "!RC!"=="0" (
-    call :MsgError "Git Pull interrompido. in the merge forcado was realizado."
+git -C "%KOMODO_ROOT%" remote remove origin >nul 2>&1
+git -C "%KOMODO_ROOT%" remote add origin https://github.com/moghtech/komodo.git
+git -C "%KOMODO_ROOT%" fetch origin main
+if errorlevel 1 (
+call :MsgError "Git fetch failed. Existing local files were preserved."
 ) else (
-    call :Log "Repository updated with git pull"
-    call :MsgOk "Repository updated."
+call :MsgOk "Git metadata created. Existing local files were preserved."
 )
-goto PAUSE_MAIN
+goto GIT_PULL_PAUSE
+
+:GIT_CLONE_CLEAN
+set "CLEAN_GIT=%USERPROFILE%\komodo-official"
+if exist "%CLEAN_GIT%\.git\" (
+    git -C "%CLEAN_GIT%" pull --ff-only
+) else (
+    git clone https://github.com/moghtech/komodo.git "%CLEAN_GIT%"
+)
+if errorlevel 1 (
+call :MsgError "Official clean clone/update failed."
+) else (
+call :MsgOk "Official clean Git checkout is ready."
+    start "" "%CLEAN_GIT%"
+)
+goto GIT_PULL_PAUSE
+
+:GIT_PULL_EXISTING
+git -C "%KOMODO_ROOT%" status --short
+echo.
+git -C "%KOMODO_ROOT%" pull --ff-only
+if errorlevel 1 (
+call :MsgError "Fast-forward pull was not possible. No forced overwrite was performed."
+) else (
+call :MsgOk "Git repository updated."
+)
+
+:GIT_PULL_PAUSE
+echo.
+choice /C BMC /N /M "[B] Back  [M] Main menu  [C] Cancel: "
+goto MAIN
 
 :EDIT_ENV
 cls
@@ -522,7 +600,7 @@ call :Header
 echo %MAGENTA%%BOLD%   [#] EDITAR environment%RESET%
 echo.
 if not defined ENV_FILE (
-    call :MsgError "in the compose.env or .env was detected."
+call :MsgError "in the compose.env or .env was detected."
     goto PAUSE_MAIN
 )
 start "" notepad.exe "%ENV_FILE%"
@@ -530,37 +608,66 @@ echo Editor aberto:
 echo %ENV_FILE%
 goto PAUSE_MAIN
 
+:DetectEnv
+@echo off
+set "ENV_FILE="
+if exist "%KOMODO_ROOT%\compose\compose.env" set "ENV_FILE=%KOMODO_ROOT%\compose\compose.env"
+if not defined ENV_FILE if exist "%KOMODO_ROOT%\compose\.env" set "ENV_FILE=%KOMODO_ROOT%\compose\.env"
+if not defined ENV_FILE if exist "%KOMODO_ROOT%\.env" set "ENV_FILE=%KOMODO_ROOT%\.env"
+exit /b 0
+
+:SetEnvValue
+@echo off
+set "ENV_KEY=%~1"
+set "ENV_VALUE=%~2"
+call :DetectEnv
+if not defined ENV_FILE exit /b 1
+set "ENV_TMP=%STATE_DIR%\env-%RANDOM%.tmp"
+powershell.exe -NoProfile -Command "$p='%ENV_FILE%';$k='%ENV_KEY%';$v='%ENV_VALUE%';$s=Get-Content -Raw -LiteralPath $p;if($s -match '(?m)^\s*'+[regex]::Escape($k)+'='){ $s=[regex]::Replace($s,'(?m)^\s*'+[regex]::Escape($k)+'=.*$', $k+'='+$v) } else { $s=$s.TrimEnd()+[Environment]::NewLine+$k+'='+$v+[Environment]::NewLine };[IO.File]::WriteAllText($p,$s,(New-Object Text.UTF8Encoding($false)))" >nul 2>&1
+exit /b %ERRORLEVEL%
+
+
 :SECURITY
+@echo off
 cls
 call :Header
-echo %MAGENTA%%BOLD%   [!] AUDITORIA of security%RESET%
+echo %MAGENTA%%BOLD%   SECURITY AUDIT%RESET%
 echo.
+call :DetectEnv
 if not defined ENV_FILE (
-    call :MsgError "in the file of environment was detected."
-    goto PAUSE_MAIN
+echo %YELLOW%No compose.env/.env file was detected.%RESET%
+    goto SECURITY_PAUSE
 )
-
-set /A SECWARN=0
-call :SecurityCheck "changeme" "value default changeme found"
-call :SecurityCheck "a_random_secret" "Webhook secret default found"
-call :SecurityCheck "a_random_jwt_secret" "JWT secret default found"
-call :SecurityCheck "PASSWORD=admin" "Password admin default found"
-call :SecurityCheck "PASSWORD=password" "Password password default found"
-
+echo File: %ENV_FILE%
 echo.
-if !SECWARN! EQU 0 (
-    call :MsgOk "in the value default conhecido was found."
+call :SecurityCheckSafe "changeme" "Default changeme value"
+call :SecurityCheckSafe "password" "Default password value"
+call :SecurityCheckSafe "KOMODO_WEBHOOK_SECRET=" "Webhook secret configured"
+call :SecurityCheckSafe "KOMODO_JWT_SECRET=" "JWT secret configured"
+call :SecurityCheckSafe "KOMODO_INIT_ADMIN_PASSWORD=changeme" "Default admin password changeme"
+echo.
+echo Audit completed without modifying the environment.
+echo.
+choice /C RBMC /N /M "[R] Run again  [B] Back  [M] Main menu  [C] Cancel: "
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto MAIN
+if errorlevel 2 goto MAIN
+goto SECURITY
+
+:SECURITY_PAUSE
+echo.
+choice /C BMC /N /M "[B] Back  [M] Main menu  [C] Cancel: "
+goto MAIN
+
+:SecurityCheckSafe
+@echo off
+findstr /I /L /C:"%~1" "%ENV_FILE%" >nul 2>&1
+if errorlevel 1 (
+echo   %GREEN%[OK]%RESET% %~2 - not detected
 ) else (
-    echo %YELLOW%%BOLD%!SECWARN! alert(s) of security found(s).%RESET%
-    echo.
-    echo Not expose o dashboard for a Internet using credentials default.
-    echo.
-    choice /C SBC /N /M "open file? [S] Yes  [B] Back  [C] Cancel: "
-    if errorlevel 3 goto MAIN
-    if errorlevel 2 goto MAIN
-    start "" notepad.exe "%ENV_FILE%"
+echo   %YELLOW%[CHECK]%RESET% %~2 - detected
 )
-goto PAUSE_MAIN
+exit /b 0
 
 :EXPLORER
 start "" explorer.exe "%KOMODO_ROOT%"
@@ -575,10 +682,10 @@ where code >nul 2>&1
 if errorlevel 1 (
     cls
     call :Header
-    call :MsgError "VS Code CLI 'code' not found in the PATH."
+call :MsgError "VS Code CLI 'code' not found in the PATH."
     if exist "%KOMODO_ROOT%\komodo.code-workspace" (
         echo.
-        echo trying open o workspace by the associacao of the Windows...
+echo trying open o workspace by the associacao of the Windows...
         start "" "%KOMODO_ROOT%\komodo.code-workspace"
     )
     goto PAUSE_MAIN
@@ -616,7 +723,7 @@ if exist "%KOMODO_ROOT%\.git\" (
     git status --short --branch
     popd
 ) else (
-    echo %YELLOW%without diretorio .git: copy probably obtida by download ZIP.%RESET%
+echo %YELLOW%without diretorio .git: copy probably obtida by download ZIP.%RESET%
 )
 goto PAUSE_MAIN
 
@@ -625,47 +732,45 @@ start "" "https://github.com/moghtech/komodo"
 goto MAIN
 
 :HELP
+@echo off
 cls
 call :Header
-echo %CYAN%%BOLD%   [?] AJUDA quick%RESET%
+echo %CYAN%%BOLD%   QUICK HELP - KOMODO CONTROL CENTER%RESET%
 echo.
-echo    1   Inicia o stack detected automatically.
-echo    2   for os services without delete volumes.
-echo    3   Reinicia os services.
-echo    8   Diagnostica Docker, Compose, Git, HTTP, port and dependencias.
-echo   11   Atualiza images Docker.
-echo   12   runs Git Pull only if a folder have .git.
-echo   14   Procura values inseguros common in the file of environment.
-echo   21   Cria or repara o shortcut of the Area of Trabalho.
-echo   22   Cria shortcut in the startup of the Windows.
-echo   24   shows user/password initial configurados.
-echo   25   Altera admin/password automatically and recria containers.
-echo   26   Baixa a versao more recente direto of the GitHub, with backup.
-echo   27   Reseta a password of a user that already EXISTE in the database.
-echo   28   promotes a user existing for Super Admin.
-echo   29   Lista users real with tag ADMIN or member.
-echo   30   Habilita registration local without editar compose.env manualmente.
-echo   31   Traduz interface Komodo for PT-BR to the live. after just F5.
-echo   32   removes a translation and restores a interface original in English.
-echo   33   Central of logs: report, errors, warnings and notifications ON/OFF.
-echo   34   course complete 0 a 23. in each screen use [P] next step.
-echo   35   Publica/atualiza o Control Center in the GitHub via fork + Pull Request.
-echo   90   removes containers/network, preservando volumes.
-echo   91   removes containers and volumes. deletes data.
+echo %GREEN%[1] Komodo will not start%RESET%
+echo     Run diagnostics, inspect Core logs and Docker status.
 echo.
-echo %WHITE%%BOLD%   NAVEGACAO%RESET%
-echo    B   returns for a screen/menu previous.
-echo    C   Cancela a operation current and returns to the menu.
+echo %BLUE%[2] Dashboard does not open%RESET%
+echo     Check HTTP health, port 9120 and service status.
 echo.
-echo %WHITE%%BOLD%   PROTECOES%RESET%
-echo    - O file uses only characters ASCII for avoid corruption of the CMD.
-echo    - Not runs PowerShell automatically to the open.
-echo    - Not depende of cd /d of the PowerShell.
-echo    - Detecta automatically o file compose.
-echo    - tries start o Docker Desktop when required.
-echo    - Errors voltam to the menu in vez of close a window.
+echo %MAGENTA%[3] User / login problem%RESET%
+echo     List users, reset password, promote Super Admin, or enable signup.
 echo.
-goto PAUSE_MAIN
+echo %YELLOW%[4] Update problem%RESET%
+echo     Repair Git checkout or use safe official update.
+echo.
+echo %CYAN%[5] GitHub contribution problem%RESET%
+echo     Check auth, fork, branch, and existing Pull Request.
+echo.
+echo %GREEN%[6] Automate Komodo%RESET%
+echo     Open the Autonomous Center.
+echo.
+echo %CYAN%[7] Read Control Center documentation%RESET%
+echo     Opens Documentation KOMODO CONTROL CENTER.
+echo.
+echo %GRAY%[B] Back   [M] Main menu   [C] Cancel%RESET%
+echo.
+choice /C 1234567BMC /N /M "Choose: "
+if errorlevel 10 goto MAIN
+if errorlevel 9 goto MAIN
+if errorlevel 8 goto MAIN
+if errorlevel 7 goto DOCUMENTATION_CENTER
+if errorlevel 6 goto AUTONOMOUS_CENTER
+if errorlevel 5 goto GITHUB_PUBLISH_CENTER
+if errorlevel 4 goto GIT_PULL
+if errorlevel 3 goto LIST_REAL_USERS
+if errorlevel 2 goto HEALTH
+goto DIAG
 
 :SHORTCUT
 cls
@@ -677,12 +782,36 @@ call :CreateShortcut
 goto PAUSE_MAIN
 
 :AUTOSTART_ON
+@echo off
 cls
 call :Header
-echo %GREEN%%BOLD%   [+] start with O WINDOWS%RESET%
+echo %GREEN%%BOLD%   START CONTROL CENTER WITH WINDOWS%RESET%
 echo.
+echo   [1] Enable startup
+echo   [2] Disable startup
+echo   [3] Show current startup status
+echo   [B] Back   [M] Main menu   [C] Cancel
+echo.
+choice /C 123BMC /N /M "Choose: "
+if errorlevel 6 goto MAIN
+if errorlevel 5 goto MAIN
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto AUTOSTART_STATUS
+if errorlevel 2 goto AUTOSTART_OFF
 call :InstallAutostart
-goto PAUSE_MAIN
+goto AUTOSTART_STATUS
+
+:AUTOSTART_STATUS
+@echo off
+echo.
+if exist "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\KOMODO_CONTROL_CENTER.lnk" (
+call :MsgOk "Startup is ENABLED."
+) else (
+echo %YELLOW%Startup is DISABLED.%RESET%
+)
+echo.
+choice /C BMC /N /M "[B] Back  [M] Main menu  [C] Cancel: "
+goto AUTOSTART_ON
 
 :AUTOSTART_OFF
 cls
@@ -701,175 +830,86 @@ goto MAIN
 @echo off
 cls
 call :Header
-echo %GREEN%%BOLD%   [@] LOGIN / ADMIN initial%RESET%
+echo %GREEN%%BOLD%   INITIAL LOGIN / ADMIN%RESET%
 echo.
 call :ShowUsersPanel
-if errorlevel 1 goto PAUSE_MAIN
 echo.
-echo.
+call :DetectEnv
 if not defined ENV_FILE (
-    call :MsgError "in the file of environment was detected."
-    goto PAUSE_MAIN
+call :MsgError "No environment file was detected."
+    goto AUTH_INFO_PAUSE
 )
-echo File:
-echo   %ENV_FILE%
-echo.
 set "ADMIN_USER="
 set "ADMIN_PASS="
 for /F "tokens=1,* delims==" %%A in ('findstr /B /I "KOMODO_INIT_ADMIN_USERNAME=" "%ENV_FILE%" 2^>nul') do set "ADMIN_USER=%%B"
 for /F "tokens=1,* delims==" %%A in ('findstr /B /I "KOMODO_INIT_ADMIN_PASSWORD=" "%ENV_FILE%" 2^>nul') do set "ADMIN_PASS=%%B"
-if defined ADMIN_USER (
-    echo %WHITE%User initial:%RESET% !ADMIN_USER!
-) else (
-    echo %YELLOW%User initial not definido.%RESET%
-)
-if defined ADMIN_PASS (
-    echo %WHITE%Password initial:%RESET% !ADMIN_PASS!
-) else (
-    echo %YELLOW%Password initial not definida.%RESET%
-)
+echo Environment file:
+echo   %ENV_FILE%
 echo.
-echo %YELLOW%important:%RESET%
-echo - these credentials are used for create o first admin in the first startup.
-echo - if o user already was created in the database, changing o file may not change a password existing.
-echo - in the compose official current, o default and admin / changeme.
+if defined ADMIN_USER (echo Initial username: !ADMIN_USER!) else echo Initial username: not defined
+if defined ADMIN_PASS (echo Initial password: configured) else echo Initial password: not defined
 echo.
-goto PAUSE_MAIN
+echo Note: KOMODO_INIT_ADMIN_* only initializes the first admin.
+echo Existing database users must be managed with options 27/28 or API/CLI.
+:AUTH_INFO_PAUSE
+echo.
+choice /C BMCR /N /M "[B] Back  [M] Main menu  [C] Cancel  [R] Refresh: "
+if errorlevel 4 goto AUTH_INFO
+goto MAIN
 
 :AUTH_EDIT
 @echo off
 cls
 call :Header
-echo %GREEN%%BOLD%   [#] change ADMIN / password automatically%RESET%
+echo %GREEN%%BOLD%   CHANGE INITIAL ADMIN / PASSWORD%RESET%
 echo.
 call :ShowUsersPanel
-if errorlevel 1 goto PAUSE_MAIN
 echo.
-echo.
+call :DetectEnv
 if not defined ENV_FILE (
-    call :MsgError "in the file of environment was detected."
-    goto PAUSE_MAIN
+call :MsgError "No environment file was detected."
+    goto AUTH_EDIT_PAUSE
 )
-
-echo is rotina faz tudo sozinha:
-echo   1. Faz backup of the compose.env
-echo   2. Altera user and password without open editor
-echo   3. Recria os containers
-echo   4. confirms a configuration applied
+echo This changes only the initial-admin environment values.
+echo Existing users in the database are not automatically renamed or re-passworded.
+echo Use option [27] for an existing user's password.
 echo.
-echo %YELLOW%important:%RESET% KOMODO_INIT_ADMIN_* cria o first admin.
-echo if a account already existir in the database, these variaveis NOT redefinem
-echo a password of the account existing.
-echo for a account existing, use a option [27].
-echo.
-
 setlocal DisableDelayedExpansion
 set "NEWADMIN="
 set "NEWPASS="
-set /p "NEWADMIN=New admin username (B/C cancela): "
-if /I "%NEWADMIN%"=="B" (
-    endlocal
-    goto MAIN
-)
-if /I "%NEWADMIN%"=="C" (
-    endlocal
-    goto MAIN
-)
-if not defined NEWADMIN (
-    endlocal
-    call :MsgError "User vazio. Operation cancelled."
-    goto PAUSE_MAIN
-)
-set /p "NEWPASS=New password (B/C cancela): "
-if /I "%NEWPASS%"=="B" (
-    endlocal
-    goto MAIN
-)
-if /I "%NEWPASS%"=="C" (
-    endlocal
-    goto MAIN
-)
-if not defined NEWPASS (
-    endlocal
-    call :MsgError "Password vazia. Operation cancelled."
-    goto PAUSE_MAIN
-)
-
+set /p "NEWADMIN=New initial admin username [B=back / C=cancel]: "
+if /I "%NEWADMIN%"=="B" (endlocal & goto MAIN)
+if /I "%NEWADMIN%"=="C" (endlocal & goto MAIN)
+if not defined NEWADMIN (endlocal & goto AUTH_EDIT)
+set /p "NEWPASS=New initial admin password [B=back / C=cancel]: "
+if /I "%NEWPASS%"=="B" (endlocal & goto AUTH_EDIT)
+if /I "%NEWPASS%"=="C" (endlocal & goto MAIN)
+if not defined NEWPASS (endlocal & goto AUTH_EDIT)
 set "ENV_BACKUP=%ENV_FILE%.backup"
 copy /Y "%ENV_FILE%" "%ENV_BACKUP%" >nul 2>&1
-if errorlevel 1 (
-    endlocal
-    call :MsgError "Could not create backup."
-    goto PAUSE_MAIN
-)
+set "ENV_FILE_SAVE=%ENV_FILE%"
+set "USER_SAVE=%NEWADMIN%"
+set "PASS_SAVE=%NEWPASS%"
+endlocal & set "ENV_FILE=%ENV_FILE_SAVE%" & set "NEWADMIN=%USER_SAVE%" & set "NEWPASS=%PASS_SAVE%"
+call :SetEnvValue "KOMODO_INIT_ADMIN_USERNAME" "%NEWADMIN%"
+if errorlevel 1 goto AUTH_EDIT_FAIL
+call :SetEnvValue "KOMODO_INIT_ADMIN_PASSWORD" "%NEWPASS%"
+if errorlevel 1 goto AUTH_EDIT_FAIL
+set "NEWPASS="
+call :MsgOk "Initial admin environment values updated."
+echo Backup:
+echo   %ENV_BACKUP%
+goto AUTH_EDIT_PAUSE
 
-set "VBS=%TEMP%\komodo_auth_%RANDOM%.vbs"
-> "%VBS%" echo On Error Resume Next
->>"%VBS%" echo Set sh = CreateObject("WScript.Shell")
->>"%VBS%" echo envPath = sh.Environment("PROCESS")("ENV_FILE")
->>"%VBS%" echo newUser = sh.Environment("PROCESS")("NEWADMIN")
->>"%VBS%" echo newPass = sh.Environment("PROCESS")("NEWPASS")
->>"%VBS%" echo Set stm = CreateObject("ADODB.Stream")
->>"%VBS%" echo stm.Type = 2
->>"%VBS%" echo stm.Charset = "utf-8"
->>"%VBS%" echo stm.Open
->>"%VBS%" echo stm.LoadFromFile envPath
->>"%VBS%" echo txt = stm.ReadText
->>"%VBS%" echo stm.Close
->>"%VBS%" echo Set re = New RegExp
->>"%VBS%" echo re.Global = True
->>"%VBS%" echo re.MultiLine = True
->>"%VBS%" echo re.Pattern = "^KOMODO_INIT_ADMIN_USERNAME=.*$"
->>"%VBS%" echo If re.Test(txt) Then
->>"%VBS%" echo   txt = re.Replace(txt, "KOMODO_INIT_ADMIN_USERNAME=" ^& newUser)
->>"%VBS%" echo Else
->>"%VBS%" echo   txt = txt ^& vbCrLf ^& "KOMODO_INIT_ADMIN_USERNAME=" ^& newUser
->>"%VBS%" echo End If
->>"%VBS%" echo re.Pattern = "^KOMODO_INIT_ADMIN_PASSWORD=.*$"
->>"%VBS%" echo If re.Test(txt) Then
->>"%VBS%" echo   txt = re.Replace(txt, "KOMODO_INIT_ADMIN_PASSWORD=" ^& newPass)
->>"%VBS%" echo Else
->>"%VBS%" echo   txt = txt ^& vbCrLf ^& "KOMODO_INIT_ADMIN_PASSWORD=" ^& newPass
->>"%VBS%" echo End If
->>"%VBS%" echo Set out = CreateObject("ADODB.Stream")
->>"%VBS%" echo out.Type = 2
->>"%VBS%" echo out.Charset = "utf-8"
->>"%VBS%" echo out.Open
->>"%VBS%" echo out.WriteText txt
->>"%VBS%" echo out.Position = 0
->>"%VBS%" echo out.SaveToFile envPath, 2
->>"%VBS%" echo out.Close
->>"%VBS%" echo If Err.Number ^<^> 0 Then WScript.Quit 1 Else WScript.Quit 0
+:AUTH_EDIT_FAIL
+set "NEWPASS="
+call :MsgError "Could not update initial admin environment values."
 
-cscript //nologo "%VBS%" >nul 2>&1
-set "AUTH_RC=%errorlevel%"
-del /Q "%VBS%" >nul 2>&1
-
-if not "%AUTH_RC%"=="0" (
-    copy /Y "%ENV_BACKUP%" "%ENV_FILE%" >nul 2>&1
-    endlocal
-    call :MsgError "Failed to change credentials. backup restored."
-    goto PAUSE_MAIN
-)
-
-endlocal
+:AUTH_EDIT_PAUSE
 echo.
-call :MsgOk "File of environment updated."
-echo backup created in:
-echo   %ENV_FILE%.backup
-echo.
-echo recreating containers for load a new configuration...
-call :Preflight
-if errorlevel 1 goto AUTH_DONE
-call :EnsureDocker
-if errorlevel 1 goto AUTH_DONE
-call :Compose up -d --force-recreate
-if errorlevel 1 (
-    call :MsgError "File updated, mas os containers not foram recriados."
-    goto AUTH_DONE
-)
-call :Log "Initial admin credentials changed automatically"
-call :MsgOk "containers recriados."
+choice /C BMCR /N /M "[B] Back  [M] Main menu  [C] Cancel  [R] Retry: "
+if errorlevel 4 goto AUTH_EDIT
+goto MAIN
 
 :AUTH_DONE
 echo.
@@ -887,11 +927,11 @@ cls
 call :Header
 echo %GREEN%%BOLD%   [+] download update official of the GITHUB%RESET%
 echo.
-echo Repository official:
+echo Official repository:
 echo   https://github.with/moghtech/komodo
 echo.
-echo %YELLOW%is option works same if your folder veio of ZIP and not possui .git.%RESET%
-echo it cria a backup before of copy a new versao.
+echo %YELLOW%ThThis option also works when your folder was downloaded as ZIP and does not contain .git.%RESET%
+echo it creates a backup before of copy a new versao.
 echo.
 choice /C SBC /N /M "Continue? [S] Yes  [B] Back  [C] Cancel: "
 if errorlevel 3 goto MAIN
@@ -909,45 +949,45 @@ echo.
 echo %CYAN%1/4 Baixando versao more recente...%RESET%
 where curl >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "curl.exe not found."
+call :MsgError "curl.exe not found."
     goto UPDATE_CLEANUP
 )
 curl.exe -L --fail --silent --show-error "https://github.com/moghtech/komodo/archive/refs/heads/main.zip" -o "%UPD_ZIP%"
 if errorlevel 1 (
-    call :MsgError "Failed to download a update."
+call :MsgError "Failed to download a update."
     goto UPDATE_CLEANUP
 )
 
 echo %CYAN%2/4 Extraindo pacote...%RESET%
 where tar >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "tar.exe not found."
+call :MsgError "tar.exe not found."
     goto UPDATE_CLEANUP
 )
 tar -xf "%UPD_ZIP%" -C "%UPD_EXTRACT%"
 if errorlevel 1 (
-    call :MsgError "Failed to extrair o pacote."
+call :MsgError "Failed to extrair o pacote."
     goto UPDATE_CLEANUP
 )
 
 if not exist "%UPD_EXTRACT%\komodo-main\" (
-    call :MsgError "Estrutura inesperada in the pacote baixado."
+call :MsgError "Estrutura inesperada in the pacote baixado."
     goto UPDATE_CLEANUP
 )
 
 echo %CYAN%3/4 creating backup of the versao current...%RESET%
 robocopy "%KOMODO_ROOT%" "%BACKUP_DIR%" /E /XD ".komodo-windows" /XF "KOMODO_CONTROL_CENTER.bat" >nul
 if errorlevel 8 (
-    call :MsgError "Failed to create backup. update cancelled."
+call :MsgError "Failed to create backup. update cancelled."
     goto UPDATE_CLEANUP
 )
 
 echo %CYAN%4/4 Aplicando files new...%RESET%
 robocopy "%UPD_EXTRACT%\komodo-main" "%KOMODO_ROOT%" /E /XD ".git" ".komodo-windows" /XF "KOMODO_CONTROL_CENTER.bat" >nul
 if errorlevel 8 (
-    call :MsgError "Failure durante a copy of the files."
-    echo backup disponivel in:
-    echo   %BACKUP_DIR%
+call :MsgError "Failure durante a copy of the files."
+echo backup disponivel in:
+echo   %BACKUP_DIR%
     goto UPDATE_CLEANUP
 )
 
@@ -991,277 +1031,175 @@ if not defined DB_NAME set "DB_NAME=komodo"
 exit /b 0
 
 :ListUsersRaw
-call :LoadDbEnv
-set "USERS_TMP=%TEMP%\komodo_users_%RANDOM%.txt"
-call :Compose exec -T mongo mongosh --quiet -u "%DB_USER%" -p "%DB_PASS%" --authenticationDatabase admin "%DB_NAME%" --eval "db.getCollectionNames().forEach(function(n){db.getCollection(n).find({username:{$exists:true}},{username:1,enabled:1,admin:1,super_admin:1}).forEach(function(u){print(u.username+'|'+u.enabled+'|'+u.admin+'|'+u.super_admin);});});" > "%USERS_TMP%" 2>nul
-set "USERS_RC=%errorlevel%"
-if not "%USERS_RC%"=="0" (
-    if exist "%USERS_TMP%" del /Q "%USERS_TMP%" >nul 2>&1
-    exit /b %USERS_RC%
+@echo off
+call :DetectCompose
+call :EnsureDocker
+if errorlevel 1 exit /b 1
+if not exist "%STATE_DIR%" mkdir "%STATE_DIR%" >nul 2>&1
+set "USER_TMP=%STATE_DIR%\users-%RANDOM%.txt"
+del /Q "%USER_TMP%" >nul 2>&1
+
+rem 1) Database discovery
+set "MONGO_USER=admin"
+set "MONGO_PASS=admin"
+call :DetectEnv
+if defined ENV_FILE (
+    for /F "tokens=1,* delims==" %%A in ('findstr /I /B /C:"MONGO_INITDB_ROOT_USERNAME=" /C:"DB_USERNAME=" /C:"KOMODO_DATABASE_USERNAME=" "%ENV_FILE%" 2^>nul') do if not "%%~B"=="" set "MONGO_USER=%%~B"
+    for /F "tokens=1,* delims==" %%A in ('findstr /I /B /C:"MONGO_INITDB_ROOT_PASSWORD=" /C:"DB_PASSWORD=" /C:"KOMODO_DATABASE_PASSWORD=" "%ENV_FILE%" 2^>nul') do if not "%%~B"=="" set "MONGO_PASS=%%~B"
 )
+call :Compose exec -T mongo mongosh --quiet --username "%MONGO_USER%" --password "%MONGO_PASS%" --authenticationDatabase admin komodo --eval "db.getCollectionNames().forEach(c=>{if(c.toLowerCase().indexOf('user')>=0)db.getCollection(c).find({}).forEach(u=>{if(u.username)print(u.username+'|'+(u.enabled===false?'DISABLED':'ENABLED')+'|'+(u.super_admin===true||u.admin===true?'ADMIN':'MEMBER'))})})" >"%USER_TMP%" 2>nul
+findstr /R /C:"|" "%USER_TMP%" >nul 2>&1
+if not errorlevel 1 exit /b 0
 
-set "USER_COUNT=0"
-for /F "usebackq tokens=1-4 delims=|" %%A in ("%USERS_TMP%") do (
-    set /A USER_COUNT+=1 >nul
-    set "U_NAME=%%A"
-    set "U_ENABLED=%%B"
-    set "U_ADMIN=%%C"
-    set "U_SUPER=%%D"
+rem 2) Komodo CLI fallback
+call :Compose exec -T core km ls users --all >"%USER_TMP%" 2>nul
+findstr /R /C:"[A-Za-z0-9_]" "%USER_TMP%" >nul 2>&1
+if not errorlevel 1 exit /b 0
 
-    set "U_ROLE=MEMBRO"
-    set "U_TAG=%TAG_MEMBER% [ MEMBRO ] %RESET%"
-    if /I "%%C"=="true" (
-        set "U_ROLE=ADMIN"
-        set "U_TAG=%TAG_ADMIN% [ ADMIN ] %RESET%"
-    )
-    if /I "%%D"=="true" (
-        set "U_ROLE=ADMIN"
-        set "U_TAG=%TAG_ADMIN% [ ADMIN ] %RESET%"
-    )
-
-    echo   !U_TAG!  !U_NAME!   %GRAY%enabled=!U_ENABLED!%RESET%
-)
-
-if exist "%USERS_TMP%" del /Q "%USERS_TMP%" >nul 2>&1
-
-if "%USER_COUNT%"=="0" (
-    echo   %YELLOW%in the user found.%RESET%
-)
-exit /b 0
+rem 3) API fallback when API credentials are configured
+call :LoadApiCredentials >nul 2>&1
+if errorlevel 1 exit /b 1
+set "API_MODE=read"
+set "API_TYPE=ListUsers"
+set "API_JSON={}"
+call :KomodoApiCallToFile "%USER_TMP%"
+exit /b %ERRORLEVEL%
 
 :ShowUsersPanel
-call :Preflight >nul 2>&1
-if errorlevel 1 exit /b 1
-call :EnsureDocker >nul 2>&1
-if errorlevel 1 exit /b 1
-echo %CYAN%%BOLD%   users real of the KOMODO%RESET%
-echo %GRAY%   ------------------------------------------------------------%RESET%
+@echo off
+echo %CYAN%%BOLD%Existing Komodo users:%RESET%
+echo.
 call :ListUsersRaw
-set "SHOW_USERS_RC=%errorlevel%"
-echo %GRAY%   ------------------------------------------------------------%RESET%
-if not "%SHOW_USERS_RC%"=="0" (
-    call :MsgError "Could not consultar os users real of the Komodo."
+if errorlevel 1 (
+echo %YELLOW%Automatic user discovery failed.%RESET%
+echo Tried: MongoDB, Komodo CLI, and API credentials when available.
     exit /b 1
 )
+findstr /R /C:"|" "%USER_TMP%" >nul 2>&1
+if not errorlevel 1 (
+    for /F "tokens=1-3 delims=|" %%A in ('findstr /R /C:"|" "%USER_TMP%"') do (
+        if /I "%%C"=="ADMIN" (
+echo   %MAGENTA%[ADMIN]%RESET% %%A - %%B
+        ) else (
+echo   %GREEN%[MEMBER]%RESET% %%A - %%B
+        )
+    )
+    exit /b 0
+)
+type "%USER_TMP%"
 exit /b 0
 
 :RESET_EXISTING_PASSWORD
 @echo off
 cls
 call :Header
-echo %GREEN%%BOLD%   [*] RESETAR password of user existing%RESET%
-echo.
-echo first vou consultar o database and show os users that REALMENTE existem.
-echo.
-call :Preflight
-if errorlevel 1 goto PAUSE_MAIN
-call :EnsureDocker
-if errorlevel 1 goto PAUSE_MAIN
+echo %GREEN%%BOLD%   RESET EXISTING USER PASSWORD%RESET%
 echo.
 call :ShowUsersPanel
-if errorlevel 1 goto PAUSE_MAIN
-
 echo.
-echo %YELLOW%important:%RESET% choose exatamente a username mostrado acima.
-echo Digitar a nome that not aparece in the lista vai falhar.
+set "TARGET_USER="
+set /p "TARGET_USER=Username [B=back / C=cancel / M=main]: "
+if /I "%TARGET_USER%"=="B" goto MAIN
+if /I "%TARGET_USER%"=="C" goto MAIN
+if /I "%TARGET_USER%"=="M" goto MAIN
+if not defined TARGET_USER goto RESET_EXISTING_PASSWORD
+set "NEWPASS="
+set /p "NEWPASS=Temporary password [B=back / C=cancel]: "
+if /I "%NEWPASS%"=="B" goto RESET_EXISTING_PASSWORD
+if /I "%NEWPASS%"=="C" goto MAIN
+if not defined NEWPASS goto RESET_EXISTING_PASSWORD
+call :Compose exec -T core km set user "%TARGET_USER%" password "%NEWPASS%"
+set "NEWPASS="
+if errorlevel 1 (
+call :MsgError "Password reset failed. Verify the username shown above."
+) else (
+call :MsgOk "Password updated."
+)
 echo.
-setlocal DisableDelayedExpansion
-set "RESET_USER="
-set "RESET_PASS="
-set /p "RESET_USER=User existing [admin] (B/C cancela): "
-if /I "%RESET_USER%"=="B" (
-    endlocal
-    goto MAIN
-)
-if /I "%RESET_USER%"=="C" (
-    endlocal
-    goto MAIN
-)
-if not defined RESET_USER set "RESET_USER=admin"
-
-set /p "RESET_PASS=New password (B/C cancela): "
-if /I "%RESET_PASS%"=="B" (
-    endlocal
-    goto MAIN
-)
-if /I "%RESET_PASS%"=="C" (
-    endlocal
-    goto MAIN
-)
-if not defined RESET_PASS (
-    endlocal
-    call :MsgError "Password vazia. Operation cancelled."
-    goto PAUSE_MAIN
-)
-
-echo.
-echo User: %RESET_USER%
-choice /C SBC /N /M "Confirmar redefinicao? [S] Yes  [B] Back  [C] Cancel: "
-if errorlevel 3 (
-    endlocal
-    goto MAIN
-)
-if errorlevel 2 (
-    endlocal
-    goto MAIN
-)
-
-echo.
-call :Compose exec -T core km set user "%RESET_USER%" password "%RESET_PASS%" -y
-set "RESET_RC=%errorlevel%"
-
-if not "%RESET_RC%"=="0" (
-    echo.
-    call :MsgError "O Komodo not conseguiu redefinir a password."
-    echo O username informado probably not existe.
-    endlocal
-    goto PAUSE_MAIN
-)
-
-echo.
-call :MsgOk "Password redefinida in the user existing."
-echo User: %RESET_USER%
-call :Log "Password reset for existing Komodo user"
-endlocal
-goto PAUSE_MAIN
+choice /C BMC /N /M "[B] Back  [M] Main  [C] Cancel: "
+goto MAIN
 
 :MAKE_SUPER_ADMIN
 @echo off
 cls
 call :Header
-echo %GREEN%%BOLD%   [+] TORNAR user SUPER ADMIN%RESET%
+echo %GREEN%%BOLD%   PROMOTE USER TO SUPER ADMIN%RESET%
 echo.
-call :Preflight
-if errorlevel 1 goto PAUSE_MAIN
-call :EnsureDocker
-if errorlevel 1 goto PAUSE_MAIN
-
 call :ShowUsersPanel
-if errorlevel 1 goto PAUSE_MAIN
-
 echo.
-echo %YELLOW%choose exatamente a username listado acima.%RESET%
-setlocal DisableDelayedExpansion
-set "ADMIN_TARGET="
-set /p "ADMIN_TARGET=User existing [admin] (B/C cancela): "
-if /I "%ADMIN_TARGET%"=="B" (
-    endlocal
-    goto MAIN
+set "TARGET_USER="
+set /p "TARGET_USER=Username [B=back / C=cancel / M=main]: "
+if /I "%TARGET_USER%"=="B" goto MAIN
+if /I "%TARGET_USER%"=="C" goto MAIN
+if /I "%TARGET_USER%"=="M" goto MAIN
+if not defined TARGET_USER goto MAKE_SUPER_ADMIN
+choice /C YNBC /N /M "Promote %TARGET_USER%? [Y] Yes [N] No [B] Back [C] Cancel: "
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto MAKE_SUPER_ADMIN
+if errorlevel 2 goto MAKE_SUPER_ADMIN
+call :Compose exec -T core km set user "%TARGET_USER%" super-admin true
+if errorlevel 1 (
+call :MsgError "Promotion failed."
+) else (
+call :MsgOk "User promoted to Super Admin."
 )
-if /I "%ADMIN_TARGET%"=="C" (
-    endlocal
-    goto MAIN
-)
-if not defined ADMIN_TARGET set "ADMIN_TARGET=admin"
-
 echo.
-choice /C SBC /N /M "Confirmar promocao? [S] Yes  [B] Back  [C] Cancel: "
-if errorlevel 3 (
-    endlocal
-    goto MAIN
-)
-if errorlevel 2 (
-    endlocal
-    goto MAIN
-)
-
-echo.
-call :Compose exec -T core km set user "%ADMIN_TARGET%" super-admin true -y
-set "ADMIN_RC=%errorlevel%"
-
-if not "%ADMIN_RC%"=="0" (
-    echo.
-    call :MsgError "Could not elevar o user."
-    echo O username informado needs existir in the database.
-    endlocal
-    goto PAUSE_MAIN
-)
-
-call :MsgOk "User now and Super Admin."
-call :Log "Existing Komodo user elevated to Super Admin"
-endlocal
-goto PAUSE_MAIN
+choice /C BMC /N /M "[B] Back  [M] Main  [C] Cancel: "
+goto MAIN
 
 :LIST_REAL_USERS
 @echo off
 cls
 call :Header
-echo %GREEN%%BOLD%   [@] users real of the KOMODO%RESET%
-echo.
-call :Preflight
-if errorlevel 1 goto PAUSE_MAIN
-call :EnsureDocker
-if errorlevel 1 goto PAUSE_MAIN
-echo Consultando directly o MongoDB usado by the Komodo...
+echo %GREEN%%BOLD%   REAL KOMODO USERS%RESET%
 echo.
 call :ShowUsersPanel
-if errorlevel 1 (
-    goto PAUSE_MAIN
-)
 echo.
-echo %GREEN%use only usernames mostrados acima in the options 27 and 28.%RESET%
-echo %YELLOW%if lowdrus NOT aparecer here, o registration ainda not was created.%RESET%
-goto PAUSE_MAIN
+choice /C RBMC /N /M "[R] Refresh  [B] Back  [M] Main menu  [C] Cancel: "
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto MAIN
+if errorlevel 2 goto MAIN
+goto LIST_REAL_USERS
 
 :ENABLE_LOCAL_SIGNUP
 @echo off
 cls
 call :Header
-echo %GREEN%%BOLD%   [+] enable registration local%RESET%
+echo %GREEN%%BOLD%   LOCAL USER REGISTRATION%RESET%
 echo.
 call :ShowUsersPanel
-if errorlevel 1 goto PAUSE_MAIN
 echo.
+echo   [1] Enable local signup
+echo   [2] Disable local signup
+echo   [3] Show current auth environment
+echo   [B] Back   [M] Main menu   [C] Cancel
 echo.
-echo is option habilita o botao Sign Up / registration local of the Komodo.
-echo it NOT deletes users existing.
+choice /C 123BMC /N /M "Choose: "
+if errorlevel 6 goto MAIN
+if errorlevel 5 goto MAIN
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto AUTH_INFO
+call :DetectEnv
+if not defined ENV_FILE (
+call :MsgError "No environment file detected."
+    goto MAIN
+)
+if errorlevel 2 (
+    call :SetEnvValue "KOMODO_DISABLE_LOCAL_USER_REGISTRATION" "true"
+call :MsgOk "Local signup disabled."
+) else (
+    call :SetEnvValue "KOMODO_LOCAL_AUTH" "true"
+    call :SetEnvValue "KOMODO_DISABLE_USER_REGISTRATION" "false"
+    call :SetEnvValue "KOMODO_DISABLE_LOCAL_USER_REGISTRATION" "false"
+call :MsgOk "Local signup enabled."
+)
 echo.
-echo configurations that will be aplicadas:
-echo   KOMODO_LOCAL_AUTH=true
-echo   KOMODO_DISABLE_USER_REGISTRATION=false
-echo   KOMODO_DISABLE_LOCAL_USER_REGISTRATION=false
-echo   KOMODO_ENABLE_NEW_USERS=true
-echo.
-choice /C SBC /N /M "Aplicar? [S] Yes  [B] Back  [C] Cancel: "
+echo Restart Komodo for environment changes to take effect.
+choice /C RBMC /N /M "[R] Restart now  [B] Back  [M] Main  [C] Cancel: "
+if errorlevel 4 goto MAIN
 if errorlevel 3 goto MAIN
 if errorlevel 2 goto MAIN
-
-if not defined ENV_FILE (
-    call :MsgError "compose.env not found."
-    goto PAUSE_MAIN
-)
-
-copy /Y "%ENV_FILE%" "%ENV_FILE%.signup-backup" >nul 2>&1
-
-set "TMPENV=%TEMP%\komodo_env_%RANDOM%.tmp"
-findstr /V /B /I "KOMODO_LOCAL_AUTH= KOMODO_DISABLE_USER_REGISTRATION= KOMODO_DISABLE_LOCAL_USER_REGISTRATION= KOMODO_ENABLE_NEW_USERS=" "%ENV_FILE%" > "%TMPENV%"
->>"%TMPENV%" echo KOMODO_LOCAL_AUTH=true
->>"%TMPENV%" echo KOMODO_DISABLE_USER_REGISTRATION=false
->>"%TMPENV%" echo KOMODO_DISABLE_LOCAL_USER_REGISTRATION=false
->>"%TMPENV%" echo KOMODO_ENABLE_NEW_USERS=true
-copy /Y "%TMPENV%" "%ENV_FILE%" >nul
-del /Q "%TMPENV%" >nul 2>&1
-
-echo.
-echo recreating o Core with registration local habilitado...
-call :Compose up -d --force-recreate core
-if errorlevel 1 (
-    call :MsgError "Failed to recriar o Core."
-    goto PAUSE_MAIN
-)
-
-call :WaitHttp 25
-echo.
-call :MsgOk "registration local habilitado."
-echo.
-echo now o dashboard must exibir a option of registration local.
-echo after of create o user desejado, use:
-echo   [29] for confirmar that ele existe
-echo   [28] for torna-lo Super Admin
-echo.
-start "" "%DASHBOARD_URL%"
-goto PAUSE_MAIN
-
+goto RESTART
 
 :FindCoreContainer
 set "CORE_ID="
@@ -1583,44 +1521,44 @@ call :EnsureDocker
 if errorlevel 1 exit /b 1
 call :FindCoreContainer
 if errorlevel 1 (
-    call :MsgError "container Core active not found."
+call :MsgError "container Core active not found."
     exit /b 1
 )
 call :BuildPtBrPayload
 if errorlevel 1 (
-    call :MsgError "Failed to preparar o modulo PT-BR."
+call :MsgError "Failed to preparar o modulo PT-BR."
     exit /b 1
 )
 
 set "PTBR_INDEX=%STATE_DIR%\ptbr\index.html"
 docker cp "%CORE_ID%:/app/ui/index.html" "%PTBR_INDEX%" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Could not ler /app/ui/index.html of the Core."
+call :MsgError "Could not ler /app/ui/index.html of the Core."
     exit /b 1
 )
 
 for /F "tokens=1-3 delims=/:. " %%A in ("%TIME%") do set "PTBR_TOKEN=%RANDOM%%%A%%B%%C"
 cscript //nologo "%PTBR_VBS%" "%PTBR_INDEX%" apply "%PTBR_TOKEN%" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Failed to injetar o carregador PT-BR in the index.html."
+call :MsgError "Failed to injetar o carregador PT-BR in the index.html."
     exit /b 1
 )
 
 docker cp "%PTBR_JS%" "%CORE_ID%:/app/ui/komodo-ptbr.js" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Failed to copy o modulo PT-BR for o Core."
+call :MsgError "Failed to copy o modulo PT-BR for o Core."
     exit /b 1
 )
 docker cp "%PTBR_INDEX%" "%CORE_ID%:/app/ui/index.html" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Failed to aplicar o index.html traduzido."
+call :MsgError "Failed to aplicar o index.html traduzido."
     exit /b 1
 )
 
 > "%STATE_DIR%\ptbr.enabled" echo enabled
 curl.exe -fsS --max-time 4 "%DASHBOARD_URL%/komodo-ptbr.js" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "O modulo was copiado, mas o Core ainda not o serviu via HTTP."
+call :MsgError "O modulo was copiado, mas o Core ainda not o serviu via HTTP."
     exit /b 1
 )
 exit /b 0
@@ -1662,7 +1600,7 @@ call :RemoveGenericLanguageSilent
 call :ApplyPtBr
 if errorlevel 1 (
     echo.
-    call :MsgError "A translation not was applied. in the restart was executed."
+call :MsgError "A translation not was applied. in the restart was executed."
     goto PAUSE_MAIN
 )
 
@@ -1697,7 +1635,7 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :FindCoreContainer
 if errorlevel 1 (
-    call :MsgError "container Core active not found."
+call :MsgError "container Core active not found."
     goto PAUSE_MAIN
 )
 call :BuildPtBrPayload
@@ -1706,17 +1644,17 @@ if errorlevel 1 goto PAUSE_MAIN
 set "PTBR_INDEX=%STATE_DIR%\ptbr\index.html"
 docker cp "%CORE_ID%:/app/ui/index.html" "%PTBR_INDEX%" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Could not ler o index.html."
+call :MsgError "Could not ler o index.html."
     goto PAUSE_MAIN
 )
 cscript //nologo "%PTBR_VBS%" "%PTBR_INDEX%" remove "0" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Failed to removes o carregador PT-BR."
+call :MsgError "Failed to removes o carregador PT-BR."
     goto PAUSE_MAIN
 )
 docker cp "%PTBR_INDEX%" "%CORE_ID%:/app/ui/index.html" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Failed to restore o index.html."
+call :MsgError "Failed to restore o index.html."
     goto PAUSE_MAIN
 )
 docker exec "%CORE_ID%" sh -lc "rm -f /app/ui/komodo-ptbr.js" >nul 2>&1
@@ -1741,6 +1679,8 @@ call :Header
 call :LogAction "Abrir Guia Completo do Komodo"
 echo %CYAN%%BOLD%   COMPLETE GUIDE of the KOMODO - course of the ZERO to the USO real%RESET%
 echo %GRAY%   for user leigo: siga always [P] next step.%RESET%
+echo.
+echo %CYAN%V19 update:%RESET% portable menu, autonomous resources, languages, users, Git/GitHub and navigation.
 echo.
 echo %YELLOW%mode more FACIL:%RESET%
 echo   type 0 and after use [P] next step in each screen.
@@ -1838,7 +1778,7 @@ echo %YELLOW%3. O that and a image DOCKER?%RESET%
 echo A image and o "molde" usado for create a container.
 echo example:
 echo   image = nginx:latest
-echo   container = nginx rodando a partir dessa image
+echo   container = nginx rodando a partir this image
 echo.
 echo %YELLOW%4. O that and a port?%RESET%
 echo port and a numero usado for acessar a service.
@@ -2116,7 +2056,7 @@ echo %YELLOW%O that and:%RESET%
 echo   - Build transforma codigo fonte in a image Docker.
 echo.
 echo %YELLOW%when / for that USAR:%RESET%
-echo   - when you possui o Dockerfile of the your project.
+echo   - when your project has a Dockerfile.
 echo   - when quer publish a new image apos changing o codigo.
 echo.
 echo %YELLOW%step A step:%RESET%
@@ -2167,7 +2107,7 @@ echo   - Separar build of production when required.
 echo.
 echo %YELLOW%step A step:%RESET%
 echo   1. Comece using a Server already conectado.
-echo   2. confirm Docker funcionando.
+echo   2. confirm Docker is working.
 echo   3. check CPU, RAM and disco.
 echo   4. confirm acesso to the Git.
 echo   5. confirm acesso to the Registry.
@@ -2406,7 +2346,7 @@ echo   - Confundir admin initial of the ENV with user already saved in the datab
 echo   - Dar Super Admin for all.
 echo.
 echo %GREEN%how SABER if FUNCIONOU:%RESET%
-echo   - each account possui privilegio adequado.
+echo   - each account has the appropriate privilege.
 echo   - Login works.
 echo   - Lista real shows classificacao correta.
 echo.
@@ -2447,7 +2387,7 @@ echo %GREEN%how SABER if FUNCIONOU:%RESET%
 echo   - you consegue apontar a causa, not only o sintoma.
 echo.
 echo %CYAN%next step:%RESET%
-echo   chapter 21 possui roteiro of errors common.
+echo   Chapter 21 contains a common-errors troubleshooting flow.
 goto GUIDE_PAUSE_14
 
 :GUIDE_15
@@ -2533,7 +2473,7 @@ echo   - RESOURCE = objeto administrado.
 echo   - DEPLOYMENT = a container.
 echo   - STACK = Docker Compose.
 echo   - REPO = repository Git.
-echo   - BUILD = cria image Docker.
+echo   - BUILD = creates image Docker.
 echo   - BUILDER = environment that runs Build.
 echo   - REGISTRY = repository of images.
 echo   - PROCEDURE = automacao in etapas.
@@ -2555,7 +2495,7 @@ echo %YELLOW%example PRATICO:%RESET%
 echo   - Stack not and Server: Stack roda in a Server.
 echo.
 echo %RED%ERRORS common:%RESET%
-echo   - Confundir Build with Deployment: Build cria image; Deployment runs container.
+echo   - Confundir Build with Deployment: Build creates image; Deployment runs container.
 echo.
 echo %GREEN%how SABER if FUNCIONOU:%RESET%
 echo   - you consegue explicar os termos with your proprias palavras.
@@ -2778,7 +2718,7 @@ echo   - logs, diagnostics and investigacao;
 echo   - variaveis, secrets and credentials;
 echo   - checklist of production.
 echo.
-echo %YELLOW%O more important:%RESET%
+echo %YELLOW%O more Important:%RESET%
 echo you not needs decorar tudo.
 echo O goal and saber:
 echo   1. where procurar;
@@ -3078,12 +3018,8 @@ goto MAIN
 @echo off
 cls
 call :Header
-echo %CYAN%%BOLD%   CONTROL CENTER LANGUAGE%RESET%
+echo %CYAN%%BOLD%   KOMODO CONTROL CENTER LANGUAGE%RESET%
 echo.
-echo V18 starts directly in English to guarantee immediate loading by double click.
-echo Komodo WEB translations remain available in option 31.
-echo.
-echo Planned/compatible Control Center language packs:
 echo   [1] English - Original / Restore
 echo   [2] Portugues do Brasil - FULL SAFE PACK
 echo   [3] Spanish - FULL SAFE PACK
@@ -3091,34 +3027,136 @@ echo   [4] German - FULL SAFE PACK
 echo   [5] Japanese - FULL SAFE PACK
 echo   [6] French - FULL SAFE PACK
 echo.
-echo The V17 startup extractor was removed because it could prevent the menu from loading.
-echo In V18 this option never blocks startup.
+echo   [B] Back   [M] Main menu   [C] Cancel
 echo.
-choice /C BMC /N /M "[B] Back  [M] Main menu  [C] Cancel: "
+choice /C 123456BMC /N /M "Choose: "
+if errorlevel 9 goto MAIN
+if errorlevel 8 goto MAIN
+if errorlevel 7 goto MAIN
+if errorlevel 6 set "CC_LANG=FR"&goto CC_LANG_SAVE
+if errorlevel 5 set "CC_LANG=JA"&goto CC_LANG_SAVE
+if errorlevel 4 set "CC_LANG=DE"&goto CC_LANG_SAVE
+if errorlevel 3 set "CC_LANG=ES"&goto CC_LANG_SAVE
+if errorlevel 2 set "CC_LANG=PT-BR"&goto CC_LANG_SAVE
+set "CC_LANG=EN"
+
+:CC_LANG_SAVE
+if not exist "%STATE_DIR%" mkdir "%STATE_DIR%" >nul 2>&1
+>"%STATE_DIR%\control-center.language" echo %CC_LANG%
+call :ApplyControlCenterLanguage
+call :MsgOk "Control Center language changed to %CC_LANG%."
 goto MAIN
 
 :DOCUMENTATION_CENTER
 @echo off
 cls
 call :Header
-echo %CYAN%%BOLD%   DOCUMENTATION / DOCUMENTACAO - INSIDE THE MENU%RESET%
+echo %CYAN%%BOLD%   DOCUMENTATION KOMODO CONTROL CENTER%RESET%
 echo.
-echo   [1] English documentation - read inside this menu
-echo   [2] Documentacao Portugues-BR - ler dentro deste menu
-echo   [3] Export EN + PT-BR Markdown files
-echo   [B] Back / Voltar
+echo   [1] Read English documentation inside the menu
+echo   [2] Ler documentacao em Portugues-BR dentro do menu
+echo   [3] Export Markdown (.md)
+echo   [4] Export Plain Text (.txt)
+echo   [5] Export HTML (.html)
+echo   [6] Export Word-compatible RTF (.rtf)
+echo   [7] Export PDF (.pdf)
+echo   [8] Export ALL formats
 echo.
-choice /C 123B /N /M "Choose / Escolha: "
-if errorlevel 4 goto MAIN
-if errorlevel 3 goto DOCUMENTATION_EXPORT
+echo   [B] Back   [M] Main menu   [C] Cancel
+echo.
+choice /C 12345678BMC /N /M "Choose: "
+if errorlevel 11 goto MAIN
+if errorlevel 10 goto MAIN
+if errorlevel 9 goto MAIN
+if errorlevel 8 goto DOC_EXPORT_ALL
+if errorlevel 7 goto DOC_EXPORT_PDF
+if errorlevel 6 goto DOC_EXPORT_RTF
+if errorlevel 5 goto DOC_EXPORT_HTML
+if errorlevel 4 goto DOC_EXPORT_TXT
+if errorlevel 3 goto DOC_EXPORT_MD
 if errorlevel 2 goto DOC_PT_1
 goto DOC_EN_1
+
+:DOC_EXPORT_MD
+call :WriteControlCenterDocs
+call :MsgOk "Markdown documentation exported."
+goto DOC_EXPORT_PAUSE
+
+:DOC_EXPORT_TXT
+call :WriteControlCenterDocs
+copy /Y "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_EN.md" "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_EN.txt" >nul
+copy /Y "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_PTBR.md" "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_PTBR.txt" >nul
+call :MsgOk "TXT documentation exported."
+goto DOC_EXPORT_PAUSE
+
+:DOC_EXPORT_HTML
+call :WriteControlCenterDocs
+powershell.exe -NoProfile -Command "$d='%STATE_DIR%\docs';$files=@('KOMODO_CONTROL_CENTER_EN','KOMODO_CONTROL_CENTER_PTBR');foreach($f in $files){$t=Get-Content -Raw (Join-Path $d ($f+'.md'));$h='<html><meta charset=utf-8><body><pre>'+[System.Net.WebUtility]::HtmlEncode($t)+'</pre></body></html>';[IO.File]::WriteAllText((Join-Path $d ($f+'.html')),$h,(New-Object Text.UTF8Encoding($false)))}" >nul 2>&1
+call :MsgOk "HTML documentation exported."
+goto DOC_EXPORT_PAUSE
+
+:DOC_EXPORT_RTF
+call :WriteControlCenterDocs
+powershell.exe -NoProfile -Command "$d='%STATE_DIR%\docs';foreach($n in @('EN','PTBR')){$src=Join-Path $d ('KOMODO_CONTROL_CENTER_'+$n+'.md');$dst=Join-Path $d ('KOMODO_CONTROL_CENTER_'+$n+'.rtf');$t=(Get-Content -Raw $src).Replace('\','\\').Replace('{','\{').Replace('}','\}').Replace([Environment]::NewLine,'\par ');[IO.File]::WriteAllText($dst,'{\rtf1\ansi\deff0 '+$t+'}',[Text.Encoding]::ASCII)}" >nul 2>&1
+call :MsgOk "RTF documentation exported."
+goto DOC_EXPORT_PAUSE
+
+:DOC_EXPORT_PDF
+call :WriteControlCenterDocs
+where pandoc >nul 2>&1
+if not errorlevel 1 (
+    pandoc "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_EN.md" -o "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_EN.pdf" >nul 2>&1
+    pandoc "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_PTBR.md" -o "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_PTBR.pdf" >nul 2>&1
+    if not errorlevel 1 (
+call :MsgOk "PDF documentation exported using Pandoc."
+        goto DOC_EXPORT_PAUSE
+    )
+)
+powershell.exe -NoProfile -Command "$d='%STATE_DIR%\docs';$w=New-Object -ComObject Word.Application -ErrorAction SilentlyContinue;if($w){$w.Visible=$false;foreach($n in @('EN','PTBR')){$src=Join-Path $d ('KOMODO_CONTROL_CENTER_'+$n+'.md');$dst=Join-Path $d ('KOMODO_CONTROL_CENTER_'+$n+'.pdf');$doc=$w.Documents.Open($src);$doc.SaveAs([ref]$dst,[ref]17);$doc.Close()};$w.Quit();exit 0}else{exit 1}" >nul 2>&1
+if errorlevel 1 (
+call :MsgError "PDF export requires Pandoc or Microsoft Word."
+) else (
+call :MsgOk "PDF documentation exported using Microsoft Word."
+)
+goto DOC_EXPORT_PAUSE
+
+:DOC_EXPORT_ALL
+call :WriteControlCenterDocs
+call :MsgOk "Markdown documentation exported."
+call :DOC_EXPORT_TXT_INTERNAL
+call :DOC_EXPORT_HTML_INTERNAL
+call :DOC_EXPORT_RTF_INTERNAL
+echo PDF export will also be attempted.
+goto DOC_EXPORT_PDF
+
+:DOC_EXPORT_TXT_INTERNAL
+copy /Y "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_EN.md" "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_EN.txt" >nul
+copy /Y "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_PTBR.md" "%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_PTBR.txt" >nul
+exit /b 0
+:DOC_EXPORT_HTML_INTERNAL
+powershell.exe -NoProfile -Command "$d='%STATE_DIR%\docs';$files=@('KOMODO_CONTROL_CENTER_EN','KOMODO_CONTROL_CENTER_PTBR');foreach($f in $files){$t=Get-Content -Raw (Join-Path $d ($f+'.md'));$h='<html><meta charset=utf-8><body><pre>'+[System.Net.WebUtility]::HtmlEncode($t)+'</pre></body></html>';[IO.File]::WriteAllText((Join-Path $d ($f+'.html')),$h,(New-Object Text.UTF8Encoding($false)))}" >nul 2>&1
+exit /b 0
+:DOC_EXPORT_RTF_INTERNAL
+powershell.exe -NoProfile -Command "$d='%STATE_DIR%\docs';foreach($n in @('EN','PTBR')){$src=Join-Path $d ('KOMODO_CONTROL_CENTER_'+$n+'.md');$dst=Join-Path $d ('KOMODO_CONTROL_CENTER_'+$n+'.rtf');$t=(Get-Content -Raw $src).Replace('\','\\').Replace('{','\{').Replace('}','\}').Replace([Environment]::NewLine,'\par ');[IO.File]::WriteAllText($dst,'{\rtf1\ansi\deff0 '+$t+'}',[Text.Encoding]::ASCII)}" >nul 2>&1
+exit /b 0
+
+:DOC_EXPORT_PAUSE
+echo.
+echo Files are in:
+echo   %STATE_DIR%\docs
+echo.
+choice /C OBMC /N /M "[O] Open folder  [B] Back  [M] Main menu  [C] Cancel: "
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto MAIN
+if errorlevel 2 goto DOCUMENTATION_CENTER
+start "" "%STATE_DIR%\docs"
+goto DOCUMENTATION_CENTER
 
 :DOCUMENTATION_EXPORT
 @echo off
 call :WriteControlCenterDocs
 if errorlevel 1 (
-    call :MsgError "Documentation export failed."
+call :MsgError "Documentation export failed."
     goto DOC_PAUSE
 )
 call :MsgOk "Documentation exported to .komodo-windows\docs"
@@ -3132,6 +3170,8 @@ call :Header
 echo %CYAN%%BOLD%   DOCUMENTATION EN - 1/6 - WHAT THIS CONTROL CENTER IS%RESET%
 echo.
 echo Komodo Control Center is a Windows companion for Komodo.
+echo V19 adds portable user-independent paths, category-tagged menu entries,
+echo improved B/M/C navigation, autonomous users/Git/GitHub flows, and safer PR reuse.
 echo It centralizes lifecycle, Docker, diagnostics, users, language,
 echo documentation, backups, support and GitHub contribution workflows.
 echo.
@@ -3228,14 +3268,16 @@ cls
 call :Header
 echo %CYAN%%BOLD%   DOCUMENTACAO PT-BR - 1/6 - O QUE E O CONTROL CENTER%RESET%
 echo.
-echo O Komodo Control Center e um companheiro Windows para o Komodo.
+echo O Komodo Control Center e a companheiro Windows for o Komodo.
+echo A V19 adiciona caminhos portaveis, categorias no menu, navegacao B/M/C,
+echo melhorias nos usuarios, Git, GitHub e reutilizacao segura de Pull Request.
 echo Centraliza operacao, Docker, diagnostico, usuarios, idiomas,
 echo documentacao, backups, suporte e contribuicoes GitHub.
 echo.
 echo Principio principal:
-echo   operacoes comuns devem funcionar sem digitar comandos manualmente.
+echo   operacoes comuns devem funcionar without digitar comandos manualmente.
 echo.
-echo Ele nao substitui o Komodo. Ele ajuda a operar o ambiente local.
+echo Ele not substitui o Komodo. Ele ajuda a operar o ambiente local.
 goto DOC_PT_PAUSE_1
 
 :DOC_PT_2
@@ -3248,7 +3290,7 @@ echo Operacao        : Iniciar, Parar, Reiniciar, Dashboard.
 echo Monitoramento   : Status, logs, health HTTP, porta 9120.
 echo Manutencao      : imagens Docker, Git, ambiente.
 echo Windows         : Explorer, PowerShell, VS Code, atalho, inicializacao.
-echo Usuarios        : lista, reset senha, Super Admin, cadastro.
+echo Users          : list, password reset, Super Admin, registration.
 echo Idiomas         : Control Center + traducao ao vivo do Komodo.
 echo Suporte         : logs, notificacoes, Support Bundle, backups.
 echo GitHub          : fork + branch + Pull Request.
@@ -3261,27 +3303,27 @@ call :Header
 echo %CYAN%%BOLD%   DOCUMENTACAO PT-BR - 3/6 - OPERACAO SEGURA%RESET%
 echo.
 echo Parada normal preserva volumes.
-echo Reset total com volumes fica separado e exige confirmacao.
-echo Senhas sao ocultadas dos logs de comandos do Control Center.
-echo Support Bundle seguro nao copia compose.env nem arquivos de secrets.
-echo A publicacao GitHub adiciona somente arquivos da contribuicao.
-echo Ela nao deve usar "git add ." para publicar.
+echo Reset total with volumes fica separado e exige confirmacao.
+echo Senhas are ocultadas dos logs de comandos do Control Center.
+echo Support Bundle seguro not copia compose.env nem files de secrets.
+echo GitHub publication adds only the intended contribution files.
+echo Ela not deve usar "git add ." for publicar.
 goto DOC_PT_PAUSE_3
 
 :DOC_PT_4
 @echo off
 cls
 call :Header
-echo %CYAN%%BOLD%   DOCUMENTACAO PT-BR - 4/6 - CONTRIBUICAO GITHUB%RESET%
+echo %CYAN%%BOLD%   DOCUMENTACAO PT-BR - 4/6 - contribution GITHUB%RESET%
 echo.
-echo Repositorio oficial : moghtech/komodo
+echo repository oficial : moghtech/komodo
 echo Fork do contribuidor : detectado pela conta autenticada no GitHub CLI.
 echo Branch               : contrib/windows-control-center
 echo Destino              : moghtech/komodo:main
 echo.
 echo O menu verifica/cria o fork, usa workspace temporario isolado,
-echo envia a branch e cria ou atualiza o Pull Request.
-echo Os mantenedores decidem se a contribuicao sera aceita.
+echo envia a branch e creates ou updates o Pull Request.
+echo Os mantenedores decidem se a contribution sera aceita.
 goto DOC_PT_PAUSE_4
 
 :DOC_PT_5
@@ -3291,12 +3333,12 @@ call :Header
 echo %CYAN%%BOLD%   DOCUMENTACAO PT-BR - 5/6 - FULL SAFE PACK%RESET%
 echo.
 echo FULL SAFE PACK significa:
-echo   - textos internos da interface sao traduzidos;
+echo   - textos internos da interface are traduzidos;
 echo   - UI dinamica e acompanhada onde suportado;
-echo   - nomes criados pelo usuario NAO sao alterados;
+echo   - nomes criados pelo user not are alterados;
 echo   - comandos, codigo, logs, paths, URLs, IDs, tokens e secrets ficam intactos.
 echo.
-echo Essa regra evita alterar valores tecnicos que poderiam quebrar o Komodo.
+echo Essa regra evita change valores tecnicos que poderiam quebrar o Komodo.
 goto DOC_PT_PAUSE_5
 
 :DOC_PT_6
@@ -3305,7 +3347,7 @@ cls
 call :Header
 echo %CYAN%%BOLD%   DOCUMENTACAO PT-BR - 6/6 - APRENDER E DIAGNOSTICAR%RESET%
 echo.
-echo Iniciante: abra a opcao 34, comece no Capitulo 0 e use Proximo Passo.
+echo Iniciante: abra a option 34, comece no chapter 0 e use Proximo Passo.
 echo.
 echo Ordem recomendada quando algo falhar:
 echo   1. Diagnostico inteligente
@@ -3415,7 +3457,7 @@ cls
 call :Header
 echo %CYAN%%BOLD%   SAFE SUPPORT BUNDLE%RESET%
 echo.
-echo Cria a pacote for diagnostics without copy compose.env, passwords or secrets.
+echo creates a pacote for diagnostics without copy compose.env, passwords or secrets.
 echo.
 choice /C SBC /N /M "create now? [S] Yes  [B] Back  [C] Cancel: "
 if errorlevel 3 goto MAIN
@@ -3436,7 +3478,7 @@ if exist "%ERROR_LOG%" copy /Y "%ERROR_LOG%" "%SUPPORT_DIR%\errors.log" >nul
 set "SUPPORT_ZIP=%STATE_DIR%\Komodo-Support-%RANDOM%.zip"
 powershell.exe -NoProfile -Command "Compress-Archive -Path '%SUPPORT_DIR%\*' -DestinationPath '%SUPPORT_ZIP%' -Force" >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Could not create ZIP. A folder of suporte was mantida."
+call :MsgError "Could not create ZIP. A folder of suporte was mantida."
     start "" "%SUPPORT_DIR%"
     goto PAUSE_MAIN
 )
@@ -3453,7 +3495,7 @@ cls
 call :Header
 echo %CYAN%%BOLD%   SAFE CONFIG backup%RESET%
 echo.
-echo Cria copy local of the files of configuration importantes.
+echo creates copy local of the files of configuration importantes.
 echo O backup may conter credentials of the environment: mantenha-o privado.
 echo.
 choice /C SBC /N /M "create backup now? [S] Yes  [B] Back  [C] Cancel: "
@@ -3506,8 +3548,9 @@ cls
 call :Header
 echo %MAGENTA%%BOLD%   TRANSLATE KOMODO LANGUAGES - LIVE%RESET%
 echo.
-echo All supported translation packs use the FULL SAFE PACK profile:
-echo interface text is translated while technical/user data remains untouched.
+echo Every language uses the FULL SAFE PACK rule.
+echo User-created names, code, logs, paths, URLs, IDs, tokens, secrets and
+echo technical values are never intentionally changed.
 echo.
 echo   [1] English - Original / Restore
 echo   [2] Portugues do Brasil - FULL SAFE PACK
@@ -3516,29 +3559,35 @@ echo   [4] German - FULL SAFE PACK
 echo   [5] Japanese - FULL SAFE PACK
 echo   [6] French - FULL SAFE PACK
 echo.
-echo   [B] Back / Voltar   [C] Cancel
+echo   [B] Back   [M] Main menu   [C] Cancel
 echo.
-choice /C 123456BC /N /M "Choose language: "
+choice /C 123456BMC /N /M "Choose language: "
+if errorlevel 9 goto MAIN
 if errorlevel 8 goto MAIN
 if errorlevel 7 goto MAIN
-if errorlevel 6 (
-    set "GEN_LANG=fr"
-    goto GENERIC_KOMODO_TRANSLATE
-)
-if errorlevel 5 (
-    set "GEN_LANG=ja"
-    goto GENERIC_KOMODO_TRANSLATE
-)
-if errorlevel 4 (
-    set "GEN_LANG=de"
-    goto GENERIC_KOMODO_TRANSLATE
-)
-if errorlevel 3 (
-    set "GEN_LANG=es"
-    goto GENERIC_KOMODO_TRANSLATE
-)
-if errorlevel 2 goto TRANSLATE_PTBR
-goto RESTORE_ENGLISH
+if errorlevel 6 set "GEN_LANG=fr"&set "GEN_LANG_NAME=French"&goto TRANSLATE_CONFIRM
+if errorlevel 5 set "GEN_LANG=ja"&set "GEN_LANG_NAME=Japanese"&goto TRANSLATE_CONFIRM
+if errorlevel 4 set "GEN_LANG=de"&set "GEN_LANG_NAME=German"&goto TRANSLATE_CONFIRM
+if errorlevel 3 set "GEN_LANG=es"&set "GEN_LANG_NAME=Spanish"&goto TRANSLATE_CONFIRM
+if errorlevel 2 set "GEN_LANG=ptbr"&set "GEN_LANG_NAME=Portugues do Brasil"&goto TRANSLATE_CONFIRM
+set "GEN_LANG=en"
+set "GEN_LANG_NAME=English - Original"
+
+:TRANSLATE_CONFIRM
+@echo off
+cls
+call :Header
+echo %MAGENTA%%BOLD%   APPLY KOMODO LANGUAGE%RESET%
+echo.
+echo Selected: %GEN_LANG_NAME%
+echo.
+choice /C YNBC /N /M "Apply now? [Y] Yes  [N] No  [B] Back  [C] Cancel: "
+if errorlevel 4 goto MAIN
+if errorlevel 3 goto KOMODO_LANGUAGE_CENTER
+if errorlevel 2 goto KOMODO_LANGUAGE_CENTER
+if /I "%GEN_LANG%"=="en" goto RESTORE_ENGLISH
+if /I "%GEN_LANG%"=="ptbr" goto TRANSLATE_PTBR
+goto GENERIC_KOMODO_TRANSLATE
 
 :GENERIC_KOMODO_TRANSLATE
 @echo off
@@ -3551,7 +3600,7 @@ echo Nomes of resources, commands, logs, paths and data tecnicos not are alterad
 echo.
 call :ApplyGenericLang "%GEN_LANG%"
 if errorlevel 1 (
-    call :MsgError "Language pack could not be applied."
+call :MsgError "Language pack could not be applied."
     goto PAUSE_MAIN
 )
 call :MsgOk "Language pack applied. Return to Komodo and press F5."
@@ -3683,11 +3732,11 @@ for /F "tokens=* delims=" %%L in ('findstr /R /C:"O-[A-Za-z0-9_-]*" "%ONBOARD_TM
 )
 if not defined ONBOARD_KEY (
     echo.
-    call :MsgError "Could not automatically extract onboarding key from km output."
-    echo The output was kept at:
-    echo %ONBOARD_TMP%
+call :MsgError "Could not automatically extract onboarding key from km output."
+echo The output was kept at:
+echo %ONBOARD_TMP%
     echo.
-    set /p "ONBOARD_KEY=Paste the O-... onboarding key here or B to cancel: "
+set /p "ONBOARD_KEY=Paste the O-... onboarding key here or B to cancel: "
     if /I "%ONBOARD_KEY%"=="B" goto AUTO_SERVERS
 )
 echo.
@@ -3695,7 +3744,7 @@ echo Connecting by SSH and installing Periphery...
 echo The SSH client may ask for host confirmation or your SSH credential.
 ssh "%SSH_TARGET%" "curl -sSL https://raw.githubusercontent.com/moghtech/komodo/main/scripts/setup-periphery.py | python3 - --core-address=\"%PUBLIC_CORE%\" --connect-as=\"%NEW_SERVER_NAME%\" --onboarding-key=\"%ONBOARD_KEY%\""
 if errorlevel 1 (
-    call :MsgError "Remote Periphery installation/onboarding failed."
+call :MsgError "Remote Periphery installation/onboarding failed."
     goto AUTO_PAUSE_SERVERS
 )
 call :MsgOk "Remote setup completed. Waiting for Komodo to receive the server..."
@@ -3814,7 +3863,7 @@ if errorlevel 3 (
 )
 if errorlevel 2 (
     set "RUN_NAME="
-    set /p "RUN_NAME=Stack name [B=back]: "
+set /p "RUN_NAME=Stack name [B=back]: "
     if /I "%RUN_NAME%"=="B" goto AUTO_STACKS
     call :KmApi deploy stack "%RUN_NAME%"
     goto AUTO_STACKS
@@ -3843,7 +3892,7 @@ if errorlevel 3 (
 )
 if errorlevel 2 (
     set "RUN_NAME="
-    set /p "RUN_NAME=Deployment name [B=back]: "
+set /p "RUN_NAME=Deployment name [B=back]: "
     if /I "%RUN_NAME%"=="B" goto AUTO_DEPLOYMENTS
     call :KmApi deploy deployment "%RUN_NAME%"
     goto AUTO_DEPLOYMENTS
@@ -3870,7 +3919,7 @@ if errorlevel 3 (
 )
 if errorlevel 2 (
     set "RUN_NAME="
-    set /p "RUN_NAME=Build name [B=back]: "
+set /p "RUN_NAME=Build name [B=back]: "
     if /I "%RUN_NAME%"=="B" goto AUTO_BUILDS
     call :KmApi build "%RUN_NAME%" -y
     goto AUTO_BUILDS
@@ -3897,7 +3946,7 @@ if errorlevel 3 (
 )
 if errorlevel 2 (
     set "RUN_NAME="
-    set /p "RUN_NAME=Procedure name [B=back]: "
+set /p "RUN_NAME=Procedure name [B=back]: "
     if /I "%RUN_NAME%"=="B" goto AUTO_PROCEDURES
     call :KmApi run procedure "%RUN_NAME%" -y
     goto AUTO_PROCEDURES
@@ -3924,7 +3973,7 @@ if errorlevel 3 (
 )
 if errorlevel 2 (
     set "RUN_NAME="
-    set /p "RUN_NAME=Action name [B=back]: "
+set /p "RUN_NAME=Action name [B=back]: "
     if /I "%RUN_NAME%"=="B" goto AUTO_ACTIONS
     call :KmApi run action "%RUN_NAME%" -y
     goto AUTO_ACTIONS
@@ -3951,7 +4000,7 @@ if errorlevel 3 (
 )
 if errorlevel 2 (
     set "RUN_NAME="
-    set /p "RUN_NAME=Sync name [B=back]: "
+set /p "RUN_NAME=Sync name [B=back]: "
     if /I "%RUN_NAME%"=="B" goto AUTO_SYNCS
     call :KmApi x commit "%RUN_NAME%"
     goto AUTO_SYNCS
@@ -4176,7 +4225,7 @@ set "API_MODE="
 set /p "API_MODE=Module [read/write/execute] or B: "
 if /I "%API_MODE%"=="B" goto AUTONOMOUS_CENTER
 if /I not "%API_MODE%"=="read" if /I not "%API_MODE%"=="write" if /I not "%API_MODE%"=="execute" (
-    call :MsgError "Invalid API module."
+call :MsgError "Invalid API module."
     goto UNIVERSAL_API
 )
 set "API_TYPE="
@@ -4208,10 +4257,10 @@ echo.
 call :KmApi ls -a
 if errorlevel 1 (
     echo.
-    echo Falling back to API resource lists...
+echo Falling back to API resource lists...
     for %%R in (Servers Swarms Stacks Deployments Builds Repos Procedures Actions ResourceSyncs Builders Alerters) do (
         echo.
-        echo ===== %%R =====
+echo ===== %%R =====
         set "API_MODE=read"
         set "API_TYPE=List%%R"
         set "API_JSON={}"
@@ -4230,11 +4279,31 @@ if not defined KOMODO_CC_API_KEY exit /b 1
 if not defined KOMODO_CC_API_SECRET exit /b 1
 exit /b 0
 
+:KomodoApiCallToFile
+@echo off
+set "API_OUT=%~1"
+call :LoadApiCredentials
+if errorlevel 1 exit /b 1
+set "API_TMP=%STATE_DIR%\api-payload-%RANDOM%.json"
+>"%API_TMP%" echo %API_JSON%
+curl.exe -sS --fail-with-body ^
+  -H "Content-Type: application/json" ^
+  -H "X-Api-Key: %KOMODO_CC_API_KEY%" ^
+  -H "X-Api-Secret: %KOMODO_CC_API_SECRET%" ^
+  --data-binary "@%API_TMP%" ^
+  "%DASHBOARD_URL%/%API_MODE%/%API_TYPE%" >"%API_OUT%" 2>&1
+set "API_RC=%ERRORLEVEL%"
+del /Q "%API_TMP%" >nul 2>&1
+set "KOMODO_CC_API_KEY="
+set "KOMODO_CC_API_SECRET="
+exit /b %API_RC%
+
+
 :KomodoApiCall
 @echo off
 call :LoadApiCredentials
 if errorlevel 1 (
-    call :MsgError "Komodo API credentials are not configured. Use main option 42."
+call :MsgError "Komodo API credentials are not configured. Use main option 42."
     exit /b 1
 )
 set "API_TMP=%STATE_DIR%\api-payload-%RANDOM%.json"
@@ -4253,7 +4322,7 @@ del /Q "%API_TMP%" >nul 2>&1
 set "KOMODO_CC_API_KEY="
 set "KOMODO_CC_API_SECRET="
 if not "%API_RC%"=="0" (
-    call :MsgError "Komodo API request failed."
+call :MsgError "Komodo API request failed."
     exit /b %API_RC%
 )
 exit /b 0
@@ -4262,7 +4331,7 @@ exit /b 0
 @echo off
 call :LoadApiCredentials
 if errorlevel 1 (
-    call :MsgError "API credentials not configured. Use option 42 first."
+call :MsgError "API credentials not configured. Use option 42 first."
     exit /b 1
 )
 call :Compose exec -T ^
@@ -4279,66 +4348,134 @@ exit /b %KM_RC%
 @echo off
 cls
 call :Header
-call :LogAction "Abrir Central de Publicacao GitHub"
-echo %MAGENTA%%BOLD%   CENTRAL of publication GITHUB - KOMODO CONTROL CENTER%RESET%
+call :LogAction "Open GitHub Publication Center"
+echo %MAGENTA%%BOLD%   GITHUB PUBLICATION CENTER - KOMODO CONTROL CENTER%RESET%
 echo.
-echo %GRAY%Repository official:%RESET% https://github.with/moghtech/komodo
-echo %GRAY%your fork:%RESET%            detected automatically by the account GitHub authenticated
-echo %GRAY%Branch of contribution:%RESET% contrib/windows-control-center
+echo Official repository: https://github.com/moghtech/komodo
+echo Contributor fork:    detected automatically from authenticated GitHub CLI account
 echo.
-echo %YELLOW%how works:%RESET%
-echo   1. Verifica Git and GitHub CLI.
-echo   2. confirms authentication.
-echo   3. Detecta your account and cria/verifica your fork automatically.
-echo   4. Prepara tudo in folder temporaria isolada.
-echo   5. copy this BAT current for scripts/windows/.
-echo   6. Gera README of the contribution.
-echo   7. Faz commit only desses files.
-echo   8. Envia for your branch in the fork.
-echo   9. Cria PR in the repository official or atualiza o PR already aberto.
+echo   [1] Publish / update KOMODO_CONTROL_CENTER contribution
+echo   [2] View Pull Request status
+echo   [3] Test GitHub connection / authentication
+echo   [4] Open your fork in browser
+echo   [5] Open official Komodo Pull Requests
+echo   [6] Preview Control Center contribution
+echo   [7] Generic contribution wizard - choose files/changes from your fork
 echo.
-echo %GREEN%[1]%RESET% Publish / Update contribution now
-echo %GREEN%[2]%RESET% View Pull Request status
-echo %GREEN%[3]%RESET% Test GitHub connection / authentication
-echo %GREEN%[4]%RESET% Open your fork in browser
-echo %GREEN%[5]%RESET% Open official Komodo Pull Requests
-echo %GREEN%[6]%RESET% Preview what will be sent
-echo.
-echo %GRAY%[B] Back   [C] Cancel%RESET%
+echo   [B] Back   [M] Main menu   [C] Cancel
 echo.
 set "GHOP="
-set /p "GHOP=%WHITE%%BOLD%choose: %RESET%"
-call :LogAction "GITHUB publicar menu: %GHOP%"
-
+set /p "GHOP=Choose: "
 if /I "%GHOP%"=="B" goto MAIN
+if /I "%GHOP%"=="M" goto MAIN
 if /I "%GHOP%"=="C" goto MAIN
 if "%GHOP%"=="1" goto GITHUB_PUBLISH_RUN
 if "%GHOP%"=="2" goto GITHUB_PUBLISH_STATUS
 if "%GHOP%"=="3" goto GITHUB_PUBLISH_TEST
-if "%GHOP%"=="4" (
-    call :EnsureGitHubCli
-    if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
-    call :CheckGitHubAuth
-    if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
-    call :DetectGitHubLogin
-    if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
-    gh repo view "%GH_LOGIN%/komodo" >nul 2>&1
-    if errorlevel 1 (
-        call :MsgError "your fork ainda not existe. use [1] for cria-lo/publish."
-        goto GITHUB_PUBLISH_PAUSE
-    )
-    gh repo view "%GH_LOGIN%/komodo" --web
-    goto GITHUB_PUBLISH_CENTER
-)
+if "%GHOP%"=="4" goto GITHUB_OPEN_FORK
 if "%GHOP%"=="5" (
     start "" "https://github.com/moghtech/komodo/pulls"
     goto GITHUB_PUBLISH_CENTER
 )
 if "%GHOP%"=="6" goto GITHUB_PUBLISH_PREVIEW
-
-call :MsgError "Invalid option in the Central GitHub: %GHOP%"
+if "%GHOP%"=="7" goto GITHUB_GENERIC_CONTRIBUTION
+if not defined GHOP goto GITHUB_PUBLISH_CENTER
+call :MsgError "Invalid option in GitHub Publication Center: %GHOP%"
 goto GITHUB_PUBLISH_PAUSE
 
+:GITHUB_OPEN_FORK
+call :EnsureGitHubCli
+if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
+call :CheckGitHubAuth
+if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
+call :DetectGitHubLogin
+if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
+gh repo view "%GH_LOGIN%/komodo" >nul 2>&1
+if errorlevel 1 (
+call :MsgError "Your fork does not exist yet. Use option [1] or [7] to create it."
+    goto GITHUB_PUBLISH_PAUSE
+)
+gh repo view "%GH_LOGIN%/komodo" --web
+goto GITHUB_PUBLISH_CENTER
+
+:GITHUB_GENERIC_CONTRIBUTION
+@echo off
+cls
+call :Header
+echo %MAGENTA%%BOLD%   GENERIC KOMODO CONTRIBUTION WIZARD%RESET%
+echo.
+echo This wizard is for contributing arbitrary files/changes to your fork and then opening a PR.
+echo It does NOT bypass upstream permissions. The official repository currently requires Fork + PR
+echo for ordinary contributors without direct push access.
+echo.
+call :EnsureGitHubCli
+if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
+call :CheckGitHubAuth
+if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
+call :DetectGitHubLogin
+if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
+gh repo view "%GH_LOGIN%/komodo" >nul 2>&1
+if errorlevel 1 (
+echo Creating fork %GH_LOGIN%/komodo...
+    gh repo fork moghtech/komodo --clone=false
+    if errorlevel 1 (
+call :MsgError "Fork creation failed."
+        goto GITHUB_PUBLISH_PAUSE
+    )
+)
+set "GEN_BRANCH="
+set /p "GEN_BRANCH=Contribution branch name [B=back]: "
+if /I "%GEN_BRANCH%"=="B" goto GITHUB_PUBLISH_CENTER
+if not defined GEN_BRANCH goto GITHUB_GENERIC_CONTRIBUTION
+set "GEN_PATH="
+set /p "GEN_PATH=Local file/folder path to contribute [B=back]: "
+if /I "%GEN_PATH%"=="B" goto GITHUB_PUBLISH_CENTER
+if not exist "%GEN_PATH%" (
+call :MsgError "The selected local path does not exist."
+    goto GITHUB_PUBLISH_PAUSE
+)
+set "GEN_DEST="
+set /p "GEN_DEST=Destination path inside Komodo repo, example scripts/windows [B=back]: "
+if /I "%GEN_DEST%"=="B" goto GITHUB_PUBLISH_CENTER
+set "GEN_MSG="
+set /p "GEN_MSG=Commit message: "
+if not defined GEN_MSG set "GEN_MSG=chore: community contribution"
+set "GEN_WORK=%TEMP%\komodo-generic-pr-%RANDOM%-%RANDOM%"
+mkdir "%GEN_WORK%" >nul 2>&1
+pushd "%GEN_WORK%"
+git clone --depth 1 https://github.com/moghtech/komodo.git repo
+if errorlevel 1 goto GITHUB_GENERIC_FAIL
+cd repo
+git remote add fork "https://github.com/%GH_LOGIN%/komodo.git"
+git checkout -b "%GEN_BRANCH%"
+if not exist "%GEN_DEST%" mkdir "%GEN_DEST%" >nul 2>&1
+xcopy "%GEN_PATH%" "%GEN_DEST%\" /E /I /Y >nul 2>&1
+git add -- "%GEN_DEST%"
+git status --short
+echo.
+choice /C YNBC /N /M "Commit and push these changes? [Y] Yes [N] No [B] Back [C] Cancel: "
+if errorlevel 4 goto GITHUB_GENERIC_CLEAN
+if errorlevel 3 goto GITHUB_GENERIC_CLEAN
+if errorlevel 2 goto GITHUB_GENERIC_CLEAN
+git config user.name "%GH_LOGIN%"
+git config user.email "%GH_LOGIN%@users.noreply.github.com"
+git commit -m "%GEN_MSG%"
+if errorlevel 1 goto GITHUB_GENERIC_FAIL
+git push -u fork "%GEN_BRANCH%"
+if errorlevel 1 goto GITHUB_GENERIC_FAIL
+gh pr create --repo moghtech/komodo --base main --head "%GH_LOGIN%:%GEN_BRANCH%" --title "%GEN_MSG%" --body "Community contribution created from Komodo Control Center."
+if errorlevel 1 (
+echo A Pull Request may already exist for this branch.
+    gh pr list --repo moghtech/komodo --state open --head "%GH_LOGIN%:%GEN_BRANCH%"
+)
+goto GITHUB_GENERIC_CLEAN
+
+:GITHUB_GENERIC_FAIL
+call :MsgError "Generic contribution workflow failed."
+:GITHUB_GENERIC_CLEAN
+popd >nul 2>&1
+if defined GEN_WORK rmdir /S /Q "%GEN_WORK%" >nul 2>&1
+goto GITHUB_PUBLISH_PAUSE
 
 :GITHUB_PUBLISH_PREVIEW
 @echo off
@@ -4391,7 +4528,7 @@ goto GITHUB_PUBLISH_PAUSE
 @echo off
 cls
 call :Header
-echo %MAGENTA%%BOLD%   STATUS of the contribution%RESET%
+echo %MAGENTA%%BOLD%   CONTRIBUTION STATUS%RESET%
 echo.
 call :EnsureGitHubCli
 if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
@@ -4402,13 +4539,13 @@ if errorlevel 1 goto GITHUB_PUBLISH_PAUSE
 
 echo %GRAY%fork:%RESET%
 gh repo view "%GH_LOGIN%/komodo" --json nameWithOwner,url,defaultBranchRef --jq ".nameWithOwner + \" | \" + .url + \" | default=\" + .defaultBranchRef.name" 2>nul
-if errorlevel 1 echo   Ainda nao encontrado ou sem acesso.
+if errorlevel 1 echo   Not found yet or inaccessible.
 echo.
 
-echo %GRAY%Pull Requests relacionados:%RESET%
+echo %GRAY%Related Pull Requests:%RESET%
 gh pr list --repo moghtech/komodo --state all --search "head:%GH_LOGIN%:contrib/windows-control-center" --limit 10 2>nul
 if errorlevel 1 (
-    call :LogWarn "Nao foi possivel consultar PRs."
+    call :LogWarn "Could not query Pull Requests."
 )
 echo.
 goto GITHUB_PUBLISH_PAUSE
@@ -4418,12 +4555,12 @@ goto GITHUB_PUBLISH_PAUSE
 @echo off
 cls
 call :Header
-echo %MAGENTA%%BOLD%   publish / update contribution%RESET%
+echo %MAGENTA%%BOLD%   PUBLISH / UPDATE CONTRIBUTION%RESET%
 echo.
-echo %YELLOW%important:%RESET%
-echo O repository official pertence a moghtech.
-echo is option envia a proposta by fork + Pull Request.
-echo Os maintainers decide if a contribution will be accepted.
+echo %YELLOW%Important:%RESET%
+echo The official repository belongs to moghtech.
+echo ThThis option sends the contribution through Fork + Pull Request.
+echo The maintainers decide whether the contribution is accepted.
 echo.
 choice /C SBC /N /M "Continue? [S] Yes  [B] Back  [C] Cancel: "
 if errorlevel 3 goto GITHUB_PUBLISH_CENTER
@@ -4444,10 +4581,10 @@ call :LogAction "Garantir fork %GH_LOGIN%/komodo"
 gh repo view "%GH_LOGIN%/komodo" >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo %CYAN%Creating fork lowdrus/komodo...%RESET%
+echo %CYAN%Creating fork %GH_LOGIN%/komodo...%RESET%
     gh repo fork moghtech/komodo --clone=false
     if errorlevel 1 (
-        call :MsgError "Failed to create o fork %GH_LOGIN%/komodo."
+call :MsgError "Failed to create o fork %GH_LOGIN%/komodo."
         goto GITHUB_PUBLISH_PAUSE
     )
     call :LogSuccess "Fork %GH_LOGIN%/komodo criado."
@@ -4465,7 +4602,7 @@ call :LogAction "Clonar upstream em workspace temporario: %GH_WORK%"
 
 git clone --depth 1 https://github.com/moghtech/komodo.git "%GH_WORK%\repo"
 if errorlevel 1 (
-    call :MsgError "Failed to clonar moghtech/komodo."
+call :MsgError "Failed to clonar moghtech/komodo."
     goto GITHUB_PUBLISH_CLEANUP
 )
 
@@ -4475,26 +4612,26 @@ git remote remove fork >nul 2>&1
 git remote add fork https://github.com/%GH_LOGIN%/komodo.git
 if errorlevel 1 (
     popd
-    call :MsgError "Failed to configurar remote of the fork."
+call :MsgError "Failed to configurar remote of the fork."
     goto GITHUB_PUBLISH_CLEANUP
 )
 
 echo.
-echo %CYAN%Verificando branch of contribution existing...%RESET%
+echo %CYAN%Checking existing contribution branch...%RESET%
 git ls-remote --exit-code --heads fork contrib/windows-control-center >nul 2>&1
 if not errorlevel 1 (
     git fetch fork contrib/windows-control-center:refs/remotes/fork/contrib/windows-control-center >nul 2>&1
     git checkout -B contrib/windows-control-center fork/contrib/windows-control-center
     if errorlevel 1 (
         popd
-        call :MsgError "Failed to open branch existing of the fork."
+call :MsgError "Failed to open branch existing of the fork."
         goto GITHUB_PUBLISH_CLEANUP
     )
 ) else (
     git checkout -B contrib/windows-control-center
     if errorlevel 1 (
         popd
-        call :MsgError "Failed to create branch of contribution."
+call :MsgError "Failed to create branch contribution."
         goto GITHUB_PUBLISH_CLEANUP
     )
 )
@@ -4506,36 +4643,36 @@ if defined KCC_MASTER if exist "%KCC_MASTER%" set "PUBLISH_SOURCE=%KCC_MASTER%"
 copy /Y "%PUBLISH_SOURCE%" "scripts\windows\KOMODO_CONTROL_CENTER.bat" >nul
 if errorlevel 1 (
     popd
-    call :MsgError "Failed to copy o BAT for o workspace."
+call :MsgError "Failed to copy o BAT for o workspace."
     goto GITHUB_PUBLISH_CLEANUP
 )
 
 call :WriteContributionReadme "%GH_WORK%\repo\scripts\windows\README.md"
 if errorlevel 1 (
     popd
-    call :MsgError "Failed to gerar README of the contribution."
+call :MsgError "Failed to gerar README of the contribution."
     goto GITHUB_PUBLISH_CLEANUP
 )
 
 git config user.name >nul 2>&1
-if errorlevel 1 git config user.name "lowdrus"
+if errorlevel 1 git config user.name "%GH_LOGIN%"
 git config user.email >nul 2>&1
-if errorlevel 1 git config user.email "lowdrus@users.noreply.github.com"
+if errorlevel 1 git config user.email "%GH_LOGIN%@users.noreply.github.com"
 
 git add -- "scripts/windows/KOMODO_CONTROL_CENTER.bat" "scripts/windows/README.md"
 
 git diff --cached --quiet
 if not errorlevel 1 (
     echo.
-    echo %YELLOW%in the mudanca new detected in the files of the contribution.%RESET%
+echo %YELLOW%in the mudanca new detected in the files of the contribution.%RESET%
     call :LogInfo "Nenhuma mudanca nova para commit."
 ) else (
     echo.
-    echo %CYAN%Creating commit...%RESET%
+echo %CYAN%Creating commit...%RESET%
     git commit -m "feat(windows): add/update Komodo Control Center"
     if errorlevel 1 (
         popd
-        call :MsgError "Failed to create commit."
+call :MsgError "Failed to create commit."
         goto GITHUB_PUBLISH_CLEANUP
     )
     call :LogSuccess "Commit da contribuicao criado."
@@ -4546,7 +4683,7 @@ echo %CYAN%Pushing branch to %GH_LOGIN%/komodo...%RESET%
 git push -u fork contrib/windows-control-center
 if errorlevel 1 (
     popd
-    call :MsgError "Failure in the push for %GH_LOGIN%/komodo."
+call :MsgError "Failure in the push for %GH_LOGIN%/komodo."
     goto GITHUB_PUBLISH_CLEANUP
 )
 
@@ -4560,20 +4697,20 @@ for /F "usebackq delims=" %%P in (`gh pr list --repo moghtech/komodo --state ope
 if defined EXISTING_PR (
     call :LogSuccess "PR existente atualizado: #%EXISTING_PR%"
     echo.
-    echo %GREEN%%BOLD%PR existing updated automatically: #%EXISTING_PR%%RESET%
+echo %GREEN%%BOLD%PR existing updated automatically: #%EXISTING_PR%%RESET%
     gh pr view "%EXISTING_PR%" --repo moghtech/komodo --web >nul 2>&1
 ) else (
     call :WritePrBody "%GH_WORK%\pr-body.md"
     echo.
-    echo %CYAN%creating new Pull Request in the repository official...%RESET%
+echo %CYAN%Creating a new Pull Request in the official repository...%RESET%
     gh pr create --repo moghtech/komodo ^
         --base main ^
         --head %GH_LOGIN%:contrib/windows-control-center ^
         --title "feat(windows): add Komodo Control Center" ^
         --body-file "%GH_WORK%\pr-body.md"
     if errorlevel 1 (
-        call :MsgError "Push was enviado, mas o Pull Request not may be created automatically."
-        echo %YELLOW%A branch became saved in the fork. you may tentar novamente by the option 35.%RESET%
+call :MsgError "Push succeeded, but the Pull Request could not be confirmed automatically."
+echo %YELLOW%The branch remains saved in the fork. You can retry from option 35.%RESET%
         goto GITHUB_PUBLISH_CLEANUP
     )
     call :LogSuccess "Novo Pull Request criado em moghtech/komodo."
@@ -4596,12 +4733,10 @@ goto GITHUB_PUBLISH_PAUSE
 @echo off
 echo.
 echo %GRAY%--------------------------------------------------------------------------------%RESET%
-choice /C BC /N /M "[B] Back for Central GitHub  [C] menu main: "
+choice /C BMC /N /M "[B] Back to GitHub Center  [M] Main menu  [C] Cancel: "
+if errorlevel 3 goto MAIN
 if errorlevel 2 goto MAIN
 goto GITHUB_PUBLISH_CENTER
-
-
-
 
 :WriteControlCenterDocs
 @echo off
@@ -4615,12 +4750,19 @@ exit /b 0
 @echo off
 if not exist "%STATE_DIR%\docs\" mkdir "%STATE_DIR%\docs" >nul 2>&1
 set "DOC_EN=%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_EN.md"
->"%DOC_EN%" echo # Komodo Control Center for Windows
+>"%DOC_EN%" echo # Komodo Control Center V19 for Windows
 >>"%DOC_EN%" echo.
 >>"%DOC_EN%" echo ## Purpose
 >>"%DOC_EN%" echo Komodo Control Center is a Windows batch-based companion for Komodo. It centralizes common lifecycle, diagnostics, account, translation, documentation, support and contribution workflows in a single menu.
 >>"%DOC_EN%" echo.
 >>"%DOC_EN%" echo ## Main capabilities
+- V20 is portable across user folders and does not depend on a specific Windows drive or GitHub username.
+- Navigation is standardized with Back / Main / Cancel on interactive pages.
+- User management uses database discovery, Komodo CLI, and API fallback when configured.
+- The GitHub center supports both Control Center publication and a generic contribution wizard.
+- Documentation can be exported as Markdown, TXT, HTML, RTF, and PDF when Pandoc or Microsoft Word is available.
+
+## Main capabilities
 >>"%DOC_EN%" echo - Start, stop and restart the local Komodo stack.
 >>"%DOC_EN%" echo - Open the local dashboard.
 >>"%DOC_EN%" echo - Inspect service status, HTTP health, port 9120 and Docker logs.
@@ -4669,7 +4811,7 @@ exit /b 0
 @echo off
 if not exist "%STATE_DIR%\docs\" mkdir "%STATE_DIR%\docs" >nul 2>&1
 set "DOC_PT=%STATE_DIR%\docs\KOMODO_CONTROL_CENTER_PTBR.md"
->"%DOC_PT%" echo # Komodo Control Center para Windows
+>"%DOC_PT%" echo # Komodo Control Center V19 para Windows
 >>"%DOC_PT%" echo.
 >>"%DOC_PT%" echo ## Objetivo
 >>"%DOC_PT%" echo O Komodo Control Center e um companheiro em BAT para Windows que centraliza operacao, diagnostico, usuarios, traducao, documentacao, suporte e contribuicoes do Komodo em um unico menu.
@@ -4773,7 +4915,7 @@ exit /b 0
 set "GH_LOGIN="
 for /F "usebackq delims=" %%U in (`gh api user --jq ".login" 2^>nul`) do set "GH_LOGIN=%%U"
 if not defined GH_LOGIN (
-    call :MsgError "Could not detect a account GitHub authenticated."
+call :MsgError "Could not detect a account GitHub authenticated."
     exit /b 1
 )
 call :LogInfo "GitHub account detected: %GH_LOGIN%"
@@ -4798,21 +4940,21 @@ if errorlevel 2 exit /b 1
 
 where winget.exe >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "winget not is disponivel. GitHub CLI not may be installed automatically."
+call :MsgError "winget not is disponivel. GitHub CLI not may be installed automatically."
     exit /b 1
 )
 
 call :LogAction "Instalar GitHub CLI via winget"
 winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements
 if errorlevel 1 (
-    call :MsgError "Failed to instalar GitHub CLI."
+call :MsgError "Failed to instalar GitHub CLI."
     exit /b 1
 )
 
 if exist "%ProgramFiles%\GitHub CLI\gh.exe" set "PATH=%ProgramFiles%\GitHub CLI;%PATH%"
 where gh.exe >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "GitHub CLI was installed, mas ainda not was localizado nesta sessao."
+call :MsgError "GitHub CLI was installed, mas ainda not was localizado nesta sessao."
     exit /b 1
 )
 
@@ -4836,14 +4978,14 @@ if errorlevel 2 exit /b 1
 call :LogAction "Iniciar autenticacao GitHub CLI"
 gh auth login --hostname github.com --git-protocol https --web
 if errorlevel 1 (
-    call :MsgError "authentication GitHub not was completed."
+call :MsgError "authentication GitHub not was completed."
     exit /b 1
 )
 
 gh auth setup-git >nul 2>&1
 gh auth status --hostname github.com >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "GitHub CLI continues without authentication valida."
+call :MsgError "GitHub CLI continues without authentication valida."
     exit /b 1
 )
 
@@ -4862,7 +5004,7 @@ exit /b 1
 :WriteContributionReadme
 @echo off
 set "README_TARGET=%~1"
->"%README_TARGET%" echo # Komodo Control Center for Windows
+>"%README_TARGET%" echo # Komodo Control Center V19 for Windows
 >>"%README_TARGET%" echo.
 >>"%README_TARGET%" echo This contribution adds a Windows batch control center for local Komodo management.
 >>"%README_TARGET%" echo.
@@ -4941,6 +5083,7 @@ echo   %GRAY%[B] Back   [C] Cancel%RESET%
 echo.
 set "LOGOP="
 set /p "LOGOP=%WHITE%%BOLD%choose: %RESET%"
+if not defined LOGOP goto LOG_CENTER
 call :LogAction "CENTRAL DE LOGS selecionado: %LOGOP%"
 
 if /I "%LOGOP%"=="B" goto MAIN
@@ -4974,19 +5117,19 @@ echo.
 if exist "%LOG_FILE%" (
     type "%LOG_FILE%"
 ) else (
-    echo in the log registrado.
+echo in the log registrado.
 )
 goto LOG_CENTER_PAUSE
 
 :LOG_ERRORS
 cls
 call :Header
-echo %RED%%BOLD%   report of ERRORS%RESET%
+echo %RED%%BOLD%   ERROR REPORT%RESET%
 echo.
 if exist "%ERROR_LOG%" (
     type "%ERROR_LOG%"
 ) else (
-    echo in the error registrado.
+echo in the error registrado.
 )
 goto LOG_CENTER_PAUSE
 
@@ -4999,7 +5142,7 @@ if exist "%LOG_FILE%" (
     findstr /I /C:"[WARN]" "%LOG_FILE%"
     if errorlevel 1 echo Nenhum aviso registrado.
 ) else (
-    echo in the log registrado.
+echo in the log registrado.
 )
 goto LOG_CENTER_PAUSE
 
@@ -5022,7 +5165,7 @@ goto LOG_CENTER_PAUSE
 
 :NOTIFY_TEST
 call :LogAction "Teste de notificacao solicitado"
-call :NotifyError "Teste: notificacoes do Komodo Control Center estao funcionando."
+call :NotifyError "Test: Komodo Control Center notifications are working."
 call :MsgOk "Teste enviado. if as notifications estiverem ON, o Windows exibira o warning."
 goto LOG_CENTER_PAUSE
 
@@ -5063,10 +5206,10 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :Compose down --remove-orphans
 if errorlevel 1 (
-    call :MsgError "Failed to removes containers."
+call :MsgError "Failed to removes containers."
 ) else (
     call :Log "Containers removed without volumes"
-    call :MsgOk "containers removidos. volumes preservados."
+call :MsgOk "containers removidos. volumes preservados."
 )
 goto PAUSE_MAIN
 
@@ -5083,7 +5226,7 @@ if /I "%CONFIRM%"=="B" goto MAIN
 if /I "%CONFIRM%"=="C" goto MAIN
 if /I not "%CONFIRM%"=="APAGAR-TUDO" (
     echo.
-    call :MsgOk "cancelled. Nada was apagado."
+call :MsgOk "cancelled. Nada was apagado."
     goto PAUSE_MAIN
 )
 call :Preflight
@@ -5092,10 +5235,10 @@ call :EnsureDocker
 if errorlevel 1 goto PAUSE_MAIN
 call :Compose down -v --remove-orphans
 if errorlevel 1 (
-    call :MsgError "Failure durante o reset."
+call :MsgError "Failure durante o reset."
 ) else (
     call :Log "FULL RESET executed"
-    call :MsgOk "Reset total completed."
+call :MsgOk "Reset total completed."
 )
 goto PAUSE_MAIN
 
@@ -5146,9 +5289,9 @@ echo %CYAN%%BOLD%===============================================================
 echo.
 echo %GRAY%   ROOT   :%RESET% %KOMODO_ROOT%
 if defined COMPOSE_FILE (
-    echo %GRAY%   STACK  :%RESET% %COMPOSE_FILE%
+echo %GRAY%   STACK  :%RESET% %COMPOSE_FILE%
 ) else (
-    echo %GRAY%   STACK  :%RESET% %RED%NOT detected%RESET%
+echo %GRAY%   STACK  :%RESET% %RED%NOT detected%RESET%
 )
 echo %GRAY%   DOCKER :%RESET% !QS_DOCKER!   %GRAY%KOMODO:%RESET% !QS_KOMODO!   %GRAY%HTTP:%RESET% !QS_HTTP!
 set "HEADER_NOTIFY=OFF"
@@ -5213,7 +5356,7 @@ exit /b 0
 
 :Compose
 if not defined COMPOSE_FILE (
-    call :MsgError "in the file compose was detected."
+call :MsgError "in the file compose was detected."
     exit /b 1
 )
 call :LogAction "docker compose command executed (arguments redacted)"
@@ -5233,22 +5376,22 @@ exit /b %COMPOSE_RC%
 
 :Preflight
 if not exist "%KOMODO_ROOT%\" (
-    call :MsgError "folder of the repository not found."
+call :MsgError "folder of the repository not found."
     exit /b 1
 )
 call :DetectCompose
 if not defined COMPOSE_FILE (
-    call :MsgError "in the file compose suportado was found."
+call :MsgError "in the file compose suportado was found."
     exit /b 1
 )
 where docker >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Docker CLI not found. Instale o Docker Desktop."
+call :MsgError "Docker CLI not found. Instale o Docker Desktop."
     exit /b 1
 )
 docker compose version >nul 2>&1
 if errorlevel 1 (
-    call :MsgError "Docker Compose v2 not found."
+call :MsgError "Docker Compose v2 not found."
     exit /b 1
 )
 exit /b 0
@@ -5264,10 +5407,10 @@ for /L %%I in (1,1,45) do (
     docker info >nul 2>&1
     if not errorlevel 1 (
         echo.
-        call :MsgOk "Docker Engine is ready."
+call :MsgOk "Docker Engine is ready."
         exit /b 0
     )
-    <nul set /p "=."
+<nul set /p "=."
     timeout /t 2 /nobreak >nul
 )
 
@@ -5294,10 +5437,10 @@ echo %GRAY%Aguardando o dashboard responder...%RESET%
 for /L %%I in (1,1,%MAXWAIT%) do (
     curl.exe -fsS --max-time 2 "%DASHBOARD_URL%" >nul 2>&1
     if not errorlevel 1 (
-        echo %GREEN%dashboard online.%RESET%
+echo %GREEN%dashboard online.%RESET%
         exit /b 0
     )
-    <nul set /p "=."
+<nul set /p "=."
     timeout /t 1 /nobreak >nul
 )
 echo.
@@ -5310,7 +5453,7 @@ call :LogAction "Criar/Reparar atalho Desktop"
 if /I not "%~f0"=="%INSTALL_BAT%" copy /Y "%~f0" "%INSTALL_BAT%" >nul 2>&1
 call :EnsureControlIcon
 if errorlevel 1 (
-    call :MsgError "Could not preparar o file of icone."
+call :MsgError "Could not preparar o file of icone."
     exit /b 1
 )
 set "VBS=%TEMP%\komodo_shortcut_%RANDOM%.vbs"
@@ -5328,7 +5471,7 @@ cscript //nologo "%VBS%" >nul 2>&1
 set "RC=%errorlevel%"
 del /Q "%VBS%" >nul 2>&1
 if not "%RC%"=="0" (
-    call :MsgError "Could not create o shortcut."
+call :MsgError "Could not create o shortcut."
     exit /b 1
 )
 if not exist "%USERPROFILE%\Desktop\Komodo Control Center.lnk" (
@@ -5346,7 +5489,7 @@ call :LogAction "Habilitar inicio automatico com Windows"
 if /I not "%~f0"=="%INSTALL_BAT%" copy /Y "%~f0" "%INSTALL_BAT%" >nul 2>&1
 call :EnsureControlIcon
 if errorlevel 1 (
-    call :MsgError "Could not preparar o file of icone."
+call :MsgError "Could not preparar o file of icone."
     exit /b 1
 )
 set "VBS=%TEMP%\komodo_startup_%RANDOM%.vbs"
@@ -5362,10 +5505,10 @@ cscript //nologo "%VBS%" >nul 2>&1
 set "RC=%errorlevel%"
 del /Q "%VBS%" >nul 2>&1
 if not "%RC%"=="0" (
-    call :MsgError "Failed to configurar startup."
+call :MsgError "Failed to configurar startup."
 ) else (
     call :Log "Windows autostart enabled"
-    call :MsgOk "shortcut adicionado a startup of the Windows."
+call :MsgOk "shortcut adicionado a startup of the Windows."
 )
 exit /b 0
 
@@ -5373,10 +5516,10 @@ exit /b 0
 set "STARTUP_LNK=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Komodo Control Center.lnk"
 if exist "%STARTUP_LNK%" del /Q "%STARTUP_LNK%" >nul 2>&1
 if exist "%STARTUP_LNK%" (
-    call :MsgError "Failed to removes startup."
+call :MsgError "Failed to removes startup."
 ) else (
     call :Log "Windows autostart disabled"
-    call :MsgOk "startup automatic removida."
+call :MsgOk "startup automatic removida."
 )
 exit /b 0
 
@@ -5384,9 +5527,9 @@ exit /b 0
 findstr /I /C:"%~1" "%ENV_FILE%" >nul 2>&1
 if not errorlevel 1 (
     set /A SECWARN+=1
-    echo %YELLOW%   [!] %~2%RESET%
+echo %YELLOW%   [!] %~2%RESET%
 ) else (
-    echo %GREEN%   [OK] %~2 - not detected%RESET%
+echo %GREEN%   [OK] %~2 - not detected%RESET%
 )
 exit /b 0
 

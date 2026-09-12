@@ -1,4 +1,4 @@
-# Komodo Control Center for Windows
+# Komodo Control Center V19 for Windows
 
 This contribution adds a Windows batch control center for local Komodo management.
 
