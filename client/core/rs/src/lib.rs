@@ -211,6 +211,7 @@ impl KomodoClient {
       if update.status == entities::update::UpdateStatus::Complete {
         return Ok(update);
       }
+      std::thread::sleep(Duration::from_millis(500));
     }
   }
 }
