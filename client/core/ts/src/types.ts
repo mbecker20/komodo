@@ -120,6 +120,8 @@ export interface ActionConfig {
 	 * this can usually be kept false outside of development.
 	 */
 	reload_deno_deps?: boolean;
+	/** Seconds before a running Action is killed. 0 or below means no timeout. */
+	execution_timeout: number;
 	/**
 	 * Typescript file contents using pre-initialized `komodo` client.
 	 * Supports variable / secret interpolation.

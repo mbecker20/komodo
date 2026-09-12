@@ -5042,6 +5042,14 @@
             "null"
           ]
         },
+        "execution_timeout": {
+          "description": "Seconds before a running Action is killed. 0 or below means no timeout.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int32"
+        },
         "file_contents": {
           "description": "Typescript file contents using pre-initialized `komodo` client.\nSupports variable / secret interpolation.",
           "type": [
