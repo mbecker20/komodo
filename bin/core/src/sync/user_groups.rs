@@ -173,8 +173,6 @@ pub async fn get_updates_for_view(
       .permissions
       .retain(|p| p.level > PermissionLevel::None);
 
-    // Discarded on purpose. This function backs the sync VIEW, which is
-    // recomputed continuously, so reporting here would be noise rather than news.
     user_group.permissions = expand_user_group_permissions(
       user_group.permissions,
       &user_group.name,
@@ -227,8 +225,6 @@ pub async fn get_updates_for_view(
   Ok(diffs)
 }
 
-/// The fourth member is the permission targets that matched no existing
-/// resource. Their permissions are not applied, so [run_updates] reports them.
 pub async fn get_updates_for_execution(
   user_groups: Vec<UserGroupToml>,
   delete: bool,
@@ -523,10 +519,6 @@ pub async fn run_updates(
   let mut has_error = false;
   let mut log = String::from("running updates on UserGroups");
 
-  // Reported, not fatal. A target can match nothing because it names a
-  // resource that does not exist, or because a pattern legitimately matches
-  // nothing right now, and the sync cannot tell those apart. Either way the
-  // permission is NOT applied, which is the part a reader needs to know.
   for target in dropped_targets {
     log.push_str(&format!(
       "\n{}: permission target matched no existing resource, so it was NOT applied | {}",
@@ -817,14 +809,7 @@ async fn run_update_permissions(
   }
 }
 
-/// Expands any regex defined targets into the full list.
-///
-/// A resource target that matches no existing resource expands to nothing and
-/// its permission is therefore never applied. Those are pushed to `dropped` so
-/// the caller can report them, because the alternative is a permission that the
-/// TOML declares, the sync reports success for, and nobody ever gets. A System
-/// target is passed through untouched: it names no resource, so there is
-/// nothing to match it against.
+/// Expands any regex defined targets into the full list
 async fn expand_user_group_permissions(
   permissions: Vec<PermissionToml>,
   user_group: &str,
@@ -837,9 +822,6 @@ async fn expand_user_group_permissions(
   for permission in permissions {
     let (variant, id) = permission.target.extract_variant_id();
     if id.is_empty() {
-      // An id is a resource name or a regex over names, so an empty one
-      // matches nothing and the permission is dropped. Same outcome as the
-      // no-match check below, different cause, so it gets its own wording.
       dropped.push(format!(
         "user group: {user_group} | target: {variant} with an empty id"
       ));
@@ -982,11 +964,6 @@ async fn expand_user_group_permissions(
           });
         expanded.extend(permissions);
       }
-      // Passed through rather than name matched. A System target names no
-      // resource, so there is nothing to match it against, and dropping it
-      // here is what made the export / import round trip lossy: the export
-      // writes System permissions into the file, and a target missing from
-      // this list is later revoked by `to_remove`.
       ResourceTargetVariant::System => {
         expanded.push(permission);
         continue;
