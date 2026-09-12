@@ -1,5 +1,9 @@
 use std::{
-  path::PathBuf, process::Stdio, sync::OnceLock, time::Duration,
+  os::unix::process::ExitStatusExt,
+  path::PathBuf,
+  process::{ExitStatus, Stdio},
+  sync::OnceLock,
+  time::Duration,
 };
 
 use komodo_client::{
@@ -275,8 +279,6 @@ async fn run_command(
     }
   };
 
-  // Pinned so the kill path below can re-await the same future, rather
-  // than dropping it and discarding everything the command printed.
   let mut wait = std::pin::pin!(child.wait_with_output());
 
   let killed_reason = tokio::select! {
@@ -295,21 +297,19 @@ async fn run_command(
 
   kill_process_group(pid);
 
-  // `SIGKILL` closes the pipes, so this resolves as soon as they drain.
-  // The bound is a backstop in case something else holds them open.
-  match tokio::time::timeout(DRAIN_AFTER_KILL, wait).await {
+  match tokio::time::timeout(Duration::from_secs(3), wait).await {
     Ok(Ok(output)) => {
-      CommandOutput::from_killed(output, killed_reason)
+      let mut output = CommandOutput::from(Ok(output));
+      output.status = ExitStatus::from_raw(1);
+      if !output.stderr.is_empty() && !output.stderr.ends_with('\n') {
+        output.stderr.push('\n');
+      }
+      output.stderr.push_str(&killed_reason);
+      output
     }
-    // Nothing to salvage, so just report why it was killed.
     _ => CommandOutput::from_err_message(killed_reason),
   }
 }
-
-/// How long to keep reading a killed command's output. Generous rather
-/// than tuned: the pipes close with the process group, so this is only
-/// reached if a descendant escaped the group still holding them.
-const DRAIN_AFTER_KILL: Duration = Duration::from_secs(3);
 
 /// Sends `SIGKILL` to the entire process group led by `pid`.
 ///
@@ -370,8 +370,6 @@ mod tests {
     );
   }
 
-  /// What a command printed before it hit the timeout is usually the only
-  /// clue about where it got stuck, so the kill must not discard it.
   #[tokio::test]
   async fn timeout_preserves_output() {
     let out = run_shell_command(

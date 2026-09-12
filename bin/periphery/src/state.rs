@@ -258,8 +258,6 @@ impl TerminalTriggers {
     Ok(())
   }
 
-  /// [Self::recv] only removes the trigger once it fires, so a caller
-  /// which gives up waiting has to remove it here.
   pub async fn remove(&self, channel: &Uuid) {
     self.0.remove(channel).await;
   }

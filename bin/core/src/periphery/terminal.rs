@@ -124,7 +124,6 @@ impl PeripheryClient {
       )
       .await
     {
-      // No stream was created, so no `Drop` will clean this up.
       connection.terminals.remove(&channel).await;
       return Err(e).context(
         "Failed to send TerminalTrigger to begin forwarding.",
@@ -146,8 +145,6 @@ pub struct ReceiverStream {
   channels: Arc<CloneCache<Uuid, Sender<anyhow::Result<Vec<u8>>>>>,
   receiver: Receiver<anyhow::Result<Vec<u8>>>,
   server: String,
-  /// Whether the stream reached its end, as opposed to being dropped
-  /// part way through.
   completed: bool,
 }
 
@@ -162,17 +159,11 @@ impl Stream for ReceiverStream {
         if bytes == END_OF_OUTPUT.as_bytes() =>
       {
         self.completed = true;
-        self.cleanup();
         Poll::Ready(None)
       }
       Poll::Ready(Some(Ok(bytes))) => Poll::Ready(Some(Ok(bytes))),
       Poll::Ready(Some(Err(e))) => Poll::Ready(Some(Err(e))),
-      // Not marked completed: the channel closing early is not the
-      // sentinel, so Periphery may still be forwarding.
-      Poll::Ready(None) => {
-        self.cleanup();
-        Poll::Ready(None)
-      }
+      Poll::Ready(None) => Poll::Ready(None),
       Poll::Pending => Poll::Pending,
     }
   }
@@ -180,34 +171,15 @@ impl Stream for ReceiverStream {
 
 impl Drop for ReceiverStream {
   fn drop(&mut self) {
-    // A stream dropped before it completes (client disconnect,
-    // cancelled Action, timeout) never sees END_OF_OUTPUT, so without
-    // this its channel is left in the map forever. Periphery keeps
-    // forwarding to it, and Core logs a missing channel for every line.
-    self.cleanup();
-  }
-}
-
-impl ReceiverStream {
-  fn cleanup(&self) {
-    // Not the prettiest but it should be fine
     let channels = self.channels.clone();
     let channel = self.channel;
-    let server = self.server.clone();
+    let server = std::mem::take(&mut self.server);
     let completed = self.completed;
-    // `Drop` can run outside the runtime, where `spawn` would panic.
-    let Ok(handle) = tokio::runtime::Handle::try_current() else {
-      return;
-    };
-    handle.spawn(async move {
+    tokio::spawn(async move {
       channels.remove(&channel).await;
       if completed {
         return;
       }
-      // Periphery is still forwarding, so tell it to stop, using the
-      // same message shape the interactive terminal sends on client
-      // disconnect. Looked up rather than held, so a reconnect in the
-      // meantime does not leave this sending on a dead channel.
       let Some(connection) =
         periphery_connections().get(&server).await
       else {
