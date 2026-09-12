@@ -1,4 +1,10 @@
-use std::{path::PathBuf, process::Stdio, sync::OnceLock};
+use std::{
+  os::unix::process::ExitStatusExt,
+  path::PathBuf,
+  process::{ExitStatus, Stdio},
+  sync::OnceLock,
+  time::Duration,
+};
 
 use komodo_client::{
   entities::{komodo_timestamp, update::Log},
@@ -273,8 +279,10 @@ async fn run_command(
     }
   };
 
+  let mut wait = std::pin::pin!(child.wait_with_output());
+
   let killed_reason = tokio::select! {
-    output = child.wait_with_output() => {
+    output = wait.as_mut() => {
       return CommandOutput::from(output);
     }
     _ = on_timeout => format!(
@@ -288,7 +296,19 @@ async fn run_command(
   };
 
   kill_process_group(pid);
-  CommandOutput::from_err_message(killed_reason)
+
+  match tokio::time::timeout(Duration::from_secs(3), wait).await {
+    Ok(Ok(output)) => {
+      let mut output = CommandOutput::from(Ok(output));
+      output.status = ExitStatus::from_raw(1);
+      if !output.stderr.is_empty() && !output.stderr.ends_with('\n') {
+        output.stderr.push('\n');
+      }
+      output.stderr.push_str(&killed_reason);
+      output
+    }
+    _ => CommandOutput::from_err_message(killed_reason),
+  }
 }
 
 /// Sends `SIGKILL` to the entire process group led by `pid`.
@@ -347,6 +367,23 @@ mod tests {
     assert!(
       pids.is_empty(),
       "backgrounded grandchild survived timeout: pids={pids:?}"
+    );
+  }
+
+  #[tokio::test]
+  async fn timeout_preserves_output() {
+    let out = run_shell_command(
+      "echo progress; echo warning >&2; sleep 31335",
+      CommandOptions::default().timeout(Duration::from_millis(300)),
+    )
+    .await;
+
+    assert!(!out.success(), "expected timeout failure: {out:?}");
+    assert_eq!(out.stdout.trim(), "progress", "stdout lost: {out:?}");
+    assert!(out.stderr.contains("warning"), "stderr lost: {out:?}");
+    assert!(
+      out.stderr.contains("timed out"),
+      "expected timeout reason: {out:?}"
     );
   }
 

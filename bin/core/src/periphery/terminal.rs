@@ -4,7 +4,7 @@ use std::{
   task::{self, Poll},
 };
 
-use anyhow::Context;
+use anyhow::{Context, anyhow};
 use futures_util::Stream;
 use komodo_client::entities::terminal::{
   TerminalStdinMessageVariant, TerminalTarget,
@@ -51,16 +51,19 @@ impl PeripheryClient {
     let (sender, receiver) = transport::channel::channel();
     connection.terminals.insert(channel, sender).await;
 
-    connection
+    if let Err(e) = connection
       .sender
       .send_terminal(
         channel,
         Ok(vec![TerminalStdinMessageVariant::Begin.as_byte()]),
       )
       .await
-      .context(
+    {
+      connection.terminals.remove(&channel).await;
+      return Err(e).context(
         "Failed to send TerminalMessage Begin byte to begin forwarding.",
-      )?;
+      );
+    }
 
     Ok(ConnectTerminalResponse {
       channel,
@@ -113,21 +116,26 @@ impl PeripheryClient {
       transport::channel::channel();
     connection.terminals.insert(channel, terminal_sender).await;
 
-    connection
+    if let Err(e) = connection
       .sender
       .send_terminal(
         channel,
         Ok(vec![TerminalStdinMessageVariant::Begin.as_byte()]),
       )
       .await
-      .context(
+    {
+      connection.terminals.remove(&channel).await;
+      return Err(e).context(
         "Failed to send TerminalTrigger to begin forwarding.",
-      )?;
+      );
+    }
 
     Ok(ReceiverStream {
       channel,
       receiver: terminal_receiver,
       channels: connection.terminals.clone(),
+      server: self.id.clone(),
+      completed: false,
     })
   }
 }
@@ -136,6 +144,8 @@ pub struct ReceiverStream {
   channel: Uuid,
   channels: Arc<CloneCache<Uuid, Sender<anyhow::Result<Vec<u8>>>>>,
   receiver: Receiver<anyhow::Result<Vec<u8>>>,
+  server: String,
+  completed: bool,
 }
 
 impl Stream for ReceiverStream {
@@ -148,27 +158,37 @@ impl Stream for ReceiverStream {
       Poll::Ready(Some(Ok(bytes)))
         if bytes == END_OF_OUTPUT.as_bytes() =>
       {
-        self.cleanup();
+        self.completed = true;
         Poll::Ready(None)
       }
       Poll::Ready(Some(Ok(bytes))) => Poll::Ready(Some(Ok(bytes))),
       Poll::Ready(Some(Err(e))) => Poll::Ready(Some(Err(e))),
-      Poll::Ready(None) => {
-        self.cleanup();
-        Poll::Ready(None)
-      }
+      Poll::Ready(None) => Poll::Ready(None),
       Poll::Pending => Poll::Pending,
     }
   }
 }
 
-impl ReceiverStream {
-  fn cleanup(&self) {
-    // Not the prettiest but it should be fine
+impl Drop for ReceiverStream {
+  fn drop(&mut self) {
     let channels = self.channels.clone();
     let channel = self.channel;
+    let server = std::mem::take(&mut self.server);
+    let completed = self.completed;
     tokio::spawn(async move {
       channels.remove(&channel).await;
+      if completed {
+        return;
+      }
+      let Some(connection) =
+        periphery_connections().get(&server).await
+      else {
+        return;
+      };
+      let _ = connection
+        .sender
+        .send_terminal(channel, Err(anyhow!("Stream dropped")))
+        .await;
     });
   }
 }

@@ -257,6 +257,10 @@ impl TerminalTriggers {
     self.0.remove(channel).await;
     Ok(())
   }
+
+  pub async fn remove(&self, channel: &Uuid) {
+    self.0.remove(channel).await;
+  }
 }
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use anyhow::{Context, anyhow};
 use futures_util::{Stream, StreamExt, TryStreamExt};
@@ -314,6 +314,7 @@ impl Resolve<crate::api::Args> for ExecuteTerminal {
     let terminal = get_terminal(&self.terminal, &self.target).await?;
 
     let channel_id = Uuid::new_v4();
+    let cancel = CancellationToken::new();
 
     let stdout = setup_execute_command_on_terminal(
       channel_id,
@@ -322,11 +323,25 @@ impl Resolve<crate::api::Args> for ExecuteTerminal {
     )
     .await?;
 
+    terminal_channels()
+      .insert(
+        channel_id,
+        Arc::new(TerminalChannel {
+          sender: terminal.stdin.clone(),
+          cancel: cancel.clone(),
+        }),
+      )
+      .await;
+
+    let terminal_cancel = terminal.cancel.clone();
+
     tokio::spawn(async move {
       forward_execute_command_on_terminal_response(
         &channel.sender,
         channel_id,
         stdout,
+        terminal_cancel,
+        cancel,
       )
       .await
     });
@@ -510,16 +525,50 @@ async fn forward_execute_command_on_terminal_response(
   sender: &Sender<EncodedTransportMessage>,
   channel: Uuid,
   mut stdout: impl Stream<Item = Result<String, LinesCodecError>> + Unpin,
+  terminal_cancel: CancellationToken,
+  cancel: CancellationToken,
 ) {
   // This waits to begin forwarding until Core sends the Begin byte start trigger.
   // This ensures no messages are lost before channels on both sides are set up.
-  if let Err(e) = terminal_triggers().recv(&channel).await {
+  let trigger = tokio::select! {
+    biased;
+    res = terminal_triggers().recv(&channel) => res,
+    _ = terminal_cancel.cancelled() => {
+      Err(anyhow!("Terminal exited before begin trigger"))
+    },
+    _ = cancel.cancelled() => {
+      Err(anyhow!("Channel cancelled before begin trigger"))
+    },
+    _ = tokio::time::sleep(Duration::from_secs(30)) => {
+      Err(anyhow!("Timed out waiting for begin trigger"))
+    },
+  };
+  if let Err(e) = trigger {
     warn!("{e:#}");
+    terminal_triggers().remove(&channel).await;
+    terminal_channels().remove(&channel).await;
+    if !cancel.is_cancelled() {
+      let _ = sender.send_terminal_exited(channel).await;
+    }
     return;
   }
 
   loop {
-    match stdout.next().await {
+    if cancel.is_cancelled() {
+      break;
+    }
+
+    let next = tokio::select! {
+      biased;
+      next = tokio::task::coop::unconstrained(stdout.next()) => next,
+      _ = terminal_cancel.cancelled() => {
+        let _ = sender.send_terminal_exited(channel).await;
+        break
+      },
+      _ = cancel.cancelled() => break,
+    };
+
+    match next {
       Some(Ok(line)) if line.as_str() == END_OF_OUTPUT => {
         if let Err(e) =
           sender.send_terminal(channel, Ok(line.into())).await
@@ -539,12 +588,78 @@ async fn forward_execute_command_on_terminal_response(
       }
       Some(Err(e)) => {
         warn!("Got stdout stream error | {e:?}");
+        let _ = sender.send_terminal_exited(channel).await;
         break;
       }
       None => {
-        clean_up_terminals().await;
+        let _ = sender.send_terminal_exited(channel).await;
         break;
       }
     }
+  }
+
+  terminal_channels().remove(&channel).await;
+  clean_up_terminals().await;
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[tokio::test]
+  async fn cancelled_terminal_still_forwards_buffered_output() {
+    const LINES: usize = 300;
+
+    let channel = Uuid::new_v4();
+    let (sender, mut receiver) =
+      transport::channel::channel::<EncodedTransportMessage>();
+
+    let (stdout_sender, stdout_receiver) =
+      tokio::sync::broadcast::channel::<bytes::Bytes>(8192);
+    let stdout = tokio_util::codec::FramedRead::new(
+      tokio_util::io::StreamReader::new(
+        tokio_stream::wrappers::BroadcastStream::new(stdout_receiver)
+          .map(|res| res.map_err(std::io::Error::other)),
+      ),
+      tokio_util::codec::LinesCodec::new(),
+    );
+
+    let mut output = String::new();
+    for i in 0..LINES {
+      output.push_str(&format!("line {i}\n"));
+    }
+    output.push_str(&format!("{KOMODO_EXIT_CODE}0\n"));
+    output.push_str(&format!("{END_OF_OUTPUT}\n"));
+    for chunk in output.as_bytes().chunks(3) {
+      stdout_sender
+        .send(bytes::Bytes::copy_from_slice(chunk))
+        .unwrap();
+    }
+
+    terminal_triggers().insert(channel).await;
+    terminal_triggers().send(&channel).await.unwrap();
+
+    let terminal_cancel = CancellationToken::new();
+    terminal_cancel.cancel();
+
+    forward_execute_command_on_terminal_response(
+      &sender,
+      channel,
+      stdout,
+      terminal_cancel,
+      CancellationToken::new(),
+    )
+    .await;
+
+    drop(sender);
+    let mut sent = 0;
+    while receiver.recv().await.is_ok() {
+      sent += 1;
+    }
+    assert_eq!(
+      sent,
+      LINES + 2,
+      "output buffered before the terminal was cancelled got dropped"
+    );
   }
 }
