@@ -197,11 +197,9 @@ macro_rules! replace_resource_target_ids {
       komodo_client::entities::ResourceTarget::System(_) => {}
       $(
         komodo_client::entities::ResourceTarget::$variant(id) => {
-          *id = $all
-            .$field
-            .get(id)
-            .map(|r| r.name.clone())
-            .unwrap_or_default();
+          if let Some(resource) = $all.$field.get(id) {
+            *id = resource.name.clone();
+          }
         }
       )*
     }
