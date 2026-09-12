@@ -266,10 +266,12 @@ impl Resolve<ExecuteArgs> for RunSync {
     } else {
       Default::default()
     };
+    let user_groups_toml = resources.user_groups.clone();
     let (
       user_groups_to_create,
       user_groups_to_update,
       user_groups_to_delete,
+      dropped_permission_targets,
     ) = if match_resource_type.is_none()
       && match_resources.is_none()
       && sync.config.include_user_groups
@@ -299,6 +301,7 @@ impl Resolve<ExecuteArgs> for RunSync {
       && user_groups_to_create.is_empty()
       && user_groups_to_update.is_empty()
       && user_groups_to_delete.is_empty()
+      && dropped_permission_targets.is_empty()
       && variables_to_create.is_empty()
       && variables_to_update.is_empty()
       && variables_to_delete.is_empty()
@@ -332,15 +335,6 @@ impl Resolve<ExecuteArgs> for RunSync {
         variables_to_create,
         variables_to_update,
         variables_to_delete,
-      )
-      .await,
-    );
-    maybe_extend(
-      &mut update.logs,
-      crate::sync::user_groups::run_updates(
-        user_groups_to_create,
-        user_groups_to_update,
-        user_groups_to_delete,
       )
       .await,
     );
@@ -399,6 +393,37 @@ impl Resolve<ExecuteArgs> for RunSync {
       &mut update.logs,
       Procedure::execute_sync_updates(procedure_deltas).await,
     );
+
+    if match_resource_type.is_none()
+      && match_resources.is_none()
+      && sync.config.include_user_groups
+    {
+      match crate::sync::user_groups::get_updates_for_execution(
+        user_groups_toml,
+        delete,
+      )
+      .await
+      {
+        Ok((to_create, to_update, to_delete, dropped_targets)) => {
+          maybe_extend(
+            &mut update.logs,
+            crate::sync::user_groups::run_updates(
+              to_create,
+              to_update,
+              to_delete,
+              dropped_targets,
+            )
+            .await,
+          )
+        }
+        Err(e) => update.push_error_log(
+          "Update UserGroups",
+          format_serror(
+            &e.context("failed to compute UserGroup updates").into(),
+          ),
+        ),
+      }
+    }
 
     // Execute the deploy cache
     deploy_from_cache(deploy_cache, &mut update.logs).await;
